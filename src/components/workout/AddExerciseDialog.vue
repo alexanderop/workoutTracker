@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,9 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { popularExercises } from '@/data/popularExercises'
 
 interface Props {
@@ -42,8 +42,8 @@ const filteredExercises = computed(() => {
     return popularExercises
   }
   const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter((ex) =>
-    ex.name.toLowerCase().includes(query)
+  return popularExercises.filter(ex =>
+    ex.name.toLowerCase().includes(query),
   )
 })
 
@@ -90,13 +90,15 @@ function handleOpenChange(value: boolean) {
         <button
           v-for="exercise in filteredExercises"
           :key="exercise.name"
-          @click="handleSelectExercise(exercise.name)"
           class="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors text-left"
+          @click="handleSelectExercise(exercise.name)"
         >
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <span class="text-xl flex-shrink-0">{{ exercise.icon }}</span>
             <div class="min-w-0">
-              <p class="font-medium text-sm truncate">{{ exercise.name }}</p>
+              <p class="font-medium text-sm truncate">
+                {{ exercise.name }}
+              </p>
               <Badge variant="secondary" class="text-xs mt-1">
                 {{ muscleLabels[exercise.muscle] }}
               </Badge>
@@ -116,9 +118,9 @@ function handleOpenChange(value: boolean) {
       <!-- Create Custom Exercise Button -->
       <div class="pt-4 border-t border-border">
         <Button
-          @click="handleCreateNew"
           variant="outline"
           class="w-full"
+          @click="handleCreateNew"
         >
           + Create Custom Exercise
         </Button>

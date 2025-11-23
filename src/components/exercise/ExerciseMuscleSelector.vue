@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Muscle } from '@/stores/exercises'
+import type { Muscle } from '@/stores/exercises'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 interface Props {
   open: boolean
@@ -16,13 +15,13 @@ interface Props {
 
 interface Emits {
   'update:open': [value: boolean]
-  select: [value: Muscle]
+  'select': [value: Muscle]
 }
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const muscleOptions: Array<{ value: Muscle; label: string; icon: string }> = [
+const muscleOptions: Array<{ value: Muscle, label: string, icon: string }> = [
   { value: 'chest', label: 'Chest', icon: '🏔️' },
   { value: 'back', label: 'Back', icon: '🔙' },
   { value: 'legs', label: 'Legs', icon: '🦵' },
@@ -37,7 +36,10 @@ function handleSelect(muscle: Muscle) {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="(val) => $emit('update:open', val)">
+  <Dialog
+    :open="open"
+    @update:open="(val) => $emit('update:open', val)"
+  >
     <DialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Muscle Group</DialogTitle>
@@ -50,13 +52,12 @@ function handleSelect(muscle: Muscle) {
         <button
           v-for="option in muscleOptions"
           :key="option.value"
-          @click="handleSelect(option.value)"
-          :class="[
-            'w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left',
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left" :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
               : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
           ]"
+          @click="handleSelect(option.value)"
         >
           <span class="text-2xl">{{ option.icon }}</span>
           <span class="font-medium">{{ option.label }}</span>

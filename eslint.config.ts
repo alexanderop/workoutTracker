@@ -13,6 +13,10 @@ import { globalIgnores } from 'eslint/config'
 
 export default defineConfigWithVueTs(
   {
+    ignores: ['.claude/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**'],
+  },
+
+  {
     name: 'app/files-to-lint',
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
@@ -21,6 +25,19 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+
+  {
+    files: ['src/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': [
+        'warn',
+        {
+          ignores: ['App', 'Layout'],
+        },
+      ],
+      'vue/component-definition-name-casing': ['warn', 'PascalCase'],
+    },
+  },
 
   {
     ...pluginVitest.configs.recommended,
@@ -33,4 +50,7 @@ export default defineConfigWithVueTs(
   },
   ...pluginOxlint.configs['flat/recommended'],
   skipFormatting,
+  {
+    ignores: ['.claude/**'],
+  },
 )

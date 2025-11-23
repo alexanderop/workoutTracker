@@ -1,4 +1,4 @@
-import { type Equipment, type Muscle, type ExerciseType, type Metrics } from '@/stores/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 
 export interface PopularExercise {
   name: string

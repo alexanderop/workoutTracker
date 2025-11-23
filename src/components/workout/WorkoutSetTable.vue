@@ -22,6 +22,12 @@ defineProps<Props>()
 defineEmits<{
   toggleComplete: [set: Set]
 }>()
+
+function getFormattedEstimated10RM(set: Set) {
+  if (!set.kg || !set.reps)
+    return '—'
+  return calculate10RM(Number.parseInt(set.kg), Number.parseInt(set.reps)).toFixed(1)
+}
 </script>
 
 <template>
@@ -99,7 +105,7 @@ defineEmits<{
         </TableCell>
 
         <TableCell class="p-1 h-10 text-center text-xs text-muted-foreground">
-          {{ set.kg && set.reps ? calculate10RM(parseInt(set.kg), parseInt(set.reps)).toFixed(1) : '—' }}
+          {{ getFormattedEstimated10RM(set) }}
         </TableCell>
 
         <TableCell class="p-1 h-10 text-center">

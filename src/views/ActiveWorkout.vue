@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AddExerciseDialog from '@/components/workout/AddExerciseDialog.vue'
-import ExerciseCarousel from '@/components/workout/ExerciseCarousel.vue'
-import PreviousHistory from '@/components/workout/PreviousHistory.vue'
-import RestTimerWidget from '@/components/workout/RestTimerWidget.vue'
-import SetTable from '@/components/workout/SetTable.vue'
+import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
+import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
+import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.vue'
+import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { useWorkout } from '@/composables/useWorkout'
 
@@ -26,7 +26,7 @@ const showAddExercise = ref(false)
     />
 
     <!-- Exercise Carousel -->
-    <ExerciseCarousel
+    <WorkoutExerciseCarousel
       :exercises="workout.exercises"
       :selected-id="workout.selectedExerciseId"
       @select="selectExercise"
@@ -37,20 +37,20 @@ const showAddExercise = ref(false)
     <!-- Main Content -->
     <div class="flex-1 p-4 overflow-y-auto">
       <!-- Sets Table -->
-      <SetTable
+      <WorkoutSetTable
         :sets="selectedExercise?.sets || []"
         @toggle-complete="toggleSetComplete"
       />
 
       <!-- Previous History -->
-      <PreviousHistory
+      <WorkoutPreviousHistory
         :sets="selectedExercise?.sets || []"
         date="Fr, 7. Nov"
       />
     </div>
 
     <!-- Rest Timer & Action Buttons -->
-    <RestTimerWidget :timer="timer" />
+    <WorkoutRestTimerWidget :timer="timer" />
 
     <!-- Add Exercise Dialog -->
     <AddExerciseDialog

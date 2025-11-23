@@ -31,7 +31,7 @@ export const useExercisesStore = defineStore('exercises', () => {
   }
 
   function getExerciseById(id: string): CustomExercise | undefined {
-    return customExercises.value.find((e) => e.id === id)
+    return customExercises.value.find(e => e.id === id)
   }
 
   function getAllExercises(): CustomExercise[] {
@@ -39,7 +39,7 @@ export const useExercisesStore = defineStore('exercises', () => {
   }
 
   function deleteExercise(id: string): void {
-    const index = customExercises.value.findIndex((e) => e.id === id)
+    const index = customExercises.value.findIndex(e => e.id === id)
     if (index !== -1) {
       customExercises.value.splice(index, 1)
     }

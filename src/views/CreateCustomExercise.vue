@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import ExerciseEquipmentSelector from '@/components/exercise/ExerciseEquipmentSelector.vue'
+import ExerciseMetricsSelector from '@/components/exercise/ExerciseMetricsSelector.vue'
+import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector.vue'
+import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useExercisesStore, type Equipment, type Muscle, type ExerciseType, type Metrics } from '@/stores/exercises'
-import EquipmentSelector from '@/components/exercise/EquipmentSelector.vue'
-import MuscleSelector from '@/components/exercise/MuscleSelector.vue'
-import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
-import MetricsSelector from '@/components/exercise/MetricsSelector.vue'
+import { useExercisesStore } from '@/stores/exercises'
 
 const router = useRouter()
 const exercisesStore = useExercisesStore()
@@ -32,13 +33,13 @@ const isSaveDisabled = computed(() => !isNameValid.value)
 
 // Equipment display
 const equipmentLabel: Record<Equipment, string> = {
-  barbell: 'Barbell',
-  dumbbell: 'Dumbbell',
-  machine: 'Machine',
-  cable: 'Cable',
-  bodyweight: 'Bodyweight',
-  kettlebell: 'Kettlebell',
-  band: 'Band',
+  'barbell': 'Barbell',
+  'dumbbell': 'Dumbbell',
+  'machine': 'Machine',
+  'cable': 'Cable',
+  'bodyweight': 'Bodyweight',
+  'kettlebell': 'Kettlebell',
+  'band': 'Band',
   'ez-bar': 'EZ Bar',
   'hex-bar': 'Hex Bar',
 }
@@ -65,7 +66,7 @@ const typeLabel: Record<ExerciseType, string> = {
 const metricsLabel: Record<Metrics, string> = {
   'weight-reps': 'Weight + Reps',
   'reps-only': 'Reps Only',
-  duration: 'Duration',
+  'duration': 'Duration',
   'distance-duration': 'Distance + Duration',
   'weight-distance': 'Weight + Distance',
 }
@@ -109,7 +110,8 @@ function handleMetricsSelect(selected: Metrics) {
 }
 
 function handleSave() {
-  if (!isNameValid.value) return
+  if (!isNameValid.value)
+    return
 
   exercisesStore.addExercise({
     icon: icon.value,
@@ -136,7 +138,9 @@ function handleSave() {
       >
         ← Back
       </Button>
-      <h1 class="text-lg font-semibold flex-1">Create Exercise</h1>
+      <h1 class="text-lg font-semibold flex-1">
+        Create Exercise
+      </h1>
       <Button
         :disabled="isSaveDisabled"
         @click="handleSave"
@@ -151,8 +155,8 @@ function handleSave() {
       <div class="flex gap-4 mb-6">
         <!-- Icon Button -->
         <button
-          @click="handleIconClick"
           class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-2xl hover:bg-slate-600 transition-colors"
+          @click="handleIconClick"
         >
           {{ icon }}
         </button>
@@ -172,8 +176,8 @@ function handleSave() {
       <div class="space-y-0 border border-border rounded-lg overflow-hidden">
         <!-- Equipment -->
         <button
-          @click="showEquipmentModal = true"
           class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+          @click="showEquipmentModal = true"
         >
           <span class="text-sm font-medium">Equipment</span>
           <div class="flex items-center gap-2">
@@ -186,8 +190,8 @@ function handleSave() {
 
         <!-- Muscle -->
         <button
-          @click="showMuscleModal = true"
           class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+          @click="showMuscleModal = true"
         >
           <span class="text-sm font-medium">Muscle</span>
           <div class="flex items-center gap-2">
@@ -200,8 +204,8 @@ function handleSave() {
 
         <!-- Exercise Type -->
         <button
-          @click="showTypeModal = true"
           class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+          @click="showTypeModal = true"
         >
           <span class="text-sm font-medium">Exercise Type</span>
           <div class="flex items-center gap-2">
@@ -214,8 +218,8 @@ function handleSave() {
 
         <!-- Metrics -->
         <button
-          @click="showMetricsModal = true"
           class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+          @click="showMetricsModal = true"
         >
           <span class="text-sm font-medium">Metrics</span>
           <div class="flex items-center gap-2">
@@ -234,17 +238,17 @@ function handleSave() {
       type="text"
       class="hidden"
       @change="handleEmojiChange"
-    />
+    >
 
     <!-- Selection Modals -->
-    <EquipmentSelector
+    <ExerciseEquipmentSelector
       :open="showEquipmentModal"
       :selected="equipment"
       @update:open="showEquipmentModal = $event"
       @select="handleEquipmentSelect"
     />
 
-    <MuscleSelector
+    <ExerciseMuscleSelector
       :open="showMuscleModal"
       :selected="muscle"
       @update:open="showMuscleModal = $event"
@@ -258,7 +262,7 @@ function handleSave() {
       @select="handleTypeSelect"
     />
 
-    <MetricsSelector
+    <ExerciseMetricsSelector
       :open="showMetricsModal"
       :selected="metrics"
       @update:open="showMetricsModal = $event"

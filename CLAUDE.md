@@ -97,6 +97,21 @@ The project uses Pinia with the Composition API setup pattern. Example in `src/s
 - Components use `<script setup>` syntax (Composition API shorthand)
 - Styling uses Tailwind utility classes and can use `clsx` + `tailwind-merge` for dynamic classes
 
+### Component Naming Conventions
+Follow the Vue.js Style Guide for component names:
+- **File names**: Always use PascalCase (e.g., `WorkoutHeader.vue`, not `workout-header.vue`)
+- **Tightly-coupled components**: Prefix with parent component name to make relationships explicit
+  - Example: If `ExerciseCarousel` only belongs to Workout, name it `WorkoutExerciseCarousel.vue`
+  - This groups related files alphabetically and clarifies dependencies
+- **Full-word names**: Avoid abbreviations (e.g., `ExerciseTypeSelector` not `ExerciseTypeSelect`)
+- **Component imports**: Use PascalCase in all imports (e.g., `import WorkoutHeader from '...'`)
+- **Template usage**: Use PascalCase in templates (e.g., `<WorkoutHeader />`)
+
+**Anti-patterns to avoid:**
+- ❌ Generic names without context: `Timer.vue`, `Selector.vue`
+- ❌ Mixed casing: `workoutTimer.vue` or `WorkoutTimer.vue` in different files
+- ❌ Vague abbreviations: `WH.vue`, `EC.vue`
+
 ## Linting & Formatting
 
 - **Oxlint** runs on TypeScript/JavaScript with `correctness` rules enabled

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Equipment } from '@/stores/exercises'
+import type { Equipment } from '@/stores/exercises'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 interface Props {
   open: boolean
@@ -16,13 +15,13 @@ interface Props {
 
 interface Emits {
   'update:open': [value: boolean]
-  select: [value: Equipment]
+  'select': [value: Equipment]
 }
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const equipmentOptions: Array<{ value: Equipment; label: string; icon: string }> = [
+const equipmentOptions: Array<{ value: Equipment, label: string, icon: string }> = [
   { value: 'barbell', label: 'Barbell', icon: '🏋️' },
   { value: 'dumbbell', label: 'Dumbbell', icon: '🪑' },
   { value: 'machine', label: 'Machine', icon: '⚙️' },
@@ -40,7 +39,10 @@ function handleSelect(equipment: Equipment) {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="(val) => $emit('update:open', val)">
+  <Dialog
+    :open="open"
+    @update:open="(val) => $emit('update:open', val)"
+  >
     <DialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Equipment</DialogTitle>
@@ -53,13 +55,12 @@ function handleSelect(equipment: Equipment) {
         <button
           v-for="option in equipmentOptions"
           :key="option.value"
-          @click="handleSelect(option.value)"
-          :class="[
-            'flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all',
+          class="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all" :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
               : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
           ]"
+          @click="handleSelect(option.value)"
         >
           <span class="text-3xl">{{ option.icon }}</span>
           <span class="text-xs font-medium text-center">{{ option.label }}</span>
