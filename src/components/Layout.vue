@@ -19,15 +19,6 @@ function isActive(path: string) {
 
 <template>
   <div class="flex flex-col h-screen bg-background">
-    <!-- Header -->
-    <header class="border-b bg-card sticky top-0 z-10">
-      <div class="px-4 py-4">
-        <h1 class="text-2xl font-bold text-foreground">
-          Workout Tracker
-        </h1>
-      </div>
-    </header>
-
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto">
       <slot />

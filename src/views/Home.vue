@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+
+const router = useRouter()
 </script>
 
 <template>
@@ -13,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card'
         <p class="text-lg text-muted-foreground mb-8">
           Track your workouts, monitor your exercises, and achieve your fitness goals
         </p>
-        <Button size="lg">
+        <Button size="lg" @click="router.push('/workout/active')">
           Get Started
         </Button>
       </CardContent>
