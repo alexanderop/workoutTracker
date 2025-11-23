@@ -20,7 +20,15 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@vueuse/core": "^14.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.554.0",
     "pinia": "^3.0.3",
+    "reka-ui": "^2.6.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.17",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
   },
@@ -45,10 +53,12 @@
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.23.0",
     "prettier": "3.6.2",
+    "tw-animate-css": "^1.4.0",
     "typescript": "~5.9.0",
     "vite": "npm:rolldown-vite@latest",
     "vite-plugin-vue-devtools": "^8.0.3",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.1"
-  }
+  },
+  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
 }
