@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { useColorMode } from '@vueuse/core'
+import { computed } from 'vue'
+
+const mode = useColorMode()
+
+const isDark = computed({
+  get: () => mode.value === 'dark',
+  set: (value: boolean) => {
+    mode.value = value ? 'dark' : 'light'
+  },
+})
 </script>
 
 <template>
@@ -16,6 +28,15 @@ import { Separator } from '@/components/ui/separator'
           <CardTitle class="text-lg">Theme</CardTitle>
           <CardDescription>Choose your preferred theme</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div class="flex items-center space-x-2">
+            <Switch
+              v-model="isDark"
+              data-testid="theme-toggle"
+            />
+            <Label>Dark Mode</Label>
+          </div>
+        </CardContent>
       </Card>
 
       <Card>

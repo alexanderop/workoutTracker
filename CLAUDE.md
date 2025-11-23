@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+NEVER use the Explore Agent
+NEVER spin up a subagent if you run e2e tests
+
 ## Project Overview
 
 **workoutTracker** is a Vue 3 + Vite web application with TypeScript support. It uses:
