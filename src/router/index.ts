@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
+import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
 import Exercises from '@/views/Exercises.vue'
 import Home from '@/views/Home.vue'
 import Settings from '@/views/Settings.vue'
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/workout/active',
       name: 'ActiveWorkout',
       component: ActiveWorkout,
+    },
+    {
+      path: '/create-exercise',
+      name: 'CreateCustomExercise',
+      component: CreateCustomExercise,
     },
   ],
 })
