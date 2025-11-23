@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Layout from '@/components/Layout.vue'
-import { RouterView } from 'vue-router'
 import { useColorMode } from '@vueuse/core'
 import { watch } from 'vue'
+import { RouterView } from 'vue-router'
+import Layout from '@/components/Layout.vue'
 
 // Initialize color mode globally
 const colorMode = useColorMode({
@@ -20,7 +20,8 @@ watch(
     const html = document.documentElement
     if (newMode === 'dark') {
       html.classList.add('dark')
-    } else {
+    }
+    else {
       html.classList.remove('dark')
     }
   },

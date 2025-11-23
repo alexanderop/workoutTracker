@@ -30,7 +30,7 @@ Implement a dark mode toggle feature using TDD (Test-Driven Development) methodo
 
 **Code**:
 ```typescript
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test('user can toggle dark mode theme in settings', async ({ page }) => {
   // Navigate to settings page

@@ -10,7 +10,6 @@ Requested handoff file: `$ARGUMENTS`
 
 If no handoff file was provided, list them all.  Eg:
 
-
 ```
 echo "## Available Handoffs"
 echo ""

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router'
-import { Home, Dumbbell, Activity, Settings } from 'lucide-vue-next'
+import { Activity, Dumbbell, Home, Settings } from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -12,7 +12,7 @@ const navItems = [
   { path: '/settings', name: 'Settings', icon: Settings, label: 'Settings' },
 ]
 
-const isActive = (path: string) => {
+function isActive(path: string) {
   return route.path === path
 }
 </script>
@@ -22,7 +22,9 @@ const isActive = (path: string) => {
     <!-- Header -->
     <header class="border-b bg-card sticky top-0 z-10">
       <div class="px-4 py-4">
-        <h1 class="text-2xl font-bold text-foreground">Workout Tracker</h1>
+        <h1 class="text-2xl font-bold text-foreground">
+          Workout Tracker
+        </h1>
       </div>
     </header>
 
@@ -37,13 +39,12 @@ const isActive = (path: string) => {
         <button
           v-for="item in navItems"
           :key="item.path"
-          @click="router.push(item.path)"
-          :class="[
-            'flex-1 flex flex-col items-center justify-center py-3 px-2 transition-colors',
+          class="flex-1 flex flex-col items-center justify-center py-3 px-2 transition-colors" :class="[
             isActive(item.path)
               ? 'text-primary border-t-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ]"
+          @click="router.push(item.path)"
         >
           <component :is="item.icon" :size="24" class="mb-1" />
           <span class="text-xs font-medium">{{ item.label }}</span>

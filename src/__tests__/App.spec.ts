@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
-
 import { mount } from '@vue/test-utils'
-import App from '../App.vue'
-import { createRouter, createMemoryHistory } from 'vue-router'
 
-describe('App', () => {
+import { describe, expect, it } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
+import App from '../App.vue'
+
+describe('app', () => {
   it('mounts renders properly', () => {
     const router = createRouter({
       history: createMemoryHistory(),
