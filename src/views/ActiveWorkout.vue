@@ -10,7 +10,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import AddExerciseDialog from '@/components/workout/AddExerciseDialog.vue'
+import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
 import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
@@ -82,7 +82,7 @@ const showAddExercise = ref(false)
     <WorkoutRestTimerWidget :timer="timer" />
 
     <!-- Add Exercise Dialog -->
-    <AddExerciseDialog
+    <WorkoutAddExerciseDialog
       :open="showAddExercise"
       @update:open="showAddExercise = $event"
       @add="addExercise"

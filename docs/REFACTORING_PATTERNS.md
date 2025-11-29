@@ -381,7 +381,7 @@ src/
 │   ├── SetTable.vue (table UI)
 │   ├── PreviousHistory.vue (history UI)
 │   ├── RestTimerWidget.vue (timer UI)
-│   └── AddExerciseDialog.vue (dialog UI)
+│   └── WorkoutAddExerciseDialog.vue (dialog UI)
 └── views/
     └── ActiveWorkout.vue (62 lines - orchestrator)
 ```

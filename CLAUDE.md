@@ -5,6 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 before you add any new ui code think if there is something that we can
 use from vue shadecn.
 
+## Code Style
+
+Follow the conventions in @TYPESCRIPT_STYLE_GUIDE.md for all TypeScript code.
+
 ## Project Overview
 
 **workoutTracker** is a Vue 3 + Vite web application with TypeScript support. It uses:

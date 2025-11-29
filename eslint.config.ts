@@ -30,12 +30,29 @@ export default defineConfigWithVueTs(
     files: ['src/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': [
-        'warn',
+        'error',
         {
           ignores: ['App', 'Layout'],
         },
       ],
-      'vue/component-definition-name-casing': ['warn', 'PascalCase'],
+      'vue/component-definition-name-casing': ['error', 'PascalCase'],
+      'vue/component-name-in-template-casing': [
+        'error',
+        'PascalCase',
+        {
+          registeredComponentsOnly: false,
+        },
+      ],
+      'vue/match-component-file-name': [
+        'error',
+        {
+          extensions: ['vue'],
+          shouldMatchCase: true,
+        },
+      ],
+      'vue/prop-name-casing': ['error', 'camelCase'],
+      'vue/attribute-hyphenation': ['error', 'always'],
+      'vue/custom-event-name-casing': ['error', 'kebab-case'],
     },
   },
 

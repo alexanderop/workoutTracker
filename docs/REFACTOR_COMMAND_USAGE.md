@@ -42,7 +42,7 @@ Output:
   + src/components/workout/SetTable.vue
   + src/components/workout/PreviousHistory.vue
   + src/components/workout/RestTimerWidget.vue
-  + src/components/workout/AddExerciseDialog.vue
+  + src/components/workout/WorkoutAddExerciseDialog.vue
 
 📝 Files Modified:
   ~ src/views/ActiveWorkout.vue (520 → 62 lines)
