@@ -4,7 +4,7 @@ import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import { useTemplateRef, computed } from 'vue'
+import { useTemplateRef, ref, watch } from 'vue'
 
 type Props = {
   exercises: ReadonlyArray<Exercise>
@@ -22,7 +22,12 @@ const emit = defineEmits<{
 const sortableContainer = useTemplateRef<HTMLElement>('sortableContainer')
 
 // Create a mutable shallow copy for sortable to work with
-const exercisesList = computed(() => [...props.exercises])
+// Must use ref (not computed) because useSortable writes to the array during drag operations
+const exercisesList = ref([...props.exercises])
+
+watch(() => props.exercises, (newExercises) => {
+  exercisesList.value = [...newExercises]
+})
 
 useSortable(sortableContainer, exercisesList, {
   animation: 150,
