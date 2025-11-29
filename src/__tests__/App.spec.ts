@@ -1,10 +1,29 @@
 import { mount } from '@vue/test-utils'
-
-import { describe, expect, it } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import 'fake-indexeddb/auto'
 import App from '../App.vue'
 
+// Mock the db module to avoid IndexedDB issues in tests
+vi.mock('@/db/repositories/activeWorkout', () => ({
+  activeWorkoutRepository: {
+    get: vi.fn().mockResolvedValue(undefined),
+    exists: vi.fn().mockResolvedValue(false),
+  },
+}))
+
+vi.mock('@/db/repositories/customExercises', () => ({
+  customExercisesRepository: {
+    getAll: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 describe('app', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
   it('mounts renders properly', () => {
     const router = createRouter({
       history: createMemoryHistory(),
@@ -21,6 +40,7 @@ describe('app', () => {
         plugins: [router],
         stubs: {
           RouterView: true,
+          ResumeWorkoutDialog: true,
         },
       },
     })

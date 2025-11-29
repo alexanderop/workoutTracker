@@ -133,6 +133,10 @@ flowchart TD
     end
 
     CreateExercise --> CreateExerciseChildren
+
+    subgraph SharedComponents["Shared Components"]
+        MobileDialogContent["MobileDialogContent"]
+    end
 ```
 
 ### shadcn/ui Components

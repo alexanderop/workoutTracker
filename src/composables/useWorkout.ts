@@ -53,8 +53,25 @@ function createInitialWorkout(): Workout {
 // Singleton state - shared across all components
 const workout = ref<Workout>(createInitialWorkout())
 
+/**
+ * Reset the workout to initial empty state.
+ */
 export function resetWorkout() {
   workout.value = createInitialWorkout()
+}
+
+/**
+ * Restore a workout from saved state (used for resuming from DB).
+ */
+export function restoreWorkout(savedWorkout: Workout) {
+  workout.value = savedWorkout
+}
+
+/**
+ * Get the raw workout ref for persistence layer.
+ */
+export function getWorkoutRef() {
+  return workout
 }
 
 export function useWorkout() {

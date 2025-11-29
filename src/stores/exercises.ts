@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { customExercisesRepository } from '@/db/repositories/customExercises'
+import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
 
 export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'kettlebell' | 'band' | 'ez-bar' | 'hex-bar'
 export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
@@ -19,13 +21,40 @@ export type CustomExercise = {
 
 export const useExercisesStore = defineStore('exercises', () => {
   const customExercises = ref<Array<CustomExercise>>([])
+  const isLoaded = ref(false)
+  const isLoading = ref(false)
 
-  function addExercise(exercise: Omit<CustomExercise, 'id' | 'createdAt'>): CustomExercise {
-    const newExercise: CustomExercise = {
-      ...exercise,
-      id: `exercise_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: Date.now(),
+  /**
+   * Load all custom exercises from the database.
+   * Call this on app initialization.
+   */
+  async function loadFromDb(): Promise<void> {
+    if (isLoading.value) return
+
+    isLoading.value = true
+    try {
+      const dbExercises = await customExercisesRepository.getAll()
+      customExercises.value = dbExercises.map(dbToCustomExercise)
+      isLoaded.value = true
     }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Add a new custom exercise to both DB and local state.
+   */
+  async function addExercise(
+    exercise: Omit<CustomExercise, 'id' | 'createdAt'>,
+  ): Promise<CustomExercise> {
+    const dbExercise = createDbCustomExercise(exercise)
+
+    // Save to DB first
+    await customExercisesRepository.add(dbExercise)
+
+    // Then update local state
+    const newExercise = dbToCustomExercise(dbExercise)
     customExercises.value = [...customExercises.value, newExercise]
     return newExercise
   }
@@ -38,12 +67,19 @@ export const useExercisesStore = defineStore('exercises', () => {
     return customExercises.value
   }
 
-  function deleteExercise(id: string): void {
+  /**
+   * Delete a custom exercise from both DB and local state.
+   */
+  async function deleteExercise(id: string): Promise<void> {
+    await customExercisesRepository.delete(id)
     customExercises.value = customExercises.value.filter(e => e.id !== id)
   }
 
   return {
     customExercises,
+    isLoaded,
+    isLoading,
+    loadFromDb,
     addExercise,
     getExerciseById,
     getAllExercises,

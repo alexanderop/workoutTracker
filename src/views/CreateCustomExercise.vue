@@ -69,11 +69,11 @@ function handleMetricsSelect(selected: Metrics) {
   showMetricsModal.value = false
 }
 
-function handleSave() {
+async function handleSave() {
   if (!isNameValid.value)
     return
 
-  exercisesStore.addExercise(getFormData())
+  await exercisesStore.addExercise(getFormData())
   router.back()
 }
 </script>

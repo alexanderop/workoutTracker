@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dumbbell, Plus } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -19,10 +19,25 @@ import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.
 import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
 import type { Set } from '@/composables/useWorkout'
-import { useWorkout } from '@/composables/useWorkout'
+import { getWorkoutRef, useWorkout } from '@/composables/useWorkout'
+import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
 
 const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue, reorderExercises } = useWorkout()
 const timer = useRestTimer()
+
+// Initialize persistence for this workout session
+const workoutRef = getWorkoutRef()
+const { isInitialized, startNewWorkoutSession, markInitialized } = useWorkoutPersistence(workoutRef)
+
+onMounted(() => {
+  // If not already initialized (from resume), start a new session
+  if (!isInitialized.value) {
+    startNewWorkoutSession()
+  }
+  else {
+    markInitialized()
+  }
+})
 
 const showAddExercise = ref(false)
 const showEditExercise = ref(false)
