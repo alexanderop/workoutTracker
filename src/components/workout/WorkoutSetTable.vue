@@ -122,7 +122,7 @@ function getFormattedEstimated10RM(set: Set) {
             <Check
               :class="cn(
                 'w-4 h-4 transition-all',
-                set.status === 'completed' ? 'animate-in zoom-in-50 duration-200' : 'opacity-30'
+                set.status === 'completed' ? 'animate-in zoom-in-50 duration-200' : 'opacity-30',
               )"
             />
           </Button>

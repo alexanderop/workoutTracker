@@ -42,12 +42,14 @@ You review Vue components for readability and suggest improvements based on prov
 <div v-if="condition">
   <!-- 20 lines of code -->
 </div>
+
 <div v-else>
   <!-- 20 lines of code -->
 </div>
 
 <!-- After -->
 <TrueCondition v-if="condition" />
+
 <FalseCondition v-else />
 ```
 

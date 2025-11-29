@@ -22,7 +22,7 @@ defineProps<Props>()
         <div
           :class="cn(
             'flex items-center justify-center w-8 h-8 rounded-full transition-colors',
-            timer.isTimerRunning.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+            timer.isTimerRunning.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
           )"
         >
           <Clock class="w-4 h-4" />
@@ -32,7 +32,7 @@ defineProps<Props>()
           <span
             :class="cn(
               'text-xl font-bold font-mono tabular-nums transition-colors',
-              timer.isTimerRunning.value ? 'text-primary' : 'text-foreground'
+              timer.isTimerRunning.value ? 'text-primary' : 'text-foreground',
             )"
           >
             {{ timer.getFormattedTime() }}

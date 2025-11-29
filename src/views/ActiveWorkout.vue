@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Dumbbell, Plus } from 'lucide-vue-next'
-import AddExerciseDialog from '@/components/workout/AddExerciseDialog.vue'
-import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
-import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
-import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
-import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.vue'
-import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -16,6 +10,12 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
+import AddExerciseDialog from '@/components/workout/AddExerciseDialog.vue'
+import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
+import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
+import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
+import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.vue'
+import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { useWorkout } from '@/composables/useWorkout'
 
