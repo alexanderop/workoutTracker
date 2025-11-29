@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { popularExercises } from '@/data/popularExercises'
+import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
 interface Props {
   open: boolean
@@ -27,15 +28,6 @@ const emit = defineEmits<Emits>()
 
 const router = useRouter()
 const searchQuery = ref('')
-
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest',
-  back: 'Back',
-  legs: 'Legs',
-  shoulders: 'Shoulders',
-  arms: 'Arms',
-  core: 'Core',
-}
 
 const filteredExercises = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -100,7 +92,7 @@ function handleOpenChange(value: boolean) {
                 {{ exercise.name }}
               </p>
               <Badge variant="secondary" class="text-xs mt-1">
-                {{ muscleLabels[exercise.muscle] }}
+                {{ MUSCLE_LABELS[exercise.muscle] }}
               </Badge>
             </div>
           </div>

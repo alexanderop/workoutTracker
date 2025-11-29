@@ -8,6 +8,12 @@ import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector
 import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  EQUIPMENT_LABELS,
+  METRICS_LABELS,
+  MUSCLE_LABELS,
+  TYPE_LABELS,
+} from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 
 const router = useRouter()
@@ -30,46 +36,6 @@ const showMetricsModal = ref(false)
 // Computed
 const isNameValid = computed(() => name.value.trim().length > 0)
 const isSaveDisabled = computed(() => !isNameValid.value)
-
-// Equipment display
-const equipmentLabel: Record<Equipment, string> = {
-  'barbell': 'Barbell',
-  'dumbbell': 'Dumbbell',
-  'machine': 'Machine',
-  'cable': 'Cable',
-  'bodyweight': 'Bodyweight',
-  'kettlebell': 'Kettlebell',
-  'band': 'Band',
-  'ez-bar': 'EZ Bar',
-  'hex-bar': 'Hex Bar',
-}
-
-// Muscle display
-const muscleLabel: Record<Muscle, string> = {
-  chest: 'Chest',
-  back: 'Back',
-  legs: 'Legs',
-  shoulders: 'Shoulders',
-  arms: 'Arms',
-  core: 'Core',
-}
-
-// Type display
-const typeLabel: Record<ExerciseType, string> = {
-  compound: 'Compound Movement',
-  isolation: 'Isolation Movement',
-  stability: 'Stability/Core',
-  cardio: 'Cardio',
-}
-
-// Metrics display
-const metricsLabel: Record<Metrics, string> = {
-  'weight-reps': 'Weight + Reps',
-  'reps-only': 'Reps Only',
-  'duration': 'Duration',
-  'distance-duration': 'Distance + Duration',
-  'weight-distance': 'Weight + Distance',
-}
 
 function handleIconClick() {
   // Trigger emoji picker - on most browsers, we can use a hidden input
@@ -182,7 +148,7 @@ function handleSave() {
           <span class="text-sm font-medium">Equipment</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ equipment ? equipmentLabel[equipment] : 'Please select' }}
+              {{ equipment ? EQUIPMENT_LABELS[equipment] : 'Please select' }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -196,7 +162,7 @@ function handleSave() {
           <span class="text-sm font-medium">Muscle</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ muscle ? muscleLabel[muscle] : 'Please select' }}
+              {{ muscle ? MUSCLE_LABELS[muscle] : 'Please select' }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -210,7 +176,7 @@ function handleSave() {
           <span class="text-sm font-medium">Exercise Type</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ typeLabel[type] }}
+              {{ TYPE_LABELS[type] }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -224,7 +190,7 @@ function handleSave() {
           <span class="text-sm font-medium">Metrics</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ metricsLabel[metrics] }}
+              {{ METRICS_LABELS[metrics] }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
