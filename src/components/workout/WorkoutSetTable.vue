@@ -18,6 +18,16 @@ import {
 import { cn } from '@/lib/utils'
 import { calculate10RM } from '@/lib/workout-utils'
 
+const TABLE_COLUMNS = [
+  { key: 'set', label: '#', class: 'w-[40px] h-8 p-1' },
+  { key: 'kg', label: 'KG', class: 'text-center h-8 p-1' },
+  { key: 'reps', label: 'REPS', class: 'text-center h-8 p-1' },
+  { key: 'rir', label: 'RIR', class: 'text-center h-8 p-1' },
+  { key: '10rm', label: '10RM', class: 'text-center h-8 p-1 text-xs' },
+  { key: 'complete', label: '✓', class: 'text-center w-[50px] h-8 p-1' },
+  { key: 'actions', label: '', class: 'w-[40px] h-8 p-1' },
+] as const
+
 type Props = {
   sets: Array<Set>
 }
@@ -53,25 +63,13 @@ function getFormattedEstimated10RM(set: Set) {
   <Table>
     <TableHeader>
       <TableRow class="border-none hover:bg-transparent">
-        <TableHead class="w-[40px] h-8 p-1">
-          #
+        <TableHead
+          v-for="column in TABLE_COLUMNS"
+          :key="column.key"
+          :class="column.class"
+        >
+          {{ column.label }}
         </TableHead>
-        <TableHead class="text-center h-8 p-1">
-          KG
-        </TableHead>
-        <TableHead class="text-center h-8 p-1">
-          REPS
-        </TableHead>
-        <TableHead class="text-center h-8 p-1">
-          RIR
-        </TableHead>
-        <TableHead class="text-center h-8 p-1 text-xs">
-          10RM
-        </TableHead>
-        <TableHead class="text-center w-[50px] h-8 p-1">
-          ✓
-        </TableHead>
-        <TableHead class="w-[40px] h-8 p-1" />
       </TableRow>
     </TableHeader>
     <TableBody>

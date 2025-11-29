@@ -21,7 +21,7 @@ import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.
 import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
 import type { Set } from '@/composables/useWorkout'
-import { getWorkoutRef, useWorkout } from '@/composables/useWorkout'
+import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
 
 const router = useRouter()
@@ -48,6 +48,7 @@ const showFinishDialog = ref(false)
 async function handleConfirmFinish() {
   const completed = await completeWorkout()
   if (completed) {
+    resetWorkout()
     router.push(`/workout/summary/${completed.id}`)
     return
   }
