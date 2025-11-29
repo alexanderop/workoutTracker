@@ -43,10 +43,9 @@ export function useRestTimer() {
   function toggle() {
     if (isActive.value) {
       pause()
+      return
     }
-    else {
-      resume()
-    }
+    resume()
   }
 
   return {

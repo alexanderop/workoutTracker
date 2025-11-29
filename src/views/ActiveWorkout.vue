@@ -36,10 +36,9 @@ onMounted(() => {
   // If not already initialized (from resume), start a new session
   if (!isInitialized.value) {
     startNewWorkoutSession()
+    return
   }
-  else {
-    markInitialized()
-  }
+  markInitialized()
 })
 
 const showAddExercise = ref(false)
@@ -47,7 +46,11 @@ const showEditExercise = ref(false)
 const showFinishDialog = ref(false)
 
 async function handleConfirmFinish() {
-  await completeWorkout()
+  const completed = await completeWorkout()
+  if (completed) {
+    router.push(`/workout/summary/${completed.id}`)
+    return
+  }
   router.push('/')
 }
 

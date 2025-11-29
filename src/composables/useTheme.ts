@@ -23,13 +23,8 @@ export function useTheme() {
   watch(
     () => colorMode.value,
     (newMode) => {
-      const html = document.documentElement
-      if (newMode === 'dark') {
-        html.classList.add('dark')
-      }
-      else {
-        html.classList.remove('dark')
-      }
+      const method = newMode === 'dark' ? 'add' : 'remove'
+      document.documentElement.classList[method]('dark')
     },
     { immediate: true },
   )

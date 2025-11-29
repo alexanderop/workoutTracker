@@ -234,8 +234,10 @@ export function useWorkout() {
       for (let i = 0; i < targetCount - currentCount; i++) {
         addSet(exerciseId)
       }
+      return
     }
-    else if (targetCount < currentCount) {
+
+    if (targetCount < currentCount) {
       // Remove sets from the end
       exercise.sets = exercise.sets.slice(0, targetCount)
     }

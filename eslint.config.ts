@@ -104,11 +104,20 @@ export default defineConfigWithVueTs(
       ],
 
       // No `enum` - use literal unions or `as const` objects
+      // No `else` or `else if` - prefer early returns or ternary operators
       'no-restricted-syntax': [
         'error',
         {
           selector: 'TSEnumDeclaration',
           message: 'Use literal unions or `as const` objects instead of enums.',
+        },
+        {
+          selector: 'IfStatement > IfStatement.alternate',
+          message: 'Avoid `else if`. Prefer early returns or ternary operators.',
+        },
+        {
+          selector: 'IfStatement > :not(IfStatement).alternate',
+          message: 'Avoid `else`. Prefer early returns or ternary operators.',
         },
       ],
 

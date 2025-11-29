@@ -49,11 +49,11 @@ export function useAppInitialization() {
           workoutName: activeWorkout.name,
           exerciseCount: activeWorkout.exercises.length,
         }
+        return
       }
-      else {
-        initState.value = { status: 'ready' }
-        isInitialized.value = true
-      }
+
+      initState.value = { status: 'ready' }
+      isInitialized.value = true
     }
     catch (error) {
       initState.value = {
