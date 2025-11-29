@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import { useColorMode } from '@vueuse/core'
-import { computed } from 'vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useTheme } from '@/composables/useTheme'
 
-const mode = useColorMode()
-
-const isDark = computed({
-  get: () => mode.value === 'dark',
-  set: (value: boolean) => {
-    mode.value = value ? 'dark' : 'light'
-  },
-})
+const { isDark } = useTheme()
 </script>
 
 <template>

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import ExerciseEquipmentSelector from '@/components/exercise/ExerciseEquipmentSelector.vue'
 import ExerciseMetricsSelector from '@/components/exercise/ExerciseMetricsSelector.vue'
 import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector.vue'
+import ExerciseSettingsItem from '@/components/exercise/ExerciseSettingsItem.vue'
 import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -123,61 +124,26 @@ function handleSave() {
 
       <!-- Configuration List -->
       <div class="space-y-0 border border-border rounded-lg overflow-hidden">
-        <!-- Equipment -->
-        <button
-          class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+        <ExerciseSettingsItem
+          label="Equipment"
+          :value="form.equipment ? EQUIPMENT_LABELS[form.equipment] : ''"
           @click="showEquipmentModal = true"
-        >
-          <span class="text-sm font-medium">Equipment</span>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted-foreground">
-              {{ form.equipment ? EQUIPMENT_LABELS[form.equipment] : 'Please select' }}
-            </span>
-            <span class="text-muted-foreground">›</span>
-          </div>
-        </button>
-
-        <!-- Muscle -->
-        <button
-          class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+        />
+        <ExerciseSettingsItem
+          label="Muscle"
+          :value="form.muscle ? MUSCLE_LABELS[form.muscle] : ''"
           @click="showMuscleModal = true"
-        >
-          <span class="text-sm font-medium">Muscle</span>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted-foreground">
-              {{ form.muscle ? MUSCLE_LABELS[form.muscle] : 'Please select' }}
-            </span>
-            <span class="text-muted-foreground">›</span>
-          </div>
-        </button>
-
-        <!-- Exercise Type -->
-        <button
-          class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+        />
+        <ExerciseSettingsItem
+          label="Exercise Type"
+          :value="TYPE_LABELS[form.type]"
           @click="showTypeModal = true"
-        >
-          <span class="text-sm font-medium">Exercise Type</span>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted-foreground">
-              {{ TYPE_LABELS[form.type] }}
-            </span>
-            <span class="text-muted-foreground">›</span>
-          </div>
-        </button>
-
-        <!-- Metrics -->
-        <button
-          class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+        />
+        <ExerciseSettingsItem
+          label="Metrics"
+          :value="METRICS_LABELS[form.metrics]"
           @click="showMetricsModal = true"
-        >
-          <span class="text-sm font-medium">Metrics</span>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted-foreground">
-              {{ METRICS_LABELS[form.metrics] }}
-            </span>
-            <span class="text-muted-foreground">›</span>
-          </div>
-        </button>
+        />
       </div>
     </div>
 
