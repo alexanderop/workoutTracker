@@ -55,7 +55,7 @@ const showAddExercise = ref(false)
         />
 
         <!-- Previous History -->
-        <WorkoutPreviousHistory :sets="selectedExercise.sets" />
+        <WorkoutPreviousHistory :sets="[]" />
       </template>
 
       <!-- Empty State -->
