@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
-import Exercises from '@/views/Exercises.vue'
-import Home from '@/views/Home.vue'
-import Settings from '@/views/Settings.vue'
-import Workouts from '@/views/Workouts.vue'
+import TheExercisesView from '@/views/TheExercisesView.vue'
+import TheHomeView from '@/views/TheHomeView.vue'
+import TheSettingsView from '@/views/TheSettingsView.vue'
+import TheWorkoutsView from '@/views/TheWorkoutsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,22 +12,22 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: Home,
+      component: TheHomeView,
     },
     {
       path: '/workouts',
       name: 'Workouts',
-      component: Workouts,
+      component: TheWorkoutsView,
     },
     {
       path: '/exercises',
       name: 'Exercises',
-      component: Exercises,
+      component: TheExercisesView,
     },
     {
       path: '/settings',
       name: 'Settings',
-      component: Settings,
+      component: TheSettingsView,
     },
     {
       path: '/workout/active',

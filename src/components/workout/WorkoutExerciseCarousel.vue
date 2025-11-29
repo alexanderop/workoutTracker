@@ -13,7 +13,7 @@ defineProps<Props>()
 defineEmits<{
   select: [exerciseId: number]
   remove: [exerciseId: number]
-  addExercise: []
+  'add-exercise': []
 }>()
 </script>
 
@@ -52,7 +52,7 @@ defineEmits<{
       <Button
         variant="outline"
         class="flex-shrink-0 h-[72px] w-[72px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center touch-manipulation p-0"
-        @click="$emit('addExercise')"
+        @click="$emit('add-exercise')"
       >
         <Plus class="w-5 h-5" />
       </Button>

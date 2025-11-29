@@ -17,14 +17,12 @@ test('user can toggle dark mode theme in settings', async ({ page }) => {
 
   // Click the toggle to switch to dark mode
   await page.locator('[data-testid="theme-toggle"]').click()
-  await page.waitForTimeout(500)
 
   // Verify dark mode is applied
   await expect(html).toHaveClass('dark')
 
   // Click toggle again to switch back to light mode
   await page.locator('[data-testid="theme-toggle"]').click()
-  await page.waitForTimeout(500)
 
   // Verify light mode is applied
   await expect(html).not.toHaveClass('dark')

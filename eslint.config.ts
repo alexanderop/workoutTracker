@@ -53,6 +53,7 @@ export default defineConfigWithVueTs(
       'vue/prop-name-casing': ['error', 'camelCase'],
       'vue/attribute-hyphenation': ['error', 'always'],
       'vue/custom-event-name-casing': ['error', 'kebab-case'],
+      'vue/max-template-depth': ['error', { maxDepth: 8 }],
       'no-restricted-imports': [
         'error',
         {
@@ -65,6 +66,14 @@ export default defineConfigWithVueTs(
           ],
         },
       ],
+    },
+  },
+
+  {
+    name: 'app/shadcn-ui-components',
+    files: ['src/components/ui/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
     },
   },
 

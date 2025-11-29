@@ -1,4 +1,6 @@
 import { computed, ref } from 'vue'
+import { popularExercises } from '@/data/popularExercises'
+import { useExercisesStore } from '@/stores/exercises'
 
 export type SetStatus = 'completed' | 'active' | 'planned'
 
@@ -60,12 +62,17 @@ export function useWorkout() {
     if (!name.trim())
       return
 
+    const exercisesStore = useExercisesStore()
+    const popularExercise = popularExercises.find(e => e.name === name)
+    const customExercise = exercisesStore.customExercises.find(e => e.name === name)
+    const icon = popularExercise?.icon ?? customExercise?.icon ?? '🆕'
+
     const newExercise: Exercise = {
       id: Math.max(...workout.value.exercises.map(e => e.id)) + 1,
       name,
       equipment: 'Equipment',
       targetReps: 8,
-      thumbnail: '🆕',
+      thumbnail: icon,
       sets: [
         { id: 1, kg: '', reps: '', rir: '', status: 'planned' },
         { id: 2, kg: '', reps: '', rir: '', status: 'planned' },

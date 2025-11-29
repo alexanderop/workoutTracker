@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import type { Set } from '@/composables/useWorkout'
+import { computed } from 'vue'
 import { Separator } from '@/components/ui/separator'
 
 interface Props {
-  sets: Set[]
+  sets: ReadonlyArray<Set>
   date?: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const hasHistoryData = computed(
+  () => props.sets.length > 0 && props.sets.some(set => set.kg !== '' || set.reps !== ''),
+)
 </script>
 
 <template>
-  <div class="mt-2">
+  <div v-if="hasHistoryData" class="mt-2">
     <Separator class="my-6" />
     <p class="text-xs font-semibold text-muted-foreground mb-3">
       PREVIOUS ({{ date }})

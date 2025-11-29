@@ -20,7 +20,7 @@ interface Props {
 
 defineProps<Props>()
 defineEmits<{
-  toggleComplete: [set: Set]
+  'toggle-complete': [set: Set]
 }>()
 
 function getFormattedEstimated10RM(set: Set) {
@@ -117,7 +117,7 @@ function getFormattedEstimated10RM(set: Set) {
                 ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
             )"
-            @click="$emit('toggleComplete', set)"
+            @click="$emit('toggle-complete', set)"
           >
             <Check
               :class="cn(
