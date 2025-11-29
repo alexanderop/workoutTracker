@@ -18,13 +18,23 @@ import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.
 import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.vue'
 import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
+import type { Set } from '@/composables/useWorkout'
 import { useWorkout } from '@/composables/useWorkout'
 
-const { workout, selectedExercise, selectExercise, toggleSetComplete, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue } = useWorkout()
+const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue } = useWorkout()
 const timer = useRestTimer()
 
 const showAddExercise = ref(false)
 const showEditExercise = ref(false)
+
+function handleSetComplete(set: Set) {
+  const result = completeSet(set)
+
+  // Only start timer when completing (not un-completing)
+  if (result.kind === 'completed') {
+    timer.startTimer()
+  }
+}
 
 function handleSaveExercise(data: { name: string, equipment: string, targetReps: number, setCount: number }) {
   if (!selectedExercise.value) return
@@ -60,7 +70,7 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
         <!-- Sets Table -->
         <WorkoutSetTable
           :sets="selectedExercise.sets"
-          @toggle-complete="toggleSetComplete"
+          @toggle-complete="handleSetComplete"
           @add-set="addSet(selectedExercise.id)"
           @remove-set="removeSet(selectedExercise.id, $event)"
           @update-set="updateSetValue"

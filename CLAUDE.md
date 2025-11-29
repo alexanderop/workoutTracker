@@ -5,6 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 before you add any new ui code think if there is something that we can
 use from vue shadecn.
 
+before you write any custom code think if there is something from 
+vueUse that could help you.
+
 ## Code Style
 
 Follow the conventions in @TYPESCRIPT_STYLE_GUIDE.md for all TypeScript code.
@@ -99,10 +102,10 @@ flowchart TD
     Layout --> BottomNav["Bottom Navigation"]
 
     subgraph Views["Route Views"]
-        Home["Home.vue"]
-        Workouts["Workouts.vue"]
-        Exercises["Exercises.vue"]
-        Settings["Settings.vue"]
+        Home["TheHomeView.vue"]
+        Workouts["TheWorkoutsView.vue"]
+        Exercises["TheExercisesView.vue"]
+        Settings["TheSettingsView.vue"]
         ActiveWorkout["ActiveWorkout.vue"]
         CreateExercise["CreateCustomExercise.vue"]
     end
@@ -116,6 +119,7 @@ flowchart TD
         WorkoutPreviousHistory["WorkoutPreviousHistory"]
         WorkoutRestTimerWidget["WorkoutRestTimerWidget"]
         WorkoutAddExerciseDialog["WorkoutAddExerciseDialog"]
+        WorkoutEditExerciseDialog["WorkoutEditExerciseDialog"]
     end
 
     ActiveWorkout --> ActiveWorkoutChildren
@@ -129,12 +133,6 @@ flowchart TD
     end
 
     CreateExercise --> CreateExerciseChildren
-    ExerciseSettingsItem --> ExerciseEquipmentSelector
-    ExerciseSettingsItem --> ExerciseMuscleSelector
-    ExerciseSettingsItem --> ExerciseTypeSelector
-    ExerciseSettingsItem --> ExerciseMetricsSelector
-
-    Settings --> SettingsItem["SettingsItem"]
 ```
 
 ### shadcn/ui Components

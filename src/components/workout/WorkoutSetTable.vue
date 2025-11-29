@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Set } from '@/composables/useWorkout'
+import { isSetReady } from '@/composables/useWorkout'
 import { Check, Plus, Trash2, Timer } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -146,14 +147,20 @@ function getFormattedEstimated10RM(set: Set) {
               'h-9 w-9 rounded-lg transition-all duration-200',
               set.status === 'completed'
                 ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
+                : isSetReady(set)
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
+                  : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
             )"
             @click="$emit('toggle-complete', set)"
           >
             <Check
               :class="cn(
                 'w-4 h-4 transition-all',
-                set.status === 'completed' ? 'animate-in zoom-in-50 duration-200' : 'opacity-30',
+                set.status === 'completed'
+                  ? 'animate-in zoom-in-50 duration-200'
+                  : isSetReady(set)
+                    ? 'opacity-100'
+                    : 'opacity-30',
               )"
             />
           </Button>

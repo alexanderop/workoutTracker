@@ -28,6 +28,19 @@ export interface Workout {
   selectedExerciseId: number
 }
 
+export type CompleteSetResult =
+  | { kind: 'completed', nextAction: 'next-set', exerciseId: number, setId: number }
+  | { kind: 'completed', nextAction: 'next-exercise', exerciseId: number }
+  | { kind: 'completed', nextAction: 'workout-complete' }
+  | { kind: 'uncompleted' }
+
+export function isSetReady(set: Readonly<Set>): boolean {
+  const kg = Number(set.kg)
+  const reps = Number(set.reps)
+  const rir = Number(set.rir)
+  return kg > 0 && reps > 0 && rir > 0
+}
+
 // Singleton state - shared across all components
 const workout = ref<Workout>({
   id: 1,
@@ -48,13 +61,62 @@ export function useWorkout() {
     workout.value.selectedExerciseId = exerciseId
   }
 
-  function toggleSetComplete(set: Set) {
+  function completeSet(set: Set): CompleteSetResult {
+    // If already completed, toggle back to active (no timer start)
     if (set.status === 'completed') {
       set.status = 'active'
+      return { kind: 'uncompleted' }
     }
-    else if (set.status === 'active') {
-      set.status = 'completed'
+
+    // Mark as completed
+    set.status = 'completed'
+
+    // Find current exercise containing this set
+    const currentExercise = workout.value.exercises.find(
+      ex => ex.sets.some(s => s.id === set.id),
+    )
+    if (!currentExercise) {
+      return { kind: 'completed', nextAction: 'workout-complete' }
     }
+
+    // Find next incomplete set in current exercise
+    const nextSet = currentExercise.sets.find(
+      s => s.status === 'planned' || s.status === 'active',
+    )
+
+    if (nextSet) {
+      nextSet.status = 'active'
+      return {
+        kind: 'completed',
+        nextAction: 'next-set',
+        exerciseId: currentExercise.id,
+        setId: nextSet.id,
+      }
+    }
+
+    // No more sets - find next exercise
+    const currentIndex = workout.value.exercises.findIndex(
+      ex => ex.id === currentExercise.id,
+    )
+    const nextExercise = workout.value.exercises[currentIndex + 1]
+
+    if (nextExercise) {
+      workout.value.selectedExerciseId = nextExercise.id
+      const firstSet = nextExercise.sets.find(
+        s => s.status === 'planned' || s.status === 'active',
+      )
+      if (firstSet) {
+        firstSet.status = 'active'
+      }
+      return {
+        kind: 'completed',
+        nextAction: 'next-exercise',
+        exerciseId: nextExercise.id,
+      }
+    }
+
+    // Workout complete - no more exercises
+    return { kind: 'completed', nextAction: 'workout-complete' }
   }
 
   function addExercise(name: string) {
@@ -74,7 +136,7 @@ export function useWorkout() {
       targetReps: 8,
       thumbnail: icon,
       sets: [
-        { id: 1, kg: '', reps: '', rir: '', status: 'planned' },
+        { id: 1, kg: '', reps: '', rir: '', status: 'active' },
         { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
         { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
       ],
@@ -161,7 +223,7 @@ export function useWorkout() {
     workout,
     selectedExercise,
     selectExercise,
-    toggleSetComplete,
+    completeSet,
     addExercise,
     removeExercise,
     updateExercise,
