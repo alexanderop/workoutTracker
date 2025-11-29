@@ -3,7 +3,7 @@ import type { Set } from '@/composables/useWorkout'
 import { computed } from 'vue'
 import { Separator } from '@/components/ui/separator'
 
-interface Props {
+type Props = {
   sets: ReadonlyArray<Set>
   date?: string
 }

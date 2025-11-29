@@ -4,8 +4,8 @@ import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-interface Props {
-  exercises: Exercise[]
+type Props = {
+  exercises: Array<Exercise>
   selectedId: number
 }
 

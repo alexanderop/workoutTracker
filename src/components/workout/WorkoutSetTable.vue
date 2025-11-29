@@ -18,8 +18,8 @@ import {
 import { cn } from '@/lib/utils'
 import { calculate10RM } from '@/lib/workout-utils'
 
-interface Props {
-  sets: Set[]
+type Props = {
+  sets: Array<Set>
 }
 
 defineProps<Props>()

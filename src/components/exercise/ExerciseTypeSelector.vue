@@ -8,12 +8,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-interface Props {
+type Props = {
   open: boolean
   selected?: ExerciseType
 }
 
-interface Emits {
+type Emits = {
   'update:open': [value: boolean]
   'select': [value: ExerciseType]
 }

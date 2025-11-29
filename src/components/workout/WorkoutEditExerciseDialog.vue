@@ -19,7 +19,7 @@ import {
   NumberFieldInput,
 } from '@/components/ui/number-field'
 
-interface Props {
+type Props = {
   open: boolean
   exerciseName: string
   equipment: string
@@ -27,7 +27,7 @@ interface Props {
   setCount: number
 }
 
-interface Emits {
+type Emits = {
   'update:open': [value: boolean]
   'save': [data: { name: string, equipment: string, targetReps: number, setCount: number }]
 }

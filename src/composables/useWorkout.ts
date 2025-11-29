@@ -4,7 +4,7 @@ import { useExercisesStore } from '@/stores/exercises'
 
 export type SetStatus = 'completed' | 'active' | 'planned'
 
-export interface Set {
+export type Set = {
   id: number
   kg: string
   reps: string
@@ -12,19 +12,19 @@ export interface Set {
   status: SetStatus
 }
 
-export interface Exercise {
+export type Exercise = {
   id: number
   name: string
   equipment: string
   targetReps: number
-  sets: Set[]
+  sets: Array<Set>
   thumbnail: string
 }
 
-export interface Workout {
+export type Workout = {
   id: number
   name: string
-  exercises: Exercise[]
+  exercises: Array<Exercise>
   selectedExerciseId: number
 }
 
@@ -147,16 +147,16 @@ export function useWorkout() {
       ],
     }
 
-    workout.value.exercises.push(newExercise)
+    workout.value.exercises = [...workout.value.exercises, newExercise]
     workout.value.selectedExerciseId = newExercise.id
   }
 
   function removeExercise(exerciseId: number) {
-    const index = workout.value.exercises.findIndex(e => e.id === exerciseId)
-    if (index > -1) {
-      workout.value.exercises.splice(index, 1)
+    const filtered = workout.value.exercises.filter(e => e.id !== exerciseId)
+    if (filtered.length !== workout.value.exercises.length) {
+      workout.value.exercises = filtered
       if (workout.value.selectedExerciseId === exerciseId) {
-        workout.value.selectedExerciseId = workout.value.exercises[0]?.id || 0
+        workout.value.selectedExerciseId = workout.value.exercises[0]?.id ?? 0
       }
     }
   }
@@ -176,23 +176,20 @@ export function useWorkout() {
 
     const setIds = exercise.sets.map(s => s.id)
     const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
-    exercise.sets.push({
+    exercise.sets = [...exercise.sets, {
       id: newId,
       kg: '',
       reps: '',
       rir: '',
       status: 'planned',
-    })
+    }]
   }
 
   function removeSet(exerciseId: number, setId: number) {
     const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
     if (!exercise || exercise.sets.length <= 1) return
 
-    const index = exercise.sets.findIndex(s => s.id === setId)
-    if (index > -1) {
-      exercise.sets.splice(index, 1)
-    }
+    exercise.sets = exercise.sets.filter(s => s.id !== setId)
   }
 
   function setSetCount(exerciseId: number, count: number) {
@@ -210,7 +207,7 @@ export function useWorkout() {
     }
     else if (targetCount < currentCount) {
       // Remove sets from the end
-      exercise.sets.splice(targetCount)
+      exercise.sets = exercise.sets.slice(0, targetCount)
     }
   }
 

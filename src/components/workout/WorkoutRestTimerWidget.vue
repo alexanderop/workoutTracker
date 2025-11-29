@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
-interface Props {
+type Props = {
   timer: ReturnType<typeof useRestTimer>
 }
 

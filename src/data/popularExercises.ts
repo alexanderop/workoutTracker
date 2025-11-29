@@ -1,6 +1,6 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 
-export interface PopularExercise {
+export type PopularExercise = {
   name: string
   icon: string
   equipment: Equipment
@@ -9,7 +9,7 @@ export interface PopularExercise {
   metrics: Metrics
 }
 
-export const popularExercises: PopularExercise[] = [
+export const popularExercises: Array<PopularExercise> = [
   {
     name: 'Bench Press',
     icon: '🏋️',

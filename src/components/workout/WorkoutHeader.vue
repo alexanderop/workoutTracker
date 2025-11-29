@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-interface Props {
+type Props = {
   exerciseName: string
   equipment: string
   targetReps: number

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-interface Props {
+type Props = {
   label: string
   value: string
   placeholder?: string

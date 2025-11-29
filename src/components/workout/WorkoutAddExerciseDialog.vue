@@ -15,11 +15,11 @@ import { Input } from '@/components/ui/input'
 import { popularExercises } from '@/data/popularExercises'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
-interface Props {
+type Props = {
   open: boolean
 }
 
-interface Emits {
+type Emits = {
   'update:open': [value: boolean]
   'add': [name: string]
 }

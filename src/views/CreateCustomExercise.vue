@@ -32,14 +32,15 @@ const showMetricsModal = ref(false)
 
 function handleIconClick() {
   // Trigger emoji picker - on most browsers, we can use a hidden input
-  const emojiInput = document.getElementById('emoji-input') as HTMLInputElement
-  if (emojiInput) {
+  const emojiInput = document.getElementById('emoji-input')
+  if (emojiInput instanceof HTMLInputElement) {
     emojiInput.click()
   }
 }
 
 function handleEmojiChange(event: Event) {
-  const input = event.target as HTMLInputElement
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
   const value = input.value
   if (value) {
     // Take the last character which should be the emoji

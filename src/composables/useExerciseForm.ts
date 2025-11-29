@@ -1,7 +1,7 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 import { computed, ref } from 'vue'
 
-interface ExerciseFormState {
+type ExerciseFormState = {
   icon: string
   name: string
   equipment: Equipment | undefined

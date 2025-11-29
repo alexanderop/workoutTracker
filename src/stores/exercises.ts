@@ -6,7 +6,7 @@ export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
 export type ExerciseType = 'compound' | 'isolation' | 'stability' | 'cardio'
 export type Metrics = 'weight-reps' | 'reps-only' | 'duration' | 'distance-duration' | 'weight-distance'
 
-export interface CustomExercise {
+export type CustomExercise = {
   id: string
   icon: string
   name: string
@@ -18,7 +18,7 @@ export interface CustomExercise {
 }
 
 export const useExercisesStore = defineStore('exercises', () => {
-  const customExercises = ref<CustomExercise[]>([])
+  const customExercises = ref<Array<CustomExercise>>([])
 
   function addExercise(exercise: Omit<CustomExercise, 'id' | 'createdAt'>): CustomExercise {
     const newExercise: CustomExercise = {
@@ -26,7 +26,7 @@ export const useExercisesStore = defineStore('exercises', () => {
       id: `exercise_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: Date.now(),
     }
-    customExercises.value.push(newExercise)
+    customExercises.value = [...customExercises.value, newExercise]
     return newExercise
   }
 
@@ -34,15 +34,12 @@ export const useExercisesStore = defineStore('exercises', () => {
     return customExercises.value.find(e => e.id === id)
   }
 
-  function getAllExercises(): CustomExercise[] {
+  function getAllExercises(): Array<CustomExercise> {
     return customExercises.value
   }
 
   function deleteExercise(id: string): void {
-    const index = customExercises.value.findIndex(e => e.id === id)
-    if (index !== -1) {
-      customExercises.value.splice(index, 1)
-    }
+    customExercises.value = customExercises.value.filter(e => e.id !== id)
   }
 
   return {
