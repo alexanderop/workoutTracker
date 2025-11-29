@@ -38,7 +38,7 @@ export function isSetReady(set: Readonly<Set>): boolean {
   const kg = Number(set.kg)
   const reps = Number(set.reps)
   const rir = Number(set.rir)
-  return kg > 0 && reps > 0 && rir > 0
+  return kg > 0 && reps > 0 && rir >= 0 && set.rir !== ''
 }
 
 // Singleton state - shared across all components
@@ -65,6 +65,11 @@ export function useWorkout() {
     // If already completed, toggle back to active (no timer start)
     if (set.status === 'completed') {
       set.status = 'active'
+      return { kind: 'uncompleted' }
+    }
+
+    // Validate before completing - reject empty/invalid sets
+    if (!isSetReady(set)) {
       return { kind: 'uncompleted' }
     }
 

@@ -3,7 +3,6 @@ import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
 import { useTheme } from '@/composables/useTheme'
 
-// Initialize theme globally
 useTheme()
 </script>
 
@@ -13,4 +12,3 @@ useTheme()
   </Layout>
 </template>
 
-<style scoped></style>

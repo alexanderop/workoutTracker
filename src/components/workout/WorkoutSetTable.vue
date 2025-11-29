@@ -45,7 +45,7 @@ function getRirValue(set: Set) {
 function getFormattedEstimated10RM(set: Set) {
   if (!set.kg || !set.reps)
     return '—'
-  return calculate10RM(Number.parseInt(set.kg), Number.parseInt(set.reps)).toFixed(1)
+  return calculate10RM(Number(set.kg), Number(set.reps)).toFixed(1)
 }
 </script>
 

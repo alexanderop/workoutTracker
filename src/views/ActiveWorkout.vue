@@ -30,9 +30,13 @@ const showEditExercise = ref(false)
 function handleSetComplete(set: Set) {
   const result = completeSet(set)
 
-  // Only start timer when completing (not un-completing)
-  if (result.kind === 'completed') {
-    timer.startTimer()
+  switch (result.kind) {
+    case 'completed':
+      timer.startTimer()
+      break
+    case 'uncompleted':
+      // No timer action needed when uncompleting or invalid set
+      break
   }
 }
 
