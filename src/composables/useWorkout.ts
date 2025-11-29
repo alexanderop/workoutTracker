@@ -84,9 +84,9 @@ export function useWorkout() {
     // Mark as completed
     set.status = 'completed'
 
-    // Find current exercise containing this set
+    // Find current exercise - use selectedExerciseId since set IDs are not globally unique
     const currentExercise = workout.value.exercises.find(
-      ex => ex.sets.some(s => s.id === set.id),
+      ex => ex.id === workout.value.selectedExerciseId && ex.sets.some(s => s.id === set.id),
     )
     if (!currentExercise) {
       return { kind: 'completed', nextAction: 'workout-complete' }
@@ -98,6 +98,11 @@ export function useWorkout() {
     )
 
     if (nextSet) {
+      // Pre-fill empty fields from completed set
+      if (!nextSet.kg) nextSet.kg = set.kg
+      if (!nextSet.reps) nextSet.reps = set.reps
+      if (!nextSet.rir) nextSet.rir = set.rir
+
       nextSet.status = 'active'
       return {
         kind: 'completed',
