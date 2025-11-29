@@ -59,15 +59,15 @@ function getFormattedEstimated10RM(set: Set) {
         v-for="(set, index) in sets"
         :key="set.id"
         :class="cn(
-          'border-none transition-colors hover:bg-transparent cursor-default',
-          set.status === 'active' ? 'bg-blue-500/20 hover:bg-blue-500/20' : '',
+          'border-none transition-all duration-200 hover:bg-transparent cursor-default',
+          set.status === 'active' ? 'bg-primary/15 hover:bg-primary/15' : '',
           set.status === 'completed' ? 'opacity-60' : '',
         )"
       >
         <TableCell class="font-medium p-1 h-10 tabular-nums">
           <div
             v-if="set.status === 'active'"
-            class="bg-blue-600 text-white w-6 h-6 rounded flex items-center justify-center"
+            class="bg-primary text-primary-foreground w-6 h-6 rounded-md flex items-center justify-center animate-in zoom-in-50 duration-200"
           >
             <Timer class="w-3 h-3" />
           </div>
@@ -89,7 +89,7 @@ function getFormattedEstimated10RM(set: Set) {
             :model-value="set.reps"
             type="number"
             placeholder="—"
-            class="text-center bg-transparent border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-blue-400 tabular-nums"
+            class="text-center bg-transparent border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums"
             @update:model-value="set.reps = String($event)"
           />
         </TableCell>
@@ -112,14 +112,19 @@ function getFormattedEstimated10RM(set: Set) {
           <Button
             size="icon"
             :class="cn(
-              'h-8 w-8 rounded-md',
+              'h-9 w-9 rounded-lg transition-all duration-200',
               set.status === 'completed'
                 ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                : 'bg-secondary hover:bg-secondary/80 text-muted-foreground',
+                : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
             )"
             @click="$emit('toggleComplete', set)"
           >
-            <Check v-if="set.status === 'completed'" class="w-4 h-4" />
+            <Check
+              :class="cn(
+                'w-4 h-4 transition-all',
+                set.status === 'completed' ? 'animate-in zoom-in-50 duration-200' : 'opacity-30'
+              )"
+            />
           </Button>
         </TableCell>
       </TableRow>

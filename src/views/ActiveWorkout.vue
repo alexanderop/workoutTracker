@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Dumbbell, Plus } from 'lucide-vue-next'
 import AddExerciseDialog from '@/components/workout/AddExerciseDialog.vue'
 import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
 import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
 import WorkoutRestTimerWidget from '@/components/workout/WorkoutRestTimerWidget.vue'
 import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
+import { Button } from '@/components/ui/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { useWorkout } from '@/composables/useWorkout'
 
@@ -49,17 +59,23 @@ const showAddExercise = ref(false)
       </template>
 
       <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center h-full text-center py-12">
-        <p class="text-muted-foreground mb-4">
-          No exercises added yet
-        </p>
-        <button
-          class="text-primary underline"
-          @click="showAddExercise = true"
-        >
-          Add your first exercise
-        </button>
-      </div>
+      <Empty v-else class="animate-in fade-in-50 duration-500 h-full border-0">
+        <EmptyContent>
+          <EmptyMedia variant="icon" class="bg-primary/10 text-primary">
+            <Dumbbell class="size-6" />
+          </EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>Start Your Workout</EmptyTitle>
+            <EmptyDescription>
+              Add exercises to begin tracking your sets and progress.
+            </EmptyDescription>
+          </EmptyHeader>
+          <Button class="gap-2" @click="showAddExercise = true">
+            <Plus class="size-4" />
+            Add First Exercise
+          </Button>
+        </EmptyContent>
+      </Empty>
     </div>
 
     <!-- Rest Timer & Action Buttons -->

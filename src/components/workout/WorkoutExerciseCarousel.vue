@@ -18,21 +18,22 @@ defineEmits<{
 
 <template>
   <div class="px-4 pb-4">
-    <div class="flex gap-2 overflow-x-auto pb-2">
+    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       <button
         v-for="exercise in exercises"
         :key="exercise.id"
         :class="cn(
-          'flex-shrink-0 h-20 w-20 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all relative',
+          'flex-shrink-0 h-[72px] w-[72px] rounded-xl flex flex-col items-center justify-center cursor-pointer relative touch-manipulation',
+          'transition-all duration-200 active:scale-95',
           exercise.id === selectedId
-            ? 'bg-blue-500/30 border-2 border-blue-500'
+            ? 'bg-primary/20 border-2 border-primary shadow-sm shadow-primary/20'
             : 'bg-secondary hover:bg-secondary/80',
         )"
         :title="exercise.name"
         @click="$emit('select', exercise.id)"
       >
-        <span class="text-2xl">{{ exercise.thumbnail }}</span>
-        <span class="text-xs mt-1 text-center line-clamp-2 px-1">
+        <span class="text-[28px] leading-none">{{ exercise.thumbnail }}</span>
+        <span class="text-[10px] font-medium mt-1 text-center line-clamp-1 px-1 text-muted-foreground">
           {{ exercise.name.split(' ')[0] }}
         </span>
 
@@ -48,7 +49,7 @@ defineEmits<{
 
       <!-- Add Exercise Button -->
       <button
-        class="flex-shrink-0 h-20 w-20 bg-secondary rounded-lg flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors text-muted-foreground"
+        class="flex-shrink-0 h-[72px] w-[72px] rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-primary touch-manipulation active:scale-95"
         @click="$emit('addExercise')"
       >
         <Plus class="w-5 h-5" />
