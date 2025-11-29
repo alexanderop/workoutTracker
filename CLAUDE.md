@@ -89,6 +89,54 @@ The project uses Pinia with the Composition API setup pattern. Example in `src/s
 
 ## Component Architecture
 
+### Component Hierarchy
+
+```mermaid
+flowchart TD
+    App["App.vue"] --> Layout["Layout.vue"]
+
+    Layout --> RouterView["RouterView"]
+    Layout --> BottomNav["Bottom Navigation"]
+
+    subgraph Views["Route Views"]
+        Home["Home.vue"]
+        Workouts["Workouts.vue"]
+        Exercises["Exercises.vue"]
+        Settings["Settings.vue"]
+        ActiveWorkout["ActiveWorkout.vue"]
+        CreateExercise["CreateCustomExercise.vue"]
+    end
+
+    RouterView --> Views
+
+    subgraph ActiveWorkoutChildren["ActiveWorkout Children"]
+        WorkoutHeader["WorkoutHeader"]
+        WorkoutExerciseCarousel["WorkoutExerciseCarousel"]
+        WorkoutSetTable["WorkoutSetTable"]
+        WorkoutPreviousHistory["WorkoutPreviousHistory"]
+        WorkoutRestTimerWidget["WorkoutRestTimerWidget"]
+        WorkoutAddExerciseDialog["WorkoutAddExerciseDialog"]
+    end
+
+    ActiveWorkout --> ActiveWorkoutChildren
+
+    subgraph CreateExerciseChildren["CreateExercise Children"]
+        ExerciseSettingsItem["ExerciseSettingsItem"]
+        ExerciseEquipmentSelector["ExerciseEquipmentSelector"]
+        ExerciseMuscleSelector["ExerciseMuscleSelector"]
+        ExerciseTypeSelector["ExerciseTypeSelector"]
+        ExerciseMetricsSelector["ExerciseMetricsSelector"]
+    end
+
+    CreateExercise --> CreateExerciseChildren
+    ExerciseSettingsItem --> ExerciseEquipmentSelector
+    ExerciseSettingsItem --> ExerciseMuscleSelector
+    ExerciseSettingsItem --> ExerciseTypeSelector
+    ExerciseSettingsItem --> ExerciseMetricsSelector
+
+    Settings --> SettingsItem["SettingsItem"]
+```
+
 ### shadcn/ui Components
 - UI components live in `src/components/ui/` using the shadcn/ui library (Vue version)
 - **IMPORTANT**: When building features, always try to use shadcn components first before creating custom components
