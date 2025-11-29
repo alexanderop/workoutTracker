@@ -2,8 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-NEVER use the Explore Agent
-NEVER spin up a subagent if you run e2e tests
+before you add any new ui code think if there is something that we can
+use from vue shadecn.
 
 ## Project Overview
 

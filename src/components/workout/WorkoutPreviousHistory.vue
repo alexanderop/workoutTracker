@@ -7,9 +7,7 @@ interface Props {
   date?: string
 }
 
-withDefaults(defineProps<Props>(), {
-  date: 'Fr, 7. Nov',
-})
+defineProps<Props>()
 </script>
 
 <template>

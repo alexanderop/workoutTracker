@@ -19,10 +19,11 @@ const showAddExercise = ref(false)
   <div class="min-h-screen bg-background text-foreground flex flex-col">
     <!-- Header -->
     <WorkoutHeader
-      :exercise-name="selectedExercise?.name || ''"
-      :equipment="selectedExercise?.equipment || ''"
-      :target-reps="selectedExercise?.targetReps || 0"
-      @delete="removeExercise(selectedExercise?.id || 0)"
+      v-if="selectedExercise"
+      :exercise-name="selectedExercise.name"
+      :equipment="selectedExercise.equipment"
+      :target-reps="selectedExercise.targetReps"
+      @delete="removeExercise(selectedExercise.id)"
     />
 
     <!-- Exercise Carousel -->
@@ -36,17 +37,29 @@ const showAddExercise = ref(false)
 
     <!-- Main Content -->
     <div class="flex-1 p-4 overflow-y-auto">
-      <!-- Sets Table -->
-      <WorkoutSetTable
-        :sets="selectedExercise?.sets || []"
-        @toggle-complete="toggleSetComplete"
-      />
+      <template v-if="selectedExercise">
+        <!-- Sets Table -->
+        <WorkoutSetTable
+          :sets="selectedExercise.sets"
+          @toggle-complete="toggleSetComplete"
+        />
 
-      <!-- Previous History -->
-      <WorkoutPreviousHistory
-        :sets="selectedExercise?.sets || []"
-        date="Fr, 7. Nov"
-      />
+        <!-- Previous History -->
+        <WorkoutPreviousHistory :sets="selectedExercise.sets" />
+      </template>
+
+      <!-- Empty State -->
+      <div v-else class="flex flex-col items-center justify-center h-full text-center py-12">
+        <p class="text-muted-foreground mb-4">
+          No exercises added yet
+        </p>
+        <button
+          class="text-primary underline"
+          @click="showAddExercise = true"
+        >
+          Add your first exercise
+        </button>
+      </div>
     </div>
 
     <!-- Rest Timer & Action Buttons -->
