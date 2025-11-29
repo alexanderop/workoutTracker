@@ -24,6 +24,7 @@ defineEmits<{
         v-for="exercise in exercises"
         :key="exercise.id"
         :variant="exercise.id === selectedId ? 'default' : 'secondary'"
+        :aria-pressed="exercise.id === selectedId"
         :class="cn(
           'flex-shrink-0 h-[72px] w-[72px] rounded-xl flex flex-col items-center justify-center relative touch-manipulation p-1',
           exercise.id === selectedId && 'ring-2 ring-primary',
@@ -51,6 +52,7 @@ defineEmits<{
       <!-- Add Exercise Button -->
       <Button
         variant="outline"
+        aria-label="Add exercise"
         class="flex-shrink-0 h-[72px] w-[72px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center touch-manipulation p-0"
         @click="$emit('add-exercise')"
       >

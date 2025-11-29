@@ -2,7 +2,7 @@
 /**
  * Claude Code Stop Hook - Quality Check
  *
- * Runs type checking and ESLint when Claude stops to ensure code quality.
+ * Runs type checking, ESLint, and unit tests when Claude stops to ensure code quality.
  */
 
 import { execSync } from 'node:child_process'
@@ -81,6 +81,17 @@ function main(): void {
   }
   else {
     results.push('✅ ESLint check passed')
+  }
+
+  // Run unit tests
+  const unitTests = runCommand('pnpm test:unit --run', 'Unit tests')
+  if (!unitTests.success) {
+    hasErrors = true
+    results.push('❌ Unit tests failed:')
+    results.push(unitTests.output)
+  }
+  else {
+    results.push('✅ Unit tests passed')
   }
 
   // Output results

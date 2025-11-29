@@ -24,6 +24,6 @@ describe('app', () => {
         },
       },
     })
-    expect(wrapper.text()).toContain('Workout Tracker')
+    expect(wrapper.text()).toContain('Home')
   })
 })
