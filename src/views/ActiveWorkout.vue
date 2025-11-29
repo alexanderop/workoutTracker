@@ -32,7 +32,7 @@ function handleSetComplete(set: Set) {
 
   switch (result.kind) {
     case 'completed':
-      timer.startTimer()
+      timer.start()
       break
     case 'uncompleted':
       // No timer action needed when uncompleting or invalid set

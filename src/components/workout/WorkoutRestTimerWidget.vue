@@ -22,7 +22,7 @@ defineProps<Props>()
         <div
           :class="cn(
             'flex items-center justify-center w-8 h-8 rounded-full transition-colors',
-            timer.isTimerRunning.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+            timer.isRunning.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
           )"
         >
           <Clock class="w-4 h-4" />
@@ -32,10 +32,10 @@ defineProps<Props>()
           <span
             :class="cn(
               'text-xl font-bold font-mono tabular-nums transition-colors',
-              timer.isTimerRunning.value ? 'text-primary' : 'text-foreground',
+              timer.isRunning.value ? 'text-primary' : 'text-foreground',
             )"
           >
-            {{ timer.getFormattedTime() }}
+            {{ timer.formattedTime }}
           </span>
         </div>
       </div>
@@ -43,11 +43,11 @@ defineProps<Props>()
       <div class="flex items-center gap-2">
         <!-- Reset button (only when timer has value) -->
         <Button
-          v-if="timer.restTime.value > 0"
+          v-if="timer.elapsedSeconds.value > 0"
           variant="ghost"
           size="icon"
           class="h-9 w-9 text-muted-foreground hover:text-foreground"
-          @click="timer.resetTimer"
+          @click="timer.reset"
         >
           <RotateCcw class="w-4 h-4" />
         </Button>
@@ -55,11 +55,11 @@ defineProps<Props>()
         <!-- Start/Stop toggle -->
         <Button
           size="sm"
-          :variant="timer.isTimerRunning.value ? 'default' : 'outline'"
+          :variant="timer.isRunning.value ? 'default' : 'outline'"
           class="min-w-[72px] transition-all"
-          @click="timer.toggleTimer"
+          @click="timer.toggle"
         >
-          {{ timer.isTimerRunning.value ? 'Stop' : 'Start' }}
+          {{ timer.isRunning.value ? 'Stop' : 'Start' }}
         </Button>
       </div>
     </div>

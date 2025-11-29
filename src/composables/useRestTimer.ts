@@ -1,17 +1,19 @@
 import { useIntervalFn } from '@vueuse/core'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
 
 // Maximum rest time before auto-stopping (5 minutes)
-const MAX_REST_TIME = 300
+const MAX_REST_TIME_SECONDS = 300
 
 export function useRestTimer() {
-  const restTime = ref(0)
+  // 1. Primary State
+  const elapsedSeconds = ref(0)
 
+  // 2. Internal interval setup
   const { pause, resume, isActive } = useIntervalFn(
     () => {
-      restTime.value++
-      if (restTime.value >= MAX_REST_TIME) {
+      elapsedSeconds.value++
+      if (elapsedSeconds.value >= MAX_REST_TIME_SECONDS) {
         pause()
       }
     },
@@ -19,7 +21,26 @@ export function useRestTimer() {
     { immediate: false },
   )
 
-  function toggleTimer() {
+  // 3. Computed
+  const isRunning = computed(() => isActive.value)
+  const formattedTime = computed(() => formatTime(elapsedSeconds.value))
+
+  // 4. Methods
+  function start() {
+    elapsedSeconds.value = 0
+    resume()
+  }
+
+  function stop() {
+    pause()
+  }
+
+  function reset() {
+    elapsedSeconds.value = 0
+    pause()
+  }
+
+  function toggle() {
     if (isActive.value) {
       pause()
     }
@@ -28,27 +49,13 @@ export function useRestTimer() {
     }
   }
 
-  function resetTimer() {
-    restTime.value = 0
-    pause()
-  }
-
-  function startTimer() {
-    restTime.value = 0
-    resume()
-  }
-
-  function getFormattedTime(): string {
-    return formatTime(restTime.value)
-  }
-
   return {
-    restTime,
-    isTimerRunning: isActive,
-    toggleTimer,
-    resetTimer,
-    stop: pause,
-    startTimer,
-    getFormattedTime,
+    elapsedSeconds,
+    isRunning,
+    formattedTime,
+    start,
+    stop,
+    reset,
+    toggle,
   }
 }
