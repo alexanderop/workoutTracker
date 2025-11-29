@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { useExercisesStore } from '@/stores/exercises'
@@ -15,7 +15,7 @@ export type InitState =
   | { status: 'error', error: Error }
 
 const initState = ref<InitState>({ status: 'loading' })
-const isInitialized = ref(false)
+const isInitialized = computed(() => initState.value.status === 'ready')
 
 /**
  * Composable for app-level initialization.
@@ -31,9 +31,8 @@ export function useAppInitialization() {
    * Initialize the app: load exercises and check for active workout.
    */
   async function initialize(): Promise<void> {
-    if (isInitialized.value) return
-
-    initState.value = { status: 'loading' }
+    // Only allow initialization from loading state (prevents re-entry)
+    if (initState.value.status !== 'loading') return
 
     try {
       // Load custom exercises from DB
@@ -53,7 +52,6 @@ export function useAppInitialization() {
       }
 
       initState.value = { status: 'ready' }
-      isInitialized.value = true
     }
     catch (error) {
       initState.value = {
@@ -73,7 +71,6 @@ export function useAppInitialization() {
       persistence.markInitialized()
     }
     initState.value = { status: 'ready' }
-    isInitialized.value = true
 
     // Navigate to active workout
     router.push('/workout/active')
@@ -85,7 +82,6 @@ export function useAppInitialization() {
   async function discardWorkout(): Promise<void> {
     await persistence.discardActiveWorkout()
     initState.value = { status: 'ready' }
-    isInitialized.value = true
   }
 
   return {

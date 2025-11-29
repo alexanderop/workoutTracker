@@ -1,7 +1,36 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
+import { onMounted, ref } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { workoutsRepository } from '@/db/repositories/workouts'
+import type { DbCompletedWorkout } from '@/db/schema'
+
+const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+const isLoading = ref(true)
+
+onMounted(async () => {
+  workouts.value = await workoutsRepository.getHistory()
+  isLoading.value = false
+})
+
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
 </script>
 
 <template>
@@ -17,17 +46,47 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/u
       </CardContent>
     </Card>
 
-    <div class="grid gap-4">
+    <!-- Loading state -->
+    <div
+      v-if="isLoading"
+      class="flex items-center justify-center py-8"
+    >
+      <div class="text-muted-foreground">Loading...</div>
+    </div>
+
+    <!-- Workout list -->
+    <div
+      v-else-if="workouts.length > 0"
+      class="grid gap-3"
+    >
+      <Card
+        v-for="workout in workouts"
+        :key="workout.id"
+        class="p-4"
+      >
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-medium">{{ workout.name }}</div>
+            <div class="text-sm text-muted-foreground">{{ formatDate(workout.completedAt) }}</div>
+          </div>
+          <div class="text-sm text-muted-foreground tabular-nums">
+            {{ formatDuration(workout.durationSeconds) }}
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    <!-- Empty state -->
+    <div
+      v-else
+      class="grid gap-4"
+    >
       <Empty>
         <EmptyHeader>
           <EmptyTitle>No workouts yet</EmptyTitle>
           <EmptyDescription>Start your first workout to get started</EmptyDescription>
         </EmptyHeader>
       </Empty>
-    </div>
-
-    <div class="mt-6">
-      <Button>Create Workout</Button>
     </div>
   </div>
 </template>
