@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Dumbbell, Plus } from 'lucide-vue-next'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/empty'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
+import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
 import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
 import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
@@ -22,12 +24,13 @@ import type { Set } from '@/composables/useWorkout'
 import { getWorkoutRef, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
 
+const router = useRouter()
 const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue, reorderExercises } = useWorkout()
 const timer = useRestTimer()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
-const { isInitialized, startNewWorkoutSession, markInitialized } = useWorkoutPersistence(workoutRef)
+const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout } = useWorkoutPersistence(workoutRef)
 
 onMounted(() => {
   // If not already initialized (from resume), start a new session
@@ -41,6 +44,12 @@ onMounted(() => {
 
 const showAddExercise = ref(false)
 const showEditExercise = ref(false)
+const showFinishDialog = ref(false)
+
+async function handleConfirmFinish() {
+  await completeWorkout()
+  router.push('/')
+}
 
 function handleSetComplete(set: Set) {
   const result = completeSet(set)
@@ -121,7 +130,7 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
     </div>
 
     <!-- Rest Timer & Action Buttons -->
-    <WorkoutRestTimerWidget :timer="timer" />
+    <WorkoutRestTimerWidget :timer="timer" @finish="showFinishDialog = true" />
 
     <!-- Add Exercise Dialog -->
     <WorkoutAddExerciseDialog
@@ -140,6 +149,12 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
       :set-count="selectedExercise.sets.length"
       @update:open="showEditExercise = $event"
       @save="handleSaveExercise"
+    />
+
+    <!-- Finish Workout Confirmation Dialog -->
+    <WorkoutFinishDialog
+      v-model:open="showFinishDialog"
+      @confirm="handleConfirmFinish"
     />
   </div>
 </template>

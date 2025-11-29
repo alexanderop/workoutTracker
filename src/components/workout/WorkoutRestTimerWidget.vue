@@ -10,6 +10,10 @@ type Props = {
 }
 
 defineProps<Props>()
+
+const emit = defineEmits<{
+  finish: []
+}>()
 </script>
 
 <template>
@@ -66,7 +70,7 @@ defineProps<Props>()
 
     <!-- Single Finish Button -->
     <div class="px-4 pb-4">
-      <Button class="w-full h-12 text-base font-semibold" size="lg">
+      <Button class="w-full h-12 text-base font-semibold" size="lg" @click="emit('finish')">
         Finish Workout
       </Button>
     </div>
