@@ -59,7 +59,7 @@ const showAddExercise = ref(false)
       </template>
 
       <!-- Empty State -->
-      <Empty v-else class="animate-in fade-in-50 duration-500 h-full border-0">
+      <Empty v-else class="animate-in fade-in-50 duration-500 h-full flex items-center justify-center border-0">
         <EmptyContent>
           <EmptyMedia variant="icon" class="bg-primary/10 text-primary">
             <Dumbbell class="size-6" />

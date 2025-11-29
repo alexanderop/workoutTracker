@@ -18,7 +18,7 @@ defineEmits<{
 </script>
 
 <template>
-  <div class="px-4 pb-4">
+  <div class="px-4 pt-4 pb-2">
     <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       <Button
         v-for="exercise in exercises"
