@@ -53,6 +53,36 @@ export default defineConfigWithVueTs(
       'vue/prop-name-casing': ['error', 'camelCase'],
       'vue/attribute-hyphenation': ['error', 'always'],
       'vue/custom-event-name-casing': ['error', 'kebab-case'],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'vue',
+              importNames: ['reactive'],
+              message: 'Use ref() instead of reactive() for consistent reactivity patterns.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    files: ['src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'vue',
+              importNames: ['reactive'],
+              message: 'Use ref() instead of reactive() for consistent reactivity patterns.',
+            },
+          ],
+        },
+      ],
     },
   },
 

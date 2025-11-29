@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ExerciseEquipmentSelector from '@/components/exercise/ExerciseEquipmentSelector.vue'
 import ExerciseMetricsSelector from '@/components/exercise/ExerciseMetricsSelector.vue'
@@ -8,6 +8,7 @@ import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector
 import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useExerciseForm } from '@/composables/useExerciseForm'
 import {
   EQUIPMENT_LABELS,
   METRICS_LABELS,
@@ -19,23 +20,14 @@ import { useExercisesStore } from '@/stores/exercises'
 const router = useRouter()
 const exercisesStore = useExercisesStore()
 
-// Form state
-const icon = ref('💪')
-const name = ref('')
-const equipment = ref<Equipment | undefined>()
-const muscle = ref<Muscle | undefined>()
-const type = ref<ExerciseType>('isolation')
-const metrics = ref<Metrics>('weight-reps')
+// Form state and validation
+const { form, isNameValid, isSaveDisabled, getFormData } = useExerciseForm()
 
 // Modal states
 const showEquipmentModal = ref(false)
 const showMuscleModal = ref(false)
 const showTypeModal = ref(false)
 const showMetricsModal = ref(false)
-
-// Computed
-const isNameValid = computed(() => name.value.trim().length > 0)
-const isSaveDisabled = computed(() => !isNameValid.value)
 
 function handleIconClick() {
   // Trigger emoji picker - on most browsers, we can use a hidden input
@@ -50,28 +42,28 @@ function handleEmojiChange(event: Event) {
   const value = input.value
   if (value) {
     // Take the last character which should be the emoji
-    icon.value = value.charAt(value.length - 1)
+    form.value.icon = value.charAt(value.length - 1)
     input.value = ''
   }
 }
 
 function handleEquipmentSelect(selected: Equipment) {
-  equipment.value = selected
+  form.value.equipment = selected
   showEquipmentModal.value = false
 }
 
 function handleMuscleSelect(selected: Muscle) {
-  muscle.value = selected
+  form.value.muscle = selected
   showMuscleModal.value = false
 }
 
 function handleTypeSelect(selected: ExerciseType) {
-  type.value = selected
+  form.value.type = selected
   showTypeModal.value = false
 }
 
 function handleMetricsSelect(selected: Metrics) {
-  metrics.value = selected
+  form.value.metrics = selected
   showMetricsModal.value = false
 }
 
@@ -79,16 +71,7 @@ function handleSave() {
   if (!isNameValid.value)
     return
 
-  exercisesStore.addExercise({
-    icon: icon.value,
-    name: name.value.trim(),
-    equipment: equipment.value,
-    muscle: muscle.value,
-    type: type.value,
-    metrics: metrics.value,
-  })
-
-  // Navigate back to active workout
+  exercisesStore.addExercise(getFormData())
   router.back()
 }
 </script>
@@ -124,13 +107,13 @@ function handleSave() {
           class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-2xl hover:bg-slate-600 transition-colors"
           @click="handleIconClick"
         >
-          {{ icon }}
+          {{ form.icon }}
         </button>
 
         <!-- Name Input -->
         <div class="flex-1">
           <Input
-            v-model="name"
+            v-model="form.name"
             placeholder="Name (e.g., Bulgarian Split Squat)"
             class="w-full"
             autofocus
@@ -148,7 +131,7 @@ function handleSave() {
           <span class="text-sm font-medium">Equipment</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ equipment ? EQUIPMENT_LABELS[equipment] : 'Please select' }}
+              {{ form.equipment ? EQUIPMENT_LABELS[form.equipment] : 'Please select' }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -162,7 +145,7 @@ function handleSave() {
           <span class="text-sm font-medium">Muscle</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ muscle ? MUSCLE_LABELS[muscle] : 'Please select' }}
+              {{ form.muscle ? MUSCLE_LABELS[form.muscle] : 'Please select' }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -176,7 +159,7 @@ function handleSave() {
           <span class="text-sm font-medium">Exercise Type</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ TYPE_LABELS[type] }}
+              {{ TYPE_LABELS[form.type] }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -190,7 +173,7 @@ function handleSave() {
           <span class="text-sm font-medium">Metrics</span>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">
-              {{ METRICS_LABELS[metrics] }}
+              {{ METRICS_LABELS[form.metrics] }}
             </span>
             <span class="text-muted-foreground">›</span>
           </div>
@@ -209,28 +192,28 @@ function handleSave() {
     <!-- Selection Modals -->
     <ExerciseEquipmentSelector
       :open="showEquipmentModal"
-      :selected="equipment"
+      :selected="form.equipment"
       @update:open="showEquipmentModal = $event"
       @select="handleEquipmentSelect"
     />
 
     <ExerciseMuscleSelector
       :open="showMuscleModal"
-      :selected="muscle"
+      :selected="form.muscle"
       @update:open="showMuscleModal = $event"
       @select="handleMuscleSelect"
     />
 
     <ExerciseTypeSelector
       :open="showTypeModal"
-      :selected="type"
+      :selected="form.type"
       @update:open="showTypeModal = $event"
       @select="handleTypeSelect"
     />
 
     <ExerciseMetricsSelector
       :open="showMetricsModal"
-      :selected="metrics"
+      :selected="form.metrics"
       @update:open="showMetricsModal = $event"
       @select="handleMetricsSelect"
     />
