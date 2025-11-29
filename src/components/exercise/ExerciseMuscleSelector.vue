@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Muscle } from '@/stores/exercises'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -40,7 +40,7 @@ function handleSelect(muscle: Muscle) {
     :open="open"
     @update:open="(val) => $emit('update:open', val)"
   >
-    <DialogContent class="max-w-md">
+    <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Muscle Group</DialogTitle>
         <DialogDescription>
@@ -64,6 +64,6 @@ function handleSelect(muscle: Muscle) {
           <span v-if="selected === option.value" class="ml-auto text-primary">✓</span>
         </button>
       </div>
-    </DialogContent>
+    </MobileDialogContent>
   </Dialog>
 </template>

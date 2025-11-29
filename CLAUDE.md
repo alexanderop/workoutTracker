@@ -101,6 +101,11 @@ The project uses Pinia with the Composition API setup pattern. Example in `src/s
 - Components use `<script setup>` syntax (Composition API shorthand)
 - Styling uses Tailwind utility classes and can use `clsx` + `tailwind-merge` for dynamic classes
 
+### MobileDialogContent
+- Use `MobileDialogContent` from `@/components/MobileDialogContent.vue` instead of `DialogContent` for dialogs
+- Displays as a bottom sheet on mobile (< 640px) and centered dialog on desktop
+- Drop-in replacement for `DialogContent` with the same props and slots
+
 ### Component Naming Conventions
 Follow the Vue.js Style Guide for component names:
 - **File names**: Always use PascalCase (e.g., `WorkoutHeader.vue`, not `workout-header.vue`)

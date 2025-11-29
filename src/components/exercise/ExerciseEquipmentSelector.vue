@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Equipment } from '@/stores/exercises'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -43,7 +43,7 @@ function handleSelect(equipment: Equipment) {
     :open="open"
     @update:open="(val) => $emit('update:open', val)"
   >
-    <DialogContent class="max-w-md">
+    <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Equipment</DialogTitle>
         <DialogDescription>
@@ -66,6 +66,6 @@ function handleSelect(equipment: Equipment) {
           <span class="text-xs font-medium text-center">{{ option.label }}</span>
         </button>
       </div>
-    </DialogContent>
+    </MobileDialogContent>
   </Dialog>
 </template>

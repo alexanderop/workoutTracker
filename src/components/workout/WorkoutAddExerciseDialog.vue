@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { Search } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -61,7 +62,7 @@ function handleOpenChange(value: boolean) {
 
 <template>
   <Dialog :open="open" @update:open="handleOpenChange">
-    <DialogContent class="max-w-md max-h-[80vh] flex flex-col">
+    <MobileDialogContent class="max-w-md max-h-[80vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>Add Exercise</DialogTitle>
         <DialogDescription>
@@ -70,37 +71,40 @@ function handleOpenChange(value: boolean) {
       </DialogHeader>
 
       <!-- Search Input -->
-      <Input
-        v-model="searchQuery"
-        placeholder="Search exercises..."
-        class="w-full"
-        autofocus
-      />
+      <div class="relative">
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <Input
+          v-model="searchQuery"
+          placeholder="Search exercises..."
+          class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+          autofocus
+        />
+      </div>
 
       <!-- Popular Exercises List -->
-      <div class="flex-1 overflow-y-auto space-y-2">
+      <div class="flex-1 overflow-y-auto -mx-4 px-4">
         <button
-          v-for="exercise in filteredExercises"
+          v-for="(exercise, index) in filteredExercises"
           :key="exercise.name"
-          class="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors text-left"
+          class="w-full flex items-center gap-3 py-3 text-left transition-colors active:bg-muted/50 group"
+          :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
           @click="handleSelectExercise(exercise.name)"
         >
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <span class="text-xl flex-shrink-0">{{ exercise.icon }}</span>
-            <div class="min-w-0">
-              <p class="font-medium text-sm truncate">
-                {{ exercise.name }}
-              </p>
-              <Badge variant="secondary" class="text-xs mt-1">
-                {{ MUSCLE_LABELS[exercise.muscle] }}
-              </Badge>
-            </div>
+          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{ exercise.icon }}</span>
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-[15px] truncate">
+              {{ exercise.name }}
+            </p>
+            <Badge variant="secondary" class="text-xs mt-0.5 font-normal">
+              {{ MUSCLE_LABELS[exercise.muscle] }}
+            </Badge>
           </div>
-          <span class="text-muted-foreground text-lg flex-shrink-0">›</span>
+          <span class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform">›</span>
         </button>
 
         <!-- Empty State -->
-        <div v-if="filteredExercises.length === 0" class="text-center py-8">
+        <div v-if="filteredExercises.length === 0" class="text-center py-12">
+          <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
           <p class="text-sm text-muted-foreground">
             No exercises found for "{{ searchQuery }}"
           </p>
@@ -110,13 +114,13 @@ function handleOpenChange(value: boolean) {
       <!-- Create Custom Exercise Button -->
       <div class="pt-4 border-t border-border">
         <Button
-          variant="outline"
+          variant="default"
           class="w-full"
           @click="handleCreateNew"
         >
           + Create Custom Exercise
         </Button>
       </div>
-    </DialogContent>
+    </MobileDialogContent>
   </Dialog>
 </template>

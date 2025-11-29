@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Metrics } from '@/stores/exercises'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -39,7 +39,7 @@ function handleSelect(metrics: Metrics) {
     :open="open"
     @update:open="(val) => $emit('update:open', val)"
   >
-    <DialogContent class="max-w-md">
+    <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Tracking Method</DialogTitle>
         <DialogDescription>
@@ -71,6 +71,6 @@ function handleSelect(metrics: Metrics) {
           </div>
         </button>
       </div>
-    </DialogContent>
+    </MobileDialogContent>
   </Dialog>
 </template>

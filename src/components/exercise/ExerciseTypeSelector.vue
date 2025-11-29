@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ExerciseType } from '@/stores/exercises'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -38,7 +38,7 @@ function handleSelect(type: ExerciseType) {
     :open="open"
     @update:open="(val) => $emit('update:open', val)"
   >
-    <DialogContent class="max-w-md">
+    <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Exercise Type</DialogTitle>
         <DialogDescription>
@@ -70,6 +70,6 @@ function handleSelect(type: ExerciseType) {
           </div>
         </button>
       </div>
-    </DialogContent>
+    </MobileDialogContent>
   </Dialog>
 </template>

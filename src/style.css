@@ -136,4 +136,34 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Mobile bottom sheet slide animation */
+  .animate-slide-up-mobile {
+    animation: slide-up-mobile 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .animate-slide-down-mobile {
+    animation: slide-down-mobile 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
+@keyframes slide-up-mobile {
+  from {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down-mobile {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
 }
