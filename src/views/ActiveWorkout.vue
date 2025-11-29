@@ -11,6 +11,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
+import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
 import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
 import WorkoutPreviousHistory from '@/components/workout/WorkoutPreviousHistory.vue'
@@ -19,10 +20,17 @@ import WorkoutSetTable from '@/components/workout/WorkoutSetTable.vue'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { useWorkout } from '@/composables/useWorkout'
 
-const { workout, selectedExercise, selectExercise, toggleSetComplete, addExercise, removeExercise } = useWorkout()
+const { workout, selectedExercise, selectExercise, toggleSetComplete, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue } = useWorkout()
 const timer = useRestTimer()
 
 const showAddExercise = ref(false)
+const showEditExercise = ref(false)
+
+function handleSaveExercise(data: { name: string, equipment: string, targetReps: number, setCount: number }) {
+  if (!selectedExercise.value) return
+  updateExercise(data)
+  setSetCount(selectedExercise.value.id, data.setCount)
+}
 </script>
 
 <template>
@@ -34,6 +42,7 @@ const showAddExercise = ref(false)
       :equipment="selectedExercise.equipment"
       :target-reps="selectedExercise.targetReps"
       @delete="removeExercise(selectedExercise.id)"
+      @edit="showEditExercise = true"
     />
 
     <!-- Exercise Carousel -->
@@ -52,6 +61,9 @@ const showAddExercise = ref(false)
         <WorkoutSetTable
           :sets="selectedExercise.sets"
           @toggle-complete="toggleSetComplete"
+          @add-set="addSet(selectedExercise.id)"
+          @remove-set="removeSet(selectedExercise.id, $event)"
+          @update-set="updateSetValue"
         />
 
         <!-- Previous History -->
@@ -86,6 +98,18 @@ const showAddExercise = ref(false)
       :open="showAddExercise"
       @update:open="showAddExercise = $event"
       @add="addExercise"
+    />
+
+    <!-- Edit Exercise Dialog -->
+    <WorkoutEditExerciseDialog
+      v-if="selectedExercise"
+      :open="showEditExercise"
+      :exercise-name="selectedExercise.name"
+      :equipment="selectedExercise.equipment"
+      :target-reps="selectedExercise.targetReps"
+      :set-count="selectedExercise.sets.length"
+      @update:open="showEditExercise = $event"
+      @save="handleSaveExercise"
     />
   </div>
 </template>

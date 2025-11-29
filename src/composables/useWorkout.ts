@@ -28,16 +28,15 @@ export interface Workout {
   selectedExerciseId: number
 }
 
-// Initialize with empty workout
-const initialWorkout: Workout = {
+// Singleton state - shared across all components
+const workout = ref<Workout>({
   id: 1,
   name: 'New Workout',
   selectedExerciseId: 0,
   exercises: [],
-}
+})
 
 export function useWorkout() {
-  const workout = ref<Workout>(initialWorkout)
 
   const selectedExercise = computed(() => {
     return workout.value.exercises.find(
@@ -67,8 +66,9 @@ export function useWorkout() {
     const customExercise = exercisesStore.customExercises.find(e => e.name === name)
     const icon = popularExercise?.icon ?? customExercise?.icon ?? '🆕'
 
+    const ids = workout.value.exercises.map(e => e.id)
     const newExercise: Exercise = {
-      id: Math.max(...workout.value.exercises.map(e => e.id)) + 1,
+      id: ids.length > 0 ? Math.max(...ids) + 1 : 1,
       name,
       equipment: 'Equipment',
       targetReps: 8,
@@ -94,6 +94,69 @@ export function useWorkout() {
     }
   }
 
+  function updateExercise(updates: Partial<Pick<Exercise, 'name' | 'equipment' | 'targetReps'>>) {
+    const exercise = workout.value.exercises.find(
+      ex => ex.id === workout.value.selectedExerciseId,
+    )
+    if (exercise) {
+      Object.assign(exercise, updates)
+    }
+  }
+
+  function addSet(exerciseId: number) {
+    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    if (!exercise) return
+
+    const setIds = exercise.sets.map(s => s.id)
+    const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
+    exercise.sets.push({
+      id: newId,
+      kg: '',
+      reps: '',
+      rir: '',
+      status: 'planned',
+    })
+  }
+
+  function removeSet(exerciseId: number, setId: number) {
+    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    if (!exercise || exercise.sets.length <= 1) return
+
+    const index = exercise.sets.findIndex(s => s.id === setId)
+    if (index > -1) {
+      exercise.sets.splice(index, 1)
+    }
+  }
+
+  function setSetCount(exerciseId: number, count: number) {
+    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    if (!exercise) return
+
+    const targetCount = Math.max(1, count)
+    const currentCount = exercise.sets.length
+
+    if (targetCount > currentCount) {
+      // Add sets
+      for (let i = 0; i < targetCount - currentCount; i++) {
+        addSet(exerciseId)
+      }
+    }
+    else if (targetCount < currentCount) {
+      // Remove sets from the end
+      exercise.sets.splice(targetCount)
+    }
+  }
+
+  function updateSetValue(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
+    const exercise = selectedExercise.value
+    if (!exercise) return
+
+    const set = exercise.sets.find(s => s.id === setId)
+    if (set) {
+      set[field] = value !== undefined ? String(value) : ''
+    }
+  }
+
   return {
     workout,
     selectedExercise,
@@ -101,5 +164,10 @@ export function useWorkout() {
     toggleSetComplete,
     addExercise,
     removeExercise,
+    updateExercise,
+    addSet,
+    removeSet,
+    setSetCount,
+    updateSetValue,
   }
 }

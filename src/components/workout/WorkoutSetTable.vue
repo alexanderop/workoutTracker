@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { Set } from '@/composables/useWorkout'
-import { Check, Timer } from 'lucide-vue-next'
+import { Check, Plus, Trash2, Timer } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  NumberField,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import {
   Table,
   TableBody,
@@ -21,7 +24,22 @@ interface Props {
 defineProps<Props>()
 defineEmits<{
   'toggle-complete': [set: Set]
+  'add-set': []
+  'remove-set': [setId: number]
+  'update-set': [setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined]
 }>()
+
+function getKgValue(set: Set) {
+  return set.kg ? Number(set.kg) : undefined
+}
+
+function getRepsValue(set: Set) {
+  return set.reps ? Number(set.reps) : undefined
+}
+
+function getRirValue(set: Set) {
+  return set.rir ? Number(set.rir) : undefined
+}
 
 function getFormattedEstimated10RM(set: Set) {
   if (!set.kg || !set.reps)
@@ -52,6 +70,7 @@ function getFormattedEstimated10RM(set: Set) {
         <TableHead class="text-center w-[50px] h-8 p-1">
           ✓
         </TableHead>
+        <TableHead class="w-[40px] h-8 p-1" />
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -75,33 +94,45 @@ function getFormattedEstimated10RM(set: Set) {
         </TableCell>
 
         <TableCell class="p-1 h-10">
-          <Input
-            :model-value="set.kg"
-            type="number"
-            placeholder="—"
-            class="text-center bg-transparent border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums"
-            @update:model-value="set.kg = String($event)"
-          />
+          <NumberField
+            :model-value="getKgValue(set)"
+            :min="0"
+            :max="999"
+            @update:model-value="$emit('update-set', set.id, 'kg', $event)"
+          >
+            <NumberFieldInput
+              placeholder="—"
+              class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
+            />
+          </NumberField>
         </TableCell>
 
         <TableCell class="p-1 h-10">
-          <Input
-            :model-value="set.reps"
-            type="number"
-            placeholder="—"
-            class="text-center bg-transparent border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums"
-            @update:model-value="set.reps = String($event)"
-          />
+          <NumberField
+            :model-value="getRepsValue(set)"
+            :min="0"
+            :max="999"
+            @update:model-value="$emit('update-set', set.id, 'reps', $event)"
+          >
+            <NumberFieldInput
+              placeholder="—"
+              class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums rounded-lg"
+            />
+          </NumberField>
         </TableCell>
 
         <TableCell class="p-1 h-10">
-          <Input
-            :model-value="set.rir"
-            type="number"
-            placeholder="—"
-            class="text-center bg-transparent border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums"
-            @update:model-value="set.rir = String($event)"
-          />
+          <NumberField
+            :model-value="getRirValue(set)"
+            :min="0"
+            :max="10"
+            @update:model-value="$emit('update-set', set.id, 'rir', $event)"
+          >
+            <NumberFieldInput
+              placeholder="—"
+              class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums rounded-lg"
+            />
+          </NumberField>
         </TableCell>
 
         <TableCell class="p-1 h-10 text-center text-xs text-muted-foreground">
@@ -127,7 +158,29 @@ function getFormattedEstimated10RM(set: Set) {
             />
           </Button>
         </TableCell>
+
+        <TableCell class="p-1 h-10 text-center">
+          <Button
+            v-if="sets.length > 1"
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8 text-muted-foreground hover:text-destructive"
+            @click="$emit('remove-set', set.id)"
+          >
+            <Trash2 class="w-4 h-4" />
+          </Button>
+        </TableCell>
       </TableRow>
     </TableBody>
   </Table>
+
+  <!-- Add Set Button -->
+  <Button
+    variant="ghost"
+    class="w-full mt-2 text-muted-foreground hover:text-foreground"
+    @click="$emit('add-set')"
+  >
+    <Plus class="w-4 h-4 mr-2" />
+    Add Set
+  </Button>
 </template>

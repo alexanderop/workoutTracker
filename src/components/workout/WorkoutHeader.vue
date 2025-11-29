@@ -19,6 +19,7 @@ interface Props {
 defineProps<Props>()
 defineEmits<{
   delete: []
+  edit: []
 }>()
 
 const router = useRouter()
@@ -50,7 +51,7 @@ const router = useRouter()
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem @click="$emit('edit')">
             <Edit2 class="mr-2 h-4 w-4" />
             <span>Edit Exercise</span>
           </DropdownMenuItem>
