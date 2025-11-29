@@ -41,13 +41,21 @@ export function isSetReady(set: Readonly<Set>): boolean {
   return kg > 0 && reps > 0 && rir >= 0 && set.rir !== ''
 }
 
+function createInitialWorkout(): Workout {
+  return {
+    id: 1,
+    name: 'New Workout',
+    selectedExerciseId: 0,
+    exercises: [],
+  }
+}
+
 // Singleton state - shared across all components
-const workout = ref<Workout>({
-  id: 1,
-  name: 'New Workout',
-  selectedExerciseId: 0,
-  exercises: [],
-})
+const workout = ref<Workout>(createInitialWorkout())
+
+export function resetWorkout() {
+  workout.value = createInitialWorkout()
+}
 
 export function useWorkout() {
 
@@ -221,6 +229,16 @@ export function useWorkout() {
     }
   }
 
+  function reorderExercises(fromIndex: number, toIndex: number) {
+    const exercises = [...workout.value.exercises]
+    const movedExercise = exercises[fromIndex]
+    if (!movedExercise) return
+
+    exercises.splice(fromIndex, 1)
+    exercises.splice(toIndex, 0, movedExercise)
+    workout.value.exercises = exercises
+  }
+
   return {
     workout,
     selectedExercise,
@@ -233,5 +251,6 @@ export function useWorkout() {
     removeSet,
     setSetCount,
     updateSetValue,
+    reorderExercises,
   }
 }

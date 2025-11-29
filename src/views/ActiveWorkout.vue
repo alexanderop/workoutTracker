@@ -21,7 +21,7 @@ import { useRestTimer } from '@/composables/useRestTimer'
 import type { Set } from '@/composables/useWorkout'
 import { useWorkout } from '@/composables/useWorkout'
 
-const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue } = useWorkout()
+const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue, reorderExercises } = useWorkout()
 const timer = useRestTimer()
 
 const showAddExercise = ref(false)
@@ -65,6 +65,7 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
       :selected-id="workout.selectedExerciseId"
       @select="selectExercise"
       @remove="removeExercise"
+      @reorder="reorderExercises"
       @add-exercise="showAddExercise = true"
     />
 

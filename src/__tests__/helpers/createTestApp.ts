@@ -23,6 +23,7 @@ type TestApp = {
   waitForDialog: () => Promise<HTMLElement>
   getDialogButton: (text: string) => HTMLElement
   assertDialogClosed: () => void
+  getCarouselExerciseButtons: () => ReadonlyArray<HTMLElement>
   cleanup: () => void
 }
 
@@ -77,6 +78,15 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     }
   }
 
+  function getCarouselExerciseButtons(): ReadonlyArray<HTMLElement> {
+    // Get all exercise buttons in the carousel (exclude the "Add exercise" button)
+    const allButtons = screen.getAllByRole('button')
+    return allButtons.filter(btn =>
+      btn.getAttribute('aria-pressed') !== null
+      && btn.getAttribute('aria-label') !== 'Add exercise',
+    )
+  }
+
   function cleanup() {
     rtlCleanup()
   }
@@ -94,6 +104,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     waitForDialog,
     getDialogButton,
     assertDialogClosed,
+    getCarouselExerciseButtons,
     cleanup,
   }
 }
