@@ -2,7 +2,6 @@
 import { Check, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import type { useBlockTimer } from '@/composables/useBlockTimer'
 import type { useRestTimer } from '@/composables/useRestTimer'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
@@ -13,20 +12,22 @@ type ButtonVariant = 'default' | 'secondary'
 type Props = {
   block: WorkoutBlock
   isTimerRunning?: boolean
+  timerDisplay?: string
+  timerLabel?: string
   canComplete?: boolean
   isFirstBlock?: boolean
   isLastBlock?: boolean
-  blockTimer?: ReturnType<typeof useBlockTimer>
   restTimer?: ReturnType<typeof useRestTimer>
 }
 
 const {
   block,
   isTimerRunning = false,
+  timerDisplay = '',
+  timerLabel = '',
   canComplete = true,
   isFirstBlock = false,
   isLastBlock = false,
-  blockTimer,
   restTimer,
 } = defineProps<Props>()
 
@@ -34,15 +35,14 @@ const emit = defineEmits<{
   'prev-block': []
   'next-block': []
   'complete-set': []
-  'increment-round': []
   'toggle-timer': []
   'complete-block': []
 }>()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
 
-// Timer display for footer
-const timerDisplay = computed((): string | null => {
+// Timer display for footer - uses props for timed blocks, computes for rest timer
+const displayedTimer = computed((): string | null => {
   // For strength blocks, show rest timer
   if (isStrengthBlock(block) && restTimer) {
     const elapsed = restTimer.elapsedSeconds.value
@@ -52,57 +52,22 @@ const timerDisplay = computed((): string | null => {
     return `${mins}:${String(secs).padStart(2, '0')}`
   }
 
-  // For timed blocks, show appropriate timer
-  if (isTimedBlock(block) && blockTimer?.blockState.value) {
-    const specific = blockTimer.blockSpecificValues.value
-    const values = blockTimer.timerValues.value
-    const kind = block.kind
-    switch (kind) {
-      case 'emom':
-        return `${specific.currentMinute}/${block.config.minutes} — :${String(specific.secondsRemainingInMinute).padStart(2, '0')}`
-      case 'tabata': {
-        const phase = specific.currentPhase === 'work' ? 'WORK' : 'REST'
-        return `R${specific.currentRound}/${block.config.rounds} ${phase} :${String(specific.secondsInCurrentPhase).padStart(2, '0')}`
-      }
-      case 'amrap':
-        return values.formattedRemaining
-      case 'fortime':
-        return values.formattedElapsed
-      default: {
-        const _exhaustive: never = kind
-        return _exhaustive
-      }
-    }
+  // For timed blocks, use the prop value passed from parent
+  if (isTimedBlock(block) && timerDisplay) {
+    return timerDisplay
   }
 
   return null
 })
 
-const timerLabel = computed((): string | null => {
+const displayedTimerLabel = computed((): string | null => {
   if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
     return 'Rest'
   }
-  if (isTimedBlock(block) && blockTimer?.blockState.value) {
-    return block.kind.toUpperCase()
+  if (isTimedBlock(block) && timerLabel) {
+    return timerLabel
   }
   return null
-})
-
-const isTimerUrgent = computed(() => {
-  if (!blockTimer?.blockState.value || !isTimedBlock(block)) return false
-
-  const specific = blockTimer.blockSpecificValues.value
-  const values = blockTimer.timerValues.value
-  switch (block.kind) {
-    case 'emom':
-      return specific.secondsRemainingInMinute <= 5
-    case 'tabata':
-      return specific.secondsInCurrentPhase <= 3
-    case 'amrap':
-      return values.remainingSeconds <= 10
-    default:
-      return false
-  }
 })
 
 const primaryAction = computed(() => {
@@ -165,27 +130,12 @@ function handlePrimaryAction() {
 <template>
   <footer class="px-4 pb-4 pt-2 safe-area-bottom bg-background/95 backdrop-blur-sm">
     <!-- Timer Display Row -->
-    <div
-      v-if="timerDisplay"
-      :class="
-        cn(
-          'flex items-center justify-center gap-3 py-2 mb-2 -mx-4 px-4',
-          isTimerUrgent && 'bg-destructive/10',
-        )
-      "
-    >
+    <div v-if="displayedTimer" class="flex items-center justify-center gap-3 py-2 mb-2 -mx-4 px-4">
       <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {{ timerLabel }}
+        {{ displayedTimerLabel }}
       </span>
-      <span
-        :class="
-          cn(
-            'font-mono text-2xl font-bold tabular-nums',
-            isTimerUrgent ? 'text-destructive animate-pulse' : blockColors.text,
-          )
-        "
-      >
-        {{ timerDisplay }}
+      <span :class="cn('font-mono text-2xl font-bold tabular-nums', blockColors.text)">
+        {{ displayedTimer }}
       </span>
     </div>
 

@@ -12,6 +12,7 @@ Write integration tests that verify complete user flows through the Vue applicat
 Place integration tests in `src/__tests__/integration/`:
 
 ```typescript
+import { waitFor } from '@testing-library/vue'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetWorkout } from '@/composables/useWorkout'
@@ -19,8 +20,11 @@ import { resetDatabase } from '../setup'
 
 describe('Feature Name', () => {
   afterEach(async () => {
-    resetWorkout()           // Reset singleton workout state
-    await resetDatabase()    // Clear IndexedDB tables
+    resetWorkout()
+    await resetDatabase()
+    // Reset body styles left by dialogs (prevents pointer-events: none issues)
+    document.body.style.cssText = ''
+    document.body.removeAttribute('style')
     document.body.innerHTML = ''
   })
 
@@ -43,6 +47,18 @@ describe('Feature Name', () => {
 Tests use `fake-indexeddb` polyfill (configured in `src/__tests__/setup.ts`). Always reset state in `afterEach`:
 - `resetWorkout()` - Clears the singleton workout ref
 - `resetDatabase()` - Clears all IndexedDB tables
+- Reset body styles - Dialogs add `pointer-events: none` to body; must clear for subsequent tests
+
+```typescript
+afterEach(async () => {
+  resetWorkout()
+  await resetDatabase()
+  // Reset body styles left by dialogs
+  document.body.style.cssText = ''
+  document.body.removeAttribute('style')
+  document.body.innerHTML = ''
+})
+```
 
 ## createTestApp API
 
@@ -111,6 +127,51 @@ await app.user.click(app.getDialogButton('Submit'))
 await app.waitForRoute(/^\/success\//)
 ```
 
+### Wait for Async UI Updates
+Use `waitFor` from `@testing-library/vue` for UI state changes after interactions:
+
+```typescript
+import { waitFor } from '@testing-library/vue'
+
+// After mode transitions (builder → active)
+await app.startWorkout()
+await waitFor(() => {
+  expect(app.queryByText(/block 1 of 2/i)).toBeTruthy()
+})
+
+// After button clicks that change UI state
+await app.user.click(startButton)
+await waitFor(() => {
+  expect(app.queryByRole('button', { name: /pause/i })).toBeTruthy()
+})
+
+// After navigation between blocks
+await app.user.click(nextBlockButton)
+await waitFor(() => {
+  expect(app.queryByText(/block 2 of 2/i)).toBeTruthy()
+})
+```
+
+### Dropdown Menu Interaction
+For dropdown menus, wait for menu items to appear before clicking:
+
+```typescript
+// Find and click the dropdown trigger
+await waitFor(() => {
+  const trigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
+  expect(trigger).toBeTruthy()
+})
+const menuTrigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
+if (!(menuTrigger instanceof HTMLElement)) throw new Error('Menu trigger not found')
+await app.user.click(menuTrigger)
+
+// Wait for menu to open, then click item
+await waitFor(() => {
+  expect(app.queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
+})
+await app.user.click(app.getByRole('menuitem', { name: /end workout/i }))
+```
+
 ## Query Selection Guide
 
 | Need | Query |
@@ -122,8 +183,46 @@ await app.waitForRoute(/^\/success\//)
 | Checkbox | `getByRole('checkbox', { name: /label/i })` |
 | Toggle button | `getByRole('button', { pressed: true/false })` |
 | Any text | `getByText(/partial text/i)` |
+| Menu item | `getByRole('menuitem', { name: /text/i })` |
+| Dialog title | `getByRole('heading', { name: /title/i })` |
 
 Use case-insensitive regex (`/text/i`) for resilience against text changes.
+
+### Avoiding Multiple Element Matches
+
+When text appears in multiple elements (e.g., "Finish Workout" as both dialog title and button), `queryByText` throws an error. Use specific role queries:
+
+```typescript
+// BAD: Matches both dialog title and button
+expect(app.queryByText(/finish workout/i)).toBeTruthy()
+
+// GOOD: Specifically target the heading
+expect(app.queryByRole('heading', { name: /finish workout/i })).toBeTruthy()
+
+// GOOD: Use getDialogButton for buttons within dialogs
+await app.user.click(app.getDialogButton('Finish Workout'))
+```
+
+### Type-Safe Element Selection
+
+ESLint forbids type assertions (`as`). Use helper functions with `instanceof` checks:
+
+```typescript
+// Helper function for footer navigation buttons
+function findFooterButton(selector: 'next' | 'prev'): HTMLElement {
+  const svgClass = selector === 'next' ? 'lucide-chevron-right' : 'lucide-chevron-left'
+  const buttons = [...document.querySelectorAll('footer button')]
+  for (const btn of buttons) {
+    if (btn.querySelector(`svg.${svgClass}`) && btn instanceof HTMLElement) {
+      return btn
+    }
+  }
+  throw new Error(`Footer ${selector} button not found`)
+}
+
+// Usage
+await app.user.click(findFooterButton('next'))
+```
 
 ## Starting at Different Routes
 

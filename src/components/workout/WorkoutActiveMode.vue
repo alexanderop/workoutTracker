@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
-import { computed, watch } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,14 +10,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useBlockTimer } from '@/composables/useBlockTimer'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { isSetReady, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
+import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutActiveModeFooter from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
-import WorkoutActiveTimedView from './WorkoutActiveTimedView.vue'
+import WorkoutAmrapView from './WorkoutAmrapView.vue'
+import WorkoutEmomView from './WorkoutEmomView.vue'
+import WorkoutForTimeView from './WorkoutForTimeView.vue'
+
+import WorkoutTabataView from './WorkoutTabataView.vue'
+
+type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
 
 const emit = defineEmits<{
   'end-workout': []
@@ -38,14 +44,25 @@ const {
 } = useWorkoutMode()
 
 const restTimer = useRestTimer()
-const blockTimer = useBlockTimer({
-  onComplete: handleBlockTimerComplete,
-})
+
+// Template ref for timed view components - they expose timer methods
+const timedViewRef = useTemplateRef<{
+  complete: () => unknown
+  toggle: () => void
+  reset: () => void
+  isRunning: { value: boolean }
+  formattedTime: { value: string }
+  timerLabel: string
+}>('timedView')
 
 const isFirstBlock = computed(() => currentBlockIndex.value === 0)
 
 const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentBlock.value))
-const isTimed = computed(() => currentBlock.value && isTimedBlock(currentBlock.value))
+
+// Computed values from timed view for footer
+const isTimerRunning = computed(() => timedViewRef.value?.isRunning.value ?? false)
+const timerDisplay = computed(() => timedViewRef.value?.formattedTime.value ?? '')
+const timerLabel = computed(() => timedViewRef.value?.timerLabel ?? '')
 
 // Header content
 const headerTitle = computed(() => {
@@ -64,17 +81,6 @@ const canCompleteSet = computed(() => {
   return isSetReady(activeSet.value)
 })
 
-// Initialize block timer when switching to a timed block
-watch(
-  () => currentBlock.value,
-  (block) => {
-    if (block && isTimedBlock(block) && !block.result) {
-      blockTimer.initializeBlock(block)
-    }
-  },
-  { immediate: true },
-)
-
 function handleCompleteSet() {
   if (!activeSet.value) return
 
@@ -90,18 +96,15 @@ function handleCompleteSet() {
   restTimer.start()
 }
 
-function handleIncrementRound() {
-  blockTimer.incrementRound()
-}
-
 function handleToggleTimer() {
-  blockTimer.toggle()
+  timedViewRef.value?.toggle()
 }
 
 function handleCompleteBlock() {
   if (!currentBlock.value || !isTimedBlock(currentBlock.value)) return
 
-  const result = blockTimer.complete()
+  // @ts-expect-error - template ref returns unknown but runtime type is TimedBlockResult
+  const result: TimedBlockResult | undefined = timedViewRef.value?.complete()
   if (result) {
     setBlockResult(currentBlockIndex.value, result)
   }
@@ -112,10 +115,6 @@ function handleCompleteBlock() {
   }
 
   advanceToNextBlock()
-}
-
-function handleBlockTimerComplete() {
-  handleCompleteBlock()
 }
 
 function handlePrevBlock() {
@@ -178,11 +177,30 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         @update-set="handleUpdateSet"
       />
 
-      <WorkoutActiveTimedView
-        v-if="isTimed && isTimedBlock(currentBlock)"
+      <!-- Timed block views - each manages its own timer internally -->
+      <WorkoutAmrapView
+        v-if="currentBlock.kind === 'amrap'"
+        ref="timedView"
         :block="currentBlock"
-        :block-timer="blockTimer"
-        @increment-round="handleIncrementRound"
+        :on-complete="handleCompleteBlock"
+      />
+      <WorkoutEmomView
+        v-else-if="currentBlock.kind === 'emom'"
+        ref="timedView"
+        :block="currentBlock"
+        :on-complete="handleCompleteBlock"
+      />
+      <WorkoutTabataView
+        v-else-if="currentBlock.kind === 'tabata'"
+        ref="timedView"
+        :block="currentBlock"
+        :on-complete="handleCompleteBlock"
+      />
+      <WorkoutForTimeView
+        v-else-if="currentBlock.kind === 'fortime'"
+        ref="timedView"
+        :block="currentBlock"
+        :on-complete="handleCompleteBlock"
       />
     </template>
 
@@ -190,16 +208,16 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     <template v-if="currentBlock" #footer>
       <WorkoutActiveModeFooter
         :block="currentBlock"
-        :is-timer-running="blockTimer.timerStatus.value.isRunning"
+        :is-timer-running="isTimerRunning"
+        :timer-display="timerDisplay"
+        :timer-label="timerLabel"
         :can-complete="canCompleteSet"
         :is-first-block="isFirstBlock"
         :is-last-block="isLastBlock"
-        :block-timer="blockTimer"
         :rest-timer="restTimer"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"
         @complete-set="handleCompleteSet"
-        @increment-round="handleIncrementRound"
         @toggle-timer="handleToggleTimer"
         @complete-block="handleCompleteBlock"
       />
