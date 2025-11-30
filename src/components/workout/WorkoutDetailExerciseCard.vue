@@ -4,12 +4,15 @@ import { computed, ref } from 'vue'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import type { DbWorkoutExercise } from '@/db/schema'
+import { formatWeight, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
+import { useSettingsStore } from '@/stores/settings'
 import WorkoutDetailSetTable from './WorkoutDetailSetTable.vue'
 
 const { exercise } = defineProps<{
   exercise: DbWorkoutExercise
 }>()
 
+const settingsStore = useSettingsStore()
 const isOpen = ref(false)
 
 const completedSets = computed(() => exercise.sets.filter((s) => s.status === 'completed'))
@@ -18,8 +21,10 @@ const summary = computed(() => {
   const sets = completedSets.value
   if (sets.length === 0) return 'No sets completed'
 
-  const bestWeight = Math.max(...sets.map((s) => Number.parseFloat(s.kg) || 0))
-  return `${sets.length} set${sets.length > 1 ? 's' : ''} × ${bestWeight}kg`
+  const bestWeightKg = Math.max(...sets.map((s) => Number.parseFloat(s.kg) || 0))
+  const displayWeight = formatWeight(bestWeightKg, settingsStore.weightUnit, 1)
+  const unitLabel = WEIGHT_UNIT_LABELS[settingsStore.weightUnit]
+  return `${sets.length} set${sets.length > 1 ? 's' : ''} × ${displayWeight}${unitLabel}`
 })
 </script>
 

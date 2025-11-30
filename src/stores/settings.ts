@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { settingsRepository } from '@/db/repositories/settings'
 
 export type WeightUnit = 'kg' | 'lbs'
@@ -44,19 +44,6 @@ export const useSettingsStore = defineStore('settings', () => {
     heightUnit.value = unit
     await settingsRepository.set({ key: 'heightUnit', value: unit })
   }
-
-  // Auto-persist on change (alternative to explicit setters)
-  watch(weightUnit, async (newUnit) => {
-    if (isLoaded.value) {
-      await settingsRepository.set({ key: 'weightUnit', value: newUnit })
-    }
-  })
-
-  watch(heightUnit, async (newUnit) => {
-    if (isLoaded.value) {
-      await settingsRepository.set({ key: 'heightUnit', value: newUnit })
-    }
-  })
 
   return {
     weightUnit,

@@ -82,20 +82,6 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">Privacy</CardTitle>
-          <CardDescription>Manage your privacy settings</CardDescription>
-        </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">About</CardTitle>
-          <CardDescription>Version 1.0.0</CardDescription>
-        </CardHeader>
-      </Card>
     </div>
   </div>
 </template>
