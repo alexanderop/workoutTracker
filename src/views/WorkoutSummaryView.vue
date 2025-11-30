@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import type { DbCompletedWorkout } from '@/db/schema'
+import { formatDuration, formatWeight } from '@/lib/formatters'
 
 const { id } = defineProps<{
   id: string
@@ -64,24 +65,6 @@ const { displayValue: animatedWeight } = useAnimatedCounter(() => stats.value.to
   delay: 900,
   duration: 1500,
 })
-
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`
-}
-
-function formatWeight(weight: number): string {
-  if (weight >= 1000) {
-    return `${(weight / 1000).toFixed(1)}k`
-  }
-  return weight.toLocaleString()
-}
 
 function handleDone() {
   router.push('/')

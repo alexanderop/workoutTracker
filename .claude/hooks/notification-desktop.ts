@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env pnpm dlx tsx
 /* eslint-disable node/prefer-global/process */
 /**
  * Claude Code Notification Hook - Desktop Alerts

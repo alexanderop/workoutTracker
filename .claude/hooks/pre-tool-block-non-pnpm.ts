@@ -1,9 +1,8 @@
 #!/usr/bin/env pnpm dlx tsx
 /**
- * Claude Code PreToolUse Hook - Protect shadcn/ui Components
+ * Claude Code PreToolUse Hook - Enforce pnpm Only
  *
- * Blocks editing of shadcn/ui components in src/components/ui/
- * These should be managed through the shadcn CLI
+ * Blocks npm, yarn, and bun commands. Only pnpm is allowed.
  */
 
 import type { PreToolUseHookInput, SyncHookJSONOutput } from '@anthropic-ai/claude-agent-sdk'
@@ -27,32 +26,37 @@ function main(): void {
 
   const input = parsedInput as PreToolUseHookInput
 
-  // Only check Write and Edit tools
-  if (input.tool_name !== 'Write' && input.tool_name !== 'Edit') {
+  // Only check Bash tool
+  if (input.tool_name !== 'Bash') {
     exit(0)
   }
 
-  const toolInput = input.tool_input as { file_path?: string }
-  const filePath = toolInput.file_path
+  const toolInput = input.tool_input as { command?: string }
+  const command = toolInput.command || ''
 
-  if (!filePath) {
-    exit(0)
-  }
+  // Check for forbidden package managers at the start of command
+  // Uses word boundary to avoid false positives like "echo npm"
+  const forbiddenPatterns = [
+    /^\s*npm\b/,
+    /^\s*yarn\b/,
+    /^\s*bun\b/,
+  ]
 
-  // Check if file is in src/components/ui/
-  if (filePath.includes('src/components/ui/')) {
+  const isForbidden = forbiddenPatterns.some(pattern => pattern.test(command))
+
+  if (isForbidden) {
     const output: SyncHookJSONOutput = {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'deny',
-        permissionDecisionReason: '🚫 BLOCKED: Cannot edit shadcn/ui components directly. Use `npx shadcn-vue@latest add` or `npx shadcn-vue@latest update` to manage components in src/components/ui/',
+        permissionDecisionReason: 'Only pnpm is allowed as the package manager. Use pnpm instead of npm, yarn, or bun.',
       },
     }
     stdout.write(JSON.stringify(output))
     exit(0)
   }
 
-  // File is safe to edit
+  // Command is allowed
   exit(0)
 }
 

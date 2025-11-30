@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env pnpm dlx tsx
 /**
  * Claude Code Stop Hook - Quality Check
  *

@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import type { DbCompletedWorkout } from '@/db/schema'
+import { formatDate, formatDuration } from '@/lib/formatters'
+
+const router = useRouter()
 
 const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
 const isLoading = ref(true)
@@ -13,23 +17,15 @@ onMounted(async () => {
   isLoading.value = false
 })
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+function navigateToWorkoutDetail(workoutId: string): void {
+  router.push(`/workouts/${workoutId}`)
 }
 
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+function handleKeyDown(event: KeyboardEvent, workoutId: string): void {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    navigateToWorkoutDetail(workoutId)
   }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
 </script>
 
@@ -49,7 +45,15 @@ function formatDuration(seconds: number): string {
 
     <!-- Workout list -->
     <div v-else-if="workouts.length > 0" class="grid gap-3">
-      <Card v-for="workout in workouts" :key="workout.id" class="p-4">
+      <Card
+        v-for="workout in workouts"
+        :key="workout.id"
+        role="button"
+        tabindex="0"
+        class="p-4 cursor-pointer hover:bg-accent transition-colors"
+        @click="navigateToWorkoutDetail(workout.id)"
+        @keydown="handleKeyDown($event, workout.id)"
+      >
         <div class="flex justify-between items-center">
           <div>
             <div class="font-medium">{{ workout.name }}</div>

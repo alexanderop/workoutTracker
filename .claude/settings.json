@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/user-prompt-skill-eval.ts\"",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/user-prompt-skill-eval.ts\"",
             "timeout": 5
           }
         ]
@@ -18,7 +18,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-protect-shadcn.ts\"",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-protect-shadcn.ts\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-block-non-pnpm.ts\"",
             "timeout": 5
           }
         ]
@@ -30,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/notification-desktop.ts\"",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/notification-desktop.ts\"",
             "timeout": 5
           }
         ]
@@ -42,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-quality-check.ts\"",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-quality-check.ts\"",
             "timeout": 120
           }
         ]

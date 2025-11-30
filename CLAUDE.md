@@ -97,6 +97,7 @@ The project uses Pinia with the Composition API setup pattern. Example in `src/s
 ```mermaid
 flowchart TD
     App["App.vue"] --> Layout["Layout.vue"]
+    App --> ResumeWorkoutDialog["ResumeWorkoutDialog"]
 
     Layout --> RouterView["RouterView"]
     Layout --> BottomNav["Bottom Navigation"]
@@ -108,6 +109,7 @@ flowchart TD
         Settings["TheSettingsView.vue"]
         ActiveWorkout["ActiveWorkout.vue"]
         CreateExercise["CreateCustomExercise.vue"]
+        WorkoutSummary["WorkoutSummaryView.vue"]
     end
 
     RouterView --> Views
@@ -120,6 +122,7 @@ flowchart TD
         WorkoutRestTimerWidget["WorkoutRestTimerWidget"]
         WorkoutAddExerciseDialog["WorkoutAddExerciseDialog"]
         WorkoutEditExerciseDialog["WorkoutEditExerciseDialog"]
+        WorkoutFinishDialog["WorkoutFinishDialog"]
     end
 
     ActiveWorkout --> ActiveWorkoutChildren
@@ -137,6 +140,8 @@ flowchart TD
     subgraph SharedComponents["Shared Components"]
         MobileDialogContent["MobileDialogContent"]
     end
+
+    ResumeWorkoutDialog -.-> MobileDialogContent
 ```
 
 ### shadcn/ui Components

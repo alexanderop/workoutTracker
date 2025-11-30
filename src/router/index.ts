@@ -5,6 +5,7 @@ import TheExercisesView from '@/views/TheExercisesView.vue'
 import TheHomeView from '@/views/TheHomeView.vue'
 import TheSettingsView from '@/views/TheSettingsView.vue'
 import TheWorkoutsView from '@/views/TheWorkoutsView.vue'
+import WorkoutDetailView from '@/views/WorkoutDetailView.vue'
 import WorkoutSummaryView from '@/views/WorkoutSummaryView.vue'
 
 export const routes = [
@@ -17,6 +18,12 @@ export const routes = [
     path: '/workouts',
     name: 'Workouts',
     component: TheWorkoutsView,
+  },
+  {
+    path: '/workouts/:id',
+    name: 'WorkoutDetail',
+    component: WorkoutDetailView,
+    props: true,
   },
   {
     path: '/exercises',
