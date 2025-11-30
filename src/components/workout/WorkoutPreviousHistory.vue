@@ -2,6 +2,8 @@
 import type { Set } from '@/composables/useWorkout'
 import { computed } from 'vue'
 import { Separator } from '@/components/ui/separator'
+import { useSettingsStore } from '@/stores/settings'
+import { formatWeight, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 
 type Props = {
   sets: ReadonlyArray<Set>
@@ -9,6 +11,15 @@ type Props = {
 }
 
 const props = defineProps<Props>()
+
+const settingsStore = useSettingsStore()
+
+function displayWeight(kgValue: string): string {
+  if (!kgValue) return '—'
+  const kg = Number(kgValue)
+  const decimals = settingsStore.weightUnit === 'lbs' ? 1 : 0
+  return formatWeight(kg, settingsStore.weightUnit, decimals)
+}
 
 const hasHistoryData = computed(
   () => props.sets.length > 0 && props.sets.some((set) => set.kg !== '' || set.reps !== ''),
@@ -26,7 +37,10 @@ const hasHistoryData = computed(
         class="flex justify-between text-sm px-2 py-1 bg-secondary/30 rounded"
       >
         <span class="text-muted-foreground">Set {{ index + 1 }}</span>
-        <span class="font-medium">{{ set.kg }} kg × {{ set.reps }}</span>
+        <span class="font-medium"
+          >{{ displayWeight(set.kg) }} {{ WEIGHT_UNIT_LABELS[settingsStore.weightUnit] }} ×
+          {{ set.reps }}</span
+        >
       </div>
     </div>
   </div>

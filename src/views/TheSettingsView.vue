@@ -45,6 +45,7 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
               :model-value="settingsStore.weightUnit"
               variant="outline"
               data-testid="weight-unit-toggle"
+              class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
               @update:model-value="handleWeightUnitChange"
             >
               <ToggleGroupItem value="kg" aria-label="Kilograms">kg</ToggleGroupItem>
@@ -58,6 +59,7 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
               :model-value="settingsStore.heightUnit"
               variant="outline"
               data-testid="height-unit-toggle"
+              class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
               @update:model-value="handleHeightUnitChange"
             >
               <ToggleGroupItem value="cm" aria-label="Centimeters">cm</ToggleGroupItem>

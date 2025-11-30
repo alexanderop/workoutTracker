@@ -1,56 +1,24 @@
 <script setup lang="ts">
 import { Trophy, Clock, Dumbbell, Target, Flame } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
-import { workoutsRepository } from '@/db/repositories/workouts'
-import type { DbCompletedWorkout } from '@/db/schema'
+import { useEnterAnimation } from '@/composables/useEnterAnimation'
+import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
 import { formatDuration, formatWeight } from '@/lib/formatters'
+import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
+import { useSettingsStore } from '@/stores/settings'
 
 const { id } = defineProps<{
   id: string
 }>()
 
 const router = useRouter()
-const workout = ref<DbCompletedWorkout | null>(null)
-const isLoading = ref(true)
-const showContent = ref(false)
-
-onMounted(async () => {
-  const data = await workoutsRepository.getById(id)
-  workout.value = data ?? null
-  isLoading.value = false
-
-  // Trigger staggered animations after a brief delay
-  setTimeout(() => {
-    showContent.value = true
-  }, 100)
-})
-
-const stats = computed(() => {
-  if (!workout.value) {
-    return { duration: 0, exerciseCount: 0, setCount: 0, totalWeight: 0 }
-  }
-
-  const completedSets = workout.value.exercises.flatMap((e) =>
-    e.sets.filter((s) => s.status === 'completed'),
-  )
-
-  const totalWeight = completedSets.reduce((sum, set) => {
-    const kg = Number.parseFloat(set.kg) || 0
-    const reps = Number.parseFloat(set.reps) || 0
-    return sum + kg * reps
-  }, 0)
-
-  return {
-    duration: workout.value.durationSeconds,
-    exerciseCount: workout.value.exercises.length,
-    setCount: completedSets.length,
-    totalWeight: Math.round(totalWeight),
-  }
-})
+const settingsStore = useSettingsStore()
+const { state, stats } = useWorkoutDetail(id)
+const { isVisible: showContent } = useEnterAnimation(100)
 
 // Animated counters with staggered delays
 const { displayValue: animatedExercises } = useAnimatedCounter(() => stats.value.exerciseCount, {
@@ -61,10 +29,25 @@ const { displayValue: animatedSets } = useAnimatedCounter(() => stats.value.setC
   delay: 750,
   duration: 1200,
 })
-const { displayValue: animatedWeight } = useAnimatedCounter(() => stats.value.totalWeight, {
-  delay: 900,
-  duration: 1500,
+const { displayValue: animatedWeight } = useAnimatedCounter(
+  () => {
+    const kg = stats.value.totalWeight
+    const decimals = settingsStore.weightUnit === 'lbs' ? 1 : 0
+    return Number.parseFloat(formatWeightUnit(kg, settingsStore.weightUnit, decimals))
+  },
+  {
+    delay: 900,
+    duration: 1500,
+  },
+)
+
+const workoutName = computed(() => {
+  return state.value.status === 'success' ? state.value.workout.name : ''
 })
+
+function weightLabel(): string {
+  return `${WEIGHT_UNIT_LABELS[settingsStore.weightUnit]} lifted`
+}
 
 function handleDone() {
   router.push('/')
@@ -99,12 +82,15 @@ function handleDone() {
     </div>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex-1 flex items-center justify-center">
+    <div v-if="state.status === 'loading'" class="flex-1 flex items-center justify-center">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
     <!-- Content -->
-    <div v-else-if="workout" class="flex-1 flex flex-col items-center justify-center p-6 gap-8">
+    <div
+      v-else-if="state.status === 'success'"
+      class="flex-1 flex flex-col items-center justify-center p-6 gap-8"
+    >
       <!-- Trophy icon with bounce animation -->
       <div class="relative" :class="showContent ? 'animate-bounce-in' : 'opacity-0'">
         <div class="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
@@ -122,7 +108,7 @@ function handleDone() {
       >
         <h1 class="text-3xl font-bold tracking-tight mb-2">Workout Complete!</h1>
         <p class="text-muted-foreground text-lg">
-          {{ workout.name }}
+          {{ workoutName }}
         </p>
       </div>
 
@@ -185,7 +171,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatWeight(animatedWeight) }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">kg lifted</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ weightLabel() }}
+          </div>
         </Card>
       </div>
     </div>
@@ -200,7 +188,7 @@ function handleDone() {
 
     <!-- Done button -->
     <div
-      v-if="workout && !isLoading"
+      v-if="state.status === 'success'"
       class="p-4 safe-area-bottom"
       :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '1000ms' }"
