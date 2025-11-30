@@ -3,10 +3,7 @@ import type { Set } from '@/composables/useWorkout'
 import { isSetReady } from '@/composables/useWorkout'
 import { Check, Plus, Trash2, Timer } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import {
-  NumberField,
-  NumberFieldInput,
-} from '@/components/ui/number-field'
+import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import {
   Table,
   TableBody,
@@ -53,8 +50,7 @@ function getRirValue(set: Set) {
 }
 
 function getFormattedEstimated10RM(set: Set) {
-  if (!set.kg || !set.reps)
-    return '—'
+  if (!set.kg || !set.reps) return '—'
   return calculate10RM(Number(set.kg), Number(set.reps)).toFixed(1)
 }
 </script>
@@ -63,11 +59,7 @@ function getFormattedEstimated10RM(set: Set) {
   <Table>
     <TableHeader>
       <TableRow class="border-none hover:bg-transparent">
-        <TableHead
-          v-for="column in TABLE_COLUMNS"
-          :key="column.key"
-          :class="column.class"
-        >
+        <TableHead v-for="column in TABLE_COLUMNS" :key="column.key" :class="column.class">
           {{ column.label }}
         </TableHead>
       </TableRow>
@@ -76,11 +68,13 @@ function getFormattedEstimated10RM(set: Set) {
       <TableRow
         v-for="(set, index) in sets"
         :key="set.id"
-        :class="cn(
-          'border-none transition-all duration-200 hover:bg-transparent cursor-default',
-          set.status === 'active' ? 'bg-primary/15 hover:bg-primary/15' : '',
-          set.status === 'completed' ? 'opacity-60' : '',
-        )"
+        :class="
+          cn(
+            'border-none transition-all duration-200 hover:bg-transparent cursor-default',
+            set.status === 'active' ? 'bg-primary/15 hover:bg-primary/15' : '',
+            set.status === 'completed' ? 'opacity-60' : '',
+          )
+        "
       >
         <TableCell class="font-medium p-1 h-10 tabular-nums">
           <div
@@ -141,25 +135,29 @@ function getFormattedEstimated10RM(set: Set) {
         <TableCell class="p-1 h-10 text-center">
           <Button
             size="icon"
-            :class="cn(
-              'h-9 w-9 rounded-lg transition-all duration-200',
-              set.status === 'completed'
-                ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                : isSetReady(set)
-                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
-                  : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
-            )"
+            :class="
+              cn(
+                'h-9 w-9 rounded-lg transition-all duration-200',
+                set.status === 'completed'
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                  : isSetReady(set)
+                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
+                    : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
+              )
+            "
             @click="$emit('toggle-complete', set)"
           >
             <Check
-              :class="cn(
-                'w-4 h-4 transition-all',
-                set.status === 'completed'
-                  ? 'animate-in zoom-in-50 duration-200'
-                  : isSetReady(set)
-                    ? 'opacity-100'
-                    : 'opacity-30',
-              )"
+              :class="
+                cn(
+                  'w-4 h-4 transition-all',
+                  set.status === 'completed'
+                    ? 'animate-in zoom-in-50 duration-200'
+                    : isSetReady(set)
+                      ? 'opacity-100'
+                      : 'opacity-30',
+                )
+              "
             />
           </Button>
         </TableCell>

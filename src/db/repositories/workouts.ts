@@ -35,17 +35,14 @@ export const workoutsRepository = {
   /**
    * Get workout history with pagination.
    */
-  async getHistory(params: {
-    limit?: number
-    offset?: number
-  } = {}): Promise<ReadonlyArray<DbCompletedWorkout>> {
+  async getHistory(
+    params: {
+      limit?: number
+      offset?: number
+    } = {},
+  ): Promise<ReadonlyArray<DbCompletedWorkout>> {
     const { limit = 50, offset = 0 } = params
-    return db.workouts
-      .orderBy('completedAt')
-      .reverse()
-      .offset(offset)
-      .limit(limit)
-      .toArray()
+    return db.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()
   },
 
   /**
@@ -55,10 +52,7 @@ export const workoutsRepository = {
     startDate: number
     endDate: number
   }): Promise<ReadonlyArray<DbCompletedWorkout>> {
-    return db.workouts
-      .where('completedAt')
-      .between(params.startDate, params.endDate)
-      .toArray()
+    return db.workouts.where('completedAt').between(params.startDate, params.endDate).toArray()
   },
 
   /**

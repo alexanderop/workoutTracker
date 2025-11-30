@@ -24,20 +24,26 @@ const emit = defineEmits<{
     <div class="flex items-center justify-between px-4 py-3">
       <div class="flex items-center gap-3">
         <div
-          :class="cn(
-            'flex items-center justify-center w-8 h-8 rounded-full transition-colors',
-            timer.isRunning.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
-          )"
+          :class="
+            cn(
+              'flex items-center justify-center w-8 h-8 rounded-full transition-colors',
+              timer.isRunning.value
+                ? 'bg-primary/20 text-primary'
+                : 'bg-muted text-muted-foreground',
+            )
+          "
         >
           <Clock class="w-4 h-4" />
         </div>
         <div class="flex flex-col">
           <span class="text-xs text-muted-foreground">Rest</span>
           <span
-            :class="cn(
-              'text-xl font-bold font-mono tabular-nums transition-colors',
-              timer.isRunning.value ? 'text-primary' : 'text-foreground',
-            )"
+            :class="
+              cn(
+                'text-xl font-bold font-mono tabular-nums transition-colors',
+                timer.isRunning.value ? 'text-primary' : 'text-foreground',
+              )
+            "
           >
             {{ timer.formattedTime }}
           </span>

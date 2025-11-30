@@ -1,36 +1,24 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { resetWorkout, useWorkout } from '@/composables/useWorkout'
 import type { Set } from '@/composables/useWorkout'
+import { workoutBuilder } from '../factories'
 
+function setupExerciseWithSets(sets: ReadonlyArray<Partial<Set>>) {
+  const { workout, completeSet } = useWorkout()
+  workout.value = workoutBuilder().withExerciseAndSets(sets).build()
+  return { workout, completeSet }
+}
 describe('useWorkout', () => {
   afterEach(() => {
     resetWorkout()
   })
 
   describe('completeSet', () => {
-    function setupExerciseWithSets(sets: ReadonlyArray<Set>) {
-      const { workout, completeSet } = useWorkout()
-      workout.value = {
-        id: 1,
-        name: 'Test Workout',
-        selectedExerciseId: 1,
-        exercises: [{
-          id: 1,
-          name: 'Bench Press',
-          equipment: 'Barbell',
-          targetReps: 8,
-          thumbnail: '🏋️',
-          sets: sets.map(s => ({ ...s })),
-        }],
-      }
-      return { workout, completeSet }
-    }
-
     describe('pre-fill behavior', () => {
       it('pre-fills empty next set with values from completed set', () => {
         const { workout, completeSet } = setupExerciseWithSets([
-          { id: 1, kg: '100', reps: '8', rir: '2', status: 'active' },
-          { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
+          { status: 'active' },
+          { kg: '', reps: '', rir: '', status: 'planned' },
         ])
 
         const firstSet = workout.value.exercises[0]!.sets[0]!
@@ -45,8 +33,8 @@ describe('useWorkout', () => {
 
       it('preserves existing values in next set - only fills empty fields', () => {
         const { workout, completeSet } = setupExerciseWithSets([
-          { id: 1, kg: '100', reps: '8', rir: '2', status: 'active' },
-          { id: 2, kg: '90', reps: '', rir: '3', status: 'planned' },
+          { status: 'active' },
+          { kg: '90', reps: '', rir: '3', status: 'planned' },
         ])
 
         const firstSet = workout.value.exercises[0]!.sets[0]!
@@ -60,8 +48,8 @@ describe('useWorkout', () => {
 
       it('does not pre-fill when completing last set in exercise', () => {
         const { workout, completeSet } = setupExerciseWithSets([
-          { id: 1, kg: '100', reps: '8', rir: '2', status: 'completed' },
-          { id: 2, kg: '100', reps: '8', rir: '2', status: 'active' },
+          { status: 'completed' },
+          { status: 'active' },
         ])
 
         const lastSet = workout.value.exercises[0]!.sets[1]!
@@ -76,33 +64,12 @@ describe('useWorkout', () => {
 
       it('does not pre-fill when moving to next exercise', () => {
         const { workout, completeSet } = useWorkout()
-        workout.value = {
-          id: 1,
-          name: 'Test Workout',
-          selectedExerciseId: 1,
-          exercises: [
-            {
-              id: 1,
-              name: 'Bench Press',
-              equipment: 'Barbell',
-              targetReps: 8,
-              thumbnail: '🏋️',
-              sets: [
-                { id: 1, kg: '100', reps: '8', rir: '2', status: 'active' },
-              ],
-            },
-            {
-              id: 2,
-              name: 'Squat',
-              equipment: 'Barbell',
-              targetReps: 8,
-              thumbnail: '🏋️',
-              sets: [
-                { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
-              ],
-            },
-          ],
-        }
+        workout.value = workoutBuilder()
+          .withExerciseAndSets([{ status: 'active' }], { name: 'Bench Press' })
+          .withExerciseAndSets([{ kg: '', reps: '', rir: '', status: 'planned' }], {
+            name: 'Squat',
+          })
+          .build()
 
         const firstExerciseSet = workout.value.exercises[0]!.sets[0]!
         const result = completeSet(firstExerciseSet)
@@ -122,35 +89,20 @@ describe('useWorkout', () => {
 
       it('pre-fills correctly in second exercise with overlapping set IDs', () => {
         const { workout, completeSet } = useWorkout()
-        workout.value = {
-          id: 1,
-          name: 'Test Workout',
-          selectedExerciseId: 2,
-          exercises: [
-            {
-              id: 1,
-              name: 'Bench Press',
-              equipment: 'Barbell',
-              targetReps: 8,
-              thumbnail: '🏋️',
-              sets: [
-                { id: 1, kg: '100', reps: '8', rir: '2', status: 'completed' },
-                { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
-              ],
-            },
-            {
-              id: 2,
-              name: 'Squat',
-              equipment: 'Barbell',
-              targetReps: 8,
-              thumbnail: '🏋️',
-              sets: [
-                { id: 1, kg: '140', reps: '5', rir: '1', status: 'active' },
-                { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
-              ],
-            },
-          ],
-        }
+        workout.value = workoutBuilder()
+          .withExerciseAndSets(
+            [{ status: 'completed' }, { kg: '', reps: '', rir: '', status: 'planned' }],
+            { name: 'Bench Press' },
+          )
+          .withExerciseAndSets(
+            [
+              { kg: '140', reps: '5', rir: '1', status: 'active' },
+              { kg: '', reps: '', rir: '', status: 'planned' },
+            ],
+            { name: 'Squat' },
+          )
+          .selectExercise(2)
+          .build()
 
         // Complete first set of second exercise (Squat)
         const squatFirstSet = workout.value.exercises[1]!.sets[0]!
@@ -178,7 +130,7 @@ describe('useWorkout', () => {
     describe('set completion', () => {
       it('returns uncompleted when set is not ready', () => {
         const { workout, completeSet } = setupExerciseWithSets([
-          { id: 1, kg: '', reps: '', rir: '', status: 'active' },
+          { kg: '', reps: '', rir: '', status: 'active' },
         ])
 
         const set = workout.value.exercises[0]!.sets[0]!
@@ -189,9 +141,7 @@ describe('useWorkout', () => {
       })
 
       it('toggles completed set back to active', () => {
-        const { workout, completeSet } = setupExerciseWithSets([
-          { id: 1, kg: '100', reps: '8', rir: '2', status: 'completed' },
-        ])
+        const { workout, completeSet } = setupExerciseWithSets([{ status: 'completed' }])
 
         const set = workout.value.exercises[0]!.sets[0]!
         const result = completeSet(set)

@@ -29,7 +29,7 @@ type Props = {
 
 type Emits = {
   'update:open': [value: boolean]
-  'save': [data: { name: string, equipment: string, targetReps: number, setCount: number }]
+  save: [data: { name: string; equipment: string; targetReps: number; setCount: number }]
 }
 
 const props = defineProps<Props>()
@@ -40,14 +40,17 @@ const equipment = ref(props.equipment)
 const targetReps = ref(props.targetReps)
 const setCount = ref(props.setCount)
 
-watch(() => props.open, (isOpen) => {
-  if (isOpen) {
-    name.value = props.exerciseName
-    equipment.value = props.equipment
-    targetReps.value = props.targetReps
-    setCount.value = props.setCount
-  }
-})
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) {
+      name.value = props.exerciseName
+      equipment.value = props.equipment
+      targetReps.value = props.targetReps
+      setCount.value = props.setCount
+    }
+  },
+)
 
 function handleSave() {
   emit('save', {
@@ -69,20 +72,13 @@ function handleCancel() {
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Edit Exercise</DialogTitle>
-        <DialogDescription>
-          Update the exercise details for this workout
-        </DialogDescription>
+        <DialogDescription> Update the exercise details for this workout </DialogDescription>
       </DialogHeader>
 
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
           <Label for="exercise-name">Exercise Name</Label>
-          <Input
-            id="exercise-name"
-            v-model="name"
-            placeholder="e.g. Bench Press"
-            class="h-12"
-          />
+          <Input id="exercise-name" v-model="name" placeholder="e.g. Bench Press" class="h-12" />
         </div>
 
         <div class="grid gap-2">
@@ -95,12 +91,7 @@ function handleCancel() {
           />
         </div>
 
-        <NumberField
-          id="target-reps"
-          v-model="targetReps"
-          :min="1"
-          :max="100"
-        >
+        <NumberField id="target-reps" v-model="targetReps" :min="1" :max="100">
           <Label for="target-reps">Target Reps</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />
@@ -109,12 +100,7 @@ function handleCancel() {
           </NumberFieldContent>
         </NumberField>
 
-        <NumberField
-          id="set-count"
-          v-model="setCount"
-          :min="1"
-          :max="20"
-        >
+        <NumberField id="set-count" v-model="setCount" :min="1" :max="20">
           <Label for="set-count">Number of Sets</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />
@@ -125,19 +111,8 @@ function handleCancel() {
       </div>
 
       <DialogFooter class="flex-row gap-2">
-        <Button
-          variant="outline"
-          class="flex-1"
-          @click="handleCancel"
-        >
-          Cancel
-        </Button>
-        <Button
-          class="flex-1"
-          @click="handleSave"
-        >
-          Save Changes
-        </Button>
+        <Button variant="outline" class="flex-1" @click="handleCancel"> Cancel </Button>
+        <Button class="flex-1" @click="handleSave"> Save Changes </Button>
       </DialogFooter>
     </MobileDialogContent>
   </Dialog>

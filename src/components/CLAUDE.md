@@ -5,6 +5,7 @@
 Use Vue 3.4's `defineModel` macro for components that need two-way binding (e.g., dialogs, form inputs, toggles).
 
 **Do this:**
+
 ```vue
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { required: true })
@@ -20,6 +21,7 @@ function close() {
 ```
 
 **Not this:**
+
 ```vue
 <script setup lang="ts">
 defineProps<{ open: boolean }>()
@@ -36,6 +38,7 @@ function close() {
 ```
 
 ### Benefits
+
 - Less boilerplate (no manual prop + emit setup)
 - Cleaner parent usage with `v-model:propName`
 - Direct `.value` assignment instead of emitting events
@@ -47,6 +50,7 @@ function close() {
 Destructure props directly with default values using native JavaScript syntax. Variables destructured from `defineProps` are automatically reactive.
 
 **Do this:**
+
 ```vue
 <script setup lang="ts">
 const { count = 0, msg = 'hello' } = defineProps<{
@@ -57,6 +61,7 @@ const { count = 0, msg = 'hello' } = defineProps<{
 ```
 
 **Not this:**
+
 ```vue
 <script setup lang="ts">
 const props = withDefaults(
@@ -66,19 +71,27 @@ const props = withDefaults(
   }>(),
   {
     count: 0,
-    msg: 'hello'
-  }
+    msg: 'hello',
+  },
 )
 </script>
 ```
 
 **Important:** When watching or passing destructured props to composables, wrap them in a getter to retain reactivity:
+
 ```ts
 // ❌ Compile-time error
-watch(count, () => { /* ... */ })
+watch(count, () => {
+  /* ... */
+})
 
 // ✅ Wrap in getter
-watch(() => count, () => { /* ... */ })
+watch(
+  () => count,
+  () => {
+    /* ... */
+  },
+)
 
 // ✅ Composables should accept getters
 useDynamicCount(() => count)
@@ -89,6 +102,7 @@ useDynamicCount(() => count)
 Use `useTemplateRef()` for template refs instead of plain refs with matching names. This approach supports dynamic ref bindings.
 
 **Do this:**
+
 ```vue
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
@@ -97,11 +111,12 @@ const inputRef = useTemplateRef('input')
 </script>
 
 <template>
-  <input ref="input">
+  <input ref="input" />
 </template>
 ```
 
 **Not this:**
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -110,7 +125,7 @@ const input = ref<HTMLInputElement | null>(null)
 </script>
 
 <template>
-  <input ref="input">
+  <input ref="input" />
 </template>
 ```
 

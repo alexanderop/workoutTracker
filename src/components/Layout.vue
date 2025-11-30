@@ -30,7 +30,8 @@ function isActive(path: string) {
         <button
           v-for="item in navItems"
           :key="item.path"
-          class="flex-1 flex flex-col items-center justify-center py-3 px-2 transition-colors" :class="[
+          class="flex-1 flex flex-col items-center justify-center py-3 px-2 transition-colors"
+          :class="[
             isActive(item.path)
               ? 'text-primary border-t-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',

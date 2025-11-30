@@ -25,12 +25,26 @@ import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkou
 import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
 
 const router = useRouter()
-const { workout, selectedExercise, selectExercise, completeSet, addExercise, removeExercise, updateExercise, addSet, removeSet, setSetCount, updateSetValue, reorderExercises } = useWorkout()
+const {
+  workout,
+  selectedExercise,
+  selectExercise,
+  completeSet,
+  addExercise,
+  removeExercise,
+  updateExercise,
+  addSet,
+  removeSet,
+  setSetCount,
+  updateSetValue,
+  reorderExercises,
+} = useWorkout()
 const timer = useRestTimer()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
-const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout } = useWorkoutPersistence(workoutRef)
+const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout } =
+  useWorkoutPersistence(workoutRef)
 
 onMounted(() => {
   // If not already initialized (from resume), start a new session
@@ -68,7 +82,12 @@ function handleSetComplete(set: Set) {
   }
 }
 
-function handleSaveExercise(data: { name: string, equipment: string, targetReps: number, setCount: number }) {
+function handleSaveExercise(data: {
+  name: string
+  equipment: string
+  targetReps: number
+  setCount: number
+}) {
   if (!selectedExercise.value) return
   updateExercise(data)
   setSetCount(selectedExercise.value.id, data.setCount)
@@ -114,7 +133,10 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
       </template>
 
       <!-- Empty State -->
-      <Empty v-else class="animate-in fade-in-50 duration-500 h-full flex items-center justify-center border-0">
+      <Empty
+        v-else
+        class="animate-in fade-in-50 duration-500 h-full flex items-center justify-center border-0"
+      >
         <EmptyContent>
           <EmptyMedia variant="icon" class="bg-primary/10 text-primary">
             <Dumbbell class="size-6" />
@@ -156,9 +178,6 @@ function handleSaveExercise(data: { name: string, equipment: string, targetReps:
     />
 
     <!-- Finish Workout Confirmation Dialog -->
-    <WorkoutFinishDialog
-      v-model:open="showFinishDialog"
-      @confirm="handleConfirmFinish"
-    />
+    <WorkoutFinishDialog v-model:open="showFinishDialog" @confirm="handleConfirmFinish" />
   </div>
 </template>

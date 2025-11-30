@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import type { Muscle } from '@/stores/exercises'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type Props = {
   open: boolean
@@ -15,13 +10,13 @@ type Props = {
 
 type Emits = {
   'update:open': [value: boolean]
-  'select': [value: Muscle]
+  select: [value: Muscle]
 }
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const muscleOptions: Array<{ value: Muscle, label: string, icon: string }> = [
+const muscleOptions: Array<{ value: Muscle; label: string; icon: string }> = [
   { value: 'chest', label: 'Chest', icon: '🏔️' },
   { value: 'back', label: 'Back', icon: '🔙' },
   { value: 'legs', label: 'Legs', icon: '🦵' },
@@ -36,23 +31,19 @@ function handleSelect(muscle: Muscle) {
 </script>
 
 <template>
-  <Dialog
-    :open="open"
-    @update:open="(val) => $emit('update:open', val)"
-  >
+  <Dialog :open="open" @update:open="(val) => $emit('update:open', val)">
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Muscle Group</DialogTitle>
-        <DialogDescription>
-          Choose the primary muscle group targeted
-        </DialogDescription>
+        <DialogDescription> Choose the primary muscle group targeted </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-2">
         <button
           v-for="option in muscleOptions"
           :key="option.value"
-          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left" :class="[
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left"
+          :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
               : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',

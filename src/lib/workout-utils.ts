@@ -3,8 +3,7 @@
  * 1RM = weight × (1 + (reps / 30))
  */
 export function calculate10RM(kg: number, reps: number): number {
-  if (kg === 0 || reps === 0)
-    return 0
+  if (kg === 0 || reps === 0) return 0
   return Math.round(kg * (1 + reps / 30) * 10) / 10
 }
 

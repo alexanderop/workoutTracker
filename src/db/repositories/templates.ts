@@ -1,10 +1,5 @@
 import { db, generateId } from '../index'
-import type {
-  DbActiveWorkout,
-  DbSet,
-  DbWorkoutExercise,
-  DbWorkoutTemplate,
-} from '../schema'
+import type { DbActiveWorkout, DbSet, DbWorkoutExercise, DbWorkoutTemplate } from '../schema'
 
 /**
  * Repository for managing workout templates.
@@ -14,10 +9,7 @@ export const templatesRepository = {
    * Get all templates, ordered by most recently used.
    */
   async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
-    return db.templates
-      .orderBy('lastUsedAt')
-      .reverse()
-      .toArray()
+    return db.templates.orderBy('lastUsedAt').reverse().toArray()
   },
 
   /**
@@ -37,7 +29,7 @@ export const templatesRepository = {
     const template: DbWorkoutTemplate = {
       id: generateId(),
       name: templateName,
-      exercises: workout.exercises.map(ex => ({
+      exercises: workout.exercises.map((ex) => ({
         exerciseDefinitionId: ex.exerciseDefinitionId,
         name: ex.name,
         equipment: ex.equipment,
@@ -63,32 +55,30 @@ export const templatesRepository = {
     }
 
     const now = Date.now()
-    const exercises: ReadonlyArray<DbWorkoutExercise> = template.exercises.map(
-      (ex, index) => {
-        const sets: ReadonlyArray<DbSet> = Array.from(
-          { length: ex.defaultSetCount },
-          (_, setIndex) => ({
-            id: generateId(),
-            kg: '',
-            reps: '',
-            rir: '',
-            status: setIndex === 0 ? 'active' : 'planned',
-            completedAt: null,
-          }),
-        )
-
-        return {
+    const exercises: ReadonlyArray<DbWorkoutExercise> = template.exercises.map((ex, index) => {
+      const sets: ReadonlyArray<DbSet> = Array.from(
+        { length: ex.defaultSetCount },
+        (_, setIndex) => ({
           id: generateId(),
-          exerciseDefinitionId: ex.exerciseDefinitionId,
-          name: ex.name,
-          equipment: ex.equipment,
-          targetReps: ex.targetReps,
-          thumbnail: ex.thumbnail,
-          orderIndex: index,
-          sets,
-        }
-      },
-    )
+          kg: '',
+          reps: '',
+          rir: '',
+          status: setIndex === 0 ? 'active' : 'planned',
+          completedAt: null,
+        }),
+      )
+
+      return {
+        id: generateId(),
+        exerciseDefinitionId: ex.exerciseDefinitionId,
+        name: ex.name,
+        equipment: ex.equipment,
+        targetReps: ex.targetReps,
+        thumbnail: ex.thumbnail,
+        orderIndex: index,
+        sets,
+      }
+    })
 
     const activeWorkout: DbActiveWorkout = {
       id: 'current',

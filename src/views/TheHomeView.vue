@@ -19,15 +19,13 @@ function startWorkout() {
       @click="startWorkout"
     >
       <CardHeader class="text-center pb-4">
-        <div class="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+        <div
+          class="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
+        >
           <Play class="w-8 h-8 text-primary ml-1" />
         </div>
-        <CardTitle class="text-2xl">
-          Start New Workout
-        </CardTitle>
-        <CardDescription>
-          Track your exercises, sets, and reps
-        </CardDescription>
+        <CardTitle class="text-2xl"> Start New Workout </CardTitle>
+        <CardDescription> Track your exercises, sets, and reps </CardDescription>
       </CardHeader>
       <CardContent class="pt-0">
         <Button class="w-full group/btn" size="lg">

@@ -40,4 +40,3 @@ onMounted(() => {
     @discard="discardWorkout"
   />
 </template>
-

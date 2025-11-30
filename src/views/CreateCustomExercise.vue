@@ -10,12 +10,7 @@ import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseForm } from '@/composables/useExerciseForm'
-import {
-  EQUIPMENT_LABELS,
-  METRICS_LABELS,
-  MUSCLE_LABELS,
-  TYPE_LABELS,
-} from '@/lib/exerciseLabels'
+import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 
 const router = useRouter()
@@ -88,8 +83,7 @@ function handleMetricsSelect(selected: Metrics) {
 }
 
 async function handleSave() {
-  if (!isNameValid.value)
-    return
+  if (!isNameValid.value) return
 
   await exercisesStore.addExercise(getFormData())
   router.back()
@@ -99,23 +93,12 @@ async function handleSave() {
 <template>
   <div class="min-h-screen bg-background text-foreground flex flex-col">
     <!-- Header -->
-    <div class="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between gap-4 z-10">
-      <Button
-        variant="ghost"
-        size="icon"
-        @click="router.back()"
-      >
-        ← Back
-      </Button>
-      <h1 class="text-lg font-semibold flex-1">
-        Create Exercise
-      </h1>
-      <Button
-        :disabled="isSaveDisabled"
-        @click="handleSave"
-      >
-        Save
-      </Button>
+    <div
+      class="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between gap-4 z-10"
+    >
+      <Button variant="ghost" size="icon" @click="router.back()"> ← Back </Button>
+      <h1 class="text-lg font-semibold flex-1">Create Exercise</h1>
+      <Button :disabled="isSaveDisabled" @click="handleSave"> Save </Button>
     </div>
 
     <!-- Main Content -->
@@ -167,12 +150,7 @@ async function handleSave() {
     </div>
 
     <!-- Hidden emoji input -->
-    <input
-      id="emoji-input"
-      type="text"
-      class="hidden"
-      @change="handleEmojiChange"
-    >
+    <input id="emoji-input" type="text" class="hidden" @change="handleEmojiChange" />
 
     <!-- Selection Modals -->
     <ExerciseEquipmentSelector

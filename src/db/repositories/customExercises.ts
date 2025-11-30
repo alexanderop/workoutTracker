@@ -50,10 +50,7 @@ export const customExercisesRepository = {
    * Check if an exercise with the given name exists.
    */
   async existsByName(name: string): Promise<boolean> {
-    const count = await db.customExercises
-      .where('name')
-      .equalsIgnoreCase(name)
-      .count()
+    const count = await db.customExercises.where('name').equalsIgnoreCase(name).count()
     return count > 0
   },
 
@@ -63,7 +60,7 @@ export const customExercisesRepository = {
   async searchByName(query: string): Promise<ReadonlyArray<DbCustomExercise>> {
     const lowerQuery = query.toLowerCase()
     return db.customExercises
-      .filter(exercise => exercise.name.toLowerCase().includes(lowerQuery))
+      .filter((exercise) => exercise.name.toLowerCase().includes(lowerQuery))
       .toArray()
   },
 }

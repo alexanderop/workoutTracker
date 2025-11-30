@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import type { Metrics } from '@/stores/exercises'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type Props = {
   open: boolean
@@ -15,18 +10,30 @@ type Props = {
 
 type Emits = {
   'update:open': [value: boolean]
-  'select': [value: Metrics]
+  select: [value: Metrics]
 }
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const metricsOptions: Array<{ value: Metrics, label: string, description: string }> = [
-  { value: 'weight-reps', label: 'Weight + Reps', description: 'Standard lifting (e.g., 5kg x 10 reps)' },
+const metricsOptions: Array<{ value: Metrics; label: string; description: string }> = [
+  {
+    value: 'weight-reps',
+    label: 'Weight + Reps',
+    description: 'Standard lifting (e.g., 5kg x 10 reps)',
+  },
   { value: 'reps-only', label: 'Reps Only', description: 'Bodyweight volume (e.g., 10 reps)' },
   { value: 'duration', label: 'Duration', description: 'Time-based (e.g., Planks for 60 seconds)' },
-  { value: 'distance-duration', label: 'Distance + Duration', description: 'Cardio (e.g., 5km in 30 mins)' },
-  { value: 'weight-distance', label: 'Weight + Distance', description: 'Combined (e.g., Sled Push 100m)' },
+  {
+    value: 'distance-duration',
+    label: 'Distance + Duration',
+    description: 'Cardio (e.g., 5km in 30 mins)',
+  },
+  {
+    value: 'weight-distance',
+    label: 'Weight + Distance',
+    description: 'Combined (e.g., Sled Push 100m)',
+  },
 ]
 
 function handleSelect(metrics: Metrics) {
@@ -35,10 +42,7 @@ function handleSelect(metrics: Metrics) {
 </script>
 
 <template>
-  <Dialog
-    :open="open"
-    @update:open="(val) => $emit('update:open', val)"
-  >
+  <Dialog :open="open" @update:open="(val) => $emit('update:open', val)">
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Tracking Method</DialogTitle>
@@ -51,7 +55,8 @@ function handleSelect(metrics: Metrics) {
         <button
           v-for="option in metricsOptions"
           :key="option.value"
-          class="w-full text-left px-4 py-3 rounded-lg border transition-all" :class="[
+          class="w-full text-left px-4 py-3 rounded-lg border transition-all"
+          :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
               : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
@@ -67,7 +72,9 @@ function handleSelect(metrics: Metrics) {
                 {{ option.description }}
               </p>
             </div>
-            <span v-if="selected === option.value" class="text-primary text-lg flex-shrink-0">✓</span>
+            <span v-if="selected === option.value" class="text-primary text-lg flex-shrink-0"
+              >✓</span
+            >
           </div>
         </button>
       </div>

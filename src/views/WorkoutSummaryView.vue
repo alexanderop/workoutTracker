@@ -33,8 +33,8 @@ const stats = computed(() => {
     return { duration: 0, exerciseCount: 0, setCount: 0, totalWeight: 0 }
   }
 
-  const completedSets = workout.value.exercises.flatMap(e =>
-    e.sets.filter(s => s.status === 'completed'),
+  const completedSets = workout.value.exercises.flatMap((e) =>
+    e.sets.filter((s) => s.status === 'completed'),
   )
 
   const totalWeight = completedSets.reduce((sum, set) => {
@@ -52,18 +52,18 @@ const stats = computed(() => {
 })
 
 // Animated counters with staggered delays
-const { displayValue: animatedExercises } = useAnimatedCounter(
-  () => stats.value.exerciseCount,
-  { delay: 600, duration: 1200 },
-)
-const { displayValue: animatedSets } = useAnimatedCounter(
-  () => stats.value.setCount,
-  { delay: 750, duration: 1200 },
-)
-const { displayValue: animatedWeight } = useAnimatedCounter(
-  () => stats.value.totalWeight,
-  { delay: 900, duration: 1500 },
-)
+const { displayValue: animatedExercises } = useAnimatedCounter(() => stats.value.exerciseCount, {
+  delay: 600,
+  duration: 1200,
+})
+const { displayValue: animatedSets } = useAnimatedCounter(() => stats.value.setCount, {
+  delay: 750,
+  duration: 1200,
+})
+const { displayValue: animatedWeight } = useAnimatedCounter(() => stats.value.totalWeight, {
+  delay: 900,
+  duration: 1500,
+})
 
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600)
@@ -109,30 +109,21 @@ function handleDone() {
         ]"
         :style="{
           left: `${(i * 5) % 100}%`,
-          animationDelay: `${(i * 0.1)}s`,
+          animationDelay: `${i * 0.1}s`,
           animationDuration: `${2 + (i % 3)}s`,
         }"
       />
     </div>
 
     <!-- Loading state -->
-    <div
-      v-if="isLoading"
-      class="flex-1 flex items-center justify-center"
-    >
+    <div v-if="isLoading" class="flex-1 flex items-center justify-center">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
     <!-- Content -->
-    <div
-      v-else-if="workout"
-      class="flex-1 flex flex-col items-center justify-center p-6 gap-8"
-    >
+    <div v-else-if="workout" class="flex-1 flex flex-col items-center justify-center p-6 gap-8">
       <!-- Trophy icon with bounce animation -->
-      <div
-        class="relative"
-        :class="showContent ? 'animate-bounce-in' : 'opacity-0'"
-      >
+      <div class="relative" :class="showContent ? 'animate-bounce-in' : 'opacity-0'">
         <div class="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
           <Trophy class="w-12 h-12 text-primary" />
         </div>
@@ -146,9 +137,7 @@ function handleDone() {
         :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
         :style="{ animationDelay: '200ms' }"
       >
-        <h1 class="text-3xl font-bold tracking-tight mb-2">
-          Workout Complete!
-        </h1>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Workout Complete!</h1>
         <p class="text-muted-foreground text-lg">
           {{ workout.name }}
         </p>
@@ -168,9 +157,7 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatDuration(stats.duration) }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
-            Duration
-          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Duration</div>
         </Card>
 
         <!-- Exercises -->
@@ -185,9 +172,7 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedExercises }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
-            Exercises
-          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Exercises</div>
         </Card>
 
         <!-- Sets -->
@@ -202,9 +187,7 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedSets }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
-            Sets
-          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Sets</div>
         </Card>
 
         <!-- Total Weight -->
@@ -219,23 +202,16 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatWeight(animatedWeight) }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
-            kg lifted
-          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">kg lifted</div>
         </Card>
       </div>
     </div>
 
     <!-- Not found state -->
-    <div
-      v-else
-      class="flex-1 flex items-center justify-center"
-    >
+    <div v-else class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <p class="text-muted-foreground mb-4">Workout not found</p>
-        <Button @click="handleDone">
-          Go Home
-        </Button>
+        <Button @click="handleDone"> Go Home </Button>
       </div>
     </div>
 
@@ -246,11 +222,7 @@ function handleDone() {
       :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '1000ms' }"
     >
-      <Button
-        class="w-full h-12 text-base font-semibold"
-        size="lg"
-        @click="handleDone"
-      >
+      <Button class="w-full h-12 text-base font-semibold" size="lg" @click="handleDone">
         Done
       </Button>
     </div>

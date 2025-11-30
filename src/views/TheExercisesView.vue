@@ -18,10 +18,10 @@ const filteredExercises = computed(() => {
   }
   const query = searchQuery.value.toLowerCase()
   return popularExercises.filter(
-    ex =>
-      ex.name.toLowerCase().includes(query)
-      || ex.muscle.toLowerCase().includes(query)
-      || ex.equipment.toLowerCase().includes(query),
+    (ex) =>
+      ex.name.toLowerCase().includes(query) ||
+      ex.muscle.toLowerCase().includes(query) ||
+      ex.equipment.toLowerCase().includes(query),
   )
 })
 
@@ -34,18 +34,16 @@ function handleCreateExercise() {
   <div class="flex-1 p-4">
     <Card class="mb-6">
       <CardContent class="pt-6">
-        <h1 class="text-3xl font-bold mb-2">
-          Exercises
-        </h1>
-        <p class="text-muted-foreground">
-          Browse and manage your exercises
-        </p>
+        <h1 class="text-3xl font-bold mb-2">Exercises</h1>
+        <p class="text-muted-foreground">Browse and manage your exercises</p>
       </CardContent>
     </Card>
 
     <!-- Search Input -->
     <div class="relative mb-4">
-      <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+      <Search
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+      />
       <Input
         v-model="searchQuery"
         placeholder="Search exercises..."
@@ -62,7 +60,9 @@ function handleCreateExercise() {
           class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-muted/50 group"
           :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
         >
-          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{ exercise.icon }}</span>
+          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
+            exercise.icon
+          }}</span>
           <div class="min-w-0 flex-1">
             <p class="font-medium text-[15px] truncate">
               {{ exercise.name }}
@@ -81,18 +81,14 @@ function handleCreateExercise() {
         <!-- Empty Search State -->
         <div v-if="filteredExercises.length === 0" class="text-center py-12">
           <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-          <p class="text-sm text-muted-foreground">
-            No exercises found for "{{ searchQuery }}"
-          </p>
+          <p class="text-sm text-muted-foreground">No exercises found for "{{ searchQuery }}"</p>
         </div>
       </CardContent>
     </Card>
 
     <!-- Create Custom Exercise Button -->
     <div class="mt-6">
-      <Button class="w-full" @click="handleCreateExercise">
-        + Create Custom Exercise
-      </Button>
+      <Button class="w-full" @click="handleCreateExercise"> + Create Custom Exercise </Button>
     </div>
   </div>
 </template>

@@ -26,24 +26,16 @@ const exerciseText = computed(() =>
       <DialogHeader>
         <DialogTitle>Resume Workout?</DialogTitle>
         <DialogDescription>
-          You have an unfinished workout: <strong>{{ workoutName }}</strong> with {{ exerciseText }}.
+          You have an unfinished workout: <strong>{{ workoutName }}</strong> with
+          {{ exerciseText }}.
         </DialogDescription>
       </DialogHeader>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button
-          variant="outline"
-          class="w-full sm:w-auto"
-          @click="emit('discard')"
-        >
+        <Button variant="outline" class="w-full sm:w-auto" @click="emit('discard')">
           Discard
         </Button>
-        <Button
-          class="w-full sm:w-auto"
-          @click="emit('resume')"
-        >
-          Resume Workout
-        </Button>
+        <Button class="w-full sm:w-auto" @click="emit('resume')"> Resume Workout </Button>
       </div>
     </MobileDialogContent>
   </Dialog>

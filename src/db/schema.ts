@@ -101,9 +101,9 @@ export type DbWorkoutTemplate = {
  * User settings with discriminated union for type safety.
  */
 export type DbUserSetting =
-  | { key: 'theme', value: 'light' | 'dark' | 'system' }
-  | { key: 'defaultRestTimer', value: number }
-  | { key: 'weightUnit', value: 'kg' | 'lbs' }
-  | { key: 'autoSaveInterval', value: number }
+  | { key: 'theme'; value: 'light' | 'dark' | 'system' }
+  | { key: 'defaultRestTimer'; value: number }
+  | { key: 'weightUnit'; value: 'kg' | 'lbs' }
+  | { key: 'autoSaveInterval'; value: number }
 
 export type UserSettingKey = DbUserSetting['key']

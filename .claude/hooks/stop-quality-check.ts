@@ -61,6 +61,17 @@ function main(): void {
   const results: string[] = []
   let hasErrors = false
 
+  // Run format first (before other checks)
+  const format = runCommand('pnpm format', 'Format')
+  if (!format.success) {
+    hasErrors = true
+    results.push('❌ Format failed:')
+    results.push(format.output)
+  }
+  else {
+    results.push('✅ Format completed')
+  }
+
   // Run type check
   const typeCheck = runCommand('pnpm type-check', 'Type check')
   if (!typeCheck.success) {

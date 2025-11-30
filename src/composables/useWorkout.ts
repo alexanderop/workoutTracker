@@ -29,9 +29,9 @@ export type Workout = {
 }
 
 export type CompleteSetResult =
-  | { kind: 'completed', nextAction: 'next-set', exerciseId: number, setId: number }
-  | { kind: 'completed', nextAction: 'next-exercise', exerciseId: number }
-  | { kind: 'completed', nextAction: 'workout-complete' }
+  | { kind: 'completed'; nextAction: 'next-set'; exerciseId: number; setId: number }
+  | { kind: 'completed'; nextAction: 'next-exercise'; exerciseId: number }
+  | { kind: 'completed'; nextAction: 'workout-complete' }
   | { kind: 'uncompleted' }
 
 export function isSetReady(set: Readonly<Set>): boolean {
@@ -75,11 +75,8 @@ export function getWorkoutRef() {
 }
 
 export function useWorkout() {
-
   const selectedExercise = computed(() => {
-    return workout.value.exercises.find(
-      ex => ex.id === workout.value.selectedExerciseId,
-    )
+    return workout.value.exercises.find((ex) => ex.id === workout.value.selectedExerciseId)
   })
 
   function selectExercise(exerciseId: number) {
@@ -103,7 +100,7 @@ export function useWorkout() {
 
     // Find current exercise - use selectedExerciseId since set IDs are not globally unique
     const currentExercise = workout.value.exercises.find(
-      ex => ex.id === workout.value.selectedExerciseId && ex.sets.some(s => s.id === set.id),
+      (ex) => ex.id === workout.value.selectedExerciseId && ex.sets.some((s) => s.id === set.id),
     )
     if (!currentExercise) {
       return { kind: 'completed', nextAction: 'workout-complete' }
@@ -111,7 +108,7 @@ export function useWorkout() {
 
     // Find next incomplete set in current exercise
     const nextSet = currentExercise.sets.find(
-      s => s.status === 'planned' || s.status === 'active',
+      (s) => s.status === 'planned' || s.status === 'active',
     )
 
     if (nextSet) {
@@ -130,15 +127,13 @@ export function useWorkout() {
     }
 
     // No more sets - find next exercise
-    const currentIndex = workout.value.exercises.findIndex(
-      ex => ex.id === currentExercise.id,
-    )
+    const currentIndex = workout.value.exercises.findIndex((ex) => ex.id === currentExercise.id)
     const nextExercise = workout.value.exercises[currentIndex + 1]
 
     if (nextExercise) {
       workout.value.selectedExerciseId = nextExercise.id
       const firstSet = nextExercise.sets.find(
-        s => s.status === 'planned' || s.status === 'active',
+        (s) => s.status === 'planned' || s.status === 'active',
       )
       if (firstSet) {
         firstSet.status = 'active'
@@ -155,15 +150,14 @@ export function useWorkout() {
   }
 
   function addExercise(name: string) {
-    if (!name.trim())
-      return
+    if (!name.trim()) return
 
     const exercisesStore = useExercisesStore()
-    const popularExercise = popularExercises.find(e => e.name === name)
-    const customExercise = exercisesStore.customExercises.find(e => e.name === name)
+    const popularExercise = popularExercises.find((e) => e.name === name)
+    const customExercise = exercisesStore.customExercises.find((e) => e.name === name)
     const icon = popularExercise?.icon ?? customExercise?.icon ?? '🆕'
 
-    const ids = workout.value.exercises.map(e => e.id)
+    const ids = workout.value.exercises.map((e) => e.id)
     const newExercise: Exercise = {
       id: ids.length > 0 ? Math.max(...ids) + 1 : 1,
       name,
@@ -182,7 +176,7 @@ export function useWorkout() {
   }
 
   function removeExercise(exerciseId: number) {
-    const filtered = workout.value.exercises.filter(e => e.id !== exerciseId)
+    const filtered = workout.value.exercises.filter((e) => e.id !== exerciseId)
     if (filtered.length !== workout.value.exercises.length) {
       workout.value.exercises = filtered
       if (workout.value.selectedExerciseId === exerciseId) {
@@ -193,7 +187,7 @@ export function useWorkout() {
 
   function updateExercise(updates: Partial<Pick<Exercise, 'name' | 'equipment' | 'targetReps'>>) {
     const exercise = workout.value.exercises.find(
-      ex => ex.id === workout.value.selectedExerciseId,
+      (ex) => ex.id === workout.value.selectedExerciseId,
     )
     if (exercise) {
       Object.assign(exercise, updates)
@@ -201,29 +195,32 @@ export function useWorkout() {
   }
 
   function addSet(exerciseId: number) {
-    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    const exercise = workout.value.exercises.find((ex) => ex.id === exerciseId)
     if (!exercise) return
 
-    const setIds = exercise.sets.map(s => s.id)
+    const setIds = exercise.sets.map((s) => s.id)
     const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
-    exercise.sets = [...exercise.sets, {
-      id: newId,
-      kg: '',
-      reps: '',
-      rir: '',
-      status: 'planned',
-    }]
+    exercise.sets = [
+      ...exercise.sets,
+      {
+        id: newId,
+        kg: '',
+        reps: '',
+        rir: '',
+        status: 'planned',
+      },
+    ]
   }
 
   function removeSet(exerciseId: number, setId: number) {
-    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    const exercise = workout.value.exercises.find((ex) => ex.id === exerciseId)
     if (!exercise || exercise.sets.length <= 1) return
 
-    exercise.sets = exercise.sets.filter(s => s.id !== setId)
+    exercise.sets = exercise.sets.filter((s) => s.id !== setId)
   }
 
   function setSetCount(exerciseId: number, count: number) {
-    const exercise = workout.value.exercises.find(ex => ex.id === exerciseId)
+    const exercise = workout.value.exercises.find((ex) => ex.id === exerciseId)
     if (!exercise) return
 
     const targetCount = Math.max(1, count)
@@ -247,7 +244,7 @@ export function useWorkout() {
     const exercise = selectedExercise.value
     if (!exercise) return
 
-    const set = exercise.sets.find(s => s.id === setId)
+    const set = exercise.sets.find((s) => s.id === setId)
     if (set) {
       set[field] = value !== undefined ? String(value) : ''
     }

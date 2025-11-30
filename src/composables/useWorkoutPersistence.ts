@@ -15,7 +15,7 @@ export type PersistenceState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'saving' }
-  | { status: 'error', error: Error }
+  | { status: 'error'; error: Error }
 
 // Track the startedAt timestamp for the current workout session
 let currentWorkoutStartedAt: number | null = null
@@ -60,8 +60,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
         await activeWorkoutRepository.save(dbWorkout)
         hasUnsavedChanges.value = false
         persistenceState.value = { status: 'idle' }
-      }
-      catch (error) {
+      } catch (error) {
         persistenceState.value = {
           status: 'error',
           error: error instanceof Error ? error : new Error('Save failed'),
@@ -86,8 +85,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
         return dbToWorkout(dbWorkout)
       }
       return null
-    }
-    catch (error) {
+    } catch (error) {
       persistenceState.value = {
         status: 'error',
         error: error instanceof Error ? error : new Error('Load failed'),
@@ -154,8 +152,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
       await activeWorkoutRepository.save(dbWorkout)
       hasUnsavedChanges.value = false
       persistenceState.value = { status: 'idle' }
-    }
-    catch (error) {
+    } catch (error) {
       persistenceState.value = {
         status: 'error',
         error: error instanceof Error ? error : new Error('Save failed'),

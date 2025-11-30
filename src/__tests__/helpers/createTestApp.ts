@@ -64,7 +64,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   function getDialogButton(text: string): HTMLElement {
     const dialog = screen.getByRole('dialog')
     const buttons = dialog.querySelectorAll('button')
-    const btn = Array.from(buttons).find(b => b.textContent?.includes(text))
+    const btn = Array.from(buttons).find((b) => b.textContent?.includes(text))
     if (!btn) {
       throw new Error(`Dialog button with text "${text}" not found`)
     }
@@ -81,9 +81,10 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   function getCarouselExerciseButtons(): ReadonlyArray<HTMLElement> {
     // Get all exercise buttons in the carousel (exclude the "Add exercise" button)
     const allButtons = screen.getAllByRole('button')
-    return allButtons.filter(btn =>
-      btn.getAttribute('aria-pressed') !== null
-      && btn.getAttribute('aria-label') !== 'Add exercise',
+    return allButtons.filter(
+      (btn) =>
+        btn.getAttribute('aria-pressed') !== null &&
+        btn.getAttribute('aria-label') !== 'Add exercise',
     )
   }
 

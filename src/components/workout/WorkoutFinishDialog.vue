@@ -32,19 +32,8 @@ function handleConfirm() {
       </DialogHeader>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button
-          variant="outline"
-          class="w-full sm:w-auto"
-          @click="handleCancel"
-        >
-          Cancel
-        </Button>
-        <Button
-          class="w-full sm:w-auto"
-          @click="handleConfirm"
-        >
-          Finish Workout
-        </Button>
+        <Button variant="outline" class="w-full sm:w-auto" @click="handleCancel"> Cancel </Button>
+        <Button class="w-full sm:w-auto" @click="handleConfirm"> Finish Workout </Button>
       </div>
     </MobileDialogContent>
   </Dialog>

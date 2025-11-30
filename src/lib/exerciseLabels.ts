@@ -1,13 +1,13 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 
 export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
-  'barbell': 'Barbell',
-  'dumbbell': 'Dumbbell',
-  'machine': 'Machine',
-  'cable': 'Cable',
-  'bodyweight': 'Bodyweight',
-  'kettlebell': 'Kettlebell',
-  'band': 'Band',
+  barbell: 'Barbell',
+  dumbbell: 'Dumbbell',
+  machine: 'Machine',
+  cable: 'Cable',
+  bodyweight: 'Bodyweight',
+  kettlebell: 'Kettlebell',
+  band: 'Band',
   'ez-bar': 'EZ Bar',
   'hex-bar': 'Hex Bar',
 } as const
@@ -31,7 +31,7 @@ export const TYPE_LABELS: Readonly<Record<ExerciseType, string>> = {
 export const METRICS_LABELS: Readonly<Record<Metrics, string>> = {
   'weight-reps': 'Weight + Reps',
   'reps-only': 'Reps Only',
-  'duration': 'Duration',
+  duration: 'Duration',
   'distance-duration': 'Distance + Duration',
   'weight-distance': 'Weight + Distance',
 } as const

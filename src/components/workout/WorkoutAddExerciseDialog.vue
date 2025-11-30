@@ -5,12 +5,7 @@ import { useRouter } from 'vue-router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { popularExercises } from '@/data/popularExercises'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
@@ -21,7 +16,7 @@ type Props = {
 
 type Emits = {
   'update:open': [value: boolean]
-  'add': [name: string]
+  add: [name: string]
 }
 
 defineProps<Props>()
@@ -35,9 +30,7 @@ const filteredExercises = computed(() => {
     return popularExercises
   }
   const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter(ex =>
-    ex.name.toLowerCase().includes(query),
-  )
+  return popularExercises.filter((ex) => ex.name.toLowerCase().includes(query))
 })
 
 function handleSelectExercise(exerciseName: string) {
@@ -72,7 +65,9 @@ function handleOpenChange(value: boolean) {
 
       <!-- Search Input -->
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <Search
+          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+        />
         <Input
           v-model="searchQuery"
           placeholder="Search exercises..."
@@ -90,7 +85,9 @@ function handleOpenChange(value: boolean) {
           :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
           @click="handleSelectExercise(exercise.name)"
         >
-          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{ exercise.icon }}</span>
+          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
+            exercise.icon
+          }}</span>
           <div class="min-w-0 flex-1">
             <p class="font-medium text-[15px] truncate">
               {{ exercise.name }}
@@ -99,25 +96,22 @@ function handleOpenChange(value: boolean) {
               {{ MUSCLE_LABELS[exercise.muscle] }}
             </Badge>
           </div>
-          <span class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform">›</span>
+          <span
+            class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform"
+            >›</span
+          >
         </button>
 
         <!-- Empty State -->
         <div v-if="filteredExercises.length === 0" class="text-center py-12">
           <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-          <p class="text-sm text-muted-foreground">
-            No exercises found for "{{ searchQuery }}"
-          </p>
+          <p class="text-sm text-muted-foreground">No exercises found for "{{ searchQuery }}"</p>
         </div>
       </div>
 
       <!-- Create Custom Exercise Button -->
       <div class="pt-4 border-t border-border">
-        <Button
-          variant="default"
-          class="w-full"
-          @click="handleCreateNew"
-        >
+        <Button variant="default" class="w-full" @click="handleCreateNew">
           + Create Custom Exercise
         </Button>
       </div>

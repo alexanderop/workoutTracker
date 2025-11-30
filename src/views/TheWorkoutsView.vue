@@ -37,33 +37,19 @@ function formatDuration(seconds: number): string {
   <div class="flex-1 p-4">
     <Card class="mb-6">
       <CardContent class="pt-6">
-        <h1 class="text-3xl font-bold mb-2">
-          Workouts
-        </h1>
-        <p class="text-muted-foreground">
-          View and manage your workouts
-        </p>
+        <h1 class="text-3xl font-bold mb-2">Workouts</h1>
+        <p class="text-muted-foreground">View and manage your workouts</p>
       </CardContent>
     </Card>
 
     <!-- Loading state -->
-    <div
-      v-if="isLoading"
-      class="flex items-center justify-center py-8"
-    >
+    <div v-if="isLoading" class="flex items-center justify-center py-8">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
     <!-- Workout list -->
-    <div
-      v-else-if="workouts.length > 0"
-      class="grid gap-3"
-    >
-      <Card
-        v-for="workout in workouts"
-        :key="workout.id"
-        class="p-4"
-      >
+    <div v-else-if="workouts.length > 0" class="grid gap-3">
+      <Card v-for="workout in workouts" :key="workout.id" class="p-4">
         <div class="flex justify-between items-center">
           <div>
             <div class="font-medium">{{ workout.name }}</div>
@@ -77,10 +63,7 @@ function formatDuration(seconds: number): string {
     </div>
 
     <!-- Empty state -->
-    <div
-      v-else
-      class="grid gap-4"
-    >
+    <div v-else class="grid gap-4">
       <Empty>
         <EmptyHeader>
           <EmptyTitle>No workouts yet</EmptyTitle>

@@ -1,11 +1,6 @@
 import type { Exercise, Set, Workout } from '@/composables/useWorkout'
 import type { CustomExercise } from '@/stores/exercises'
-import type {
-  DbActiveWorkout,
-  DbCustomExercise,
-  DbSet,
-  DbWorkoutExercise,
-} from './schema'
+import type { DbActiveWorkout, DbCustomExercise, DbSet, DbWorkoutExercise } from './schema'
 import { generateId } from './index'
 
 // ============================================
@@ -78,11 +73,9 @@ export function workoutToDb(
 ): DbActiveWorkout {
   // Find selected exercise's string ID
   const selectedExerciseIndex = workout.exercises.findIndex(
-    ex => ex.id === workout.selectedExerciseId,
+    (ex) => ex.id === workout.selectedExerciseId,
   )
-  const selectedExerciseDbId = selectedExerciseIndex >= 0
-    ? String(workout.selectedExerciseId)
-    : ''
+  const selectedExerciseDbId = selectedExerciseIndex >= 0 ? String(workout.selectedExerciseId) : ''
 
   return {
     id: 'current',
@@ -104,11 +97,10 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
 
   // Find selected exercise ID from db string ID
   const selectedIndex = dbWorkout.exercises.findIndex(
-    ex => ex.id === dbWorkout.selectedExerciseId,
+    (ex) => ex.id === dbWorkout.selectedExerciseId,
   )
-  const selectedExerciseId = selectedIndex >= 0
-    ? sortedExercises[selectedIndex]?.id ?? 0
-    : sortedExercises[0]?.id ?? 0
+  const selectedExerciseId =
+    selectedIndex >= 0 ? (sortedExercises[selectedIndex]?.id ?? 0) : (sortedExercises[0]?.id ?? 0)
 
   return {
     id: 1,

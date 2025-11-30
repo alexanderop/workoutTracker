@@ -11,8 +11,8 @@ import { useWorkoutPersistence } from './useWorkoutPersistence'
 export type InitState =
   | { status: 'loading' }
   | { status: 'ready' }
-  | { status: 'prompt-resume', workoutName: string, exerciseCount: number }
-  | { status: 'error', error: Error }
+  | { status: 'prompt-resume'; workoutName: string; exerciseCount: number }
+  | { status: 'error'; error: Error }
 
 const initState = ref<InitState>({ status: 'loading' })
 const isInitialized = computed(() => initState.value.status === 'ready')
@@ -52,8 +52,7 @@ export function useAppInitialization() {
       }
 
       initState.value = { status: 'ready' }
-    }
-    catch (error) {
+    } catch (error) {
       initState.value = {
         status: 'error',
         error: error instanceof Error ? error : new Error('Initialization failed'),

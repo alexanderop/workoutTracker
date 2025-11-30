@@ -25,9 +25,12 @@ const sortableContainer = useTemplateRef<HTMLElement>('sortableContainer')
 // Must use ref (not computed) because useSortable writes to the array during drag operations
 const exercisesList = ref([...props.exercises])
 
-watch(() => props.exercises, (newExercises) => {
-  exercisesList.value = [...newExercises]
-})
+watch(
+  () => props.exercises,
+  (newExercises) => {
+    exercisesList.value = [...newExercises]
+  },
+)
 
 useSortable(sortableContainer, exercisesList, {
   animation: 150,
@@ -45,18 +48,16 @@ useSortable(sortableContainer, exercisesList, {
   <div class="px-4 pt-4 pb-2">
     <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       <div ref="sortableContainer" class="flex gap-2">
-        <div
-          v-for="exercise in exercisesList"
-          :key="exercise.id"
-          class="relative flex-shrink-0"
-        >
+        <div v-for="exercise in exercisesList" :key="exercise.id" class="relative flex-shrink-0">
           <Button
             :variant="exercise.id === selectedId ? 'default' : 'secondary'"
             :aria-pressed="exercise.id === selectedId"
-            :class="cn(
-              'h-[72px] w-[72px] rounded-xl flex flex-col items-center justify-center relative touch-manipulation p-1',
-              exercise.id === selectedId && 'ring-2 ring-primary',
-            )"
+            :class="
+              cn(
+                'h-[72px] w-[72px] rounded-xl flex flex-col items-center justify-center relative touch-manipulation p-1',
+                exercise.id === selectedId && 'ring-2 ring-primary',
+              )
+            "
             :title="exercise.name"
             @click="emit('select', exercise.id)"
           >

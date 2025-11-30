@@ -3,10 +3,24 @@ import { ref } from 'vue'
 import { customExercisesRepository } from '@/db/repositories/customExercises'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
 
-export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'kettlebell' | 'band' | 'ez-bar' | 'hex-bar'
+export type Equipment =
+  | 'barbell'
+  | 'dumbbell'
+  | 'machine'
+  | 'cable'
+  | 'bodyweight'
+  | 'kettlebell'
+  | 'band'
+  | 'ez-bar'
+  | 'hex-bar'
 export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
 export type ExerciseType = 'compound' | 'isolation' | 'stability' | 'cardio'
-export type Metrics = 'weight-reps' | 'reps-only' | 'duration' | 'distance-duration' | 'weight-distance'
+export type Metrics =
+  | 'weight-reps'
+  | 'reps-only'
+  | 'duration'
+  | 'distance-duration'
+  | 'weight-distance'
 
 export type CustomExercise = {
   id: string
@@ -36,8 +50,7 @@ export const useExercisesStore = defineStore('exercises', () => {
       const dbExercises = await customExercisesRepository.getAll()
       customExercises.value = dbExercises.map(dbToCustomExercise)
       isLoaded.value = true
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -60,7 +73,7 @@ export const useExercisesStore = defineStore('exercises', () => {
   }
 
   function getExerciseById(id: string): CustomExercise | undefined {
-    return customExercises.value.find(e => e.id === id)
+    return customExercises.value.find((e) => e.id === id)
   }
 
   function getAllExercises(): Array<CustomExercise> {
@@ -72,7 +85,7 @@ export const useExercisesStore = defineStore('exercises', () => {
    */
   async function deleteExercise(id: string): Promise<void> {
     await customExercisesRepository.delete(id)
-    customExercises.value = customExercises.value.filter(e => e.id !== id)
+    customExercises.value = customExercises.value.filter((e) => e.id !== id)
   }
 
   return {

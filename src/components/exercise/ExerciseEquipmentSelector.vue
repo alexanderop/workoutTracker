@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import type { Equipment } from '@/stores/exercises'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type Props = {
   open: boolean
@@ -15,13 +10,13 @@ type Props = {
 
 type Emits = {
   'update:open': [value: boolean]
-  'select': [value: Equipment]
+  select: [value: Equipment]
 }
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const equipmentOptions: Array<{ value: Equipment, label: string, icon: string }> = [
+const equipmentOptions: Array<{ value: Equipment; label: string; icon: string }> = [
   { value: 'barbell', label: 'Barbell', icon: '🏋️' },
   { value: 'dumbbell', label: 'Dumbbell', icon: '🪑' },
   { value: 'machine', label: 'Machine', icon: '⚙️' },
@@ -39,23 +34,19 @@ function handleSelect(equipment: Equipment) {
 </script>
 
 <template>
-  <Dialog
-    :open="open"
-    @update:open="(val) => $emit('update:open', val)"
-  >
+  <Dialog :open="open" @update:open="(val) => $emit('update:open', val)">
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Select Equipment</DialogTitle>
-        <DialogDescription>
-          Choose the primary equipment for this exercise
-        </DialogDescription>
+        <DialogDescription> Choose the primary equipment for this exercise </DialogDescription>
       </DialogHeader>
 
       <div class="grid grid-cols-3 gap-3">
         <button
           v-for="option in equipmentOptions"
           :key="option.value"
-          class="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all" :class="[
+          class="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all"
+          :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
               : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
