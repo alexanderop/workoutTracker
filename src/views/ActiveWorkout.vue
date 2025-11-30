@@ -43,7 +43,7 @@ const timer = useRestTimer()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
-const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout } =
+const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout, saveNow } =
   useWorkoutPersistence(workoutRef)
 
 onMounted(() => {
@@ -59,7 +59,12 @@ const showAddExercise = ref(false)
 const showEditExercise = ref(false)
 const showFinishDialog = ref(false)
 
-async function handleConfirmFinish() {
+async function handleConfirmFinish(name: string) {
+  // Update workout name before persisting
+  workout.value.name = name
+
+  // Ensure workout is persisted before completing (debounce may not have fired)
+  await saveNow()
   const completed = await completeWorkout()
   if (completed) {
     resetWorkout()

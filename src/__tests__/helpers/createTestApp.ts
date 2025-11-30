@@ -10,6 +10,19 @@ type CreateTestAppOptions = {
   initialRoute?: string
 }
 
+type SetInputs = {
+  kg: HTMLElement
+  reps: HTMLElement
+  rir: HTMLElement
+  complete: HTMLElement
+}
+
+type SetValues = {
+  kg?: number
+  reps?: number
+  rir?: number
+}
+
 type TestApp = {
   router: Router
   user: ReturnType<typeof userEvent.setup>
@@ -21,9 +34,12 @@ type TestApp = {
   findByText: typeof screen.findByText
   navigateTo: (path: string) => Promise<void>
   waitForDialog: () => Promise<HTMLElement>
+  waitForRoute: (pathPattern: RegExp) => Promise<void>
   getDialogButton: (text: string) => HTMLElement
   assertDialogClosed: () => void
   getCarouselExerciseButtons: () => ReadonlyArray<HTMLElement>
+  getSetRow: (setIndex: number) => SetInputs
+  fillSet: (setIndex: number, values: SetValues) => Promise<void>
   cleanup: () => void
 }
 
@@ -61,6 +77,15 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     })
   }
 
+  async function waitForRoute(pathPattern: RegExp): Promise<void> {
+    await waitFor(() => {
+      const currentPath = router.currentRoute.value.path
+      if (!pathPattern.test(currentPath)) {
+        throw new Error(`Expected route to match ${pathPattern}, got ${currentPath}`)
+      }
+    })
+  }
+
   function getDialogButton(text: string): HTMLElement {
     const dialog = screen.getByRole('dialog')
     const buttons = dialog.querySelectorAll('button')
@@ -88,6 +113,63 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     )
   }
 
+  function getSetRow(setIndex: number): SetInputs {
+    // Get table rows and find the row at the specified index
+    const rows = document.querySelectorAll('tbody tr')
+    const row = rows[setIndex]
+    if (!row) {
+      throw new Error(`Set row at index ${setIndex} not found`)
+    }
+
+    // Get all spinbuttons (NumberFieldInput) in the row - they appear in order: kg, reps, rir
+    const spinbuttons = row.querySelectorAll('[role="spinbutton"]')
+    if (spinbuttons.length < 3) {
+      throw new Error(`Expected 3 spinbuttons in set row, found ${spinbuttons.length}`)
+    }
+
+    const kg = spinbuttons[0]
+    const reps = spinbuttons[1]
+    const rir = spinbuttons[2]
+
+    if (
+      !(kg instanceof HTMLElement) ||
+      !(reps instanceof HTMLElement) ||
+      !(rir instanceof HTMLElement)
+    ) {
+      throw new Error('Spinbutton elements are not HTMLElements')
+    }
+
+    // Get the complete button (first button with an SVG icon in the complete column)
+    const completeButton = row.querySelector('button:has(svg.lucide-check)')
+    if (!(completeButton instanceof HTMLElement)) {
+      throw new Error('Complete button not found in set row')
+    }
+
+    return {
+      kg,
+      reps,
+      rir,
+      complete: completeButton,
+    }
+  }
+
+  async function fillSet(setIndex: number, values: SetValues): Promise<void> {
+    const inputs = getSetRow(setIndex)
+
+    if (values.kg !== undefined) {
+      await user.clear(inputs.kg)
+      await user.type(inputs.kg, String(values.kg))
+    }
+    if (values.reps !== undefined) {
+      await user.clear(inputs.reps)
+      await user.type(inputs.reps, String(values.reps))
+    }
+    if (values.rir !== undefined) {
+      await user.clear(inputs.rir)
+      await user.type(inputs.rir, String(values.rir))
+    }
+  }
+
   function cleanup() {
     rtlCleanup()
   }
@@ -103,9 +185,12 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     findByText: screen.findByText,
     navigateTo,
     waitForDialog,
+    waitForRoute,
     getDialogButton,
     assertDialogClosed,
     getCarouselExerciseButtons,
+    getSetRow,
+    fillSet,
     cleanup,
   }
 }
