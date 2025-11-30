@@ -1,5 +1,6 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 import type { SetStatus } from '@/composables/useWorkout'
+import type { WorkoutMode } from '@/types/blocks'
 
 // ============================================
 // Database Types
@@ -178,6 +179,8 @@ export type DbActiveWorkout = {
   selectedBlockIndex: number
   startedAt: number
   lastModifiedAt: number
+  mode: WorkoutMode
+  activeSetIndex: number | null
 }
 
 /**

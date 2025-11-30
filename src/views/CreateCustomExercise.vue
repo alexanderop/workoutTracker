@@ -7,6 +7,7 @@ import ExerciseMetricsSelector from '@/components/exercise/ExerciseMetricsSelect
 import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector.vue'
 import ExerciseSettingsItem from '@/components/exercise/ExerciseSettingsItem.vue'
 import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
+import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseForm } from '@/composables/useExerciseForm'
@@ -91,23 +92,18 @@ async function handleSave() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background text-foreground flex flex-col">
-    <!-- Header -->
-    <div
-      class="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between gap-4 z-10"
-    >
-      <Button variant="ghost" size="icon" @click="router.back()"> ← Back </Button>
-      <h1 class="text-lg font-semibold flex-1">Create Exercise</h1>
+  <PageLayout title="Create Exercise">
+    <template #header-actions>
       <Button :disabled="isSaveDisabled" @click="handleSave"> Save </Button>
-    </div>
+    </template>
 
     <!-- Main Content -->
-    <div class="flex-1 overflow-y-auto p-4">
+    <div class="p-4">
       <!-- Icon & Name Section -->
-      <div class="flex gap-4 mb-6">
+      <div class="mb-6 flex gap-4">
         <!-- Icon Button -->
         <button
-          class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-2xl hover:bg-slate-600 transition-colors"
+          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-2xl transition-colors hover:bg-slate-600"
           @click="handleIconClick"
         >
           {{ form.icon }}
@@ -125,7 +121,7 @@ async function handleSave() {
       </div>
 
       <!-- Configuration List -->
-      <div class="space-y-0 border border-border rounded-lg overflow-hidden">
+      <div class="space-y-0 overflow-hidden rounded-lg border border-border">
         <ExerciseSettingsItem
           label="Equipment"
           :value="form.equipment ? EQUIPMENT_LABELS[form.equipment] : ''"
@@ -180,5 +176,5 @@ async function handleSave() {
       @update:open="closeModal"
       @select="handleMetricsSelect"
     />
-  </div>
+  </PageLayout>
 </template>

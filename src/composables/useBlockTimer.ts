@@ -1,502 +1,343 @@
 /**
- * Composable for managing timed block timers (AMRAP, EMOM, Tabata, For Time).
+ * Unified timer composable for timed workout blocks.
  *
- * Provides unified timer logic with block-specific state management.
+ * Provides a single API that internally dispatches to the appropriate
+ * specialized timer (AMRAP, EMOM, Tabata, For Time).
  */
 
-import { useIntervalFn } from '@vueuse/core'
-import { computed, ref, watch } from 'vue'
+import type { ComputedRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
+
 import type {
   ActiveBlockState,
   AmrapResult,
-  AmrapState,
+  BlockTimerState,
   EmomResult,
-  EmomState,
   ForTimeResult,
-  ForTimeState,
   TabataResult,
-  TabataState,
   TimedBlock,
 } from '@/types/blocks'
-import { formatTime } from '@/lib/workout-utils'
+import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
+import { useEmomTimer } from '@/composables/timers/useEmomTimer'
+import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
+import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 
-type BlockTimerConfig = {
+// --- Types ---
+
+type BlockTimerConfig = Readonly<{
   onMinuteChange?: (minute: number) => void
   onPhaseChange?: (phase: 'work' | 'rest') => void
   onRoundChange?: (round: number) => void
   onComplete?: () => void
+}>
+
+type TimerInstance =
+  | ReturnType<typeof useAmrapTimer>
+  | ReturnType<typeof useEmomTimer>
+  | ReturnType<typeof useTabataTimer>
+  | ReturnType<typeof useForTimeTimer>
+
+type TimerResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
+
+type TimerValues = Readonly<{
+  elapsedMs: number
+  elapsedSeconds: number
+  remainingSeconds: number
+  progress: number
+  formattedElapsed: string
+  formattedRemaining: string
+}>
+
+type TimerStatus = Readonly<{
+  isRunning: boolean
+  isPaused: boolean
+  isCompleted: boolean
+  isIdle: boolean
+}>
+
+type BlockSpecificValues = Readonly<{
+  currentMinute: number
+  secondsRemainingInMinute: number
+  currentRound: number
+  currentPhase: 'work' | 'rest'
+  secondsInCurrentPhase: number
+  roundsCompleted: number
+}>
+
+// --- Pure Helper Functions (Functional Core) ---
+
+function buildTimerState(timer: TimerInstance | null): BlockTimerState {
+  if (!timer) return { status: 'idle' }
+  if (timer.isCompleted.value) return { status: 'completed', startedAt: 0, completedAt: 0 }
+  if (timer.isPaused.value) return { status: 'paused', startedAt: 0, pausedAt: 0 }
+  if (timer.isRunning.value) return { status: 'running', startedAt: 0, pausedAt: null }
+  return { status: 'idle' }
 }
 
-function createInitialAmrapState(): AmrapState {
+function extractTimerValues(timer: TimerInstance | null): TimerValues {
   return {
-    timerState: { status: 'idle' },
-    rounds: 0,
-    currentExerciseIndex: 0,
+    elapsedMs: timer?.elapsedMs.value ?? 0,
+    elapsedSeconds: timer?.elapsedSeconds.value ?? 0,
+    remainingSeconds: timer?.remainingSeconds.value ?? 0,
+    progress: timer?.progress.value ?? 0,
+    formattedElapsed: timer?.formattedElapsed.value ?? '0:00',
+    formattedRemaining: timer?.formattedRemaining.value ?? '0:00',
   }
 }
 
-function createInitialEmomState(): EmomState {
+function extractTimerStatus(timer: TimerInstance | null): TimerStatus {
   return {
-    timerState: { status: 'idle' },
-    currentMinute: 1,
-    currentExerciseIndex: 0,
-    missedMinutes: [],
+    isRunning: timer?.isRunning.value ?? false,
+    isPaused: timer?.isPaused.value ?? false,
+    isCompleted: timer?.isCompleted.value ?? false,
+    isIdle: timer?.isIdle.value ?? true,
   }
 }
 
-function createInitialTabataState(): TabataState {
-  return {
-    timerState: { status: 'idle' },
-    currentRound: 1,
-    phase: 'work',
-    repsPerRound: [],
-  }
-}
-
-function createInitialForTimeState(): ForTimeState {
-  return {
-    timerState: { status: 'idle' },
-    completedExercises: [],
-  }
-}
+// --- Composable ---
 
 export function useBlockTimer(config: BlockTimerConfig = {}) {
-  // 1. Primary State
-  const activeBlock = ref<TimedBlock | null>(null)
-  const blockState = ref<ActiveBlockState | null>(null)
-  const elapsedMs = ref(0)
+  // 1. Initializing - timer instances (lazy-initialized)
+  let amrapTimer: ReturnType<typeof useAmrapTimer> | null = null
+  let emomTimer: ReturnType<typeof useEmomTimer> | null = null
+  let tabataTimer: ReturnType<typeof useTabataTimer> | null = null
+  let forTimeTimer: ReturnType<typeof useForTimeTimer> | null = null
 
-  // 2. Internal interval - updates every 100ms for smooth countdown
-  const { pause, resume, isActive } = useIntervalFn(
-    () => {
-      if (!blockState.value || blockState.value.state.timerState.status !== 'running') {
-        return
-      }
+  function getOrCreateAmrapTimer() {
+    if (!amrapTimer) {
+      amrapTimer = useAmrapTimer({ onComplete: config.onComplete })
+    }
+    return amrapTimer
+  }
 
-      const now = Date.now()
-      const { startedAt } = blockState.value.state.timerState
-      elapsedMs.value = now - startedAt
+  function getOrCreateEmomTimer() {
+    if (!emomTimer) {
+      emomTimer = useEmomTimer({
+        onMinuteChange: config.onMinuteChange,
+        onComplete: config.onComplete,
+      })
+    }
+    return emomTimer
+  }
 
-      // Handle block-specific logic on each tick
-      handleTimerTick()
-    },
-    100,
-    { immediate: false },
+  function getOrCreateTabataTimer() {
+    if (!tabataTimer) {
+      tabataTimer = useTabataTimer({
+        onPhaseChange: config.onPhaseChange,
+        onRoundChange: config.onRoundChange,
+        onComplete: config.onComplete,
+      })
+    }
+    return tabataTimer
+  }
+
+  function getOrCreateForTimeTimer() {
+    if (!forTimeTimer) {
+      forTimeTimer = useForTimeTimer({ onComplete: config.onComplete })
+    }
+    return forTimeTimer
+  }
+
+  // 2. Primary State
+  const activeBlockKind = shallowRef<TimedBlock['kind'] | null>(null)
+
+  // 3. State Metadata - error handling
+  const error = ref<Error | null>(null)
+
+  // 4. Computed - derived state
+
+  const currentTimer = computed((): TimerInstance | null => {
+    switch (activeBlockKind.value) {
+      case 'amrap':
+        return amrapTimer
+      case 'emom':
+        return emomTimer
+      case 'tabata':
+        return tabataTimer
+      case 'fortime':
+        return forTimeTimer
+      default:
+        return null
+    }
+  })
+
+  const activeBlock = computed(() => currentTimer.value?.block.value ?? null)
+
+  // Grouped timer values
+  const timerValues: ComputedRef<TimerValues> = computed(() =>
+    extractTimerValues(currentTimer.value),
   )
 
-  // 3. Computed values
-  const isRunning = computed(() => isActive.value)
+  // Grouped timer status
+  const timerStatus: ComputedRef<TimerStatus> = computed(() =>
+    extractTimerStatus(currentTimer.value),
+  )
 
-  const elapsedSeconds = computed(() => Math.floor(elapsedMs.value / 1000))
+  // Block-specific computed values grouped
+  const blockSpecificValues: ComputedRef<BlockSpecificValues> = computed(() => ({
+    currentMinute: activeBlockKind.value === 'emom' ? (emomTimer?.currentMinute.value ?? 0) : 0,
+    secondsRemainingInMinute:
+      activeBlockKind.value === 'emom' ? (emomTimer?.secondsRemainingInMinute.value ?? 0) : 0,
+    currentRound: activeBlockKind.value === 'tabata' ? (tabataTimer?.currentRound.value ?? 0) : 0,
+    currentPhase:
+      activeBlockKind.value === 'tabata' ? (tabataTimer?.currentPhase.value ?? 'work') : 'work',
+    secondsInCurrentPhase:
+      activeBlockKind.value === 'tabata' ? (tabataTimer?.secondsInCurrentPhase.value ?? 0) : 0,
+    roundsCompleted: activeBlockKind.value === 'amrap' ? (amrapTimer?.rounds.value ?? 0) : 0,
+  }))
 
-  const remainingSeconds = computed(() => {
-    if (!activeBlock.value) return 0
+  const blockState = computed((): ActiveBlockState | null => {
+    if (!currentTimer.value) return null
 
-    switch (activeBlock.value.kind) {
+    const timerState = buildTimerState(currentTimer.value)
+
+    switch (activeBlockKind.value) {
       case 'amrap':
-        return Math.max(0, activeBlock.value.config.durationSeconds - elapsedSeconds.value)
-      case 'emom':
-        return Math.max(0, activeBlock.value.config.minutes * 60 - elapsedSeconds.value)
-      case 'tabata': {
-        const { rounds, workSeconds, restSeconds } = activeBlock.value.config
-        const totalSeconds = rounds * (workSeconds + restSeconds)
-        return Math.max(0, totalSeconds - elapsedSeconds.value)
-      }
-      case 'fortime':
-        // For Time counts up, show time cap remaining if set
-        if (activeBlock.value.config.timeCapSeconds) {
-          return Math.max(0, activeBlock.value.config.timeCapSeconds - elapsedSeconds.value)
+        return {
+          kind: 'amrap',
+          state: {
+            timerState,
+            rounds: amrapTimer?.rounds.value ?? 0,
+            currentExerciseIndex: amrapTimer?.currentExerciseIndex.value ?? 0,
+          },
         }
-        return 0
-      default: {
-        const _exhaustiveCheck: never = activeBlock.value
-        return _exhaustiveCheck
-      }
-    }
-  })
-
-  const formattedElapsed = computed(() => formatTime(elapsedSeconds.value))
-
-  const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
-
-  // Current minute for EMOM
-  const currentMinute = computed(() => {
-    if (blockState.value?.kind !== 'emom') return 0
-    return blockState.value.state.currentMinute
-  })
-
-  // Seconds remaining in current minute for EMOM
-  const secondsInCurrentMinute = computed(() => {
-    if (!activeBlock.value || activeBlock.value.kind !== 'emom') return 0
-    const secondsElapsed = elapsedSeconds.value
-    return 60 - (secondsElapsed % 60)
-  })
-
-  // Current round for Tabata
-  const currentRound = computed(() => {
-    if (blockState.value?.kind !== 'tabata') return 0
-    return blockState.value.state.currentRound
-  })
-
-  // Current phase for Tabata
-  const currentPhase = computed(() => {
-    if (blockState.value?.kind !== 'tabata') return 'work'
-    return blockState.value.state.phase
-  })
-
-  // Seconds remaining in current phase for Tabata
-  const secondsInCurrentPhase = computed(() => {
-    if (!activeBlock.value || activeBlock.value.kind !== 'tabata') return 0
-    const { workSeconds, restSeconds } = activeBlock.value.config
-    const intervalLength = workSeconds + restSeconds
-    const secondsInInterval = elapsedSeconds.value % intervalLength
-    const phase = blockState.value?.kind === 'tabata' ? blockState.value.state.phase : 'work'
-
-    if (phase === 'work') {
-      return Math.max(0, workSeconds - secondsInInterval)
-    }
-    return Math.max(0, restSeconds - (secondsInInterval - workSeconds))
-  })
-
-  // Progress percentage (0-100)
-  const progress = computed(() => {
-    if (!activeBlock.value) return 0
-
-    switch (activeBlock.value.kind) {
-      case 'amrap':
-        return Math.min(
-          100,
-          (elapsedSeconds.value / activeBlock.value.config.durationSeconds) * 100,
-        )
       case 'emom':
-        return Math.min(100, (elapsedSeconds.value / (activeBlock.value.config.minutes * 60)) * 100)
-      case 'tabata': {
-        const { rounds, workSeconds, restSeconds } = activeBlock.value.config
-        const totalSeconds = rounds * (workSeconds + restSeconds)
-        return Math.min(100, (elapsedSeconds.value / totalSeconds) * 100)
-      }
-      case 'fortime':
-        if (activeBlock.value.config.timeCapSeconds) {
-          return Math.min(
-            100,
-            (elapsedSeconds.value / activeBlock.value.config.timeCapSeconds) * 100,
-          )
+        return {
+          kind: 'emom',
+          state: {
+            timerState,
+            currentMinute: emomTimer?.currentMinute.value ?? 0,
+            currentExerciseIndex: emomTimer?.currentExerciseIndex.value ?? 0,
+            missedMinutes: emomTimer?.missedMinutes.value ?? [],
+          },
         }
-        return 0 // No progress for uncapped For Time
-      default: {
-        const _exhaustiveCheck: never = activeBlock.value
-        return _exhaustiveCheck
-      }
+      case 'tabata':
+        return {
+          kind: 'tabata',
+          state: {
+            timerState,
+            currentRound: tabataTimer?.currentRound.value ?? 0,
+            phase: tabataTimer?.currentPhase.value ?? 'work',
+            repsPerRound: tabataTimer?.repsPerRound.value ?? [],
+          },
+        }
+      case 'fortime':
+        return {
+          kind: 'fortime',
+          state: {
+            timerState,
+            completedExercises: forTimeTimer?.completedExercises.value ?? [],
+          },
+        }
+      default:
+        return null
     }
   })
 
-  // Rounds completed (AMRAP)
-  const roundsCompleted = computed(() => {
-    if (blockState.value?.kind !== 'amrap') return 0
-    return blockState.value.state.rounds
-  })
+  // 5. Methods
 
-  // 4. Methods
+  function clearError() {
+    error.value = null
+  }
+
   function initializeBlock(block: TimedBlock) {
-    activeBlock.value = block
-    elapsedMs.value = 0
+    clearError()
+    activeBlockKind.value = block.kind
 
+    // Discriminated union narrows type automatically via block.kind
     switch (block.kind) {
       case 'amrap':
-        blockState.value = { kind: 'amrap', state: createInitialAmrapState() }
+        getOrCreateAmrapTimer().initialize(block)
         break
       case 'emom':
-        blockState.value = { kind: 'emom', state: createInitialEmomState() }
+        getOrCreateEmomTimer().initialize(block)
         break
       case 'tabata':
-        blockState.value = { kind: 'tabata', state: createInitialTabataState() }
+        getOrCreateTabataTimer().initialize(block)
         break
       case 'fortime':
-        blockState.value = { kind: 'fortime', state: createInitialForTimeState() }
+        getOrCreateForTimeTimer().initialize(block)
         break
     }
   }
 
   function start() {
-    if (!blockState.value) return
-
-    const now = Date.now()
-
-    if (blockState.value.state.timerState.status === 'paused') {
-      // Resume from pause - adjust startedAt
-      const pausedDuration = now - blockState.value.state.timerState.pausedAt
-      blockState.value.state.timerState = {
-        status: 'running',
-        startedAt: blockState.value.state.timerState.startedAt + pausedDuration,
-        pausedAt: null,
-      }
-      resume()
-      return
-    }
-
-    // Fresh start
-    blockState.value.state.timerState = {
-      status: 'running',
-      startedAt: now,
-      pausedAt: null,
-    }
-    resume()
+    currentTimer.value?.start()
   }
 
-  function pauseTimer() {
-    if (!blockState.value || blockState.value.state.timerState.status !== 'running') return
-
-    const { startedAt } = blockState.value.state.timerState
-    blockState.value.state.timerState = {
-      status: 'paused',
-      startedAt,
-      pausedAt: Date.now(),
-    }
-    pause()
+  function pause() {
+    currentTimer.value?.pause()
   }
 
   function toggle() {
-    if (!blockState.value) return
-
-    if (blockState.value.state.timerState.status === 'running') {
-      pauseTimer()
-      return
-    }
-
-    start()
+    currentTimer.value?.toggle()
   }
 
   function reset() {
-    if (!activeBlock.value) return
-    pause()
-    elapsedMs.value = 0
-    initializeBlock(activeBlock.value)
+    clearError()
+    currentTimer.value?.reset()
   }
 
-  function complete(): AmrapResult | EmomResult | TabataResult | ForTimeResult | null {
-    if (!blockState.value || !activeBlock.value) return null
-
-    const now = Date.now()
-    pause()
-
-    switch (blockState.value.kind) {
-      case 'amrap': {
-        const result: AmrapResult = {
-          rounds: blockState.value.state.rounds,
-          partialReps: blockState.value.state.currentExerciseIndex,
-          actualDuration: elapsedSeconds.value,
-        }
-        blockState.value.state.timerState = {
-          status: 'completed',
-          startedAt:
-            blockState.value.state.timerState.status !== 'idle'
-              ? blockState.value.state.timerState.startedAt
-              : now,
-          completedAt: now,
-        }
-        return result
-      }
-      case 'emom': {
-        const result: EmomResult = {
-          completedMinutes: blockState.value.state.currentMinute - 1,
-          missedMinutes: blockState.value.state.missedMinutes,
-        }
-        blockState.value.state.timerState = {
-          status: 'completed',
-          startedAt:
-            blockState.value.state.timerState.status !== 'idle'
-              ? blockState.value.state.timerState.startedAt
-              : now,
-          completedAt: now,
-        }
-        return result
-      }
-      case 'tabata': {
-        const result: TabataResult = {
-          repsPerRound: blockState.value.state.repsPerRound,
-        }
-        blockState.value.state.timerState = {
-          status: 'completed',
-          startedAt:
-            blockState.value.state.timerState.status !== 'idle'
-              ? blockState.value.state.timerState.startedAt
-              : now,
-          completedAt: now,
-        }
-        return result
-      }
-      case 'fortime': {
-        const result: ForTimeResult = {
-          completionTime: elapsedSeconds.value,
-          completed: true,
-        }
-        blockState.value.state.timerState = {
-          status: 'completed',
-          startedAt:
-            blockState.value.state.timerState.status !== 'idle'
-              ? blockState.value.state.timerState.startedAt
-              : now,
-          completedAt: now,
-        }
-        return result
-      }
-    }
+  function complete(): TimerResult | null {
+    return currentTimer.value?.complete() ?? null
   }
 
-  // AMRAP-specific: increment round count
-  function incrementRound() {
-    if (blockState.value?.kind !== 'amrap') return
-    blockState.value.state.rounds++
-    blockState.value.state.currentExerciseIndex = 0
+  // Block-specific methods with error state instead of throwing
+  function incrementRound(): boolean {
+    if (activeBlockKind.value !== 'amrap') {
+      error.value = new Error('incrementRound() can only be called for AMRAP blocks')
+      return false
+    }
+    amrapTimer?.incrementRound()
+    return true
   }
 
-  // EMOM-specific: mark minute as missed
-  function markMinuteMissed(minute: number) {
-    if (blockState.value?.kind !== 'emom') return
-    if (!blockState.value.state.missedMinutes.includes(minute)) {
-      blockState.value.state.missedMinutes.push(minute)
+  function markMinuteMissed(minute: number): boolean {
+    if (activeBlockKind.value !== 'emom') {
+      error.value = new Error('markMinuteMissed() can only be called for EMOM blocks')
+      return false
     }
+    emomTimer?.markMinuteMissed(minute)
+    return true
   }
 
-  // Tabata-specific: record reps for current round
-  function recordTabataReps(reps: number) {
-    if (blockState.value?.kind !== 'tabata') return
-    const roundIndex = blockState.value.state.currentRound - 1
-    blockState.value.state.repsPerRound[roundIndex] = reps
+  function recordTabataReps(reps: number): boolean {
+    if (activeBlockKind.value !== 'tabata') {
+      error.value = new Error('recordTabataReps() can only be called for Tabata blocks')
+      return false
+    }
+    tabataTimer?.recordReps(reps)
+    return true
   }
 
-  // For Time-specific: mark exercise as complete
-  function markExerciseComplete(exerciseId: string) {
-    if (blockState.value?.kind !== 'fortime') return
-    if (!blockState.value.state.completedExercises.includes(exerciseId)) {
-      blockState.value.state.completedExercises.push(exerciseId)
+  function markExerciseComplete(exerciseId: string): boolean {
+    if (activeBlockKind.value !== 'fortime') {
+      error.value = new Error('markExerciseComplete() can only be called for For Time blocks')
+      return false
     }
+    forTimeTimer?.markExerciseComplete(exerciseId)
+    return true
   }
-
-  // 5. Internal timer tick handler
-  function handleTimerTick() {
-    if (!blockState.value || !activeBlock.value) return
-
-    const seconds = elapsedSeconds.value
-    const block = activeBlock.value
-
-    // Block kind and state kind should always match
-    if (blockState.value.kind === 'emom' && block.kind === 'emom') {
-      const newMinute = Math.floor(seconds / 60) + 1
-
-      if (newMinute !== blockState.value.state.currentMinute && newMinute <= block.config.minutes) {
-        blockState.value.state.currentMinute = newMinute
-        // Rotate exercise if configured
-        if (block.config.exerciseRotation === 'each-minute') {
-          blockState.value.state.currentExerciseIndex =
-            (blockState.value.state.currentExerciseIndex + 1) % block.exercises.length
-        }
-        config.onMinuteChange?.(newMinute)
-      }
-
-      // Check for completion
-      if (seconds >= block.config.minutes * 60) {
-        complete()
-        config.onComplete?.()
-      }
-      return
-    }
-
-    if (blockState.value.kind === 'amrap' && block.kind === 'amrap') {
-      // Check for completion
-      if (seconds >= block.config.durationSeconds) {
-        complete()
-        config.onComplete?.()
-      }
-      return
-    }
-
-    if (blockState.value.kind === 'tabata' && block.kind === 'tabata') {
-      const { workSeconds, restSeconds, rounds } = block.config
-      const intervalLength = workSeconds + restSeconds
-      const totalSeconds = rounds * intervalLength
-
-      // Calculate current round and phase
-      const currentInterval = Math.floor(seconds / intervalLength) + 1
-      const secondsInInterval = seconds % intervalLength
-      const newPhase: 'work' | 'rest' = secondsInInterval < workSeconds ? 'work' : 'rest'
-
-      // Update round
-      if (currentInterval !== blockState.value.state.currentRound && currentInterval <= rounds) {
-        blockState.value.state.currentRound = currentInterval
-        config.onRoundChange?.(currentInterval)
-      }
-
-      // Update phase
-      if (newPhase !== blockState.value.state.phase) {
-        blockState.value.state.phase = newPhase
-        config.onPhaseChange?.(newPhase)
-      }
-
-      // Check for completion
-      if (seconds >= totalSeconds) {
-        complete()
-        config.onComplete?.()
-      }
-      return
-    }
-
-    if (blockState.value.kind === 'fortime' && block.kind === 'fortime') {
-      // Check for time cap
-      if (block.config.timeCapSeconds && seconds >= block.config.timeCapSeconds) {
-        // Time cap reached without completion
-        pause()
-        blockState.value.state.timerState = {
-          status: 'completed',
-          startedAt:
-            blockState.value.state.timerState.status !== 'idle'
-              ? blockState.value.state.timerState.startedAt
-              : Date.now(),
-          completedAt: Date.now(),
-        }
-        config.onComplete?.()
-      }
-    }
-  }
-
-  // 6. Cleanup on block change
-  watch(activeBlock, (newBlock, oldBlock) => {
-    if (oldBlock && !newBlock) {
-      pause()
-      blockState.value = null
-      elapsedMs.value = 0
-    }
-  })
 
   return {
     // State
     activeBlock,
     blockState,
-    elapsedMs,
-    elapsedSeconds,
-    remainingSeconds,
-    isRunning,
+    error,
 
-    // Formatted values
-    formattedElapsed,
-    formattedRemaining,
-    progress,
-
-    // Block-specific computed
-    currentMinute,
-    secondsInCurrentMinute,
-    currentRound,
-    currentPhase,
-    secondsInCurrentPhase,
-    roundsCompleted,
+    // Grouped computed
+    timerValues,
+    timerStatus,
+    blockSpecificValues,
 
     // Methods
     initializeBlock,
     start,
-    pause: pauseTimer,
+    pause,
     toggle,
     reset,
     complete,
+    clearError,
 
     // Block-specific methods
     incrementRound,

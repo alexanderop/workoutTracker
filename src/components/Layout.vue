@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Activity, Dumbbell, Home, Settings } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+
+const hideNavigation = computed(() => route.meta.hideNav === true)
 
 const navItems = [
   { path: '/', name: 'Home', icon: Home, label: 'Home' },
@@ -25,7 +28,7 @@ function isActive(path: string) {
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="border-t bg-card sticky bottom-0">
+    <nav v-if="!hideNavigation" class="border-t bg-card sticky bottom-0">
       <div class="flex justify-around">
         <button
           v-for="item in navItems"

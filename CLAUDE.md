@@ -98,6 +98,7 @@ The project uses Pinia with the Composition API setup pattern. Example in `src/s
 flowchart TD
     App["App.vue"] --> Layout["Layout.vue"]
     App --> ResumeWorkoutDialog["ResumeWorkoutDialog"]
+    App --> PwaUpdatePrompt["PwaUpdatePrompt"]
 
     Layout --> RouterView["RouterView"]
     Layout --> BottomNav["Bottom Navigation"]
@@ -109,6 +110,9 @@ flowchart TD
         Settings["TheSettingsView.vue"]
         ActiveWorkout["ActiveWorkout.vue"]
         CreateExercise["CreateCustomExercise.vue"]
+        CreateTemplate["CreateTemplateView.vue"]
+        TemplateDetail["TemplateDetailView.vue"]
+        WorkoutDetail["WorkoutDetailView.vue"]
         WorkoutSummary["WorkoutSummaryView.vue"]
     end
 
@@ -116,13 +120,17 @@ flowchart TD
 
     subgraph ActiveWorkoutChildren["ActiveWorkout Children"]
         WorkoutHeader["WorkoutHeader"]
-        WorkoutExerciseCarousel["WorkoutExerciseCarousel"]
+        WorkoutBlockCarousel["WorkoutBlockCarousel"]
         WorkoutSetTable["WorkoutSetTable"]
         WorkoutPreviousHistory["WorkoutPreviousHistory"]
-        WorkoutRestTimerWidget["WorkoutRestTimerWidget"]
-        WorkoutAddExerciseDialog["WorkoutAddExerciseDialog"]
+        WorkoutTimerWidget["WorkoutTimerWidget"]
+        WorkoutTimedBlockCard["WorkoutTimedBlockCard"]
+        WorkoutTimedBlockFocusView["WorkoutTimedBlockFocusView"]
+        WorkoutAddBlockDialog["WorkoutAddBlockDialog"]
+        WorkoutConfigureBlockDialog["WorkoutConfigureBlockDialog"]
         WorkoutEditExerciseDialog["WorkoutEditExerciseDialog"]
         WorkoutFinishDialog["WorkoutFinishDialog"]
+        WorkoutCancelDialog["WorkoutCancelDialog"]
     end
 
     ActiveWorkout --> ActiveWorkoutChildren
@@ -137,11 +145,34 @@ flowchart TD
 
     CreateExercise --> CreateExerciseChildren
 
+    subgraph TemplateChildren["Template View Children"]
+        TemplateExerciseList["TemplateExerciseList"]
+        TemplateExerciseItem["TemplateExerciseItem"]
+    end
+
+    CreateTemplate --> TemplateChildren
+    CreateTemplate --> WorkoutAddExerciseDialog["WorkoutAddExerciseDialog"]
+    TemplateDetail --> TemplateChildren
+    TemplateDetail --> WorkoutAddExerciseDialog
+    TemplateExerciseList --> TemplateExerciseItem
+
+    subgraph WorkoutDetailChildren["WorkoutDetail Children"]
+        WorkoutDetailExerciseCard["WorkoutDetailExerciseCard"]
+        WorkoutDetailStatsRow["WorkoutDetailStatsRow"]
+        WorkoutDetailSetTable["WorkoutDetailSetTable"]
+        WorkoutDetailSetRow["WorkoutDetailSetRow"]
+    end
+
+    WorkoutDetail --> WorkoutDetailChildren
+    WorkoutDetailExerciseCard --> WorkoutDetailSetTable
+    WorkoutDetailSetTable --> WorkoutDetailSetRow
+
     subgraph SharedComponents["Shared Components"]
         MobileDialogContent["MobileDialogContent"]
     end
 
     ResumeWorkoutDialog -.-> MobileDialogContent
+    TemplateDetail -.-> MobileDialogContent
 ```
 
 ### shadcn/ui Components

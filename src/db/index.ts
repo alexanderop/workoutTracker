@@ -43,3 +43,11 @@ export function generateId(): string {
 export function generatePrefixedId(prefix: string): string {
   return `${prefix}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`
 }
+
+/**
+ * Delete all data from the database and recreate it.
+ */
+export async function deleteAllData(): Promise<void> {
+  await db.delete()
+  await db.open()
+}

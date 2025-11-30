@@ -5,8 +5,8 @@ import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDia
 import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
 import type { TemplateExercise } from '@/components/templates/TemplateExerciseList.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { templatesRepository } from '@/db/repositories/templates'
@@ -154,36 +154,32 @@ function handleCancel(): void {
 </script>
 
 <template>
-  <div class="flex-1 p-4 flex flex-col">
+  <PageLayout
+    :title="template?.name ?? 'Template'"
+    :subtitle="template ? `${exercises.length} exercises` : undefined"
+    back-to="/workouts"
+  >
     <!-- Loading state -->
     <div v-if="isLoading" class="flex items-center justify-center py-8">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
     <!-- Main content -->
-    <template v-else-if="template">
-      <!-- Header -->
-      <Card class="mb-6">
-        <CardContent class="pt-6">
-          <h1 class="text-3xl font-bold mb-2">{{ template.name }}</h1>
-          <p class="text-muted-foreground">{{ exercises.length }} exercises</p>
-        </CardContent>
-      </Card>
-
+    <div v-else-if="template" class="flex flex-1 flex-col p-4">
       <!-- Template name input -->
       <div class="mb-6">
-        <label for="template-name" class="block text-sm font-medium mb-2">Template Name</label>
+        <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
         <Input id="template-name" v-model="templateName" class="w-full" />
       </div>
 
       <!-- Exercises section -->
-      <div class="flex-1 flex flex-col mb-6">
-        <div class="flex items-center justify-between mb-4">
+      <div class="mb-6 flex flex-1 flex-col">
+        <div class="mb-4 flex items-center justify-between">
           <h2 class="text-lg font-semibold">Exercises</h2>
           <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
         </div>
 
-        <div v-if="exercises.length > 0" class="flex-1 overflow-y-auto mb-4">
+        <div v-if="exercises.length > 0" class="mb-4 flex-1 overflow-y-auto">
           <TemplateExerciseList
             :exercises="exercises"
             @update:exercises="handleExercisesUpdate"
@@ -195,25 +191,26 @@ function handleCancel(): void {
           + Add Exercise
         </Button>
       </div>
+    </div>
 
-      <!-- Action buttons -->
-      <div class="space-y-3">
+    <template v-if="template" #footer>
+      <div class="space-y-3 p-4">
         <!-- Start Workout button -->
         <Button
           class="w-full"
           size="lg"
-          @click="handleStartWorkout"
           :disabled="isStarting || exercises.length === 0"
+          @click="handleStartWorkout"
         >
           {{ isStarting ? 'Starting...' : 'Start Workout' }}
         </Button>
 
         <!-- Edit buttons -->
         <div v-if="isEdited" class="flex gap-3">
-          <Button variant="outline" class="flex-1" @click="handleCancel" :disabled="isSaving">
+          <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
             Cancel
           </Button>
-          <Button class="flex-1" @click="handleSaveChanges" :disabled="!isEdited || isSaving">
+          <Button class="flex-1" :disabled="!isEdited || isSaving" @click="handleSaveChanges">
             {{ isSaving ? 'Saving...' : 'Save Changes' }}
           </Button>
         </div>
@@ -222,40 +219,40 @@ function handleCancel(): void {
         <Button
           variant="destructive"
           class="w-full"
-          @click="showDeleteDialog = true"
           :disabled="isEdited"
+          @click="showDeleteDialog = true"
         >
           Delete Template
         </Button>
       </div>
-
-      <!-- Add Exercise Dialog -->
-      <WorkoutAddExerciseDialog
-        :open="isAddExerciseOpen"
-        @update:open="isAddExerciseOpen = $event"
-        @add="handleAddExercise"
-      />
-
-      <!-- Delete Confirmation Dialog -->
-      <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
-        <MobileDialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Template?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. The template "{{ template.name }}" will be permanently
-              deleted.
-            </DialogDescription>
-          </DialogHeader>
-          <div class="flex gap-3 pt-4">
-            <Button variant="outline" class="flex-1" @click="showDeleteDialog = false">
-              Cancel
-            </Button>
-            <Button variant="destructive" class="flex-1" @click="handleDeleteTemplate">
-              Delete
-            </Button>
-          </div>
-        </MobileDialogContent>
-      </Dialog>
     </template>
-  </div>
+
+    <!-- Add Exercise Dialog -->
+    <WorkoutAddExerciseDialog
+      :open="isAddExerciseOpen"
+      @update:open="isAddExerciseOpen = $event"
+      @add="handleAddExercise"
+    />
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <MobileDialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Template?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. The template "{{ template?.name }}" will be permanently
+            deleted.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="flex gap-3 pt-4">
+          <Button variant="outline" class="flex-1" @click="showDeleteDialog = false">
+            Cancel
+          </Button>
+          <Button variant="destructive" class="flex-1" @click="handleDeleteTemplate">
+            Delete
+          </Button>
+        </div>
+      </MobileDialogContent>
+    </Dialog>
+  </PageLayout>
 </template>

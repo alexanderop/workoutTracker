@@ -6,6 +6,8 @@ const DEFAULTS: Readonly<Omit<Workout, 'blocks'>> = {
   name: 'Test Workout',
   selectedBlockIndex: 0,
   startedAt: Date.now(),
+  mode: 'builder',
+  activeSetIndex: null,
 }
 
 export function createWorkout(overrides: Partial<Workout> = {}): Workout {

@@ -28,7 +28,7 @@ const emit = defineEmits<{
 
 const isActiveTimedBlock = computed(() => {
   if (!props.block || !isTimedBlock(props.block)) return false
-  return props.blockTimer.isRunning.value || props.blockTimer.blockState.value !== null
+  return props.blockTimer.timerStatus.value.isRunning || props.blockTimer.blockState.value !== null
 })
 
 const showTimedBlockUI = computed(() => {
@@ -43,20 +43,23 @@ const timedBlock = computed(() => {
 // Determine if timer is in final countdown (last 10 seconds)
 const isInFinalCountdown = computed(() => {
   if (!isActiveTimedBlock.value) return false
-  return (
-    props.blockTimer.remainingSeconds.value <= 10 && props.blockTimer.remainingSeconds.value > 0
-  )
+  const remaining = props.blockTimer.timerValues.value.remainingSeconds
+  return remaining <= 10 && remaining > 0
 })
 
 // Get phase color for Tabata
 const phaseColor = computed(() => {
   if (!timedBlock.value || timedBlock.value.kind !== 'tabata') return ''
-  return props.blockTimer.currentPhase.value === 'work' ? 'text-emerald-500' : 'text-amber-500'
+  return props.blockTimer.blockSpecificValues.value.currentPhase === 'work'
+    ? 'text-emerald-500'
+    : 'text-amber-500'
 })
 
 const phaseBackground = computed(() => {
   if (!timedBlock.value || timedBlock.value.kind !== 'tabata') return ''
-  return props.blockTimer.currentPhase.value === 'work' ? 'bg-emerald-500/20' : 'bg-amber-500/20'
+  return props.blockTimer.blockSpecificValues.value.currentPhase === 'work'
+    ? 'bg-emerald-500/20'
+    : 'bg-amber-500/20'
 })
 </script>
 
@@ -83,17 +86,17 @@ const phaseBackground = computed(() => {
                 )
               "
             >
-              {{ blockTimer.formattedRemaining }}
+              {{ blockTimer.timerValues.value.formattedRemaining }}
             </div>
 
             <!-- Progress Bar -->
-            <Progress :model-value="blockTimer.progress.value" class="h-2" />
+            <Progress :model-value="blockTimer.timerValues.value.progress" class="h-2" />
 
             <!-- Round Counter -->
             <div class="flex items-center justify-center gap-4">
               <div class="text-center">
                 <div class="text-3xl font-bold text-foreground">
-                  {{ blockTimer.roundsCompleted }}
+                  {{ blockTimer.blockSpecificValues.value.roundsCompleted }}
                 </div>
                 <div class="text-xs text-muted-foreground uppercase">Rounds</div>
               </div>
@@ -101,7 +104,7 @@ const phaseBackground = computed(() => {
                 size="lg"
                 variant="outline"
                 class="h-14 w-24"
-                :disabled="!blockTimer.isRunning.value"
+                :disabled="!blockTimer.timerStatus.value.isRunning"
                 @click="emit('increment-round')"
               >
                 +1
@@ -115,12 +118,15 @@ const phaseBackground = computed(() => {
                 Reset
               </Button>
               <Button
-                :variant="blockTimer.isRunning.value ? 'secondary' : 'default'"
+                :variant="blockTimer.timerStatus.value.isRunning ? 'secondary' : 'default'"
                 class="flex-1 h-12"
                 @click="blockTimer.toggle"
               >
-                <component :is="blockTimer.isRunning.value ? Pause : Play" class="w-4 h-4 mr-2" />
-                {{ blockTimer.isRunning.value ? 'Pause' : 'Start' }}
+                <component
+                  :is="blockTimer.timerStatus.value.isRunning ? Pause : Play"
+                  class="w-4 h-4 mr-2"
+                />
+                {{ blockTimer.timerStatus.value.isRunning ? 'Pause' : 'Start' }}
               </Button>
               <Button variant="default" class="flex-1 h-12" @click="emit('complete-block')">
                 Done
@@ -133,7 +139,8 @@ const phaseBackground = computed(() => {
         <template v-else-if="timedBlock.kind === 'emom'">
           <div class="text-center space-y-3">
             <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              MINUTE {{ blockTimer.currentMinute }} of {{ timedBlock.config.minutes }}
+              MINUTE {{ blockTimer.blockSpecificValues.value.currentMinute }} of
+              {{ timedBlock.config.minutes }}
             </div>
 
             <!-- Seconds in Current Minute -->
@@ -141,13 +148,18 @@ const phaseBackground = computed(() => {
               :class="
                 cn(
                   'text-6xl font-bold font-mono tabular-nums transition-colors',
-                  blockTimer.secondsInCurrentMinute.value <= 10
+                  blockTimer.blockSpecificValues.value.secondsRemainingInMinute <= 10
                     ? 'text-destructive animate-pulse'
                     : 'text-primary',
                 )
               "
             >
-              :{{ String(blockTimer.secondsInCurrentMinute.value).padStart(2, '0') }}
+              :{{
+                String(blockTimer.blockSpecificValues.value.secondsRemainingInMinute).padStart(
+                  2,
+                  '0',
+                )
+              }}
             </div>
 
             <!-- Current Exercise -->
@@ -162,7 +174,7 @@ const phaseBackground = computed(() => {
             </div>
 
             <!-- Progress -->
-            <Progress :model-value="blockTimer.progress.value" class="h-2" />
+            <Progress :model-value="blockTimer.timerValues.value.progress" class="h-2" />
 
             <!-- Controls -->
             <div class="flex gap-3 pt-2">
@@ -171,12 +183,15 @@ const phaseBackground = computed(() => {
                 Reset
               </Button>
               <Button
-                :variant="blockTimer.isRunning.value ? 'secondary' : 'default'"
+                :variant="blockTimer.timerStatus.value.isRunning ? 'secondary' : 'default'"
                 class="flex-1 h-12"
                 @click="blockTimer.toggle"
               >
-                <component :is="blockTimer.isRunning.value ? Pause : Play" class="w-4 h-4 mr-2" />
-                {{ blockTimer.isRunning.value ? 'Pause' : 'Start' }}
+                <component
+                  :is="blockTimer.timerStatus.value.isRunning ? Pause : Play"
+                  class="w-4 h-4 mr-2"
+                />
+                {{ blockTimer.timerStatus.value.isRunning ? 'Pause' : 'Start' }}
               </Button>
               <Button variant="default" class="flex-1 h-12" @click="emit('complete-block')">
                 Done
@@ -198,7 +213,7 @@ const phaseBackground = computed(() => {
                 )
               "
             >
-              {{ blockTimer.currentPhase.value }}
+              {{ blockTimer.blockSpecificValues.value.currentPhase }}
             </div>
 
             <!-- Timer -->
@@ -206,22 +221,25 @@ const phaseBackground = computed(() => {
               :class="
                 cn(
                   'text-6xl font-bold font-mono tabular-nums transition-colors',
-                  blockTimer.secondsInCurrentPhase.value <= 3
+                  blockTimer.blockSpecificValues.value.secondsInCurrentPhase <= 3
                     ? 'text-destructive animate-pulse'
                     : phaseColor,
                 )
               "
             >
-              :{{ String(blockTimer.secondsInCurrentPhase.value).padStart(2, '0') }}
+              :{{
+                String(blockTimer.blockSpecificValues.value.secondsInCurrentPhase).padStart(2, '0')
+              }}
             </div>
 
             <!-- Round Indicator -->
             <div class="text-sm text-muted-foreground">
-              Round {{ blockTimer.currentRound }} / {{ timedBlock.config.rounds }}
+              Round {{ blockTimer.blockSpecificValues.value.currentRound }} /
+              {{ timedBlock.config.rounds }}
             </div>
 
             <!-- Progress -->
-            <Progress :model-value="blockTimer.progress.value" class="h-2" />
+            <Progress :model-value="blockTimer.timerValues.value.progress" class="h-2" />
 
             <!-- Controls -->
             <div class="flex gap-3 pt-2">
@@ -230,12 +248,15 @@ const phaseBackground = computed(() => {
                 Reset
               </Button>
               <Button
-                :variant="blockTimer.isRunning.value ? 'secondary' : 'default'"
+                :variant="blockTimer.timerStatus.value.isRunning ? 'secondary' : 'default'"
                 class="flex-1 h-12"
                 @click="blockTimer.toggle"
               >
-                <component :is="blockTimer.isRunning.value ? Pause : Play" class="w-4 h-4 mr-2" />
-                {{ blockTimer.isRunning.value ? 'Pause' : 'Start' }}
+                <component
+                  :is="blockTimer.timerStatus.value.isRunning ? Pause : Play"
+                  class="w-4 h-4 mr-2"
+                />
+                {{ blockTimer.timerStatus.value.isRunning ? 'Pause' : 'Start' }}
               </Button>
               <Button variant="default" class="flex-1 h-12" @click="emit('complete-block')">
                 Done
@@ -253,7 +274,7 @@ const phaseBackground = computed(() => {
 
             <!-- Count-up Timer -->
             <div class="text-5xl font-bold font-mono tabular-nums text-primary">
-              {{ blockTimer.formattedElapsed }}
+              {{ blockTimer.timerValues.value.formattedElapsed }}
             </div>
 
             <!-- Time Cap (if set) -->
@@ -266,7 +287,7 @@ const phaseBackground = computed(() => {
             <!-- Progress (only if time cap) -->
             <Progress
               v-if="timedBlock.config.timeCapSeconds"
-              :model-value="blockTimer.progress.value"
+              :model-value="blockTimer.timerValues.value.progress"
               class="h-2"
             />
 
@@ -277,12 +298,15 @@ const phaseBackground = computed(() => {
                 Reset
               </Button>
               <Button
-                :variant="blockTimer.isRunning.value ? 'secondary' : 'default'"
+                :variant="blockTimer.timerStatus.value.isRunning ? 'secondary' : 'default'"
                 class="flex-1 h-12"
                 @click="blockTimer.toggle"
               >
-                <component :is="blockTimer.isRunning.value ? Pause : Play" class="w-4 h-4 mr-2" />
-                {{ blockTimer.isRunning.value ? 'Pause' : 'Start' }}
+                <component
+                  :is="blockTimer.timerStatus.value.isRunning ? Pause : Play"
+                  class="w-4 h-4 mr-2"
+                />
+                {{ blockTimer.timerStatus.value.isRunning ? 'Pause' : 'Start' }}
               </Button>
               <Button
                 variant="default"

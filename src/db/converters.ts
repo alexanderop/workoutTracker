@@ -338,6 +338,8 @@ export function workoutToDb(
     selectedBlockIndex: workout.selectedBlockIndex,
     startedAt: existingStartedAt ?? workout.startedAt,
     lastModifiedAt: Date.now(),
+    mode: workout.mode,
+    activeSetIndex: workout.activeSetIndex,
   }
 }
 
@@ -355,6 +357,8 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
     blocks: sortedBlocks,
     selectedBlockIndex: dbWorkout.selectedBlockIndex,
     startedAt: dbWorkout.startedAt,
+    mode: dbWorkout.mode ?? 'builder',
+    activeSetIndex: dbWorkout.activeSetIndex ?? null,
   }
 }
 
@@ -388,6 +392,8 @@ export function legacyToBlockWorkout(legacy: Readonly<DbLegacyActiveWorkout>): D
     selectedBlockIndex: selectedIndex >= 0 ? selectedIndex : 0,
     startedAt: legacy.startedAt,
     lastModifiedAt: legacy.lastModifiedAt,
+    mode: 'builder',
+    activeSetIndex: null,
   }
 }
 

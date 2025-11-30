@@ -55,15 +55,17 @@ const nextExercises = computed(() => {
 // Determine timer display value based on block type
 const timerDisplay = computed((): string => {
   const kind = props.block.kind
+  const specific = props.blockTimer.blockSpecificValues.value
+  const values = props.blockTimer.timerValues.value
   switch (kind) {
     case 'emom':
-      return String(props.blockTimer.secondsInCurrentMinute.value).padStart(2, '0')
+      return String(specific.secondsRemainingInMinute).padStart(2, '0')
     case 'tabata':
-      return String(props.blockTimer.secondsInCurrentPhase.value).padStart(2, '0')
+      return String(specific.secondsInCurrentPhase).padStart(2, '0')
     case 'amrap':
-      return props.blockTimer.formattedRemaining.value
+      return values.formattedRemaining
     case 'fortime':
-      return props.blockTimer.formattedElapsed.value
+      return values.formattedElapsed
     default: {
       const _exhaustive: never = kind
       return _exhaustive
@@ -74,20 +76,22 @@ const timerDisplay = computed((): string => {
 // Progress for circular indicator (0-100)
 const circularProgress = computed((): number => {
   const kind = props.block.kind
+  const specific = props.blockTimer.blockSpecificValues.value
+  const values = props.blockTimer.timerValues.value
   switch (kind) {
     case 'emom':
       // Progress within the current minute (60 -> 0 seconds)
-      return ((60 - props.blockTimer.secondsInCurrentMinute.value) / 60) * 100
+      return ((60 - specific.secondsRemainingInMinute) / 60) * 100
     case 'tabata': {
-      const phase = props.blockTimer.currentPhase.value
-      const seconds = props.blockTimer.secondsInCurrentPhase.value
+      const phase = specific.currentPhase
+      const seconds = specific.secondsInCurrentPhase
       const total =
         phase === 'work' ? props.block.config.workSeconds : props.block.config.restSeconds
       return ((total - seconds) / total) * 100
     }
     case 'amrap':
     case 'fortime':
-      return props.blockTimer.progress.value
+      return values.progress
     default: {
       const _exhaustive: never = kind
       return _exhaustive
@@ -98,11 +102,12 @@ const circularProgress = computed((): number => {
 // Round/minute indicator text
 const progressLabel = computed((): string => {
   const kind = props.block.kind
+  const specific = props.blockTimer.blockSpecificValues.value
   switch (kind) {
     case 'emom':
-      return `MINUTE ${props.blockTimer.currentMinute.value} OF ${props.block.config.minutes}`
+      return `MINUTE ${specific.currentMinute} OF ${props.block.config.minutes}`
     case 'tabata':
-      return `ROUND ${props.blockTimer.currentRound.value} / ${props.block.config.rounds}`
+      return `ROUND ${specific.currentRound} / ${props.block.config.rounds}`
     case 'amrap':
       return BLOCK_LABELS.amrap
     case 'fortime':
@@ -116,13 +121,15 @@ const progressLabel = computed((): string => {
 
 // Check if in final countdown
 const isUrgent = computed(() => {
+  const specific = props.blockTimer.blockSpecificValues.value
+  const values = props.blockTimer.timerValues.value
   switch (props.block.kind) {
     case 'emom':
-      return props.blockTimer.secondsInCurrentMinute.value <= 5
+      return specific.secondsRemainingInMinute <= 5
     case 'tabata':
-      return props.blockTimer.secondsInCurrentPhase.value <= 3
+      return specific.secondsInCurrentPhase <= 3
     case 'amrap':
-      return props.blockTimer.remainingSeconds.value <= 10
+      return values.remainingSeconds <= 10
     default:
       return false
   }
@@ -131,7 +138,7 @@ const isUrgent = computed(() => {
 // Tabata phase indicator
 const tabataPhase = computed(() => {
   if (props.block.kind !== 'tabata') return null
-  return props.blockTimer.currentPhase.value
+  return props.blockTimer.blockSpecificValues.value.currentPhase
 })
 
 // SVG circle calculations
@@ -262,7 +269,7 @@ const strokeDashoffset = computed(
       <div v-if="block.kind === 'amrap'" class="mt-8 flex items-center gap-6">
         <div class="text-center">
           <div class="text-5xl font-bold text-primary tabular-nums">
-            {{ blockTimer.roundsCompleted }}
+            {{ blockTimer.blockSpecificValues.value.roundsCompleted }}
           </div>
           <div class="text-xs text-muted-foreground uppercase tracking-wider mt-1">Rounds</div>
         </div>
@@ -270,7 +277,7 @@ const strokeDashoffset = computed(
           size="lg"
           variant="outline"
           class="h-16 w-20 text-xl font-bold"
-          :disabled="!blockTimer.isRunning.value"
+          :disabled="!blockTimer.timerStatus.value.isRunning"
           @click="emit('increment-round')"
         >
           +1
@@ -292,13 +299,16 @@ const strokeDashoffset = computed(
         </Button>
 
         <Button
-          :variant="blockTimer.isRunning.value ? 'secondary' : 'default'"
+          :variant="blockTimer.timerStatus.value.isRunning ? 'secondary' : 'default'"
           size="lg"
           class="flex-1 h-14 text-lg font-semibold rounded-full"
           @click="blockTimer.toggle"
         >
-          <component :is="blockTimer.isRunning.value ? Pause : Play" class="size-5 mr-2" />
-          {{ blockTimer.isRunning.value ? 'Pause' : 'Start' }}
+          <component
+            :is="blockTimer.timerStatus.value.isRunning ? Pause : Play"
+            class="size-5 mr-2"
+          />
+          {{ blockTimer.timerStatus.value.isRunning ? 'Pause' : 'Start' }}
         </Button>
 
         <Button

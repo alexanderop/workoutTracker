@@ -237,6 +237,8 @@ export const templatesRepository = {
       selectedBlockIndex: 0,
       startedAt: now,
       lastModifiedAt: now,
+      mode: 'builder',
+      activeSetIndex: null,
     }
 
     // Update template usage and return the workout (don't save to DB yet)

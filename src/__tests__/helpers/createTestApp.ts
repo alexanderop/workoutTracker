@@ -39,8 +39,11 @@ type TestApp = {
   getDialogButton: (text: string) => HTMLElement
   assertDialogClosed: () => void
   getCarouselExerciseButtons: () => ReadonlyArray<HTMLElement>
+  getPlaylistBlockButtons: () => ReadonlyArray<HTMLElement>
   getSetRow: (setIndex: number) => SetInputs
   fillSet: (setIndex: number, values: SetValues) => Promise<void>
+  startWorkout: () => Promise<void>
+  openWorkoutMenu: () => Promise<void>
   cleanup: () => void
 }
 
@@ -106,12 +109,39 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   function getCarouselExerciseButtons(): ReadonlyArray<HTMLElement> {
     // Get all exercise buttons in the carousel (exclude the "Add exercise" button)
+    // In the new UI, these are playlist items with role="button" and aria-pressed
     const allButtons = screen.getAllByRole('button')
     return allButtons.filter(
       (btn) =>
         btn.getAttribute('aria-pressed') !== null &&
         btn.getAttribute('aria-label') !== 'Add exercise',
     )
+  }
+
+  function getPlaylistBlockButtons(): ReadonlyArray<HTMLElement> {
+    // Get all block buttons in the playlist (role="button" with aria-pressed)
+    const allButtons = screen.getAllByRole('button')
+    return allButtons.filter((btn) => btn.getAttribute('aria-pressed') !== null)
+  }
+
+  async function startWorkout(): Promise<void> {
+    // Click "Start Workout" button to transition from builder to active mode
+    await user.click(screen.getByRole('button', { name: /start workout/i }))
+  }
+
+  async function openWorkoutMenu(): Promise<void> {
+    // Open the dropdown menu in active mode header (three-dot/more icon)
+    // The menu button is a ghost button with MoreVertical icon
+    const buttons = screen.getAllByRole('button')
+    const menuButton = buttons.find((btn) => {
+      // Find the button that contains the MoreVertical SVG
+      const svg = btn.querySelector('svg.lucide-more-vertical')
+      return svg !== null
+    })
+    if (!menuButton) {
+      throw new Error('Workout menu button not found')
+    }
+    await user.click(menuButton)
   }
 
   function getSetRow(setIndex: number): SetInputs {
@@ -191,8 +221,11 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     getDialogButton,
     assertDialogClosed,
     getCarouselExerciseButtons,
+    getPlaylistBlockButtons,
     getSetRow,
     fillSet,
+    startWorkout,
+    openWorkoutMenu,
     cleanup,
   }
 }

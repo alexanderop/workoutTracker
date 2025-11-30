@@ -17,6 +17,7 @@ import type {
   TabataConfig,
   TabataResult,
   WorkoutBlock,
+  WorkoutMode,
 } from '@/types/blocks'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
@@ -46,6 +47,8 @@ export type Workout = {
   blocks: Array<WorkoutBlock>
   selectedBlockIndex: number
   startedAt: number
+  mode: WorkoutMode
+  activeSetIndex: number | null
 }
 
 export type CompleteSetResult =
@@ -68,6 +71,8 @@ function createInitialWorkout(): Workout {
     blocks: [],
     selectedBlockIndex: -1,
     startedAt: Date.now(),
+    mode: 'builder',
+    activeSetIndex: null,
   }
 }
 
@@ -166,6 +171,13 @@ export function useWorkout() {
       if (!nextSet.rir) nextSet.rir = set.rir
 
       nextSet.status = 'active'
+
+      // Update activeSetIndex to point to the next set
+      const nextSetIndex = currentBlock.sets.findIndex((s) => s.id === nextSet.id)
+      if (nextSetIndex >= 0) {
+        workout.value.activeSetIndex = nextSetIndex
+      }
+
       return {
         kind: 'completed',
         nextAction: 'next-set',
@@ -187,6 +199,7 @@ export function useWorkout() {
         const firstSet = nextBlock.sets.find((s) => s.status === 'planned' || s.status === 'active')
         if (firstSet) {
           firstSet.status = 'active'
+          workout.value.activeSetIndex = 0
         }
       }
 

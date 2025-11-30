@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
 import type { TemplateExercise } from '@/components/templates/TemplateExerciseList.vue'
+import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { templatesRepository } from '@/db/repositories/templates'
 import { popularExercises } from '@/data/popularExercises'
@@ -75,65 +75,60 @@ function handleCancel(): void {
 </script>
 
 <template>
-  <div class="flex-1 p-4 flex flex-col">
-    <!-- Header -->
-    <Card class="mb-6">
-      <CardContent class="pt-6">
-        <h1 class="text-3xl font-bold mb-2">Create Template</h1>
-        <p class="text-muted-foreground">Build a new workout template from scratch</p>
-      </CardContent>
-    </Card>
-
-    <!-- Template name input -->
-    <div class="mb-6">
-      <label for="template-name" class="block text-sm font-medium mb-2">Template Name</label>
-      <Input
-        id="template-name"
-        v-model="templateName"
-        placeholder="e.g., Upper Body Day"
-        class="w-full"
-      />
-    </div>
-
-    <!-- Exercises section -->
-    <div class="flex-1 flex flex-col mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Exercises</h2>
-        <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
-      </div>
-
-      <div v-if="exercises.length > 0" class="flex-1 overflow-y-auto mb-4">
-        <TemplateExerciseList
-          :exercises="exercises"
-          @update:exercises="handleExercisesUpdate"
-          @remove-exercise="handleRemoveExercise"
+  <PageLayout title="Create Template" subtitle="Build a new workout template from scratch">
+    <div class="flex flex-1 flex-col p-4">
+      <!-- Template name input -->
+      <div class="mb-6">
+        <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
+        <Input
+          id="template-name"
+          v-model="templateName"
+          placeholder="e.g., Upper Body Day"
+          class="w-full"
         />
       </div>
 
-      <div
-        v-else
-        class="flex-1 flex items-center justify-center text-center text-muted-foreground mb-4"
-      >
-        <div>
-          <p class="mb-2">No exercises yet</p>
-          <p class="text-sm">Add exercises to build your template</p>
+      <!-- Exercises section -->
+      <div class="mb-6 flex flex-1 flex-col">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Exercises</h2>
+          <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
         </div>
+
+        <div v-if="exercises.length > 0" class="mb-4 flex-1 overflow-y-auto">
+          <TemplateExerciseList
+            :exercises="exercises"
+            @update:exercises="handleExercisesUpdate"
+            @remove-exercise="handleRemoveExercise"
+          />
+        </div>
+
+        <div
+          v-else
+          class="mb-4 flex flex-1 items-center justify-center text-center text-muted-foreground"
+        >
+          <div>
+            <p class="mb-2">No exercises yet</p>
+            <p class="text-sm">Add exercises to build your template</p>
+          </div>
+        </div>
+
+        <Button variant="outline" class="w-full" @click="isAddExerciseOpen = true">
+          + Add Exercise
+        </Button>
       </div>
-
-      <Button variant="outline" class="w-full" @click="isAddExerciseOpen = true">
-        + Add Exercise
-      </Button>
     </div>
 
-    <!-- Action buttons -->
-    <div class="flex gap-3">
-      <Button variant="outline" class="flex-1" @click="handleCancel" :disabled="isSaving">
-        Cancel
-      </Button>
-      <Button class="flex-1" :disabled="!isValid || isSaving" @click="handleSave">
-        {{ isSaving ? 'Saving...' : 'Save Template' }}
-      </Button>
-    </div>
+    <template #footer>
+      <div class="flex gap-3 p-4">
+        <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
+          Cancel
+        </Button>
+        <Button class="flex-1" :disabled="!isValid || isSaving" @click="handleSave">
+          {{ isSaving ? 'Saving...' : 'Save Template' }}
+        </Button>
+      </div>
+    </template>
 
     <!-- Add Exercise Dialog -->
     <WorkoutAddExerciseDialog
@@ -141,5 +136,5 @@ function handleCancel(): void {
       @update:open="isAddExerciseOpen = $event"
       @add="handleAddExercise"
     />
-  </div>
+  </PageLayout>
 </template>

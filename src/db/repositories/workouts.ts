@@ -131,6 +131,8 @@ export const workoutsRepository = {
       selectedBlockIndex: 0,
       startedAt: now,
       lastModifiedAt: now,
+      mode: 'builder',
+      activeSetIndex: null,
     }
 
     await db.activeWorkout.put(activeWorkout)

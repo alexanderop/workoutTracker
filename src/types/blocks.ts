@@ -121,6 +121,12 @@ export type TimedBlock = EmomBlock | AmrapBlock | TabataBlock | ForTimeBlock
 export type WorkoutBlock = StrengthBlock | TimedBlock
 
 // ============================================
+// Timer Status (shared across composables)
+// ============================================
+
+export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
+
+// ============================================
 // Block State (for active timed blocks)
 // ============================================
 
@@ -160,6 +166,12 @@ export type ActiveBlockState =
   | { kind: 'emom'; state: EmomState }
   | { kind: 'tabata'; state: TabataState }
   | { kind: 'fortime'; state: ForTimeState }
+
+// ============================================
+// Workout Mode
+// ============================================
+
+export type WorkoutMode = 'builder' | 'active'
 
 // ============================================
 // Helper Types
@@ -215,6 +227,14 @@ export const BLOCK_ICONS: Record<BlockKind, string> = {
   tabata: '⚡',
   fortime: '🏁',
 }
+
+export const BLOCK_COLORS = {
+  strength: { bg: 'bg-blue-500/20', text: 'text-blue-500', accent: 'bg-blue-500' },
+  amrap: { bg: 'bg-purple-500/20', text: 'text-purple-500', accent: 'bg-purple-500' },
+  emom: { bg: 'bg-orange-500/20', text: 'text-orange-500', accent: 'bg-orange-500' },
+  tabata: { bg: 'bg-emerald-500/20', text: 'text-emerald-500', accent: 'bg-emerald-500' },
+  fortime: { bg: 'bg-rose-500/20', text: 'text-rose-500', accent: 'bg-rose-500' },
+} as const
 
 export function getBlockDurationDisplay(block: TimedBlock): string {
   switch (block.kind) {

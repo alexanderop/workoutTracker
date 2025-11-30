@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ChevronLeft } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/components/workout/WorkoutDetailExerciseCard.vue'
 import WorkoutDetailStatsRow from '@/components/workout/WorkoutDetailStatsRow.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
@@ -22,10 +22,6 @@ const { resumeWorkout } = useAppInitialization()
 
 const isRedoing = ref(false)
 
-function handleBack() {
-  router.push('/workouts')
-}
-
 async function handleRedoWorkout() {
   if (isRedoing.value) return
 
@@ -42,37 +38,11 @@ async function handleRedoWorkout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <!-- Header (always visible) -->
-    <header
-      class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-    >
-      <div class="flex items-center gap-3 px-4 py-3">
-        <Button variant="ghost" size="icon" class="shrink-0" @click="handleBack">
-          <ChevronLeft class="h-5 w-5" />
-        </Button>
-        <div v-if="state.status === 'success'" class="min-w-0 flex-1">
-          <h1
-            class="truncate text-xl font-semibold tracking-tight"
-            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-          >
-            {{ state.workout.name }}
-          </h1>
-          <p
-            class="text-sm text-muted-foreground"
-            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-            :style="{ animationDelay: '50ms' }"
-          >
-            {{ formatDate(state.workout.startedAt) }}
-          </p>
-        </div>
-        <div v-else class="min-w-0 flex-1"></div>
-        <Button variant="default" :disabled="isRedoing" @click="handleRedoWorkout">
-          {{ isRedoing ? 'Starting...' : 'Redo Workout' }}
-        </Button>
-      </div>
-    </header>
-
+  <PageLayout
+    :title="state.status === 'success' ? state.workout.name : ''"
+    :subtitle="state.status === 'success' ? formatDate(state.workout.startedAt) : undefined"
+    back-to="/workouts"
+  >
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
       <div class="text-muted-foreground">Loading...</div>
@@ -104,7 +74,7 @@ async function handleRedoWorkout() {
             :style="{ animationDelay: `${150 + index * 50}ms` }"
           >
             <div class="font-semibold uppercase">{{ block.kind }}</div>
-            <div v-if="block.result" class="text-sm text-muted-foreground mt-1">
+            <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
               <template v-if="block.kind === 'amrap'"> {{ block.result.rounds }} rounds </template>
               <template v-else-if="block.kind === 'fortime'">
                 {{ block.result.completed ? 'Completed' : 'Capped' }}
@@ -135,13 +105,21 @@ async function handleRedoWorkout() {
       class="flex flex-col items-center justify-center py-16"
     >
       <p class="mb-4 text-muted-foreground">Error loading workout</p>
-      <Button variant="outline" @click="handleBack">Go Back</Button>
+      <Button variant="outline" @click="router.push('/workouts')">Go Back</Button>
     </div>
 
     <!-- Not found state -->
     <div v-else class="flex flex-col items-center justify-center py-16">
       <p class="mb-4 text-muted-foreground">Workout not found</p>
-      <Button variant="outline" @click="handleBack">Go Back</Button>
+      <Button variant="outline" @click="router.push('/workouts')">Go Back</Button>
     </div>
-  </div>
+
+    <template v-if="state.status === 'success'" #footer>
+      <div class="p-4">
+        <Button class="w-full" size="lg" :disabled="isRedoing" @click="handleRedoWorkout">
+          {{ isRedoing ? 'Starting...' : 'Redo Workout' }}
+        </Button>
+      </div>
+    </template>
+  </PageLayout>
 </template>
