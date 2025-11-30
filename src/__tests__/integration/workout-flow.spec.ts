@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { waitFor } from '@testing-library/vue'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetWorkout } from '@/composables/useWorkout'
 import { resetDatabase } from '../setup'
@@ -111,6 +112,75 @@ describe('Workout Flow Integration', () => {
 
     // Verify the custom name appears on summary
     expect(await app.findByText('Push Day')).toBeDefined()
+
+    app.cleanup()
+  })
+
+  it('allows user to cancel and delete workout without saving', async () => {
+    const app = await createTestApp()
+
+    // Navigate to Active Workout
+    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    expect(app.router.currentRoute.value.path).toBe('/workout/active')
+
+    // Add an exercise and complete a set
+    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    await app.waitForDialog()
+    await app.user.click(app.getDialogButton('Bench Press'))
+    await app.fillSet(0, { kg: 100, reps: 10, rir: 2 })
+    await app.user.click(app.getSetRow(0).complete)
+
+    // Click Cancel button
+    await app.user.click(app.getByRole('button', { name: /^cancel$/i }))
+
+    // Verify cancel dialog appears with warning
+    await app.waitForDialog()
+    expect(app.getByRole('heading', { name: /cancel workout/i })).toBeDefined()
+    expect(app.getByText(/will be deleted/i)).toBeDefined()
+
+    // Click "Delete Workout" to confirm
+    await app.user.click(app.getDialogButton('Delete Workout'))
+
+    // Wait for async navigation back to home
+    await app.waitForRoute(/^\/$/)
+
+    // Verify workout is not saved (no "Resume Workout" prompt should appear)
+    // Start a new workout to verify state is clean
+    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    expect(app.router.currentRoute.value.path).toBe('/workout/active')
+
+    // Verify empty state (no exercises from previous workout)
+    expect(app.getByRole('button', { name: /add first exercise/i })).toBeDefined()
+
+    app.cleanup()
+  })
+
+  it('allows user to dismiss cancel dialog and continue workout', async () => {
+    const app = await createTestApp()
+
+    // Navigate to Active Workout
+    await app.user.click(app.getByRole('button', { name: /get started/i }))
+
+    // Add an exercise
+    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    await app.waitForDialog()
+    await app.user.click(app.getDialogButton('Bench Press'))
+
+    // Click Cancel button
+    await app.user.click(app.getByRole('button', { name: /^cancel$/i }))
+    await app.waitForDialog()
+
+    // Click "Keep Working Out" to dismiss
+    await app.user.click(app.getDialogButton('Keep Working Out'))
+
+    // Wait for dialog to close
+    await waitFor(() => {
+      app.assertDialogClosed()
+    })
+
+    // Verify still on active workout with exercise intact
+    expect(app.router.currentRoute.value.path).toBe('/workout/active')
+    expect(app.getByRole('heading', { name: /bench press/i })).toBeDefined()
 
     app.cleanup()
   })

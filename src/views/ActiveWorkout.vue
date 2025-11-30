@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/empty'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
+import WorkoutCancelDialog from '@/components/workout/WorkoutCancelDialog.vue'
 import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
 import WorkoutExerciseCarousel from '@/components/workout/WorkoutExerciseCarousel.vue'
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue'
@@ -43,8 +44,14 @@ const timer = useRestTimer()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
-const { isInitialized, startNewWorkoutSession, markInitialized, completeWorkout, saveNow } =
-  useWorkoutPersistence(workoutRef)
+const {
+  isInitialized,
+  startNewWorkoutSession,
+  markInitialized,
+  completeWorkout,
+  saveNow,
+  discardActiveWorkout,
+} = useWorkoutPersistence(workoutRef)
 
 onMounted(() => {
   // If not already initialized (from resume), start a new session
@@ -58,6 +65,7 @@ onMounted(() => {
 const showAddExercise = ref(false)
 const showEditExercise = ref(false)
 const showFinishDialog = ref(false)
+const showCancelDialog = ref(false)
 
 async function handleConfirmFinish(name: string) {
   // Update workout name before persisting
@@ -71,6 +79,12 @@ async function handleConfirmFinish(name: string) {
     router.push(`/workout/summary/${completed.id}`)
     return
   }
+  router.push('/')
+}
+
+async function handleConfirmCancel() {
+  await discardActiveWorkout()
+  resetWorkout()
   router.push('/')
 }
 
@@ -161,7 +175,11 @@ function handleSaveExercise(data: {
     </div>
 
     <!-- Rest Timer & Action Buttons -->
-    <WorkoutRestTimerWidget :timer="timer" @finish="showFinishDialog = true" />
+    <WorkoutRestTimerWidget
+      :timer="timer"
+      @finish="showFinishDialog = true"
+      @cancel="showCancelDialog = true"
+    />
 
     <!-- Add Exercise Dialog -->
     <WorkoutAddExerciseDialog
@@ -184,5 +202,8 @@ function handleSaveExercise(data: {
 
     <!-- Finish Workout Confirmation Dialog -->
     <WorkoutFinishDialog v-model:open="showFinishDialog" @confirm="handleConfirmFinish" />
+
+    <!-- Cancel Workout Confirmation Dialog -->
+    <WorkoutCancelDialog v-model:open="showCancelDialog" @confirm="handleConfirmCancel" />
   </div>
 </template>

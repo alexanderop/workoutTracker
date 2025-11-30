@@ -13,6 +13,7 @@ defineProps<Props>()
 
 const emit = defineEmits<{
   finish: []
+  cancel: []
 }>()
 </script>
 
@@ -74,9 +75,17 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <!-- Single Finish Button -->
-    <div class="px-4 pb-4">
-      <Button class="w-full h-12 text-base font-semibold" size="lg" @click="emit('finish')">
+    <!-- Action Buttons -->
+    <div class="flex gap-3 px-4 pb-4">
+      <Button
+        variant="outline"
+        class="flex-1 h-12 text-base font-semibold"
+        size="lg"
+        @click="emit('cancel')"
+      >
+        Cancel
+      </Button>
+      <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="emit('finish')">
         Finish Workout
       </Button>
     </div>
