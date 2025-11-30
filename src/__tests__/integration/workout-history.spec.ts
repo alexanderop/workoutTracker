@@ -66,7 +66,13 @@ describe('Workout History Detail View', () => {
     // Assert: Verify workout details are displayed
     expect(app.getByText('Push Day')).toBeDefined()
     expect(app.getByText('Bench Press')).toBeDefined()
-    expect(app.getByText('100')).toBeDefined() // kg value
+
+    // Expand the exercise card to see set details
+    const exerciseCard = app.getByText('Bench Press')
+    await app.user.click(exerciseCard)
+
+    // Verify set data is displayed (weight shown as "100kg", reps as "10")
+    expect(app.getByText('100kg')).toBeDefined()
     expect(app.getByText('10')).toBeDefined() // reps value
 
     app.cleanup()
