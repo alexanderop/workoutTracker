@@ -1,8 +1,8 @@
-import type { DbCompletedWorkout, DbWorkoutExercise, DbSet } from '@/db/schema'
+import type { DbCompletedWorkout, DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/db/schema'
 import { generateId } from '@/db'
-import { createDbExercise, createDbExerciseWithSets } from './dbExercise.factory'
+import { createDbStrengthBlock, createDbStrengthBlockWithSets } from './dbBlock.factory'
 
-const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'exercises'>> = {
+const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks'>> = {
   name: 'Test Workout',
   startedAt: Date.now() - 3600000,
   completedAt: Date.now(),
@@ -16,7 +16,7 @@ export function createDbCompletedWorkout(
   return {
     id: generateId(),
     ...DEFAULTS,
-    exercises: overrides.exercises ?? [createDbExercise()],
+    blocks: overrides.blocks ?? [createDbStrengthBlock()],
     ...overrides,
   }
 }
@@ -25,7 +25,7 @@ export class DbWorkoutBuilder {
   private workout: DbCompletedWorkout
 
   constructor() {
-    this.workout = createDbCompletedWorkout({ exercises: [] })
+    this.workout = createDbCompletedWorkout({ blocks: [] })
   }
 
   withName(name: string): this {
@@ -48,25 +48,38 @@ export class DbWorkoutBuilder {
     return this
   }
 
-  withExercise(overrides: Partial<DbWorkoutExercise> = {}): this {
-    const orderIndex = this.workout.exercises.length
-    const exercise = createDbExercise({ orderIndex, ...overrides })
+  withBlock(block: DbWorkoutBlock): this {
     this.workout = {
       ...this.workout,
-      exercises: [...this.workout.exercises, exercise],
+      blocks: [...this.workout.blocks, block],
     }
     return this
   }
 
-  withExerciseAndSets(
-    sets: ReadonlyArray<Partial<DbSet>>,
-    exerciseOverrides: Partial<Omit<DbWorkoutExercise, 'sets'>> = {},
-  ): this {
-    const orderIndex = this.workout.exercises.length
-    const exercise = createDbExerciseWithSets(sets, { orderIndex, ...exerciseOverrides })
+  withStrengthBlock(overrides: Partial<DbStrengthBlock> = {}): this {
+    const orderIndex = this.workout.blocks.length
+    const block = createDbStrengthBlock({ orderIndex, ...overrides })
     this.workout = {
       ...this.workout,
-      exercises: [...this.workout.exercises, exercise],
+      blocks: [...this.workout.blocks, block],
+    }
+    return this
+  }
+
+  // Backward compatible alias
+  withExercise(overrides: Partial<DbStrengthBlock> = {}): this {
+    return this.withStrengthBlock(overrides)
+  }
+
+  withExerciseAndSets(
+    sets: ReadonlyArray<Partial<DbSet>>,
+    exerciseOverrides: Partial<Omit<DbStrengthBlock, 'sets'>> = {},
+  ): this {
+    const orderIndex = this.workout.blocks.length
+    const block = createDbStrengthBlockWithSets(sets, { orderIndex, ...exerciseOverrides })
+    this.workout = {
+      ...this.workout,
+      blocks: [...this.workout.blocks, block],
     }
     return this
   }

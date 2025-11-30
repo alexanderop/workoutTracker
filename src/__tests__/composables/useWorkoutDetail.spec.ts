@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { DbCompletedWorkout, DbSet, DbWorkoutExercise } from '@/db/schema'
+import type { DbCompletedWorkout, DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/db/schema'
 import {
   calculateTotalWeight,
   computeWorkoutStats,
@@ -22,11 +22,12 @@ function createSet(overrides: Partial<DbSet> = {}): DbSet {
   }
 }
 
-function createExercise(
-  overrides: Partial<DbWorkoutExercise> & { sets?: ReadonlyArray<DbSet> } = {},
-): DbWorkoutExercise {
+function createStrengthBlock(
+  overrides: Partial<DbStrengthBlock> & { sets?: ReadonlyArray<DbSet> } = {},
+): DbStrengthBlock {
   return {
-    id: 'exercise-1',
+    kind: 'strength',
+    id: 'block-1',
     exerciseDefinitionId: 'def-1',
     name: 'Bench Press',
     equipment: 'barbell',
@@ -42,7 +43,7 @@ function createWorkout(overrides: Partial<DbCompletedWorkout> = {}): DbCompleted
   return {
     id: 'workout-1',
     name: 'Test Workout',
-    exercises: [],
+    blocks: [],
     startedAt: Date.now(),
     completedAt: Date.now(),
     durationSeconds: 3600,
@@ -56,19 +57,19 @@ function createWorkout(overrides: Partial<DbCompletedWorkout> = {}): DbCompleted
 // ============================================
 
 describe('getCompletedSets', () => {
-  it('returns empty array when no exercises', () => {
+  it('returns empty array when no blocks', () => {
     const result = getCompletedSets([])
     expect(result).toEqual([])
   })
 
   it('returns empty array when no sets are completed', () => {
-    const exercises = [
-      createExercise({
+    const blocks: ReadonlyArray<DbWorkoutBlock> = [
+      createStrengthBlock({
         sets: [createSet({ status: 'planned' }), createSet({ status: 'planned' })],
       }),
     ]
 
-    const result = getCompletedSets(exercises)
+    const result = getCompletedSets(blocks)
     expect(result).toEqual([])
   })
 
@@ -76,25 +77,27 @@ describe('getCompletedSets', () => {
     const completedSet = createSet({ id: 'completed-1', status: 'completed' })
     const plannedSet = createSet({ id: 'planned-1', status: 'planned' })
 
-    const exercises = [createExercise({ sets: [completedSet, plannedSet] })]
+    const blocks: ReadonlyArray<DbWorkoutBlock> = [
+      createStrengthBlock({ sets: [completedSet, plannedSet] }),
+    ]
 
-    const result = getCompletedSets(exercises)
+    const result = getCompletedSets(blocks)
 
     expect(result).toHaveLength(1)
     expect(result[0]?.id).toBe('completed-1')
   })
 
-  it('returns completed sets from multiple exercises', () => {
-    const exercises = [
-      createExercise({
-        id: 'ex-1',
+  it('returns completed sets from multiple blocks', () => {
+    const blocks: ReadonlyArray<DbWorkoutBlock> = [
+      createStrengthBlock({
+        id: 'block-1',
         sets: [
           createSet({ id: 'set-1', status: 'completed' }),
           createSet({ id: 'set-2', status: 'planned' }),
         ],
       }),
-      createExercise({
-        id: 'ex-2',
+      createStrengthBlock({
+        id: 'block-2',
         sets: [
           createSet({ id: 'set-3', status: 'completed' }),
           createSet({ id: 'set-4', status: 'completed' }),
@@ -102,7 +105,7 @@ describe('getCompletedSets', () => {
       }),
     ]
 
-    const result = getCompletedSets(exercises)
+    const result = getCompletedSets(blocks)
 
     expect(result).toHaveLength(3)
     expect(result.map((s) => s.id)).toEqual(['set-1', 'set-3', 'set-4'])
@@ -161,12 +164,12 @@ describe('computeWorkoutStats', () => {
     expect(stats.duration).toBe(5400)
   })
 
-  it('counts exercises', () => {
+  it('counts strength blocks as exercises', () => {
     const workout = createWorkout({
-      exercises: [
-        createExercise({ id: 'ex-1' }),
-        createExercise({ id: 'ex-2' }),
-        createExercise({ id: 'ex-3' }),
+      blocks: [
+        createStrengthBlock({ id: 'block-1' }),
+        createStrengthBlock({ id: 'block-2' }),
+        createStrengthBlock({ id: 'block-3' }),
       ],
     })
     const stats = computeWorkoutStats(workout)
@@ -175,8 +178,8 @@ describe('computeWorkoutStats', () => {
 
   it('counts only completed sets', () => {
     const workout = createWorkout({
-      exercises: [
-        createExercise({
+      blocks: [
+        createStrengthBlock({
           sets: [
             createSet({ status: 'completed' }),
             createSet({ status: 'completed' }),
@@ -191,8 +194,8 @@ describe('computeWorkoutStats', () => {
 
   it('calculates total weight from completed sets only', () => {
     const workout = createWorkout({
-      exercises: [
-        createExercise({
+      blocks: [
+        createStrengthBlock({
           sets: [
             createSet({ kg: '100', reps: '10', status: 'completed' }), // 1000
             createSet({ kg: '200', reps: '5', status: 'planned' }), // not counted
@@ -207,14 +210,14 @@ describe('computeWorkoutStats', () => {
   it('returns complete stats object', () => {
     const workout = createWorkout({
       durationSeconds: 3600,
-      exercises: [
-        createExercise({
+      blocks: [
+        createStrengthBlock({
           sets: [
             createSet({ kg: '100', reps: '10', status: 'completed' }),
             createSet({ kg: '100', reps: '8', status: 'completed' }),
           ],
         }),
-        createExercise({
+        createStrengthBlock({
           sets: [createSet({ kg: '50', reps: '12', status: 'completed' })],
         }),
       ],
@@ -227,6 +230,8 @@ describe('computeWorkoutStats', () => {
       exerciseCount: 2,
       setCount: 3,
       totalWeight: 2400, // 1000 + 800 + 600
+      timedBlockCount: 0,
+      totalRounds: 0,
     })
   })
 })

@@ -46,8 +46,8 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     async (newWorkout) => {
       if (!isInitialized.value) return
 
-      // No exercises means no active workout to save
-      if (newWorkout.exercises.length === 0) {
+      // No blocks means no active workout to save
+      if (newWorkout.blocks.length === 0) {
         await activeWorkoutRepository.clear()
         currentWorkoutStartedAt = null
         hasUnsavedChanges.value = false
@@ -144,7 +144,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Force save the current workout state immediately.
    */
   async function saveNow(): Promise<void> {
-    if (workout.value.exercises.length === 0) return
+    if (workout.value.blocks.length === 0) return
 
     persistenceState.value = { status: 'saving' }
     try {

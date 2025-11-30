@@ -1,0 +1,262 @@
+/**
+ * Block-based workout architecture types.
+ *
+ * Both bodybuilding and CrossFit workouts are modeled as a sequence of blocks.
+ * Each block has a type that determines its behavior and UI.
+ */
+
+import type { Set } from '@/composables/useWorkout'
+
+// ============================================
+// Block Exercise (for timed blocks)
+// ============================================
+
+/**
+ * Simplified exercise for timed blocks.
+ * Unlike strength exercises, these don't track individual sets.
+ */
+export type BlockExercise = {
+  id: string
+  name: string
+  prescribedReps: number
+  load: string | null // "24kg", "bodyweight", "light band"
+  thumbnail: string
+}
+
+// ============================================
+// Block Configurations
+// ============================================
+
+export type EmomConfig = {
+  minutes: number
+  exerciseRotation: 'each-minute' | 'full-round'
+}
+
+export type AmrapConfig = {
+  durationSeconds: number
+}
+
+export type TabataConfig = {
+  rounds: number
+  workSeconds: number
+  restSeconds: number
+}
+
+export type ForTimeConfig = {
+  timeCapSeconds: number | null
+}
+
+// ============================================
+// Block Results
+// ============================================
+
+export type AmrapResult = {
+  rounds: number
+  partialReps: number
+  actualDuration: number
+}
+
+export type EmomResult = {
+  completedMinutes: number
+  missedMinutes: ReadonlyArray<number>
+}
+
+export type TabataResult = {
+  repsPerRound: ReadonlyArray<number>
+}
+
+export type ForTimeResult = {
+  completionTime: number
+  completed: boolean
+}
+
+// ============================================
+// Block Types (Discriminated Union)
+// ============================================
+
+export type StrengthBlock = {
+  kind: 'strength'
+  id: number
+  name: string
+  equipment: string
+  targetReps: number
+  sets: Array<Set>
+  thumbnail: string
+}
+
+export type EmomBlock = {
+  kind: 'emom'
+  id: number
+  config: EmomConfig
+  exercises: ReadonlyArray<BlockExercise>
+  result: EmomResult | null
+}
+
+export type AmrapBlock = {
+  kind: 'amrap'
+  id: number
+  config: AmrapConfig
+  exercises: ReadonlyArray<BlockExercise>
+  result: AmrapResult | null
+}
+
+export type TabataBlock = {
+  kind: 'tabata'
+  id: number
+  config: TabataConfig
+  exercise: BlockExercise
+  result: TabataResult | null
+}
+
+export type ForTimeBlock = {
+  kind: 'fortime'
+  id: number
+  config: ForTimeConfig
+  exercises: ReadonlyArray<BlockExercise>
+  result: ForTimeResult | null
+}
+
+export type TimedBlock = EmomBlock | AmrapBlock | TabataBlock | ForTimeBlock
+
+export type WorkoutBlock = StrengthBlock | TimedBlock
+
+// ============================================
+// Block State (for active timed blocks)
+// ============================================
+
+export type BlockTimerState =
+  | { status: 'idle' }
+  | { status: 'running'; startedAt: number; pausedAt: null }
+  | { status: 'paused'; startedAt: number; pausedAt: number }
+  | { status: 'completed'; startedAt: number; completedAt: number }
+
+export type AmrapState = {
+  timerState: BlockTimerState
+  rounds: number
+  currentExerciseIndex: number
+}
+
+export type EmomState = {
+  timerState: BlockTimerState
+  currentMinute: number
+  currentExerciseIndex: number
+  missedMinutes: Array<number>
+}
+
+export type TabataState = {
+  timerState: BlockTimerState
+  currentRound: number
+  phase: 'work' | 'rest'
+  repsPerRound: Array<number>
+}
+
+export type ForTimeState = {
+  timerState: BlockTimerState
+  completedExercises: Array<string> // exercise IDs
+}
+
+export type ActiveBlockState =
+  | { kind: 'amrap'; state: AmrapState }
+  | { kind: 'emom'; state: EmomState }
+  | { kind: 'tabata'; state: TabataState }
+  | { kind: 'fortime'; state: ForTimeState }
+
+// ============================================
+// Helper Types
+// ============================================
+
+export type BlockKind = WorkoutBlock['kind']
+export type TimedBlockKind = TimedBlock['kind']
+
+// ============================================
+// Type Guards
+// ============================================
+
+export function isStrengthBlock(block: WorkoutBlock): block is StrengthBlock {
+  return block.kind === 'strength'
+}
+
+export function isTimedBlock(block: WorkoutBlock): block is TimedBlock {
+  return block.kind !== 'strength'
+}
+
+export function isAmrapBlock(block: WorkoutBlock): block is AmrapBlock {
+  return block.kind === 'amrap'
+}
+
+export function isEmomBlock(block: WorkoutBlock): block is EmomBlock {
+  return block.kind === 'emom'
+}
+
+export function isTabataBlock(block: WorkoutBlock): block is TabataBlock {
+  return block.kind === 'tabata'
+}
+
+export function isForTimeBlock(block: WorkoutBlock): block is ForTimeBlock {
+  return block.kind === 'fortime'
+}
+
+// ============================================
+// Block Display Helpers
+// ============================================
+
+export const BLOCK_LABELS: Record<BlockKind, string> = {
+  strength: 'Strength',
+  emom: 'EMOM',
+  amrap: 'AMRAP',
+  tabata: 'Tabata',
+  fortime: 'For Time',
+}
+
+export const BLOCK_ICONS: Record<BlockKind, string> = {
+  strength: '🏋️',
+  emom: '⏱️',
+  amrap: '🔄',
+  tabata: '⚡',
+  fortime: '🏁',
+}
+
+export function getBlockDurationDisplay(block: TimedBlock): string {
+  switch (block.kind) {
+    case 'emom':
+      return `${block.config.minutes} min`
+    case 'amrap':
+      return `${Math.floor(block.config.durationSeconds / 60)} min`
+    case 'tabata': {
+      const totalSeconds =
+        block.config.rounds * (block.config.workSeconds + block.config.restSeconds)
+      return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, '0')}`
+    }
+    case 'fortime':
+      return block.config.timeCapSeconds
+        ? `Cap: ${Math.floor(block.config.timeCapSeconds / 60)} min`
+        : 'No cap'
+  }
+}
+
+export function getBlockExerciseList(block: TimedBlock): ReadonlyArray<BlockExercise> {
+  if (block.kind === 'tabata') {
+    return [block.exercise]
+  }
+  return block.exercises
+}
+
+/**
+ * Get a short name for a block for display in carousel.
+ */
+export function getBlockShortName(block: WorkoutBlock): string {
+  if (block.kind === 'strength') {
+    return block.name.split(' ')[0] ?? block.name
+  }
+  return BLOCK_LABELS[block.kind]
+}
+
+/**
+ * Get the thumbnail/icon for a block.
+ */
+export function getBlockThumbnail(block: WorkoutBlock): string {
+  if (block.kind === 'strength') {
+    return block.thumbnail
+  }
+  return BLOCK_ICONS[block.kind]
+}

@@ -12,7 +12,7 @@ import { useWorkoutPersistence } from './useWorkoutPersistence'
 export type InitState =
   | { status: 'loading' }
   | { status: 'ready' }
-  | { status: 'prompt-resume'; workoutName: string; exerciseCount: number }
+  | { status: 'prompt-resume'; workoutName: string; blockCount: number }
   | { status: 'error'; error: Error }
 
 const initState = ref<InitState>({ status: 'loading' })
@@ -43,12 +43,12 @@ export function useAppInitialization() {
       // Check for active workout
       const activeWorkout = await activeWorkoutRepository.get()
 
-      if (activeWorkout && activeWorkout.exercises.length > 0) {
+      if (activeWorkout && activeWorkout.blocks.length > 0) {
         // Prompt user to resume
         initState.value = {
           status: 'prompt-resume',
           workoutName: activeWorkout.name,
-          exerciseCount: activeWorkout.exercises.length,
+          blockCount: activeWorkout.blocks.length,
         }
         return
       }

@@ -134,8 +134,9 @@ describe('Template Flow Integration', () => {
       // Create a template first
       const template = await templatesRepository.create({
         name: 'Leg Day',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Squat',
             equipment: 'Barbell',
@@ -184,8 +185,9 @@ describe('Template Flow Integration', () => {
       // Create a template first
       const template = await templatesRepository.create({
         name: 'Upper Body',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Bench Press',
             equipment: 'Barbell',
@@ -220,7 +222,7 @@ describe('Template Flow Integration', () => {
       // Verify changes persisted
       await waitFor(async () => {
         const updated = await templatesRepository.getById(template.id)
-        expect(updated?.exercises.length).toBe(2)
+        expect(updated?.blocks.length).toBe(2)
       })
 
       app.cleanup()
@@ -232,8 +234,9 @@ describe('Template Flow Integration', () => {
       // Create a template with multiple exercises
       const template = await templatesRepository.create({
         name: 'Push Day',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Bench Press',
             equipment: 'Barbell',
@@ -242,6 +245,7 @@ describe('Template Flow Integration', () => {
             defaultSetCount: 3,
           },
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Overhead Press',
             equipment: 'Barbell',
@@ -284,8 +288,9 @@ describe('Template Flow Integration', () => {
     it('updates template lastUsedAt when starting workout', async () => {
       const template = await templatesRepository.create({
         name: 'Test Template',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Squat',
             equipment: 'Barbell',
@@ -325,8 +330,9 @@ describe('Template Flow Integration', () => {
       // Create a template
       const template = await templatesRepository.create({
         name: 'To Delete',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Squat',
             equipment: 'Barbell',
@@ -367,8 +373,9 @@ describe('Template Flow Integration', () => {
     it('cancels delete when clicking cancel in dialog', async () => {
       const template = await templatesRepository.create({
         name: 'Keep Me',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Squat',
             equipment: 'Barbell',
@@ -413,8 +420,9 @@ describe('Template Flow Integration', () => {
     it('disables delete button when template has unsaved changes', async () => {
       const template = await templatesRepository.create({
         name: 'Test Template',
-        exercises: [
+        blocks: [
           {
+            kind: 'strength',
             exerciseDefinitionId: null,
             name: 'Squat',
             equipment: 'Barbell',

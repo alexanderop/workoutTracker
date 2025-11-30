@@ -1,5 +1,11 @@
 import { db, generateId } from '../index'
-import type { DbActiveWorkout, DbCompletedWorkout } from '../schema'
+import type {
+  DbActiveWorkout,
+  DbCompletedWorkout,
+  DbStrengthBlock,
+  DbWorkoutBlock,
+} from '../schema'
+import { isDbStrengthBlock } from '../schema'
 
 /**
  * Repository for managing completed workout history.
@@ -17,7 +23,7 @@ export const workoutsRepository = {
     const completedWorkout: DbCompletedWorkout = {
       id: generateId(),
       name: activeWorkout.name,
-      exercises: activeWorkout.exercises,
+      blocks: activeWorkout.blocks,
       startedAt: activeWorkout.startedAt,
       completedAt,
       durationSeconds: Math.floor((completedAt - activeWorkout.startedAt) / 1000),
@@ -78,7 +84,7 @@ export const workoutsRepository = {
 
   /**
    * Start a new active workout from a completed workout.
-   * Creates a new active workout with exercises and sets prefilled from the completed workout.
+   * Creates a new active workout with blocks and sets prefilled from the completed workout.
    * All set statuses are reset to 'planned'.
    */
   async startFromCompleted(id: string): Promise<DbActiveWorkout> {
@@ -89,35 +95,40 @@ export const workoutsRepository = {
 
     const now = Date.now()
 
-    // Sort exercises by orderIndex to ensure correct order
-    const sortedExercises = [...completedWorkout.exercises].sort(
-      (a, b) => a.orderIndex - b.orderIndex,
-    )
+    // Sort blocks by orderIndex to ensure correct order
+    const sortedBlocks = [...completedWorkout.blocks].sort((a, b) => a.orderIndex - b.orderIndex)
 
-    // Map exercises with new IDs while preserving all data
-    const newExercises = sortedExercises.map((exercise) => ({
-      id: generateId(),
-      exerciseDefinitionId: exercise.exerciseDefinitionId,
-      name: exercise.name,
-      equipment: exercise.equipment,
-      targetReps: exercise.targetReps,
-      thumbnail: exercise.thumbnail,
-      orderIndex: exercise.orderIndex,
-      sets: exercise.sets.map((set) => ({
+    // Map blocks with new IDs while preserving all data
+    const newBlocks: ReadonlyArray<DbWorkoutBlock> = sortedBlocks.map((block) => {
+      if (isDbStrengthBlock(block)) {
+        // Strength block - reset set statuses
+        return {
+          ...block,
+          id: generateId(),
+          sets: block.sets.map((set) => ({
+            id: generateId(),
+            kg: set.kg,
+            reps: set.reps,
+            rir: set.rir,
+            status: 'planned' as const,
+            completedAt: null,
+          })),
+        } satisfies DbStrengthBlock
+      }
+
+      // Timed blocks - reset results
+      return {
+        ...block,
         id: generateId(),
-        kg: set.kg,
-        reps: set.reps,
-        rir: set.rir,
-        status: 'planned' as const,
-        completedAt: null,
-      })),
-    }))
+        result: null,
+      }
+    })
 
     const activeWorkout: DbActiveWorkout = {
       id: 'current',
       name: completedWorkout.name,
-      exercises: newExercises,
-      selectedExerciseId: newExercises[0]?.id ?? '',
+      blocks: newBlocks,
+      selectedBlockIndex: 0,
       startedAt: now,
       lastModifiedAt: now,
     }

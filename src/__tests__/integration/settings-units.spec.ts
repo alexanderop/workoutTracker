@@ -3,7 +3,7 @@ import { createTestApp } from '../helpers/createTestApp'
 import { resetWorkout } from '@/composables/useWorkout'
 import { resetDatabase } from '../setup'
 import { db, generateId } from '@/db'
-import type { DbCompletedWorkout, DbWorkoutExercise, DbSet } from '@/db/schema'
+import type { DbCompletedWorkout, DbStrengthBlock, DbSet } from '@/db/schema'
 import { kgToLbs } from '@/lib/unitConversion'
 
 describe('Settings Units Integration', () => {
@@ -59,8 +59,9 @@ describe('Settings Units Integration', () => {
 
     // Start a workout
     await app.user.click(app.getByRole('button', { name: /get started/i }))
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
+    // The dialog opens with Exercises tab active by default
     await app.user.click(app.getDialogButton('Bench Press'))
 
     // Verify default column header shows KG
@@ -97,7 +98,8 @@ describe('Settings Units Integration', () => {
       completedAt: Date.now(),
     }
 
-    const benchPressExercise: DbWorkoutExercise = {
+    const benchPressBlock: DbStrengthBlock = {
+      kind: 'strength',
       id: generateId(),
       exerciseDefinitionId: null,
       name: 'Bench Press',
@@ -111,7 +113,7 @@ describe('Settings Units Integration', () => {
     const completedWorkout: DbCompletedWorkout = {
       id: generateId(),
       name: 'Push Day',
-      exercises: [benchPressExercise],
+      blocks: [benchPressBlock],
       startedAt: Date.now() - 3600000,
       completedAt: Date.now(),
       durationSeconds: 3600,
@@ -163,7 +165,8 @@ describe('Settings Units Integration', () => {
       completedAt: Date.now() + 1000,
     }
 
-    const benchPressExercise: DbWorkoutExercise = {
+    const benchPressBlock: DbStrengthBlock = {
+      kind: 'strength',
       id: generateId(),
       exerciseDefinitionId: null,
       name: 'Bench Press',
@@ -177,7 +180,7 @@ describe('Settings Units Integration', () => {
     const completedWorkout: DbCompletedWorkout = {
       id: generateId(),
       name: 'Strength Session',
-      exercises: [benchPressExercise],
+      blocks: [benchPressBlock],
       startedAt: Date.now() - 3600000,
       completedAt: Date.now(),
       durationSeconds: 3600,
@@ -219,8 +222,9 @@ describe('Settings Units Integration', () => {
     // Arrange: Start workout and complete sets with known weights
     await app.navigateTo('/')
     await app.user.click(app.getByRole('button', { name: /get started/i }))
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
+    // The dialog opens with Exercises tab active by default
     await app.user.click(app.getDialogButton('Bench Press'))
 
     // Complete two sets: 10kg x 10 reps + 5kg x 10 reps = 150kg total

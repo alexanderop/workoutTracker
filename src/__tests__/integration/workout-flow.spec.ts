@@ -19,15 +19,15 @@ describe('Workout Flow Integration', () => {
     await app.user.click(app.getByRole('button', { name: /get started/i }))
     expect(app.router.currentRoute.value.path).toBe('/workout/active')
 
-    // Add first exercise
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    // Add first exercise (via Add Block dialog - Exercises tab is default)
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Bench Press'))
     app.assertDialogClosed()
     expect(app.getByRole('heading', { name: /bench press/i })).toBeDefined()
 
     // Add second exercise via carousel "+" button (using aria-label)
-    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
+    await app.user.click(app.getByRole('button', { name: /add block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Squat'))
     expect(app.getByRole('heading', { name: /squat/i })).toBeDefined()
@@ -53,8 +53,8 @@ describe('Workout Flow Integration', () => {
     await app.user.click(app.getByRole('button', { name: /get started/i }))
     expect(app.router.currentRoute.value.path).toBe('/workout/active')
 
-    // Add an exercise
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    // Add an exercise (via Add Block dialog - Exercises tab is default)
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Bench Press'))
     app.assertDialogClosed()
@@ -91,8 +91,8 @@ describe('Workout Flow Integration', () => {
     // Navigate to Active Workout
     await app.user.click(app.getByRole('button', { name: /get started/i }))
 
-    // Add an exercise and complete a set
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    // Add an exercise and complete a set (via Add Block dialog - Exercises tab is default)
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Bench Press'))
     await app.fillSet(0, { kg: 100, reps: 10, rir: 2 })
@@ -123,8 +123,8 @@ describe('Workout Flow Integration', () => {
     await app.user.click(app.getByRole('button', { name: /get started/i }))
     expect(app.router.currentRoute.value.path).toBe('/workout/active')
 
-    // Add an exercise and complete a set
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    // Add an exercise and complete a set (via Add Block dialog - Exercises tab is default)
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Bench Press'))
     await app.fillSet(0, { kg: 100, reps: 10, rir: 2 })
@@ -149,8 +149,8 @@ describe('Workout Flow Integration', () => {
     await app.user.click(app.getByRole('button', { name: /get started/i }))
     expect(app.router.currentRoute.value.path).toBe('/workout/active')
 
-    // Verify empty state (no exercises from previous workout)
-    expect(app.getByRole('button', { name: /add first exercise/i })).toBeDefined()
+    // Verify empty state (no blocks from previous workout)
+    expect(app.getByRole('button', { name: /add first block/i })).toBeDefined()
 
     app.cleanup()
   })
@@ -161,8 +161,8 @@ describe('Workout Flow Integration', () => {
     // Navigate to Active Workout
     await app.user.click(app.getByRole('button', { name: /get started/i }))
 
-    // Add an exercise
-    await app.user.click(app.getByRole('button', { name: /add first exercise/i }))
+    // Add an exercise (via Add Block dialog - Exercises tab is default)
+    await app.user.click(app.getByRole('button', { name: /add first block/i }))
     await app.waitForDialog()
     await app.user.click(app.getDialogButton('Bench Press'))
 

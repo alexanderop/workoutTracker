@@ -4,10 +4,11 @@ import type { Set } from '@/composables/useWorkout'
 import { workoutBuilder } from '../factories'
 
 function setupExerciseWithSets(sets: ReadonlyArray<Partial<Set>>) {
-  const { workout, completeSet } = useWorkout()
+  const { workout, exercises, completeSet } = useWorkout()
   workout.value = workoutBuilder().withExerciseAndSets(sets).build()
-  return { workout, completeSet }
+  return { workout, exercises, completeSet }
 }
+
 describe('useWorkout', () => {
   afterEach(() => {
     resetWorkout()
@@ -16,15 +17,15 @@ describe('useWorkout', () => {
   describe('completeSet', () => {
     describe('pre-fill behavior', () => {
       it('pre-fills empty next set with values from completed set', () => {
-        const { workout, completeSet } = setupExerciseWithSets([
+        const { exercises, completeSet } = setupExerciseWithSets([
           { status: 'active' },
           { kg: '', reps: '', rir: '', status: 'planned' },
         ])
 
-        const firstSet = workout.value.exercises[0]!.sets[0]!
+        const firstSet = exercises.value[0]!.sets[0]!
         completeSet(firstSet)
 
-        const secondSet = workout.value.exercises[0]!.sets[1]!
+        const secondSet = exercises.value[0]!.sets[1]!
         expect(secondSet.kg).toBe('100')
         expect(secondSet.reps).toBe('8')
         expect(secondSet.rir).toBe('2')
@@ -32,27 +33,27 @@ describe('useWorkout', () => {
       })
 
       it('preserves existing values in next set - only fills empty fields', () => {
-        const { workout, completeSet } = setupExerciseWithSets([
+        const { exercises, completeSet } = setupExerciseWithSets([
           { status: 'active' },
           { kg: '90', reps: '', rir: '3', status: 'planned' },
         ])
 
-        const firstSet = workout.value.exercises[0]!.sets[0]!
+        const firstSet = exercises.value[0]!.sets[0]!
         completeSet(firstSet)
 
-        const secondSet = workout.value.exercises[0]!.sets[1]!
+        const secondSet = exercises.value[0]!.sets[1]!
         expect(secondSet.kg).toBe('90') // Preserved
         expect(secondSet.reps).toBe('8') // Filled from first set
         expect(secondSet.rir).toBe('3') // Preserved
       })
 
       it('does not pre-fill when completing last set in exercise', () => {
-        const { workout, completeSet } = setupExerciseWithSets([
+        const { exercises, completeSet } = setupExerciseWithSets([
           { status: 'completed' },
           { status: 'active' },
         ])
 
-        const lastSet = workout.value.exercises[0]!.sets[1]!
+        const lastSet = exercises.value[0]!.sets[1]!
         const result = completeSet(lastSet)
 
         // Should indicate workout complete (no more sets/exercises)
@@ -63,7 +64,7 @@ describe('useWorkout', () => {
       })
 
       it('does not pre-fill when moving to next exercise', () => {
-        const { workout, completeSet } = useWorkout()
+        const { workout, exercises, completeSet } = useWorkout()
         workout.value = workoutBuilder()
           .withExerciseAndSets([{ status: 'active' }], { name: 'Bench Press' })
           .withExerciseAndSets([{ kg: '', reps: '', rir: '', status: 'planned' }], {
@@ -71,24 +72,24 @@ describe('useWorkout', () => {
           })
           .build()
 
-        const firstExerciseSet = workout.value.exercises[0]!.sets[0]!
+        const firstExerciseSet = exercises.value[0]!.sets[0]!
         const result = completeSet(firstExerciseSet)
 
-        // Should move to next exercise
+        // Should move to next block
         expect(result.kind).toBe('completed')
         if (result.kind === 'completed') {
-          expect(result.nextAction).toBe('next-exercise')
+          expect(result.nextAction).toBe('next-block')
         }
 
         // Second exercise's set should remain empty (no cross-exercise pre-fill)
-        const secondExerciseSet = workout.value.exercises[1]!.sets[0]!
+        const secondExerciseSet = exercises.value[1]!.sets[0]!
         expect(secondExerciseSet.kg).toBe('')
         expect(secondExerciseSet.reps).toBe('')
         expect(secondExerciseSet.rir).toBe('')
       })
 
       it('pre-fills correctly in second exercise with overlapping set IDs', () => {
-        const { workout, completeSet } = useWorkout()
+        const { workout, exercises, completeSet } = useWorkout()
         workout.value = workoutBuilder()
           .withExerciseAndSets(
             [{ status: 'completed' }, { kg: '', reps: '', rir: '', status: 'planned' }],
@@ -105,22 +106,22 @@ describe('useWorkout', () => {
           .build()
 
         // Complete first set of second exercise (Squat)
-        const squatFirstSet = workout.value.exercises[1]!.sets[0]!
+        const squatFirstSet = exercises.value[1]!.sets[0]!
         const result = completeSet(squatFirstSet)
 
         expect(result.kind).toBe('completed')
         if (result.kind === 'completed' && result.nextAction === 'next-set') {
-          expect(result.exerciseId).toBe(2) // Squat's ID
+          expect(result.blockIndex).toBe(1) // Squat is at block index 1
         }
 
         // Second set of Squat should be pre-filled with Squat values, not Bench values
-        const squatSecondSet = workout.value.exercises[1]!.sets[1]!
+        const squatSecondSet = exercises.value[1]!.sets[1]!
         expect(squatSecondSet.kg).toBe('140')
         expect(squatSecondSet.reps).toBe('5')
         expect(squatSecondSet.rir).toBe('1')
 
         // Bench Press sets should be unchanged
-        const benchSecondSet = workout.value.exercises[0]!.sets[1]!
+        const benchSecondSet = exercises.value[0]!.sets[1]!
         expect(benchSecondSet.kg).toBe('')
         expect(benchSecondSet.reps).toBe('')
         expect(benchSecondSet.rir).toBe('')
@@ -129,11 +130,11 @@ describe('useWorkout', () => {
 
     describe('set completion', () => {
       it('returns uncompleted when set is not ready', () => {
-        const { workout, completeSet } = setupExerciseWithSets([
+        const { exercises, completeSet } = setupExerciseWithSets([
           { kg: '', reps: '', rir: '', status: 'active' },
         ])
 
-        const set = workout.value.exercises[0]!.sets[0]!
+        const set = exercises.value[0]!.sets[0]!
         const result = completeSet(set)
 
         expect(result.kind).toBe('uncompleted')
@@ -141,9 +142,9 @@ describe('useWorkout', () => {
       })
 
       it('toggles completed set back to active', () => {
-        const { workout, completeSet } = setupExerciseWithSets([{ status: 'completed' }])
+        const { exercises, completeSet } = setupExerciseWithSets([{ status: 'completed' }])
 
-        const set = workout.value.exercises[0]!.sets[0]!
+        const set = exercises.value[0]!.sets[0]!
         const result = completeSet(set)
 
         expect(result.kind).toBe('uncompleted')

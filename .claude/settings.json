@@ -20,6 +20,11 @@
             "type": "command",
             "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-protect-shadcn.ts\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-no-else.ts\"",
+            "timeout": 5
           }
         ]
       },
@@ -42,6 +47,18 @@
             "type": "command",
             "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/notification-desktop.ts\"",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-typecheck.ts\"",
+            "timeout": 30
           }
         ]
       }

@@ -1,6 +1,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { workoutsRepository } from '@/db/repositories/workouts'
-import type { DbCompletedWorkout, DbSet, DbWorkoutExercise } from '@/db/schema'
+import type { DbCompletedWorkout, DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/db/schema'
+import { isDbStrengthBlock } from '@/db/schema'
 
 // ============================================
 // Types
@@ -17,6 +18,8 @@ export type WorkoutStats = {
   exerciseCount: number
   setCount: number
   totalWeight: number
+  timedBlockCount: number
+  totalRounds: number
 }
 
 // ============================================
@@ -24,12 +27,21 @@ export type WorkoutStats = {
 // ============================================
 
 /**
- * Extracts all completed sets from a list of exercises.
+ * Extracts all completed sets from strength blocks.
  */
-export function getCompletedSets(
-  exercises: ReadonlyArray<DbWorkoutExercise>,
-): ReadonlyArray<DbSet> {
-  return exercises.flatMap((exercise) => exercise.sets.filter((set) => set.status === 'completed'))
+export function getCompletedSets(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray<DbSet> {
+  return blocks
+    .filter(isDbStrengthBlock)
+    .flatMap((block) => block.sets.filter((set) => set.status === 'completed'))
+}
+
+/**
+ * Gets all strength blocks from a workout.
+ */
+export function getStrengthBlocks(
+  blocks: ReadonlyArray<DbWorkoutBlock>,
+): ReadonlyArray<DbStrengthBlock> {
+  return blocks.filter(isDbStrengthBlock)
 }
 
 /**
@@ -46,16 +58,38 @@ export function calculateTotalWeight(sets: ReadonlyArray<DbSet>): number {
 }
 
 /**
+ * Counts total rounds from AMRAP blocks.
+ */
+export function countTotalRounds(blocks: ReadonlyArray<DbWorkoutBlock>): number {
+  return blocks.reduce((total, block) => {
+    if (block.kind === 'amrap' && block.result) {
+      return total + block.result.rounds
+    }
+    return total
+  }, 0)
+}
+
+/**
+ * Counts timed blocks in a workout.
+ */
+export function countTimedBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): number {
+  return blocks.filter((block) => block.kind !== 'strength').length
+}
+
+/**
  * Computes workout statistics from a completed workout.
  */
 export function computeWorkoutStats(workout: DbCompletedWorkout): WorkoutStats {
-  const completedSets = getCompletedSets(workout.exercises)
+  const strengthBlocks = getStrengthBlocks(workout.blocks)
+  const completedSets = getCompletedSets(workout.blocks)
 
   return {
     duration: workout.durationSeconds,
-    exerciseCount: workout.exercises.length,
+    exerciseCount: strengthBlocks.length,
     setCount: completedSets.length,
     totalWeight: calculateTotalWeight(completedSets),
+    timedBlockCount: countTimedBlocks(workout.blocks),
+    totalRounds: countTotalRounds(workout.blocks),
   }
 }
 
@@ -68,6 +102,8 @@ const DEFAULT_STATS: WorkoutStats = {
   exerciseCount: 0,
   setCount: 0,
   totalWeight: 0,
+  timedBlockCount: 0,
+  totalRounds: 0,
 }
 
 // ============================================

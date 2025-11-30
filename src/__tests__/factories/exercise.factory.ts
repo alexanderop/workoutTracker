@@ -1,41 +1,25 @@
-import type { Exercise, Set } from '@/composables/useWorkout'
+// Re-export from block.factory for backward compatibility
+// Tests using Exercise terminology will continue to work
+export {
+  createStrengthBlock as createExercise,
+  createStrengthBlockWithSets as createExerciseWithSets,
+} from './block.factory'
+
+import type { StrengthBlock } from '@/types/blocks'
 import { faker } from '@faker-js/faker'
-import { createEmptySet, createSet } from './set.factory'
+import { createStrengthBlock } from './block.factory'
 
-const DEFAULTS: Readonly<Omit<Exercise, 'sets'>> = {
-  id: 1,
-  name: 'Bench Press',
-  equipment: 'Barbell',
-  targetReps: 8,
-  thumbnail: '🏋️',
-}
-
-export function createExercise(overrides: Partial<Exercise> = {}): Exercise {
-  return {
-    ...DEFAULTS,
-    sets: [createSet(), createEmptySet({ id: 2 }), createEmptySet({ id: 3 })],
-    ...overrides,
-  }
-}
-
-export function createExerciseWithSets(
-  sets: ReadonlyArray<Partial<Set>>,
-  overrides: Partial<Omit<Exercise, 'sets'>> = {},
-): Exercise {
-  return createExercise({
-    ...overrides,
-    sets: sets.map((s, i) => createSet({ id: i + 1, ...s })),
-  })
-}
-
-export function createRandomExercise(overrides: Partial<Exercise> = {}): Exercise {
+export function createRandomExercise(overrides: Partial<StrengthBlock> = {}): StrengthBlock {
   const exerciseNames = ['Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Barbell Row']
   const equipmentTypes = ['Barbell', 'Dumbbell', 'Cable', 'Machine']
 
-  return createExercise({
+  return createStrengthBlock({
     name: faker.helpers.arrayElement(exerciseNames),
     equipment: faker.helpers.arrayElement(equipmentTypes),
     targetReps: faker.number.int({ min: 5, max: 15 }),
     ...overrides,
   })
 }
+
+// Re-export the type for backward compatibility
+export type { StrengthBlock as Exercise } from '@/types/blocks'

@@ -87,15 +87,34 @@ async function handleRedoWorkout() {
         :style="{ animationDelay: '100ms' }"
       />
 
-      <!-- Exercises list -->
+      <!-- Blocks list -->
       <div class="flex-1 space-y-3 p-4">
-        <WorkoutDetailExerciseCard
-          v-for="(exercise, index) in state.workout.exercises"
-          :key="exercise.id"
-          :exercise="exercise"
-          :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-          :style="{ animationDelay: `${150 + index * 50}ms` }"
-        />
+        <template v-for="(block, index) in state.workout.blocks" :key="block.id">
+          <WorkoutDetailExerciseCard
+            v-if="block.kind === 'strength'"
+            :exercise="block"
+            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+            :style="{ animationDelay: `${150 + index * 50}ms` }"
+          />
+          <!-- Timed blocks show as simple cards for now -->
+          <div
+            v-else
+            class="rounded-lg border bg-card p-4"
+            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+            :style="{ animationDelay: `${150 + index * 50}ms` }"
+          >
+            <div class="font-semibold uppercase">{{ block.kind }}</div>
+            <div v-if="block.result" class="text-sm text-muted-foreground mt-1">
+              <template v-if="block.kind === 'amrap'"> {{ block.result.rounds }} rounds </template>
+              <template v-else-if="block.kind === 'fortime'">
+                {{ block.result.completed ? 'Completed' : 'Capped' }}
+              </template>
+              <template v-else-if="block.kind === 'emom'">
+                {{ block.result.completedMinutes }} minutes completed
+              </template>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Notes section if available -->

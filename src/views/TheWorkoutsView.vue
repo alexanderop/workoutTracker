@@ -97,9 +97,7 @@ function formatTemplateDate(timestamp: number | null): string {
             <div class="flex justify-between items-center">
               <div>
                 <div class="font-medium">{{ template.name }}</div>
-                <div class="text-sm text-muted-foreground">
-                  {{ template.exercises.length }} exercises
-                </div>
+                <div class="text-sm text-muted-foreground">{{ template.blocks.length }} blocks</div>
                 <div class="text-xs text-muted-foreground mt-1">
                   {{ formatTemplateDate(template.lastUsedAt) }}
                 </div>

@@ -1,18 +1,19 @@
 import type { Workout } from '@/composables/useWorkout'
-import { createExercise } from './exercise.factory'
+import { createStrengthBlock } from './block.factory'
 
-const DEFAULTS: Readonly<Omit<Workout, 'exercises'>> = {
+const DEFAULTS: Readonly<Omit<Workout, 'blocks'>> = {
   id: 1,
   name: 'Test Workout',
-  selectedExerciseId: 1,
+  selectedBlockIndex: 0,
+  startedAt: Date.now(),
 }
 
 export function createWorkout(overrides: Partial<Workout> = {}): Workout {
-  const exercises = overrides.exercises ?? [createExercise()]
+  const blocks = overrides.blocks ?? [createStrengthBlock()]
   return {
     ...DEFAULTS,
-    exercises,
-    selectedExerciseId: overrides.selectedExerciseId ?? exercises[0]?.id ?? 0,
+    blocks,
+    selectedBlockIndex: overrides.selectedBlockIndex ?? (blocks.length > 0 ? 0 : -1),
     ...overrides,
   }
 }

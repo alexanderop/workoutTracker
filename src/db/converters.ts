@@ -1,10 +1,40 @@
-import type { Exercise, Set, Workout } from '@/composables/useWorkout'
+import type { Set, Workout } from '@/composables/useWorkout'
 import type { CustomExercise } from '@/stores/exercises'
-import type { DbActiveWorkout, DbCustomExercise, DbSet, DbWorkoutExercise } from './schema'
+import type {
+  AmrapBlock,
+  AmrapResult,
+  BlockExercise,
+  EmomBlock,
+  EmomResult,
+  ForTimeBlock,
+  ForTimeResult,
+  StrengthBlock,
+  TabataBlock,
+  TabataResult,
+  WorkoutBlock,
+} from '@/types/blocks'
+import type {
+  DbActiveWorkout,
+  DbAmrapBlock,
+  DbAmrapResult,
+  DbBlockExercise,
+  DbCustomExercise,
+  DbEmomBlock,
+  DbEmomResult,
+  DbForTimeBlock,
+  DbForTimeResult,
+  DbLegacyActiveWorkout,
+  DbSet,
+  DbStrengthBlock,
+  DbTabataBlock,
+  DbTabataResult,
+  DbWorkoutBlock,
+  DbWorkoutExercise,
+} from './schema'
 import { generateId } from './index'
 
 // ============================================
-// Workout Converters
+// Set Converters
 // ============================================
 
 /**
@@ -34,35 +64,265 @@ function dbToSet(dbSet: Readonly<DbSet>, index: number): Set {
   }
 }
 
-/**
- * Convert in-memory Exercise to database format.
- */
-function exerciseToDb(exercise: Readonly<Exercise>, orderIndex: number): DbWorkoutExercise {
+// ============================================
+// Block Exercise Converters
+// ============================================
+
+function blockExerciseToDb(exercise: Readonly<BlockExercise>): DbBlockExercise {
   return {
-    id: String(exercise.id),
-    exerciseDefinitionId: null,
+    id: exercise.id,
     name: exercise.name,
-    equipment: exercise.equipment,
-    targetReps: exercise.targetReps,
+    prescribedReps: exercise.prescribedReps,
+    load: exercise.load,
     thumbnail: exercise.thumbnail,
+  }
+}
+
+function dbToBlockExercise(dbExercise: Readonly<DbBlockExercise>): BlockExercise {
+  return {
+    id: dbExercise.id,
+    name: dbExercise.name,
+    prescribedReps: dbExercise.prescribedReps,
+    load: dbExercise.load,
+    thumbnail: dbExercise.thumbnail,
+  }
+}
+
+// ============================================
+// Block Result Converters
+// ============================================
+
+function amrapResultToDb(result: Readonly<AmrapResult>): DbAmrapResult {
+  return {
+    rounds: result.rounds,
+    partialReps: result.partialReps,
+    actualDuration: result.actualDuration,
+  }
+}
+
+function dbToAmrapResult(dbResult: Readonly<DbAmrapResult>): AmrapResult {
+  return {
+    rounds: dbResult.rounds,
+    partialReps: dbResult.partialReps,
+    actualDuration: dbResult.actualDuration,
+  }
+}
+
+function emomResultToDb(result: Readonly<EmomResult>): DbEmomResult {
+  return {
+    completedMinutes: result.completedMinutes,
+    missedMinutes: [...result.missedMinutes],
+  }
+}
+
+function dbToEmomResult(dbResult: Readonly<DbEmomResult>): EmomResult {
+  return {
+    completedMinutes: dbResult.completedMinutes,
+    missedMinutes: [...dbResult.missedMinutes],
+  }
+}
+
+function tabataResultToDb(result: Readonly<TabataResult>): DbTabataResult {
+  return {
+    repsPerRound: [...result.repsPerRound],
+  }
+}
+
+function dbToTabataResult(dbResult: Readonly<DbTabataResult>): TabataResult {
+  return {
+    repsPerRound: [...dbResult.repsPerRound],
+  }
+}
+
+function forTimeResultToDb(result: Readonly<ForTimeResult>): DbForTimeResult {
+  return {
+    completionTime: result.completionTime,
+    completed: result.completed,
+  }
+}
+
+function dbToForTimeResult(dbResult: Readonly<DbForTimeResult>): ForTimeResult {
+  return {
+    completionTime: dbResult.completionTime,
+    completed: dbResult.completed,
+  }
+}
+
+// ============================================
+// Block Converters
+// ============================================
+
+function strengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: number): DbStrengthBlock {
+  return {
+    kind: 'strength',
+    id: String(block.id),
+    exerciseDefinitionId: null,
+    name: block.name,
+    equipment: block.equipment,
+    targetReps: block.targetReps,
+    thumbnail: block.thumbnail,
+    sets: block.sets.map(setToDb),
     orderIndex,
-    sets: exercise.sets.map(setToDb),
+  }
+}
+
+function dbToStrengthBlock(dbBlock: Readonly<DbStrengthBlock>, index: number): StrengthBlock {
+  return {
+    kind: 'strength',
+    id: index + 1,
+    name: dbBlock.name,
+    equipment: dbBlock.equipment,
+    targetReps: dbBlock.targetReps,
+    thumbnail: dbBlock.thumbnail,
+    sets: dbBlock.sets.map(dbToSet),
+  }
+}
+
+function amrapBlockToDb(block: Readonly<AmrapBlock>, orderIndex: number): DbAmrapBlock {
+  return {
+    kind: 'amrap',
+    id: String(block.id),
+    config: {
+      durationSeconds: block.config.durationSeconds,
+    },
+    exercises: block.exercises.map(blockExerciseToDb),
+    result: block.result ? amrapResultToDb(block.result) : null,
+    orderIndex,
+  }
+}
+
+function dbToAmrapBlock(dbBlock: Readonly<DbAmrapBlock>, index: number): AmrapBlock {
+  return {
+    kind: 'amrap',
+    id: index + 1,
+    config: {
+      durationSeconds: dbBlock.config.durationSeconds,
+    },
+    exercises: dbBlock.exercises.map(dbToBlockExercise),
+    result: dbBlock.result ? dbToAmrapResult(dbBlock.result) : null,
+  }
+}
+
+function emomBlockToDb(block: Readonly<EmomBlock>, orderIndex: number): DbEmomBlock {
+  return {
+    kind: 'emom',
+    id: String(block.id),
+    config: {
+      minutes: block.config.minutes,
+      exerciseRotation: block.config.exerciseRotation,
+    },
+    exercises: block.exercises.map(blockExerciseToDb),
+    result: block.result ? emomResultToDb(block.result) : null,
+    orderIndex,
+  }
+}
+
+function dbToEmomBlock(dbBlock: Readonly<DbEmomBlock>, index: number): EmomBlock {
+  return {
+    kind: 'emom',
+    id: index + 1,
+    config: {
+      minutes: dbBlock.config.minutes,
+      exerciseRotation: dbBlock.config.exerciseRotation,
+    },
+    exercises: dbBlock.exercises.map(dbToBlockExercise),
+    result: dbBlock.result ? dbToEmomResult(dbBlock.result) : null,
+  }
+}
+
+function tabataBlockToDb(block: Readonly<TabataBlock>, orderIndex: number): DbTabataBlock {
+  return {
+    kind: 'tabata',
+    id: String(block.id),
+    config: {
+      rounds: block.config.rounds,
+      workSeconds: block.config.workSeconds,
+      restSeconds: block.config.restSeconds,
+    },
+    exercise: blockExerciseToDb(block.exercise),
+    result: block.result ? tabataResultToDb(block.result) : null,
+    orderIndex,
+  }
+}
+
+function dbToTabataBlock(dbBlock: Readonly<DbTabataBlock>, index: number): TabataBlock {
+  return {
+    kind: 'tabata',
+    id: index + 1,
+    config: {
+      rounds: dbBlock.config.rounds,
+      workSeconds: dbBlock.config.workSeconds,
+      restSeconds: dbBlock.config.restSeconds,
+    },
+    exercise: dbToBlockExercise(dbBlock.exercise),
+    result: dbBlock.result ? dbToTabataResult(dbBlock.result) : null,
+  }
+}
+
+function forTimeBlockToDb(block: Readonly<ForTimeBlock>, orderIndex: number): DbForTimeBlock {
+  return {
+    kind: 'fortime',
+    id: String(block.id),
+    config: {
+      timeCapSeconds: block.config.timeCapSeconds,
+    },
+    exercises: block.exercises.map(blockExerciseToDb),
+    result: block.result ? forTimeResultToDb(block.result) : null,
+    orderIndex,
+  }
+}
+
+function dbToForTimeBlock(dbBlock: Readonly<DbForTimeBlock>, index: number): ForTimeBlock {
+  return {
+    kind: 'fortime',
+    id: index + 1,
+    config: {
+      timeCapSeconds: dbBlock.config.timeCapSeconds,
+    },
+    exercises: dbBlock.exercises.map(dbToBlockExercise),
+    result: dbBlock.result ? dbToForTimeResult(dbBlock.result) : null,
   }
 }
 
 /**
- * Convert database Exercise to in-memory format.
+ * Convert in-memory block to database format.
  */
-function dbToExercise(dbExercise: Readonly<DbWorkoutExercise>, index: number): Exercise {
-  return {
-    id: index + 1,
-    name: dbExercise.name,
-    equipment: dbExercise.equipment,
-    targetReps: dbExercise.targetReps,
-    thumbnail: dbExercise.thumbnail,
-    sets: dbExercise.sets.map(dbToSet),
+function blockToDb(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkoutBlock {
+  switch (block.kind) {
+    case 'strength':
+      return strengthBlockToDb(block, orderIndex)
+    case 'amrap':
+      return amrapBlockToDb(block, orderIndex)
+    case 'emom':
+      return emomBlockToDb(block, orderIndex)
+    case 'tabata':
+      return tabataBlockToDb(block, orderIndex)
+    case 'fortime':
+      return forTimeBlockToDb(block, orderIndex)
   }
 }
+
+/**
+ * Convert database block to in-memory format.
+ */
+function dbToBlock(dbBlock: Readonly<DbWorkoutBlock>, index: number): WorkoutBlock {
+  switch (dbBlock.kind) {
+    case 'strength':
+      return dbToStrengthBlock(dbBlock, index)
+    case 'amrap':
+      return dbToAmrapBlock(dbBlock, index)
+    case 'emom':
+      return dbToEmomBlock(dbBlock, index)
+    case 'tabata':
+      return dbToTabataBlock(dbBlock, index)
+    case 'fortime':
+      return dbToForTimeBlock(dbBlock, index)
+  }
+}
+
+// ============================================
+// Workout Converters
+// ============================================
 
 /**
  * Convert in-memory Workout to database ActiveWorkout format.
@@ -71,19 +331,13 @@ export function workoutToDb(
   workout: Readonly<Workout>,
   existingStartedAt?: number,
 ): DbActiveWorkout {
-  // Find selected exercise's string ID
-  const selectedExerciseIndex = workout.exercises.findIndex(
-    (ex) => ex.id === workout.selectedExerciseId,
-  )
-  const selectedExerciseDbId = selectedExerciseIndex >= 0 ? String(workout.selectedExerciseId) : ''
-
   return {
     id: 'current',
     name: workout.name,
-    selectedExerciseId: selectedExerciseDbId,
-    startedAt: existingStartedAt ?? Date.now(),
+    blocks: workout.blocks.map((block, index) => blockToDb(block, index)),
+    selectedBlockIndex: workout.selectedBlockIndex,
+    startedAt: existingStartedAt ?? workout.startedAt,
     lastModifiedAt: Date.now(),
-    exercises: workout.exercises.map((ex, index) => exerciseToDb(ex, index)),
   }
 }
 
@@ -91,23 +345,59 @@ export function workoutToDb(
  * Convert database ActiveWorkout to in-memory Workout format.
  */
 export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
-  const sortedExercises = [...dbWorkout.exercises]
+  const sortedBlocks = [...dbWorkout.blocks]
     .sort((a, b) => a.orderIndex - b.orderIndex)
-    .map(dbToExercise)
-
-  // Find selected exercise ID from db string ID
-  const selectedIndex = dbWorkout.exercises.findIndex(
-    (ex) => ex.id === dbWorkout.selectedExerciseId,
-  )
-  const selectedExerciseId =
-    selectedIndex >= 0 ? (sortedExercises[selectedIndex]?.id ?? 0) : (sortedExercises[0]?.id ?? 0)
+    .map(dbToBlock)
 
   return {
     id: 1,
     name: dbWorkout.name,
-    selectedExerciseId,
-    exercises: sortedExercises,
+    blocks: sortedBlocks,
+    selectedBlockIndex: dbWorkout.selectedBlockIndex,
+    startedAt: dbWorkout.startedAt,
   }
+}
+
+/**
+ * Convert legacy active workout (exercises array) to new block-based format.
+ */
+export function legacyToBlockWorkout(legacy: Readonly<DbLegacyActiveWorkout>): DbActiveWorkout {
+  const sortedExercises = [...legacy.exercises].sort((a, b) => a.orderIndex - b.orderIndex)
+
+  const blocks: ReadonlyArray<DbWorkoutBlock> = sortedExercises.map(
+    (ex, index): DbStrengthBlock => ({
+      kind: 'strength',
+      id: ex.id,
+      exerciseDefinitionId: ex.exerciseDefinitionId,
+      name: ex.name,
+      equipment: ex.equipment,
+      targetReps: ex.targetReps,
+      thumbnail: ex.thumbnail,
+      sets: ex.sets,
+      orderIndex: index,
+    }),
+  )
+
+  // Find selected block index
+  const selectedIndex = sortedExercises.findIndex((ex) => ex.id === legacy.selectedExerciseId)
+
+  return {
+    id: 'current',
+    name: legacy.name,
+    blocks,
+    selectedBlockIndex: selectedIndex >= 0 ? selectedIndex : 0,
+    startedAt: legacy.startedAt,
+    lastModifiedAt: legacy.lastModifiedAt,
+  }
+}
+
+/**
+ * Check if a workout is in legacy format (has exercises array instead of blocks).
+ */
+export function isLegacyWorkout(
+  workout: DbActiveWorkout | DbLegacyActiveWorkout,
+): workout is DbLegacyActiveWorkout {
+  return 'exercises' in workout && !('blocks' in workout)
 }
 
 // ============================================
@@ -164,5 +454,27 @@ export function createDbCustomExercise(
     metrics: exercise.metrics,
     createdAt: now,
     updatedAt: now,
+  }
+}
+
+// ============================================
+// Legacy Exercise Converters (kept for backward compatibility)
+// ============================================
+
+/**
+ * Convert legacy DbWorkoutExercise to DbStrengthBlock.
+ * Used for migrating old data.
+ */
+export function legacyExerciseToBlock(exercise: Readonly<DbWorkoutExercise>): DbStrengthBlock {
+  return {
+    kind: 'strength',
+    id: exercise.id,
+    exerciseDefinitionId: exercise.exerciseDefinitionId,
+    name: exercise.name,
+    equipment: exercise.equipment,
+    targetReps: exercise.targetReps,
+    thumbnail: exercise.thumbnail,
+    sets: exercise.sets,
+    orderIndex: exercise.orderIndex,
   }
 }

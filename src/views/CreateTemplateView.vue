@@ -52,7 +52,8 @@ async function handleSave(): Promise<void> {
   try {
     const template = await templatesRepository.create({
       name: templateName.value.trim(),
-      exercises: exercises.value.map((ex) => ({
+      blocks: exercises.value.map((ex) => ({
+        kind: 'strength' as const,
         exerciseDefinitionId: null,
         name: ex.name,
         equipment: ex.equipment,

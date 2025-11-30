@@ -7,7 +7,7 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 const props = defineProps<{
   open: boolean
   workoutName: string
-  exerciseCount: number
+  blockCount: number
 }>()
 
 const emit = defineEmits<{
@@ -15,8 +15,8 @@ const emit = defineEmits<{
   discard: []
 }>()
 
-const exerciseText = computed(() =>
-  props.exerciseCount === 1 ? '1 exercise' : `${props.exerciseCount} exercises`,
+const blockText = computed(() =>
+  props.blockCount === 1 ? '1 block' : `${props.blockCount} blocks`,
 )
 </script>
 
@@ -26,8 +26,7 @@ const exerciseText = computed(() =>
       <DialogHeader>
         <DialogTitle>Resume Workout?</DialogTitle>
         <DialogDescription>
-          You have an unfinished workout: <strong>{{ workoutName }}</strong> with
-          {{ exerciseText }}.
+          You have an unfinished workout: <strong>{{ workoutName }}</strong> with {{ blockText }}.
         </DialogDescription>
       </DialogHeader>
 

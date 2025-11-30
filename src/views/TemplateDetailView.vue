@@ -14,7 +14,7 @@ import { restoreWorkout } from '@/composables/useWorkout'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { dbToWorkout } from '@/db/converters'
 import { popularExercises } from '@/data/popularExercises'
-import type { DbWorkoutTemplate } from '@/db/schema'
+import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,18 +31,10 @@ const isStarting = ref(false)
 
 const isEdited = computed(() => {
   if (!template.value) return false
+  // Simplified edit detection - just check name and count for now
+  const strengthBlocks = template.value.blocks.filter((b) => b.kind === 'strength')
   return (
-    templateName.value !== template.value.name ||
-    exercises.value.some((ex, i) => {
-      const original = template.value?.exercises[i]
-      return (
-        !original ||
-        ex.name !== original.name ||
-        ex.equipment !== original.equipment ||
-        ex.defaultSetCount !== original.defaultSetCount
-      )
-    }) ||
-    exercises.value.length !== template.value.exercises.length
+    templateName.value !== template.value.name || exercises.value.length !== strengthBlocks.length
   )
 })
 
@@ -56,13 +48,16 @@ onMounted(async () => {
 
     template.value = loaded
     templateName.value = loaded.name
-    exercises.value = loaded.exercises.map((ex) => ({
-      exerciseId: ex.name,
-      name: ex.name,
-      equipment: ex.equipment,
-      thumbnail: ex.thumbnail,
-      defaultSetCount: ex.defaultSetCount,
-    }))
+    // Extract strength blocks for exercise editing
+    exercises.value = loaded.blocks
+      .filter((b): b is DbTemplateStrengthBlock => b.kind === 'strength')
+      .map((block) => ({
+        exerciseId: block.name,
+        name: block.name,
+        equipment: block.equipment,
+        thumbnail: block.thumbnail,
+        defaultSetCount: block.defaultSetCount,
+      }))
   } finally {
     isLoading.value = false
   }
@@ -98,7 +93,8 @@ async function handleSaveChanges(): Promise<void> {
   try {
     await templatesRepository.update(template.value.id, {
       name: templateName.value.trim(),
-      exercises: exercises.value.map((ex) => ({
+      blocks: exercises.value.map((ex) => ({
+        kind: 'strength' as const,
         exerciseDefinitionId: null,
         name: ex.name,
         equipment: ex.equipment,
@@ -112,13 +108,16 @@ async function handleSaveChanges(): Promise<void> {
     if (updated) {
       template.value = updated
       templateName.value = updated.name
-      exercises.value = updated.exercises.map((ex) => ({
-        exerciseId: ex.name,
-        name: ex.name,
-        equipment: ex.equipment,
-        thumbnail: ex.thumbnail,
-        defaultSetCount: ex.defaultSetCount,
-      }))
+      // Extract strength blocks for exercise editing
+      exercises.value = updated.blocks
+        .filter((b): b is DbTemplateStrengthBlock => b.kind === 'strength')
+        .map((block) => ({
+          exerciseId: block.name,
+          name: block.name,
+          equipment: block.equipment,
+          thumbnail: block.thumbnail,
+          defaultSetCount: block.defaultSetCount,
+        }))
     }
   } finally {
     isSaving.value = false

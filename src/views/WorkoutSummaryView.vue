@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Trophy, Clock, Dumbbell, Target, Flame } from 'lucide-vue-next'
+import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -40,6 +40,13 @@ const { displayValue: animatedWeight } = useAnimatedCounter(
     duration: 1500,
   },
 )
+const { displayValue: animatedRounds } = useAnimatedCounter(() => stats.value.totalRounds, {
+  delay: 1050,
+  duration: 1200,
+})
+
+const hasTimedBlocks = computed(() => stats.value.timedBlockCount > 0)
+const hasStrengthBlocks = computed(() => stats.value.exerciseCount > 0)
 
 const workoutName = computed(() => {
   return state.value.status === 'success' ? state.value.workout.name : ''
@@ -129,8 +136,9 @@ function handleDone() {
           <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Duration</div>
         </Card>
 
-        <!-- Exercises -->
+        <!-- Exercises (only if strength blocks exist) -->
         <Card
+          v-if="hasStrengthBlocks"
           class="p-4 text-center border-0 bg-secondary/50"
           :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
           :style="{ animationDelay: '500ms' }"
@@ -144,8 +152,25 @@ function handleDone() {
           <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Exercises</div>
         </Card>
 
-        <!-- Sets -->
+        <!-- Rounds (only if timed blocks with rounds exist) -->
         <Card
+          v-if="hasTimedBlocks && stats.totalRounds > 0"
+          class="p-4 text-center border-0 bg-secondary/50"
+          :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+          :style="{ animationDelay: '500ms' }"
+        >
+          <div class="flex justify-center mb-2">
+            <Repeat class="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div class="text-2xl font-bold font-mono text-primary tabular-nums">
+            {{ animatedRounds }}
+          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Rounds</div>
+        </Card>
+
+        <!-- Sets (only if strength blocks exist) -->
+        <Card
+          v-if="hasStrengthBlocks"
           class="p-4 text-center border-0 bg-secondary/50"
           :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
           :style="{ animationDelay: '600ms' }"
@@ -159,8 +184,25 @@ function handleDone() {
           <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Sets</div>
         </Card>
 
-        <!-- Total Weight -->
+        <!-- Timed Blocks Count -->
         <Card
+          v-if="hasTimedBlocks"
+          class="p-4 text-center border-0 bg-secondary/50"
+          :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+          :style="{ animationDelay: '600ms' }"
+        >
+          <div class="flex justify-center mb-2">
+            <Clock class="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div class="text-2xl font-bold font-mono text-primary tabular-nums">
+            {{ stats.timedBlockCount }}
+          </div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Timed Blocks</div>
+        </Card>
+
+        <!-- Total Weight (only if strength blocks exist) -->
+        <Card
+          v-if="hasStrengthBlocks"
           class="p-4 text-center border-0 bg-secondary/50"
           :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
           :style="{ animationDelay: '700ms' }"

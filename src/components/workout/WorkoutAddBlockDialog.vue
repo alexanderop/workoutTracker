@@ -1,0 +1,211 @@
+<script setup lang="ts">
+import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { popularExercises } from '@/data/popularExercises'
+import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
+import type { TimedBlockKind } from '@/types/blocks'
+import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
+
+type Props = {
+  open: boolean
+}
+
+type Emits = {
+  'update:open': [value: boolean]
+  'add-exercise': [name: string]
+  'add-timed-block': [kind: TimedBlockKind]
+}
+
+defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const router = useRouter()
+const searchQuery = ref('')
+const activeTab = ref('exercises')
+
+const filteredExercises = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return popularExercises
+  }
+  const query = searchQuery.value.toLowerCase()
+  return popularExercises.filter((ex) => ex.name.toLowerCase().includes(query))
+})
+
+const timedBlockTypes: ReadonlyArray<{
+  kind: TimedBlockKind
+  icon: typeof Timer
+  description: string
+}> = [
+  {
+    kind: 'amrap',
+    icon: Repeat,
+    description: 'As Many Rounds As Possible in a set time',
+  },
+  {
+    kind: 'emom',
+    icon: Timer,
+    description: 'Every Minute On the Minute',
+  },
+  {
+    kind: 'tabata',
+    icon: Zap,
+    description: '20s work / 10s rest intervals',
+  },
+  {
+    kind: 'fortime',
+    icon: Timer,
+    description: 'Complete the work as fast as possible',
+  },
+]
+
+function handleSelectExercise(exerciseName: string) {
+  emit('add-exercise', exerciseName)
+  emit('update:open', false)
+  searchQuery.value = ''
+}
+
+function handleSelectTimedBlock(kind: TimedBlockKind) {
+  emit('add-timed-block', kind)
+  emit('update:open', false)
+}
+
+function handleCreateNew() {
+  emit('update:open', false)
+  searchQuery.value = ''
+  router.push('/create-exercise')
+}
+
+function handleOpenChange(value: boolean) {
+  emit('update:open', value)
+  if (!value) {
+    searchQuery.value = ''
+    activeTab.value = 'exercises'
+  }
+}
+</script>
+
+<template>
+  <Dialog :open="open" @update:open="handleOpenChange">
+    <MobileDialogContent
+      :show-close-button="false"
+      class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
+    >
+      <!-- Mobile close button -->
+      <button
+        class="absolute right-4 top-4 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
+        @click="handleOpenChange(false)"
+      >
+        <X class="size-5" />
+        <span class="sr-only">Close</span>
+      </button>
+
+      <DialogHeader>
+        <DialogTitle>Add to Workout</DialogTitle>
+        <DialogDescription> Add an exercise or a timed block </DialogDescription>
+      </DialogHeader>
+
+      <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
+        <TabsList class="grid w-full grid-cols-2">
+          <TabsTrigger value="exercises">Exercises</TabsTrigger>
+          <TabsTrigger value="timed">Timed Blocks</TabsTrigger>
+        </TabsList>
+
+        <!-- Exercises Tab -->
+        <TabsContent value="exercises" class="flex-1 flex flex-col min-h-0 mt-4">
+          <!-- Search Input -->
+          <div class="relative">
+            <Search
+              class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+            />
+            <Input
+              v-model="searchQuery"
+              placeholder="Search exercises..."
+              class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+              autofocus
+            />
+          </div>
+
+          <!-- Exercise List -->
+          <div class="flex-1 overflow-y-auto -mx-4 px-4 mt-4">
+            <button
+              v-for="(exercise, index) in filteredExercises"
+              :key="exercise.name"
+              class="w-full flex items-center gap-3 py-3 text-left transition-colors active:bg-muted/50 group"
+              :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
+              @click="handleSelectExercise(exercise.name)"
+            >
+              <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
+                exercise.icon
+              }}</span>
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-[15px] truncate">
+                  {{ exercise.name }}
+                </p>
+                <Badge variant="secondary" class="text-xs mt-0.5 font-normal">
+                  {{ MUSCLE_LABELS[exercise.muscle] }}
+                </Badge>
+              </div>
+              <span
+                class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform"
+                >›</span
+              >
+            </button>
+
+            <!-- Empty State -->
+            <div v-if="filteredExercises.length === 0" class="text-center py-12">
+              <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p class="text-sm text-muted-foreground">
+                No exercises found for "{{ searchQuery }}"
+              </p>
+            </div>
+          </div>
+
+          <!-- Create Custom Exercise Button -->
+          <div class="pt-4 border-t border-border flex-shrink-0">
+            <Button variant="default" class="w-full" @click="handleCreateNew">
+              + Create Custom Exercise
+            </Button>
+          </div>
+        </TabsContent>
+
+        <!-- Timed Blocks Tab -->
+        <TabsContent value="timed" class="flex-1 flex flex-col min-h-0 mt-4">
+          <div class="space-y-3">
+            <button
+              v-for="blockType in timedBlockTypes"
+              :key="blockType.kind"
+              class="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+              @click="handleSelectTimedBlock(blockType.kind)"
+            >
+              <div
+                class="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary"
+              >
+                <span class="text-2xl">{{ BLOCK_ICONS[blockType.kind] }}</span>
+              </div>
+              <div class="flex-1">
+                <p class="font-semibold text-lg">{{ BLOCK_LABELS[blockType.kind] }}</p>
+                <p class="text-sm text-muted-foreground">{{ blockType.description }}</p>
+              </div>
+              <span class="text-muted-foreground/50 text-xl">›</span>
+            </button>
+          </div>
+
+          <Separator class="my-4" />
+
+          <div class="text-center text-sm text-muted-foreground">
+            <p>Timed blocks let you add CrossFit-style workouts to your session.</p>
+            <p class="mt-1">You can mix strength and timed blocks in the same workout!</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </MobileDialogContent>
+  </Dialog>
+</template>

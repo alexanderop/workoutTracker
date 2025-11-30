@@ -16,10 +16,10 @@ const resumeDialogData = computed(() => {
   if (initState.value.status === 'prompt-resume') {
     return {
       workoutName: initState.value.workoutName,
-      exerciseCount: initState.value.exerciseCount,
+      blockCount: initState.value.blockCount,
     }
   }
-  return { workoutName: '', exerciseCount: 0 }
+  return { workoutName: '', blockCount: 0 }
 })
 
 onMounted(() => {
@@ -36,7 +36,7 @@ onMounted(() => {
   <ResumeWorkoutDialog
     :open="showResumeDialog"
     :workout-name="resumeDialogData.workoutName"
-    :exercise-count="resumeDialogData.exerciseCount"
+    :block-count="resumeDialogData.blockCount"
     @resume="resumeWorkout"
     @discard="discardWorkout"
   />
