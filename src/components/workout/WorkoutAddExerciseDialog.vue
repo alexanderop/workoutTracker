@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next'
+import { Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
@@ -55,7 +55,19 @@ function handleOpenChange(value: boolean) {
 
 <template>
   <Dialog :open="open" @update:open="handleOpenChange">
-    <MobileDialogContent class="max-w-md max-h-[80vh] flex flex-col">
+    <MobileDialogContent
+      :show-close-button="false"
+      class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[80vh] flex flex-col rounded-t-none sm:rounded-lg"
+    >
+      <!-- Mobile close button -->
+      <button
+        class="absolute right-4 top-4 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        @click="handleOpenChange(false)"
+      >
+        <X class="size-5" />
+        <span class="sr-only">Close</span>
+      </button>
+
       <DialogHeader>
         <DialogTitle>Add Exercise</DialogTitle>
         <DialogDescription>
@@ -110,7 +122,7 @@ function handleOpenChange(value: boolean) {
       </div>
 
       <!-- Create Custom Exercise Button -->
-      <div class="pt-4 border-t border-border">
+      <div class="pt-4 border-t border-border flex-shrink-0">
         <Button variant="default" class="w-full" @click="handleCreateNew">
           + Create Custom Exercise
         </Button>
