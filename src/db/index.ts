@@ -22,7 +22,7 @@ class WorkoutTrackerDb extends Dexie {
       customExercises: 'id, name, muscle, equipment, createdAt',
       workouts: 'id, startedAt, completedAt',
       activeWorkout: 'id',
-      templates: 'id, name, createdAt',
+      templates: 'id, name, createdAt, lastUsedAt',
       settings: 'key',
     })
   }

@@ -118,4 +118,30 @@ export const templatesRepository = {
   async rename(id: string, newName: string): Promise<void> {
     await db.templates.update(id, { name: newName })
   },
+
+  /**
+   * Create a new template from scratch.
+   */
+  async create(data: {
+    name: string
+    exercises: ReadonlyArray<{
+      exerciseDefinitionId: string | null
+      name: string
+      equipment: string
+      targetReps: number
+      thumbnail: string
+      defaultSetCount: number
+    }>
+  }): Promise<DbWorkoutTemplate> {
+    const template: DbWorkoutTemplate = {
+      id: generateId(),
+      name: data.name,
+      exercises: data.exercises,
+      createdAt: Date.now(),
+      lastUsedAt: null,
+    }
+
+    await db.templates.add(template)
+    return template
+  },
 }

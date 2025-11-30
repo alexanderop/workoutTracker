@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { workoutsRepository } from '@/db/repositories/workouts'
-import type { DbCompletedWorkout } from '@/db/schema'
+import { templatesRepository } from '@/db/repositories/templates'
+import type { DbCompletedWorkout, DbWorkoutTemplate } from '@/db/schema'
 import { formatDate, formatDuration } from '@/lib/formatters'
 
 const router = useRouter()
 
 const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+const templates = ref<ReadonlyArray<DbWorkoutTemplate>>([])
 const isLoading = ref(true)
 
 onMounted(async () => {
-  workouts.value = await workoutsRepository.getHistory()
+  ;[workouts.value, templates.value] = await Promise.all([
+    workoutsRepository.getHistory(),
+    templatesRepository.getAll(),
+  ])
   isLoading.value = false
 })
 
@@ -21,59 +28,135 @@ function navigateToWorkoutDetail(workoutId: string): void {
   router.push(`/workouts/${workoutId}`)
 }
 
-function handleKeyDown(event: KeyboardEvent, workoutId: string): void {
+function navigateToTemplateDetail(templateId: string): void {
+  router.push(`/templates/${templateId}`)
+}
+
+function handleWorkoutKeyDown(event: KeyboardEvent, workoutId: string): void {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
     navigateToWorkoutDetail(workoutId)
   }
 }
+
+function handleTemplateKeyDown(event: KeyboardEvent, templateId: string): void {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    navigateToTemplateDetail(templateId)
+  }
+}
+
+function handleCreateTemplate(): void {
+  router.push('/templates/create')
+}
+
+function formatTemplateDate(timestamp: number | null): string {
+  if (!timestamp) return 'Never used'
+  return `Last used ${formatDate(timestamp)}`
+}
 </script>
 
 <template>
-  <div class="flex-1 p-4">
+  <div class="flex-1 p-4 flex flex-col">
     <Card class="mb-6">
       <CardContent class="pt-6">
         <h1 class="text-3xl font-bold mb-2">Workouts</h1>
-        <p class="text-muted-foreground">View and manage your workouts</p>
+        <p class="text-muted-foreground">View and manage your workouts and templates</p>
       </CardContent>
     </Card>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex items-center justify-center py-8">
+    <div v-if="isLoading" class="flex items-center justify-center py-8 flex-1">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
-    <!-- Workout list -->
-    <div v-else-if="workouts.length > 0" class="grid gap-3">
-      <Card
-        v-for="workout in workouts"
-        :key="workout.id"
-        role="button"
-        tabindex="0"
-        class="p-4 cursor-pointer hover:bg-accent transition-colors"
-        @click="navigateToWorkoutDetail(workout.id)"
-        @keydown="handleKeyDown($event, workout.id)"
-      >
-        <div class="flex justify-between items-center">
-          <div>
-            <div class="font-medium">{{ workout.name }}</div>
-            <div class="text-sm text-muted-foreground">{{ formatDate(workout.completedAt) }}</div>
-          </div>
-          <div class="text-sm text-muted-foreground tabular-nums">
-            {{ formatDuration(workout.durationSeconds) }}
-          </div>
-        </div>
-      </Card>
-    </div>
+    <!-- Tabs -->
+    <Tabs v-else default-value="history" class="flex flex-col flex-1">
+      <TabsList class="grid w-full grid-cols-2 mb-6">
+        <TabsTrigger value="templates">Templates</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+      </TabsList>
 
-    <!-- Empty state -->
-    <div v-else class="grid gap-4">
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>No workouts yet</EmptyTitle>
-          <EmptyDescription>Start your first workout to get started</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    </div>
+      <!-- Templates Tab -->
+      <TabsContent value="templates" class="flex-1 flex flex-col">
+        <div class="mb-4">
+          <Button class="w-full" @click="handleCreateTemplate"> + Create Template </Button>
+        </div>
+
+        <!-- Templates list -->
+        <div v-if="templates.length > 0" class="grid gap-3 flex-1 overflow-y-auto">
+          <Card
+            v-for="template in templates"
+            :key="template.id"
+            role="button"
+            tabindex="0"
+            class="p-4 cursor-pointer hover:bg-accent transition-colors"
+            @click="navigateToTemplateDetail(template.id)"
+            @keydown="handleTemplateKeyDown($event, template.id)"
+          >
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium">{{ template.name }}</div>
+                <div class="text-sm text-muted-foreground">
+                  {{ template.exercises.length }} exercises
+                </div>
+                <div class="text-xs text-muted-foreground mt-1">
+                  {{ formatTemplateDate(template.lastUsedAt) }}
+                </div>
+              </div>
+              <div class="text-sm text-muted-foreground">›</div>
+            </div>
+          </Card>
+        </div>
+
+        <!-- Empty state -->
+        <div v-else class="flex-1 flex items-center justify-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No templates yet</EmptyTitle>
+              <EmptyDescription>Create your first template to get started</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </TabsContent>
+
+      <!-- History Tab -->
+      <TabsContent value="history" class="flex-1 flex flex-col">
+        <!-- Workouts list -->
+        <div v-if="workouts.length > 0" class="grid gap-3 flex-1 overflow-y-auto">
+          <Card
+            v-for="workout in workouts"
+            :key="workout.id"
+            role="button"
+            tabindex="0"
+            class="p-4 cursor-pointer hover:bg-accent transition-colors"
+            @click="navigateToWorkoutDetail(workout.id)"
+            @keydown="handleWorkoutKeyDown($event, workout.id)"
+          >
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium">{{ workout.name }}</div>
+                <div class="text-sm text-muted-foreground">
+                  {{ formatDate(workout.completedAt) }}
+                </div>
+              </div>
+              <div class="text-sm text-muted-foreground tabular-nums">
+                {{ formatDuration(workout.durationSeconds) }}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <!-- Empty state -->
+        <div v-else class="flex-1 flex items-center justify-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No workouts yet</EmptyTitle>
+              <EmptyDescription>Start your first workout to get started</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </TabsContent>
+    </Tabs>
   </div>
 </template>

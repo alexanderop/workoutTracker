@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
+import CreateTemplateView from '@/views/CreateTemplateView.vue'
+import TemplateDetailView from '@/views/TemplateDetailView.vue'
 import TheExercisesView from '@/views/TheExercisesView.vue'
 import TheHomeView from '@/views/TheHomeView.vue'
 import TheSettingsView from '@/views/TheSettingsView.vue'
@@ -49,6 +51,17 @@ export const routes = [
     path: '/workout/summary/:id',
     name: 'WorkoutSummary',
     component: WorkoutSummaryView,
+    props: true,
+  },
+  {
+    path: '/templates/create',
+    name: 'CreateTemplate',
+    component: CreateTemplateView,
+  },
+  {
+    path: '/templates/:id',
+    name: 'TemplateDetail',
+    component: TemplateDetailView,
     props: true,
   },
 ]
