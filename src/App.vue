@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
+import PwaUpdatePrompt from '@/components/PwaUpdatePrompt.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
 import { useAppInitialization } from '@/composables/useAppInitialization'
 import { useTheme } from '@/composables/useTheme'
@@ -39,4 +40,7 @@ onMounted(() => {
     @resume="resumeWorkout"
     @discard="discardWorkout"
   />
+
+  <!-- PWA update prompt -->
+  <PwaUpdatePrompt />
 </template>

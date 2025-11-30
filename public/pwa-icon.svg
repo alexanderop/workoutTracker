@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#7c3aed"/>
+
+  <!-- Dumbbell shape -->
+  <g fill="white">
+    <!-- Left weight plates -->
+    <rect x="80" y="196" width="40" height="120" rx="8"/>
+    <rect x="100" y="216" width="30" height="80" rx="4"/>
+
+    <!-- Bar -->
+    <rect x="130" y="241" width="252" height="30" rx="4"/>
+
+    <!-- Right weight plates -->
+    <rect x="382" y="216" width="30" height="80" rx="4"/>
+    <rect x="392" y="196" width="40" height="120" rx="8"/>
+  </g>
+</svg>
