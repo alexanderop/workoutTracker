@@ -28,6 +28,7 @@ type TestApp = {
   user: ReturnType<typeof userEvent.setup>
   getByRole: typeof screen.getByRole
   getByText: typeof screen.getByText
+  getByTestId: typeof screen.getByTestId
   queryByRole: typeof screen.queryByRole
   queryByText: typeof screen.queryByText
   findByRole: typeof screen.findByRole
@@ -179,6 +180,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     user,
     getByRole: screen.getByRole,
     getByText: screen.getByText,
+    getByTestId: screen.getByTestId,
     queryByRole: screen.queryByRole,
     queryByText: screen.queryByText,
     findByRole: screen.findByRole,

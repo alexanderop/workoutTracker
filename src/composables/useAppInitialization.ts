@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { useExercisesStore } from '@/stores/exercises'
+import { useSettingsStore } from '@/stores/settings'
 import { getWorkoutRef, restoreWorkout } from './useWorkout'
 import { useWorkoutPersistence } from './useWorkoutPersistence'
 
@@ -24,6 +25,7 @@ const isInitialized = computed(() => initState.value.status === 'ready')
 export function useAppInitialization() {
   const router = useRouter()
   const exercisesStore = useExercisesStore()
+  const settingsStore = useSettingsStore()
   const workoutRef = getWorkoutRef()
   const persistence = useWorkoutPersistence(workoutRef)
 
@@ -35,8 +37,8 @@ export function useAppInitialization() {
     if (initState.value.status !== 'loading') return
 
     try {
-      // Load custom exercises from DB
-      await exercisesStore.loadFromDb()
+      // Load settings and custom exercises from DB in parallel
+      await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])
 
       // Check for active workout
       const activeWorkout = await activeWorkoutRepository.get()

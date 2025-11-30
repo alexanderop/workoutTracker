@@ -1,10 +1,26 @@
 <script setup lang="ts">
+import type { AcceptableValue } from 'reka-ui'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useTheme } from '@/composables/useTheme'
+import { useSettingsStore } from '@/stores/settings'
 
 const { isDark } = useTheme()
+const settingsStore = useSettingsStore()
+
+function handleWeightUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
+  if (value === 'kg' || value === 'lbs') {
+    settingsStore.weightUnit = value
+  }
+}
+
+function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
+  if (value === 'cm' || value === 'ft-in') {
+    settingsStore.heightUnit = value
+  }
+}
 </script>
 
 <template>
@@ -15,9 +31,46 @@ const { isDark } = useTheme()
     </div>
 
     <div class="space-y-4 max-w-2xl">
+      <!-- Units Section -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-lg"> Theme </CardTitle>
+          <CardTitle class="text-lg">Units</CardTitle>
+          <CardDescription>Choose your preferred measurement units</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex items-center justify-between">
+            <Label>Weight</Label>
+            <ToggleGroup
+              type="single"
+              :model-value="settingsStore.weightUnit"
+              variant="outline"
+              data-testid="weight-unit-toggle"
+              @update:model-value="handleWeightUnitChange"
+            >
+              <ToggleGroupItem value="kg" aria-label="Kilograms">kg</ToggleGroupItem>
+              <ToggleGroupItem value="lbs" aria-label="Pounds">lbs</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div class="flex items-center justify-between">
+            <Label>Height</Label>
+            <ToggleGroup
+              type="single"
+              :model-value="settingsStore.heightUnit"
+              variant="outline"
+              data-testid="height-unit-toggle"
+              @update:model-value="handleHeightUnitChange"
+            >
+              <ToggleGroupItem value="cm" aria-label="Centimeters">cm</ToggleGroupItem>
+              <ToggleGroupItem value="ft-in" aria-label="Feet and Inches">ft/in</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Appearance Section -->
+      <Card>
+        <CardHeader>
+          <CardTitle class="text-lg">Appearance</CardTitle>
           <CardDescription>Choose your preferred theme</CardDescription>
         </CardHeader>
         <CardContent>
@@ -30,14 +83,14 @@ const { isDark } = useTheme()
 
       <Card>
         <CardHeader>
-          <CardTitle class="text-lg"> Privacy </CardTitle>
+          <CardTitle class="text-lg">Privacy</CardTitle>
           <CardDescription>Manage your privacy settings</CardDescription>
         </CardHeader>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle class="text-lg"> About </CardTitle>
+          <CardTitle class="text-lg">About</CardTitle>
           <CardDescription>Version 1.0.0</CardDescription>
         </CardHeader>
       </Card>

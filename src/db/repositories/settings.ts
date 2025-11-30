@@ -8,6 +8,7 @@ const SETTING_DEFAULTS = {
   theme: 'system',
   defaultRestTimer: 90,
   weightUnit: 'kg',
+  heightUnit: 'cm',
   autoSaveInterval: 1000,
 } as const
 

@@ -104,6 +104,7 @@ export type DbUserSetting =
   | { key: 'theme'; value: 'light' | 'dark' | 'system' }
   | { key: 'defaultRestTimer'; value: number }
   | { key: 'weightUnit'; value: 'kg' | 'lbs' }
+  | { key: 'heightUnit'; value: 'cm' | 'ft-in' }
   | { key: 'autoSaveInterval'; value: number }
 
 export type UserSettingKey = DbUserSetting['key']
