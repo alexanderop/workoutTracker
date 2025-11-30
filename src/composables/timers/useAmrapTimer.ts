@@ -115,9 +115,16 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
   }
 
   function complete(): AmrapResult {
+    // Guard against double-completion to prevent infinite loops
+    const wasAlreadyCompleted = status.value === 'completed'
+
     status.value = 'completed'
     stopInterval()
-    config.onComplete?.()
+
+    // Only call onComplete when transitioning to completed state
+    if (!wasAlreadyCompleted) {
+      config.onComplete?.()
+    }
 
     return {
       rounds: rounds.value,

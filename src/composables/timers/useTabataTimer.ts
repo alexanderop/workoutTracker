@@ -164,9 +164,16 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
   }
 
   function complete(): TabataResult {
+    // Guard against double-completion to prevent infinite loops
+    const wasAlreadyCompleted = status.value === 'completed'
+
     status.value = 'completed'
     stopInterval()
-    config.onComplete?.()
+
+    // Only call onComplete when transitioning to completed state
+    if (!wasAlreadyCompleted) {
+      config.onComplete?.()
+    }
 
     return {
       repsPerRound: repsPerRound.value,

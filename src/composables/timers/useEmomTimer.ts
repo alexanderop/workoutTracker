@@ -146,9 +146,16 @@ export function useEmomTimer(config: EmomTimerConfig = {}) {
   }
 
   function complete(): EmomResult {
+    // Guard against double-completion to prevent infinite loops
+    const wasAlreadyCompleted = status.value === 'completed'
+
     status.value = 'completed'
     stopInterval()
-    config.onComplete?.()
+
+    // Only call onComplete when transitioning to completed state
+    if (!wasAlreadyCompleted) {
+      config.onComplete?.()
+    }
 
     return {
       completedMinutes: currentMinute.value - 1,
