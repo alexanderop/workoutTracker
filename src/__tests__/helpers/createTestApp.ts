@@ -11,9 +11,9 @@ type CreateTestAppOptions = {
 }
 
 type SetInputs = {
-  kg: HTMLElement
-  reps: HTMLElement
-  rir: HTMLElement
+  kg: HTMLInputElement
+  reps: HTMLInputElement
+  rir: HTMLInputElement
   complete: HTMLElement
 }
 
@@ -133,11 +133,11 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     const rir = spinbuttons[2]
 
     if (
-      !(kg instanceof HTMLElement) ||
-      !(reps instanceof HTMLElement) ||
-      !(rir instanceof HTMLElement)
+      !(kg instanceof HTMLInputElement) ||
+      !(reps instanceof HTMLInputElement) ||
+      !(rir instanceof HTMLInputElement)
     ) {
-      throw new Error('Spinbutton elements are not HTMLElements')
+      throw new Error('Spinbutton elements are not HTMLInputElements')
     }
 
     // Get the complete button (first button with an SVG icon in the complete column)

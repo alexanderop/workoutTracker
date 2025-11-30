@@ -75,4 +75,54 @@ export const workoutsRepository = {
   async count(): Promise<number> {
     return db.workouts.count()
   },
+
+  /**
+   * Start a new active workout from a completed workout.
+   * Creates a new active workout with exercises and sets prefilled from the completed workout.
+   * All set statuses are reset to 'planned'.
+   */
+  async startFromCompleted(id: string): Promise<DbActiveWorkout> {
+    const completedWorkout = await db.workouts.get(id)
+    if (!completedWorkout) {
+      throw new Error(`Workout with id ${id} not found`)
+    }
+
+    const now = Date.now()
+
+    // Sort exercises by orderIndex to ensure correct order
+    const sortedExercises = [...completedWorkout.exercises].sort(
+      (a, b) => a.orderIndex - b.orderIndex,
+    )
+
+    // Map exercises with new IDs while preserving all data
+    const newExercises = sortedExercises.map((exercise) => ({
+      id: generateId(),
+      exerciseDefinitionId: exercise.exerciseDefinitionId,
+      name: exercise.name,
+      equipment: exercise.equipment,
+      targetReps: exercise.targetReps,
+      thumbnail: exercise.thumbnail,
+      orderIndex: exercise.orderIndex,
+      sets: exercise.sets.map((set) => ({
+        id: generateId(),
+        kg: set.kg,
+        reps: set.reps,
+        rir: set.rir,
+        status: 'planned' as const,
+        completedAt: null,
+      })),
+    }))
+
+    const activeWorkout: DbActiveWorkout = {
+      id: 'current',
+      name: completedWorkout.name,
+      exercises: newExercises,
+      selectedExerciseId: newExercises[0]?.id ?? '',
+      startedAt: now,
+      lastModifiedAt: now,
+    }
+
+    await db.activeWorkout.put(activeWorkout)
+    return activeWorkout
+  },
 }

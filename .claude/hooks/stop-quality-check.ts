@@ -108,7 +108,8 @@ function main(): void {
   // Output results
   const output = results.join('\n')
   if (hasErrors) {
-    stderr.write(output)
+    const fixPrompt = `\n\n🔧 QUALITY CHECK FAILED\n\nFix all the errors shown above. Do not stop until all checks pass.\n`
+    stderr.write(output + fixPrompt)
     exit(1)
   }
   else {

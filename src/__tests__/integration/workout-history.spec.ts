@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetWorkout } from '@/composables/useWorkout'
 import { resetDatabase } from '../setup'
-import { db, generateId } from '@/db'
-import type { DbCompletedWorkout, DbWorkoutExercise, DbSet } from '@/db/schema'
+import { db } from '@/db'
+import { dbWorkoutBuilder } from '../factories'
 
 describe('Workout History Detail View', () => {
   afterEach(async () => {
@@ -14,35 +14,16 @@ describe('Workout History Detail View', () => {
 
   it('navigates to detail view when clicking a completed workout and displays exercise and set information', async () => {
     // Arrange: Create a completed workout in the database
-    const completedSet: DbSet = {
-      id: generateId(),
-      kg: '100',
-      reps: '10',
-      rir: '2',
-      status: 'completed',
-      completedAt: Date.now(),
-    }
-
-    const benchPressExercise: DbWorkoutExercise = {
-      id: generateId(),
-      exerciseDefinitionId: null,
-      name: 'Bench Press',
-      equipment: 'Barbell',
-      targetReps: 8,
-      thumbnail: '🏋️',
-      sets: [completedSet],
-      orderIndex: 0,
-    }
-
-    const completedWorkout: DbCompletedWorkout = {
-      id: generateId(),
-      name: 'Push Day',
-      exercises: [benchPressExercise],
-      startedAt: Date.now() - 3600000, // 1 hour ago
-      completedAt: Date.now(),
-      durationSeconds: 3600,
-      notes: '',
-    }
+    const completedWorkout = dbWorkoutBuilder()
+      .withName('Push Day')
+      .withDuration(3600)
+      .withExerciseAndSets([{ kg: '100', reps: '10', rir: '2' }], {
+        name: 'Bench Press',
+        equipment: 'Barbell',
+        thumbnail: '🏋️',
+        targetReps: 8,
+      })
+      .build()
 
     await db.workouts.add(completedWorkout)
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { ChevronLeft } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,8 @@ import WorkoutDetailStatsRow from '@/components/workout/WorkoutDetailStatsRow.vu
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
+import { workoutsRepository } from '@/db/repositories/workouts'
+import { useAppInitialization } from '@/composables/useAppInitialization'
 
 const { id } = defineProps<{
   id: string
@@ -15,14 +18,61 @@ const { id } = defineProps<{
 const router = useRouter()
 const { state, stats } = useWorkoutDetail(id)
 const { isVisible: showContent } = useEnterAnimation(100)
+const { resumeWorkout } = useAppInitialization()
+
+const isRedoing = ref(false)
 
 function handleBack() {
   router.push('/workouts')
+}
+
+async function handleRedoWorkout() {
+  if (isRedoing.value) return
+
+  isRedoing.value = true
+  try {
+    await workoutsRepository.startFromCompleted(id)
+    await resumeWorkout()
+  } catch (error) {
+    // Log error and reset loading state
+    console.error('Failed to redo workout:', error)
+    isRedoing.value = false
+  }
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-background">
+    <!-- Header (always visible) -->
+    <header
+      class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
+      <div class="flex items-center gap-3 px-4 py-3">
+        <Button variant="ghost" size="icon" class="shrink-0" @click="handleBack">
+          <ChevronLeft class="h-5 w-5" />
+        </Button>
+        <div v-if="state.status === 'success'" class="min-w-0 flex-1">
+          <h1
+            class="truncate text-xl font-semibold tracking-tight"
+            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+          >
+            {{ state.workout.name }}
+          </h1>
+          <p
+            class="text-sm text-muted-foreground"
+            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+            :style="{ animationDelay: '50ms' }"
+          >
+            {{ formatDate(state.workout.startedAt) }}
+          </p>
+        </div>
+        <div v-else class="min-w-0 flex-1"></div>
+        <Button variant="default" :disabled="isRedoing" @click="handleRedoWorkout">
+          {{ isRedoing ? 'Starting...' : 'Redo Workout' }}
+        </Button>
+      </div>
+    </header>
+
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
       <div class="text-muted-foreground">Loading...</div>
@@ -30,32 +80,6 @@ function handleBack() {
 
     <!-- Workout details -->
     <div v-else-if="state.status === 'success'" class="flex flex-col">
-      <!-- Header -->
-      <header
-        class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      >
-        <div class="flex items-center gap-3 px-4 py-3">
-          <Button variant="ghost" size="icon" class="shrink-0" @click="handleBack">
-            <ChevronLeft class="h-5 w-5" />
-          </Button>
-          <div class="min-w-0 flex-1">
-            <h1
-              class="truncate text-xl font-semibold tracking-tight"
-              :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-            >
-              {{ state.workout.name }}
-            </h1>
-            <p
-              class="text-sm text-muted-foreground"
-              :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-              :style="{ animationDelay: '50ms' }"
-            >
-              {{ formatDate(state.workout.startedAt) }}
-            </p>
-          </div>
-        </div>
-      </header>
-
       <!-- Stats row -->
       <WorkoutDetailStatsRow
         :stats="stats"
