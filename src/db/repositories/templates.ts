@@ -1,6 +1,7 @@
 import { db, generateId } from '../index'
 import type {
   DbActiveWorkout,
+  DbCompletedWorkout,
   DbSet,
   DbStrengthBlock,
   DbTemplateBlock,
@@ -183,10 +184,17 @@ function templateBlockToWorkoutBlock(
  */
 export const templatesRepository = {
   /**
-   * Get all templates, ordered by most recently used.
+   * Get all templates, ordered by most recently used (null values last).
    */
   async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
-    return db.templates.orderBy('lastUsedAt').reverse().toArray()
+    const templates = await db.templates.toArray()
+    // Sort by lastUsedAt descending, with null values at the end
+    return templates.sort((a, b) => {
+      if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
+      if (a.lastUsedAt === null) return 1
+      if (b.lastUsedAt === null) return -1
+      return b.lastUsedAt - a.lastUsedAt
+    })
   },
 
   /**
@@ -201,6 +209,26 @@ export const templatesRepository = {
    */
   async createFromWorkout(
     workout: Readonly<DbActiveWorkout>,
+    templateName: string,
+  ): Promise<DbWorkoutTemplate> {
+    const template: DbWorkoutTemplate = {
+      id: generateId(),
+      name: templateName,
+      blocks: workout.blocks.map(workoutBlockToTemplateBlock),
+      createdAt: Date.now(),
+      lastUsedAt: null,
+      tags: [],
+    }
+
+    await db.templates.add(template)
+    return template
+  },
+
+  /**
+   * Create a template from a completed workout.
+   */
+  async createFromCompletedWorkout(
+    workout: Readonly<DbCompletedWorkout>,
     templateName: string,
   ): Promise<DbWorkoutTemplate> {
     const template: DbWorkoutTemplate = {

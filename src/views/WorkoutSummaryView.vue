@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
+import { templatesRepository } from '@/db/repositories/templates'
 import { formatDuration, formatWeight } from '@/lib/formatters'
 import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import { useSettingsStore } from '@/stores/settings'
@@ -54,6 +58,35 @@ const workoutName = computed(() => {
 
 function weightLabel(): string {
   return `${WEIGHT_UNIT_LABELS[settingsStore.weightUnit]} lifted`
+}
+
+// Save as Template state
+const showSaveTemplateDialog = ref(false)
+const templateName = ref('')
+const isSavingTemplate = ref(false)
+
+async function handleSaveAsTemplate(): Promise<void> {
+  if (state.value.status !== 'success' || isSavingTemplate.value) return
+  if (!templateName.value.trim()) return
+
+  isSavingTemplate.value = true
+  try {
+    await templatesRepository.createFromCompletedWorkout(
+      state.value.workout,
+      templateName.value.trim(),
+    )
+    showSaveTemplateDialog.value = false
+    templateName.value = ''
+  } finally {
+    isSavingTemplate.value = false
+  }
+}
+
+function openSaveTemplateDialog(): void {
+  if (state.value.status === 'success') {
+    templateName.value = state.value.workout.name
+  }
+  showSaveTemplateDialog.value = true
 }
 
 function handleDone() {
@@ -228,16 +261,59 @@ function handleDone() {
       </div>
     </div>
 
-    <!-- Done button -->
+    <!-- Action buttons -->
     <div
       v-if="state.status === 'success'"
-      class="p-4 safe-area-bottom"
+      class="p-4 safe-area-bottom space-y-3"
       :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '1000ms' }"
     >
-      <Button class="w-full h-12 text-base font-semibold" size="lg" @click="handleDone">
-        Done
-      </Button>
+      <div class="flex gap-3">
+        <Button
+          variant="outline"
+          class="flex-1 h-12 text-base font-semibold"
+          size="lg"
+          @click="openSaveTemplateDialog"
+        >
+          Save as Template
+        </Button>
+        <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="handleDone">
+          Done
+        </Button>
+      </div>
     </div>
+
+    <!-- Save as Template Dialog -->
+    <Dialog :open="showSaveTemplateDialog" @update:open="showSaveTemplateDialog = $event">
+      <MobileDialogContent>
+        <DialogHeader>
+          <DialogTitle>Save as Template</DialogTitle>
+          <DialogDescription>
+            Save this workout as a template to quickly start similar workouts in the future.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="py-4">
+          <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
+          <Input id="template-name" v-model="templateName" placeholder="e.g., Push Day" />
+        </div>
+        <div class="flex gap-3">
+          <Button
+            variant="outline"
+            class="flex-1"
+            :disabled="isSavingTemplate"
+            @click="showSaveTemplateDialog = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            class="flex-1"
+            :disabled="!templateName.trim() || isSavingTemplate"
+            @click="handleSaveAsTemplate"
+          >
+            {{ isSavingTemplate ? 'Saving...' : 'Save Template' }}
+          </Button>
+        </div>
+      </MobileDialogContent>
+    </Dialog>
   </div>
 </template>
