@@ -6,13 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { popularExercises } from '@/data/popularExercises'
 import { generateId } from '@/db/index'
@@ -25,6 +18,10 @@ import type {
   TimedBlockKind,
 } from '@/types/blocks'
 import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
+import WorkoutAmrapConfig, { type AmrapConfigModel } from './WorkoutAmrapConfig.vue'
+import WorkoutEmomConfig, { type EmomConfigModel } from './WorkoutEmomConfig.vue'
+import WorkoutForTimeConfig, { type ForTimeConfigModel } from './WorkoutForTimeConfig.vue'
+import WorkoutTabataConfig, { type TabataConfigModel } from './WorkoutTabataConfig.vue'
 
 type Props = {
   open: boolean
@@ -42,21 +39,11 @@ type Emits = {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-// AMRAP Config
-const amrapDuration = ref(12)
-
-// EMOM Config
-const emomMinutes = ref(10)
-const emomRotation = ref<'each-minute' | 'full-round'>('full-round')
-
-// Tabata Config
-const tabataRounds = ref(8)
-const tabataWork = ref(20)
-const tabataRest = ref(10)
-
-// For Time Config
-const forTimeHasCap = ref(true)
-const forTimeCap = ref(15)
+// Config state for each block type
+const amrapConfig = ref<AmrapConfigModel>({ durationMinutes: 12 })
+const emomConfig = ref<EmomConfigModel>({ minutes: 10, rotation: 'full-round' })
+const tabataConfig = ref<TabataConfigModel>({ rounds: 8, workSeconds: 20, restSeconds: 10 })
+const fortimeConfig = ref<ForTimeConfigModel>({ hasCap: true, capMinutes: 15 })
 
 // Exercises for multi-exercise blocks
 const blockExercises = ref<Array<BlockExercise>>([])
@@ -87,14 +74,10 @@ watch(
 )
 
 function resetConfig() {
-  amrapDuration.value = 12
-  emomMinutes.value = 10
-  emomRotation.value = 'full-round'
-  tabataRounds.value = 8
-  tabataWork.value = 20
-  tabataRest.value = 10
-  forTimeHasCap.value = true
-  forTimeCap.value = 15
+  amrapConfig.value = { durationMinutes: 12 }
+  emomConfig.value = { minutes: 10, rotation: 'full-round' }
+  tabataConfig.value = { rounds: 8, workSeconds: 20, restSeconds: 10 }
+  fortimeConfig.value = { hasCap: true, capMinutes: 15 }
   blockExercises.value = []
   tabataExercise.value = null
   showExercisePicker.value = false
@@ -143,12 +126,16 @@ function updateExerciseLoad(index: number, load: string) {
 function handleConfirm() {
   switch (props.blockKind) {
     case 'amrap':
-      emit('confirm-amrap', { durationSeconds: amrapDuration.value * 60 }, blockExercises.value)
+      emit(
+        'confirm-amrap',
+        { durationSeconds: amrapConfig.value.durationMinutes * 60 },
+        blockExercises.value,
+      )
       break
     case 'emom':
       emit(
         'confirm-emom',
-        { minutes: emomMinutes.value, exerciseRotation: emomRotation.value },
+        { minutes: emomConfig.value.minutes, exerciseRotation: emomConfig.value.rotation },
         blockExercises.value,
       )
       break
@@ -157,9 +144,9 @@ function handleConfirm() {
         emit(
           'confirm-tabata',
           {
-            rounds: tabataRounds.value,
-            workSeconds: tabataWork.value,
-            restSeconds: tabataRest.value,
+            rounds: tabataConfig.value.rounds,
+            workSeconds: tabataConfig.value.workSeconds,
+            restSeconds: tabataConfig.value.restSeconds,
           },
           tabataExercise.value,
         )
@@ -168,7 +155,7 @@ function handleConfirm() {
     case 'fortime':
       emit(
         'confirm-fortime',
-        { timeCapSeconds: forTimeHasCap.value ? forTimeCap.value * 60 : null },
+        { timeCapSeconds: fortimeConfig.value.hasCap ? fortimeConfig.value.capMinutes * 60 : null },
         blockExercises.value,
       )
       break
@@ -212,131 +199,11 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <!-- AMRAP Config -->
-        <template v-if="blockKind === 'amrap'">
-          <div class="space-y-2">
-            <Label>Duration (minutes)</Label>
-            <div class="flex gap-2">
-              <Button
-                v-for="mins in [8, 10, 12, 15, 20]"
-                :key="mins"
-                :variant="amrapDuration === mins ? 'default' : 'outline'"
-                size="sm"
-                @click="amrapDuration = mins"
-              >
-                {{ mins }}
-              </Button>
-            </div>
-            <Input v-model.number="amrapDuration" type="number" min="1" max="60" class="mt-2" />
-          </div>
-        </template>
-
-        <!-- EMOM Config -->
-        <template v-if="blockKind === 'emom'">
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label>Duration (minutes)</Label>
-              <div class="flex gap-2">
-                <Button
-                  v-for="mins in [8, 10, 12, 15, 20]"
-                  :key="mins"
-                  :variant="emomMinutes === mins ? 'default' : 'outline'"
-                  size="sm"
-                  @click="emomMinutes = mins"
-                >
-                  {{ mins }}
-                </Button>
-              </div>
-              <Input v-model.number="emomMinutes" type="number" min="1" max="60" class="mt-2" />
-            </div>
-
-            <div class="space-y-2">
-              <Label>Exercise Rotation</Label>
-              <!-- eslint-disable vue/max-template-depth -->
-              <Select v-model="emomRotation">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full-round">Full round each minute</SelectItem>
-                  <SelectItem value="each-minute">One exercise per minute</SelectItem>
-                </SelectContent>
-              </Select>
-              <!-- eslint-enable vue/max-template-depth -->
-            </div>
-          </div>
-        </template>
-
-        <!-- Tabata Config -->
-        <template v-if="blockKind === 'tabata'">
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label>Rounds</Label>
-              <div class="flex gap-2">
-                <Button
-                  v-for="r in [6, 8, 10, 12]"
-                  :key="r"
-                  :variant="tabataRounds === r ? 'default' : 'outline'"
-                  size="sm"
-                  @click="tabataRounds = r"
-                >
-                  {{ r }}
-                </Button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label>Work (seconds)</Label>
-                <Input v-model.number="tabataWork" type="number" min="5" max="60" />
-              </div>
-              <div class="space-y-2">
-                <Label>Rest (seconds)</Label>
-                <Input v-model.number="tabataRest" type="number" min="5" max="60" />
-              </div>
-            </div>
-
-            <div class="bg-secondary/50 rounded-lg p-3 text-center">
-              <p class="text-sm text-muted-foreground">Total time</p>
-              <p class="text-xl font-bold font-mono">
-                {{ Math.floor((tabataRounds * (tabataWork + tabataRest)) / 60) }}:{{
-                  String((tabataRounds * (tabataWork + tabataRest)) % 60).padStart(2, '0')
-                }}
-              </p>
-            </div>
-          </div>
-        </template>
-
-        <!-- For Time Config -->
-        <template v-if="blockKind === 'fortime'">
-          <div class="space-y-4">
-            <div class="flex items-center gap-3">
-              <input
-                id="has-cap"
-                v-model="forTimeHasCap"
-                type="checkbox"
-                class="h-4 w-4 rounded border-gray-300"
-              />
-              <Label for="has-cap">Set a time cap</Label>
-            </div>
-
-            <div v-if="forTimeHasCap" class="space-y-2">
-              <Label>Time Cap (minutes)</Label>
-              <div class="flex gap-2">
-                <Button
-                  v-for="mins in [10, 12, 15, 20, 30]"
-                  :key="mins"
-                  :variant="forTimeCap === mins ? 'default' : 'outline'"
-                  size="sm"
-                  @click="forTimeCap = mins"
-                >
-                  {{ mins }}
-                </Button>
-              </div>
-              <Input v-model.number="forTimeCap" type="number" min="1" max="60" class="mt-2" />
-            </div>
-          </div>
-        </template>
+        <!-- Block-specific config -->
+        <WorkoutAmrapConfig v-if="blockKind === 'amrap'" v-model="amrapConfig" />
+        <WorkoutEmomConfig v-else-if="blockKind === 'emom'" v-model="emomConfig" />
+        <WorkoutTabataConfig v-else-if="blockKind === 'tabata'" v-model="tabataConfig" />
+        <WorkoutForTimeConfig v-else-if="blockKind === 'fortime'" v-model="fortimeConfig" />
 
         <Separator />
 
