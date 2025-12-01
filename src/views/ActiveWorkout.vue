@@ -5,7 +5,10 @@ import WorkoutActiveMode from '@/components/workout/WorkoutActiveMode.vue'
 import WorkoutAddBlockDialog from '@/components/workout/WorkoutAddBlockDialog.vue'
 import WorkoutBuilderMode from '@/components/workout/WorkoutBuilderMode.vue'
 import WorkoutCancelDialog from '@/components/workout/WorkoutCancelDialog.vue'
-import WorkoutConfigureBlockDialog from '@/components/workout/WorkoutConfigureBlockDialog.vue'
+import WorkoutConfigureAmrapDialog from '@/components/workout/WorkoutConfigureAmrapDialog.vue'
+import WorkoutConfigureEmomDialog from '@/components/workout/WorkoutConfigureEmomDialog.vue'
+import WorkoutConfigureForTimeDialog from '@/components/workout/WorkoutConfigureForTimeDialog.vue'
+import WorkoutConfigureTabataDialog from '@/components/workout/WorkoutConfigureTabataDialog.vue'
 import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkout'
@@ -60,13 +63,19 @@ onMounted(() => {
   markInitialized()
 })
 
-// Dialog states
-const showAddBlock = ref(false)
-const showEditExercise = ref(false)
-const showFinishDialog = ref(false)
-const showCancelDialog = ref(false)
-const showConfigureBlock = ref(false)
-const configuringBlockKind = ref<TimedBlockKind | null>(null)
+// Dialog state
+type ActiveDialog =
+  | 'addBlock'
+  | 'editExercise'
+  | 'finish'
+  | 'cancel'
+  | 'configureAmrap'
+  | 'configureEmom'
+  | 'configureTabata'
+  | 'configureForTime'
+  | null
+
+const activeDialog = ref<ActiveDialog>(null)
 const editingBlockIndex = ref<number | null>(null)
 
 // Handlers for finish/cancel
@@ -90,8 +99,13 @@ async function handleConfirmCancel() {
 
 // Block management handlers
 function handleAddTimedBlock(kind: TimedBlockKind) {
-  configuringBlockKind.value = kind
-  showConfigureBlock.value = true
+  const dialogMap: Record<TimedBlockKind, ActiveDialog> = {
+    amrap: 'configureAmrap',
+    emom: 'configureEmom',
+    tabata: 'configureTabata',
+    fortime: 'configureForTime',
+  }
+  activeDialog.value = dialogMap[kind]
 }
 
 function handleConfirmAmrap(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -127,7 +141,7 @@ function handleEditBlock(index: number) {
 
   if (isStrengthBlock(block)) {
     editingBlockIndex.value = index
-    showEditExercise.value = true
+    activeDialog.value = 'editExercise'
   }
 }
 </script>
@@ -137,49 +151,68 @@ function handleEditBlock(index: number) {
     <!-- Builder Mode -->
     <WorkoutBuilderMode
       v-if="isBuilderMode"
-      @add-block="showAddBlock = true"
+      @add-block="activeDialog = 'addBlock'"
       @edit-block="handleEditBlock"
     />
 
     <!-- Active Mode -->
     <WorkoutActiveMode
       v-if="isActiveMode"
-      @end-workout="showFinishDialog = true"
-      @cancel-workout="showCancelDialog = true"
-      @workout-complete="showFinishDialog = true"
+      @end-workout="activeDialog = 'finish'"
+      @cancel-workout="activeDialog = 'cancel'"
+      @workout-complete="activeDialog = 'finish'"
     />
 
     <!-- Dialogs (shared across modes) -->
     <WorkoutAddBlockDialog
-      :open="showAddBlock"
-      @update:open="showAddBlock = $event"
+      :open="activeDialog === 'addBlock'"
+      @update:open="activeDialog === 'addBlock' && !$event ? (activeDialog = null) : undefined"
       @add-exercise="addExercise"
       @add-timed-block="handleAddTimedBlock"
     />
 
-    <WorkoutConfigureBlockDialog
-      :open="showConfigureBlock"
-      :block-kind="configuringBlockKind"
-      @update:open="showConfigureBlock = $event"
-      @confirm-amrap="handleConfirmAmrap"
-      @confirm-emom="handleConfirmEmom"
-      @confirm-tabata="handleConfirmTabata"
-      @confirm-fortime="handleConfirmForTime"
+    <WorkoutConfigureAmrapDialog
+      :open="activeDialog === 'configureAmrap'"
+      @update:open="activeDialog = $event ? 'configureAmrap' : null"
+      @confirm="handleConfirmAmrap"
+    />
+    <WorkoutConfigureEmomDialog
+      :open="activeDialog === 'configureEmom'"
+      @update:open="activeDialog = $event ? 'configureEmom' : null"
+      @confirm="handleConfirmEmom"
+    />
+    <WorkoutConfigureTabataDialog
+      :open="activeDialog === 'configureTabata'"
+      @update:open="activeDialog = $event ? 'configureTabata' : null"
+      @confirm="handleConfirmTabata"
+    />
+    <WorkoutConfigureForTimeDialog
+      :open="activeDialog === 'configureForTime'"
+      @update:open="activeDialog = $event ? 'configureForTime' : null"
+      @confirm="handleConfirmForTime"
     />
 
     <WorkoutEditExerciseDialog
       v-if="selectedExercise"
-      :open="showEditExercise"
+      :open="activeDialog === 'editExercise'"
       :exercise-name="selectedExercise.name"
       :equipment="selectedExercise.equipment"
       :target-reps="selectedExercise.targetReps"
       :set-count="selectedExercise.sets.length"
-      @update:open="showEditExercise = $event"
+      @update:open="activeDialog = $event ? 'editExercise' : null"
       @save="handleSaveExercise"
     />
 
-    <WorkoutFinishDialog v-model:open="showFinishDialog" @confirm="handleConfirmFinish" />
+    <WorkoutFinishDialog
+      :open="activeDialog === 'finish'"
+      @update:open="activeDialog = $event ? 'finish' : null"
+      @confirm="handleConfirmFinish"
+    />
 
-    <WorkoutCancelDialog v-model:open="showCancelDialog" @confirm="handleConfirmCancel" />
+    <WorkoutCancelDialog
+      :open="activeDialog === 'cancel'"
+      @update:open="activeDialog = $event ? 'cancel' : null"
+      @confirm="handleConfirmCancel"
+    />
   </div>
 </template>
