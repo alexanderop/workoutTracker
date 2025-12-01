@@ -15,7 +15,7 @@ import { isSetReady, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
 import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
-import WorkoutActiveModeFooter from './WorkoutActiveModeFooter.vue'
+import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from './WorkoutAmrapView.vue'
 import WorkoutEmomView from './WorkoutEmomView.vue'
@@ -59,10 +59,15 @@ const isFirstBlock = computed(() => currentBlockIndex.value === 0)
 
 const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentBlock.value))
 
-// Computed values from timed view for footer
-const isTimerRunning = computed(() => timedViewRef.value?.isRunning.value ?? false)
-const timerDisplay = computed(() => timedViewRef.value?.formattedTime.value ?? '')
-const timerLabel = computed(() => timedViewRef.value?.timerLabel ?? '')
+// Grouped timer data from timed view for footer
+const timerDisplayData = computed<TimerDisplayData | undefined>(() => {
+  if (!timedViewRef.value) return undefined
+  return {
+    isRunning: timedViewRef.value.isRunning.value,
+    display: timedViewRef.value.formattedTime.value,
+    label: timedViewRef.value.timerLabel,
+  }
+})
 
 // Header content
 const headerTitle = computed(() => {
@@ -208,9 +213,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     <template v-if="currentBlock" #footer>
       <WorkoutActiveModeFooter
         :block="currentBlock"
-        :is-timer-running="isTimerRunning"
-        :timer-display="timerDisplay"
-        :timer-label="timerLabel"
+        :timer="timerDisplayData"
         :can-complete="canCompleteSet"
         :is-first-block="isFirstBlock"
         :is-last-block="isLastBlock"

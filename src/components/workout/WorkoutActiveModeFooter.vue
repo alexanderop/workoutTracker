@@ -9,11 +9,15 @@ import { BLOCK_COLORS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 type ButtonVariant = 'default' | 'secondary'
 
+export type TimerDisplayData = {
+  isRunning: boolean
+  display: string
+  label: string
+}
+
 type Props = {
   block: WorkoutBlock
-  isTimerRunning?: boolean
-  timerDisplay?: string
-  timerLabel?: string
+  timer?: TimerDisplayData
   canComplete?: boolean
   isFirstBlock?: boolean
   isLastBlock?: boolean
@@ -22,9 +26,7 @@ type Props = {
 
 const {
   block,
-  isTimerRunning = false,
-  timerDisplay = '',
-  timerLabel = '',
+  timer,
   canComplete = true,
   isFirstBlock = false,
   isLastBlock = false,
@@ -53,8 +55,8 @@ const displayedTimer = computed((): string | null => {
   }
 
   // For timed blocks, use the prop value passed from parent
-  if (isTimedBlock(block) && timerDisplay) {
-    return timerDisplay
+  if (isTimedBlock(block) && timer?.display) {
+    return timer.display
   }
 
   return null
@@ -64,8 +66,8 @@ const displayedTimerLabel = computed((): string | null => {
   if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
     return 'Rest'
   }
-  if (isTimedBlock(block) && timerLabel) {
-    return timerLabel
+  if (isTimedBlock(block) && timer?.label) {
+    return timer.label
   }
   return null
 })
@@ -86,10 +88,10 @@ const primaryAction = computed(() => {
     case 'emom':
     case 'tabata':
       return {
-        label: isTimerRunning ? 'Pause' : 'Start',
-        icon: isTimerRunning ? Pause : Play,
+        label: timer?.isRunning ? 'Pause' : 'Start',
+        icon: timer?.isRunning ? Pause : Play,
         emit: 'toggle-timer' as const,
-        variant: isTimerRunning ? 'secondary' : 'default',
+        variant: timer?.isRunning ? 'secondary' : 'default',
       }
     case 'fortime':
       return {
