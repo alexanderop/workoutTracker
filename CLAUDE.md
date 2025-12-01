@@ -1,87 +1,44 @@
-# CLAUDE.md
+# Workout Tracker
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Vue 3 PWA for tracking strength and CrossFit-style workouts with block-based programming.
 
 ## Commands
 
 ```bash
 pnpm dev              # Start dev server
-pnpm build            # Type-check + build for production
-pnpm test:unit        # Run all unit tests
-pnpm test:unit src/__tests__/composables/useWorkout.spec.ts  # Run single test file
-pnpm lint             # Run oxlint + eslint with auto-fix
-pnpm type-check       # TypeScript type checking only
+pnpm build            # Type-check + build
+pnpm test:unit        # Run tests (add <file> for single file)
+pnpm lint             # oxlint + eslint with auto-fix
 ```
 
 ## Architecture
 
-### Block-Based Workout System
+### Block-Based System
 
-Workouts consist of ordered **blocks** (discriminated union via `kind` property):
+Workouts consist of ordered **blocks** (discriminated union via `kind`):
+- **Strength** (`kind: 'strength'`): Set/rep tracking with kg, reps, RIR
+- **Timed** (`kind: 'amrap' | 'emom' | 'tabata' | 'fortime'`): CrossFit-style timers
 
-- **Strength blocks** (`kind: 'strength'`): Traditional set/rep tracking with kg, reps, RIR per set
-- **Timed blocks** (`kind: 'amrap' | 'emom' | 'tabata' | 'fortime'`): CrossFit-style blocks with configs and results
-
-Types are defined in `src/types/blocks.ts` (runtime types) and `src/db/schema.ts` (persistence types with `Db` prefix).
+Types: `src/types/blocks.ts` (runtime), `src/db/schema.ts` (persistence, `Db` prefix)
 
 ### State Management
 
-- **Workout state**: Singleton ref in `src/composables/useWorkout.ts` - shared across all components via `useWorkout()` composable
-- **Pinia stores**: Only for exercises (`useExercisesStore`) and settings (`useSettingsStore`)
-- **Persistence**: Dexie IndexedDB in `src/db/` with repositories pattern
+- **Workout state**: Singleton ref in `src/composables/useWorkout.ts`
+- **Pinia stores**: Exercises and settings only
+- **Persistence**: Dexie IndexedDB in `src/db/` with repositories
 
-### Workout Modes
+### Modes
 
-Two modes controlled by `workout.mode`:
-- `'builder'`: Add/remove/reorder blocks, configure exercises
-- `'active'`: Execute workout, complete sets, run timers
+`'builder'` (configure blocks) → `'active'` (execute workout)
 
-### Key Composables
+### Key Locations
 
-- `useWorkout()`: Core workout state and mutations
-- `useWorkoutPersistence()`: Auto-save/restore to IndexedDB
-- `useRestTimer()`: Rest timer between sets
-- Timed block timers in `src/composables/timers/`:
-  - `useAmrapTimer()`: AMRAP countdown with round tracking
-  - `useEmomTimer()`: EMOM minute transitions and exercise rotation
-  - `useTabataTimer()`: Tabata work/rest phase management
-  - `useForTimeTimer()`: For Time count-up with optional time cap
+- `src/composables/` - Core logic, timers
+- `src/components/ui/` - shadcn-vue primitives (do not modify)
+- `src/components/{feature}/` - Feature components with parent-prefixed names
 
-### Testing
+## Documentation
 
-- **Unit tests**: `src/__tests__/composables/` - test composables directly
-- **Integration tests**: `src/__tests__/integration/` - full user flows with `createTestApp()` helper
-- **Factories**: `src/__tests__/factories/` - create test data with builder pattern
-- **Setup**: `src/__tests__/setup.ts` - uses `fake-indexeddb` for DB isolation
-
-Use `withSetup()` helper for composables needing Vue lifecycle, `createTestApp()` for full app rendering.
-
-### UI Components
-
-- `src/components/ui/`: shadcn-vue primitives (reka-ui based) - do not modify
-- `src/components/{feature}/`: Feature components prefixed with feature name (e.g., `WorkoutSetTable.vue`)
-
-## Code Style
-
-### TypeScript Rules (enforced by ESLint)
-
-- Use `type` not `interface`
-- Use `Array<T>` not `T[]`
-- Use `ref()` not `reactive()`
-- Use `unknown` + type guards, not `any`
-- Separate type imports: `import type { X } from '...'`
-- No type assertions (`as`) except `as const`
-- No enums - use literal unions or `as const` objects
-- No `else`/`else if` - use early returns or ternary
-
-### Vue Rules
-
-- Component names: PascalCase, multi-word (except App, Layout, shadcn-ui components)
-- Child components prefixed with parent name: `WorkoutSetTable`, `ExerciseMuscleSelector`
-- Props: camelCase in script, kebab-case in template attributes
-- Events: kebab-case
-- Max template depth: 8
-
-### Writing Style
-
-Always use active voice in responses and code comments.
+Read before working on specific areas:
+- `docs/agent/testing.md` - Test helpers (withSetup, createTestApp), factories
+- `docs/agent/composables.md` - useWorkout API, timer state machines
