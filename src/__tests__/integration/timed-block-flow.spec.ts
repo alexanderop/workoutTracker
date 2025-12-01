@@ -271,4 +271,51 @@ describe('Timed Block Execution', () => {
 
     app.cleanup()
   })
+
+  it('AMRAP block allows incrementing rounds with +1 button', async () => {
+    const app = await createTestApp()
+
+    // Start new workout
+    await app.user.click(app.getByRole('button', { name: /get started/i }))
+
+    // Add AMRAP block
+    await addTimedBlock(app, 'AMRAP')
+
+    // Verify block was added
+    expect(app.getPlaylistBlockButtons().length).toBe(1)
+
+    // Start the workout
+    await app.startWorkout()
+
+    // Wait for active mode
+    await waitFor(() => {
+      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+    })
+
+    // Verify AMRAP UI elements
+    expect(app.queryByRole('heading', { name: /amrap/i })).toBeTruthy()
+    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(app.queryByText(/rounds/i)).toBeTruthy()
+
+    // Start the timer by clicking Start
+    await app.user.click(app.getByRole('button', { name: /start/i }))
+
+    // Wait for +1 button to be enabled (timer must be running)
+    await waitFor(() => {
+      const plusButton = app.queryByRole('button', { name: /\+1/i })
+      expect(plusButton).toBeTruthy()
+      expect(plusButton).toHaveProperty('disabled', false)
+    })
+
+    // Increment rounds
+    await app.user.click(app.getByRole('button', { name: /\+1/i }))
+    await app.user.click(app.getByRole('button', { name: /\+1/i }))
+
+    // End workout via menu
+    await endWorkoutViaMenu(app)
+
+    expect(app.router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+
+    app.cleanup()
+  })
 })

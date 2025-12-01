@@ -10,6 +10,7 @@ export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
   band: 'Band',
   'ez-bar': 'EZ Bar',
   'hex-bar': 'Hex Bar',
+  club: 'Club',
 } as const
 
 export const MUSCLE_LABELS: Readonly<Record<Muscle, string>> = {

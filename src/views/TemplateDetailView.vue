@@ -1,148 +1,59 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
-import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
-import type { TemplateExercise } from '@/components/templates/TemplateExerciseList.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
+import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { templatesRepository } from '@/db/repositories/templates'
-import { restoreWorkout } from '@/composables/useWorkout'
-import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
-import { dbToWorkout } from '@/db/converters'
-import { popularExercises } from '@/data/popularExercises'
-import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
+import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
+import { useTemplateDetail } from '@/composables/useTemplateDetail'
 
 const route = useRoute()
 const router = useRouter()
-
 const templateId = String(route.params.id)
-const template = ref<DbWorkoutTemplate | null>(null)
-const templateName = ref('')
-const exercises = ref<ReadonlyArray<TemplateExercise>>([])
+
+const {
+  state,
+  templateName,
+  exercises,
+  isSaving,
+  isStarting,
+  isEdited,
+  saveTemplate,
+  deleteTemplate,
+  startWorkout,
+  addExercise,
+  removeExercise,
+  updateExercises,
+} = useTemplateDetail(templateId)
+
+// UI-only dialog states
 const isAddExerciseOpen = ref(false)
 const showDeleteDialog = ref(false)
-const isLoading = ref(true)
-const isSaving = ref(false)
-const isStarting = ref(false)
 
-const isEdited = computed(() => {
-  if (!template.value) return false
-  // Simplified edit detection - just check name and count for now
-  const strengthBlocks = template.value.blocks.filter((b) => b.kind === 'strength')
-  return (
-    templateName.value !== template.value.name || exercises.value.length !== strengthBlocks.length
-  )
-})
-
-onMounted(async () => {
-  try {
-    const loaded = await templatesRepository.getById(templateId)
-    if (!loaded) {
-      await router.push('/workouts')
-      return
+// Redirect to workouts list if template not found
+watch(
+  () => state.value.status,
+  (status) => {
+    if (status === 'not-found') {
+      router.push('/workouts')
     }
+  },
+)
 
-    template.value = loaded
-    templateName.value = loaded.name
-    // Extract strength blocks for exercise editing
-    exercises.value = loaded.blocks
-      .filter((b): b is DbTemplateStrengthBlock => b.kind === 'strength')
-      .map((block) => ({
-        exerciseId: block.name,
-        name: block.name,
-        equipment: block.equipment,
-        thumbnail: block.thumbnail,
-        defaultSetCount: block.defaultSetCount,
-      }))
-  } finally {
-    isLoading.value = false
-  }
-})
-
-function handleAddExercise(exerciseName: string): void {
-  const popularExercise = popularExercises.find((ex) => ex.name === exerciseName)
-  if (!popularExercise) return
-
-  const newExercise: TemplateExercise = {
-    exerciseId: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    name: exerciseName,
-    equipment: popularExercise.equipment,
-    thumbnail: popularExercise.icon,
-    defaultSetCount: 3,
-  }
-
-  exercises.value = [...exercises.value, newExercise]
-}
-
-function handleExercisesUpdate(updated: ReadonlyArray<TemplateExercise>): void {
-  exercises.value = updated
-}
-
-function handleRemoveExercise(exerciseId: string): void {
-  exercises.value = exercises.value.filter((ex) => ex.exerciseId !== exerciseId)
-}
-
-async function handleSaveChanges(): Promise<void> {
-  if (!template.value || !isEdited.value || isSaving.value) return
-
-  isSaving.value = true
-  try {
-    await templatesRepository.update(template.value.id, {
-      name: templateName.value.trim(),
-      blocks: exercises.value.map((ex) => ({
-        kind: 'strength' as const,
-        exerciseDefinitionId: null,
-        name: ex.name,
-        equipment: ex.equipment,
-        targetReps: 8,
-        thumbnail: ex.thumbnail,
-        defaultSetCount: ex.defaultSetCount,
-      })),
-    })
-
-    const updated = await templatesRepository.getById(templateId)
-    if (updated) {
-      template.value = updated
-      templateName.value = updated.name
-      // Extract strength blocks for exercise editing
-      exercises.value = updated.blocks
-        .filter((b): b is DbTemplateStrengthBlock => b.kind === 'strength')
-        .map((block) => ({
-          exerciseId: block.name,
-          name: block.name,
-          equipment: block.equipment,
-          thumbnail: block.thumbnail,
-          defaultSetCount: block.defaultSetCount,
-        }))
-    }
-  } finally {
-    isSaving.value = false
+// Navigation handlers
+async function handleStartWorkout(): Promise<void> {
+  const success = await startWorkout()
+  if (success) {
+    router.push('/workout/active')
   }
 }
 
 async function handleDeleteTemplate(): Promise<void> {
-  if (!template.value) return
-  await templatesRepository.delete(template.value.id)
-  await router.push('/workouts')
-}
-
-async function handleStartWorkout(): Promise<void> {
-  if (!template.value || isStarting.value) return
-
-  isStarting.value = true
-  try {
-    const activeWorkout = await templatesRepository.startFromTemplate(template.value.id)
-    await activeWorkoutRepository.save(activeWorkout)
-    const inMemoryWorkout = dbToWorkout(activeWorkout)
-    restoreWorkout(inMemoryWorkout)
-    await router.push('/workout/active')
-  } finally {
-    isStarting.value = false
-  }
+  await deleteTemplate()
+  router.push('/workouts')
 }
 
 function handleCancel(): void {
@@ -155,17 +66,17 @@ function handleCancel(): void {
 
 <template>
   <PageLayout
-    :title="template?.name ?? 'Template'"
-    :subtitle="template ? `${exercises.length} exercises` : undefined"
+    :title="state.status === 'success' ? state.template.name : 'Template'"
+    :subtitle="state.status === 'success' ? `${exercises.length} exercises` : undefined"
     back-to="/workouts"
   >
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex items-center justify-center py-8">
+    <div v-if="state.status === 'loading'" class="flex items-center justify-center py-8">
       <div class="text-muted-foreground">Loading...</div>
     </div>
 
     <!-- Main content -->
-    <div v-else-if="template" class="flex flex-1 flex-col p-4">
+    <div v-else-if="state.status === 'success'" class="flex flex-1 flex-col p-4">
       <!-- Template name input -->
       <div class="mb-6">
         <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
@@ -182,8 +93,8 @@ function handleCancel(): void {
         <div v-if="exercises.length > 0" class="mb-4 flex-1 overflow-y-auto">
           <TemplateExerciseList
             :exercises="exercises"
-            @update:exercises="handleExercisesUpdate"
-            @remove-exercise="handleRemoveExercise"
+            @update:exercises="updateExercises"
+            @remove-exercise="removeExercise"
           />
         </div>
 
@@ -193,7 +104,7 @@ function handleCancel(): void {
       </div>
     </div>
 
-    <template v-if="template" #footer>
+    <template v-if="state.status === 'success'" #footer>
       <div class="space-y-3 p-4">
         <!-- Start Workout button -->
         <Button
@@ -210,7 +121,7 @@ function handleCancel(): void {
           <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
             Cancel
           </Button>
-          <Button class="flex-1" :disabled="!isEdited || isSaving" @click="handleSaveChanges">
+          <Button class="flex-1" :disabled="!isEdited || isSaving" @click="saveTemplate">
             {{ isSaving ? 'Saving...' : 'Save Changes' }}
           </Button>
         </div>
@@ -231,7 +142,7 @@ function handleCancel(): void {
     <WorkoutAddExerciseDialog
       :open="isAddExerciseOpen"
       @update:open="isAddExerciseOpen = $event"
-      @add="handleAddExercise"
+      @add="addExercise"
     />
 
     <!-- Delete Confirmation Dialog -->
@@ -240,8 +151,9 @@ function handleCancel(): void {
         <DialogHeader>
           <DialogTitle>Delete Template?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. The template "{{ template?.name }}" will be permanently
-            deleted.
+            This action cannot be undone. The template "{{
+              state.status === 'success' ? state.template.name : ''
+            }}" will be permanently deleted.
           </DialogDescription>
         </DialogHeader>
         <div class="flex gap-3 pt-4">

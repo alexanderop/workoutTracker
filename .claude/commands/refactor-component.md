@@ -1,7 +1,6 @@
 ---
 description: Automatically refactor large Vue components using design patterns
 allowed-tools: Read, Write, Glob, Grep, Edit, Bash
-model: sonnet
 ---
 
 # Component Refactor Assistant

@@ -13,6 +13,7 @@ export type Equipment =
   | 'band'
   | 'ez-bar'
   | 'hex-bar'
+  | 'club'
 export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
 export type ExerciseType = 'compound' | 'isolation' | 'stability' | 'cardio'
 export type Metrics =

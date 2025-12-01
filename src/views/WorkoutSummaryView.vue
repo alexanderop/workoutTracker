@@ -2,11 +2,9 @@
 import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import WorkoutSaveTemplateDialog from '@/components/workout/WorkoutSaveTemplateDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
@@ -62,31 +60,18 @@ function weightLabel(): string {
 
 // Save as Template state
 const showSaveTemplateDialog = ref(false)
-const templateName = ref('')
 const isSavingTemplate = ref(false)
 
-async function handleSaveAsTemplate(): Promise<void> {
+async function handleSaveAsTemplate(name: string): Promise<void> {
   if (state.value.status !== 'success' || isSavingTemplate.value) return
-  if (!templateName.value.trim()) return
 
   isSavingTemplate.value = true
   try {
-    await templatesRepository.createFromCompletedWorkout(
-      state.value.workout,
-      templateName.value.trim(),
-    )
+    await templatesRepository.createFromCompletedWorkout(state.value.workout, name)
     showSaveTemplateDialog.value = false
-    templateName.value = ''
   } finally {
     isSavingTemplate.value = false
   }
-}
-
-function openSaveTemplateDialog(): void {
-  if (state.value.status === 'success') {
-    templateName.value = state.value.workout.name
-  }
-  showSaveTemplateDialog.value = true
 }
 
 function handleDone() {
@@ -273,7 +258,7 @@ function handleDone() {
           variant="outline"
           class="flex-1 h-12 text-base font-semibold"
           size="lg"
-          @click="openSaveTemplateDialog"
+          @click="showSaveTemplateDialog = true"
         >
           Save as Template
         </Button>
@@ -284,36 +269,11 @@ function handleDone() {
     </div>
 
     <!-- Save as Template Dialog -->
-    <Dialog :open="showSaveTemplateDialog" @update:open="showSaveTemplateDialog = $event">
-      <MobileDialogContent>
-        <DialogHeader>
-          <DialogTitle>Save as Template</DialogTitle>
-          <DialogDescription>
-            Save this workout as a template to quickly start similar workouts in the future.
-          </DialogDescription>
-        </DialogHeader>
-        <div class="py-4">
-          <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
-          <Input id="template-name" v-model="templateName" placeholder="e.g., Push Day" />
-        </div>
-        <div class="flex gap-3">
-          <Button
-            variant="outline"
-            class="flex-1"
-            :disabled="isSavingTemplate"
-            @click="showSaveTemplateDialog = false"
-          >
-            Cancel
-          </Button>
-          <Button
-            class="flex-1"
-            :disabled="!templateName.trim() || isSavingTemplate"
-            @click="handleSaveAsTemplate"
-          >
-            {{ isSavingTemplate ? 'Saving...' : 'Save Template' }}
-          </Button>
-        </div>
-      </MobileDialogContent>
-    </Dialog>
+    <WorkoutSaveTemplateDialog
+      v-model:open="showSaveTemplateDialog"
+      :initial-name="workoutName"
+      :is-saving="isSavingTemplate"
+      @confirm="handleSaveAsTemplate"
+    />
   </div>
 </template>
