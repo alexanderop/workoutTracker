@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Search, X } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { popularExercises } from '@/data/popularExercises'
+import { useExerciseSearch } from '@/composables/useExerciseSearch'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
 type Props = {
@@ -23,15 +22,7 @@ defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const router = useRouter()
-const searchQuery = ref('')
-
-const filteredExercises = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return popularExercises
-  }
-  const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter((ex) => ex.name.toLowerCase().includes(query))
-})
+const { searchQuery, filteredExercises } = useExerciseSearch()
 
 function handleSelectExercise(exerciseName: string) {
   emit('add', exerciseName)

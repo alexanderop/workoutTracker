@@ -163,7 +163,7 @@ export const popularExercises: Array<PopularExercise> = [
     metrics: 'weight-reps',
   },
   {
-    name: 'Turkish Get-up',
+    name: 'Kettlebell Turkish Get-up',
     icon: '🇹🇷',
     equipment: 'kettlebell',
     muscle: 'core',
