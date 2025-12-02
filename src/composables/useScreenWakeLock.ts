@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
 import { computed, onScopeDispose, ref, watch } from 'vue'
-import { useWakeLock } from '@vueuse/core'
+import { useDocumentVisibility, useWakeLock } from '@vueuse/core'
 
 // Minimal silent MP4 video (base64) - loops to keep screen awake on iOS/fallback browsers
 const SILENT_VIDEO_BASE64 =
@@ -35,15 +35,28 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     release,
     sentinel,
   } = useWakeLock()
+  const visibility = useDocumentVisibility()
 
   // 2. Primary State
   const videoIsActive = ref(false)
   let videoElement: HTMLVideoElement | null = null
+  let userHasInteracted = false // Track user gesture for PWA autoplay
 
   // Mobile detection for redundancy decision
   const isMobileDevice = computed(() => {
     if (typeof navigator === 'undefined') return false
     return navigator.maxTouchPoints > 0
+  })
+
+  // PWA standalone mode detection - wake lock is less reliable in installed PWAs
+  const isPWAStandalone = computed(() => {
+    if (typeof window === 'undefined') return false
+    // Check CSS media query for standalone mode (Chrome/Edge/Firefox)
+    const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches
+    // Check Safari-specific standalone property
+    const isSafariStandalone =
+      'standalone' in window.navigator && window.navigator.standalone === true
+    return isStandaloneMedia || isSafariStandalone
   })
 
   // 3. Computed - derived state
@@ -54,8 +67,19 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
   // Handle forced release from OS (Android aggressive power management)
   function handleForcedRelease() {
-    console.log('[WakeLock] Forced release detected, re-acquiring...')
-    acquireNative()
+    // Only re-acquire if page is visible - otherwise we'll fail anyway
+    if (visibility.value === 'hidden') {
+      console.log('[WakeLock] Forced release detected but page hidden, skipping re-acquire')
+      return
+    }
+    // Only re-acquire if user has interacted (for PWA autoplay policies)
+    if (!userHasInteracted) {
+      console.log('[WakeLock] Forced release detected but no user interaction yet, skipping')
+      return
+    }
+    console.log('[WakeLock] Forced release detected, re-acquiring all...')
+    // Use acquireAll to try both native AND video fallback
+    acquireAll()
   }
 
   async function acquireNative(): Promise<void> {
@@ -110,10 +134,16 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   }
 
   async function acquireAll(options?: { redundant?: boolean }): Promise<void> {
-    const useRedundancy = options?.redundant ?? isMobileDevice.value
+    // Mark that user has interacted - enables re-acquisition after forced release
+    userHasInteracted = true
+
+    // Always use redundancy on mobile OR in PWA standalone mode (less reliable there)
+    const useRedundancy = options?.redundant ?? (isMobileDevice.value || isPWAStandalone.value)
     console.log('[WakeLock] Acquiring all...', {
       useRedundancy,
       isSupported: nativeIsSupported.value,
+      isMobile: isMobileDevice.value,
+      isPWA: isPWAStandalone.value,
     })
 
     let nativeSucceeded = false
@@ -123,11 +153,12 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
         nativeSucceeded = true
       } catch {
         // Native failed, will use fallback
+        console.log('[WakeLock] Native failed, falling back to video')
       }
     }
 
-    // On mobile, always start video as backup
-    // On desktop, only start if native failed
+    // On mobile/PWA, ALWAYS start video as backup (native API unreliable in PWA mode)
+    // On desktop browser, only start if native failed
     if (useRedundancy || !nativeSucceeded) {
       startVideoFallback()
     }

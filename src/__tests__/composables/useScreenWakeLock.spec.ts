@@ -22,6 +22,7 @@ const mockRelease = vi.fn()
 const mockIsSupported = ref(true)
 const mockIsActive = ref(false)
 const mockSentinel = shallowRef<WakeLockSentinel | null>(null)
+const mockVisibility = ref<DocumentVisibilityState>('visible')
 
 vi.mock('@vueuse/core', () => ({
   useWakeLock: vi.fn(() => ({
@@ -31,11 +32,27 @@ vi.mock('@vueuse/core', () => ({
     release: mockRelease,
     sentinel: mockSentinel,
   })),
+  useDocumentVisibility: vi.fn(() => mockVisibility),
 }))
 
 // Suppress console.log/warn during tests
 vi.spyOn(console, 'log').mockImplementation(() => {})
 vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+// Mock window.matchMedia for PWA standalone detection
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false, // Not in PWA standalone mode by default
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
 describe('useScreenWakeLock', () => {
   beforeEach(() => {
@@ -44,6 +61,7 @@ describe('useScreenWakeLock', () => {
     mockIsSupported.value = true
     mockIsActive.value = false
     mockSentinel.value = null
+    mockVisibility.value = 'visible'
     // Clean up any video elements from previous tests
     document.querySelectorAll('video').forEach((el) => el.remove())
   })
@@ -89,8 +107,11 @@ describe('useScreenWakeLock', () => {
       app.unmount()
     })
 
-    it('re-acquires when sentinel fires release event', async () => {
-      const [, app] = withSetup(() => useScreenWakeLock())
+    it('re-acquires when sentinel fires release event after user interaction', async () => {
+      const [result, app] = withSetup(() => useScreenWakeLock())
+
+      // First acquire to set userHasInteracted = true
+      await result.acquireAll({ redundant: false })
 
       // Simulate acquiring and getting a sentinel
       const mockSentinelObj = createMockSentinel()
@@ -108,7 +129,60 @@ describe('useScreenWakeLock', () => {
       mockRequest.mockClear()
       releaseHandler()
 
+      // Should re-acquire since user has interacted and page is visible
       expect(mockRequest).toHaveBeenCalledWith('screen')
+      app.unmount()
+    })
+
+    it('does not re-acquire on release if user has not interacted', async () => {
+      const [, app] = withSetup(() => useScreenWakeLock())
+
+      // Simulate getting a sentinel WITHOUT calling acquireAll first
+      const mockSentinelObj = createMockSentinel()
+      mockSentinel.value = mockSentinelObj
+      await nextTick()
+
+      // Get the handler that was registered
+      const releaseHandler = mockSentinelObj.addEventListener.mock.calls.find(
+        (call) => call[0] === 'release',
+      )?.[1]
+
+      expect(releaseHandler).toBeDefined()
+
+      // Simulate forced release
+      mockRequest.mockClear()
+      releaseHandler()
+
+      // Should NOT re-acquire since userHasInteracted is still false
+      expect(mockRequest).not.toHaveBeenCalled()
+      app.unmount()
+    })
+
+    it('does not re-acquire on release when page is hidden', async () => {
+      const [result, app] = withSetup(() => useScreenWakeLock())
+
+      // First acquire to set userHasInteracted = true
+      await result.acquireAll({ redundant: false })
+
+      // Simulate getting a sentinel
+      const mockSentinelObj = createMockSentinel()
+      mockSentinel.value = mockSentinelObj
+      await nextTick()
+
+      // Get the handler that was registered
+      const releaseHandler = mockSentinelObj.addEventListener.mock.calls.find(
+        (call) => call[0] === 'release',
+      )?.[1]
+
+      // Simulate page becoming hidden
+      mockVisibility.value = 'hidden'
+
+      // Simulate forced release
+      mockRequest.mockClear()
+      releaseHandler()
+
+      // Should NOT re-acquire since page is hidden
+      expect(mockRequest).not.toHaveBeenCalled()
       app.unmount()
     })
 
