@@ -27,12 +27,47 @@ const {
   release: releaseWakeLock,
 } = useWakeLock()
 
+const videoFallbackActive = ref(false)
+let videoElement: HTMLVideoElement | null = null
+
 async function toggleWakeLock() {
   if (wakeLockActive.value) {
     await releaseWakeLock()
     return
   }
   await requestWakeLock('screen')
+}
+
+function toggleVideoFallback() {
+  if (videoFallbackActive.value) {
+    stopVideoFallback()
+    return
+  }
+  startVideoFallback()
+}
+
+function startVideoFallback() {
+  if (videoElement) return
+  videoElement = document.createElement('video')
+  videoElement.setAttribute('playsinline', '')
+  videoElement.setAttribute('muted', '')
+  videoElement.muted = true
+  // Minimal silent MP4
+  videoElement.src =
+    'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAwBtZGF0AAACrQYF//+p3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE1MiByMjg1NCBlOWE1OTAzIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTMgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAD2WIhAA3//728P4FNjuZQQAAAu5tb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAZAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACGHRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAEAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAgAAAAIAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAGQAAAAAAAEAAAAAAZBtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAACgAAAAEAFXEAAAAAAAtaGRscgAAAAAAAAAAdmlkZQAAAAAAAAAAAAAAAFZpZGVvSGFuZGxlcgAAAAE7bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAA+3N0YmwAAACXc3RzZAAAAAAAAAABAAAAh2F2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAgACAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAxYXZjQwFkAAr/4QAYZ2QACqzZX4iIhAAAAwAEAAADAFA8SJZYAQAGaOvjyyLAAAAAGHN0dHMAAAAAAAAAAQAAAAEAAAQAAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAAAQAAABRzdHN6AAAAAAAAAsUAAAABAAAAFHN0Y28AAAAAAAAAAQAAADAAAABidWR0YQAAAFptZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAAC1pbHN0AAAAJal0b28AAAAdZGF0YQAAAAEAAAAATGF2ZjU3LjgzLjEwMA=='
+  videoElement.loop = true
+  videoElement.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px'
+  document.body.appendChild(videoElement)
+  videoElement.play().catch(() => {})
+  videoFallbackActive.value = true
+}
+
+function stopVideoFallback() {
+  if (!videoElement) return
+  videoElement.pause()
+  videoElement.remove()
+  videoElement = null
+  videoFallbackActive.value = false
 }
 
 const showDeleteDialog = ref(false)
@@ -177,30 +212,25 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
       <Card>
         <CardHeader>
           <CardTitle class="text-lg">Device Features</CardTitle>
-          <CardDescription>Check device API support</CardDescription>
+          <CardDescription>Test screen wake lock methods</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
+          <!-- Native Wake Lock API -->
           <div class="flex items-center justify-between">
             <div>
-              <p class="font-medium">Screen Wake Lock</p>
-              <p class="text-sm text-muted-foreground">
-                {{
-                  wakeLockSupported
-                    ? 'Keeps screen on during workouts'
-                    : 'Not supported on this device'
-                }}
-              </p>
+              <p class="font-medium">Wake Lock API</p>
+              <p class="text-sm text-muted-foreground">Native browser API</p>
             </div>
             <div class="flex items-center gap-3">
               <span
                 class="text-xs px-2 py-1 rounded-full"
                 :class="
-                  wakeLockSupported
+                  wakeLockActive
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                 "
               >
-                {{ wakeLockSupported ? 'Supported' : 'Unsupported' }}
+                {{ wakeLockActive ? 'Active' : 'Inactive' }}
               </span>
               <Button
                 v-if="wakeLockSupported"
@@ -209,12 +239,44 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
                 data-testid="wake-lock-test"
                 @click="toggleWakeLock"
               >
-                {{ wakeLockActive ? 'Release Lock' : 'Test Lock' }}
+                {{ wakeLockActive ? 'Release' : 'Test' }}
+              </Button>
+              <span v-else class="text-xs text-red-500">Not supported</span>
+            </div>
+          </div>
+
+          <!-- Video Fallback -->
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium">Video Fallback</p>
+              <p class="text-sm text-muted-foreground">Silent video keeps screen on</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span
+                class="text-xs px-2 py-1 rounded-full"
+                :class="
+                  videoFallbackActive
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                "
+              >
+                {{ videoFallbackActive ? 'Active' : 'Inactive' }}
+              </span>
+              <Button variant="outline" size="sm" @click="toggleVideoFallback">
+                {{ videoFallbackActive ? 'Stop' : 'Test' }}
               </Button>
             </div>
           </div>
-          <p v-if="wakeLockActive" class="text-sm text-amber-600 dark:text-amber-400">
-            Wake lock is active. Your screen will stay on until you release it or leave this page.
+
+          <p
+            v-if="wakeLockActive || videoFallbackActive"
+            class="text-sm text-amber-600 dark:text-amber-400"
+          >
+            Screen should stay on. Leave phone idle for 2 minutes to test.
+          </p>
+
+          <p class="text-xs text-muted-foreground pt-2 border-t">
+            If neither works, check: Settings → Apps → Battery → Set to "Unrestricted"
           </p>
         </CardContent>
       </Card>
