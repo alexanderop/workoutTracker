@@ -10,6 +10,8 @@ const SETTING_DEFAULTS = {
   weightUnit: 'kg',
   heightUnit: 'cm',
   autoSaveInterval: 1000,
+  screenWakeLock: true,
+  timerSoundEnabled: true,
 } as const
 
 type SettingDefaults = typeof SETTING_DEFAULTS

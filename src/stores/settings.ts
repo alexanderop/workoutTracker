@@ -8,6 +8,8 @@ export type HeightUnit = 'cm' | 'ft-in'
 export const useSettingsStore = defineStore('settings', () => {
   const weightUnit = ref<WeightUnit>('kg')
   const heightUnit = ref<HeightUnit>('cm')
+  const screenWakeLock = ref(true)
+  const timerSoundEnabled = ref(true)
   const isLoaded = ref(false)
   const isLoading = ref(false)
 
@@ -23,6 +25,7 @@ export const useSettingsStore = defineStore('settings', () => {
       const settings = await settingsRepository.getAll()
       weightUnit.value = settings.weightUnit
       heightUnit.value = settings.heightUnit
+      screenWakeLock.value = settings.screenWakeLock
       isLoaded.value = true
     } finally {
       isLoading.value = false
@@ -45,13 +48,24 @@ export const useSettingsStore = defineStore('settings', () => {
     await settingsRepository.set({ key: 'heightUnit', value: unit })
   }
 
+  /**
+   * Set the screen wake lock preference.
+   */
+  async function setScreenWakeLock(enabled: boolean): Promise<void> {
+    screenWakeLock.value = enabled
+    await settingsRepository.set({ key: 'screenWakeLock', value: enabled })
+  }
+
   return {
     weightUnit,
     heightUnit,
+    screenWakeLock,
+    timerSoundEnabled,
     isLoaded,
     isLoading,
     loadFromDb,
     setWeightUnit,
     setHeightUnit,
+    setScreenWakeLock,
   }
 })

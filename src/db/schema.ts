@@ -292,6 +292,8 @@ export type DbUserSetting =
   | { key: 'weightUnit'; value: 'kg' | 'lbs' }
   | { key: 'heightUnit'; value: 'cm' | 'ft-in' }
   | { key: 'autoSaveInterval'; value: number }
+  | { key: 'screenWakeLock'; value: boolean }
+  | { key: 'timerSoundEnabled'; value: boolean }
 
 export type UserSettingKey = DbUserSetting['key']
 

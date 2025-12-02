@@ -114,6 +114,10 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
     settingsStore.heightUnit = value
   }
 }
+
+function handleScreenWakeLockChange(enabled: boolean) {
+  settingsStore.setScreenWakeLock(enabled)
+}
 </script>
 
 <template>
@@ -176,15 +180,30 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
         </CardContent>
       </Card>
 
-      <!-- Device Features Section -->
+      <!-- Screen Section -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-lg">Device Features</CardTitle>
-          <CardDescription>Test screen wake lock methods</CardDescription>
+          <CardTitle class="text-lg">Screen</CardTitle>
+          <CardDescription>Control screen behavior while using the app</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <!-- Native Wake Lock API -->
+          <!-- Keep Screen On Toggle -->
           <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium">Keep Screen On</p>
+              <p class="text-sm text-muted-foreground">
+                Prevent screen from dimming while using the app
+              </p>
+            </div>
+            <Switch
+              :model-value="settingsStore.screenWakeLock"
+              data-testid="screen-wake-lock-toggle"
+              @update:model-value="handleScreenWakeLockChange"
+            />
+          </div>
+
+          <!-- Native Wake Lock API (Debug) -->
+          <div class="flex items-center justify-between pt-4 border-t">
             <div>
               <p class="font-medium">Wake Lock API</p>
               <p class="text-sm text-muted-foreground">Native browser API</p>

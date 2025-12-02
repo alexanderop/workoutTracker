@@ -6,8 +6,10 @@ import PwaUpdatePrompt from '@/components/PwaUpdatePrompt.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
 import { useAppInitialization } from '@/composables/useAppInitialization'
 import { useTheme } from '@/composables/useTheme'
+import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
 
 useTheme()
+useGlobalWakeLock()
 
 const { initState, initialize, resumeWorkout, discardWorkout } = useAppInitialization()
 

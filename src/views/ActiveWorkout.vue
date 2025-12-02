@@ -14,7 +14,6 @@ import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
-import { useWorkoutWakeLock } from '@/composables/useWorkoutWakeLock'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -39,9 +38,6 @@ const {
 } = useWorkout()
 
 const { isBuilderMode, isActiveMode } = useWorkoutMode()
-
-// Keep screen awake during active workouts
-useWorkoutWakeLock()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
