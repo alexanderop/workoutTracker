@@ -5,6 +5,7 @@ import CreateTemplateView from '@/views/CreateTemplateView.vue'
 import TemplateDetailView from '@/views/TemplateDetailView.vue'
 import TheExercisesView from '@/views/TheExercisesView.vue'
 import TheHomeView from '@/views/TheHomeView.vue'
+import TheTimersView from '@/views/TheTimersView.vue'
 import TheSettingsView from '@/views/TheSettingsView.vue'
 import TheWorkoutsView from '@/views/TheWorkoutsView.vue'
 import WorkoutDetailView from '@/views/WorkoutDetailView.vue'
@@ -36,6 +37,11 @@ export const routes = [
     path: '/settings',
     name: 'Settings',
     component: TheSettingsView,
+  },
+  {
+    path: '/timers',
+    name: 'Timers',
+    component: TheTimersView,
   },
   {
     path: '/workout/active',

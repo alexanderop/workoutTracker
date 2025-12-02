@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, Play } from 'lucide-vue-next'
+import { ArrowRight, Play, Timer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,10 +9,14 @@ const router = useRouter()
 function startWorkout() {
   router.push('/workout/active')
 }
+
+function goToTimers() {
+  router.push('/timers')
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center flex-1 p-4">
+  <div class="flex flex-col items-center justify-center flex-1 p-4 gap-4">
     <!-- Main action card -->
     <Card
       class="w-full max-w-md cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -33,6 +37,22 @@ function startWorkout() {
           <ArrowRight class="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
         </Button>
       </CardContent>
+    </Card>
+
+    <!-- Quick Timer card -->
+    <Card
+      class="w-full max-w-md cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+      @click="goToTimers"
+    >
+      <CardHeader class="text-center pb-4">
+        <div
+          class="mx-auto mb-4 w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"
+        >
+          <Timer class="w-7 h-7 text-orange-500" />
+        </div>
+        <CardTitle class="text-xl"> Quick Timer </CardTitle>
+        <CardDescription> AMRAP, EMOM, Tabata, For Time </CardDescription>
+      </CardHeader>
     </Card>
   </div>
 </template>
