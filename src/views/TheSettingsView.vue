@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
+import { useWakeLock } from '@vueuse/core'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,22 @@ import SettingsImportErrorDialog from '@/components/settings/SettingsImportError
 
 const { isDark } = useTheme()
 const settingsStore = useSettingsStore()
+
+// Wake Lock testing
+const {
+  isSupported: wakeLockSupported,
+  isActive: wakeLockActive,
+  request: requestWakeLock,
+  release: releaseWakeLock,
+} = useWakeLock()
+
+async function toggleWakeLock() {
+  if (wakeLockActive.value) {
+    await releaseWakeLock()
+    return
+  }
+  await requestWakeLock('screen')
+}
 
 const showDeleteDialog = ref(false)
 const showImportDialog = ref(false)
@@ -153,6 +170,52 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
             <Switch v-model="isDark" data-testid="theme-toggle" />
             <Label>Dark Mode</Label>
           </div>
+        </CardContent>
+      </Card>
+
+      <!-- Device Features Section -->
+      <Card>
+        <CardHeader>
+          <CardTitle class="text-lg">Device Features</CardTitle>
+          <CardDescription>Check device API support</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium">Screen Wake Lock</p>
+              <p class="text-sm text-muted-foreground">
+                {{
+                  wakeLockSupported
+                    ? 'Keeps screen on during workouts'
+                    : 'Not supported on this device'
+                }}
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span
+                class="text-xs px-2 py-1 rounded-full"
+                :class="
+                  wakeLockSupported
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                "
+              >
+                {{ wakeLockSupported ? 'Supported' : 'Unsupported' }}
+              </span>
+              <Button
+                v-if="wakeLockSupported"
+                variant="outline"
+                size="sm"
+                data-testid="wake-lock-test"
+                @click="toggleWakeLock"
+              >
+                {{ wakeLockActive ? 'Release Lock' : 'Test Lock' }}
+              </Button>
+            </div>
+          </div>
+          <p v-if="wakeLockActive" class="text-sm text-amber-600 dark:text-amber-400">
+            Wake lock is active. Your screen will stay on until you release it or leave this page.
+          </p>
         </CardContent>
       </Card>
 
