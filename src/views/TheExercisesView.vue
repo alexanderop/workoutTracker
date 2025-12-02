@@ -1,29 +1,54 @@
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next'
+import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { popularExercises } from '@/data/popularExercises'
-import { EQUIPMENT_LABELS, MUSCLE_LABELS } from '@/lib/exerciseLabels'
+import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
+import type { Muscle } from '@/stores/exercises'
 
 const router = useRouter()
 const searchQuery = ref('')
+const activeFilter = ref<Muscle | 'all'>('all')
+
+const muscleFilters: Array<{ value: Muscle | 'all'; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'chest', label: 'Chest' },
+  { value: 'back', label: 'Back' },
+  { value: 'legs', label: 'Legs' },
+  { value: 'shoulders', label: 'Shoulders' },
+  { value: 'arms', label: 'Arms' },
+  { value: 'core', label: 'Core' },
+]
 
 const filteredExercises = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return popularExercises
+  let exercises = popularExercises
+
+  // Apply muscle filter
+  if (activeFilter.value !== 'all') {
+    exercises = exercises.filter((ex) => ex.muscle === activeFilter.value)
   }
-  const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter(
-    (ex) =>
-      ex.name.toLowerCase().includes(query) ||
-      ex.muscle.toLowerCase().includes(query) ||
-      ex.equipment.toLowerCase().includes(query),
-  )
+
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    exercises = exercises.filter(
+      (ex) =>
+        ex.name.toLowerCase().includes(query) ||
+        ex.muscle.toLowerCase().includes(query) ||
+        ex.equipment.toLowerCase().includes(query),
+    )
+  }
+
+  return exercises
 })
+
+const exerciseCount = computed(() => filteredExercises.value.length)
+
+function clearSearch() {
+  searchQuery.value = ''
+}
 
 function handleCreateExercise() {
   router.push('/create-exercise')
@@ -31,64 +56,107 @@ function handleCreateExercise() {
 </script>
 
 <template>
-  <div class="flex-1 p-4">
-    <Card class="mb-6">
-      <CardContent class="pt-6">
-        <h1 class="text-3xl font-bold mb-2">Exercises</h1>
-        <p class="text-muted-foreground">Browse and manage your exercises</p>
-      </CardContent>
-    </Card>
+  <div class="flex-1 flex flex-col min-h-0">
+    <!-- Sticky Header -->
+    <div class="sticky top-0 z-10 bg-background/95 backdrop-blur-sm px-5 pt-6 pb-4">
+      <!-- Title & Count -->
+      <div class="mb-5">
+        <h1 class="text-4xl font-semibold tracking-tight">Exercises</h1>
+        <p class="text-sm text-muted-foreground mt-1">{{ exerciseCount }} exercises</p>
+      </div>
 
-    <!-- Search Input -->
-    <div class="relative mb-4">
-      <Search
-        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
-      />
-      <Input
-        v-model="searchQuery"
-        placeholder="Search exercises..."
-        class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-      />
+      <!-- Search Input -->
+      <div class="relative mb-4">
+        <Search
+          class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground/60 pointer-events-none transition-colors"
+        />
+        <Input
+          v-model="searchQuery"
+          placeholder="Search by name, muscle, or equipment..."
+          class="w-full pl-12 pr-10 h-14 text-base rounded-2xl bg-muted/40 border-transparent placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-200"
+        />
+        <button
+          v-if="searchQuery"
+          class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted/80 text-muted-foreground/60 hover:text-foreground transition-colors"
+          @click="clearSearch"
+        >
+          <X class="size-4" />
+        </button>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-1">
+        <button
+          v-for="filter in muscleFilters"
+          :key="filter.value"
+          class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
+          :class="
+            activeFilter === filter.value
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+          "
+          @click="activeFilter = filter.value"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
     </div>
 
-    <!-- Exercises List -->
-    <Card>
-      <CardContent class="p-0">
+    <!-- Exercise List -->
+    <div class="flex-1 overflow-y-auto px-5 pb-24">
+      <div v-if="filteredExercises.length > 0" class="space-y-1">
         <button
-          v-for="(exercise, index) in filteredExercises"
+          v-for="exercise in filteredExercises"
           :key="exercise.name"
-          class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-muted/50 group"
-          :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
+          class="w-full flex items-center gap-4 px-4 py-4 text-left rounded-xl transition-all duration-150 hover:bg-muted/50 active:bg-muted active:scale-[0.99] group"
         >
-          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
-            exercise.icon
-          }}</span>
+          <!-- Icon Container -->
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-xl bg-muted/60 flex items-center justify-center text-2xl group-hover:bg-muted group-active:scale-95 transition-all duration-150"
+          >
+            {{ exercise.icon }}
+          </div>
+
+          <!-- Content -->
           <div class="min-w-0 flex-1">
-            <p class="font-medium text-[15px] truncate">
+            <p class="font-medium text-base tracking-tight truncate">
               {{ exercise.name }}
             </p>
-            <div class="flex gap-1.5 mt-0.5">
-              <Badge variant="secondary" class="text-xs font-normal">
-                {{ MUSCLE_LABELS[exercise.muscle] }}
-              </Badge>
-              <Badge variant="outline" class="text-xs font-normal">
-                {{ EQUIPMENT_LABELS[exercise.equipment] }}
-              </Badge>
-            </div>
+            <p class="text-xs text-muted-foreground mt-0.5 uppercase tracking-wide">
+              {{ MUSCLE_LABELS[exercise.muscle] }}
+            </p>
           </div>
         </button>
+      </div>
 
-        <!-- Empty Search State -->
-        <div v-if="filteredExercises.length === 0" class="text-center py-12">
-          <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-          <p class="text-sm text-muted-foreground">No exercises found for "{{ searchQuery }}"</p>
+      <!-- Empty State -->
+      <div v-else class="flex flex-col items-center justify-center py-20 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+          <Search class="size-7 text-muted-foreground/40" />
         </div>
-      </CardContent>
-    </Card>
+        <p class="text-base font-medium text-foreground/80 mb-1">No exercises found</p>
+        <p class="text-sm text-muted-foreground max-w-[240px]">
+          <template v-if="searchQuery"> No results for "{{ searchQuery }}" </template>
+          <template v-else> Try a different filter or create a custom exercise </template>
+        </p>
+        <Button variant="outline" class="mt-4" @click="handleCreateExercise">
+          <Plus class="size-4 mr-2" />
+          Create Custom
+        </Button>
+      </div>
+    </div>
 
-    <!-- Create Custom Exercise Button -->
-    <div class="mt-6">
-      <Button class="w-full" @click="handleCreateExercise"> + Create Custom Exercise </Button>
+    <!-- Floating Create Button -->
+    <div class="fixed bottom-20 left-0 right-0 px-5 pb-4 pointer-events-none">
+      <div class="max-w-lg mx-auto">
+        <Button
+          class="w-full h-14 text-base font-medium rounded-2xl shadow-lg shadow-primary/20 pointer-events-auto"
+          @click="handleCreateExercise"
+        >
+          <Plus class="size-5 mr-2" />
+          Create Custom Exercise
+        </Button>
+      </div>
     </div>
   </div>
 </template>
