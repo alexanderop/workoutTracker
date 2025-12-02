@@ -1,38 +1,37 @@
-import { effectScope, watch, onScopeDispose } from 'vue'
-import { useWakeLock } from '@vueuse/core'
+import { watch, onScopeDispose } from 'vue'
+import { useWakeLock, useDocumentVisibility } from '@vueuse/core'
 import { useWorkout } from './useWorkout'
 
 export function useWorkoutWakeLock() {
   const { workout } = useWorkout()
   const { isSupported, isActive, request, release } = useWakeLock()
+  const visibility = useDocumentVisibility()
 
-  // Create a dedicated scope for this composable's watchers
-  const scope = effectScope()
-
-  scope.run(() => {
-    // Handle initial state and watch for mode changes
-    watch(
-      () => workout.value.mode,
-      (mode, oldMode) => {
-        if (mode === 'active') {
-          request('screen')
-          return
-        }
-        // Only release if transitioning from active to builder
-        if (oldMode === 'active' && mode === 'builder') {
-          release()
-        }
-      },
-      { immediate: true, flush: 'sync' },
-    )
-  })
-
-  onScopeDispose(() => {
-    scope.stop()
-    if (workout.value.mode === 'active') {
+  // Request/release based on workout mode
+  watch(
+    () => workout.value.mode,
+    (mode) => {
+      if (mode === 'active') {
+        request('screen')
+        return
+      }
       release()
-    }
-  })
+    },
+    { immediate: true, flush: 'sync' },
+  )
+
+  // Re-acquire when page becomes visible (browser releases lock on tab switch)
+  watch(
+    visibility,
+    (state) => {
+      if (state === 'visible' && workout.value.mode === 'active') {
+        request('screen')
+      }
+    },
+    { flush: 'sync' },
+  )
+
+  onScopeDispose(() => release())
 
   return { isSupported, isActive }
 }

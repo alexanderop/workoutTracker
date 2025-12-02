@@ -4,11 +4,12 @@ import { useWorkoutWakeLock } from '@/composables/useWorkoutWakeLock'
 import { resetWorkout, useWorkout } from '@/composables/useWorkout'
 import { withSetup } from '../helpers/withSetup'
 
-// Mock @vueuse/core's useWakeLock
+// Mock @vueuse/core's useWakeLock and useDocumentVisibility
 const mockRequest = vi.fn()
 const mockRelease = vi.fn()
 const mockIsSupported = ref(true)
 const mockIsActive = ref(false)
+const mockVisibility = ref<DocumentVisibilityState>('hidden')
 
 vi.mock('@vueuse/core', () => ({
   useWakeLock: vi.fn(() => ({
@@ -17,6 +18,7 @@ vi.mock('@vueuse/core', () => ({
     request: mockRequest,
     release: mockRelease,
   })),
+  useDocumentVisibility: vi.fn(() => mockVisibility),
 }))
 
 describe('useWorkoutWakeLock', () => {
@@ -24,6 +26,7 @@ describe('useWorkoutWakeLock', () => {
     resetWorkout()
     mockRequest.mockClear()
     mockRelease.mockClear()
+    mockVisibility.value = 'hidden'
   })
 
   afterEach(() => {
@@ -73,9 +76,10 @@ describe('useWorkoutWakeLock', () => {
       const { workout } = useWorkout()
       const [, app] = withSetup(() => useWorkoutWakeLock())
 
-      workout.value.mode = 'active'
-      mockRequest.mockClear()
+      // Clear mocks after setup (builder mode triggers initial release)
+      mockRelease.mockClear()
 
+      workout.value.mode = 'active'
       workout.value.mode = 'builder'
 
       expect(mockRelease).toHaveBeenCalledTimes(1)
@@ -98,6 +102,10 @@ describe('useWorkoutWakeLock', () => {
     it('handles multiple mode transitions correctly', () => {
       const { workout } = useWorkout()
       const [, app] = withSetup(() => useWorkoutWakeLock())
+
+      // Clear mocks after setup (builder mode triggers initial release)
+      mockRequest.mockClear()
+      mockRelease.mockClear()
 
       workout.value.mode = 'active'
       expect(mockRequest).toHaveBeenCalledTimes(1)
@@ -129,15 +137,58 @@ describe('useWorkoutWakeLock', () => {
       expect(mockRelease).toHaveBeenCalledTimes(1)
     })
 
-    it('does not release wake lock when component unmounts with builder mode', () => {
+    it('calls release on unmount even in builder mode (no-op but safe)', () => {
       const { workout } = useWorkout()
       expect(workout.value.mode).toBe('builder')
 
       const [, app] = withSetup(() => useWorkoutWakeLock())
 
+      // release() called once from initial watch (builder mode triggers release)
+      expect(mockRelease).toHaveBeenCalledTimes(1)
+      mockRelease.mockClear()
+
       app.unmount()
 
-      expect(mockRelease).not.toHaveBeenCalled()
+      // release() called again on dispose (safe no-op)
+      expect(mockRelease).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('visibility changes', () => {
+    it('re-requests wake lock when page becomes visible during active workout', () => {
+      const { workout } = useWorkout()
+      workout.value.mode = 'active'
+
+      const [, app] = withSetup(() => useWorkoutWakeLock())
+
+      expect(mockRequest).toHaveBeenCalledTimes(1)
+      mockRequest.mockClear()
+
+      // Simulate tab going hidden then visible
+      mockVisibility.value = 'hidden'
+      mockVisibility.value = 'visible'
+
+      expect(mockRequest).toHaveBeenCalledWith('screen')
+      expect(mockRequest).toHaveBeenCalledTimes(1)
+
+      app.unmount()
+    })
+
+    it('does not re-request wake lock when page becomes visible in builder mode', () => {
+      const { workout } = useWorkout()
+      expect(workout.value.mode).toBe('builder')
+
+      const [, app] = withSetup(() => useWorkoutWakeLock())
+
+      mockRequest.mockClear()
+
+      // Simulate tab going hidden then visible
+      mockVisibility.value = 'hidden'
+      mockVisibility.value = 'visible'
+
+      expect(mockRequest).not.toHaveBeenCalled()
+
+      app.unmount()
     })
   })
 })
