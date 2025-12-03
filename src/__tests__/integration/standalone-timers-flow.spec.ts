@@ -1,54 +1,9 @@
-import { waitFor } from '@testing-library/vue'
+import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
-
-// Helper to find timer type button by its label text
-function findTimerTypeButton(label: 'AMRAP' | 'EMOM' | 'Tabata' | 'For Time'): HTMLElement {
-  const buttons = [...document.querySelectorAll('button')]
-  for (const btn of buttons) {
-    if (btn.textContent?.includes(label) && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error(`Timer type button "${label}" not found`)
-}
-
-// Helper to find preset button by text
-function findPresetButton(text: string): HTMLElement {
-  const buttons = [...document.querySelectorAll('button')]
-  for (const btn of buttons) {
-    if (btn.textContent?.toLowerCase().includes(text.toLowerCase()) && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error(`Preset button containing "${text}" not found`)
-}
-
-// Helper to find control buttons by their SVG icon class
-function findControlButton(iconName: 'x' | 'play' | 'pause' | 'rotate-ccw'): HTMLElement {
-  const svgClass = `lucide-${iconName}`
-  const buttons = [...document.querySelectorAll('button')]
-  for (const btn of buttons) {
-    if (btn.querySelector(`svg.${svgClass}`) && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error(`Control button with icon ${iconName} not found`)
-}
-
-// Helper to find the back button with arrow-left icon
-function findBackButton(): HTMLElement {
-  const buttons = [...document.querySelectorAll('button')]
-  for (const btn of buttons) {
-    if (btn.querySelector('svg.lucide-arrow-left') && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error('Back button with arrow-left icon not found')
-}
 
 // Helper to navigate to timers page from home
 async function goToTimersPage(app: Awaited<ReturnType<typeof createTestApp>>) {
@@ -120,7 +75,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Click AMRAP button
-    await app.user.click(findTimerTypeButton('AMRAP'))
+    await app.user.click(screen.getByRole('button', { name: /AMRAP/i }))
 
     // Verify presets are shown - use exact text to avoid matching "15 min"
     await waitFor(() => {
@@ -139,7 +94,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Click Tabata button
-    await app.user.click(findTimerTypeButton('Tabata'))
+    await app.user.click(screen.getByRole('button', { name: /Tabata/i }))
 
     // Verify presets are shown
     await waitFor(() => {
@@ -159,31 +114,25 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Select AMRAP
-    await app.user.click(findTimerTypeButton('AMRAP'))
+    await app.user.click(screen.getByRole('button', { name: /AMRAP/i }))
 
     // Wait for presets and select 5 min preset
     await waitFor(() => {
       expect(app.queryByText('5 min')).toBeTruthy()
     })
-    await app.user.click(findPresetButton('Quick burst')) // Use description to be more specific
+    await app.user.click(screen.getByRole('button', { name: /Quick burst/i }))
 
-    // Verify timer runner is shown with controls
+    // Verify timer runner is shown with controls - use semantic queries with aria-labels
     await waitFor(() => {
-      // Play button should be visible (timer not started yet)
-      const playButtons = document.querySelectorAll('svg.lucide-play')
-      expect(playButtons.length).toBeGreaterThan(0)
+      expect(app.getTimerControlButton('exit')).toBeTruthy()
     })
 
     // Verify rounds display exists
     expect(app.queryByText(/Rounds/)).toBeTruthy()
 
-    // Verify exit button (X) exists
-    const closeButtons = document.querySelectorAll('svg.lucide-x')
-    expect(closeButtons.length).toBeGreaterThan(0)
-
-    // Verify reset button exists
-    const resetButtons = document.querySelectorAll('svg.lucide-rotate-ccw')
-    expect(resetButtons.length).toBeGreaterThan(0)
+    // Verify exit and reset buttons exist using semantic queries
+    expect(app.getTimerControlButton('exit')).toBeTruthy()
+    expect(app.getTimerControlButton('reset')).toBeTruthy()
 
     app.cleanup()
   })
@@ -193,15 +142,15 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Select EMOM
-    await app.user.click(findTimerTypeButton('EMOM'))
+    await app.user.click(screen.getByRole('button', { name: /EMOM/i }))
 
     // Wait for presets
     await waitFor(() => {
       expect(app.queryByText('10 min')).toBeTruthy()
     })
 
-    // Click back button (arrow-left icon)
-    await app.user.click(findBackButton())
+    // Click back button
+    await app.user.click(screen.getByRole('button', { name: /go back/i }))
 
     // Should be back at timer selection
     await waitFor(() => {
@@ -216,13 +165,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Select Tabata
-    await app.user.click(findTimerTypeButton('Tabata'))
+    await app.user.click(screen.getByRole('button', { name: /Tabata/i }))
 
     // Wait for presets and click Custom
     await waitFor(() => {
       expect(app.queryByText(/Custom/)).toBeTruthy()
     })
-    await app.user.click(findPresetButton('Custom'))
+    await app.user.click(screen.getByRole('button', { name: /Custom/i }))
 
     // Verify custom form fields appear
     await waitFor(() => {
@@ -242,7 +191,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Click For Time button
-    await app.user.click(findTimerTypeButton('For Time'))
+    await app.user.click(screen.getByRole('button', { name: /For Time/i }))
 
     // Verify presets are shown
     await waitFor(() => {
@@ -260,20 +209,19 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Select AMRAP and start 5 min preset
-    await app.user.click(findTimerTypeButton('AMRAP'))
+    await app.user.click(screen.getByRole('button', { name: /AMRAP/i }))
     await waitFor(() => {
       expect(app.queryByText('5 min')).toBeTruthy()
     })
-    await app.user.click(findPresetButton('Quick burst'))
+    await app.user.click(screen.getByRole('button', { name: /Quick burst/i }))
 
-    // Wait for timer UI
+    // Wait for timer UI using semantic query
     await waitFor(() => {
-      const closeButtons = document.querySelectorAll('svg.lucide-x')
-      expect(closeButtons.length).toBeGreaterThan(0)
+      expect(app.getTimerControlButton('exit')).toBeTruthy()
     })
 
-    // Find and click exit button
-    await app.user.click(findControlButton('x'))
+    // Find and click exit button using semantic query
+    await app.user.click(app.getTimerControlButton('exit'))
 
     // Should return to timer selection
     await waitFor(() => {
@@ -288,13 +236,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(app)
 
     // Select EMOM
-    await app.user.click(findTimerTypeButton('EMOM'))
+    await app.user.click(screen.getByRole('button', { name: /EMOM/i }))
 
     // Select 10 min preset
     await waitFor(() => {
       expect(app.queryByText('10 min')).toBeTruthy()
     })
-    await app.user.click(findPresetButton('Quick session'))
+    await app.user.click(screen.getByRole('button', { name: /Quick session/i }))
 
     // Verify timer UI is shown with minute display (uppercase)
     await waitFor(() => {

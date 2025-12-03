@@ -5,27 +5,6 @@ import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
-// Helper to find footer navigation buttons
-function findFooterButton(selector: 'next' | 'prev'): HTMLElement {
-  const svgClass = selector === 'next' ? 'lucide-chevron-right' : 'lucide-chevron-left'
-  const buttons = [...document.querySelectorAll('footer button')]
-  for (const btn of buttons) {
-    if (btn.querySelector(`svg.${svgClass}`) && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error(`Footer ${selector} button not found`)
-}
-
-// Helper to find dropdown menu trigger
-function findMenuTrigger(): HTMLElement {
-  const trigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
-  if (!(trigger instanceof HTMLElement)) {
-    throw new Error('Menu trigger not found or not an HTMLElement')
-  }
-  return trigger
-}
-
 // Helper to add a timed block to workout
 async function addTimedBlock(
   app: Awaited<ReturnType<typeof createTestApp>>,
@@ -67,9 +46,9 @@ async function addTimedBlock(
 // Helper to end workout via menu
 async function endWorkoutViaMenu(app: Awaited<ReturnType<typeof createTestApp>>) {
   await waitFor(() => {
-    expect(findMenuTrigger()).toBeTruthy()
+    expect(app.getMenuTrigger()).toBeTruthy()
   })
-  await app.user.click(findMenuTrigger())
+  await app.user.click(app.getMenuTrigger())
 
   await waitFor(() => {
     expect(app.queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
@@ -256,7 +235,7 @@ describe('Timed Block Execution', () => {
     expect(app.queryByRole('button', { name: /complete set/i })).toBeTruthy()
 
     // Navigate to AMRAP block
-    await app.user.click(findFooterButton('next'))
+    await app.user.click(app.getFooterButton('next'))
 
     await waitFor(() => {
       expect(app.queryByText(/block 2 of 2/i)).toBeTruthy()
@@ -266,7 +245,7 @@ describe('Timed Block Execution', () => {
     expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
 
     // Navigate back to strength block
-    await app.user.click(findFooterButton('prev'))
+    await app.user.click(app.getFooterButton('prev'))
 
     await waitFor(() => {
       expect(app.queryByText(/block 1 of 2/i)).toBeTruthy()

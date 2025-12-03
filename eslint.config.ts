@@ -80,6 +80,9 @@ export default defineConfigWithVueTs(
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
     rules: {
+      // No console.log - keeps codebase clean
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+
       // No `any` - use `unknown` + type guards
       '@typescript-eslint/no-explicit-any': 'error',
 

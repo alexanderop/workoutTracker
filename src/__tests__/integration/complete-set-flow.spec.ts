@@ -1,3 +1,4 @@
+import { screen } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
@@ -35,14 +36,10 @@ describe('Complete Set Flow', () => {
     // Verify we're on set 1 of 3
     expect(app.getByText('1/3')).toBeDefined()
 
-    // Fill in the first set values using the spinbuttons
-    // The inputs don't have accessible names, so we get all spinbuttons
-    const [weightInput, repsInput, rirInput] = [
-      ...document.querySelectorAll<HTMLElement>('[role="spinbutton"]'),
-    ]
-    if (!weightInput || !repsInput || !rirInput) {
-      throw new Error('Expected spinbutton elements not found')
-    }
+    // Fill in the first set values using semantic queries
+    const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
+    const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
+    const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
     await app.user.type(weightInput, '100')
     await app.user.type(repsInput, '8')
@@ -75,13 +72,11 @@ describe('Complete Set Flow', () => {
     // Start the workout
     await app.startWorkout()
 
-    // Complete set 1
-    const [weightInput, repsInput, rirInput] = [
-      ...document.querySelectorAll<HTMLElement>('[role="spinbutton"]'),
-    ]
-    if (!weightInput || !repsInput || !rirInput) {
-      throw new Error('Expected spinbutton elements not found')
-    }
+    // Complete set 1 using semantic queries
+    const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
+    const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
+    const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
+
     await app.user.type(weightInput, '100')
     await app.user.type(repsInput, '8')
     await app.user.type(rirInput, '2')
@@ -97,9 +92,9 @@ describe('Complete Set Flow', () => {
     // Complete set 3
     await app.user.click(app.getByRole('button', { name: /complete set/i }))
 
-    // Verify all three sets appear in the history
-    const historyPills = document.querySelectorAll('[class*="bg-primary/10"]')
-    expect(historyPills.length).toBe(3)
+    // Verify all three sets appear in the history (by counting text patterns)
+    const completedSets = screen.getAllByText(/100kg × 8/)
+    expect(completedSets.length).toBe(3)
 
     app.cleanup()
   })

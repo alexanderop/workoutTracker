@@ -122,6 +122,7 @@ function getFormattedEstimated10RM(set: Set) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Weight"
               class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
             />
           </NumberField>
@@ -136,6 +137,7 @@ function getFormattedEstimated10RM(set: Set) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Reps"
               class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums rounded-lg"
             />
           </NumberField>
@@ -150,6 +152,7 @@ function getFormattedEstimated10RM(set: Set) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Reps in reserve"
               class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums rounded-lg"
             />
           </NumberField>
@@ -162,6 +165,7 @@ function getFormattedEstimated10RM(set: Set) {
         <TableCell class="p-1 h-10 text-center">
           <Button
             size="icon"
+            aria-label="Mark set complete"
             :class="
               cn(
                 'h-9 w-9 rounded-lg transition-all duration-200',

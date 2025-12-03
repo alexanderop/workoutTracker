@@ -68,28 +68,17 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   // Handle forced release from OS (Android aggressive power management)
   function handleForcedRelease() {
     // Only re-acquire if page is visible - otherwise we'll fail anyway
-    if (visibility.value === 'hidden') {
-      console.log('[WakeLock] Forced release detected but page hidden, skipping re-acquire')
-      return
-    }
+    if (visibility.value === 'hidden') return
     // Only re-acquire if user has interacted (for PWA autoplay policies)
-    if (!userHasInteracted) {
-      console.log('[WakeLock] Forced release detected but no user interaction yet, skipping')
-      return
-    }
-    console.log('[WakeLock] Forced release detected, re-acquiring all...')
+    if (!userHasInteracted) return
     // Use acquireAll to try both native AND video fallback
     acquireAll()
   }
 
   async function acquireNative(): Promise<void> {
-    if (!nativeIsSupported.value) {
-      console.log('[WakeLock] Native API not supported')
-      return
-    }
+    if (!nativeIsSupported.value) return
     try {
       await request('screen')
-      console.log('[WakeLock] Native API acquired')
     } catch (err) {
       console.warn('[WakeLock] Native API failed:', err)
       throw err
@@ -98,13 +87,11 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
   function releaseNative(): void {
     release()
-    console.log('[WakeLock] Native API released')
   }
 
   function startVideoFallback(): void {
     if (videoElement) return
 
-    console.log('[WakeLock] Starting video fallback')
     videoElement = document.createElement('video')
     videoElement.setAttribute('playsinline', '')
     videoElement.setAttribute('muted', '')
@@ -126,7 +113,6 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   function stopVideoFallback(): void {
     if (!videoElement) return
 
-    console.log('[WakeLock] Stopping video fallback')
     videoElement.pause()
     videoElement.remove()
     videoElement = null
@@ -139,12 +125,6 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
     // Always use redundancy on mobile OR in PWA standalone mode (less reliable there)
     const useRedundancy = options?.redundant ?? (isMobileDevice.value || isPWAStandalone.value)
-    console.log('[WakeLock] Acquiring all...', {
-      useRedundancy,
-      isSupported: nativeIsSupported.value,
-      isMobile: isMobileDevice.value,
-      isPWA: isPWAStandalone.value,
-    })
 
     let nativeSucceeded = false
     if (nativeIsSupported.value) {
@@ -153,7 +133,6 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
         nativeSucceeded = true
       } catch {
         // Native failed, will use fallback
-        console.log('[WakeLock] Native failed, falling back to video')
       }
     }
 
@@ -165,7 +144,6 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   }
 
   function releaseAll(): void {
-    console.log('[WakeLock] Releasing all...')
     releaseNative()
     stopVideoFallback()
   }

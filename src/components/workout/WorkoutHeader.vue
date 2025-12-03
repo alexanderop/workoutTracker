@@ -28,7 +28,13 @@ const router = useRouter()
 <template>
   <div class="sticky top-0 border-b border-border bg-background/95 backdrop-blur-sm z-10">
     <div class="flex items-center gap-3 px-4 py-3">
-      <Button variant="ghost" size="icon" class="h-9 w-9 flex-shrink-0" @click="router.back()">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-9 w-9 flex-shrink-0"
+        aria-label="Go back"
+        @click="router.back()"
+      >
         <ChevronLeft class="w-5 h-5" />
       </Button>
       <div class="flex-1 min-w-0">
@@ -41,7 +47,7 @@ const router = useRouter()
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost" size="icon" class="h-8 w-8">
+          <Button variant="ghost" size="icon" class="h-8 w-8" aria-label="More options">
             <MoreVertical class="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>

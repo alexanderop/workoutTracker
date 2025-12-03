@@ -46,6 +46,9 @@ type TestApp = {
   fillSet: (setIndex: number, values: SetValues) => Promise<void>
   startWorkout: () => Promise<void>
   openWorkoutMenu: () => Promise<void>
+  getFooterButton: (direction: 'prev' | 'next') => HTMLElement
+  getMenuTrigger: () => HTMLElement
+  getTimerControlButton: (action: 'exit' | 'reset') => HTMLElement
   cleanup: () => void
 }
 
@@ -146,18 +149,8 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   }
 
   async function openWorkoutMenu(): Promise<void> {
-    // Open the dropdown menu in active mode header (three-dot/more icon)
-    // The menu button is a ghost button with MoreVertical icon
-    const buttons = screen.getAllByRole('button')
-    const menuButton = buttons.find((btn) => {
-      // Find the button that contains the MoreVertical SVG
-      const svg = btn.querySelector('svg.lucide-more-vertical')
-      return svg !== null
-    })
-    if (!menuButton) {
-      throw new Error('Workout menu button not found')
-    }
-    await user.click(menuButton)
+    // Open the dropdown menu in active mode header using semantic query
+    await user.click(screen.getByRole('button', { name: /workout options|more options/i }))
   }
 
   function getSetRow(setIndex: number): SetInputs {
@@ -168,26 +161,21 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
       throw new Error(`Set row at index ${setIndex} not found`)
     }
 
-    // Get all spinbuttons (NumberFieldInput) in the row - they appear in order: kg, reps, rir
-    const spinbuttons = row.querySelectorAll('[role="spinbutton"]')
-    if (spinbuttons.length < 3) {
-      throw new Error(`Expected 3 spinbuttons in set row, found ${spinbuttons.length}`)
-    }
-
-    const kg = spinbuttons[0]
-    const reps = spinbuttons[1]
-    const rir = spinbuttons[2]
+    // Get spinbuttons by aria-label (semantic queries)
+    const kg = row.querySelector('[aria-label="Weight"]')
+    const reps = row.querySelector('[aria-label="Reps"]')
+    const rir = row.querySelector('[aria-label="Reps in reserve"]')
 
     if (
       !(kg instanceof HTMLInputElement) ||
       !(reps instanceof HTMLInputElement) ||
       !(rir instanceof HTMLInputElement)
     ) {
-      throw new Error('Spinbutton elements are not HTMLInputElements')
+      throw new Error('Spinbutton elements not found or not HTMLInputElements')
     }
 
-    // Get the complete button (first button with an SVG icon in the complete column)
-    const completeButton = row.querySelector('button:has(svg.lucide-check)')
+    // Get the complete button by aria-label
+    const completeButton = row.querySelector('[aria-label="Mark set complete"]')
     if (!(completeButton instanceof HTMLElement)) {
       throw new Error('Complete button not found in set row')
     }
@@ -217,6 +205,23 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     }
   }
 
+  function getFooterButton(direction: 'prev' | 'next'): HTMLElement {
+    const label = direction === 'prev' ? /previous block/i : /next block/i
+    return screen.getByRole('button', { name: label })
+  }
+
+  function getMenuTrigger(): HTMLElement {
+    return screen.getByRole('button', { name: /workout options|more options/i })
+  }
+
+  function getTimerControlButton(action: 'exit' | 'reset'): HTMLElement {
+    const labels: Record<typeof action, RegExp> = {
+      exit: /exit timer/i,
+      reset: /reset timer/i,
+    }
+    return screen.getByRole('button', { name: labels[action] })
+  }
+
   function cleanup() {
     rtlCleanup()
   }
@@ -242,6 +247,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     fillSet,
     startWorkout,
     openWorkoutMenu,
+    getFooterButton,
+    getMenuTrigger,
+    getTimerControlButton,
     cleanup,
   }
 }

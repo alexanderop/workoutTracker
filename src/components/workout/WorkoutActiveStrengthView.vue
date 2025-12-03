@@ -120,6 +120,7 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Weight"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-24 text-7xl font-extrabold tabular-nums rounded-2xl text-center w-44"
             />
           </NumberField>
@@ -143,6 +144,7 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Reps"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold text-primary tabular-nums rounded-xl text-center w-24"
             />
           </NumberField>
@@ -162,6 +164,7 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
+              aria-label="Reps in reserve"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold tabular-nums rounded-xl text-center w-24"
             />
           </NumberField>

@@ -151,7 +151,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     <template #header-actions>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost" size="icon" class="flex-shrink-0">
+          <Button variant="ghost" size="icon" class="flex-shrink-0" aria-label="Workout options">
             <MoreVertical class="size-5" />
           </Button>
         </DropdownMenuTrigger>

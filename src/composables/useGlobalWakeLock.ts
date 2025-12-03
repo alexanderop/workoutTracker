@@ -33,14 +33,12 @@ export function useGlobalWakeLock() {
     const shouldActivate = enabled && visible
 
     if (shouldActivate && !shouldBeActive) {
-      console.log('[GlobalWakeLock] Acquiring wake lock...')
       wakeLock.acquireAll()
       shouldBeActive = true
       return
     }
 
     if (!shouldActivate && shouldBeActive) {
-      console.log('[GlobalWakeLock] Releasing wake lock...')
       wakeLock.releaseAll()
       shouldBeActive = false
     }
@@ -65,14 +63,12 @@ export function useGlobalWakeLock() {
     if (!settingsStore.isLoaded || !settingsStore.screenWakeLock) return
 
     if (state === 'hidden') {
-      console.log('[GlobalWakeLock] Page hidden, releasing to save battery...')
       wakeLock.releaseAll()
       shouldBeActive = false
       return
     }
 
     if (state === 'visible' && prevState === 'hidden') {
-      console.log('[GlobalWakeLock] Page visible, re-acquiring...')
       wakeLock.acquireAll()
       shouldBeActive = true
     }

@@ -87,7 +87,13 @@ function handleExit() {
     <!-- Controls -->
     <div class="p-4 border-t bg-background/95 backdrop-blur">
       <div v-if="!isComplete" class="flex items-center justify-center gap-4">
-        <Button variant="outline" size="icon" class="h-12 w-12" @click="handleExit">
+        <Button
+          variant="outline"
+          size="icon"
+          class="h-12 w-12"
+          aria-label="Exit timer"
+          @click="handleExit"
+        >
           <X class="w-5 h-5" />
         </Button>
 
@@ -101,7 +107,13 @@ function handleExit() {
           <Play v-if="!isRunning" class="w-6 h-6 ml-0.5" />
         </Button>
 
-        <Button variant="outline" size="icon" class="h-12 w-12" @click="handleReset">
+        <Button
+          variant="outline"
+          size="icon"
+          class="h-12 w-12"
+          aria-label="Reset timer"
+          @click="handleReset"
+        >
           <RotateCcw class="w-5 h-5" />
         </Button>
       </div>

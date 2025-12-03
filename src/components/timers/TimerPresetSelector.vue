@@ -168,7 +168,7 @@ function startCustom() {
   <div class="flex flex-col h-full">
     <!-- Header -->
     <div class="p-4 border-b flex items-center gap-3">
-      <Button variant="ghost" size="icon" @click="emit('back')">
+      <Button variant="ghost" size="icon" aria-label="Go back" @click="emit('back')">
         <ArrowLeft class="w-5 h-5" />
       </Button>
       <h1 class="text-lg font-semibold">{{ timerLabel }}</h1>

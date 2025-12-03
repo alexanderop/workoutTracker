@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/vue'
+import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
 import { resetInitState } from '@/composables/useAppInitialization'
@@ -6,15 +6,6 @@ import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
-
-// Helper to find dropdown menu trigger
-function findMenuTrigger(): HTMLElement {
-  const trigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
-  if (!(trigger instanceof HTMLElement)) {
-    throw new Error('Menu trigger not found or not an HTMLElement')
-  }
-  return trigger
-}
 
 describe('Template Flow', () => {
   beforeEach(async () => {
@@ -54,12 +45,10 @@ describe('Template Flow', () => {
       await app.startWorkout()
       await waitFor(() => expect(app.queryByText(/block 1 of 2/i)).toBeTruthy())
 
-      // Complete one set in Bench Press
-      const spinbuttons = [...document.querySelectorAll<HTMLElement>('[role="spinbutton"]')]
-      const [weightInput, repsInput, rirInput] = spinbuttons
-      if (!weightInput || !repsInput || !rirInput) {
-        throw new Error('Expected spinbutton elements not found')
-      }
+      // Complete one set in Bench Press using semantic queries
+      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
+      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
+      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
       await app.user.type(weightInput, '80')
       await app.user.type(repsInput, '10')
@@ -67,8 +56,8 @@ describe('Template Flow', () => {
       await app.user.click(app.getByRole('button', { name: /complete set/i }))
 
       // Finish the workout via menu
-      await waitFor(() => expect(findMenuTrigger()).toBeTruthy())
-      await app.user.click(findMenuTrigger())
+      await waitFor(() => expect(app.getMenuTrigger()).toBeTruthy())
+      await app.user.click(app.getMenuTrigger())
 
       await waitFor(() => {
         expect(app.queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()

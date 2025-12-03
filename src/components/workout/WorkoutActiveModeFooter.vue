@@ -148,6 +148,7 @@ function handlePrimaryAction() {
         variant="outline"
         size="icon"
         class="h-12 w-12 flex-shrink-0"
+        aria-label="Previous block"
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
       >
@@ -176,6 +177,7 @@ function handlePrimaryAction() {
         variant="outline"
         size="icon"
         class="h-12 w-12 flex-shrink-0"
+        aria-label="Next block"
         :disabled="isLastBlock"
         @click="emit('next-block')"
       >
