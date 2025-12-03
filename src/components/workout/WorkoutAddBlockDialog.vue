@@ -3,40 +3,35 @@ import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { popularExercises } from '@/data/popularExercises'
-import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
+import WorkoutAddBlockDialogExerciseItem from './WorkoutAddBlockDialogExerciseItem.vue'
+import { useExercisesStore, type CustomExercise } from '@/stores/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
 
-type Props = {
-  open: boolean
-}
+const open = defineModel<boolean>('open', { required: true })
 
-type Emits = {
-  'update:open': [value: boolean]
-  'add-exercise': [name: string]
+const emit = defineEmits<{
+  'add-exercise': [exerciseId: string, name: string]
   'add-timed-block': [kind: TimedBlockKind]
-}
-
-defineProps<Props>()
-const emit = defineEmits<Emits>()
+}>()
 
 const router = useRouter()
+const exercisesStore = useExercisesStore()
 const searchQuery = ref('')
 const activeTab = ref('exercises')
 
 const filteredExercises = computed(() => {
+  const allExercises = exercisesStore.customExercises
   if (!searchQuery.value.trim()) {
-    return popularExercises
+    return allExercises
   }
   const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter((ex) => ex.name.toLowerCase().includes(query))
+  return allExercises.filter((ex) => ex.name.toLowerCase().includes(query))
 })
 
 const timedBlockTypes: ReadonlyArray<{
@@ -66,25 +61,26 @@ const timedBlockTypes: ReadonlyArray<{
   },
 ]
 
-function handleSelectExercise(exerciseName: string) {
-  emit('add-exercise', exerciseName)
-  emit('update:open', false)
+function handleSelectExercise(exercise: CustomExercise) {
+  emit('add-exercise', exercise.id, exercise.name)
+  open.value = false
   searchQuery.value = ''
 }
 
 function handleSelectTimedBlock(kind: TimedBlockKind) {
+  // Don't set open.value = false here - the parent will change activeDialog
+  // which will automatically close this dialog via the computed getter
   emit('add-timed-block', kind)
-  emit('update:open', false)
 }
 
 function handleCreateNew() {
-  emit('update:open', false)
+  open.value = false
   searchQuery.value = ''
   router.push('/create-exercise')
 }
 
 function handleOpenChange(value: boolean) {
-  emit('update:open', value)
+  open.value = value
   if (!value) {
     searchQuery.value = ''
     activeTab.value = 'exercises'
@@ -93,7 +89,7 @@ function handleOpenChange(value: boolean) {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
+  <Dialog v-model:open="open" @update:open="handleOpenChange">
     <MobileDialogContent
       :show-close-button="false"
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
@@ -135,29 +131,13 @@ function handleOpenChange(value: boolean) {
 
           <!-- Exercise List -->
           <div class="flex-1 overflow-y-auto -mx-4 px-4 mt-4">
-            <button
+            <WorkoutAddBlockDialogExerciseItem
               v-for="(exercise, index) in filteredExercises"
-              :key="exercise.name"
-              class="w-full flex items-center gap-3 py-3 text-left transition-colors active:bg-muted/50 group"
-              :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
-              @click="handleSelectExercise(exercise.name)"
-            >
-              <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
-                exercise.icon
-              }}</span>
-              <div class="min-w-0 flex-1">
-                <p class="font-medium text-[15px] truncate">
-                  {{ exercise.name }}
-                </p>
-                <Badge variant="secondary" class="text-xs mt-0.5 font-normal">
-                  {{ MUSCLE_LABELS[exercise.muscle] }}
-                </Badge>
-              </div>
-              <span
-                class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform"
-                >›</span
-              >
-            </button>
+              :key="exercise.id"
+              :exercise="exercise"
+              :show-border="index !== filteredExercises.length - 1"
+              @select="handleSelectExercise(exercise)"
+            />
 
             <!-- Empty State -->
             <div v-if="filteredExercises.length === 0" class="text-center py-12">

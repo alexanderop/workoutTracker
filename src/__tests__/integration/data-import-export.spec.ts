@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
+import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { resetDatabase } from '../setup'
 import { db } from '@/db'
@@ -9,7 +10,10 @@ import * as dataImport from '@/lib/dataImport'
 import * as dbModule from '@/db'
 
 describe('Data Import/Export', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    resetInitState()
+    await resetDatabase()
+
     // Mock URL methods that don't exist in JSDOM
     vi.stubGlobal('URL', {
       ...URL,

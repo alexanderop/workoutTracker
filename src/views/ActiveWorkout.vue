@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import WorkoutActiveMode from '@/components/workout/WorkoutActiveMode.vue'
 import WorkoutAddBlockDialog from '@/components/workout/WorkoutAddBlockDialog.vue'
@@ -10,6 +10,7 @@ import WorkoutConfigureEmomDialog from '@/components/workout/WorkoutConfigureEmo
 import WorkoutConfigureForTimeDialog from '@/components/workout/WorkoutConfigureForTimeDialog.vue'
 import WorkoutConfigureTabataDialog from '@/components/workout/WorkoutConfigureTabataDialog.vue'
 import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
+import type { ExerciseEditData } from '@/components/workout/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
@@ -73,6 +74,31 @@ type ActiveDialog =
 
 const activeDialog = ref<ActiveDialog>(null)
 const editingBlockIndex = ref<number | null>(null)
+
+// Computed for exercise edit dialog
+const selectedExerciseData = computed<ExerciseEditData | null>(() => {
+  if (!selectedExercise.value) return null
+  return {
+    name: selectedExercise.value.name,
+    equipment: selectedExercise.value.equipment,
+    targetReps: selectedExercise.value.targetReps,
+    setCount: selectedExercise.value.sets.length,
+  }
+})
+
+const editExerciseDialogOpen = computed({
+  get: () => activeDialog.value === 'editExercise',
+  set: (value: boolean) => {
+    activeDialog.value = value ? 'editExercise' : null
+  },
+})
+
+const addBlockDialogOpen = computed({
+  get: () => activeDialog.value === 'addBlock',
+  set: (value: boolean) => {
+    activeDialog.value = value ? 'addBlock' : null
+  },
+})
 
 // Handlers for finish/cancel
 async function handleConfirmFinish(name: string) {
@@ -161,9 +187,8 @@ function handleEditBlock(index: number) {
 
     <!-- Dialogs (shared across modes) -->
     <WorkoutAddBlockDialog
-      :open="activeDialog === 'addBlock'"
-      @update:open="activeDialog === 'addBlock' && !$event ? (activeDialog = null) : undefined"
-      @add-exercise="addExercise"
+      v-model:open="addBlockDialogOpen"
+      @add-exercise="(id, name) => addExercise(id, name)"
       @add-timed-block="handleAddTimedBlock"
     />
 
@@ -189,13 +214,9 @@ function handleEditBlock(index: number) {
     />
 
     <WorkoutEditExerciseDialog
-      v-if="selectedExercise"
-      :open="activeDialog === 'editExercise'"
-      :exercise-name="selectedExercise.name"
-      :equipment="selectedExercise.equipment"
-      :target-reps="selectedExercise.targetReps"
-      :set-count="selectedExercise.sets.length"
-      @update:open="activeDialog = $event ? 'editExercise' : null"
+      v-if="selectedExerciseData"
+      v-model:open="editExerciseDialogOpen"
+      :exercise="selectedExerciseData"
       @save="handleSaveExercise"
     />
 

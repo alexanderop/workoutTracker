@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue'
-import { popularExercises } from '@/data/popularExercises'
 import { useExercisesStore } from '@/stores/exercises'
 import type {
   AmrapBlock,
@@ -108,6 +107,42 @@ function generateBlockId(): number {
   return ids.length > 0 ? Math.max(...ids) + 1 : 1
 }
 
+/**
+ * Immutably update the workout object properties.
+ */
+function updateWorkout(updates: Partial<Workout>): void {
+  workout.value = { ...workout.value, ...updates }
+}
+
+/**
+ * Immutably update a block at a specific index.
+ */
+function updateBlockAtIndex(
+  blockIndex: number,
+  updater: (block: WorkoutBlock) => WorkoutBlock,
+): void {
+  const block = workout.value.blocks[blockIndex]
+  if (!block) return
+  const updatedBlock = updater(block)
+  workout.value = {
+    ...workout.value,
+    blocks: workout.value.blocks.map((b, i) => (i === blockIndex ? updatedBlock : b)),
+  }
+}
+
+/**
+ * Immutably update a set within a strength block.
+ */
+function updateSetInBlock(blockIndex: number, setId: number, updater: (set: Set) => Set): void {
+  updateBlockAtIndex(blockIndex, (block) => {
+    if (!isStrengthBlock(block)) return block
+    return {
+      ...block,
+      sets: block.sets.map((s) => (s.id === setId ? updater(s) : s)),
+    }
+  })
+}
+
 export function useWorkout() {
   const selectedBlock = computed(() => {
     if (workout.value.selectedBlockIndex < 0) return undefined
@@ -128,7 +163,7 @@ export function useWorkout() {
 
   function selectBlock(blockIndex: number) {
     if (blockIndex >= 0 && blockIndex < workout.value.blocks.length) {
-      workout.value.selectedBlockIndex = blockIndex
+      updateWorkout({ selectedBlockIndex: blockIndex })
     }
   }
 
@@ -136,14 +171,17 @@ export function useWorkout() {
   function selectExercise(exerciseId: number) {
     const index = workout.value.blocks.findIndex((b) => isStrengthBlock(b) && b.id === exerciseId)
     if (index >= 0) {
-      workout.value.selectedBlockIndex = index
+      updateWorkout({ selectedBlockIndex: index })
     }
   }
 
   function completeSet(set: Set): CompleteSetResult {
+    const setId = set.id
+    const blockIndex = workout.value.selectedBlockIndex
+
     // If already completed, toggle back to active (no timer start)
     if (set.status === 'completed') {
-      set.status = 'active'
+      updateSetInBlock(blockIndex, setId, (s) => ({ ...s, status: 'active' }))
       return { kind: 'uncompleted' }
     }
 
@@ -153,10 +191,10 @@ export function useWorkout() {
     }
 
     // Mark as completed
-    set.status = 'completed'
+    updateSetInBlock(blockIndex, setId, (s) => ({ ...s, status: 'completed' }))
 
-    // Find current strength block
-    const currentBlock = selectedBlock.value
+    // Find current strength block (re-fetch after update)
+    const currentBlock = workout.value.blocks[blockIndex]
     if (!currentBlock || !isStrengthBlock(currentBlock)) {
       return { kind: 'completed', nextAction: 'workout-complete' }
     }
@@ -165,17 +203,19 @@ export function useWorkout() {
     const nextSet = currentBlock.sets.find((s) => s.status === 'planned' || s.status === 'active')
 
     if (nextSet) {
-      // Pre-fill empty fields from completed set
-      if (!nextSet.kg) nextSet.kg = set.kg
-      if (!nextSet.reps) nextSet.reps = set.reps
-      if (!nextSet.rir) nextSet.rir = set.rir
-
-      nextSet.status = 'active'
+      // Pre-fill empty fields from completed set and activate
+      updateSetInBlock(blockIndex, nextSet.id, (s) => ({
+        ...s,
+        kg: s.kg || set.kg,
+        reps: s.reps || set.reps,
+        rir: s.rir || set.rir,
+        status: 'active',
+      }))
 
       // Update activeSetIndex to point to the next set
       const nextSetIndex = currentBlock.sets.findIndex((s) => s.id === nextSet.id)
       if (nextSetIndex >= 0) {
-        workout.value.activeSetIndex = nextSetIndex
+        updateWorkout({ activeSetIndex: nextSetIndex })
       }
 
       return {
@@ -187,19 +227,18 @@ export function useWorkout() {
     }
 
     // No more sets - find next block
-    const currentIndex = workout.value.selectedBlockIndex
-    const nextBlockIndex = currentIndex + 1
+    const nextBlockIndex = blockIndex + 1
 
     if (nextBlockIndex < workout.value.blocks.length) {
-      workout.value.selectedBlockIndex = nextBlockIndex
+      updateWorkout({ selectedBlockIndex: nextBlockIndex })
       const nextBlock = workout.value.blocks[nextBlockIndex]
 
       // If next block is a strength block, activate its first set
       if (nextBlock && isStrengthBlock(nextBlock)) {
         const firstSet = nextBlock.sets.find((s) => s.status === 'planned' || s.status === 'active')
         if (firstSet) {
-          firstSet.status = 'active'
-          workout.value.activeSetIndex = 0
+          updateSetInBlock(nextBlockIndex, firstSet.id, (s) => ({ ...s, status: 'active' }))
+          updateWorkout({ activeSetIndex: 0 })
         }
       }
 
@@ -214,17 +253,17 @@ export function useWorkout() {
     return { kind: 'completed', nextAction: 'workout-complete' }
   }
 
-  function addExercise(name: string) {
+  function addExercise(exerciseId: string, name: string) {
     if (!name.trim()) return
 
     const exercisesStore = useExercisesStore()
-    const popularExercise = popularExercises.find((e) => e.name === name)
-    const customExercise = exercisesStore.customExercises.find((e) => e.name === name)
-    const icon = popularExercise?.icon ?? customExercise?.icon ?? '🆕'
+    const exercise = exercisesStore.getExerciseById(exerciseId)
+    const icon = exercise?.icon ?? '🆕'
 
     const newBlock: StrengthBlock = {
       kind: 'strength',
       id: generateBlockId(),
+      exerciseDefinitionId: exerciseId,
       name,
       equipment: 'Equipment',
       targetReps: 8,
@@ -236,8 +275,8 @@ export function useWorkout() {
       ],
     }
 
-    workout.value.blocks = [...workout.value.blocks, newBlock]
-    workout.value.selectedBlockIndex = workout.value.blocks.length - 1
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
   function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -249,8 +288,8 @@ export function useWorkout() {
       result: null,
     }
 
-    workout.value.blocks = [...workout.value.blocks, newBlock]
-    workout.value.selectedBlockIndex = workout.value.blocks.length - 1
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
   function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -262,8 +301,8 @@ export function useWorkout() {
       result: null,
     }
 
-    workout.value.blocks = [...workout.value.blocks, newBlock]
-    workout.value.selectedBlockIndex = workout.value.blocks.length - 1
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise) {
@@ -275,8 +314,8 @@ export function useWorkout() {
       result: null,
     }
 
-    workout.value.blocks = [...workout.value.blocks, newBlock]
-    workout.value.selectedBlockIndex = workout.value.blocks.length - 1
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
   function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -288,31 +327,27 @@ export function useWorkout() {
       result: null,
     }
 
-    workout.value.blocks = [...workout.value.blocks, newBlock]
-    workout.value.selectedBlockIndex = workout.value.blocks.length - 1
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
   function removeBlock(blockIndex: number) {
     if (blockIndex < 0 || blockIndex >= workout.value.blocks.length) return
 
     const filtered = workout.value.blocks.filter((_, i) => i !== blockIndex)
-    workout.value.blocks = filtered
+    const currentSelected = workout.value.selectedBlockIndex
 
-    // Handle empty list first
-    if (filtered.length === 0) {
-      workout.value.selectedBlockIndex = -1
-      return
-    }
+    // Calculate new selected index using ternary chain
+    const newSelectedIndex =
+      filtered.length === 0
+        ? -1
+        : currentSelected >= filtered.length
+          ? Math.max(0, filtered.length - 1)
+          : currentSelected > blockIndex
+            ? currentSelected - 1
+            : currentSelected
 
-    // Adjust selected index
-    if (workout.value.selectedBlockIndex >= filtered.length) {
-      workout.value.selectedBlockIndex = Math.max(0, filtered.length - 1)
-      return
-    }
-
-    if (workout.value.selectedBlockIndex > blockIndex) {
-      workout.value.selectedBlockIndex--
-    }
+    updateWorkout({ blocks: filtered, selectedBlockIndex: newSelectedIndex })
   }
 
   // For backward compatibility
@@ -326,9 +361,14 @@ export function useWorkout() {
   function updateStrengthBlock(
     updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
   ) {
-    const block = selectedBlock.value
+    const blockIndex = workout.value.selectedBlockIndex
+    const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return
-    Object.assign(block, updates)
+
+    updateBlockAtIndex(blockIndex, (b) => {
+      if (!isStrengthBlock(b)) return b
+      return { ...b, ...updates }
+    })
   }
 
   // For backward compatibility
@@ -340,25 +380,25 @@ export function useWorkout() {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return
 
-    const setIds = block.sets.map((s) => s.id)
-    const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
-    block.sets = [
-      ...block.sets,
-      {
-        id: newId,
-        kg: '',
-        reps: '',
-        rir: '',
-        status: 'planned',
-      },
-    ]
+    updateBlockAtIndex(blockIndex, (b) => {
+      if (!isStrengthBlock(b)) return b
+      const setIds = b.sets.map((s) => s.id)
+      const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
+      return {
+        ...b,
+        sets: [...b.sets, { id: newId, kg: '', reps: '', rir: '', status: 'planned' as const }],
+      }
+    })
   }
 
   function removeSet(blockIndex: number, setId: number) {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block) || block.sets.length <= 1) return
 
-    block.sets = block.sets.filter((s) => s.id !== setId)
+    updateBlockAtIndex(blockIndex, (b) => {
+      if (!isStrengthBlock(b)) return b
+      return { ...b, sets: b.sets.filter((s) => s.id !== setId) }
+    })
   }
 
   function setSetCount(blockIndex: number, count: number) {
@@ -376,18 +416,25 @@ export function useWorkout() {
     }
 
     if (targetCount < currentCount) {
-      block.sets = block.sets.slice(0, targetCount)
+      updateBlockAtIndex(blockIndex, (b) => {
+        if (!isStrengthBlock(b)) return b
+        return { ...b, sets: b.sets.slice(0, targetCount) }
+      })
     }
   }
 
   function updateSetValue(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
-    const block = selectedBlock.value
+    const blockIndex = workout.value.selectedBlockIndex
+    const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return
 
     const set = block.sets.find((s) => s.id === setId)
-    if (set) {
-      set[field] = value !== undefined ? String(value) : ''
-    }
+    if (!set) return
+
+    updateSetInBlock(blockIndex, setId, (s) => ({
+      ...s,
+      [field]: value !== undefined ? String(value) : '',
+    }))
   }
 
   function reorderBlocks(fromIndex: number, toIndex: number) {
@@ -397,28 +444,20 @@ export function useWorkout() {
 
     blocks.splice(fromIndex, 1)
     blocks.splice(toIndex, 0, movedBlock)
-    workout.value.blocks = blocks
 
-    // Update selected index if needed
-    if (workout.value.selectedBlockIndex === fromIndex) {
-      workout.value.selectedBlockIndex = toIndex
-      return
-    }
+    const currentSelected = workout.value.selectedBlockIndex
 
-    if (
-      fromIndex < workout.value.selectedBlockIndex &&
-      toIndex >= workout.value.selectedBlockIndex
-    ) {
-      workout.value.selectedBlockIndex--
-      return
-    }
+    // Calculate new selected index using ternary chain
+    const newSelectedIndex =
+      currentSelected === fromIndex
+        ? toIndex
+        : fromIndex < currentSelected && toIndex >= currentSelected
+          ? currentSelected - 1
+          : fromIndex > currentSelected && toIndex <= currentSelected
+            ? currentSelected + 1
+            : currentSelected
 
-    if (
-      fromIndex > workout.value.selectedBlockIndex &&
-      toIndex <= workout.value.selectedBlockIndex
-    ) {
-      workout.value.selectedBlockIndex++
-    }
+    updateWorkout({ blocks, selectedBlockIndex: newSelectedIndex })
   }
 
   // For backward compatibility
@@ -434,21 +473,28 @@ export function useWorkout() {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isTimedBlock(block)) return
 
-    // Type guard based on result shape to assign correctly
-    if (block.kind === 'amrap' && 'rounds' in result) {
-      block.result = result
-      return
-    }
-    if (block.kind === 'emom' && 'completedMinutes' in result) {
-      block.result = result
-      return
-    }
-    if (block.kind === 'tabata' && 'repsPerRound' in result) {
-      block.result = result
-      return
-    }
-    if (block.kind === 'fortime' && 'completionTime' in result) {
-      block.result = result
+    // Use switch to narrow both block and result types for TypeScript
+    switch (block.kind) {
+      case 'amrap':
+        if ('rounds' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'emom':
+        if ('completedMinutes' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'tabata':
+        if ('repsPerRound' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'fortime':
+        if ('completionTime' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
     }
   }
 

@@ -156,7 +156,7 @@ function strengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: number): 
   return {
     kind: 'strength',
     id: String(block.id),
-    exerciseDefinitionId: null,
+    exerciseDefinitionId: block.exerciseDefinitionId,
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
@@ -170,6 +170,7 @@ function dbToStrengthBlock(dbBlock: Readonly<DbStrengthBlock>, index: number): S
   return {
     kind: 'strength',
     id: index + 1,
+    exerciseDefinitionId: dbBlock.exerciseDefinitionId,
     name: dbBlock.name,
     equipment: dbBlock.equipment,
     targetReps: dbBlock.targetReps,

@@ -28,4 +28,6 @@ export async function resetDatabase(): Promise<void> {
   await db.customExercises.clear()
   await db.templates.clear()
   await db.settings.clear()
+  // Clear seeding marker so exercises are re-seeded in each test
+  localStorage.removeItem('exercises_seed_version')
 }

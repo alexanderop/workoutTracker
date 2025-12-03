@@ -1,9 +1,15 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
 describe('Complete Set Flow', () => {
+  beforeEach(async () => {
+    resetInitState()
+    await resetDatabase()
+  })
+
   afterEach(async () => {
     resetWorkout()
     await resetDatabase()

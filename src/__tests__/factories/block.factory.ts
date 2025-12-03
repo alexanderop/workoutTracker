@@ -5,6 +5,7 @@ import { createSet, createEmptySet } from './set.factory'
 const STRENGTH_DEFAULTS: Readonly<Omit<StrengthBlock, 'sets'>> = {
   kind: 'strength',
   id: 1,
+  exerciseDefinitionId: null,
   name: 'Bench Press',
   equipment: 'Barbell',
   targetReps: 8,

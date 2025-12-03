@@ -148,7 +148,9 @@ describe('useWorkout', () => {
         const result = completeSet(set)
 
         expect(result.kind).toBe('uncompleted')
-        expect(set.status).toBe('active')
+        // Re-fetch from workout state after immutable update
+        const updatedSet = exercises.value[0]!.sets[0]!
+        expect(updatedSet.status).toBe('active')
       })
     })
   })

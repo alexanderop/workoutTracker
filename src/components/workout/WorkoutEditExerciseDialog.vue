@@ -19,35 +19,36 @@ import {
   NumberFieldInput,
 } from '@/components/ui/number-field'
 
-type Props = {
-  open: boolean
-  exerciseName: string
+export type ExerciseEditData = {
+  name: string
   equipment: string
   targetReps: number
   setCount: number
 }
 
-type Emits = {
-  'update:open': [value: boolean]
-  save: [data: { name: string; equipment: string; targetReps: number; setCount: number }]
-}
+const { exercise } = defineProps<{
+  exercise: ExerciseEditData
+}>()
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const open = defineModel<boolean>('open', { required: true })
 
-const name = ref(props.exerciseName)
-const equipment = ref(props.equipment)
-const targetReps = ref(props.targetReps)
-const setCount = ref(props.setCount)
+const emit = defineEmits<{
+  save: [data: ExerciseEditData]
+}>()
+
+const name = ref(exercise.name)
+const equipment = ref(exercise.equipment)
+const targetReps = ref(exercise.targetReps)
+const setCount = ref(exercise.setCount)
 
 watch(
-  () => props.open,
+  () => open.value,
   (isOpen) => {
     if (isOpen) {
-      name.value = props.exerciseName
-      equipment.value = props.equipment
-      targetReps.value = props.targetReps
-      setCount.value = props.setCount
+      name.value = exercise.name
+      equipment.value = exercise.equipment
+      targetReps.value = exercise.targetReps
+      setCount.value = exercise.setCount
     }
   },
 )
@@ -59,16 +60,16 @@ function handleSave() {
     targetReps: targetReps.value,
     setCount: Math.max(1, setCount.value),
   })
-  emit('update:open', false)
+  open.value = false
 }
 
 function handleCancel() {
-  emit('update:open', false)
+  open.value = false
 }
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog v-model:open="open">
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Edit Exercise</DialogTitle>

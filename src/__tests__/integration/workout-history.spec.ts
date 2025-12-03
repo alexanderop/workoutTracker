@@ -1,11 +1,17 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
+import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { resetDatabase } from '../setup'
 import { db } from '@/db'
 import { dbWorkoutBuilder } from '../factories'
 
 describe('Workout History Detail View', () => {
+  beforeEach(async () => {
+    resetInitState()
+    await resetDatabase()
+  })
+
   afterEach(async () => {
     resetWorkout()
     await resetDatabase()

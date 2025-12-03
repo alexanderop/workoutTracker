@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/vue'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
+import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
@@ -16,6 +17,11 @@ function findMenuTrigger(): HTMLElement {
 }
 
 describe('Template Flow', () => {
+  beforeEach(async () => {
+    resetInitState()
+    await resetDatabase()
+  })
+
   afterEach(async () => {
     resetWorkout()
     await resetDatabase()

@@ -10,6 +10,8 @@ export default mergeConfig(
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
       setupFiles: ['./src/__tests__/setup.ts'],
+      // Run test files sequentially to prevent module-level singleton state interference
+      fileParallelism: false,
       coverage: {
         provider: 'v8',
         reporter: ['text'],

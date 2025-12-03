@@ -1,10 +1,12 @@
 import type { Router } from 'vue-router'
 import { render, screen, waitFor, cleanup as rtlCleanup } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
+import { flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '@/App.vue'
 import { routes } from '@/router'
+import { useExercisesStore } from '@/stores/exercises'
 
 type CreateTestAppOptions = {
   initialRoute?: string
@@ -69,6 +71,20 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   })
 
   await router.isReady()
+
+  // Flush Vue's async operations to ensure onMounted fires
+  await flushPromises()
+
+  // Wait for app initialization to complete (exercises seeding and loading)
+  const exercisesStore = useExercisesStore(pinia)
+  await waitFor(
+    () => {
+      if (exercisesStore.customExercises.length === 0) {
+        throw new Error('Exercises not loaded yet')
+      }
+    },
+    { timeout: 5000 },
+  )
 
   async function navigateTo(path: string) {
     await router.push(path)

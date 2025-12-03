@@ -77,6 +77,7 @@ export type ForTimeResult = {
 export type StrengthBlock = {
   kind: 'strength'
   id: number
+  exerciseDefinitionId: string | null
   name: string
   equipment: string
   targetReps: number
