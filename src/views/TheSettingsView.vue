@@ -1,45 +1,38 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import {
+  Scale,
+  Ruler,
+  Moon,
+  Smartphone,
+  Download,
+  Upload,
+  Trash2,
+  ChevronDown,
+} from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
-import { useScreenWakeLock } from '@/composables/useScreenWakeLock'
 import { deleteAllData } from '@/db'
 import { exportAllData, type ExportData } from '@/lib/dataExport'
 import { importAllData, parseExportFile } from '@/lib/dataImport'
 import SettingsDeleteAllDataDialog from '@/components/settings/SettingsDeleteAllDataDialog.vue'
 import SettingsImportDataDialog from '@/components/settings/SettingsImportDataDialog.vue'
 import SettingsImportErrorDialog from '@/components/settings/SettingsImportErrorDialog.vue'
+import SettingsWakeLockDiagnostics from '@/components/settings/SettingsWakeLockDiagnostics.vue'
 
 const { isDark } = useTheme()
 const settingsStore = useSettingsStore()
 
-// Wake Lock testing using the shared composable
-const wakeLock = useScreenWakeLock()
-
-async function toggleNativeWakeLock() {
-  if (wakeLock.nativeIsActive.value) {
-    wakeLock.releaseNative()
-    return
-  }
-  await wakeLock.acquireNative()
-}
-
-function toggleVideoFallback() {
-  if (wakeLock.videoIsActive.value) {
-    wakeLock.stopVideoFallback()
-    return
-  }
-  wakeLock.startVideoFallback()
-}
-
 const showDeleteDialog = ref(false)
 const showImportDialog = ref(false)
+const advancedOpen = ref(false)
 const showImportErrorDialog = ref(false)
 const importData = ref<ExportData | null>(null)
 const importError = ref('')
@@ -121,197 +114,224 @@ function handleScreenWakeLockChange(enabled: boolean) {
 </script>
 
 <template>
-  <div class="flex-1 p-4">
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2">Settings</h1>
-      <p class="text-muted-foreground">Customize your app preferences</p>
+  <div class="flex-1 p-4 pb-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+      <p class="text-muted-foreground mt-1">Customize your app preferences</p>
     </div>
 
-    <div class="space-y-4 max-w-2xl">
+    <div class="space-y-8 max-w-2xl">
       <!-- Units Section -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">Units</CardTitle>
-          <CardDescription>Choose your preferred measurement units</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="flex items-center justify-between">
-            <Label>Weight</Label>
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Units
+        </h2>
+        <div class="space-y-4">
+          <!-- Weight -->
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Label class="flex items-center gap-3 text-base">
+              <Scale class="size-5 text-muted-foreground" />
+              Weight
+            </Label>
             <ToggleGroup
               type="single"
               :model-value="settingsStore.weightUnit"
               variant="outline"
               data-testid="weight-unit-toggle"
-              class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
+              class="w-full sm:w-auto [&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
               @update:model-value="handleWeightUnitChange"
             >
-              <ToggleGroupItem value="kg" aria-label="Kilograms">kg</ToggleGroupItem>
-              <ToggleGroupItem value="lbs" aria-label="Pounds">lbs</ToggleGroupItem>
+              <ToggleGroupItem
+                value="kg"
+                aria-label="Kilograms"
+                class="flex-1 sm:flex-none min-h-11 px-6"
+              >
+                kg
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="lbs"
+                aria-label="Pounds"
+                class="flex-1 sm:flex-none min-h-11 px-6"
+              >
+                lbs
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
-          <div class="flex items-center justify-between">
-            <Label>Height</Label>
+
+          <!-- Height -->
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Label class="flex items-center gap-3 text-base">
+              <Ruler class="size-5 text-muted-foreground" />
+              Height
+            </Label>
             <ToggleGroup
               type="single"
               :model-value="settingsStore.heightUnit"
               variant="outline"
               data-testid="height-unit-toggle"
-              class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
+              class="w-full sm:w-auto [&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
               @update:model-value="handleHeightUnitChange"
             >
-              <ToggleGroupItem value="cm" aria-label="Centimeters">cm</ToggleGroupItem>
-              <ToggleGroupItem value="ft-in" aria-label="Feet and Inches">ft/in</ToggleGroupItem>
+              <ToggleGroupItem
+                value="cm"
+                aria-label="Centimeters"
+                class="flex-1 sm:flex-none min-h-11 px-6"
+              >
+                cm
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="ft-in"
+                aria-label="Feet and Inches"
+                class="flex-1 sm:flex-none min-h-11 px-6"
+              >
+                ft/in
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+
+      <Separator />
 
       <!-- Appearance Section -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">Appearance</CardTitle>
-          <CardDescription>Choose your preferred theme</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="flex items-center space-x-2">
-            <Switch v-model="isDark" data-testid="theme-toggle" />
-            <Label>Dark Mode</Label>
-          </div>
-        </CardContent>
-      </Card>
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Appearance
+        </h2>
+        <div class="flex items-center justify-between">
+          <Label class="flex items-center gap-3 text-base cursor-pointer" for="theme-toggle">
+            <Moon class="size-5 text-muted-foreground" />
+            Dark Mode
+          </Label>
+          <Switch id="theme-toggle" v-model="isDark" data-testid="theme-toggle" />
+        </div>
+      </section>
+
+      <Separator />
 
       <!-- Screen Section -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">Screen</CardTitle>
-          <CardDescription>Control screen behavior while using the app</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Screen
+        </h2>
+        <div class="space-y-4">
           <!-- Keep Screen On Toggle -->
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium">Keep Screen On</p>
-              <p class="text-sm text-muted-foreground">
-                Prevent screen from dimming while using the app
-              </p>
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-start gap-3 min-w-0">
+              <Smartphone class="size-5 text-muted-foreground mt-0.5 shrink-0" />
+              <div class="min-w-0">
+                <Label class="text-base cursor-pointer" for="wake-lock-toggle"
+                  >Keep Screen On</Label
+                >
+                <p class="text-sm text-muted-foreground">Prevent dimming during workouts</p>
+              </div>
             </div>
             <Switch
+              id="wake-lock-toggle"
               :model-value="settingsStore.screenWakeLock"
               data-testid="screen-wake-lock-toggle"
+              class="shrink-0"
               @update:model-value="handleScreenWakeLockChange"
             />
           </div>
 
-          <!-- Native Wake Lock API (Debug) -->
-          <div class="flex items-center justify-between pt-4 border-t">
-            <div>
-              <p class="font-medium">Wake Lock API</p>
-              <p class="text-sm text-muted-foreground">Native browser API</p>
-            </div>
+          <!-- Advanced/Debug Section -->
+          <Collapsible v-model:open="advancedOpen" class="pt-2">
+            <CollapsibleTrigger
+              class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+            >
+              <ChevronDown
+                class="size-4 transition-transform duration-200"
+                :class="{ '-rotate-180': advancedOpen }"
+              />
+              Advanced diagnostics
+            </CollapsibleTrigger>
+            <CollapsibleContent class="pt-4">
+              <SettingsWakeLockDiagnostics />
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </section>
+
+      <Separator />
+
+      <!-- Data Section -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Data
+        </h2>
+        <div class="space-y-3">
+          <!-- Export -->
+          <button
+            type="button"
+            aria-label="Export Data"
+            class="flex items-center justify-between w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left disabled:opacity-50"
+            :disabled="isExporting"
+            @click="handleExport"
+          >
             <div class="flex items-center gap-3">
-              <span
-                class="text-xs px-2 py-1 rounded-full"
-                :class="
-                  wakeLock.nativeIsActive.value
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                "
-              >
-                {{ wakeLock.nativeIsActive.value ? 'Active' : 'Inactive' }}
-              </span>
-              <Button
-                v-if="wakeLock.isSupported.value"
-                variant="outline"
-                size="sm"
-                data-testid="wake-lock-test"
-                @click="toggleNativeWakeLock"
-              >
-                {{ wakeLock.nativeIsActive.value ? 'Release' : 'Test' }}
-              </Button>
-              <span v-if="!wakeLock.isSupported.value" class="text-xs text-red-500"
-                >Not supported</span
-              >
+              <Download class="size-5 text-muted-foreground" />
+              <div>
+                <p class="font-medium">Export Data</p>
+                <p class="text-sm text-muted-foreground">Download backup file</p>
+              </div>
             </div>
-          </div>
+            <span v-if="isExporting" class="text-sm text-muted-foreground">Exporting...</span>
+          </button>
 
-          <!-- Video Fallback -->
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium">Video Fallback</p>
-              <p class="text-sm text-muted-foreground">Silent video keeps screen on</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <span
-                class="text-xs px-2 py-1 rounded-full"
-                :class="
-                  wakeLock.videoIsActive.value
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                "
-              >
-                {{ wakeLock.videoIsActive.value ? 'Active' : 'Inactive' }}
-              </span>
-              <Button variant="outline" size="sm" @click="toggleVideoFallback">
-                {{ wakeLock.videoIsActive.value ? 'Stop' : 'Test' }}
-              </Button>
-            </div>
-          </div>
-
-          <p v-if="wakeLock.isActive.value" class="text-sm text-amber-600 dark:text-amber-400">
-            Screen should stay on. Leave phone idle for 2 minutes to test.
-          </p>
-
-          <p class="text-xs text-muted-foreground pt-2 border-t">
-            If neither works, check: Settings → Apps → Battery → Set to "Unrestricted"
-          </p>
-        </CardContent>
-      </Card>
-
-      <!-- Data Management Section -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-lg">Data Management</CardTitle>
-          <CardDescription>Manage your app data</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium">Export Data</p>
-              <p class="text-sm text-muted-foreground">Download all your data as a backup file</p>
-            </div>
-            <Button variant="outline" :disabled="isExporting" @click="handleExport">
-              {{ isExporting ? 'Exporting...' : 'Export Data' }}
-            </Button>
-          </div>
-
-          <div class="flex items-center justify-between">
+          <!-- Import -->
+          <button
+            type="button"
+            aria-label="Import Data"
+            class="flex items-center gap-3 w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left"
+            @click="handleImportClick"
+          >
+            <Upload class="size-5 text-muted-foreground" />
             <div>
               <p class="font-medium">Import Data</p>
-              <p class="text-sm text-muted-foreground">Restore data from a backup file</p>
+              <p class="text-sm text-muted-foreground">Restore from backup</p>
             </div>
-            <Button variant="outline" @click="handleImportClick"> Import Data </Button>
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".json"
-              class="hidden"
-              @change="handleFileSelect"
-            />
-          </div>
+          </button>
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".json"
+            class="hidden"
+            @change="handleFileSelect"
+          />
+        </div>
+      </section>
 
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium">Delete All Data</p>
-              <p class="text-sm text-muted-foreground">
-                Permanently delete all workouts, exercises, templates, and settings
-              </p>
+      <Separator />
+
+      <!-- Danger Zone -->
+      <section>
+        <h2 class="text-sm font-semibold text-destructive uppercase tracking-wider mb-4">
+          Danger Zone
+        </h2>
+        <div class="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <Trash2 class="size-5 text-destructive mt-0.5 shrink-0" />
+              <div>
+                <p class="font-medium">Delete All Data</p>
+                <p class="text-sm text-muted-foreground">
+                  Permanently remove all workouts, exercises, and settings
+                </p>
+              </div>
             </div>
-            <Button variant="destructive" @click="showDeleteDialog = true">
-              Delete All Data
+            <Button
+              variant="destructive"
+              aria-label="Delete All Data"
+              class="w-full sm:w-auto min-h-11 shrink-0"
+              @click="showDeleteDialog = true"
+            >
+              Delete All
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
 
     <SettingsDeleteAllDataDialog v-model:open="showDeleteDialog" @confirm="handleDeleteAllData" />
