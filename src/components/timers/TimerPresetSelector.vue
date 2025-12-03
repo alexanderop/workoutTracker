@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ArrowLeft, Play, Settings2 } from 'lucide-vue-next'
+import { ArrowLeft } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import TimerPresetButton from '@/components/timers/TimerPresetButton.vue'
+import TimerPresetList from '@/components/timers/TimerPresetList.vue'
+import TimerCustomForm from '@/components/timers/TimerCustomForm.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
 import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
 
@@ -48,6 +47,13 @@ const FORTIME_PRESETS: Array<ForTimePreset> = [
   { label: 'No cap', description: 'Unlimited time', timeCapSeconds: null },
 ]
 
+const TIMER_LABELS: Record<TimerType, string> = {
+  amrap: 'AMRAP',
+  emom: 'EMOM',
+  tabata: 'Tabata',
+  fortime: 'For Time',
+}
+
 const { timerType } = defineProps<{
   timerType: TimerType
 }>()
@@ -59,22 +65,24 @@ const emit = defineEmits<{
 
 const showCustom = ref(false)
 
-// Custom form state
-const customAmrap = ref({ minutes: 10 })
-const customEmom = ref({ minutes: 10 })
-const customTabata = ref({ rounds: 8, workSeconds: 20, restSeconds: 10 })
-const customForTime = ref({ minutes: 10, hasCap: true })
-
 const colors = computed(() => BLOCK_COLORS[timerType])
+const timerLabel = computed(() => TIMER_LABELS[timerType])
 
-const timerLabel = computed(() => {
-  const labels: Record<TimerType, string> = {
-    amrap: 'AMRAP',
-    emom: 'EMOM',
-    tabata: 'Tabata',
-    fortime: 'For Time',
+const presets = computed(() => {
+  switch (timerType) {
+    case 'amrap':
+      return AMRAP_PRESETS
+    case 'emom':
+      return EMOM_PRESETS
+    case 'tabata':
+      return TABATA_PRESETS
+    case 'fortime':
+      return FORTIME_PRESETS
+    default: {
+      const exhaustive: never = timerType
+      return exhaustive
+    }
   }
-  return labels[timerType]
 })
 
 function createAmrapBlock(durationSeconds: number): AmrapBlock {
@@ -117,50 +125,62 @@ function createForTimeBlock(timeCapSeconds: number | null): ForTimeBlock {
   }
 }
 
-function selectAmrapPreset(preset: AmrapPreset) {
-  emit('start', createAmrapBlock(preset.durationSeconds))
-}
-
-function selectEmomPreset(preset: EmomPreset) {
-  emit('start', createEmomBlock(preset.minutes))
-}
-
-function selectTabataPreset(preset: TabataPreset) {
-  emit('start', createTabataBlock(preset.rounds, preset.workSeconds, preset.restSeconds))
-}
-
-function selectForTimePreset(preset: ForTimePreset) {
-  emit('start', createForTimeBlock(preset.timeCapSeconds))
-}
-
-function startCustom() {
-  if (timerType === 'amrap') {
-    emit('start', createAmrapBlock(customAmrap.value.minutes * 60))
-    return
+function handlePresetSelect(preset: {
+  label: string
+  description: string
+  [key: string]: unknown
+}) {
+  switch (timerType) {
+    case 'amrap':
+      emit('start', createAmrapBlock(Number(preset.durationSeconds)))
+      break
+    case 'emom':
+      emit('start', createEmomBlock(Number(preset.minutes)))
+      break
+    case 'tabata':
+      emit(
+        'start',
+        createTabataBlock(
+          Number(preset.rounds),
+          Number(preset.workSeconds),
+          Number(preset.restSeconds),
+        ),
+      )
+      break
+    case 'fortime':
+      emit(
+        'start',
+        createForTimeBlock(preset.timeCapSeconds === null ? null : Number(preset.timeCapSeconds)),
+      )
+      break
   }
+}
 
-  if (timerType === 'emom') {
-    emit('start', createEmomBlock(customEmom.value.minutes))
-    return
+function handleCustomSubmit(config: Record<string, number | boolean | null>) {
+  switch (timerType) {
+    case 'amrap':
+      emit('start', createAmrapBlock(Number(config.durationSeconds)))
+      break
+    case 'emom':
+      emit('start', createEmomBlock(Number(config.minutes)))
+      break
+    case 'tabata':
+      emit(
+        'start',
+        createTabataBlock(
+          Number(config.rounds),
+          Number(config.workSeconds),
+          Number(config.restSeconds),
+        ),
+      )
+      break
+    case 'fortime':
+      emit(
+        'start',
+        createForTimeBlock(config.timeCapSeconds === null ? null : Number(config.timeCapSeconds)),
+      )
+      break
   }
-
-  if (timerType === 'tabata') {
-    emit(
-      'start',
-      createTabataBlock(
-        customTabata.value.rounds,
-        customTabata.value.workSeconds,
-        customTabata.value.restSeconds,
-      ),
-    )
-    return
-  }
-
-  // fortime
-  emit(
-    'start',
-    createForTimeBlock(customForTime.value.hasCap ? customForTime.value.minutes * 60 : null),
-  )
 }
 </script>
 
@@ -176,167 +196,21 @@ function startCustom() {
 
     <!-- Content -->
     <div class="flex-1 p-4 overflow-y-auto">
-      <!-- Presets -->
-      <div v-if="!showCustom" class="space-y-3">
-        <!-- AMRAP Presets -->
-        <template v-if="timerType === 'amrap'">
-          <TimerPresetButton
-            v-for="preset in AMRAP_PRESETS"
-            :key="preset.label"
-            :label="preset.label"
-            :description="preset.description"
-            :color-class="colors.text"
-            @select="selectAmrapPreset(preset)"
-          />
-        </template>
+      <TimerPresetList
+        v-if="!showCustom"
+        :presets="presets"
+        :color-class="colors.text"
+        @select="handlePresetSelect"
+        @show-custom="showCustom = true"
+      />
 
-        <!-- EMOM Presets -->
-        <template v-if="timerType === 'emom'">
-          <TimerPresetButton
-            v-for="preset in EMOM_PRESETS"
-            :key="preset.label"
-            :label="preset.label"
-            :description="preset.description"
-            :color-class="colors.text"
-            @select="selectEmomPreset(preset)"
-          />
-        </template>
-
-        <!-- Tabata Presets -->
-        <template v-if="timerType === 'tabata'">
-          <TimerPresetButton
-            v-for="preset in TABATA_PRESETS"
-            :key="preset.label"
-            :label="preset.label"
-            :description="preset.description"
-            :color-class="colors.text"
-            @select="selectTabataPreset(preset)"
-          />
-        </template>
-
-        <!-- For Time Presets -->
-        <template v-if="timerType === 'fortime'">
-          <TimerPresetButton
-            v-for="preset in FORTIME_PRESETS"
-            :key="preset.label"
-            :label="preset.label"
-            :description="preset.description"
-            :color-class="colors.text"
-            @select="selectForTimePreset(preset)"
-          />
-        </template>
-
-        <!-- Custom option -->
-        <button
-          class="w-full p-4 rounded-lg border-2 border-dashed hover:border-muted-foreground transition-colors text-left"
-          @click="showCustom = true"
-        >
-          <div class="flex items-center gap-3">
-            <Settings2 class="w-5 h-5 text-muted-foreground" />
-            <div>
-              <div class="font-semibold text-foreground">Custom</div>
-              <div class="text-sm text-muted-foreground">Configure your own settings</div>
-            </div>
-          </div>
-        </button>
-      </div>
-
-      <!-- Custom Form -->
-      <div v-if="showCustom" class="space-y-6">
-        <!-- AMRAP custom -->
-        <div v-if="timerType === 'amrap'" class="space-y-4">
-          <div class="space-y-2">
-            <Label for="amrap-minutes">Duration (minutes)</Label>
-            <Input
-              id="amrap-minutes"
-              v-model.number="customAmrap.minutes"
-              type="number"
-              min="1"
-              max="60"
-            />
-          </div>
-        </div>
-
-        <!-- EMOM custom -->
-        <div v-if="timerType === 'emom'" class="space-y-4">
-          <div class="space-y-2">
-            <Label for="emom-minutes">Duration (minutes)</Label>
-            <Input
-              id="emom-minutes"
-              v-model.number="customEmom.minutes"
-              type="number"
-              min="1"
-              max="60"
-            />
-          </div>
-        </div>
-
-        <!-- Tabata custom -->
-        <div v-if="timerType === 'tabata'" class="space-y-4">
-          <div class="space-y-2">
-            <Label for="tabata-rounds">Rounds</Label>
-            <Input
-              id="tabata-rounds"
-              v-model.number="customTabata.rounds"
-              type="number"
-              min="1"
-              max="20"
-            />
-          </div>
-          <div class="space-y-2">
-            <Label for="tabata-work">Work (seconds)</Label>
-            <Input
-              id="tabata-work"
-              v-model.number="customTabata.workSeconds"
-              type="number"
-              min="5"
-              max="600"
-            />
-          </div>
-          <div class="space-y-2">
-            <Label for="tabata-rest">Rest (seconds)</Label>
-            <Input
-              id="tabata-rest"
-              v-model.number="customTabata.restSeconds"
-              type="number"
-              min="5"
-              max="600"
-            />
-          </div>
-        </div>
-
-        <!-- For Time custom -->
-        <div v-if="timerType === 'fortime'" class="space-y-4">
-          <div class="flex items-center gap-2">
-            <input
-              id="fortime-hascap"
-              v-model="customForTime.hasCap"
-              type="checkbox"
-              class="rounded"
-            />
-            <Label for="fortime-hascap">Enable time cap</Label>
-          </div>
-          <div v-if="customForTime.hasCap" class="space-y-2">
-            <Label for="fortime-minutes">Time cap (minutes)</Label>
-            <Input
-              id="fortime-minutes"
-              v-model.number="customForTime.minutes"
-              type="number"
-              min="1"
-              max="60"
-            />
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-3 pt-4">
-          <Button variant="outline" class="flex-1" @click="showCustom = false"> Back </Button>
-          <Button class="flex-1" :class="colors.accent" @click="startCustom">
-            <Play class="w-4 h-4 mr-2" />
-            Start
-          </Button>
-        </div>
-      </div>
+      <TimerCustomForm
+        v-else
+        :timer-type="timerType"
+        :color-class="colors.accent"
+        @back="showCustom = false"
+        @submit="handleCustomSubmit"
+      />
     </div>
   </div>
 </template>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
-import { kgToLbs, lbsToKg, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
-import { useSettingsStore } from '@/stores/settings'
+import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { StrengthBlock } from '@/types/blocks'
 
 type Props = {
@@ -16,7 +15,7 @@ const emit = defineEmits<{
 
 const { block, activeSetIndex } = defineProps<Props>()
 
-const settingsStore = useSettingsStore()
+const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 
 const activeSet = computed(() => block.sets[activeSetIndex])
 
@@ -30,31 +29,12 @@ const lastSetHint = computed(() => {
   if (!lastCompletedSet.value) return null
   const weight = lastCompletedSet.value.kg
   if (!weight) return null
-  const displayWeight =
-    settingsStore.weightUnit === 'lbs' ? Math.round(kgToLbs(Number(weight))) : weight
-  return `Last: ${displayWeight}${WEIGHT_UNIT_LABELS[settingsStore.weightUnit]}`
+  return `Last: ${toDisplayValue(weight)}${unitLabel.value}`
 })
-
-const weightLabel = computed(() => WEIGHT_UNIT_LABELS[settingsStore.weightUnit])
-
-function getWeightDisplayValue() {
-  if (!activeSet.value?.kg) return undefined
-  const kgValue = Number(activeSet.value.kg)
-  if (settingsStore.weightUnit === 'lbs') {
-    return Math.round(kgToLbs(kgValue))
-  }
-  return kgValue
-}
 
 function handleWeightChange(displayValue: number | undefined) {
   if (!activeSet.value) return
-  if (displayValue === undefined) {
-    emit('update-set', activeSet.value.id, 'kg', undefined)
-    return
-  }
-  const kgValue =
-    settingsStore.weightUnit === 'lbs' ? Math.round(lbsToKg(displayValue) * 10) / 10 : displayValue
-  emit('update-set', activeSet.value.id, 'kg', kgValue)
+  emit('update-set', activeSet.value.id, 'kg', toStorageValue(displayValue))
 }
 
 function getRepsValue() {
@@ -113,7 +93,7 @@ function handleRirChange(value: number | undefined) {
       <div class="mb-8">
         <div class="flex items-baseline justify-center gap-3">
           <NumberField
-            :model-value="getWeightDisplayValue()"
+            :model-value="toDisplayValue(activeSet?.kg)"
             :min="0"
             :max="999"
             @update:model-value="handleWeightChange"
@@ -124,7 +104,7 @@ function handleRirChange(value: number | undefined) {
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-24 text-7xl font-extrabold tabular-nums rounded-2xl text-center w-44"
             />
           </NumberField>
-          <span class="text-3xl font-medium text-muted-foreground">{{ weightLabel }}</span>
+          <span class="text-3xl font-medium text-muted-foreground">{{ unitLabel }}</span>
         </div>
         <!-- Last set hint -->
         <p v-if="lastSetHint" class="text-center text-sm text-muted-foreground/70 mt-2">
@@ -181,8 +161,7 @@ function handleRirChange(value: number | undefined) {
             v-if="set.status === 'completed'"
             class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium tabular-nums"
           >
-            {{ settingsStore.weightUnit === 'lbs' ? Math.round(kgToLbs(Number(set.kg))) : set.kg
-            }}{{ WEIGHT_UNIT_LABELS[settingsStore.weightUnit] }} × {{ set.reps }}
+            {{ toDisplayValue(set.kg) }}{{ unitLabel }} × {{ set.reps }}
           </div>
         </template>
       </div>
