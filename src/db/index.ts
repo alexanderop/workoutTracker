@@ -38,13 +38,6 @@ export function generateId(): string {
 }
 
 /**
- * Generate a prefixed ID with timestamp for readability.
- */
-export function generatePrefixedId(prefix: string): string {
-  return `${prefix}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`
-}
-
-/**
  * Delete all data from the database and recreate it.
  */
 export async function deleteAllData(): Promise<void> {

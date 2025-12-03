@@ -30,7 +30,7 @@ export type ExportData = {
  * Collect all user data from the database for export.
  * Excludes active workout (in-progress).
  */
-export async function collectExportData(): Promise<ExportData> {
+async function collectExportData(): Promise<ExportData> {
   const [settings, customExercises, templates, workouts] = await Promise.all([
     db.settings.toArray(),
     db.customExercises.toArray(),

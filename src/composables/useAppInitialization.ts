@@ -10,7 +10,7 @@ import { useWorkoutPersistence } from './useWorkoutPersistence'
 /**
  * App initialization state using discriminated union.
  */
-export type InitState =
+type InitState =
   | { status: 'loading' }
   | { status: 'ready' }
   | { status: 'prompt-resume'; workoutName: string; blockCount: number }

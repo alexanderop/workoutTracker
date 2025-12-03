@@ -128,47 +128,6 @@ export type WorkoutBlock = StrengthBlock | TimedBlock
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
 
 // ============================================
-// Block State (for active timed blocks)
-// ============================================
-
-export type BlockTimerState =
-  | { status: 'idle' }
-  | { status: 'running'; startedAt: number; pausedAt: null }
-  | { status: 'paused'; startedAt: number; pausedAt: number }
-  | { status: 'completed'; startedAt: number; completedAt: number }
-
-export type AmrapState = {
-  timerState: BlockTimerState
-  rounds: number
-  currentExerciseIndex: number
-}
-
-export type EmomState = {
-  timerState: BlockTimerState
-  currentMinute: number
-  currentExerciseIndex: number
-  missedMinutes: Array<number>
-}
-
-export type TabataState = {
-  timerState: BlockTimerState
-  currentRound: number
-  phase: 'work' | 'rest'
-  repsPerRound: Array<number>
-}
-
-export type ForTimeState = {
-  timerState: BlockTimerState
-  completedExercises: Array<string> // exercise IDs
-}
-
-export type ActiveBlockState =
-  | { kind: 'amrap'; state: AmrapState }
-  | { kind: 'emom'; state: EmomState }
-  | { kind: 'tabata'; state: TabataState }
-  | { kind: 'fortime'; state: ForTimeState }
-
-// ============================================
 // Workout Mode
 // ============================================
 
@@ -178,7 +137,7 @@ export type WorkoutMode = 'builder' | 'active'
 // Helper Types
 // ============================================
 
-export type BlockKind = WorkoutBlock['kind']
+type BlockKind = WorkoutBlock['kind']
 export type TimedBlockKind = TimedBlock['kind']
 
 // ============================================
@@ -191,22 +150,6 @@ export function isStrengthBlock(block: WorkoutBlock): block is StrengthBlock {
 
 export function isTimedBlock(block: WorkoutBlock): block is TimedBlock {
   return block.kind !== 'strength'
-}
-
-export function isAmrapBlock(block: WorkoutBlock): block is AmrapBlock {
-  return block.kind === 'amrap'
-}
-
-export function isEmomBlock(block: WorkoutBlock): block is EmomBlock {
-  return block.kind === 'emom'
-}
-
-export function isTabataBlock(block: WorkoutBlock): block is TabataBlock {
-  return block.kind === 'tabata'
-}
-
-export function isForTimeBlock(block: WorkoutBlock): block is ForTimeBlock {
-  return block.kind === 'fortime'
 }
 
 // ============================================
@@ -260,16 +203,6 @@ export function getBlockExerciseList(block: TimedBlock): ReadonlyArray<BlockExer
     return [block.exercise]
   }
   return block.exercises
-}
-
-/**
- * Get a short name for a block for display in carousel.
- */
-export function getBlockShortName(block: WorkoutBlock): string {
-  if (block.kind === 'strength') {
-    return block.name.split(' ')[0] ?? block.name
-  }
-  return BLOCK_LABELS[block.kind]
 }
 
 /**

@@ -4,14 +4,14 @@ import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
 import type { Workout } from './useWorkout'
-import type { DbActiveWorkout, DbCompletedWorkout } from '@/db/schema'
+import type { DbCompletedWorkout } from '@/db/schema'
 
 const AUTO_SAVE_DEBOUNCE_MS = 1000
 
 /**
  * Persistence state using discriminated union for type safety.
  */
-export type PersistenceState =
+type PersistenceState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'saving' }
@@ -172,11 +172,4 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     markInitialized,
     saveNow,
   }
-}
-
-/**
- * Get the database active workout directly (for templates, etc.)
- */
-export async function getDbActiveWorkout(): Promise<DbActiveWorkout | undefined> {
-  return activeWorkoutRepository.get()
 }

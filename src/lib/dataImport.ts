@@ -10,7 +10,7 @@ const MAX_SUPPORTED_VERSION = 1
 /**
  * Result of parsing an export file.
  */
-export type ParseResult = { success: true; data: ExportData } | { success: false; error: string }
+type ParseResult = { success: true; data: ExportData } | { success: false; error: string }
 
 /**
  * Read a File as text.

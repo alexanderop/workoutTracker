@@ -7,7 +7,7 @@ import { isDbStrengthBlock } from '@/db/schema'
 // Types
 // ============================================
 
-export type WorkoutDetailState =
+type WorkoutDetailState =
   | { status: 'loading' }
   | { status: 'success'; workout: DbCompletedWorkout }
   | { status: 'not-found' }
@@ -38,9 +38,7 @@ export function getCompletedSets(blocks: ReadonlyArray<DbWorkoutBlock>): Readonl
 /**
  * Gets all strength blocks from a workout.
  */
-export function getStrengthBlocks(
-  blocks: ReadonlyArray<DbWorkoutBlock>,
-): ReadonlyArray<DbStrengthBlock> {
+function getStrengthBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray<DbStrengthBlock> {
   return blocks.filter(isDbStrengthBlock)
 }
 
@@ -60,7 +58,7 @@ export function calculateTotalWeight(sets: ReadonlyArray<DbSet>): number {
 /**
  * Counts total rounds from AMRAP blocks.
  */
-export function countTotalRounds(blocks: ReadonlyArray<DbWorkoutBlock>): number {
+function countTotalRounds(blocks: ReadonlyArray<DbWorkoutBlock>): number {
   return blocks.reduce((total, block) => {
     if (block.kind === 'amrap' && block.result) {
       return total + block.result.rounds
@@ -72,7 +70,7 @@ export function countTotalRounds(blocks: ReadonlyArray<DbWorkoutBlock>): number 
 /**
  * Counts timed blocks in a workout.
  */
-export function countTimedBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): number {
+function countTimedBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): number {
   return blocks.filter((block) => block.kind !== 'strength').length
 }
 

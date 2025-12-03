@@ -30,16 +30,6 @@ export type Set = {
   status: SetStatus
 }
 
-// Legacy Exercise type - now maps to StrengthBlock
-export type Exercise = {
-  id: number
-  name: string
-  equipment: string
-  targetReps: number
-  sets: Array<Set>
-  thumbnail: string
-}
-
 export type Workout = {
   id: number
   name: string
@@ -50,7 +40,7 @@ export type Workout = {
   activeSetIndex: number | null
 }
 
-export type CompleteSetResult =
+type CompleteSetResult =
   | { kind: 'completed'; nextAction: 'next-set'; blockIndex: number; setId: number }
   | { kind: 'completed'; nextAction: 'next-block'; blockIndex: number }
   | { kind: 'completed'; nextAction: 'workout-complete' }
@@ -372,7 +362,9 @@ export function useWorkout() {
   }
 
   // For backward compatibility
-  function updateExercise(updates: Partial<Pick<Exercise, 'name' | 'equipment' | 'targetReps'>>) {
+  function updateExercise(
+    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
+  ) {
     updateStrengthBlock(updates)
   }
 

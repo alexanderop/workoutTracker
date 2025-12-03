@@ -1,23 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Clock, Dumbbell, Flame, Target } from 'lucide-vue-next'
+import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { WorkoutStats } from '@/composables/useWorkoutDetail'
 import { formatDuration } from '@/lib/formatters'
-import { formatWeight, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
-import { useSettingsStore } from '@/stores/settings'
 
 const { stats } = defineProps<{
   stats: WorkoutStats
 }>()
 
-const settingsStore = useSettingsStore()
+const { toDisplayValue, unitLabel } = useWeightDisplay()
 
-function displayWeight(): string {
-  return formatWeight(stats.totalWeight, settingsStore.weightUnit)
-}
-
-function weightLabel(): string {
-  return `${WEIGHT_UNIT_LABELS[settingsStore.weightUnit]} lifted`
-}
+const displayedWeight = computed(() => toDisplayValue(stats.totalWeight) ?? 0)
+const weightLabelText = computed(() => `${unitLabel.value} lifted`)
 </script>
 
 <template>
@@ -57,9 +52,9 @@ function weightLabel(): string {
         <Flame class="h-4 w-4 text-muted-foreground" />
       </div>
       <div class="mt-1 font-mono text-sm font-semibold tabular-nums">
-        {{ displayWeight() }}
+        {{ displayedWeight }}
       </div>
-      <div class="text-xs text-muted-foreground">{{ weightLabel() }}</div>
+      <div class="text-xs text-muted-foreground">{{ weightLabelText }}</div>
     </div>
   </div>
 </template>

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.ts", "src/**/*.vue"],
+  "project": ["src/**/*.ts", "src/**/*.vue"],
+  "ignore": [
+    ".claude/**",
+    "env.d.ts",
+    "src/components/ui/**"
+  ],
+  "ignoreDependencies": [
+    "@antfu/eslint-config",
+    "@prettier/plugin-oxc",
+    "@testing-library/jest-dom",
+    "tailwindcss",
+    "tw-animate-css"
+  ],
+  "vitest": {
+    "entry": [
+      "src/__tests__/**/*.spec.ts",
+      "src/__tests__/helpers/*.ts",
+      "src/__tests__/factories/*.ts"
+    ]
+  }
+}

@@ -65,22 +65,22 @@ export type DbBlockExercise = {
 // Block Configurations
 // ============================================
 
-export type DbEmomConfig = {
+type DbEmomConfig = {
   minutes: number
   exerciseRotation: 'each-minute' | 'full-round'
 }
 
-export type DbAmrapConfig = {
+type DbAmrapConfig = {
   durationSeconds: number
 }
 
-export type DbTabataConfig = {
+type DbTabataConfig = {
   rounds: number
   workSeconds: number
   restSeconds: number
 }
 
-export type DbForTimeConfig = {
+type DbForTimeConfig = {
   timeCapSeconds: number | null
 }
 
@@ -160,7 +160,7 @@ export type DbForTimeBlock = {
   orderIndex: number
 }
 
-export type DbTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
+type DbTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
 
 export type DbWorkoutBlock = DbStrengthBlock | DbTimedBlock
 
@@ -201,21 +201,9 @@ export type DbCompletedWorkout = {
 // ============================================
 
 /**
- * Template exercise (subset of exercise data for templates).
- */
-export type DbTemplateExercise = {
-  exerciseDefinitionId: string | null
-  name: string
-  equipment: string
-  targetReps: number
-  thumbnail: string
-  defaultSetCount: number
-}
-
-/**
  * Template block exercise (for timed blocks in templates).
  */
-export type DbTemplateBlockExercise = {
+type DbTemplateBlockExercise = {
   exerciseDefinitionId: string | null
   name: string
   prescribedReps: number
@@ -236,25 +224,25 @@ export type DbTemplateStrengthBlock = {
   defaultSetCount: number
 }
 
-export type DbTemplateEmomBlock = {
+type DbTemplateEmomBlock = {
   kind: 'emom'
   config: DbEmomConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
-export type DbTemplateAmrapBlock = {
+type DbTemplateAmrapBlock = {
   kind: 'amrap'
   config: DbAmrapConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
-export type DbTemplateTabataBlock = {
+type DbTemplateTabataBlock = {
   kind: 'tabata'
   config: DbTabataConfig
   exercise: DbTemplateBlockExercise
 }
 
-export type DbTemplateForTimeBlock = {
+type DbTemplateForTimeBlock = {
   kind: 'fortime'
   config: DbForTimeConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
@@ -305,10 +293,6 @@ export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlo
   return block.kind === 'strength'
 }
 
-export function isDbTimedBlock(block: DbWorkoutBlock): block is DbTimedBlock {
-  return block.kind !== 'strength'
-}
-
 // ============================================
 // Legacy Types (for backward compatibility)
 // ============================================
@@ -324,30 +308,4 @@ export type DbLegacyActiveWorkout = {
   selectedExerciseId: string
   startedAt: number
   lastModifiedAt: number
-}
-
-/**
- * Legacy completed workout format.
- * @deprecated Use DbCompletedWorkout with blocks instead
- */
-export type DbLegacyCompletedWorkout = {
-  id: string
-  name: string
-  exercises: ReadonlyArray<DbWorkoutExercise>
-  startedAt: number
-  completedAt: number
-  durationSeconds: number
-  notes: string
-}
-
-/**
- * Legacy template format.
- * @deprecated Use DbWorkoutTemplate with blocks instead
- */
-export type DbLegacyWorkoutTemplate = {
-  id: string
-  name: string
-  exercises: ReadonlyArray<DbTemplateExercise>
-  createdAt: number
-  lastUsedAt: number | null
 }

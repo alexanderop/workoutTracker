@@ -3,24 +3,50 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config.*'
+      - 'vitest.config.*'
+      - 'tsconfig*.json'
+      - 'eslint.config.*'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config.*'
+      - 'vitest.config.*'
+      - 'tsconfig*.json'
+      - 'eslint.config.*'
+      - '.github/workflows/ci.yml'
 
 env:
   NODE_VERSION: 22
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.1.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -31,28 +57,52 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-  type-check:
+  knip:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.1.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Find unused code
+        run: pnpm knip
+
+  type-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Cache TypeScript build info
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
+        continue-on-error: true
         with:
           path: |
             node_modules/.cache
             tsconfig.tsbuildinfo
-          key: ts-${{ runner.os }}-${{ hashFiles('**/tsconfig*.json', 'src/**/*.ts', 'src/**/*.vue') }}
+          key: ts-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/tsconfig*.json') }}
           restore-keys: |
             ts-${{ runner.os }}-
 
@@ -63,22 +113,25 @@ jobs:
         run: pnpm type-check
 
   build:
+    needs: [type-check]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.1.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Cache Vite build
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
+        continue-on-error: true
         with:
           path: |
             node_modules/.vite
@@ -93,26 +146,35 @@ jobs:
       - name: Build
         run: pnpm build-only
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.1.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Cache Vitest
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
+        continue-on-error: true
         with:
           path: node_modules/.vitest
-          key: vitest-${{ runner.os }}-${{ hashFiles('**/vitest.config.*') }}
+          key: vitest-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/vitest.config.*') }}
           restore-keys: |
             vitest-${{ runner.os }}-
 

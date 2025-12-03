@@ -10,7 +10,7 @@ import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
 // Types
 // ============================================
 
-export type TemplateExercise = {
+type TemplateExercise = {
   exerciseId: string
   name: string
   equipment: string
@@ -18,7 +18,7 @@ export type TemplateExercise = {
   defaultSetCount: number
 }
 
-export type TemplateDetailState =
+type TemplateDetailState =
   | { status: 'loading' }
   | { status: 'success'; template: DbWorkoutTemplate }
   | { status: 'not-found' }
@@ -30,7 +30,7 @@ export type TemplateDetailState =
 /**
  * Extracts template exercises from strength blocks.
  */
-export function extractExercisesFromBlocks(
+function extractExercisesFromBlocks(
   blocks: ReadonlyArray<DbTemplateStrengthBlock>,
 ): ReadonlyArray<TemplateExercise> {
   return blocks.map((block) => ({
@@ -45,7 +45,7 @@ export function extractExercisesFromBlocks(
 /**
  * Converts exercises back to template blocks for saving.
  */
-export function exercisesToBlocks(
+function exercisesToBlocks(
   exercises: ReadonlyArray<TemplateExercise>,
 ): ReadonlyArray<DbTemplateStrengthBlock> {
   return exercises.map((ex) => ({
@@ -62,7 +62,7 @@ export function exercisesToBlocks(
 /**
  * Checks if template has been edited compared to original.
  */
-export function checkIsEdited(
+function checkIsEdited(
   template: DbWorkoutTemplate,
   currentName: string,
   currentExerciseCount: number,

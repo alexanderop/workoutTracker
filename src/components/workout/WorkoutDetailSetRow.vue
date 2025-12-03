@@ -1,33 +1,31 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { TableCell, TableRow } from '@/components/ui/table'
+import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { DbSet } from '@/db/schema'
 import { calculate10RM } from '@/lib/workout-utils'
-import { useSettingsStore } from '@/stores/settings'
-import { formatWeight, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 
 const { set, index } = defineProps<{
   set: DbSet
   index: number
 }>()
 
-const settingsStore = useSettingsStore()
+const { formatWithUnit, toDisplayValue, unitLabel } = useWeightDisplay()
 
-const isCompleted = set.status === 'completed'
+const isCompleted = computed(() => set.status === 'completed')
 
-function displayWeight(kgValue: string): string {
-  if (!kgValue) return '—'
-  const kg = Number(kgValue)
-  // Use 1 decimal for lbs, 0 for kg (cleaner display for typical kg values)
-  const decimals = settingsStore.weightUnit === 'lbs' ? 1 : 0
-  return formatWeight(kg, settingsStore.weightUnit, decimals)
-}
+const displayedWeight = computed(() => {
+  if (!set.kg) return '—'
+  const display = toDisplayValue(set.kg)
+  return display !== undefined ? `${display}${unitLabel.value}` : '—'
+})
 
-function formatOneRepMax(kg: string, reps: string): string {
-  const kgNum = Number.parseFloat(kg) || 0
-  const repsNum = Number.parseFloat(reps) || 0
+const estimatedRM = computed(() => {
+  const kgNum = Number.parseFloat(set.kg) || 0
+  const repsNum = Number.parseFloat(set.reps) || 0
   if (kgNum === 0 || repsNum === 0) return '—'
-  return `${calculate10RM(kgNum, repsNum)}kg`
-}
+  return formatWithUnit(calculate10RM(kgNum, repsNum))
+})
 </script>
 
 <template>
@@ -37,7 +35,7 @@ function formatOneRepMax(kg: string, reps: string): string {
     </TableCell>
     <TableCell class="text-right font-mono tabular-nums">
       <span :class="{ 'font-semibold text-primary': isCompleted }">
-        {{ displayWeight(set.kg) }}{{ WEIGHT_UNIT_LABELS[settingsStore.weightUnit] }}
+        {{ displayedWeight }}
       </span>
     </TableCell>
     <TableCell class="text-right font-mono tabular-nums">
@@ -49,7 +47,7 @@ function formatOneRepMax(kg: string, reps: string): string {
       {{ set.rir || '—' }}
     </TableCell>
     <TableCell class="text-right font-mono tabular-nums">
-      {{ formatOneRepMax(set.kg, set.reps) }}
+      {{ estimatedRM }}
     </TableCell>
   </TableRow>
 </template>

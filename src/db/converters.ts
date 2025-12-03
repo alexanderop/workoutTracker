@@ -23,13 +23,11 @@ import type {
   DbEmomResult,
   DbForTimeBlock,
   DbForTimeResult,
-  DbLegacyActiveWorkout,
   DbSet,
   DbStrengthBlock,
   DbTabataBlock,
   DbTabataResult,
   DbWorkoutBlock,
-  DbWorkoutExercise,
 } from './schema'
 import { generateId } from './index'
 
@@ -363,70 +361,9 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
   }
 }
 
-/**
- * Convert legacy active workout (exercises array) to new block-based format.
- */
-export function legacyToBlockWorkout(legacy: Readonly<DbLegacyActiveWorkout>): DbActiveWorkout {
-  const sortedExercises = [...legacy.exercises].sort((a, b) => a.orderIndex - b.orderIndex)
-
-  const blocks: ReadonlyArray<DbWorkoutBlock> = sortedExercises.map(
-    (ex, index): DbStrengthBlock => ({
-      kind: 'strength',
-      id: ex.id,
-      exerciseDefinitionId: ex.exerciseDefinitionId,
-      name: ex.name,
-      equipment: ex.equipment,
-      targetReps: ex.targetReps,
-      thumbnail: ex.thumbnail,
-      sets: ex.sets,
-      orderIndex: index,
-    }),
-  )
-
-  // Find selected block index
-  const selectedIndex = sortedExercises.findIndex((ex) => ex.id === legacy.selectedExerciseId)
-
-  return {
-    id: 'current',
-    name: legacy.name,
-    blocks,
-    selectedBlockIndex: selectedIndex >= 0 ? selectedIndex : 0,
-    startedAt: legacy.startedAt,
-    lastModifiedAt: legacy.lastModifiedAt,
-    mode: 'builder',
-    activeSetIndex: null,
-  }
-}
-
-/**
- * Check if a workout is in legacy format (has exercises array instead of blocks).
- */
-export function isLegacyWorkout(
-  workout: DbActiveWorkout | DbLegacyActiveWorkout,
-): workout is DbLegacyActiveWorkout {
-  return 'exercises' in workout && !('blocks' in workout)
-}
-
 // ============================================
 // Custom Exercise Converters
 // ============================================
-
-/**
- * Convert in-memory CustomExercise to database format.
- */
-export function customExerciseToDb(exercise: Readonly<CustomExercise>): DbCustomExercise {
-  return {
-    id: exercise.id,
-    icon: exercise.icon,
-    name: exercise.name,
-    equipment: exercise.equipment ?? null,
-    muscle: exercise.muscle ?? null,
-    type: exercise.type,
-    metrics: exercise.metrics,
-    createdAt: exercise.createdAt,
-    updatedAt: Date.now(),
-  }
-}
 
 /**
  * Convert database CustomExercise to in-memory format.
@@ -461,27 +398,5 @@ export function createDbCustomExercise(
     metrics: exercise.metrics,
     createdAt: now,
     updatedAt: now,
-  }
-}
-
-// ============================================
-// Legacy Exercise Converters (kept for backward compatibility)
-// ============================================
-
-/**
- * Convert legacy DbWorkoutExercise to DbStrengthBlock.
- * Used for migrating old data.
- */
-export function legacyExerciseToBlock(exercise: Readonly<DbWorkoutExercise>): DbStrengthBlock {
-  return {
-    kind: 'strength',
-    id: exercise.id,
-    exerciseDefinitionId: exercise.exerciseDefinitionId,
-    name: exercise.name,
-    equipment: exercise.equipment,
-    targetReps: exercise.targetReps,
-    thumbnail: exercise.thumbnail,
-    sets: exercise.sets,
-    orderIndex: exercise.orderIndex,
   }
 }

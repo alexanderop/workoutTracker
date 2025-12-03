@@ -2,15 +2,18 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ExerciseEquipmentSelector from '@/components/exercise/ExerciseEquipmentSelector.vue'
-import ExerciseMetricsSelector from '@/components/exercise/ExerciseMetricsSelector.vue'
-import ExerciseMuscleSelector from '@/components/exercise/ExerciseMuscleSelector.vue'
+import ExerciseSelectorDialog from '@/components/exercise/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/components/exercise/ExerciseSettingsItem.vue'
-import ExerciseTypeSelector from '@/components/exercise/ExerciseTypeSelector.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseForm } from '@/composables/useExerciseForm'
+import {
+  EQUIPMENT_OPTIONS,
+  METRICS_OPTIONS,
+  MUSCLE_OPTIONS,
+  TYPE_OPTIONS,
+} from '@/data/exerciseOptions'
 import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 
@@ -30,18 +33,34 @@ type ModalState =
 
 const modalState = ref<ModalState>({ kind: 'closed' })
 
-// Computed helpers for template compatibility
-const showEquipmentModal = computed(() => modalState.value.kind === 'equipment')
-const showMuscleModal = computed(() => modalState.value.kind === 'muscle')
-const showTypeModal = computed(() => modalState.value.kind === 'type')
-const showMetricsModal = computed(() => modalState.value.kind === 'metrics')
+// Writable computed helpers for v-model compatibility
+const showEquipmentModal = computed({
+  get: () => modalState.value.kind === 'equipment',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
+const showMuscleModal = computed({
+  get: () => modalState.value.kind === 'muscle',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
+const showTypeModal = computed({
+  get: () => modalState.value.kind === 'type',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
+const showMetricsModal = computed({
+  get: () => modalState.value.kind === 'metrics',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
 
 function openModal(kind: ModalState['kind']) {
   modalState.value = { kind }
-}
-
-function closeModal() {
-  modalState.value = { kind: 'closed' }
 }
 
 function handleIconClick() {
@@ -65,22 +84,18 @@ function handleEmojiChange(event: Event) {
 
 function handleEquipmentSelect(selected: Equipment) {
   form.value.equipment = selected
-  closeModal()
 }
 
 function handleMuscleSelect(selected: Muscle) {
   form.value.muscle = selected
-  closeModal()
 }
 
 function handleTypeSelect(selected: ExerciseType) {
   form.value.type = selected
-  closeModal()
 }
 
 function handleMetricsSelect(selected: Metrics) {
   form.value.metrics = selected
-  closeModal()
 }
 
 async function handleSave() {
@@ -149,31 +164,40 @@ async function handleSave() {
     <input id="emoji-input" type="text" class="hidden" @change="handleEmojiChange" />
 
     <!-- Selection Modals -->
-    <ExerciseEquipmentSelector
-      :open="showEquipmentModal"
+    <ExerciseSelectorDialog
+      v-model:open="showEquipmentModal"
+      title="Select Equipment"
+      description="Choose the primary equipment for this exercise"
+      :options="EQUIPMENT_OPTIONS"
       :selected="form.equipment"
-      @update:open="closeModal"
+      layout="grid"
       @select="handleEquipmentSelect"
     />
 
-    <ExerciseMuscleSelector
-      :open="showMuscleModal"
+    <ExerciseSelectorDialog
+      v-model:open="showMuscleModal"
+      title="Select Muscle Group"
+      description="Choose the primary muscle group targeted"
+      :options="MUSCLE_OPTIONS"
       :selected="form.muscle"
-      @update:open="closeModal"
       @select="handleMuscleSelect"
     />
 
-    <ExerciseTypeSelector
-      :open="showTypeModal"
+    <ExerciseSelectorDialog
+      v-model:open="showTypeModal"
+      title="Select Exercise Type"
+      description="Choose the complexity or category of this exercise"
+      :options="TYPE_OPTIONS"
       :selected="form.type"
-      @update:open="closeModal"
       @select="handleTypeSelect"
     />
 
-    <ExerciseMetricsSelector
-      :open="showMetricsModal"
+    <ExerciseSelectorDialog
+      v-model:open="showMetricsModal"
+      title="Select Tracking Method"
+      description="Choose what data will be tracked when performing this exercise"
+      :options="METRICS_OPTIONS"
       :selected="form.metrics"
-      @update:open="closeModal"
       @select="handleMetricsSelect"
     />
   </PageLayout>

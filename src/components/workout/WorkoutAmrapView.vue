@@ -5,6 +5,7 @@ import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
 import { cn } from '@/lib/utils'
 import type { AmrapBlock, AmrapResult } from '@/types/blocks'
 import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/types/blocks'
+import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 type Props = {
   block: AmrapBlock
@@ -37,13 +38,6 @@ const nextExercises = computed(() => {
 
 const isUrgent = computed(() => timer.remainingSeconds.value <= 10)
 
-// SVG circle calculations
-const circleRadius = 140
-const circleCircumference = 2 * Math.PI * circleRadius
-const strokeDashoffset = computed(
-  () => circleCircumference - (timer.progress.value / 100) * circleCircumference,
-)
-
 // Initialize timer on mount
 onMounted(() => {
   timer.initialize(block)
@@ -73,58 +67,31 @@ defineExpose({
     </div>
 
     <!-- Circular Timer -->
-    <div class="relative mb-6">
-      <svg class="w-[320px] h-[320px] -rotate-90" viewBox="0 0 320 320">
-        <!-- Track -->
-        <circle
-          cx="160"
-          cy="160"
-          :r="circleRadius"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="8"
-          class="text-muted/30"
-        />
+    <WorkoutCircularTimer
+      :progress="timer.progress.value"
+      :progress-color="blockColors.text"
+      :urgent="isUrgent"
+      class="mb-6"
+    >
+      <span
+        :class="
+          cn(
+            'text-5xl font-mono tabular-nums font-bold transition-colors',
+            isUrgent && 'text-destructive animate-pulse',
+          )
+        "
+      >
+        {{ timer.formattedRemaining.value }}
+      </span>
 
-        <!-- Progress -->
-        <circle
-          cx="160"
-          cy="160"
-          :r="circleRadius"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="8"
-          stroke-linecap="round"
-          :stroke-dasharray="circleCircumference"
-          :stroke-dashoffset="strokeDashoffset"
-          :class="
-            cn('transition-all duration-200', isUrgent ? 'text-destructive' : blockColors.text)
-          "
-        />
-      </svg>
-
-      <!-- Timer Display -->
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          :class="
-            cn(
-              'text-5xl font-mono tabular-nums font-bold transition-colors',
-              isUrgent && 'text-destructive animate-pulse',
-            )
-          "
-        >
-          {{ timer.formattedRemaining.value }}
-        </span>
-
-        <!-- Current Exercise (inside circle) -->
-        <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
-          <p class="text-lg font-semibold text-foreground truncate">
-            {{ currentExercise.name }}
-          </p>
-          <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
-        </div>
+      <!-- Current Exercise (inside circle) -->
+      <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
+        <p class="text-lg font-semibold text-foreground truncate">
+          {{ currentExercise.name }}
+        </p>
+        <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
       </div>
-    </div>
+    </WorkoutCircularTimer>
 
     <!-- Next Exercises -->
     <div v-if="nextExercises.length > 0" class="flex items-center gap-2 text-muted-foreground mb-6">

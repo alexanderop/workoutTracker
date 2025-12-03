@@ -4,6 +4,7 @@ import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { cn } from '@/lib/utils'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
+import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 type Props = {
   block: TabataBlock
@@ -28,18 +29,13 @@ const phaseColors = computed(() => {
   return { text: 'text-amber-400', bg: 'bg-amber-500/20' }
 })
 
-// SVG circle calculations - progress within current phase
-const circleRadius = 140
-const circleCircumference = 2 * Math.PI * circleRadius
+// Progress within current phase (0-100)
 const circularProgress = computed(() => {
   const seconds = timer.secondsInCurrentPhase.value
   const total =
     timer.currentPhase.value === 'work' ? block.config.workSeconds : block.config.restSeconds
   return ((total - seconds) / total) * 100
 })
-const strokeDashoffset = computed(
-  () => circleCircumference - (circularProgress.value / 100) * circleCircumference,
-)
 
 // Timer display - seconds in current phase
 const timerDisplay = computed(() => String(timer.secondsInCurrentPhase.value).padStart(2, '0'))
@@ -87,57 +83,30 @@ defineExpose({
     </div>
 
     <!-- Circular Timer -->
-    <div class="relative mb-6">
-      <svg class="w-[320px] h-[320px] -rotate-90" viewBox="0 0 320 320">
-        <!-- Track -->
-        <circle
-          cx="160"
-          cy="160"
-          :r="circleRadius"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="8"
-          class="text-muted/30"
-        />
+    <WorkoutCircularTimer
+      :progress="circularProgress"
+      :progress-color="phaseColors.text"
+      :urgent="isUrgent"
+      class="mb-6"
+    >
+      <span
+        :class="
+          cn(
+            'text-[5.5rem] leading-none font-mono tabular-nums font-bold transition-colors',
+            isUrgent && 'text-destructive animate-pulse',
+          )
+        "
+      >
+        :{{ timerDisplay }}
+      </span>
 
-        <!-- Progress -->
-        <circle
-          cx="160"
-          cy="160"
-          :r="circleRadius"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="8"
-          stroke-linecap="round"
-          :stroke-dasharray="circleCircumference"
-          :stroke-dashoffset="strokeDashoffset"
-          :class="
-            cn('transition-all duration-200', isUrgent ? 'text-destructive' : phaseColors.text)
-          "
-        />
-      </svg>
-
-      <!-- Timer Display -->
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          :class="
-            cn(
-              'text-[5.5rem] leading-none font-mono tabular-nums font-bold transition-colors',
-              isUrgent && 'text-destructive animate-pulse',
-            )
-          "
-        >
-          :{{ timerDisplay }}
-        </span>
-
-        <!-- Current Exercise (inside circle) -->
-        <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
-          <p class="text-lg font-semibold text-foreground truncate">
-            {{ currentExercise.name }}
-          </p>
-          <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
-        </div>
+      <!-- Current Exercise (inside circle) -->
+      <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
+        <p class="text-lg font-semibold text-foreground truncate">
+          {{ currentExercise.name }}
+        </p>
+        <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
       </div>
-    </div>
+    </WorkoutCircularTimer>
   </div>
 </template>
