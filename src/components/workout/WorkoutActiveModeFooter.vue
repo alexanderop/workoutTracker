@@ -12,6 +12,13 @@ const { t } = useI18n()
 
 type ButtonVariant = 'default' | 'secondary'
 
+type PrimaryAction = {
+  label: string
+  icon: typeof Check
+  emit: 'complete-set' | 'toggle-timer' | 'complete-block'
+  variant: ButtonVariant
+}
+
 export type TimerDisplayData = {
   isRunning: boolean
   display: string
@@ -75,47 +82,50 @@ const displayedTimerLabel = computed((): string | null => {
   return null
 })
 
-const primaryAction = computed(() => {
-  if (isStrengthBlock(block)) {
-    return {
-      label: t('workouts.active.footer.completeSet'),
-      icon: Check,
-      emit: 'complete-set' as const,
-      variant: canComplete ? 'default' : 'secondary',
-    }
+// Strategy: Strength blocks show "Complete Set"
+function getStrengthAction(): PrimaryAction {
+  return {
+    label: t('workouts.active.footer.completeSet'),
+    icon: Check,
+    emit: 'complete-set',
+    variant: canComplete ? 'default' : 'secondary',
+  }
+}
+
+// Strategy: Timer-controlled blocks (amrap, emom, tabata) toggle play/pause
+function getTimerToggleAction(isRunning: boolean): PrimaryAction {
+  return {
+    label: isRunning
+      ? t('workouts.active.footer.pause')
+      : t('workouts.active.footer.start'),
+    icon: isRunning ? Pause : Play,
+    emit: 'toggle-timer',
+    variant: isRunning ? 'secondary' : 'default',
+  }
+}
+
+// Strategy: ForTime blocks show "Done" to mark completion
+function getForTimeAction(): PrimaryAction {
+  return {
+    label: t('workouts.active.footer.done'),
+    icon: Check,
+    emit: 'complete-block',
+    variant: 'default',
+  }
+}
+
+const primaryAction = computed((): PrimaryAction => {
+  if (isStrengthBlock(block)) return getStrengthAction()
+
+  const isRunning = timer?.isRunning ?? false
+  const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {
+    amrap: () => getTimerToggleAction(isRunning),
+    emom: () => getTimerToggleAction(isRunning),
+    tabata: () => getTimerToggleAction(isRunning),
+    fortime: getForTimeAction,
   }
 
-  const kind = block.kind
-  switch (kind) {
-    case 'amrap':
-    case 'emom':
-    case 'tabata':
-      return {
-        label: timer?.isRunning
-          ? t('workouts.active.footer.pause')
-          : t('workouts.active.footer.start'),
-        icon: timer?.isRunning ? Pause : Play,
-        emit: 'toggle-timer' as const,
-        variant: timer?.isRunning ? 'secondary' : 'default',
-      }
-    case 'fortime':
-      return {
-        label: t('workouts.active.footer.done'),
-        icon: Check,
-        emit: 'complete-block' as const,
-        variant: 'default',
-      }
-    default: {
-      // Exhaustive check - kind should be 'never' here
-      kind satisfies never
-      return {
-        label: 'Unknown',
-        icon: Check,
-        emit: 'complete-block' as const,
-        variant: 'default' as const,
-      }
-    }
-  }
+  return actionByKind[block.kind]()
 })
 
 function handlePrimaryAction() {

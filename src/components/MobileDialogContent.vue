@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { DialogContentEmits, DialogContentProps } from 'reka-ui'
+import type { DialogContentEmits } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
 import { X } from 'lucide-vue-next'
 import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
@@ -12,21 +11,19 @@ defineOptions({
   inheritAttrs: false,
 })
 
-const props = withDefaults(
-  defineProps<
-    DialogContentProps & { class?: HTMLAttributes['class']; showCloseButton?: boolean }
-  >(),
-  {
-    showCloseButton: true,
-  },
-)
+const { class: className, showCloseButton = true } = defineProps<{
+  class?: HTMLAttributes['class']
+  showCloseButton?: boolean
+}>()
 const emits = defineEmits<DialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, 'class')
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const forwarded = useForwardPropsEmits({}, emits)
 
 const { t } = useI18n()
+
+defineSlots<{
+  default: () => unknown
+}>()
 </script>
 
 <template>
@@ -41,7 +38,7 @@ const { t } = useI18n()
           'data-[state=open]:animate-slide-up-mobile data-[state=closed]:animate-slide-down-mobile',
           'sm:data-[state=open]:animate-in sm:data-[state=closed]:animate-out sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95 sm:duration-200',
           'sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%] sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:p-6',
-          props.class,
+          className,
         )
       "
     >

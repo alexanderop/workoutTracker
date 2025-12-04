@@ -5,14 +5,22 @@ import { Button } from '@/components/ui/button'
 
 const { t } = useI18n()
 
-type Props = {
+type Exercise = {
   exerciseId: string
   name: string
   equipment: string
   thumbnail: string
   defaultSetCount: number
+}
+
+type Movement = {
   canMoveUp: boolean
   canMoveDown: boolean
+}
+
+type Props = {
+  exercise: Exercise
+  movement: Movement
 }
 
 type Emits = {
@@ -22,7 +30,7 @@ type Emits = {
   'move-down': []
 }
 
-const { defaultSetCount } = defineProps<Props>()
+const { exercise, movement } = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 function handleSetCountChange(event: Event): void {
@@ -35,12 +43,12 @@ function handleSetCountChange(event: Event): void {
 }
 
 function incrementSetCount(): void {
-  emit('update:setCount', defaultSetCount + 1)
+  emit('update:setCount', exercise.defaultSetCount + 1)
 }
 
 function decrementSetCount(): void {
-  if (defaultSetCount > 1) {
-    emit('update:setCount', defaultSetCount - 1)
+  if (exercise.defaultSetCount > 1) {
+    emit('update:setCount', exercise.defaultSetCount - 1)
   }
 }
 </script>
@@ -49,12 +57,12 @@ function decrementSetCount(): void {
   <div class="bg-muted/30 rounded-xl border border-border/50 overflow-hidden">
     <!-- Top row: Exercise info -->
     <div class="flex items-center gap-3 p-4">
-      <div class="flex-shrink-0 text-3xl" role="img" :aria-label="name">
-        {{ thumbnail }}
+      <div class="flex-shrink-0 text-3xl" role="img" :aria-label="exercise.name">
+        {{ exercise.thumbnail }}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-semibold text-base leading-tight">{{ name }}</p>
-        <p class="text-sm text-muted-foreground mt-0.5">{{ equipment }}</p>
+        <p class="font-semibold text-base leading-tight">{{ exercise.name }}</p>
+        <p class="text-sm text-muted-foreground mt-0.5">{{ exercise.equipment }}</p>
       </div>
     </div>
 
@@ -71,7 +79,7 @@ function decrementSetCount(): void {
           <button
             type="button"
             class="flex items-center justify-center size-10 hover:bg-muted active:bg-muted/80 transition-colors rounded-l-lg disabled:opacity-40"
-            :disabled="defaultSetCount === 1"
+            :disabled="exercise.defaultSetCount === 1"
             :aria-label="t('common.aria.decreaseSetCount')"
             @click="decrementSetCount"
           >
@@ -79,7 +87,7 @@ function decrementSetCount(): void {
           </button>
           <input
             type="number"
-            :value="defaultSetCount"
+            :value="exercise.defaultSetCount"
             min="1"
             max="10"
             class="w-10 text-center text-base font-semibold border-0 bg-transparent focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -101,7 +109,7 @@ function decrementSetCount(): void {
         <Button
           variant="ghost"
           size="icon"
-          :disabled="!canMoveUp"
+          :disabled="!movement.canMoveUp"
           :aria-label="t('common.aria.moveUp')"
           @click="$emit('move-up')"
         >
@@ -110,7 +118,7 @@ function decrementSetCount(): void {
         <Button
           variant="ghost"
           size="icon"
-          :disabled="!canMoveDown"
+          :disabled="!movement.canMoveDown"
           :aria-label="t('common.aria.moveDown')"
           @click="$emit('move-down')"
         >

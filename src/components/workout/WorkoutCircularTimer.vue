@@ -20,6 +20,10 @@ const {
   showProgress = true,
 } = defineProps<Props>()
 
+defineSlots<{
+  default: () => unknown
+}>()
+
 const circleRadius = 140
 const circleCircumference = 2 * Math.PI * circleRadius
 const strokeDashoffset = computed(

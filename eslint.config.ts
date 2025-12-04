@@ -54,6 +54,19 @@ export default defineConfigWithVueTs(
       'vue/attribute-hyphenation': ['error', 'always'],
       'vue/custom-event-name-casing': ['error', 'kebab-case'],
       'vue/max-template-depth': ['error', { maxDepth: 8 }],
+      'vue/max-props': ['error', { maxProps: 6 }],
+
+      // Dead code detection
+      'vue/no-unused-properties': ['error', {
+        groups: ['props', 'data', 'computed', 'methods'],
+      }],
+      'vue/no-unused-refs': 'error',
+      'vue/no-unused-emit-declarations': 'error',
+
+      // Explicit APIs
+      'vue/require-expose': 'warn',
+      'vue/require-explicit-slots': 'warn',
+
       'no-restricted-imports': [
         'error',
         {
@@ -74,6 +87,12 @@ export default defineConfigWithVueTs(
     files: ['src/components/ui/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
+      'vue/max-props': 'off',
+      'vue/no-unused-properties': 'off',
+      'vue/no-unused-refs': 'off',
+      'vue/no-unused-emit-declarations': 'off',
+      'vue/require-expose': 'off',
+      'vue/require-explicit-slots': 'off',
     },
   },
 
@@ -81,6 +100,9 @@ export default defineConfigWithVueTs(
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
     rules: {
+      // Limit cyclomatic complexity per function
+      'complexity': ['warn', { max: 10 }],
+
       // No console.log - keeps codebase clean
       'no-console': ['error', { allow: ['warn', 'error'] }],
 

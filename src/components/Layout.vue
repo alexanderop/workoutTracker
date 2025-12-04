@@ -17,6 +17,10 @@ const navItems = computed(() => [
   { path: '/settings', name: 'Settings', icon: Settings, label: t('nav.settings') },
 ])
 
+defineSlots<{
+  default: () => unknown
+}>()
+
 function isActive(path: string) {
   return route.path === path
 }

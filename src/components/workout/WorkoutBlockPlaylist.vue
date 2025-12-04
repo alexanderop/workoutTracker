@@ -64,7 +64,6 @@ function isBlockCompleted(index: number): boolean {
         v-for="(block, index) in blocksList"
         :key="block.id"
         :block="block"
-        :index="index"
         :is-selected="index === selectedIndex"
         :is-completed="isBlockCompleted(index)"
         :show-connector="index < blocksList.length - 1"

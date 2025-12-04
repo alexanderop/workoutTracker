@@ -165,81 +165,89 @@ export function useWorkout() {
     }
   }
 
+  // Helper: Find the first incomplete set in a strength block
+  function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
+    return block.sets.find((s) => s.status === 'planned' || s.status === 'active')
+  }
+
+  // Helper: Activate the next set in current block, pre-filling from completed set
+  function activateNextSetInBlock(
+    blockIndex: number,
+    block: StrengthBlock,
+    completedSet: Set,
+  ): CompleteSetResult | null {
+    const nextSet = findNextIncompleteSet(block)
+    if (!nextSet) return null
+
+    updateSetInBlock(blockIndex, nextSet.id, (s) => ({
+      ...s,
+      kg: s.kg || completedSet.kg,
+      reps: s.reps || completedSet.reps,
+      rir: s.rir || completedSet.rir,
+      status: 'active',
+    }))
+
+    const nextSetIndex = block.sets.findIndex((s) => s.id === nextSet.id)
+    if (nextSetIndex >= 0) {
+      updateWorkout({ activeSetIndex: nextSetIndex })
+    }
+
+    return {
+      kind: 'completed',
+      nextAction: 'next-set',
+      blockIndex,
+      setId: nextSet.id,
+    }
+  }
+
+  // Helper: Advance to next block and activate its first set if strength
+  function advanceToNextBlock(nextBlockIndex: number): CompleteSetResult | null {
+    if (nextBlockIndex >= workout.value.blocks.length) return null
+
+    updateWorkout({ selectedBlockIndex: nextBlockIndex })
+    const nextBlock = workout.value.blocks[nextBlockIndex]
+
+    if (nextBlock && isStrengthBlock(nextBlock)) {
+      const firstSet = findNextIncompleteSet(nextBlock)
+      if (firstSet) {
+        updateSetInBlock(nextBlockIndex, firstSet.id, (s) => ({ ...s, status: 'active' }))
+        updateWorkout({ activeSetIndex: 0 })
+      }
+    }
+
+    return { kind: 'completed', nextAction: 'next-block', blockIndex: nextBlockIndex }
+  }
+
   function completeSet(set: Set): CompleteSetResult {
-    const setId = set.id
     const blockIndex = workout.value.selectedBlockIndex
 
-    // If already completed, toggle back to active (no timer start)
+    // Guard: Toggle completed set back to active
     if (set.status === 'completed') {
-      updateSetInBlock(blockIndex, setId, (s) => ({ ...s, status: 'active' }))
+      updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'active' }))
       return { kind: 'uncompleted' }
     }
 
-    // Validate before completing - reject empty/invalid sets
-    if (!isSetReady(set)) {
-      return { kind: 'uncompleted' }
-    }
+    // Guard: Reject invalid sets
+    if (!isSetReady(set)) return { kind: 'uncompleted' }
 
     // Mark as completed
-    updateSetInBlock(blockIndex, setId, (s) => ({ ...s, status: 'completed' }))
+    updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'completed' }))
 
-    // Find current strength block (re-fetch after update)
+    // Get current block (re-fetch after update)
     const currentBlock = workout.value.blocks[blockIndex]
     if (!currentBlock || !isStrengthBlock(currentBlock)) {
       return { kind: 'completed', nextAction: 'workout-complete' }
     }
 
-    // Find next incomplete set in current block
-    const nextSet = currentBlock.sets.find((s) => s.status === 'planned' || s.status === 'active')
+    // Try: Activate next set in current block
+    const nextSetResult = activateNextSetInBlock(blockIndex, currentBlock, set)
+    if (nextSetResult) return nextSetResult
 
-    if (nextSet) {
-      // Pre-fill empty fields from completed set and activate
-      updateSetInBlock(blockIndex, nextSet.id, (s) => ({
-        ...s,
-        kg: s.kg || set.kg,
-        reps: s.reps || set.reps,
-        rir: s.rir || set.rir,
-        status: 'active',
-      }))
+    // Try: Advance to next block
+    const nextBlockResult = advanceToNextBlock(blockIndex + 1)
+    if (nextBlockResult) return nextBlockResult
 
-      // Update activeSetIndex to point to the next set
-      const nextSetIndex = currentBlock.sets.findIndex((s) => s.id === nextSet.id)
-      if (nextSetIndex >= 0) {
-        updateWorkout({ activeSetIndex: nextSetIndex })
-      }
-
-      return {
-        kind: 'completed',
-        nextAction: 'next-set',
-        blockIndex: workout.value.selectedBlockIndex,
-        setId: nextSet.id,
-      }
-    }
-
-    // No more sets - find next block
-    const nextBlockIndex = blockIndex + 1
-
-    if (nextBlockIndex < workout.value.blocks.length) {
-      updateWorkout({ selectedBlockIndex: nextBlockIndex })
-      const nextBlock = workout.value.blocks[nextBlockIndex]
-
-      // If next block is a strength block, activate its first set
-      if (nextBlock && isStrengthBlock(nextBlock)) {
-        const firstSet = nextBlock.sets.find((s) => s.status === 'planned' || s.status === 'active')
-        if (firstSet) {
-          updateSetInBlock(nextBlockIndex, firstSet.id, (s) => ({ ...s, status: 'active' }))
-          updateWorkout({ activeSetIndex: 0 })
-        }
-      }
-
-      return {
-        kind: 'completed',
-        nextAction: 'next-block',
-        blockIndex: nextBlockIndex,
-      }
-    }
-
-    // Workout complete - no more blocks
+    // Fallback: Workout complete
     return { kind: 'completed', nextAction: 'workout-complete' }
   }
 
@@ -457,6 +465,14 @@ export function useWorkout() {
     reorderBlocks(fromIndex, toIndex)
   }
 
+  // Strategy map: Each block kind has a unique property that identifies its result type
+  const RESULT_TYPE_KEY: Record<'amrap' | 'emom' | 'tabata' | 'fortime', string> = {
+    amrap: 'rounds',
+    emom: 'completedMinutes',
+    tabata: 'repsPerRound',
+    fortime: 'completionTime',
+  }
+
   // Set result for a timed block
   function setBlockResult(
     blockIndex: number,
@@ -465,28 +481,9 @@ export function useWorkout() {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isTimedBlock(block)) return
 
-    // Use switch to narrow both block and result types for TypeScript
-    switch (block.kind) {
-      case 'amrap':
-        if ('rounds' in result) {
-          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
-        }
-        break
-      case 'emom':
-        if ('completedMinutes' in result) {
-          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
-        }
-        break
-      case 'tabata':
-        if ('repsPerRound' in result) {
-          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
-        }
-        break
-      case 'fortime':
-        if ('completionTime' in result) {
-          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
-        }
-        break
+    const expectedKey = RESULT_TYPE_KEY[block.kind]
+    if (expectedKey in result) {
+      updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
     }
   }
 

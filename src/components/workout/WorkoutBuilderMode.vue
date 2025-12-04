@@ -22,7 +22,6 @@ const { t } = useI18n()
 const emit = defineEmits<{
   'add-block': []
   'edit-block': [index: number]
-  'remove-block': [index: number]
 }>()
 
 const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()

@@ -15,7 +15,6 @@ import {
 
 type Props = {
   block: WorkoutBlock
-  index: number
   isSelected: boolean
   isCompleted?: boolean
   showConnector?: boolean

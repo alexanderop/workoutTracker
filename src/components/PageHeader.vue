@@ -19,6 +19,10 @@ const emit = defineEmits<{
   back: []
 }>()
 
+defineSlots<{
+  actions: () => unknown
+}>()
+
 const router = useRouter()
 
 function handleBack() {

@@ -18,6 +18,12 @@ const {
 const emit = defineEmits<{
   back: []
 }>()
+
+defineSlots<{
+  'header-actions': () => unknown
+  default: () => unknown
+  footer: () => unknown
+}>()
 </script>
 
 <template>
