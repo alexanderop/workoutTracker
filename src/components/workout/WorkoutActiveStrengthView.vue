@@ -128,7 +128,7 @@ function handleRirChange(value: number | undefined) {
             <NumberFieldInput
               placeholder="—"
               :aria-label="t('common.aria.reps')"
-              class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold text-primary tabular-nums rounded-xl text-center w-24"
+              class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-20 text-5xl font-bold text-primary tabular-nums rounded-xl text-center w-32"
             />
           </NumberField>
           <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{
@@ -137,7 +137,7 @@ function handleRirChange(value: number | undefined) {
         </div>
 
         <!-- Divider -->
-        <div class="h-12 w-px bg-border" />
+        <div class="h-16 w-px bg-border/50" />
 
         <!-- RIR -->
         <div class="flex flex-col items-center">
@@ -150,7 +150,7 @@ function handleRirChange(value: number | undefined) {
             <NumberFieldInput
               placeholder="—"
               :aria-label="t('common.aria.repsInReserve')"
-              class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold tabular-nums rounded-xl text-center w-24"
+              class="bg-secondary/50 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-3xl font-bold tabular-nums rounded-xl text-center w-20"
             />
           </NumberField>
           <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{

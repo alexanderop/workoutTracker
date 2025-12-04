@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,16 @@ type Props = {
 
 const { block, onComplete } = defineProps<Props>()
 
+const emit = defineEmits<{
+  'update:isRunning': [value: boolean]
+}>()
+
 const timer = useTabataTimer({ onComplete })
+
+// Emit when isRunning changes so parent can react
+watch(timer.isRunning, (isRunning) => {
+  emit('update:isRunning', isRunning)
+})
 
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[0])

@@ -26,7 +26,7 @@ const emit = defineEmits<{
 }>()
 
 const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
-const { startWorkout, hasBlocks } = useWorkoutMode()
+const { startWorkout, hasBlocks, isActiveMode } = useWorkoutMode()
 
 function getBlockDurationSeconds(block: (typeof workout.value.blocks)[number]): number {
   if (isStrengthBlock(block)) {
@@ -134,7 +134,7 @@ function handleStartWorkout() {
           @click="handleStartWorkout"
         >
           <Play class="size-5" />
-          {{ t('workouts.builder.startWorkout') }}
+          {{ isActiveMode ? t('workouts.resume') : t('workouts.builder.startWorkout') }}
         </Button>
       </div>
     </template>

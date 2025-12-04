@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
-import { computed, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -62,11 +62,18 @@ const isFirstBlock = computed(() => currentBlockIndex.value === 0)
 
 const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentBlock.value))
 
+// Timer running state - updated via emit from timer views
+const timerIsRunning = ref(false)
+
+function handleTimerRunningChange(isRunning: boolean) {
+  timerIsRunning.value = isRunning
+}
+
 // Grouped timer data from timed view for footer
 const timerDisplayData = computed<TimerDisplayData | undefined>(() => {
   if (!timedViewRef.value) return undefined
   return {
-    isRunning: timedViewRef.value.isRunning.value,
+    isRunning: timerIsRunning.value,
     display: timedViewRef.value.formattedTime.value,
     label: timedViewRef.value.timerLabel,
   }
@@ -196,24 +203,28 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
+        @update:is-running="handleTimerRunningChange"
       />
       <WorkoutEmomView
         v-else-if="currentBlock.kind === 'emom'"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
+        @update:is-running="handleTimerRunningChange"
       />
       <WorkoutTabataView
         v-else-if="currentBlock.kind === 'tabata'"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
+        @update:is-running="handleTimerRunningChange"
       />
       <WorkoutForTimeView
         v-else-if="currentBlock.kind === 'fortime'"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
+        @update:is-running="handleTimerRunningChange"
       />
     </template>
 

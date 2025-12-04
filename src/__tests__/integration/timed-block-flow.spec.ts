@@ -303,4 +303,35 @@ describe('Timed Block Execution', () => {
 
     app.cleanup()
   })
+
+  it('timer button changes to Pause when running', async () => {
+    const app = await createTestApp()
+
+    // Start new workout
+    await app.user.click(app.getByRole('button', { name: /get started/i }))
+
+    // Add EMOM block
+    await addTimedBlock(app, 'EMOM')
+    await app.startWorkout()
+
+    // Wait for active mode
+    await waitFor(() => {
+      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+    })
+
+    // Verify Start button exists
+    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(app.queryByRole('button', { name: /pause/i })).toBeNull()
+
+    // Click Start
+    await app.user.click(app.getByRole('button', { name: /start/i }))
+
+    // Verify button changed to Pause
+    await waitFor(() => {
+      expect(app.queryByRole('button', { name: /pause/i })).toBeTruthy()
+    })
+    expect(app.queryByRole('button', { name: /start/i })).toBeNull()
+
+    app.cleanup()
+  })
 })
