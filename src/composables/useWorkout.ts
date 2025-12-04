@@ -465,14 +465,6 @@ export function useWorkout() {
     reorderBlocks(fromIndex, toIndex)
   }
 
-  // Strategy map: Each block kind has a unique property that identifies its result type
-  const RESULT_TYPE_KEY: Record<'amrap' | 'emom' | 'tabata' | 'fortime', string> = {
-    amrap: 'rounds',
-    emom: 'completedMinutes',
-    tabata: 'repsPerRound',
-    fortime: 'completionTime',
-  }
-
   // Set result for a timed block
   function setBlockResult(
     blockIndex: number,
@@ -481,9 +473,28 @@ export function useWorkout() {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isTimedBlock(block)) return
 
-    const expectedKey = RESULT_TYPE_KEY[block.kind]
-    if (expectedKey in result) {
-      updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+    // Use switch to narrow block type and assign correctly-typed result
+    switch (block.kind) {
+      case 'amrap':
+        if ('rounds' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'emom':
+        if ('completedMinutes' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'tabata':
+        if ('repsPerRound' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
+      case 'fortime':
+        if ('completionTime' in result) {
+          updateBlockAtIndex(blockIndex, () => ({ ...block, result }))
+        }
+        break
     }
   }
 
