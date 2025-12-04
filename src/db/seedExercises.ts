@@ -2,24 +2,13 @@ import { db, generateId } from './index'
 import { popularExercises } from '@/data/popularExercises'
 import type { DbCustomExercise } from './schema'
 
-const SEED_VERSION_KEY = 'exercises_seed_version'
-const CURRENT_SEED_VERSION = 1
-
 /**
  * Seed popular exercises to IndexedDB if not already seeded.
- * Uses localStorage to track seed version for idempotency.
+ * Checks IndexedDB directly since browsers may clear it while keeping localStorage.
  */
 export async function seedPopularExercises(): Promise<void> {
-  const storedVersion = localStorage.getItem(SEED_VERSION_KEY)
-
-  if (storedVersion === String(CURRENT_SEED_VERSION)) {
-    return
-  }
-
-  // Check if exercises already exist (handles case where localStorage was cleared)
   const existingCount = await db.customExercises.count()
   if (existingCount > 0) {
-    localStorage.setItem(SEED_VERSION_KEY, String(CURRENT_SEED_VERSION))
     return
   }
 
@@ -37,5 +26,4 @@ export async function seedPopularExercises(): Promise<void> {
   }))
 
   await db.customExercises.bulkAdd(exercisesToSeed)
-  localStorage.setItem(SEED_VERSION_KEY, String(CURRENT_SEED_VERSION))
 }

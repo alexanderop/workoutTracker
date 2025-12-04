@@ -1,15 +1,34 @@
-import { createI18n } from 'vue-i18n'
-import type { MessageSchema } from './types'
+import { createI18n, type I18n } from 'vue-i18n'
+import en from './messages/en'
+import type { MessageSchema, SupportedLocale } from './types'
+// Import types.ts to activate the declare module augmentation
+import './types'
 
-export type SupportedLocale = 'en' | 'de'
+export type { SupportedLocale } from './types'
 
-export const i18n = createI18n<[MessageSchema], SupportedLocale, false>({
-  legacy: false,
-  locale: 'en',
-  fallbackLocale: 'en',
-  missingWarn: import.meta.env.MODE !== 'test',
-  fallbackWarn: import.meta.env.MODE !== 'test',
-})
+// Type for composition mode i18n with wider locale support
+type CompositionI18n = I18n<
+  Partial<Record<SupportedLocale, MessageSchema>>,
+  Record<string, never>,
+  Record<string, never>,
+  SupportedLocale,
+  false
+>
+
+// Helper function to create i18n with proper return type
+// The return type annotation widens the inferred types for dynamic locale loading
+function createCompositionI18n(): CompositionI18n {
+  return createI18n({
+    legacy: false,
+    locale: 'en',
+    fallbackLocale: 'en',
+    messages: { en },
+    missingWarn: import.meta.env.MODE !== 'test',
+    fallbackWarn: import.meta.env.MODE !== 'test',
+  })
+}
+
+export const i18n = createCompositionI18n()
 
 const loadingLocales = new Map<SupportedLocale, Promise<void>>()
 

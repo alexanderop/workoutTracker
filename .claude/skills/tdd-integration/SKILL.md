@@ -5,7 +5,7 @@ description: Enforce Test-Driven Development with strict Red-Green-Refactor cycl
 
 # TDD Integration Testing
 
-Enforce strict Test-Driven Development using the Red-Green-Refactor cycle with dedicated subagents.
+Enforce strict Test-Driven Development using the Red-Green-Refactor cycle.
 
 ## Mandatory Workflow
 
@@ -14,50 +14,36 @@ Every new feature MUST follow this strict 3-phase cycle. Do NOT skip phases.
 ### Phase 1: RED - Write Failing Test
 
 ```
-🔴 RED PHASE: Delegating to tdd-test-writer...
+🔴 RED PHASE
 ```
 
-Invoke the `tdd-test-writer` subagent with:
-- Feature requirement from user request
-- Expected behavior to test
-
-The subagent returns:
-- Test file path
-- Failure output confirming test fails
-- Summary of what the test verifies
+1. Write an integration test for the feature requirement
+2. Run the test with `pnpm test:unit <test-file>`
+3. Verify the test FAILS (this proves it tests something real)
 
 **Do NOT proceed to Green phase until test failure is confirmed.**
 
 ### Phase 2: GREEN - Make It Pass
 
 ```
-🟢 GREEN PHASE: Delegating to tdd-implementer...
+🟢 GREEN PHASE
 ```
 
-Invoke the `tdd-implementer` subagent with:
-- Test file path from RED phase
-- Feature requirement context
-
-The subagent returns:
-- Files modified
-- Success output confirming test passes
-- Implementation summary
+1. Write the MINIMAL implementation to make the test pass
+2. Run the test to confirm it passes
+3. Keep implementation simple—no extra features
 
 **Do NOT proceed to Refactor phase until test passes.**
 
 ### Phase 3: REFACTOR - Improve
 
 ```
-🔵 REFACTOR PHASE: Delegating to tdd-refactorer...
+🔵 REFACTOR PHASE
 ```
 
-Invoke the `tdd-refactorer` subagent with:
-- Test file path
-- Implementation files from GREEN phase
-
-The subagent returns either:
-- Changes made + test success output, OR
-- "No refactoring needed" with reasoning
+1. Evaluate the code for improvements (duplication, clarity, patterns)
+2. If changes needed: refactor and verify tests still pass
+3. If no changes needed: state "No refactoring needed" with reasoning
 
 **Cycle complete when refactor phase returns.**
 
