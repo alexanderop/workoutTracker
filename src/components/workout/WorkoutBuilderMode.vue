@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Dumbbell, Play } from 'lucide-vue-next'
+import { Dumbbell, Play, RotateCcw } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 }>()
 
 const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
-const { startWorkout, hasBlocks, isActiveMode } = useWorkoutMode()
+const { startWorkout, hasBlocks, hasStarted } = useWorkoutMode()
 
 function getBlockDurationSeconds(block: (typeof workout.value.blocks)[number]): number {
   if (isStrengthBlock(block)) {
@@ -130,10 +130,12 @@ function handleStartWorkout() {
         <Button
           size="lg"
           class="w-full h-14 text-lg font-semibold gap-2"
+          :class="hasStarted && 'animate-pulse-ring'"
           @click="handleStartWorkout"
         >
-          <Play class="size-5" />
-          {{ isActiveMode ? t('workouts.resume') : t('workouts.builder.startWorkout') }}
+          <RotateCcw v-if="hasStarted" class="size-5" />
+          <Play v-else class="size-5" />
+          {{ hasStarted ? t('workouts.resume') : t('workouts.builder.startWorkout') }}
         </Button>
       </div>
     </template>

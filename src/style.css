@@ -244,9 +244,39 @@
   .animate-bounce-in,
   .animate-slide-up-fade,
   .animate-confetti-fall,
-  .animate-confetti-burst {
+  .animate-confetti-burst,
+  .animate-pulse-ring {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Pulsing ring animation for active workout button */
+@keyframes pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.55 0.25 290 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px oklch(0.55 0.25 290 / 0);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.dark .animate-pulse-ring {
+  animation-name: pulse-ring-dark;
+}
+
+@keyframes pulse-ring-dark {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.75 0.2 290 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px oklch(0.75 0.2 290 / 0);
   }
 }

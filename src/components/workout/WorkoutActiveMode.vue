@@ -22,6 +22,7 @@ import WorkoutAmrapView from './WorkoutAmrapView.vue'
 import WorkoutEmomView from './WorkoutEmomView.vue'
 import WorkoutForTimeView from './WorkoutForTimeView.vue'
 
+import WorkoutDurationBadge from './WorkoutDurationBadge.vue'
 import WorkoutTabataView from './WorkoutTabataView.vue'
 
 const { t } = useI18n()
@@ -157,8 +158,9 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     prevent-navigation
     @back="returnToBuilder"
   >
-    <!-- Header actions (dropdown menu) -->
+    <!-- Header actions (duration badge + dropdown menu) -->
     <template #header-actions>
+      <WorkoutDurationBadge />
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button

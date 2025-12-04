@@ -7,5 +7,5 @@ export type SupportedLocale = 'en' | 'de'
 // This pattern is recommended by official vue-i18n docs for type safety without assertions
 declare module 'vue-i18n' {
   // Must use interface (not type) for proper module augmentation
-  export interface DefineLocaleMessage extends MessageSchema {}
+  export type DefineLocaleMessage = {} & MessageSchema
 }

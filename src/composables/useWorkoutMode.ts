@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useWorkout } from './useWorkout'
-import { isStrengthBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 /**
  * Composable for managing workout mode transitions.
@@ -28,11 +28,32 @@ export function useWorkoutMode() {
   })
 
   /**
+   * Check if workout has any progress (sets completed or timed blocks done).
+   * Used to determine whether to show "Continue Workout" vs "Start Workout".
+   */
+  const hasStarted = computed(() => {
+    return workout.value.blocks.some((block) => {
+      if (isStrengthBlock(block)) {
+        return block.sets.some((set) => set.status === 'completed')
+      }
+      if (isTimedBlock(block)) {
+        return block.result !== null
+      }
+      return false
+    })
+  })
+
+  /**
    * Start the workout - transition from builder to active mode.
    * Selects the first block and activates its first set if strength.
    */
   function startWorkout() {
     if (!hasBlocks.value) return
+
+    // Reset startedAt only on first start (not when resuming)
+    if (!hasStarted.value) {
+      workout.value.startedAt = Date.now()
+    }
 
     workout.value.mode = 'active'
     workout.value.selectedBlockIndex = 0
@@ -138,6 +159,7 @@ export function useWorkoutMode() {
     mode,
     isBuilderMode,
     isActiveMode,
+    hasStarted,
 
     // Block navigation
     currentBlockIndex,
