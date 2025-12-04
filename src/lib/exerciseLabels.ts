@@ -1,19 +1,19 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 
-export function getEquipmentLabel(equipment: Equipment): string {
+function getEquipmentLabel(equipment: Equipment): string {
   return i18n.global.t(`exercises.equipment.${equipment}`)
 }
 
-export function getMuscleLabel(muscle: Muscle): string {
+function getMuscleLabel(muscle: Muscle): string {
   return i18n.global.t(`exercises.muscle.${muscle}`)
 }
 
-export function getTypeLabel(type: ExerciseType): string {
+function getTypeLabel(type: ExerciseType): string {
   return i18n.global.t(`exercises.type.${type}`)
 }
 
-export function getMetricsLabel(metrics: Metrics): string {
+function getMetricsLabel(metrics: Metrics): string {
   return i18n.global.t(`exercises.metrics.${metrics}`)
 }
 

@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { settingsRepository } from '@/db/repositories/settings'
 
 export type WeightUnit = 'kg' | 'lbs'
-export type HeightUnit = 'cm' | 'ft-in'
-export type Language = 'en' | 'de'
+type HeightUnit = 'cm' | 'ft-in'
+type Language = 'en' | 'de'
 
 export const useSettingsStore = defineStore('settings', () => {
   const weightUnit = ref<WeightUnit>('kg')

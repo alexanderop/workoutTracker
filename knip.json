@@ -5,7 +5,8 @@
   "ignore": [
     ".claude/**",
     "env.d.ts",
-    "src/components/ui/**"
+    "src/components/ui/**",
+    "src/i18n/messages/de/**"
   ],
   "ignoreDependencies": [
     "@antfu/eslint-config",
@@ -17,6 +18,7 @@
   "vitest": {
     "entry": [
       "src/__tests__/**/*.spec.ts",
+      "src/db/__tests__/**/*.spec.ts",
       "src/__tests__/helpers/*.ts",
       "src/__tests__/factories/*.ts"
     ]

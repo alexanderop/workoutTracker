@@ -293,20 +293,3 @@ export type UserSettingKey = DbUserSetting['key']
 export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlock {
   return block.kind === 'strength'
 }
-
-// ============================================
-// Legacy Types (for backward compatibility)
-// ============================================
-
-/**
- * Legacy active workout format (will be migrated to blocks).
- * @deprecated Use DbActiveWorkout with blocks instead
- */
-export type DbLegacyActiveWorkout = {
-  id: 'current'
-  name: string
-  exercises: ReadonlyArray<DbWorkoutExercise>
-  selectedExerciseId: string
-  startedAt: number
-  lastModifiedAt: number
-}
