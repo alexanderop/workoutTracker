@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Check, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import type { useRestTimer } from '@/composables/useRestTimer'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
 import { BLOCK_COLORS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type ButtonVariant = 'default' | 'secondary'
 
@@ -64,7 +67,7 @@ const displayedTimer = computed((): string | null => {
 
 const displayedTimerLabel = computed((): string | null => {
   if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
-    return 'Rest'
+    return t('workouts.active.footer.rest')
   }
   if (isTimedBlock(block) && timer?.label) {
     return timer.label
@@ -75,7 +78,7 @@ const displayedTimerLabel = computed((): string | null => {
 const primaryAction = computed(() => {
   if (isStrengthBlock(block)) {
     return {
-      label: 'Complete Set',
+      label: t('workouts.active.footer.completeSet'),
       icon: Check,
       emit: 'complete-set' as const,
       variant: canComplete ? 'default' : 'secondary',
@@ -88,14 +91,16 @@ const primaryAction = computed(() => {
     case 'emom':
     case 'tabata':
       return {
-        label: timer?.isRunning ? 'Pause' : 'Start',
+        label: timer?.isRunning
+          ? t('workouts.active.footer.pause')
+          : t('workouts.active.footer.start'),
         icon: timer?.isRunning ? Pause : Play,
         emit: 'toggle-timer' as const,
         variant: timer?.isRunning ? 'secondary' : 'default',
       }
     case 'fortime':
       return {
-        label: 'Done',
+        label: t('workouts.active.footer.done'),
         icon: Check,
         emit: 'complete-block' as const,
         variant: 'default',
@@ -148,7 +153,7 @@ function handlePrimaryAction() {
         variant="outline"
         size="icon"
         class="h-12 w-12 flex-shrink-0"
-        aria-label="Previous block"
+        :aria-label="t('common.aria.previousBlock')"
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
       >
@@ -177,7 +182,7 @@ function handlePrimaryAction() {
         variant="outline"
         size="icon"
         class="h-12 w-12 flex-shrink-0"
-        aria-label="Next block"
+        :aria-label="t('common.aria.nextBlock')"
         :disabled="isLastBlock"
         @click="emit('next-block')"
       >

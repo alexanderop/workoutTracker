@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Search, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { popularExercises } from '@/data/popularExercises'
@@ -14,6 +15,7 @@ const { mode = 'multi' } = defineProps<{
   mode?: 'single' | 'multi'
 }>()
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 
 const searchQuery = ref('')
 
@@ -48,7 +50,11 @@ function handleClose() {
   <div v-if="open" class="absolute inset-0 bg-background flex flex-col z-20">
     <div class="p-4 border-b">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold">{{ mode === 'single' ? 'Select Exercise' : 'Add Exercise' }}</h3>
+        <h3 class="font-semibold">
+          {{
+            mode === 'single' ? t('exercises.picker.selectTitle') : t('exercises.picker.addTitle')
+          }}
+        </h3>
         <Button variant="ghost" size="icon-sm" @click="handleClose">
           <X class="w-4 h-4" />
         </Button>
@@ -58,7 +64,12 @@ function handleClose() {
         <Search
           class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
         />
-        <Input v-model="searchQuery" placeholder="Search exercises..." class="pl-10" autofocus />
+        <Input
+          v-model="searchQuery"
+          :placeholder="t('exercises.picker.searchPlaceholder')"
+          class="pl-10"
+          autofocus
+        />
       </div>
     </div>
 

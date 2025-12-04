@@ -7,9 +7,11 @@ import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
 import { useAppInitialization } from '@/composables/useAppInitialization'
 import { useTheme } from '@/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
+import { useLanguage } from '@/composables/useLanguage'
 
 useTheme()
 useGlobalWakeLock()
+useLanguage()
 
 const { initState, initialize, resumeWorkout, discardWorkout } = useAppInitialization()
 

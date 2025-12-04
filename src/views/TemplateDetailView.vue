@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
@@ -10,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import { useTemplateDetail } from '@/composables/useTemplateDetail'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const templateId = String(route.params.id)
@@ -72,21 +74,23 @@ function handleCancel(): void {
   >
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-8">
-      <div class="text-muted-foreground">Loading...</div>
+      <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
     <!-- Main content -->
     <div v-else-if="state.status === 'success'" class="flex flex-1 flex-col p-4">
       <!-- Template name input -->
       <div class="mb-6">
-        <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
+        <label for="template-name" class="mb-2 block text-sm font-medium">{{
+          t('workouts.templates.name')
+        }}</label>
         <Input id="template-name" v-model="templateName" class="w-full" />
       </div>
 
       <!-- Exercises section -->
       <div class="mb-6 flex flex-1 flex-col">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">Exercises</h2>
+          <h2 class="text-lg font-semibold">{{ t('workouts.templates.exercises') }}</h2>
           <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
         </div>
 
@@ -99,7 +103,7 @@ function handleCancel(): void {
         </div>
 
         <Button variant="outline" class="w-full" @click="isAddExerciseOpen = true">
-          + Add Exercise
+          {{ t('common.buttons.addExercise') }}
         </Button>
       </div>
     </div>
@@ -113,16 +117,16 @@ function handleCancel(): void {
           :disabled="isStarting || exercises.length === 0"
           @click="handleStartWorkout"
         >
-          {{ isStarting ? 'Starting...' : 'Start Workout' }}
+          {{ isStarting ? t('workouts.templates.starting') : t('workouts.templates.startWorkout') }}
         </Button>
 
         <!-- Edit buttons -->
         <div v-if="isEdited" class="flex gap-3">
           <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
-            Cancel
+            {{ t('common.buttons.cancel') }}
           </Button>
           <Button class="flex-1" :disabled="!isEdited || isSaving" @click="saveTemplate">
-            {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            {{ isSaving ? t('common.states.saving') : t('workouts.templates.saveChanges') }}
           </Button>
         </div>
 
@@ -133,7 +137,7 @@ function handleCancel(): void {
           :disabled="isEdited"
           @click="showDeleteDialog = true"
         >
-          Delete Template
+          {{ t('workouts.templates.deleteTemplate') }}
         </Button>
       </div>
     </template>
@@ -149,19 +153,21 @@ function handleCancel(): void {
     <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
       <MobileDialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Template?</DialogTitle>
+          <DialogTitle>{{ t('workouts.templates.deleteConfirmTitle') }}</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. The template "{{
-              state.status === 'success' ? state.template.name : ''
-            }}" will be permanently deleted.
+            {{
+              t('workouts.templates.deleteConfirmDescription', {
+                name: state.status === 'success' ? state.template.name : '',
+              })
+            }}
           </DialogDescription>
         </DialogHeader>
         <div class="flex gap-3 pt-4">
           <Button variant="outline" class="flex-1" @click="showDeleteDialog = false">
-            Cancel
+            {{ t('common.buttons.cancel') }}
           </Button>
           <Button variant="destructive" class="flex-1" @click="handleDeleteTemplate">
-            Delete
+            {{ t('common.buttons.delete') }}
           </Button>
         </div>
       </MobileDialogContent>

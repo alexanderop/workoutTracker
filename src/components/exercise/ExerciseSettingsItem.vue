@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 type Props = {
   label: string
   value: string
   placeholder?: string
 }
 
-withDefaults(defineProps<Props>(), {
-  placeholder: 'Please select',
-})
+const { t } = useI18n()
+
+const { value, label, placeholder } = defineProps<Props>()
 
 const emit = defineEmits<{ click: [] }>()
+
+const displayValue = computed(() => value || placeholder || t('common.settings.placeholder'))
 </script>
 
 <template>
@@ -20,7 +25,7 @@ const emit = defineEmits<{ click: [] }>()
     <span class="text-sm font-medium">{{ label }}</span>
     <div class="flex items-center gap-2">
       <span class="text-sm text-muted-foreground">
-        {{ value || placeholder }}
+        {{ displayValue }}
       </span>
       <span class="text-muted-foreground">›</span>
     </div>

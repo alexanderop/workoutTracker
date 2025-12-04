@@ -3,9 +3,12 @@ import { Plus } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import type { WorkoutBlock } from '@/types/blocks'
 import WorkoutBlockPlaylistItem from './WorkoutBlockPlaylistItem.vue'
+
+const { t } = useI18n()
 
 type Props = {
   blocks: ReadonlyArray<WorkoutBlock>
@@ -80,7 +83,7 @@ function isBlockCompleted(index: number): boolean {
       @click="emit('add-block')"
     >
       <Plus class="w-5 h-5 mr-2" />
-      Add Block
+      {{ t('workouts.builder.playlist.addBlock') }}
     </Button>
   </div>
 </template>

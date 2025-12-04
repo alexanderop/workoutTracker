@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import type { ExportData } from '@/lib/dataExport'
 import { getExportSummary } from '@/lib/dataImport'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { data, isImporting = false } = defineProps<{
   data: ExportData
   isImporting?: boolean
@@ -35,20 +37,40 @@ function handleConfirm() {
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <AlertTriangle class="h-5 w-5 text-destructive" />
-          Import Data?
+          {{ t('settings.dialogs.importData.title') }}
         </DialogTitle>
         <DialogDescription>
-          This will replace all your existing data with the imported data. This action cannot be
-          undone.
+          {{ t('settings.dialogs.importData.description') }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="rounded-lg border bg-muted/50 p-4 text-sm">
-        <p class="font-medium mb-2">You are about to import:</p>
+        <p class="font-medium mb-2">{{ t('settings.dialogs.importData.aboutToImport') }}</p>
         <ul class="space-y-1 text-muted-foreground">
-          <li>{{ summary.workouts }} workout{{ summary.workouts === 1 ? '' : 's' }}</li>
-          <li>{{ summary.templates }} template{{ summary.templates === 1 ? '' : 's' }}</li>
-          <li>{{ summary.exercises }} custom exercise{{ summary.exercises === 1 ? '' : 's' }}</li>
+          <li>
+            {{ summary.workouts }}
+            {{
+              summary.workouts === 1
+                ? t('settings.dialogs.importData.workouts')
+                : t('settings.dialogs.importData.workouts_plural')
+            }}
+          </li>
+          <li>
+            {{ summary.templates }}
+            {{
+              summary.templates === 1
+                ? t('settings.dialogs.importData.templates')
+                : t('settings.dialogs.importData.templates_plural')
+            }}
+          </li>
+          <li>
+            {{ summary.exercises }}
+            {{
+              summary.exercises === 1
+                ? t('settings.dialogs.importData.exercises')
+                : t('settings.dialogs.importData.exercises_plural')
+            }}
+          </li>
         </ul>
       </div>
 
@@ -59,7 +81,7 @@ function handleConfirm() {
           :disabled="isImporting"
           @click="handleCancel"
         >
-          Cancel
+          {{ t('settings.dialogs.importData.cancel') }}
         </Button>
         <Button
           variant="destructive"
@@ -67,7 +89,11 @@ function handleConfirm() {
           :disabled="isImporting"
           @click="handleConfirm"
         >
-          {{ isImporting ? 'Importing...' : 'Import Data' }}
+          {{
+            isImporting
+              ? t('settings.dialogs.importData.importing')
+              : t('settings.dialogs.importData.confirm')
+          }}
         </Button>
       </div>
     </MobileDialogContent>

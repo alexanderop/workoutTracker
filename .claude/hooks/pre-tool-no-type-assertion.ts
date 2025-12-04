@@ -1,9 +1,9 @@
 #!/usr/bin/env pnpm dlx tsx
 /**
- * Claude Code PreToolUse Hook - No `as any` or `as unknown`
+ * Claude Code PreToolUse Hook - No Type Assertions
  *
- * Blocks code that uses `as any` or `as unknown` type assertions.
- * Requires proper typing instead of escape hatches.
+ * Blocks ALL type assertions (`as SomeType`).
+ * Excludes: import/export aliases, .claude/hooks/ directory.
  */
 
 import type { PreToolUseHookInput, SyncHookJSONOutput } from '@anthropic-ai/claude-agent-sdk'
@@ -31,26 +31,32 @@ function isCodeFile(filePath: string): boolean {
 
 function findTypeAssertionViolations(content: string): ReadonlyArray<string> {
   const violations: Array<string> = []
-
   const lines = content.split('\n')
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
+    const trimmed = line.trim()
 
     // Skip comments
-    const trimmed = line.trim()
     if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
       continue
     }
 
-    // Check for `as any` pattern
-    if (/\bas\s+any\b/.test(line)) {
-      violations.push(`Line ${i + 1}: Found 'as any' - "${trimmed}"`)
+    // Skip import/export statements (they use `as` for aliases)
+    if (/^(import|export)\b/.test(trimmed)) {
       continue
     }
 
-    // Check for `as unknown` pattern
-    if (/\bas\s+unknown\b/.test(line)) {
-      violations.push(`Line ${i + 1}: Found 'as unknown' - "${trimmed}"`)
+    // Remove string literals to avoid false positives
+    const withoutStrings = line
+      .replace(/'[^']*'/g, "''")
+      .replace(/"[^"]*"/g, '""')
+      .replace(/`[^`]*`/g, '``')
+
+    // Match type assertions: `as TypeName` patterns
+    // Catches: `expr as SomeType`, `(value) as Type`, `x as Type[]`, `x as Type<T>`
+    if (/\bas\s+[A-Z][a-zA-Z0-9<>[\]|&,\s]*/.test(withoutStrings)) {
+      violations.push(`Line ${i + 1}: Found type assertion - "${trimmed}"`)
     }
   }
 
@@ -87,6 +93,11 @@ function main(): void {
     exit(0)
   }
 
+  // Skip hook files (they need type assertions for parsing)
+  if (filePath.includes('.claude/hooks/')) {
+    exit(0)
+  }
+
   // Get the content to check
   let contentToCheck: string | undefined
   if (input.tool_name === 'Write') {
@@ -107,7 +118,7 @@ function main(): void {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'deny',
-        permissionDecisionReason: `🚫 BLOCKED: Code contains 'as any' or 'as unknown' type assertions.\n\nViolations found:\n${violations.join('\n')}\n\nInstead of type assertions, use:\n- Proper type definitions\n- Type guards (if/typeof/instanceof checks)\n- Generic type parameters\n- Zod or similar runtime validation`,
+        permissionDecisionReason: `🚫 BLOCKED: Code contains type assertions.\n\nViolations found:\n${violations.join('\n')}\n\nInstead of type assertions, use:\n- Proper type definitions\n- Type guards (if/typeof/instanceof checks)\n- Generic type parameters\n- Zod or similar runtime validation`,
       },
     }
     stdout.write(JSON.stringify(output))

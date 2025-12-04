@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, X } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const { needRefresh, updateServiceWorker } = useRegisterSW()
 
 function close() {
@@ -35,22 +37,26 @@ function update() {
             <RefreshCw class="size-5 text-primary" />
           </div>
           <div class="flex-1 space-y-1">
-            <p class="font-medium text-foreground">Update available</p>
-            <p class="text-sm text-muted-foreground">A new version of Workout Tracker is ready.</p>
+            <p class="font-medium text-foreground">{{ t('dialogs.pwaUpdate.title') }}</p>
+            <p class="text-sm text-muted-foreground">{{ t('dialogs.pwaUpdate.description') }}</p>
           </div>
           <Button
             variant="ghost"
             size="icon-sm"
             class="-mr-2 -mt-2"
-            aria-label="Dismiss"
+            :aria-label="t('common.aria.dismiss')"
             @click="close"
           >
             <X class="size-4" />
           </Button>
         </div>
         <div class="mt-3 flex gap-2">
-          <Button variant="outline" size="sm" class="flex-1" @click="close"> Later </Button>
-          <Button size="sm" class="flex-1" @click="update"> Update now </Button>
+          <Button variant="outline" size="sm" class="flex-1" @click="close">{{
+            t('common.buttons.later')
+          }}</Button>
+          <Button size="sm" class="flex-1" @click="update">{{
+            t('dialogs.pwaUpdate.updateButton')
+          }}</Button>
         </div>
       </div>
     </Transition>

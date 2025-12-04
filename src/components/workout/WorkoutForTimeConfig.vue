@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const { t } = useI18n()
 
 export type ForTimeConfigModel = {
   hasCap: boolean
@@ -22,11 +25,11 @@ const presets = [10, 12, 15, 20, 30] as const
         type="checkbox"
         class="h-4 w-4 rounded border-gray-300"
       />
-      <Label for="has-cap">Set a time cap</Label>
+      <Label for="has-cap">{{ t('dialogs.fortimeConfig.setTimeCap') }}</Label>
     </div>
 
     <div v-if="model.hasCap" class="space-y-2">
-      <Label>Time Cap (minutes)</Label>
+      <Label>{{ t('dialogs.fortimeConfig.timeCap') }}</Label>
       <div class="flex gap-2">
         <Button
           v-for="mins in presets"

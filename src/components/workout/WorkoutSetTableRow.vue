@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Set } from '@/composables/useWorkout'
 import { isSetReady } from '@/composables/useWorkout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
@@ -9,6 +10,8 @@ import { TableCell, TableRow } from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { Button } from '@/components/ui/button'
 import { Check, Timer, Trash2 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const { set, index, canDelete } = defineProps<{
   set: Set
@@ -108,7 +111,7 @@ function handleRirChange(value: number | undefined) {
       >
         <NumberFieldInput
           placeholder="—"
-          aria-label="Weight"
+          :aria-label="t('common.aria.weight')"
           class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
         />
       </NumberField>
@@ -124,7 +127,7 @@ function handleRirChange(value: number | undefined) {
       >
         <NumberFieldInput
           placeholder="—"
-          aria-label="Reps"
+          :aria-label="t('common.aria.reps')"
           class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums rounded-lg"
         />
       </NumberField>
@@ -140,7 +143,7 @@ function handleRirChange(value: number | undefined) {
       >
         <NumberFieldInput
           placeholder="—"
-          aria-label="Reps in reserve"
+          :aria-label="t('common.aria.repsInReserve')"
           class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums rounded-lg"
         />
       </NumberField>
@@ -155,7 +158,7 @@ function handleRirChange(value: number | undefined) {
     <TableCell class="p-1 h-10 text-center">
       <Button
         size="icon"
-        aria-label="Mark set complete"
+        :aria-label="t('common.aria.markSetComplete')"
         :class="completeButtonClass"
         @click="emit('toggle-complete', set)"
       >

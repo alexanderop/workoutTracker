@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
+
+const { t } = useI18n()
 
 const open = defineModel<boolean>('open', { required: true })
 
@@ -23,18 +26,18 @@ function handleConfirm() {
   <Dialog v-model:open="open">
     <MobileDialogContent>
       <DialogHeader>
-        <DialogTitle>Cancel Workout?</DialogTitle>
+        <DialogTitle>{{ t('dialogs.cancel.title') }}</DialogTitle>
         <DialogDescription>
-          Your workout will be deleted and cannot be recovered. All progress will be lost.
+          {{ t('dialogs.cancel.description') }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <Button variant="outline" class="w-full sm:w-auto" @click="handleCancel">
-          Keep Working Out
+          {{ t('dialogs.cancel.keepWorking') }}
         </Button>
         <Button variant="destructive" class="w-full sm:w-auto" @click="handleConfirm">
-          Delete Workout
+          {{ t('dialogs.cancel.deleteWorkout') }}
         </Button>
       </div>
     </MobileDialogContent>

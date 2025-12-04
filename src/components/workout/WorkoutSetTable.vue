@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Set } from '@/composables/useWorkout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { Plus } from 'lucide-vue-next'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import WorkoutSetTableRow from '@/components/workout/WorkoutSetTableRow.vue'
 
+const { t } = useI18n()
 const { unitLabel } = useWeightDisplay()
 
 const weightLabel = computed(() => unitLabel.value.toUpperCase())
@@ -34,9 +36,15 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
       <TableRow class="border-none hover:bg-transparent">
         <TableHead class="w-[40px] h-8 p-1">#</TableHead>
         <TableHead class="text-center h-8 p-1">{{ weightLabel }}</TableHead>
-        <TableHead class="text-center h-8 p-1">REPS</TableHead>
-        <TableHead class="text-center h-8 p-1">RIR</TableHead>
-        <TableHead class="text-center h-8 p-1 text-xs">10RM</TableHead>
+        <TableHead class="text-center h-8 p-1">{{
+          t('workouts.table.headers.reps').toUpperCase()
+        }}</TableHead>
+        <TableHead class="text-center h-8 p-1">{{
+          t('workouts.table.headers.rir').toUpperCase()
+        }}</TableHead>
+        <TableHead class="text-center h-8 p-1 text-xs">{{
+          t('workouts.table.headers.tenRm')
+        }}</TableHead>
         <TableHead class="text-center w-[50px] h-8 p-1">✓</TableHead>
         <TableHead class="w-[40px] h-8 p-1" />
       </TableRow>
@@ -62,6 +70,6 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     @click="emit('add-set')"
   >
     <Plus class="w-4 h-4 mr-2" />
-    Add Set
+    {{ t('workouts.sets.addSet') }}
   </Button>
 </template>

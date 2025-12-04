@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { useRestTimer } from '@/composables/useRestTimer'
 import { Clock, RotateCcw } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+
+const { t } = useI18n()
 
 type Props = {
   timer: ReturnType<typeof useRestTimer>
@@ -37,7 +40,7 @@ const emit = defineEmits<{
           <Clock class="w-4 h-4" />
         </div>
         <div class="flex flex-col">
-          <span class="text-xs text-muted-foreground">Rest</span>
+          <span class="text-xs text-muted-foreground">{{ t('workouts.active.footer.rest') }}</span>
           <span
             :class="
               cn(
@@ -70,7 +73,7 @@ const emit = defineEmits<{
           class="min-w-[72px] transition-all"
           @click="timer.toggle"
         >
-          {{ timer.isRunning.value ? 'Stop' : 'Start' }}
+          {{ timer.isRunning.value ? t('common.rest.timer.stop') : t('common.rest.timer.start') }}
         </Button>
       </div>
     </div>
@@ -83,10 +86,10 @@ const emit = defineEmits<{
         size="lg"
         @click="emit('cancel')"
       >
-        Cancel
+        {{ t('common.rest.timer.cancel') }}
       </Button>
       <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="emit('finish')">
-        Finish Workout
+        {{ t('common.rest.timer.finishWorkout') }}
       </Button>
     </div>
   </div>

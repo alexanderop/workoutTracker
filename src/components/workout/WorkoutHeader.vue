@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ChevronLeft, Edit2, MoreVertical, Trash2 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,6 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
+const { t } = useI18n()
 
 type Props = {
   exerciseName: string
@@ -32,7 +35,7 @@ const router = useRouter()
         variant="ghost"
         size="icon"
         class="h-9 w-9 flex-shrink-0"
-        aria-label="Go back"
+        :aria-label="t('common.aria.goBack')"
         @click="router.back()"
       >
         <ChevronLeft class="w-5 h-5" />
@@ -42,24 +45,30 @@ const router = useRouter()
           {{ exerciseName }}
         </h1>
         <p class="text-xs text-muted-foreground mt-0.5">
-          {{ equipment }} <span class="text-primary/60">·</span> {{ targetReps }} Reps
+          {{ equipment }} · {{ targetReps }}
+          {{ t('workouts.builder.header.targetReps') }}
         </p>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost" size="icon" class="h-8 w-8" aria-label="More options">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :aria-label="t('common.aria.moreOptions')"
+          >
             <MoreVertical class="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem @click="$emit('edit')">
             <Edit2 class="mr-2 h-4 w-4" />
-            <span>Edit Exercise</span>
+            <span>{{ t('workouts.builder.header.editExercise') }}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem class="text-destructive" @click="$emit('delete')">
             <Trash2 class="mr-2 h-4 w-4" />
-            <span>Delete Exercise</span>
+            <span>{{ t('workouts.builder.header.deleteExercise') }}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

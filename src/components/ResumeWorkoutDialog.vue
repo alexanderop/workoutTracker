@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 
-const props = defineProps<{
+defineProps<{
   open: boolean
   workoutName: string
   blockCount: number
@@ -15,26 +15,32 @@ const emit = defineEmits<{
   discard: []
 }>()
 
-const blockText = computed(() =>
-  props.blockCount === 1 ? '1 block' : `${props.blockCount} blocks`,
-)
+const { t } = useI18n()
 </script>
 
 <template>
   <Dialog :open="open">
     <MobileDialogContent :show-close-button="false">
       <DialogHeader>
-        <DialogTitle>Resume Workout?</DialogTitle>
+        <DialogTitle>{{ t('dialogs.resume.title') }}</DialogTitle>
         <DialogDescription>
-          You have an unfinished workout: <strong>{{ workoutName }}</strong> with {{ blockText }}.
+          {{ t('dialogs.resume.description') }} <strong>{{ workoutName }}</strong>
+          {{
+            t('dialogs.resume.descriptionWithBlocks', {
+              count: blockCount,
+              blocks: blockCount === 1 ? t('dialogs.resume.block') : t('dialogs.resume.blocks'),
+            })
+          }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <Button variant="outline" class="w-full sm:w-auto" @click="emit('discard')">
-          Discard
+          {{ t('common.buttons.discard') }}
         </Button>
-        <Button class="w-full sm:w-auto" @click="emit('resume')"> Resume Workout </Button>
+        <Button class="w-full sm:w-auto" @click="emit('resume')">{{
+          t('dialogs.resume.resumeButton')
+        }}</Button>
       </div>
     </MobileDialogContent>
   </Dialog>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { StrengthBlock } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type Props = {
   block: StrengthBlock
@@ -29,7 +32,7 @@ const lastSetHint = computed(() => {
   if (!lastCompletedSet.value) return null
   const weight = lastCompletedSet.value.kg
   if (!weight) return null
-  return `Last: ${toDisplayValue(weight)}${unitLabel.value}`
+  return `${t('workouts.active.strength.last')}${toDisplayValue(weight)}${unitLabel.value}`
 })
 
 function handleWeightChange(displayValue: number | undefined) {
@@ -100,7 +103,7 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
-              aria-label="Weight"
+              :aria-label="t('common.aria.weight')"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-24 text-7xl font-extrabold tabular-nums rounded-2xl text-center w-44"
             />
           </NumberField>
@@ -124,11 +127,13 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
-              aria-label="Reps"
+              :aria-label="t('common.aria.reps')"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold text-primary tabular-nums rounded-xl text-center w-24"
             />
           </NumberField>
-          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">reps</span>
+          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{
+            t('workouts.active.strength.reps')
+          }}</span>
         </div>
 
         <!-- Divider -->
@@ -144,11 +149,13 @@ function handleRirChange(value: number | undefined) {
           >
             <NumberFieldInput
               placeholder="—"
-              aria-label="Reps in reserve"
+              :aria-label="t('common.aria.repsInReserve')"
               class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-4xl font-bold tabular-nums rounded-xl text-center w-24"
             />
           </NumberField>
-          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">rir</span>
+          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{
+            t('workouts.active.strength.rir')
+          }}</span>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import WorkoutSaveTemplateDialog from '@/components/workout/WorkoutSaveTemplateDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -12,6 +13,8 @@ import { templatesRepository } from '@/db/repositories/templates'
 import { formatDuration, formatWeight } from '@/lib/formatters'
 import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import { useSettingsStore } from '@/stores/settings'
+
+const { t } = useI18n()
 
 const { id } = defineProps<{
   id: string
@@ -108,7 +111,7 @@ function handleDone() {
 
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex-1 flex items-center justify-center">
-      <div class="text-muted-foreground">Loading...</div>
+      <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
     <!-- Content -->
@@ -131,7 +134,7 @@ function handleDone() {
         :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
         :style="{ animationDelay: '200ms' }"
       >
-        <h1 class="text-3xl font-bold tracking-tight mb-2">Workout Complete!</h1>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">{{ t('workouts.summary.title') }}</h1>
         <p class="text-muted-foreground text-lg">
           {{ workoutName }}
         </p>
@@ -151,7 +154,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatDuration(stats.duration) }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Duration</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ t('workouts.summary.stats.duration') }}
+          </div>
         </Card>
 
         <!-- Exercises (only if strength blocks exist) -->
@@ -167,7 +172,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedExercises }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Exercises</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ t('workouts.summary.stats.exercises') }}
+          </div>
         </Card>
 
         <!-- Rounds (only if timed blocks with rounds exist) -->
@@ -183,7 +190,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedRounds }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Rounds</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ t('workouts.summary.stats.rounds') }}
+          </div>
         </Card>
 
         <!-- Sets (only if strength blocks exist) -->
@@ -199,7 +208,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedSets }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Sets</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ t('workouts.summary.stats.sets') }}
+          </div>
         </Card>
 
         <!-- Timed Blocks Count -->
@@ -215,7 +226,9 @@ function handleDone() {
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ stats.timedBlockCount }}
           </div>
-          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">Timed Blocks</div>
+          <div class="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+            {{ t('workouts.summary.stats.timedBlocks') }}
+          </div>
         </Card>
 
         <!-- Total Weight (only if strength blocks exist) -->
@@ -241,8 +254,8 @@ function handleDone() {
     <!-- Not found state -->
     <div v-else class="flex-1 flex items-center justify-center">
       <div class="text-center">
-        <p class="text-muted-foreground mb-4">Workout not found</p>
-        <Button @click="handleDone"> Go Home </Button>
+        <p class="text-muted-foreground mb-4">{{ t('workouts.detail.notFound') }}</p>
+        <Button @click="handleDone">{{ t('common.buttons.goHome') }}</Button>
       </div>
     </div>
 
@@ -260,10 +273,10 @@ function handleDone() {
           size="lg"
           @click="showSaveTemplateDialog = true"
         >
-          Save as Template
+          {{ t('workouts.summary.button.saveTemplate') }}
         </Button>
         <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="handleDone">
-          Done
+          {{ t('workouts.summary.button.done') }}
         </Button>
       </div>
     </div>

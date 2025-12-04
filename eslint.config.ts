@@ -1,3 +1,4 @@
+import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
@@ -143,6 +144,25 @@ export default defineConfigWithVueTs(
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
   },
+
+  // Vue i18n - enforce translation usage (no-raw-text)
+  {
+    name: 'app/vue-i18n',
+    files: ['src/**/*.vue'],
+    plugins: {
+      '@intlify/vue-i18n': pluginVueI18n,
+    },
+    rules: {
+      '@intlify/vue-i18n/no-raw-text': ['warn', {
+        ignorePattern: '^[-#:()&+×/°′″%]+$',
+        ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', 'Close'],
+        attributes: {
+          '/.+/': ['title', 'aria-label', 'aria-placeholder', 'placeholder', 'alt'],
+        },
+      }],
+    },
+  },
+
   ...pluginOxlint.configs['flat/recommended'],
   skipFormatting,
   {

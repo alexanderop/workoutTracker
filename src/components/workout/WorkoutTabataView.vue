@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { cn } from '@/lib/utils'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+
+const { t } = useI18n()
 
 type Props = {
   block: TabataBlock
@@ -18,7 +21,9 @@ const timer = useTabataTimer({ onComplete })
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[0])
 
-const progressLabel = computed(() => `ROUND ${timer.currentRound.value} / ${block.config.rounds}`)
+const progressLabel = computed(
+  () => `${t('timers.workout.tabata.round')}${timer.currentRound.value} / ${block.config.rounds}`,
+)
 
 const isUrgent = computed(() => timer.secondsInCurrentPhase.value <= 3)
 
@@ -42,7 +47,10 @@ const timerDisplay = computed(() => String(timer.secondsInCurrentPhase.value).pa
 
 // Footer display format
 const formattedTime = computed(() => {
-  const phase = timer.currentPhase.value === 'work' ? 'WORK' : 'REST'
+  const phase =
+    timer.currentPhase.value === 'work'
+      ? t('timers.workout.tabata.work')
+      : t('timers.workout.tabata.rest')
   return `R${timer.currentRound.value}/${block.config.rounds} ${phase} :${String(timer.secondsInCurrentPhase.value).padStart(2, '0')}`
 })
 
@@ -105,7 +113,9 @@ defineExpose({
         <p class="text-lg font-semibold text-foreground truncate">
           {{ currentExercise.name }}
         </p>
-        <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
+        <p class="text-sm text-muted-foreground">
+          {{ currentExercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
+        </p>
       </div>
     </WorkoutCircularTimer>
   </div>

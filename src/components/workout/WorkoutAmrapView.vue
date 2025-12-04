@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
 import { cn } from '@/lib/utils'
 import type { AmrapBlock, AmrapResult } from '@/types/blocks'
 import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/types/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+
+const { t } = useI18n()
 
 type Props = {
   block: AmrapBlock
@@ -89,15 +92,17 @@ defineExpose({
         <p class="text-lg font-semibold text-foreground truncate">
           {{ currentExercise.name }}
         </p>
-        <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
+        <p class="text-sm text-muted-foreground">
+          {{ currentExercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
+        </p>
       </div>
     </WorkoutCircularTimer>
 
     <!-- Next Exercises -->
     <div v-if="nextExercises.length > 0" class="flex items-center gap-2 text-muted-foreground mb-6">
-      <span class="text-xs uppercase tracking-wide">Next:</span>
+      <span class="text-xs uppercase tracking-wide">{{ t('timers.workout.amrap.next') }}</span>
       <span v-for="(ex, i) in nextExercises" :key="ex.id" class="text-sm">
-        {{ ex.name }}<span v-if="i < nextExercises.length - 1" class="mx-1">&rarr;</span>
+        {{ ex.name }}<span v-if="i < nextExercises.length - 1" class="mx-1">→</span>
       </span>
     </div>
 
@@ -107,7 +112,9 @@ defineExpose({
         <div :class="cn('text-5xl font-bold tabular-nums', blockColors.text)">
           {{ timer.rounds.value }}
         </div>
-        <div class="text-xs text-muted-foreground uppercase tracking-wider mt-1">Rounds</div>
+        <div class="text-xs text-muted-foreground uppercase tracking-wider mt-1">
+          {{ t('workouts.builder.timedCard.rounds') }}
+        </div>
       </div>
       <Button
         size="lg"
@@ -116,7 +123,7 @@ defineExpose({
         :disabled="!timer.isRunning.value"
         @click="handleIncrementRound"
       >
-        +1
+        {{ t('workouts.builder.timedCard.plusOne') }}
       </Button>
     </div>
   </div>

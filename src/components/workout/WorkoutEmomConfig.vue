@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
+const { t } = useI18n()
 
 export type EmomConfigModel = {
   minutes: number
@@ -23,7 +26,7 @@ const presets = [8, 10, 12, 15, 20] as const
 <template>
   <div class="space-y-4">
     <div class="space-y-2">
-      <Label>Duration (minutes)</Label>
+      <Label>{{ t('dialogs.amrapConfig.duration') }}</Label>
       <div class="flex gap-2">
         <Button
           v-for="mins in presets"
@@ -39,14 +42,14 @@ const presets = [8, 10, 12, 15, 20] as const
     </div>
 
     <div class="space-y-2">
-      <Label>Exercise Rotation</Label>
+      <Label>{{ t('dialogs.emomConfig.rotation') }}</Label>
       <Select v-model="model.rotation">
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="full-round">Full round each minute</SelectItem>
-          <SelectItem value="each-minute">One exercise per minute</SelectItem>
+          <SelectItem value="full-round">{{ t('dialogs.emomConfig.fullRound') }}</SelectItem>
+          <SelectItem value="each-minute">{{ t('dialogs.emomConfig.onePerMinute') }}</SelectItem>
         </SelectContent>
       </Select>
     </div>

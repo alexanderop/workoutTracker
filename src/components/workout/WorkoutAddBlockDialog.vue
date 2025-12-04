@@ -2,6 +2,7 @@
 import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -12,6 +13,8 @@ import WorkoutAddBlockDialogExerciseItem from './WorkoutAddBlockDialogExerciseIt
 import { useExercisesStore, type CustomExercise } from '@/stores/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
+
+const { t } = useI18n()
 
 const open = defineModel<boolean>('open', { required: true })
 
@@ -100,18 +103,18 @@ function handleOpenChange(value: boolean) {
         @click="handleOpenChange(false)"
       >
         <X class="size-5" />
-        <span class="sr-only">Close</span>
+        <span class="sr-only">{{ t('common.buttons.close') }}</span>
       </button>
 
       <DialogHeader>
-        <DialogTitle>Add to Workout</DialogTitle>
-        <DialogDescription> Add an exercise or a timed block </DialogDescription>
+        <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
+        <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
       </DialogHeader>
 
       <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
         <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="exercises">Exercises</TabsTrigger>
-          <TabsTrigger value="timed">Timed Blocks</TabsTrigger>
+          <TabsTrigger value="exercises">{{ t('dialogs.addBlock.exercisesTab') }}</TabsTrigger>
+          <TabsTrigger value="timed">{{ t('dialogs.addBlock.timedBlocksTab') }}</TabsTrigger>
         </TabsList>
 
         <!-- Exercises Tab -->
@@ -123,7 +126,7 @@ function handleOpenChange(value: boolean) {
             />
             <Input
               v-model="searchQuery"
-              placeholder="Search exercises..."
+              :placeholder="t('dialogs.addBlock.searchPlaceholder')"
               class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
               autofocus
             />
@@ -143,7 +146,7 @@ function handleOpenChange(value: boolean) {
             <div v-if="filteredExercises.length === 0" class="text-center py-12">
               <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
               <p class="text-sm text-muted-foreground">
-                No exercises found for "{{ searchQuery }}"
+                {{ t('dialogs.addBlock.noResults', { query: searchQuery }) }}
               </p>
             </div>
           </div>
@@ -151,7 +154,7 @@ function handleOpenChange(value: boolean) {
           <!-- Create Custom Exercise Button -->
           <div class="pt-4 border-t border-border flex-shrink-0">
             <Button variant="default" class="w-full" @click="handleCreateNew">
-              + Create Custom Exercise
+              {{ t('dialogs.addBlock.createCustomExercise') }}
             </Button>
           </div>
         </TabsContent>
@@ -181,8 +184,8 @@ function handleOpenChange(value: boolean) {
           <Separator class="my-4" />
 
           <div class="text-center text-sm text-muted-foreground">
-            <p>Timed blocks let you add CrossFit-style workouts to your session.</p>
-            <p class="mt-1">You can mix strength and timed blocks in the same workout!</p>
+            <p>{{ t('dialogs.addBlock.timedBlocksInfo') }}</p>
+            <p class="mt-1">{{ t('dialogs.addBlock.timedBlocksMixing') }}</p>
           </div>
         </TabsContent>
       </Tabs>

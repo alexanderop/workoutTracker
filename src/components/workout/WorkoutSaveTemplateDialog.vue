@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, useId, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const { t } = useI18n()
 
 const open = defineModel<boolean>('open', { required: true })
 
@@ -38,28 +41,28 @@ function handleConfirm() {
   <Dialog v-model:open="open">
     <MobileDialogContent>
       <DialogHeader>
-        <DialogTitle>Save as Template</DialogTitle>
+        <DialogTitle>{{ t('dialogs.saveTemplate.title') }}</DialogTitle>
         <DialogDescription>
-          Save this workout as a template to quickly start similar workouts in the future.
+          {{ t('dialogs.saveTemplate.description') }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-2 py-4">
-        <Label :for="inputId">Template Name</Label>
+        <Label :for="inputId">{{ t('dialogs.saveTemplate.templateName') }}</Label>
         <Input
           :id="inputId"
           v-model="templateName"
-          placeholder="e.g., Push Day"
-          aria-label="Template Name"
+          :placeholder="t('dialogs.saveTemplate.templateNamePlaceholder')"
+          :aria-label="t('dialogs.saveTemplate.templateName')"
         />
       </div>
 
       <div class="flex gap-3">
         <Button variant="outline" class="flex-1" :disabled="isSaving" @click="open = false">
-          Cancel
+          {{ t('common.buttons.cancel') }}
         </Button>
         <Button class="flex-1" :disabled="!templateName.trim() || isSaving" @click="handleConfirm">
-          {{ isSaving ? 'Saving...' : 'Save Template' }}
+          {{ isSaving ? t('dialogs.saveTemplate.saving') : t('dialogs.saveTemplate.saveTemplate') }}
         </Button>
       </div>
     </MobileDialogContent>

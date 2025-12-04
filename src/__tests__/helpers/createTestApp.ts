@@ -7,6 +7,8 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '@/App.vue'
 import { routes } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
+import { i18n } from '@/i18n'
+import en from '@/i18n/messages/en'
 
 type CreateTestAppOptions = {
   initialRoute?: string
@@ -67,9 +69,13 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   const user = userEvent.setup()
 
+  // Preload English messages for tests
+  i18n.global.setLocaleMessage('en', en)
+  i18n.global.locale.value = 'en'
+
   render(App, {
     global: {
-      plugins: [router, pinia],
+      plugins: [router, pinia, i18n],
     },
   })
 

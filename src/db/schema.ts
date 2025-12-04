@@ -282,6 +282,7 @@ export type DbUserSetting =
   | { key: 'autoSaveInterval'; value: number }
   | { key: 'screenWakeLock'; value: boolean }
   | { key: 'timerSoundEnabled'; value: boolean }
+  | { key: 'language'; value: 'en' | 'de' }
 
 export type UserSettingKey = DbUserSetting['key']
 

@@ -1,8 +1,11 @@
+import { i18n } from '@/i18n'
+
 /**
  * Format a timestamp to a human-readable date string.
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  const locale = i18n.global.locale.value || 'en'
+  return new Date(timestamp).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

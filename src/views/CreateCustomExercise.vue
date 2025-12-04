@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/components/exercise/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/components/exercise/ExerciseSettingsItem.vue'
@@ -18,6 +19,7 @@ import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/
 import { useExercisesStore } from '@/stores/exercises'
 
 const router = useRouter()
+const { t } = useI18n()
 const exercisesStore = useExercisesStore()
 
 // Form state and validation
@@ -107,9 +109,11 @@ async function handleSave() {
 </script>
 
 <template>
-  <PageLayout title="Create Exercise">
+  <PageLayout :title="t('exercises.create.title')">
     <template #header-actions>
-      <Button :disabled="isSaveDisabled" @click="handleSave"> Save </Button>
+      <Button :disabled="isSaveDisabled" @click="handleSave">{{
+        t('exercises.create.save')
+      }}</Button>
     </template>
 
     <!-- Main Content -->
@@ -128,7 +132,7 @@ async function handleSave() {
         <div class="flex-1">
           <Input
             v-model="form.name"
-            placeholder="Name (e.g., Bulgarian Split Squat)"
+            :placeholder="t('exercises.create.namePlaceholder')"
             class="w-full"
             autofocus
           />
@@ -138,22 +142,22 @@ async function handleSave() {
       <!-- Configuration List -->
       <div class="space-y-0 overflow-hidden rounded-lg border border-border">
         <ExerciseSettingsItem
-          label="Equipment"
+          :label="t('exercises.labels.equipment')"
           :value="form.equipment ? EQUIPMENT_LABELS[form.equipment] : ''"
           @click="openModal('equipment')"
         />
         <ExerciseSettingsItem
-          label="Muscle"
+          :label="t('exercises.labels.muscle')"
           :value="form.muscle ? MUSCLE_LABELS[form.muscle] : ''"
           @click="openModal('muscle')"
         />
         <ExerciseSettingsItem
-          label="Exercise Type"
+          :label="t('exercises.labels.exerciseType')"
           :value="TYPE_LABELS[form.type]"
           @click="openModal('type')"
         />
         <ExerciseSettingsItem
-          label="Metrics"
+          :label="t('exercises.labels.metrics')"
           :value="METRICS_LABELS[form.metrics]"
           @click="openModal('metrics')"
         />
@@ -166,8 +170,8 @@ async function handleSave() {
     <!-- Selection Modals -->
     <ExerciseSelectorDialog
       v-model:open="showEquipmentModal"
-      title="Select Equipment"
-      description="Choose the primary equipment for this exercise"
+      :title="t('exercises.selectors.equipment.title')"
+      :description="t('exercises.selectors.equipment.description')"
       :options="EQUIPMENT_OPTIONS"
       :selected="form.equipment"
       layout="grid"
@@ -176,8 +180,8 @@ async function handleSave() {
 
     <ExerciseSelectorDialog
       v-model:open="showMuscleModal"
-      title="Select Muscle Group"
-      description="Choose the primary muscle group targeted"
+      :title="t('exercises.selectors.muscle.title')"
+      :description="t('exercises.selectors.muscle.description')"
       :options="MUSCLE_OPTIONS"
       :selected="form.muscle"
       @select="handleMuscleSelect"
@@ -185,8 +189,8 @@ async function handleSave() {
 
     <ExerciseSelectorDialog
       v-model:open="showTypeModal"
-      title="Select Exercise Type"
-      description="Choose the complexity or category of this exercise"
+      :title="t('exercises.selectors.type.title')"
+      :description="t('exercises.selectors.type.description')"
       :options="TYPE_OPTIONS"
       :selected="form.type"
       @select="handleTypeSelect"
@@ -194,8 +198,8 @@ async function handleSave() {
 
     <ExerciseSelectorDialog
       v-model:open="showMetricsModal"
-      title="Select Tracking Method"
-      description="Choose what data will be tracked when performing this exercise"
+      :title="t('exercises.selectors.metrics.title')"
+      :description="t('exercises.selectors.metrics.description')"
       :options="METRICS_OPTIONS"
       :selected="form.metrics"
       @select="handleMetricsSelect"

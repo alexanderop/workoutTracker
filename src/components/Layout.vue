@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { Activity, Dumbbell, Home, Settings } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
 const hideNavigation = computed(() => route.meta.hideNav === true)
 
-const navItems = [
-  { path: '/', name: 'Home', icon: Home, label: 'Home' },
-  { path: '/workouts', name: 'Workouts', icon: Dumbbell, label: 'Workouts' },
-  { path: '/exercises', name: 'Exercises', icon: Activity, label: 'Exercises' },
-  { path: '/settings', name: 'Settings', icon: Settings, label: 'Settings' },
-]
+const navItems = computed(() => [
+  { path: '/', name: 'Home', icon: Home, label: t('nav.home') },
+  { path: '/workouts', name: 'Workouts', icon: Dumbbell, label: t('nav.workouts') },
+  { path: '/exercises', name: 'Exercises', icon: Activity, label: t('nav.exercises') },
+  { path: '/settings', name: 'Settings', icon: Settings, label: t('nav.settings') },
+])
 
 function isActive(path: string) {
   return route.path === path

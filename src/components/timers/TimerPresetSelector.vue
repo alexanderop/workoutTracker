@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ArrowLeft } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import TimerPresetList from '@/components/timers/TimerPresetList.vue'
 import TimerCustomForm from '@/components/timers/TimerCustomForm.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
 import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type TimerType = 'amrap' | 'emom' | 'tabata' | 'fortime'
 
@@ -20,38 +23,67 @@ type TabataPreset = {
 }
 type ForTimePreset = { label: string; description: string; timeCapSeconds: number | null }
 
-const AMRAP_PRESETS: Array<AmrapPreset> = [
-  { label: '5 min', description: 'Quick burst', durationSeconds: 300 },
-  { label: '10 min', description: 'Standard', durationSeconds: 600 },
-  { label: '15 min', description: 'Extended', durationSeconds: 900 },
-  { label: '20 min', description: 'Long form', durationSeconds: 1200 },
-]
+function getAmrapPresets(): Array<AmrapPreset> {
+  return [
+    { label: '5 min', description: t('timers.presets.quickBurst'), durationSeconds: 300 },
+    { label: '10 min', description: t('timers.presets.standard'), durationSeconds: 600 },
+    { label: '15 min', description: t('timers.presets.extended'), durationSeconds: 900 },
+    { label: '20 min', description: t('timers.presets.longForm'), durationSeconds: 1200 },
+  ]
+}
 
-const EMOM_PRESETS: Array<EmomPreset> = [
-  { label: '10 min', description: 'Quick session', minutes: 10 },
-  { label: '15 min', description: 'Standard', minutes: 15 },
-  { label: '20 min', description: 'Extended', minutes: 20 },
-]
+function getEmomPresets(): Array<EmomPreset> {
+  return [
+    { label: '10 min', description: t('timers.presets.quickSession'), minutes: 10 },
+    { label: '15 min', description: t('timers.presets.standard'), minutes: 15 },
+    { label: '20 min', description: t('timers.presets.extended'), minutes: 20 },
+  ]
+}
 
-const TABATA_PRESETS: Array<TabataPreset> = [
-  { label: 'Classic', description: '8×20/10', rounds: 8, workSeconds: 20, restSeconds: 10 },
-  { label: 'Long', description: '8×30/15', rounds: 8, workSeconds: 30, restSeconds: 15 },
-  { label: 'Short', description: '4×20/10', rounds: 4, workSeconds: 20, restSeconds: 10 },
-  { label: 'Nordic', description: '4×4min/3min', rounds: 4, workSeconds: 240, restSeconds: 180 },
-]
+function getTabataPresets(): Array<TabataPreset> {
+  return [
+    {
+      label: t('timers.presets.classic'),
+      description: '8×20/10',
+      rounds: 8,
+      workSeconds: 20,
+      restSeconds: 10,
+    },
+    {
+      label: t('timers.presets.long'),
+      description: '8×30/15',
+      rounds: 8,
+      workSeconds: 30,
+      restSeconds: 15,
+    },
+    {
+      label: t('timers.presets.short'),
+      description: '4×20/10',
+      rounds: 4,
+      workSeconds: 20,
+      restSeconds: 10,
+    },
+    {
+      label: t('timers.presets.nordic'),
+      description: '4×4min/3min',
+      rounds: 4,
+      workSeconds: 240,
+      restSeconds: 180,
+    },
+  ]
+}
 
-const FORTIME_PRESETS: Array<ForTimePreset> = [
-  { label: '10 min cap', description: 'Quick challenge', timeCapSeconds: 600 },
-  { label: '15 min cap', description: 'Standard cap', timeCapSeconds: 900 },
-  { label: '20 min cap', description: 'Extended cap', timeCapSeconds: 1200 },
-  { label: 'No cap', description: 'Unlimited time', timeCapSeconds: null },
-]
-
-const TIMER_LABELS: Record<TimerType, string> = {
-  amrap: 'AMRAP',
-  emom: 'EMOM',
-  tabata: 'Tabata',
-  fortime: 'For Time',
+function getForTimePresets(): Array<ForTimePreset> {
+  return [
+    { label: '10 min cap', description: t('timers.presets.quickChallenge'), timeCapSeconds: 600 },
+    { label: '15 min cap', description: t('timers.presets.standardCap'), timeCapSeconds: 900 },
+    { label: '20 min cap', description: t('timers.presets.extendedCap'), timeCapSeconds: 1200 },
+    {
+      label: t('timers.presets.noCap'),
+      description: t('timers.presets.unlimitedTime'),
+      timeCapSeconds: null,
+    },
+  ]
 }
 
 const { timerType } = defineProps<{
@@ -66,18 +98,18 @@ const emit = defineEmits<{
 const showCustom = ref(false)
 
 const colors = computed(() => BLOCK_COLORS[timerType])
-const timerLabel = computed(() => TIMER_LABELS[timerType])
+const timerLabel = computed(() => t(`timers.types.${timerType}`))
 
 const presets = computed(() => {
   switch (timerType) {
     case 'amrap':
-      return AMRAP_PRESETS
+      return getAmrapPresets()
     case 'emom':
-      return EMOM_PRESETS
+      return getEmomPresets()
     case 'tabata':
-      return TABATA_PRESETS
+      return getTabataPresets()
     case 'fortime':
-      return FORTIME_PRESETS
+      return getForTimePresets()
     default: {
       const exhaustive: never = timerType
       return exhaustive
@@ -188,7 +220,12 @@ function handleCustomSubmit(config: Record<string, number | boolean | null>) {
   <div class="flex flex-col h-full">
     <!-- Header -->
     <div class="p-4 border-b flex items-center gap-3">
-      <Button variant="ghost" size="icon" aria-label="Go back" @click="emit('back')">
+      <Button
+        variant="ghost"
+        size="icon"
+        :aria-label="t('common.aria.goBack')"
+        @click="emit('back')"
+      >
         <ArrowLeft class="w-5 h-5" />
       </Button>
       <h1 class="text-lg font-semibold">{{ timerLabel }}</h1>

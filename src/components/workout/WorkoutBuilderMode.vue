@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Dumbbell, Play } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,6 +16,8 @@ import { useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutBlockPlaylist from './WorkoutBlockPlaylist.vue'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'add-block': []
@@ -91,7 +94,7 @@ function handleStartWorkout() {
 </script>
 
 <template>
-  <PageLayout title="Workout Plan" :subtitle="subtitle" :scrollable="hasBlocks">
+  <PageLayout :title="t('workouts.builder.plan')" :subtitle="subtitle" :scrollable="hasBlocks">
     <div :class="hasBlocks ? 'px-4' : 'h-full flex items-center justify-center'">
       <WorkoutBlockPlaylist
         v-if="hasBlocks"
@@ -110,14 +113,14 @@ function handleStartWorkout() {
             <Dumbbell class="size-6" />
           </EmptyMedia>
           <EmptyHeader>
-            <EmptyTitle>Start Your Workout</EmptyTitle>
+            <EmptyTitle>{{ t('workouts.builder.startYourWorkout') }}</EmptyTitle>
             <EmptyDescription>
-              Add exercises or timed blocks to begin tracking your session.
+              {{ t('workouts.builder.description') }}
             </EmptyDescription>
           </EmptyHeader>
           <Button class="gap-2" @click="emit('add-block')">
             <Dumbbell class="size-4" />
-            Add First Block
+            {{ t('workouts.builder.addFirstBlock') }}
           </Button>
         </EmptyContent>
       </Empty>
@@ -131,7 +134,7 @@ function handleStartWorkout() {
           @click="handleStartWorkout"
         >
           <Play class="size-5" />
-          Start Workout
+          {{ t('workouts.builder.startWorkout') }}
         </Button>
       </div>
     </template>

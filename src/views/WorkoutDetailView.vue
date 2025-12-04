@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/components/workout/WorkoutDetailExerciseCard.vue'
@@ -10,6 +11,8 @@ import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import { useAppInitialization } from '@/composables/useAppInitialization'
+
+const { t } = useI18n()
 
 const { id } = defineProps<{
   id: string
@@ -45,7 +48,7 @@ async function handleRedoWorkout() {
   >
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
-      <div class="text-muted-foreground">Loading...</div>
+      <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
     <!-- Workout details -->
@@ -75,12 +78,18 @@ async function handleRedoWorkout() {
           >
             <div class="font-semibold uppercase">{{ block.kind }}</div>
             <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
-              <template v-if="block.kind === 'amrap'"> {{ block.result.rounds }} rounds </template>
+              <template v-if="block.kind === 'amrap'">
+                {{ block.result.rounds }} {{ t('workouts.detail.rounds') }}
+              </template>
               <template v-else-if="block.kind === 'fortime'">
-                {{ block.result.completed ? 'Completed' : 'Capped' }}
+                {{
+                  block.result.completed
+                    ? t('workouts.detail.completed')
+                    : t('workouts.detail.capped')
+                }}
               </template>
               <template v-else-if="block.kind === 'emom'">
-                {{ block.result.completedMinutes }} minutes completed
+                {{ block.result.completedMinutes }} {{ t('workouts.detail.minutesCompleted') }}
               </template>
             </div>
           </div>
@@ -94,7 +103,9 @@ async function handleRedoWorkout() {
         :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
         :style="{ animationDelay: '300ms' }"
       >
-        <h2 class="mb-2 text-sm font-medium text-muted-foreground">Notes</h2>
+        <h2 class="mb-2 text-sm font-medium text-muted-foreground">
+          {{ t('workouts.detail.notes') }}
+        </h2>
         <p class="text-sm">{{ state.workout.notes }}</p>
       </div>
     </div>
@@ -104,20 +115,24 @@ async function handleRedoWorkout() {
       v-else-if="state.status === 'error'"
       class="flex flex-col items-center justify-center py-16"
     >
-      <p class="mb-4 text-muted-foreground">Error loading workout</p>
-      <Button variant="outline" @click="router.push('/workouts')">Go Back</Button>
+      <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.error') }}</p>
+      <Button variant="outline" @click="router.push('/workouts')">{{
+        t('workouts.detail.goBack')
+      }}</Button>
     </div>
 
     <!-- Not found state -->
     <div v-else class="flex flex-col items-center justify-center py-16">
-      <p class="mb-4 text-muted-foreground">Workout not found</p>
-      <Button variant="outline" @click="router.push('/workouts')">Go Back</Button>
+      <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.notFound') }}</p>
+      <Button variant="outline" @click="router.push('/workouts')">{{
+        t('workouts.detail.goBack')
+      }}</Button>
     </div>
 
     <template v-if="state.status === 'success'" #footer>
       <div class="p-4">
         <Button class="w-full" size="lg" :disabled="isRedoing" @click="handleRedoWorkout">
-          {{ isRedoing ? 'Starting...' : 'Redo Workout' }}
+          {{ isRedoing ? t('workouts.redo.starting') : t('workouts.redo.button') }}
         </Button>
       </div>
     </template>

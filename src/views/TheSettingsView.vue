@@ -8,6 +8,13 @@ import { Separator } from '@/components/ui/separator'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Scale,
   Ruler,
   Moon,
@@ -16,9 +23,11 @@ import {
   Upload,
   Trash2,
   ChevronDown,
+  Globe,
 } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
+import { useI18n } from 'vue-i18n'
 import { deleteAllData } from '@/db'
 import { exportAllData, type ExportData } from '@/lib/dataExport'
 import { importAllData, parseExportFile } from '@/lib/dataImport'
@@ -29,6 +38,7 @@ import SettingsWakeLockDiagnostics from '@/components/settings/SettingsWakeLockD
 
 const { isDark } = useTheme()
 const settingsStore = useSettingsStore()
+const { t } = useI18n()
 
 const showDeleteDialog = ref(false)
 const showImportDialog = ref(false)
@@ -89,7 +99,7 @@ async function handleImportConfirm() {
     await importAllData(importData.value)
     window.location.reload()
   } catch {
-    importError.value = 'Failed to import your data. Please try again.'
+    importError.value = t('settings.errors.importFailed')
     showImportErrorDialog.value = true
   } finally {
     isImporting.value = false
@@ -111,28 +121,34 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
 function handleScreenWakeLockChange(enabled: boolean) {
   settingsStore.setScreenWakeLock(enabled)
 }
+
+function handleLanguageChange(value: AcceptableValue) {
+  if (value === 'en' || value === 'de') {
+    settingsStore.setLanguage(value)
+  }
+}
 </script>
 
 <template>
   <div class="flex-1 p-4 pb-8">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
-      <p class="text-muted-foreground mt-1">Customize your app preferences</p>
+      <h1 class="text-3xl font-bold tracking-tight">{{ t('settings.title') }}</h1>
+      <p class="text-muted-foreground mt-1">{{ t('settings.subtitle') }}</p>
     </div>
 
     <div class="space-y-8 max-w-2xl">
       <!-- Units Section -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Units
+          {{ t('settings.sections.units') }}
         </h2>
         <div class="space-y-4">
           <!-- Weight -->
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Label class="flex items-center gap-3 text-base">
               <Scale class="size-5 text-muted-foreground" />
-              Weight
+              {{ t('settings.labels.weight') }}
             </Label>
             <ToggleGroup
               type="single"
@@ -144,14 +160,14 @@ function handleScreenWakeLockChange(enabled: boolean) {
             >
               <ToggleGroupItem
                 value="kg"
-                aria-label="Kilograms"
+                :aria-label="t('settings.labels.ariaKilograms')"
                 class="flex-1 sm:flex-none min-h-11 px-6"
               >
                 kg
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="lbs"
-                aria-label="Pounds"
+                :aria-label="t('settings.labels.ariaPounds')"
                 class="flex-1 sm:flex-none min-h-11 px-6"
               >
                 lbs
@@ -163,7 +179,7 @@ function handleScreenWakeLockChange(enabled: boolean) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Label class="flex items-center gap-3 text-base">
               <Ruler class="size-5 text-muted-foreground" />
-              Height
+              {{ t('settings.labels.height') }}
             </Label>
             <ToggleGroup
               type="single"
@@ -175,14 +191,14 @@ function handleScreenWakeLockChange(enabled: boolean) {
             >
               <ToggleGroupItem
                 value="cm"
-                aria-label="Centimeters"
+                :aria-label="t('settings.labels.ariaCentimeters')"
                 class="flex-1 sm:flex-none min-h-11 px-6"
               >
                 cm
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="ft-in"
-                aria-label="Feet and Inches"
+                :aria-label="t('settings.labels.ariaFeetAndInches')"
                 class="flex-1 sm:flex-none min-h-11 px-6"
               >
                 ft/in
@@ -197,14 +213,38 @@ function handleScreenWakeLockChange(enabled: boolean) {
       <!-- Appearance Section -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Appearance
+          {{ t('settings.sections.appearance') }}
         </h2>
-        <div class="flex items-center justify-between">
-          <Label class="flex items-center gap-3 text-base cursor-pointer" for="theme-toggle">
-            <Moon class="size-5 text-muted-foreground" />
-            Dark Mode
-          </Label>
-          <Switch id="theme-toggle" v-model="isDark" data-testid="theme-toggle" />
+        <div class="space-y-4">
+          <!-- Dark Mode -->
+          <div class="flex items-center justify-between">
+            <Label class="flex items-center gap-3 text-base cursor-pointer" for="theme-toggle">
+              <Moon class="size-5 text-muted-foreground" />
+              {{ t('settings.labels.darkMode') }}
+            </Label>
+            <Switch id="theme-toggle" v-model="isDark" data-testid="theme-toggle" />
+          </div>
+
+          <!-- Language -->
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Label class="flex items-center gap-3 text-base">
+              <Globe class="size-5 text-muted-foreground" />
+              {{ t('settings.labels.language') }}
+            </Label>
+            <Select
+              :model-value="settingsStore.language"
+              data-testid="language-select"
+              @update:model-value="handleLanguageChange"
+            >
+              <SelectTrigger class="w-full sm:w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">{{ t('settings.languages.en') }}</SelectItem>
+                <SelectItem value="de">{{ t('settings.languages.de') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </section>
 
@@ -213,7 +253,7 @@ function handleScreenWakeLockChange(enabled: boolean) {
       <!-- Screen Section -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Screen
+          {{ t('settings.sections.screen') }}
         </h2>
         <div class="space-y-4">
           <!-- Keep Screen On Toggle -->
@@ -221,10 +261,12 @@ function handleScreenWakeLockChange(enabled: boolean) {
             <div class="flex items-start gap-3 min-w-0">
               <Smartphone class="size-5 text-muted-foreground mt-0.5 shrink-0" />
               <div class="min-w-0">
-                <Label class="text-base cursor-pointer" for="wake-lock-toggle"
-                  >Keep Screen On</Label
-                >
-                <p class="text-sm text-muted-foreground">Prevent dimming during workouts</p>
+                <Label class="text-base cursor-pointer" for="wake-lock-toggle">{{
+                  t('settings.labels.keepScreenOn')
+                }}</Label>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('settings.labels.preventDimming') }}
+                </p>
               </div>
             </div>
             <Switch
@@ -245,7 +287,7 @@ function handleScreenWakeLockChange(enabled: boolean) {
                 class="size-4 transition-transform duration-200"
                 :class="{ '-rotate-180': advancedOpen }"
               />
-              Advanced diagnostics
+              {{ t('settings.labels.advancedDiagnostics') }}
             </CollapsibleTrigger>
             <CollapsibleContent class="pt-4">
               <SettingsWakeLockDiagnostics />
@@ -259,13 +301,13 @@ function handleScreenWakeLockChange(enabled: boolean) {
       <!-- Data Section -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Data
+          {{ t('settings.sections.data') }}
         </h2>
         <div class="space-y-3">
           <!-- Export -->
           <button
             type="button"
-            aria-label="Export Data"
+            :aria-label="t('settings.labels.ariaExportData')"
             class="flex items-center justify-between w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left disabled:opacity-50"
             :disabled="isExporting"
             @click="handleExport"
@@ -273,24 +315,30 @@ function handleScreenWakeLockChange(enabled: boolean) {
             <div class="flex items-center gap-3">
               <Download class="size-5 text-muted-foreground" />
               <div>
-                <p class="font-medium">Export Data</p>
-                <p class="text-sm text-muted-foreground">Download backup file</p>
+                <p class="font-medium">{{ t('settings.labels.exportData') }}</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('settings.labels.downloadBackup') }}
+                </p>
               </div>
             </div>
-            <span v-if="isExporting" class="text-sm text-muted-foreground">Exporting...</span>
+            <span v-if="isExporting" class="text-sm text-muted-foreground">{{
+              t('settings.labels.exporting')
+            }}</span>
           </button>
 
           <!-- Import -->
           <button
             type="button"
-            aria-label="Import Data"
+            :aria-label="t('settings.labels.ariaImportData')"
             class="flex items-center gap-3 w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left"
             @click="handleImportClick"
           >
             <Upload class="size-5 text-muted-foreground" />
             <div>
-              <p class="font-medium">Import Data</p>
-              <p class="text-sm text-muted-foreground">Restore from backup</p>
+              <p class="font-medium">{{ t('settings.labels.importData') }}</p>
+              <p class="text-sm text-muted-foreground">
+                {{ t('settings.labels.restoreFromBackup') }}
+              </p>
             </div>
           </button>
           <input
@@ -308,26 +356,26 @@ function handleScreenWakeLockChange(enabled: boolean) {
       <!-- Danger Zone -->
       <section>
         <h2 class="text-sm font-semibold text-destructive uppercase tracking-wider mb-4">
-          Danger Zone
+          {{ t('settings.sections.dangerZone') }}
         </h2>
         <div class="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-start gap-3">
               <Trash2 class="size-5 text-destructive mt-0.5 shrink-0" />
               <div>
-                <p class="font-medium">Delete All Data</p>
+                <p class="font-medium">{{ t('settings.labels.deleteAllData') }}</p>
                 <p class="text-sm text-muted-foreground">
-                  Permanently remove all workouts, exercises, and settings
+                  {{ t('settings.labels.deleteAllDataDescription') }}
                 </p>
               </div>
             </div>
             <Button
               variant="destructive"
-              aria-label="Delete All Data"
+              :aria-label="t('settings.labels.ariaDeleteAllData')"
               class="w-full sm:w-auto min-h-11 shrink-0"
               @click="showDeleteDialog = true"
             >
-              Delete All
+              {{ t('settings.labels.deleteAll') }}
             </Button>
           </div>
         </div>

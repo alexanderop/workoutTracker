@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const { t } = useI18n()
 
 export type AmrapConfigModel = {
   durationMinutes: number
@@ -14,7 +17,7 @@ const presets = [8, 10, 12, 15, 20] as const
 
 <template>
   <div class="space-y-2">
-    <Label>Duration (minutes)</Label>
+    <Label>{{ t('dialogs.amrapConfig.duration') }}</Label>
     <div class="flex gap-2">
       <Button
         v-for="mins in presets"

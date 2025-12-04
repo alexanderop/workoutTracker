@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ChevronDown, Dumbbell } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
@@ -11,6 +12,7 @@ const { exercise } = defineProps<{
   exercise: DbWorkoutExercise
 }>()
 
+const { t } = useI18n()
 const { formatWithUnit } = useWeightDisplay()
 const isOpen = ref(false)
 
@@ -18,7 +20,7 @@ const completedSets = computed(() => exercise.sets.filter((s) => s.status === 'c
 
 const summary = computed(() => {
   const sets = completedSets.value
-  if (sets.length === 0) return 'No sets completed'
+  if (sets.length === 0) return t('workouts.sets.noSetsCompleted')
 
   const bestWeightKg = Math.max(...sets.map((s) => Number.parseFloat(s.kg) || 0))
   return `${sets.length} set${sets.length > 1 ? 's' : ''} × ${formatWithUnit(bestWeightKg, 1)}`
@@ -55,7 +57,7 @@ const summary = computed(() => {
           <WorkoutDetailSetTable :sets="exercise.sets" />
 
           <div v-if="exercise.targetReps > 0" class="mt-3 text-sm text-muted-foreground">
-            Target: {{ exercise.targetReps }} reps
+            {{ t('workouts.sets.target', { reps: exercise.targetReps }) }}
           </div>
         </CardContent>
       </CollapsibleContent>

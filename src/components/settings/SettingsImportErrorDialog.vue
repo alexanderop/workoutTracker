@@ -3,7 +3,9 @@ import { AlertCircle } from 'lucide-vue-next'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { error } = defineProps<{
   error: string
 }>()
@@ -21,7 +23,7 @@ function handleClose() {
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <AlertCircle class="h-5 w-5 text-destructive" />
-          Import Failed
+          {{ t('settings.dialogs.importError.title') }}
         </DialogTitle>
         <DialogDescription>
           {{ error }}
@@ -29,7 +31,9 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex justify-end">
-        <Button variant="outline" @click="handleClose"> OK </Button>
+        <Button variant="outline" @click="handleClose">
+          {{ t('settings.dialogs.importError.ok') }}
+        </Button>
       </div>
     </MobileDialogContent>
   </Dialog>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
 import { Pause, Play, RotateCcw, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import WorkoutAmrapView from '@/components/workout/WorkoutAmrapView.vue'
 import WorkoutEmomView from '@/components/workout/WorkoutEmomView.vue'
@@ -8,6 +9,8 @@ import WorkoutTabataView from '@/components/workout/WorkoutTabataView.vue'
 import WorkoutForTimeView from '@/components/workout/WorkoutForTimeView.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
 import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type TimedBlock = AmrapBlock | EmomBlock | TabataBlock | ForTimeBlock
 
@@ -91,7 +94,7 @@ function handleExit() {
           variant="outline"
           size="icon"
           class="h-12 w-12"
-          aria-label="Exit timer"
+          :aria-label="t('common.aria.exitTimer')"
           @click="handleExit"
         >
           <X class="w-5 h-5" />
@@ -111,7 +114,7 @@ function handleExit() {
           variant="outline"
           size="icon"
           class="h-12 w-12"
-          aria-label="Reset timer"
+          :aria-label="t('common.aria.resetTimer')"
           @click="handleReset"
         >
           <RotateCcw class="w-5 h-5" />
@@ -120,13 +123,13 @@ function handleExit() {
 
       <!-- Completion state -->
       <div v-if="isComplete" class="text-center space-y-4">
-        <div class="text-2xl font-bold" :class="colors.text">Complete!</div>
+        <div class="text-2xl font-bold" :class="colors.text">{{ t('timers.runner.complete') }}</div>
         <div class="flex gap-3 justify-center">
           <Button variant="outline" @click="handleReset">
             <RotateCcw class="w-4 h-4 mr-2" />
-            Again
+            {{ t('timers.runner.again') }}
           </Button>
-          <Button @click="handleExit"> Done </Button>
+          <Button @click="handleExit">{{ t('timers.runner.done') }}</Button>
         </div>
       </div>
     </div>

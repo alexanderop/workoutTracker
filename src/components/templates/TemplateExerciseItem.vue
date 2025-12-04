@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+
+const { t } = useI18n()
 
 type Props = {
   exerciseId: string
@@ -61,13 +64,15 @@ function decrementSetCount(): void {
     >
       <!-- Set count control -->
       <div class="flex items-center gap-3">
-        <span class="text-sm text-muted-foreground font-medium">Sets</span>
+        <span class="text-sm text-muted-foreground font-medium">{{
+          t('workouts.templates.sets')
+        }}</span>
         <div class="flex items-center bg-background rounded-lg border border-border shadow-sm">
           <button
             type="button"
             class="flex items-center justify-center size-10 hover:bg-muted active:bg-muted/80 transition-colors rounded-l-lg disabled:opacity-40"
             :disabled="defaultSetCount === 1"
-            aria-label="Decrease set count"
+            :aria-label="t('common.aria.decreaseSetCount')"
             @click="decrementSetCount"
           >
             <Minus class="size-4" />
@@ -83,7 +88,7 @@ function decrementSetCount(): void {
           <button
             type="button"
             class="flex items-center justify-center size-10 hover:bg-muted active:bg-muted/80 transition-colors rounded-r-lg"
-            aria-label="Increase set count"
+            :aria-label="t('common.aria.increaseSetCount')"
             @click="incrementSetCount"
           >
             <Plus class="size-4" />
@@ -97,7 +102,7 @@ function decrementSetCount(): void {
           variant="ghost"
           size="icon"
           :disabled="!canMoveUp"
-          aria-label="Move up"
+          :aria-label="t('common.aria.moveUp')"
           @click="$emit('move-up')"
         >
           <ChevronUp class="size-5" />
@@ -106,7 +111,7 @@ function decrementSetCount(): void {
           variant="ghost"
           size="icon"
           :disabled="!canMoveDown"
-          aria-label="Move down"
+          :aria-label="t('common.aria.moveDown')"
           @click="$emit('move-down')"
         >
           <ChevronDown class="size-5" />
@@ -115,7 +120,7 @@ function decrementSetCount(): void {
           variant="ghost"
           size="icon"
           class="text-destructive hover:text-destructive hover:bg-destructive/10"
-          aria-label="Remove exercise"
+          :aria-label="t('common.aria.removeExercise')"
           @click="$emit('remove')"
         >
           <Trash2 class="size-5" />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Check, Maximize2, Play } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +14,8 @@ import {
   getBlockDurationDisplay,
   getBlockExerciseList,
 } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type Props = {
   block: TimedBlock
@@ -44,6 +47,8 @@ const roundCount = computed(() => {
   }
   return 0
 })
+
+const roundsLabel = computed(() => t('workouts.builder.timedCard.rounds'))
 </script>
 
 <template>
@@ -75,7 +80,7 @@ const roundCount = computed(() => {
             <div>
               <p class="font-medium">{{ exercise.name }}</p>
               <p class="text-sm text-muted-foreground">
-                {{ exercise.prescribedReps }} reps
+                {{ exercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
                 <template v-if="exercise.load"> · {{ exercise.load }} </template>
               </p>
             </div>
@@ -99,7 +104,7 @@ const roundCount = computed(() => {
         >
           <div class="text-center flex-1">
             <div class="text-3xl font-bold text-primary">{{ roundCount }}</div>
-            <div class="text-xs text-muted-foreground uppercase">Rounds</div>
+            <div class="text-xs text-muted-foreground uppercase">{{ roundsLabel }}</div>
           </div>
           <Button
             variant="outline"
@@ -108,16 +113,18 @@ const roundCount = computed(() => {
             :disabled="!isRunning"
             @click="emit('increment-round')"
           >
-            +1 Round
+            {{ t('workouts.builder.timedCard.plusOne') }} {{ roundsLabel }}
           </Button>
         </div>
 
         <!-- Tabata: Round/Rep Display -->
         <div v-if="block.kind === 'tabata' && block.result" class="bg-background/50 rounded-lg p-3">
-          <div class="text-xs text-muted-foreground uppercase mb-2">Reps per Round</div>
+          <div class="text-xs text-muted-foreground uppercase mb-2">
+            {{ t('workouts.builder.timedCard.repsPerRound') }}
+          </div>
           <div class="flex flex-wrap gap-2">
             <Badge v-for="(reps, idx) in block.result.repsPerRound" :key="idx" variant="secondary">
-              R{{ idx + 1 }}: {{ reps }}
+              {{ t('workouts.builder.timedCard.roundLabel', { num: idx + 1 }) }}: {{ reps }}
             </Badge>
           </div>
         </div>
@@ -129,7 +136,8 @@ const roundCount = computed(() => {
         >
           <Check class="w-5 h-5" />
           <span class="font-semibold">
-            Completed in {{ Math.floor(block.result.completionTime / 60) }}:{{
+            {{ t('workouts.builder.timedCard.completedIn')
+            }}{{ Math.floor(block.result.completionTime / 60) }}:{{
               String(block.result.completionTime % 60).padStart(2, '0')
             }}
           </span>
@@ -139,7 +147,7 @@ const roundCount = computed(() => {
       <!-- Start Button (when not active) -->
       <Button v-if="!isActive" class="w-full mt-4" size="lg" @click="emit('start')">
         <Play class="w-4 h-4 mr-2" />
-        Start Block
+        {{ t('workouts.builder.timedCard.startBlock') }}
       </Button>
 
       <!-- Expand to Focus Mode (when active) -->
@@ -151,7 +159,7 @@ const roundCount = computed(() => {
         @click="emit('expand-focus')"
       >
         <Maximize2 class="w-4 h-4 mr-2" />
-        Focus Mode
+        {{ t('workouts.builder.timedCard.focusMode') }}
       </Button>
     </CardContent>
   </Card>

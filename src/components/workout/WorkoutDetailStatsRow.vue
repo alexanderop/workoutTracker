@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Clock, Dumbbell, Flame, Target } from 'lucide-vue-next'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { WorkoutStats } from '@/composables/useWorkoutDetail'
@@ -9,10 +10,11 @@ const { stats } = defineProps<{
   stats: WorkoutStats
 }>()
 
+const { t } = useI18n()
 const { toDisplayValue, unitLabel } = useWeightDisplay()
 
 const displayedWeight = computed(() => toDisplayValue(stats.totalWeight) ?? 0)
-const weightLabelText = computed(() => `${unitLabel.value} lifted`)
+const weightLabelText = computed(() => t('workouts.stats.volumeLabel', { unit: unitLabel.value }))
 </script>
 
 <template>
@@ -24,7 +26,7 @@ const weightLabelText = computed(() => `${unitLabel.value} lifted`)
       <div class="mt-1 font-mono text-sm font-semibold tabular-nums">
         {{ formatDuration(stats.duration) }}
       </div>
-      <div class="text-xs text-muted-foreground">Duration</div>
+      <div class="text-xs text-muted-foreground">{{ t('workouts.stats.duration') }}</div>
     </div>
 
     <div class="text-center">
@@ -34,7 +36,7 @@ const weightLabelText = computed(() => `${unitLabel.value} lifted`)
       <div class="mt-1 font-mono text-sm font-semibold tabular-nums">
         {{ stats.exerciseCount }}
       </div>
-      <div class="text-xs text-muted-foreground">Exercises</div>
+      <div class="text-xs text-muted-foreground">{{ t('workouts.stats.exercises') }}</div>
     </div>
 
     <div class="text-center">
@@ -44,7 +46,7 @@ const weightLabelText = computed(() => `${unitLabel.value} lifted`)
       <div class="mt-1 font-mono text-sm font-semibold tabular-nums">
         {{ stats.setCount }}
       </div>
-      <div class="text-xs text-muted-foreground">Sets</div>
+      <div class="text-xs text-muted-foreground">{{ t('workouts.stats.sets') }}</div>
     </div>
 
     <div class="text-center">

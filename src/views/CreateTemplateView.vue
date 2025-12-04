@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
 import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
 import type { TemplateExercise } from '@/components/templates/TemplateExerciseList.vue'
@@ -11,6 +12,7 @@ import { templatesRepository } from '@/db/repositories/templates'
 import { popularExercises } from '@/data/popularExercises'
 
 const router = useRouter()
+const { t } = useI18n()
 
 const templateName = ref('')
 const exercises = ref<ReadonlyArray<TemplateExercise>>([])
@@ -75,15 +77,17 @@ function handleCancel(): void {
 </script>
 
 <template>
-  <PageLayout title="Create Template" subtitle="Build a new workout template from scratch">
+  <PageLayout :title="t('workouts.templates.create')" :subtitle="t('workouts.templates.subtitle')">
     <div class="flex flex-1 flex-col p-4">
       <!-- Template name input -->
       <div class="mb-6">
-        <label for="template-name" class="mb-2 block text-sm font-medium">Template Name</label>
+        <label for="template-name" class="mb-2 block text-sm font-medium">{{
+          t('workouts.templates.name')
+        }}</label>
         <Input
           id="template-name"
           v-model="templateName"
-          placeholder="e.g., Upper Body Day"
+          :placeholder="t('workouts.templates.namePlaceholder')"
           class="w-full"
         />
       </div>
@@ -91,7 +95,7 @@ function handleCancel(): void {
       <!-- Exercises section -->
       <div class="mb-6 flex flex-1 flex-col">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">Exercises</h2>
+          <h2 class="text-lg font-semibold">{{ t('workouts.templates.exercises') }}</h2>
           <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
         </div>
 
@@ -108,13 +112,13 @@ function handleCancel(): void {
           class="mb-4 flex flex-1 items-center justify-center text-center text-muted-foreground"
         >
           <div>
-            <p class="mb-2">No exercises yet</p>
-            <p class="text-sm">Add exercises to build your template</p>
+            <p class="mb-2">{{ t('workouts.templates.empty.title') }}</p>
+            <p class="text-sm">{{ t('workouts.templates.empty.description') }}</p>
           </div>
         </div>
 
         <Button variant="outline" class="w-full" @click="isAddExerciseOpen = true">
-          + Add Exercise
+          + {{ t('workouts.templates.addExercise') }}
         </Button>
       </div>
     </div>
@@ -122,10 +126,10 @@ function handleCancel(): void {
     <template #footer>
       <div class="flex gap-3 p-4">
         <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
-          Cancel
+          {{ t('common.buttons.cancel') }}
         </Button>
         <Button class="flex-1" :disabled="!isValid || isSaving" @click="handleSave">
-          {{ isSaving ? 'Saving...' : 'Save Template' }}
+          {{ isSaving ? t('common.states.saving') : t('workouts.templates.saveTemplate') }}
         </Button>
       </div>
     </template>

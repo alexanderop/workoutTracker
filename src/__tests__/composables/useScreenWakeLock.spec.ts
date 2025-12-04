@@ -39,10 +39,6 @@ vi.mock('@vueuse/core', () => ({
 vi.spyOn(console, 'log').mockImplementation(() => {})
 vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-// Mock HTMLMediaElement methods not implemented by jsdom
-HTMLVideoElement.prototype.play = vi.fn(() => Promise.resolve())
-HTMLVideoElement.prototype.pause = vi.fn()
-
 // Mock window.matchMedia for PWA standalone detection
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

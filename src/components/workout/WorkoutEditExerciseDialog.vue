@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +19,8 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from '@/components/ui/number-field'
+
+const { t } = useI18n()
 
 export type ExerciseEditData = {
   name: string
@@ -72,28 +75,33 @@ function handleCancel() {
   <Dialog v-model:open="open">
     <MobileDialogContent class="max-w-md">
       <DialogHeader>
-        <DialogTitle>Edit Exercise</DialogTitle>
-        <DialogDescription> Update the exercise details for this workout </DialogDescription>
+        <DialogTitle>{{ t('dialogs.editExercise.title') }}</DialogTitle>
+        <DialogDescription> {{ t('dialogs.editExercise.description') }} </DialogDescription>
       </DialogHeader>
 
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
-          <Label for="exercise-name">Exercise Name</Label>
-          <Input id="exercise-name" v-model="name" placeholder="e.g. Bench Press" class="h-12" />
+          <Label for="exercise-name">{{ t('dialogs.editExercise.exerciseName') }}</Label>
+          <Input
+            id="exercise-name"
+            v-model="name"
+            :placeholder="t('dialogs.editExercise.exerciseNamePlaceholder')"
+            class="h-12"
+          />
         </div>
 
         <div class="grid gap-2">
-          <Label for="equipment">Equipment</Label>
+          <Label for="equipment">{{ t('dialogs.editExercise.equipment') }}</Label>
           <Input
             id="equipment"
             v-model="equipment"
-            placeholder="e.g. Barbell, Dumbbells"
+            :placeholder="t('dialogs.editExercise.equipmentPlaceholder')"
             class="h-12"
           />
         </div>
 
         <NumberField id="target-reps" v-model="targetReps" :min="1" :max="100">
-          <Label for="target-reps">Target Reps</Label>
+          <Label for="target-reps">{{ t('dialogs.editExercise.targetReps') }}</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />
             <NumberFieldInput />
@@ -102,7 +110,7 @@ function handleCancel() {
         </NumberField>
 
         <NumberField id="set-count" v-model="setCount" :min="1" :max="20">
-          <Label for="set-count">Number of Sets</Label>
+          <Label for="set-count">{{ t('dialogs.editExercise.numberOfSets') }}</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />
             <NumberFieldInput />
@@ -112,8 +120,12 @@ function handleCancel() {
       </div>
 
       <DialogFooter class="flex-row gap-2">
-        <Button variant="outline" class="flex-1" @click="handleCancel"> Cancel </Button>
-        <Button class="flex-1" @click="handleSave"> Save Changes </Button>
+        <Button variant="outline" class="flex-1" @click="handleCancel">
+          {{ t('common.buttons.cancel') }}
+        </Button>
+        <Button class="flex-1" @click="handleSave">
+          {{ t('dialogs.editExercise.saveChanges') }}
+        </Button>
       </DialogFooter>
     </MobileDialogContent>
   </Dialog>

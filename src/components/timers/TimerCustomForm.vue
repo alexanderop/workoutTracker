@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Play } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const { t } = useI18n()
 
 type TimerType = 'amrap' | 'emom' | 'tabata' | 'fortime'
 
@@ -48,7 +51,7 @@ function handleSubmit() {
     <!-- AMRAP custom -->
     <div v-if="timerType === 'amrap'" class="space-y-4">
       <div class="space-y-2">
-        <Label for="amrap-minutes">Duration (minutes)</Label>
+        <Label for="amrap-minutes">{{ t('timers.form.durationMinutes') }}</Label>
         <Input
           id="amrap-minutes"
           v-model.number="customAmrap.minutes"
@@ -62,7 +65,7 @@ function handleSubmit() {
     <!-- EMOM custom -->
     <div v-if="timerType === 'emom'" class="space-y-4">
       <div class="space-y-2">
-        <Label for="emom-minutes">Duration (minutes)</Label>
+        <Label for="emom-minutes">{{ t('timers.form.durationMinutes') }}</Label>
         <Input
           id="emom-minutes"
           v-model.number="customEmom.minutes"
@@ -76,7 +79,7 @@ function handleSubmit() {
     <!-- Tabata custom -->
     <div v-if="timerType === 'tabata'" class="space-y-4">
       <div class="space-y-2">
-        <Label for="tabata-rounds">Rounds</Label>
+        <Label for="tabata-rounds">{{ t('timers.form.rounds') }}</Label>
         <Input
           id="tabata-rounds"
           v-model.number="customTabata.rounds"
@@ -86,7 +89,7 @@ function handleSubmit() {
         />
       </div>
       <div class="space-y-2">
-        <Label for="tabata-work">Work (seconds)</Label>
+        <Label for="tabata-work">{{ t('timers.form.workSeconds') }}</Label>
         <Input
           id="tabata-work"
           v-model.number="customTabata.workSeconds"
@@ -96,7 +99,7 @@ function handleSubmit() {
         />
       </div>
       <div class="space-y-2">
-        <Label for="tabata-rest">Rest (seconds)</Label>
+        <Label for="tabata-rest">{{ t('timers.form.restSeconds') }}</Label>
         <Input
           id="tabata-rest"
           v-model.number="customTabata.restSeconds"
@@ -111,10 +114,10 @@ function handleSubmit() {
     <div v-if="timerType === 'fortime'" class="space-y-4">
       <div class="flex items-center gap-2">
         <input id="fortime-hascap" v-model="customForTime.hasCap" type="checkbox" class="rounded" />
-        <Label for="fortime-hascap">Enable time cap</Label>
+        <Label for="fortime-hascap">{{ t('timers.form.enableTimeCap') }}</Label>
       </div>
       <div v-if="customForTime.hasCap" class="space-y-2">
-        <Label for="fortime-minutes">Time cap (minutes)</Label>
+        <Label for="fortime-minutes">{{ t('timers.form.timeCapMinutes') }}</Label>
         <Input
           id="fortime-minutes"
           v-model.number="customForTime.minutes"
@@ -127,10 +130,12 @@ function handleSubmit() {
 
     <!-- Actions -->
     <div class="flex gap-3 pt-4">
-      <Button variant="outline" class="flex-1" @click="emit('back')"> Back </Button>
+      <Button variant="outline" class="flex-1" @click="emit('back')">
+        {{ t('timers.form.back') }}
+      </Button>
       <Button class="flex-1" :class="colorClass" @click="handleSubmit">
         <Play class="w-4 h-4 mr-2" />
-        Start
+        {{ t('timers.form.start') }}
       </Button>
     </div>
   </div>

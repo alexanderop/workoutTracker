@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue'
 import { Timer } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import TimerPresetSelector from '@/components/timers/TimerPresetSelector.vue'
 import StandaloneTimerRunner from '@/components/timers/StandaloneTimerRunner.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
 import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
+
+const { t } = useI18n()
 
 type TimerType = 'amrap' | 'emom' | 'tabata' | 'fortime'
 type ViewState = 'select' | 'configure' | 'running'
@@ -47,7 +50,7 @@ function handleComplete() {
       <div class="p-4 border-b">
         <div class="flex items-center gap-2">
           <Timer class="w-5 h-5 text-primary" />
-          <h1 class="text-lg font-semibold">Quick Timers</h1>
+          <h1 class="text-lg font-semibold">{{ t('timers.view.title') }}</h1>
         </div>
       </div>
 
@@ -58,8 +61,8 @@ function handleComplete() {
             :class="BLOCK_COLORS.amrap.text"
             @click="selectTimer('amrap')"
           >
-            <div class="text-2xl font-bold mb-1">AMRAP</div>
-            <div class="text-sm text-muted-foreground">As Many Rounds As Possible</div>
+            <div class="text-2xl font-bold mb-1">{{ t('timers.types.amrap') }}</div>
+            <div class="text-sm text-muted-foreground">{{ t('timers.descriptions.amrap') }}</div>
           </button>
 
           <button
@@ -67,8 +70,8 @@ function handleComplete() {
             :class="BLOCK_COLORS.emom.text"
             @click="selectTimer('emom')"
           >
-            <div class="text-2xl font-bold mb-1">EMOM</div>
-            <div class="text-sm text-muted-foreground">Every Minute On the Minute</div>
+            <div class="text-2xl font-bold mb-1">{{ t('timers.types.emom') }}</div>
+            <div class="text-sm text-muted-foreground">{{ t('timers.descriptions.emom') }}</div>
           </button>
 
           <button
@@ -76,8 +79,10 @@ function handleComplete() {
             :class="BLOCK_COLORS.tabata.text"
             @click="selectTimer('tabata')"
           >
-            <div class="text-2xl font-bold mb-1">Tabata</div>
-            <div class="text-sm text-muted-foreground">Work/Rest Intervals</div>
+            <div class="text-2xl font-bold mb-1">{{ t('timers.types.tabata') }}</div>
+            <div class="text-sm text-muted-foreground">
+              {{ t('timers.descriptions.workRestIntervals') }}
+            </div>
           </button>
 
           <button
@@ -85,8 +90,10 @@ function handleComplete() {
             :class="BLOCK_COLORS.fortime.text"
             @click="selectTimer('fortime')"
           >
-            <div class="text-2xl font-bold mb-1">For Time</div>
-            <div class="text-sm text-muted-foreground">Race Against the Clock</div>
+            <div class="text-2xl font-bold mb-1">{{ t('timers.types.fortime') }}</div>
+            <div class="text-sm text-muted-foreground">
+              {{ t('timers.descriptions.raceAgainstClock') }}
+            </div>
           </button>
         </div>
       </div>

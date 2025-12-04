@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto'
+import { vi } from 'vitest'
 import { db } from '@/db'
 
 /**
@@ -15,6 +16,29 @@ window.matchMedia = (query: string): MediaQueryList => ({
   addEventListener: () => {},
   removeEventListener: () => {},
   dispatchEvent: () => true,
+})
+
+/**
+ * Mock HTMLMediaElement methods not implemented by jsdom.
+ * Required for useScreenWakeLock fallback video element.
+ * Uses configurable: true to allow test-specific overrides.
+ */
+Object.defineProperty(window.HTMLMediaElement.prototype, 'play', {
+  configurable: true,
+  writable: true,
+  value: vi.fn().mockResolvedValue(undefined),
+})
+
+Object.defineProperty(window.HTMLMediaElement.prototype, 'pause', {
+  configurable: true,
+  writable: true,
+  value: vi.fn(),
+})
+
+Object.defineProperty(window.HTMLMediaElement.prototype, 'load', {
+  configurable: true,
+  writable: true,
+  value: vi.fn(),
 })
 
 /**

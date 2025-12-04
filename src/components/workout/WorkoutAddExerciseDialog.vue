@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Search, X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,8 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
+
+const { t } = useI18n()
 
 type Props = {
   open: boolean
@@ -56,13 +59,13 @@ function handleOpenChange(value: boolean) {
         @click="handleOpenChange(false)"
       >
         <X class="size-5" />
-        <span class="sr-only">Close</span>
+        <span class="sr-only">{{ t('common.buttons.close') }}</span>
       </button>
 
       <DialogHeader>
-        <DialogTitle>Add Exercise</DialogTitle>
+        <DialogTitle>{{ t('dialogs.addExercise.title') }}</DialogTitle>
         <DialogDescription>
-          Choose from popular exercises or create a custom one
+          {{ t('dialogs.addExercise.description') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -73,7 +76,7 @@ function handleOpenChange(value: boolean) {
         />
         <Input
           v-model="searchQuery"
-          placeholder="Search exercises..."
+          :placeholder="t('dialogs.addExercise.searchPlaceholder')"
           class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
           autofocus
         />
@@ -108,14 +111,16 @@ function handleOpenChange(value: boolean) {
         <!-- Empty State -->
         <div v-if="filteredExercises.length === 0" class="text-center py-12">
           <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-          <p class="text-sm text-muted-foreground">No exercises found for "{{ searchQuery }}"</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('dialogs.addExercise.noResults', { query: searchQuery }) }}
+          </p>
         </div>
       </div>
 
       <!-- Create Custom Exercise Button -->
       <div class="pt-4 border-t border-border flex-shrink-0">
         <Button variant="default" class="w-full" @click="handleCreateNew">
-          + Create Custom Exercise
+          {{ t('dialogs.addExercise.createCustomExercise') }}
         </Button>
       </div>
     </MobileDialogContent>

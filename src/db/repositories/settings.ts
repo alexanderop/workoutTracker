@@ -12,6 +12,7 @@ const SETTING_DEFAULTS = {
   autoSaveInterval: 1000,
   screenWakeLock: true,
   timerSoundEnabled: true,
+  language: undefined,
 } as const
 
 type SettingDefaults = typeof SETTING_DEFAULTS

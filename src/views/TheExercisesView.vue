@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,18 +10,19 @@ import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 import type { Muscle } from '@/stores/exercises'
 
 const router = useRouter()
+const { t } = useI18n()
 const searchQuery = ref('')
 const activeFilter = ref<Muscle | 'all'>('all')
 
-const muscleFilters: Array<{ value: Muscle | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'chest', label: 'Chest' },
-  { value: 'back', label: 'Back' },
-  { value: 'legs', label: 'Legs' },
-  { value: 'shoulders', label: 'Shoulders' },
-  { value: 'arms', label: 'Arms' },
-  { value: 'core', label: 'Core' },
-]
+const muscleFilters = computed<Array<{ value: Muscle | 'all'; label: string }>>(() => [
+  { value: 'all', label: t('exercises.filters.all') },
+  { value: 'chest', label: t('exercises.muscle.chest') },
+  { value: 'back', label: t('exercises.muscle.back') },
+  { value: 'legs', label: t('exercises.muscle.legs') },
+  { value: 'shoulders', label: t('exercises.muscle.shoulders') },
+  { value: 'arms', label: t('exercises.muscle.arms') },
+  { value: 'core', label: t('exercises.muscle.core') },
+])
 
 const filteredExercises = computed(() => {
   let exercises = popularExercises
@@ -61,8 +63,10 @@ function handleCreateExercise() {
     <div class="sticky top-0 z-10 bg-background/95 backdrop-blur-sm px-5 pt-6 pb-4">
       <!-- Title & Count -->
       <div class="mb-5">
-        <h1 class="text-4xl font-semibold tracking-tight">Exercises</h1>
-        <p class="text-sm text-muted-foreground mt-1">{{ exerciseCount }} exercises</p>
+        <h1 class="text-4xl font-semibold tracking-tight">{{ t('exercises.title') }}</h1>
+        <p class="text-sm text-muted-foreground mt-1">
+          {{ t('exercises.count', { count: exerciseCount }) }}
+        </p>
       </div>
 
       <!-- Search Input -->
@@ -72,7 +76,7 @@ function handleCreateExercise() {
         />
         <Input
           v-model="searchQuery"
-          placeholder="Search by name, muscle, or equipment..."
+          :placeholder="t('exercises.searchPlaceholder')"
           class="w-full pl-12 pr-10 h-14 text-base rounded-2xl bg-muted/40 border-transparent placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-200"
         />
         <button
@@ -134,14 +138,18 @@ function handleCreateExercise() {
         <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
           <Search class="size-7 text-muted-foreground/40" />
         </div>
-        <p class="text-base font-medium text-foreground/80 mb-1">No exercises found</p>
+        <p class="text-base font-medium text-foreground/80 mb-1">
+          {{ t('exercises.empty.title') }}
+        </p>
         <p class="text-sm text-muted-foreground max-w-[240px]">
-          <template v-if="searchQuery"> No results for "{{ searchQuery }}" </template>
-          <template v-else> Try a different filter or create a custom exercise </template>
+          <template v-if="searchQuery">{{
+            t('exercises.empty.noResults', { query: searchQuery })
+          }}</template>
+          <template v-else>{{ t('exercises.empty.tryDifferent') }}</template>
         </p>
         <Button variant="outline" class="mt-4" @click="handleCreateExercise">
           <Plus class="size-4 mr-2" />
-          Create Custom
+          {{ t('exercises.create.customShort') }}
         </Button>
       </div>
     </div>
@@ -154,7 +162,7 @@ function handleCreateExercise() {
           @click="handleCreateExercise"
         >
           <Plus class="size-5 mr-2" />
-          Create Custom Exercise
+          {{ t('exercises.create.custom') }}
         </Button>
       </div>
     </div>

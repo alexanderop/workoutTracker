@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Settings2 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import TimerPresetButton from '@/components/timers/TimerPresetButton.vue'
+
+const { t } = useI18n()
 
 type Preset = {
   label: string
@@ -38,8 +41,8 @@ const emit = defineEmits<{
       <div class="flex items-center gap-3">
         <Settings2 class="w-5 h-5 text-muted-foreground" />
         <div>
-          <div class="font-semibold text-foreground">Custom</div>
-          <div class="text-sm text-muted-foreground">Configure your own settings</div>
+          <div class="font-semibold text-foreground">{{ t('timers.presets.custom') }}</div>
+          <div class="text-sm text-muted-foreground">{{ t('timers.presets.configureOwn') }}</div>
         </div>
       </div>
     </button>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
 import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
 import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/types/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+
+const { t } = useI18n()
 
 type Props = {
   block: ForTimeBlock
@@ -60,13 +63,15 @@ defineExpose({
         <p class="text-lg font-semibold text-foreground truncate">
           {{ currentExercise.name }}
         </p>
-        <p class="text-sm text-muted-foreground">{{ currentExercise.prescribedReps }} reps</p>
+        <p class="text-sm text-muted-foreground">
+          {{ currentExercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
+        </p>
       </div>
     </WorkoutCircularTimer>
 
     <!-- Time Cap indicator -->
     <div v-if="hasTimeCap" class="text-sm text-muted-foreground">
-      Cap: {{ Math.floor(block.config.timeCapSeconds! / 60) }}:{{
+      {{ t('timers.workout.fortime.cap') }}{{ Math.floor(block.config.timeCapSeconds! / 60) }}:{{
         String(block.config.timeCapSeconds! % 60).padStart(2, '0')
       }}
     </div>

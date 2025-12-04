@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const { t } = useI18n()
 
 export type TabataConfigModel = {
   rounds: number
@@ -24,7 +27,7 @@ const totalRemainder = computed(() => String(totalSeconds.value % 60).padStart(2
 <template>
   <div class="space-y-4">
     <div class="space-y-2">
-      <Label>Rounds</Label>
+      <Label>{{ t('workouts.builder.timedCard.rounds') }}</Label>
       <div class="flex gap-2">
         <Button
           v-for="r in roundPresets"
@@ -40,17 +43,17 @@ const totalRemainder = computed(() => String(totalSeconds.value % 60).padStart(2
 
     <div class="grid grid-cols-2 gap-4">
       <div class="space-y-2">
-        <Label>Work (seconds)</Label>
+        <Label>{{ t('dialogs.tabataConfig.work') }}</Label>
         <Input v-model.number="model.workSeconds" type="number" min="5" max="60" />
       </div>
       <div class="space-y-2">
-        <Label>Rest (seconds)</Label>
+        <Label>{{ t('dialogs.tabataConfig.rest') }}</Label>
         <Input v-model.number="model.restSeconds" type="number" min="5" max="60" />
       </div>
     </div>
 
     <div class="bg-secondary/50 rounded-lg p-3 text-center">
-      <p class="text-sm text-muted-foreground">Total time</p>
+      <p class="text-sm text-muted-foreground">{{ t('dialogs.tabataConfig.totalTime') }}</p>
       <p class="text-xl font-bold font-mono">{{ totalMinutes }}:{{ totalRemainder }}</p>
     </div>
   </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
@@ -9,6 +10,8 @@ import { workoutsRepository } from '@/db/repositories/workouts'
 import { templatesRepository } from '@/db/repositories/templates'
 import type { DbCompletedWorkout, DbWorkoutTemplate } from '@/db/schema'
 import { formatDate, formatDuration } from '@/lib/formatters'
+
+const { t } = useI18n()
 
 const router = useRouter()
 
@@ -60,27 +63,29 @@ function formatTemplateDate(timestamp: number | null): string {
   <div class="flex-1 p-4 flex flex-col">
     <Card class="mb-6">
       <CardContent class="pt-6">
-        <h1 class="text-3xl font-bold mb-2">Workouts</h1>
-        <p class="text-muted-foreground">View and manage your workouts and templates</p>
+        <h1 class="text-3xl font-bold mb-2">{{ t('workouts.title') }}</h1>
+        <p class="text-muted-foreground">{{ t('workouts.empty.description') }}</p>
       </CardContent>
     </Card>
 
     <!-- Loading state -->
     <div v-if="isLoading" class="flex items-center justify-center py-8 flex-1">
-      <div class="text-muted-foreground">Loading...</div>
+      <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
     <!-- Tabs -->
     <Tabs v-else default-value="history" class="flex flex-col flex-1">
       <TabsList class="grid w-full grid-cols-2 mb-6">
-        <TabsTrigger value="templates">Templates</TabsTrigger>
-        <TabsTrigger value="history">History</TabsTrigger>
+        <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
+        <TabsTrigger value="history">{{ t('workouts.list.history') }}</TabsTrigger>
       </TabsList>
 
       <!-- Templates Tab -->
       <TabsContent value="templates" class="flex-1 flex flex-col">
         <div class="mb-4">
-          <Button class="w-full" @click="handleCreateTemplate"> + Create Template </Button>
+          <Button class="w-full" @click="handleCreateTemplate">{{
+            t('common.buttons.createTemplate')
+          }}</Button>
         </div>
 
         <!-- Templates list -->
@@ -97,7 +102,9 @@ function formatTemplateDate(timestamp: number | null): string {
             <div class="flex justify-between items-center">
               <div>
                 <div class="font-medium">{{ template.name }}</div>
-                <div class="text-sm text-muted-foreground">{{ template.blocks.length }} blocks</div>
+                <div class="text-sm text-muted-foreground">
+                  {{ t('workouts.builder.blockCount', { count: template.blocks.length }) }}
+                </div>
                 <div class="text-xs text-muted-foreground mt-1">
                   {{ formatTemplateDate(template.lastUsedAt) }}
                 </div>
@@ -111,8 +118,8 @@ function formatTemplateDate(timestamp: number | null): string {
         <div v-else class="flex-1 flex items-center justify-center">
           <Empty>
             <EmptyHeader>
-              <EmptyTitle>No templates yet</EmptyTitle>
-              <EmptyDescription>Create your first template to get started</EmptyDescription>
+              <EmptyTitle>{{ t('workouts.empty.templates.title') }}</EmptyTitle>
+              <EmptyDescription>{{ t('workouts.empty.templates.description') }}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </div>
@@ -149,8 +156,8 @@ function formatTemplateDate(timestamp: number | null): string {
         <div v-else class="flex-1 flex items-center justify-center">
           <Empty>
             <EmptyHeader>
-              <EmptyTitle>No workouts yet</EmptyTitle>
-              <EmptyDescription>Start your first workout to get started</EmptyDescription>
+              <EmptyTitle>{{ t('workouts.empty.history.title') }}</EmptyTitle>
+              <EmptyDescription>{{ t('workouts.empty.history.description') }}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </div>

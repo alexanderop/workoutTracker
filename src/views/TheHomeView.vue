@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ArrowRight, Play, Timer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+const { t } = useI18n()
 const router = useRouter()
 
 function startWorkout() {
@@ -28,12 +30,12 @@ function goToTimers() {
         >
           <Play class="w-8 h-8 text-primary ml-1" />
         </div>
-        <CardTitle class="text-2xl"> Start New Workout </CardTitle>
-        <CardDescription> Track your exercises, sets, and reps </CardDescription>
+        <CardTitle class="text-2xl">{{ t('nav.homeView.startNewWorkout') }}</CardTitle>
+        <CardDescription>{{ t('nav.homeView.trackDescription') }}</CardDescription>
       </CardHeader>
       <CardContent class="pt-0">
         <Button class="w-full group/btn" size="lg">
-          Get Started
+          {{ t('common.buttons.getStarted') }}
           <ArrowRight class="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
         </Button>
       </CardContent>
@@ -50,8 +52,8 @@ function goToTimers() {
         >
           <Timer class="w-7 h-7 text-orange-500" />
         </div>
-        <CardTitle class="text-xl"> Quick Timer </CardTitle>
-        <CardDescription> AMRAP, EMOM, Tabata, For Time </CardDescription>
+        <CardTitle class="text-xl">{{ t('nav.homeView.quickTimer') }}</CardTitle>
+        <CardDescription>{{ t('nav.homeView.quickTimerDescription') }}</CardDescription>
       </CardHeader>
     </Card>
   </div>
