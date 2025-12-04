@@ -1,25 +1,24 @@
 import { screen, waitFor } from '@testing-library/vue'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/composables/useAppInitialization'
 import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
+// Helper to wait for debounced auto-save to complete
+// The useWorkoutPersistence composable has a 1000ms debounced auto-save
+const waitForDebouncedSave = () => new Promise((r) => setTimeout(r, 1100))
+
 describe('Full Workout Flow', () => {
   beforeEach(async () => {
+    // Wait for any pending debounced saves from previous test suite
+    await waitForDebouncedSave()
     resetInitState()
     await resetDatabase()
   })
 
   afterEach(async () => {
     resetWorkout()
-    await resetDatabase()
-    // Flush pending debounced saves using fake timers briefly
-    // The useWorkoutPersistence composable has a 1000ms debounced auto-save
-    // that can fire after test cleanup, writing stale data to DB
-    vi.useFakeTimers()
-    await vi.advanceTimersByTimeAsync(1100)
-    vi.useRealTimers()
     await resetDatabase()
     // Reset body styles that might have been set by dialogs
     document.body.style.cssText = ''
