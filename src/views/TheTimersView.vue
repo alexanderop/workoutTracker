@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue'
-import { Timer } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import PageLayout from '@/components/PageLayout.vue'
 import TimerPresetSelector from '@/components/timers/TimerPresetSelector.vue'
 import StandaloneTimerRunner from '@/components/timers/StandaloneTimerRunner.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
@@ -46,15 +46,8 @@ function handleComplete() {
 <template>
   <div class="flex flex-col h-full">
     <!-- Timer Selection -->
-    <template v-if="currentView === 'select'">
-      <div class="p-4 border-b">
-        <div class="flex items-center gap-2">
-          <Timer class="w-5 h-5 text-primary" />
-          <h1 class="text-lg font-semibold">{{ t('timers.view.title') }}</h1>
-        </div>
-      </div>
-
-      <div class="flex-1 p-4">
+    <PageLayout v-if="currentView === 'select'" :title="t('timers.view.title')">
+      <div class="p-4">
         <div class="grid grid-cols-2 gap-4">
           <button
             class="p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
@@ -97,7 +90,7 @@ function handleComplete() {
           </button>
         </div>
       </div>
-    </template>
+    </PageLayout>
 
     <!-- Preset Selection -->
     <TimerPresetSelector
