@@ -5,14 +5,8 @@ import { resetWorkout } from '@/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
-// Helper to wait for debounced auto-save to complete
-// The useWorkoutPersistence composable has a 1000ms debounced auto-save
-const waitForDebouncedSave = () => new Promise((r) => setTimeout(r, 1100))
-
 describe('Full Workout Flow', () => {
   beforeEach(async () => {
-    // Wait for any pending debounced saves from previous test suite
-    await waitForDebouncedSave()
     resetInitState()
     await resetDatabase()
   })

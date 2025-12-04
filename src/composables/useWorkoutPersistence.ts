@@ -1,4 +1,4 @@
-import { ref, type Ref, watch } from 'vue'
+import { onScopeDispose, ref, type Ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { workoutsRepository } from '@/db/repositories/workouts'
@@ -28,6 +28,13 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
   const persistenceState = ref<PersistenceState>({ status: 'idle' })
   const hasUnsavedChanges = ref(false)
   const isInitialized = ref(false)
+  // Track if the composable scope is disposed (component unmounted)
+  // This prevents pending debounced callbacks from writing stale data
+  let isDisposed = false
+
+  onScopeDispose(() => {
+    isDisposed = true
+  })
 
   // Track changes for unsaved indicator
   watch(
@@ -44,6 +51,9 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
   watchDebounced(
     workout,
     async (newWorkout) => {
+      // Skip save if scope is disposed (component unmounted)
+      // The debounced callback can fire after unmount due to setTimeout timing
+      if (isDisposed) return
       if (!isInitialized.value) return
 
       // No blocks means no active workout to save
