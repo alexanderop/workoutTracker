@@ -67,18 +67,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-quality-check.ts\"",
-            "timeout": 120
-          }
-        ]
-      }
     ]
   }
 }
