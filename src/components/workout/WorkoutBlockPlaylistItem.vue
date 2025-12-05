@@ -129,7 +129,7 @@ const completedSets = computed(() => {
         :style="{ x }"
         :class="
           cn(
-            'relative flex items-center gap-3 p-3 min-h-[64px] bg-background cursor-pointer',
+            'relative w-full flex items-center gap-3 p-3 min-h-[64px] bg-background cursor-pointer',
             'border border-transparent transition-[border-color,background-color]',
             isSelected && 'border-primary bg-primary/5',
             isCompleted && 'opacity-60',
