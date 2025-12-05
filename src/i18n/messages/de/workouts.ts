@@ -61,6 +61,7 @@ export default {
     },
     queue: {
       title: 'Workout-Warteschlange',
+      description: 'Workout-Blöcke verwalten',
       open: 'Workout-Warteschlange öffnen',
       addBlock: 'Übung hinzufügen',
       active: '(Aktiv)',

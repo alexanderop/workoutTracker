@@ -1,16 +1,6 @@
 <script setup lang="ts">
-import { List, MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
 import { computed, ref, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useRestTimer } from '@/composables/useRestTimer'
 import { isSetReady, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
@@ -22,10 +12,8 @@ import WorkoutAmrapView from './WorkoutAmrapView.vue'
 import WorkoutEmomView from './WorkoutEmomView.vue'
 import WorkoutForTimeView from './WorkoutForTimeView.vue'
 
-import WorkoutDurationBadge from './WorkoutDurationBadge.vue'
+import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
 import WorkoutTabataView from './WorkoutTabataView.vue'
-
-const { t } = useI18n()
 
 type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
 
@@ -159,45 +147,14 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     prevent-navigation
     @back="returnToBuilder"
   >
-    <!-- Header actions (queue button + duration badge + dropdown menu) -->
     <template #header-actions>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="flex-shrink-0"
-        :aria-label="t('workouts.active.queue.open')"
-        @click="emit('open-queue')"
-      >
-        <List class="size-5" />
-      </Button>
-      <WorkoutDurationBadge />
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="flex-shrink-0"
-            :aria-label="t('common.aria.workoutOptions')"
-          >
-            <MoreVertical class="size-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-48">
-          <DropdownMenuItem v-if="canSkipBlock" @click="handleSkipBlock">
-            <SkipForward class="size-4 mr-2" />
-            {{ t('workouts.active.mode.skipBlock') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator v-if="canSkipBlock" />
-          <DropdownMenuItem @click="emit('end-workout')">
-            <Square class="size-4 mr-2" />
-            {{ t('workouts.active.mode.endWorkout') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem class="text-destructive" @click="emit('cancel-workout')">
-            <X class="size-4 mr-2" />
-            {{ t('workouts.active.mode.cancelWorkout') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <WorkoutActiveModeHeaderActions
+        :can-skip-block="canSkipBlock"
+        @skip-block="handleSkipBlock"
+        @open-queue="emit('open-queue')"
+        @end-workout="emit('end-workout')"
+        @cancel-workout="emit('cancel-workout')"
+      />
     </template>
 
     <!-- Main content - switches between strength and timed views -->

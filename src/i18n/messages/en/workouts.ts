@@ -61,6 +61,7 @@ export default {
     },
     queue: {
       title: 'Workout Queue',
+      description: 'Manage workout blocks',
       open: 'Open workout queue',
       addBlock: 'Add Exercise',
       active: '(Active)',

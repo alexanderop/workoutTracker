@@ -91,7 +91,7 @@ function handleAddBlock() {
       <DialogHeader>
         <DialogTitle>{{ t('workouts.active.queue.title') }}</DialogTitle>
         <DialogDescription class="sr-only">
-          Manage workout blocks
+          {{ t('workouts.active.queue.description') }}
         </DialogDescription>
       </DialogHeader>
 
