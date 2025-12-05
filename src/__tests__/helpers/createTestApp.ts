@@ -51,6 +51,11 @@ type TestApp = {
   getFooterButton: (direction: 'prev' | 'next') => HTMLElement
   getMenuTrigger: () => HTMLElement
   getTimerControlButton: (action: 'exit' | 'reset') => HTMLElement
+  // Journey helpers
+  navigateToBuilder: () => Promise<void>
+  openAddBlockDialog: () => Promise<void>
+  addStrengthBlock: (exerciseName: string) => Promise<void>
+  switchToTimedBlocksTab: () => Promise<void>
   cleanup: () => void
 }
 
@@ -232,6 +237,30 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     rtlCleanup()
   }
 
+  // Journey helpers - common navigation patterns for integration tests
+  async function navigateToBuilder(): Promise<void> {
+    await user.click(screen.getByRole('button', { name: /get started/i }))
+  }
+
+  async function openAddBlockDialog(): Promise<void> {
+    const addBlockBtn =
+      screen.queryByRole('button', { name: /add first block/i }) ??
+      screen.getByRole('button', { name: /add block/i })
+    await user.click(addBlockBtn)
+    await waitForDialog()
+  }
+
+  async function addStrengthBlock(exerciseName: string): Promise<void> {
+    await navigateToBuilder()
+    await openAddBlockDialog()
+    await user.click(getDialogButton(exerciseName))
+    assertDialogClosed()
+  }
+
+  async function switchToTimedBlocksTab(): Promise<void> {
+    await user.click(screen.getByRole('tab', { name: /timed blocks/i }))
+  }
+
   return {
     router,
     user,
@@ -256,6 +285,11 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     getFooterButton,
     getMenuTrigger,
     getTimerControlButton,
+    // Journey helpers
+    navigateToBuilder,
+    openAddBlockDialog,
+    addStrengthBlock,
+    switchToTimedBlocksTab,
     cleanup,
   }
 }
