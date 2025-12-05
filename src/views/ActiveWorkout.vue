@@ -12,6 +12,7 @@ import WorkoutConfigureTabataDialog from '@/components/workout/WorkoutConfigureT
 import WorkoutEditExerciseDialog from '@/components/workout/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/components/workout/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/workout/WorkoutFinishDialog.vue'
+import WorkoutQueueDrawer from '@/components/workout/WorkoutQueueDrawer.vue'
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/composables/useWorkout'
 import { useWorkoutMode } from '@/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/composables/useWorkoutPersistence'
@@ -74,6 +75,7 @@ type ActiveDialog =
 
 const activeDialog = ref<ActiveDialog>(null)
 const editingBlockIndex = ref<number | null>(null)
+const queueDrawerOpen = ref(false)
 
 // Computed for exercise edit dialog
 const selectedExerciseData = computed<ExerciseEditData | null>(() => {
@@ -166,6 +168,15 @@ function handleEditBlock(index: number) {
     activeDialog.value = 'editExercise'
   }
 }
+
+function handleOpenQueue() {
+  queueDrawerOpen.value = true
+}
+
+function handleQueueAddBlock() {
+  queueDrawerOpen.value = false
+  activeDialog.value = 'addBlock'
+}
 </script>
 
 <template>
@@ -183,6 +194,7 @@ function handleEditBlock(index: number) {
       @end-workout="activeDialog = 'finish'"
       @cancel-workout="activeDialog = 'cancel'"
       @workout-complete="activeDialog = 'finish'"
+      @open-queue="handleOpenQueue"
     />
 
     <!-- Dialogs (shared across modes) -->
@@ -231,5 +243,8 @@ function handleEditBlock(index: number) {
       @update:open="activeDialog = $event ? 'cancel' : null"
       @confirm="handleConfirmCancel"
     />
+
+    <!-- Queue Drawer (active mode) -->
+    <WorkoutQueueDrawer v-model:open="queueDrawerOpen" @add-block="handleQueueAddBlock" />
   </div>
 </template>

@@ -59,6 +59,13 @@ export default {
       endWorkout: 'Workout beenden',
       cancelWorkout: 'Workout abbrechen',
     },
+    queue: {
+      title: 'Workout-Warteschlange',
+      open: 'Workout-Warteschlange öffnen',
+      addBlock: 'Übung hinzufügen',
+      active: '(Aktiv)',
+      exercises: '{count} Übungen',
+    },
     footer: {
       completeSet: 'Satz abschließen',
       pause: 'Pause',

@@ -59,6 +59,13 @@ export default {
       endWorkout: 'End Workout',
       cancelWorkout: 'Cancel Workout',
     },
+    queue: {
+      title: 'Workout Queue',
+      open: 'Open workout queue',
+      addBlock: 'Add Exercise',
+      active: '(Active)',
+      exercises: '{count} exercises',
+    },
     footer: {
       completeSet: 'Complete Set',
       pause: 'Pause',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
+import { List, MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
 import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
@@ -33,6 +33,7 @@ const emit = defineEmits<{
   'end-workout': []
   'cancel-workout': []
   'workout-complete': []
+  'open-queue': []
 }>()
 
 const { workout, completeSet, setBlockResult, updateSetValue } = useWorkout()
@@ -158,8 +159,17 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     prevent-navigation
     @back="returnToBuilder"
   >
-    <!-- Header actions (duration badge + dropdown menu) -->
+    <!-- Header actions (queue button + duration badge + dropdown menu) -->
     <template #header-actions>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="flex-shrink-0"
+        :aria-label="t('workouts.active.queue.open')"
+        @click="emit('open-queue')"
+      >
+        <List class="size-5" />
+      </Button>
       <WorkoutDurationBadge />
       <DropdownMenu>
         <DropdownMenuTrigger as-child>

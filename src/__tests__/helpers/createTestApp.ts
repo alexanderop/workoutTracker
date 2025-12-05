@@ -56,6 +56,10 @@ type TestApp = {
   openAddBlockDialog: () => Promise<void>
   addStrengthBlock: (exerciseName: string) => Promise<void>
   switchToTimedBlocksTab: () => Promise<void>
+  // Queue helpers
+  openWorkoutQueue: () => Promise<void>
+  getQueueItems: () => ReadonlyArray<HTMLElement>
+  getActiveQueueItem: () => HTMLElement | null
   cleanup: () => void
 }
 
@@ -261,6 +265,23 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     await user.click(screen.getByRole('tab', { name: /timed blocks/i }))
   }
 
+  async function openWorkoutQueue(): Promise<void> {
+    await user.click(screen.getByRole('button', { name: /open workout queue/i }))
+    await waitForDialog()
+  }
+
+  function getQueueItems(): ReadonlyArray<HTMLElement> {
+    // Get all queue item buttons within the dialog (role="button" with data-queue-item)
+    const dialog = screen.getByRole('dialog')
+    const items = dialog.querySelectorAll('[data-queue-item]')
+    return Array.from(items).filter((item): item is HTMLElement => item instanceof HTMLElement)
+  }
+
+  function getActiveQueueItem(): HTMLElement | null {
+    const items = getQueueItems()
+    return items.find((item) => item.textContent?.includes('(Active)')) ?? null
+  }
+
   return {
     router,
     user,
@@ -290,6 +311,10 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     openAddBlockDialog,
     addStrengthBlock,
     switchToTimedBlocksTab,
+    // Queue helpers
+    openWorkoutQueue,
+    getQueueItems,
+    getActiveQueueItem,
     cleanup,
   }
 }
