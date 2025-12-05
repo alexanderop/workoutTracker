@@ -1,5 +1,5 @@
-import { db } from '../index'
-import type { DbUserSetting, UserSettingKey } from '../schema'
+import { db } from '@/db'
+import type { DbUserSetting, UserSettingKey } from '@/db/schema'
 
 /**
  * Default values for user settings.

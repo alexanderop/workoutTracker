@@ -32,7 +32,7 @@ beforeEach(async () => {
 Test composables that don't need Vue lifecycle directly:
 
 ```ts
-import { useRestTimer } from '@/composables/useRestTimer'
+import { useRestTimer } from '@/features/timers'
 
 it('starts a timer', () => {
   const { start, isRunning } = useRestTimer()

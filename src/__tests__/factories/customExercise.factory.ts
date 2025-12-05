@@ -1,4 +1,4 @@
-import type { CustomExercise, Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
+import type { CustomExercise, Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import { faker } from '@faker-js/faker'
 
 const DEFAULTS: Readonly<CustomExercise> = {

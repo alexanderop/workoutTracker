@@ -1,4 +1,4 @@
-import type { WeightUnit } from '@/stores/settings'
+import type { WeightUnit } from '@/types/settings'
 
 const KG_TO_LBS = 2.20462
 

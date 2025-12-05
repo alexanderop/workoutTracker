@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import ExerciseSelectorDialog from '@/components/exercise/ExerciseSelectorDialog.vue'
-import ExerciseSettingsItem from '@/components/exercise/ExerciseSettingsItem.vue'
+import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
+import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useExerciseForm } from '@/composables/useExerciseForm'
+import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
 import {
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
   MUSCLE_OPTIONS,
   TYPE_OPTIONS,
-} from '@/data/exerciseOptions'
+} from '@/features/exercises/data/exerciseOptions'
 import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 

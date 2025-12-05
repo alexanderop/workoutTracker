@@ -1,4 +1,4 @@
-import { db, generateId } from '../index'
+import { db, generateId } from '@/db'
 import type {
   DbActiveWorkout,
   DbCompletedWorkout,
@@ -8,7 +8,7 @@ import type {
   DbTemplateStrengthBlock,
   DbWorkoutBlock,
   DbWorkoutTemplate,
-} from '../schema'
+} from '@/db/schema'
 
 /**
  * Convert a workout block to a template block.

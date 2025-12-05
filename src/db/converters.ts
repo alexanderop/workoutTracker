@@ -1,5 +1,5 @@
-import type { Set, Workout } from '@/composables/useWorkout'
-import type { CustomExercise } from '@/stores/exercises'
+import type { Set, Workout } from '@/types/workout'
+import type { CustomExercise } from '@/types/exercises'
 import type {
   AmrapBlock,
   AmrapResult,

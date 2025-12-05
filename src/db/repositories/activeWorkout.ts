@@ -1,5 +1,5 @@
-import { db } from '../index'
-import type { DbActiveWorkout } from '../schema'
+import { db } from '@/db'
+import type { DbActiveWorkout } from '@/db/schema'
 
 /**
  * Repository for managing the active (in-progress) workout.

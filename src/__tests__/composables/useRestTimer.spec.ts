@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useRestTimer } from '@/composables/useRestTimer'
+import { useRestTimer } from '@/composables/timers/useRestTimer'
 
 describe('useRestTimer', () => {
   beforeEach(() => {

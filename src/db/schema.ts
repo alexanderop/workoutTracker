@@ -1,5 +1,5 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
-import type { SetStatus } from '@/composables/useWorkout'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type { SetStatus } from '@/types/workout'
 import type { WorkoutMode } from '@/types/blocks'
 
 // ============================================

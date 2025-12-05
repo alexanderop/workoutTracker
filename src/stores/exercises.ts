@@ -2,37 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { customExercisesRepository } from '@/db/repositories/customExercises'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
-
-export type Equipment =
-  | 'barbell'
-  | 'dumbbell'
-  | 'machine'
-  | 'cable'
-  | 'bodyweight'
-  | 'kettlebell'
-  | 'band'
-  | 'ez-bar'
-  | 'hex-bar'
-  | 'club'
-export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
-export type ExerciseType = 'compound' | 'isolation' | 'stability' | 'cardio'
-export type Metrics =
-  | 'weight-reps'
-  | 'reps-only'
-  | 'duration'
-  | 'distance-duration'
-  | 'weight-distance'
-
-export type CustomExercise = {
-  id: string
-  icon: string
-  name: string
-  equipment?: Equipment
-  muscle?: Muscle
-  type: ExerciseType
-  metrics: Metrics
-  createdAt: number
-}
+import type { CustomExercise } from '@/types/exercises'
 
 export const useExercisesStore = defineStore('exercises', () => {
   const customExercises = ref<Array<CustomExercise>>([])

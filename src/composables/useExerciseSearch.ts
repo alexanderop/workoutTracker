@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { PopularExercise } from '@/data/popularExercises'
-import type { Muscle } from '@/stores/exercises'
+import type { Muscle } from '@/types/exercises'
 
 import { computed, ref } from 'vue'
 import { popularExercises } from '@/data/popularExercises'

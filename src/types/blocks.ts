@@ -5,7 +5,19 @@
  * Each block has a type that determines its behavior and UI.
  */
 
-import type { Set } from '@/composables/useWorkout'
+// ============================================
+// Set Types (used by strength blocks)
+// ============================================
+
+export type SetStatus = 'completed' | 'active' | 'planned'
+
+export type WorkoutSet = {
+  id: number
+  kg: string
+  reps: string
+  rir: string
+  status: SetStatus
+}
 
 // ============================================
 // Block Exercise (for timed blocks)
@@ -81,7 +93,7 @@ export type StrengthBlock = {
   name: string
   equipment: string
   targetReps: number
-  sets: Array<Set>
+  sets: Array<WorkoutSet>
   thumbnail: string
 }
 
@@ -165,11 +177,11 @@ export const BLOCK_LABELS: Record<BlockKind, string> = {
 }
 
 export const BLOCK_ICONS: Record<BlockKind, string> = {
-  strength: '🏋️',
-  emom: '⏱️',
-  amrap: '🔄',
-  tabata: '⚡',
-  fortime: '🏁',
+  strength: '',
+  emom: '',
+  amrap: '',
+  tabata: '',
+  fortime: '',
 }
 
 export const BLOCK_COLORS = {

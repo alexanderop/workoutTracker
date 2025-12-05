@@ -1,4 +1,4 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import { i18n } from '@/i18n'
 
 function getEquipmentLabel(equipment: Equipment): string {

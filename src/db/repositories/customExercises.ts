@@ -1,5 +1,5 @@
-import { db } from '../index'
-import type { DbCustomExercise } from '../schema'
+import { db } from '@/db'
+import type { DbCustomExercise } from '@/db/schema'
 
 /**
  * Repository for managing custom exercise definitions.

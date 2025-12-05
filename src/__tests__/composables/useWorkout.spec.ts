@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { resetWorkout, useWorkout } from '@/composables/useWorkout'
-import type { Set } from '@/composables/useWorkout'
+import { resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
+import type { Set } from '@/features/workout/composables/useWorkout'
 import { workoutBuilder } from '../factories'
 
 function setupExerciseWithSets(sets: ReadonlyArray<Partial<Set>>) {

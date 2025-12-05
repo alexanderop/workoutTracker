@@ -25,16 +25,16 @@ import {
   ChevronDown,
   Globe,
 } from 'lucide-vue-next'
-import { useTheme } from '@/composables/useTheme'
+import { useTheme } from '@/features/settings/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from 'vue-i18n'
 import { deleteAllData } from '@/db'
 import { exportAllData, type ExportData } from '@/lib/dataExport'
 import { importAllData, parseExportFile } from '@/lib/dataImport'
-import SettingsDeleteAllDataDialog from '@/components/settings/SettingsDeleteAllDataDialog.vue'
-import SettingsImportDataDialog from '@/components/settings/SettingsImportDataDialog.vue'
-import SettingsImportErrorDialog from '@/components/settings/SettingsImportErrorDialog.vue'
-import SettingsWakeLockDiagnostics from '@/components/settings/SettingsWakeLockDiagnostics.vue'
+import SettingsDeleteAllDataDialog from '@/features/settings/components/SettingsDeleteAllDataDialog.vue'
+import SettingsImportDataDialog from '@/features/settings/components/SettingsImportDataDialog.vue'
+import SettingsImportErrorDialog from '@/features/settings/components/SettingsImportErrorDialog.vue'
+import SettingsWakeLockDiagnostics from '@/features/settings/components/SettingsWakeLockDiagnostics.vue'
 
 const { isDark } = useTheme()
 const settingsStore = useSettingsStore()

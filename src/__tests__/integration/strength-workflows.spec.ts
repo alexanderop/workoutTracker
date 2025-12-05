@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/composables/useAppInitialization'
-import { resetWorkout } from '@/composables/useWorkout'
+import { resetInitState } from '@/features/workout/composables/useAppInitialization'
+import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 

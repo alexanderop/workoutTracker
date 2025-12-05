@@ -4,13 +4,13 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
-import WorkoutDetailExerciseCard from '@/components/workout/WorkoutDetailExerciseCard.vue'
-import WorkoutDetailStatsRow from '@/components/workout/WorkoutDetailStatsRow.vue'
+import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
+import WorkoutDetailStatsRow from '@/features/workout/components/WorkoutDetailStatsRow.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
-import { useWorkoutDetail } from '@/composables/useWorkoutDetail'
+import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
 import { workoutsRepository } from '@/db/repositories/workouts'
-import { useAppInitialization } from '@/composables/useAppInitialization'
+import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 
 const { t } = useI18n()
 

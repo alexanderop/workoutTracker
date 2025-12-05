@@ -1,4 +1,4 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/stores/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 
 export type PopularExercise = {
   name: string

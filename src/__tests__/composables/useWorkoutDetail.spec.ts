@@ -4,7 +4,7 @@ import {
   calculateTotalWeight,
   computeWorkoutStats,
   getCompletedSets,
-} from '@/composables/useWorkoutDetail'
+} from '@/features/workout/composables/useWorkoutDetail'
 
 // ============================================
 // Test Factories

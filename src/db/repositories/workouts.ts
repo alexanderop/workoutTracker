@@ -1,11 +1,11 @@
-import { db, generateId } from '../index'
+import { db, generateId } from '@/db'
 import type {
   DbActiveWorkout,
   DbCompletedWorkout,
   DbStrengthBlock,
   DbWorkoutBlock,
-} from '../schema'
-import { isDbStrengthBlock } from '../schema'
+} from '@/db/schema'
+import { isDbStrengthBlock } from '@/db/schema'
 
 /**
  * Repository for managing completed workout history.

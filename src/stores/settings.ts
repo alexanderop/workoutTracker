@@ -1,10 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { settingsRepository } from '@/db/repositories/settings'
-
-export type WeightUnit = 'kg' | 'lbs'
-type HeightUnit = 'cm' | 'ft-in'
-type Language = 'en' | 'de'
+import type { HeightUnit, Language, WeightUnit } from '@/types/settings'
 
 export const useSettingsStore = defineStore('settings', () => {
   const weightUnit = ref<WeightUnit>('kg')

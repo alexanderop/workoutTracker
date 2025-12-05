@@ -2,6 +2,7 @@ import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
+import pluginImportX from 'eslint-plugin-import-x'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
@@ -165,6 +166,47 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+  },
+
+  // Feature boundary enforcement - prevent cross-feature imports
+  {
+    name: 'app/feature-boundaries',
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/**/__tests__/**'],
+    plugins: {
+      'import-x': pluginImportX,
+    },
+    settings: {
+      'import-x/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+      },
+    },
+    rules: {
+      'import-x/no-restricted-paths': ['error', {
+        zones: [
+          // === CROSS-FEATURE ISOLATION ===
+          // Features cannot import from other features (strict Bulletproof compliance)
+          { target: './src/features/workout', from: './src/features', except: ['./workout'] },
+          { target: './src/features/exercises', from: './src/features', except: ['./exercises'] },
+          { target: './src/features/settings', from: './src/features', except: ['./settings'] },
+          { target: './src/features/timers', from: './src/features', except: ['./timers'] },
+          { target: './src/features/templates', from: './src/features', except: ['./templates'] },
+
+          // === UNIDIRECTIONAL FLOW ===
+          // Shared code cannot import from features or views
+          {
+            target: ['./src/components', './src/composables', './src/lib', './src/db', './src/types', './src/stores'],
+            from: ['./src/features', './src/views'],
+          },
+
+          // Features cannot import from views (views are the top-level orchestrators)
+          { target: './src/features', from: './src/views' },
+        ],
+      }],
+    },
   },
 
   // Vue i18n - enforce translation usage (no-raw-text)

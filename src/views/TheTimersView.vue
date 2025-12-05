@@ -2,8 +2,8 @@
 import { ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
-import TimerPresetSelector from '@/components/timers/TimerPresetSelector.vue'
-import StandaloneTimerRunner from '@/components/timers/StandaloneTimerRunner.vue'
+import TimerPresetSelector from '@/features/timers/components/TimerPresetSelector.vue'
+import StandaloneTimerRunner from '@/features/timers/components/StandaloneTimerRunner.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
 import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
 

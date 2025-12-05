@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useTimerAudio } from '@/composables/useTimerAudio'
+import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
 

@@ -3,11 +3,11 @@ import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import ExerciseListItem from '@/components/exercise/ExerciseListItem.vue'
+import ExerciseListItem from '@/components/exercises/ExerciseListItem.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
-import type { Muscle } from '@/stores/exercises'
+import type { Muscle } from '@/types/exercises'
 
 const router = useRouter()
 const { t } = useI18n()

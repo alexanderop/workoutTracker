@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, describe, expect, it } from 'vitest'
-import { resetWorkout } from '@/composables/useWorkout'
+import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { i18n } from '@/i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
@@ -48,7 +48,7 @@ describe('Localization', () => {
       // Clear preloaded English messages to expose the bug
       // The createTestApp helper preloads English at line 73, which masks the bug
       // Using empty object - intentionally invalid for testing error handling
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions
       i18n.global.setLocaleMessage('en', {} as any)
 
       // Set German as the language and load German messages

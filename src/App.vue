@@ -4,10 +4,10 @@ import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
 import PwaUpdatePrompt from '@/components/PwaUpdatePrompt.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
-import { useAppInitialization } from '@/composables/useAppInitialization'
-import { useTheme } from '@/composables/useTheme'
+import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
+import { useTheme } from '@/features/settings/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
-import { useLanguage } from '@/composables/useLanguage'
+import { useLanguage } from '@/features/settings/composables/useLanguage'
 
 useTheme()
 useGlobalWakeLock()

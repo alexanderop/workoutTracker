@@ -4,12 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
-import TemplateExerciseList from '@/components/templates/TemplateExerciseList.vue'
+import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import WorkoutAddExerciseDialog from '@/components/workout/WorkoutAddExerciseDialog.vue'
-import { useTemplateDetail } from '@/composables/useTemplateDetail'
+import WorkoutAddExerciseDialog from '@/features/workout/components/WorkoutAddExerciseDialog.vue'
+import { useTemplateDetail } from '@/features/templates/composables/useTemplateDetail'
 
 const { t } = useI18n()
 const route = useRoute()
