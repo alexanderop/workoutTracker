@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { GripVertical, Pencil, X } from 'lucide-vue-next'
+import { GripVertical, Pencil, Trash2 } from 'lucide-vue-next'
+import { motion } from 'motion-v'
 import { computed } from 'vue'
-import { Button } from '@/components/ui/button'
+import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
 import {
@@ -12,6 +13,7 @@ import {
   isStrengthBlock,
   isTimedBlock,
 } from '@/types/blocks'
+import { useSwipeToReveal } from '@/composables/useSwipeToReveal'
 
 type Props = {
   block: WorkoutBlock
@@ -34,6 +36,29 @@ const emit = defineEmits<{
   edit: []
   remove: []
 }>()
+
+const { t } = useI18n()
+
+// Swipe-to-reveal state
+const {
+  x,
+  setContainerRef,
+  isTouchDevice,
+  BUTTON_WIDTH,
+  REVEAL_WIDTH,
+  closeSwipe,
+  handleDragEnd,
+} = useSwipeToReveal(() => block.id)
+
+function handleEdit() {
+  closeSwipe()
+  emit('edit')
+}
+
+function handleRemove() {
+  closeSwipe()
+  emit('remove')
+}
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
 const thumbnail = computed(() => getBlockThumbnail(block))
@@ -65,87 +90,122 @@ const completedSets = computed(() => {
       aria-hidden="true"
     />
 
-    <!-- Main item -->
+    <!-- Main item with swipe -->
     <div
-      :class="
-        cn(
-          'flex-1 flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer min-h-[64px]',
-          'border border-transparent',
-          isSelected && 'border-primary bg-primary/5',
-          isCompleted && 'opacity-60',
-          disabled && 'pointer-events-none opacity-50',
-        )
-      "
-      role="button"
-      tabindex="0"
-      :aria-pressed="isSelected"
-      @click="emit('select')"
-      @keydown.enter="emit('select')"
-      @keydown.space.prevent="emit('select')"
+      :ref="setContainerRef"
+      class="flex-1 relative overflow-hidden rounded-lg"
+      :class="disabled && 'pointer-events-none opacity-50'"
     >
-      <!-- Drag handle -->
+      <!-- Swipe action buttons (positioned behind content, touch only) -->
       <div
-        class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle"
-        :class="disabled && 'opacity-0'"
+        v-if="isTouchDevice && !disabled"
+        class="absolute right-0 inset-y-0 flex items-stretch"
       >
-        <GripVertical class="w-5 h-5 text-muted-foreground" />
+        <button
+          v-if="isStrengthBlock(block)"
+          class="bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+          :style="{ width: `${BUTTON_WIDTH}px` }"
+          :aria-label="t('common.edit')"
+          @click="handleEdit"
+        >
+          <Pencil class="w-5 h-5 text-foreground" />
+        </button>
+        <button
+          class="bg-destructive flex items-center justify-center hover:bg-destructive/90 transition-colors"
+          :style="{ width: `${BUTTON_WIDTH}px` }"
+          :aria-label="t('common.delete')"
+          @click="handleRemove"
+        >
+          <Trash2 class="w-5 h-5 text-white" />
+        </button>
       </div>
 
-      <!-- Block icon -->
-      <div
+      <!-- Swipeable content -->
+      <!-- eslint-disable-next-line vue/component-name-in-template-casing -->
+      <motion.div
+        :drag="isTouchDevice ? 'x' : false"
+        :drag-constraints="{ left: -REVEAL_WIDTH, right: 0 }"
+        :drag-elastic="0.1"
+        :style="{ x }"
         :class="
           cn(
-            'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl',
-            blockColors.bg,
+            'relative flex items-center gap-3 p-3 min-h-[64px] bg-background cursor-pointer',
+            'border border-transparent transition-[border-color,background-color]',
+            isSelected && 'border-primary bg-primary/5',
+            isCompleted && 'opacity-60',
           )
         "
+        role="button"
+        tabindex="0"
+        :aria-pressed="isSelected"
+        @drag-end="handleDragEnd"
+        @click="emit('select')"
+        @keydown.enter="emit('select')"
+        @keydown.space.prevent="emit('select')"
       >
-        {{ thumbnail }}
-      </div>
-
-      <!-- Block info -->
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="font-medium truncate">
-            {{ isStrengthBlock(block) ? block.name : label }}
-          </span>
-          <span
-            v-if="isTimedBlock(block)"
-            :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)"
-          >
-            {{ block.kind.toUpperCase() }}
-          </span>
+        <!-- Drag handle -->
+        <div
+          class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle"
+          :class="disabled && 'opacity-0'"
+          @pointerdown.stop
+        >
+          <GripVertical class="w-5 h-5 text-muted-foreground" />
         </div>
-        <p class="text-sm text-muted-foreground truncate">
-          {{ subtitle }}
-        </p>
-      </div>
 
-      <!-- Progress/status -->
-      <div v-if="completedSets" class="flex-shrink-0 text-sm text-muted-foreground">
-        {{ completedSets }}
-      </div>
+        <!-- Block icon -->
+        <div
+          :class="
+            cn(
+              'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl',
+              blockColors.bg,
+            )
+          "
+        >
+          {{ thumbnail }}
+        </div>
 
-      <!-- Actions -->
-      <div v-if="!disabled" class="flex-shrink-0 flex items-center gap-1">
-        <Button
-          v-if="isStrengthBlock(block)"
-          variant="ghost"
-          size="icon-sm"
-          class="text-muted-foreground hover:text-foreground"
-          @click.stop="emit('edit')"
-        >
-          <Pencil class="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          class="text-muted-foreground hover:text-destructive"
-          @click.stop="emit('remove')"
-        >
-          <X class="w-4 h-4" />
-        </Button>
-      </div>
+        <!-- Block info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-medium truncate">
+              {{ isStrengthBlock(block) ? block.name : label }}
+            </span>
+            <span
+              v-if="isTimedBlock(block)"
+              :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)"
+            >
+              {{ block.kind.toUpperCase() }}
+            </span>
+          </div>
+          <p class="text-sm text-muted-foreground truncate">
+            {{ subtitle }}
+          </p>
+        </div>
+
+        <!-- Progress/status -->
+        <div v-if="completedSets" class="flex-shrink-0 text-sm text-muted-foreground">
+          {{ completedSets }}
+        </div>
+
+        <!-- Desktop action buttons (non-touch devices) -->
+        <div v-if="!isTouchDevice && !disabled" class="flex-shrink-0 flex items-center gap-1">
+          <button
+            v-if="isStrengthBlock(block)"
+            class="p-1.5 rounded hover:bg-muted transition-colors"
+            :aria-label="t('common.edit')"
+            @click.stop="handleEdit"
+          >
+            <Pencil class="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
+            class="p-1.5 rounded hover:bg-destructive/10 transition-colors"
+            :aria-label="t('common.delete')"
+            @click.stop="handleRemove"
+          >
+            <Trash2 class="w-4 h-4 text-destructive" />
+          </button>
+        </div>
+      </motion.div>
     </div>
   </div>
 </template>

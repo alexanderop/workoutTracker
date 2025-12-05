@@ -29,6 +29,7 @@
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
     "lucide-vue-next": "^0.554.0",
+    "motion-v": "^1.7.4",
     "pinia": "^3.0.3",
     "reka-ui": "^2.6.0",
     "sortablejs": "^1.15.6",
