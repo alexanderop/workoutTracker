@@ -20,95 +20,97 @@ describe('Timed Block Configuration', () => {
   })
 
   it('allows user to add timed blocks from the dialog and start workout', async () => {
-    const app = await createTestApp()
+    const { builder, user, getByRole, queryByText, queryByRole, common, cleanup } =
+      await createTestApp()
 
-    await app.navigateToBuilder()
-    await app.openAddBlockDialog()
+    await builder.navigateTo()
+    await builder.openAddBlockDialog()
 
     // Verify exercises tab is default (check aria-selected attribute)
-    const exercisesTab = app.getByRole('tab', { name: /exercises/i })
+    const exercisesTab = getByRole('tab', { name: /exercises/i })
     expect(exercisesTab.getAttribute('aria-selected')).toBe('true')
 
     // Switch to timed blocks tab
-    await app.switchToTimedBlocksTab()
+    await builder.switchToTimedBlocksTab()
 
     // Verify all block types are available
-    expect(app.queryByText('AMRAP')).toBeTruthy()
-    expect(app.queryByText('EMOM')).toBeTruthy()
-    expect(app.queryByText('Tabata')).toBeTruthy()
-    expect(app.queryByText('For Time')).toBeTruthy()
+    expect(queryByText('AMRAP')).toBeTruthy()
+    expect(queryByText('EMOM')).toBeTruthy()
+    expect(queryByText('Tabata')).toBeTruthy()
+    expect(queryByText('For Time')).toBeTruthy()
 
     // Select AMRAP - this opens a configuration dialog
-    await app.user.click(app.getDialogButton('AMRAP'))
+    await user.click(common.getDialogButton('AMRAP'))
 
     // Wait for configuration dialog
     await waitFor(() => {
-      const dialog = app.getByRole('dialog')
+      const dialog = getByRole('dialog')
       expect(dialog.textContent).toContain('Configure')
     })
 
     // Add an exercise to the AMRAP
-    await app.user.click(app.getDialogButton('Add Exercise'))
-    await app.user.click(app.getDialogButton('Push-ups'))
+    await user.click(common.getDialogButton('Add Exercise'))
+    await user.click(common.getDialogButton('Push-ups'))
 
     // Confirm the block by clicking "Add Block"
-    await app.user.click(app.getDialogButton('Add Block'))
+    await user.click(common.getDialogButton('Add Block'))
 
     // Wait for dialog to close
     await waitFor(() => {
-      expect(app.queryByRole('dialog')).toBeNull()
+      expect(queryByRole('dialog')).toBeNull()
     })
 
     // Verify AMRAP block appears in builder
-    const playlistButtons = app.getPlaylistBlockButtons()
+    const playlistButtons = builder.getPlaylistBlockButtons()
     expect(playlistButtons.length).toBe(1)
 
     // Start workout and verify timer UI
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Timer should display (verify Start button appears)
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('filters exercises when searching in add block dialog', async () => {
-    const app = await createTestApp()
+    const { builder, user, getByRole, queryByText, queryByRole, common, cleanup } =
+      await createTestApp()
 
-    await app.navigateToBuilder()
-    await app.openAddBlockDialog()
+    await builder.navigateTo()
+    await builder.openAddBlockDialog()
 
     // Multiple exercises should be visible initially
-    expect(app.queryByText('Bench Press')).toBeTruthy()
-    expect(app.queryByText('Squat')).toBeTruthy()
+    expect(queryByText('Bench Press')).toBeTruthy()
+    expect(queryByText('Squat')).toBeTruthy()
 
     // Type in search input
-    const searchInput = app.getByRole('textbox')
-    await app.user.type(searchInput, 'bench')
+    const searchInput = getByRole('textbox')
+    await user.type(searchInput, 'bench')
 
     // Only matching exercise should remain
     await waitFor(() => {
-      expect(app.queryByText('Bench Press')).toBeTruthy()
-      expect(app.queryByText('Squat')).toBeFalsy()
+      expect(queryByText('Bench Press')).toBeTruthy()
+      expect(queryByText('Squat')).toBeFalsy()
     })
 
     // Select the filtered exercise and verify it adds to workout
-    await app.user.click(app.getDialogButton('Bench Press'))
+    await user.click(common.getDialogButton('Bench Press'))
 
     // Dialog should close after selecting exercise
     await waitFor(() => {
-      expect(app.queryByRole('dialog')).toBeNull()
+      expect(queryByRole('dialog')).toBeNull()
     })
 
     // Verify exercise was added to builder
-    const playlistButtons = app.getPlaylistBlockButtons()
+    const playlistButtons = builder.getPlaylistBlockButtons()
     expect(playlistButtons.length).toBe(1)
 
-    app.cleanup()
+    cleanup()
   })
 })

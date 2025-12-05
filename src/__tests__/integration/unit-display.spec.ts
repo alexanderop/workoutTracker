@@ -20,92 +20,94 @@ describe('Unit Display', () => {
   })
 
   it('displays weight in lbs when user changes unit preference', async () => {
-    const app = await createTestApp()
+    const { user, getByRole, queryByRole, queryByText, navigateTo, common, builder, cleanup } =
+      await createTestApp()
 
     // Start a workout and add a strength block
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
-    await app.user.click(app.getByRole('button', { name: /add first block/i }))
-    await app.waitForDialog()
-    await app.user.click(app.getDialogButton('Bench Press'))
-    app.assertDialogClosed()
+    await user.click(getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /add first block/i }))
+    await common.waitForDialog()
+    await user.click(common.getDialogButton('Bench Press'))
+    common.assertDialogClosed()
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Verify weight unit shows 'kg' by default
-    expect(app.queryByText(/kg$/)).toBeTruthy()
+    expect(queryByText(/kg$/)).toBeTruthy()
 
     // Navigate to settings
-    await app.navigateTo('/settings')
+    await navigateTo('/settings')
 
     // Find and click the 'lbs' toggle option (button with aria-label "Pounds")
     const lbsButton = screen.getByRole('button', { name: /pounds/i })
-    await app.user.click(lbsButton)
+    await user.click(lbsButton)
 
     // Navigate back to workout
-    await app.navigateTo('/workout/active')
+    await navigateTo('/workout/active')
 
     // Wait for the workout view to render
     await waitFor(() => {
-      expect(app.queryByRole('spinbutton', { name: /weight/i })).toBeTruthy()
+      expect(queryByRole('spinbutton', { name: /weight/i })).toBeTruthy()
     })
 
     // Verify weight unit now shows 'lbs'
-    expect(app.queryByText(/lbs$/)).toBeTruthy()
+    expect(queryByText(/lbs$/)).toBeTruthy()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('converts and displays weight correctly when switching units', async () => {
-    const app = await createTestApp()
+    const { user, getByRole, queryByText, navigateTo, common, builder, cleanup } =
+      await createTestApp()
 
     // Navigate to settings first and switch to lbs
-    await app.navigateTo('/settings')
+    await navigateTo('/settings')
     const lbsButton = screen.getByRole('button', { name: /pounds/i })
-    await app.user.click(lbsButton)
+    await user.click(lbsButton)
 
     // Navigate to home and start workout
-    await app.navigateTo('/')
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await navigateTo('/')
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add a strength block
-    await app.user.click(app.getByRole('button', { name: /add first block/i }))
-    await app.waitForDialog()
-    await app.user.click(app.getDialogButton('Bench Press'))
-    app.assertDialogClosed()
+    await user.click(getByRole('button', { name: /add first block/i }))
+    await common.waitForDialog()
+    await user.click(common.getDialogButton('Bench Press'))
+    common.assertDialogClosed()
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify weight unit shows 'lbs' after preference change
-    expect(app.queryByText(/lbs$/)).toBeTruthy()
+    expect(queryByText(/lbs$/)).toBeTruthy()
 
     // Enter weight in lbs (220 lbs ≈ 100 kg, stored internally as kg)
     const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
     const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
     const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-    await app.user.type(weightInput, '220')
-    await app.user.type(repsInput, '8')
-    await app.user.type(rirInput, '2')
+    await user.type(weightInput, '220')
+    await user.type(repsInput, '8')
+    await user.type(rirInput, '2')
 
     // Complete the set
-    await app.user.click(app.getByRole('button', { name: /complete set/i }))
+    await user.click(getByRole('button', { name: /complete set/i }))
 
     // Verify we advanced to set 2
     await waitFor(() => {
-      expect(app.queryByText('2/3')).toBeTruthy()
+      expect(queryByText('2/3')).toBeTruthy()
     })
 
     // Verify completed set shows in lbs format
     await waitFor(() => {
-      expect(app.queryByText(/220lbs × 8/)).toBeTruthy()
+      expect(queryByText(/220lbs × 8/)).toBeTruthy()
     })
 
-    app.cleanup()
+    cleanup()
   })
 })

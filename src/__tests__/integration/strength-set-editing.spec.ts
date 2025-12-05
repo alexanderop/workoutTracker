@@ -20,62 +20,63 @@ describe('Strength Set Editing', () => {
   })
 
   it('displays strength block UI and allows completing all sets', async () => {
-    const app = await createTestApp()
+    const { builder, user, queryByRole, queryByText, getByText, getByRole, cleanup } =
+      await createTestApp()
 
     // Setup: add strength block and start workout
-    await app.addStrengthBlock('Bench Press')
-    await app.startWorkout()
+    await builder.addStrengthBlock('Bench Press')
+    await builder.startWorkout()
 
     // Verify initial UI state (grouped assertions)
     await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /bench press/i })).toBeTruthy()
+      expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
     })
-    expect(app.queryByText('Strength')).toBeTruthy()
-    expect(app.queryByText('1/3')).toBeTruthy()
+    expect(queryByText('Strength')).toBeTruthy()
+    expect(queryByText('1/3')).toBeTruthy()
 
     // Fill the first set values using semantic queries
     const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
     const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
     const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-    await app.user.type(weightInput, '80')
-    await app.user.type(repsInput, '10')
-    await app.user.type(rirInput, '2')
+    await user.type(weightInput, '80')
+    await user.type(repsInput, '10')
+    await user.type(rirInput, '2')
 
     // Complete set 1
-    await app.user.click(app.getByRole('button', { name: /complete set/i }))
+    await user.click(getByRole('button', { name: /complete set/i }))
 
     // Verify advancement to set 2
-    expect(app.getByText('2/3')).toBeDefined()
+    expect(getByText('2/3')).toBeDefined()
 
     // Verify the completed set appears in the history
-    expect(app.getByText(/80kg × 10/)).toBeDefined()
+    expect(getByText(/80kg × 10/)).toBeDefined()
 
     // Complete set 2 (values should be pre-filled from set 1)
-    await app.user.click(app.getByRole('button', { name: /complete set/i }))
+    await user.click(getByRole('button', { name: /complete set/i }))
 
     // Verify advancement to set 3
-    expect(app.getByText('3/3')).toBeDefined()
+    expect(getByText('3/3')).toBeDefined()
 
     // Complete set 3
-    await app.user.click(app.getByRole('button', { name: /complete set/i }))
+    await user.click(getByRole('button', { name: /complete set/i }))
 
     // Verify all three sets appear in the history
     const completedSets = screen.getAllByText(/80kg × 10/)
     expect(completedSets.length).toBe(3)
 
-    app.cleanup()
+    cleanup()
   })
 
   it('prefills values from previous set when advancing', async () => {
-    const app = await createTestApp()
+    const { builder, user, queryByRole, getByText, getByRole, cleanup } = await createTestApp()
 
-    await app.addStrengthBlock('Squat')
-    await app.startWorkout()
+    await builder.addStrengthBlock('Squat')
+    await builder.startWorkout()
 
     // Wait for UI to be ready
     await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /squat/i })).toBeTruthy()
+      expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
     })
 
     // Fill first set with specific values
@@ -83,15 +84,15 @@ describe('Strength Set Editing', () => {
     const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
     const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-    await app.user.type(weightInput, '100')
-    await app.user.type(repsInput, '5')
-    await app.user.type(rirInput, '1')
+    await user.type(weightInput, '100')
+    await user.type(repsInput, '5')
+    await user.type(rirInput, '1')
 
     // Complete first set
-    await app.user.click(app.getByRole('button', { name: /complete set/i }))
+    await user.click(getByRole('button', { name: /complete set/i }))
 
     // Wait for advancement to set 2
-    expect(app.getByText('2/3')).toBeDefined()
+    expect(getByText('2/3')).toBeDefined()
 
     // Get fresh references to inputs for set 2
     const weightInput2 = screen.getByRole('spinbutton', { name: /weight/i })
@@ -101,6 +102,6 @@ describe('Strength Set Editing', () => {
     expect(weightInput2).toHaveProperty('value', '100')
     expect(repsInput2).toHaveProperty('value', '5')
 
-    app.cleanup()
+    cleanup()
   })
 })

@@ -39,10 +39,14 @@ describe('Data Import/Export', () => {
     vi.unstubAllGlobals()
   })
 
-  async function navigateToSettings(app: Awaited<ReturnType<typeof createTestApp>>): Promise<void> {
-    await app.user.click(app.getByRole('button', { name: /settings/i }))
+  async function navigateToSettings(testApp: {
+    user: Awaited<ReturnType<typeof createTestApp>>['user']
+    getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole']
+    router: Awaited<ReturnType<typeof createTestApp>>['router']
+  }): Promise<void> {
+    await testApp.user.click(testApp.getByRole('button', { name: /settings/i }))
     await waitFor(() => {
-      expect(app.router.currentRoute.value.path).toBe('/settings')
+      expect(testApp.router.currentRoute.value.path).toBe('/settings')
     })
   }
 
@@ -51,11 +55,12 @@ describe('Data Import/Export', () => {
     const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
     await db.workouts.add(workout)
 
-    const app = await createTestApp()
-    await navigateToSettings(app)
+    const { user, getByRole, router, cleanup } = await createTestApp()
+    const testApp = { user, getByRole, router }
+    await navigateToSettings(testApp)
 
     // Act: Click export button
-    await app.user.click(app.getByRole('button', { name: /^export data$/i }))
+    await user.click(getByRole('button', { name: /^export data$/i }))
 
     // Assert: Blob was created and cleaned up
     await waitFor(() => {
@@ -63,7 +68,7 @@ describe('Data Import/Export', () => {
     })
     expect(URL.revokeObjectURL).toHaveBeenCalled()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('imports data from a valid backup file and calls importAllData', async () => {
@@ -88,23 +93,25 @@ describe('Data Import/Export', () => {
       type: 'application/json',
     })
 
-    const app = await createTestApp()
-    await navigateToSettings(app)
+    const { user, getByRole, router, queryByRole, queryByText, common, cleanup } =
+      await createTestApp()
+    const testApp = { user, getByRole, router }
+    await navigateToSettings(testApp)
 
     // Act: Upload file via hidden input
     const fileInput = document.querySelector('input[type="file"]')
     if (!(fileInput instanceof HTMLInputElement)) {
       throw new Error('File input not found')
     }
-    await app.user.upload(fileInput, file)
+    await user.upload(fileInput, file)
 
     // Assert: Confirmation dialog appears with correct count
-    await app.waitForDialog()
-    expect(app.queryByRole('heading', { name: /import data/i })).toBeTruthy()
-    expect(app.queryByText(/1 workout/i)).toBeTruthy()
+    await common.waitForDialog()
+    expect(queryByRole('heading', { name: /import data/i })).toBeTruthy()
+    expect(queryByText(/1 workout/i)).toBeTruthy()
 
     // Act: Confirm import
-    await app.user.click(app.getDialogButton('Import Data'))
+    await user.click(common.getDialogButton('Import Data'))
 
     // Assert: importAllData was called with correct data
     await waitFor(() => {
@@ -120,34 +127,36 @@ describe('Data Import/Export', () => {
       )
     })
 
-    app.cleanup()
+    cleanup()
   })
 
   it('shows error dialog when importing invalid JSON', async () => {
     const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-    const app = await createTestApp()
-    await navigateToSettings(app)
+    const { user, getByRole, router, queryByRole, queryByText, common, cleanup } =
+      await createTestApp()
+    const testApp = { user, getByRole, router }
+    await navigateToSettings(testApp)
 
     // Act: Upload invalid file
     const fileInput = document.querySelector('input[type="file"]')
     if (!(fileInput instanceof HTMLInputElement)) {
       throw new Error('File input not found')
     }
-    await app.user.upload(fileInput, file)
+    await user.upload(fileInput, file)
 
     // Assert: Error dialog appears with correct message
-    await app.waitForDialog()
-    expect(app.queryByRole('heading', { name: /import failed/i })).toBeTruthy()
-    expect(app.queryByText(/not valid JSON/i)).toBeTruthy()
+    await common.waitForDialog()
+    expect(queryByRole('heading', { name: /import failed/i })).toBeTruthy()
+    expect(queryByText(/not valid JSON/i)).toBeTruthy()
 
     // Dismiss dialog
-    await app.user.click(app.getDialogButton('OK'))
+    await user.click(common.getDialogButton('OK'))
     await waitFor(() => {
-      expect(app.queryByRole('dialog')).toBeNull()
+      expect(queryByRole('dialog')).toBeNull()
     })
 
-    app.cleanup()
+    cleanup()
   })
 
   it('deletes all data when confirmed', async () => {
@@ -157,25 +166,26 @@ describe('Data Import/Export', () => {
 
     const deleteSpy = vi.spyOn(dbModule, 'deleteAllData').mockResolvedValue()
 
-    const app = await createTestApp()
-    await navigateToSettings(app)
+    const { user, getByRole, router, queryByRole, common, cleanup } = await createTestApp()
+    const testApp = { user, getByRole, router }
+    await navigateToSettings(testApp)
 
     // Act: Click delete all data button (use exact match to avoid matching dialog button)
-    const deleteButton = app.getByRole('button', { name: /^delete all data$/i })
-    await app.user.click(deleteButton)
+    const deleteButton = getByRole('button', { name: /^delete all data$/i })
+    await user.click(deleteButton)
 
     // Assert: Confirmation dialog appears
-    await app.waitForDialog()
-    expect(app.queryByRole('heading', { name: /delete all data/i })).toBeTruthy()
+    await common.waitForDialog()
+    expect(queryByRole('heading', { name: /delete all data/i })).toBeTruthy()
 
     // Confirm deletion
-    await app.user.click(app.getDialogButton('Delete All Data'))
+    await user.click(common.getDialogButton('Delete All Data'))
 
     // Assert: deleteAllData was called
     await waitFor(() => {
       expect(deleteSpy).toHaveBeenCalled()
     })
 
-    app.cleanup()
+    cleanup()
   })
 })

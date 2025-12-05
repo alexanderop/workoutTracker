@@ -34,34 +34,34 @@ describe('Workout History Detail View', () => {
     await db.workouts.add(completedWorkout)
 
     // Act: Start at home and navigate to workouts page
-    const app = await createTestApp()
+    const { user, router, getByRole, getByText, findByText, cleanup } = await createTestApp()
 
     // Navigate to workouts via bottom nav
-    const workoutsNavButton = app.getByRole('button', { name: /workouts/i })
-    await app.user.click(workoutsNavButton)
+    const workoutsNavButton = getByRole('button', { name: /workouts/i })
+    await user.click(workoutsNavButton)
 
     // Wait for workouts page to load
-    expect(app.router.currentRoute.value.path).toBe('/workouts')
+    expect(router.currentRoute.value.path).toBe('/workouts')
 
     // Find the workout card and click it
-    const workoutCard = await app.findByText('Push Day')
-    await app.user.click(workoutCard)
+    const workoutCard = await findByText('Push Day')
+    await user.click(workoutCard)
 
     // Assert: Verify navigation to detail view
-    expect(app.router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
+    expect(router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
 
     // Assert: Verify workout details are displayed
-    expect(app.getByText('Push Day')).toBeDefined()
-    expect(app.getByText('Bench Press')).toBeDefined()
+    expect(getByText('Push Day')).toBeDefined()
+    expect(getByText('Bench Press')).toBeDefined()
 
     // Expand the exercise card to see set details
-    const exerciseCard = app.getByText('Bench Press')
-    await app.user.click(exerciseCard)
+    const exerciseCard = getByText('Bench Press')
+    await user.click(exerciseCard)
 
     // Verify set data is displayed (weight shown as "100kg", reps as "10")
-    expect(app.getByText('100kg')).toBeDefined()
-    expect(app.getByText('10')).toBeDefined() // reps value
+    expect(getByText('100kg')).toBeDefined()
+    expect(getByText('10')).toBeDefined() // reps value
 
-    app.cleanup()
+    cleanup()
   })
 })

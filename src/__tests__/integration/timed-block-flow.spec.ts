@@ -7,58 +7,67 @@ import { resetDatabase } from '../setup'
 
 // Helper to add a timed block to workout
 async function addTimedBlock(
-  app: Awaited<ReturnType<typeof createTestApp>>,
+  common: Awaited<ReturnType<typeof createTestApp>>['common'],
+  user: Awaited<ReturnType<typeof createTestApp>>['user'],
+  getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole'],
+  queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
   blockType: 'AMRAP' | 'EMOM' | 'Tabata' | 'For Time',
 ) {
   // Click add block button
   const addBlockButton =
-    app.queryByRole('button', { name: /add first block/i }) ??
-    app.getByRole('button', { name: /add block/i })
-  await app.user.click(addBlockButton)
-  await app.waitForDialog()
+    queryByRole('button', { name: /add first block/i }) ??
+    getByRole('button', { name: /add block/i })
+  await user.click(addBlockButton)
+  await common.waitForDialog()
 
   // Switch to Timed Blocks tab
-  await app.user.click(app.getByRole('tab', { name: /timed blocks/i }))
+  await user.click(getByRole('tab', { name: /timed blocks/i }))
 
   // Click the block type
-  await app.user.click(app.getDialogButton(blockType))
+  await user.click(common.getDialogButton(blockType))
 
   // Configure dialog opens - wait for it
   await waitFor(() => {
-    const dialog = app.getByRole('dialog')
+    const dialog = getByRole('dialog')
     expect(dialog.textContent).toContain('Configure')
   })
 
   // Add an exercise - Tabata uses "Select Exercise", others use "Add Exercise"
   const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
-  await app.user.click(app.getDialogButton(exerciseButtonText))
-  await app.user.click(app.getDialogButton('Push-ups'))
+  await user.click(common.getDialogButton(exerciseButtonText))
+  await user.click(common.getDialogButton('Push-ups'))
 
   // Click Add Block to confirm
-  await app.user.click(app.getDialogButton('Add Block'))
+  await user.click(common.getDialogButton('Add Block'))
 
   // Wait for dialog to close
   await waitFor(() => {
-    expect(app.queryByRole('dialog')).toBeNull()
+    expect(queryByRole('dialog')).toBeNull()
   })
 }
 
 // Helper to end workout via menu
-async function endWorkoutViaMenu(app: Awaited<ReturnType<typeof createTestApp>>) {
+async function endWorkoutViaMenu(
+  workout: Awaited<ReturnType<typeof createTestApp>>['workout'],
+  common: Awaited<ReturnType<typeof createTestApp>>['common'],
+  user: Awaited<ReturnType<typeof createTestApp>>['user'],
+  getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole'],
+  queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
+) {
   await waitFor(() => {
-    expect(app.getMenuTrigger()).toBeTruthy()
+    expect(workout.getMenuTrigger()).toBeTruthy()
   })
-  await app.user.click(app.getMenuTrigger())
+  await user.click(workout.getMenuTrigger())
 
   await waitFor(() => {
-    expect(app.queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
+    expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
   })
-  await app.user.click(app.getByRole('menuitem', { name: /end workout/i }))
+  await user.click(getByRole('menuitem', { name: /end workout/i }))
 
-  await app.waitForDialog()
-  await app.user.click(app.getDialogButton('Finish Workout'))
+  await common.waitForDialog()
+  await user.click(common.getDialogButton('Finish Workout'))
 
-  await app.waitForRoute(/^\/workout\/summary\//)
+  await common.waitForRoute(/^\/workout\/summary\//)
 }
 
 describe('Timed Block Execution', () => {
@@ -76,262 +85,262 @@ describe('Timed Block Execution', () => {
   })
 
   it('creates AMRAP block and shows timer UI', async () => {
-    const app = await createTestApp()
+    const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
-    expect(app.router.currentRoute.value.path).toBe('/workout/active')
+    await user.click(getByRole('button', { name: /get started/i }))
+    expect(router.currentRoute.value.path).toBe('/workout/active')
 
     // Add AMRAP block
-    await addTimedBlock(app, 'AMRAP')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'AMRAP')
 
     // Verify block was added
-    const playlistButtons = app.getPlaylistBlockButtons()
+    const playlistButtons = builder.getPlaylistBlockButtons()
     expect(playlistButtons.length).toBe(1)
 
     // Start the workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify AMRAP view is shown with Start button
-    expect(app.queryByRole('heading', { name: /amrap/i })).toBeTruthy()
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('heading', { name: /amrap/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
     // Verify rounds section exists
-    expect(app.queryByText(/rounds/i)).toBeTruthy()
+    expect(queryByText(/rounds/i)).toBeTruthy()
 
     // Verify +1 button exists
-    expect(app.queryByRole('button', { name: /\+1/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /\+1/i })).toBeTruthy()
 
     // End workout via menu
-    await endWorkoutViaMenu(app)
-    expect(app.router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+    await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
+    expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
-    app.cleanup()
+    cleanup()
   })
 
   it('creates EMOM block and shows minute display', async () => {
-    const app = await createTestApp()
+    const { builder, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add EMOM block
-    await addTimedBlock(app, 'EMOM')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'EMOM')
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode with EMOM
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify EMOM view shows minute info
-    expect(app.queryByText(/minute 1 of/i)).toBeTruthy()
+    expect(queryByText(/minute 1 of/i)).toBeTruthy()
 
     // Verify Start button exists
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
     // Verify exercise is displayed
-    expect(app.queryByText('Push-ups')).toBeTruthy()
+    expect(queryByText('Push-ups')).toBeTruthy()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('creates Tabata block and shows round/phase info', async () => {
-    const app = await createTestApp()
+    const { builder, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add Tabata block
-    await addTimedBlock(app, 'Tabata')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'Tabata')
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode with Tabata
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify Tabata view shows round info
-    expect(app.queryByText(/round 1/i)).toBeTruthy()
+    expect(queryByText(/round 1/i)).toBeTruthy()
 
     // Verify Start button exists
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('creates For Time block and completes with Done button', async () => {
-    const app = await createTestApp()
+    const { builder, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add For Time block
-    await addTimedBlock(app, 'For Time')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'For Time')
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify For Time view is shown with Done button (not Start/Pause)
-    expect(app.queryByRole('heading', { name: /for time/i })).toBeTruthy()
-    const doneButton = app.queryByRole('button', { name: /done/i })
+    expect(queryByRole('heading', { name: /for time/i })).toBeTruthy()
+    const doneButton = queryByRole('button', { name: /done/i })
     expect(doneButton).toBeTruthy()
 
     // Click Done to complete the block
-    await app.user.click(doneButton!)
+    await user.click(doneButton!)
 
     // Should show finish workout dialog
-    await app.waitForDialog()
-    await app.user.click(app.getDialogButton('Finish Workout'))
+    await common.waitForDialog()
+    await user.click(common.getDialogButton('Finish Workout'))
 
-    await app.waitForRoute(/^\/workout\/summary\//)
-    expect(app.router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+    await common.waitForRoute(/^\/workout\/summary\//)
+    expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
-    app.cleanup()
+    cleanup()
   })
 
   it('navigates between strength and timed blocks in hybrid workout', async () => {
-    const app = await createTestApp()
+    const { builder, workout, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add strength block first
-    await app.user.click(app.getByRole('button', { name: /add first block/i }))
-    await app.waitForDialog()
-    await app.user.click(app.getDialogButton('Bench Press'))
-    await waitFor(() => expect(app.queryByRole('dialog')).toBeNull())
+    await user.click(getByRole('button', { name: /add first block/i }))
+    await common.waitForDialog()
+    await user.click(common.getDialogButton('Bench Press'))
+    await waitFor(() => expect(queryByRole('dialog')).toBeNull())
 
     // Add AMRAP block
-    await addTimedBlock(app, 'AMRAP')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'AMRAP')
 
     // Verify both blocks exist
-    const playlistButtons = app.getPlaylistBlockButtons()
+    const playlistButtons = builder.getPlaylistBlockButtons()
     expect(playlistButtons.length).toBe(2)
 
     // Start workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode on first block (strength)
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 2/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 2/i)).toBeTruthy()
     })
 
     // Verify strength view shows Complete Set button
-    expect(app.queryByRole('button', { name: /complete set/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /complete set/i })).toBeTruthy()
 
     // Navigate to AMRAP block
-    await app.user.click(app.getFooterButton('next'))
+    await user.click(workout.getFooterButton('next'))
 
     await waitFor(() => {
-      expect(app.queryByText(/block 2 of 2/i)).toBeTruthy()
+      expect(queryByText(/block 2 of 2/i)).toBeTruthy()
     })
 
     // Verify AMRAP view shows Start button
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
     // Navigate back to strength block
-    await app.user.click(app.getFooterButton('prev'))
+    await user.click(workout.getFooterButton('prev'))
 
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 2/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 2/i)).toBeTruthy()
     })
 
     // Verify back on strength view
-    expect(app.queryByRole('button', { name: /complete set/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /complete set/i })).toBeTruthy()
 
-    app.cleanup()
+    cleanup()
   })
 
   it('AMRAP block allows incrementing rounds with +1 button', async () => {
-    const app = await createTestApp()
+    const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add AMRAP block
-    await addTimedBlock(app, 'AMRAP')
+    await addTimedBlock(common, user, getByRole, queryByRole, 'AMRAP')
 
     // Verify block was added
-    expect(app.getPlaylistBlockButtons().length).toBe(1)
+    expect(builder.getPlaylistBlockButtons().length).toBe(1)
 
     // Start the workout
-    await app.startWorkout()
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify AMRAP UI elements
-    expect(app.queryByRole('heading', { name: /amrap/i })).toBeTruthy()
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
-    expect(app.queryByText(/rounds/i)).toBeTruthy()
+    expect(queryByRole('heading', { name: /amrap/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByText(/rounds/i)).toBeTruthy()
 
     // Start the timer by clicking Start
-    await app.user.click(app.getByRole('button', { name: /start/i }))
+    await user.click(getByRole('button', { name: /start/i }))
 
     // Wait for +1 button to be enabled (timer must be running)
     await waitFor(() => {
-      const plusButton = app.queryByRole('button', { name: /\+1/i })
+      const plusButton = queryByRole('button', { name: /\+1/i })
       expect(plusButton).toBeTruthy()
       expect(plusButton).toHaveProperty('disabled', false)
     })
 
     // Increment rounds
-    await app.user.click(app.getByRole('button', { name: /\+1/i }))
-    await app.user.click(app.getByRole('button', { name: /\+1/i }))
+    await user.click(getByRole('button', { name: /\+1/i }))
+    await user.click(getByRole('button', { name: /\+1/i }))
 
     // End workout via menu
-    await endWorkoutViaMenu(app)
+    await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
 
-    expect(app.router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+    expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
-    app.cleanup()
+    cleanup()
   })
 
   it('timer button changes to Pause when running', async () => {
-    const app = await createTestApp()
+    const { builder, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
     // Start new workout
-    await app.user.click(app.getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /get started/i }))
 
     // Add EMOM block
-    await addTimedBlock(app, 'EMOM')
-    await app.startWorkout()
+    await addTimedBlock(common, user, getByRole, queryByRole, 'EMOM')
+    await builder.startWorkout()
 
     // Wait for active mode
     await waitFor(() => {
-      expect(app.queryByText(/block 1 of 1/i)).toBeTruthy()
+      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
     })
 
     // Verify Start button exists
-    expect(app.queryByRole('button', { name: /start/i })).toBeTruthy()
-    expect(app.queryByRole('button', { name: /pause/i })).toBeNull()
+    expect(queryByRole('button', { name: /start/i })).toBeTruthy()
+    expect(queryByRole('button', { name: /pause/i })).toBeNull()
 
     // Click Start
-    await app.user.click(app.getByRole('button', { name: /start/i }))
+    await user.click(getByRole('button', { name: /start/i }))
 
     // Verify button changed to Pause
     await waitFor(() => {
-      expect(app.queryByRole('button', { name: /pause/i })).toBeTruthy()
+      expect(queryByRole('button', { name: /pause/i })).toBeTruthy()
     })
-    expect(app.queryByRole('button', { name: /start/i })).toBeNull()
+    expect(queryByRole('button', { name: /start/i })).toBeNull()
 
-    app.cleanup()
+    cleanup()
   })
 })

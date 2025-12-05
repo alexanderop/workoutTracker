@@ -21,19 +21,19 @@ describe('Continue Workout Flow', () => {
 
   describe('Continue Workout Button', () => {
     it('shows "Start Workout" with Play icon for fresh workout', async () => {
-      const app = await createTestApp()
+      const { common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await app.user.click(app.getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /get started/i }))
 
       // Add an exercise block
-      await app.user.click(app.getByRole('button', { name: /add first block/i }))
-      await app.waitForDialog()
-      await app.user.click(app.getDialogButton('Bench Press'))
-      app.assertDialogClosed()
+      await user.click(getByRole('button', { name: /add first block/i }))
+      await common.waitForDialog()
+      await user.click(common.getDialogButton('Bench Press'))
+      common.assertDialogClosed()
 
       // Verify the button shows "Start Workout" (not "Resume")
-      const startButton = app.getByRole('button', { name: /start workout/i })
+      const startButton = getByRole('button', { name: /start workout/i })
       expect(startButton).toBeDefined()
 
       // Verify Play icon is present (not RotateCcw)
@@ -45,48 +45,48 @@ describe('Continue Workout Flow', () => {
       // Verify no pulsing animation class
       expect(startButton.className).not.toContain('animate-pulse-ring')
 
-      app.cleanup()
+      cleanup()
     })
 
     it('shows "Resume Workout" with RotateCcw icon after completing a set', async () => {
-      const app = await createTestApp()
+      const { builder, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await app.user.click(app.getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /get started/i }))
 
       // Add an exercise block
-      await app.user.click(app.getByRole('button', { name: /add first block/i }))
-      await app.waitForDialog()
-      await app.user.click(app.getDialogButton('Bench Press'))
-      app.assertDialogClosed()
+      await user.click(getByRole('button', { name: /add first block/i }))
+      await common.waitForDialog()
+      await user.click(common.getDialogButton('Bench Press'))
+      common.assertDialogClosed()
 
       // Start the workout
-      await app.startWorkout()
+      await builder.startWorkout()
 
       // Fill in set values and complete the first set
       const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await app.user.type(weightInput, '100')
-      await app.user.type(repsInput, '8')
-      await app.user.type(rirInput, '2')
-      await app.user.click(app.getByRole('button', { name: /complete set/i }))
+      await user.type(weightInput, '100')
+      await user.type(repsInput, '8')
+      await user.type(rirInput, '2')
+      await user.click(getByRole('button', { name: /complete set/i }))
 
       // Go back to builder mode - find back button by chevron icon
       const backButton = document.querySelector('header button')
       if (!(backButton instanceof HTMLElement)) {
         throw new Error('Back button not found')
       }
-      await app.user.click(backButton)
+      await user.click(backButton)
 
       // Wait for builder mode to render
       await waitFor(() => {
-        expect(app.queryByRole('button', { name: /resume workout/i })).toBeTruthy()
+        expect(queryByRole('button', { name: /resume workout/i })).toBeTruthy()
       })
 
       // Verify the button shows "Resume Workout"
-      const resumeButton = app.getByRole('button', { name: /resume workout/i })
+      const resumeButton = getByRole('button', { name: /resume workout/i })
       expect(resumeButton).toBeDefined()
 
       // Verify RotateCcw icon is present (not Play)
@@ -98,45 +98,46 @@ describe('Continue Workout Flow', () => {
       // Verify pulsing animation class is applied
       expect(resumeButton.className).toContain('animate-pulse-ring')
 
-      app.cleanup()
+      cleanup()
     })
 
     it('allows resuming workout from Continue button', async () => {
-      const app = await createTestApp()
+      const { builder, common, user, getByRole, queryByRole, getByText, cleanup } =
+        await createTestApp()
 
       // Navigate to workout builder
-      await app.user.click(app.getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /get started/i }))
 
       // Add an exercise block
-      await app.user.click(app.getByRole('button', { name: /add first block/i }))
-      await app.waitForDialog()
-      await app.user.click(app.getDialogButton('Bench Press'))
-      app.assertDialogClosed()
+      await user.click(getByRole('button', { name: /add first block/i }))
+      await common.waitForDialog()
+      await user.click(common.getDialogButton('Bench Press'))
+      common.assertDialogClosed()
 
       // Start workout, complete a set, go back
-      await app.startWorkout()
+      await builder.startWorkout()
       const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-      await app.user.type(weightInput, '100')
-      await app.user.type(repsInput, '8')
-      await app.user.type(rirInput, '2')
-      await app.user.click(app.getByRole('button', { name: /complete set/i }))
+      await user.type(weightInput, '100')
+      await user.type(repsInput, '8')
+      await user.type(rirInput, '2')
+      await user.click(getByRole('button', { name: /complete set/i }))
 
       // Go back to builder mode - find back button in header
       const backButton = document.querySelector('header button')
       if (!(backButton instanceof HTMLElement)) {
         throw new Error('Back button not found')
       }
-      await app.user.click(backButton)
+      await user.click(backButton)
 
       // Wait for builder mode
       await waitFor(() => {
-        expect(app.queryByRole('button', { name: /resume workout/i })).toBeTruthy()
+        expect(queryByRole('button', { name: /resume workout/i })).toBeTruthy()
       })
 
       // Click Resume Workout
-      await app.user.click(app.getByRole('button', { name: /resume workout/i }))
+      await user.click(getByRole('button', { name: /resume workout/i }))
 
       // Verify we're back in active mode by checking for timer badge
       await waitFor(() => {
@@ -145,27 +146,27 @@ describe('Continue Workout Flow', () => {
       })
 
       // Verify completed set is still visible in history
-      expect(app.getByText(/100kg × 8/)).toBeDefined()
+      expect(getByText(/100kg × 8/)).toBeDefined()
 
-      app.cleanup()
+      cleanup()
     })
   })
 
   describe('Duration Timer Badge', () => {
     it('shows duration badge with timer icon and pulsing indicator in active mode', async () => {
-      const app = await createTestApp()
+      const { builder, common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await app.user.click(app.getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /get started/i }))
 
       // Add an exercise block
-      await app.user.click(app.getByRole('button', { name: /add first block/i }))
-      await app.waitForDialog()
-      await app.user.click(app.getDialogButton('Bench Press'))
-      app.assertDialogClosed()
+      await user.click(getByRole('button', { name: /add first block/i }))
+      await common.waitForDialog()
+      await user.click(common.getDialogButton('Bench Press'))
+      common.assertDialogClosed()
 
       // Start the workout
-      await app.startWorkout()
+      await builder.startWorkout()
 
       // Wait for active mode to render and verify duration badge appears
       await waitFor(() => {
@@ -183,7 +184,7 @@ describe('Continue Workout Flow', () => {
       const pulsingDot = document.querySelector('.animate-ping')
       expect(pulsingDot).toBeTruthy()
 
-      app.cleanup()
+      cleanup()
     })
   })
 })
