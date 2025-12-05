@@ -3,16 +3,20 @@ import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import ExerciseListItem from '@/components/exercise/ExerciseListItem.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { popularExercises } from '@/data/popularExercises'
-import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
+import { useExerciseSearch } from '@/composables/useExerciseSearch'
 import type { Muscle } from '@/stores/exercises'
 
 const router = useRouter()
 const { t } = useI18n()
-const searchQuery = ref('')
+
 const activeFilter = ref<Muscle | 'all'>('all')
+const { searchQuery, filteredExercises } = useExerciseSearch({
+  muscleFilter: activeFilter,
+  searchFields: ['name', 'muscle', 'equipment'],
+})
 
 const muscleFilters = computed<Array<{ value: Muscle | 'all'; label: string }>>(() => [
   { value: 'all', label: t('exercises.filters.all') },
@@ -23,28 +27,6 @@ const muscleFilters = computed<Array<{ value: Muscle | 'all'; label: string }>>(
   { value: 'arms', label: t('exercises.muscle.arms') },
   { value: 'core', label: t('exercises.muscle.core') },
 ])
-
-const filteredExercises = computed(() => {
-  let exercises = popularExercises
-
-  // Apply muscle filter
-  if (activeFilter.value !== 'all') {
-    exercises = exercises.filter((ex) => ex.muscle === activeFilter.value)
-  }
-
-  // Apply search filter
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    exercises = exercises.filter(
-      (ex) =>
-        ex.name.toLowerCase().includes(query) ||
-        ex.muscle.toLowerCase().includes(query) ||
-        ex.equipment.toLowerCase().includes(query),
-    )
-  }
-
-  return exercises
-})
 
 const exerciseCount = computed(() => filteredExercises.value.length)
 
@@ -109,28 +91,13 @@ function handleCreateExercise() {
     <!-- Exercise List -->
     <div class="flex-1 overflow-y-auto px-5 pb-24">
       <div v-if="filteredExercises.length > 0" class="space-y-1">
-        <button
+        <ExerciseListItem
           v-for="exercise in filteredExercises"
-          :key="exercise.name"
-          class="w-full flex items-center gap-4 px-4 py-4 text-left rounded-xl transition-all duration-150 hover:bg-muted/50 active:bg-muted active:scale-[0.99] group"
-        >
-          <!-- Icon Container -->
-          <div
-            class="flex-shrink-0 w-12 h-12 rounded-xl bg-muted/60 flex items-center justify-center text-2xl group-hover:bg-muted group-active:scale-95 transition-all duration-150"
-          >
-            {{ exercise.icon }}
-          </div>
-
-          <!-- Content -->
-          <div class="min-w-0 flex-1">
-            <p class="font-medium text-base tracking-tight truncate">
-              {{ exercise.name }}
-            </p>
-            <p class="text-xs text-muted-foreground mt-0.5 uppercase tracking-wide">
-              {{ MUSCLE_LABELS[exercise.muscle] }}
-            </p>
-          </div>
-        </button>
+          :key="exercise.id ?? exercise.name"
+          :exercise="exercise"
+          variant="list"
+          @select="() => {}"
+        />
       </div>
 
       <!-- Empty State -->

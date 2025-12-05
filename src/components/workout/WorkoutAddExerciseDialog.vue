@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import type { Exercise } from '@/composables/useExerciseSearch'
+
 import { Search, X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import ExerciseListItem from '@/components/exercise/ExerciseListItem.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
-import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
 const { t } = useI18n()
 
@@ -27,8 +28,8 @@ const emit = defineEmits<Emits>()
 const router = useRouter()
 const { searchQuery, filteredExercises } = useExerciseSearch()
 
-function handleSelectExercise(exerciseName: string) {
-  emit('add', exerciseName)
+function handleSelectExercise(exercise: Exercise) {
+  emit('add', exercise.name)
   emit('update:open', false)
   searchQuery.value = ''
 }
@@ -82,31 +83,17 @@ function handleOpenChange(value: boolean) {
         />
       </div>
 
-      <!-- Popular Exercises List -->
+      <!-- Exercises List -->
       <div class="flex-1 overflow-y-auto -mx-4 px-4">
-        <button
-          v-for="(exercise, index) in filteredExercises"
-          :key="exercise.name"
-          class="w-full flex items-center gap-3 py-3 text-left transition-colors active:bg-muted/50 group"
-          :class="index !== filteredExercises.length - 1 ? 'border-b border-border/50' : ''"
-          @click="handleSelectExercise(exercise.name)"
-        >
-          <span class="text-2xl flex-shrink-0 group-active:scale-110 transition-transform">{{
-            exercise.icon
-          }}</span>
-          <div class="min-w-0 flex-1">
-            <p class="font-medium text-[15px] truncate">
-              {{ exercise.name }}
-            </p>
-            <Badge variant="secondary" class="text-xs mt-0.5 font-normal">
-              {{ MUSCLE_LABELS[exercise.muscle] }}
-            </Badge>
-          </div>
-          <span
-            class="text-muted-foreground/50 text-xl flex-shrink-0 group-active:translate-x-0.5 transition-transform"
-            >›</span
-          >
-        </button>
+        <div class="divide-y divide-border/50">
+          <ExerciseListItem
+            v-for="exercise in filteredExercises"
+            :key="exercise.id ?? exercise.name"
+            :exercise="exercise"
+            variant="dialog"
+            @select="handleSelectExercise"
+          />
+        </div>
 
         <!-- Empty State -->
         <div v-if="filteredExercises.length === 0" class="text-center py-12">

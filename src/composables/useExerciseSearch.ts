@@ -1,44 +1,105 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { PopularExercise } from '@/data/popularExercises'
+import type { Muscle } from '@/stores/exercises'
 
 import { computed, ref } from 'vue'
 import { popularExercises } from '@/data/popularExercises'
+import { useExercisesStore } from '@/stores/exercises'
 
 /**
- * Filters exercises by name using case-insensitive search.
+ * Exercise type that combines PopularExercise and CustomExercise.
+ * Equipment and muscle are optional since custom exercises may not have them.
  */
-function filterExercisesByName(
-  exercises: ReadonlyArray<PopularExercise>,
+export type Exercise = {
+  name: string
+  icon: string
+  equipment?: PopularExercise['equipment']
+  muscle?: PopularExercise['muscle']
+  type: PopularExercise['type']
+  metrics: PopularExercise['metrics']
+  id?: string
+  createdAt?: number
+}
+
+type SearchField = 'name' | 'muscle' | 'equipment'
+
+/**
+ * Filters exercises by muscle group.
+ * Returns all exercises when muscle is 'all'.
+ */
+function filterByMuscle(
+  exercises: ReadonlyArray<Exercise>,
+  muscle: Muscle | 'all',
+): Array<Exercise> {
+  if (muscle === 'all') return [...exercises]
+  return exercises.filter((ex) => ex.muscle === muscle)
+}
+
+/**
+ * Filters exercises by search query across specified fields.
+ * Uses case-insensitive substring matching.
+ */
+function filterBySearchQuery(
+  exercises: ReadonlyArray<Exercise>,
   query: string,
-): Array<PopularExercise> {
-  const normalizedQuery = query.toLowerCase()
-  return exercises.filter((exercise) => exercise.name.toLowerCase().includes(normalizedQuery))
+  fields: ReadonlyArray<SearchField>,
+): Array<Exercise> {
+  const trimmed = query.trim().toLowerCase()
+  if (!trimmed) return [...exercises]
+
+  return exercises.filter((ex) =>
+    fields.some((field) => ex[field]?.toLowerCase().includes(trimmed)),
+  )
+}
+
+type UseExerciseSearchOptions = {
+  muscleFilter?: Ref<Muscle | 'all'>
+  searchFields?: ReadonlyArray<SearchField>
 }
 
 type UseExerciseSearchReturn = {
   searchQuery: Ref<string>
-  filteredExercises: ComputedRef<Array<PopularExercise>>
+  filteredExercises: ComputedRef<Array<Exercise>>
+  allExercises: ComputedRef<Array<Exercise>>
 }
 
 /**
- * Composable that provides search functionality for popular exercises.
- * Returns all exercises when searchQuery is empty or whitespace.
+ * Composable that provides search functionality for all exercises.
+ * Combines popular exercises with custom exercises from the store.
+ * Returns all exercises sorted alphabetically when searchQuery is empty.
+ *
+ * @param options.muscleFilter - Optional ref to filter by muscle group
+ * @param options.searchFields - Fields to search (default: ['name'])
  */
-export function useExerciseSearch(): UseExerciseSearchReturn {
-  // 2. Primary State
+export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerciseSearchReturn {
+  const exercisesStore = useExercisesStore()
   const searchQuery = ref('')
 
-  // 4. Computed
+  const searchFields = options?.searchFields ?? ['name']
+
+  const allExercises = computed<Array<Exercise>>(() => {
+    const combined: Array<Exercise> = [
+      ...popularExercises,
+      ...exercisesStore.customExercises,
+    ]
+    return combined.sort((a, b) => a.name.localeCompare(b.name))
+  })
+
   const filteredExercises = computed(() => {
-    const trimmedQuery = searchQuery.value.trim()
-    if (!trimmedQuery) {
-      return popularExercises
+    let result = allExercises.value
+
+    if (options?.muscleFilter) {
+      result = filterByMuscle(result, options.muscleFilter.value)
     }
-    return filterExercisesByName(popularExercises, trimmedQuery)
+
+    result = filterBySearchQuery(result, searchQuery.value, searchFields)
+
+    return result
   })
 
   return {
     searchQuery,
     filteredExercises,
+    allExercises,
   }
 }
