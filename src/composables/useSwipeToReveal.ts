@@ -3,7 +3,7 @@ import { shallowRef, toValue, watch, type MaybeRefOrGetter, type ComponentPublic
 import { onClickOutside, useMediaQuery } from '@vueuse/core'
 import { useSwipeActionsManager } from '@/composables/useSwipeActionsManager'
 
-export type SwipeToRevealOptions = {
+type SwipeToRevealOptions = {
   /**
    * Number of action buttons to reveal
    * @default 2
