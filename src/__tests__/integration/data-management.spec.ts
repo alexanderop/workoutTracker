@@ -42,25 +42,13 @@ describe('Data Management', () => {
       })
     })
 
-    async function navigateToSettings(testApp: {
-      user: Awaited<ReturnType<typeof createTestApp>>['user']
-      getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole']
-      router: Awaited<ReturnType<typeof createTestApp>>['router']
-    }): Promise<void> {
-      await testApp.user.click(testApp.getByRole('button', { name: /settings/i }))
-      await waitFor(() => {
-        expect(testApp.router.currentRoute.value.path).toBe('/settings')
-      })
-    }
-
     it('exports data when clicking Export Data button', async () => {
       // Arrange: Add test data to DB
       const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
       await db.workouts.add(workout)
 
-      const { user, getByRole, router, cleanup } = await createTestApp()
-      const testApp = { user, getByRole, router }
-      await navigateToSettings(testApp)
+      const { common, user, getByRole, cleanup } = await createTestApp()
+      await common.navigateToSettings()
 
       // Act: Click export button
       await user.click(getByRole('button', { name: /^export data$/i }))
@@ -96,10 +84,9 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { user, getByRole, router, queryByRole, queryByText, common, cleanup } =
+      const { user, getByRole, queryByRole, queryByText, common, cleanup } =
         await createTestApp()
-      const testApp = { user, getByRole, router }
-      await navigateToSettings(testApp)
+      await common.navigateToSettings()
 
       // Act: Upload file via hidden input
       const fileInput = document.querySelector('input[type="file"]')
@@ -136,10 +123,9 @@ describe('Data Management', () => {
     it('shows error dialog when importing invalid JSON', async () => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { user, getByRole, router, queryByRole, queryByText, common, cleanup } =
+      const { user, getByRole, queryByRole, queryByText, common, cleanup } =
         await createTestApp()
-      const testApp = { user, getByRole, router }
-      await navigateToSettings(testApp)
+      await common.navigateToSettings()
 
       // Act: Upload invalid file
       const fileInput = document.querySelector('input[type="file"]')
@@ -169,9 +155,8 @@ describe('Data Management', () => {
 
       const deleteSpy = vi.spyOn(dbModule, 'deleteAllData').mockResolvedValue()
 
-      const { user, getByRole, router, queryByRole, common, cleanup } = await createTestApp()
-      const testApp = { user, getByRole, router }
-      await navigateToSettings(testApp)
+      const { user, getByRole, queryByRole, common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
       const deleteButton = getByRole('button', { name: /^delete all data$/i })
@@ -210,14 +195,8 @@ describe('Data Management', () => {
       await db.workouts.add(completedWorkout)
 
       // Act: Start at home and navigate to workouts page
-      const { user, router, getByRole, getByText, findByText, cleanup } = await createTestApp()
-
-      // Navigate to workouts via bottom nav
-      const workoutsNavButton = getByRole('button', { name: /workouts/i })
-      await user.click(workoutsNavButton)
-
-      // Wait for workouts page to load
-      expect(router.currentRoute.value.path).toBe('/workouts')
+      const { common, user, router, getByText, findByText, cleanup } = await createTestApp()
+      await common.navigateToWorkouts()
 
       // Find the workout card and click it
       const workoutCard = await findByText('Push Day')

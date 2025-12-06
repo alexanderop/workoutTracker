@@ -1,9 +1,19 @@
 import { screen } from '@testing-library/vue'
 import type { SetInputs, SetValues, TestContext } from '../types'
 
+/**
+ * Page Object for the active workout view.
+ * Provides methods to interact with sets, navigate between blocks, and control timers.
+ */
 export class ActiveWorkoutPO {
   constructor(private ctx: TestContext) {}
 
+  /**
+   * Retrieves input elements and complete button for a specific set row.
+   * @param setIndex - Zero-based index of the set row in the table
+   * @returns Object containing weight, reps, RIR inputs and complete button
+   * @throws Error if the row or any required element is not found
+   */
   getSetRow(setIndex: number): SetInputs {
     const rows = document.querySelectorAll('tbody tr')
     const row = rows[setIndex]
@@ -32,6 +42,12 @@ export class ActiveWorkoutPO {
     }
   }
 
+  /**
+   * Fills in the values for a specific set row.
+   * Clears existing values before typing new ones. Skips undefined values.
+   * @param setIndex - Zero-based index of the set row to fill
+   * @param values - Object containing optional kg, reps, and rir values
+   */
   async fillSet(setIndex: number, values: SetValues): Promise<void> {
     const inputs = this.getSetRow(setIndex)
 
@@ -47,19 +63,36 @@ export class ActiveWorkoutPO {
     await typeValue(inputs.rir, values.rir)
   }
 
+  /**
+   * Opens the workout options menu by clicking the menu trigger button.
+   */
   async openMenu(): Promise<void> {
     await this.ctx.user.click(screen.getByRole('button', { name: /workout options|more options/i }))
   }
 
+  /**
+   * Retrieves a navigation button from the workout footer.
+   * @param direction - Either 'prev' for previous block or 'next' for next block
+   * @returns The navigation button element
+   */
   getFooterButton(direction: 'prev' | 'next'): HTMLElement {
     const label = direction === 'prev' ? /previous block/i : /next block/i
     return screen.getByRole('button', { name: label })
   }
 
+  /**
+   * Retrieves the workout options menu trigger button.
+   * @returns The menu trigger button element
+   */
   getMenuTrigger(): HTMLElement {
     return screen.getByRole('button', { name: /workout options|more options/i })
   }
 
+  /**
+   * Retrieves a timer control button by its action type.
+   * @param action - Either 'exit' to exit the timer or 'reset' to reset it
+   * @returns The timer control button element
+   */
   getTimerControlButton(action: 'exit' | 'reset'): HTMLElement {
     const labels: Record<typeof action, RegExp> = {
       exit: /exit timer/i,

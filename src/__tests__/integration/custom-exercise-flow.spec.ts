@@ -23,9 +23,7 @@ describe('Custom Exercise Flow', () => {
     const { common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
     // Step 1: Navigate to exercises view
-    const exercisesNavButton = getByRole('button', { name: /exercises/i })
-    await user.click(exercisesNavButton)
-    await common.waitForRoute(/^\/exercises$/)
+    await common.navigateToExercises()
 
     // Step 2: Click create custom exercise button
     const createButton = getByRole('button', { name: /create.*custom/i })
@@ -55,9 +53,7 @@ describe('Custom Exercise Flow', () => {
     const { common, router, user, getByRole, queryByText, cleanup } = await createTestApp()
 
     // Create custom exercise via UI
-    const exercisesNavButton = getByRole('button', { name: /exercises/i })
-    await user.click(exercisesNavButton)
-    await common.waitForRoute(/^\/exercises$/)
+    await common.navigateToExercises()
 
     const createButton = getByRole('button', { name: /create.*custom/i })
     await user.click(createButton)
@@ -88,9 +84,7 @@ describe('Custom Exercise Flow', () => {
     const { common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
     // Create custom exercise with unique name
-    const exercisesNavButton = getByRole('button', { name: /exercises/i })
-    await user.click(exercisesNavButton)
-    await common.waitForRoute(/^\/exercises$/)
+    await common.navigateToExercises()
 
     const createButton = getByRole('button', { name: /create.*custom/i })
     await user.click(createButton)
@@ -120,8 +114,7 @@ describe('Custom Exercise Flow', () => {
       const { common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
-      await user.click(getByRole('button', { name: /exercises/i }))
-      await common.waitForRoute(/^\/exercises$/)
+      await common.navigateToExercises()
       await user.click(getByRole('button', { name: /create.*custom/i }))
       await common.waitForRoute(/^\/create-exercise$/)
 
@@ -136,8 +129,7 @@ describe('Custom Exercise Flow', () => {
       const { common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
-      await user.click(getByRole('button', { name: /exercises/i }))
-      await common.waitForRoute(/^\/exercises$/)
+      await common.navigateToExercises()
       await user.click(getByRole('button', { name: /create.*custom/i }))
       await common.waitForRoute(/^\/create-exercise$/)
 
@@ -156,8 +148,7 @@ describe('Custom Exercise Flow', () => {
       const { common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
-      await user.click(getByRole('button', { name: /exercises/i }))
-      await common.waitForRoute(/^\/exercises$/)
+      await common.navigateToExercises()
       await user.click(getByRole('button', { name: /create.*custom/i }))
       await common.waitForRoute(/^\/create-exercise$/)
 
@@ -186,8 +177,7 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 1: Create custom exercise
       // ========================================
-      await user.click(getByRole('button', { name: /exercises/i }))
-      await common.waitForRoute(/^\/exercises$/)
+      await common.navigateToExercises()
       await user.click(getByRole('button', { name: /create.*custom/i }))
       await common.waitForRoute(/^\/create-exercise$/)
 
