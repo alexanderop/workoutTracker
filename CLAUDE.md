@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 pnpm dev              # Dev server with HMR
-pnpm test:unit        # Run all tests
-pnpm test:unit <file> # Run single test file
-pnpm test:browser     # Run browser tests (Playwright)
+pnpm test             # Run all tests (Playwright browser)
+pnpm test <file>      # Run single test file
+pnpm test:headed      # Run tests with visible browser
+pnpm test:ui          # Run tests with Vitest UI
 pnpm lint             # oxlint + eslint with auto-fix
 pnpm build            # Type-check + production build
 pnpm type-check       # TypeScript only

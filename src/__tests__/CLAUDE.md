@@ -1,6 +1,6 @@
 # Testing Guide for Claude
 
-This guide explains how to write tests in this project. Tests use **Vitest** with **@testing-library/vue** and **fake-indexeddb**.
+This guide explains how to write tests in this project. All tests run in **Playwright browser mode** using **Vitest** with **@testing-library/vue** and **fake-indexeddb**.
 
 ## Directory Structure
 
@@ -315,8 +315,10 @@ await flushPromises()
 ## Running Tests
 
 ```bash
-pnpm test:unit                    # Run all tests
-pnpm test:unit useRestTimer       # Run tests matching pattern
-pnpm test:unit --watch            # Watch mode
-pnpm test:unit --coverage         # With coverage report
+pnpm test                         # Run all tests (Playwright browser)
+pnpm test useRestTimer            # Run tests matching pattern
+pnpm test:watch                   # Watch mode
+pnpm test:headed                  # Run with visible browser
+pnpm test:ui                      # Vitest UI
+pnpm test:coverage                # With coverage report
 ```

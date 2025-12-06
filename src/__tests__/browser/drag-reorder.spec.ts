@@ -4,7 +4,7 @@ import { createApp, h } from 'vue'
 import { i18n } from '@/i18n'
 import WorkoutBlockPlaylist from '@/features/workout/components/WorkoutBlockPlaylist.vue'
 import { createStrengthBlock } from '@/__tests__/factories'
-import { resetDatabase } from './setup'
+import { resetDatabase } from '../setup'
 
 /**
  * Helper to render component in browser mode

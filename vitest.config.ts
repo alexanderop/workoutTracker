@@ -17,12 +17,12 @@ const optimizeDeps = {
   include: ['workbox-window'],
 }
 
-// Define vitest config directly without merging with vite.config.ts
-// to avoid type conflicts between rolldown-vite and vitest's vite types
+// All tests run in Playwright browser mode for consistent, real-browser behavior
 // Note: This file is excluded from tsconfig.vitest.json type checking due to plugin type conflicts
 export default defineConfig({
   plugins: [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })],
   resolve,
+  optimizeDeps,
   test: {
     root: fileURLToPath(new URL('./', import.meta.url)),
     exclude: [...configDefaults.exclude, 'e2e/**'],
@@ -30,59 +30,14 @@ export default defineConfig({
     fileParallelism: false,
     // Stop test execution after first failure
     bail: 1,
-
-    projects: [
-      // Fast unit/composable tests in jsdom
-      {
-        extends: true,
-        test: {
-          name: 'unit',
-          include: [
-            'src/__tests__/composables/**/*.spec.ts',
-            'src/__tests__/integration/**/*.spec.ts',
-            'src/__tests__/stores/**/*.spec.ts',
-          ],
-          environment: 'jsdom',
-          setupFiles: ['./src/__tests__/setup.ts'],
-        },
-      },
-      // Browser tests for Web APIs - uses custom vite config without devtools
-      {
-        extends: false,
-        plugins: [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })],
-        resolve,
-        optimizeDeps,
-        test: {
-          name: 'browser',
-          include: ['src/__tests__/browser/**/*.spec.ts'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium' }],
-            headless: true,
-          },
-          setupFiles: ['./src/__tests__/browser/setup.ts'],
-        },
-      },
-      // Integration tests in real browser - same tests as 'unit' but in Chromium
-      {
-        extends: false,
-        plugins: [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })],
-        resolve,
-        optimizeDeps,
-        test: {
-          name: 'integration-browser',
-          include: ['src/__tests__/integration/**/*.spec.ts'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium' }],
-            headless: true,
-          },
-          setupFiles: ['./src/__tests__/browser/setup.ts'],
-        },
-      },
-    ],
+    include: ['src/__tests__/**/*.spec.ts'],
+    browser: {
+      enabled: true,
+      provider: playwright(),
+      instances: [{ browser: 'chromium' }],
+      headless: true,
+    },
+    setupFiles: ['./src/__tests__/setup.ts'],
 
     coverage: {
       provider: 'v8',

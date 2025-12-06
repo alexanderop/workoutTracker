@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
-import { resetDatabase } from './setup'
+import { resetDatabase } from '../setup'
 
 /**
  * Browser tests for useTimerAudio with real Web Audio API.
