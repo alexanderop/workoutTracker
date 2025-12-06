@@ -1,36 +1,14 @@
 import { computed, ref } from 'vue'
 import { getTemplatesRepository } from '@/db'
-import { popularExercises } from '@/data/popularExercises'
 import { tryCatch } from '@/lib/tryCatch'
+import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbWorkoutTemplate } from '@/db/schema'
 import type { TemplateExercise } from '@/features/templates/components/TemplateExerciseList.vue'
+import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
 
 // ============================================
 // Pure Functions (Functional Core)
 // ============================================
-
-/**
- * Generates a unique exercise ID for template creation.
- */
-function generateExerciseId(): string {
-  return `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-/**
- * Finds a popular exercise by name and creates a template exercise from it.
- */
-function createTemplateExercise(exerciseName: string): TemplateExercise | null {
-  const popularExercise = popularExercises.find((ex) => ex.name === exerciseName)
-  if (!popularExercise) return null
-
-  return {
-    exerciseId: generateExerciseId(),
-    name: exerciseName,
-    equipment: popularExercise.equipment,
-    thumbnail: popularExercise.icon,
-    defaultSetCount: 3,
-  }
-}
 
 /**
  * Converts template exercises to strength blocks for database storage.
@@ -68,10 +46,8 @@ export function useTemplateCreation() {
   )
 
   // Methods
-  function addExercise(exercise: { name: string; icon: string }): void {
-    const templateExercise = createTemplateExercise(exercise.name)
-    if (!templateExercise) return
-
+  function addExercise(exercise: Exercise): void {
+    const templateExercise = createTemplateExercise(exercise)
     exercises.value = [...exercises.value, templateExercise]
   }
 

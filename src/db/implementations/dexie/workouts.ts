@@ -6,6 +6,7 @@ import type {
   DbWorkoutBlock,
 } from '@/db/schema'
 import { isDbStrengthBlock } from '@/db/schema'
+import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
 
@@ -60,7 +61,7 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
     async startFromCompleted(id: string): Promise<DbActiveWorkout> {
       const completedWorkout = await db.workouts.get(id)
       if (!completedWorkout) {
-        throw new Error(`Workout with id ${id} not found`)
+        throw createDatabaseError('NOT_FOUND', 'start workout from history')
       }
 
       const now = Date.now()

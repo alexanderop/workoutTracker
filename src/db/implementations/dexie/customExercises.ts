@@ -1,5 +1,6 @@
 import type { CustomExercisesRepository } from '@/db/interfaces'
 import type { DbCustomExercise } from '@/db/schema'
+import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
 
 export function createDexieCustomExercisesRepository(
@@ -27,7 +28,7 @@ export function createDexieCustomExercisesRepository(
         updatedAt: Date.now(),
       })
       if (updated === 0) {
-        throw new Error(`Exercise with id ${id} not found`)
+        throw createDatabaseError('NOT_FOUND', 'update custom exercise')
       }
     },
 

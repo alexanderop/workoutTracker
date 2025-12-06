@@ -11,6 +11,7 @@ import type {
   DbWorkoutBlock,
   DbWorkoutTemplate,
 } from '@/db/schema'
+import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
 
@@ -234,7 +235,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     async startFromTemplate(templateId: string): Promise<DbActiveWorkout> {
       const template = await db.templates.get(templateId)
       if (!template) {
-        throw new Error(`Template ${templateId} not found`)
+        throw createDatabaseError('NOT_FOUND', 'start workout from template')
       }
 
       const now = Date.now()
@@ -253,11 +254,8 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
         activeSetIndex: null,
       }
 
-      // Update template usage and return the workout (don't save to DB yet)
-      const updated = await db.templates.update(templateId, { lastUsedAt: now })
-      if (updated === 0) {
-        throw new Error(`Template with id ${templateId} not found`)
-      }
+      // Update template usage tracking (template exists, so this will always succeed)
+      await db.templates.update(templateId, { lastUsedAt: now })
 
       return activeWorkout
     },
@@ -268,7 +266,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     ): Promise<void> {
       const updated = await db.templates.update(id, updates)
       if (updated === 0) {
-        throw new Error(`Template with id ${id} not found`)
+        throw createDatabaseError('NOT_FOUND', 'update template')
       }
     },
 
@@ -279,7 +277,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     async rename(id: string, newName: string): Promise<void> {
       const updated = await db.templates.update(id, { name: newName })
       if (updated === 0) {
-        throw new Error(`Template with id ${id} not found`)
+        throw createDatabaseError('NOT_FOUND', 'rename template')
       }
     },
 

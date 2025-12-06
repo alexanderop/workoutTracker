@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { useToggle } from '@vueuse/core'
+import type { Exercise } from '@/composables/useExerciseSearch'
 import { generateId } from '@/db/index'
 import type { BlockExercise } from '@/types/blocks'
 
@@ -9,7 +10,7 @@ export function useTimedBlockExercises() {
 
   const canConfirm = computed(() => exercises.value.length > 0)
 
-  function handleSelectExercise(exercise: { name: string; icon: string }) {
+  function handleSelectExercise(exercise: Exercise) {
     const newExercise: BlockExercise = {
       id: generateId(),
       name: exercise.name,

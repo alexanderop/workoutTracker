@@ -2,9 +2,10 @@ import { computed, onMounted, ref } from 'vue'
 import { getTemplatesRepository, getActiveWorkoutRepository } from '@/db'
 import { dbToWorkout } from '@/db/converters'
 import { restoreWorkout } from '@/stores/workoutState'
-import { popularExercises } from '@/data/popularExercises'
 import { tryCatch } from '@/lib/tryCatch'
+import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
+import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
 
 // ============================================
 // Types
@@ -154,18 +155,8 @@ export function useTemplateDetail(templateId: string) {
   }
 
   // Exercise manipulation
-  function addExercise(exerciseName: string): void {
-    const popularExercise = popularExercises.find((ex) => ex.name === exerciseName)
-    if (!popularExercise) return
-
-    const newExercise: TemplateExercise = {
-      exerciseId: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: exerciseName,
-      equipment: popularExercise.equipment,
-      thumbnail: popularExercise.icon,
-      defaultSetCount: 3,
-    }
-
+  function addExercise(exercise: Exercise): void {
+    const newExercise = createTemplateExercise(exercise)
     exercises.value = [...exercises.value, newExercise]
   }
 

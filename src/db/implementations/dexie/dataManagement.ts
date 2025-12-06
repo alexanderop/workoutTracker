@@ -19,13 +19,14 @@ export function createDexieDataManagementRepository(
     async importAll(data: ExportDataContents): Promise<void> {
       await db.transaction(
         'rw',
-        [db.settings, db.customExercises, db.templates, db.workouts],
+        [db.settings, db.customExercises, db.templates, db.workouts, db.activeWorkout],
         async () => {
           await Promise.all([
             db.settings.clear(),
             db.customExercises.clear(),
             db.templates.clear(),
             db.workouts.clear(),
+            db.activeWorkout.clear(),
           ])
 
           const { settings, customExercises, templates, workouts } = data
