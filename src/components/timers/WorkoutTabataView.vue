@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
+import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { cn } from '@/lib/utils'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
@@ -20,11 +21,38 @@ const emit = defineEmits<{
   'update:isRunning': [value: boolean]
 }>()
 
-const timer = useTabataTimer({ onComplete })
+const audio = useTimerAudio()
+
+function handleComplete() {
+  audio.playComplete()
+  onComplete?.()
+}
+
+function handlePhaseChange(phase: 'work' | 'rest') {
+  if (phase === 'work') {
+    audio.playWorkBeep()
+    return
+  }
+  audio.playRestBeep()
+}
+
+function handleRoundChange() {
+  audio.playRoundBeep()
+}
+
+const timer = useTabataTimer({
+  onComplete: handleComplete,
+  onPhaseChange: handlePhaseChange,
+  onRoundChange: handleRoundChange,
+})
 
 // Emit when isRunning changes so parent can react
-watch(timer.isRunning, (isRunning) => {
+watch(timer.isRunning, (isRunning, wasRunning) => {
   emit('update:isRunning', isRunning)
+  // Play work beep when timer first starts (idle -> running)
+  if (isRunning && !wasRunning) {
+    audio.playWorkBeep()
+  }
 })
 
 const exercises = computed(() => getBlockExerciseList(block))

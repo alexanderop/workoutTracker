@@ -1,6 +1,10 @@
 import 'fake-indexeddb/auto'
 import { vi } from 'vitest'
 import { db } from '@/db'
+import { setupAudioContextMock } from './helpers/audioMock'
+
+// Setup AudioContext mock before any components are loaded
+setupAudioContextMock()
 
 /**
  * Mock window.matchMedia for PWA standalone detection and media queries in tests.

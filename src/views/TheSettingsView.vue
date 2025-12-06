@@ -24,6 +24,7 @@ import {
   Trash2,
   ChevronDown,
   Globe,
+  Volume2,
 } from 'lucide-vue-next'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
@@ -120,6 +121,10 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
 
 function handleScreenWakeLockChange(enabled: boolean) {
   settingsStore.setScreenWakeLock(enabled)
+}
+
+function handleTimerSoundChange(enabled: boolean) {
+  settingsStore.setTimerSoundEnabled(enabled)
 }
 
 function handleLanguageChange(value: AcceptableValue) {
@@ -275,6 +280,28 @@ function handleLanguageChange(value: AcceptableValue) {
               data-testid="screen-wake-lock-toggle"
               class="shrink-0"
               @update:model-value="handleScreenWakeLockChange"
+            />
+          </div>
+
+          <!-- Timer Sounds Toggle -->
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-start gap-3 min-w-0">
+              <Volume2 class="size-5 text-muted-foreground mt-0.5 shrink-0" />
+              <div class="min-w-0">
+                <Label class="text-base cursor-pointer" for="timer-sound-toggle">{{
+                  t('settings.labels.timerSounds')
+                }}</Label>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('settings.labels.playAudioCues') }}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="timer-sound-toggle"
+              :model-value="settingsStore.timerSoundEnabled"
+              data-testid="timer-sound-toggle"
+              class="shrink-0"
+              @update:model-value="handleTimerSoundChange"
             />
           </div>
 

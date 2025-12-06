@@ -20,10 +20,10 @@ import type {
   WorkoutBlock,
 } from '@/types/blocks'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
-import type { Set, SetStatus, Workout } from '@/types/workout'
+import type { Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
-export type { Set, SetStatus, Workout } from '@/types/workout'
+export type { Set, Workout } from '@/types/workout'
 export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
 
 // Get reference to shared workout singleton

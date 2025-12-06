@@ -15,6 +15,8 @@ export default {
     language: 'Sprache',
     keepScreenOn: 'Bildschirm anlassen',
     preventDimming: 'Abdunklung während des Trainings verhindern',
+    timerSounds: 'Timer-Töne',
+    playAudioCues: 'Audiosignale während zeitgesteuerten Trainings abspielen',
     advancedDiagnostics: 'Erweiterte Diagnose',
     exportData: 'Daten exportieren',
     downloadBackup: 'Sicherungsdatei herunterladen',

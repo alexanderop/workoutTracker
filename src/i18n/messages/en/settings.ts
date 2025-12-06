@@ -15,6 +15,8 @@ export default {
     language: 'Language',
     keepScreenOn: 'Keep Screen On',
     preventDimming: 'Prevent dimming during workouts',
+    timerSounds: 'Timer Sounds',
+    playAudioCues: 'Play audio cues during timed workouts',
     advancedDiagnostics: 'Advanced diagnostics',
     exportData: 'Export Data',
     downloadBackup: 'Download backup file',

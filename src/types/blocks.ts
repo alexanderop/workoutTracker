@@ -9,9 +9,9 @@
 // Set Types (used by strength blocks)
 // ============================================
 
-export type SetStatus = 'completed' | 'active' | 'planned'
+type SetStatus = 'completed' | 'active' | 'planned'
 
-export type WorkoutSet = {
+type WorkoutSet = {
   id: number
   kg: string
   reps: string
