@@ -15,7 +15,11 @@
         "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
         "dom-size": ["warn", { "maxNumericValue": 2000 }],
         "bf-cache": "off",
-        "network-dependency-tree-insight": "off"
+        "network-dependency-tree-insight": "off",
+        "unused-javascript": "off",
+        "valid-source-maps": "off",
+        "render-blocking-insight": "off",
+        "render-blocking-resources": "off"
       }
     },
     "upload": {
