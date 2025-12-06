@@ -125,18 +125,18 @@ describe('tryCatch', () => {
       expect(error.message).toBe('Database SAVE_FAILED: save workout')
     })
 
-    it('attaches cause to database error', () => {
+    it('attaches originalCause to database error', () => {
       const cause = new Error('Connection refused')
       const error = createDatabaseError('LOAD_FAILED', 'load workout', cause)
 
       expect(error.code).toBe('LOAD_FAILED')
-      expect(error.cause).toBe(cause)
+      expect(error.originalCause).toBe(cause)
     })
 
     it('ignores non-Error cause', () => {
       const error = createDatabaseError('NOT_FOUND', 'find workout', 'string cause')
 
-      expect(error.cause).toBeUndefined()
+      expect(error.originalCause).toBeUndefined()
     })
 
     it('works with tryCatch and preserves DatabaseError type', async () => {

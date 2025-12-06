@@ -3,6 +3,7 @@ import { watchDebounced } from '@vueuse/core'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
+import { tryCatch } from '@/lib/tryCatch'
 import type { Workout } from './useWorkout'
 import type { DbCompletedWorkout } from '@/db/schema'
 
@@ -65,17 +66,17 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
       }
 
       persistenceState.value = { status: 'saving' }
-      try {
-        const dbWorkout = workoutToDb(newWorkout, currentWorkoutStartedAt ?? undefined)
-        await activeWorkoutRepository.save(dbWorkout)
-        hasUnsavedChanges.value = false
-        persistenceState.value = { status: 'idle' }
-      } catch (error) {
-        persistenceState.value = {
-          status: 'error',
-          error: error instanceof Error ? error : new Error('Save failed'),
-        }
+
+      const dbWorkout = workoutToDb(newWorkout, currentWorkoutStartedAt ?? undefined)
+      const [saveError] = await tryCatch(activeWorkoutRepository.save(dbWorkout))
+
+      if (saveError) {
+        persistenceState.value = { status: 'error', error: saveError }
+        return
       }
+
+      hasUnsavedChanges.value = false
+      persistenceState.value = { status: 'idle' }
     },
     { debounce: AUTO_SAVE_DEBOUNCE_MS, deep: true },
   )
@@ -86,22 +87,21 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    */
   async function loadActiveWorkout(): Promise<Workout | null> {
     persistenceState.value = { status: 'loading' }
-    try {
-      const dbWorkout = await activeWorkoutRepository.get()
-      persistenceState.value = { status: 'idle' }
 
-      if (dbWorkout) {
-        currentWorkoutStartedAt = dbWorkout.startedAt
-        return dbToWorkout(dbWorkout)
-      }
-      return null
-    } catch (error) {
-      persistenceState.value = {
-        status: 'error',
-        error: error instanceof Error ? error : new Error('Load failed'),
-      }
+    const [loadError, dbWorkout] = await tryCatch(activeWorkoutRepository.get())
+
+    if (loadError) {
+      persistenceState.value = { status: 'error', error: loadError }
       return null
     }
+
+    persistenceState.value = { status: 'idle' }
+
+    if (dbWorkout) {
+      currentWorkoutStartedAt = dbWorkout.startedAt
+      return dbToWorkout(dbWorkout)
+    }
+    return null
   }
 
   /**
@@ -157,17 +157,17 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     if (workout.value.blocks.length === 0) return
 
     persistenceState.value = { status: 'saving' }
-    try {
-      const dbWorkout = workoutToDb(workout.value, currentWorkoutStartedAt ?? undefined)
-      await activeWorkoutRepository.save(dbWorkout)
-      hasUnsavedChanges.value = false
-      persistenceState.value = { status: 'idle' }
-    } catch (error) {
-      persistenceState.value = {
-        status: 'error',
-        error: error instanceof Error ? error : new Error('Save failed'),
-      }
+
+    const dbWorkout = workoutToDb(workout.value, currentWorkoutStartedAt ?? undefined)
+    const [saveError] = await tryCatch(activeWorkoutRepository.save(dbWorkout))
+
+    if (saveError) {
+      persistenceState.value = { status: 'error', error: saveError }
+      return
     }
+
+    hasUnsavedChanges.value = false
+    persistenceState.value = { status: 'idle' }
   }
 
   return {

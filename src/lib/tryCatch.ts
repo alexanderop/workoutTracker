@@ -70,15 +70,14 @@ export type DatabaseErrorCode = (typeof DatabaseErrorCode)[keyof typeof Database
 export class DatabaseError extends Error {
   readonly code: DatabaseErrorCode
   readonly operation: string
+  readonly originalCause?: Error
 
   constructor(code: DatabaseErrorCode, operation: string, cause?: Error) {
     super(`Database ${code}: ${operation}`)
     this.name = 'DatabaseError'
     this.code = code
     this.operation = operation
-    if (cause) {
-      this.cause = cause
-    }
+    this.originalCause = cause
   }
 }
 
