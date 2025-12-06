@@ -83,7 +83,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   // Instantiate page objects
   const common = new CommonPO(context)
   const builder = new BuilderPO(context, common)
-  const workout = new ActiveWorkoutPO(context)
+  const workout = new ActiveWorkoutPO(context, common)
   const queue = new QueuePO(context, common)
 
   // Simple navigation helper

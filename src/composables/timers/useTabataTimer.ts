@@ -4,10 +4,10 @@
  * Manages work/rest phase transitions and round counting for Tabata intervals.
  */
 
-import { useIntervalFn } from '@vueuse/core'
 import { computed, ref, shallowRef } from 'vue'
-import type { TabataBlock, TabataResult, TimerStatus } from '@/types/blocks'
+import type { TabataBlock, TabataResult } from '@/types/blocks'
 import { formatTime } from '@/lib/workout-utils'
+import { useBaseTimer } from './useBaseTimer'
 
 type TabataTimerConfig = Readonly<{
   onPhaseChange?: (phase: 'work' | 'rest') => void
@@ -16,29 +16,17 @@ type TabataTimerConfig = Readonly<{
 }>
 
 export function useTabataTimer(config: TabataTimerConfig = {}) {
-  // State
+  // Tabata-specific state
   const block = shallowRef<TabataBlock | null>(null)
-  const status = ref<TimerStatus>('idle')
-  const elapsedMs = ref(0)
-  const startedAt = ref<number | null>(null)
-  const pausedDuration = ref(0)
   const currentRound = ref(1)
   const currentPhase = ref<'work' | 'rest'>('work')
   const repsPerRound = ref<Array<number>>([])
 
-  // Interval timer
-  const { pause: stopInterval, resume: startInterval } = useIntervalFn(
-    () => {
-      if (status.value !== 'running' || !startedAt.value) return
-
-      const now = Date.now()
-      elapsedMs.value = now - startedAt.value - pausedDuration.value
-
-      handleTick()
-    },
-    100,
-    { immediate: false },
-  )
+  // Base timer with tick handler for phase/round transitions
+  const baseTimer = useBaseTimer({
+    onTick: handleTick,
+    onComplete: config.onComplete,
+  })
 
   function handleTick() {
     if (!block.value) return
@@ -46,7 +34,7 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     const { workSeconds, restSeconds, rounds } = block.value.config
     const intervalLength = workSeconds + restSeconds
     const totalSeconds = rounds * intervalLength
-    const seconds = elapsedSeconds.value
+    const seconds = baseTimer.elapsedSeconds.value
 
     // Check for completion
     if (seconds >= totalSeconds) {
@@ -72,21 +60,19 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     }
   }
 
-  // Computed
-  const elapsedSeconds = computed(() => Math.floor(elapsedMs.value / 1000))
-
+  // Tabata-specific computed
   const remainingSeconds = computed(() => {
     if (!block.value) return 0
     const { rounds, workSeconds, restSeconds } = block.value.config
     const totalSeconds = rounds * (workSeconds + restSeconds)
-    return Math.max(0, totalSeconds - elapsedSeconds.value)
+    return Math.max(0, totalSeconds - baseTimer.elapsedSeconds.value)
   })
 
   const secondsInCurrentPhase = computed(() => {
     if (!block.value) return 0
     const { workSeconds, restSeconds } = block.value.config
     const intervalLength = workSeconds + restSeconds
-    const secondsInInterval = elapsedSeconds.value % intervalLength
+    const secondsInInterval = baseTimer.elapsedSeconds.value % intervalLength
 
     if (currentPhase.value === 'work') {
       return Math.max(0, workSeconds - secondsInInterval)
@@ -98,64 +84,19 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     if (!block.value) return 0
     const { rounds, workSeconds, restSeconds } = block.value.config
     const totalSeconds = rounds * (workSeconds + restSeconds)
-    return Math.min(100, (elapsedSeconds.value / totalSeconds) * 100)
+    return Math.min(100, (baseTimer.elapsedSeconds.value / totalSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(elapsedSeconds.value))
+  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
   const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
-
-  const isRunning = computed(() => status.value === 'running')
-  const isPaused = computed(() => status.value === 'paused')
-  const isCompleted = computed(() => status.value === 'completed')
-  const isIdle = computed(() => status.value === 'idle')
 
   // Methods
   function initialize(tabataBlock: TabataBlock) {
     block.value = tabataBlock
-    status.value = 'idle'
-    elapsedMs.value = 0
-    startedAt.value = null
-    pausedDuration.value = 0
     currentRound.value = 1
     currentPhase.value = 'work'
     repsPerRound.value = []
-    stopInterval()
-  }
-
-  function start() {
-    if (status.value === 'completed') return
-
-    if (status.value === 'paused' && startedAt.value) {
-      // Resume from pause
-      const now = Date.now()
-      const pauseStart = startedAt.value + elapsedMs.value + pausedDuration.value
-      pausedDuration.value += now - pauseStart
-      status.value = 'running'
-      startInterval()
-      return
-    }
-
-    // Fresh start
-    startedAt.value = Date.now()
-    status.value = 'running'
-    startInterval()
-  }
-
-  function pause() {
-    if (status.value !== 'running') return
-    status.value = 'paused'
-    stopInterval()
-  }
-
-  function toggle() {
-    if (status.value === 'running') {
-      pause()
-      return
-    }
-
-    if (status.value === 'idle' || status.value === 'paused') {
-      start()
-    }
+    baseTimer.resetState()
   }
 
   function reset() {
@@ -164,17 +105,7 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
   }
 
   function complete(): TabataResult {
-    // Guard against double-completion to prevent infinite loops
-    const wasAlreadyCompleted = status.value === 'completed'
-
-    status.value = 'completed'
-    stopInterval()
-
-    // Only call onComplete when transitioning to completed state
-    if (!wasAlreadyCompleted) {
-      config.onComplete?.()
-    }
-
+    baseTimer.complete()
     return {
       repsPerRound: repsPerRound.value,
     }
@@ -188,20 +119,20 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
   }
 
   return {
-    // State
+    // State from base timer
+    elapsedMs: baseTimer.elapsedMs,
+    elapsedSeconds: baseTimer.elapsedSeconds,
+    isRunning: baseTimer.isRunning,
+    isPaused: baseTimer.isPaused,
+    isCompleted: baseTimer.isCompleted,
+    isIdle: baseTimer.isIdle,
+
+    // Tabata-specific state
     block,
-    elapsedMs,
-    elapsedSeconds,
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    isRunning,
-    isPaused,
-    isCompleted,
-    isIdle,
-
-    // Tabata-specific
     currentRound,
     currentPhase,
     secondsInCurrentPhase,
@@ -209,9 +140,9 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
 
     // Methods
     initialize,
-    start,
-    pause,
-    toggle,
+    start: baseTimer.start,
+    pause: baseTimer.pause,
+    toggle: baseTimer.toggle,
     reset,
     complete,
     recordReps,

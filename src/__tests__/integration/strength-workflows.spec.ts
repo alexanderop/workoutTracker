@@ -1,27 +1,15 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Strength Workflows', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   describe('Set Completion', () => {
     it('advances to the next set after completing a set', async () => {
-      const { builder, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Click "Get Started" on home page to start a new workout
       await user.click(getByRole('button', { name: /get started/i }))
@@ -41,19 +29,8 @@ describe('Strength Workflows', () => {
         expect(queryByText('1/3')).toBeTruthy()
       })
 
-      // Fill in the first set values using semantic queries
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '100', reps: '8', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      // Fill and complete the first set
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify the UI advanced to set 2 of 3 (this would have failed before the fix)
       await waitFor(() => {
@@ -67,7 +44,7 @@ describe('Strength Workflows', () => {
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
@@ -80,19 +57,8 @@ describe('Strength Workflows', () => {
       expect(queryByText('Strength')).toBeTruthy()
       expect(queryByText('1/3')).toBeTruthy()
 
-      // Fill the first set values using semantic queries
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '80', reps: '10', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      // Fill and complete the first set
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Verify advancement to set 2
       await waitFor(() => {
@@ -125,7 +91,7 @@ describe('Strength Workflows', () => {
 
   describe('Value Prefilling', () => {
     it('prefills values from previous set when advancing', async () => {
-      const { builder, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, queryByRole, queryByText, cleanup } = await createTestApp()
 
       await builder.addStrengthBlock('Squat')
       await builder.startWorkout()
@@ -135,19 +101,8 @@ describe('Strength Workflows', () => {
         expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
       })
 
-      // Fill first set with specific values
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '100', reps: '5', rir: '1' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      // Fill and complete first set with specific values
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
       // Wait for advancement to set 2
       await waitFor(() => {

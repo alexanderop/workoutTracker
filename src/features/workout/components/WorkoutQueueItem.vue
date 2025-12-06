@@ -106,8 +106,13 @@ const isCompleted = computed(() => status === 'completed')
     </div>
 
     <!-- Completed indicator -->
-    <div v-if="isCompleted" class="flex-shrink-0">
-      <Check class="lucide-check size-5 text-green-500" />
+    <div
+      v-if="isCompleted"
+      class="flex-shrink-0"
+      role="img"
+      :aria-label="t('common.aria.blockCompleted')"
+    >
+      <Check class="size-5 text-green-500" aria-hidden="true" />
     </div>
   </div>
 </template>

@@ -35,7 +35,7 @@ import { importAllData, parseExportFile } from '@/features/settings/utils/dataIm
 import { tryCatch } from '@/lib/tryCatch'
 import SettingsDeleteAllDataDialog from '@/features/settings/components/SettingsDeleteAllDataDialog.vue'
 import SettingsImportDataDialog from '@/features/settings/components/SettingsImportDataDialog.vue'
-import SettingsImportErrorDialog from '@/features/settings/components/SettingsImportErrorDialog.vue'
+import ErrorDialog from '@/components/ErrorDialog.vue'
 import SettingsWakeLockDiagnostics from '@/features/settings/components/SettingsWakeLockDiagnostics.vue'
 
 const { isDark } = useTheme()
@@ -421,8 +421,8 @@ function handleLanguageChange(value: AcceptableValue) {
       :is-importing="isImporting"
       @confirm="handleImportConfirm"
     />
-    <SettingsImportErrorDialog v-model:open="showImportErrorDialog" :error="importError" />
-    <SettingsImportErrorDialog
+    <ErrorDialog v-model:open="showImportErrorDialog" :error="importError" />
+    <ErrorDialog
       v-model:open="showExportError"
       :error="t('settings.errors.exportFailed.message')"
       :title="t('settings.errors.exportFailed.title')"

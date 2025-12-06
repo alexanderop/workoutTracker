@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import type { Component } from 'vue'
 import { createApp, h } from 'vue'
-import { createI18n } from 'vue-i18n'
+import { i18n } from '@/i18n'
 import WorkoutBlockPlaylist from '@/features/workout/components/WorkoutBlockPlaylist.vue'
 import { createStrengthBlock } from '@/__tests__/factories'
 import { resetDatabase } from './setup'
@@ -9,27 +10,11 @@ import { resetDatabase } from './setup'
  * Helper to render component in browser mode
  */
 function renderComponent(
-  component: unknown,
+  component: Component,
   props: Record<string, unknown>,
 ): { container: HTMLElement; unmount: () => void } {
   const container = document.createElement('div')
   document.body.appendChild(container)
-
-  const i18n = createI18n({
-    legacy: false,
-    locale: 'en',
-    messages: {
-      en: {
-        workouts: {
-          builder: {
-            playlist: {
-              addBlock: 'Add Block',
-            },
-          },
-        },
-      },
-    },
-  })
 
   const app = createApp({
     render() {

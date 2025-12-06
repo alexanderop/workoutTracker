@@ -1,12 +1,16 @@
 import { screen } from '@testing-library/vue'
 import type { SetInputs, SetValues, TestContext } from '../types'
+import type { CommonPO } from './CommonPO'
 
 /**
  * Page Object for the active workout view.
  * Provides methods to interact with sets, navigate between blocks, and control timers.
  */
 export class ActiveWorkoutPO {
-  constructor(private ctx: TestContext) {}
+  constructor(
+    private ctx: TestContext,
+    private common: CommonPO,
+  ) {}
 
   /**
    * Retrieves input elements and complete button for a specific set row.
@@ -99,5 +103,21 @@ export class ActiveWorkoutPO {
       reset: /reset timer/i,
     }
     return screen.getByRole('button', { name: labels[action] })
+  }
+
+  /**
+   * Fills strength set inputs using the card-based UI and clicks the complete button.
+   * Handles jsdom vs browser mode differences using CommonPO's fillStrengthSetAndWaitForButton.
+   * @param values - Object with weight, reps, rir values as strings
+   */
+  async fillCardSetAndComplete(values: { weight: string; reps: string; rir: string }): Promise<void> {
+    const inputs = {
+      weight: screen.getByRole('spinbutton', { name: /weight/i }),
+      reps: screen.getByRole('spinbutton', { name: /reps$/i }),
+      rir: screen.getByRole('spinbutton', { name: /reps in reserve/i }),
+    }
+    const completeButton = screen.getByRole('button', { name: /complete set/i })
+    await this.common.fillStrengthSetAndWaitForButton(inputs, values, completeButton)
+    await this.ctx.user.click(completeButton)
   }
 }

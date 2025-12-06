@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useDialogState } from '@/composables/useDialogState'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.vue'
@@ -63,7 +64,7 @@ onMounted(() => {
 })
 
 // Dialog state
-type ActiveDialog =
+type WorkoutDialog =
   | 'addBlock'
   | 'editExercise'
   | 'finish'
@@ -72,9 +73,18 @@ type ActiveDialog =
   | 'configureEmom'
   | 'configureTabata'
   | 'configureForTime'
-  | null
 
-const activeDialog = ref<ActiveDialog>(null)
+const { createDialogModel, open: openDialog } = useDialogState<WorkoutDialog>()
+
+const addBlockDialogOpen = createDialogModel('addBlock')
+const editExerciseDialogOpen = createDialogModel('editExercise')
+const finishDialogOpen = createDialogModel('finish')
+const cancelDialogOpen = createDialogModel('cancel')
+const configureAmrapOpen = createDialogModel('configureAmrap')
+const configureEmomOpen = createDialogModel('configureEmom')
+const configureTabataOpen = createDialogModel('configureTabata')
+const configureForTimeOpen = createDialogModel('configureForTime')
+
 const editingBlockIndex = ref<number | null>(null)
 const queueDrawerOpen = ref(false)
 
@@ -87,20 +97,6 @@ const selectedExerciseData = computed<ExerciseEditData | null>(() => {
     targetReps: selectedExercise.value.targetReps,
     setCount: selectedExercise.value.sets.length,
   }
-})
-
-const editExerciseDialogOpen = computed({
-  get: () => activeDialog.value === 'editExercise',
-  set: (value: boolean) => {
-    activeDialog.value = value ? 'editExercise' : null
-  },
-})
-
-const addBlockDialogOpen = computed({
-  get: () => activeDialog.value === 'addBlock',
-  set: (value: boolean) => {
-    activeDialog.value = value ? 'addBlock' : null
-  },
 })
 
 // Handlers for finish/cancel
@@ -124,13 +120,13 @@ async function handleConfirmCancel() {
 
 // Block management handlers
 function handleAddTimedBlock(kind: TimedBlockKind) {
-  const dialogMap: Record<TimedBlockKind, ActiveDialog> = {
+  const dialogMap: Record<TimedBlockKind, WorkoutDialog> = {
     amrap: 'configureAmrap',
     emom: 'configureEmom',
     tabata: 'configureTabata',
     fortime: 'configureForTime',
   }
-  activeDialog.value = dialogMap[kind]
+  openDialog(dialogMap[kind])
 }
 
 function handleConfirmAmrap(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -166,7 +162,7 @@ function handleEditBlock(index: number) {
 
   if (isStrengthBlock(block)) {
     editingBlockIndex.value = index
-    activeDialog.value = 'editExercise'
+    openDialog('editExercise')
   }
 }
 
@@ -176,7 +172,7 @@ function handleOpenQueue() {
 
 function handleQueueAddBlock() {
   queueDrawerOpen.value = false
-  activeDialog.value = 'addBlock'
+  openDialog('addBlock')
 }
 </script>
 
@@ -185,16 +181,16 @@ function handleQueueAddBlock() {
     <!-- Builder Mode -->
     <WorkoutBuilderMode
       v-if="isBuilderMode"
-      @add-block="activeDialog = 'addBlock'"
+      @add-block="openDialog('addBlock')"
       @edit-block="handleEditBlock"
     />
 
     <!-- Active Mode -->
     <WorkoutActiveMode
       v-if="isActiveMode"
-      @end-workout="activeDialog = 'finish'"
-      @cancel-workout="activeDialog = 'cancel'"
-      @workout-complete="activeDialog = 'finish'"
+      @end-workout="openDialog('finish')"
+      @cancel-workout="openDialog('cancel')"
+      @workout-complete="openDialog('finish')"
       @open-queue="handleOpenQueue"
     />
 
@@ -206,23 +202,19 @@ function handleQueueAddBlock() {
     />
 
     <WorkoutConfigureAmrapDialog
-      :open="activeDialog === 'configureAmrap'"
-      @update:open="activeDialog = $event ? 'configureAmrap' : null"
+      v-model:open="configureAmrapOpen"
       @confirm="handleConfirmAmrap"
     />
     <WorkoutConfigureEmomDialog
-      :open="activeDialog === 'configureEmom'"
-      @update:open="activeDialog = $event ? 'configureEmom' : null"
+      v-model:open="configureEmomOpen"
       @confirm="handleConfirmEmom"
     />
     <WorkoutConfigureTabataDialog
-      :open="activeDialog === 'configureTabata'"
-      @update:open="activeDialog = $event ? 'configureTabata' : null"
+      v-model:open="configureTabataOpen"
       @confirm="handleConfirmTabata"
     />
     <WorkoutConfigureForTimeDialog
-      :open="activeDialog === 'configureForTime'"
-      @update:open="activeDialog = $event ? 'configureForTime' : null"
+      v-model:open="configureForTimeOpen"
       @confirm="handleConfirmForTime"
     />
 
@@ -234,14 +226,12 @@ function handleQueueAddBlock() {
     />
 
     <WorkoutFinishDialog
-      :open="activeDialog === 'finish'"
-      @update:open="activeDialog = $event ? 'finish' : null"
+      v-model:open="finishDialogOpen"
       @confirm="handleConfirmFinish"
     />
 
     <WorkoutCancelDialog
-      :open="activeDialog === 'cancel'"
-      @update:open="activeDialog = $event ? 'cancel' : null"
+      v-model:open="cancelDialogOpen"
       @confirm="handleConfirmCancel"
     />
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
 import WorkoutDetailStatsRow from '@/features/workout/components/WorkoutDetailStatsRow.vue'
-import SettingsImportErrorDialog from '@/features/settings/components/SettingsImportErrorDialog.vue'
+import ErrorDialog from '@/components/ErrorDialog.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
@@ -139,7 +139,7 @@ async function handleRedoWorkout() {
       </div>
     </template>
 
-    <SettingsImportErrorDialog
+    <ErrorDialog
       v-model:open="showRedoError"
       :error="t('workouts.redo.error.message')"
       :title="t('workouts.redo.error.title')"

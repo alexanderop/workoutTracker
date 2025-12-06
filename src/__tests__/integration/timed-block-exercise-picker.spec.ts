@@ -1,23 +1,13 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { customExercisesRepository } from '@/db/repositories/customExercises'
 import { createDbCustomExercise } from '@/db/converters'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Timed Block Exercise Picker', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   describe('Custom exercises', () => {
     it('shows custom exercises from IndexedDB when adding to EMOM block', async () => {

@@ -4,8 +4,9 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 
-defineProps<{
-  open: boolean
+const open = defineModel<boolean>('open', { required: true })
+
+const { workoutName, blockCount } = defineProps<{
   workoutName: string
   blockCount: number
 }>()
@@ -19,7 +20,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <Dialog :open="open">
+  <Dialog v-model:open="open">
     <MobileDialogContent :show-close-button="false">
       <DialogHeader>
         <DialogTitle>{{ t('dialogs.resume.title') }}</DialogTitle>

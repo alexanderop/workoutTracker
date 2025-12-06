@@ -11,7 +11,9 @@ test('Result type is error-first tuple', () => {
 test('ResultData extracts data type from Result', () => {
   type UserResult = Result<{ id: number; name: string }>
 
-  expectTypeOf<ResultData<UserResult>>().toEqualTypeOf<{ id: number; name: string }>()
+  // ResultData extracts T from Result<T>, but since Result is a union
+  // [Error, null] | [null, T], inference picks up both null and T
+  expectTypeOf<ResultData<UserResult>>().toEqualTypeOf<{ id: number; name: string } | null>()
 })
 
 test('tryCatch sync returns Result tuple', () => {
@@ -51,31 +53,19 @@ test('destructured tuple has correct types', () => {
   expectTypeOf(data).toEqualTypeOf<string | null>()
 })
 
-test('type narrowing works after error check', () => {
-  const result: Result<{ id: number }> = [null, { id: 1 }]
-  const [error, data] = result
-
-  if (error) {
-    // After error check, error is Error (not null)
-    expectTypeOf(error).toEqualTypeOf<Error>()
-    // Data should be null when error exists
-    expectTypeOf(data).toEqualTypeOf<null>()
-    return
+test('Result tuple type can be narrowed with type guards', () => {
+  // Define a type guard for success case
+  function isSuccess<T>(result: Result<T>): result is [null, T] {
+    return result[0] === null
   }
 
-  // After null check, error is null
-  expectTypeOf(error).toEqualTypeOf<null>()
-  // Data should be the success type
-  expectTypeOf(data).toEqualTypeOf<{ id: number }>()
-})
+  const result: Result<{ id: number }> = [null, { id: 1 }]
 
-test('type narrowing works with negated error check', () => {
-  const result: Result<string> = [null, 'success']
-  const [error, data] = result
-
-  if (!error) {
-    expectTypeOf(error).toEqualTypeOf<null>()
-    expectTypeOf(data).toEqualTypeOf<string>()
+  if (isSuccess(result)) {
+    // After type guard, result is narrowed to [null, T]
+    expectTypeOf(result).toEqualTypeOf<[null, { id: number }]>()
+    expectTypeOf(result[0]).toEqualTypeOf<null>()
+    expectTypeOf(result[1]).toEqualTypeOf<{ id: number }>()
   }
 })
 

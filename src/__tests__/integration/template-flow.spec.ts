@@ -1,26 +1,14 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
 
 describe('Template Flow', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   describe('Test 1a: Create template from finished workout', () => {
     it('saves a completed workout as a template', async () => {
@@ -47,19 +35,8 @@ describe('Template Flow', () => {
       await builder.startWorkout()
       await waitFor(() => expect(queryByText(/block 1 of 2/i)).toBeTruthy())
 
-      // Complete one set in Bench Press using semantic queries
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '80', reps: '10', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      // Complete one set in Bench Press
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Finish the workout via menu
       await waitFor(() => expect(workout.getMenuTrigger()).toBeTruthy())

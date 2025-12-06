@@ -25,7 +25,7 @@ Review the current changes using our specialized review agents.
 
 ## Instructions
 
-Launch **3 Task tools in parallel** (single message, multiple tool calls) with these subagent types:
+Launch **8 Task tools in parallel** (single message, multiple tool calls) with these subagent types:
 
 ### 1. Fowler Refactoring Reviewer
 ```
@@ -72,6 +72,81 @@ prompt: |
   Return: Test quality issues with suggestions for improving test confidence.
 ```
 
+### 4. TypeScript Reviewer
+```
+subagent_type: typescript-reviewer
+prompt: |
+  Review the following code changes for TypeScript strict mode compliance.
+
+  Changed files: [filter .ts/.vue files from <changed_files>]
+
+  Diff:
+  [include relevant diffs from <staged_diff> and <unstaged_diff>]
+
+  Focus on: no `any`, no type assertions, proper generics, discriminated unions.
+  Return: Type safety violations with severity and fixes.
+```
+
+### 5. Accessibility Reviewer
+```
+subagent_type: accessibility-reviewer
+prompt: |
+  Review the following Vue component changes for accessibility issues.
+
+  Changed Vue files: [filter .vue files from <changed_files>]
+
+  Diff:
+  [include Vue file diffs from <staged_diff> and <unstaged_diff>]
+
+  Focus on: ARIA attributes, keyboard navigation, focus management, touch targets.
+  Return: WCAG violations with severity and fixes.
+```
+
+### 6. Performance Reviewer
+```
+subagent_type: performance-reviewer
+prompt: |
+  Review the following code changes for performance issues.
+
+  Changed files: [list from <changed_files>]
+
+  Diff:
+  [include relevant diffs from <staged_diff> and <unstaged_diff>]
+
+  Focus on: reactivity efficiency, shallowRef usage, computed vs method, memory leaks.
+  Return: Performance issues with impact assessment and optimizations.
+```
+
+### 7. Architecture Reviewer
+```
+subagent_type: architecture-reviewer
+prompt: |
+  Review the following code changes for architecture boundary violations.
+
+  Changed files: [list from <changed_files>]
+
+  Diff:
+  [include relevant diffs from <staged_diff> and <unstaged_diff>]
+
+  Focus on: feature isolation, dependency direction, layer violations.
+  Return: Architecture violations with severity and refactoring suggestions.
+```
+
+### 8. Security Reviewer
+```
+subagent_type: security-reviewer
+prompt: |
+  Review the following code changes for security vulnerabilities.
+
+  Changed files: [list from <changed_files>]
+
+  Diff:
+  [include relevant diffs from <staged_diff> and <unstaged_diff>]
+
+  Focus on: XSS, injection, data validation, sensitive data exposure.
+  Return: Security vulnerabilities with OWASP category and fixes.
+```
+
 ## After All Agents Complete
 
 Compile the results into a single report:
@@ -80,10 +155,13 @@ Compile the results into a single report:
 # Code Review Report
 
 ## Summary
-[Brief overview of findings across all reviewers]
+[Brief overview of findings across all 8 reviewers]
+
+## Critical Issues
+[Any high-severity items that must be fixed before committing]
 
 ## Refactoring Opportunities (Fowler)
-[Issues ordered by priority]
+[Code smells and refactoring suggestions]
 
 ## Vue Component Issues
 [Pattern violations with impact ratings]
@@ -91,8 +169,23 @@ Compile the results into a single report:
 ## Test Quality
 [Test improvements needed]
 
+## TypeScript
+[Type safety violations]
+
+## Accessibility
+[WCAG violations and a11y issues]
+
+## Performance
+[Reactivity and optimization issues]
+
+## Architecture
+[Boundary violations and layering issues]
+
+## Security
+[Vulnerabilities with OWASP categories]
+
 ## Recommended Actions
-[Top 3-5 actionable items to address before committing]
+[Top 5 actionable items to address before committing, ordered by priority]
 ```
 
 If a reviewer finds no issues, note that section passes review.

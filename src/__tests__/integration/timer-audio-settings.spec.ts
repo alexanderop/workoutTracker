@@ -1,24 +1,12 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Timer Audio Settings', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   describe('Settings Page Toggle', () => {
     it('displays timer sounds toggle on settings page', async () => {

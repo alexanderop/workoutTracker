@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/vue'
+import { screen, waitFor } from '@testing-library/vue'
+import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 
@@ -77,5 +78,36 @@ export class BuilderPO {
   getPlaylistBlockButtons(): ReadonlyArray<HTMLElement> {
     const allButtons = screen.getAllByRole('button')
     return allButtons.filter((btn) => btn.getAttribute('aria-pressed') !== null)
+  }
+
+  /**
+   * Adds a timed block (AMRAP, EMOM, Tabata, or For Time) with an exercise.
+   * Opens the add block dialog, switches to timed blocks tab, configures the block,
+   * adds an exercise, and confirms.
+   * @param blockType - The type of timed block to add
+   * @param exerciseName - The name of the exercise to add (defaults to 'Push-ups')
+   */
+  async addTimedBlock(
+    blockType: 'AMRAP' | 'EMOM' | 'Tabata' | 'For Time',
+    exerciseName = 'Push-ups',
+  ): Promise<void> {
+    await this.openAddBlockDialog()
+    await this.switchToTimedBlocksTab()
+    await this.ctx.user.click(this.common.getDialogButton(blockType))
+
+    // Wait for configure dialog
+    await waitFor(() => {
+      const dialog = screen.getByRole('dialog')
+      expect(dialog.textContent).toContain('Configure')
+    })
+
+    // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
+    const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
+    await this.ctx.user.click(this.common.getDialogButton(exerciseButtonText))
+    await this.common.selectExercise(exerciseName)
+
+    // Confirm block
+    await this.ctx.user.click(this.common.getDialogButton('Add Block'))
+    await this.common.waitForDialogClose()
   }
 }

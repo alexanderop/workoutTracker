@@ -39,6 +39,8 @@ export default {
     moveDown: 'Move down',
     removeExercise: 'Remove exercise',
     markSetComplete: 'Mark set complete',
+    workoutDuration: 'Workout duration',
+    blockCompleted: 'Block completed',
   },
   states: {
     loading: 'Loading...',

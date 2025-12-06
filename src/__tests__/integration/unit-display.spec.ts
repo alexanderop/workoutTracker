@@ -1,24 +1,12 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Unit Display', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   it('displays weight in lbs when user changes unit preference', async () => {
     const { user, getByRole, queryByRole, queryByText, navigateTo, common, builder, cleanup } =
@@ -41,7 +29,7 @@ describe('Unit Display', () => {
     await navigateTo({ name: RouteNames.Settings })
 
     // Find and click the 'lbs' toggle option (button with aria-label "Pounds")
-    const lbsButton = screen.getByRole('button', { name: /pounds/i })
+    const lbsButton = getByRole('button', { name: /pounds/i })
     await user.click(lbsButton)
 
     // Navigate back to workout
@@ -59,12 +47,12 @@ describe('Unit Display', () => {
   })
 
   it('converts and displays weight correctly when switching units', async () => {
-    const { user, getByRole, queryByText, navigateTo, common, builder, cleanup } =
+    const { user, getByRole, queryByText, navigateTo, common, builder, workout, cleanup } =
       await createTestApp()
 
     // Navigate to settings first and switch to lbs
     await navigateTo({ name: RouteNames.Settings })
-    const lbsButton = screen.getByRole('button', { name: /pounds/i })
+    const lbsButton = getByRole('button', { name: /pounds/i })
     await user.click(lbsButton)
 
     // Navigate to home and start workout
@@ -89,17 +77,7 @@ describe('Unit Display', () => {
     expect(queryByText(/lbs$/)).toBeTruthy()
 
     // Enter weight in lbs (220 lbs ≈ 100 kg, stored internally as kg)
-    const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-    const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-    const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-    // Fill inputs and wait for button (handles jsdom vs browser differences)
-    const completeButton = getByRole('button', { name: /complete set/i })
-    await common.fillStrengthSetAndWaitForButton(
-      { weight: weightInput, reps: repsInput, rir: rirInput },
-      { weight: '220', reps: '8', rir: '2' },
-      completeButton,
-    )
-    await user.click(completeButton)
+    await workout.fillCardSetAndComplete({ weight: '220', reps: '8', rir: '2' })
 
     // Verify we advanced to set 2
     await waitFor(() => {

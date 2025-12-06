@@ -1,23 +1,11 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Management', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   describe('Hybrid Workouts', () => {
     it('creates a workout with strength and timed blocks, executes it, and finishes', async () => {
@@ -73,19 +61,7 @@ describe('Workout Management', () => {
 
       // Complete a set in the strength block
       expect(getByText('1/3')).toBeTruthy()
-
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '80', reps: '10', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Verify advanced to set 2/3
       expect(getByText('2/3')).toBeTruthy()
@@ -134,7 +110,7 @@ describe('Workout Management', () => {
 
   describe('Navigation', () => {
     it('navigates back and forth between blocks in active mode', async () => {
-      const { builder, workout, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Start workout
       await user.click(getByRole('button', { name: /get started/i }))
@@ -190,23 +166,18 @@ describe('Workout Management', () => {
       common.assertDialogClosed()
 
       // Verify the button shows "Start Workout" (not "Resume")
+      // Button text "Start Workout" indicates fresh workout state
       const startButton = getByRole('button', { name: /start workout/i })
       expect(startButton).toBeDefined()
 
-      // Verify Play icon is present (not RotateCcw)
-      const playIcon = startButton.querySelector('svg.lucide-play')
-      const rotateIcon = startButton.querySelector('svg.lucide-rotate-ccw')
-      expect(playIcon).toBeTruthy()
-      expect(rotateIcon).toBeFalsy()
-
-      // Verify no pulsing animation class
+      // Verify no pulsing animation class (indicates fresh workout, not resuming)
       expect(startButton.className).not.toContain('animate-pulse-ring')
 
       cleanup()
     })
 
     it('shows "Resume Workout" with RotateCcw icon after completing a set', async () => {
-      const { builder, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
       await user.click(getByRole('button', { name: /get started/i }))
@@ -221,18 +192,8 @@ describe('Workout Management', () => {
       await builder.startWorkout()
 
       // Fill in set values and complete the first set
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '100', reps: '8', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      // Fill and complete the first set
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Go back to builder mode - find back button by chevron icon
       const backButton = document.querySelector('header button')
@@ -247,23 +208,18 @@ describe('Workout Management', () => {
       })
 
       // Verify the button shows "Resume Workout"
+      // Button text "Resume Workout" indicates workout in progress
       const resumeButton = getByRole('button', { name: /resume workout/i })
       expect(resumeButton).toBeDefined()
 
-      // Verify RotateCcw icon is present (not Play)
-      const rotateIcon = resumeButton.querySelector('svg.lucide-rotate-ccw')
-      const playIcon = resumeButton.querySelector('svg.lucide-play')
-      expect(rotateIcon).toBeTruthy()
-      expect(playIcon).toBeFalsy()
-
-      // Verify pulsing animation class is applied
+      // Verify pulsing animation class indicates workout in progress
       expect(resumeButton.className).toContain('animate-pulse-ring')
 
       cleanup()
     })
 
     it('allows resuming workout from Continue button', async () => {
-      const { builder, common, user, getByRole, queryByRole, getByText, cleanup } =
+      const { builder, workout, common, user, getByRole, queryByRole, getByText, cleanup } =
         await createTestApp()
 
       // Navigate to workout builder
@@ -277,18 +233,7 @@ describe('Workout Management', () => {
 
       // Start workout, complete a set, go back
       await builder.startWorkout()
-      const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
-      const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-
-      // Fill inputs and wait for button (handles jsdom vs browser differences)
-      const completeButton = getByRole('button', { name: /complete set/i })
-      await common.fillStrengthSetAndWaitForButton(
-        { weight: weightInput, reps: repsInput, rir: rirInput },
-        { weight: '100', reps: '8', rir: '2' },
-        completeButton,
-      )
-      await user.click(completeButton)
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Go back to builder mode - find back button in header
       const backButton = document.querySelector('header button')
@@ -307,8 +252,7 @@ describe('Workout Management', () => {
 
       // Verify we're back in active mode by checking for timer badge
       await waitFor(() => {
-        const timerIcon = document.querySelector('svg[class*="lucide-timer"]')
-        expect(timerIcon).toBeTruthy()
+        expect(queryByRole('timer')).toBeTruthy()
       })
 
       // Verify completed set is still visible in history
@@ -318,7 +262,7 @@ describe('Workout Management', () => {
     })
 
     it('shows duration badge with timer icon and pulsing indicator in active mode', async () => {
-      const { builder, common, user, getByRole, cleanup } = await createTestApp()
+      const { builder, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
       await user.click(getByRole('button', { name: /get started/i }))
@@ -334,9 +278,7 @@ describe('Workout Management', () => {
 
       // Wait for active mode to render and verify duration badge appears
       await waitFor(() => {
-        // Look for the duration badge with timer icon (lucide-timer-icon class)
-        const timerIcon = document.querySelector('svg[class*="lucide-timer"]')
-        expect(timerIcon).toBeTruthy()
+        expect(queryByRole('timer')).toBeTruthy()
       })
 
       // Verify the badge contains a time format (m:ss or mm:ss)

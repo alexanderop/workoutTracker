@@ -4,111 +4,54 @@
  * Counts up until completion or time cap is reached.
  */
 
-import { useIntervalFn } from '@vueuse/core'
 import { computed, ref, shallowRef } from 'vue'
-import type { ForTimeBlock, ForTimeResult, TimerStatus } from '@/types/blocks'
+import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
 import { formatTime } from '@/lib/workout-utils'
+import { useBaseTimer } from './useBaseTimer'
 
 type ForTimeTimerConfig = Readonly<{
   onComplete?: () => void
 }>
 
 export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
-  // State
+  // ForTime-specific state
   const block = shallowRef<ForTimeBlock | null>(null)
-  const status = ref<TimerStatus>('idle')
-  const elapsedMs = ref(0)
-  const startedAt = ref<number | null>(null)
-  const pausedDuration = ref(0)
   const completedExercises = ref<Array<string>>([])
   const finishedBeforeCap = ref(false)
 
-  // Interval timer
-  const { pause: stopInterval, resume: startInterval } = useIntervalFn(
-    () => {
-      if (status.value !== 'running' || !startedAt.value) return
-
-      const now = Date.now()
-      elapsedMs.value = now - startedAt.value - pausedDuration.value
-
+  // Base timer with tick handler for time cap checking
+  const baseTimer = useBaseTimer({
+    onTick: () => {
       // Check for time cap
       if (block.value?.config.timeCapSeconds) {
-        if (elapsedSeconds.value >= block.value.config.timeCapSeconds) {
+        if (baseTimer.elapsedSeconds.value >= block.value.config.timeCapSeconds) {
           complete()
         }
       }
     },
-    100,
-    { immediate: false },
-  )
+    onComplete: config.onComplete,
+  })
 
-  // Computed
-  const elapsedSeconds = computed(() => Math.floor(elapsedMs.value / 1000))
-
+  // ForTime-specific computed
   const remainingSeconds = computed(() => {
     if (!block.value?.config.timeCapSeconds) return 0
-    return Math.max(0, block.value.config.timeCapSeconds - elapsedSeconds.value)
+    return Math.max(0, block.value.config.timeCapSeconds - baseTimer.elapsedSeconds.value)
   })
 
   const progress = computed(() => {
     if (!block.value?.config.timeCapSeconds) return 0
-    return Math.min(100, (elapsedSeconds.value / block.value.config.timeCapSeconds) * 100)
+    return Math.min(100, (baseTimer.elapsedSeconds.value / block.value.config.timeCapSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(elapsedSeconds.value))
+  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
   const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
-
-  const isRunning = computed(() => status.value === 'running')
-  const isPaused = computed(() => status.value === 'paused')
-  const isCompleted = computed(() => status.value === 'completed')
-  const isIdle = computed(() => status.value === 'idle')
 
   // Methods
   function initialize(forTimeBlock: ForTimeBlock) {
     block.value = forTimeBlock
-    status.value = 'idle'
-    elapsedMs.value = 0
-    startedAt.value = null
-    pausedDuration.value = 0
     completedExercises.value = []
     finishedBeforeCap.value = false
-    stopInterval()
-  }
-
-  function start() {
-    if (status.value === 'completed') return
-
-    if (status.value === 'paused' && startedAt.value) {
-      // Resume from pause
-      const now = Date.now()
-      const pauseStart = startedAt.value + elapsedMs.value + pausedDuration.value
-      pausedDuration.value += now - pauseStart
-      status.value = 'running'
-      startInterval()
-      return
-    }
-
-    // Fresh start
-    startedAt.value = Date.now()
-    status.value = 'running'
-    startInterval()
-  }
-
-  function pause() {
-    if (status.value !== 'running') return
-    status.value = 'paused'
-    stopInterval()
-  }
-
-  function toggle() {
-    if (status.value === 'running') {
-      pause()
-      return
-    }
-
-    if (status.value === 'idle' || status.value === 'paused') {
-      start()
-    }
+    baseTimer.resetState()
   }
 
   function reset() {
@@ -117,19 +60,9 @@ export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
   }
 
   function complete(): ForTimeResult {
-    // Guard against double-completion to prevent infinite loops
-    const wasAlreadyCompleted = status.value === 'completed'
-
-    status.value = 'completed'
-    stopInterval()
-
-    // Only call onComplete when transitioning to completed state
-    if (!wasAlreadyCompleted) {
-      config.onComplete?.()
-    }
-
+    baseTimer.complete()
     return {
-      completionTime: elapsedSeconds.value,
+      completionTime: baseTimer.elapsedSeconds.value,
       completed: finishedBeforeCap.value,
     }
   }
@@ -145,28 +78,28 @@ export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
   }
 
   return {
-    // State
+    // State from base timer
+    elapsedMs: baseTimer.elapsedMs,
+    elapsedSeconds: baseTimer.elapsedSeconds,
+    isRunning: baseTimer.isRunning,
+    isPaused: baseTimer.isPaused,
+    isCompleted: baseTimer.isCompleted,
+    isIdle: baseTimer.isIdle,
+
+    // ForTime-specific state
     block,
-    elapsedMs,
-    elapsedSeconds,
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    isRunning,
-    isPaused,
-    isCompleted,
-    isIdle,
-
-    // ForTime-specific
     completedExercises,
     finishedBeforeCap,
 
     // Methods
     initialize,
-    start,
-    pause,
-    toggle,
+    start: baseTimer.start,
+    pause: baseTimer.pause,
+    toggle: baseTimer.toggle,
     reset,
     complete,
     markExerciseComplete,

@@ -9,10 +9,8 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Helper to open AMRAP config dialog
 async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestApp>>) {
@@ -95,18 +93,11 @@ function getLoadInputInRow(row: Element): HTMLInputElement | null {
 }
 
 describe('Timed Block Exercise List', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
+  beforeEach(setupIntegrationTest)
 
   afterEach(async () => {
     await flushPromises()
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
+    await cleanupIntegrationTest()
   })
 
   describe('empty state', () => {

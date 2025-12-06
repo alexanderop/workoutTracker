@@ -1,12 +1,10 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder } from '../factories'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Detect browser mode - location.reload is read-only in real browsers
 const isBrowserMode = (() => {
@@ -19,17 +17,10 @@ const isBrowserMode = (() => {
 })()
 
 describe('Data Management', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
+  beforeEach(setupIntegrationTest)
 
   afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
+    await cleanupIntegrationTest()
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })

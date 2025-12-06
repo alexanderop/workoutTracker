@@ -1,9 +1,7 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   clearAudioMocksUnified,
   getAudioMocksUnified,
@@ -117,8 +115,7 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
 
 describe('Timer Audio Playback', () => {
   beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
+    await setupIntegrationTest()
     if (isBrowserMode()) {
       setupAudioSpies()
     }
@@ -129,11 +126,7 @@ describe('Timer Audio Playback', () => {
     if (isBrowserMode()) {
       restoreAudioSpies()
     }
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
+    await cleanupIntegrationTest()
   })
 
   describe('Tabata Timer', () => {
@@ -164,7 +157,7 @@ describe('Timer Audio Playback', () => {
       await waitFor(() => {
         const mocks = getAudioMocksUnified()
         const restBeep = mocks.createOscillator?.mock.results.find(
-          (r) => r.value?.frequency.value === 440,
+          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
         )
         expect(restBeep).toBeDefined()
       })
@@ -185,7 +178,7 @@ describe('Timer Audio Playback', () => {
       await waitFor(() => {
         const mocks = getAudioMocksUnified()
         const roundBeep = mocks.createOscillator?.mock.results.find(
-          (r) => r.value?.frequency.value === 660,
+          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
         )
         expect(roundBeep).toBeDefined()
       })

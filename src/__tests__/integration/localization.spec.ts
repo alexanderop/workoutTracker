@@ -1,20 +1,13 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, describe, expect, it } from 'vitest'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Localization', () => {
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  afterEach(cleanupIntegrationTest)
 
   describe('Message Preloading', () => {
     it('preloads English messages synchronously at import time', () => {

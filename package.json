@@ -24,7 +24,8 @@
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
     "knip": "knip",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
@@ -42,6 +43,9 @@
     "vue": "^3.5.22",
     "vue-i18n": "^11.2.2",
     "vue-router": "^4.6.3"
+  },
+  "lint-staged": {
+    "*.{ts,vue,js}": "eslint --fix --cache"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
@@ -71,9 +75,11 @@
     "eslint-plugin-oxlint": "~1.23.0",
     "eslint-plugin-vue": "~10.5.0",
     "fake-indexeddb": "^6.2.5",
+    "husky": "^9.1.7",
     "jiti": "^2.6.1",
     "jsdom": "^27.0.1",
     "knip": "^5.71.0",
+    "lint-staged": "^16.2.7",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.23.0",
     "playwright": "^1.57.0",

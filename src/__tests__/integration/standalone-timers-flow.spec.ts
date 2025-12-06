@@ -1,9 +1,7 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Helper to navigate to timers page from home
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
@@ -15,18 +13,8 @@ async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>
 }
 
 describe('Standalone Timers Flow', () => {
-  beforeEach(async () => {
-    resetInitState()
-    await resetDatabase()
-  })
-
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   it('navigates from home to timers page via Quick Timer card', async () => {
     const { user, getByText, queryByText, router, cleanup } = await createTestApp()
