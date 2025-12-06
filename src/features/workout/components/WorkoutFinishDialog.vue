@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { getDefaultWorkoutName } from '@/lib/workoutName'
+import { getDefaultWorkoutName } from '../lib/workoutName'
 
 const { t } = useI18n()
 

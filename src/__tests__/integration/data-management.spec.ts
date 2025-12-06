@@ -4,7 +4,7 @@ import { resetInitState } from '@/features/workout/composables/useAppInitializat
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { db } from '@/db'
 import * as dbModule from '@/db'
-import * as dataImport from '@/lib/dataImport'
+import * as dataImport from '@/features/settings/utils/dataImport'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder } from '../factories'
 import { resetDatabase } from '../setup'

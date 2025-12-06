@@ -2,24 +2,32 @@
 
 ## Directory Structure
 
+Composables are split between **shared** (`src/composables/`) and **feature-specific** (`src/features/*/composables/`).
+
 ```
-src/composables/
-├── useWorkout.ts           # Core workout state (singleton)
-├── useWorkoutPersistence.ts # IndexedDB auto-save/restore
-├── useWorkoutMode.ts       # Builder/active mode management
-├── useWorkoutDetail.ts     # Workout history detail view
-├── useRestTimer.ts         # Rest timer between sets
-├── useWorkoutWakeLock.ts   # Screen wake lock during workouts
-├── useTheme.ts             # Dark/light theme management
-├── useEnterAnimation.ts    # Staggered list animations
-├── useAnimatedCounter.ts   # Number animation
-├── useExerciseForm.ts      # Custom exercise form state
-├── useAppInitialization.ts # App startup logic
+src/composables/                    # Shared composables
+├── useAnimatedCounter.ts           # Number animation
+├── useEnterAnimation.ts            # Staggered list animations
+├── useExerciseSearch.ts            # Exercise search/filter
+├── useGlobalWakeLock.ts            # App-wide wake lock state
+├── useScreenWakeLock.ts            # Screen wake lock API
+├── useWeightDisplay.ts             # Weight unit formatting
 └── timers/
-    ├── useAmrapTimer.ts    # AMRAP countdown
-    ├── useEmomTimer.ts     # EMOM minute transitions
-    ├── useTabataTimer.ts   # Tabata work/rest phases
-    └── useForTimeTimer.ts  # For Time count-up
+    ├── useRestTimer.ts             # Rest timer between sets
+    ├── useAmrapTimer.ts            # AMRAP countdown
+    ├── useEmomTimer.ts             # EMOM minute transitions
+    ├── useTabataTimer.ts           # Tabata work/rest phases
+    ├── useForTimeTimer.ts          # For Time count-up
+    └── useTimerAudio.ts            # Timer audio notifications
+
+src/features/workout/composables/   # Workout feature composables
+├── useWorkout.ts                   # Core workout state (singleton)
+├── useWorkoutPersistence.ts        # IndexedDB auto-save/restore
+├── useWorkoutMode.ts               # Builder/active mode management
+├── useWorkoutDetail.ts             # Workout history detail view
+├── useWorkoutDurationTimer.ts      # Workout elapsed time
+├── useTimedBlockExercises.ts       # Timed block exercise management
+└── useAppInitialization.ts         # App startup logic
 ```
 
 ## Core Composables
@@ -28,7 +36,7 @@ src/composables/
 
 **Singleton pattern** - all components share the same workout state via `workout.value`.
 
-Location: `src/composables/useWorkout.ts`
+Location: `src/features/workout/composables/useWorkout.ts`
 
 ```ts
 const {
@@ -66,7 +74,7 @@ const {
 
 Handles auto-save to IndexedDB with debouncing.
 
-Location: `src/composables/useWorkoutPersistence.ts`
+Location: `src/features/workout/composables/useWorkoutPersistence.ts`
 
 ```ts
 const {
@@ -88,7 +96,7 @@ const {
 
 Rest timer between sets with audio notification.
 
-Location: `src/composables/useRestTimer.ts`
+Location: `src/composables/timers/useRestTimer.ts`
 
 ```ts
 const {
@@ -109,11 +117,11 @@ const {
 
 All timers follow a similar pattern with state machine for phases.
 
+Location: `src/composables/timers/`
+
 ### useAmrapTimer(config)
 
 AMRAP (As Many Rounds As Possible) countdown timer.
-
-Location: `src/composables/timers/useAmrapTimer.ts`
 
 ```ts
 const {
@@ -135,8 +143,6 @@ const {
 
 EMOM (Every Minute On the Minute) with exercise rotation.
 
-Location: `src/composables/timers/useEmomTimer.ts`
-
 ```ts
 const {
   phase,              // 'idle' | 'countdown' | 'active' | 'rest' | 'complete'
@@ -155,8 +161,6 @@ const {
 ### useTabataTimer(config)
 
 Tabata intervals (work/rest phases).
-
-Location: `src/composables/timers/useTabataTimer.ts`
 
 ```ts
 const {
@@ -177,8 +181,6 @@ const {
 ### useForTimeTimer(config)
 
 For Time count-up timer with optional cap.
-
-Location: `src/composables/timers/useForTimeTimer.ts`
 
 ```ts
 const {

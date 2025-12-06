@@ -4,8 +4,8 @@ import { AlertTriangle } from 'lucide-vue-next'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import type { ExportData } from '@/lib/dataExport'
-import { getExportSummary } from '@/lib/dataImport'
+import type { ExportData } from '../utils/dataExport'
+import { getExportSummary } from '../utils/dataImport'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

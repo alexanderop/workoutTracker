@@ -1,89 +1,152 @@
-# Workout Tracker
+# CLAUDE.md
 
-Vue 3 PWA for tracking strength and CrossFit-style workouts with block-based programming.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Quick Commands
 
 ```bash
-pnpm dev              # Start dev server
-pnpm build            # Type-check + build
-pnpm test:unit        # Run tests (add <file> for single file)
+pnpm dev              # Dev server
+pnpm test:unit        # Run all tests
+pnpm test:unit <file> # Run single test file
 pnpm lint             # oxlint + eslint with auto-fix
+pnpm build            # Type-check + production build
+pnpm type-check       # TypeScript validation only
+pnpm knip             # Find unused exports/dependencies
 ```
 
-## Architecture
+## Architecture Overview
 
-### Block-Based System
+Vue 3 PWA for strength and CrossFit-style workout tracking using a **Bulletproof feature-based architecture**.
 
-Workouts consist of ordered **blocks** (discriminated union via `kind`):
+### Block-Based Workout Model
+
+Workouts are sequences of **blocks** using discriminated unions via `kind`:
 - **Strength** (`kind: 'strength'`): Set/rep tracking with kg, reps, RIR
 - **Timed** (`kind: 'amrap' | 'emom' | 'tabata' | 'fortime'`): CrossFit-style timers
 
-Types: `src/types/blocks.ts` (runtime), `src/db/schema.ts` (persistence, `Db` prefix)
+**Key files:** `src/types/blocks.ts` (runtime types), `src/db/schema.ts` (persistence with `Db` prefix)
+
+### Project Structure
+
+```
+src/
+├── features/           # Self-contained feature modules (Bulletproof pattern)
+│   ├── exercises/      # Exercise library CRUD
+│   ├── settings/       # App settings & preferences
+│   ├── templates/      # Workout templates
+│   ├── timers/         # Timer composables (rest timer export)
+│   └── workout/        # Workout execution logic
+├── views/              # Route-level page components (orchestrate features)
+├── components/         # Shared components
+│   └── ui/             # shadcn-vue primitives (DO NOT EDIT)
+├── composables/        # Shared composables (singletons for workout state)
+├── stores/             # Pinia stores (exercises, settings only)
+├── db/                 # Dexie IndexedDB + repository pattern
+├── types/              # Shared TypeScript types
+└── lib/                # Utility functions
+```
+
+### Feature Boundary Rules (ESLint-Enforced)
+
+- Features cannot import from other features
+- Shared code (`components/`, `composables/`, `lib/`, `db/`, `types/`, `stores/`) cannot import from features or views
+- Features cannot import from views (views are top-level orchestrators)
 
 ### State Management
 
-- **Workout state**: Singleton ref in `src/composables/useWorkout.ts`
-- **Pinia stores**: Exercises and settings only
-- **Persistence**: Dexie IndexedDB in `src/db/` with repositories
+- **Workout state**: Singleton ref in `src/composables/useWorkout.ts` - all components share same state
+- **Pinia stores**: Only for `exercises` and `settings` (`src/stores/`)
+- **Persistence**: Dexie IndexedDB with repository pattern (`src/db/repositories/`)
+- **Workout modes**: `'builder'` (configure blocks) → `'active'` (execute workout)
 
-### Modes
+## Code Patterns
 
-`'builder'` (configure blocks) → `'active'` (execute workout)
+### TypeScript Strict Rules (ESLint-Enforced)
 
-### Key Locations
+- **NO** `any` - use `unknown` + type guards
+- **NO** `enum` - use literal unions or `as const` objects
+- **NO** type assertions (`as T`) - except `as const`
+- **NO** `else`/`else if` - use early returns or ternary operators
+- **NO** `reactive()` - use `ref()` for consistent patterns
+- Use `type` over `interface`
+- Use `Array<T>` over `T[]`
+- Separate type imports: `import type { Foo } from './foo'`
 
-- `src/composables/` - Core logic, timers
-- `src/components/ui/` - shadcn-vue primitives (do not modify)
-- `src/components/{feature}/` - Feature components with parent-prefixed names
+### Vue 3.5+ APIs (Required)
 
-## Documentation
+```vue
+<script setup lang="ts">
+// Reactive props destructure with defaults
+const { count = 0 } = defineProps<{ count?: number }>()
 
-Read before working on specific areas:
-- `docs/agent/testing.md` - Test helpers (withSetup, createTestApp), factories
+// Two-way binding
+const open = defineModel<boolean>('open', { required: true })
+
+// Template refs
+const inputRef = useTemplateRef('input')
+</script>
+```
+
+**Important:** Wrap destructured props in getters for watchers: `watch(() => count, ...)`
+
+### shadcn-vue Components
+
+- Location: `src/components/ui/` - **NEVER modify these files**
+- Built on **reka-ui** - check reka-ui docs for correct API
+- Style: new-york, uses CSS variables for theming
+- Primary color defined in `src/style.css` via `--primary` (OKLCH format)
+
+### Component Naming
+
+Prefix child components with parent name (Vue Style Guide Priority B):
+- `WorkoutSetTable.vue` not `SetTable.vue`
+- `ExerciseMuscleSelector.vue` not `MuscleSelector.vue`
+
+## Testing
+
+### Composables
+
+```ts
+// Direct test (no lifecycle)
+const { start, isRunning } = useRestTimer()
+
+// With lifecycle (onMounted, etc.)
+const [result, app] = withSetup(() => useMyComposable())
+app.unmount() // cleanup
+```
+
+### Integration Tests
+
+```ts
+const app = await createTestApp({ initialRoute: '/' })
+await app.navigateTo('/workout')
+await app.startWorkout()
+await app.fillSet(0, { kg: 100, reps: 8, rir: 2 })
+app.cleanup()
+```
+
+### Factories
+
+```ts
+// In-memory (useWorkout tests)
+const workout = workoutBuilder().withStrengthBlock('Squat', 3).build()
+
+// Database (integration tests)
+const dbWorkout = dbWorkoutBuilder().withExercise('Deadlift', 3).completed().build()
+```
+
+**Helpers:** `src/__tests__/helpers/`, **Factories:** `src/__tests__/factories/`
+
+### Test Setup
+
+Tests use `fake-indexeddb`. Import `resetDatabase` to clear tables:
+```ts
+import { resetDatabase } from '@/__tests__/setup'
+beforeEach(async () => await resetDatabase())
+```
+
+## Key Documentation
+
+- `docs/agent/testing.md` - Test helpers, factories, patterns
 - `docs/agent/composables.md` - useWorkout API, timer state machines
-
-## Problem-Solving Strategy
-
-### When Stuck on a Problem
-
-If you're blocked or looping on the same issue without progress:
-
-1. **Detect the loop** - If you've attempted the same approach 2-3 times without success, STOP
-2. **Spawn parallel subagents** to investigate independently:
-   - One subagent to search the web for similar issues/solutions
-   - One subagent to analyze the codebase for related patterns
-   - One subagent to reason about alternative approaches
-3. **Set a time/attempt limit** - Maximum 3 attempts per approach before pivoting
-4. **Synthesize findings** - Combine subagent results and choose the best path forward
-
-### Subagent Prompts (Copy-Paste Templates)
-
-**Web Search Subagent:**
-```
-Search the web for: "[specific error message or problem description]"
-Focus on: Vue 3, TypeScript, [relevant library] solutions
-Return: Top 3 solutions with code examples and source links
-```
-
-**Codebase Analysis Subagent:**
-```
-Search the codebase for similar patterns to: [problem description]
-Look in: composables, components, existing implementations
-Return: Relevant code patterns and how they solved similar issues
-```
-
-**Alternative Approach Subagent:**
-```
-Think about alternative solutions for: [problem description]
-Constraints: [list any constraints]
-Return: 3 different approaches with pros/cons for each
-```
-
-### Anti-Loop Rules
-
-- **Never retry the exact same code change** more than once
-- **If tests fail 3 times**, step back and re-read the test requirements
-- **If a file edit fails**, check if the file content matches your expectations
-- **When import errors persist**, use semantic_search to find correct paths
-- **If build fails repeatedly**, check `tsconfig.json` and `vite.config.ts` for config issues
+- `src/components/CLAUDE.md` - Vue 3.5 component patterns
