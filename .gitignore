@@ -33,8 +33,8 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
-# Vitest
-__screenshots__/
+# Vitest attachments (temporary test artifacts)
+.vitest-attachments/
 
 test-results/
 playwright-report/

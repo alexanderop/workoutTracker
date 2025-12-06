@@ -194,43 +194,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup-test-env
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(pnpm list @playwright/test --depth=0 --json | jq -r '.[0].dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4.2.3
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install chromium --with-deps
-
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
-
       - name: Run tests with coverage
         run: pnpm test:coverage
+
+  test-a11y:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Run accessibility tests
+        run: pnpm test:a11y
+
+  test-visual:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Run visual regression tests
+        run: pnpm test:visual
