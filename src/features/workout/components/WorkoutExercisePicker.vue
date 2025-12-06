@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { popularExercises } from '@/data/popularExercises'
+import { useExercisesStore } from '@/stores/exercises'
 
 type Emits = {
   select: [exercise: { name: string; icon: string }]
@@ -17,14 +17,16 @@ const { mode = 'multi' } = defineProps<{
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
+const exercisesStore = useExercisesStore()
 const searchQuery = ref('')
 
 const filteredExercises = computed(() => {
+  const allExercises = exercisesStore.customExercises
   if (!searchQuery.value.trim()) {
-    return popularExercises.slice(0, 10)
+    return allExercises.slice(0, 10)
   }
   const query = searchQuery.value.toLowerCase()
-  return popularExercises.filter((ex) => ex.name.toLowerCase().includes(query)).slice(0, 10)
+  return allExercises.filter((ex) => ex.name.toLowerCase().includes(query)).slice(0, 10)
 })
 
 watch(open, (isOpen) => {

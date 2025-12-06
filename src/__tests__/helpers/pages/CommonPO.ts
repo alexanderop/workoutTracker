@@ -26,6 +26,15 @@ export class CommonPO {
     }
   }
 
+  async selectExercise(exerciseName: string): Promise<void> {
+    const searchInput = screen.getByRole('textbox')
+    await this.ctx.user.type(searchInput, exerciseName)
+    await waitFor(() => {
+      this.getDialogButton(exerciseName)
+    })
+    await this.ctx.user.click(this.getDialogButton(exerciseName))
+  }
+
   async waitForRoute(pathPattern: RegExp): Promise<void> {
     await waitFor(() => {
       const currentPath = this.ctx.router.currentRoute.value.path

@@ -35,7 +35,9 @@ async function addTimedBlock(
   // Add an exercise - Tabata uses "Select Exercise", others use "Add Exercise"
   const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
   await user.click(common.getDialogButton(exerciseButtonText))
-  await user.click(common.getDialogButton('Push-ups'))
+
+  // Search for Push-ups and select it
+  await common.selectExercise('Push-ups')
 
   // Click Add Block to confirm
   await user.click(common.getDialogButton('Add Block'))
@@ -116,7 +118,7 @@ describe('Timed Block Workflows', () => {
 
       // Add an exercise to the AMRAP
       await user.click(common.getDialogButton('Add Exercise'))
-      await user.click(common.getDialogButton('Push-ups'))
+      await common.selectExercise('Push-ups')
 
       // Confirm the block by clicking "Add Block"
       await user.click(common.getDialogButton('Add Block'))
