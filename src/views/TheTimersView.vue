@@ -50,40 +50,40 @@ function handleComplete() {
       <div class="p-4">
         <div class="grid grid-cols-2 gap-4">
           <button
-            class="p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
+            class="p-4 sm:p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
             :class="BLOCK_COLORS.amrap.text"
             @click="selectTimer('amrap')"
           >
-            <div class="text-2xl font-bold mb-1">{{ t('timers.types.amrap') }}</div>
+            <div class="text-xl sm:text-2xl font-bold mb-1">{{ t('timers.types.amrap') }}</div>
             <div class="text-sm text-muted-foreground">{{ t('timers.descriptions.amrap') }}</div>
           </button>
 
           <button
-            class="p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
+            class="p-4 sm:p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
             :class="BLOCK_COLORS.emom.text"
             @click="selectTimer('emom')"
           >
-            <div class="text-2xl font-bold mb-1">{{ t('timers.types.emom') }}</div>
+            <div class="text-xl sm:text-2xl font-bold mb-1">{{ t('timers.types.emom') }}</div>
             <div class="text-sm text-muted-foreground">{{ t('timers.descriptions.emom') }}</div>
           </button>
 
           <button
-            class="p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
+            class="p-4 sm:p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
             :class="BLOCK_COLORS.tabata.text"
             @click="selectTimer('tabata')"
           >
-            <div class="text-2xl font-bold mb-1">{{ t('timers.types.tabata') }}</div>
+            <div class="text-xl sm:text-2xl font-bold mb-1">{{ t('timers.types.tabata') }}</div>
             <div class="text-sm text-muted-foreground">
               {{ t('timers.descriptions.workRestIntervals') }}
             </div>
           </button>
 
           <button
-            class="p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
+            class="p-4 sm:p-6 rounded-lg border-2 hover:border-current transition-colors text-center"
             :class="BLOCK_COLORS.fortime.text"
             @click="selectTimer('fortime')"
           >
-            <div class="text-2xl font-bold mb-1">{{ t('timers.types.fortime') }}</div>
+            <div class="text-xl sm:text-2xl font-bold mb-1">{{ t('timers.types.fortime') }}</div>
             <div class="text-sm text-muted-foreground">
               {{ t('timers.descriptions.raceAgainstClock') }}
             </div>

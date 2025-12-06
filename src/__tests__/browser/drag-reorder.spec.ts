@@ -134,7 +134,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     })
     cleanup = unmount
 
-    const blockItems = container.querySelectorAll('[role="button"]')
+    const blockItems = container.querySelectorAll('button[aria-pressed]')
     expect(blockItems.length).toBe(3)
     expect(blockItems[0]?.getAttribute('aria-pressed')).toBe('false')
     expect(blockItems[1]?.getAttribute('aria-pressed')).toBe('true')
@@ -189,17 +189,21 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     })
     cleanup = unmount
 
-    const blockItems = container.querySelectorAll('[role="button"]')
-    expect(blockItems.length).toBe(3)
+    // Query for block containers using aria-pressed buttons, then find their parent containers
+    const blockButtons = container.querySelectorAll('button[aria-pressed]')
+    expect(blockButtons.length).toBe(3)
+
+    // The opacity-60 class is on the parent container of the button
+    const getBlockContainer = (btn: Element) => btn.parentElement
 
     // First block (index 0) should have opacity-60 (completed)
-    expect(blockItems[0]?.classList.contains('opacity-60')).toBe(true)
+    expect(getBlockContainer(blockButtons[0]!)?.classList.contains('opacity-60')).toBe(true)
 
     // Second block (index 1) should NOT have opacity-60
-    expect(blockItems[1]?.classList.contains('opacity-60')).toBe(false)
+    expect(getBlockContainer(blockButtons[1]!)?.classList.contains('opacity-60')).toBe(false)
 
     // Third block (index 2) should have opacity-60 (completed)
-    expect(blockItems[2]?.classList.contains('opacity-60')).toBe(true)
+    expect(getBlockContainer(blockButtons[2]!)?.classList.contains('opacity-60')).toBe(true)
   })
 
   it('renders connectors between blocks', () => {

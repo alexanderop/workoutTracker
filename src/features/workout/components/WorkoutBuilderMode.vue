@@ -106,7 +106,7 @@ function handleStartWorkout() {
         @add-block="emit('add-block')"
       />
 
-      <Empty v-else class="animate-in fade-in-50 duration-500 border-0">
+      <Empty v-else class="border-0">
         <EmptyContent>
           <EmptyMedia variant="icon" class="bg-primary/10 text-primary">
             <Dumbbell class="size-6" />

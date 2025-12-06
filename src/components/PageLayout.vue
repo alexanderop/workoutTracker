@@ -40,9 +40,9 @@ defineSlots<{
       </template>
     </PageHeader>
 
-    <main class="flex-1" :class="scrollable ? 'overflow-y-auto' : 'overflow-hidden'">
+    <div class="flex-1" :class="scrollable ? 'overflow-y-auto' : 'overflow-hidden'">
       <slot />
-    </main>
+    </div>
 
     <footer v-if="$slots.footer" class="sticky bottom-0 border-t bg-background">
       <slot name="footer" />

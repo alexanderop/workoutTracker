@@ -41,6 +41,8 @@ export default {
     markSetComplete: 'Mark set complete',
     workoutDuration: 'Workout duration',
     blockCompleted: 'Block completed',
+    editBlock: 'Edit {name}',
+    removeBlock: 'Remove {name}',
   },
   states: {
     loading: 'Loading...',

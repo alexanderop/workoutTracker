@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { GripVertical, Pencil, X } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
@@ -34,6 +35,8 @@ const emit = defineEmits<{
   edit: []
   remove: []
 }>()
+
+const { t } = useI18n()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
 const thumbnail = computed(() => getBlockThumbnail(block))
@@ -69,81 +72,87 @@ const completedSets = computed(() => {
     <div
       :class="
         cn(
-          'flex-1 flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer min-h-[64px]',
+          'flex-1 flex items-center gap-3 rounded-lg transition-all min-h-[64px]',
           'border border-transparent',
           isSelected && 'border-primary bg-primary/5',
           isCompleted && 'opacity-60',
           disabled && 'pointer-events-none opacity-50',
         )
       "
-      role="button"
-      tabindex="0"
-      :aria-pressed="isSelected"
-      @click="emit('select')"
-      @keydown.enter="emit('select')"
-      @keydown.space.prevent="emit('select')"
     >
-      <!-- Drag handle -->
-      <div
-        class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle"
-        :class="disabled && 'opacity-0'"
+      <!-- Selectable area -->
+      <button
+        type="button"
+        class="flex flex-1 items-center gap-3 p-3 min-w-0 text-left"
+        :aria-pressed="isSelected"
+        :aria-label="isStrengthBlock(block) ? block.name : label"
+        @click="emit('select')"
       >
-        <GripVertical class="w-5 h-5 text-muted-foreground" />
-      </div>
-
-      <!-- Block icon -->
-      <div
-        :class="
-          cn(
-            'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl',
-            blockColors.bg,
-          )
-        "
-      >
-        {{ thumbnail }}
-      </div>
-
-      <!-- Block info -->
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="font-medium truncate">
-            {{ isStrengthBlock(block) ? block.name : label }}
-          </span>
-          <span
-            v-if="isTimedBlock(block)"
-            :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)"
-          >
-            {{ block.kind.toUpperCase() }}
-          </span>
+        <!-- Drag handle -->
+        <div
+          class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle"
+          :class="disabled && 'opacity-0'"
+        >
+          <GripVertical class="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         </div>
-        <p class="text-sm text-muted-foreground truncate">
-          {{ subtitle }}
-        </p>
-      </div>
 
-      <!-- Progress/status -->
-      <div v-if="completedSets" class="flex-shrink-0 text-sm text-muted-foreground">
-        {{ completedSets }}
-      </div>
+        <!-- Block icon -->
+        <div
+          :class="
+            cn(
+              'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl',
+              blockColors.bg,
+            )
+          "
+          aria-hidden="true"
+        >
+          {{ thumbnail }}
+        </div>
+
+        <!-- Block info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-medium truncate">
+              {{ isStrengthBlock(block) ? block.name : label }}
+            </span>
+            <span
+              v-if="isTimedBlock(block)"
+              :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)"
+            >
+              {{ block.kind.toUpperCase() }}
+            </span>
+          </div>
+          <p :class="cn('text-sm truncate', isSelected ? 'text-foreground/60' : 'text-muted-foreground')">
+            {{ subtitle }}
+          </p>
+        </div>
+
+        <!-- Progress/status -->
+        <div v-if="completedSets" class="flex-shrink-0 text-sm text-foreground/70">
+          {{ completedSets }}
+        </div>
+      </button>
 
       <!-- Actions -->
-      <div v-if="!disabled" class="flex-shrink-0 flex items-center gap-1">
+      <div v-if="!disabled" class="flex-shrink-0 flex items-center gap-1 pr-3">
         <Button
           v-if="isStrengthBlock(block)"
           variant="ghost"
           size="icon-sm"
           class="text-muted-foreground hover:text-foreground"
+          :aria-label="t('common.aria.editBlock', { name: block.name })"
           @click.stop="emit('edit')"
         >
-          <Pencil class="w-4 h-4" />
+          <Pencil class="w-4 h-4" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
           size="icon-sm"
           class="text-muted-foreground hover:text-destructive"
+          :aria-label="t('common.aria.removeBlock', { name: isStrengthBlock(block) ? block.name : label })"
           @click.stop="emit('remove')"
         >
-          <X class="w-4 h-4" />
+          <X class="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
     </div>

@@ -245,7 +245,7 @@ function handleLanguageChange(value: AcceptableValue) {
               data-testid="language-select"
               @update:model-value="handleLanguageChange"
             >
-              <SelectTrigger class="w-full sm:w-[180px]">
+              <SelectTrigger class="w-full sm:w-[180px]" :aria-label="t('settings.labels.language')">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

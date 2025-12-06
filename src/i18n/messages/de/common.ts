@@ -39,6 +39,10 @@ export default {
     moveDown: 'Nach unten',
     removeExercise: 'Übung entfernen',
     markSetComplete: 'Satz als abgeschlossen markieren',
+    workoutDuration: 'Workout-Dauer',
+    blockCompleted: 'Block abgeschlossen',
+    editBlock: '{name} bearbeiten',
+    removeBlock: '{name} entfernen',
   },
   states: {
     loading: 'Lädt...',

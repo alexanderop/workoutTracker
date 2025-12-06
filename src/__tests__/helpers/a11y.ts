@@ -17,6 +17,14 @@ export async function assertNoViolations(container: Element): Promise<void> {
       console.error(`  Help: ${violation.helpUrl}`)
       violation.nodes.forEach((node) => {
         console.error(`  Element: ${node.html}`)
+        if (node.any && node.any.length > 0) {
+          node.any.forEach((check) => {
+            console.error(`  Check: ${check.id} - ${check.message}`)
+            if (check.data) {
+              console.error(`  Data: ${JSON.stringify(check.data)}`)
+            }
+          })
+        }
       })
     })
   }
