@@ -4,7 +4,7 @@ import { resetInitState } from '@/features/workout/composables/useAppInitializat
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
+import { resetDatabase } from '../helpers/resetDatabase'
 
 describe('Timer Audio Settings', () => {
   beforeEach(async () => {

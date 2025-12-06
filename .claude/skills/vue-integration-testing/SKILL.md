@@ -15,8 +15,8 @@ Place integration tests in `src/__tests__/integration/`:
 import { waitFor } from '@testing-library/vue'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetWorkout } from '@/composables/useWorkout'
-import { resetDatabase } from '../setup'
+import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { resetDatabase } from '../helpers/resetDatabase'
 
 describe('Feature Name', () => {
   afterEach(async () => {

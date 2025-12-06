@@ -156,6 +156,8 @@ export default defineConfigWithVueTs(
 
       // No `enum` - use literal unions or `as const` objects
       // No `else` or `else if` - prefer early returns or ternary operators
+      // No native try/catch - use tryCatch() utility
+      // No hardcoded route strings - use RouteNames
       'no-restricted-syntax': [
         'error',
         {
@@ -169,6 +171,22 @@ export default defineConfigWithVueTs(
         {
           selector: 'IfStatement > :not(IfStatement).alternate',
           message: 'Avoid `else`. Prefer early returns or ternary operators.',
+        },
+        {
+          selector: 'TryStatement',
+          message: 'Use tryCatch() from @/lib/tryCatch instead of try/catch. Returns Result<T> tuple: [error, null] | [null, data].',
+        },
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
+        },
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
+          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
+        },
+        {
+          selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
         },
       ],
 
@@ -190,6 +208,42 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+  },
+
+  // Allow native try/catch in tryCatch utility implementation
+  {
+    name: 'app/try-catch-utility-exception',
+    files: ['src/lib/tryCatch.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use literal unions or `as const` objects instead of enums.',
+        },
+        {
+          selector: 'IfStatement > IfStatement.alternate',
+          message: 'Avoid `else if`. Prefer early returns or ternary operators.',
+        },
+        {
+          selector: 'IfStatement > :not(IfStatement).alternate',
+          message: 'Avoid `else`. Prefer early returns or ternary operators.',
+        },
+        // TryStatement intentionally omitted - this file implements the tryCatch utility
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
+        },
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
+          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
+        },
+        {
+          selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
+        },
+      ],
+    },
   },
 
   // Enforce integration testing - ban direct component mounting
@@ -256,29 +310,6 @@ export default defineConfigWithVueTs(
           { target: './src/features', from: './src/views' },
         ],
       }],
-    },
-  },
-
-  // Enforce named routes - prevent hardcoded route strings
-  {
-    name: 'app/enforce-named-routes',
-    files: ['src/**/*.{ts,vue}'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
-        },
-        {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
-          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
-        },
-        {
-          selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
-        },
-      ],
     },
   },
 

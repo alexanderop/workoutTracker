@@ -64,7 +64,7 @@ describe('tryCatch', () => {
 
     it('normalizes non-Error throws to Error', () => {
       const [error, data] = tryCatch(() => {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
+         
         throw 'string throw'
       })
 

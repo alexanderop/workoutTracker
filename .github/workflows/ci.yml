@@ -181,5 +181,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Unit tests
-        run: pnpm test:unit
+      - name: Unit tests with coverage
+        run: pnpm test:unit --coverage

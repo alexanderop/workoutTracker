@@ -5,7 +5,7 @@ import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { customExercisesRepository } from '@/db/repositories/customExercises'
 import { createDbCustomExercise } from '@/db/converters'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
+import { resetDatabase } from '../helpers/resetDatabase'
 
 describe('Timed Block Exercise Picker', () => {
   beforeEach(async () => {

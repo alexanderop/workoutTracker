@@ -3,8 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
-import { getAudioMocks, clearAudioMocks } from '../helpers/audioMock'
+import { resetDatabase } from '../helpers/resetDatabase'
+import {
+  clearAudioMocksUnified,
+  getAudioMocksUnified,
+  isBrowserMode,
+  restoreAudioSpies,
+  setupAudioSpies,
+} from '../helpers/audioMock'
 
 // Helper to navigate to Quick Timer page
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
@@ -84,7 +90,7 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
 
   // Wait for custom form
   await waitFor(() => {
-    expect(testApp.queryByText(/Minutes/)).toBeTruthy()
+    expect(testApp.queryByText(/minutes/i)).toBeTruthy()
   })
 
   // Configure short duration: 2 minutes
@@ -113,10 +119,16 @@ describe('Timer Audio Playback', () => {
   beforeEach(async () => {
     resetInitState()
     await resetDatabase()
-    clearAudioMocks()
+    if (isBrowserMode()) {
+      setupAudioSpies()
+    }
+    clearAudioMocksUnified()
   })
 
   afterEach(async () => {
+    if (isBrowserMode()) {
+      restoreAudioSpies()
+    }
     resetWorkout()
     await resetDatabase()
     document.body.style.cssText = ''
@@ -129,11 +141,11 @@ describe('Timer Audio Playback', () => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
-      const mocks = getAudioMocks()
+      const mocks = getAudioMocksUnified()
 
       // The timer should play work beep immediately on start (880Hz)
       expect(mocks.createOscillator).toHaveBeenCalled()
-      const oscillator = mocks.createOscillator.mock.results[0]?.value
+      const oscillator = mocks.createOscillator?.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(880)
 
       testApp.cleanup()
@@ -143,15 +155,15 @@ describe('Timer Audio Playback', () => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
-      clearAudioMocks()
-      const mocks = getAudioMocks()
+      clearAudioMocksUnified()
 
       // Wait for work phase to end and rest phase to begin (2 seconds + buffer)
       await new Promise((resolve) => setTimeout(resolve, 2500))
 
       // Verify rest beep played (440Hz)
       await waitFor(() => {
-        const restBeep = mocks.createOscillator.mock.results.find(
+        const mocks = getAudioMocksUnified()
+        const restBeep = mocks.createOscillator?.mock.results.find(
           (r) => r.value?.frequency.value === 440,
         )
         expect(restBeep).toBeDefined()
@@ -160,19 +172,19 @@ describe('Timer Audio Playback', () => {
       testApp.cleanup()
     })
 
-    it('plays round beep on round transition', async () => {
+    it('plays round beep on round transition', { timeout: 10000 }, async () => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
-      clearAudioMocks()
-      const mocks = getAudioMocks()
+      clearAudioMocksUnified()
 
       // Wait for first round to complete (work + rest = 4 seconds)
       await new Promise((resolve) => setTimeout(resolve, 4500))
 
       // Verify round beep played (660Hz)
       await waitFor(() => {
-        const roundBeep = mocks.createOscillator.mock.results.find(
+        const mocks = getAudioMocksUnified()
+        const roundBeep = mocks.createOscillator?.mock.results.find(
           (r) => r.value?.frequency.value === 660,
         )
         expect(roundBeep).toBeDefined()
@@ -199,8 +211,7 @@ describe('Timer Audio Playback', () => {
         expect(testApp.queryByText(/quick timer/i)).toBeTruthy()
       })
 
-      clearAudioMocks()
-      const mocks = getAudioMocks()
+      clearAudioMocksUnified()
 
       await startShortTabata(testApp)
 
@@ -208,6 +219,7 @@ describe('Timer Audio Playback', () => {
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       // No audio should have played
+      const mocks = getAudioMocksUnified()
       expect(mocks.createOscillator).not.toHaveBeenCalled()
 
       testApp.cleanup()
@@ -219,8 +231,7 @@ describe('Timer Audio Playback', () => {
       const testApp = await createTestApp()
       await startShortEmom(testApp)
 
-      clearAudioMocks()
-      const mocks = getAudioMocks()
+      clearAudioMocksUnified()
 
       // Wait for first minute to complete (60 seconds is too long, so we test the setup)
       // In real scenario this would wait 60s, but for now we verify the wiring works

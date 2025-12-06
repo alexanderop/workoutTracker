@@ -5,7 +5,7 @@ import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
+import { resetDatabase } from '../helpers/resetDatabase'
 
 describe('Localization', () => {
   afterEach(async () => {

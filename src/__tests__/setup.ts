@@ -1,7 +1,9 @@
 import 'fake-indexeddb/auto'
 import { vi } from 'vitest'
-import { db } from '@/db'
 import { setupAudioContextMock } from './helpers/audioMock'
+
+// Re-export resetDatabase for backwards compatibility
+export { resetDatabase } from './helpers/resetDatabase'
 
 // Setup AudioContext mock before any components are loaded
 setupAudioContextMock()
@@ -45,17 +47,3 @@ Object.defineProperty(window.HTMLMediaElement.prototype, 'load', {
   value: vi.fn(),
 })
 
-/**
- * Reset the database between tests to ensure isolation.
- * Clears all tables instead of deleting/reopening to avoid
- * DatabaseClosedError from pending debounced watchers.
- */
-export async function resetDatabase(): Promise<void> {
-  await db.activeWorkout.clear()
-  await db.workouts.clear()
-  await db.customExercises.clear()
-  await db.templates.clear()
-  await db.settings.clear()
-  // Clear seeding marker so exercises are re-seeded in each test
-  localStorage.removeItem('exercises_seed_version')
-}

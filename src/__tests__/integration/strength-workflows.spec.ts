@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
+import { resetDatabase } from '../helpers/resetDatabase'
 
 describe('Strength Workflows', () => {
   beforeEach(async () => {
@@ -21,7 +21,7 @@ describe('Strength Workflows', () => {
 
   describe('Set Completion', () => {
     it('advances to the next set after completing a set', async () => {
-      const { builder, common, user, getByRole, getByText, cleanup } = await createTestApp()
+      const { builder, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Click "Get Started" on home page to start a new workout
       await user.click(getByRole('button', { name: /get started/i }))
@@ -36,8 +36,10 @@ describe('Strength Workflows', () => {
       // Start the workout (transition from builder to active mode)
       await builder.startWorkout()
 
-      // Verify we're on set 1 of 3
-      expect(getByText('1/3')).toBeDefined()
+      // Verify we're on set 1 of 3 (wait for active workout UI)
+      await waitFor(() => {
+        expect(queryByText('1/3')).toBeTruthy()
+      })
 
       // Fill in the first set values using semantic queries
       const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
@@ -52,17 +54,18 @@ describe('Strength Workflows', () => {
       await user.click(getByRole('button', { name: /complete set/i }))
 
       // Verify the UI advanced to set 2 of 3 (this would have failed before the fix)
-      expect(getByText('2/3')).toBeDefined()
+      await waitFor(() => {
+        expect(queryByText('2/3')).toBeTruthy()
+      })
 
       // Verify the completed set appears in the history
-      expect(getByText(/100kg × 8/)).toBeDefined()
+      expect(queryByText(/100kg × 8/)).toBeTruthy()
 
       cleanup()
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, user, queryByRole, queryByText, getByText, getByRole, cleanup } =
-        await createTestApp()
+      const { builder, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
@@ -88,23 +91,29 @@ describe('Strength Workflows', () => {
       await user.click(getByRole('button', { name: /complete set/i }))
 
       // Verify advancement to set 2
-      expect(getByText('2/3')).toBeDefined()
+      await waitFor(() => {
+        expect(queryByText('2/3')).toBeTruthy()
+      })
 
       // Verify the completed set appears in the history
-      expect(getByText(/80kg × 10/)).toBeDefined()
+      expect(queryByText(/80kg × 10/)).toBeTruthy()
 
       // Complete set 2 (values should be pre-filled from set 1)
       await user.click(getByRole('button', { name: /complete set/i }))
 
       // Verify advancement to set 3
-      expect(getByText('3/3')).toBeDefined()
+      await waitFor(() => {
+        expect(queryByText('3/3')).toBeTruthy()
+      })
 
       // Complete set 3
       await user.click(getByRole('button', { name: /complete set/i }))
 
       // Verify all three sets appear in the history
-      const completedSets = screen.getAllByText(/80kg × 10/)
-      expect(completedSets.length).toBe(3)
+      await waitFor(() => {
+        const completedSets = screen.queryAllByText(/80kg × 10/)
+        expect(completedSets.length).toBe(3)
+      })
 
       cleanup()
     })
@@ -112,7 +121,7 @@ describe('Strength Workflows', () => {
 
   describe('Value Prefilling', () => {
     it('prefills values from previous set when advancing', async () => {
-      const { builder, user, queryByRole, getByText, getByRole, cleanup } = await createTestApp()
+      const { builder, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       await builder.addStrengthBlock('Squat')
       await builder.startWorkout()
@@ -135,7 +144,9 @@ describe('Strength Workflows', () => {
       await user.click(getByRole('button', { name: /complete set/i }))
 
       // Wait for advancement to set 2
-      expect(getByText('2/3')).toBeDefined()
+      await waitFor(() => {
+        expect(queryByText('2/3')).toBeTruthy()
+      })
 
       // Get fresh references to inputs for set 2
       const weightInput2 = screen.getByRole('spinbutton', { name: /weight/i })

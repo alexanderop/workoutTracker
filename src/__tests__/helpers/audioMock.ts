@@ -1,8 +1,14 @@
 /**
  * Audio mock helper for testing Web Audio API usage.
  * Provides mock implementations for AudioContext, OscillatorNode, and GainNode.
+ *
+ * Two modes are supported:
+ * - jsdom mode: Uses MockAudioContext class that replaces global.AudioContext
+ * - Browser mode: Uses vi.spyOn() on the real AudioContext.prototype
+ *
+ * Use getAudioMocksUnified() for environment-agnostic access to mocks/spies.
  */
-import { vi } from 'vitest'
+import { vi, type MockInstance } from 'vitest'
 
 // Store mock functions so they can be accessed and cleared
 const mockOscillatorStart = vi.fn()
@@ -97,4 +103,83 @@ export function clearAudioMocks(): void {
   mockGainConnect.mockClear()
   mockCreateOscillator.mockClear()
   mockCreateGain.mockClear()
+}
+
+// =============================================================================
+// Browser Mode: Spy on real AudioContext.prototype
+// =============================================================================
+
+let createOscillatorSpy: ReturnType<typeof vi.spyOn> | null = null
+let createGainSpy: ReturnType<typeof vi.spyOn> | null = null
+
+/**
+ * Sets up spies on the real AudioContext.prototype methods.
+ * Call this in beforeEach for browser mode tests.
+ */
+export function setupAudioSpies(): void {
+  createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
+  createGainSpy = vi.spyOn(AudioContext.prototype, 'createGain')
+}
+
+/**
+ * Returns the spy functions for assertions in browser mode.
+ */
+export function getAudioSpies() {
+  return {
+    createOscillator: createOscillatorSpy,
+    createGain: createGainSpy,
+  }
+}
+
+/**
+ * Clears all spy call history.
+ * Call this in beforeEach to reset state between tests.
+ */
+export function clearAudioSpies(): void {
+  createOscillatorSpy?.mockClear()
+  createGainSpy?.mockClear()
+}
+
+/**
+ * Restores the original implementations.
+ * Call this in afterEach for browser mode tests.
+ */
+export function restoreAudioSpies(): void {
+  createOscillatorSpy?.mockRestore()
+  createGainSpy?.mockRestore()
+  createOscillatorSpy = null
+  createGainSpy = null
+}
+
+// =============================================================================
+// Unified API: Works in both jsdom and browser modes
+// =============================================================================
+
+/**
+ * Detect if running in real browser (not jsdom).
+ */
+export function isBrowserMode(): boolean {
+  return (
+    typeof window !== 'undefined' && !window.navigator.userAgent.includes('jsdom')
+  )
+}
+
+/**
+ * Returns mocks/spies in a unified interface that works in both environments.
+ * In jsdom: returns the mock functions from setupAudioContextMock()
+ * In browser: returns the spies from setupAudioSpies()
+ */
+export function getAudioMocksUnified() {
+  return isBrowserMode() ? getAudioSpies() : getAudioMocks()
+}
+
+/**
+ * Clears all mock/spy call history for the current environment.
+ */
+export function clearAudioMocksUnified(): void {
+  if (isBrowserMode()) {
+    clearAudioSpies()
+    return
+  }
+  clearAudioMocks()
 }

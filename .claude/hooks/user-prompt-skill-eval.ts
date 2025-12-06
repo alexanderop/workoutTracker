@@ -20,8 +20,22 @@ function main(): void {
   const instruction = `
 INSTRUCTION: MANDATORY SKILL ACTIVATION SEQUENCE
 
+Available skills:
+- brainstorm: Refine rough ideas into designs through collaborative questioning
+- frontend-design: Create distinctive, production-grade frontend interfaces
+- git-worktree: Set up parallel development workspaces using git worktree
+- shadcn-vue-docs: Fetch and answer questions about shadcn-vue components
+- skill-creator: Guide for creating effective skills
+- tdd-integration: Enforce TDD with strict Red-Green-Refactor cycle
+- vitest-docs: Vitest documentation reference
+- vitest-mocking: Vitest mocking patterns and techniques
+- vue-composables: Write high-quality Vue 3 composables
+- vue-composable-testing: Test Vue 3 composables with Vitest
+- vue-integration-testing: Write Vue 3 integration tests using Testing Library
+- writingPlan: Create detailed implementation plans for engineers
+
 Step 1 - EVALUATE (do this in your response):
-For each skill in <available_skills>, state: [skill-name] - YES/NO - [reason]
+For each skill above, state: [skill-name] - YES/NO - [reason]
 
 Step 2 - ACTIVATE (do this immediately after Step 1):
 IF any skills are YES → Use Skill(skill-name) tool for EACH relevant skill NOW

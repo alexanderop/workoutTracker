@@ -5,7 +5,7 @@ import { resetInitState } from '@/features/workout/composables/useAppInitializat
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetDatabase } from '../setup'
+import { resetDatabase } from '../helpers/resetDatabase'
 import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
 
 describe('Template Flow', () => {
