@@ -16,13 +16,51 @@ const SETTING_DEFAULTS: SettingDefaults = {
   language: undefined,
 }
 
+/**
+ * Get a setting value by key with proper type narrowing via function overloads.
+ */
+function createGetFunction(db: WorkoutTrackerDb) {
+  async function get(key: 'theme'): Promise<'light' | 'dark' | 'system'>
+  async function get(key: 'defaultRestTimer'): Promise<number>
+  async function get(key: 'weightUnit'): Promise<'kg' | 'lbs'>
+  async function get(key: 'heightUnit'): Promise<'cm' | 'ft-in'>
+  async function get(key: 'autoSaveInterval'): Promise<number>
+  async function get(key: 'screenWakeLock'): Promise<boolean>
+  async function get(key: 'timerSoundEnabled'): Promise<boolean>
+  async function get(key: 'language'): Promise<'en' | 'de' | undefined>
+  async function get(key: UserSettingKey) {
+    const setting = await db.settings.get(key)
+    if (!setting) {
+      return SETTING_DEFAULTS[key]
+    }
+
+    // Use switch to narrow the discriminated union
+    switch (setting.key) {
+      case 'theme':
+        return setting.value
+      case 'defaultRestTimer':
+        return setting.value
+      case 'weightUnit':
+        return setting.value
+      case 'heightUnit':
+        return setting.value
+      case 'autoSaveInterval':
+        return setting.value
+      case 'screenWakeLock':
+        return setting.value
+      case 'timerSoundEnabled':
+        return setting.value
+      case 'language':
+        return setting.value
+    }
+  }
+
+  return get
+}
+
 export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRepository {
   return {
-    async get<TKey extends UserSettingKey>(key: TKey): Promise<SettingDefaults[TKey]> {
-      const setting = await db.settings.get(key)
-      // @ts-expect-error - Dexie returns the discriminated union, we know the value matches the key
-      return setting?.value ?? SETTING_DEFAULTS[key]
-    },
+    get: createGetFunction(db),
 
     async set(setting: DbUserSetting): Promise<void> {
       await db.settings.put(setting)
@@ -33,8 +71,32 @@ export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRep
       const result = { ...SETTING_DEFAULTS }
 
       for (const setting of settings) {
-        // @ts-expect-error - Dynamic key assignment from DB values
-        result[setting.key] = setting.value
+        switch (setting.key) {
+          case 'theme':
+            result.theme = setting.value
+            break
+          case 'defaultRestTimer':
+            result.defaultRestTimer = setting.value
+            break
+          case 'weightUnit':
+            result.weightUnit = setting.value
+            break
+          case 'heightUnit':
+            result.heightUnit = setting.value
+            break
+          case 'autoSaveInterval':
+            result.autoSaveInterval = setting.value
+            break
+          case 'screenWakeLock':
+            result.screenWakeLock = setting.value
+            break
+          case 'timerSoundEnabled':
+            result.timerSoundEnabled = setting.value
+            break
+          case 'language':
+            result.language = setting.value
+            break
+        }
       }
 
       return result

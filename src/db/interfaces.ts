@@ -27,7 +27,14 @@ export type SettingDefaults = {
 }
 
 export type SettingsRepository = {
-  get<TKey extends UserSettingKey>(key: TKey): Promise<SettingDefaults[TKey]>
+  get(key: 'theme'): Promise<'light' | 'dark' | 'system'>
+  get(key: 'defaultRestTimer'): Promise<number>
+  get(key: 'weightUnit'): Promise<'kg' | 'lbs'>
+  get(key: 'heightUnit'): Promise<'cm' | 'ft-in'>
+  get(key: 'autoSaveInterval'): Promise<number>
+  get(key: 'screenWakeLock'): Promise<boolean>
+  get(key: 'timerSoundEnabled'): Promise<boolean>
+  get(key: 'language'): Promise<'en' | 'de' | undefined>
   set(setting: DbUserSetting): Promise<void>
   getAll(): Promise<SettingDefaults>
   reset(key: UserSettingKey): Promise<void>
