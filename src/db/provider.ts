@@ -14,16 +14,3 @@ export function getRepositoryProvider(): RepositoryProvider {
   return currentProvider
 }
 
-/**
- * Set a custom repository provider (for testing or alternative backends).
- */
-export function setRepositoryProvider(provider: RepositoryProvider): void {
-  currentProvider = provider
-}
-
-/**
- * Reset to default provider (useful for test cleanup).
- */
-export function resetRepositoryProvider(): void {
-  currentProvider = null
-}

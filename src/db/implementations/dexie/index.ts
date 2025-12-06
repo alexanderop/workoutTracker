@@ -18,5 +18,3 @@ export function createDexieRepositoryProvider(): RepositoryProvider {
   }
 }
 
-// Re-export database utilities for backwards compatibility
-export { db, generateId } from './database'

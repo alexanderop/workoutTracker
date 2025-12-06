@@ -10,7 +10,6 @@ import { getRepositoryProvider } from './provider'
 
 // Re-export types for consumers
 export * from './interfaces'
-export { setRepositoryProvider, resetRepositoryProvider } from './provider'
 
 // ============================================
 // Repository Getters
