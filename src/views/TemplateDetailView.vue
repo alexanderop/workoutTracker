@@ -2,13 +2,14 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouteNames } from '@/router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import WorkoutAddExerciseDialog from '@/features/workout/components/WorkoutAddExerciseDialog.vue'
+import { WorkoutExercisePicker } from '@/features/workout'
 import { useTemplateDetail } from '@/features/templates/composables/useTemplateDetail'
 
 const { t } = useI18n()
@@ -40,7 +41,7 @@ watch(
   () => state.value.status,
   (status) => {
     if (status === 'not-found') {
-      router.push('/workouts')
+      router.push({ name: RouteNames.Workouts })
     }
   },
 )
@@ -49,13 +50,13 @@ watch(
 async function handleStartWorkout(): Promise<void> {
   const success = await startWorkout()
   if (success) {
-    router.push('/workout/active')
+    router.push({ name: RouteNames.ActiveWorkout })
   }
 }
 
 async function handleDeleteTemplate(): Promise<void> {
   await deleteTemplate()
-  router.push('/workouts')
+  router.push({ name: RouteNames.Workouts })
 }
 
 function handleCancel(): void {
@@ -63,6 +64,11 @@ function handleCancel(): void {
     return
   }
   router.back()
+}
+
+// Wrapper to adapt new picker signature to composable's expected string argument
+function handleAddExercise(exercise: { name: string; icon: string }): void {
+  addExercise(exercise.name)
 }
 </script>
 
@@ -143,10 +149,11 @@ function handleCancel(): void {
     </template>
 
     <!-- Add Exercise Dialog -->
-    <WorkoutAddExerciseDialog
-      :open="isAddExerciseOpen"
-      @update:open="isAddExerciseOpen = $event"
-      @add="addExercise"
+    <WorkoutExercisePicker
+      v-model:open="isAddExerciseOpen"
+      presentation="dialog"
+      :show-create="true"
+      @select="handleAddExercise"
     />
 
     <!-- Delete Confirmation Dialog -->

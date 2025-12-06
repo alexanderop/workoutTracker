@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
@@ -103,7 +104,7 @@ describe('Template Flow', () => {
       expect(templates[0]?.blocks).toHaveLength(2)
 
       // Navigate to workouts page and verify template appears
-      await navigateTo('/workouts')
+      await navigateTo({ name: RouteNames.Workouts })
 
       // Wait for the page to finish loading
       await waitFor(() => {
@@ -137,7 +138,7 @@ describe('Template Flow', () => {
       await db.templates.add(template)
 
       // Navigate to workouts page
-      await navigateTo('/workouts')
+      await navigateTo({ name: RouteNames.Workouts })
 
       // Wait for page to finish loading
       await waitFor(() => {
@@ -201,7 +202,7 @@ describe('Template Flow', () => {
       await db.templates.add(template)
 
       // Navigate to template detail page
-      await navigateTo('/templates/tpl-edit-test')
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-edit-test' } })
 
       // Wait for template page to finish loading
       await waitFor(() => {
@@ -245,7 +246,7 @@ describe('Template Flow', () => {
       await db.templates.add(template)
 
       // Navigate to template detail page
-      await navigateTo('/templates/tpl-delete-test')
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-test' } })
 
       // Wait for template page to finish loading
       await waitFor(() => {

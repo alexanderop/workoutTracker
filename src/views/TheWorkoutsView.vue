@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
@@ -28,11 +29,11 @@ onMounted(async () => {
 })
 
 function navigateToWorkoutDetail(workoutId: string): void {
-  router.push(`/workouts/${workoutId}`)
+  router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
 }
 
 function navigateToTemplateDetail(templateId: string): void {
-  router.push(`/templates/${templateId}`)
+  router.push({ name: RouteNames.TemplateDetail, params: { id: templateId } })
 }
 
 function handleWorkoutKeyDown(event: KeyboardEvent, workoutId: string): void {
@@ -50,7 +51,7 @@ function handleTemplateKeyDown(event: KeyboardEvent, templateId: string): void {
 }
 
 function handleCreateTemplate(): void {
-  router.push('/templates/create')
+  router.push({ name: RouteNames.CreateTemplate })
 }
 
 function formatTemplateDate(timestamp: number | null): string {

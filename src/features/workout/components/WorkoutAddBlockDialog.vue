@@ -3,6 +3,7 @@ import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouteNames } from '@/router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -80,7 +81,7 @@ function handleSelectTimedBlock(kind: TimedBlockKind) {
 function handleCreateNew() {
   open.value = false
   searchQuery.value = ''
-  router.push('/create-exercise')
+  router.push({ name: RouteNames.CreateCustomExercise })
 }
 
 function handleOpenChange(value: boolean) {

@@ -3,6 +3,7 @@ import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouteNames } from '@/router'
 import WorkoutSaveTemplateDialog from '@/features/workout/components/WorkoutSaveTemplateDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -78,7 +79,7 @@ async function handleSaveAsTemplate(name: string): Promise<void> {
 }
 
 function handleDone() {
-  router.push('/')
+  router.push({ name: RouteNames.Home })
 }
 </script>
 

@@ -3,8 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { db } from '@/db'
-import * as dbModule from '@/db'
-import * as dataImport from '@/features/settings/utils/dataImport'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder } from '../factories'
 import { resetDatabase } from '../setup'
@@ -62,9 +60,9 @@ describe('Data Management', () => {
       cleanup()
     })
 
-    it('imports data from a valid backup file and calls importAllData', async () => {
-      // Arrange: Spy on importAllData
-      const importSpy = vi.spyOn(dataImport, 'importAllData').mockResolvedValue()
+    it('imports data from a valid backup file', async () => {
+      // Arrange: Verify DB is empty
+      expect(await db.workouts.count()).toBe(0)
 
       const importedWorkout = dbWorkoutBuilder()
         .withName('Imported Workout')
@@ -84,8 +82,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { user, getByRole, queryByRole, queryByText, common, cleanup } =
-        await createTestApp()
+      const { user, queryByRole, queryByText, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -103,19 +100,12 @@ describe('Data Management', () => {
       // Act: Confirm import
       await user.click(common.getDialogButton('Import Data'))
 
-      // Assert: importAllData was called with correct data
-      await waitFor(() => {
-        expect(importSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            version: 1,
-            data: expect.objectContaining({
-              workouts: expect.arrayContaining([
-                expect.objectContaining({ name: 'Imported Workout' }),
-              ]),
-            }),
-          }),
-        )
+      // Assert: Data was actually persisted to DB
+      await waitFor(async () => {
+        expect(await db.workouts.count()).toBe(1)
       })
+      const workouts = await db.workouts.toArray()
+      expect(workouts[0]?.name).toBe('Imported Workout')
 
       cleanup()
     })
@@ -123,8 +113,7 @@ describe('Data Management', () => {
     it('shows error dialog when importing invalid JSON', async () => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { user, getByRole, queryByRole, queryByText, common, cleanup } =
-        await createTestApp()
+      const { user, queryByRole, queryByText, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload invalid file
@@ -149,11 +138,9 @@ describe('Data Management', () => {
     })
 
     it('deletes all data when confirmed', async () => {
-      // Arrange: Add data to database and spy on deleteAllData
+      // Arrange: Add data to database
       await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
       expect(await db.workouts.count()).toBe(1)
-
-      const deleteSpy = vi.spyOn(dbModule, 'deleteAllData').mockResolvedValue()
 
       const { user, getByRole, queryByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -169,9 +156,9 @@ describe('Data Management', () => {
       // Confirm deletion
       await user.click(common.getDialogButton('Delete All Data'))
 
-      // Assert: deleteAllData was called
-      await waitFor(() => {
-        expect(deleteSpy).toHaveBeenCalled()
+      // Assert: Data was actually deleted from DB
+      await waitFor(async () => {
+        expect(await db.workouts.count()).toBe(0)
       })
 
       cleanup()

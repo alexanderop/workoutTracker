@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
@@ -37,14 +38,14 @@ describe('Unit Display', () => {
     expect(queryByText(/kg$/)).toBeTruthy()
 
     // Navigate to settings
-    await navigateTo('/settings')
+    await navigateTo({ name: RouteNames.Settings })
 
     // Find and click the 'lbs' toggle option (button with aria-label "Pounds")
     const lbsButton = screen.getByRole('button', { name: /pounds/i })
     await user.click(lbsButton)
 
     // Navigate back to workout
-    await navigateTo('/workout/active')
+    await navigateTo({ name: RouteNames.ActiveWorkout })
 
     // Wait for the workout view to render
     await waitFor(() => {
@@ -62,12 +63,12 @@ describe('Unit Display', () => {
       await createTestApp()
 
     // Navigate to settings first and switch to lbs
-    await navigateTo('/settings')
+    await navigateTo({ name: RouteNames.Settings })
     const lbsButton = screen.getByRole('button', { name: /pounds/i })
     await user.click(lbsButton)
 
     // Navigate to home and start workout
-    await navigateTo('/')
+    await navigateTo({ name: RouteNames.Home })
     await user.click(getByRole('button', { name: /get started/i }))
 
     // Add a strength block

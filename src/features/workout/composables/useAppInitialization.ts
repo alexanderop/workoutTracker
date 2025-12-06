@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { RouteNames } from '@/router'
 import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { useExercisesStore } from '@/stores/exercises'
@@ -86,7 +87,7 @@ export function useAppInitialization() {
 
     // Navigate to active workout with error handling
     try {
-      await router.push('/workout/active')
+      await router.push({ name: RouteNames.ActiveWorkout })
     } catch (error) {
       // Navigation failures are typically user-initiated (e.g., back button)
       console.warn('Navigation to active workout failed:', error)

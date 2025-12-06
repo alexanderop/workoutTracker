@@ -11,62 +11,78 @@ import TheWorkoutsView from '@/views/TheWorkoutsView.vue'
 import WorkoutDetailView from '@/views/WorkoutDetailView.vue'
 import WorkoutSummaryView from '@/views/WorkoutSummaryView.vue'
 
+export const RouteNames = {
+  Home: 'Home',
+  Workouts: 'Workouts',
+  WorkoutDetail: 'WorkoutDetail',
+  Exercises: 'Exercises',
+  Settings: 'Settings',
+  Timers: 'Timers',
+  ActiveWorkout: 'ActiveWorkout',
+  CreateCustomExercise: 'CreateCustomExercise',
+  WorkoutSummary: 'WorkoutSummary',
+  CreateTemplate: 'CreateTemplate',
+  TemplateDetail: 'TemplateDetail',
+} as const
+
+export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
+
 export const routes = [
   {
     path: '/',
-    name: 'Home',
+    name: RouteNames.Home,
     component: TheHomeView,
   },
   {
     path: '/workouts',
-    name: 'Workouts',
+    name: RouteNames.Workouts,
     component: TheWorkoutsView,
   },
   {
     path: '/workouts/:id',
-    name: 'WorkoutDetail',
+    name: RouteNames.WorkoutDetail,
     component: WorkoutDetailView,
     props: true,
   },
   {
     path: '/exercises',
-    name: 'Exercises',
+    name: RouteNames.Exercises,
     component: TheExercisesView,
   },
   {
     path: '/settings',
-    name: 'Settings',
+    name: RouteNames.Settings,
     component: TheSettingsView,
   },
   {
     path: '/timers',
-    name: 'Timers',
+    name: RouteNames.Timers,
     component: TheTimersView,
   },
   {
     path: '/workout/active',
-    name: 'ActiveWorkout',
+    name: RouteNames.ActiveWorkout,
     component: ActiveWorkout,
   },
   {
     path: '/create-exercise',
-    name: 'CreateCustomExercise',
+    name: RouteNames.CreateCustomExercise,
     component: CreateCustomExercise,
   },
   {
     path: '/workout/summary/:id',
-    name: 'WorkoutSummary',
+    name: RouteNames.WorkoutSummary,
     component: WorkoutSummaryView,
     props: true,
   },
   {
     path: '/templates/create',
-    name: 'CreateTemplate',
+    name: RouteNames.CreateTemplate,
     component: CreateTemplateView,
   },
   {
     path: '/templates/:id',
-    name: 'TemplateDetail',
+    name: RouteNames.TemplateDetail,
     component: TemplateDetailView,
     props: true,
   },

@@ -97,6 +97,30 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Prevent direct DOM manipulation in application code - use Vue template refs
+  {
+    name: 'app/no-direct-dom-manipulation',
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/**/__tests__/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.object.name="document"][callee.property.name="getElementById"]',
+          message: 'Use Vue template refs (useTemplateRef) instead of document.getElementById().',
+        },
+        {
+          selector: 'CallExpression[callee.object.name="document"][callee.property.name=/^querySelector(All)?$/]',
+          message: 'Use Vue template refs (useTemplateRef) instead of document.querySelector*().',
+        },
+        {
+          selector: 'CallExpression[callee.object.name="document"][callee.property.name=/^getElementsBy/]',
+          message: 'Use Vue template refs (useTemplateRef) instead of document.getElementsBy*().',
+        },
+      ],
+    },
+  },
+
   {
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
@@ -168,6 +192,32 @@ export default defineConfigWithVueTs(
     files: ['src/**/__tests__/*'],
   },
 
+  // Enforce integration testing - ban direct component mounting
+  {
+    name: 'app/enforce-integration-tests',
+    files: ['src/**/__tests__/**/*.{ts,spec.ts}'],
+    ignores: ['src/__tests__/helpers/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@testing-library/vue',
+              importNames: ['render'],
+              message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of render().',
+            },
+            {
+              name: '@vue/test-utils',
+              importNames: ['mount', 'shallowMount'],
+              message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of mounting components directly.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // Feature boundary enforcement - prevent cross-feature imports
   {
     name: 'app/feature-boundaries',
@@ -206,6 +256,29 @@ export default defineConfigWithVueTs(
           { target: './src/features', from: './src/views' },
         ],
       }],
+    },
+  },
+
+  // Enforce named routes - prevent hardcoded route strings
+  {
+    name: 'app/enforce-named-routes',
+    files: ['src/**/*.{ts,vue}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
+        },
+        {
+          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
+          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
+        },
+        {
+          selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
+          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
+        },
+      ],
     },
   },
 

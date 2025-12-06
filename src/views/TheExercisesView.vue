@@ -3,6 +3,7 @@ import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { RouteNames } from '@/router'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,7 +36,7 @@ function clearSearch() {
 }
 
 function handleCreateExercise() {
-  router.push('/create-exercise')
+  router.push({ name: RouteNames.CreateCustomExercise })
 }
 </script>
 

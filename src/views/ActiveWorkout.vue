@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { RouteNames } from '@/router'
 import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.vue'
 import WorkoutAddBlockDialog from '@/features/workout/components/WorkoutAddBlockDialog.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
@@ -109,16 +110,16 @@ async function handleConfirmFinish(name: string) {
   const completed = await completeWorkout()
   if (completed) {
     resetWorkout()
-    router.push(`/workout/summary/${completed.id}`)
+    router.push({ name: RouteNames.WorkoutSummary, params: { id: completed.id } })
     return
   }
-  router.push('/')
+  router.push({ name: RouteNames.Home })
 }
 
 async function handleConfirmCancel() {
   await discardActiveWorkout()
   resetWorkout()
-  router.push('/')
+  router.push({ name: RouteNames.Home })
 }
 
 // Block management handlers

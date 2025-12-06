@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Plus, Trash2, X } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
@@ -13,6 +12,7 @@ import type { AmrapConfig, BlockExercise } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
 import WorkoutAmrapConfig, { type AmrapConfigModel } from './WorkoutAmrapConfig.vue'
 import WorkoutExercisePicker from './WorkoutExercisePicker.vue'
+import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
 
 const { t } = useI18n()
 
@@ -83,54 +83,23 @@ function handleClose() {
         <div class="space-y-3">
           <Label>{{ t('dialogs.amrapConfig.exercises') }}</Label>
 
-          <p v-if="exercises.length === 0" class="text-center py-6 text-muted-foreground">
-            {{ t('dialogs.amrapConfig.noExercises') }}
-          </p>
-
-          <div
-            v-for="(exercise, index) in exercises"
-            :key="exercise.id"
-            class="flex items-center gap-3 bg-secondary/30 rounded-lg p-3"
-          >
-            <span class="text-xl">{{ exercise.thumbnail }}</span>
-            <div class="flex-1 min-w-0">
-              <p class="font-medium truncate">{{ exercise.name }}</p>
-              <div class="flex gap-2 mt-1">
-                <Input
-                  :model-value="exercise.prescribedReps"
-                  type="number"
-                  min="1"
-                  class="h-8 w-20"
-                  :placeholder="t('dialogs.amrapConfig.repPlaceholder')"
-                  @update:model-value="updateExerciseReps(index, Number($event))"
-                />
-                <Input
-                  :model-value="exercise.load ?? ''"
-                  class="h-8 flex-1"
-                  :placeholder="t('dialogs.amrapConfig.loadPlaceholder')"
-                  @update:model-value="updateExerciseLoad(index, String($event))"
-                />
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              class="text-destructive"
-              @click="removeExercise(index)"
-            >
-              <Trash2 class="w-4 h-4" />
-            </Button>
-          </div>
-
-          <Button variant="outline" class="w-full" @click="showExercisePicker = true">
-            <Plus class="w-4 h-4 mr-2" />
-            {{ t('dialogs.amrapConfig.addExercise') }}
-          </Button>
+          <WorkoutTimedBlockExerciseList
+            :exercises="exercises"
+            :empty-message="t('dialogs.amrapConfig.noExercises')"
+            :add-button-text="t('dialogs.amrapConfig.addExercise')"
+            :rep-placeholder="t('dialogs.amrapConfig.repPlaceholder')"
+            :load-placeholder="t('dialogs.amrapConfig.loadPlaceholder')"
+            @update:reps="updateExerciseReps"
+            @update:load="updateExerciseLoad"
+            @remove="removeExercise"
+            @add="showExercisePicker = true"
+          />
         </div>
       </div>
 
       <WorkoutExercisePicker
         v-model:open="showExercisePicker"
+        presentation="overlay"
         mode="multi"
         @select="handleSelectExercise"
       />

@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
 
@@ -67,7 +68,7 @@ describe('Custom Exercise Flow', () => {
     await common.waitForRoute(/^\/exercises$/)
 
     // Now start a workout and check the add exercise dialog
-    await router.push('/')
+    await router.push({ name: RouteNames.Home })
     await user.click(getByRole('button', { name: /get started/i }))
     await user.click(getByRole('button', { name: /add.*block/i }))
     await common.waitForDialog()
@@ -189,7 +190,7 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 2: Start new workout
       // ========================================
-      await router.push('/')
+      await router.push({ name: RouteNames.Home })
       await user.click(getByRole('button', { name: /get started/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 

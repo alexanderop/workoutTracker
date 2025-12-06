@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import WorkoutAddExerciseDialog from '@/features/workout/components/WorkoutAddExerciseDialog.vue'
+import { RouteNames } from '@/router'
+import { WorkoutExercisePicker } from '@/features/workout'
 import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
 import type { TemplateExercise } from '@/features/templates/components/TemplateExerciseList.vue'
 import PageLayout from '@/components/PageLayout.vue'
@@ -21,8 +22,8 @@ const isSaving = ref(false)
 
 const isValid = computed(() => templateName.value.trim().length > 0 && exercises.value.length > 0)
 
-function handleAddExercise(exerciseName: string): void {
-  const popularExercise = popularExercises.find((ex) => ex.name === exerciseName)
+function handleAddExercise(exercise: { name: string; icon: string }): void {
+  const popularExercise = popularExercises.find((ex) => ex.name === exercise.name)
   if (!popularExercise) return
 
   // Generate unique ID for this exercise in the template
@@ -30,7 +31,7 @@ function handleAddExercise(exerciseName: string): void {
 
   const newExercise: TemplateExercise = {
     exerciseId,
-    name: exerciseName,
+    name: exercise.name,
     equipment: popularExercise.equipment,
     thumbnail: popularExercise.icon,
     defaultSetCount: 3,
@@ -65,7 +66,7 @@ async function handleSave(): Promise<void> {
       })),
     })
 
-    await router.push(`/templates/${template.id}`)
+    await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
   } finally {
     isSaving.value = false
   }
@@ -135,10 +136,11 @@ function handleCancel(): void {
     </template>
 
     <!-- Add Exercise Dialog -->
-    <WorkoutAddExerciseDialog
-      :open="isAddExerciseOpen"
-      @update:open="isAddExerciseOpen = $event"
-      @add="handleAddExercise"
+    <WorkoutExercisePicker
+      v-model:open="isAddExerciseOpen"
+      presentation="dialog"
+      :show-create="true"
+      @select="handleAddExercise"
     />
   </PageLayout>
 </template>

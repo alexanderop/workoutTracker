@@ -121,16 +121,17 @@ export async function importAllData(exportData: ExportData): Promise<void> {
         db.workouts.clear(),
       ])
 
-      // Insert imported data
-      const { settings, customExercises, templates, workouts } = exportData.data
+      // Insert imported data - use JSON round-trip to strip Vue reactivity proxies
+      // before IndexedDB's structured clone algorithm runs
+      const serialized = JSON.stringify(exportData.data)
+      const rawData: ExportData['data'] = JSON.parse(serialized)
+      const { settings, customExercises, templates, workouts } = rawData
 
       await Promise.all([
-        settings.length > 0 ? db.settings.bulkAdd([...settings]) : Promise.resolve(),
-        customExercises.length > 0
-          ? db.customExercises.bulkAdd([...customExercises])
-          : Promise.resolve(),
-        templates.length > 0 ? db.templates.bulkAdd([...templates]) : Promise.resolve(),
-        workouts.length > 0 ? db.workouts.bulkAdd([...workouts]) : Promise.resolve(),
+        settings.length > 0 ? db.settings.bulkAdd(settings) : Promise.resolve(),
+        customExercises.length > 0 ? db.customExercises.bulkAdd(customExercises) : Promise.resolve(),
+        templates.length > 0 ? db.templates.bulkAdd(templates) : Promise.resolve(),
+        workouts.length > 0 ? db.workouts.bulkAdd(workouts) : Promise.resolve(),
       ])
     },
   )

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
@@ -65,12 +65,10 @@ function openModal(kind: ModalState['kind']) {
   modalState.value = { kind }
 }
 
+const emojiInputRef = useTemplateRef<HTMLInputElement>('emojiInput')
+
 function handleIconClick() {
-  // Trigger emoji picker - on most browsers, we can use a hidden input
-  const emojiInput = document.getElementById('emoji-input')
-  if (emojiInput instanceof HTMLInputElement) {
-    emojiInput.click()
-  }
+  emojiInputRef.value?.click()
 }
 
 function handleEmojiChange(event: Event) {
@@ -165,7 +163,7 @@ async function handleSave() {
     </div>
 
     <!-- Hidden emoji input -->
-    <input id="emoji-input" type="text" class="hidden" @change="handleEmojiChange" />
+    <input ref="emojiInput" type="text" class="hidden" @change="handleEmojiChange" />
 
     <!-- Selection Modals -->
     <ExerciseSelectorDialog

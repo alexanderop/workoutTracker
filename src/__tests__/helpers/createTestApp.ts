@@ -1,4 +1,4 @@
-import type { Router } from 'vue-router'
+import type { RouteLocationRaw, Router } from 'vue-router'
 import { render, screen, waitFor, cleanup as rtlCleanup } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
 import { flushPromises } from '@vue/test-utils'
@@ -32,7 +32,7 @@ type TestApp = {
   findByRole: typeof screen.findByRole
   findByText: typeof screen.findByText
   // Helpers
-  navigateTo: (path: string) => Promise<void>
+  navigateTo: (to: RouteLocationRaw) => Promise<void>
   cleanup: () => void
 }
 
@@ -87,8 +87,8 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   const queue = new QueuePO(context, common)
 
   // Simple navigation helper
-  async function navigateTo(path: string) {
-    await router.push(path)
+  async function navigateTo(to: RouteLocationRaw) {
+    await router.push(to)
   }
 
   function cleanup() {

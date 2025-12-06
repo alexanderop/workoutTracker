@@ -2,6 +2,7 @@ import { waitFor } from '@testing-library/vue'
 import { afterEach, describe, expect, it } from 'vitest'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { i18n } from '@/i18n'
+import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
 import { resetDatabase } from '../setup'
@@ -65,7 +66,7 @@ describe('Localization', () => {
       )
 
       // Navigate to settings page
-      await navigateTo('/settings')
+      await navigateTo({ name: RouteNames.Settings })
 
       // Wait for settings page to load in German
       await waitFor(

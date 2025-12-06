@@ -2,6 +2,7 @@
 import { ArrowRight, Play, Timer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -9,11 +10,11 @@ const { t } = useI18n()
 const router = useRouter()
 
 function startWorkout() {
-  router.push('/workout/active')
+  router.push({ name: RouteNames.ActiveWorkout })
 }
 
 function goToTimers() {
-  router.push('/timers')
+  router.push({ name: RouteNames.Timers })
 }
 </script>
 

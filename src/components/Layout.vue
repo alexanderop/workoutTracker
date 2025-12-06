@@ -3,6 +3,8 @@ import { Activity, Dumbbell, Home, Settings } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { RouteNames } from '@/router'
+import type { RouteName } from '@/router'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -10,19 +12,21 @@ const route = useRoute()
 
 const hideNavigation = computed(() => route.meta.hideNav === true)
 
-const navItems = computed(() => [
-  { path: '/', name: 'Home', icon: Home, label: t('nav.home') },
-  { path: '/workouts', name: 'Workouts', icon: Dumbbell, label: t('nav.workouts') },
-  { path: '/exercises', name: 'Exercises', icon: Activity, label: t('nav.exercises') },
-  { path: '/settings', name: 'Settings', icon: Settings, label: t('nav.settings') },
+const navItems = computed<
+  ReadonlyArray<{ routeName: RouteName; icon: typeof Home; label: string }>
+>(() => [
+  { routeName: RouteNames.Home, icon: Home, label: t('nav.home') },
+  { routeName: RouteNames.Workouts, icon: Dumbbell, label: t('nav.workouts') },
+  { routeName: RouteNames.Exercises, icon: Activity, label: t('nav.exercises') },
+  { routeName: RouteNames.Settings, icon: Settings, label: t('nav.settings') },
 ])
 
 defineSlots<{
   default: () => unknown
 }>()
 
-function isActive(path: string) {
-  return route.path === path
+function isActive(routeName: RouteName) {
+  return route.name === routeName
 }
 </script>
 
@@ -38,14 +42,14 @@ function isActive(path: string) {
       <div class="flex justify-around">
         <button
           v-for="item in navItems"
-          :key="item.path"
+          :key="item.routeName"
           class="flex-1 flex flex-col items-center justify-center py-3 px-2 transition-colors"
           :class="[
-            isActive(item.path)
+            isActive(item.routeName)
               ? 'text-primary border-t-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ]"
-          @click="router.push(item.path)"
+          @click="router.push({ name: item.routeName })"
         >
           <component :is="item.icon" :size="24" class="mb-1" />
           <span class="text-xs font-medium">{{ item.label }}</span>

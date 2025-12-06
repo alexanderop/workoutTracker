@@ -128,6 +128,7 @@ function handleClose() {
 
       <WorkoutExercisePicker
         v-model:open="showExercisePicker"
+        presentation="overlay"
         mode="single"
         @select="handleSelectExercise"
       />

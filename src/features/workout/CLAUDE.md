@@ -12,7 +12,7 @@ This feature handles building and executing workouts. Users construct workouts f
 - `WorkoutBuilderMode` - Block playlist for configuring workout
 - `WorkoutActiveMode` - Immersive execution view
 - `WorkoutAddBlockDialog` - Add strength or timed blocks
-- `WorkoutAddExerciseDialog` - Quick exercise addition
+- `WorkoutExercisePicker` - Unified exercise picker (dialog or overlay modes)
 - `WorkoutCancelDialog` - Confirm workout abandonment
 - `WorkoutFinishDialog` - Complete workout with summary
 - `WorkoutQueueDrawer` - View/manage block queue during execution
@@ -85,7 +85,7 @@ WorkoutView (view)
 │   ├── WorkoutBlockPlaylist
 │   │   └── WorkoutBlockPlaylistItem
 │   ├── WorkoutAddBlockDialog
-│   └── WorkoutAddExerciseDialog
+│   └── WorkoutExercisePicker
 └── WorkoutActiveMode
     ├── WorkoutHeader
     ├── WorkoutActiveStrengthView (for strength blocks)

@@ -3,7 +3,6 @@ import type { PopularExercise } from '@/data/popularExercises'
 import type { Muscle } from '@/types/exercises'
 
 import { computed, ref } from 'vue'
-import { popularExercises } from '@/data/popularExercises'
 import { useExercisesStore } from '@/stores/exercises'
 
 /**
@@ -65,7 +64,7 @@ type UseExerciseSearchReturn = {
 
 /**
  * Composable that provides search functionality for all exercises.
- * Combines popular exercises with custom exercises from the store.
+ * Exercises are loaded from the store (popular exercises are seeded on app init).
  * Returns all exercises sorted alphabetically when searchQuery is empty.
  *
  * @param options.muscleFilter - Optional ref to filter by muscle group
@@ -78,11 +77,7 @@ export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerci
   const searchFields = options?.searchFields ?? ['name']
 
   const allExercises = computed<Array<Exercise>>(() => {
-    const combined: Array<Exercise> = [
-      ...popularExercises,
-      ...exercisesStore.customExercises,
-    ]
-    return combined.sort((a, b) => a.name.localeCompare(b.name))
+    return [...exercisesStore.customExercises].sort((a, b) => a.name.localeCompare(b.name))
   })
 
   const filteredExercises = computed(() => {
