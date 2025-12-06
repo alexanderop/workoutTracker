@@ -1,6 +1,8 @@
-import type { ExportData } from './dataExport'
 import { getDataManagementRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+
+import type { ExportData } from './dataExport'
+import { exportDataSchema } from './validation'
 
 /**
  * Maximum supported export version.
@@ -9,9 +11,17 @@ import { tryCatch } from '@/lib/tryCatch'
 const MAX_SUPPORTED_VERSION = 1
 
 /**
+ * Maximum file size for import (10MB).
+ * Prevents DoS attacks from maliciously large files.
+ */
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
+
+/**
  * Result of parsing an export file.
  */
-type ParseResult = { success: true; data: ExportData } | { success: false; error: string }
+type ParseResult =
+  | { success: true; data: ExportData }
+  | { success: false; error: string; details?: string }
 
 /**
  * Read a File as text.
@@ -33,69 +43,47 @@ async function readFileAsText(file: File): Promise<string> {
 }
 
 /**
- * Type guard to check if value is a record object.
- */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-/**
- * Validate the structure of export data.
+ * Validate the structure of export data using Zod schema.
+ * Uses .strict() mode to reject unknown properties and prevent prototype pollution.
  */
 function validateExportData(data: unknown): ParseResult {
-  if (!isRecord(data)) {
-    return { success: false, error: 'Invalid file format' }
-  }
+  const result = exportDataSchema.safeParse(data)
 
-  // Check version
-  if (typeof data.version !== 'number') {
-    return { success: false, error: 'This file is not a valid workout tracker export' }
-  }
-
-  if (data.version > MAX_SUPPORTED_VERSION) {
+  if (!result.success) {
+    const firstIssue = result.error.issues[0]
+    const path = firstIssue?.path.join('.') ?? 'unknown'
+    const message = firstIssue?.message ?? 'Validation failed'
     return {
       success: false,
-      error: 'This export file is from a newer version and cannot be imported',
+      error: 'validationFailed',
+      details: `Invalid data at "${path}": ${message}`,
     }
   }
 
-  // Check exportedAt
-  if (typeof data.exportedAt !== 'string') {
-    return { success: false, error: 'Export file is corrupted or incomplete' }
+  // Check version after schema validation
+  if (result.data.version > MAX_SUPPORTED_VERSION) {
+    return { success: false, error: 'newerVersion' }
   }
 
-  // Check data object
-  if (!isRecord(data.data)) {
-    return { success: false, error: 'Export file is corrupted or incomplete' }
-  }
-
-  const dataObj = data.data
-
-  // Check required arrays exist
-  const requiredArrays = ['settings', 'customExercises', 'templates', 'workouts'] as const
-  for (const key of requiredArrays) {
-    if (!Array.isArray(dataObj[key])) {
-      return { success: false, error: 'Export file is corrupted or incomplete' }
-    }
-  }
-
-  // At this point we've validated the structure matches ExportData
-  // @ts-expect-error - We've validated the structure but TypeScript can't narrow it
-  return { success: true, data }
+  return { success: true, data: result.data }
 }
 
 /**
  * Parse and validate an export file.
  */
 export async function parseExportFile(file: File): Promise<ParseResult> {
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return { success: false, error: 'fileTooLarge' }
+  }
+
   const [readError, text] = await tryCatch(readFileAsText(file))
   if (readError) {
-    return { success: false, error: 'Failed to read the selected file' }
+    return { success: false, error: 'readFailed' }
   }
 
   const [parseError, parsed] = tryCatch(() => JSON.parse(text))
   if (parseError) {
-    return { success: false, error: 'The selected file is not valid JSON' }
+    return { success: false, error: 'invalidJson' }
   }
 
   return validateExportData(parsed)

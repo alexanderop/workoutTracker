@@ -88,5 +88,12 @@ export default {
       title: 'Export fehlgeschlagen',
       message: 'Ihre Daten konnten nicht exportiert werden. Bitte versuchen Sie es erneut.',
     },
+    fileTooLarge: 'Datei überschreitet die maximale Größe von 10MB',
+    readFailed: 'Die ausgewählte Datei konnte nicht gelesen werden',
+    invalidJson: 'Die ausgewählte Datei ist kein gültiges JSON',
+    invalidFileFormat: 'Ungültiges Dateiformat',
+    notValidExport: 'Diese Datei ist kein gültiger Workout-Tracker-Export',
+    newerVersion: 'Diese Exportdatei stammt aus einer neueren Version und kann nicht importiert werden',
+    corrupted: 'Exportdatei ist beschädigt oder unvollständig',
   },
 } as const
