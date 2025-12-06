@@ -34,41 +34,26 @@ export const useSettingsStore = defineStore('settings', () => {
     isLoaded.value = true
   }
 
-  /**
-   * Set the weight unit preference.
-   */
   async function setWeightUnit(unit: WeightUnit): Promise<void> {
     weightUnit.value = unit
     await getSettingsRepository().set({ key: 'weightUnit', value: unit })
   }
 
-  /**
-   * Set the height unit preference.
-   */
   async function setHeightUnit(unit: HeightUnit): Promise<void> {
     heightUnit.value = unit
     await getSettingsRepository().set({ key: 'heightUnit', value: unit })
   }
 
-  /**
-   * Set the screen wake lock preference.
-   */
   async function setScreenWakeLock(enabled: boolean): Promise<void> {
     screenWakeLock.value = enabled
     await getSettingsRepository().set({ key: 'screenWakeLock', value: enabled })
   }
 
-  /**
-   * Set the language preference.
-   */
   async function setLanguage(lang: Language): Promise<void> {
     language.value = lang
     await getSettingsRepository().set({ key: 'language', value: lang })
   }
 
-  /**
-   * Set the timer sound preference.
-   */
   async function setTimerSoundEnabled(enabled: boolean): Promise<void> {
     timerSoundEnabled.value = enabled
     await getSettingsRepository().set({ key: 'timerSoundEnabled', value: enabled })

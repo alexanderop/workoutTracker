@@ -1,80 +1,34 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
 import { WorkoutExercisePicker } from '@/features/workout'
 import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
-import type { TemplateExercise } from '@/features/templates/components/TemplateExerciseList.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { getTemplatesRepository } from '@/db'
-import { popularExercises } from '@/data/popularExercises'
-import { tryCatch } from '@/lib/tryCatch'
+import { useTemplateCreation } from '@/features/templates/composables/useTemplateCreation'
 
 const router = useRouter()
 const { t } = useI18n()
 
-const templateName = ref('')
-const exercises = ref<ReadonlyArray<TemplateExercise>>([])
-const isAddExerciseOpen = ref(false)
-const isSaving = ref(false)
-
-const isValid = computed(() => templateName.value.trim().length > 0 && exercises.value.length > 0)
-
-function handleAddExercise(exercise: { name: string; icon: string }): void {
-  const popularExercise = popularExercises.find((ex) => ex.name === exercise.name)
-  if (!popularExercise) return
-
-  // Generate unique ID for this exercise in the template
-  const exerciseId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
-
-  const newExercise: TemplateExercise = {
-    exerciseId,
-    name: exercise.name,
-    equipment: popularExercise.equipment,
-    thumbnail: popularExercise.icon,
-    defaultSetCount: 3,
-  }
-
-  exercises.value = [...exercises.value, newExercise]
-}
-
-function handleExercisesUpdate(updated: ReadonlyArray<TemplateExercise>): void {
-  exercises.value = updated
-}
-
-function handleRemoveExercise(exerciseId: string): void {
-  exercises.value = exercises.value.filter((ex) => ex.exerciseId !== exerciseId)
-}
+const {
+  templateName,
+  exercises,
+  isAddExerciseOpen,
+  isSaving,
+  isValid,
+  addExercise,
+  removeExercise,
+  updateExercises,
+  save,
+} = useTemplateCreation()
 
 async function handleSave(): Promise<void> {
-  if (!isValid.value || isSaving.value) return
-
-  isSaving.value = true
-  const [error, template] = await tryCatch(
-    getTemplatesRepository().create({
-      name: templateName.value.trim(),
-      blocks: exercises.value.map((ex) => ({
-        kind: 'strength' as const,
-        exerciseDefinitionId: null,
-        name: ex.name,
-        equipment: ex.equipment,
-        targetReps: 8,
-        thumbnail: ex.thumbnail,
-        defaultSetCount: ex.defaultSetCount,
-      })),
-    }),
-  )
-
-  if (error) {
-    isSaving.value = false
-    return
+  const template = await save()
+  if (template) {
+    await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
   }
-
-  await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
-  isSaving.value = false
 }
 
 function handleCancel(): void {
@@ -108,8 +62,8 @@ function handleCancel(): void {
         <div v-if="exercises.length > 0" class="mb-4 flex-1 overflow-y-auto">
           <TemplateExerciseList
             :exercises="exercises"
-            @update:exercises="handleExercisesUpdate"
-            @remove-exercise="handleRemoveExercise"
+            @update:exercises="updateExercises"
+            @remove-exercise="removeExercise"
           />
         </div>
 
@@ -145,7 +99,7 @@ function handleCancel(): void {
       v-model:open="isAddExerciseOpen"
       presentation="dialog"
       :show-create="true"
-      @select="handleAddExercise"
+      @select="addExercise"
     />
   </PageLayout>
 </template>

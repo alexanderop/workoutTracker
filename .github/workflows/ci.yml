@@ -112,6 +112,17 @@ jobs:
       - name: Find unused code
         run: pnpm knip
 
+  composable-usage:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Check composable usage
+        run: pnpm check:composables
+
   type-check:
     needs: setup
     runs-on: ubuntu-latest

@@ -52,7 +52,6 @@ export function generateId(): string {
 
 /**
  * Delete all data from the database and recreate it.
- * @deprecated Use getDataManagementRepository().deleteAll() instead
  */
 export async function deleteAllData(): Promise<void> {
   await getDataManagementRepository().deleteAll()

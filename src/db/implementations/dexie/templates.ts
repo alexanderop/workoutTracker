@@ -1,16 +1,33 @@
 import type { CreateTemplateData, TemplatesRepository } from '@/db/interfaces'
 import type {
   DbActiveWorkout,
+  DbBlockExercise,
   DbCompletedWorkout,
   DbSet,
   DbStrengthBlock,
   DbTemplateBlock,
+  DbTemplateBlockExercise,
   DbTemplateStrengthBlock,
   DbWorkoutBlock,
   DbWorkoutTemplate,
 } from '@/db/schema'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
+
+/**
+ * Transform template exercises to workout block exercises with generated IDs.
+ */
+function templateExercisesToWorkoutExercises(
+  exercises: ReadonlyArray<Readonly<DbTemplateBlockExercise>>,
+): Array<DbBlockExercise> {
+  return exercises.map((ex) => ({
+    id: generateId(),
+    name: ex.name,
+    prescribedReps: ex.prescribedReps,
+    load: ex.load,
+    thumbnail: ex.thumbnail,
+  }))
+}
 
 /**
  * Convert a workout block to a template block.
@@ -123,13 +140,7 @@ function templateBlockToWorkoutBlock(
         kind: 'emom',
         id: generateId(),
         config: templateBlock.config,
-        exercises: templateBlock.exercises.map((ex) => ({
-          id: generateId(),
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
         result: null,
         orderIndex,
       }
@@ -138,13 +149,7 @@ function templateBlockToWorkoutBlock(
         kind: 'amrap',
         id: generateId(),
         config: templateBlock.config,
-        exercises: templateBlock.exercises.map((ex) => ({
-          id: generateId(),
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
         result: null,
         orderIndex,
       }
@@ -168,13 +173,7 @@ function templateBlockToWorkoutBlock(
         kind: 'fortime',
         id: generateId(),
         config: templateBlock.config,
-        exercises: templateBlock.exercises.map((ex) => ({
-          id: generateId(),
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
         result: null,
         orderIndex,
       }

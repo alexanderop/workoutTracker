@@ -25,6 +25,7 @@
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
     "knip": "knip",
+    "check:composables": "bash scripts/check-composable-usage.sh",
     "lhci": "lhci autorun",
     "format": "prettier --write src/",
     "prepare": "husky"

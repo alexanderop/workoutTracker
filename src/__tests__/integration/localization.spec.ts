@@ -36,32 +36,18 @@ describe('Localization', () => {
   })
 
   describe('Language Switching', () => {
-    it('displays English translations when switching from German to English', async () => {
-      // Create app first (initializes Pinia)
-      const { queryByText, queryByRole, getByRole, navigateTo, cleanup } = await createTestApp()
+    it('displays English translations when switching from German to English via UI', async () => {
+      const { user, navigateTo, queryByText, queryByRole, getByRole, findByText, cleanup } =
+        await createTestApp()
 
-      // Clear preloaded English messages to expose the bug
-      // The createTestApp helper preloads English at line 73, which masks the bug
-      // @ts-expect-error Intentionally passing empty object to test error handling
-      i18n.global.setLocaleMessage('en', {})
-
-      // Set German as the language and load German messages
+      // Set German as the starting language
       const settingsStore = useSettingsStore()
       settingsStore.setLanguage('de')
-
-      // Wait for German to load
-      await waitFor(
-        () => {
-          const germanText = queryByText(/neues workout/i) // Home page in German
-          expect(germanText).toBeTruthy()
-        },
-        { timeout: 3000 },
-      )
 
       // Navigate to settings page
       await navigateTo({ name: RouteNames.Settings })
 
-      // Wait for settings page to load in German
+      // Wait for settings page to render in German
       await waitFor(
         () => {
           const heading = queryByRole('heading', { name: /einstellungen/i })
@@ -74,32 +60,29 @@ describe('Localization', () => {
       // Verify German labels display
       expect(queryByText(/gewicht/i)).toBeTruthy() // "Gewicht" = Weight in German
 
-      // Switch to English programmatically (simulates user selecting English)
-      // This triggers useLanguage composable which calls loadLocale('en')
-      settingsStore.setLanguage('en')
+      // Open the language select dropdown (aria-label is "Sprache" in German)
+      const languageSelect = getByRole('combobox', { name: /sprache/i })
+      await user.click(languageSelect)
 
-      // Wait for language change attempt to complete
-      // BUG: The loadLocale function sees 'en' in availableLocales and returns early
-      // without loading messages, causing raw keys to display instead of English text
+      // Select English from the dropdown options
+      const englishOption = await findByText('English')
+      await user.click(englishOption)
+
+      // Wait for UI to update to English
       await waitFor(
         () => {
-          // The page should update, but with raw translation keys due to the bug
           const heading = queryByRole('heading', { level: 1 })
-          expect(heading?.textContent).not.toBe('Einstellungen') // Should change from German
+          expect(heading?.textContent).toBe('Settings')
         },
         { timeout: 3000 },
       )
 
-      // Assert English text displays correctly (THIS WILL FAIL due to the bug)
+      // Verify English labels display correctly
       const settingsHeading = getByRole('heading', { level: 1 })
+      expect(settingsHeading.textContent).toBe('Settings')
 
-      // The bug causes raw keys to display instead of English text
-      // We expect "Settings" but will get "settings.title"
-      expect(settingsHeading.textContent).toBe('Settings') // FAILS - actual: 'settings.title'
-
-      // Verify English labels display not raw keys
-      const weightHeading = queryByText(/^weight$/i)
-      expect(weightHeading).toBeTruthy() // FAILS - will be 'settings.labels.weight'
+      const weightLabel = queryByText(/^weight$/i)
+      expect(weightLabel).toBeTruthy()
 
       cleanup()
     })

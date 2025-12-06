@@ -147,6 +147,25 @@ function dbToForTimeResult(dbResult: Readonly<DbForTimeResult>): ForTimeResult {
 }
 
 // ============================================
+// Block Converter Registry Types
+// ============================================
+
+type BlockConverterPair<K extends WorkoutBlock['kind']> = {
+  toDb: (
+    block: Readonly<Extract<WorkoutBlock, { kind: K }>>,
+    orderIndex: number,
+  ) => Extract<DbWorkoutBlock, { kind: K }>
+  fromDb: (
+    dbBlock: Readonly<Extract<DbWorkoutBlock, { kind: K }>>,
+    index: number,
+  ) => Extract<WorkoutBlock, { kind: K }>
+}
+
+type BlockConverterRegistry = {
+  [K in WorkoutBlock['kind']]: BlockConverterPair<K>
+}
+
+// ============================================
 // Block Converters
 // ============================================
 
@@ -283,8 +302,28 @@ function dbToForTimeBlock(dbBlock: Readonly<DbForTimeBlock>, index: number): For
   }
 }
 
+// ============================================
+// Block Converter Registry (compile-time exhaustiveness check)
+// ============================================
+
+/**
+ * Registry mapping block kinds to their conversion functions.
+ * TypeScript enforces that all block kinds are covered at compile time.
+ */
+const BLOCK_CONVERTERS: BlockConverterRegistry = {
+  strength: { toDb: strengthBlockToDb, fromDb: dbToStrengthBlock },
+  amrap: { toDb: amrapBlockToDb, fromDb: dbToAmrapBlock },
+  emom: { toDb: emomBlockToDb, fromDb: dbToEmomBlock },
+  tabata: { toDb: tabataBlockToDb, fromDb: dbToTabataBlock },
+  fortime: { toDb: forTimeBlockToDb, fromDb: dbToForTimeBlock },
+}
+
+// Ensure registry covers all kinds (unused at runtime, enforced at compile time)
+void BLOCK_CONVERTERS
+
 /**
  * Convert in-memory block to database format.
+ * Uses switch for proper TypeScript type narrowing.
  */
 function blockToDb(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkoutBlock {
   switch (block.kind) {
@@ -303,6 +342,7 @@ function blockToDb(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkout
 
 /**
  * Convert database block to in-memory format.
+ * Uses switch for proper TypeScript type narrowing.
  */
 function dbToBlock(dbBlock: Readonly<DbWorkoutBlock>, index: number): WorkoutBlock {
   switch (dbBlock.kind) {

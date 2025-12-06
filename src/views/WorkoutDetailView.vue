@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
 import WorkoutDetailStatsRow from '@/features/workout/components/WorkoutDetailStatsRow.vue'
+import TimedBlockCard from '@/features/workout/components/TimedBlockCard.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
@@ -71,30 +72,12 @@ async function handleRedoWorkout() {
             :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
             :style="{ animationDelay: `${150 + index * 50}ms` }"
           />
-          <!-- Timed blocks show as simple cards for now -->
-          <div
+          <TimedBlockCard
             v-else
-            class="rounded-lg border bg-card p-4"
+            :block="block"
             :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
             :style="{ animationDelay: `${150 + index * 50}ms` }"
-          >
-            <div class="font-semibold uppercase">{{ block.kind }}</div>
-            <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
-              <template v-if="block.kind === 'amrap'">
-                {{ block.result.rounds }} {{ t('workouts.detail.rounds') }}
-              </template>
-              <template v-else-if="block.kind === 'fortime'">
-                {{
-                  block.result.completed
-                    ? t('workouts.detail.completed')
-                    : t('workouts.detail.capped')
-                }}
-              </template>
-              <template v-else-if="block.kind === 'emom'">
-                {{ block.result.completedMinutes }} {{ t('workouts.detail.minutesCompleted') }}
-              </template>
-            </div>
-          </div>
+          />
         </template>
       </div>
 
