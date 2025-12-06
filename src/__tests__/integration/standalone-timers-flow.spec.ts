@@ -251,4 +251,69 @@ describe('Standalone Timers Flow', () => {
 
     testApp.cleanup()
   })
+
+  describe('PageLayout header visibility', () => {
+    it('shows page header with timer type on preset selection screen', async () => {
+      const testApp = await createTestApp()
+      await goToTimersPage(testApp)
+
+      // Select AMRAP timer type
+      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+
+      // Wait for preset screen
+      await waitFor(() => {
+        expect(testApp.queryByText('5 min')).toBeTruthy()
+      })
+
+      // Verify PageLayout header shows timer type as a heading
+      // PageLayout renders title as an h1 heading element
+      expect(testApp.queryByRole('heading', { name: /AMRAP/i, level: 1 })).toBeTruthy()
+
+      testApp.cleanup()
+    })
+
+    it('shows page header with timer type on running timer screen', async () => {
+      const testApp = await createTestApp()
+      await goToTimersPage(testApp)
+
+      // Select AMRAP and start timer
+      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+      await waitFor(() => {
+        expect(testApp.queryByText('5 min')).toBeTruthy()
+      })
+      await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+
+      // Wait for timer UI
+      await waitFor(() => {
+        expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+      })
+
+      // Verify PageLayout header shows timer type as a heading
+      expect(testApp.queryByRole('heading', { name: /AMRAP/i, level: 1 })).toBeTruthy()
+
+      testApp.cleanup()
+    })
+
+    it('shows page header with timer type on running EMOM timer screen', async () => {
+      const testApp = await createTestApp()
+      await goToTimersPage(testApp)
+
+      // Select EMOM and start timer
+      await testApp.user.click(screen.getByRole('button', { name: /EMOM/i }))
+      await waitFor(() => {
+        expect(testApp.queryByText('10 min')).toBeTruthy()
+      })
+      await testApp.user.click(screen.getByRole('button', { name: /Quick session/i }))
+
+      // Wait for timer UI
+      await waitFor(() => {
+        expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+      })
+
+      // Verify PageLayout header shows timer type as a heading
+      expect(testApp.queryByRole('heading', { name: /EMOM/i, level: 1 })).toBeTruthy()
+
+      testApp.cleanup()
+    })
+  })
 })

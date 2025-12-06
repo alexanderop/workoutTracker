@@ -56,7 +56,10 @@ describe('Workout Management', () => {
       // Set duration to 8 minutes and add exercise
       await user.click(common.getDialogButton('8'))
       await user.click(common.getDialogButton('Add Exercise'))
-      await user.click(common.getDialogButton('Push-ups'))
+
+      // Use selectExercise helper to search and select (only 10 shown by default)
+      await common.selectExercise('Push-ups')
+
       await user.click(common.getDialogButton('Add Block'))
 
       // Wait for dialog to close

@@ -3,6 +3,7 @@ import { ref, computed, useTemplateRef } from 'vue'
 import { Pause, Play, RotateCcw, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import PageLayout from '@/components/PageLayout.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
 import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
@@ -35,6 +36,7 @@ const timerRef = useTemplateRef<TimerViewExposed>('timer')
 const isComplete = ref(false)
 
 const colors = computed(() => BLOCK_COLORS[block.kind])
+const timerLabel = computed(() => t(`timers.types.${block.kind}`))
 
 const isRunning = computed(() => timerRef.value?.isRunning.value ?? false)
 
@@ -58,7 +60,7 @@ function handleExit() {
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-background">
+  <PageLayout :title="timerLabel" prevent-navigation @back="handleExit">
     <!-- Timer Content -->
     <div class="flex-1 flex flex-col">
       <WorkoutAmrapView
@@ -87,8 +89,7 @@ function handleExit() {
       />
     </div>
 
-    <!-- Controls -->
-    <div class="p-4 border-t bg-background/95 backdrop-blur">
+    <template #footer>
       <div v-if="!isComplete" class="flex items-center justify-center gap-4">
         <Button
           variant="outline"
@@ -132,6 +133,6 @@ function handleExit() {
           <Button @click="handleExit">{{ t('timers.runner.done') }}</Button>
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </PageLayout>
 </template>

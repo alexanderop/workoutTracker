@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ChevronLeft } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+
+const { t } = useI18n()
 
 const {
   title,
@@ -41,7 +44,13 @@ function handleBack() {
     class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
   >
     <div class="flex items-center gap-3 px-4 py-3">
-      <Button variant="ghost" size="icon" class="shrink-0" @click="handleBack">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="shrink-0"
+        :aria-label="t('common.aria.goBack')"
+        @click="handleBack"
+      >
         <ChevronLeft class="h-5 w-5" />
       </Button>
       <div class="min-w-0 flex-1">

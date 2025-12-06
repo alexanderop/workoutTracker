@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ArrowLeft } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
+import PageLayout from '@/components/PageLayout.vue'
 import TimerPresetList from './TimerPresetList.vue'
 import TimerCustomForm from './TimerCustomForm.vue'
 import { BLOCK_COLORS } from '@/types/blocks'
@@ -217,22 +216,8 @@ function handleCustomSubmit(config: Record<string, number | boolean | null>) {
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
-    <!-- Header -->
-    <div class="p-4 border-b flex items-center gap-3">
-      <Button
-        variant="ghost"
-        size="icon"
-        :aria-label="t('common.aria.goBack')"
-        @click="emit('back')"
-      >
-        <ArrowLeft class="w-5 h-5" />
-      </Button>
-      <h1 class="text-lg font-semibold">{{ timerLabel }}</h1>
-    </div>
-
-    <!-- Content -->
-    <div class="flex-1 p-4 overflow-y-auto">
+  <PageLayout :title="timerLabel" prevent-navigation @back="emit('back')">
+    <div class="p-4">
       <TimerPresetList
         v-if="!showCustom"
         :presets="presets"
@@ -249,5 +234,5 @@ function handleCustomSubmit(config: Record<string, number | boolean | null>) {
         @submit="handleCustomSubmit"
       />
     </div>
-  </div>
+  </PageLayout>
 </template>

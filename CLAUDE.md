@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+- always do TDD when implementing a new feature 
+- only write integration tests 
 
 ## Quick Commands
 
