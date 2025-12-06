@@ -14,6 +14,7 @@ import { templatesRepository } from '@/db/repositories/templates'
 import { formatDuration, formatWeight } from '@/lib/formatters'
 import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import { useSettingsStore } from '@/stores/settings'
+import { tryCatch } from '@/lib/tryCatch'
 
 const { t } = useI18n()
 
@@ -70,12 +71,9 @@ async function handleSaveAsTemplate(name: string): Promise<void> {
   if (state.value.status !== 'success' || isSavingTemplate.value) return
 
   isSavingTemplate.value = true
-  try {
-    await templatesRepository.createFromCompletedWorkout(state.value.workout, name)
-    showSaveTemplateDialog.value = false
-  } finally {
-    isSavingTemplate.value = false
-  }
+  await tryCatch(templatesRepository.createFromCompletedWorkout(state.value.workout, name))
+  showSaveTemplateDialog.value = false
+  isSavingTemplate.value = false
 }
 
 function handleDone() {

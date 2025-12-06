@@ -108,6 +108,10 @@ export default {
   redo: {
     button: 'Redo Workout',
     starting: 'Starting...',
+    error: {
+      title: 'Unable to Start Workout',
+      message: 'Something went wrong. Please try again.',
+    },
   },
   table: {
     headers: {

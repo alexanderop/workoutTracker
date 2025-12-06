@@ -28,7 +28,7 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await builder.startWorkout()
       await waitFor(() => {
@@ -52,10 +52,10 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Squat'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await builder.startWorkout()
       await waitFor(() => {
@@ -93,10 +93,10 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Squat'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await builder.startWorkout()
       await waitFor(() => {
@@ -131,7 +131,7 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await builder.startWorkout()
       await waitFor(() => {
@@ -143,9 +143,13 @@ describe('Workout Queue', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '80')
-      await user.type(repsInput, '10')
-      await user.type(rirInput, '2')
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '80', reps: '10', rir: '2' },
+        completeButton,
+      )
 
       // Complete all 3 sets (values are pre-filled after first)
       for (let i = 0; i < 3; i++) {
@@ -200,7 +204,7 @@ describe('Workout Queue', () => {
 
       // Select an exercise
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Verify 2 blocks now (check the header text)
       await waitFor(() => {
@@ -232,7 +236,7 @@ describe('Workout Queue', () => {
       await common.selectExercise('Push-ups')
       await user.click(common.getDialogButton('Add Block'))
 
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await builder.startWorkout()
       await waitFor(() => {

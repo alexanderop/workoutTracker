@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
 import WorkoutDetailStatsRow from '@/features/workout/components/WorkoutDetailStatsRow.vue'
+import SettingsImportErrorDialog from '@/features/settings/components/SettingsImportErrorDialog.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
 import { workoutsRepository } from '@/db/repositories/workouts'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
+import { tryCatch } from '@/lib/tryCatch'
 
 const { t } = useI18n()
 
@@ -24,19 +26,19 @@ const { isVisible: showContent } = useEnterAnimation(100)
 const { resumeWorkout } = useAppInitialization()
 
 const isRedoing = ref(false)
+const showRedoError = ref(false)
 
 async function handleRedoWorkout() {
   if (isRedoing.value) return
 
   isRedoing.value = true
-  try {
-    await workoutsRepository.startFromCompleted(id)
-    await resumeWorkout()
-  } catch (error) {
-    // Log error and reset loading state
-    console.error('Failed to redo workout:', error)
+  const [error] = await tryCatch(workoutsRepository.startFromCompleted(id))
+  if (error) {
+    showRedoError.value = true
     isRedoing.value = false
+    return
   }
+  await resumeWorkout()
 }
 </script>
 
@@ -136,5 +138,11 @@ async function handleRedoWorkout() {
         </Button>
       </div>
     </template>
+
+    <SettingsImportErrorDialog
+      v-model:open="showRedoError"
+      :error="t('workouts.redo.error.message')"
+      :title="t('workouts.redo.error.title')"
+    />
   </PageLayout>
 </template>

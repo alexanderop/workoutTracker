@@ -7,6 +7,7 @@ import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
 import { getWorkoutRef, restoreWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { tryCatch } from '@/lib/tryCatch'
 
 /**
  * App initialization state using discriminated union.
@@ -45,32 +46,33 @@ export function useAppInitialization() {
     // Only allow initialization from loading state (prevents re-entry)
     if (initState.value.status !== 'loading') return
 
-    try {
-      // Seed popular exercises first (idempotent)
-      await seedPopularExercises()
+    const [error] = await tryCatch(
+      (async () => {
+        // Seed popular exercises first (idempotent)
+        await seedPopularExercises()
 
-      // Load settings and custom exercises from DB in parallel
-      await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])
+        // Load settings and custom exercises from DB in parallel
+        await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])
 
-      // Check for active workout
-      const activeWorkout = await activeWorkoutRepository.get()
+        // Check for active workout
+        const activeWorkout = await activeWorkoutRepository.get()
 
-      if (activeWorkout && activeWorkout.blocks.length > 0) {
-        // Prompt user to resume
-        initState.value = {
-          status: 'prompt-resume',
-          workoutName: activeWorkout.name,
-          blockCount: activeWorkout.blocks.length,
+        if (activeWorkout && activeWorkout.blocks.length > 0) {
+          // Prompt user to resume
+          initState.value = {
+            status: 'prompt-resume',
+            workoutName: activeWorkout.name,
+            blockCount: activeWorkout.blocks.length,
+          }
+          return
         }
-        return
-      }
 
-      initState.value = { status: 'ready' }
-    } catch (error) {
-      initState.value = {
-        status: 'error',
-        error: error instanceof Error ? error : new Error('Initialization failed'),
-      }
+        initState.value = { status: 'ready' }
+      })(),
+    )
+
+    if (error) {
+      initState.value = { status: 'error', error }
     }
   }
 
@@ -85,13 +87,8 @@ export function useAppInitialization() {
     }
     initState.value = { status: 'ready' }
 
-    // Navigate to active workout with error handling
-    try {
-      await router.push({ name: RouteNames.ActiveWorkout })
-    } catch (error) {
-      // Navigation failures are typically user-initiated (e.g., back button)
-      console.warn('Navigation to active workout failed:', error)
-    }
+    // Navigate to active workout - failures are typically user-initiated (e.g., back button)
+    await tryCatch(router.push({ name: RouteNames.ActiveWorkout }))
   }
 
   /**

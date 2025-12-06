@@ -92,12 +92,14 @@ describe('Unit Display', () => {
     const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
     const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
     const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-    await user.type(weightInput, '220')
-    await user.type(repsInput, '8')
-    await user.type(rirInput, '2')
-
-    // Complete the set
-    await user.click(getByRole('button', { name: /complete set/i }))
+    // Fill inputs and wait for button (handles jsdom vs browser differences)
+    const completeButton = getByRole('button', { name: /complete set/i })
+    await common.fillStrengthSetAndWaitForButton(
+      { weight: weightInput, reps: repsInput, rir: rirInput },
+      { weight: '220', reps: '8', rir: '2' },
+      completeButton,
+    )
+    await user.click(completeButton)
 
     // Verify we advanced to set 2
     await waitFor(() => {

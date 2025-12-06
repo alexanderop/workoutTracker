@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { flushPromises } from '@vue/test-utils'
 import type { TestContext } from '../types'
 
 /**
@@ -14,6 +15,28 @@ export class CommonPO {
    */
   async waitForDialog(): Promise<HTMLElement> {
     return await waitFor(() => screen.getByRole('dialog'))
+  }
+
+  /**
+   * Waits for a dialog to fully close, including overlay and animations.
+   * In browser mode, dialogs use CSS animations that can block pointer events.
+   * This method waits for both the dialog element AND overlay to be removed.
+   */
+  async waitForDialogClose(): Promise<void> {
+    await waitFor(() => {
+      // Check that dialog role element is gone
+      const dialog = screen.queryByRole('dialog')
+      if (dialog) {
+        throw new Error('Dialog still open')
+      }
+      // Check that dialog overlay is gone (fixed overlay with z-50)
+      const overlay = document.querySelector('[data-slot="dialog-overlay"]')
+      if (overlay) {
+        throw new Error('Dialog overlay still present')
+      }
+    })
+    // Flush any pending Vue updates after dialog unmount
+    await flushPromises()
   }
 
   /**
@@ -100,5 +123,72 @@ export class CommonPO {
     const workoutsNavButton = screen.getByRole('button', { name: /workouts/i })
     await this.ctx.user.click(workoutsNavButton)
     await this.waitForRoute(/^\/workouts$/)
+  }
+
+  /**
+   * Detects if we're running in jsdom vs a real browser.
+   * jsdom includes 'jsdom' in the userAgent string.
+   */
+  isJsdomMode(): boolean {
+    return navigator.userAgent.toLowerCase().includes('jsdom')
+  }
+
+  /**
+   * Sets the value of an input element directly and dispatches events.
+   * Use in browser mode where user.type() doesn't work reliably with NumberField.
+   * @param input - The input element (from getByRole or similar query)
+   * @param value - The value to set
+   */
+  private setInputValueDirectly(input: Element, value: string): void {
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error('Expected HTMLInputElement')
+    }
+    input.focus()
+    // Use native setter to trigger React/Vue internals properly
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    )?.set
+    const setterFn = nativeInputValueSetter ?? ((v: string) => { input.value = v })
+    setterFn.call(input, value)
+    // Dispatch input and change events to trigger Vue reactivity
+    input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }))
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+    input.blur()
+  }
+
+  /**
+   * Fills strength set inputs (weight, reps, rir) and waits for button to be enabled.
+   * Handles both jsdom and browser mode differences:
+   * - jsdom: uses user.type() and skips button enable wait (jsdom doesn't enforce CSS disabled)
+   * - browser: uses direct DOM manipulation and waits for button to enable
+   * @param inputs - Object with weightInput, repsInput, rirInput elements
+   * @param values - Object with weight, reps, rir values as strings
+   * @param completeButton - The Complete Set button element to wait for
+   */
+  async fillStrengthSetAndWaitForButton(
+    inputs: { weight: Element; reps: Element; rir: Element },
+    values: { weight: string; reps: string; rir: string },
+    completeButton: Element,
+  ): Promise<void> {
+    if (this.isJsdomMode()) {
+      // jsdom mode: use user.type() - it triggers Vue reactivity properly
+      await this.ctx.user.type(inputs.weight, values.weight)
+      await this.ctx.user.type(inputs.reps, values.reps)
+      await this.ctx.user.type(inputs.rir, values.rir)
+      // Skip button wait - jsdom doesn't enforce CSS disabled state
+      return
+    }
+
+    // Browser mode: direct DOM manipulation + wait for button
+    this.setInputValueDirectly(inputs.weight, values.weight)
+    this.setInputValueDirectly(inputs.reps, values.reps)
+    this.setInputValueDirectly(inputs.rir, values.rir)
+    await flushPromises()
+    await waitFor(() => {
+      if (completeButton.hasAttribute('disabled')) {
+        throw new Error('Button still disabled')
+      }
+    })
   }
 }

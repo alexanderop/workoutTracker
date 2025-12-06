@@ -6,8 +6,9 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const { error } = defineProps<{
+const { error, title } = defineProps<{
   error: string
+  title?: string
 }>()
 
 const open = defineModel<boolean>('open', { required: true })
@@ -23,7 +24,7 @@ function handleClose() {
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <AlertCircle class="h-5 w-5 text-destructive" />
-          {{ t('settings.dialogs.importError.title') }}
+          {{ title ?? t('settings.dialogs.importError.title') }}
         </DialogTitle>
         <DialogDescription>
           {{ error }}

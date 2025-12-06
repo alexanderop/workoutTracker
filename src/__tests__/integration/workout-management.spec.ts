@@ -31,11 +31,7 @@ describe('Workout Management', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
-
-      // Wait for dialog to close
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await common.waitForDialogClose()
 
       // Add AMRAP block with exercise
       await user.click(getByRole('button', { name: /add block/i }))
@@ -61,11 +57,7 @@ describe('Workout Management', () => {
       await common.selectExercise('Push-ups')
 
       await user.click(common.getDialogButton('Add Block'))
-
-      // Wait for dialog to close
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await common.waitForDialogClose()
 
       // Verify both blocks exist and start workout
       const playlistButtons = builder.getPlaylistBlockButtons()
@@ -86,11 +78,14 @@ describe('Workout Management', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '80')
-      await user.type(repsInput, '10')
-      await user.type(rirInput, '2')
-
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '80', reps: '10', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Verify advanced to set 2/3
       expect(getByText('2/3')).toBeTruthy()
@@ -148,12 +143,12 @@ describe('Workout Management', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       await user.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Deadlift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Start workout
       await builder.startWorkout()
@@ -230,10 +225,14 @@ describe('Workout Management', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '100')
-      await user.type(repsInput, '8')
-      await user.type(rirInput, '2')
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '100', reps: '8', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Go back to builder mode - find back button by chevron icon
       const backButton = document.querySelector('header button')
@@ -281,10 +280,15 @@ describe('Workout Management', () => {
       const weightInput = screen.getByRole('spinbutton', { name: /weight/i })
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
-      await user.type(weightInput, '100')
-      await user.type(repsInput, '8')
-      await user.type(rirInput, '2')
-      await user.click(getByRole('button', { name: /complete set/i }))
+
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '100', reps: '8', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Go back to builder mode - find back button in header
       const backButton = document.querySelector('header button')
@@ -357,7 +361,7 @@ describe('Workout Management', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Start workout
       await builder.startWorkout()

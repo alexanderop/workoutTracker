@@ -1,5 +1,6 @@
 import type { ExportData } from './dataExport'
 import { db } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 
 /**
  * Maximum supported export version.
@@ -87,17 +88,13 @@ function validateExportData(data: unknown): ParseResult {
  * Parse and validate an export file.
  */
 export async function parseExportFile(file: File): Promise<ParseResult> {
-  let text: string
-  try {
-    text = await readFileAsText(file)
-  } catch {
+  const [readError, text] = await tryCatch(readFileAsText(file))
+  if (readError) {
     return { success: false, error: 'Failed to read the selected file' }
   }
 
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(text)
-  } catch {
+  const [parseError, parsed] = tryCatch(() => JSON.parse(text))
+  if (parseError) {
     return { success: false, error: 'The selected file is not valid JSON' }
   }
 

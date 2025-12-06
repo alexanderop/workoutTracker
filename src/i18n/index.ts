@@ -1,5 +1,6 @@
 import { createI18n, type I18n } from 'vue-i18n'
 import en from './messages/en'
+import { tryCatch } from '@/lib/tryCatch'
 import type { MessageSchema, SupportedLocale } from './types'
 // Import types.ts to activate the declare module augmentation
 import './types'
@@ -59,10 +60,10 @@ export async function loadLocale(locale: SupportedLocale): Promise<void> {
   })()
 
   loadingLocales.set(locale, loadPromise)
-  try {
-    await loadPromise
-  } finally {
-    loadingLocales.delete(locale)
-  }
+  const [error] = await tryCatch(loadPromise)
+  loadingLocales.delete(locale)
+
+  if (error) return
+
   i18n.global.locale.value = locale
 }

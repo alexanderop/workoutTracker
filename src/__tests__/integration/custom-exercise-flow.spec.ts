@@ -200,7 +200,7 @@ describe('Custom Exercise Flow', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('My Custom Lift'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // ========================================
       // PHASE 4: Start workout and complete a set
@@ -215,10 +215,14 @@ describe('Custom Exercise Flow', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '60')
-      await user.type(repsInput, '12')
-      await user.type(rirInput, '3')
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '60', reps: '12', rir: '3' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // ========================================
       // PHASE 5: Finish workout

@@ -84,5 +84,9 @@ export default {
   },
   errors: {
     importFailed: 'Fehler beim Importieren Ihrer Daten. Bitte versuchen Sie es erneut.',
+    exportFailed: {
+      title: 'Export fehlgeschlagen',
+      message: 'Ihre Daten konnten nicht exportiert werden. Bitte versuchen Sie es erneut.',
+    },
   },
 } as const

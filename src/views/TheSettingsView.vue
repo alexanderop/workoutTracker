@@ -32,6 +32,7 @@ import { useI18n } from 'vue-i18n'
 import { deleteAllData } from '@/db'
 import { exportAllData, type ExportData } from '@/features/settings/utils/dataExport'
 import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
+import { tryCatch } from '@/lib/tryCatch'
 import SettingsDeleteAllDataDialog from '@/features/settings/components/SettingsDeleteAllDataDialog.vue'
 import SettingsImportDataDialog from '@/features/settings/components/SettingsImportDataDialog.vue'
 import SettingsImportErrorDialog from '@/features/settings/components/SettingsImportErrorDialog.vue'
@@ -56,13 +57,15 @@ async function handleDeleteAllData() {
   window.location.reload()
 }
 
+const showExportError = ref(false)
+
 async function handleExport() {
   isExporting.value = true
-  try {
-    await exportAllData()
-  } finally {
-    isExporting.value = false
+  const [error] = await tryCatch(exportAllData())
+  if (error) {
+    showExportError.value = true
   }
+  isExporting.value = false
 }
 
 function handleImportClick() {
@@ -96,15 +99,16 @@ async function handleImportConfirm() {
   if (!importData.value) return
 
   isImporting.value = true
-  try {
-    await importAllData(importData.value)
-    window.location.reload()
-  } catch {
+  const [error] = await tryCatch(importAllData(importData.value))
+  isImporting.value = false
+
+  if (error) {
     importError.value = t('settings.errors.importFailed')
     showImportErrorDialog.value = true
-  } finally {
-    isImporting.value = false
+    return
   }
+
+  window.location.reload()
 }
 
 function handleWeightUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
@@ -418,5 +422,10 @@ function handleLanguageChange(value: AcceptableValue) {
       @confirm="handleImportConfirm"
     />
     <SettingsImportErrorDialog v-model:open="showImportErrorDialog" :error="importError" />
+    <SettingsImportErrorDialog
+      v-model:open="showExportError"
+      :error="t('settings.errors.exportFailed.message')"
+      :title="t('settings.errors.exportFailed.title')"
+    />
   </div>
 </template>

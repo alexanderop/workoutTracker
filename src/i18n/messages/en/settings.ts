@@ -82,5 +82,9 @@ export default {
   },
   errors: {
     importFailed: 'Failed to import your data. Please try again.',
+    exportFailed: {
+      title: 'Export Failed',
+      message: 'Unable to export your data. Please try again.',
+    },
   },
 } as const

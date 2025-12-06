@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { workoutsRepository } from '@/db/repositories/workouts'
+import { tryCatch } from '@/lib/tryCatch'
 import type { DbCompletedWorkout, DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/db/schema'
 import { isDbStrengthBlock } from '@/db/schema'
 
@@ -123,19 +124,19 @@ export function useWorkoutDetail(workoutId: string) {
   // Methods
   async function loadWorkout() {
     state.value = { status: 'loading' }
-    try {
-      const workout = await workoutsRepository.getById(workoutId)
-      if (!workout) {
-        state.value = { status: 'not-found' }
-        return
-      }
-      state.value = { status: 'success', workout }
-    } catch (error) {
-      state.value = {
-        status: 'error',
-        error: error instanceof Error ? error : new Error(String(error)),
-      }
+    const [error, workout] = await tryCatch(workoutsRepository.getById(workoutId))
+
+    if (error) {
+      state.value = { status: 'error', error }
+      return
     }
+
+    if (!workout) {
+      state.value = { status: 'not-found' }
+      return
+    }
+
+    state.value = { status: 'success', workout }
   }
 
   // Lifecycle Hooks

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { useScreenWakeLock } from '@/composables/useScreenWakeLock'
+import { tryCatch } from '@/lib/tryCatch'
 import { withSetup } from '../helpers/withSetup'
 import { resetDatabase } from './setup'
 
@@ -46,13 +47,10 @@ describe('useScreenWakeLock - browser mode', () => {
       }
 
       // In headless mode, may fail due to permissions
-      try {
-        await result.acquireNative()
-        expect(result.nativeIsActive.value).toBe(true)
-      } catch {
-        // Expected in headless browser without user interaction
-        expect(result.nativeIsActive.value).toBe(false)
-      }
+      const [error] = await tryCatch(result.acquireNative())
+      // Expected: either succeeds (nativeIsActive=true) or fails in headless (nativeIsActive=false)
+      const expectedActive = error ? false : true
+      expect(result.nativeIsActive.value).toBe(expectedActive)
     })
 
     it('releases wake lock successfully', async () => {
@@ -63,12 +61,8 @@ describe('useScreenWakeLock - browser mode', () => {
         return
       }
 
-      // Try to acquire, but may fail in headless mode
-      try {
-        await result.acquireNative()
-      } catch {
-        // Expected in headless browser
-      }
+      // Try to acquire, but may fail in headless mode (expected behavior)
+      await tryCatch(result.acquireNative())
 
       // Release should work regardless
       result.releaseNative()

@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto'
+import '@/style.css'
 
 /**
  * Browser mode setup - no mocks needed since real browser APIs are available.

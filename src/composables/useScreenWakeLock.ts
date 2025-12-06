@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useDocumentVisibility, useWakeLock } from '@vueuse/core'
+import { tryCatch } from '@/lib/tryCatch'
 
 // Minimal silent MP4 video (base64) - loops to keep screen awake on iOS/fallback browsers
 const SILENT_VIDEO_BASE64 =
@@ -77,11 +78,10 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
   async function acquireNative(): Promise<void> {
     if (!nativeIsSupported.value) return
-    try {
-      await request('screen')
-    } catch (err) {
-      console.warn('[WakeLock] Native API failed:', err)
-      throw err
+    const [error] = await tryCatch(request('screen'))
+    if (error) {
+      console.warn('[WakeLock] Native API failed:', error)
+      throw error
     }
   }
 
@@ -128,12 +128,8 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
     let nativeSucceeded = false
     if (nativeIsSupported.value) {
-      try {
-        await acquireNative()
-        nativeSucceeded = true
-      } catch {
-        // Native failed, will use fallback
-      }
+      const [error] = await tryCatch(acquireNative())
+      nativeSucceeded = !error
     }
 
     // On mobile/PWA, ALWAYS start video as backup (native API unreliable in PWA mode)

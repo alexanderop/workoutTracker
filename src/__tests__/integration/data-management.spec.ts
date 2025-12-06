@@ -3,20 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { db } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder } from '../factories'
 import { resetDatabase } from '../helpers/resetDatabase'
 
 // Detect browser mode - location.reload is read-only in real browsers
 const isBrowserMode = (() => {
-  try {
+  const [error] = tryCatch(() => {
     const original = window.location.reload
     window.location.reload = vi.fn()
     window.location.reload = original
-    return false
-  } catch {
-    return true
-  }
+  })
+  return Boolean(error)
 })()
 
 describe('Data Management', () => {

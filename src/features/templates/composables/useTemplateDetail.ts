@@ -4,6 +4,7 @@ import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
 import { dbToWorkout } from '@/db/converters'
 import { restoreWorkout } from '@/stores/workoutState'
 import { popularExercises } from '@/data/popularExercises'
+import { tryCatch } from '@/lib/tryCatch'
 import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
 
 // ============================================
@@ -116,17 +117,16 @@ export function useTemplateDetail(templateId: string) {
     if (state.value.status !== 'success' || isSaving.value) return
 
     isSaving.value = true
-    try {
-      await templatesRepository.update(state.value.template.id, {
+    await tryCatch(
+      templatesRepository.update(state.value.template.id, {
         name: templateName.value.trim(),
         blocks: exercisesToBlocks(exercises.value),
-      })
+      }),
+    )
 
-      // Reload to get updated data
-      await loadTemplate()
-    } finally {
-      isSaving.value = false
-    }
+    // Reload to get updated data
+    await loadTemplate()
+    isSaving.value = false
   }
 
   async function deleteTemplate(): Promise<void> {
@@ -138,15 +138,20 @@ export function useTemplateDetail(templateId: string) {
     if (state.value.status !== 'success' || isStarting.value) return false
 
     isStarting.value = true
-    try {
-      const activeWorkout = await templatesRepository.startFromTemplate(state.value.template.id)
-      await activeWorkoutRepository.save(activeWorkout)
-      const inMemoryWorkout = dbToWorkout(activeWorkout)
-      restoreWorkout(inMemoryWorkout)
-      return true
-    } finally {
+    const [error, activeWorkout] = await tryCatch(
+      templatesRepository.startFromTemplate(state.value.template.id),
+    )
+
+    if (error) {
       isStarting.value = false
+      return false
     }
+
+    await activeWorkoutRepository.save(activeWorkout)
+    const inMemoryWorkout = dbToWorkout(activeWorkout)
+    restoreWorkout(inMemoryWorkout)
+    isStarting.value = false
+    return true
   }
 
   // Exercise manipulation

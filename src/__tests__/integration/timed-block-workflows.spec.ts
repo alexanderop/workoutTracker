@@ -42,10 +42,8 @@ async function addTimedBlock(
   // Click Add Block to confirm
   await user.click(common.getDialogButton('Add Block'))
 
-  // Wait for dialog to close
-  await waitFor(() => {
-    expect(queryByRole('dialog')).toBeNull()
-  })
+  // Wait for dialog AND overlay to fully close (prevents pointer-events: none issues)
+  await common.waitForDialogClose()
 }
 
 // Helper to end workout via menu
@@ -123,10 +121,8 @@ describe('Timed Block Workflows', () => {
       // Confirm the block by clicking "Add Block"
       await user.click(common.getDialogButton('Add Block'))
 
-      // Wait for dialog to close
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      // Wait for dialog AND overlay to fully close
+      await common.waitForDialogClose()
 
       // Verify AMRAP block appears in builder
       const playlistButtons = builder.getPlaylistBlockButtons()
@@ -170,10 +166,8 @@ describe('Timed Block Workflows', () => {
       // Select the filtered exercise and verify it adds to workout
       await user.click(common.getDialogButton('Bench Press'))
 
-      // Dialog should close after selecting exercise
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      // Wait for dialog AND overlay to fully close
+      await common.waitForDialogClose()
 
       // Verify exercise was added to builder
       const playlistButtons = builder.getPlaylistBlockButtons()
@@ -323,7 +317,7 @@ describe('Timed Block Workflows', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Add AMRAP block
       await addTimedBlock(common, user, getByRole, queryByRole, 'AMRAP')

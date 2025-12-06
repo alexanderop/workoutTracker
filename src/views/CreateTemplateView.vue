@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { templatesRepository } from '@/db/repositories/templates'
 import { popularExercises } from '@/data/popularExercises'
+import { tryCatch } from '@/lib/tryCatch'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -52,8 +53,8 @@ async function handleSave(): Promise<void> {
   if (!isValid.value || isSaving.value) return
 
   isSaving.value = true
-  try {
-    const template = await templatesRepository.create({
+  const [error, template] = await tryCatch(
+    templatesRepository.create({
       name: templateName.value.trim(),
       blocks: exercises.value.map((ex) => ({
         kind: 'strength' as const,
@@ -64,12 +65,16 @@ async function handleSave(): Promise<void> {
         thumbnail: ex.thumbnail,
         defaultSetCount: ex.defaultSetCount,
       })),
-    })
+    }),
+  )
 
-    await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
-  } finally {
+  if (error) {
     isSaving.value = false
+    return
   }
+
+  await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
+  isSaving.value = false
 }
 
 function handleCancel(): void {

@@ -8,7 +8,7 @@
  *
  * Use getAudioMocksUnified() for environment-agnostic access to mocks/spies.
  */
-import { vi, type MockInstance } from 'vitest'
+import { vi } from 'vitest'
 
 // Store mock functions so they can be accessed and cleared
 const mockOscillatorStart = vi.fn()

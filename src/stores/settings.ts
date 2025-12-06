@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { settingsRepository } from '@/db/repositories/settings'
+import { tryCatch } from '@/lib/tryCatch'
 import type { HeightUnit, Language, WeightUnit } from '@/types/settings'
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -20,17 +21,17 @@ export const useSettingsStore = defineStore('settings', () => {
     if (isLoading.value) return
 
     isLoading.value = true
-    try {
-      const settings = await settingsRepository.getAll()
-      weightUnit.value = settings.weightUnit
-      heightUnit.value = settings.heightUnit
-      screenWakeLock.value = settings.screenWakeLock
-      timerSoundEnabled.value = settings.timerSoundEnabled
-      language.value = settings.language
-      isLoaded.value = true
-    } finally {
-      isLoading.value = false
-    }
+    const [error, settings] = await tryCatch(settingsRepository.getAll())
+    isLoading.value = false
+
+    if (error) return
+
+    weightUnit.value = settings.weightUnit
+    heightUnit.value = settings.heightUnit
+    screenWakeLock.value = settings.screenWakeLock
+    timerSoundEnabled.value = settings.timerSoundEnabled
+    language.value = settings.language
+    isLoaded.value = true
   }
 
   /**

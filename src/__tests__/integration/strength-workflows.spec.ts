@@ -46,12 +46,14 @@ describe('Strength Workflows', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '100')
-      await user.type(repsInput, '8')
-      await user.type(rirInput, '2')
-
-      // Click Complete Set
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '100', reps: '8', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Verify the UI advanced to set 2 of 3 (this would have failed before the fix)
       await waitFor(() => {
@@ -65,7 +67,7 @@ describe('Strength Workflows', () => {
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
@@ -83,12 +85,14 @@ describe('Strength Workflows', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '80')
-      await user.type(repsInput, '10')
-      await user.type(rirInput, '2')
-
-      // Complete set 1
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '80', reps: '10', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Verify advancement to set 2
       await waitFor(() => {
@@ -121,7 +125,7 @@ describe('Strength Workflows', () => {
 
   describe('Value Prefilling', () => {
     it('prefills values from previous set when advancing', async () => {
-      const { builder, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       await builder.addStrengthBlock('Squat')
       await builder.startWorkout()
@@ -136,12 +140,14 @@ describe('Strength Workflows', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '100')
-      await user.type(repsInput, '5')
-      await user.type(rirInput, '1')
-
-      // Complete first set
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '100', reps: '5', rir: '1' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Wait for advancement to set 2
       await waitFor(() => {

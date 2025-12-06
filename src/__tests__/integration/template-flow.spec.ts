@@ -35,13 +35,13 @@ describe('Template Flow', () => {
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Add another strength block (Squat)
       await user.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Squat'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Start workout
       await builder.startWorkout()
@@ -52,10 +52,14 @@ describe('Template Flow', () => {
       const repsInput = screen.getByRole('spinbutton', { name: /reps$/i })
       const rirInput = screen.getByRole('spinbutton', { name: /reps in reserve/i })
 
-      await user.type(weightInput, '80')
-      await user.type(repsInput, '10')
-      await user.type(rirInput, '2')
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Fill inputs and wait for button (handles jsdom vs browser differences)
+      const completeButton = getByRole('button', { name: /complete set/i })
+      await common.fillStrengthSetAndWaitForButton(
+        { weight: weightInput, reps: repsInput, rir: rirInput },
+        { weight: '80', reps: '10', rir: '2' },
+        completeButton,
+      )
+      await user.click(completeButton)
 
       // Finish the workout via menu
       await waitFor(() => expect(workout.getMenuTrigger()).toBeTruthy())
@@ -218,7 +222,7 @@ describe('Template Flow', () => {
       await user.click(getByRole('button', { name: /add exercise/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Squat'))
-      await waitFor(() => expect(queryByRole('dialog')).toBeNull())
+      await common.waitForDialogClose()
 
       // Save changes
       await user.click(getByRole('button', { name: /save changes/i }))

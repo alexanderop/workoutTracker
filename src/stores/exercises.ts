@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { customExercisesRepository } from '@/db/repositories/customExercises'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
+import { tryCatch } from '@/lib/tryCatch'
 import type { CustomExercise } from '@/types/exercises'
 
 export const useExercisesStore = defineStore('exercises', () => {
@@ -17,13 +18,13 @@ export const useExercisesStore = defineStore('exercises', () => {
     if (isLoading.value) return
 
     isLoading.value = true
-    try {
-      const dbExercises = await customExercisesRepository.getAll()
-      customExercises.value = dbExercises.map(dbToCustomExercise)
-      isLoaded.value = true
-    } finally {
-      isLoading.value = false
-    }
+    const [error, dbExercises] = await tryCatch(customExercisesRepository.getAll())
+    isLoading.value = false
+
+    if (error) return
+
+    customExercises.value = dbExercises.map(dbToCustomExercise)
+    isLoaded.value = true
   }
 
   /**

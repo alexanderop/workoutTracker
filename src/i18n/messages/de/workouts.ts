@@ -108,6 +108,10 @@ export default {
   redo: {
     button: 'Workout wiederholen',
     starting: 'Startet...',
+    error: {
+      title: 'Workout konnte nicht gestartet werden',
+      message: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+    },
   },
   table: {
     headers: {
