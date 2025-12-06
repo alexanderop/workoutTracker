@@ -22,10 +22,13 @@ export function createDexieCustomExercisesRepository(
       id: string,
       updates: Partial<Omit<DbCustomExercise, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      await db.customExercises.update(id, {
+      const updated = await db.customExercises.update(id, {
         ...updates,
         updatedAt: Date.now(),
       })
+      if (updated === 0) {
+        throw new Error(`Exercise with id ${id} not found`)
+      }
     },
 
     async delete(id: string): Promise<void> {

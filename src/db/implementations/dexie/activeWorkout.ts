@@ -23,8 +23,8 @@ export function createDexieActiveWorkoutRepository(
     },
 
     async exists(): Promise<boolean> {
-      const count = await db.activeWorkout.count()
-      return count > 0
+      const workout = await db.activeWorkout.get('current')
+      return workout !== undefined
     },
   }
 }

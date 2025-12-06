@@ -255,7 +255,10 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
       }
 
       // Update template usage and return the workout (don't save to DB yet)
-      await db.templates.update(templateId, { lastUsedAt: now })
+      const updated = await db.templates.update(templateId, { lastUsedAt: now })
+      if (updated === 0) {
+        throw new Error(`Template with id ${templateId} not found`)
+      }
 
       return activeWorkout
     },
@@ -264,7 +267,10 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
       id: string,
       updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      await db.templates.update(id, updates)
+      const updated = await db.templates.update(id, updates)
+      if (updated === 0) {
+        throw new Error(`Template with id ${id} not found`)
+      }
     },
 
     async delete(id: string): Promise<void> {
@@ -272,7 +278,10 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     },
 
     async rename(id: string, newName: string): Promise<void> {
-      await db.templates.update(id, { name: newName })
+      const updated = await db.templates.update(id, { name: newName })
+      if (updated === 0) {
+        throw new Error(`Template with id ${id} not found`)
+      }
     },
 
     async create(data: CreateTemplateData): Promise<DbWorkoutTemplate> {
