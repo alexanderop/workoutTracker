@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { cwd, env, exit, stderr, stdout } from 'node:process'
 
 // Type from @anthropic-ai/claude-agent-sdk
-interface StopHookInput {
+type StopHookInput = {
   session_id: string
   transcript_path: string
   cwd: string
@@ -58,7 +58,7 @@ function main(): void {
     exit(0)
   }
 
-  const results: string[] = []
+  const results: Array<string> = []
   let hasErrors = false
 
   // Run format first (before other checks)

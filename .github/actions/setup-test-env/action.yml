@@ -18,10 +18,16 @@ runs:
         node-version: ${{ inputs.node-version }}
 
     - name: Restore node_modules
+      id: cache-restore
       uses: actions/cache/restore@v4.2.3
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install dependencies (cache miss)
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile --prefer-offline
 
     - name: Get Playwright version
       id: playwright-version

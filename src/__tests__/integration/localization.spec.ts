@@ -42,7 +42,7 @@ describe('Localization', () => {
       // Clear preloaded English messages to expose the bug
       // The createTestApp helper preloads English at line 73, which masks the bug
       // Using empty object - intentionally invalid for testing error handling
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       i18n.global.setLocaleMessage('en', {} as any)
 
       // Set German as the language and load German messages

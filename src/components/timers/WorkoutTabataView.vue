@@ -87,13 +87,16 @@ const circularProgress = computed(() => {
 // Timer display - seconds in current phase
 const timerDisplay = computed(() => String(timer.secondsInCurrentPhase.value).padStart(2, '0'))
 
+// Localized phase label
+const phaseLabel = computed(() =>
+  timer.currentPhase.value === 'work'
+    ? t('timers.workout.tabata.work')
+    : t('timers.workout.tabata.rest'),
+)
+
 // Footer display format
 const formattedTime = computed(() => {
-  const phase =
-    timer.currentPhase.value === 'work'
-      ? t('timers.workout.tabata.work')
-      : t('timers.workout.tabata.rest')
-  return `R${timer.currentRound.value}/${block.config.rounds} ${phase} :${String(timer.secondsInCurrentPhase.value).padStart(2, '0')}`
+  return `R${timer.currentRound.value}/${block.config.rounds} ${phaseLabel.value} :${String(timer.secondsInCurrentPhase.value).padStart(2, '0')}`
 })
 
 // Initialize timer on mount
@@ -132,7 +135,7 @@ defineExpose({
           )
         "
       >
-        {{ timer.currentPhase.value }}
+        {{ phaseLabel }}
       </div>
 
       <!-- MASSIVE time display for gym floor readability -->

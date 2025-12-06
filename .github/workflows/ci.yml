@@ -215,7 +215,7 @@ jobs:
 
   test-visual:
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4.2.2
