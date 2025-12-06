@@ -32,19 +32,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <Layout>
-    <RouterView />
-  </Layout>
+  <div data-testid="app">
+    <Layout>
+      <RouterView />
+    </Layout>
 
-  <!-- Resume workout dialog -->
-  <ResumeWorkoutDialog
-    :open="showResumeDialog"
-    :workout-name="resumeDialogData.workoutName"
-    :block-count="resumeDialogData.blockCount"
-    @resume="resumeWorkout"
-    @discard="discardWorkout"
-  />
+    <!-- Resume workout dialog -->
+    <ResumeWorkoutDialog
+      :open="showResumeDialog"
+      :workout-name="resumeDialogData.workoutName"
+      :block-count="resumeDialogData.blockCount"
+      @resume="resumeWorkout"
+      @discard="discardWorkout"
+    />
 
-  <!-- PWA update prompt -->
-  <PwaUpdatePrompt />
+    <!-- PWA update prompt -->
+    <PwaUpdatePrompt />
+  </div>
 </template>

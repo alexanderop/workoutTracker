@@ -27,6 +27,8 @@ export default {
     moreOptions: 'More options',
     exitTimer: 'Exit timer',
     resetTimer: 'Reset timer',
+    playTimer: 'Start timer',
+    pauseTimer: 'Pause timer',
     workoutOptions: 'Workout options',
     previousBlock: 'Previous block',
     nextBlock: 'Next block',

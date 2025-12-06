@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-definitions": "off",
+    "typescript/array-type": ["error", { "default": "generic" }],
+    "typescript/consistent-type-imports": ["error", {
+      "prefer": "type-imports",
+      "fixStyle": "separate-type-imports"
+    }],
+    "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
+    "eslint/no-restricted-imports": ["error", {
+      "paths": [{
+        "name": "vue",
+        "importNames": ["reactive"],
+        "message": "Use ref() instead of reactive() for consistent reactivity patterns."
+      }]
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["**/__tests__/**"],
+      "rules": {
+        "typescript/no-explicit-any": "warn"
+      }
+    },
+    {
+      "files": ["**/i18n/types.ts"],
+      "rules": {
+        "eslint/no-unused-vars": "off"
+      }
+    }
+  ]
+}

@@ -7,6 +7,6 @@ export type SupportedLocale = 'en' | 'de'
 // This pattern is recommended by official vue-i18n docs for type safety without assertions
 declare module 'vue-i18n' {
   // Must use interface (not type) for proper module augmentation
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/consistent-type-definitions
-  interface DefineLocaleMessage extends MessageSchema {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface DefineLocaleMessage extends MessageSchema {}
 }

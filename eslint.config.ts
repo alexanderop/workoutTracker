@@ -67,19 +67,6 @@ export default defineConfigWithVueTs(
       // Explicit APIs
       'vue/require-expose': 'warn',
       'vue/require-explicit-slots': 'warn',
-
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'vue',
-              importNames: ['reactive'],
-              message: 'Use ref() instead of reactive() for consistent reactivity patterns.',
-            },
-          ],
-        },
-      ],
     },
   },
 
@@ -128,24 +115,6 @@ export default defineConfigWithVueTs(
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
 
-      // No console.log - keeps codebase clean
-      'no-console': ['error', { allow: ['warn', 'error'] }],
-
-      // No `any` - use `unknown` + type guards
-      '@typescript-eslint/no-explicit-any': 'error',
-
-      // Use `type` over `interface`
-      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-
-      // Use `Array<T>` syntax, not `T[]`
-      '@typescript-eslint/array-type': ['error', { default: 'generic' }],
-
-      // Separate `import type` from regular imports
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
-      ],
-
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [
         'error',
@@ -187,19 +156,6 @@ export default defineConfigWithVueTs(
         {
           selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
           message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
-        },
-      ],
-
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'vue',
-              importNames: ['reactive'],
-              message: 'Use ref() instead of reactive() for consistent reactivity patterns.',
-            },
-          ],
         },
       ],
     },
@@ -331,7 +287,7 @@ export default defineConfigWithVueTs(
     },
   },
 
-  ...pluginOxlint.configs['flat/recommended'],
+  ...pluginOxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
   skipFormatting,
   {
     ignores: ['.claude/**'],

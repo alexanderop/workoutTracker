@@ -27,18 +27,14 @@ describe('tryCatch', () => {
     })
 
     it('handles async function that resolves', async () => {
-      const asyncFn = async () => 42
-      const [error, data] = await tryCatch(asyncFn())
+      const [error, data] = await tryCatch(Promise.resolve(42))
 
       expect(error).toBeNull()
       expect(data).toBe(42)
     })
 
     it('handles async function that rejects', async () => {
-      const asyncFn = async () => {
-        throw new Error('async error')
-      }
-      const [error, data] = await tryCatch(asyncFn())
+      const [error, data] = await tryCatch(Promise.reject(new Error('async error')))
 
       expect(error?.message).toBe('async error')
       expect(data).toBeNull()

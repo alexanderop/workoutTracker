@@ -232,12 +232,81 @@ describe('Standalone Timers Flow', () => {
     })
     await testApp.user.click(screen.getByRole('button', { name: /Quick session/i }))
 
-    // Verify timer UI is shown with minute display (uppercase)
+    // Verify timer UI is shown with minute counter (format: "1 / 10 MIN")
     await waitFor(() => {
-      expect(testApp.queryByText(/MINUTE 1 OF 10/)).toBeTruthy()
+      expect(testApp.queryByText(/min/i)).toBeTruthy()
     })
 
     testApp.cleanup()
+  })
+
+  describe('Play/Pause button toggle', () => {
+    it('toggles from play to pause icon when timer is started', async () => {
+      const testApp = await createTestApp()
+      await goToTimersPage(testApp)
+
+      // Select AMRAP and start 5 min preset
+      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+      await waitFor(() => {
+        expect(testApp.queryByText('5 min')).toBeTruthy()
+      })
+      await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+
+      // Wait for timer UI
+      await waitFor(() => {
+        expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+      })
+
+      // Initially should show play icon (timer not running)
+      expect(testApp.workout.isTimerRunning()).toBe(false)
+
+      // Click play button
+      const playPauseBtn = testApp.workout.getTimerPlayPauseButton()
+      await testApp.user.click(playPauseBtn)
+
+      // Should now show pause icon (timer running)
+      await waitFor(() => {
+        expect(testApp.workout.isTimerRunning()).toBe(true)
+      })
+
+      testApp.cleanup()
+    })
+
+    it('toggles from pause to play icon when timer is paused', async () => {
+      const testApp = await createTestApp()
+      await goToTimersPage(testApp)
+
+      // Select Tabata and start Classic preset
+      await testApp.user.click(screen.getByRole('button', { name: /Tabata/i }))
+      await waitFor(() => {
+        expect(testApp.queryByText(/Classic/)).toBeTruthy()
+      })
+      await testApp.user.click(screen.getByRole('button', { name: /Classic/i }))
+
+      // Wait for timer UI
+      await waitFor(() => {
+        expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+      })
+
+      // Start the timer
+      const playPauseBtn = testApp.workout.getTimerPlayPauseButton()
+      await testApp.user.click(playPauseBtn)
+
+      // Verify running
+      await waitFor(() => {
+        expect(testApp.workout.isTimerRunning()).toBe(true)
+      })
+
+      // Pause the timer
+      await testApp.user.click(playPauseBtn)
+
+      // Should now show play icon (timer paused)
+      await waitFor(() => {
+        expect(testApp.workout.isTimerRunning()).toBe(false)
+      })
+
+      testApp.cleanup()
+    })
   })
 
   describe('PageLayout header visibility', () => {

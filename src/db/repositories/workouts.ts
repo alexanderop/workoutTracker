@@ -96,7 +96,7 @@ export const workoutsRepository = {
     const now = Date.now()
 
     // Sort blocks by orderIndex to ensure correct order
-    const sortedBlocks = [...completedWorkout.blocks].sort((a, b) => a.orderIndex - b.orderIndex)
+    const sortedBlocks = [...completedWorkout.blocks].toSorted((a, b) => a.orderIndex - b.orderIndex)
 
     // Map blocks with new IDs while preserving all data
     const newBlocks: ReadonlyArray<DbWorkoutBlock> = sortedBlocks.map((block) => {

@@ -30,7 +30,7 @@ export default defineConfig({
     fileParallelism: false,
     // Stop test execution after first failure
     bail: 1,
-    include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**'],
+    include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**', '!src/__tests__/visual/**'],
     browser: {
       enabled: true,
       provider: playwright(),

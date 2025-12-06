@@ -189,7 +189,7 @@ export const templatesRepository = {
   async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
     const templates = await db.templates.toArray()
     // Sort by lastUsedAt descending, with null values at the end
-    return templates.sort((a, b) => {
+    return templates.toSorted((a, b) => {
       if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
       if (a.lastUsedAt === null) return 1
       if (b.lastUsedAt === null) return -1

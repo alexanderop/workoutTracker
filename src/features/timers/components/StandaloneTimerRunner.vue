@@ -34,11 +34,10 @@ const emit = defineEmits<{
 
 const timerRef = useTemplateRef<TimerViewExposed>('timer')
 const isComplete = ref(false)
+const isRunning = ref(false)
 
 const colors = computed(() => BLOCK_COLORS[block.kind])
 const timerLabel = computed(() => t(`timers.types.${block.kind}`))
-
-const isRunning = computed(() => timerRef.value?.isRunning.value ?? false)
 
 function handleToggle() {
   timerRef.value?.toggle()
@@ -46,51 +45,61 @@ function handleToggle() {
 
 function handleReset() {
   isComplete.value = false
+  isRunning.value = false
   timerRef.value?.reset()
 }
 
 function handleComplete() {
   isComplete.value = true
+  isRunning.value = false
   emit('complete')
 }
 
 function handleExit() {
   emit('exit')
 }
+
+function handleRunningChange(value: boolean) {
+  isRunning.value = value
+}
 </script>
 
 <template>
   <PageLayout :title="timerLabel" prevent-navigation @back="handleExit">
     <!-- Timer Content -->
-    <div class="flex-1 flex flex-col">
+    <div class="h-full flex flex-col">
       <WorkoutAmrapView
         v-if="block.kind === 'amrap'"
         ref="timer"
         :block="block"
         :on-complete="handleComplete"
+        @update:is-running="handleRunningChange"
       />
       <WorkoutEmomView
         v-if="block.kind === 'emom'"
         ref="timer"
         :block="block"
         :on-complete="handleComplete"
+        @update:is-running="handleRunningChange"
       />
       <WorkoutTabataView
         v-if="block.kind === 'tabata'"
         ref="timer"
         :block="block"
         :on-complete="handleComplete"
+        @update:is-running="handleRunningChange"
       />
       <WorkoutForTimeView
         v-if="block.kind === 'fortime'"
         ref="timer"
         :block="block"
         :on-complete="handleComplete"
+        @update:is-running="handleRunningChange"
       />
     </div>
 
     <template #footer>
-      <div v-if="!isComplete" class="flex items-center justify-center gap-4">
+      <div v-if="!isComplete" class="flex items-center justify-center gap-4 py-4 safe-area-bottom">
         <Button
           variant="outline"
           size="icon"
@@ -105,6 +114,7 @@ function handleExit() {
           size="lg"
           class="h-14 w-14 rounded-full"
           :class="colors.accent"
+          :aria-label="isRunning ? t('common.aria.pauseTimer') : t('common.aria.playTimer')"
           @click="handleToggle"
         >
           <Pause v-if="isRunning" class="w-6 h-6" />
@@ -123,7 +133,7 @@ function handleExit() {
       </div>
 
       <!-- Completion state -->
-      <div v-if="isComplete" class="text-center space-y-4">
+      <div v-if="isComplete" class="text-center space-y-4 py-4 safe-area-bottom">
         <div class="text-2xl font-bold" :class="colors.text">{{ t('timers.runner.complete') }}</div>
         <div class="flex gap-3 justify-center">
           <Button variant="outline" @click="handleReset">

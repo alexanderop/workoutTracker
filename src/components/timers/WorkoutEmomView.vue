@@ -31,23 +31,6 @@ const blockColors = computed(() => BLOCK_COLORS.emom)
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[timer.currentExerciseIndex.value])
 
-const nextExercises = computed(() => {
-  if (exercises.value.length <= 1) return []
-  const next = []
-  for (let i = 1; i <= 2; i++) {
-    const idx = (timer.currentExerciseIndex.value + i) % exercises.value.length
-    if (exercises.value[idx]) {
-      next.push(exercises.value[idx])
-    }
-  }
-  return next
-})
-
-const progressLabel = computed(
-  () =>
-    `${t('timers.workout.emom.minute')}${timer.currentMinute.value}${t('timers.workout.emom.of')}${block.config.minutes}`,
-)
-
 const isUrgent = computed(() => timer.secondsRemainingInMinute.value <= 5)
 
 // Progress within current minute (0-100)
@@ -79,47 +62,47 @@ defineExpose({
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col items-center justify-center px-6">
-    <!-- Progress label -->
-    <div class="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">
-      {{ progressLabel }}
-    </div>
-
-    <!-- Circular Timer -->
+  <div class="flex-1 flex flex-col items-center justify-center px-4">
+    <!-- Circular Timer - gym variant with all info inside -->
     <WorkoutCircularTimer
+      variant="gym"
       :progress="circularProgress"
       :progress-color="blockColors.text"
       :urgent="isUrgent"
-      class="mb-6"
     >
+      <!-- Minute indicator inside circle -->
+      <div class="mb-1 flex items-center gap-2">
+        <span :class="cn('text-3xl font-black tabular-nums', blockColors.text)">
+          {{ timer.currentMinute.value }}
+        </span>
+        <span class="text-xl text-muted-foreground font-bold">/</span>
+        <span class="text-xl text-muted-foreground font-bold tabular-nums">
+          {{ block.config.minutes }}
+        </span>
+        <span class="text-sm text-muted-foreground font-semibold uppercase ml-1">{{ t('timers.labels.minuteAbbr') }}</span>
+      </div>
+
+      <!-- MASSIVE seconds display -->
       <span
         :class="
           cn(
-            'text-[5.5rem] leading-none font-mono tabular-nums font-bold transition-colors',
+            'text-[7rem] leading-none font-mono tabular-nums font-black tracking-tight transition-colors',
             isUrgent && 'text-destructive animate-pulse',
           )
         "
       >
-        :{{ timerDisplay }}
+        {{ timerDisplay }}
       </span>
 
       <!-- Current Exercise (inside circle) -->
-      <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
-        <p class="text-lg font-semibold text-foreground truncate">
+      <div v-if="currentExercise" class="mt-2 text-center max-w-[220px]">
+        <p class="text-lg font-bold text-foreground truncate">
           {{ currentExercise.name }}
         </p>
-        <p class="text-sm text-muted-foreground">
+        <p class="text-base text-muted-foreground font-semibold">
           {{ currentExercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
         </p>
       </div>
     </WorkoutCircularTimer>
-
-    <!-- Next Exercises -->
-    <div v-if="nextExercises.length > 0" class="flex items-center gap-2 text-muted-foreground mb-6">
-      <span class="text-xs uppercase tracking-wide">{{ t('timers.workout.amrap.next') }}</span>
-      <span v-for="(ex, i) in nextExercises" :key="ex.id" class="text-sm">
-        {{ ex.name }}<span v-if="i < nextExercises.length - 1" class="mx-1">→</span>
-      </span>
-    </div>
   </div>
 </template>
