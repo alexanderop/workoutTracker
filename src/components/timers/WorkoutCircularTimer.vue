@@ -11,6 +11,8 @@ type Props = {
   urgent?: boolean
   /** Whether to show the progress arc (false hides it, useful for ForTime without cap) */
   showProgress?: boolean
+  /** Size variant - 'default' for standard, 'gym' for larger gym-floor readable */
+  variant?: 'default' | 'gym'
 }
 
 const {
@@ -18,43 +20,54 @@ const {
   progressColor = 'text-primary',
   urgent = false,
   showProgress = true,
+  variant = 'default',
 } = defineProps<Props>()
 
 defineSlots<{
   default: () => unknown
 }>()
 
-const circleRadius = 140
-const circleCircumference = 2 * Math.PI * circleRadius
+// Gym variant: larger circle with thicker stroke for floor visibility
+const isGym = computed(() => variant === 'gym')
+const circleRadius = computed(() => (isGym.value ? 155 : 140))
+const strokeWidth = computed(() => (isGym.value ? 16 : 8))
+const viewBoxSize = computed(() => (isGym.value ? 360 : 320))
+const center = computed(() => viewBoxSize.value / 2)
+
+const circleCircumference = computed(() => 2 * Math.PI * circleRadius.value)
 const strokeDashoffset = computed(
-  () => circleCircumference - (progress / 100) * circleCircumference,
+  () => circleCircumference.value - (progress / 100) * circleCircumference.value,
+)
+
+const containerClasses = computed(() =>
+  isGym.value ? 'w-[360px] h-[360px]' : 'w-[320px] h-[320px]',
 )
 </script>
 
 <template>
   <div class="relative">
-    <svg class="w-[320px] h-[320px] -rotate-90" viewBox="0 0 320 320">
-      <!-- Track -->
+    <svg :class="cn(containerClasses, '-rotate-90')" :viewBox="`0 0 ${viewBoxSize} ${viewBoxSize}`">
+      <!-- Track - thicker and more visible in gym mode -->
       <circle
-        cx="160"
-        cy="160"
+        :cx="center"
+        :cy="center"
         :r="circleRadius"
         fill="none"
         stroke="currentColor"
-        stroke-width="8"
-        class="text-muted/30"
+        :stroke-width="strokeWidth"
+        :class="isGym ? 'text-muted/40' : 'text-muted/30'"
       />
 
-      <!-- Progress -->
+      <!-- Progress - square caps in gym mode for industrial feel -->
       <circle
         v-if="showProgress"
-        cx="160"
-        cy="160"
+        :cx="center"
+        :cy="center"
         :r="circleRadius"
         fill="none"
         stroke="currentColor"
-        stroke-width="8"
-        stroke-linecap="round"
+        :stroke-width="strokeWidth"
+        :stroke-linecap="isGym ? 'square' : 'round'"
         :stroke-dasharray="circleCircumference"
         :stroke-dashoffset="strokeDashoffset"
         :class="cn('transition-all duration-200', urgent ? 'text-destructive' : progressColor)"

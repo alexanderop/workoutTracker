@@ -181,8 +181,8 @@ describe('Timed Block Workflows', () => {
         expect(queryByText(/block 1 of 1/i)).toBeTruthy()
       })
 
-      // Verify EMOM view shows minute info
-      expect(queryByText(/minute 1 of/i)).toBeTruthy()
+      // Verify EMOM view shows minute counter (format: "1 / 10 MIN")
+      expect(queryByText(/min/i)).toBeTruthy()
 
       // Verify Start button exists
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
@@ -210,8 +210,8 @@ describe('Timed Block Workflows', () => {
         expect(queryByText(/block 1 of 1/i)).toBeTruthy()
       })
 
-      // Verify Tabata view shows round info
-      expect(queryByText(/round 1/i)).toBeTruthy()
+      // Verify Tabata view shows phase badge (lowercase in DOM, CSS transforms to uppercase)
+      expect(queryByText('work')).toBeTruthy()
 
       // Verify Start button exists
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
@@ -458,8 +458,8 @@ describe('Timed Block Workflows', () => {
         expect(queryByText(/block 1 of 1/i)).toBeTruthy()
       })
 
-      // Verify EMOM view shows minute info and exercise
-      expect(queryByText(/minute 1 of/i)).toBeTruthy()
+      // Verify EMOM view shows minute counter (format: "1 / 10 MIN")
+      expect(queryByText(/min/i)).toBeTruthy()
       expect(queryByText('Push-ups')).toBeTruthy()
 
       // Verify Start button is available

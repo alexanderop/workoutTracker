@@ -106,6 +106,29 @@ export class ActiveWorkoutPO {
   }
 
   /**
+   * Retrieves the play/pause button by its accessible name.
+   * @returns The play/pause button element
+   */
+  getTimerPlayPauseButton(): HTMLElement {
+    // Try pause button first (timer running), then play button (timer paused)
+    const pauseBtn = screen.queryByRole('button', { name: /pause timer/i })
+    if (pauseBtn) return pauseBtn
+
+    const playBtn = screen.queryByRole('button', { name: /start timer/i })
+    if (playBtn) return playBtn
+
+    throw new Error('Play/pause button not found - check aria-label is present')
+  }
+
+  /**
+   * Checks if the timer is currently running by checking for the Pause button.
+   * @returns true if the timer shows a pause button (meaning it's running)
+   */
+  isTimerRunning(): boolean {
+    return screen.queryByRole('button', { name: /pause timer/i }) !== null
+  }
+
+  /**
    * Fills strength set inputs using the card-based UI and clicks the complete button.
    * Handles jsdom vs browser mode differences using CommonPO's fillStrengthSetAndWaitForButton.
    * @param values - Object with weight, reps, rir values as strings

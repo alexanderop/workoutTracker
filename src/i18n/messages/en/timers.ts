@@ -20,6 +20,7 @@ export default {
     rest: 'Rest',
     timeCap: 'Time Cap',
     minutes: 'Minutes',
+    minuteAbbr: 'min',
     seconds: 'Seconds',
   },
   status: {

@@ -33,18 +33,6 @@ const blockColors = computed(() => BLOCK_COLORS.amrap)
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[timer.currentExerciseIndex.value])
 
-const nextExercises = computed(() => {
-  if (exercises.value.length <= 1) return []
-  const next = []
-  for (let i = 1; i <= 2; i++) {
-    const idx = (timer.currentExerciseIndex.value + i) % exercises.value.length
-    if (exercises.value[idx]) {
-      next.push(exercises.value[idx])
-    }
-  }
-  return next
-})
-
 const isUrgent = computed(() => timer.remainingSeconds.value <= 10)
 
 // Initialize timer on mount
@@ -69,23 +57,25 @@ defineExpose({
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col items-center justify-center px-6">
-    <!-- Progress label -->
-    <div class="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">
-      {{ BLOCK_LABELS.amrap }}
-    </div>
-
-    <!-- Circular Timer -->
+  <div class="flex-1 flex flex-col items-center justify-center px-4">
+    <!-- Circular Timer - gym variant with all info inside -->
     <WorkoutCircularTimer
+      variant="gym"
       :progress="timer.progress.value"
       :progress-color="blockColors.text"
       :urgent="isUrgent"
-      class="mb-6"
+      class="mb-4"
     >
+      <!-- Label inside circle -->
+      <div class="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">
+        {{ BLOCK_LABELS.amrap }}
+      </div>
+
+      <!-- MASSIVE time display -->
       <span
         :class="
           cn(
-            'text-5xl font-mono tabular-nums font-bold transition-colors',
+            'text-[5rem] leading-none font-mono tabular-nums font-black tracking-tight transition-colors',
             isUrgent && 'text-destructive animate-pulse',
           )
         "
@@ -93,44 +83,34 @@ defineExpose({
         {{ timer.formattedRemaining.value }}
       </span>
 
+      <!-- Round counter - prominent inside circle -->
+      <div class="mt-2 flex items-center gap-3">
+        <span :class="cn('text-4xl font-black tabular-nums', blockColors.text)">
+          {{ timer.rounds.value }}
+        </span>
+        <span class="text-lg text-muted-foreground font-bold uppercase">
+          {{ t('workouts.builder.timedCard.rounds') }}
+        </span>
+      </div>
+
       <!-- Current Exercise (inside circle) -->
-      <div v-if="currentExercise" class="mt-4 text-center max-w-[200px]">
-        <p class="text-lg font-semibold text-foreground truncate">
+      <div v-if="currentExercise" class="mt-1 text-center max-w-[220px]">
+        <p class="text-base font-semibold text-foreground/80 truncate">
           {{ currentExercise.name }}
-        </p>
-        <p class="text-sm text-muted-foreground">
-          {{ currentExercise.prescribedReps }} {{ t('workouts.builder.timedCard.reps') }}
         </p>
       </div>
     </WorkoutCircularTimer>
 
-    <!-- Next Exercises -->
-    <div v-if="nextExercises.length > 0" class="flex items-center gap-2 text-muted-foreground mb-6">
-      <span class="text-xs uppercase tracking-wide">{{ t('timers.workout.amrap.next') }}</span>
-      <span v-for="(ex, i) in nextExercises" :key="ex.id" class="text-sm">
-        {{ ex.name }}<span v-if="i < nextExercises.length - 1" class="mx-1">→</span>
-      </span>
-    </div>
-
-    <!-- Round Counter -->
-    <div class="flex items-center gap-6">
-      <div class="text-center">
-        <div :class="cn('text-5xl font-bold tabular-nums', blockColors.text)">
-          {{ timer.rounds.value }}
-        </div>
-        <div class="text-xs text-muted-foreground uppercase tracking-wider mt-1">
-          {{ t('workouts.builder.timedCard.rounds') }}
-        </div>
-      </div>
-      <Button
-        size="lg"
-        variant="outline"
-        class="h-16 w-20 text-xl font-bold"
-        :disabled="!timer.isRunning.value"
-        @click="handleIncrementRound"
-      >
-        {{ t('workouts.builder.timedCard.plusOne') }}
-      </Button>
-    </div>
+    <!-- +1 Button - larger for gym use -->
+    <Button
+      size="lg"
+      variant="outline"
+      class="h-14 w-20 text-2xl font-black border-2"
+      :class="blockColors.text"
+      :disabled="!timer.isRunning.value"
+      @click="handleIncrementRound"
+    >
+      {{ t('workouts.builder.timedCard.plusOne') }}
+    </Button>
   </div>
 </template>
