@@ -86,6 +86,32 @@ function updateSetInBlock(blockIndex: number, setId: number, updater: (set: Set)
   })
 }
 
+/**
+ * Find the first incomplete set in a strength block.
+ */
+function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
+  return block.sets.find((s) => s.status === 'planned' || s.status === 'active')
+}
+
+/**
+ * Create a typed update function for block results.
+ */
+function getTypedResultUpdate(
+  block: TimedBlock,
+  result: AmrapResult | EmomResult | TabataResult | ForTimeResult,
+): (() => TimedBlock) | null {
+  switch (block.kind) {
+    case 'amrap':
+      return 'rounds' in result ? () => ({ ...block, result }) : null
+    case 'emom':
+      return 'completedMinutes' in result ? () => ({ ...block, result }) : null
+    case 'tabata':
+      return 'repsPerRound' in result ? () => ({ ...block, result }) : null
+    case 'fortime':
+      return 'completionTime' in result ? () => ({ ...block, result }) : null
+  }
+}
+
 export function useWorkout() {
   const selectedBlock = computed(() => {
     if (workout.value.selectedBlockIndex < 0) return undefined
@@ -116,11 +142,6 @@ export function useWorkout() {
     if (index >= 0) {
       updateWorkout({ selectedBlockIndex: index })
     }
-  }
-
-  // Helper: Find the first incomplete set in a strength block
-  function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
-    return block.sets.find((s) => s.status === 'planned' || s.status === 'active')
   }
 
   // Helper: Activate the next set in current block, pre-filling from completed set
@@ -428,23 +449,6 @@ export function useWorkout() {
 
     const update = getTypedResultUpdate(block, result)
     if (update) updateBlockAtIndex(blockIndex, update)
-  }
-
-  // Helper to create typed update function for block results
-  function getTypedResultUpdate(
-    block: TimedBlock,
-    result: AmrapResult | EmomResult | TabataResult | ForTimeResult,
-  ): (() => TimedBlock) | null {
-    switch (block.kind) {
-      case 'amrap':
-        return 'rounds' in result ? () => ({ ...block, result }) : null
-      case 'emom':
-        return 'completedMinutes' in result ? () => ({ ...block, result }) : null
-      case 'tabata':
-        return 'repsPerRound' in result ? () => ({ ...block, result }) : null
-      case 'fortime':
-        return 'completionTime' in result ? () => ({ ...block, result }) : null
-    }
   }
 
   return {

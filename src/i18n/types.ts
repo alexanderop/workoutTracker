@@ -8,5 +8,5 @@ export type SupportedLocale = 'en' | 'de'
 declare module 'vue-i18n' {
   // Must use interface (not type) for proper module augmentation
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface DefineLocaleMessage extends MessageSchema {}
+  export interface DefineLocaleMessage extends MessageSchema {}
 }

@@ -347,7 +347,7 @@ export function workoutToDb(
  */
 export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
   const sortedBlocks = [...dbWorkout.blocks]
-    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .toSorted((a, b) => a.orderIndex - b.orderIndex)
     .map(dbToBlock)
 
   return {

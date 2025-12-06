@@ -210,8 +210,8 @@ describe('Timed Block Workflows', () => {
         expect(queryByText(/block 1 of 1/i)).toBeTruthy()
       })
 
-      // Verify Tabata view shows phase badge (lowercase in DOM, CSS transforms to uppercase)
-      expect(queryByText('work')).toBeTruthy()
+      // Verify Tabata view shows phase badge (exact uppercase match)
+      expect(queryByText('WORK')).toBeTruthy()
 
       // Verify Start button exists
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()

@@ -7,6 +7,11 @@ import { createStrengthBlock } from '@/__tests__/factories'
 import { resetDatabase } from '../setup'
 
 /**
+ * Gets the parent container of a block button element
+ */
+const getBlockContainer = (btn: Element) => btn.parentElement
+
+/**
  * Helper to render component in browser mode
  */
 function renderComponent(
@@ -192,9 +197,6 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // Query for block containers using aria-pressed buttons, then find their parent containers
     const blockButtons = container.querySelectorAll('button[aria-pressed]')
     expect(blockButtons.length).toBe(3)
-
-    // The opacity-60 class is on the parent container of the button
-    const getBlockContainer = (btn: Element) => btn.parentElement
 
     // First block (index 0) should have opacity-60 (completed)
     expect(getBlockContainer(blockButtons[0]!)?.classList.contains('opacity-60')).toBe(true)

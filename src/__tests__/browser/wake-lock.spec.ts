@@ -49,7 +49,7 @@ describe('useScreenWakeLock - browser mode', () => {
       // In headless mode, may fail due to permissions
       const [error] = await tryCatch(result.acquireNative())
       // Expected: either succeeds (nativeIsActive=true) or fails in headless (nativeIsActive=false)
-      const expectedActive = error ? false : true
+      const expectedActive = !error
       expect(result.nativeIsActive.value).toBe(expectedActive)
     })
 

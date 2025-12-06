@@ -1,7 +1,6 @@
 ---
 description: Commit staged changes and push to remote
 allowed-tools: Bash(git status), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git rev-parse:*), Bash(git remote:*)
-model: haiku
 ---
 
 # Commit and Push

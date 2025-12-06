@@ -41,9 +41,8 @@ describe('Localization', () => {
 
       // Clear preloaded English messages to expose the bug
       // The createTestApp helper preloads English at line 73, which masks the bug
-      // Using empty object - intentionally invalid for testing error handling
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      i18n.global.setLocaleMessage('en', {} as any)
+      // @ts-expect-error Intentionally passing empty object to test error handling
+      i18n.global.setLocaleMessage('en', {})
 
       // Set German as the language and load German messages
       const settingsStore = useSettingsStore()

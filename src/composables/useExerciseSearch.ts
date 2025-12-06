@@ -77,7 +77,7 @@ export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerci
   const searchFields = options?.searchFields ?? ['name']
 
   const allExercises = computed<Array<Exercise>>(() => {
-    return [...exercisesStore.customExercises].sort((a, b) => a.name.localeCompare(b.name))
+    return [...exercisesStore.customExercises].toSorted((a, b) => a.name.localeCompare(b.name))
   })
 
   const filteredExercises = computed(() => {
