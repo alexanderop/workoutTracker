@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { workoutsRepository } from '@/db/repositories/workouts'
-import { templatesRepository } from '@/db/repositories/templates'
+import { getWorkoutsRepository, getTemplatesRepository } from '@/db'
 import type { DbCompletedWorkout, DbWorkoutTemplate } from '@/db/schema'
 import { formatDate, formatDuration } from '@/lib/formatters'
 
@@ -22,8 +21,8 @@ const isLoading = ref(true)
 
 onMounted(async () => {
   ;[workouts.value, templates.value] = await Promise.all([
-    workoutsRepository.getHistory(),
-    templatesRepository.getAll(),
+    getWorkoutsRepository().getHistory(),
+    getTemplatesRepository().getAll(),
   ])
   isLoading.value = false
 })

@@ -38,3 +38,7 @@ coverage
 
 test-results/
 playwright-report/
+
+# Performance budget artifacts
+stats.html
+.lighthouseci/

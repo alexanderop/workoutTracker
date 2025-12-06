@@ -1,12 +1,13 @@
 import { waitFor } from '@testing-library/vue'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest } from '../helpers/integrationSetup'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Localization', () => {
+  beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
   describe('Message Preloading', () => {

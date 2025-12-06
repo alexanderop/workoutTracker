@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
+import { getActiveWorkoutRepository } from '@/db'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
@@ -55,7 +55,7 @@ export function useAppInitialization() {
         await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])
 
         // Check for active workout
-        const activeWorkout = await activeWorkoutRepository.get()
+        const activeWorkout = await getActiveWorkoutRepository().get()
 
         if (activeWorkout && activeWorkout.blocks.length > 0) {
           // Prompt user to resume

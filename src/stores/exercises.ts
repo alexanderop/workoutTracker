@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { customExercisesRepository } from '@/db/repositories/customExercises'
+import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import type { CustomExercise } from '@/types/exercises'
@@ -18,7 +18,7 @@ export const useExercisesStore = defineStore('exercises', () => {
     if (isLoading.value) return
 
     isLoading.value = true
-    const [error, dbExercises] = await tryCatch(customExercisesRepository.getAll())
+    const [error, dbExercises] = await tryCatch(getCustomExercisesRepository().getAll())
     isLoading.value = false
 
     if (error) return
@@ -36,7 +36,7 @@ export const useExercisesStore = defineStore('exercises', () => {
     const dbExercise = createDbCustomExercise(exercise)
 
     // Save to DB first
-    await customExercisesRepository.add(dbExercise)
+    await getCustomExercisesRepository().add(dbExercise)
 
     // Then update local state
     const newExercise = dbToCustomExercise(dbExercise)
@@ -56,7 +56,7 @@ export const useExercisesStore = defineStore('exercises', () => {
    * Delete a custom exercise from both DB and local state.
    */
   async function deleteExercise(id: string): Promise<void> {
-    await customExercisesRepository.delete(id)
+    await getCustomExercisesRepository().delete(id)
     customExercises.value = customExercises.value.filter((e) => e.id !== id)
   }
 

@@ -1,5 +1,5 @@
 import type { ExportData } from './dataExport'
-import { db } from '@/db'
+import { getDataManagementRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
 /**
@@ -106,32 +106,12 @@ export async function parseExportFile(file: File): Promise<ParseResult> {
  * Uses a transaction to ensure atomicity.
  */
 export async function importAllData(exportData: ExportData): Promise<void> {
-  await db.transaction(
-    'rw',
-    [db.settings, db.customExercises, db.templates, db.workouts],
-    async () => {
-      // Clear all existing data
-      await Promise.all([
-        db.settings.clear(),
-        db.customExercises.clear(),
-        db.templates.clear(),
-        db.workouts.clear(),
-      ])
+  // Use JSON round-trip to strip Vue reactivity proxies
+  // before IndexedDB's structured clone algorithm runs
+  const serialized = JSON.stringify(exportData.data)
+  const rawData: ExportData['data'] = JSON.parse(serialized)
 
-      // Insert imported data - use JSON round-trip to strip Vue reactivity proxies
-      // before IndexedDB's structured clone algorithm runs
-      const serialized = JSON.stringify(exportData.data)
-      const rawData: ExportData['data'] = JSON.parse(serialized)
-      const { settings, customExercises, templates, workouts } = rawData
-
-      await Promise.all([
-        settings.length > 0 ? db.settings.bulkAdd(settings) : Promise.resolve(),
-        customExercises.length > 0 ? db.customExercises.bulkAdd(customExercises) : Promise.resolve(),
-        templates.length > 0 ? db.templates.bulkAdd(templates) : Promise.resolve(),
-        workouts.length > 0 ? db.workouts.bulkAdd(workouts) : Promise.resolve(),
-      ])
-    },
-  )
+  await getDataManagementRepository().importAll(rawData)
 }
 
 /**

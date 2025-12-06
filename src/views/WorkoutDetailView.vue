@@ -10,7 +10,7 @@ import ErrorDialog from '@/components/ErrorDialog.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
 import { formatDate } from '@/lib/formatters'
-import { workoutsRepository } from '@/db/repositories/workouts'
+import { getWorkoutsRepository } from '@/db'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { tryCatch } from '@/lib/tryCatch'
 
@@ -32,7 +32,7 @@ async function handleRedoWorkout() {
   if (isRedoing.value) return
 
   isRedoing.value = true
-  const [error] = await tryCatch(workoutsRepository.startFromCompleted(id))
+  const [error] = await tryCatch(getWorkoutsRepository().startFromCompleted(id))
   if (error) {
     showRedoError.value = true
     isRedoing.value = false

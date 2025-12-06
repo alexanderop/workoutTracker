@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
-import { templatesRepository } from '@/db/repositories/templates'
+import { getTemplatesRepository } from '@/db'
 import { formatDuration, formatWeight } from '@/lib/formatters'
 import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import { useSettingsStore } from '@/stores/settings'
@@ -71,7 +71,7 @@ async function handleSaveAsTemplate(name: string): Promise<void> {
   if (state.value.status !== 'success' || isSavingTemplate.value) return
 
   isSavingTemplate.value = true
-  await tryCatch(templatesRepository.createFromCompletedWorkout(state.value.workout, name))
+  await tryCatch(getTemplatesRepository().createFromCompletedWorkout(state.value.workout, name))
   showSaveTemplateDialog.value = false
   isSavingTemplate.value = false
 }

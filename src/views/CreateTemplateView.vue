@@ -9,7 +9,7 @@ import type { TemplateExercise } from '@/features/templates/components/TemplateE
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { templatesRepository } from '@/db/repositories/templates'
+import { getTemplatesRepository } from '@/db'
 import { popularExercises } from '@/data/popularExercises'
 import { tryCatch } from '@/lib/tryCatch'
 
@@ -54,7 +54,7 @@ async function handleSave(): Promise<void> {
 
   isSaving.value = true
   const [error, template] = await tryCatch(
-    templatesRepository.create({
+    getTemplatesRepository().create({
       name: templateName.value.trim(),
       blocks: exercises.value.map((ex) => ({
         kind: 'strength' as const,

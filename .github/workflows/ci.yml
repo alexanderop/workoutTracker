@@ -11,6 +11,7 @@ on:
       - 'vitest.config.*'
       - 'tsconfig*.json'
       - 'eslint.config.*'
+      - 'lighthouserc.json'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
@@ -22,6 +23,7 @@ on:
       - 'vitest.config.*'
       - 'tsconfig*.json'
       - 'eslint.config.*'
+      - 'lighthouserc.json'
       - '.github/workflows/ci.yml'
 
 env:
@@ -224,3 +226,34 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Run visual regression tests
         run: pnpm test:visual
+
+  performance-budget:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: dist
+          path: dist
+
+      - name: Run Lighthouse CI
+        run: pnpm lhci autorun

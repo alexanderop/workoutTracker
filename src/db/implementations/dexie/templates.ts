@@ -1,4 +1,4 @@
-import { db, generateId } from '@/db'
+import type { CreateTemplateData, TemplatesRepository } from '@/db/interfaces'
 import type {
   DbActiveWorkout,
   DbCompletedWorkout,
@@ -9,6 +9,8 @@ import type {
   DbWorkoutBlock,
   DbWorkoutTemplate,
 } from '@/db/schema'
+import type { WorkoutTrackerDb } from './database'
+import { generateId } from './database'
 
 /**
  * Convert a workout block to a template block.
@@ -179,144 +181,112 @@ function templateBlockToWorkoutBlock(
   }
 }
 
-/**
- * Repository for managing workout templates.
- */
-export const templatesRepository = {
-  /**
-   * Get all templates, ordered by most recently used (null values last).
-   */
-  async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
-    const templates = await db.templates.toArray()
-    // Sort by lastUsedAt descending, with null values at the end
-    return templates.toSorted((a, b) => {
-      if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
-      if (a.lastUsedAt === null) return 1
-      if (b.lastUsedAt === null) return -1
-      return b.lastUsedAt - a.lastUsedAt
-    })
-  },
+export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesRepository {
+  return {
+    async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
+      const templates = await db.templates.toArray()
+      // Sort by lastUsedAt descending, with null values at the end
+      return templates.toSorted((a, b) => {
+        if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
+        if (a.lastUsedAt === null) return 1
+        if (b.lastUsedAt === null) return -1
+        return b.lastUsedAt - a.lastUsedAt
+      })
+    },
 
-  /**
-   * Get a specific template by ID.
-   */
-  async getById(id: string): Promise<DbWorkoutTemplate | undefined> {
-    return db.templates.get(id)
-  },
+    async getById(id: string): Promise<DbWorkoutTemplate | undefined> {
+      return db.templates.get(id)
+    },
 
-  /**
-   * Create a template from an active workout.
-   */
-  async createFromWorkout(
-    workout: Readonly<DbActiveWorkout>,
-    templateName: string,
-  ): Promise<DbWorkoutTemplate> {
-    const template: DbWorkoutTemplate = {
-      id: generateId(),
-      name: templateName,
-      blocks: workout.blocks.map(workoutBlockToTemplateBlock),
-      createdAt: Date.now(),
-      lastUsedAt: null,
-      tags: [],
-    }
+    async createFromWorkout(
+      workout: Readonly<DbActiveWorkout>,
+      templateName: string,
+    ): Promise<DbWorkoutTemplate> {
+      const template: DbWorkoutTemplate = {
+        id: generateId(),
+        name: templateName,
+        blocks: workout.blocks.map(workoutBlockToTemplateBlock),
+        createdAt: Date.now(),
+        lastUsedAt: null,
+        tags: [],
+      }
 
-    await db.templates.add(template)
-    return template
-  },
+      await db.templates.add(template)
+      return template
+    },
 
-  /**
-   * Create a template from a completed workout.
-   */
-  async createFromCompletedWorkout(
-    workout: Readonly<DbCompletedWorkout>,
-    templateName: string,
-  ): Promise<DbWorkoutTemplate> {
-    const template: DbWorkoutTemplate = {
-      id: generateId(),
-      name: templateName,
-      blocks: workout.blocks.map(workoutBlockToTemplateBlock),
-      createdAt: Date.now(),
-      lastUsedAt: null,
-      tags: [],
-    }
+    async createFromCompletedWorkout(
+      workout: Readonly<DbCompletedWorkout>,
+      templateName: string,
+    ): Promise<DbWorkoutTemplate> {
+      const template: DbWorkoutTemplate = {
+        id: generateId(),
+        name: templateName,
+        blocks: workout.blocks.map(workoutBlockToTemplateBlock),
+        createdAt: Date.now(),
+        lastUsedAt: null,
+        tags: [],
+      }
 
-    await db.templates.add(template)
-    return template
-  },
+      await db.templates.add(template)
+      return template
+    },
 
-  /**
-   * Create a new active workout from a template.
-   */
-  async startFromTemplate(templateId: string): Promise<DbActiveWorkout> {
-    const template = await db.templates.get(templateId)
-    if (!template) {
-      throw new Error(`Template ${templateId} not found`)
-    }
+    async startFromTemplate(templateId: string): Promise<DbActiveWorkout> {
+      const template = await db.templates.get(templateId)
+      if (!template) {
+        throw new Error(`Template ${templateId} not found`)
+      }
 
-    const now = Date.now()
-    const blocks: ReadonlyArray<DbWorkoutBlock> = template.blocks.map((block, index) =>
-      templateBlockToWorkoutBlock(block, index),
-    )
+      const now = Date.now()
+      const blocks: ReadonlyArray<DbWorkoutBlock> = template.blocks.map((block, index) =>
+        templateBlockToWorkoutBlock(block, index),
+      )
 
-    const activeWorkout: DbActiveWorkout = {
-      id: 'current',
-      name: template.name,
-      blocks,
-      selectedBlockIndex: 0,
-      startedAt: now,
-      lastModifiedAt: now,
-      mode: 'builder',
-      activeSetIndex: null,
-    }
+      const activeWorkout: DbActiveWorkout = {
+        id: 'current',
+        name: template.name,
+        blocks,
+        selectedBlockIndex: 0,
+        startedAt: now,
+        lastModifiedAt: now,
+        mode: 'builder',
+        activeSetIndex: null,
+      }
 
-    // Update template usage and return the workout (don't save to DB yet)
-    await db.templates.update(templateId, { lastUsedAt: now })
+      // Update template usage and return the workout (don't save to DB yet)
+      await db.templates.update(templateId, { lastUsedAt: now })
 
-    return activeWorkout
-  },
+      return activeWorkout
+    },
 
-  /**
-   * Update a template.
-   */
-  async update(
-    id: string,
-    updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
-  ): Promise<void> {
-    await db.templates.update(id, updates)
-  },
+    async update(
+      id: string,
+      updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
+    ): Promise<void> {
+      await db.templates.update(id, updates)
+    },
 
-  /**
-   * Delete a template.
-   */
-  async delete(id: string): Promise<void> {
-    await db.templates.delete(id)
-  },
+    async delete(id: string): Promise<void> {
+      await db.templates.delete(id)
+    },
 
-  /**
-   * Rename a template.
-   */
-  async rename(id: string, newName: string): Promise<void> {
-    await db.templates.update(id, { name: newName })
-  },
+    async rename(id: string, newName: string): Promise<void> {
+      await db.templates.update(id, { name: newName })
+    },
 
-  /**
-   * Create a new template from scratch.
-   */
-  async create(data: {
-    name: string
-    blocks: ReadonlyArray<DbTemplateBlock>
-    tags?: ReadonlyArray<string>
-  }): Promise<DbWorkoutTemplate> {
-    const template: DbWorkoutTemplate = {
-      id: generateId(),
-      name: data.name,
-      blocks: data.blocks,
-      createdAt: Date.now(),
-      lastUsedAt: null,
-      tags: data.tags ?? [],
-    }
+    async create(data: CreateTemplateData): Promise<DbWorkoutTemplate> {
+      const template: DbWorkoutTemplate = {
+        id: generateId(),
+        name: data.name,
+        blocks: data.blocks,
+        createdAt: Date.now(),
+        lastUsedAt: null,
+        tags: data.tags ?? [],
+      }
 
-    await db.templates.add(template)
-    return template
-  },
+      await db.templates.add(template)
+      return template
+    },
+  }
 }
