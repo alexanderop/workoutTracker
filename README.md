@@ -2,8 +2,6 @@
 
 My personal Progressive Web App for tracking strength training and CrossFit-style workouts. I built this because I wanted a workout app that actually works offline, supports the timer protocols I use (AMRAP, EMOM, Tabata), and doesn't require a subscription.
 
-![App Screenshot](docs/screenshots/home.png)
-
 ## Features
 
 ### Block-Based Workouts
@@ -42,12 +40,6 @@ Save your favorite workouts as templates to reuse later. No more rebuilding the 
 - Multiple languages (i18n ready)
 - Weight units (kg or lbs)
 - Timer volume control
-
-## Screenshots
-
-| Home | Active Workout | Timer | Exercises |
-|------|----------------|-------|-----------|
-| ![Home](docs/screenshots/home.png) | ![Workout](docs/screenshots/workout.png) | ![Timer](docs/screenshots/timer.png) | ![Exercises](docs/screenshots/exercises.png) |
 
 ## Tech Stack
 
