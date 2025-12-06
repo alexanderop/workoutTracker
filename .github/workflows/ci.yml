@@ -120,6 +120,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+
       - name: Check composable usage
         run: pnpm check:composables
 
