@@ -36,17 +36,10 @@ function navigateToTemplateDetail(templateId: string): void {
   router.push({ name: RouteNames.TemplateDetail, params: { id: templateId } })
 }
 
-function handleWorkoutKeyDown(event: KeyboardEvent, workoutId: string): void {
+function handleActivationKey(event: KeyboardEvent, action: () => void): void {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
-    navigateToWorkoutDetail(workoutId)
-  }
-}
-
-function handleTemplateKeyDown(event: KeyboardEvent, templateId: string): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    navigateToTemplateDetail(templateId)
+    action()
   }
 }
 
@@ -98,7 +91,7 @@ function formatTemplateDate(timestamp: number | null): string {
             tabindex="0"
             class="p-4 cursor-pointer hover:bg-accent transition-colors"
             @click="navigateToTemplateDetail(template.id)"
-            @keydown="handleTemplateKeyDown($event, template.id)"
+            @keydown="(e: KeyboardEvent) => handleActivationKey(e, () => navigateToTemplateDetail(template.id))"
           >
             <div class="flex justify-between items-center">
               <div>
@@ -137,7 +130,7 @@ function formatTemplateDate(timestamp: number | null): string {
             tabindex="0"
             class="p-4 cursor-pointer hover:bg-accent transition-colors"
             @click="navigateToWorkoutDetail(workout.id)"
-            @keydown="handleWorkoutKeyDown($event, workout.id)"
+            @keydown="(e: KeyboardEvent) => handleActivationKey(e, () => navigateToWorkoutDetail(workout.id))"
           >
             <div class="flex justify-between items-center">
               <div>

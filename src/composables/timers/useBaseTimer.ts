@@ -8,7 +8,7 @@
 import { useIntervalFn } from '@vueuse/core'
 import { computed, readonly, ref } from 'vue'
 
-export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
+type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
 
 type TimerAction = 'start' | 'resume' | 'pause' | 'complete'
 
@@ -20,7 +20,7 @@ const TRANSITIONS = {
   completed: {},
 } as const satisfies Record<TimerStatus, Partial<Record<TimerAction, TimerStatus>>>
 
-export type BaseTimerConfig = Readonly<{
+type BaseTimerConfig = Readonly<{
   onTick?: () => void
   onComplete?: () => void
   tickInterval?: number

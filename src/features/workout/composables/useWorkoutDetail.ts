@@ -30,7 +30,7 @@ export type WorkoutStats = {
 /**
  * Extracts all completed sets from strength blocks.
  */
-export function getCompletedSets(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray<DbSet> {
+function getCompletedSets(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray<DbSet> {
   return blocks
     .filter(isDbStrengthBlock)
     .flatMap((block) => block.sets.filter((set) => set.status === 'completed'))
@@ -47,7 +47,7 @@ function getStrengthBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray
  * Calculates total weight lifted from a list of sets.
  * Weight = sum of (kg × reps) for each set.
  */
-export function calculateTotalWeight(sets: ReadonlyArray<DbSet>): number {
+function calculateTotalWeight(sets: ReadonlyArray<DbSet>): number {
   const total = sets.reduce((sum, set) => {
     const kg = Number.parseFloat(set.kg) || 0
     const reps = Number.parseFloat(set.reps) || 0
@@ -78,7 +78,7 @@ function countTimedBlocks(blocks: ReadonlyArray<DbWorkoutBlock>): number {
 /**
  * Computes workout statistics from a completed workout.
  */
-export function computeWorkoutStats(workout: DbCompletedWorkout): WorkoutStats {
+function computeWorkoutStats(workout: DbCompletedWorkout): WorkoutStats {
   const strengthBlocks = getStrengthBlocks(workout.blocks)
   const completedSets = getCompletedSets(workout.blocks)
 

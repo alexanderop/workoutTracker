@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ChevronDown, Dumbbell } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -14,7 +15,7 @@ const { exercise } = defineProps<{
 
 const { t } = useI18n()
 const { formatWithUnit } = useWeightDisplay()
-const isOpen = ref(false)
+const [isOpen] = useToggle(false)
 
 const completedSets = computed(() => exercise.sets.filter((s) => s.status === 'completed'))
 

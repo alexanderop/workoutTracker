@@ -155,7 +155,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -169,17 +169,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Cache Vitest
-        uses: actions/cache@v4.2.3
-        continue-on-error: true
-        with:
-          path: node_modules/.vitest
-          key: vitest-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/vitest.config.*') }}
-          restore-keys: |
-            vitest-${{ runner.os }}-
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Unit tests with coverage
-        run: pnpm test:unit --coverage
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage

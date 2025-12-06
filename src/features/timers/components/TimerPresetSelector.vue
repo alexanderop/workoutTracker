@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import TimerPresetList from './TimerPresetList.vue'
@@ -94,7 +95,7 @@ const emit = defineEmits<{
   start: [block: AmrapBlock | EmomBlock | TabataBlock | ForTimeBlock]
 }>()
 
-const showCustom = ref(false)
+const [showCustom, toggleShowCustom] = useToggle(false)
 
 const colors = computed(() => BLOCK_COLORS[timerType])
 const timerLabel = computed(() => t(`timers.types.${timerType}`))
@@ -223,14 +224,14 @@ function handleCustomSubmit(config: Record<string, number | boolean | null>) {
         :presets="presets"
         :color-class="colors.text"
         @select="handlePresetSelect"
-        @show-custom="showCustom = true"
+        @show-custom="toggleShowCustom(true)"
       />
 
       <TimerCustomForm
         v-else
         :timer-type="timerType"
         :color-class="colors.accent"
-        @back="showCustom = false"
+        @back="toggleShowCustom(false)"
         @submit="handleCustomSubmit"
       />
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Plus, Trash2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
+import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
@@ -24,7 +25,7 @@ const emit = defineEmits<Emits>()
 
 const config = ref<TabataConfigModel>({ rounds: 8, workSeconds: 20, restSeconds: 10 })
 const exercise = ref<BlockExercise | null>(null)
-const showExercisePicker = ref(false)
+const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)
 
 const canConfirm = computed(() => exercise.value !== null)
 
@@ -32,7 +33,7 @@ watch(open, (isOpen) => {
   if (isOpen) {
     config.value = { rounds: 8, workSeconds: 20, restSeconds: 10 }
     exercise.value = null
-    showExercisePicker.value = false
+    toggleShowExercisePicker(false)
   }
 })
 
@@ -118,7 +119,7 @@ function handleClose() {
             v-if="!exercise"
             variant="outline"
             class="w-full"
-            @click="showExercisePicker = true"
+            @click="toggleShowExercisePicker(true)"
           >
             <Plus class="w-4 h-4 mr-2" />
             {{ t('dialogs.tabataConfig.selectButton') }}

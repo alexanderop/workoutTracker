@@ -18,6 +18,7 @@ type CreateTestAppOptions = {
 type TestApp = {
   router: Router
   user: ReturnType<typeof userEvent.setup>
+  container: Element
   // Page Objects
   common: CommonPO
   builder: BuilderPO
@@ -55,7 +56,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   i18n.global.setLocaleMessage('en', en)
   i18n.global.locale.value = 'en'
 
-  render(App, {
+  const { container } = render(App, {
     global: {
       plugins: [router, pinia, i18n],
     },
@@ -98,6 +99,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   return {
     router,
     user,
+    container,
     // Page Objects
     common,
     builder,

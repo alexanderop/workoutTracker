@@ -1,4 +1,5 @@
 import { onMounted, ref } from 'vue'
+import { useTimeoutFn } from '@vueuse/core'
 
 /**
  * Provides a simple enter animation trigger for staggered element reveals.
@@ -9,11 +10,15 @@ import { onMounted, ref } from 'vue'
 export function useEnterAnimation(delay = 100) {
   const isVisible = ref(false)
 
-  onMounted(() => {
-    setTimeout(() => {
+  const { start } = useTimeoutFn(
+    () => {
       isVisible.value = true
-    }, delay)
-  })
+    },
+    delay,
+    { immediate: false }
+  )
+
+  onMounted(start)
 
   return { isVisible }
 }

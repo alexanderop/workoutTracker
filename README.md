@@ -1,73 +1,100 @@
-# workoutTracker
+# Workout Tracker
 
-This template should help get you started developing with Vue 3 in Vite.
+A Vue 3 Progressive Web App for tracking strength and timed workouts with offline-first capabilities.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Block-based workouts** — Compose workouts from strength blocks (sets/reps/weight) and timed blocks (AMRAP, EMOM, Tabata, For Time)
+- **Offline-first** — IndexedDB storage via Dexie with full PWA support
+- **Exercise library** — Create and manage custom exercises
+- **Workout templates** — Save and reuse workout configurations
+- **Multiple timer modes** — Rest timers, AMRAP, EMOM, Tabata, and For Time protocols
+- **i18n ready** — Internationalization support via vue-i18n
 
-## Recommended Browser Setup
+## Tech Stack
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- **Vue 3.5+** with Composition API and `<script setup>`
+- **TypeScript** with strict type checking
+- **Tailwind CSS 4** for styling
+- **shadcn-vue** (reka-ui) component library
+- **Pinia** for state management
+- **Dexie** for IndexedDB persistence
+- **Vite 6** with PWA plugin
+- **Vitest** with Playwright browser testing
 
-## Type Support for `.vue` Imports in TS
+## Getting Started
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### Prerequisites
 
-## Customize configuration
+- Node.js ^20.19.0 or >=22.12.0
+- pnpm 10.24.0+
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Installation
 
-## Project Setup
-
-```sh
+```bash
 pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+### Development
 
-```sh
+```bash
 pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Build
 
-```sh
+```bash
 pnpm build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+## Scripts
 
-```sh
-pnpm test:unit
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server with HMR |
+| `pnpm build` | Type-check and build for production |
+| `pnpm test` | Run all tests (Playwright browser) |
+| `pnpm test:headed` | Run tests with visible browser |
+| `pnpm test:ui` | Run tests with Vitest UI |
+| `pnpm test:coverage` | Run tests with coverage report |
+| `pnpm lint` | Run oxlint + eslint with auto-fix |
+| `pnpm type-check` | TypeScript type checking only |
+| `pnpm knip` | Find unused exports/dependencies |
+
+## Architecture
+
+This project follows **Bulletproof feature-based architecture**:
+
+```
+src/
+├── features/          # Domain-specific modules
+│   ├── exercises/     # Exercise library CRUD
+│   ├── settings/      # App settings
+│   ├── templates/     # Workout templates
+│   ├── timers/        # Timer UI components
+│   └── workout/       # Core workout execution
+├── composables/       # Shared Vue composables
+│   └── timers/        # Timer state machines
+├── components/        # Shared UI components
+│   └── ui/            # shadcn-vue primitives
+├── db/                # Dexie database layer
+│   └── repositories/  # Data access patterns
+├── stores/            # Pinia stores
+├── views/             # Route-level components
+└── types/             # TypeScript types
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### Dependency Rules
 
-```sh
-# Install browsers for the first run
-npx playwright install
+- Views → Features → Shared (composables, components, stores, db)
+- Features cannot import other features
+- Shared code cannot import features
 
-# When testing on CI, must build the project first
-pnpm build
+## IDE Setup
 
-# Runs the end-to-end tests
-pnpm test:e2e
-# Runs the tests only on Chromium
-pnpm test:e2e --project=chromium
-# Runs the tests of a specific file
-pnpm test:e2e tests/example.spec.ts
-# Runs the tests in debug mode
-pnpm test:e2e --debug
-```
+- [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+- [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) browser extension
 
-### Lint with [ESLint](https://eslint.org/)
+## License
 
-```sh
-pnpm lint
-```
+Private

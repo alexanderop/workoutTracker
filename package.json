@@ -16,6 +16,7 @@
     "test:headed": "vitest --browser.headless=false",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:a11y": "vitest run --config vitest.a11y.config.ts",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
@@ -66,6 +67,7 @@
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
+    "axe-core": "^4.11.0",
     "eslint": "^9.37.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import-x": "^4.16.1",
@@ -86,7 +88,6 @@
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-vue-devtools": "^8.0.3",
     "vitest": "^4.0.15",
-    "vitest-browser-vue": "^2.0.1",
     "vue-tsc": "^3.1.1",
     "workbox-window": "^7.4.0"
   }

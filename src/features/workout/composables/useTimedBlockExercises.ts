@@ -1,10 +1,11 @@
 import { computed, ref } from 'vue'
+import { useToggle } from '@vueuse/core'
 import { generateId } from '@/db/index'
 import type { BlockExercise } from '@/types/blocks'
 
 export function useTimedBlockExercises() {
   const exercises = ref<Array<BlockExercise>>([])
-  const showExercisePicker = ref(false)
+  const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)
 
   const canConfirm = computed(() => exercises.value.length > 0)
 
@@ -17,7 +18,7 @@ export function useTimedBlockExercises() {
       thumbnail: exercise.icon,
     }
     exercises.value = [...exercises.value, newExercise]
-    showExercisePicker.value = false
+    toggleShowExercisePicker(false)
   }
 
   function removeExercise(index: number) {
@@ -40,7 +41,7 @@ export function useTimedBlockExercises() {
 
   function reset() {
     exercises.value = []
-    showExercisePicker.value = false
+    toggleShowExercisePicker(false)
   }
 
   return {

@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onScopeDispose, ref, watch } from 'vue'
-import { useDocumentVisibility, useWakeLock } from '@vueuse/core'
+import { computed, onScopeDispose, ref } from 'vue'
+import { useDocumentVisibility, useEventListener, useMediaQuery, useWakeLock } from '@vueuse/core'
 import { tryCatch } from '@/lib/tryCatch'
 
 // Minimal silent MP4 video (base64) - loops to keep screen awake on iOS/fallback browsers
@@ -50,15 +50,15 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   })
 
   // PWA standalone mode detection - wake lock is less reliable in installed PWAs
-  const isPWAStandalone = computed(() => {
-    if (typeof window === 'undefined') return false
-    // Check CSS media query for standalone mode (Chrome/Edge/Firefox)
-    const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches
-    // Check Safari-specific standalone property
-    const isSafariStandalone =
-      'standalone' in window.navigator && window.navigator.standalone === true
-    return isStandaloneMedia || isSafariStandalone
-  })
+  // Reactive media query - updates automatically if display mode changes
+  const isStandaloneMedia = useMediaQuery('(display-mode: standalone)')
+  // Safari-specific standalone property check
+  const isSafariStandalone = computed(() =>
+    'standalone' in window.navigator && window.navigator.standalone === true
+  )
+  const isPWAStandalone = computed(() =>
+    isStandaloneMedia.value || isSafariStandalone.value
+  )
 
   // 3. Computed - derived state
   const isSupported = computed(() => nativeIsSupported.value)
@@ -144,23 +144,14 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     stopVideoFallback()
   }
 
-  // 5. Watchers
+  // 5. Event Listeners
 
   // Listen for forced release events on sentinel (Android power management)
-  watch(sentinel, (newSentinel, oldSentinel) => {
-    if (oldSentinel) {
-      oldSentinel.removeEventListener('release', handleForcedRelease)
-    }
-    if (newSentinel && !newSentinel.released) {
-      newSentinel.addEventListener('release', handleForcedRelease)
-    }
-  })
+  // useEventListener handles cleanup automatically when sentinel changes or on unmount
+  useEventListener(sentinel, 'release', handleForcedRelease)
 
   // 6. Cleanup
   onScopeDispose(() => {
-    if (sentinel.value) {
-      sentinel.value.removeEventListener('release', handleForcedRelease)
-    }
     releaseAll()
   })
 

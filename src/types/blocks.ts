@@ -134,12 +134,6 @@ export type TimedBlock = EmomBlock | AmrapBlock | TabataBlock | ForTimeBlock
 export type WorkoutBlock = StrengthBlock | TimedBlock
 
 // ============================================
-// Timer Status (shared across composables)
-// ============================================
-
-export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
-
-// ============================================
 // Workout Mode
 // ============================================
 

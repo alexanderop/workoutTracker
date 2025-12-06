@@ -2,12 +2,7 @@
  * Error-first tuple result type.
  * Success: [null, T] | Failure: [Error, null]
  */
-export type Result<T> = [Error, null] | [null, T]
-
-/**
- * Helper type to extract the data type from a Result.
- */
-export type ResultData<R> = R extends Result<infer T> ? T : never
+type Result<T> = [Error, null] | [null, T]
 
 /**
  * Normalizes unknown catch values to Error.
