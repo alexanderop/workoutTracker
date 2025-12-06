@@ -229,7 +229,7 @@ describe('Workout Queue', () => {
 
       await user.click(common.getDialogButton('8'))
       await user.click(common.getDialogButton('Add Exercise'))
-      await user.click(common.getDialogButton('Push-ups'))
+      await common.selectExercise('Push-ups')
       await user.click(common.getDialogButton('Add Block'))
 
       await waitFor(() => expect(queryByRole('dialog')).toBeNull())
