@@ -87,6 +87,7 @@ function createValidWorkout(overrides: Record<string, unknown> = {}) {
     completedAt: Date.now(),
     durationSeconds: 3600,
     notes: '',
+    benchmarkId: null,
     ...overrides,
   }
 }
