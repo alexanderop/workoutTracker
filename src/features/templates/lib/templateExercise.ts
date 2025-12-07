@@ -5,7 +5,7 @@ import type { TemplateExercise } from '@/features/templates/components/TemplateE
 /**
  * Generates a unique exercise ID for template creation.
  */
-export function generateExerciseId(): string {
+function generateExerciseId(): string {
   return `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 

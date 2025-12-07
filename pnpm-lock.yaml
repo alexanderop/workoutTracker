@@ -84,6 +84,9 @@ importers:
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.5
+      '@types/jsdom':
+        specifier: ^27.0.0
+        version: 27.0.0
       '@types/node':
         specifier: ^22.18.11
         version: 22.19.1
@@ -147,6 +150,9 @@ importers:
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
+      jsdom:
+        specifier: ^27.2.0
+        version: 27.2.0
       knip:
         specifier: ^5.71.0
         version: 5.71.0(@types/node@22.19.1)(typescript@5.9.3)
@@ -1937,6 +1943,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/jsdom@27.0.0':
+    resolution: {integrity: sha512-NZyFl/PViwKzdEkQg96gtnB8wm+1ljhdDay9ahn4hgb+SfVtPCbm3TlmDUFXTA+MGN3CijicnMhG18SI5H3rFw==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -1954,6 +1963,9 @@ packages:
 
   '@types/sortablejs@1.15.9':
     resolution: {integrity: sha512-7HP+rZGE2p886PKV9c9OJzLBI6BBJu1O7lJGYnPyG3fS4/duUCcngkNCjsLwIMV+WMqANe3tt4irrXHSIe68OQ==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -6142,8 +6154,7 @@ packages:
 
 snapshots:
 
-  '@acemir/cssom@0.9.24':
-    optional: true
+  '@acemir/cssom@0.9.24': {}
 
   '@adobe/css-tools@4.4.4': {}
 
@@ -6212,7 +6223,6 @@ snapshots:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
       lru-cache: 11.2.2
-    optional: true
 
   '@asamuzakjp/dom-selector@6.7.4':
     dependencies:
@@ -6221,10 +6231,8 @@ snapshots:
       css-tree: 3.1.0
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.2.2
-    optional: true
 
-  '@asamuzakjp/nwsapi@2.3.9':
-    optional: true
+  '@asamuzakjp/nwsapi@2.3.9': {}
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -6935,14 +6943,12 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@csstools/color-helpers@5.1.0':
-    optional: true
+  '@csstools/color-helpers@5.1.0': {}
 
   '@csstools/css-calc@2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
-    optional: true
 
   '@csstools/css-color-parser@3.1.0(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
     dependencies:
@@ -6950,18 +6956,14 @@ snapshots:
       '@csstools/css-calc': 2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
-    optional: true
 
   '@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4)':
     dependencies:
       '@csstools/css-tokenizer': 3.0.4
-    optional: true
 
-  '@csstools/css-syntax-patches-for-csstree@1.0.17':
-    optional: true
+  '@csstools/css-syntax-patches-for-csstree@1.0.17': {}
 
-  '@csstools/css-tokenizer@3.0.4':
-    optional: true
+  '@csstools/css-tokenizer@3.0.4': {}
 
   '@emnapi/core@1.7.1':
     dependencies:
@@ -7923,6 +7925,12 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/jsdom@27.0.0':
+    dependencies:
+      '@types/node': 22.19.1
+      '@types/tough-cookie': 4.0.5
+      parse5: 7.3.0
+
   '@types/json-schema@7.0.15': {}
 
   '@types/mdast@4.0.4':
@@ -7938,6 +7946,8 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/sortablejs@1.15.9': {}
+
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/trusted-types@2.0.7': {}
 
@@ -8649,7 +8659,6 @@ snapshots:
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
-    optional: true
 
   birpc@2.8.0: {}
 
@@ -8922,7 +8931,6 @@ snapshots:
     dependencies:
       mdn-data: 2.12.2
       source-map-js: 1.2.1
-    optional: true
 
   css.escape@1.5.1: {}
 
@@ -8933,7 +8941,6 @@ snapshots:
       '@asamuzakjp/css-color': 4.1.0
       '@csstools/css-syntax-patches-for-csstree': 1.0.17
       css-tree: 3.1.0
-    optional: true
 
   csstype@3.2.3: {}
 
@@ -8943,7 +8950,6 @@ snapshots:
     dependencies:
       whatwg-mimetype: 4.0.0
       whatwg-url: 15.1.0
-    optional: true
 
   data-view-buffer@1.0.2:
     dependencies:
@@ -9952,7 +9958,6 @@ snapshots:
   html-encoding-sniffer@4.0.0:
     dependencies:
       whatwg-encoding: 3.1.1
-    optional: true
 
   html-entities@2.6.0: {}
 
@@ -10001,7 +10006,6 @@ snapshots:
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
-    optional: true
 
   idb@7.1.1: {}
 
@@ -10176,8 +10180,7 @@ snapshots:
 
   is-obj@2.0.0: {}
 
-  is-potential-custom-element-name@1.0.1:
-    optional: true
+  is-potential-custom-element-name@1.0.1: {}
 
   is-regex@1.2.1:
     dependencies:
@@ -10345,7 +10348,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-    optional: true
 
   jsesc@3.1.0: {}
 
@@ -10735,8 +10737,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
 
-  mdn-data@2.12.2:
-    optional: true
+  mdn-data@2.12.2: {}
 
   media-typer@0.3.0: {}
 
@@ -11253,7 +11254,6 @@ snapshots:
   parse5@8.0.0:
     dependencies:
       entities: 6.0.1
-    optional: true
 
   parseurl@1.3.3: {}
 
@@ -11636,7 +11636,6 @@ snapshots:
   saxes@6.0.0:
     dependencies:
       xmlchars: 2.2.0
-    optional: true
 
   scslre@0.3.0:
     dependencies:
@@ -12014,8 +12013,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  symbol-tree@3.2.4:
-    optional: true
+  symbol-tree@3.2.4: {}
 
   synckit@0.10.4:
     dependencies:
@@ -12094,8 +12092,7 @@ snapshots:
 
   tldts-core@6.1.86: {}
 
-  tldts-core@7.0.19:
-    optional: true
+  tldts-core@7.0.19: {}
 
   tldts-icann@6.1.86:
     dependencies:
@@ -12104,7 +12101,6 @@ snapshots:
   tldts@7.0.19:
     dependencies:
       tldts-core: 7.0.19
-    optional: true
 
   tmp@0.0.33:
     dependencies:
@@ -12136,7 +12132,6 @@ snapshots:
   tough-cookie@6.0.0:
     dependencies:
       tldts: 7.0.19
-    optional: true
 
   tr46@0.0.3: {}
 
@@ -12147,7 +12142,6 @@ snapshots:
   tr46@6.0.0:
     dependencies:
       punycode: 2.3.1
-    optional: true
 
   tree-kill@1.2.2: {}
 
@@ -12513,7 +12507,6 @@ snapshots:
   w3c-xmlserializer@5.0.0:
     dependencies:
       xml-name-validator: 5.0.0
-    optional: true
 
   walk-up-path@4.0.0: {}
 
@@ -12523,24 +12516,20 @@ snapshots:
 
   webidl-conversions@4.0.2: {}
 
-  webidl-conversions@8.0.0:
-    optional: true
+  webidl-conversions@8.0.0: {}
 
   whatwg-encoding@3.1.1:
     dependencies:
       iconv-lite: 0.6.3
-    optional: true
 
   whatwg-fetch@3.6.20: {}
 
-  whatwg-mimetype@4.0.0:
-    optional: true
+  whatwg-mimetype@4.0.0: {}
 
   whatwg-url@15.1.0:
     dependencies:
       tr46: 6.0.0
       webidl-conversions: 8.0.0
-    optional: true
 
   whatwg-url@5.0.0:
     dependencies:
@@ -12769,11 +12758,9 @@ snapshots:
 
   xml-name-validator@4.0.0: {}
 
-  xml-name-validator@5.0.0:
-    optional: true
+  xml-name-validator@5.0.0: {}
 
-  xmlchars@2.2.0:
-    optional: true
+  xmlchars@2.2.0: {}
 
   y18n@4.0.3: {}
 
