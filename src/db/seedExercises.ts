@@ -1,4 +1,4 @@
-import { db, generateId } from './index'
+import { generateId, getCustomExercisesRepository } from './index'
 import { popularExercises } from '@/data/popularExercises'
 import type { DbCustomExercise } from './schema'
 
@@ -7,8 +7,9 @@ import type { DbCustomExercise } from './schema'
  * Checks IndexedDB directly since browsers may clear it while keeping localStorage.
  */
 export async function seedPopularExercises(): Promise<void> {
-  const existingCount = await db.customExercises.count()
-  if (existingCount > 0) {
+  const repo = getCustomExercisesRepository()
+  const existing = await repo.getAll()
+  if (existing.length > 0) {
     return
   }
 
@@ -25,5 +26,6 @@ export async function seedPopularExercises(): Promise<void> {
     updatedAt: now,
   }))
 
-  await db.customExercises.bulkAdd(exercisesToSeed)
+  // Add each exercise using the repository
+  await Promise.all(exercisesToSeed.map((ex) => repo.add(ex)))
 }

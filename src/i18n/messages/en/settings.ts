@@ -86,5 +86,12 @@ export default {
       title: 'Export Failed',
       message: 'Unable to export your data. Please try again.',
     },
+    fileTooLarge: 'File exceeds maximum size of 10MB',
+    readFailed: 'Failed to read the selected file',
+    invalidJson: 'The selected file is not valid JSON',
+    invalidFileFormat: 'Invalid file format',
+    notValidExport: 'This file is not a valid workout tracker export',
+    newerVersion: 'This export file is from a newer version and cannot be imported',
+    corrupted: 'Export file is corrupted or incomplete',
   },
 } as const

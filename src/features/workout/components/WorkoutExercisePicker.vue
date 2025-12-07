@@ -32,7 +32,7 @@ type Props = {
 }
 
 type Emits = {
-  select: [exercise: { name: string; icon: string }]
+  select: [exercise: Exercise]
 }
 
 const open = defineModel<boolean>('open', { required: true })
@@ -49,7 +49,7 @@ watch(open, (isOpen) => {
 })
 
 function handleSelectExercise(exercise: Exercise) {
-  emit('select', { name: exercise.name, icon: exercise.icon })
+  emit('select', exercise)
   searchQuery.value = ''
   if (mode === 'single') {
     open.value = false

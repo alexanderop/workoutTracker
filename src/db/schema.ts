@@ -203,7 +203,7 @@ export type DbCompletedWorkout = {
 /**
  * Template block exercise (for timed blocks in templates).
  */
-type DbTemplateBlockExercise = {
+export type DbTemplateBlockExercise = {
   exerciseDefinitionId: string | null
   name: string
   prescribedReps: number

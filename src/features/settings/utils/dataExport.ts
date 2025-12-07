@@ -4,7 +4,7 @@ import type {
   DbUserSetting,
   DbWorkoutTemplate,
 } from '@/db/schema'
-import { db } from '@/db'
+import { getDataManagementRepository } from '@/db'
 
 /**
  * Current export format version.
@@ -31,22 +31,12 @@ export type ExportData = {
  * Excludes active workout (in-progress).
  */
 async function collectExportData(): Promise<ExportData> {
-  const [settings, customExercises, templates, workouts] = await Promise.all([
-    db.settings.toArray(),
-    db.customExercises.toArray(),
-    db.templates.toArray(),
-    db.workouts.toArray(),
-  ])
+  const data = await getDataManagementRepository().exportAll()
 
   return {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
-    data: {
-      settings,
-      customExercises,
-      templates,
-      workouts,
-    },
+    data,
   }
 }
 

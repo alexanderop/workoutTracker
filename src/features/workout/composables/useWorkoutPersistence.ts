@@ -1,7 +1,6 @@
 import { onScopeDispose, ref, type Ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
-import { workoutsRepository } from '@/db/repositories/workouts'
+import { getActiveWorkoutRepository, getWorkoutsRepository } from '@/db'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Workout } from './useWorkout'
@@ -59,7 +58,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
 
       // No blocks means no active workout to save
       if (newWorkout.blocks.length === 0) {
-        await activeWorkoutRepository.clear()
+        await getActiveWorkoutRepository().clear()
         currentWorkoutStartedAt = null
         hasUnsavedChanges.value = false
         return
@@ -68,7 +67,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
       persistenceState.value = { status: 'saving' }
 
       const dbWorkout = workoutToDb(newWorkout, currentWorkoutStartedAt ?? undefined)
-      const [saveError] = await tryCatch(activeWorkoutRepository.save(dbWorkout))
+      const [saveError] = await tryCatch(getActiveWorkoutRepository().save(dbWorkout))
 
       if (saveError) {
         persistenceState.value = { status: 'error', error: saveError }
@@ -88,7 +87,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
   async function loadActiveWorkout(): Promise<Workout | null> {
     persistenceState.value = { status: 'loading' }
 
-    const [loadError, dbWorkout] = await tryCatch(activeWorkoutRepository.get())
+    const [loadError, dbWorkout] = await tryCatch(getActiveWorkoutRepository().get())
 
     if (loadError) {
       persistenceState.value = { status: 'error', error: loadError }
@@ -108,14 +107,14 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Check if an active workout exists in the database.
    */
   async function hasActiveWorkout(): Promise<boolean> {
-    return activeWorkoutRepository.exists()
+    return getActiveWorkoutRepository().exists()
   }
 
   /**
    * Discard the active workout without saving to history.
    */
   async function discardActiveWorkout(): Promise<void> {
-    await activeWorkoutRepository.clear()
+    await getActiveWorkoutRepository().clear()
     currentWorkoutStartedAt = null
     hasUnsavedChanges.value = false
   }
@@ -125,10 +124,10 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Returns the completed workout for navigation to summary.
    */
   async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
-    const dbWorkout = await activeWorkoutRepository.get()
+    const dbWorkout = await getActiveWorkoutRepository().get()
     if (!dbWorkout) return null
 
-    const completed = await workoutsRepository.completeWorkout(dbWorkout, notes)
+    const completed = await getWorkoutsRepository().completeWorkout(dbWorkout, notes)
     currentWorkoutStartedAt = null
     hasUnsavedChanges.value = false
     return completed
@@ -159,7 +158,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     persistenceState.value = { status: 'saving' }
 
     const dbWorkout = workoutToDb(workout.value, currentWorkoutStartedAt ?? undefined)
-    const [saveError] = await tryCatch(activeWorkoutRepository.save(dbWorkout))
+    const [saveError] = await tryCatch(getActiveWorkoutRepository().save(dbWorkout))
 
     if (saveError) {
       persistenceState.value = { status: 'error', error: saveError }

@@ -86,7 +86,7 @@ async function handleFileSelect(event: Event) {
   const result = await parseExportFile(file)
 
   if (!result.success) {
-    importError.value = result.error
+    importError.value = t(`settings.errors.${result.error}`)
     showImportErrorDialog.value = true
     return
   }

@@ -1,5 +1,5 @@
 import { computed, onMounted, ref } from 'vue'
-import { workoutsRepository } from '@/db/repositories/workouts'
+import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { DbCompletedWorkout, DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/db/schema'
 import { isDbStrengthBlock } from '@/db/schema'
@@ -124,7 +124,7 @@ export function useWorkoutDetail(workoutId: string) {
   // Methods
   async function loadWorkout() {
     state.value = { status: 'loading' }
-    const [error, workout] = await tryCatch(workoutsRepository.getById(workoutId))
+    const [error, workout] = await tryCatch(getWorkoutsRepository().getById(workoutId))
 
     if (error) {
       state.value = { status: 'error', error }

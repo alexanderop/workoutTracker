@@ -1,11 +1,11 @@
 import { computed, onMounted, ref } from 'vue'
-import { templatesRepository } from '@/db/repositories/templates'
-import { activeWorkoutRepository } from '@/db/repositories/activeWorkout'
+import { getTemplatesRepository, getActiveWorkoutRepository } from '@/db'
 import { dbToWorkout } from '@/db/converters'
 import { restoreWorkout } from '@/stores/workoutState'
-import { popularExercises } from '@/data/popularExercises'
 import { tryCatch } from '@/lib/tryCatch'
+import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
+import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
 
 // ============================================
 // Types
@@ -96,7 +96,7 @@ export function useTemplateDetail(templateId: string) {
   async function loadTemplate(): Promise<boolean> {
     state.value = { status: 'loading' }
 
-    const loaded = await templatesRepository.getById(templateId)
+    const loaded = await getTemplatesRepository().getById(templateId)
     if (!loaded) {
       state.value = { status: 'not-found' }
       return false
@@ -118,7 +118,7 @@ export function useTemplateDetail(templateId: string) {
 
     isSaving.value = true
     await tryCatch(
-      templatesRepository.update(state.value.template.id, {
+      getTemplatesRepository().update(state.value.template.id, {
         name: templateName.value.trim(),
         blocks: exercisesToBlocks(exercises.value),
       }),
@@ -131,7 +131,7 @@ export function useTemplateDetail(templateId: string) {
 
   async function deleteTemplate(): Promise<void> {
     if (state.value.status !== 'success') return
-    await templatesRepository.delete(state.value.template.id)
+    await getTemplatesRepository().delete(state.value.template.id)
   }
 
   async function startWorkout(): Promise<boolean> {
@@ -139,7 +139,7 @@ export function useTemplateDetail(templateId: string) {
 
     isStarting.value = true
     const [error, activeWorkout] = await tryCatch(
-      templatesRepository.startFromTemplate(state.value.template.id),
+      getTemplatesRepository().startFromTemplate(state.value.template.id),
     )
 
     if (error) {
@@ -147,7 +147,7 @@ export function useTemplateDetail(templateId: string) {
       return false
     }
 
-    await activeWorkoutRepository.save(activeWorkout)
+    await getActiveWorkoutRepository().save(activeWorkout)
     const inMemoryWorkout = dbToWorkout(activeWorkout)
     restoreWorkout(inMemoryWorkout)
     isStarting.value = false
@@ -155,18 +155,8 @@ export function useTemplateDetail(templateId: string) {
   }
 
   // Exercise manipulation
-  function addExercise(exerciseName: string): void {
-    const popularExercise = popularExercises.find((ex) => ex.name === exerciseName)
-    if (!popularExercise) return
-
-    const newExercise: TemplateExercise = {
-      exerciseId: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: exerciseName,
-      equipment: popularExercise.equipment,
-      thumbnail: popularExercise.icon,
-      defaultSetCount: 3,
-    }
-
+  function addExercise(exercise: Exercise): void {
+    const newExercise = createTemplateExercise(exercise)
     exercises.value = [...exercises.value, newExercise]
   }
 

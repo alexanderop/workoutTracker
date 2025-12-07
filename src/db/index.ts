@@ -1,34 +1,47 @@
-import Dexie from 'dexie'
-import type { Table } from 'dexie'
 import type {
-  DbActiveWorkout,
-  DbCompletedWorkout,
-  DbCustomExercise,
-  DbUserSetting,
-  DbWorkoutTemplate,
-} from './schema'
+  ActiveWorkoutRepository,
+  CustomExercisesRepository,
+  DataManagementRepository,
+  SettingsRepository,
+  TemplatesRepository,
+  WorkoutsRepository,
+} from './interfaces'
+import { getRepositoryProvider } from './provider'
 
-class WorkoutTrackerDb extends Dexie {
-  customExercises!: Table<DbCustomExercise, string>
-  workouts!: Table<DbCompletedWorkout, string>
-  activeWorkout!: Table<DbActiveWorkout, 'current'>
-  templates!: Table<DbWorkoutTemplate, string>
-  settings!: Table<DbUserSetting, string>
+// Re-export types for consumers
+export * from './interfaces'
 
-  constructor() {
-    super('WorkoutTrackerDb')
+// ============================================
+// Repository Getters
+// ============================================
 
-    this.version(1).stores({
-      customExercises: 'id, name, muscle, equipment, createdAt',
-      workouts: 'id, startedAt, completedAt',
-      activeWorkout: 'id',
-      templates: 'id, name, createdAt, lastUsedAt',
-      settings: 'key',
-    })
-  }
+export function getActiveWorkoutRepository(): ActiveWorkoutRepository {
+  return getRepositoryProvider().activeWorkout
 }
 
-export const db = new WorkoutTrackerDb()
+export function getWorkoutsRepository(): WorkoutsRepository {
+  return getRepositoryProvider().workouts
+}
+
+export function getTemplatesRepository(): TemplatesRepository {
+  return getRepositoryProvider().templates
+}
+
+export function getCustomExercisesRepository(): CustomExercisesRepository {
+  return getRepositoryProvider().customExercises
+}
+
+export function getSettingsRepository(): SettingsRepository {
+  return getRepositoryProvider().settings
+}
+
+export function getDataManagementRepository(): DataManagementRepository {
+  return getRepositoryProvider().dataManagement
+}
+
+// ============================================
+// Utilities
+// ============================================
 
 /**
  * Generate a unique ID for database records.
@@ -41,6 +54,15 @@ export function generateId(): string {
  * Delete all data from the database and recreate it.
  */
 export async function deleteAllData(): Promise<void> {
-  await db.delete()
-  await db.open()
+  await getDataManagementRepository().deleteAll()
 }
+
+// ============================================
+// Test Utilities
+// ============================================
+
+/**
+ * Get the underlying Dexie database instance for test setup/teardown.
+ * Only use this in integration tests - prefer repository methods for production code.
+ */
+export { db } from './implementations/dexie/database'

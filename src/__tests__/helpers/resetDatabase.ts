@@ -1,4 +1,4 @@
-import { db } from '@/db'
+import { getDataManagementRepository } from '@/db'
 
 /**
  * Reset the database between tests to ensure isolation.
@@ -6,11 +6,7 @@ import { db } from '@/db'
  * DatabaseClosedError from pending debounced watchers.
  */
 export async function resetDatabase(): Promise<void> {
-  await db.activeWorkout.clear()
-  await db.workouts.clear()
-  await db.customExercises.clear()
-  await db.templates.clear()
-  await db.settings.clear()
+  await getDataManagementRepository().deleteAll()
   // Clear seeding marker so exercises are re-seeded in each test
   localStorage.removeItem('exercises_seed_version')
 }

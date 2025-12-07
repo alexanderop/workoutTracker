@@ -1,0 +1,196 @@
+import { z } from 'zod'
+
+import {
+  exerciseRotationSchema,
+  safeIdSchema,
+  safeStringSchema,
+  setStatusSchema,
+  timestampSchema,
+} from './primitiveSchemas'
+
+// ============================================
+// DbSet Schema
+// ============================================
+
+/**
+ * DbSet schema matching src/db/schema.ts DbSet type.
+ */
+const dbSetSchema = z
+  .object({
+    id: safeIdSchema,
+    kg: z.string().max(20),
+    reps: z.string().max(20),
+    rir: z.string().max(20),
+    status: setStatusSchema,
+    completedAt: timestampSchema.nullable(),
+  })
+  .strict()
+
+// ============================================
+// DbBlockExercise Schema (for timed blocks)
+// ============================================
+
+/**
+ * DbBlockExercise schema matching src/db/schema.ts DbBlockExercise type.
+ */
+const dbBlockExerciseSchema = z
+  .object({
+    id: safeIdSchema,
+    name: safeStringSchema.min(1).max(200),
+    prescribedReps: z.number().int().min(0).max(1000),
+    load: z.string().max(50).nullable(),
+    thumbnail: z.string().max(50),
+  })
+  .strict()
+
+// ============================================
+// Block Config Schemas
+// ============================================
+
+const dbEmomConfigSchema = z
+  .object({
+    minutes: z.number().int().min(1).max(120),
+    exerciseRotation: exerciseRotationSchema,
+  })
+  .strict()
+
+const dbAmrapConfigSchema = z
+  .object({
+    durationSeconds: z.number().int().min(1).max(7200), // max 2 hours
+  })
+  .strict()
+
+const dbTabataConfigSchema = z
+  .object({
+    rounds: z.number().int().min(1).max(100),
+    workSeconds: z.number().int().min(1).max(600),
+    restSeconds: z.number().int().min(0).max(600),
+  })
+  .strict()
+
+const dbForTimeConfigSchema = z
+  .object({
+    timeCapSeconds: z.number().int().min(1).max(7200).nullable(),
+  })
+  .strict()
+
+// ============================================
+// Block Result Schemas
+// ============================================
+
+const dbAmrapResultSchema = z
+  .object({
+    rounds: z.number().int().min(0),
+    partialReps: z.number().int().min(0),
+    actualDuration: z.number().int().min(0),
+  })
+  .strict()
+
+const dbEmomResultSchema = z
+  .object({
+    completedMinutes: z.number().int().min(0),
+    missedMinutes: z.array(z.number().int().min(0)).max(120),
+  })
+  .strict()
+
+const dbTabataResultSchema = z
+  .object({
+    repsPerRound: z.array(z.number().int().min(0)).max(100),
+  })
+  .strict()
+
+const dbForTimeResultSchema = z
+  .object({
+    completionTime: z.number().int().min(0),
+    completed: z.boolean(),
+  })
+  .strict()
+
+// ============================================
+// Workout Block Schemas (Discriminated Union)
+// ============================================
+
+/**
+ * DbStrengthBlock schema matching src/db/schema.ts DbStrengthBlock type.
+ */
+const dbStrengthBlockSchema = z
+  .object({
+    kind: z.literal('strength'),
+    id: safeIdSchema,
+    exerciseDefinitionId: safeIdSchema.nullable(),
+    name: safeStringSchema.min(1).max(200),
+    equipment: z.string().max(100),
+    targetReps: z.number().int().min(1).max(1000),
+    thumbnail: z.string().max(50),
+    sets: z.array(dbSetSchema).max(50),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
+ * DbEmomBlock schema matching src/db/schema.ts DbEmomBlock type.
+ */
+const dbEmomBlockSchema = z
+  .object({
+    kind: z.literal('emom'),
+    id: safeIdSchema,
+    config: dbEmomConfigSchema,
+    exercises: z.array(dbBlockExerciseSchema).max(20),
+    result: dbEmomResultSchema.nullable(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
+ * DbAmrapBlock schema matching src/db/schema.ts DbAmrapBlock type.
+ */
+const dbAmrapBlockSchema = z
+  .object({
+    kind: z.literal('amrap'),
+    id: safeIdSchema,
+    config: dbAmrapConfigSchema,
+    exercises: z.array(dbBlockExerciseSchema).max(20),
+    result: dbAmrapResultSchema.nullable(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
+ * DbTabataBlock schema matching src/db/schema.ts DbTabataBlock type.
+ */
+const dbTabataBlockSchema = z
+  .object({
+    kind: z.literal('tabata'),
+    id: safeIdSchema,
+    config: dbTabataConfigSchema,
+    exercise: dbBlockExerciseSchema,
+    result: dbTabataResultSchema.nullable(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
+ * DbForTimeBlock schema matching src/db/schema.ts DbForTimeBlock type.
+ */
+const dbForTimeBlockSchema = z
+  .object({
+    kind: z.literal('fortime'),
+    id: safeIdSchema,
+    config: dbForTimeConfigSchema,
+    exercises: z.array(dbBlockExerciseSchema).max(20),
+    result: dbForTimeResultSchema.nullable(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
+ * DbWorkoutBlock discriminated union schema.
+ * Matches src/db/schema.ts DbWorkoutBlock type.
+ */
+export const dbWorkoutBlockSchema = z.discriminatedUnion('kind', [
+  dbStrengthBlockSchema,
+  dbEmomBlockSchema,
+  dbAmrapBlockSchema,
+  dbTabataBlockSchema,
+  dbForTimeBlockSchema,
+])

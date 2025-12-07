@@ -66,10 +66,6 @@ function handleCancel(): void {
   router.back()
 }
 
-// Wrapper to adapt new picker signature to composable's expected string argument
-function handleAddExercise(exercise: { name: string; icon: string }): void {
-  addExercise(exercise.name)
-}
 </script>
 
 <template>
@@ -153,7 +149,7 @@ function handleAddExercise(exercise: { name: string; icon: string }): void {
       v-model:open="isAddExerciseOpen"
       presentation="dialog"
       :show-create="true"
-      @select="handleAddExercise"
+      @select="addExercise"
     />
 
     <!-- Delete Confirmation Dialog -->

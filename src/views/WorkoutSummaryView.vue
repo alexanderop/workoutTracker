@@ -7,12 +7,11 @@ import { RouteNames } from '@/router'
 import WorkoutSaveTemplateDialog from '@/features/workout/components/WorkoutSaveTemplateDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useWorkoutDetail } from '@/features/workout/composables/useWorkoutDetail'
-import { templatesRepository } from '@/db/repositories/templates'
+import { useSummaryStats } from '@/features/workout/composables/useSummaryStats'
+import { getTemplatesRepository } from '@/db'
 import { formatDuration, formatWeight } from '@/lib/formatters'
-import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import { useSettingsStore } from '@/stores/settings'
 import { tryCatch } from '@/lib/tryCatch'
 
@@ -27,41 +26,19 @@ const settingsStore = useSettingsStore()
 const { state, stats } = useWorkoutDetail(id)
 const { isVisible: showContent } = useEnterAnimation(100)
 
-// Animated counters with staggered delays
-const { displayValue: animatedExercises } = useAnimatedCounter(() => stats.value.exerciseCount, {
-  delay: 600,
-  duration: 1200,
-})
-const { displayValue: animatedSets } = useAnimatedCounter(() => stats.value.setCount, {
-  delay: 750,
-  duration: 1200,
-})
-const { displayValue: animatedWeight } = useAnimatedCounter(
-  () => {
-    const kg = stats.value.totalWeight
-    const decimals = settingsStore.weightUnit === 'lbs' ? 1 : 0
-    return Number.parseFloat(formatWeightUnit(kg, settingsStore.weightUnit, decimals))
-  },
-  {
-    delay: 900,
-    duration: 1500,
-  },
-)
-const { displayValue: animatedRounds } = useAnimatedCounter(() => stats.value.totalRounds, {
-  delay: 1050,
-  duration: 1200,
-})
-
-const hasTimedBlocks = computed(() => stats.value.timedBlockCount > 0)
-const hasStrengthBlocks = computed(() => stats.value.exerciseCount > 0)
+const {
+  animatedExercises,
+  animatedSets,
+  animatedWeight,
+  animatedRounds,
+  hasTimedBlocks,
+  hasStrengthBlocks,
+  weightLabel,
+} = useSummaryStats(stats, () => settingsStore.weightUnit)
 
 const workoutName = computed(() => {
   return state.value.status === 'success' ? state.value.workout.name : ''
 })
-
-function weightLabel(): string {
-  return `${WEIGHT_UNIT_LABELS[settingsStore.weightUnit]} lifted`
-}
 
 // Save as Template state
 const showSaveTemplateDialog = ref(false)
@@ -71,7 +48,7 @@ async function handleSaveAsTemplate(name: string): Promise<void> {
   if (state.value.status !== 'success' || isSavingTemplate.value) return
 
   isSavingTemplate.value = true
-  await tryCatch(templatesRepository.createFromCompletedWorkout(state.value.workout, name))
+  await tryCatch(getTemplatesRepository().createFromCompletedWorkout(state.value.workout, name))
   showSaveTemplateDialog.value = false
   isSavingTemplate.value = false
 }

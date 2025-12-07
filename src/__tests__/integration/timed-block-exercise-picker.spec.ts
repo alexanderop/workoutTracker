@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { customExercisesRepository } from '@/db/repositories/customExercises'
+import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise } from '@/db/converters'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -18,7 +18,7 @@ describe('Timed Block Exercise Picker', () => {
         type: 'compound',
         metrics: 'weight-reps',
       })
-      await customExercisesRepository.add(customExercise)
+      await getCustomExercisesRepository().add(customExercise)
 
       // When: I navigate to workout builder and add an EMOM block
       const { builder, user, common, getByRole, queryByText, cleanup } = await createTestApp()

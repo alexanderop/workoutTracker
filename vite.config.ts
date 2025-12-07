@@ -2,9 +2,18 @@ import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
+import { visualizer } from 'rollup-plugin-visualizer'
+import type { PluginOption } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vueDevTools from 'vite-plugin-vue-devtools'
+
+// @ts-expect-error Rollup plugin types differ from Vite 6's PluginOption interface
+const bundleVisualizer: PluginOption = visualizer({
+  filename: './dist/stats.html',
+  gzipSize: true,
+  brotliSize: true,
+})
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -56,7 +65,19 @@ export default defineConfig({
         enabled: true,
       },
     }),
+    bundleVisualizer,
   ],
+  build: {
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'CHUNK_SIZE_LIMIT') {
+          throw new Error(warning.message)
+        }
+        warn(warning)
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
