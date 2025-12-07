@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
+import type { DbBenchmark } from '@/db/schema'
 
 type BenchmarkType = 'fortime' | 'rounds'
 
@@ -63,8 +64,24 @@ export function useBenchmarkForm() {
 
   function getFormData(): BenchmarkFormState {
     return {
-      ...form.value,
       name: form.value.name.trim(),
+      type: form.value.type,
+      rounds: form.value.rounds,
+      exercises: form.value.exercises.map((ex) => ({ ...ex })),
+    }
+  }
+
+  function initialize(benchmark: DbBenchmark) {
+    form.value = {
+      name: benchmark.name,
+      type: benchmark.type,
+      rounds: benchmark.rounds,
+      exercises: benchmark.exercises.map((ex) => ({
+        exerciseDefinitionId: ex.exerciseDefinitionId,
+        name: ex.name,
+        prescribedReps: ex.prescribedReps,
+        thumbnail: ex.thumbnail,
+      })),
     }
   }
 
@@ -79,5 +96,6 @@ export function useBenchmarkForm() {
     removeExercise,
     reorderExercises,
     getFormData,
+    initialize,
   }
 }

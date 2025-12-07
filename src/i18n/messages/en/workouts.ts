@@ -170,6 +170,7 @@ export default {
   },
   benchmarks: {
     create: 'Create Benchmark',
+    edit: 'Edit Benchmark',
     name: 'Workout Name',
     namePlaceholder: 'e.g., Murph, Fran, Cindy',
     type: {
@@ -186,6 +187,8 @@ export default {
     exerciseCount: '{count} exercises',
     addExercise: 'Add Exercise',
     noExercises: 'No exercises added yet. Add exercises to create your benchmark.',
+    saveChanges: 'Save Changes',
+    cancelEdit: 'Cancel',
     detail: {
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',

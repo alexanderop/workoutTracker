@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
-import BenchmarkExerciseCard from '@/features/benchmarks/components/BenchmarkExerciseCard.vue'
+import BenchmarkViewMode from '@/features/benchmarks/components/BenchmarkViewMode.vue'
+import BenchmarkEditMode from '@/features/benchmarks/components/BenchmarkEditMode.vue'
+import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
+import WorkoutExercisePicker from '@/features/workout/components/WorkoutExercisePicker.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useBenchmarkDetail } from '@/features/benchmarks/composables/useBenchmarkDetail'
+import { useBenchmarkForm } from '@/features/benchmarks/composables/useBenchmarkForm'
 import { formatBenchmarkType } from '@/lib/formatters'
 import { RouteNames } from '@/router'
+import type { Exercise } from '@/composables/useExerciseSearch'
 
 const { t } = useI18n()
 
@@ -16,8 +22,25 @@ const { id } = defineProps<{
 }>()
 
 const router = useRouter()
-const { state, isStarting, startWorkout } = useBenchmarkDetail(id)
+const { state, isStarting, startWorkout, saveBenchmark } = useBenchmarkDetail(id)
 const { isVisible: showContent } = useEnterAnimation(100)
+const {
+  form,
+  isSaveDisabled,
+  showRoundsInput,
+  addExercise,
+  removeExercise,
+  reorderExercises,
+  getFormData,
+  initialize,
+} = useBenchmarkForm()
+const isEditMode = ref(false)
+const isSaving = ref(false)
+
+// Exercise picker state
+const showExercisePicker = ref(false)
+const showRepsDialog = ref(false)
+const selectedExercise = ref<Exercise | null>(null)
 
 async function handleStartWorkout() {
   const success = await startWorkout()
@@ -25,13 +48,57 @@ async function handleStartWorkout() {
     router.push({ name: RouteNames.ActiveWorkout })
   }
 }
+
+function enterEditMode() {
+  if (state.value.status === 'success') {
+    initialize(state.value.benchmark)
+    isEditMode.value = true
+  }
+}
+
+async function handleSave() {
+  if (state.value.status !== 'success' || isSaving.value) return
+
+  isSaving.value = true
+  const data = getFormData()
+  const { success } = await saveBenchmark(data)
+
+  if (success) {
+    isEditMode.value = false
+  }
+  isSaving.value = false
+}
+
+function handleCancel() {
+  isEditMode.value = false
+}
+
+function handleAddExercise() {
+  showExercisePicker.value = true
+}
+
+function handleExerciseSelected(exercise: Exercise) {
+  selectedExercise.value = exercise
+  showRepsDialog.value = true
+}
+
+function handleRepsConfirm(reps: number) {
+  if (selectedExercise.value) {
+    addExercise(selectedExercise.value, reps)
+    selectedExercise.value = null
+  }
+}
+
+function handleRepsCancel() {
+  selectedExercise.value = null
+}
 </script>
 
 <template>
   <PageLayout
-    :title="state.status === 'success' ? state.benchmark.name : ''"
+    :title="state.status === 'success' && !isEditMode ? state.benchmark.name : ''"
     :subtitle="
-      state.status === 'success'
+      state.status === 'success' && !isEditMode
         ? formatBenchmarkType(state.benchmark.type, state.benchmark.rounds)
         : undefined
     "
@@ -42,34 +109,22 @@ async function handleStartWorkout() {
       <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
-    <!-- Benchmark details (Athletic Editorial style) -->
-    <div v-else-if="state.status === 'success'" class="flex flex-col">
-      <!-- Workout type banner with bold typography -->
-      <div
-        class="border-b bg-muted/30 px-4 py-6"
-        :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-        :style="{ animationDelay: '100ms' }"
-      >
-        <div class="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {{ t('workouts.benchmarks.detail.workoutStructure') }}
-        </div>
-        <div class="text-2xl font-bold">
-          {{ formatBenchmarkType(state.benchmark.type, state.benchmark.rounds) }}
-        </div>
-      </div>
+    <!-- View Mode -->
+    <BenchmarkViewMode
+      v-else-if="state.status === 'success' && !isEditMode"
+      :benchmark="state.benchmark"
+      :show-content="showContent"
+    />
 
-      <!-- Exercise list with staggered animations -->
-      <div class="space-y-3 p-4">
-        <BenchmarkExerciseCard
-          v-for="(exercise, index) in state.benchmark.exercises"
-          :key="index"
-          :exercise="exercise"
-          :index="index"
-          :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-          :style="{ animationDelay: `${150 + index * 50}ms` }"
-        />
-      </div>
-    </div>
+    <!-- Edit Mode -->
+    <BenchmarkEditMode
+      v-else-if="state.status === 'success' && isEditMode"
+      v-model:form="form"
+      :show-rounds-input="showRoundsInput"
+      @add-exercise="handleAddExercise"
+      @remove-exercise="removeExercise"
+      @reorder-exercises="reorderExercises"
+    />
 
     <!-- Error state -->
     <div v-else-if="state.status === 'error'" class="flex flex-col items-center justify-center py-16">
@@ -87,10 +142,14 @@ async function handleStartWorkout() {
       </Button>
     </div>
 
-    <!-- Footer with prominent Start button -->
+    <!-- Footer with prominent Start button or Edit/Save/Cancel buttons -->
     <template v-if="state.status === 'success'" #footer>
-      <div class="p-4">
-        <Button class="w-full" size="lg" :disabled="isStarting" @click="handleStartWorkout">
+      <!-- View mode: Show Start Workout button -->
+      <div v-if="!isEditMode" class="flex gap-2 p-4">
+        <Button variant="outline" class="flex-1" @click="enterEditMode">
+          {{ t('workouts.benchmarks.edit') }}
+        </Button>
+        <Button class="flex-1" size="lg" :disabled="isStarting" @click="handleStartWorkout">
           {{
             isStarting
               ? t('workouts.benchmarks.detail.starting')
@@ -98,6 +157,33 @@ async function handleStartWorkout() {
           }}
         </Button>
       </div>
+
+      <!-- Edit mode: Show Save/Cancel buttons -->
+      <div v-else class="flex gap-2 p-4">
+        <Button variant="outline" class="flex-1" @click="handleCancel">
+          {{ t('workouts.benchmarks.cancelEdit') }}
+        </Button>
+        <Button class="flex-1" :disabled="isSaveDisabled || isSaving" @click="handleSave">
+          {{ isSaving ? t('common.states.saving') : t('workouts.benchmarks.saveChanges') }}
+        </Button>
+      </div>
     </template>
+
+    <!-- Exercise Picker Dialog -->
+    <WorkoutExercisePicker
+      v-model:open="showExercisePicker"
+      presentation="dialog"
+      mode="single"
+      :show-create="true"
+      @select="handleExerciseSelected"
+    />
+
+    <!-- Reps Input Dialog -->
+    <BenchmarkRepsDialog
+      v-model:open="showRepsDialog"
+      :exercise="selectedExercise"
+      @confirm="handleRepsConfirm"
+      @cancel="handleRepsCancel"
+    />
   </PageLayout>
 </template>

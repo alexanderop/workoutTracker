@@ -12,6 +12,7 @@ import { ArrowLeft, Clock, Plus, RotateCw } from 'lucide-vue-next'
 import WorkoutExercisePicker from '@/features/workout/components/WorkoutExercisePicker.vue'
 import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
+import BenchmarkTypeCard from '@/features/benchmarks/components/BenchmarkTypeCard.vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import { getRepositoryProvider } from '@/db/provider'
 import { tryCatch } from '@/lib/tryCatch'
@@ -118,45 +119,23 @@ async function handleSave() {
         <div class="space-y-2">
           <Label>{{ t('workouts.benchmarks.type.label') }}</Label>
           <div class="grid grid-cols-2 gap-3">
-            <!-- For Time Card -->
-            <button
-              type="button"
-              :class="[
-                'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors',
-                form.type === 'fortime'
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:bg-accent',
-              ]"
-              @click="form.type = 'fortime'"
-            >
-              <Clock :size="32" />
-              <div class="text-center">
-                <div class="font-semibold">{{ t('workouts.benchmarks.type.fortime') }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ t('workouts.benchmarks.type.fortimeDescription') }}
-                </div>
-              </div>
-            </button>
+            <BenchmarkTypeCard
+              type="fortime"
+              :is-selected="form.type === 'fortime'"
+              :icon="Clock"
+              :label="t('workouts.benchmarks.type.fortime')"
+              :description="t('workouts.benchmarks.type.fortimeDescription')"
+              @select="form.type = $event"
+            />
 
-            <!-- Rounds Card -->
-            <button
-              type="button"
-              :class="[
-                'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors',
-                form.type === 'rounds'
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:bg-accent',
-              ]"
-              @click="form.type = 'rounds'"
-            >
-              <RotateCw :size="32" />
-              <div class="text-center">
-                <div class="font-semibold">{{ t('workouts.benchmarks.type.rounds') }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ t('workouts.benchmarks.type.roundsDescription') }}
-                </div>
-              </div>
-            </button>
+            <BenchmarkTypeCard
+              type="rounds"
+              :is-selected="form.type === 'rounds'"
+              :icon="RotateCw"
+              :label="t('workouts.benchmarks.type.rounds')"
+              :description="t('workouts.benchmarks.type.roundsDescription')"
+              @select="form.type = $event"
+            />
           </div>
         </div>
 

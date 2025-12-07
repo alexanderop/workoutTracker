@@ -150,4 +150,77 @@ export class BenchmarkDetailPO {
       expect(this.ctx.router.currentRoute.value.path).toBe('/workouts')
     })
   }
+
+  /**
+   * Clicks the "Edit" button to enter edit mode.
+   */
+  async clickEdit(): Promise<void> {
+    const editButton = await waitFor(() => screen.getByRole('button', { name: /edit/i }))
+    await this.ctx.user.click(editButton)
+  }
+
+  /**
+   * Clicks the "Save" or "Save Changes" button in edit mode.
+   */
+  async clickSave(): Promise<void> {
+    const saveButton = await waitFor(() =>
+      screen.getByRole('button', { name: /save changes|save/i }),
+    )
+    await this.ctx.user.click(saveButton)
+  }
+
+  /**
+   * Clicks the "Cancel" button to exit edit mode.
+   */
+  async clickCancel(): Promise<void> {
+    const cancelButton = await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
+    await this.ctx.user.click(cancelButton)
+  }
+
+  /**
+   * Edits the benchmark name input field.
+   * @param newName - The new name to set
+   */
+  async editBenchmarkName(newName: string): Promise<void> {
+    const nameInput = await waitFor(() =>
+      screen.getByRole('textbox', { name: /workout name|name/i }),
+    )
+    await this.ctx.user.clear(nameInput)
+    await this.ctx.user.type(nameInput, newName)
+  }
+
+  /**
+   * Asserts that the view is in edit mode.
+   * Checks for presence of save and cancel buttons.
+   */
+  assertEditMode(): void {
+    expect(screen.queryByRole('button', { name: /save changes|save/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /cancel/i })).toBeTruthy()
+  }
+
+  /**
+   * Asserts that the view is in view mode (not editing).
+   * Checks for presence of edit button and absence of save/cancel.
+   */
+  assertViewMode(): void {
+    expect(screen.queryByRole('button', { name: /edit/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /save changes|save/i })).toBeFalsy()
+    expect(screen.queryByRole('button', { name: /cancel/i })).toBeFalsy()
+  }
+
+  /**
+   * Asserts that the save button is disabled.
+   */
+  assertSaveDisabled(): void {
+    const saveButton = screen.getByRole('button', { name: /save changes|save/i })
+    expect(saveButton.hasAttribute('disabled')).toBe(true)
+  }
+
+  /**
+   * Asserts that the save button is enabled.
+   */
+  assertSaveEnabled(): void {
+    const saveButton = screen.getByRole('button', { name: /save changes|save/i })
+    expect(saveButton.hasAttribute('disabled')).toBe(false)
+  }
 }

@@ -4,6 +4,7 @@ import { dbToWorkout } from '@/db/converters'
 import { restoreWorkout } from '@/stores/workoutState'
 import { tryCatch } from '@/lib/tryCatch'
 import type { DbBenchmark } from '@/db/schema'
+import type { BenchmarkFormExercise } from './useBenchmarkForm'
 
 // ============================================
 // Types
@@ -14,6 +15,13 @@ type BenchmarkDetailState =
   | { status: 'success'; benchmark: DbBenchmark }
   | { status: 'not-found' }
   | { status: 'error'; error: Error }
+
+type BenchmarkFormState = {
+  name: string
+  type: 'fortime' | 'rounds'
+  rounds: number
+  exercises: Array<BenchmarkFormExercise>
+}
 
 // ============================================
 // Composable
@@ -69,6 +77,28 @@ export function useBenchmarkDetail(benchmarkId: string) {
     return true
   }
 
+  async function saveBenchmark(
+    data: BenchmarkFormState,
+  ): Promise<{ success: boolean; error: Error | null }> {
+    const repo = getBenchmarksRepository()
+
+    const [error] = await tryCatch(
+      repo.update(benchmarkId, {
+        name: data.name,
+        type: data.type,
+        rounds: data.rounds,
+        exercises: data.exercises,
+      }),
+    )
+
+    if (error) {
+      return { success: false, error }
+    }
+
+    await loadBenchmark()
+    return { success: true, error: null }
+  }
+
   // Lifecycle Hooks
   onMounted(() => {
     loadBenchmark()
@@ -79,5 +109,6 @@ export function useBenchmarkDetail(benchmarkId: string) {
     isStarting,
     startWorkout,
     loadBenchmark,
+    saveBenchmark,
   }
 }
