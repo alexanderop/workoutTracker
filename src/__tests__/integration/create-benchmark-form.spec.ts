@@ -38,7 +38,7 @@ describe('Create Benchmark Form', () => {
     app.cleanup()
   })
 
-  it('enables save button when workout name is entered', async () => {
+  it('keeps save button disabled when workout name is entered without exercises', async () => {
     const app = await createTestApp()
 
     await app.router.push('/benchmarks/create')
@@ -51,7 +51,7 @@ describe('Create Benchmark Form', () => {
 
     await waitFor(() => {
       const saveButton = app.getByRole('button', { name: /save/i })
-      expect(saveButton).not.toHaveAttribute('disabled')
+      expect(saveButton).toHaveAttribute('disabled')
     })
 
     app.cleanup()
@@ -140,7 +140,7 @@ describe('Create Benchmark Form', () => {
     app.cleanup()
   })
 
-  it('navigates to /workouts when save button is clicked', async () => {
+  it('navigates to /workouts when save button is clicked with name and exercise', async () => {
     const app = await createTestApp()
 
     await app.router.push('/benchmarks/create')
@@ -150,6 +150,28 @@ describe('Create Benchmark Form', () => {
 
     const nameInput = screen.getByLabelText(/workout name/i)
     await app.user.type(nameInput, 'Fran')
+
+    // Add an exercise
+    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
+    await waitFor(() => {
+      expect(app.queryByText(/thruster/i)).toBeTruthy()
+    })
+    await app.user.click(app.getByText(/thruster/i))
+    await waitFor(() => {
+      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
+    })
+    await app.user.click(app.getByRole('button', { name: /^add$/i }))
+
+    // Wait for dialog to close
+    await waitFor(() => {
+      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
+    })
+
+    // Ensure body is clickable
+    await waitFor(() => {
+      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
+      expect(pointerEvents).not.toBe('none')
+    })
 
     const saveButton = app.getByRole('button', { name: /save/i })
     await app.user.click(saveButton)

@@ -182,5 +182,8 @@ export default {
     rounds: {
       label: 'Number of Rounds',
     },
+    exercises: 'Exercises',
+    addExercise: 'Add Exercise',
+    noExercises: 'No exercises added yet. Add exercises to create your benchmark.',
   },
 } as const

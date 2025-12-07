@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useBenchmarkForm } from '@/features/benchmarks/composables/useBenchmarkForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,18 +8,72 @@ import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { ArrowLeft, Clock, RotateCw } from 'lucide-vue-next'
+import { ArrowLeft, Clock, Plus, RotateCw } from 'lucide-vue-next'
+import WorkoutExercisePicker from '@/features/workout/components/WorkoutExercisePicker.vue'
+import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
+import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
+import type { Exercise } from '@/composables/useExerciseSearch'
+import { getRepositoryProvider } from '@/db/provider'
+import { tryCatch } from '@/lib/tryCatch'
 
 const { t } = useI18n()
 const router = useRouter()
-const { form, isSaveDisabled, showRoundsInput, getFormData } = useBenchmarkForm()
+const {
+  form,
+  isSaveDisabled,
+  showRoundsInput,
+  addExercise,
+  removeExercise,
+  reorderExercises,
+  getFormData,
+} = useBenchmarkForm()
+
+const showExercisePicker = ref(false)
+const showRepsDialog = ref(false)
+const selectedExercise = ref<Exercise | null>(null)
 
 function handleBack() {
   router.push({ name: RouteNames.Workouts })
 }
 
-function handleSave() {
-  getFormData()
+function handleAddExercise() {
+  showExercisePicker.value = true
+}
+
+function handleExerciseSelected(exercise: Exercise) {
+  selectedExercise.value = exercise
+  showRepsDialog.value = true
+}
+
+function handleRepsConfirm(reps: number) {
+  if (selectedExercise.value) {
+    addExercise(selectedExercise.value, reps)
+    selectedExercise.value = null
+  }
+}
+
+function handleRepsCancel() {
+  selectedExercise.value = null
+}
+
+async function handleSave() {
+  const data = getFormData()
+  const repo = getRepositoryProvider().benchmarks
+
+  const [error] = await tryCatch(
+    repo.create({
+      name: data.name,
+      type: data.type,
+      rounds: data.rounds,
+      exercises: data.exercises,
+    }),
+  )
+
+  if (error) {
+    console.error('Failed to save benchmark:', error)
+    return
+  }
+
   router.push({ name: RouteNames.Workouts })
 }
 </script>
@@ -108,15 +163,44 @@ function handleSave() {
         <!-- Rounds Input (Conditional) -->
         <div v-if="showRoundsInput" class="space-y-2">
           <Label for="rounds">{{ t('workouts.benchmarks.rounds.label') }}</Label>
-          <NumberField
-            id="rounds"
-            v-model="form.rounds"
-            :min="1"
-          >
+          <NumberField id="rounds" v-model="form.rounds" :min="1">
             <NumberFieldInput />
           </NumberField>
         </div>
+
+        <!-- Exercise List Section -->
+        <div v-if="form.exercises.length > 0" class="space-y-2">
+          <Label>{{ t('workouts.benchmarks.exercises') }}</Label>
+          <BenchmarkExerciseList
+            :exercises="form.exercises"
+            @remove="removeExercise"
+            @reorder="reorderExercises"
+          />
+        </div>
+
+        <!-- Add Exercise Button -->
+        <Button variant="outline" class="w-full border-dashed" @click="handleAddExercise">
+          <Plus class="mr-2 size-5" />
+          {{ t('workouts.benchmarks.addExercise') }}
+        </Button>
       </div>
     </div>
+
+    <!-- Exercise Picker Dialog -->
+    <WorkoutExercisePicker
+      v-model:open="showExercisePicker"
+      presentation="dialog"
+      mode="single"
+      :show-create="true"
+      @select="handleExerciseSelected"
+    />
+
+    <!-- Reps Input Dialog -->
+    <BenchmarkRepsDialog
+      v-model:open="showRepsDialog"
+      :exercise="selectedExercise"
+      @confirm="handleRepsConfirm"
+      @cancel="handleRepsCancel"
+    />
   </div>
 </template>

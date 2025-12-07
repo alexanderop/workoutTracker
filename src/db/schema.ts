@@ -62,6 +62,35 @@ export type DbBlockExercise = {
 }
 
 // ============================================
+// Benchmark Types
+// ============================================
+
+/**
+ * Benchmark exercise (similar to DbTemplateBlockExercise).
+ * Stores snapshot of exercise data at benchmark creation time.
+ */
+export type DbBenchmarkExercise = {
+  exerciseDefinitionId: string | null
+  name: string
+  prescribedReps: number
+  thumbnail: string
+}
+
+/**
+ * Benchmark workout definition for performance tracking.
+ * Benchmarks are reusable workout templates optimized for time comparisons.
+ */
+export type DbBenchmark = {
+  id: string
+  name: string
+  type: 'fortime' | 'rounds'
+  rounds: number
+  exercises: ReadonlyArray<DbBenchmarkExercise>
+  createdAt: number
+  lastUsedAt: number | null
+}
+
+// ============================================
 // Block Configurations
 // ============================================
 
