@@ -10,6 +10,8 @@ function createInitialWorkout(): Workout {
     startedAt: Date.now(),
     mode: 'builder',
     activeSetIndex: null,
+    benchmarkId: null,
+    globalTimerStartedAt: null,
   }
 }
 

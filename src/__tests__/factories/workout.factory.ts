@@ -8,6 +8,8 @@ const DEFAULTS: Readonly<Omit<Workout, 'blocks'>> = {
   startedAt: Date.now(),
   mode: 'builder',
   activeSetIndex: null,
+  benchmarkId: null,
+  globalTimerStartedAt: null,
 }
 
 export function createWorkout(overrides: Partial<Workout> = {}): Workout {

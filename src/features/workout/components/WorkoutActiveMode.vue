@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { useRestTimer } from '@/composables/timers/useRestTimer'
+import type { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
@@ -15,6 +16,14 @@ import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
 
 type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
+
+const {
+  isBenchmarkMode = false,
+  benchmarkTimer,
+} = defineProps<{
+  isBenchmarkMode?: boolean
+  benchmarkTimer?: ReturnType<typeof useBenchmarkGlobalTimer>
+}>()
 
 const emit = defineEmits<{
   'end-workout': []
@@ -71,10 +80,23 @@ const timerDisplayData = computed<TimerDisplayData | undefined>(() => {
 // Header content
 const headerTitle = computed(() => {
   if (!currentBlock.value) return 'Workout'
+
+  // Benchmark mode: show benchmark name
+  if (isBenchmarkMode) {
+    return workout.value.name
+  }
+
+  // Regular mode: show block type
   return BLOCK_LABELS[currentBlock.value.kind]
 })
 
 const headerSubtitle = computed(() => {
+  // Benchmark mode: show timer
+  if (isBenchmarkMode && benchmarkTimer) {
+    return `⏱ ${benchmarkTimer.formattedElapsed.value}`
+  }
+
+  // Regular mode: show block counter
   return `Block ${currentBlockIndex.value + 1} of ${totalBlocks.value}`
 })
 
@@ -136,6 +158,17 @@ function handleSkipBlock() {
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
+
+// Start timer when entering active mode (for benchmarks)
+watch(
+  () => workout.value.mode,
+  (newMode) => {
+    if (newMode === 'active' && isBenchmarkMode && benchmarkTimer && !benchmarkTimer.isRunning.value) {
+      benchmarkTimer.start()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

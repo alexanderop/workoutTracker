@@ -53,6 +53,11 @@ export function useWorkoutMode() {
     // Reset startedAt only on first start (not when resuming)
     if (!hasStarted.value) {
       workout.value.startedAt = Date.now()
+
+      // Start global timer for benchmarks
+      if (workout.value.benchmarkId && !workout.value.globalTimerStartedAt) {
+        workout.value.globalTimerStartedAt = Date.now()
+      }
     }
 
     workout.value.mode = 'active'

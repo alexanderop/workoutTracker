@@ -252,6 +252,8 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
         lastModifiedAt: now,
         mode: 'builder',
         activeSetIndex: null,
+        benchmarkId: null,
+        globalTimerStartedAt: null,
       }
 
       // Update template usage tracking (template exists, so this will always succeed)

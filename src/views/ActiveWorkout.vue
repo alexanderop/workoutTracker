@@ -18,6 +18,7 @@ import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -54,6 +55,12 @@ const {
   discardActiveWorkout,
 } = useWorkoutPersistence(workoutRef)
 
+// Benchmark mode detection
+const isBenchmarkMode = computed(() => !!workout.value.benchmarkId)
+
+// Initialize global timer for benchmarks
+const benchmarkTimer = useBenchmarkGlobalTimer()
+
 onMounted(() => {
   // If not already initialized (from resume), start a new session
   if (!isInitialized.value) {
@@ -61,6 +68,11 @@ onMounted(() => {
     return
   }
   markInitialized()
+
+  // Initialize benchmark timer if in benchmark mode
+  if (isBenchmarkMode.value && workout.value.globalTimerStartedAt) {
+    benchmarkTimer.initializeFromWorkout(workout.value.globalTimerStartedAt)
+  }
 })
 
 // Dialog state
@@ -188,6 +200,8 @@ function handleQueueAddBlock() {
     <!-- Active Mode -->
     <WorkoutActiveMode
       v-if="isActiveMode"
+      :is-benchmark-mode="isBenchmarkMode"
+      :benchmark-timer="benchmarkTimer"
       @end-workout="openDialog('finish')"
       @cancel-workout="openDialog('cancel')"
       @workout-complete="openDialog('finish')"
