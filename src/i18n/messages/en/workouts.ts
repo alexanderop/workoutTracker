@@ -168,4 +168,19 @@ export default {
       description: 'Add exercises to build your template',
     },
   },
+  benchmarks: {
+    create: 'Create Benchmark',
+    name: 'Workout Name',
+    namePlaceholder: 'e.g., Murph, Fran, Cindy',
+    type: {
+      label: 'Type',
+      fortime: 'For Time',
+      fortimeDescription: 'Complete all exercises as fast as possible',
+      rounds: 'Rounds',
+      roundsDescription: 'Complete X rounds of the exercises',
+    },
+    rounds: {
+      label: 'Number of Rounds',
+    },
+  },
 } as const
