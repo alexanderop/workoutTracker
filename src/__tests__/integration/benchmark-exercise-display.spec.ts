@@ -373,15 +373,18 @@ describe('Benchmark Exercise Display', () => {
       )
       await app.user.click(doneButton)
 
-      // Wait for completion state
-      // The workout should transition to completion view
+      // Wait for finish dialog to appear
       await waitFor(
         () => {
-          // After completing, we should no longer see the exercise display
-          expect(screen.queryByRole('heading', { name: /only exercise/i })).toBeNull()
+          // After completing the last exercise, the finish dialog should open
+          expect(screen.getByRole('heading', { name: /finish workout/i })).toBeTruthy()
         },
         { timeout: 3000 },
       )
+
+      // Verify the finish dialog is showing
+      expect(screen.getByText(/your workout will be saved to your history/i)).toBeTruthy()
+      expect(screen.getByRole('button', { name: /finish workout/i })).toBeTruthy()
 
       app.cleanup()
     })
