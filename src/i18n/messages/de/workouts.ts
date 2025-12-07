@@ -168,4 +168,19 @@ export default {
       description: 'Füge Übungen hinzu um deine Vorlage zu erstellen',
     },
   },
+  benchmarks: {
+    create: 'Benchmark Erstellen',
+    name: 'Trainingsname',
+    namePlaceholder: 'z.B. Murph, Fran, Cindy',
+    type: {
+      label: 'Typ',
+      fortime: 'Auf Zeit',
+      fortimeDescription: 'Absolviere alle Übungen so schnell wie möglich',
+      rounds: 'Runden',
+      roundsDescription: 'Absolviere X Runden der Übungen',
+    },
+    rounds: {
+      label: 'Anzahl der Runden',
+    },
+  },
 } as const
