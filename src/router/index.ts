@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
+import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
 import CreateBenchmarkView from '@/views/CreateBenchmarkView.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
 import CreateTemplateView from '@/views/CreateTemplateView.vue'
@@ -25,6 +26,7 @@ export const RouteNames = {
   CreateTemplate: 'CreateTemplate',
   TemplateDetail: 'TemplateDetail',
   CreateBenchmark: 'CreateBenchmark',
+  BenchmarkDetail: 'BenchmarkDetail',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -92,6 +94,12 @@ export const routes = [
     path: '/benchmarks/create',
     name: RouteNames.CreateBenchmark,
     component: CreateBenchmarkView,
+  },
+  {
+    path: '/benchmarks/:id',
+    name: RouteNames.BenchmarkDetail,
+    component: BenchmarkDetailView,
+    props: true,
   },
 ]
 

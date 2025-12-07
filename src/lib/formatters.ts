@@ -35,3 +35,14 @@ export function formatWeight(weight: number): string {
   }
   return weight.toLocaleString()
 }
+
+/**
+ * Format benchmark type for display.
+ * Returns "For Time" for fortime type, or "X Rounds" for rounds type.
+ */
+export function formatBenchmarkType(type: 'fortime' | 'rounds', rounds: number): string {
+  if (type === 'fortime') {
+    return 'For Time'
+  }
+  return `${rounds} Rounds`
+}

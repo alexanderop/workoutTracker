@@ -69,4 +69,5 @@ export default {
   settings: {
     placeholder: 'Please select',
   },
+  reps: 'reps',
 } as const

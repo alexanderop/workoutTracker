@@ -54,6 +54,9 @@ export function useBenchmarkForm() {
   function reorderExercises(fromIndex: number, toIndex: number) {
     const exercises = [...form.value.exercises]
     const [movedExercise] = exercises.splice(fromIndex, 1)
+    if (!movedExercise) {
+      return
+    }
     exercises.splice(toIndex, 0, movedExercise)
     form.value.exercises = exercises
   }

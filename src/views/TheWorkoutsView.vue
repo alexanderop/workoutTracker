@@ -8,11 +8,14 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
 import TemplateListCard from '@/components/TemplateListCard.vue'
+import BenchmarkListCard from '@/features/benchmarks/components/BenchmarkListCard.vue'
 import { useWorkoutsList } from '@/composables/useWorkoutsList'
+import { useBenchmarksList } from '@/composables/useBenchmarksList'
 
 const { t } = useI18n()
 const router = useRouter()
 const { workouts, templates, isLoading, formatTemplateDate } = useWorkoutsList()
+const { benchmarks, formatBenchmarkType } = useBenchmarksList()
 
 function navigateToWorkoutDetail(workoutId: string): void {
   router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
@@ -28,6 +31,10 @@ function handleCreateTemplate(): void {
 
 function handleCreateBenchmark(): void {
   router.push({ name: RouteNames.CreateBenchmark })
+}
+
+function navigateToBenchmarkDetail(benchmarkId: string): void {
+  router.push({ name: RouteNames.BenchmarkDetail, params: { id: benchmarkId } })
 }
 </script>
 
@@ -114,8 +121,19 @@ function handleCreateBenchmark(): void {
           }}</Button>
         </div>
 
+        <!-- Benchmarks list -->
+        <div v-if="benchmarks.length > 0" class="grid flex-1 gap-3 overflow-y-auto">
+          <BenchmarkListCard
+            v-for="benchmark in benchmarks"
+            :key="benchmark.id"
+            :benchmark="benchmark"
+            :format-type="formatBenchmarkType"
+            @click="navigateToBenchmarkDetail"
+          />
+        </div>
+
         <!-- Empty state -->
-        <div class="flex flex-1 items-center justify-center">
+        <div v-else class="flex flex-1 items-center justify-center">
           <Empty>
             <EmptyHeader>
               <EmptyTitle>{{ t('workouts.empty.benchmarks.title') }}</EmptyTitle>

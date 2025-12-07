@@ -2,6 +2,7 @@
 import { GripVertical, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
+import { useI18n } from 'vue-i18n'
 
 type Emits = {
   remove: []
@@ -13,6 +14,7 @@ const { exercise, index } = defineProps<{
 }>()
 
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -37,7 +39,7 @@ const emit = defineEmits<Emits>()
     <!-- Exercise info -->
     <div class="min-w-0 flex-1">
       <p class="truncate font-medium">{{ exercise.name }}</p>
-      <p class="text-sm text-muted-foreground">{{ exercise.prescribedReps }} reps</p>
+      <p class="text-sm text-muted-foreground">{{ exercise.prescribedReps }} {{ t('common.reps') }}</p>
     </div>
 
     <!-- Delete button -->

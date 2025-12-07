@@ -97,9 +97,15 @@ export async function importAllData(exportData: ExportData): Promise<void> {
   // Use JSON round-trip to strip Vue reactivity proxies
   // before IndexedDB's structured clone algorithm runs
   const serialized = JSON.stringify(exportData.data)
-  const rawData: ExportData['data'] = JSON.parse(serialized)
+  const rawData = JSON.parse(serialized)
 
-  await getDataManagementRepository().importAll(rawData)
+  await getDataManagementRepository().importAll({
+    settings: rawData.settings,
+    customExercises: rawData.customExercises,
+    templates: rawData.templates,
+    workouts: rawData.workouts,
+    benchmarks: rawData.benchmarks ?? [],
+  })
 }
 
 /**

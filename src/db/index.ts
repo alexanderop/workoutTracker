@@ -1,5 +1,6 @@
 import type {
   ActiveWorkoutRepository,
+  BenchmarksRepository,
   CustomExercisesRepository,
   DataManagementRepository,
   SettingsRepository,
@@ -37,6 +38,10 @@ export function getSettingsRepository(): SettingsRepository {
 
 export function getDataManagementRepository(): DataManagementRepository {
   return getRepositoryProvider().dataManagement
+}
+
+export function getBenchmarksRepository(): BenchmarksRepository {
+  return getRepositoryProvider().benchmarks
 }
 
 // ============================================

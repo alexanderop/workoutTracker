@@ -1,5 +1,5 @@
 import type { BenchmarksRepository } from '@/db/interfaces'
-import type { DbBenchmark } from '@/db/schema'
+import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
@@ -55,6 +55,56 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'update benchmark last used')
       }
+    },
+
+    async startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout> {
+      const benchmark = await db.benchmarks.get(benchmarkId)
+      if (!benchmark) {
+        throw createDatabaseError('NOT_FOUND', 'start workout from benchmark')
+      }
+
+      const now = Date.now()
+
+      // Create ForTime block with fresh exercise instances (unique IDs per block)
+      const createBlock = (orderIndex: number): DbForTimeBlock => ({
+        kind: 'fortime',
+        id: generateId(),
+        config: {
+          timeCapSeconds: null,
+        },
+        exercises: benchmark.exercises.map((ex) => ({
+          id: generateId(),
+          name: ex.name,
+          prescribedReps: ex.prescribedReps,
+          load: null,
+          thumbnail: ex.thumbnail,
+        })),
+        result: null,
+        orderIndex,
+      })
+
+      // For "rounds" type, create multiple blocks (one per round)
+      // For "fortime" type, create single block
+      const blocks: ReadonlyArray<DbWorkoutBlock> =
+        benchmark.type === 'rounds'
+          ? Array.from({ length: benchmark.rounds }, (_, i) => createBlock(i))
+          : [createBlock(0)]
+
+      const activeWorkout: DbActiveWorkout = {
+        id: 'current',
+        name: benchmark.name,
+        blocks,
+        selectedBlockIndex: 0,
+        startedAt: now,
+        lastModifiedAt: now,
+        mode: 'builder',
+        activeSetIndex: null,
+      }
+
+      // Update benchmark usage tracking
+      await db.benchmarks.update(benchmarkId, { lastUsedAt: now })
+
+      return activeWorkout
     },
   }
 }

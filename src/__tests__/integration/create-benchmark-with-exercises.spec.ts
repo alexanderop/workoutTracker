@@ -32,60 +32,16 @@ describe('Create Benchmark with Exercises', () => {
       expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
     })
 
-    // Fill benchmark name
-    const nameInput = app.getByRole('textbox', { name: /workout name/i })
-    await app.user.type(nameInput, 'Fran')
+    // Fill benchmark name and add exercise
+    await app.benchmarkForm.fillName('Fran')
+    await app.benchmarkForm.selectType('fortime')
+    await app.benchmarkForm.addExerciseWithReps('Thruster', 21)
 
-    // Select "For Time" type (should be selected by default, but click to ensure)
-    const forTimeButton = app.getByRole('button', { name: /for time/i })
-    await app.user.click(forTimeButton)
-
-    // Add first exercise
-    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
-
-    // Wait for exercise picker dialog to open and select Thruster
+    // Save benchmark (button should now be enabled after adding exercise)
     await waitFor(() => {
-      expect(app.queryByText(/thruster/i)).toBeTruthy()
+      app.benchmarkForm.assertSaveEnabled()
     })
-    await app.user.click(app.getByText(/thruster/i))
-
-    // Wait for reps dialog to open
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
-    })
-
-    // Input reps (21) and confirm
-    const repsInput = app.getByRole('spinbutton')
-    await app.user.clear(repsInput)
-    await app.user.type(repsInput, '21')
-
-    await waitFor(() => {
-      const addButton = app.queryByRole('button', { name: /^add$/i })
-      expect(addButton).toBeTruthy()
-    })
-    await app.user.click(app.getByRole('button', { name: /^add$/i }))
-
-    // Wait for dialog to close
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
-    })
-
-    // Ensure body is clickable again (dialog cleanup)
-    await waitFor(() => {
-      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
-      expect(pointerEvents).not.toBe('none')
-    })
-
-    // Verify exercise appears in list
-    await waitFor(() => {
-      expect(app.queryByText(/thruster/i)).toBeTruthy()
-      expect(app.queryByText(/21 reps/i)).toBeTruthy()
-    })
-
-    // Save benchmark
-    const saveButton = app.getByRole('button', { name: /save/i })
-    expect(saveButton).not.toBeDisabled()
-    await app.user.click(saveButton)
+    await app.benchmarkForm.clickSave()
 
     // Wait for save to complete
     await new Promise((resolve) => setTimeout(resolve, 500))
@@ -95,11 +51,15 @@ describe('Create Benchmark with Exercises', () => {
     const benchmarks = await repo.getAll()
 
     expect(benchmarks).toHaveLength(1)
-    expect(benchmarks[0].name).toBe('Fran')
-    expect(benchmarks[0].type).toBe('fortime')
-    expect(benchmarks[0].exercises).toHaveLength(1)
-    expect(benchmarks[0].exercises[0].name).toBe('Kettlebell Thruster')
-    expect(benchmarks[0].exercises[0].prescribedReps).toBe(21)
+    const benchmark = benchmarks[0]
+    if (!benchmark) throw new Error('Benchmark not found')
+    expect(benchmark.name).toBe('Fran')
+    expect(benchmark.type).toBe('fortime')
+    expect(benchmark.exercises).toHaveLength(1)
+    const exercise = benchmark.exercises[0]
+    if (!exercise) throw new Error('Exercise not found')
+    expect(exercise.name).toBe('Kettlebell Thruster')
+    expect(exercise.prescribedReps).toBe(21)
 
     // Should navigate back to workouts view after save
     expect(app.router.currentRoute.value.path).toBe('/workouts')
@@ -115,13 +75,11 @@ describe('Create Benchmark with Exercises', () => {
       expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
     })
 
-    // Fill name
-    const nameInput = app.getByRole('textbox', { name: /workout name/i })
-    await app.user.type(nameInput, 'Test Benchmark')
+    // Fill name without exercises
+    await app.benchmarkForm.fillName('Test Benchmark')
 
     // Save button should be disabled (no exercises)
-    const saveButton = app.getByRole('button', { name: /save/i })
-    expect(saveButton).toBeDisabled()
+    app.benchmarkForm.assertSaveDisabled()
 
     app.cleanup()
   })
@@ -134,44 +92,17 @@ describe('Create Benchmark with Exercises', () => {
       expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
     })
 
-    // Fill name
-    await app.user.type(app.getByRole('textbox', { name: /workout name/i }), 'Test')
-
-    // Add exercise
-    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
-
-    await waitFor(() => {
-      expect(app.queryByText(/thruster/i)).toBeTruthy()
-    })
-    await app.user.click(app.getByText(/thruster/i))
-
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
-    })
-    await app.user.click(app.getByRole('button', { name: /^add$/i }))
-
-    // Wait for dialog to close
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
-    })
-
-    // Ensure body is clickable again (dialog cleanup)
-    await waitFor(() => {
-      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
-      expect(pointerEvents).not.toBe('none')
-    })
+    // Fill name and add exercise
+    await app.benchmarkForm.fillName('Test')
+    await app.benchmarkForm.addExerciseWithReps('Thruster', 21)
 
     // Verify exercise appears
     await waitFor(() => {
       expect(app.queryByText(/thruster/i)).toBeTruthy()
     })
 
-    // Click delete button (X icon)
-    const deleteButtons = document.querySelectorAll('button svg.lucide-x')
-    expect(deleteButtons.length).toBeGreaterThan(0)
-    const deleteButton = deleteButtons[0].closest('button')
-    if (!(deleteButton instanceof HTMLElement)) throw new Error('Delete button not found')
-    await app.user.click(deleteButton)
+    // Remove the exercise
+    await app.benchmarkForm.removeExercise(0)
 
     // Exercise should be removed
     await waitFor(() => {
@@ -179,8 +110,7 @@ describe('Create Benchmark with Exercises', () => {
     })
 
     // Save button should be disabled again
-    const saveButton = app.getByRole('button', { name: /save/i })
-    expect(saveButton).toBeDisabled()
+    app.benchmarkForm.assertSaveDisabled()
 
     app.cleanup()
   })
@@ -195,64 +125,14 @@ describe('Create Benchmark with Exercises', () => {
       expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
     })
 
-    // Fill benchmark name
-    const nameInput = app.getByRole('textbox', { name: /workout name/i })
-    await app.user.type(nameInput, 'Fran')
-
-    // Add first exercise (Thruster - 21 reps)
-    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
-    await waitFor(() => {
-      expect(app.queryByText(/thruster/i)).toBeTruthy()
-    })
-    await app.user.click(app.getByText(/thruster/i))
-
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
-    })
-
-    const repsInput1 = app.getByRole('spinbutton')
-    await app.user.clear(repsInput1)
-    await app.user.type(repsInput1, '21')
-    await app.user.click(app.getByRole('button', { name: /^add$/i }))
-
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
-    })
-
-    await waitFor(() => {
-      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
-      expect(pointerEvents).not.toBe('none')
-    })
-
-    // Add second exercise (Pull-ups - 15 reps)
-    await app.user.click(app.getByRole('button', { name: /add exercise/i }))
-    await waitFor(() => {
-      expect(app.queryByText(/pull-ups/i)).toBeTruthy()
-    })
-    await app.user.click(app.getByText(/pull-ups/i))
-
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
-    })
-
-    const repsInput2 = app.getByRole('spinbutton')
-    await app.user.clear(repsInput2)
-    await app.user.type(repsInput2, '15')
-    await app.user.click(app.getByRole('button', { name: /^add$/i }))
-
-    await waitFor(() => {
-      expect(app.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
-    })
-
-    await waitFor(() => {
-      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
-      expect(pointerEvents).not.toBe('none')
-    })
+    // Fill benchmark name and add multiple exercises
+    await app.benchmarkForm.fillName('Fran')
+    await app.benchmarkForm.addExerciseWithReps('Thruster', 21)
+    await app.benchmarkForm.addExerciseWithReps('Pull-ups', 15)
 
     // Save benchmark
-    const saveButton = app.getByRole('button', { name: /save/i })
-    expect(saveButton).not.toBeDisabled()
-    await app.user.click(saveButton)
+    app.benchmarkForm.assertSaveEnabled()
+    await app.benchmarkForm.clickSave()
 
     // Wait for save to complete
     await new Promise((resolve) => setTimeout(resolve, 500))
@@ -262,12 +142,18 @@ describe('Create Benchmark with Exercises', () => {
     const benchmarks = await repo.getAll()
 
     expect(benchmarks).toHaveLength(1)
-    expect(benchmarks[0].name).toBe('Fran')
-    expect(benchmarks[0].exercises).toHaveLength(2)
-    expect(benchmarks[0].exercises[0].name).toBe('Kettlebell Thruster')
-    expect(benchmarks[0].exercises[0].prescribedReps).toBe(21)
-    expect(benchmarks[0].exercises[1].name).toBe('Pull-ups')
-    expect(benchmarks[0].exercises[1].prescribedReps).toBe(15)
+    const benchmark = benchmarks[0]
+    if (!benchmark) throw new Error('Benchmark not found')
+    expect(benchmark.name).toBe('Fran')
+    expect(benchmark.exercises).toHaveLength(2)
+    const exercise1 = benchmark.exercises[0]
+    const exercise2 = benchmark.exercises[1]
+    if (!exercise1) throw new Error('First exercise not found')
+    if (!exercise2) throw new Error('Second exercise not found')
+    expect(exercise1.name).toBe('Kettlebell Thruster')
+    expect(exercise1.prescribedReps).toBe(21)
+    expect(exercise2.name).toBe('Pull-ups')
+    expect(exercise2.prescribedReps).toBe(15)
 
     // Should navigate back to workouts view
     expect(app.router.currentRoute.value.path).toBe('/workouts')

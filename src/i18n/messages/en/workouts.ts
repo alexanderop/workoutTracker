@@ -183,7 +183,15 @@ export default {
       label: 'Number of Rounds',
     },
     exercises: 'Exercises',
+    exerciseCount: '{count} exercises',
     addExercise: 'Add Exercise',
     noExercises: 'No exercises added yet. Add exercises to create your benchmark.',
+    detail: {
+      workoutStructure: 'Workout Structure',
+      startWorkout: 'Start Workout',
+      starting: 'Starting...',
+      error: 'Error loading benchmark',
+      notFound: 'Benchmark not found',
+    },
   },
 } as const

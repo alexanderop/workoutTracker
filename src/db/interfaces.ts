@@ -326,6 +326,11 @@ export type BenchmarksRepository = {
    * Update last used timestamp when benchmark is performed.
    */
   updateLastUsed(id: string): Promise<void>
+  /**
+   * Create an active workout from a benchmark and update last used timestamp.
+   * @throws Error if benchmark not found
+   */
+  startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout>
 }
 
 // ============================================
