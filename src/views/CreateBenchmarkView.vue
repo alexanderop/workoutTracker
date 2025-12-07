@@ -18,9 +18,7 @@ function handleBack() {
 }
 
 function handleSave() {
-  const data = getFormData()
-   
-  console.log('Benchmark data:', data)
+  getFormData()
   router.push({ name: RouteNames.Workouts })
 }
 </script>
