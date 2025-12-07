@@ -99,6 +99,7 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
         lastModifiedAt: now,
         mode: 'builder',
         activeSetIndex: null,
+        activeExerciseIndex: null,
         benchmarkId,
         globalTimerStartedAt: null,
       }

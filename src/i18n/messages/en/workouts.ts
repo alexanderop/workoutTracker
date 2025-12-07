@@ -200,5 +200,9 @@ export default {
       error: 'Error loading benchmark',
       notFound: 'Benchmark not found',
     },
+    exerciseDisplay: {
+      exerciseNumber: 'Exercise {current} of {total}',
+      reps: 'reps',
+    },
   },
 } as const

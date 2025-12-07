@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useWorkout } from './useWorkout'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock, type WorkoutBlock } from '@/types/blocks'
 
 /**
  * Composable for managing workout mode transitions.
@@ -43,6 +43,37 @@ export function useWorkoutMode() {
     })
   })
 
+  function initializeTimestamps() {
+    if (hasStarted.value) return
+
+    workout.value.startedAt = Date.now()
+
+    if (workout.value.benchmarkId && !workout.value.globalTimerStartedAt) {
+      workout.value.globalTimerStartedAt = Date.now()
+    }
+  }
+
+  function activateFirstSet(firstBlock: WorkoutBlock) {
+    if (!isStrengthBlock(firstBlock)) return
+
+    workout.value.activeSetIndex = 0
+    const firstSet = firstBlock.sets[0]
+    if (firstSet && firstSet.status === 'planned') {
+      firstSet.status = 'active'
+    }
+  }
+
+  function initializeFirstBlock() {
+    const firstBlock = workout.value.blocks[0]
+    if (!firstBlock) return
+
+    activateFirstSet(firstBlock)
+
+    if (isTimedBlock(firstBlock) && workout.value.benchmarkId) {
+      workout.value.activeExerciseIndex = 0
+    }
+  }
+
   /**
    * Start the workout - transition from builder to active mode.
    * Selects the first block and activates its first set if strength.
@@ -50,30 +81,13 @@ export function useWorkoutMode() {
   function startWorkout() {
     if (!hasBlocks.value) return
 
-    // Reset startedAt only on first start (not when resuming)
-    if (!hasStarted.value) {
-      workout.value.startedAt = Date.now()
-
-      // Start global timer for benchmarks
-      if (workout.value.benchmarkId && !workout.value.globalTimerStartedAt) {
-        workout.value.globalTimerStartedAt = Date.now()
-      }
-    }
+    initializeTimestamps()
 
     workout.value.mode = 'active'
     workout.value.selectedBlockIndex = 0
     workout.value.activeSetIndex = null
 
-    // Initialize first block's active state
-    const firstBlock = workout.value.blocks[0]
-    if (firstBlock && isStrengthBlock(firstBlock)) {
-      workout.value.activeSetIndex = 0
-      // Activate first set
-      const firstSet = firstBlock.sets[0]
-      if (firstSet && firstSet.status === 'planned') {
-        firstSet.status = 'active'
-      }
-    }
+    initializeFirstBlock()
   }
 
   /**
@@ -107,6 +121,11 @@ export function useWorkoutMode() {
       if (firstSet && firstSet.status === 'planned') {
         firstSet.status = 'active'
       }
+    }
+
+    // Reset exercise index for benchmark blocks
+    if (nextBlock && isTimedBlock(nextBlock) && workout.value.benchmarkId) {
+      workout.value.activeExerciseIndex = 0
     }
 
     return true

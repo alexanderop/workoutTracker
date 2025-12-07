@@ -210,6 +210,7 @@ export type DbActiveWorkout = {
   lastModifiedAt: number
   mode: WorkoutMode
   activeSetIndex: number | null
+  activeExerciseIndex: number | null
   benchmarkId: string | null
   globalTimerStartedAt: number | null
 }

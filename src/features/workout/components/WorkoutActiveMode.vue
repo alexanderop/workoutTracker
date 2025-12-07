@@ -6,7 +6,7 @@ import type { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkG
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
-import { BLOCK_LABELS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { BLOCK_LABELS, getBlockExerciseList, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
@@ -14,6 +14,7 @@ import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
+import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
 
 type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
 
@@ -32,7 +33,16 @@ const emit = defineEmits<{
   'open-queue': []
 }>()
 
-const { workout, completeSet, setBlockResult, updateSetValue } = useWorkout()
+const {
+  workout,
+  completeSet,
+  setBlockResult,
+  updateSetValue,
+  advanceToNextExercise,
+  currentExercisePosition,
+  totalExerciseCount,
+  globalExerciseIndex,
+} = useWorkout()
 const {
   currentBlock,
   currentBlockIndex,
@@ -107,6 +117,16 @@ const canCompleteSet = computed(() => {
   return isSetReady(activeSet.value)
 })
 
+const isLastExercise = computed(() => {
+  if (!isBenchmarkMode || !currentBlock.value || !isTimedBlock(currentBlock.value))
+    return false
+
+  const exerciseIndex = workout.value.activeExerciseIndex ?? 0
+  const exerciseCount = getBlockExerciseList(currentBlock.value).length
+
+  return exerciseIndex === exerciseCount - 1 && isLastBlock.value
+})
+
 function handleCompleteSet() {
   if (!activeSet.value) return
 
@@ -157,6 +177,14 @@ function handleSkipBlock() {
 
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
+}
+
+function handleNextExercise() {
+  const result = advanceToNextExercise()
+
+  if (result === 'workout-complete') {
+    emit('workout-complete')
+  }
 }
 
 // Start timer when entering active mode (for benchmarks)
@@ -220,12 +248,23 @@ watch(
         :on-complete="handleCompleteBlock"
         @update:is-running="handleTimerRunningChange"
       />
+      <!-- Regular ForTime (non-benchmark) -->
       <WorkoutForTimeView
-        v-else-if="currentBlock.kind === 'fortime'"
+        v-else-if="currentBlock.kind === 'fortime' && !isBenchmarkMode"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
         @update:is-running="handleTimerRunningChange"
+      />
+
+      <!-- Benchmark ForTime (with exercise progression) -->
+      <BenchmarkForTimeView
+        v-else-if="currentBlock.kind === 'fortime' && isBenchmarkMode"
+        :block="currentBlock"
+        :exercise-number="currentExercisePosition?.current ?? 1"
+        :total-exercises-in-round="currentExercisePosition?.total ?? 1"
+        :global-exercise-index="globalExerciseIndex ?? 0"
+        :total-exercises="totalExerciseCount ?? 1"
       />
     </template>
 
@@ -234,15 +273,20 @@ watch(
       <WorkoutActiveModeFooter
         :block="currentBlock"
         :timer="timerDisplayData"
-        :can-complete="canCompleteSet"
-        :is-first-block="isFirstBlock"
-        :is-last-block="isLastBlock"
         :rest-timer="restTimer"
+        :state="{
+          canComplete: canCompleteSet,
+          isFirstBlock,
+          isLastBlock,
+          isBenchmarkMode,
+          isLastExercise,
+        }"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"
         @complete-set="handleCompleteSet"
         @toggle-timer="handleToggleTimer"
         @complete-block="handleCompleteBlock"
+        @next-exercise="handleNextExercise"
       />
     </template>
   </PageLayout>

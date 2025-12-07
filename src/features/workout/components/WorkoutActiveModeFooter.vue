@@ -15,7 +15,7 @@ type ButtonVariant = 'default' | 'secondary'
 type PrimaryAction = {
   label: string
   icon: typeof Check
-  emit: 'complete-set' | 'toggle-timer' | 'complete-block'
+  emit: 'complete-set' | 'toggle-timer' | 'complete-block' | 'next-exercise'
   variant: ButtonVariant
 }
 
@@ -25,23 +25,35 @@ export type TimerDisplayData = {
   label: string
 }
 
-type Props = {
-  block: WorkoutBlock
-  timer?: TimerDisplayData
+type WorkoutState = {
   canComplete?: boolean
   isFirstBlock?: boolean
   isLastBlock?: boolean
+  isBenchmarkMode?: boolean
+  isLastExercise?: boolean
+}
+
+type Props = {
+  block: WorkoutBlock
+  timer?: TimerDisplayData
   restTimer?: ReturnType<typeof useRestTimer>
+  state?: WorkoutState
 }
 
 const {
   block,
   timer,
+  restTimer,
+  state = {},
+} = defineProps<Props>()
+
+const {
   canComplete = true,
   isFirstBlock = false,
   isLastBlock = false,
-  restTimer,
-} = defineProps<Props>()
+  isBenchmarkMode = false,
+  isLastExercise = false,
+} = state
 
 const emit = defineEmits<{
   'prev-block': []
@@ -49,6 +61,7 @@ const emit = defineEmits<{
   'complete-set': []
   'toggle-timer': []
   'complete-block': []
+  'next-exercise': []
 }>()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
@@ -114,8 +127,26 @@ function getForTimeAction(): PrimaryAction {
   }
 }
 
+// Strategy: Benchmark ForTime blocks show "Next Exercise" or "Done" based on position
+function getBenchmarkAction(): PrimaryAction {
+  if (isLastExercise) {
+    return getForTimeAction()
+  }
+  return {
+    label: 'Next Exercise',
+    icon: ChevronRight,
+    emit: 'next-exercise',
+    variant: 'default',
+  }
+}
+
 const primaryAction = computed((): PrimaryAction => {
   if (isStrengthBlock(block)) return getStrengthAction()
+
+  // Benchmark mode: Show exercise navigation
+  if (isBenchmarkMode && block.kind === 'fortime') {
+    return getBenchmarkAction()
+  }
 
   const isRunning = timer?.isRunning ?? false
   const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {
@@ -139,6 +170,9 @@ function handlePrimaryAction() {
       break
     case 'complete-block':
       emit('complete-block')
+      break
+    case 'next-exercise':
+      emit('next-exercise')
       break
   }
 }

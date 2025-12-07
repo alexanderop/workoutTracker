@@ -200,5 +200,9 @@ export default {
       error: 'Fehler beim Laden des Benchmarks',
       notFound: 'Benchmark nicht gefunden',
     },
+    exerciseDisplay: {
+      exerciseNumber: 'Übung {current} von {total}',
+      reps: 'Wdh.',
+    },
   },
 } as const
