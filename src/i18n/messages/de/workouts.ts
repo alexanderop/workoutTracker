@@ -16,10 +16,15 @@ export default {
       title: 'Noch keine Workouts',
       description: 'Starte dein erstes Workout um zu beginnen',
     },
+    benchmarks: {
+      title: 'Noch keine Benchmarks',
+      description: 'Erstelle deinen ersten Benchmark um Fortschritte zu verfolgen',
+    },
   },
   list: {
     templates: 'Vorlagen',
     history: 'Verlauf',
+    benchmarks: 'Benchmarks',
   },
   builder: {
     title: 'Workout Builder',
