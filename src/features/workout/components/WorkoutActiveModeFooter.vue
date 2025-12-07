@@ -30,7 +30,7 @@ type WorkoutState = {
   isFirstBlock?: boolean
   isLastBlock?: boolean
   isBenchmarkMode?: boolean
-  isLastExercise?: boolean
+  isTransitioning?: boolean
 }
 
 type Props = {
@@ -40,20 +40,15 @@ type Props = {
   state?: WorkoutState
 }
 
-const {
-  block,
-  timer,
-  restTimer,
-  state = {},
-} = defineProps<Props>()
+const props = defineProps<Props>()
 
-const {
-  canComplete = true,
-  isFirstBlock = false,
-  isLastBlock = false,
-  isBenchmarkMode = false,
-  isLastExercise = false,
-} = state
+const state = computed(() => props.state ?? {})
+
+const canComplete = computed(() => state.value.canComplete ?? true)
+const isFirstBlock = computed(() => state.value.isFirstBlock ?? false)
+const isLastBlock = computed(() => state.value.isLastBlock ?? false)
+const isBenchmarkMode = computed(() => state.value.isBenchmarkMode ?? false)
+const isTransitioning = computed(() => state.value.isTransitioning ?? false)
 
 const emit = defineEmits<{
   'prev-block': []
@@ -64,13 +59,13 @@ const emit = defineEmits<{
   'next-exercise': []
 }>()
 
-const blockColors = computed(() => BLOCK_COLORS[block.kind])
+const blockColors = computed(() => BLOCK_COLORS[props.block.kind])
 
 // Timer display for footer - uses props for timed blocks, computes for rest timer
 const displayedTimer = computed((): string | null => {
   // For strength blocks, show rest timer
-  if (isStrengthBlock(block) && restTimer) {
-    const elapsed = restTimer.elapsedSeconds.value
+  if (isStrengthBlock(props.block) && props.restTimer) {
+    const elapsed = props.restTimer.elapsedSeconds.value
     if (elapsed === 0) return null
     const mins = Math.floor(elapsed / 60)
     const secs = elapsed % 60
@@ -78,19 +73,19 @@ const displayedTimer = computed((): string | null => {
   }
 
   // For timed blocks, use the prop value passed from parent
-  if (isTimedBlock(block) && timer?.display) {
-    return timer.display
+  if (isTimedBlock(props.block) && props.timer?.display) {
+    return props.timer.display
   }
 
   return null
 })
 
 const displayedTimerLabel = computed((): string | null => {
-  if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
+  if (isStrengthBlock(props.block) && props.restTimer?.elapsedSeconds.value) {
     return t('workouts.active.footer.rest')
   }
-  if (isTimedBlock(block) && timer?.label) {
-    return timer.label
+  if (isTimedBlock(props.block) && props.timer?.label) {
+    return props.timer.label
   }
   return null
 })
@@ -101,7 +96,7 @@ function getStrengthAction(): PrimaryAction {
     label: t('workouts.active.footer.completeSet'),
     icon: Check,
     emit: 'complete-set',
-    variant: canComplete ? 'default' : 'secondary',
+    variant: canComplete.value ? 'default' : 'secondary',
   }
 }
 
@@ -127,28 +122,25 @@ function getForTimeAction(): PrimaryAction {
   }
 }
 
-// Strategy: Benchmark ForTime blocks show "Next Exercise" or "Done" based on position
+// Strategy: Benchmark ForTime blocks show "Done" for all exercises
 function getBenchmarkAction(): PrimaryAction {
-  if (isLastExercise) {
-    return getForTimeAction()
-  }
   return {
-    label: 'Next Exercise',
-    icon: ChevronRight,
+    label: t('workouts.active.footer.done'),
+    icon: Check,
     emit: 'next-exercise',
     variant: 'default',
   }
 }
 
 const primaryAction = computed((): PrimaryAction => {
-  if (isStrengthBlock(block)) return getStrengthAction()
+  if (isStrengthBlock(props.block)) return getStrengthAction()
 
   // Benchmark mode: Show exercise navigation
-  if (isBenchmarkMode && block.kind === 'fortime') {
+  if (isBenchmarkMode.value && props.block.kind === 'fortime') {
     return getBenchmarkAction()
   }
 
-  const isRunning = timer?.isRunning ?? false
+  const isRunning = props.timer?.isRunning ?? false
   const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {
     amrap: () => getTimerToggleAction(isRunning),
     emom: () => getTimerToggleAction(isRunning),
@@ -156,7 +148,7 @@ const primaryAction = computed((): PrimaryAction => {
     fortime: getForTimeAction,
   }
 
-  return actionByKind[block.kind]()
+  return actionByKind[props.block.kind]()
 })
 
 function handlePrimaryAction() {
@@ -214,7 +206,7 @@ function handlePrimaryAction() {
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
-        :disabled="isStrengthBlock(block) && !canComplete"
+        :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
         @click="handlePrimaryAction"
       >
         <component :is="primaryAction.icon" class="size-5" />

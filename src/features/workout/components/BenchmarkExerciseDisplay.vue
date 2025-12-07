@@ -13,7 +13,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-4 px-6 py-8">
+  <div class="flex flex-col items-center gap-4 px-6 py-8" aria-live="polite">
     <!-- Exercise number -->
     <div class="text-sm font-bold text-muted-foreground uppercase tracking-widest">
       {{ t('workouts.benchmarks.exerciseDisplay.exerciseNumber', { current: exerciseNumber, total: totalExercises }) }}

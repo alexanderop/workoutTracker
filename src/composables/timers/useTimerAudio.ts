@@ -19,6 +19,7 @@ export function useTimerAudio() {
 
     oscillator.frequency.value = frequency
     oscillator.type = 'sine'
+    gainNode.gain.value = 2.5 // Boost volume to cut through background music
 
     oscillator.connect(gainNode)
     gainNode.connect(audioContext.destination)

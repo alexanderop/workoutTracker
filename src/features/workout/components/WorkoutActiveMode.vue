@@ -6,7 +6,7 @@ import type { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkG
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
-import { BLOCK_LABELS, getBlockExerciseList, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { BLOCK_LABELS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
@@ -73,6 +73,10 @@ const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentB
 // Timer running state - updated via emit from timer views
 const timerIsRunning = ref(false)
 
+// Animation state for exercise transitions (benchmark mode)
+const isExerciseTransitioning = ref(false)
+const showExerciseCheckmark = ref(false)
+
 function handleTimerRunningChange(isRunning: boolean) {
   timerIsRunning.value = isRunning
 }
@@ -115,16 +119,6 @@ const canSkipBlock = computed(() => currentBlockIndex.value < totalBlocks.value 
 const canCompleteSet = computed(() => {
   if (!activeSet.value) return false
   return isSetReady(activeSet.value)
-})
-
-const isLastExercise = computed(() => {
-  if (!isBenchmarkMode || !currentBlock.value || !isTimedBlock(currentBlock.value))
-    return false
-
-  const exerciseIndex = workout.value.activeExerciseIndex ?? 0
-  const exerciseCount = getBlockExerciseList(currentBlock.value).length
-
-  return exerciseIndex === exerciseCount - 1 && isLastBlock.value
 })
 
 function handleCompleteSet() {
@@ -179,8 +173,23 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
   updateSetValue(setId, field, value)
 }
 
-function handleNextExercise() {
+async function handleNextExercise() {
+  if (isExerciseTransitioning.value) return // Prevent rapid tapping
+
+  isExerciseTransitioning.value = true
+  showExerciseCheckmark.value = true
+
+  // Phase 1: Checkmark animation (300ms)
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  // Phase 2: Advance exercise + slide transition
   const result = advanceToNextExercise()
+  showExerciseCheckmark.value = false
+
+  // Wait for slide transition (500ms)
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  isExerciseTransitioning.value = false
 
   if (result === 'workout-complete') {
     emit('workout-complete')
@@ -265,6 +274,7 @@ watch(
         :total-exercises-in-round="currentExercisePosition?.total ?? 1"
         :global-exercise-index="globalExerciseIndex ?? 0"
         :total-exercises="totalExerciseCount ?? 1"
+        :animation-state="{ showCheckmark: showExerciseCheckmark, isTransitioning: isExerciseTransitioning }"
       />
     </template>
 
@@ -279,7 +289,7 @@ watch(
           isFirstBlock,
           isLastBlock,
           isBenchmarkMode,
-          isLastExercise,
+          isTransitioning: isExerciseTransitioning,
         }"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"
