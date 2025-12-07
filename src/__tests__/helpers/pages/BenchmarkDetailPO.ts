@@ -223,4 +223,55 @@ export class BenchmarkDetailPO {
     const saveButton = screen.getByRole('button', { name: /save changes|save/i })
     expect(saveButton.hasAttribute('disabled')).toBe(false)
   }
+
+  /**
+   * Clicks the "Delete Benchmark" button to open delete confirmation dialog.
+   */
+  async clickDelete(): Promise<void> {
+    const deleteButton = await waitFor(() =>
+      screen.getByRole('button', { name: /delete benchmark/i }),
+    )
+    await this.ctx.user.click(deleteButton)
+  }
+
+  /**
+   * Asserts that the delete confirmation dialog is displayed.
+   */
+  assertDeleteDialogOpen(): void {
+    expect(screen.getByText(/delete benchmark\?/i)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy()
+  }
+
+  /**
+   * Clicks the "Cancel" button in the delete confirmation dialog.
+   */
+  async clickDeleteCancel(): Promise<void> {
+    const cancelButton = await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
+    await this.ctx.user.click(cancelButton)
+  }
+
+  /**
+   * Clicks the "Delete" button in the delete confirmation dialog.
+   * Waits for navigation to /workouts after deletion.
+   */
+  async confirmDelete(): Promise<void> {
+    const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
+    const dialogDeleteButton = deleteButtons[deleteButtons.length - 1]
+    if (!dialogDeleteButton) {
+      throw new Error('Delete button not found in dialog')
+    }
+
+    await this.ctx.user.click(dialogDeleteButton)
+
+    await waitFor(() => {
+      expect(this.ctx.router.currentRoute.value.path).toBe('/workouts')
+    })
+  }
+
+  /**
+   * Asserts that delete button is visible in view mode.
+   */
+  assertDeleteButtonVisible(): void {
+    expect(screen.getByRole('button', { name: /delete benchmark/i })).toBeTruthy()
+  }
 }

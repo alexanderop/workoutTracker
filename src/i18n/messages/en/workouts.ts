@@ -189,6 +189,10 @@ export default {
     noExercises: 'No exercises added yet. Add exercises to create your benchmark.',
     saveChanges: 'Save Changes',
     cancelEdit: 'Cancel',
+    deleteBenchmark: 'Delete Benchmark',
+    deleteConfirmTitle: 'Delete Benchmark?',
+    deleteConfirmDescription:
+      'This action cannot be undone. The benchmark "{name}" will be permanently deleted.',
     detail: {
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',

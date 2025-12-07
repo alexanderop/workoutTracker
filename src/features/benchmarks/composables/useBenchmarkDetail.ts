@@ -99,6 +99,11 @@ export function useBenchmarkDetail(benchmarkId: string) {
     return { success: true, error: null }
   }
 
+  async function deleteBenchmark(): Promise<void> {
+    if (state.value.status !== 'success') return
+    await getBenchmarksRepository().delete(state.value.benchmark.id)
+  }
+
   // Lifecycle Hooks
   onMounted(() => {
     loadBenchmark()
@@ -110,5 +115,6 @@ export function useBenchmarkDetail(benchmarkId: string) {
     startWorkout,
     loadBenchmark,
     saveBenchmark,
+    deleteBenchmark,
   }
 }

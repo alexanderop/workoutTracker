@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import PageLayout from '@/components/PageLayout.vue'
+import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import BenchmarkViewMode from '@/features/benchmarks/components/BenchmarkViewMode.vue'
 import BenchmarkEditMode from '@/features/benchmarks/components/BenchmarkEditMode.vue'
 import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
@@ -22,7 +24,7 @@ const { id } = defineProps<{
 }>()
 
 const router = useRouter()
-const { state, isStarting, startWorkout, saveBenchmark } = useBenchmarkDetail(id)
+const { state, isStarting, startWorkout, saveBenchmark, deleteBenchmark } = useBenchmarkDetail(id)
 const { isVisible: showContent } = useEnterAnimation(100)
 const {
   form,
@@ -41,6 +43,9 @@ const isSaving = ref(false)
 const showExercisePicker = ref(false)
 const showRepsDialog = ref(false)
 const selectedExercise = ref<Exercise | null>(null)
+
+// Delete dialog state
+const showDeleteDialog = ref(false)
 
 async function handleStartWorkout() {
   const success = await startWorkout()
@@ -91,6 +96,11 @@ function handleRepsConfirm(reps: number) {
 
 function handleRepsCancel() {
   selectedExercise.value = null
+}
+
+async function handleDeleteBenchmark(): Promise<void> {
+  await deleteBenchmark()
+  router.push({ name: RouteNames.Workouts })
 }
 </script>
 
@@ -144,17 +154,24 @@ function handleRepsCancel() {
 
     <!-- Footer with prominent Start button or Edit/Save/Cancel buttons -->
     <template v-if="state.status === 'success'" #footer>
-      <!-- View mode: Show Start Workout button -->
-      <div v-if="!isEditMode" class="flex gap-2 p-4">
-        <Button variant="outline" class="flex-1" @click="enterEditMode">
-          {{ t('workouts.benchmarks.edit') }}
-        </Button>
-        <Button class="flex-1" size="lg" :disabled="isStarting" @click="handleStartWorkout">
-          {{
-            isStarting
-              ? t('workouts.benchmarks.detail.starting')
-              : t('workouts.benchmarks.detail.startWorkout')
-          }}
+      <!-- View mode: Show Start Workout button and Delete button -->
+      <div v-if="!isEditMode" class="space-y-3 p-4">
+        <div class="flex gap-2">
+          <Button variant="outline" class="flex-1" @click="enterEditMode">
+            {{ t('workouts.benchmarks.edit') }}
+          </Button>
+          <Button class="flex-1" size="lg" :disabled="isStarting" @click="handleStartWorkout">
+            {{
+              isStarting
+                ? t('workouts.benchmarks.detail.starting')
+                : t('workouts.benchmarks.detail.startWorkout')
+            }}
+          </Button>
+        </div>
+
+        <!-- Delete button -->
+        <Button variant="destructive" class="w-full" @click="showDeleteDialog = true">
+          {{ t('workouts.benchmarks.deleteBenchmark') }}
         </Button>
       </div>
 
@@ -185,5 +202,29 @@ function handleRepsCancel() {
       @confirm="handleRepsConfirm"
       @cancel="handleRepsCancel"
     />
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <MobileDialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ t('workouts.benchmarks.deleteConfirmTitle') }}</DialogTitle>
+          <DialogDescription>
+            {{
+              t('workouts.benchmarks.deleteConfirmDescription', {
+                name: state.status === 'success' ? state.benchmark.name : '',
+              })
+            }}
+          </DialogDescription>
+        </DialogHeader>
+        <div class="flex gap-3 pt-4">
+          <Button variant="outline" class="flex-1" @click="showDeleteDialog = false">
+            {{ t('common.buttons.cancel') }}
+          </Button>
+          <Button variant="destructive" class="flex-1" @click="handleDeleteBenchmark">
+            {{ t('common.buttons.delete') }}
+          </Button>
+        </div>
+      </MobileDialogContent>
+    </Dialog>
   </PageLayout>
 </template>
