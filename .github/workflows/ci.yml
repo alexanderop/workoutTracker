@@ -57,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Cache node_modules
-        uses: actions/cache/save@v4.2.3
+        uses: actions/cache/save@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -79,7 +79,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -104,7 +104,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -129,7 +129,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -168,13 +168,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Cache TypeScript build info
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v4.3.0
         continue-on-error: true
         with:
           path: |
@@ -204,13 +204,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Cache Vite build
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v4.3.0
         continue-on-error: true
         with:
           path: |
@@ -283,7 +283,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v4.2.3
+        uses: actions/cache/restore@v4.3.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
