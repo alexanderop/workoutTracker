@@ -18,6 +18,7 @@ export default {
     stop: 'Stopp',
     starting: 'Startet...',
     createTemplate: '+ Vorlage erstellen',
+    createBenchmark: 'Benchmark erstellen',
     getStarted: 'Loslegen',
     addExercise: '+ Übung hinzufügen',
   },

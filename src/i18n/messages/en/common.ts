@@ -18,6 +18,7 @@ export default {
     stop: 'Stop',
     starting: 'Starting...',
     createTemplate: '+ Create Template',
+    createBenchmark: 'Create Benchmark',
     getStarted: 'Get Started',
     addExercise: '+ Add Exercise',
   },

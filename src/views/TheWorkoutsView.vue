@@ -25,6 +25,10 @@ function navigateToTemplateDetail(templateId: string): void {
 function handleCreateTemplate(): void {
   router.push({ name: RouteNames.CreateTemplate })
 }
+
+function handleCreateBenchmark(): void {
+  router.push({ name: RouteNames.CreateBenchmark })
+}
 </script>
 
 <template>
@@ -43,9 +47,10 @@ function handleCreateTemplate(): void {
 
     <!-- Tabs -->
     <Tabs v-else default-value="history" class="flex flex-1 flex-col">
-      <TabsList class="mb-6 grid w-full grid-cols-2">
+      <TabsList class="mb-6 grid w-full grid-cols-3">
         <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
         <TabsTrigger value="history">{{ t('workouts.list.history') }}</TabsTrigger>
+        <TabsTrigger value="benchmarks">{{ t('workouts.list.benchmarks') }}</TabsTrigger>
       </TabsList>
 
       <!-- Templates Tab -->
@@ -96,6 +101,25 @@ function handleCreateTemplate(): void {
             <EmptyHeader>
               <EmptyTitle>{{ t('workouts.empty.history.title') }}</EmptyTitle>
               <EmptyDescription>{{ t('workouts.empty.history.description') }}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </TabsContent>
+
+      <!-- Benchmarks Tab -->
+      <TabsContent value="benchmarks" class="flex flex-1 flex-col">
+        <div class="mb-4">
+          <Button class="w-full" @click="handleCreateBenchmark">{{
+            t('common.buttons.createBenchmark')
+          }}</Button>
+        </div>
+
+        <!-- Empty state -->
+        <div class="flex flex-1 items-center justify-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>{{ t('workouts.empty.benchmarks.title') }}</EmptyTitle>
+              <EmptyDescription>{{ t('workouts.empty.benchmarks.description') }}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </div>
