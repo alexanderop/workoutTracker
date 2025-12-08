@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { Plus } from 'lucide-vue-next'
+import { Plus, X } from 'lucide-vue-next'
 import { ref, useTemplateRef, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useI18n } from 'vue-i18n'
-import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
+import { cn } from '@/lib/utils'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutQueueItem from './WorkoutQueueItem.vue'
 
@@ -86,14 +93,39 @@ function handleAddBlock() {
 </script>
 
 <template>
-  <Dialog v-model:open="open">
-    <MobileDialogContent class="max-h-[80vh] flex flex-col">
-      <DialogHeader>
-        <DialogTitle>{{ t('workouts.active.queue.title') }}</DialogTitle>
-        <DialogDescription class="sr-only">
+  <Sheet v-model:open="open">
+    <SheetContent
+      side="bottom"
+      :class="
+        cn(
+          'max-h-[80vh] flex flex-col',
+          // Mobile: bottom sheet
+          'bg-background fixed bottom-0 left-0 right-0 z-50 w-full',
+          'gap-4 rounded-t-2xl border pt-2 px-4 pb-6 shadow-lg safe-area-bottom',
+          'data-[state=open]:animate-slide-up-mobile',
+          'data-[state=closed]:animate-slide-down-mobile',
+          // Desktop: centered modal
+          'sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%]',
+          'sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%]',
+          'sm:rounded-lg sm:p-6',
+          'sm:data-[state=open]:animate-in sm:data-[state=open]:fade-in-0',
+          'sm:data-[state=closed]:animate-out sm:data-[state=closed]:fade-out-0',
+          'sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
+          'sm:duration-200',
+        )
+      "
+    >
+      <!-- Drag handle (mobile only) -->
+      <div class="flex justify-center pb-2 sm:hidden">
+        <div class="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+      </div>
+
+      <SheetHeader>
+        <SheetTitle>{{ t('workouts.active.queue.title') }}</SheetTitle>
+        <SheetDescription class="sr-only">
           {{ t('workouts.active.queue.description') }}
-        </DialogDescription>
-      </DialogHeader>
+        </SheetDescription>
+      </SheetHeader>
 
       <!-- Scrollable list of blocks -->
       <div ref="sortableContainer" class="flex-1 overflow-y-auto -mx-4 px-4 flex flex-col gap-1">
@@ -112,6 +144,14 @@ function handleAddBlock() {
         <Plus class="size-5 mr-2" />
         {{ t('workouts.active.queue.addBlock') }}
       </Button>
-    </MobileDialogContent>
-  </Dialog>
+
+      <!-- Close button (desktop only) -->
+      <SheetClose
+        class="absolute top-4 right-4 hidden sm:block rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+      >
+        <X class="size-4" />
+        <span class="sr-only">{{ t('common.buttons.close') }}</span>
+      </SheetClose>
+    </SheetContent>
+  </Sheet>
 </template>
