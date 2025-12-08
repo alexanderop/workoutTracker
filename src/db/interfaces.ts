@@ -24,6 +24,7 @@ export type SettingDefaults = {
   autoSaveInterval: number
   screenWakeLock: boolean
   timerSoundEnabled: boolean
+  timerSoundVolume: number
   language: 'en' | 'de' | undefined
 }
 
@@ -56,6 +57,10 @@ export type SettingsRepository = {
    * Retrieve timer sound setting with fallback to default (true).
    */
   get(key: 'timerSoundEnabled'): Promise<boolean>
+  /**
+   * Retrieve timer sound volume setting with fallback to default (0.8).
+   */
+  get(key: 'timerSoundVolume'): Promise<number>
   /**
    * Retrieve language setting with fallback to default (undefined).
    */

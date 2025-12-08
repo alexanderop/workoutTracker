@@ -303,11 +303,10 @@ describe('Benchmark Detail Flow', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.waitForLoad('Test Benchmark')
 
-      // Click back (PageLayout provides back navigation via back-to prop)
-      // The back-to="/workouts" prop should handle navigation
-      await app.router.push('/workouts')
+      // Click back button in PageLayout header
+      await app.benchmarkDetail.clickBackButton()
 
-      // Verify navigation
+      // Verify navigation to workouts list
       await waitFor(() => {
         expect(app.router.currentRoute.value.path).toBe('/workouts')
       })

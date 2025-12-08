@@ -1,0 +1,62 @@
+[
+  {
+    "directory": "src/features/",
+    "purpose": "Feature modules (Bulletproof architecture)",
+    "key_items": "workout/, exercises/, templates/, benchmarks/, settings/, timers/",
+    "imports": "Only from shared (composables, db, types, lib)"
+  },
+  {
+    "directory": "src/__tests__/",
+    "purpose": "Testing infrastructure",
+    "key_items": "integration/, composables/, factories/, helpers/",
+    "imports": "Vitest + Playwright browser mode"
+  },
+  {
+    "directory": "src/db/",
+    "purpose": "Database layer (Repository pattern)",
+    "key_items": "schema.ts, interfaces.ts, implementations/dexie/",
+    "imports": "Dexie (IndexedDB wrapper)"
+  },
+  {
+    "directory": "src/composables/",
+    "purpose": "Shared reactive logic",
+    "key_items": "timers/, useWorkout.ts, useTheme.ts",
+    "imports": "Cross-cutting composables"
+  },
+  {
+    "directory": "src/components/",
+    "purpose": "Shared Vue components",
+    "key_items": "ui/ (shadcn-vue), timers/, Layout.vue",
+    "imports": "DO NOT EDIT ui/ components"
+  },
+  {
+    "directory": "src/views/",
+    "purpose": "Route-level pages",
+    "key_items": "Orchestrate features + shared components",
+    "imports": "Can import features + shared"
+  },
+  {
+    "directory": "src/stores/",
+    "purpose": "Pinia stores",
+    "key_items": "exercises.ts, settings.ts",
+    "imports": "Global state management"
+  },
+  {
+    "directory": "src/types/",
+    "purpose": "Shared TypeScript types",
+    "key_items": "blocks.ts, workout.ts, exercise.ts",
+    "imports": "Domain types (no Db prefix)"
+  },
+  {
+    "directory": "src/router/",
+    "purpose": "Vue Router config",
+    "key_items": "RouteNames (use instead of string literals)",
+    "imports": "Named routes enforced by ESLint"
+  },
+  {
+    "directory": "src/i18n/",
+    "purpose": "Internationalization",
+    "key_items": "Translation files",
+    "imports": "vue-i18n"
+  }
+]

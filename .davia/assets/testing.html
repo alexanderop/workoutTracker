@@ -1,0 +1,49 @@
+<h1>Testing</h1>
+<p><strong>Comprehensive testing strategy</strong> using Vitest + Playwright browser mode with integration-first approach.</p>
+<hr />
+<h2>🧪 Testing Philosophy</h2>
+<p>This project follows <strong>integration-first testing</strong> with Testing Library principles:</p>
+<p></p>
+<ul>
+<li><strong>Test user behavior</strong>, not implementation details</li>
+<li><strong>Use accessible queries</strong> (getByRole, getByLabelText) over test IDs</li>
+<li><strong>Real browser environment</strong> via Playwright (NOT jsdom)</li>
+<li><strong>High confidence</strong> through full user journeys</li>
+</ul>
+<p></p>
+<hr />
+<h2>🎯 Test Types</h2>
+<p>The project uses <strong>6 distinct test types</strong>, each serving a specific purpose:</p>
+<p></p>
+<database-view data-path="data/test-types.json"></database-view>
+<p></p>
+<hr />
+<h2>⚡ Quick Commands</h2>
+<pre><code># Run all tests (Playwright browser mode)
+pnpm test
+
+# Watch mode (auto-rerun on changes)
+pnpm test:watch
+
+# Headed browser (visible for debugging)
+pnpm test:headed
+
+# Interactive UI
+pnpm test:ui
+
+# Coverage report
+pnpm test:coverage</code></pre>
+<hr />
+<h2>📖 Testing Topics</h2>
+<p><strong>Explore each testing approach:</strong></p>
+<p></p>
+<ul>
+<li><strong>Strategy</strong> - Overall testing approach and test pyramid</li>
+<li><strong>Integration Tests</strong> - Full user flow tests with createTestApp</li>
+<li><strong>Composable Tests</strong> - Unit tests for reactive logic</li>
+<li><strong>Test Utilities</strong> - Helpers, page objects, and factories</li>
+</ul>
+<p></p>
+<blockquote>
+<p>💡 Integration tests give the highest confidence by testing complete user journeys in a real browser.</p>
+</blockquote>

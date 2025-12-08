@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { Plus, X } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import { ref, useTemplateRef, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -144,14 +143,6 @@ function handleAddBlock() {
         <Plus class="size-5 mr-2" />
         {{ t('workouts.active.queue.addBlock') }}
       </Button>
-
-      <!-- Close button (desktop only) -->
-      <SheetClose
-        class="absolute top-4 right-4 hidden sm:block rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-      >
-        <X class="size-4" />
-        <span class="sr-only">{{ t('common.buttons.close') }}</span>
-      </SheetClose>
     </SheetContent>
   </Sheet>
 </template>

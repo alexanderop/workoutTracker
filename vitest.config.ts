@@ -17,27 +17,34 @@ const optimizeDeps = {
   include: ['workbox-window'],
 }
 
+// Shared plugins for all projects
+const plugins = [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })]
+
+// Shared base configuration for all projects
 // All tests run in Playwright browser mode for consistent, real-browser behavior
+const sharedTestConfig = {
+  root: fileURLToPath(new URL('./', import.meta.url)),
+  exclude: [...configDefaults.exclude, 'e2e/**'],
+  // Run test files sequentially to prevent module-level singleton state interference
+  fileParallelism: false,
+  // Stop test execution after first failure
+  bail: 1,
+  browser: {
+    enabled: true,
+    provider: playwright(),
+    instances: [{ browser: 'chromium' as const }],
+    headless: true,
+  },
+  setupFiles: ['./src/__tests__/setup.ts'],
+}
+
 // Note: This file is excluded from tsconfig.vitest.json type checking due to plugin type conflicts
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })],
+  plugins,
   resolve,
   optimizeDeps,
   test: {
-    root: fileURLToPath(new URL('./', import.meta.url)),
-    exclude: [...configDefaults.exclude, 'e2e/**'],
-    // Run test files sequentially to prevent module-level singleton state interference
-    fileParallelism: false,
-    // Stop test execution after first failure
-    bail: 1,
-    include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**', '!src/__tests__/visual/**'],
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: 'chromium' }],
-      headless: true,
-    },
-    setupFiles: ['./src/__tests__/setup.ts'],
+    ...sharedTestConfig,
 
     // Filter out noisy WakeLock errors in browser tests
     onConsoleLog(log: string, type: 'stdout' | 'stderr'): false | void {
@@ -47,6 +54,7 @@ export default defineConfig({
       // Let all other messages through
     },
 
+    // Coverage configuration (applies to default project when using --coverage)
     coverage: {
       provider: 'v8',
       reporter: ['text'],
@@ -59,5 +67,46 @@ export default defineConfig({
         statements: 80,
       },
     },
+
+    // Project-based configuration for running different test suites
+    projects: [
+      // Project 1: Default (main tests)
+      {
+        test: {
+          name: 'default',
+          include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**', '!src/__tests__/visual/**'],
+        },
+      },
+
+      // Project 2: Accessibility tests
+      {
+        test: {
+          name: 'a11y',
+          include: ['src/__tests__/a11y/**/*.spec.ts'],
+        },
+      },
+
+      // Project 3: Visual regression tests
+      {
+        test: {
+          name: 'visual',
+          include: ['src/__tests__/visual/**/*.spec.ts'],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [{ browser: 'chromium' as const }],
+            headless: true,
+            expect: {
+              toMatchScreenshot: {
+                comparatorOptions: {
+                  threshold: 0.2,
+                  allowedMismatchedPixelRatio: 0.02,
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
   },
 })

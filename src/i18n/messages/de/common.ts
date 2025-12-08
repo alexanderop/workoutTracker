@@ -68,4 +68,8 @@ export default {
   settings: {
     placeholder: 'Bitte wählen',
   },
+  reps: 'Wdh.',
+  units: {
+    kg: 'kg',
+  },
 } as const

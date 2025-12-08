@@ -274,4 +274,12 @@ export class BenchmarkDetailPO {
   assertDeleteButtonVisible(): void {
     expect(screen.getByRole('button', { name: /delete benchmark/i })).toBeTruthy()
   }
+
+  /**
+   * Clicks the back button in the PageLayout header.
+   */
+  async clickBackButton(): Promise<void> {
+    const backButton = screen.getByRole('button', { name: /go back/i })
+    await this.ctx.user.click(backButton)
+  }
 }

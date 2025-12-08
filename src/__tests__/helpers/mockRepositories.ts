@@ -1,5 +1,29 @@
 import { vi } from 'vitest'
 import type { RepositoryProvider, SettingDefaults } from '@/db/interfaces'
+import type { DbActiveWorkout } from '@/db/schema'
+
+/**
+ * Create a mock DbActiveWorkout with sensible defaults.
+ * Ensures type safety by enforcing the complete DbActiveWorkout shape.
+ */
+function createMockActiveWorkout(
+  overrides?: Partial<DbActiveWorkout>
+): DbActiveWorkout {
+  return {
+    id: 'current',
+    name: 'Test Workout',
+    blocks: [],
+    selectedBlockIndex: 0,
+    startedAt: Date.now(),
+    lastModifiedAt: Date.now(),
+    mode: 'builder',
+    activeSetIndex: null,
+    activeExerciseIndex: null,
+    benchmarkId: null,
+    globalTimerStartedAt: null,
+    ...overrides,
+  }
+}
 
 /**
  * Create a mock repository provider for unit tests.
@@ -14,6 +38,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
     autoSaveInterval: 1000,
     screenWakeLock: true,
     timerSoundEnabled: true,
+    timerSoundVolume: 0.8,
     language: undefined,
   }
 
@@ -39,16 +64,9 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getById: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
       count: vi.fn().mockResolvedValue(0),
-      startFromCompleted: vi.fn().mockResolvedValue({
-        id: 'current',
-        name: 'Test Workout',
-        blocks: [],
-        selectedBlockIndex: 0,
-        startedAt: Date.now(),
-        lastModifiedAt: Date.now(),
-        mode: 'builder',
-        activeSetIndex: null,
-      }),
+      startFromCompleted: vi
+        .fn()
+        .mockResolvedValue(createMockActiveWorkout({ name: 'Test Workout' })),
     },
     templates: {
       getAll: vi.fn().mockResolvedValue([]),
@@ -69,16 +87,9 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         lastUsedAt: null,
         tags: [],
       }),
-      startFromTemplate: vi.fn().mockResolvedValue({
-        id: 'current',
-        name: 'From Template',
-        blocks: [],
-        selectedBlockIndex: 0,
-        startedAt: Date.now(),
-        lastModifiedAt: Date.now(),
-        mode: 'builder',
-        activeSetIndex: null,
-      }),
+      startFromTemplate: vi
+        .fn()
+        .mockResolvedValue(createMockActiveWorkout({ name: 'From Template' })),
       update: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
       rename: vi.fn().mockResolvedValue(undefined),
@@ -135,16 +146,12 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       update: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
       updateLastUsed: vi.fn().mockResolvedValue(undefined),
-      startFromBenchmark: vi.fn().mockResolvedValue({
-        id: 'current',
-        name: 'Test Benchmark',
-        blocks: [],
-        selectedBlockIndex: 0,
-        startedAt: Date.now(),
-        lastModifiedAt: Date.now(),
-        mode: 'builder',
-        activeSetIndex: null,
-      }),
+      startFromBenchmark: vi.fn().mockResolvedValue(
+        createMockActiveWorkout({
+          name: 'Test Benchmark',
+          benchmarkId: 'benchmark-1',
+        })
+      ),
     },
   }
 }

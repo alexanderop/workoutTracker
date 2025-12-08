@@ -1,0 +1,76 @@
+<h1>Exercise Library</h1>
+<p>Build a <strong>personalized database</strong> of exercises you perform regularly. Makes workout creation faster and more consistent. 📚</p>
+<hr>
+<h2>💡 Why Use the Exercise Library?</h2>
+<p>Instead of typing exercise details every time you create a workout:</p>
+<ul>
+  <li><strong>Save once, reuse forever:</strong> Define "Barbell Back Squat" with all details</li>
+  <li><strong>Consistency:</strong> Same name, equipment, and defaults every time</li>
+  <li><strong>Speed:</strong> Quick-add exercises to strength blocks in one tap</li>
+  <li><strong>Organization:</strong> Browse your exercise collection, edit or delete as needed</li>
+</ul>
+<hr>
+<h2>🔄 Exercise Library Workflow</h2>
+<p>How exercises flow from library to workouts:</p>
+<p></p>
+<excalidraw data-path="data/exercise-library.json"></excalidraw>
+<p></p>
+<hr>
+<h2>📝 Creating an Exercise</h2>
+<p>When adding a new exercise, you define:</p>
+<ol>
+  <li><strong>Name:</strong> e.g., "Barbell Back Squat", "Dumbbell Bench Press"</li>
+  <li><strong>Equipment:</strong> e.g., "Barbell", "Dumbbells", "Bodyweight", "Kettlebell"</li>
+  <li><strong>Target Reps:</strong> Default rep range (e.g., 5 for heavy compounds, 10 for accessories)</li>
+  <li><strong>Image/Icon:</strong> Optional thumbnail for quick visual identification</li>
+</ol>
+<blockquote>
+  <p><strong>Example Exercise Definition:</strong></p>
+  <p>Name: <em>Barbell Back Squat</em></p>
+  <p>Equipment: <em>Barbell</em></p>
+  <p>Target Reps: <em>5</em></p>
+  <p>Icon: <em>🏋️ Barbell icon</em></p>
+</blockquote>
+<hr>
+<h2>🎯 Using Exercises in Workouts</h2>
+<p>When building a workout with strength blocks:</p>
+<ol>
+  <li>Add a <strong>Strength Block</strong></li>
+  <li>Choose <strong>"Select from Library"</strong></li>
+  <li>Pick an exercise (e.g., "Barbell Back Squat")</li>
+  <li>Exercise details <strong>auto-fill</strong>:
+    <ul>
+      <li>Name → pre-filled</li>
+      <li>Equipment → pre-filled</li>
+      <li>Target Reps → pre-filled (editable for this workout)</li>
+    </ul>
+  </li>
+  <li>Add sets with weight/reps/RIR</li>
+</ol>
+<p><em>Editing exercise details in the workout does NOT change the library definition.</em></p>
+<hr>
+<h2>✏️ Managing Your Library</h2>
+<h3>Edit Exercise</h3>
+<ul>
+  <li>Update name, equipment, target reps, or image</li>
+  <li>Changes apply to future uses (not retroactive to past workouts)</li>
+</ul>
+<h3>Delete Exercise</h3>
+<ul>
+  <li>Removes from library permanently</li>
+  <li>Does NOT affect completed workouts that used this exercise</li>
+  <li>You'll need to manually type details if you want to use it again</li>
+</ul>
+<hr>
+<h2>💡 Best Practices</h2>
+<ul>
+  <li><strong>Add staples first:</strong> Main compound lifts (Squat, Bench, Deadlift, etc.)</li>
+  <li><strong>Use consistent naming:</strong> "Barbell Back Squat" not "Back Squats" or "BB Squat"</li>
+  <li><strong>Set realistic target reps:</strong> What you <em>usually</em> program (can override per workout)</li>
+  <li><strong>Add images:</strong> Visual cues speed up exercise selection in the builder</li>
+</ul>
+<hr>
+<h2>🔗 Connection to Timed Blocks</h2>
+<p><strong>Note:</strong> The exercise library is primarily for <strong>strength blocks</strong>. Timed blocks (AMRAP, EMOM, etc.) use simplified "BlockExercise" definitions that you create on-the-fly within the block itself.</p>
+<p><em>This keeps timed blocks lightweight and focused on movement patterns rather than detailed strength tracking.</em></p>
+<p></p>

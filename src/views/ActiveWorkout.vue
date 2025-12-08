@@ -181,10 +181,10 @@ function handleSaveExercise(data: {
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 
-function handleWorkoutComplete() {
+async function handleWorkoutComplete() {
   // For benchmarks, skip the naming dialog (name already set)
   if (isBenchmarkMode.value) {
-    handleConfirmFinish(workout.value.name)
+    await handleConfirmFinish(workout.value.name)
     return
   }
 

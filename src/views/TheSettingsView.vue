@@ -131,6 +131,13 @@ function handleTimerSoundChange(enabled: boolean) {
   settingsStore.setTimerSoundEnabled(enabled)
 }
 
+function handleTimerSoundVolumeChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const volume = parseFloat(target.value)
+  settingsStore.setTimerSoundVolume(volume)
+}
+
 function handleLanguageChange(value: AcceptableValue) {
   if (value === 'en' || value === 'de') {
     settingsStore.setLanguage(value)
@@ -307,6 +314,30 @@ function handleLanguageChange(value: AcceptableValue) {
               class="shrink-0"
               @update:model-value="handleTimerSoundChange"
             />
+          </div>
+
+          <!-- Timer Sound Volume Control -->
+          <div v-if="settingsStore.timerSoundEnabled" class="flex flex-col gap-3">
+            <Label class="text-base" for="timer-sound-volume">{{
+              t('settings.labels.timerSoundVolume')
+            }}</Label>
+            <div class="flex items-center gap-4">
+              <input
+                id="timer-sound-volume"
+                type="range"
+                min="0.5"
+                max="1"
+                step="0.05"
+                :value="settingsStore.timerSoundVolume"
+                data-testid="timer-sound-volume-slider"
+                class="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                @change="handleTimerSoundVolumeChange"
+              />
+              <span class="text-sm font-medium text-muted-foreground min-w-12">
+                {{ Math.round(settingsStore.timerSoundVolume * 100) }}%
+              </span>
+            </div>
+            <p class="text-xs text-muted-foreground">{{ t('settings.labels.volumeRange') }}</p>
           </div>
 
           <!-- Advanced/Debug Section -->

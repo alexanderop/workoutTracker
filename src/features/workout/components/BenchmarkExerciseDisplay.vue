@@ -36,7 +36,7 @@ const { t } = useI18n()
 
     <!-- Load (if present) -->
     <div v-if="exercise.load" class="text-lg text-muted-foreground font-medium">
-      {{ exercise.load }} kg
+      {{ exercise.load }} {{ t('common.units.kg') }}
     </div>
   </div>
 </template>

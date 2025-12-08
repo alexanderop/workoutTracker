@@ -69,6 +69,9 @@ export default {
   },
   settings: {
     placeholder: 'Please select',
+    reps: 'reps',
   },
-  reps: 'reps',
+  units: {
+    kg: 'kg',
+  },
 } as const

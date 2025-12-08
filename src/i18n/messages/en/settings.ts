@@ -17,6 +17,8 @@ export default {
     preventDimming: 'Prevent dimming during workouts',
     timerSounds: 'Timer Sounds',
     playAudioCues: 'Play audio cues during timed workouts',
+    timerSoundVolume: 'Volume',
+    volumeRange: 'Adjust between 50% and 100%',
     advancedDiagnostics: 'Advanced diagnostics',
     exportData: 'Export Data',
     downloadBackup: 'Download backup file',

@@ -55,5 +55,4 @@ src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
 
 
 # Davia
-.davia/
 .claude/skills/davia-documentation/SKILL.md

@@ -1,0 +1,97 @@
+<h1>Database Layer</h1>
+<p><strong>Repository Pattern</strong> with Dexie.js for offline-first IndexedDB persistence.</p>
+<hr />
+<h2>🗄️ Architecture Overview</h2>
+<p>The database layer uses the <strong>Repository Pattern</strong> to abstract IndexedDB operations:</p>
+<p></p>
+<excalidraw data-path="data/database-pattern.json"></excalidraw>
+<p></p>
+<hr />
+<h2>📁 File Structure</h2>
+<pre><code>src/db/
+├── schema.ts                 # Database types (Db* prefix)
+├── interfaces.ts             # Repository interfaces (contracts)
+├── provider.ts               # Repository provider (singleton)
+├── index.ts                  # Public API (getters)
+├── converters.ts             # Domain ↔ Database type converters
+└── implementations/
+    └── dexie/
+        ├── database.ts       # Dexie schema definition
+        ├── settings.ts       # Settings repository impl
+        ├── customExercises.ts
+        ├── workouts.ts
+        ├── activeWorkout.ts
+        ├── templates.ts
+        ├── benchmarks.ts
+        └── dataManagement.ts</code></pre>
+<hr />
+<h2>🎯 Key Concepts</h2>
+<h3>1️⃣ Repository Interfaces</h3>
+<p>Define <strong>contracts</strong> for data access - implementations can be swapped:</p>
+<pre><code>// src/db/interfaces.ts
+export type WorkoutsRepository = {
+  getAll(): Promise&lt;Array&lt;DbCompletedWorkout&gt;&gt;
+  getById(id: string): Promise&lt;DbCompletedWorkout | undefined&gt;
+  create(workout: DbCompletedWorkout): Promise&lt;DbCompletedWorkout&gt;
+  delete(id: string): Promise&lt;void&gt;
+}</code></pre>
+<h3>2️⃣ Db* Types vs Domain Types</h3>
+<ul>
+<li><strong>Database types</strong> (<code>Db*</code> prefix): Use <code>null</code> for "no value" (IndexedDB requirement)</li>
+<li><strong>Domain types</strong> (no prefix): Use <code>undefined</code> for optional values</li>
+</ul>
+<pre><code>// Database type
+type DbCustomExercise = {
+  equipment: Equipment | null  // IndexedDB-compatible
+}
+
+// Domain type
+type Exercise = {
+  equipment?: Equipment  // App logic uses undefined
+}</code></pre>
+<h3>3️⃣ Type Converters</h3>
+<p>Transform between database and domain types:</p>
+<pre><code>import { convertWorkoutToDb, convertDbToWorkout } from '@/db/converters'
+
+// Domain → Database
+const dbWorkout = convertWorkoutToDb(workout)
+await getWorkoutsRepository().create(dbWorkout)
+
+// Database → Domain
+const workout = convertDbToWorkout(dbWorkout)</code></pre>
+<hr />
+<h2>📊 Database Schema</h2>
+<p><strong>Current tables in IndexedDB:</strong></p>
+<p></p>
+<database-view data-path="data/database-tables.json"></database-view>
+<p></p>
+<hr />
+<h2>✅ Usage Pattern</h2>
+<p><strong>Always use repository getters</strong> from <code>@/db/index.ts</code>:</p>
+<pre><code>import { getWorkoutsRepository, generateId } from '@/db'
+
+const repo = getWorkoutsRepository()
+
+// Create
+const workout = { id: generateId(), /* ... */ }
+await repo.create(workout)
+
+// Read
+const allWorkouts = await repo.getAll()
+const oneWorkout = await repo.getById(id)
+
+// Delete
+await repo.delete(id)</code></pre>
+<p></p>
+<blockquote>
+<p>❌ <strong>Never import Dexie directly</strong> (except in tests). Always use repository getters.</p>
+</blockquote>
+<hr />
+<h2>💡 Benefits</h2>
+<ul>
+<li><strong>Abstraction</strong> - Easy to swap implementations (e.g., move to SQL later)</li>
+<li><strong>Testing</strong> - Mock repositories in tests without touching real database</li>
+<li><strong>Type Safety</strong> - TypeScript ensures correct usage</li>
+<li><strong>Offline First</strong> - IndexedDB works without network</li>
+<li><strong>Consistency</strong> - Single source of truth for data operations</li>
+</ul>

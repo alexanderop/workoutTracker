@@ -1,0 +1,122 @@
+[
+  {
+    "category": "🎯 Purpose",
+    "name": "Workout Tracker PWA",
+    "description": "Single-project Vue 3 Progressive Web App for strength and CrossFit workout tracking with offline-first capabilities"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "Vue 3.5+",
+    "description": "Latest Vue with reactive props destructuring, defineModel, and useTemplateRef"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "TypeScript (strict)",
+    "description": "NO any, enum, or type assertions - uses unknown + type guards"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "Vite",
+    "description": "Fast build tool with HMR for development"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "Pinia",
+    "description": "State management for exercises and settings stores"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "Dexie (IndexedDB)",
+    "description": "Repository pattern for offline-first data persistence"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "Vitest + Playwright",
+    "description": "Browser mode testing with real DOM and navigation"
+  },
+  {
+    "category": "⚡ Tech Stack",
+    "name": "shadcn-vue + Tailwind",
+    "description": "Modern UI components with utility-first CSS"
+  },
+  {
+    "category": "🏗️ Architecture",
+    "name": "Bulletproof Feature-Based",
+    "description": "ESLint-enforced dependency rules: Views → Features → Shared (features cannot import other features)"
+  },
+  {
+    "category": "🏗️ Architecture",
+    "name": "Repository Pattern",
+    "description": "Database abstraction with Dexie for IndexedDB operations"
+  },
+  {
+    "category": "🏗️ Architecture",
+    "name": "Composable-First",
+    "description": "Reusable reactive logic for timers, workout state, and UI interactions"
+  },
+  {
+    "category": "✨ Core Features",
+    "name": "Exercise Library",
+    "description": "CRUD operations for custom exercises with categories and tracking modes"
+  },
+  {
+    "category": "✨ Core Features",
+    "name": "Workout Templates",
+    "description": "Save and reuse workout configurations (Strength, AMRAP, EMOM, Tabata, ForTime)"
+  },
+  {
+    "category": "✨ Core Features",
+    "name": "Live Workout Execution",
+    "description": "State machines for each workout type with timers and set tracking"
+  },
+  {
+    "category": "✨ Core Features",
+    "name": "Benchmark Tracking",
+    "description": "Track performance on standard CrossFit benchmarks (Fran, Murph, etc.)"
+  },
+  {
+    "category": "✨ Core Features",
+    "name": "Timer Suite",
+    "description": "Rest, AMRAP, EMOM, Tabata, and ForTime timers with state management"
+  },
+  {
+    "category": "🧪 Testing Strategy",
+    "name": "Integration Tests",
+    "description": "Full user flow tests with createTestApp helper, real routing, and state"
+  },
+  {
+    "category": "🧪 Testing Strategy",
+    "name": "Composable Tests",
+    "description": "Unit tests for composables using withSetup helper and Vue reactivity"
+  },
+  {
+    "category": "🧪 Testing Strategy",
+    "name": "Test Factories",
+    "description": "Builder pattern for generating test data (workouts, exercises, users)"
+  },
+  {
+    "category": "🔐 Security & Privacy",
+    "name": "Fully Local",
+    "description": "No PII tracking - all data stored in IndexedDB on device"
+  },
+  {
+    "category": "🔐 Security & Privacy",
+    "name": "Offline First",
+    "description": "PWA capabilities with service worker for offline usage"
+  },
+  {
+    "category": "📋 Code Quality",
+    "name": "ESLint Rules",
+    "description": "Enforced patterns: tryCatch() for errors, RouteNames for routing, import boundaries"
+  },
+  {
+    "category": "📋 Code Quality",
+    "name": "Type Safety",
+    "description": "Strict TypeScript mode with NO any types allowed"
+  },
+  {
+    "category": "📋 Code Quality",
+    "name": "Conventional Commits",
+    "description": "Format: feat(workout): add rest timer with scope and type"
+  }
+]
