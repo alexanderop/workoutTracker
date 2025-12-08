@@ -72,8 +72,10 @@ export default defineConfig({
     projects: [
       // Project 1: Default (main tests)
       {
+        plugins,
         resolve,
         test: {
+          ...sharedTestConfig,
           name: 'default',
           include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**', '!src/__tests__/visual/**'],
         },
@@ -81,8 +83,10 @@ export default defineConfig({
 
       // Project 2: Accessibility tests
       {
+        plugins,
         resolve,
         test: {
+          ...sharedTestConfig,
           name: 'a11y',
           include: ['src/__tests__/a11y/**/*.spec.ts'],
         },
@@ -90,8 +94,10 @@ export default defineConfig({
 
       // Project 3: Visual regression tests
       {
+        plugins,
         resolve,
         test: {
+          ...sharedTestConfig,
           name: 'visual',
           include: ['src/__tests__/visual/**/*.spec.ts'],
           browser: {
