@@ -1,0 +1,204 @@
+<h1>Composables</h1>
+<p><strong>Business logic + temporary state</strong>. Composables encapsulate reusable logic and bridge between stores, repositories, and components.</p>
+<p></p>
+<h2>🧩 What Composables Manage</h2>
+<p>Composables handle <strong>temporary, derived, or behavioral state</strong>:</p>
+<ul>
+<li>🔄 <strong>Data fetching</strong> - Load from repositories, cache temporarily</li>
+<li>🎛️ <strong>Filtering/search</strong> - Derive state from stores or props</li>
+<li>🤝 <strong>Coordination</strong> - Bridge between layers (DB ↔ memory)</li>
+<li>⏱️ <strong>State machines</strong> - Timers, workflows with enforced transitions</li>
+</ul>
+<p></p>
+<blockquote><p>💡 <strong>Key Benefit</strong>: Composables are <strong>reusable</strong> and <strong>testable</strong> - extract once, use everywhere.</p></blockquote>
+<p></p>
+<excalidraw data-path="data/composables-patterns.json"></excalidraw>
+<p></p>
+<hr>
+<h2>📊 Composable Patterns</h2>
+<h3>1. Fetch + Cache Pattern</h3>
+<p><strong>Load data from repositories, cache in refs</strong> for component use.</p>
+<p></p>
+<p><strong>Example</strong>: <code>useWorkoutsList.ts</code> (lines 1-54)</p>
+<pre><code>export function useWorkoutsList() {
+  const workouts = ref&lt;Array&lt;CompletedWorkout&gt;&gt;([])
+  const templates = ref&lt;Array&lt;Template&gt;&gt;([])
+  const isLoading = ref(true)
+
+  async function loadAll() {
+    const [workoutList, templateList] = await Promise.all([
+      getWorkoutsRepository().getHistory(),
+      getTemplatesRepository().getAll()
+    ])
+    workouts.value = workoutList
+    templates.value = templateList
+    isLoading.value = false
+  }
+
+  onMounted(() =&gt; loadAll())
+
+  return { workouts, templates, isLoading, loadAll }
+}</code></pre>
+<p></p>
+<p><strong>Use when</strong>:</p>
+<ul>
+<li>✅ Data is loaded per-component (not globally cached)</li>
+<li>✅ You need loading states for the UI</li>
+<li>✅ Data comes from multiple repositories in parallel</li>
+</ul>
+<p></p>
+<h3>2. Filter + Derive Pattern</h3>
+<p><strong>Read from stores, compute filtered/derived results</strong> reactively.</p>
+<p></p>
+<p><strong>Example</strong>: <code>useExerciseSearch.ts</code> (lines 73-100)</p>
+<pre><code>export function useExerciseSearch(options?: UseExerciseSearchOptions) {
+  const exercisesStore = useExercisesStore()
+  const searchQuery = ref('')
+
+  const allExercises = computed(() =&gt; {
+    return [...exercisesStore.customExercises].toSorted(...)
+  })
+
+  const filteredExercises = computed(() =&gt; {
+    let result = allExercises.value
+    result = filterByMuscle(result, options?.muscleFilter.value)
+    result = filterBySearchQuery(result, searchQuery.value, ['name'])
+    return result
+  })
+
+  return { searchQuery, filteredExercises, allExercises }
+}</code></pre>
+<p></p>
+<p><strong>Use when</strong>:</p>
+<ul>
+<li>✅ Deriving state from store data</li>
+<li>✅ Reactive filtering or transformations</li>
+<li>✅ Multiple computed dependencies</li>
+</ul>
+<p></p>
+<h3>3. Coordinate Pattern</h3>
+<p><strong>Bridge between layers</strong> - watch changes, convert types, save to DB.</p>
+<p></p>
+<p><strong>Example</strong>: <code>useWorkoutPersistence.ts</code> (lines 50-81)</p>
+<pre><code>export function useWorkoutPersistence() {
+  const workout = getWorkoutRef() // Singleton state
+  const persistenceState = ref&lt;PersistenceState&gt;({ status: 'idle' })
+
+  // Auto-save: watch changes, debounce, convert, save
+  watchDebounced(
+    workout,
+    async (newWorkout) =&gt; {
+      if (newWorkout.blocks.length === 0) {
+        await getActiveWorkoutRepository().clear()
+        return
+      }
+
+      persistenceState.value = { status: 'saving' }
+
+      // Convert domain type → DB type
+      const dbWorkout = workoutToDb(newWorkout, currentWorkoutStartedAt)
+
+      // Save to repository
+      await getActiveWorkoutRepository().save(dbWorkout)
+
+      persistenceState.value = { status: 'idle' }
+    },
+    { debounce: 1000, deep: true }
+  )
+
+  return { persistenceState, loadActiveWorkout, completeWorkout, discardWorkout }
+}</code></pre>
+<p></p>
+<p><strong>Use when</strong>:</p>
+<ul>
+<li>✅ Coordinating between in-memory state and database</li>
+<li>✅ Auto-saving with debounce</li>
+<li>✅ Type conversions (domain ↔ DB)</li>
+</ul>
+<p></p>
+<h3>4. State Machine Pattern</h3>
+<p><strong>Enforce state transitions</strong> with clear status tracking.</p>
+<p></p>
+<p><strong>Example</strong>: <code>useBaseTimer.ts</code> (lines 1-150)</p>
+<pre><code>export function useBaseTimer() {
+  const status = ref&lt;TimerStatus&gt;('idle')
+  const elapsedMs = ref(0)
+  const startedAt = ref&lt;number | undefined&gt;()
+
+  function start() {
+    if (status.value === 'running') return
+    status.value = 'running'
+    startedAt.value = Date.now()
+  }
+
+  function pause() {
+    if (status.value !== 'running') return
+    status.value = 'paused'
+  }
+
+  function complete() {
+    if (status.value === 'idle') return
+    status.value = 'completed'
+  }
+
+  // Readonly outputs to prevent mutations
+  return {
+    status: readonly(status),
+    elapsedMs: readonly(elapsedMs),
+    start,
+    pause,
+    complete
+  }
+}</code></pre>
+<p></p>
+<p><strong>Use when</strong>:</p>
+<ul>
+<li>✅ Enforcing state transitions (idle → running → paused → completed)</li>
+<li>✅ Preventing invalid operations</li>
+<li>✅ Readonly outputs to avoid accidental mutations</li>
+</ul>
+<p></p>
+<hr>
+<h2>✅ Use Composables When...</h2>
+<ul>
+<li>✅ Logic is <strong>reusable</strong> across components</li>
+<li>✅ State is <strong>temporary</strong> or <strong>component-specific</strong></li>
+<li>✅ You need <strong>business logic</strong> (validation, formatting, coordination)</li>
+<li>✅ Bridging between <strong>stores and repositories</strong></li>
+<li>✅ Managing <strong>derived/computed state</strong></li>
+</ul>
+<p></p>
+<h2>❌ Don't Use Composables When...</h2>
+<ul>
+<li>❌ Data is <strong>globally cached</strong> (use stores instead)</li>
+<li>❌ State is <strong>trivial</strong> and only used once (use local component state)</li>
+<li>❌ You just need <strong>database access</strong> (call repositories directly from composables)</li>
+</ul>
+<p></p>
+<hr>
+<h2>🔗 Integration with Other Layers</h2>
+<p><strong>Composables → Stores</strong>:</p>
+<ul>
+<li>Read cached data from stores</li>
+<li>Example: <code>useExerciseSearch</code> reads from <code>exercisesStore</code> (line 74)</li>
+</ul>
+<p></p>
+<p><strong>Composables → Repositories</strong>:</p>
+<ul>
+<li>Call repositories directly for DB operations</li>
+<li>Example: <code>useWorkoutsList</code> calls <code>getWorkoutsRepository()</code> (line 34)</li>
+</ul>
+<p></p>
+<p><strong>Components → Composables</strong>:</p>
+<ul>
+<li>Components call composables for logic + state</li>
+<li>Example: <code>const { workouts, isLoading } = useWorkoutsList()</code></li>
+</ul>
+<p></p>
+<hr>
+<h2>📂 Composable Locations</h2>
+<ul>
+<li><strong>Shared composables</strong>: <code>src/composables/</code> (timers, app init)</li>
+<li><strong>Feature composables</strong>: <code>src/features/*/composables/</code> (workout persistence)</li>
+<li><strong>Test helpers</strong>: <code>src/__tests__/helpers/</code> (withSetup, createTestApp)</li>
+</ul>
