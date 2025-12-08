@@ -194,6 +194,9 @@ export default {
     deleteConfirmTitle: 'Delete Benchmark?',
     deleteConfirmDescription:
       'This action cannot be undone. The benchmark "{name}" will be permanently deleted.',
+    personalBest: 'PERSONAL BEST',
+    noPbYet: 'No PB yet',
+    pbLabel: 'PB',
     detail: {
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',

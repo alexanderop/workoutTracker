@@ -193,6 +193,9 @@ export default {
     deleteConfirmTitle: 'Benchmark löschen?',
     deleteConfirmDescription:
       'Diese Aktion kann nicht rückgängig gemacht werden. Der Benchmark "{name}" wird dauerhaft gelöscht.',
+    personalBest: 'PERSÖNLICHE BESTLEISTUNG',
+    noPbYet: 'Noch kein PB',
+    pbLabel: 'PB',
     detail: {
       workoutStructure: 'Trainingsstruktur',
       startWorkout: 'Training Starten',

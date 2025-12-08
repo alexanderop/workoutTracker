@@ -152,6 +152,8 @@ export function createMockRepositoryProvider(): RepositoryProvider {
           benchmarkId: 'benchmark-1',
         })
       ),
+      getPersonalBest: vi.fn().mockResolvedValue(null),
+      getPersonalBests: vi.fn().mockResolvedValue(new Map()),
     },
   }
 }

@@ -109,5 +109,66 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
 
       return activeWorkout
     },
+
+    async getPersonalBest(benchmarkId: string): Promise<number | null> {
+      // Get all completed workouts for this benchmark
+      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
+
+      if (workouts.length === 0) {
+        return null
+      }
+
+      // Find the minimum completion time from all ForTime blocks
+      let bestTime: number | null = null
+
+      for (const workout of workouts) {
+        for (const block of workout.blocks) {
+          if (block.kind === 'fortime' && block.result?.completed) {
+            const time = block.result.completionTime
+            if (bestTime === null || time < bestTime) {
+              bestTime = time
+            }
+          }
+        }
+      }
+
+      return bestTime
+    },
+
+    async getPersonalBests(
+      benchmarkIds: ReadonlyArray<string>
+    ): Promise<ReadonlyMap<string, number>> {
+      // Early return for empty input
+      if (benchmarkIds.length === 0) {
+        return new Map()
+      }
+
+      // Single query: Get all workouts for all benchmark IDs
+      const workouts = await db.workouts
+        .where('benchmarkId')
+        .anyOf(benchmarkIds)
+        .toArray()
+
+      // Build map of benchmark ID -> best time
+      const bestTimes = new Map<string, number>()
+
+      for (const workout of workouts) {
+        // Skip workouts without benchmarkId (shouldn't happen with anyOf query)
+        if (workout.benchmarkId === null) continue
+
+        for (const block of workout.blocks) {
+          if (block.kind === 'fortime' && block.result?.completed) {
+            const time = block.result.completionTime
+            const currentBest = bestTimes.get(workout.benchmarkId)
+
+            if (currentBest === undefined || time < currentBest) {
+              bestTimes.set(workout.benchmarkId, time)
+            }
+          }
+        }
+      }
+
+      return bestTimes
+    },
   }
 }

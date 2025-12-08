@@ -22,7 +22,7 @@ export class WorkoutTrackerDb extends Dexie {
 
     this.version(1).stores({
       customExercises: 'id, name, muscle, equipment, createdAt',
-      workouts: 'id, startedAt, completedAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
       activeWorkout: 'id',
       templates: 'id, name, createdAt, lastUsedAt',
       settings: 'key',

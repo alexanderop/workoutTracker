@@ -336,6 +336,17 @@ export type BenchmarksRepository = {
    * @throws Error if benchmark not found
    */
   startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout>
+  /**
+   * Get the personal best (fastest completion time) for a benchmark.
+   * Returns the completion time in seconds, or null if no completions exist.
+   */
+  getPersonalBest(benchmarkId: string): Promise<number | null>
+  /**
+   * Get personal bests for multiple benchmarks in a single batch query.
+   * Returns a Map of benchmark IDs to completion times (in seconds).
+   * Benchmarks without completions are omitted from the map.
+   */
+  getPersonalBests(benchmarkIds: ReadonlyArray<string>): Promise<ReadonlyMap<string, number>>
 }
 
 // ============================================

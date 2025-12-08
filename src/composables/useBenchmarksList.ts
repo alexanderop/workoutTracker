@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, shallowRef } from 'vue'
 import { getBenchmarksRepository } from '@/db'
 import { formatBenchmarkType } from '@/lib/formatters'
 import type { DbBenchmark } from '@/db/schema'
@@ -21,7 +21,8 @@ function formatBenchmarkDate(timestamp: number | null): string {
 
 export function useBenchmarksList() {
   // Primary State
-  const benchmarks = ref<ReadonlyArray<DbBenchmark>>([])
+  const benchmarks = shallowRef<ReadonlyArray<DbBenchmark>>([])
+  const personalBests = shallowRef<ReadonlyMap<string, number>>(new Map())
 
   // State Metadata
   const isLoading = ref(true)
@@ -29,7 +30,13 @@ export function useBenchmarksList() {
   // Methods
   async function loadAll(): Promise<void> {
     isLoading.value = true
-    benchmarks.value = await getBenchmarksRepository().getAll()
+    const repo = getBenchmarksRepository()
+    benchmarks.value = await repo.getAll()
+
+    // Load PBs for all benchmarks (batch query)
+    const benchmarkIds = benchmarks.value.map((b) => b.id)
+    personalBests.value = await repo.getPersonalBests(benchmarkIds)
+
     isLoading.value = false
   }
 
@@ -41,6 +48,7 @@ export function useBenchmarksList() {
   return {
     // State
     benchmarks,
+    personalBests,
     isLoading,
     // Methods
     loadAll,

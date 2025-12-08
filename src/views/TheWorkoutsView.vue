@@ -15,7 +15,7 @@ import { useBenchmarksList } from '@/composables/useBenchmarksList'
 const { t } = useI18n()
 const router = useRouter()
 const { workouts, templates, isLoading, formatTemplateDate } = useWorkoutsList()
-const { benchmarks, formatBenchmarkType } = useBenchmarksList()
+const { benchmarks, personalBests, formatBenchmarkType } = useBenchmarksList()
 
 function navigateToWorkoutDetail(workoutId: string): void {
   router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
@@ -127,6 +127,7 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
             v-for="benchmark in benchmarks"
             :key="benchmark.id"
             :benchmark="benchmark"
+            :personal-best="personalBests.get(benchmark.id)"
             :format-type="formatBenchmarkType"
             @click="navigateToBenchmarkDetail"
           />

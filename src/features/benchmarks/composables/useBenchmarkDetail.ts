@@ -12,7 +12,7 @@ import type { BenchmarkFormExercise } from './useBenchmarkForm'
 
 type BenchmarkDetailState =
   | { status: 'loading' }
-  | { status: 'success'; benchmark: DbBenchmark }
+  | { status: 'success'; benchmark: DbBenchmark; personalBest: number | null }
   | { status: 'not-found' }
   | { status: 'error'; error: Error }
 
@@ -38,7 +38,8 @@ export function useBenchmarkDetail(benchmarkId: string) {
   async function loadBenchmark(): Promise<void> {
     state.value = { status: 'loading' }
 
-    const [error, loaded] = await tryCatch(getBenchmarksRepository().getById(benchmarkId))
+    const repo = getBenchmarksRepository()
+    const [error, loaded] = await tryCatch(repo.getById(benchmarkId))
 
     if (error) {
       state.value = { status: 'error', error }
@@ -50,7 +51,11 @@ export function useBenchmarkDetail(benchmarkId: string) {
       return
     }
 
-    state.value = { status: 'success', benchmark: loaded }
+    // Load personal best
+    const [pbError, pb] = await tryCatch(repo.getPersonalBest(benchmarkId))
+    const personalBest = pbError ? null : pb
+
+    state.value = { status: 'success', benchmark: loaded, personalBest }
   }
 
   async function startWorkout(): Promise<boolean> {

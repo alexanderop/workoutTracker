@@ -123,6 +123,7 @@ async function handleDeleteBenchmark(): Promise<void> {
     <BenchmarkViewMode
       v-else-if="state.status === 'success' && !isEditMode"
       :benchmark="state.benchmark"
+      :personal-best="state.personalBest"
       :show-content="showContent"
     />
 
