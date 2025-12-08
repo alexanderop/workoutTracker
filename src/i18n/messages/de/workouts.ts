@@ -228,5 +228,8 @@ export default {
       second: 'Sekunde',
       seconds: 'Sekunden',
     },
+    attemptHistory: 'Versuchsverlauf',
+    noAttempts: 'Noch keine Versuche',
+    pbBadge: '🏆 Persönliche Bestleistung',
   },
 } as const

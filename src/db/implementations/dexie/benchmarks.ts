@@ -1,4 +1,4 @@
-import type { BenchmarksRepository } from '@/db/interfaces'
+import type { BenchmarkAttempt, BenchmarksRepository } from '@/db/interfaces'
 import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
@@ -169,6 +169,46 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       }
 
       return bestTimes
+    },
+
+    async getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>> {
+      // Get all completed workouts for this benchmark
+      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
+
+      if (workouts.length === 0) {
+        return []
+      }
+
+      // Extract completion times and build attempt records
+      const attempts: Array<{ id: string; completedAt: number; completionTime: number }> = []
+
+      for (const workout of workouts) {
+        for (const block of workout.blocks) {
+          if (block.kind === 'fortime' && block.result?.completed) {
+            attempts.push({
+              id: workout.id,
+              completedAt: workout.completedAt,
+              completionTime: block.result.completionTime,
+            })
+            break // Only use first ForTime block
+          }
+        }
+      }
+
+      // Find PB time
+      if (attempts.length === 0) {
+        return []
+      }
+
+      const bestTime = Math.min(...attempts.map((a) => a.completionTime))
+
+      // Mark PB attempts and sort by date (newest first)
+      return attempts
+        .map((a) => ({
+          ...a,
+          isPersonalBest: a.completionTime === bestTime,
+        }))
+        .toSorted((a, b) => b.completedAt - a.completedAt)
     },
   }
 }

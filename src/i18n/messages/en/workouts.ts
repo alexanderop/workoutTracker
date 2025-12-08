@@ -229,5 +229,8 @@ export default {
       second: 'second',
       seconds: 'seconds',
     },
+    attemptHistory: 'Attempt History',
+    noAttempts: 'No attempts yet',
+    pbBadge: '🏆 Personal Best',
   },
 } as const

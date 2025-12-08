@@ -154,6 +154,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       ),
       getPersonalBest: vi.fn().mockResolvedValue(null),
       getPersonalBests: vi.fn().mockResolvedValue(new Map()),
+      getAttemptHistory: vi.fn().mockResolvedValue([]),
     },
   }
 }

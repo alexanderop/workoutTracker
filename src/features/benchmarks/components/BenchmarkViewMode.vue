@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BenchmarkExerciseCard from './BenchmarkExerciseCard.vue'
+import BenchmarkAttemptHistory from './BenchmarkAttemptHistory.vue'
 import { formatBenchmarkType } from '@/lib/formatters'
 import { usePersonalBestDisplay } from '../composables/usePersonalBestDisplay'
+import { useBenchmarkAttemptHistory } from '../composables/useBenchmarkAttemptHistory'
 import type { DbBenchmark } from '@/db/schema'
 
 const { benchmark, personalBest, showContent } = defineProps<{
@@ -13,6 +16,10 @@ const { benchmark, personalBest, showContent } = defineProps<{
 
 const { t } = useI18n()
 const { hasPb, formatHero } = usePersonalBestDisplay()
+
+// Load attempt history
+const benchmarkId = computed(() => benchmark.id)
+const { attempts } = useBenchmarkAttemptHistory(benchmarkId)
 </script>
 
 <template>
@@ -60,4 +67,7 @@ const { hasPb, formatHero } = usePersonalBestDisplay()
       :style="{ animationDelay: `${150 + index * 50}ms` }"
     />
   </div>
+
+  <!-- Attempt History Section -->
+  <BenchmarkAttemptHistory :attempts="attempts" />
 </template>

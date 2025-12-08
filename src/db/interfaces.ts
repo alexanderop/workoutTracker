@@ -347,6 +347,21 @@ export type BenchmarksRepository = {
    * Benchmarks without completions are omitted from the map.
    */
   getPersonalBests(benchmarkIds: ReadonlyArray<string>): Promise<ReadonlyMap<string, number>>
+  /**
+   * Get all completed attempts for a benchmark, sorted by date (newest first).
+   * Returns empty array if no attempts exist.
+   */
+  getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>>
+}
+
+/**
+ * Single attempt record for a benchmark workout.
+ */
+export type BenchmarkAttempt = {
+  id: string // workout ID
+  completedAt: number // timestamp (ms)
+  completionTime: number // seconds
+  isPersonalBest: boolean // true if this is the PB
 }
 
 // ============================================
