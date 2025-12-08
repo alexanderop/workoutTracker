@@ -6,30 +6,39 @@ export function createDexieDataManagementRepository(
 ): DataManagementRepository {
   return {
     async exportAll(): Promise<ExportDataContents> {
-      const [settings, customExercises, templates, workouts] = await Promise.all([
+      const [settings, customExercises, templates, workouts, benchmarks] = await Promise.all([
         db.settings.toArray(),
         db.customExercises.toArray(),
         db.templates.toArray(),
         db.workouts.toArray(),
+        db.benchmarks.toArray(),
       ])
 
-      return { settings, customExercises, templates, workouts }
+      return { settings, customExercises, templates, workouts, benchmarks }
     },
 
     async importAll(data: ExportDataContents): Promise<void> {
       await db.transaction(
         'rw',
-        [db.settings, db.customExercises, db.templates, db.workouts, db.activeWorkout],
+        [
+          db.settings,
+          db.customExercises,
+          db.templates,
+          db.workouts,
+          db.benchmarks,
+          db.activeWorkout,
+        ],
         async () => {
           await Promise.all([
             db.settings.clear(),
             db.customExercises.clear(),
             db.templates.clear(),
             db.workouts.clear(),
+            db.benchmarks.clear(),
             db.activeWorkout.clear(),
           ])
 
-          const { settings, customExercises, templates, workouts } = data
+          const { settings, customExercises, templates, workouts, benchmarks } = data
 
           await Promise.all([
             settings.length > 0 ? db.settings.bulkAdd([...settings]) : Promise.resolve(),
@@ -38,6 +47,7 @@ export function createDexieDataManagementRepository(
               : Promise.resolve(),
             templates.length > 0 ? db.templates.bulkAdd([...templates]) : Promise.resolve(),
             workouts.length > 0 ? db.workouts.bulkAdd([...workouts]) : Promise.resolve(),
+            benchmarks.length > 0 ? db.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
           ])
         },
       )
@@ -46,13 +56,21 @@ export function createDexieDataManagementRepository(
     async deleteAll(): Promise<void> {
       await db.transaction(
         'rw',
-        [db.settings, db.customExercises, db.templates, db.workouts, db.activeWorkout],
+        [
+          db.settings,
+          db.customExercises,
+          db.templates,
+          db.workouts,
+          db.benchmarks,
+          db.activeWorkout,
+        ],
         async () => {
           await Promise.all([
             db.settings.clear(),
             db.customExercises.clear(),
             db.templates.clear(),
             db.workouts.clear(),
+            db.benchmarks.clear(),
             db.activeWorkout.clear(),
           ])
         },

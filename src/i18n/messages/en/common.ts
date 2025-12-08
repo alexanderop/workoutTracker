@@ -44,6 +44,7 @@ export default {
     markSetComplete: 'Mark set complete',
     workoutDuration: 'Workout duration',
     blockCompleted: 'Block completed',
+    completed: 'Completed',
     editBlock: 'Edit {name}',
     removeBlock: 'Remove {name}',
   },
@@ -68,5 +69,9 @@ export default {
   },
   settings: {
     placeholder: 'Please select',
+    reps: 'reps',
+  },
+  units: {
+    kg: 'kg',
   },
 } as const

@@ -1,20 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { useScreenWakeLock } from '@/composables/useScreenWakeLock'
 import { tryCatch } from '@/lib/tryCatch'
 import { withSetup } from '../helpers/withSetup'
-import { resetDatabase } from '../setup'
 
 /**
  * Browser tests for useScreenWakeLock with real browser APIs.
  * Tests verify Wake Lock API and video fallback behavior that jsdom cannot simulate.
+ * Note: Each withSetup() call creates a fresh Pinia instance with default settings.
  */
 describe('useScreenWakeLock - browser mode', () => {
   let cleanup: (() => void) | null = null
-
-  beforeEach(async () => {
-    await resetDatabase()
-  })
 
   afterEach(async () => {
     // Call cleanup to unmount app

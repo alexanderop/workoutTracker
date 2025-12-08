@@ -17,6 +17,8 @@ export default {
     preventDimming: 'Abdunklung während des Trainings verhindern',
     timerSounds: 'Timer-Töne',
     playAudioCues: 'Audiosignale während zeitgesteuerten Trainings abspielen',
+    timerSoundVolume: 'Lautstärke',
+    volumeRange: 'Anpassung zwischen 50% und 100%',
     advancedDiagnostics: 'Erweiterte Diagnose',
     exportData: 'Daten exportieren',
     downloadBackup: 'Sicherungsdatei herunterladen',

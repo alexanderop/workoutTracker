@@ -1,0 +1,210 @@
+<h1>Data Flow Examples</h1>
+<p><strong>Real-world data flow patterns</strong> from the codebase. See how stores, composables, and repositories work together.</p>
+<p></p>
+<excalidraw data-path="data/data-flow-examples.json"></excalidraw>
+<p></p>
+<hr>
+<h2>📖 Example 1: App Initialization</h2>
+<p><strong>Scenario</strong>: Load stores when the app starts</p>
+<p><strong>Location</strong>: <code>src/composables/useAppInitialization.ts:35-77</code></p>
+<p></p>
+<p><strong>Flow</strong>:</p>
+<pre><code>async function initialize(): Promise&lt;void&gt; {
+  // 1. Seed popular exercises (idempotent)
+  await seedPopularExercises()
+
+  // 2. Load stores in parallel (caches from DB)
+  await Promise.all([
+    settingsStore.loadFromDb(),      // Repository → Store cache
+    exercisesStore.loadFromDb()      // Repository → Store cache
+  ])
+
+  // 3. Check for active workout (from repository)
+  const activeWorkout = await getActiveWorkoutRepository().get()
+
+  // 4. If exists, prompt to resume
+  if (activeWorkout && activeWorkout.blocks.length &gt; 0) {
+    initState.value = {
+      status: 'prompt-resume',
+      workoutName: activeWorkout.name,
+      blockCount: activeWorkout.blocks.length
+    }
+  }
+}</code></pre>
+<p></p>
+<p><strong>Key Insights</strong>:</p>
+<ul>
+<li>Stores are loaded <strong>in parallel</strong> for speed</li>
+<li>After loading, all store access is <strong>synchronous</strong></li>
+<li>Active workout check uses <strong>repository directly</strong> (not cached)</li>
+</ul>
+<p></p>
+<hr>
+<h2>📖 Example 2: Adding an Exercise</h2>
+<p><strong>Scenario</strong>: User creates a custom exercise</p>
+<p><strong>Location</strong>: <code>src/stores/exercises.ts:33-45</code></p>
+<p></p>
+<p><strong>Flow</strong>:</p>
+<pre><code>async function addExercise(exercise: Omit&lt;CustomExercise, 'id'&gt;): Promise&lt;CustomExercise&gt; {
+  // 1. Create DB format with ID
+  const dbExercise = createDbCustomExercise(exercise)
+
+  // 2. Save to database FIRST (persistent)
+  await getCustomExercisesRepository().add(dbExercise)
+
+  // 3. Convert back to domain type
+  const newExercise = dbToCustomExercise(dbExercise)
+
+  // 4. Update local store state
+  customExercises.value = [...customExercises.value, newExercise]
+
+  return newExercise
+}</code></pre>
+<p></p>
+<p><strong>Key Insights</strong>:</p>
+<ul>
+<li><strong>DB-first pattern</strong>: Always persist before updating cache</li>
+<li><strong>Type conversions</strong>: Domain → DB → Domain</li>
+<li><strong>Immutable updates</strong>: Spread operator creates new array</li>
+<li>If DB write fails, cache is <strong>not updated</strong></li>
+</ul>
+<p></p>
+<hr>
+<h2>📖 Example 3: Searching Exercises</h2>
+<p><strong>Scenario</strong>: User searches for exercises by name</p>
+<p><strong>Location</strong>: <code>src/composables/useExerciseSearch.ts:73-100</code></p>
+<p></p>
+<p><strong>Flow</strong>:</p>
+<pre><code>export function useExerciseSearch(options?: UseExerciseSearchOptions) {
+  const exercisesStore = useExercisesStore()
+  const searchQuery = ref('')
+
+  // Computed property with store data
+  const allExercises = computed(() =&gt; {
+    // Reads cached data from store (no DB call!)
+    return [...exercisesStore.customExercises].toSorted(...)
+  })
+
+  const filteredExercises = computed(() =&gt; {
+    // Pure filtering functions on cached data
+    let result = allExercises.value
+    result = filterByMuscle(result, options?.muscleFilter.value)
+    result = filterBySearchQuery(result, searchQuery.value, ['name'])
+    return result
+  })
+
+  return { searchQuery, filteredExercises, allExercises }
+}</code></pre>
+<p></p>
+<p><strong>Key Insights</strong>:</p>
+<ul>
+<li><strong>No DB calls</strong>: All data from store cache</li>
+<li><strong>Reactive filtering</strong>: Computed properties auto-update</li>
+<li><strong>Pure functions</strong>: filterByMuscle, filterBySearchQuery</li>
+<li><strong>Composable composition</strong>: Reusable across components</li>
+</ul>
+<p></p>
+<hr>
+<h2>📖 Example 4: Auto-Save Workout</h2>
+<p><strong>Scenario</strong>: User edits workout, changes auto-save to DB</p>
+<p><strong>Location</strong>: <code>src/features/workout/composables/useWorkoutPersistence.ts:50-81</code></p>
+<p></p>
+<p><strong>Flow</strong>:</p>
+<pre><code>watchDebounced(
+  workout,
+  async (newWorkout) =&gt; {
+    if (isDisposed) return
+    if (!isInitialized.value) return
+
+    if (newWorkout.blocks.length === 0) {
+      // Clear active workout if empty
+      await getActiveWorkoutRepository().clear()
+      return
+    }
+
+    persistenceState.value = { status: 'saving' }
+
+    // Convert domain type to DB type
+    const dbWorkout = workoutToDb(newWorkout, currentWorkoutStartedAt)
+
+    // Save to repository
+    const [saveError] = await tryCatch(
+      getActiveWorkoutRepository().save(dbWorkout)
+    )
+
+    if (saveError) {
+      persistenceState.value = { status: 'error', error: saveError }
+      return
+    }
+
+    hasUnsavedChanges.value = false
+    persistenceState.value = { status: 'idle' }
+  },
+  { debounce: 1000, deep: true }  // Auto-save every 1 second of inactivity
+)</code></pre>
+<p></p>
+<p><strong>Key Insights</strong>:</p>
+<ul>
+<li><strong>Debounced</strong>: Waits 1 second after changes stop</li>
+<li><strong>Deep watch</strong>: Tracks nested property changes</li>
+<li><strong>Type conversion</strong>: Domain → DB format</li>
+<li><strong>Error handling</strong>: Uses tryCatch pattern</li>
+<li><strong>State tracking</strong>: persistenceState for UI feedback</li>
+</ul>
+<p></p>
+<hr>
+<h2>🔄 Common Patterns Summary</h2>
+<h3>1. Load-Once Pattern (Stores)</h3>
+<p><strong>When</strong>: App initialization</p>
+<p><strong>Flow</strong>: DB → Repository → Store → Cache</p>
+<p><strong>Result</strong>: Synchronous access everywhere after initial load</p>
+<p></p>
+<h3>2. DB-First Update Pattern (Stores)</h3>
+<p><strong>When</strong>: Modifying cached data</p>
+<p><strong>Flow</strong>: Persist to DB first → Update cache second</p>
+<p><strong>Result</strong>: Cache never out of sync with DB</p>
+<p></p>
+<h3>3. Reactive Filtering Pattern (Composables)</h3>
+<p><strong>When</strong>: Deriving state from stores</p>
+<p><strong>Flow</strong>: Store cache → Computed → Reactive results</p>
+<p><strong>Result</strong>: No DB calls, instant updates</p>
+<p></p>
+<h3>4. Auto-Save Pattern (Composables)</h3>
+<p><strong>When</strong>: Coordinating memory ↔ DB</p>
+<p><strong>Flow</strong>: Watch changes → Debounce → Convert types → Save to DB</p>
+<p><strong>Result</strong>: Seamless persistence without user action</p>
+<p></p>
+<hr>
+<h2>⏱️ Timing Considerations</h2>
+<p><strong>Store Loading</strong>:</p>
+<ul>
+<li>Happens <strong>once</strong> at app startup</li>
+<li>Parallel loading for speed</li>
+<li>Blocks UI until loaded (loading spinner)</li>
+</ul>
+<p></p>
+<p><strong>Auto-Save Debouncing</strong>:</p>
+<ul>
+<li><strong>1000ms debounce</strong> - Waits for typing to stop</li>
+<li>Prevents excessive DB writes</li>
+<li>User sees "saving..." indicator</li>
+</ul>
+<p></p>
+<p><strong>Reactive Filtering</strong>:</p>
+<ul>
+<li><strong>Instant</strong> - No async operations</li>
+<li>Computed properties update on next tick</li>
+<li>Feels instantaneous to user</li>
+</ul>
+<p></p>
+<hr>
+<h2>🎯 Best Practices from Examples</h2>
+<ul>
+<li>✅ <strong>Parallel loads</strong>: Use <code>Promise.all()</code> for independent operations</li>
+<li>✅ <strong>Type conversions</strong>: Always convert at layer boundaries</li>
+<li>✅ <strong>Error handling</strong>: Use <code>tryCatch</code> pattern, never bare try/catch</li>
+<li>✅ <strong>Debounce writes</strong>: Prevent excessive DB operations</li>
+<li>✅ <strong>Readonly refs</strong>: Prevent accidental mutations from composables</li>
+<li>✅ <strong>Deep watching</strong>: Use <code>{ deep: true }</code> for nested objects</li>
+<li>✅ <strong>Loading states</strong>: Track isLoading, persistenceState for UI feedback</li>
+</ul>

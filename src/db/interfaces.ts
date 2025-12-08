@@ -1,5 +1,6 @@
 import type {
   DbActiveWorkout,
+  DbBenchmark,
   DbCompletedWorkout,
   DbCustomExercise,
   DbTemplateBlock,
@@ -23,6 +24,7 @@ export type SettingDefaults = {
   autoSaveInterval: number
   screenWakeLock: boolean
   timerSoundEnabled: boolean
+  timerSoundVolume: number
   language: 'en' | 'de' | undefined
 }
 
@@ -55,6 +57,10 @@ export type SettingsRepository = {
    * Retrieve timer sound setting with fallback to default (true).
    */
   get(key: 'timerSoundEnabled'): Promise<boolean>
+  /**
+   * Retrieve timer sound volume setting with fallback to default (0.8).
+   */
+  get(key: 'timerSoundVolume'): Promise<number>
   /**
    * Retrieve language setting with fallback to default (undefined).
    */
@@ -270,6 +276,7 @@ export type ExportDataContents = {
   customExercises: ReadonlyArray<DbCustomExercise>
   templates: ReadonlyArray<DbWorkoutTemplate>
   workouts: ReadonlyArray<DbCompletedWorkout>
+  benchmarks: ReadonlyArray<DbBenchmark>
 }
 
 export type DataManagementRepository = {
@@ -291,6 +298,50 @@ export type DataManagementRepository = {
 // Repository Provider (All Repositories)
 // ============================================
 
+// ============================================
+// Benchmarks Repository
+// ============================================
+
+export type BenchmarksRepository = {
+  /**
+   * Retrieve all benchmarks sorted by creation date (newest first).
+   */
+  getAll(): Promise<ReadonlyArray<DbBenchmark>>
+  /**
+   * Find benchmark by ID.
+   */
+  getById(id: string): Promise<DbBenchmark | undefined>
+  /**
+   * Create a new benchmark.
+   */
+  create(benchmark: Omit<DbBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>): Promise<DbBenchmark>
+  /**
+   * Update an existing benchmark.
+   * @throws Error if benchmark with id not found
+   */
+  update(
+    id: string,
+    updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>,
+  ): Promise<void>
+  /**
+   * Delete a benchmark by ID. Silently succeeds if ID doesn't exist.
+   */
+  delete(id: string): Promise<void>
+  /**
+   * Update last used timestamp when benchmark is performed.
+   */
+  updateLastUsed(id: string): Promise<void>
+  /**
+   * Create an active workout from a benchmark and update last used timestamp.
+   * @throws Error if benchmark not found
+   */
+  startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout>
+}
+
+// ============================================
+// Repository Provider (All Repositories)
+// ============================================
+
 /**
  * Unified interface providing access to all repository instances.
  */
@@ -301,4 +352,5 @@ export type RepositoryProvider = {
   customExercises: CustomExercisesRepository
   settings: SettingsRepository
   dataManagement: DataManagementRepository
+  benchmarks: BenchmarksRepository
 }

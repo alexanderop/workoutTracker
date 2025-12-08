@@ -11,10 +11,9 @@ describe('Benchmarks Tab', () => {
     const app = await createTestApp()
 
     // Navigate to workouts page
-    await app.user.click(app.getByRole('button', { name: /workouts/i }))
-    expect(app.router.currentRoute.value.path).toBe('/workouts')
+    await app.common.navigateToWorkouts()
 
-    // Wait for tabs to load
+    // Wait for tabs to appear
     await waitFor(() => {
       expect(app.queryByRole('tab', { name: /templates/i })).toBeTruthy()
     })
@@ -30,22 +29,11 @@ describe('Benchmarks Tab', () => {
   it('shows empty state with Create Benchmark button when no benchmarks exist', async () => {
     const app = await createTestApp()
 
-    // Navigate to workouts page
-    await app.user.click(app.getByRole('button', { name: /workouts/i }))
+    // Navigate to benchmarks tab
+    await app.benchmarks.navigateToTab()
 
-    // Wait for tabs to load
-    await waitFor(() => {
-      expect(app.queryByRole('tab', { name: /benchmarks/i })).toBeTruthy()
-    })
-
-    // Click on Benchmarks tab
-    await app.user.click(app.getByRole('tab', { name: /benchmarks/i }))
-
-    // Assert empty state message displays
-    expect(app.getByText(/no benchmarks yet/i)).toBeTruthy()
-
-    // Assert Create Benchmark button exists
-    expect(app.getByRole('button', { name: /create benchmark/i })).toBeTruthy()
+    // Assert empty state displays
+    app.benchmarks.assertEmptyState()
 
     app.cleanup()
   })
@@ -53,19 +41,11 @@ describe('Benchmarks Tab', () => {
   it('navigates to /benchmarks/create when Create Benchmark button is clicked', async () => {
     const app = await createTestApp()
 
-    // Navigate to workouts page
-    await app.user.click(app.getByRole('button', { name: /workouts/i }))
-
-    // Wait for tabs to load
-    await waitFor(() => {
-      expect(app.queryByRole('tab', { name: /benchmarks/i })).toBeTruthy()
-    })
-
-    // Click on Benchmarks tab
-    await app.user.click(app.getByRole('tab', { name: /benchmarks/i }))
+    // Navigate to benchmarks tab
+    await app.benchmarks.navigateToTab()
 
     // Click Create Benchmark button
-    await app.user.click(app.getByRole('button', { name: /create benchmark/i }))
+    await app.benchmarks.clickCreateBenchmark()
 
     // Assert navigation to /benchmarks/create
     expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')

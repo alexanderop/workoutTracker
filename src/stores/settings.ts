@@ -9,6 +9,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const heightUnit = ref<HeightUnit>('cm')
   const screenWakeLock = ref(true)
   const timerSoundEnabled = ref(true)
+  const timerSoundVolume = ref(0.8)
   const language = ref<Language | undefined>(undefined)
   const isLoaded = ref(false)
   const isLoading = ref(false)
@@ -30,6 +31,7 @@ export const useSettingsStore = defineStore('settings', () => {
     heightUnit.value = settings.heightUnit
     screenWakeLock.value = settings.screenWakeLock
     timerSoundEnabled.value = settings.timerSoundEnabled
+    timerSoundVolume.value = settings.timerSoundVolume
     language.value = settings.language
     isLoaded.value = true
   }
@@ -59,11 +61,18 @@ export const useSettingsStore = defineStore('settings', () => {
     await getSettingsRepository().set({ key: 'timerSoundEnabled', value: enabled })
   }
 
+  async function setTimerSoundVolume(volume: number): Promise<void> {
+    const clampedVolume = Math.min(Math.max(volume, 0.5), 1.0)
+    timerSoundVolume.value = clampedVolume
+    await getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume })
+  }
+
   return {
     weightUnit,
     heightUnit,
     screenWakeLock,
     timerSoundEnabled,
+    timerSoundVolume,
     language,
     isLoaded,
     isLoading,
@@ -73,5 +82,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setScreenWakeLock,
     setLanguage,
     setTimerSoundEnabled,
+    setTimerSoundVolume,
   }
 })

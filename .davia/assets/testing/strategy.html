@@ -1,0 +1,101 @@
+<h1>Testing Strategy</h1>
+<p>Comprehensive testing using <strong>Vitest with Playwright browser mode</strong> for real DOM and navigation.</p>
+<hr />
+<h2>🧪 Three-Tiered Testing Pyramid</h2>
+<p></p>
+<excalidraw data-path="data/testing-strategy.json"></excalidraw>
+<p></p>
+<ul>
+<li><strong>Integration Tests</strong> (Top Priority) - Full user journeys with real routing and state</li>
+<li><strong>Composable Tests</strong> (Unit Tests) - Reactive logic with lifecycle support</li>
+<li><strong>Test Factories</strong> (Supporting) - Builder pattern for generating test data</li>
+</ul>
+<hr />
+<h2>🎯 Why Playwright Browser Mode?</h2>
+<p><strong>Tests run in a REAL browser</strong> (not jsdom), giving access to:</p>
+<p></p>
+<ul>
+<li>✅ Real DOM APIs (localStorage, IndexedDB, etc.)</li>
+<li>✅ Actual browser navigation and history</li>
+<li>✅ CSS and layout calculations</li>
+<li>✅ Web APIs like WakeLock for workout timers</li>
+<li>✅ Real user interactions (clicks, typing, focus)</li>
+</ul>
+<p></p>
+<blockquote>
+<p>🚀 <strong>Higher confidence:</strong> If it works in Playwright, it works in production.</p>
+</blockquote>
+<hr />
+<h2>📊 Test Coverage Goals</h2>
+<ul>
+<li><strong>Integration tests</strong> - Cover all critical user flows (80%+ coverage)</li>
+<li><strong>Composable tests</strong> - Test complex reactive logic and state machines</li>
+<li><strong>Accessibility tests</strong> - Ensure screen reader compatibility</li>
+<li><strong>Browser API tests</strong> - Audio playback, wake lock, service worker</li>
+</ul>
+<hr />
+<h2>⚡ Testing Stack</h2>
+<ul>
+<li><strong>Framework</strong>: Vitest 4 with Playwright browser mode</li>
+<li><strong>Rendering</strong>: Testing Library (Vue)</li>
+<li><strong>User simulation</strong>: @testing-library/user-event</li>
+<li><strong>Database</strong>: fake-indexeddb (for IndexedDB isolation)</li>
+<li><strong>Accessibility</strong>: axe-core integration</li>
+</ul>
+<hr />
+<h2>📁 Test Organization</h2>
+<pre><code>src/__tests__/
+├── integration/       # Full user flow tests ⭐
+├── composables/       # Composable unit tests
+├── browser/          # Browser API tests (audio, wake lock)
+├── a11y/             # Accessibility tests
+├── helpers/          # Test utilities and page objects
+│   ├── pages/       # Page Object pattern
+│   ├── createTestApp.ts
+│   ├── withSetup.ts
+│   └── integrationSetup.ts
+└── factories/        # Test data builders</code></pre>
+<hr />
+<h2>✅ Essential Practices</h2>
+<h3>1️⃣ Always Reset Database</h3>
+<pre><code>import { resetDatabase } from '@/__tests__/setup'
+
+beforeEach(async () => {
+  await resetDatabase()  // ✅ Prevents test interference
+})</code></pre>
+<h3>2️⃣ Always Cleanup Integration Tests</h3>
+<pre><code>it('my test', async () => {
+  const app = await createTestApp()
+  // ... test code ...
+  app.cleanup()  // ✅ Required - prevents memory leaks
+})</code></pre>
+<h3>3️⃣ Use Query Priority</h3>
+<ol>
+<li><strong>getByRole</strong> (best - accessible)</li>
+<li><strong>getByLabelText</strong> (forms)</li>
+<li><strong>getByPlaceholderText</strong> (forms)</li>
+<li><strong>getByText</strong> (non-interactive)</li>
+<li><strong>getByTestId</strong> (last resort)</li>
+</ol>
+<p></p>
+<pre><code>// ✅ GOOD - accessible query
+const button = app.getByRole('button', { name: /start workout/i })
+
+// ❌ AVOID - test ID (only when necessary)
+const element = app.getByTestId('workout-timer')</code></pre>
+<hr />
+<h2>🏃 Running Tests</h2>
+<pre><code># All tests
+pnpm test
+
+# Watch mode
+pnpm test:watch
+
+# Headed browser (visible)
+pnpm test:headed
+
+# With coverage (aim for >80%)
+pnpm test:coverage
+
+# Specific file
+pnpm test src/__tests__/integration/workout-flow.spec.ts</code></pre>

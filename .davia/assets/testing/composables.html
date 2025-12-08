@@ -1,0 +1,189 @@
+<h1>Composable Testing</h1>
+<p>⚙️ <strong>Unit testing Vue 3 composables</strong> with and without lifecycle hooks</p>
+<hr />
+<h2>🎯 What Are Composable Tests?</h2>
+<p><strong>Composable tests</strong> verify the behavior of Vue Composition API functions in isolation.</p>
+<p>They test:</p>
+<ul>
+<li>✅ Reactive state management</li>
+<li>✅ Computed properties</li>
+<li>✅ Methods and side effects</li>
+<li>✅ Lifecycle hook integration</li>
+<li>✅ Dependency injection (provide/inject)</li>
+</ul>
+<hr />
+<h2>📍 Location</h2>
+<pre><code>src/__tests__/composables/</code></pre>
+<p><strong>Example files</strong>:</p>
+<ul>
+<li><code>timers/useBaseTimer.spec.ts</code> - Direct composable test</li>
+<li><code>useDialogState.spec.ts</code> - Lifecycle-dependent composable</li>
+</ul>
+<hr />
+<h2>🔀 Decision Tree: Which Testing Approach?</h2>
+<p></p>
+<excalidraw data-path="data/composable-test-decision.json"></excalidraw>
+<p></p>
+<hr />
+<h2>✅ Direct Testing (No Lifecycle Hooks)</h2>
+<p><strong>Use when</strong>: Composable doesn't use <code>onMounted</code>, <code>onUnmounted</code>, <code>inject</code>, <code>provide</code>, or other lifecycle hooks</p>
+<h3>Example: Simple Timer Composable</h3>
+<pre><code>import { useRestTimer } from '@/composables/timers/useRestTimer'
+
+describe('useRestTimer', () =&gt; {
+  it('starts a timer with given duration', () =&gt; {
+    const { start, isRunning, timeRemaining } = useRestTimer()
+
+    start(60)
+
+    expect(isRunning.value).toBe(true)
+    expect(timeRemaining.value).toBe(60)
+  })
+
+  it('stops a running timer', () =&gt; {
+    const { start, stop, isRunning } = useRestTimer()
+
+    start(60)
+    stop()
+
+    expect(isRunning.value).toBe(false)
+  })
+})</code></pre>
+<p><strong>No cleanup required</strong> - composable is called directly</p>
+<hr />
+<h2>🔄 withSetup Testing (Lifecycle Hooks)</h2>
+<p><strong>Use when</strong>: Composable uses Vue lifecycle hooks or dependency injection</p>
+<p><strong>File</strong>: <code>src/__tests__/helpers/withSetup.ts</code></p>
+<h3>What withSetup Provides</h3>
+<ul>
+<li>🔄 <strong>Component lifecycle</strong> (onMounted, onUnmounted)</li>
+<li>📦 <strong>Dependency injection</strong> (provide/inject)</li>
+<li>🎯 <strong>Full Vue component context</strong></li>
+</ul>
+<h3>Example: Dialog State Composable</h3>
+<pre><code>import { withSetup } from '@/__tests__/helpers/withSetup'
+import { useDialogState } from '@/composables/useDialogState'
+
+describe('useDialogState', () =&gt; {
+  it('initializes with closed state', () =&gt; {
+    const [result, app] = withSetup(() =&gt; useDialogState())
+
+    expect(result.isOpen.value).toBe(false)
+
+    app.unmount() // ✅ Required cleanup
+  })
+
+  it('opens and closes dialog', () =&gt; {
+    const [result, app] = withSetup(() =&gt; useDialogState())
+
+    result.open()
+    expect(result.isOpen.value).toBe(true)
+
+    result.close()
+    expect(result.isOpen.value).toBe(false)
+
+    app.unmount()
+  })
+})</code></pre>
+<p><strong>Cleanup required</strong> - must call <code>app.unmount()</code></p>
+<hr />
+<h2>🛠️ withSetup API</h2>
+<h3>Signature</h3>
+<pre><code>function withSetup&lt;T&gt;(composable: () =&gt; T): [T, App]</code></pre>
+<h3>Returns</h3>
+<ul>
+<li><strong>[0]</strong> - Result from the composable</li>
+<li><strong>[1]</strong> - Vue App instance (for cleanup)</li>
+</ul>
+<h3>Usage with Plugins</h3>
+<pre><code>import { withSetup } from '@/__tests__/helpers/withSetup'
+import { createPinia } from 'pinia'
+
+it('uses Pinia store', () =&gt; {
+  const pinia = createPinia()
+  const [result, app] = withSetup(() =&gt; useMyComposable(), {
+    plugins: [pinia]
+  })
+
+  // ... assertions ...
+
+  app.unmount()
+})</code></pre>
+<hr />
+<h2>🎓 Real Examples</h2>
+<h3>Example 1: Direct Test (No Lifecycle)</h3>
+<p><strong>File</strong>: <code>src/__tests__/composables/timers/useBaseTimer.spec.ts</code></p>
+<pre><code>import { useBaseTimer } from '@/composables/timers/useBaseTimer'
+
+describe('useBaseTimer', () =&gt; {
+  it('increments time every second', async () =&gt; {
+    vi.useFakeTimers()
+
+    const { start, elapsedSeconds } = useBaseTimer()
+
+    start()
+
+    vi.advanceTimersByTime(3000) // 3 seconds
+    expect(elapsedSeconds.value).toBe(3)
+
+    vi.useRealTimers()
+  })
+})</code></pre>
+<h3>Example 2: withSetup Test (Lifecycle Hooks)</h3>
+<p><strong>File</strong>: <code>src/__tests__/composables/useDialogState.spec.ts</code></p>
+<pre><code>import { withSetup } from '@/__tests__/helpers/withSetup'
+import { useDialogState } from '@/composables/useDialogState'
+
+describe('useDialogState', () =&gt; {
+  it('triggers onMounted callback', () =&gt; {
+    const mountedSpy = vi.fn()
+
+    const [result, app] = withSetup(() =&gt; {
+      const state = useDialogState()
+      onMounted(mountedSpy)
+      return state
+    })
+
+    expect(mountedSpy).toHaveBeenCalled()
+
+    app.unmount()
+  })
+})</code></pre>
+<hr />
+<h2>⚠️ Common Pitfalls</h2>
+<h3>❌ Forgetting to Unmount</h3>
+<pre><code>// ❌ BAD - memory leak
+it('my test', () =&gt; {
+  const [result, app] = withSetup(() =&gt; useMyComposable())
+  expect(result.value).toBe(true)
+  // No unmount!
+})
+
+// ✅ GOOD - properly cleaned up
+it('my test', () =&gt; {
+  const [result, app] = withSetup(() =&gt; useMyComposable())
+  expect(result.value).toBe(true)
+  app.unmount()
+})</code></pre>
+<h3>❌ Using withSetup When Not Needed</h3>
+<pre><code>// ❌ BAD - unnecessary overhead
+it('simple composable', () =&gt; {
+  const [result, app] = withSetup(() =&gt; useSimpleCounter())
+  expect(result.count.value).toBe(0)
+  app.unmount()
+})
+
+// ✅ GOOD - call directly
+it('simple composable', () =&gt; {
+  const { count } = useSimpleCounter()
+  expect(count.value).toBe(0)
+})</code></pre>
+<hr />
+<h2>💡 Tips &amp; Best Practices</h2>
+<ul>
+<li>✅ <strong>Direct test</strong> when possible (simpler, faster)</li>
+<li>✅ <strong>Use withSetup</strong> only for lifecycle-dependent composables</li>
+<li>✅ <strong>Always unmount</strong> when using withSetup</li>
+<li>✅ <strong>Use vi.useFakeTimers</strong> for timer-based composables</li>
+<li>❌ <strong>Don't over-test</strong> implementation details (test behavior, not internals)</li>
+</ul>

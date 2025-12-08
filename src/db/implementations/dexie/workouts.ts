@@ -25,6 +25,7 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
         completedAt,
         durationSeconds: Math.floor((completedAt - activeWorkout.startedAt) / 1000),
         notes,
+        benchmarkId: activeWorkout.benchmarkId,
       }
 
       await db.transaction('rw', [db.workouts, db.activeWorkout], async () => {
@@ -106,6 +107,9 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
         lastModifiedAt: now,
         mode: 'builder',
         activeSetIndex: null,
+        activeExerciseIndex: null,
+        benchmarkId: null,
+        globalTimerStartedAt: null,
       }
 
       await db.activeWorkout.put(activeWorkout)

@@ -1,0 +1,103 @@
+<h1>Development</h1>
+<p><strong>Developer workflow and contribution guide</strong> for maintaining code quality and consistency.</p>
+<p></p>
+<blockquote>
+<p>💡 <strong>New to the project?</strong> Start with the <strong>Overview</strong> page for installation and quick start commands.</p>
+</blockquote>
+<p></p>
+<hr />
+<h2>✅ Definition of Done</h2>
+<p>Before creating a PR, ensure <strong>ALL of these pass</strong>:</p>
+<p></p>
+<ul data-type="taskList">
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm type-check</code> passes (no TypeScript errors)</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm lint</code> passes (oxlint + eslint)</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm test</code> passes (all tests green)</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p>No <code>any</code>, <code>enum</code>, or type assertions added</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p>No cross-feature imports (ESLint catches this)</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p>shadcn-vue components in <code>src/components/ui/</code> not modified</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p>Followed Vue 3.5+ APIs (<code>defineProps</code> destructuring, <code>defineModel</code>, <code>useTemplateRef</code>)</p>
+</li>
+</ul>
+<p></p>
+<blockquote>
+<p>💡 <strong>Quick check:</strong> <code>pnpm type-check &amp;&amp; pnpm lint &amp;&amp; pnpm test</code></p>
+</blockquote>
+<hr />
+<h2>📝 Commit Format</h2>
+<p><strong>Conventional Commits with scope:</strong></p>
+<pre><code>feat(workout): add rest timer
+fix(exercises): correct validation logic
+refactor(db): simplify repository pattern
+test(integration): add benchmark flow test
+docs(readme): update setup instructions
+chore(deps): upgrade vue to 3.5.1</code></pre>
+<p><strong>Types:</strong> <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>test</code>, <code>docs</code>, <code>chore</code></p>
+<p><strong>Run before committing:</strong></p>
+<pre><code>pnpm lint && pnpm type-check</code></pre>
+<hr />
+<h2>🌿 Branch Strategy</h2>
+<ul>
+<li><strong>Main branch:</strong> <code>main</code></li>
+<li><strong>Feature branches:</strong> <code>feature/description</code> or descriptive names</li>
+<li>Check git status output for current branch name</li>
+</ul>
+<hr />
+<h2>🔒 Security & Secrets</h2>
+<ul>
+<li>❌ <strong>Never commit</strong> tokens, API keys, or credentials</li>
+<li>✅ Environment variables: Use <code>.env.local</code> (gitignored)</li>
+<li>✅ <strong>No PII tracking:</strong> App is fully local (IndexedDB only)</li>
+</ul>
+<hr />
+<h2>🧪 Testing Workflow</h2>
+<pre><code># Run all tests
+pnpm test
+
+# Watch mode (auto-rerun on changes)
+pnpm test:watch
+
+# Headed browser (visible window for debugging)
+pnpm test:headed
+
+# Coverage report (aim for >80%)
+pnpm test:coverage
+
+# Run specific test file
+pnpm test src/__tests__/integration/workout-flow.spec.ts</code></pre>
+<hr />
+<h2>📦 Building for Production</h2>
+<pre><code># Production build (includes type-check)
+pnpm build
+
+# Preview production build locally
+pnpm preview</code></pre>
+<p>The build output will be in <code>dist/</code> directory.</p>
+<hr />
+<h2>🔍 Code Quality Tools</h2>
+<ul>
+<li><strong>Type checking:</strong> <code>pnpm type-check</code> (TypeScript strict mode)</li>
+<li><strong>Linting:</strong> <code>pnpm lint</code> (oxlint + ESLint with auto-fix)</li>
+<li><strong>Unused code:</strong> <code>pnpm knip</code> (find unused exports/dependencies)</li>
+<li><strong>Testing:</strong> <code>pnpm test</code> (Vitest + Playwright browser mode)</li>
+</ul>

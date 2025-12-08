@@ -1,0 +1,50 @@
+import { onMounted, ref } from 'vue'
+import { getBenchmarksRepository } from '@/db'
+import { formatBenchmarkType } from '@/lib/formatters'
+import type { DbBenchmark } from '@/db/schema'
+
+// ============================================
+// Pure Functions (Functional Core)
+// ============================================
+
+/**
+ * Formats a benchmark's last used timestamp for display.
+ */
+function formatBenchmarkDate(timestamp: number | null): string {
+  if (!timestamp) return 'Never used'
+  return `Last used ${new Date(timestamp).toLocaleDateString()}`
+}
+
+// ============================================
+// Composable (Imperative Shell)
+// ============================================
+
+export function useBenchmarksList() {
+  // Primary State
+  const benchmarks = ref<ReadonlyArray<DbBenchmark>>([])
+
+  // State Metadata
+  const isLoading = ref(true)
+
+  // Methods
+  async function loadAll(): Promise<void> {
+    isLoading.value = true
+    benchmarks.value = await getBenchmarksRepository().getAll()
+    isLoading.value = false
+  }
+
+  // Lifecycle Hooks
+  onMounted(() => {
+    loadAll()
+  })
+
+  return {
+    // State
+    benchmarks,
+    isLoading,
+    // Methods
+    loadAll,
+    formatBenchmarkType,
+    formatBenchmarkDate,
+  }
+}

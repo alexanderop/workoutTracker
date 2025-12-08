@@ -8,6 +8,7 @@ const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks'>> = {
   completedAt: Date.now(),
   durationSeconds: 3600,
   notes: '',
+  benchmarkId: null,
 }
 
 export function createDbCompletedWorkout(

@@ -379,6 +379,9 @@ export function workoutToDb(
     lastModifiedAt: Date.now(),
     mode: workout.mode,
     activeSetIndex: workout.activeSetIndex,
+    activeExerciseIndex: workout.activeExerciseIndex,
+    benchmarkId: workout.benchmarkId,
+    globalTimerStartedAt: workout.globalTimerStartedAt,
   }
 }
 
@@ -398,6 +401,9 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
     startedAt: dbWorkout.startedAt,
     mode: dbWorkout.mode ?? 'builder',
     activeSetIndex: dbWorkout.activeSetIndex ?? null,
+    activeExerciseIndex: dbWorkout.activeExerciseIndex ?? null,
+    benchmarkId: dbWorkout.benchmarkId,
+    globalTimerStartedAt: dbWorkout.globalTimerStartedAt,
   }
 }
 

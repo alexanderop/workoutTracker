@@ -1,0 +1,143 @@
+<h1>Pinia Stores</h1>
+<p><strong>Domain-level state cache</strong> for frequently-accessed data. Stores act as a synchronization layer between the database and components.</p>
+<p></p>
+<h2>💾 What Stores Manage</h2>
+<p>Stores are for <strong>persistent, frequently-accessed domain data</strong>:</p>
+<ul>
+<li>📚 <strong>Exercise library</strong> - Custom exercises (loaded once, accessed everywhere)</li>
+<li>⚙️ <strong>User settings</strong> - Preferences, units, theme (loaded once, rarely changes)</li>
+<li>🎯 <strong>Hot data</strong> - Data that needs to be instantly available across many components</li>
+</ul>
+<p></p>
+<blockquote><p>⚡ <strong>Key Benefit</strong>: After initial load, all store access is <strong>synchronous</strong> (no awaits!)</p></blockquote>
+<p></p>
+<excalidraw data-path="data/pinia-stores-flow.json"></excalidraw>
+<p></p>
+<hr>
+<h2>📦 Store Examples</h2>
+<h3>Exercises Store</h3>
+<p><strong>Location</strong>: <code>src/stores/exercises.ts</code></p>
+<p><strong>Purpose</strong>: Cache all custom exercises in memory</p>
+<p></p>
+<p><strong>Key Methods</strong>:</p>
+<ul>
+<li><code>loadFromDb()</code> - Load all exercises once at startup (lines 18-30)</li>
+<li><code>addExercise()</code> - DB-first add pattern (lines 33-45)</li>
+<li><code>deleteExercise()</code> - DB-first delete pattern (lines 47-57)</li>
+<li><code>getAllExercises()</code> - Synchronous getter from cache (line 59)</li>
+<li><code>getExerciseById()</code> - Synchronous lookup (lines 61-63)</li>
+</ul>
+<p></p>
+<p><strong>State</strong>:</p>
+<ul>
+<li><code>customExercises: Ref&lt;Array&lt;CustomExercise&gt;&gt;</code> - The cached list</li>
+<li><code>isLoaded / isLoading</code> - Load state metadata</li>
+</ul>
+<p></p>
+<h3>Settings Store</h3>
+<p><strong>Location</strong>: <code>src/stores/settings.ts</code></p>
+<p><strong>Purpose</strong>: Cache user preferences and settings</p>
+<p></p>
+<p><strong>Key Methods</strong>:</p>
+<ul>
+<li><code>loadFromDb()</code> - Load all settings once at startup (lines 19-41)</li>
+<li><code>setWeightUnit()</code> - Update weight unit setting (lines 43-48)</li>
+<li><code>setLanguage()</code> - Update language preference (lines 50-55)</li>
+<li><code>setTimerSoundEnabled()</code> - Toggle timer sounds (lines 57-62)</li>
+<li><code>setTimerSoundVolume()</code> - Adjust volume with validation (lines 64-70)</li>
+</ul>
+<p></p>
+<p><strong>State</strong>:</p>
+<ul>
+<li><code>weightUnit, heightUnit, language</code> - User preferences</li>
+<li><code>screenWakeLock, timerSoundEnabled</code> - Feature toggles</li>
+<li><code>timerSoundVolume</code> - Validated to 0.5-1.0 range (line 66)</li>
+</ul>
+<p></p>
+<hr>
+<h2>🔄 Store Patterns</h2>
+<h3>1. Load-Once Pattern</h3>
+<p><strong>Stores load data once at app initialization</strong>, then all access is synchronous.</p>
+<p></p>
+<pre><code>// src/composables/useAppInitialization.ts:35-77
+async function initialize() {
+  // Load stores in parallel
+  await Promise.all([
+    settingsStore.loadFromDb(),
+    exercisesStore.loadFromDb()
+  ])
+
+  // After this, all access is synchronous!
+  const exercises = exercisesStore.getAllExercises() // No await!
+}</code></pre>
+<p></p>
+<h3>2. DB-First Update Pattern</h3>
+<p><strong>Always save to database first</strong>, then update the store cache.</p>
+<p></p>
+<pre><code>// src/stores/exercises.ts:33-45
+async function addExercise(exercise: Omit&lt;CustomExercise, 'id'&gt;) {
+  const dbExercise = createDbCustomExercise(exercise)
+
+  // 1. Save to DB first (persistent)
+  await getCustomExercisesRepository().add(dbExercise)
+
+  // 2. Convert to domain type
+  const newExercise = dbToCustomExercise(dbExercise)
+
+  // 3. Update cache
+  customExercises.value = [...customExercises.value, newExercise]
+
+  return newExercise
+}</code></pre>
+<p></p>
+<h3>3. Validation Pattern</h3>
+<p><strong>Validate and clamp values</strong> before saving.</p>
+<p></p>
+<pre><code>// src/stores/settings.ts:64-70
+async function setTimerSoundVolume(volume: number): Promise&lt;void&gt; {
+  // Clamp to valid range
+  const clampedVolume = Math.max(0.5, Math.min(1.0, volume))
+
+  await getSettingsRepository().set({
+    key: 'timerSoundVolume',
+    value: clampedVolume
+  })
+  timerSoundVolume.value = clampedVolume
+}</code></pre>
+<p></p>
+<hr>
+<h2>✅ Use Stores When...</h2>
+<ul>
+<li>✅ Data is <strong>accessed frequently</strong> across many components</li>
+<li>✅ Data is <strong>loaded once</strong> and rarely changes</li>
+<li>✅ You need <strong>synchronous access</strong> (no awaits in components)</li>
+<li>✅ Data represents <strong>domain-level state</strong> (exercises, settings)</li>
+</ul>
+<p></p>
+<h2>❌ Don't Use Stores When...</h2>
+<ul>
+<li>❌ Data is <strong>temporary</strong> or <strong>component-specific</strong> (use composables)</li>
+<li>❌ Data changes <strong>frequently</strong> (use reactive refs in composables)</li>
+<li>❌ Data is only used in <strong>one place</strong> (use local component state)</li>
+<li>❌ You need <strong>complex business logic</strong> (use composables)</li>
+</ul>
+<p></p>
+<hr>
+<h2>🔗 Integration with Other Layers</h2>
+<p><strong>Stores → Repositories</strong>:</p>
+<ul>
+<li>Stores call repositories for DB operations</li>
+<li>Example: <code>getCustomExercisesRepository().add()</code></li>
+</ul>
+<p></p>
+<p><strong>Composables → Stores</strong>:</p>
+<ul>
+<li>Composables read from stores for cached data</li>
+<li>Example: <code>useExerciseSearch</code> uses <code>exercisesStore.customExercises</code></li>
+</ul>
+<p></p>
+<p><strong>Components → Stores</strong>:</p>
+<ul>
+<li>Components can directly access store data (synchronous)</li>
+<li>Example: <code>const store = useExercisesStore(); const exercises = store.getAllExercises()</code></li>
+</ul>

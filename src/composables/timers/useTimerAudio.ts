@@ -19,6 +19,7 @@ export function useTimerAudio() {
 
     oscillator.frequency.value = frequency
     oscillator.type = 'sine'
+    gainNode.gain.value = Math.min(settings.timerSoundVolume, 1.0)
 
     oscillator.connect(gainNode)
     gainNode.connect(audioContext.destination)

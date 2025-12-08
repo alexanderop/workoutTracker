@@ -19,7 +19,7 @@ describe('Create Benchmark Form', () => {
     expect(screen.getByLabelText(/workout name/i)).toBeTruthy()
     expect(screen.getAllByText(/for time/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/rounds/i).length).toBeGreaterThan(0)
-    expect(app.getByRole('button', { name: /save/i })).toBeTruthy()
+    expect(app.benchmarkForm.getSaveButton()).toBeTruthy()
 
     app.cleanup()
   })
@@ -32,13 +32,12 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const saveButton = app.getByRole('button', { name: /save/i })
-    expect(saveButton).toHaveAttribute('disabled')
+    app.benchmarkForm.assertSaveDisabled()
 
     app.cleanup()
   })
 
-  it('enables save button when workout name is entered', async () => {
+  it('keeps save button disabled when workout name is entered without exercises', async () => {
     const app = await createTestApp()
 
     await app.router.push('/benchmarks/create')
@@ -46,12 +45,10 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const nameInput = screen.getByLabelText(/workout name/i)
-    await app.user.type(nameInput, 'Murph')
+    await app.benchmarkForm.fillName('Murph')
 
     await waitFor(() => {
-      const saveButton = app.getByRole('button', { name: /save/i })
-      expect(saveButton).not.toHaveAttribute('disabled')
+      app.benchmarkForm.assertSaveDisabled()
     })
 
     app.cleanup()
@@ -65,7 +62,7 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    expect(screen.queryByLabelText(/number of rounds/i)).toBeNull()
+    expect(app.benchmarkForm.getRoundsInput()).toBeNull()
 
     app.cleanup()
   })
@@ -78,11 +75,7 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const roundsElement = screen.getAllByText(/^rounds$/i)[0]
-    if (!roundsElement) throw new Error('Rounds element not found')
-    const roundsCard = roundsElement.closest('button')
-    if (!roundsCard) throw new Error('Rounds card button not found')
-    await app.user.click(roundsCard)
+    await app.benchmarkForm.selectType('rounds')
 
     const roundsInput = await screen.findByLabelText(/number of rounds/i)
     expect(roundsInput).toBeTruthy()
@@ -98,11 +91,7 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const roundsElement = screen.getAllByText(/^rounds$/i)[0]
-    if (!roundsElement) throw new Error('Rounds element not found')
-    const roundsCard = roundsElement.closest('button')
-    if (!roundsCard) throw new Error('Rounds card button not found')
-    await app.user.click(roundsCard)
+    await app.benchmarkForm.selectType('rounds')
 
     const roundsInput = await screen.findByLabelText(/number of rounds/i)
     expect(roundsInput).toHaveValue('5')
@@ -118,29 +107,20 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const forTimeElement = screen.getAllByText(/^for time$/i)[0]
-    if (!forTimeElement) throw new Error('For Time element not found')
-    const forTimeCard = forTimeElement.closest('button')
-    if (!forTimeCard) throw new Error('For Time card button not found')
-    const roundsElement = screen.getAllByText(/^rounds$/i)[0]
-    if (!roundsElement) throw new Error('Rounds element not found')
-    const roundsCard = roundsElement.closest('button')
-    if (!roundsCard) throw new Error('Rounds card button not found')
-
     // Switch to Rounds
-    await app.user.click(roundsCard)
+    await app.benchmarkForm.selectType('rounds')
     expect(await screen.findByLabelText(/number of rounds/i)).toBeTruthy()
 
     // Switch to For Time
-    await app.user.click(forTimeCard)
+    await app.benchmarkForm.selectType('fortime')
     await waitFor(() => {
-      expect(screen.queryByLabelText(/number of rounds/i)).toBeNull()
+      expect(app.benchmarkForm.getRoundsInput()).toBeNull()
     })
 
     app.cleanup()
   })
 
-  it('navigates to /workouts when save button is clicked', async () => {
+  it('navigates to /workouts when save button is clicked with name and exercise', async () => {
     const app = await createTestApp()
 
     await app.router.push('/benchmarks/create')
@@ -148,11 +128,10 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const nameInput = screen.getByLabelText(/workout name/i)
-    await app.user.type(nameInput, 'Fran')
+    await app.benchmarkForm.fillName('Fran')
+    await app.benchmarkForm.addExerciseWithReps('Thruster', 21)
 
-    const saveButton = app.getByRole('button', { name: /save/i })
-    await app.user.click(saveButton)
+    await app.benchmarkForm.clickSave()
 
     await waitFor(() => {
       expect(app.router.currentRoute.value.path).toBe('/workouts')
@@ -169,8 +148,7 @@ describe('Create Benchmark Form', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmarks/create')
     })
 
-    const backButton = app.getByRole('button', { name: /back/i })
-    await app.user.click(backButton)
+    await app.benchmarkForm.clickBack()
 
     await waitFor(() => {
       expect(app.router.currentRoute.value.path).toBe('/workouts')

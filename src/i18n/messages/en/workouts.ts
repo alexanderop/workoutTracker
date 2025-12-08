@@ -77,6 +77,7 @@ export default {
       pause: 'Pause',
       start: 'Start',
       done: 'Done',
+      back: 'Back',
       rest: 'Rest',
     },
     strength: {
@@ -170,6 +171,7 @@ export default {
   },
   benchmarks: {
     create: 'Create Benchmark',
+    edit: 'Edit Benchmark',
     name: 'Workout Name',
     namePlaceholder: 'e.g., Murph, Fran, Cindy',
     type: {
@@ -181,6 +183,38 @@ export default {
     },
     rounds: {
       label: 'Number of Rounds',
+    },
+    exercises: 'Exercises',
+    exerciseCount: '{count} exercises',
+    addExercise: 'Add Exercise',
+    noExercises: 'No exercises added yet. Add exercises to create your benchmark.',
+    saveChanges: 'Save Changes',
+    cancelEdit: 'Cancel',
+    deleteBenchmark: 'Delete Benchmark',
+    deleteConfirmTitle: 'Delete Benchmark?',
+    deleteConfirmDescription:
+      'This action cannot be undone. The benchmark "{name}" will be permanently deleted.',
+    detail: {
+      workoutStructure: 'Workout Structure',
+      startWorkout: 'Start Workout',
+      starting: 'Starting...',
+      error: 'Error loading benchmark',
+      notFound: 'Benchmark not found',
+    },
+    exerciseDisplay: {
+      exerciseNumber: 'Exercise {current} of {total}',
+      reps: 'reps',
+    },
+    queue: {
+      title: 'Exercise Queue',
+      description: 'View exercise progress',
+      roundHeader: 'Round {round}',
+      active: 'Active',
+      exerciseStatus: {
+        completed: 'Completed',
+        active: 'Active',
+        pending: 'Upcoming',
+      },
     },
   },
 } as const

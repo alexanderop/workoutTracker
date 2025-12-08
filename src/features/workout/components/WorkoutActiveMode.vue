@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { useRestTimer } from '@/composables/timers/useRestTimer'
+import type { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
@@ -13,8 +14,17 @@ import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
+import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
 
 type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
+
+const {
+  isBenchmarkMode = false,
+  benchmarkTimer,
+} = defineProps<{
+  isBenchmarkMode?: boolean
+  benchmarkTimer?: ReturnType<typeof useBenchmarkGlobalTimer>
+}>()
 
 const emit = defineEmits<{
   'end-workout': []
@@ -23,7 +33,17 @@ const emit = defineEmits<{
   'open-queue': []
 }>()
 
-const { workout, completeSet, setBlockResult, updateSetValue } = useWorkout()
+const {
+  workout,
+  completeSet,
+  setBlockResult,
+  updateSetValue,
+  advanceToNextExercise,
+  goToPreviousExercise,
+  currentExercisePosition,
+  totalExerciseCount,
+  globalExerciseIndex,
+} = useWorkout()
 const {
   currentBlock,
   currentBlockIndex,
@@ -54,6 +74,11 @@ const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentB
 // Timer running state - updated via emit from timer views
 const timerIsRunning = ref(false)
 
+// Animation state for exercise transitions (benchmark mode)
+const isExerciseTransitioning = ref(false)
+const showExerciseCheckmark = ref(false)
+const showBenchmarkCompletion = ref(false)
+
 function handleTimerRunningChange(isRunning: boolean) {
   timerIsRunning.value = isRunning
 }
@@ -71,10 +96,23 @@ const timerDisplayData = computed<TimerDisplayData | undefined>(() => {
 // Header content
 const headerTitle = computed(() => {
   if (!currentBlock.value) return 'Workout'
+
+  // Benchmark mode: show benchmark name
+  if (isBenchmarkMode) {
+    return workout.value.name
+  }
+
+  // Regular mode: show block type
   return BLOCK_LABELS[currentBlock.value.kind]
 })
 
 const headerSubtitle = computed(() => {
+  // Benchmark mode: show timer
+  if (isBenchmarkMode && benchmarkTimer) {
+    return `⏱ ${benchmarkTimer.formattedElapsed.value}`
+  }
+
+  // Regular mode: show block counter
   return `Block ${currentBlockIndex.value + 1} of ${totalBlocks.value}`
 })
 
@@ -136,6 +174,65 @@ function handleSkipBlock() {
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
+
+async function handleNextExercise() {
+  if (isExerciseTransitioning.value) return // Prevent rapid tapping
+
+  isExerciseTransitioning.value = true
+  showExerciseCheckmark.value = true
+
+  // Phase 1: Checkmark animation (300ms)
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  // Phase 2: Advance exercise + slide transition
+  const result = advanceToNextExercise()
+  showExerciseCheckmark.value = false
+
+  // Wait for slide transition (500ms)
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  isExerciseTransitioning.value = false
+
+  if (result === 'workout-complete') {
+    // Stop timer immediately
+    if (benchmarkTimer) {
+      benchmarkTimer.pause()
+    }
+
+    // Save ForTime result with completion time
+    if (currentBlock.value?.kind === 'fortime') {
+      const completionTime = benchmarkTimer?.elapsedSeconds.value ?? 0
+      setBlockResult(currentBlockIndex.value, {
+        completionTime,
+        completed: true,
+      })
+    }
+
+    // Show completion screen instead of emitting immediately
+    showBenchmarkCompletion.value = true
+    return // Don't emit 'workout-complete' yet
+  }
+}
+
+function handlePreviousExercise() {
+  // No animation - instant transition for correction action
+  goToPreviousExercise()
+}
+
+function handleViewDetails() {
+  emit('workout-complete')
+}
+
+// Start timer when entering active mode (for benchmarks)
+watch(
+  () => workout.value.mode,
+  (newMode) => {
+    if (newMode === 'active' && isBenchmarkMode && benchmarkTimer && !benchmarkTimer.isRunning.value) {
+      benchmarkTimer.start()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -187,12 +284,28 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         :on-complete="handleCompleteBlock"
         @update:is-running="handleTimerRunningChange"
       />
+      <!-- Regular ForTime (non-benchmark) -->
       <WorkoutForTimeView
-        v-else-if="currentBlock.kind === 'fortime'"
+        v-else-if="currentBlock.kind === 'fortime' && !isBenchmarkMode"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"
         @update:is-running="handleTimerRunningChange"
+      />
+
+      <!-- Benchmark ForTime (with exercise progression) -->
+      <BenchmarkForTimeView
+        v-else-if="currentBlock.kind === 'fortime' && isBenchmarkMode"
+        :block="currentBlock"
+        :exercise-number="currentExercisePosition?.current ?? 1"
+        :total-exercises-in-round="currentExercisePosition?.total ?? 1"
+        :global-exercise-index="globalExerciseIndex ?? 0"
+        :total-exercises="totalExerciseCount ?? 1"
+        :animation-state="{ showCheckmark: showExerciseCheckmark, isTransitioning: isExerciseTransitioning }"
+        :show-completion="showBenchmarkCompletion"
+        :completion-time="benchmarkTimer?.elapsedSeconds.value ?? 0"
+        :benchmark-name="workout.name"
+        @view-details="handleViewDetails"
       />
     </template>
 
@@ -201,15 +314,21 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
       <WorkoutActiveModeFooter
         :block="currentBlock"
         :timer="timerDisplayData"
-        :can-complete="canCompleteSet"
-        :is-first-block="isFirstBlock"
-        :is-last-block="isLastBlock"
         :rest-timer="restTimer"
+        :state="{
+          canComplete: canCompleteSet,
+          isFirstBlock,
+          isLastBlock,
+          isBenchmarkMode,
+          isTransitioning: isExerciseTransitioning,
+        }"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"
         @complete-set="handleCompleteSet"
         @toggle-timer="handleToggleTimer"
         @complete-block="handleCompleteBlock"
+        @next-exercise="handleNextExercise"
+        @prev-exercise="handlePreviousExercise"
       />
     </template>
   </PageLayout>

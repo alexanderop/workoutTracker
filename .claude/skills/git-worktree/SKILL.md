@@ -1,97 +1,210 @@
 ---
-name: git-worktree
-description: Set up parallel development workspaces using git worktree for working on multiple features simultaneously with separate Claude Code sessions. Use when asked to "work on multiple features", "parallel development", "set up worktrees", "multiple branches at once", or when detecting that a user needs to work on several features concurrently. Also triggers for "separate Claude Code sessions" or "work in parallel".
+name: using-git-worktrees
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
 ---
 
-# Git Worktree for Parallel Development
+# Using Git Worktrees
 
-Enable working on multiple features simultaneously by creating separate worktrees, each with its own Claude Code session.
+## Overview
 
-## Quick Start
+Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
+
+**Core principle:** Systematic directory selection + safety verification = reliable isolation.
+
+**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+
+## Directory Selection Process
+
+Follow this priority order:
+
+### 1. Check Existing Directories
 
 ```bash
-# Create worktrees for multiple features
-.claude/skills/git-worktree/scripts/setup-worktrees.sh dashboard admin mobile
-
-# Open separate terminals and start Claude Code in each:
-# Terminal 1: cd ../workoutTracker-features/dashboard && claude
-# Terminal 2: cd ../workoutTracker-features/admin && claude
-# Terminal 3: cd ../workoutTracker-features/mobile && claude
+# Check in priority order
+ls -d .worktrees 2>/dev/null     # Preferred (hidden)
+ls -d worktrees 2>/dev/null      # Alternative
 ```
 
-## Workflow
+**If found:** Use that directory. If both exist, `.worktrees` wins.
 
-### 1. Setup Worktrees
-
-Use the helper script to create worktrees:
+### 2. Check CLAUDE.md
 
 ```bash
-.claude/skills/git-worktree/scripts/setup-worktrees.sh <feature1> <feature2> [feature3...]
+grep -i "worktree.*directory" CLAUDE.md 2>/dev/null
 ```
 
-This creates:
-- Parent directory: `../{project-name}-features/`
-- Worktree per feature: `../{project-name}-features/{feature}/`
-- Branch per feature: `feature/{feature}`
+**If preference specified:** Use it without asking.
 
-Manual alternative:
-```bash
-mkdir ../project-features
-git worktree add ../project-features/dashboard -b feature/dashboard
-git worktree add ../project-features/admin -b feature/admin
+### 3. Ask User
+
+If no directory exists and no CLAUDE.md preference:
+
+```
+No worktree directory found. Where should I create worktrees?
+
+1. .worktrees/ (project-local, hidden)
+2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
+
+Which would you prefer?
 ```
 
-### 2. Work in Parallel
+## Safety Verification
 
-Open separate terminal windows and start Claude Code in each worktree:
+### For Project-Local Directories (.worktrees or worktrees)
+
+**MUST verify .gitignore before creating worktree:**
 
 ```bash
-cd ../project-features/dashboard && claude
-cd ../project-features/admin && claude
-cd ../project-features/mobile && claude
+# Check if directory pattern in .gitignore
+grep -q "^\.worktrees/$" .gitignore || grep -q "^worktrees/$" .gitignore
 ```
 
-Each session works independently on its own branch without conflicts.
+**If NOT in .gitignore:**
 
-### 3. Test Integration
+Per Jesse's rule "Fix broken things immediately":
+1. Add appropriate line to .gitignore
+2. Commit the change
+3. Proceed with worktree creation
 
-Periodically test how features work together:
+**Why critical:** Prevents accidentally committing worktree contents to repository.
+
+### For Global Directory (~/.config/superpowers/worktrees)
+
+No .gitignore verification needed - outside project entirely.
+
+## Creation Steps
+
+### 1. Detect Project Name
 
 ```bash
-# In main project directory
-git merge feature/dashboard --no-commit
-git merge feature/admin --no-commit
+project=$(basename "$(git rev-parse --show-toplevel)")
+```
+
+### 2. Create Worktree
+
+```bash
+# Determine full path
+case $LOCATION in
+  .worktrees|worktrees)
+    path="$LOCATION/$BRANCH_NAME"
+    ;;
+  ~/.config/superpowers/worktrees/*)
+    path="$HOME/.config/superpowers/worktrees/$project/$BRANCH_NAME"
+    ;;
+esac
+
+# Create worktree with new branch
+git worktree add "$path" -b "$BRANCH_NAME"
+cd "$path"
+```
+
+### 3. Run Project Setup
+
+Auto-detect and run appropriate setup:
+
+```bash
+# Node.js
+if [ -f package.json ]; then pnpm install; fi
+
+# Rust
+if [ -f Cargo.toml ]; then cargo build; fi
+
+# Python
+if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+if [ -f pyproject.toml ]; then poetry install; fi
+
+# Go
+if [ -f go.mod ]; then go mod download; fi
+```
+
+### 4. Verify Clean Baseline
+
+Run tests to ensure worktree starts clean:
+
+```bash
+# Examples - use project-appropriate command
 pnpm test
-git reset --hard HEAD  # Reset if issues found
+cargo test
+pytest
+go test ./...
 ```
 
-### 4. Merge and Cleanup
+**If tests fail:** Report failures, ask whether to proceed or investigate.
 
-When features are complete:
+**If tests pass:** Report ready.
 
-```bash
-# Merge each feature
-git checkout main
-git merge feature/dashboard
-git merge feature/admin
-git merge feature/mobile
+### 5. Report Location
 
-# Clean up worktrees
-.claude/skills/git-worktree/scripts/cleanup-worktrees.sh --all
+```
+Worktree ready at <full-path>
+Tests passing (<N> tests, 0 failures)
+Ready to implement <feature-name>
 ```
 
-## Commands Reference
+## Quick Reference
 
-| Command | Description |
-|---------|-------------|
-| `git worktree add <path> -b <branch>` | Create worktree with new branch |
-| `git worktree add <path> <branch>` | Create worktree from existing branch |
-| `git worktree list` | List all worktrees |
-| `git worktree remove <path>` | Remove a worktree |
+| Situation | Action |
+|-----------|--------|
+| `.worktrees/` exists | Use it (verify .gitignore) |
+| `worktrees/` exists | Use it (verify .gitignore) |
+| Both exist | Use `.worktrees/` |
+| Neither exists | Check CLAUDE.md → Ask user |
+| Directory not in .gitignore | Add it immediately + commit |
+| Tests fail during baseline | Report failures + ask |
+| No package.json/Cargo.toml | Skip dependency install |
 
-## Best Practices
+## Common Mistakes
 
-- Keep features independent to avoid merge conflicts
-- Commit frequently in each worktree
-- Test integration before final merge
-- Use descriptive branch names: `feature/`, `fix/`, `refactor/`
+**Skipping .gitignore verification**
+- **Problem:** Worktree contents get tracked, pollute git status
+- **Fix:** Always grep .gitignore before creating project-local worktree
+
+**Assuming directory location**
+- **Problem:** Creates inconsistency, violates project conventions
+- **Fix:** Follow priority: existing > CLAUDE.md > ask
+
+**Proceeding with failing tests**
+- **Problem:** Can't distinguish new bugs from pre-existing issues
+- **Fix:** Report failures, get explicit permission to proceed
+
+**Hardcoding setup commands**
+- **Problem:** Breaks on projects using different tools
+- **Fix:** Auto-detect from project files (package.json, etc.)
+
+## Example Workflow
+
+```
+You: I'm using the using-git-worktrees skill to set up an isolated workspace.
+
+[Check .worktrees/ - exists]
+[Verify .gitignore - contains .worktrees/]
+[Create worktree: git worktree add .worktrees/auth -b feature/auth]
+[Run npm install]
+[Run npm test - 47 passing]
+
+Worktree ready at /Users/jesse/myproject/.worktrees/auth
+Tests passing (47 tests, 0 failures)
+Ready to implement auth feature
+```
+
+## Red Flags
+
+**Never:**
+- Create worktree without .gitignore verification (project-local)
+- Skip baseline test verification
+- Proceed with failing tests without asking
+- Assume directory location when ambiguous
+- Skip CLAUDE.md check
+
+**Always:**
+- Follow directory priority: existing > CLAUDE.md > ask
+- Verify .gitignore for project-local
+- Auto-detect and run project setup
+- Verify clean test baseline
+
+## Integration
+
+**Called by:**
+- **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
+- Any skill needing isolated workspace
+
