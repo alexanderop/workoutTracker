@@ -4,7 +4,6 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 import { createTestApp } from '../helpers/createTestApp'
 import { getBenchmarksRepository } from '@/db'
 import type { DbBenchmark } from '@/db/schema'
-import { tryCatch } from '@/lib/tryCatch'
 
 describe('Benchmark Exercise Completion', () => {
   beforeEach(setupIntegrationTest)
@@ -168,7 +167,6 @@ describe('Benchmark Exercise Completion', () => {
         () => {
           // Check for either finish dialog OR workout summary page
           const hasFinishDialog = screen.queryByText(/Finish Workout\?/i)
-          const hasSummary = screen.queryByText(/Venus/i) // Benchmark name still visible
           const hasWorkoutOptions = screen.queryByRole('button', { name: /workout options/i })
 
           // After completion, we should not see the workout options menu button

@@ -52,3 +52,8 @@ src/__tests__/features/**/__screenshots__/
 
 # Exclude temporary visual regression outputs (keep only platform-specific baselines)
 src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
+
+
+# Davia
+.davia/
+.claude/skills/davia-documentation/SKILL.md

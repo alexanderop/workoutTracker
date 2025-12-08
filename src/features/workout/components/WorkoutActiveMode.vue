@@ -77,6 +77,7 @@ const timerIsRunning = ref(false)
 // Animation state for exercise transitions (benchmark mode)
 const isExerciseTransitioning = ref(false)
 const showExerciseCheckmark = ref(false)
+const showBenchmarkCompletion = ref(false)
 
 function handleTimerRunningChange(isRunning: boolean) {
   timerIsRunning.value = isRunning
@@ -193,13 +194,33 @@ async function handleNextExercise() {
   isExerciseTransitioning.value = false
 
   if (result === 'workout-complete') {
-    emit('workout-complete')
+    // Stop timer immediately
+    if (benchmarkTimer) {
+      benchmarkTimer.pause()
+    }
+
+    // Save ForTime result with completion time
+    if (currentBlock.value?.kind === 'fortime') {
+      const completionTime = benchmarkTimer?.elapsedSeconds.value ?? 0
+      setBlockResult(currentBlockIndex.value, {
+        completionTime,
+        completed: true,
+      })
+    }
+
+    // Show completion screen instead of emitting immediately
+    showBenchmarkCompletion.value = true
+    return // Don't emit 'workout-complete' yet
   }
 }
 
 function handlePreviousExercise() {
   // No animation - instant transition for correction action
   goToPreviousExercise()
+}
+
+function handleViewDetails() {
+  emit('workout-complete')
 }
 
 // Start timer when entering active mode (for benchmarks)
@@ -281,6 +302,10 @@ watch(
         :global-exercise-index="globalExerciseIndex ?? 0"
         :total-exercises="totalExerciseCount ?? 1"
         :animation-state="{ showCheckmark: showExerciseCheckmark, isTransitioning: isExerciseTransitioning }"
+        :show-completion="showBenchmarkCompletion"
+        :completion-time="benchmarkTimer?.elapsedSeconds.value ?? 0"
+        :benchmark-name="workout.name"
+        @view-details="handleViewDetails"
       />
     </template>
 

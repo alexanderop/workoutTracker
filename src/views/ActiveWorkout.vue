@@ -168,6 +168,17 @@ function handleSaveExercise(data: {
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 
+function handleWorkoutComplete() {
+  // For benchmarks, skip the naming dialog (name already set)
+  if (isBenchmarkMode.value) {
+    handleConfirmFinish(workout.value.name)
+    return
+  }
+
+  // For regular workouts, show dialog
+  openDialog('finish')
+}
+
 function handleEditBlock(index: number) {
   const block = workout.value.blocks[index]
   if (!block) return
@@ -204,7 +215,7 @@ function handleQueueAddBlock() {
       :benchmark-timer="benchmarkTimer"
       @end-workout="openDialog('finish')"
       @cancel-workout="openDialog('cancel')"
-      @workout-complete="openDialog('finish')"
+      @workout-complete="handleWorkoutComplete"
       @open-queue="handleOpenQueue"
     />
 
