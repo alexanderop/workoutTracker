@@ -219,5 +219,15 @@ export default {
         pending: 'Upcoming',
       },
     },
+    pb: {
+      newPb: '🎉 New PB! 🎉',
+      firstPb: '🎉 First PB set! 🎉',
+      previous: 'Previous:',
+      faster: '{time} faster!',
+      minute: 'minute',
+      minutes: 'minutes',
+      second: 'second',
+      seconds: 'seconds',
+    },
   },
 } as const

@@ -218,5 +218,15 @@ export default {
         pending: 'Ausstehend',
       },
     },
+    pb: {
+      newPb: '🎉 Neue Bestleistung! 🎉',
+      firstPb: '🎉 Erste Bestleistung gesetzt! 🎉',
+      previous: 'Vorherige:',
+      faster: '{time} schneller!',
+      minute: 'Minute',
+      minutes: 'Minuten',
+      second: 'Sekunde',
+      seconds: 'Sekunden',
+    },
   },
 } as const
