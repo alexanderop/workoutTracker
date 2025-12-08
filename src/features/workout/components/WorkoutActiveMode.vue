@@ -39,6 +39,7 @@ const {
   setBlockResult,
   updateSetValue,
   advanceToNextExercise,
+  goToPreviousExercise,
   currentExercisePosition,
   totalExerciseCount,
   globalExerciseIndex,
@@ -196,6 +197,11 @@ async function handleNextExercise() {
   }
 }
 
+function handlePreviousExercise() {
+  // No animation - instant transition for correction action
+  goToPreviousExercise()
+}
+
 // Start timer when entering active mode (for benchmarks)
 watch(
   () => workout.value.mode,
@@ -297,6 +303,7 @@ watch(
         @toggle-timer="handleToggleTimer"
         @complete-block="handleCompleteBlock"
         @next-exercise="handleNextExercise"
+        @prev-exercise="handlePreviousExercise"
       />
     </template>
   </PageLayout>

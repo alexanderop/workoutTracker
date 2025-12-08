@@ -4,11 +4,13 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import type { useRestTimer } from '@/composables/timers/useRestTimer'
+import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
 import { BLOCK_COLORS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 const { t } = useI18n()
+const { workout } = useWorkout()
 
 type ButtonVariant = 'default' | 'secondary'
 
@@ -57,9 +59,20 @@ const emit = defineEmits<{
   'toggle-timer': []
   'complete-block': []
   'next-exercise': []
+  'prev-exercise': []
 }>()
 
 const blockColors = computed(() => BLOCK_COLORS[props.block.kind])
+
+const canGoBack = computed(() => {
+  if (!isBenchmarkMode.value) return false
+  if (isTransitioning.value) return false
+
+  const exerciseIndex = workout.value.activeExerciseIndex ?? 0
+  const blockIndex = workout.value.selectedBlockIndex
+
+  return exerciseIndex > 0 || blockIndex > 0
+})
 
 // Timer display for footer - uses props for timed blocks, computes for rest timer
 const displayedTimer = computed((): string | null => {
@@ -223,6 +236,23 @@ function handlePrimaryAction() {
         @click="emit('next-block')"
       >
         <ChevronRight class="size-5" />
+      </Button>
+    </div>
+
+    <!-- Back Exercise Button Row (Benchmark Mode Only) -->
+    <div
+      v-if="isBenchmarkMode && canGoBack"
+      class="flex justify-center mt-2"
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-2 text-muted-foreground"
+        :disabled="isTransitioning"
+        @click="emit('prev-exercise')"
+      >
+        <ChevronLeft class="size-4" />
+        {{ t('workouts.active.footer.back') }}
       </Button>
     </div>
   </footer>

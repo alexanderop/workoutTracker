@@ -77,6 +77,7 @@ export default {
       pause: 'Pause',
       start: 'Start',
       done: 'Done',
+      back: 'Back',
       rest: 'Rest',
     },
     strength: {
