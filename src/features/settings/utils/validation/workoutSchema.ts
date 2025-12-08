@@ -15,5 +15,6 @@ export const dbCompletedWorkoutSchema = z
     completedAt: timestampSchema,
     durationSeconds: z.number().int().min(0).max(86400), // max 24 hours
     notes: z.string().max(10000),
+    benchmarkId: z.string().nullable(),
   })
   .strict()

@@ -13,6 +13,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
   autoSaveInterval: 1000,
   screenWakeLock: true,
   timerSoundEnabled: true,
+  timerSoundVolume: 0.8,
   language: undefined,
 }
 
@@ -27,6 +28,7 @@ function createGetFunction(db: WorkoutTrackerDb) {
   async function get(key: 'autoSaveInterval'): Promise<number>
   async function get(key: 'screenWakeLock'): Promise<boolean>
   async function get(key: 'timerSoundEnabled'): Promise<boolean>
+  async function get(key: 'timerSoundVolume'): Promise<number>
   async function get(key: 'language'): Promise<'en' | 'de' | undefined>
   async function get(key: UserSettingKey) {
     const setting = await db.settings.get(key)
@@ -49,6 +51,8 @@ function createGetFunction(db: WorkoutTrackerDb) {
       case 'screenWakeLock':
         return setting.value
       case 'timerSoundEnabled':
+        return setting.value
+      case 'timerSoundVolume':
         return setting.value
       case 'language':
         return setting.value
@@ -92,6 +96,9 @@ export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRep
             break
           case 'timerSoundEnabled':
             result.timerSoundEnabled = setting.value
+            break
+          case 'timerSoundVolume':
+            result.timerSoundVolume = setting.value
             break
           case 'language':
             result.language = setting.value

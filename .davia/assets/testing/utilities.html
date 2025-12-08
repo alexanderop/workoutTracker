@@ -1,0 +1,206 @@
+<h1>Test Utilities</h1>
+<p>🛠️ <strong>Reusable helpers, page objects, and test data builders</strong></p>
+<hr />
+<h2>🎯 What Are Test Utilities?</h2>
+<p><strong>Test utilities</strong> are reusable tools that simplify writing tests.</p>
+<p>They include:</p>
+<ul>
+<li>🔧 <strong>Test Helpers</strong> - App rendering, setup/teardown, database reset</li>
+<li>📄 <strong>Page Objects</strong> - Encapsulated UI interactions</li>
+<li>🏭 <strong>Test Factories</strong> - Builders for test data</li>
+</ul>
+<hr />
+<h2>📍 Location</h2>
+<pre><code>src/__tests__/
+├── helpers/           # Test helpers and page objects
+│   ├── pages/        # Page Object implementations
+│   ├── createTestApp.ts
+│   ├── withSetup.ts
+│   ├── integrationSetup.ts
+│   └── resetDatabase.ts
+└── factories/         # Test data builders</code></pre>
+<hr />
+<h2>🗺️ Test Utilities Structure</h2>
+<p></p>
+<excalidraw data-path="data/test-utilities-structure.json"></excalidraw>
+<p></p>
+<hr />
+<h2>🔧 Test Helpers</h2>
+<h3>createTestApp()</h3>
+<p><strong>Purpose</strong>: Render full application with router, Pinia, and i18n</p>
+<p><strong>File</strong>: <code>src/__tests__/helpers/createTestApp.ts</code></p>
+<p><strong>Usage</strong>:</p>
+<pre><code>const app = await createTestApp({ initialRoute: '/' })
+// ... interact with app ...
+app.cleanup()</code></pre>
+<h3>withSetup()</h3>
+<p><strong>Purpose</strong>: Test composables with lifecycle hooks</p>
+<p><strong>File</strong>: <code>src/__tests__/helpers/withSetup.ts</code></p>
+<p><strong>Usage</strong>:</p>
+<pre><code>const [result, app] = withSetup(() =&gt; useMyComposable())
+// ... test result ...
+app.unmount()</code></pre>
+<h3>resetDatabase()</h3>
+<p><strong>Purpose</strong>: Reset IndexedDB between tests for isolation</p>
+<p><strong>File</strong>: <code>src/__tests__/setup.ts</code></p>
+<p><strong>Usage</strong>:</p>
+<pre><code>beforeEach(async () =&gt; {
+  await resetDatabase()
+})</code></pre>
+<h3>integrationSetup()</h3>
+<p><strong>Purpose</strong>: Setup and teardown for integration tests</p>
+<p><strong>File</strong>: <code>src/__tests__/helpers/integrationSetup.ts</code></p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { setupIntegrationTest, cleanupIntegrationTest } from '../helpers/integrationSetup'
+
+beforeEach(setupIntegrationTest)
+afterEach(cleanupIntegrationTest)</code></pre>
+<hr />
+<h2>📄 Page Objects</h2>
+<p><strong>Purpose</strong>: Encapsulate UI interactions into reusable, readable methods</p>
+<p><strong>Location</strong>: <code>src/__tests__/helpers/pages/</code></p>
+<h3>CommonPO</h3>
+<p><strong>File</strong>: <code>CommonPO.ts</code></p>
+<p><strong>Handles</strong>:</p>
+<ul>
+<li>✅ Dialogs (wait, get buttons, assert closed)</li>
+<li>✅ Navigation helpers</li>
+<li>✅ Common assertions</li>
+</ul>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.common.waitForDialog()
+const btn = app.common.getDialogButton('Confirm')
+app.common.assertDialogClosed()</code></pre>
+<h3>BuilderPO</h3>
+<p><strong>File</strong>: <code>BuilderPO.ts</code></p>
+<p><strong>Handles</strong>: Workout builder interactions</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.builder.addStrengthBlock()
+await app.builder.addExercise('Squat')
+await app.builder.fillSet(0, { kg: 100, reps: 5 })</code></pre>
+<h3>ActiveWorkoutPO</h3>
+<p><strong>File</strong>: <code>ActiveWorkoutPO.ts</code></p>
+<p><strong>Handles</strong>: Active workout page interactions</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.workout.clickStartWorkout()
+await app.workout.completeExercise(0)
+await app.workout.fillSet(0, { kg: 100, reps: 8, rir: 2 })</code></pre>
+<h3>QueuePO</h3>
+<p><strong>File</strong>: <code>QueuePO.ts</code></p>
+<p><strong>Handles</strong>: Exercise queue drawer</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.queue.openDrawer()
+await app.queue.selectBlock(0)
+await app.queue.closeDrawer()</code></pre>
+<h3>BenchmarksPO</h3>
+<p><strong>File</strong>: <code>BenchmarksPO.ts</code></p>
+<p><strong>Handles</strong>: Benchmark list page</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.benchmarks.navigateToList()
+await app.benchmarks.clickCreateButton()
+await app.benchmarks.selectBenchmark('Fran')</code></pre>
+<h3>BenchmarkFormPO</h3>
+<p><strong>File</strong>: <code>BenchmarkFormPO.ts</code></p>
+<p><strong>Handles</strong>: Create/edit benchmark form</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.benchmarkForm.fillName('Cindy')
+await app.benchmarkForm.selectType('fortime')
+await app.benchmarkForm.addExercise('Pull-ups', 5)
+await app.benchmarkForm.submit()</code></pre>
+<h3>BenchmarkDetailPO</h3>
+<p><strong>File</strong>: <code>BenchmarkDetailPO.ts</code></p>
+<p><strong>Handles</strong>: Benchmark detail view</p>
+<p><strong>Methods</strong>:</p>
+<pre><code>await app.benchmarkDetail.startBenchmark()
+await app.benchmarkDetail.viewHistory()</code></pre>
+<hr />
+<h2>🏭 Test Factories</h2>
+<p><strong>Purpose</strong>: Build test data with fluent API</p>
+<p><strong>Location</strong>: <code>src/__tests__/factories/</code></p>
+<h3>workoutBuilder</h3>
+<p><strong>File</strong>: <code>workout.builder.ts</code></p>
+<p><strong>Purpose</strong>: Build in-memory workouts for <code>useWorkout()</code> tests</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { workoutBuilder } from '@/__tests__/factories/workout.builder'
+
+const workout = workoutBuilder()
+  .withName('Leg Day')
+  .withStrengthBlock({ exerciseName: 'Squat' })
+  .withExerciseAndSets([
+    { kg: 100, reps: 5, rir: 2, completed: true },
+    { kg: 100, reps: 5, rir: 2, completed: false },
+  ])
+  .selectBlock(0)
+  .build()</code></pre>
+<h3>dbWorkoutBuilder</h3>
+<p><strong>File</strong>: <code>dbWorkout.factory.ts</code></p>
+<p><strong>Purpose</strong>: Create database workouts for integration tests</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { dbWorkoutBuilder } from '@/__tests__/factories/dbWorkout.factory'
+
+const workout = await dbWorkoutBuilder()
+  .withExercise('Deadlift', 3)
+  .completed()
+  .build()</code></pre>
+<h3>blockFactory</h3>
+<p><strong>File</strong>: <code>block.factory.ts</code></p>
+<p><strong>Purpose</strong>: Create workout blocks</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { strengthBlock, amrapBlock } from '@/__tests__/factories/block.factory'
+
+const block = strengthBlock({ exerciseName: 'Bench Press' })</code></pre>
+<h3>setFactory</h3>
+<p><strong>File</strong>: <code>set.factory.ts</code></p>
+<p><strong>Purpose</strong>: Create exercise sets</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { createSet } from '@/__tests__/factories/set.factory'
+
+const set = createSet({ kg: 80, reps: 10, rir: 1 })</code></pre>
+<h3>exerciseFactory</h3>
+<p><strong>File</strong>: <code>exercise.factory.ts</code></p>
+<p><strong>Purpose</strong>: Create exercises</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>import { createExercise } from '@/__tests__/factories/exercise.factory'
+
+const exercise = createExercise({ name: 'Pull-up' })</code></pre>
+<hr />
+<h2>🎓 Example: Using Everything Together</h2>
+<pre><code>import { createTestApp } from '@/__tests__/helpers/createTestApp'
+import { resetDatabase } from '@/__tests__/setup'
+import { dbWorkoutBuilder } from '@/__tests__/factories/dbWorkout.factory'
+
+describe('Workout Flow', () =&gt; {
+  beforeEach(async () =&gt; {
+    await resetDatabase()
+  })
+
+  it('completes a workout', async () =&gt; {
+    // 🏭 Create test data
+    await dbWorkoutBuilder()
+      .withExercise('Squat', 3)
+      .build()
+
+    // 🔧 Render app
+    const app = await createTestApp({ initialRoute: '/' })
+
+    // 📄 Use page objects
+    await app.workout.clickStartWorkout()
+    await app.workout.completeExercise(0)
+
+    // Assert
+    expect(app.getByText(/complete/i)).toBeInTheDocument()
+
+    // Cleanup
+    app.cleanup()
+  })
+})</code></pre>
+<hr />
+<h2>💡 Tips &amp; Best Practices</h2>
+<ul>
+<li>✅ <strong>Use page objects</strong> for complex interactions (readable, reusable)</li>
+<li>✅ <strong>Use factories</strong> for test data (avoid manual object creation)</li>
+<li>✅ <strong>Reset database</strong> before each test (isolation)</li>
+<li>✅ <strong>Cleanup</strong> after integration tests (prevent memory leaks)</li>
+<li>❌ <strong>Don't duplicate</strong> page object logic across tests</li>
+<li>❌ <strong>Don't hardcode</strong> test data (use factories)</li>
+</ul>

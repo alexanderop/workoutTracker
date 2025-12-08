@@ -4,18 +4,20 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import type { useRestTimer } from '@/composables/timers/useRestTimer'
+import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
 import { BLOCK_COLORS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 const { t } = useI18n()
+const { workout } = useWorkout()
 
 type ButtonVariant = 'default' | 'secondary'
 
 type PrimaryAction = {
   label: string
   icon: typeof Check
-  emit: 'complete-set' | 'toggle-timer' | 'complete-block'
+  emit: 'complete-set' | 'toggle-timer' | 'complete-block' | 'next-exercise'
   variant: ButtonVariant
 }
 
@@ -25,23 +27,30 @@ export type TimerDisplayData = {
   label: string
 }
 
-type Props = {
-  block: WorkoutBlock
-  timer?: TimerDisplayData
+type WorkoutState = {
   canComplete?: boolean
   isFirstBlock?: boolean
   isLastBlock?: boolean
-  restTimer?: ReturnType<typeof useRestTimer>
+  isBenchmarkMode?: boolean
+  isTransitioning?: boolean
 }
 
-const {
-  block,
-  timer,
-  canComplete = true,
-  isFirstBlock = false,
-  isLastBlock = false,
-  restTimer,
-} = defineProps<Props>()
+type Props = {
+  block: WorkoutBlock
+  timer?: TimerDisplayData
+  restTimer?: ReturnType<typeof useRestTimer>
+  state?: WorkoutState
+}
+
+const props = defineProps<Props>()
+
+const state = computed(() => props.state ?? {})
+
+const canComplete = computed(() => state.value.canComplete ?? true)
+const isFirstBlock = computed(() => state.value.isFirstBlock ?? false)
+const isLastBlock = computed(() => state.value.isLastBlock ?? false)
+const isBenchmarkMode = computed(() => state.value.isBenchmarkMode ?? false)
+const isTransitioning = computed(() => state.value.isTransitioning ?? false)
 
 const emit = defineEmits<{
   'prev-block': []
@@ -49,15 +58,27 @@ const emit = defineEmits<{
   'complete-set': []
   'toggle-timer': []
   'complete-block': []
+  'next-exercise': []
+  'prev-exercise': []
 }>()
 
-const blockColors = computed(() => BLOCK_COLORS[block.kind])
+const blockColors = computed(() => BLOCK_COLORS[props.block.kind])
+
+const canGoBack = computed(() => {
+  if (!isBenchmarkMode.value) return false
+  if (isTransitioning.value) return false
+
+  const exerciseIndex = workout.value.activeExerciseIndex ?? 0
+  const blockIndex = workout.value.selectedBlockIndex
+
+  return exerciseIndex > 0 || blockIndex > 0
+})
 
 // Timer display for footer - uses props for timed blocks, computes for rest timer
 const displayedTimer = computed((): string | null => {
   // For strength blocks, show rest timer
-  if (isStrengthBlock(block) && restTimer) {
-    const elapsed = restTimer.elapsedSeconds.value
+  if (isStrengthBlock(props.block) && props.restTimer) {
+    const elapsed = props.restTimer.elapsedSeconds.value
     if (elapsed === 0) return null
     const mins = Math.floor(elapsed / 60)
     const secs = elapsed % 60
@@ -65,19 +86,19 @@ const displayedTimer = computed((): string | null => {
   }
 
   // For timed blocks, use the prop value passed from parent
-  if (isTimedBlock(block) && timer?.display) {
-    return timer.display
+  if (isTimedBlock(props.block) && props.timer?.display) {
+    return props.timer.display
   }
 
   return null
 })
 
 const displayedTimerLabel = computed((): string | null => {
-  if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
+  if (isStrengthBlock(props.block) && props.restTimer?.elapsedSeconds.value) {
     return t('workouts.active.footer.rest')
   }
-  if (isTimedBlock(block) && timer?.label) {
-    return timer.label
+  if (isTimedBlock(props.block) && props.timer?.label) {
+    return props.timer.label
   }
   return null
 })
@@ -88,7 +109,7 @@ function getStrengthAction(): PrimaryAction {
     label: t('workouts.active.footer.completeSet'),
     icon: Check,
     emit: 'complete-set',
-    variant: canComplete ? 'default' : 'secondary',
+    variant: canComplete.value ? 'default' : 'secondary',
   }
 }
 
@@ -114,10 +135,25 @@ function getForTimeAction(): PrimaryAction {
   }
 }
 
-const primaryAction = computed((): PrimaryAction => {
-  if (isStrengthBlock(block)) return getStrengthAction()
+// Strategy: Benchmark ForTime blocks show "Done" for all exercises
+function getBenchmarkAction(): PrimaryAction {
+  return {
+    label: t('workouts.active.footer.done'),
+    icon: Check,
+    emit: 'next-exercise',
+    variant: 'default',
+  }
+}
 
-  const isRunning = timer?.isRunning ?? false
+const primaryAction = computed((): PrimaryAction => {
+  if (isStrengthBlock(props.block)) return getStrengthAction()
+
+  // Benchmark mode: Show exercise navigation
+  if (isBenchmarkMode.value && props.block.kind === 'fortime') {
+    return getBenchmarkAction()
+  }
+
+  const isRunning = props.timer?.isRunning ?? false
   const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {
     amrap: () => getTimerToggleAction(isRunning),
     emom: () => getTimerToggleAction(isRunning),
@@ -125,7 +161,7 @@ const primaryAction = computed((): PrimaryAction => {
     fortime: getForTimeAction,
   }
 
-  return actionByKind[block.kind]()
+  return actionByKind[props.block.kind]()
 })
 
 function handlePrimaryAction() {
@@ -139,6 +175,9 @@ function handlePrimaryAction() {
       break
     case 'complete-block':
       emit('complete-block')
+      break
+    case 'next-exercise':
+      emit('next-exercise')
       break
   }
 }
@@ -180,7 +219,7 @@ function handlePrimaryAction() {
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
-        :disabled="isStrengthBlock(block) && !canComplete"
+        :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
         @click="handlePrimaryAction"
       >
         <component :is="primaryAction.icon" class="size-5" />
@@ -197,6 +236,23 @@ function handlePrimaryAction() {
         @click="emit('next-block')"
       >
         <ChevronRight class="size-5" />
+      </Button>
+    </div>
+
+    <!-- Back Exercise Button Row (Benchmark Mode Only) -->
+    <div
+      v-if="isBenchmarkMode && canGoBack"
+      class="flex justify-center mt-2"
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-2 text-muted-foreground"
+        :disabled="isTransitioning"
+        @click="emit('prev-exercise')"
+      >
+        <ChevronLeft class="size-4" />
+        {{ t('workouts.active.footer.back') }}
       </Button>
     </div>
   </footer>

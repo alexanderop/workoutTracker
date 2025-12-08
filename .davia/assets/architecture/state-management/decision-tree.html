@@ -1,0 +1,200 @@
+<h1>Decision Tree</h1>
+<p><strong>Quick guide</strong> to help you decide: Should I use a Store, Composable, or Repository?</p>
+<p></p>
+<excalidraw data-path="data/decision-tree.json"></excalidraw>
+<p></p>
+<hr>
+<h2>🎯 Quick Checklists</h2>
+<h3>Use Local Component State When...</h3>
+<ul>
+<li>✅ State is <strong>only used in one component</strong></li>
+<li>✅ State is <strong>temporary</strong> (form inputs, UI toggles)</li>
+<li>✅ No persistence needed</li>
+<li>✅ Not reused anywhere else</li>
+</ul>
+<p></p>
+<p><strong>Example</strong>:</p>
+<pre><code>const isDialogOpen = ref(false)
+const searchQuery = ref('')
+const selectedTab = ref('overview')</code></pre>
+<p></p>
+<h3>Use a Composable When...</h3>
+<ul>
+<li>✅ Logic is <strong>reusable</strong> across components</li>
+<li>✅ State is <strong>temporary</strong> or <strong>component-specific</strong></li>
+<li>✅ You need <strong>business logic</strong> (validation, formatting, coordination)</li>
+<li>✅ Bridging between <strong>stores and repositories</strong></li>
+<li>✅ Managing <strong>derived/computed state</strong></li>
+<li>✅ State machines (timers, workflows)</li>
+</ul>
+<p></p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>useWorkoutsList()</code> - Fetch from repos, cache temporarily</li>
+<li><code>useExerciseSearch()</code> - Filter store data reactively</li>
+<li><code>useWorkoutPersistence()</code> - Auto-save coordination</li>
+<li><code>useBaseTimer()</code> - State machine logic</li>
+</ul>
+<p></p>
+<h3>Use a Pinia Store When...</h3>
+<ul>
+<li>✅ Data is <strong>accessed frequently</strong> across many components</li>
+<li>✅ Data is <strong>loaded once</strong> and rarely changes</li>
+<li>✅ You need <strong>synchronous access</strong> (no awaits in components)</li>
+<li>✅ Data represents <strong>domain-level state</strong> (exercises, settings)</li>
+<li>✅ Data is <strong>global app state</strong></li>
+</ul>
+<p></p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>exercisesStore</code> - Exercise library cache</li>
+<li><code>settingsStore</code> - User preferences cache</li>
+</ul>
+<p></p>
+<h3>Call a Repository When...</h3>
+<ul>
+<li>✅ You're in a <strong>store or composable</strong> (never from components)</li>
+<li>✅ You need <strong>database access</strong> (read or write)</li>
+<li>✅ Converting between <strong>domain and DB types</strong></li>
+</ul>
+<p></p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>getCustomExercisesRepository().add()</code> - From store</li>
+<li><code>getWorkoutsRepository().getHistory()</code> - From composable</li>
+</ul>
+<p></p>
+<hr>
+<h2>🚨 Common Mistakes</h2>
+<h3>❌ NEVER: Component → Repository</h3>
+<p><strong>Wrong</strong>:</p>
+<pre><code>// Component.vue
+const exercises = await getCustomExercisesRepository().getAll()</code></pre>
+<p></p>
+<p><strong>Right</strong>:</p>
+<pre><code>// Component.vue
+const store = useExercisesStore()
+const exercises = store.getAllExercises() // Synchronous from cache</code></pre>
+<p></p>
+<h3>❌ NEVER: Store data that changes frequently</h3>
+<p><strong>Wrong</strong>:</p>
+<pre><code>// Creating a store for active workout state
+const activeWorkoutStore = defineStore('activeWorkout', ...)</code></pre>
+<p></p>
+<p><strong>Right</strong>:</p>
+<pre><code>// Use singleton ref for temporary state
+const workoutRef = ref&lt;Workout&gt;(...)
+export function getWorkoutRef() { return workoutRef }</code></pre>
+<p></p>
+<h3>❌ NEVER: Duplicate logic across components</h3>
+<p><strong>Wrong</strong>:</p>
+<pre><code>// ComponentA.vue
+const filtered = computed(() =&gt; exercises.value.filter(...))
+
+// ComponentB.vue
+const filtered = computed(() =&gt; exercises.value.filter(...))</code></pre>
+<p></p>
+<p><strong>Right</strong>:</p>
+<pre><code>// composables/useExerciseSearch.ts
+export function useExerciseSearch() {
+  const filtered = computed(() =&gt; ...)
+  return { filtered }
+}
+
+// Both components use it
+const { filtered } = useExerciseSearch()</code></pre>
+<p></p>
+<hr>
+<h2>📊 Real Examples from Codebase</h2>
+<h3>Scenario 1: Exercise Library</h3>
+<p><strong>Question</strong>: Where should I store custom exercises?</p>
+<p></p>
+<p><strong>Analysis</strong>:</p>
+<ul>
+<li>✅ Accessed frequently (exercise picker, workout builder)</li>
+<li>✅ Loaded once at startup</li>
+<li>✅ Global app state</li>
+<li>✅ Needs to be synchronous</li>
+</ul>
+<p></p>
+<p><strong>Decision</strong>: <strong>Pinia Store</strong> (<code>src/stores/exercises.ts</code>)</p>
+<p></p>
+<h3>Scenario 2: Workout History</h3>
+<p><strong>Question</strong>: Where should I load completed workouts?</p>
+<p></p>
+<p><strong>Analysis</strong>:</p>
+<ul>
+<li>❌ Only used in history view (not global)</li>
+<li>❌ Large dataset (don't want to cache all)</li>
+<li>✅ Needs pagination, filtering</li>
+<li>✅ Loaded per-component</li>
+</ul>
+<p></p>
+<p><strong>Decision</strong>: <strong>Composable</strong> (<code>src/composables/useWorkoutsList.ts</code>)</p>
+<p></p>
+<h3>Scenario 3: Exercise Search</h3>
+<p><strong>Question</strong>: Where should I implement search/filter logic?</p>
+<p></p>
+<p><strong>Analysis</strong>:</p>
+<ul>
+<li>✅ Reusable across components</li>
+<li>✅ Derives state from store data</li>
+<li>✅ Reactive computed filtering</li>
+<li>❌ Not stored in DB (temporary)</li>
+</ul>
+<p></p>
+<p><strong>Decision</strong>: <strong>Composable</strong> (<code>src/composables/useExerciseSearch.ts</code>)</p>
+<p></p>
+<h3>Scenario 4: Auto-Save Workout</h3>
+<p><strong>Question</strong>: How should I auto-save the active workout?</p>
+<p></p>
+<p><strong>Analysis</strong>:</p>
+<ul>
+<li>✅ Needs to watch state changes</li>
+<li>✅ Debounce to avoid excessive writes</li>
+<li>✅ Coordinate memory ↔ DB</li>
+<li>✅ Type conversions needed</li>
+</ul>
+<p></p>
+<p><strong>Decision</strong>: <strong>Composable</strong> (<code>src/features/workout/composables/useWorkoutPersistence.ts</code>)</p>
+<p></p>
+<h3>Scenario 5: Timer State</h3>
+<p><strong>Question</strong>: Where should I manage rest timer state?</p>
+<p></p>
+<p><strong>Analysis</strong>:</p>
+<ul>
+<li>✅ State machine (idle → running → paused)</li>
+<li>✅ Reusable (rest, AMRAP, EMOM, Tabata)</li>
+<li>❌ No persistence needed</li>
+<li>❌ Component-specific</li>
+</ul>
+<p></p>
+<p><strong>Decision</strong>: <strong>Composable</strong> (<code>src/composables/timers/useBaseTimer.ts</code>)</p>
+<p></p>
+<hr>
+<h2>🧠 Mental Model</h2>
+<p><strong>Ask yourself these questions in order</strong>:</p>
+<p></p>
+<p><strong>1. Does it need to persist to database?</strong></p>
+<ul>
+<li>No → Local state or composable</li>
+<li>Yes → Continue...</li>
+</ul>
+<p></p>
+<p><strong>2. Where am I calling from?</strong></p>
+<ul>
+<li>Component → Use store or composable (never repository)</li>
+<li>Store/Composable → Can call repository</li>
+</ul>
+<p></p>
+<p><strong>3. Is it accessed frequently across many components?</strong></p>
+<ul>
+<li>Yes + Global → Pinia Store</li>
+<li>No + Per-component → Composable</li>
+</ul>
+<p></p>
+<p><strong>4. Is the logic reusable?</strong></p>
+<ul>
+<li>Yes → Composable</li>
+<li>No → Local component state</li>
+</ul>

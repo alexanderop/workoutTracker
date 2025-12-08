@@ -1,26 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
+import { describe, expect, it, vi } from 'vitest'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
-import { resetDatabase } from '../setup'
 
 /**
  * Browser tests for useTimerAudio with real Web Audio API.
  * These tests verify AudioContext behavior that cannot be simulated in jsdom.
+ * Note: Each withSetup() call creates a fresh Pinia instance with default settings.
  */
 describe('useTimerAudio - browser mode', () => {
-  beforeEach(async () => {
-    await resetDatabase()
-    setActivePinia(createPinia())
-  })
-
   describe('real AudioContext integration', () => {
-    beforeEach(() => {
-      const settings = useSettingsStore()
-      settings.timerSoundEnabled = true
-    })
-
     it('creates AudioContext successfully without errors', () => {
       const [result, app] = withSetup(() => useTimerAudio())
 
@@ -123,15 +112,18 @@ describe('useTimerAudio - browser mode', () => {
   })
 
   describe('respects timerSoundEnabled setting', () => {
-    beforeEach(() => {
-      const settings = useSettingsStore()
-      settings.timerSoundEnabled = false
-    })
+    function setupWithSoundDisabled() {
+      return withSetup(() => {
+        const settings = useSettingsStore()
+        settings.timerSoundEnabled = false
+        return useTimerAudio()
+      })
+    }
 
     it('does not create AudioContext when sounds are disabled', () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
-      const [result, app] = withSetup(() => useTimerAudio())
+      const [result, app] = setupWithSoundDisabled()
 
       result.playWorkBeep()
       result.playRestBeep()
@@ -146,7 +138,7 @@ describe('useTimerAudio - browser mode', () => {
     it('does not create audio nodes for playComplete when disabled', () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
-      const [result, app] = withSetup(() => useTimerAudio())
+      const [result, app] = setupWithSoundDisabled()
 
       result.playComplete()
 

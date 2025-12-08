@@ -2,6 +2,7 @@ import Dexie from 'dexie'
 import type { Table } from 'dexie'
 import type {
   DbActiveWorkout,
+  DbBenchmark,
   DbCompletedWorkout,
   DbCustomExercise,
   DbUserSetting,
@@ -14,6 +15,7 @@ export class WorkoutTrackerDb extends Dexie {
   activeWorkout!: Table<DbActiveWorkout, 'current'>
   templates!: Table<DbWorkoutTemplate, string>
   settings!: Table<DbUserSetting, string>
+  benchmarks!: Table<DbBenchmark, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -24,6 +26,7 @@ export class WorkoutTrackerDb extends Dexie {
       activeWorkout: 'id',
       templates: 'id, name, createdAt, lastUsedAt',
       settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
     })
   }
 }

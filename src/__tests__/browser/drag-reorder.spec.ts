@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import type { Component } from 'vue'
 import { createApp, h } from 'vue'
+import { createPinia } from 'pinia'
 import { i18n } from '@/i18n'
 import WorkoutBlockPlaylist from '@/features/workout/components/WorkoutBlockPlaylist.vue'
 import { createStrengthBlock } from '@/__tests__/factories'
-import { resetDatabase } from '../setup'
 
 /**
  * Gets the parent container of a block button element
@@ -27,6 +27,7 @@ function renderComponent(
     },
   })
 
+  app.use(createPinia())
   app.use(i18n)
   app.mount(container)
 
@@ -42,13 +43,10 @@ function renderComponent(
 /**
  * Browser tests for drag-and-drop reordering in WorkoutBlockPlaylist.
  * Tests real browser drag behavior that cannot be simulated in jsdom.
+ * Note: Each renderComponent() call creates a fresh Pinia instance.
  */
 describe('WorkoutBlockPlaylist - drag and drop', () => {
   let cleanup: (() => void) | null = null
-
-  beforeEach(async () => {
-    await resetDatabase()
-  })
 
   afterEach(() => {
     cleanup?.()

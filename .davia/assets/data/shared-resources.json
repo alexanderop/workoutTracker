@@ -1,0 +1,62 @@
+[
+  {
+    "resource": "exercises store (Pinia)",
+    "location": "src/stores/exercises.ts",
+    "type": "State Management",
+    "purpose": "Global exercise library with custom exercises",
+    "consumers": "workout, templates, benchmarks, exercises features",
+    "couplingRisk": "HIGH - Many features read from this. Changes impact all consumers",
+    "mutators": "Only exercises feature writes to it",
+    "cohesionNote": "Single responsibility: exercise library. Good cohesion"
+  },
+  {
+    "resource": "workoutState (singleton ref)",
+    "location": "src/stores/workoutState.ts",
+    "type": "State Management",
+    "purpose": "Shared singleton ref for active workout",
+    "consumers": "workout feature only",
+    "couplingRisk": "MEDIUM - Singleton pattern. All workout components share same state",
+    "mutators": "Only workout feature (via useWorkout composable)",
+    "cohesionNote": "Focused on single workout state. Excellent cohesion"
+  },
+  {
+    "resource": "settings store (Pinia)",
+    "location": "src/stores/settings.ts",
+    "type": "State Management",
+    "purpose": "User preferences (theme, language, units, defaults)",
+    "consumers": "settings feature, app initialization",
+    "couplingRisk": "LOW - Read-only for most features. Isolated concerns",
+    "mutators": "Only settings feature",
+    "cohesionNote": "Focused on app configuration. Good cohesion"
+  },
+  {
+    "resource": "Database Repositories",
+    "location": "src/db/implementations/dexie/",
+    "type": "Data Persistence",
+    "purpose": "Repository pattern for IndexedDB access",
+    "consumers": "All features that need persistence",
+    "couplingRisk": "LOW - Interface-based. Features depend on abstractions, not implementations",
+    "mutators": "Each feature uses its own repository",
+    "cohesionNote": "Repository pattern ensures loose coupling. Each repository has single responsibility"
+  },
+  {
+    "resource": "Timer Composables",
+    "location": "src/composables/timers/",
+    "type": "Business Logic",
+    "purpose": "Stateless timer state machines (rest, AMRAP, EMOM, Tabata, ForTime)",
+    "consumers": "workout feature, timers feature",
+    "couplingRisk": "LOW - Stateless, pure functions. No side effects",
+    "mutators": "None (composables are imported, not mutated)",
+    "cohesionNote": "Each timer composable handles one timer type. Excellent cohesion"
+  },
+  {
+    "resource": "Type Definitions",
+    "location": "src/types/ (blocks.ts, workout.ts, exercises.ts)",
+    "type": "Type Safety",
+    "purpose": "Shared TypeScript types for domain models",
+    "consumers": "All features",
+    "couplingRisk": "LOW - Types are pure data structures. No runtime coupling",
+    "mutators": "None (types don't have state)",
+    "cohesionNote": "Each type file focused on one domain. Strong cohesion"
+  }
+]

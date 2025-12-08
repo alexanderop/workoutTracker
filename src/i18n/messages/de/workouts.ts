@@ -170,6 +170,7 @@ export default {
   },
   benchmarks: {
     create: 'Benchmark Erstellen',
+    edit: 'Benchmark Bearbeiten',
     name: 'Trainingsname',
     namePlaceholder: 'z.B. Murph, Fran, Cindy',
     type: {
@@ -181,6 +182,38 @@ export default {
     },
     rounds: {
       label: 'Anzahl der Runden',
+    },
+    exercises: 'Übungen',
+    exerciseCount: '{count} Übungen',
+    addExercise: 'Übung hinzufügen',
+    noExercises: 'Noch keine Übungen hinzugefügt. Füge Übungen hinzu, um deinen Benchmark zu erstellen.',
+    saveChanges: 'Änderungen speichern',
+    cancelEdit: 'Abbrechen',
+    deleteBenchmark: 'Benchmark löschen',
+    deleteConfirmTitle: 'Benchmark löschen?',
+    deleteConfirmDescription:
+      'Diese Aktion kann nicht rückgängig gemacht werden. Der Benchmark "{name}" wird dauerhaft gelöscht.',
+    detail: {
+      workoutStructure: 'Trainingsstruktur',
+      startWorkout: 'Training Starten',
+      starting: 'Wird gestartet...',
+      error: 'Fehler beim Laden des Benchmarks',
+      notFound: 'Benchmark nicht gefunden',
+    },
+    exerciseDisplay: {
+      exerciseNumber: 'Übung {current} von {total}',
+      reps: 'Wdh.',
+    },
+    queue: {
+      title: 'Übungsreihenfolge',
+      description: 'Übungsfortschritt anzeigen',
+      roundHeader: 'Runde {round}',
+      active: 'Aktiv',
+      exerciseStatus: {
+        completed: 'Abgeschlossen',
+        active: 'Aktiv',
+        pending: 'Ausstehend',
+      },
     },
   },
 } as const

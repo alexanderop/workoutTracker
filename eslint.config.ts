@@ -4,6 +4,7 @@ import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginOxlint from 'eslint-plugin-oxlint'
+import pluginUnicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
 
@@ -111,9 +112,15 @@ export default defineConfigWithVueTs(
   {
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
+    plugins: {
+      unicorn: pluginUnicorn,
+    },
     rules: {
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
+
+      // Prefer ternary operators over simple if-return patterns
+      'unicorn/prefer-ternary': 'error',
 
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [
@@ -277,7 +284,7 @@ export default defineConfigWithVueTs(
       '@intlify/vue-i18n': pluginVueI18n,
     },
     rules: {
-      '@intlify/vue-i18n/no-raw-text': ['warn', {
+      '@intlify/vue-i18n/no-raw-text': ['error', {
         ignorePattern: '^[-#:()&+×/°′″%]+$',
         ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', 'Close'],
         attributes: {

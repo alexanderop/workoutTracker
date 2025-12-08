@@ -9,7 +9,15 @@ import { routes } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
-import { CommonPO, BuilderPO, ActiveWorkoutPO, QueuePO } from './pages'
+import {
+  CommonPO,
+  BuilderPO,
+  ActiveWorkoutPO,
+  QueuePO,
+  BenchmarksPO,
+  BenchmarkFormPO,
+  BenchmarkDetailPO,
+} from './pages'
 
 type CreateTestAppOptions = {
   initialRoute?: string
@@ -24,6 +32,9 @@ type TestApp = {
   builder: BuilderPO
   workout: ActiveWorkoutPO
   queue: QueuePO
+  benchmarks: BenchmarksPO
+  benchmarkForm: BenchmarkFormPO
+  benchmarkDetail: BenchmarkDetailPO
   // Raw query methods
   getByRole: typeof screen.getByRole
   getByText: typeof screen.getByText
@@ -86,6 +97,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   const builder = new BuilderPO(context, common)
   const workout = new ActiveWorkoutPO(context, common)
   const queue = new QueuePO(context, common)
+  const benchmarks = new BenchmarksPO(context, common)
+  const benchmarkForm = new BenchmarkFormPO(context, common)
+  const benchmarkDetail = new BenchmarkDetailPO(context, common)
 
   // Simple navigation helper
   async function navigateTo(to: RouteLocationRaw) {
@@ -105,6 +119,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     builder,
     workout,
     queue,
+    benchmarks,
+    benchmarkForm,
+    benchmarkDetail,
     // Raw query methods
     getByRole: screen.getByRole,
     getByText: screen.getByText,

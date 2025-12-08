@@ -1,0 +1,173 @@
+<h1>Integration Testing</h1>
+<p>🔄 <strong>Full user flow testing</strong> with router, Pinia, and real UI interactions</p>
+<hr />
+<h2>🎯 What Are Integration Tests?</h2>
+<p><strong>Integration tests</strong> simulate complete user journeys through the application.</p>
+<p>They test:</p>
+<ul>
+<li>✅ Multi-step workflows (create workout → add exercises → complete)</li>
+<li>✅ Navigation between pages</li>
+<li>✅ State management (Pinia stores)</li>
+<li>✅ Database interactions (IndexedDB via repositories)</li>
+<li>✅ Dialog and drawer interactions</li>
+</ul>
+<hr />
+<h2>📍 Location</h2>
+<pre><code>src/__tests__/integration/</code></pre>
+<p><strong>Example files</strong>:</p>
+<ul>
+<li><code>benchmark-timer-flow.spec.ts</code> - Complete benchmark workout flow</li>
+<li><code>workout-management.spec.ts</code> - CRUD operations for workouts</li>
+<li><code>exercise-picker.spec.ts</code> - Exercise selection workflow</li>
+</ul>
+<hr />
+<h2>🔄 Integration Test Workflow</h2>
+<p></p>
+<excalidraw data-path="data/integration-test-flow.json"></excalidraw>
+<p></p>
+<hr />
+<h2>🛠️ Core Helper: createTestApp()</h2>
+<p>The <strong>createTestApp</strong> helper renders the full application with all necessary plugins.</p>
+<p><strong>File</strong>: <code>src/__tests__/helpers/createTestApp.ts</code></p>
+<h3>What It Provides</h3>
+<ul>
+<li>🔌 <strong>Router</strong> (Vue Router with memory history)</li>
+<li>📦 <strong>Pinia</strong> (state management)</li>
+<li>🌍 <strong>i18n</strong> (internationalization)</li>
+<li>👤 <strong>user-event</strong> (realistic user interactions)</li>
+<li>📄 <strong>Page Objects</strong> (reusable test helpers)</li>
+<li>🔍 <strong>Testing Library queries</strong> (getByRole, getByText, etc.)</li>
+</ul>
+<h3>Basic Usage</h3>
+<pre><code>import { createTestApp } from '@/__tests__/helpers/createTestApp'
+import { resetDatabase } from '@/__tests__/setup'
+
+beforeEach(async () =&gt; {
+  await resetDatabase()
+})
+
+it('completes a workout flow', async () =&gt; {
+  const app = await createTestApp({ initialRoute: '/' })
+
+  // Navigate
+  await app.navigateTo('/workout/active')
+
+  // Interact using page objects
+  await app.workout.clickStartWorkout()
+
+  // Or use raw Testing Library queries
+  const button = app.getByRole('button', { name: /complete/i })
+  await app.user.click(button)
+
+  // Always cleanup
+  app.cleanup()
+})</code></pre>
+<hr />
+<h2>📦 Page Objects</h2>
+<p><strong>Page Objects</strong> encapsulate common UI interactions into reusable methods.</p>
+<p><strong>Location</strong>: <code>src/__tests__/helpers/pages/</code></p>
+<h3>Available Page Objects</h3>
+<ul>
+<li><strong>app.common</strong> - Dialogs, navigation, alerts</li>
+<li><strong>app.builder</strong> - Workout builder interactions</li>
+<li><strong>app.workout</strong> - Active workout page</li>
+<li><strong>app.queue</strong> - Exercise queue drawer</li>
+<li><strong>app.benchmarks</strong> - Benchmark list page</li>
+<li><strong>app.benchmarkForm</strong> - Create/edit benchmark form</li>
+<li><strong>app.benchmarkDetail</strong> - Benchmark detail view</li>
+</ul>
+<h3>Example: Using Page Objects</h3>
+<pre><code>const app = await createTestApp()
+
+// Navigate to benchmarks
+await app.benchmarks.navigateToList()
+
+// Fill benchmark form
+await app.benchmarkForm.fillName('Fran')
+await app.benchmarkForm.addExercise('Thrusters', 21)
+await app.benchmarkForm.addExercise('Pull-ups', 21)
+
+// Submit
+await app.benchmarkForm.submit()
+
+// Wait for dialog
+await app.common.waitForDialog()
+const confirmButton = app.common.getDialogButton('Confirm')
+await app.user.click(confirmButton)
+
+app.cleanup()</code></pre>
+<hr />
+<h2>⚠️ Critical Requirements</h2>
+<h3>1️⃣ Always Reset Database</h3>
+<pre><code>import { resetDatabase } from '@/__tests__/setup'
+
+beforeEach(async () =&gt; {
+  await resetDatabase()
+})</code></pre>
+<p><strong>Why?</strong> Tests must be isolated. Without reset, data from one test leaks into another.</p>
+<h3>2️⃣ Always Cleanup</h3>
+<pre><code>it('my test', async () =&gt; {
+  const app = await createTestApp()
+  // ... test code ...
+  app.cleanup() // ✅ REQUIRED
+})</code></pre>
+<p><strong>Alternative using setup/teardown</strong>:</p>
+<pre><code>import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+
+beforeEach(setupIntegrationTest)
+afterEach(cleanupIntegrationTest)</code></pre>
+<h3>3️⃣ Wait for Async Operations</h3>
+<pre><code>import { waitFor } from '@testing-library/vue'
+
+await app.navigateTo('/workout')
+await waitFor(() =&gt; {
+  expect(app.router.currentRoute.value.path).toBe('/workout')
+})</code></pre>
+<hr />
+<h2>🎓 Real Example</h2>
+<p><strong>File</strong>: <code>src/__tests__/integration/benchmark-timer-flow.spec.ts:12-60</code></p>
+<pre><code>import { createTestApp } from '@/__tests__/helpers/createTestApp'
+import { resetDatabase } from '@/__tests__/setup'
+
+describe('Benchmark Timer Flow', () =&gt; {
+  beforeEach(async () =&gt; {
+    await resetDatabase()
+  })
+
+  it('completes a ForTime benchmark', async () =&gt; {
+    const app = await createTestApp({ initialRoute: '/benchmarks' })
+
+    // Navigate to create benchmark
+    await app.benchmarks.clickCreateButton()
+
+    // Fill form
+    await app.benchmarkForm.fillName('Cindy')
+    await app.benchmarkForm.selectType('fortime')
+    await app.benchmarkForm.addExercise('Pull-ups', 5)
+
+    // Submit
+    await app.benchmarkForm.submit()
+
+    // Start benchmark
+    const startButton = app.getByRole('button', { name: /start/i })
+    await app.user.click(startButton)
+
+    // Complete exercise
+    await app.workout.completeExercise(0)
+
+    // Verify completion
+    expect(app.getByText(/benchmark complete/i)).toBeInTheDocument()
+
+    app.cleanup()
+  })
+})</code></pre>
+<hr />
+<h2>💡 Tips &amp; Best Practices</h2>
+<ul>
+<li>✅ <strong>Use page objects</strong> for complex interactions (reduces duplication)</li>
+<li>✅ <strong>Use getByRole</strong> for interactive elements (accessible queries)</li>
+<li>✅ <strong>Use waitFor</strong> for async operations (navigation, API calls)</li>
+<li>✅ <strong>Test user behavior</strong>, not implementation details</li>
+<li>❌ <strong>Don't use querySelectors</strong> (use Testing Library queries)</li>
+<li>❌ <strong>Don't skip cleanup</strong> (causes memory leaks and test pollution)</li>
+</ul>

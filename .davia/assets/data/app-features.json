@@ -1,0 +1,42 @@
+[
+  {
+    "feature": "Exercise Library",
+    "purpose": "Manage custom exercise definitions with equipment, target reps, and images",
+    "user_benefit": "Build a personalized library of exercises you perform regularly"
+  },
+  {
+    "feature": "Workout Builder",
+    "purpose": "Create workouts by combining multiple blocks (strength, AMRAP, EMOM, etc.)",
+    "user_benefit": "Design flexible workouts that mix strength training with CrossFit-style conditioning"
+  },
+  {
+    "feature": "Active Workout Mode",
+    "purpose": "Execute workouts with timers, set tracking, and automatic progression",
+    "user_benefit": "Stay focused during workouts with guided timers and easy set logging"
+  },
+  {
+    "feature": "Workout Templates",
+    "purpose": "Save workout structures to reuse later without recreating from scratch",
+    "user_benefit": "Quickly start familiar workout programs or weekly splits"
+  },
+  {
+    "feature": "Benchmark Tracking",
+    "purpose": "Track performance on standard CrossFit benchmarks (Fran, Cindy, etc.)",
+    "user_benefit": "Measure progress over time on well-known benchmark workouts"
+  },
+  {
+    "feature": "Workout History",
+    "purpose": "Automatically save completed workouts with all sets and times recorded",
+    "user_benefit": "Review past performance, track volume, and see progression trends"
+  },
+  {
+    "feature": "Offline-First Design",
+    "purpose": "All data stored locally in browser - works without internet connection",
+    "user_benefit": "Use the app anywhere (even in gyms with poor connectivity)"
+  },
+  {
+    "feature": "Rest Timers",
+    "purpose": "Built-in countdown timers between sets with audio notifications",
+    "user_benefit": "Stay consistent with rest periods and maintain workout intensity"
+  }
+]

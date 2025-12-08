@@ -1,5 +1,6 @@
 import type { App } from 'vue'
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
 /**
  * Mounts a minimal Vue app to trigger lifecycle hooks.
@@ -21,6 +22,7 @@ export function withSetup<TResult>(composable: () => TResult): [TResult, App] {
       return () => {}
     },
   })
+  app.use(createPinia())
   app.mount(document.createElement('div'))
   // @ts-expect-error - result is assigned synchronously in setup
   return [result, app]

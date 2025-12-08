@@ -1,0 +1,50 @@
+[
+  {
+    "type": "Integration Tests",
+    "location": "src/__tests__/integration/",
+    "purpose": "Full user flow testing with router, Pinia, and real UI interactions",
+    "when_to_use": "Testing complete user journeys, navigation flows, multi-step workflows",
+    "helper": "createTestApp()",
+    "example": "benchmark-timer-flow.spec.ts"
+  },
+  {
+    "type": "Composable Unit Tests",
+    "location": "src/__tests__/composables/",
+    "purpose": "Direct testing of composables without lifecycle hooks",
+    "when_to_use": "Testing composables that don't use onMounted, onUnmounted, inject, or provide",
+    "helper": "Direct import and call",
+    "example": "timers/useBaseTimer.spec.ts"
+  },
+  {
+    "type": "Composable Lifecycle Tests",
+    "location": "src/__tests__/composables/",
+    "purpose": "Testing composables that use Vue lifecycle hooks",
+    "when_to_use": "Testing composables with onMounted, onUnmounted, inject, provide, or other lifecycle hooks",
+    "helper": "withSetup()",
+    "example": "useDialogState.spec.ts"
+  },
+  {
+    "type": "Database/Repository Tests",
+    "location": "src/db/__tests__/",
+    "purpose": "Testing repository CRUD operations with IndexedDB",
+    "when_to_use": "Testing database schema, queries, and repository patterns",
+    "helper": "resetDatabase()",
+    "example": "workoutRepository tests"
+  },
+  {
+    "type": "Browser Tests",
+    "location": "src/__tests__/browser/",
+    "purpose": "Testing browser-specific features (audio, drag-and-drop, wake lock)",
+    "when_to_use": "Testing features that require real browser APIs not available in jsdom",
+    "helper": "createTestApp() + browser APIs",
+    "example": "wake-lock.spec.ts"
+  },
+  {
+    "type": "Accessibility Tests",
+    "location": "src/__tests__/a11y/",
+    "purpose": "Testing accessibility compliance (WCAG standards)",
+    "when_to_use": "Ensuring app meets accessibility requirements",
+    "helper": "axe-core integration",
+    "example": "a11y.spec.ts"
+  }
+]

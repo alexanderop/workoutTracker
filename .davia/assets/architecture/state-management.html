@@ -1,0 +1,63 @@
+<h1>State Management</h1>
+<p><strong>Three-layer architecture</strong> for managing state in the workout tracker. Each layer has a specific purpose and responsibility.</p>
+<p></p>
+<h2>🏗️ Architecture Overview</h2>
+<p>The app uses a <strong>clean separation of concerns</strong> across three layers:</p>
+<ul>
+<li><strong>📦 Repositories</strong> - Persistence layer (IndexedDB via Dexie)</li>
+<li><strong>💾 Stores</strong> - Domain-level cache (Pinia)</li>
+<li><strong>🧩 Composables</strong> - Business logic + temporary state</li>
+</ul>
+<p></p>
+<excalidraw data-path="data/state-management-overview.json"></excalidraw>
+<p></p>
+<hr>
+<h2>📚 Quick Guide</h2>
+<p><strong>When to use each layer?</strong></p>
+<ul>
+<li><strong>Pinia Store</strong> → Frequently-accessed data, loaded once at startup (exercises, settings)</li>
+<li><strong>Composable</strong> → Temporary state, derived data, business logic (search, timers, auto-save)</li>
+<li><strong>Repository</strong> → Database access only (never call directly from components)</li>
+</ul>
+<p></p>
+<blockquote><p>💡 <strong>Golden Rule</strong>: Components never call repositories directly. Always go through stores or composables.</p></blockquote>
+<p></p>
+<hr>
+<h2>🔍 Dive Deeper</h2>
+<p>Explore each layer in detail:</p>
+<ul>
+<li><strong>Pinia Stores</strong> → <code>src/stores/</code> - Exercise and settings caches</li>
+<li><strong>Composables</strong> → <code>src/composables/</code> - State machines, filters, coordination</li>
+<li><strong>Repositories</strong> → <code>src/db/</code> - Type-safe persistence layer</li>
+<li><strong>Decision Tree</strong> → Should I use a store, composable, or repository?</li>
+<li><strong>Data Flow Examples</strong> → Real-world patterns from the codebase</li>
+</ul>
+<p></p>
+<hr>
+<h2>🎯 Key Patterns</h2>
+<p><strong>1. DB-First Updates</strong></p>
+<ul>
+<li>Always save to database first, then update store cache</li>
+<li>Example: <code>src/stores/exercises.ts:39-43</code></li>
+</ul>
+<p></p>
+<p><strong>2. Load-Once Pattern</strong></p>
+<ul>
+<li>Stores load data once at app initialization</li>
+<li>After that, all access is synchronous from cache</li>
+<li>Example: <code>src/stores/exercises.ts:18-30</code></li>
+</ul>
+<p></p>
+<p><strong>3. Auto-Save Pattern</strong></p>
+<ul>
+<li>Use <code>watchDebounced</code> for reactive persistence</li>
+<li>Debounce 1000ms to avoid excessive writes</li>
+<li>Example: <code>src/features/workout/composables/useWorkoutPersistence.ts:50-81</code></li>
+</ul>
+<p></p>
+<p><strong>4. Type Conversions</strong></p>
+<ul>
+<li>Database types use <code>null</code> for no value</li>
+<li>Domain types use <code>undefined</code> for optional values</li>
+<li>Converters bridge between them: <code>src/db/converters.ts</code></li>
+</ul>

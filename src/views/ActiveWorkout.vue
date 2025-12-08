@@ -15,9 +15,11 @@ import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEdit
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/features/workout/components/WorkoutFinishDialog.vue'
 import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer.vue'
+import BenchmarkExerciseQueueDrawer from '@/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue'
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -26,7 +28,7 @@ import type {
   TabataConfig,
   TimedBlockKind,
 } from '@/types/blocks'
-import { isStrengthBlock } from '@/types/blocks'
+import { getBlockExerciseList, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 const router = useRouter()
 const {
@@ -54,6 +56,24 @@ const {
   discardActiveWorkout,
 } = useWorkoutPersistence(workoutRef)
 
+// Benchmark mode detection
+const isBenchmarkMode = computed(() => !!workout.value.benchmarkId)
+
+// Benchmark data for exercise queue
+const benchmarkType = computed<'fortime' | 'rounds'>(() => {
+  // ForTime benchmarks have 1 block, Rounds benchmarks have multiple blocks
+  return workout.value.blocks.length === 1 ? 'fortime' : 'rounds'
+})
+
+const firstBlockExercises = computed(() => {
+  const firstBlock = workout.value.blocks[0]
+  if (!firstBlock || !isTimedBlock(firstBlock)) return []
+  return getBlockExerciseList(firstBlock)
+})
+
+// Initialize global timer for benchmarks
+const benchmarkTimer = useBenchmarkGlobalTimer()
+
 onMounted(() => {
   // If not already initialized (from resume), start a new session
   if (!isInitialized.value) {
@@ -61,6 +81,11 @@ onMounted(() => {
     return
   }
   markInitialized()
+
+  // Initialize benchmark timer if in benchmark mode
+  if (isBenchmarkMode.value && workout.value.globalTimerStartedAt) {
+    benchmarkTimer.initializeFromWorkout(workout.value.globalTimerStartedAt)
+  }
 })
 
 // Dialog state
@@ -156,6 +181,17 @@ function handleSaveExercise(data: {
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 
+async function handleWorkoutComplete() {
+  // For benchmarks, skip the naming dialog (name already set)
+  if (isBenchmarkMode.value) {
+    await handleConfirmFinish(workout.value.name)
+    return
+  }
+
+  // For regular workouts, show dialog
+  openDialog('finish')
+}
+
 function handleEditBlock(index: number) {
   const block = workout.value.blocks[index]
   if (!block) return
@@ -188,9 +224,11 @@ function handleQueueAddBlock() {
     <!-- Active Mode -->
     <WorkoutActiveMode
       v-if="isActiveMode"
+      :is-benchmark-mode="isBenchmarkMode"
+      :benchmark-timer="benchmarkTimer"
       @end-workout="openDialog('finish')"
       @cancel-workout="openDialog('cancel')"
-      @workout-complete="openDialog('finish')"
+      @workout-complete="handleWorkoutComplete"
       @open-queue="handleOpenQueue"
     />
 
@@ -236,6 +274,22 @@ function handleQueueAddBlock() {
     />
 
     <!-- Queue Drawer (active mode) -->
-    <WorkoutQueueDrawer v-model:open="queueDrawerOpen" @add-block="handleQueueAddBlock" />
+    <!-- Regular workout queue -->
+    <WorkoutQueueDrawer
+      v-if="!isBenchmarkMode"
+      v-model:open="queueDrawerOpen"
+      @add-block="handleQueueAddBlock"
+    />
+
+    <!-- Benchmark exercise queue -->
+    <BenchmarkExerciseQueueDrawer
+      v-if="isBenchmarkMode"
+      v-model:open="queueDrawerOpen"
+      :benchmark-type="benchmarkType"
+      :total-blocks="workout.blocks.length"
+      :exercises="firstBlockExercises"
+      :current-block-index="workout.selectedBlockIndex"
+      :current-exercise-index="workout.activeExerciseIndex ?? 0"
+    />
   </div>
 </template>

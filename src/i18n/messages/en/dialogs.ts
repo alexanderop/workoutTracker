@@ -120,4 +120,8 @@ export default {
     addExercise: 'Add Exercise',
     addBlock: 'Add Block',
   },
+  benchmarkReps: {
+    title: 'Set Prescribed Reps',
+    description: 'How many reps of {exercise} per round?',
+  },
 } as const
