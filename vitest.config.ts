@@ -72,6 +72,7 @@ export default defineConfig({
     projects: [
       // Project 1: Default (main tests)
       {
+        resolve,
         test: {
           name: 'default',
           include: ['src/__tests__/**/*.spec.ts', '!src/__tests__/a11y/**', '!src/__tests__/visual/**'],
@@ -80,6 +81,7 @@ export default defineConfig({
 
       // Project 2: Accessibility tests
       {
+        resolve,
         test: {
           name: 'a11y',
           include: ['src/__tests__/a11y/**/*.spec.ts'],
@@ -88,6 +90,7 @@ export default defineConfig({
 
       // Project 3: Visual regression tests
       {
+        resolve,
         test: {
           name: 'visual',
           include: ['src/__tests__/visual/**/*.spec.ts'],
