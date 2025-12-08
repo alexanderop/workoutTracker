@@ -44,6 +44,7 @@ export default {
     markSetComplete: 'Mark set complete',
     workoutDuration: 'Workout duration',
     blockCompleted: 'Block completed',
+    completed: 'Completed',
     editBlock: 'Edit {name}',
     removeBlock: 'Remove {name}',
   },

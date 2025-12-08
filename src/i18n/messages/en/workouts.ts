@@ -205,5 +205,16 @@ export default {
       exerciseNumber: 'Exercise {current} of {total}',
       reps: 'reps',
     },
+    queue: {
+      title: 'Exercise Queue',
+      description: 'View exercise progress',
+      roundHeader: 'Round {round}',
+      active: 'Active',
+      exerciseStatus: {
+        completed: 'Completed',
+        active: 'Active',
+        pending: 'Upcoming',
+      },
+    },
   },
 } as const

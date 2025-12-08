@@ -42,6 +42,7 @@ export default {
     markSetComplete: 'Satz als abgeschlossen markieren',
     workoutDuration: 'Workout-Dauer',
     blockCompleted: 'Block abgeschlossen',
+    completed: 'Abgeschlossen',
     editBlock: '{name} bearbeiten',
     removeBlock: '{name} entfernen',
   },

@@ -204,5 +204,16 @@ export default {
       exerciseNumber: 'Übung {current} von {total}',
       reps: 'Wdh.',
     },
+    queue: {
+      title: 'Übungsreihenfolge',
+      description: 'Übungsfortschritt anzeigen',
+      roundHeader: 'Runde {round}',
+      active: 'Aktiv',
+      exerciseStatus: {
+        completed: 'Abgeschlossen',
+        active: 'Aktiv',
+        pending: 'Ausstehend',
+      },
+    },
   },
 } as const
