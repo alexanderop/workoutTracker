@@ -39,10 +39,10 @@ export default defineConfig({
     },
     setupFiles: ['./src/__tests__/setup.ts'],
 
-    // Filter out noisy WakeLock video fallback errors in browser tests
+    // Filter out noisy WakeLock errors in browser tests
     onConsoleLog(log: string, type: 'stdout' | 'stderr'): false | void {
-      if (type === 'stderr' && log.includes('[WakeLock] Video fallback play failed')) {
-        return false // Suppress this message
+      if (type === 'stderr' && log.includes('[WakeLock]')) {
+        return false // Suppress all WakeLock warnings (expected in test environment)
       }
       // Let all other messages through
     },
