@@ -8,8 +8,7 @@ import { Clock, Plus, RotateCw } from 'lucide-vue-next'
 import BenchmarkTypeCard from './BenchmarkTypeCard.vue'
 import BenchmarkExerciseList from './BenchmarkExerciseList.vue'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
-
-type BenchmarkType = 'fortime' | 'rounds'
+import type { BenchmarkType } from '@/types/benchmark'
 
 type BenchmarkFormState = {
   name: string

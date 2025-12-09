@@ -1,6 +1,7 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import type { SetStatus } from '@/types/workout'
 import type { WorkoutMode } from '@/types/blocks'
+import type { BenchmarkType } from '@/types/benchmark'
 
 // ============================================
 // Database Types
@@ -83,7 +84,7 @@ export type DbBenchmarkExercise = {
 export type DbBenchmark = {
   id: string
   name: string
-  type: 'fortime' | 'rounds'
+  type: BenchmarkType
   rounds: number
   exercises: ReadonlyArray<DbBenchmarkExercise>
   createdAt: number

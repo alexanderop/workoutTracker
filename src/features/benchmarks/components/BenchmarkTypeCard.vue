@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-
-type BenchmarkType = 'fortime' | 'rounds'
+import type { BenchmarkType } from '@/types/benchmark'
 
 type Emits = {
   select: [type: BenchmarkType]

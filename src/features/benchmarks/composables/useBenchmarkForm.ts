@@ -1,8 +1,7 @@
 import { computed, ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbBenchmark } from '@/db/schema'
-
-type BenchmarkType = 'fortime' | 'rounds'
+import type { BenchmarkType } from '@/types/benchmark'
 
 export type BenchmarkFormExercise = {
   exerciseDefinitionId: string | null
