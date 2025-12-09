@@ -85,34 +85,38 @@ export type ForTimeResult = {
   splitTimes?: ReadonlyArray<number>
 }
 
-// Union type for all timed block results
+/**
+ * Union type for all timed block results
+ * @public - Used by isTimedBlockResult() type guard
+ */
 export type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
 
 // ============================================
 // Zod Schemas for Runtime Validation
 // ============================================
 
-export const AmrapResultSchema = z.object({
+const AmrapResultSchema = z.object({
   rounds: z.number(),
   partialReps: z.number(),
   actualDuration: z.number(),
 })
 
-export const EmomResultSchema = z.object({
+const EmomResultSchema = z.object({
   completedMinutes: z.number(),
   missedMinutes: z.array(z.number()),
 })
 
-export const TabataResultSchema = z.object({
+const TabataResultSchema = z.object({
   repsPerRound: z.array(z.number()),
 })
 
-export const ForTimeResultSchema = z.object({
+const ForTimeResultSchema = z.object({
   completionTime: z.number(),
   completed: z.boolean(),
   splitTimes: z.array(z.number()).optional(),
 })
 
+/** @public - Used by isTimedBlockResult() type guard */
 export const TimedBlockResultSchema = z.union([
   AmrapResultSchema,
   EmomResultSchema,
