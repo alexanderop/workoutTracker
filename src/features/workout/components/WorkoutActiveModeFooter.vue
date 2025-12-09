@@ -206,7 +206,7 @@ function handlePrimaryAction() {
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
       >
-        <ChevronLeft class="size-5" />
+        <ChevronLeft class="size-5" aria-hidden="true" />
       </Button>
 
       <!-- Primary action -->
@@ -222,7 +222,7 @@ function handlePrimaryAction() {
         :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
         @click="handlePrimaryAction"
       >
-        <component :is="primaryAction.icon" class="size-5" />
+        <component :is="primaryAction.icon" class="size-5" aria-hidden="true" />
         {{ primaryAction.label }}
       </Button>
 
@@ -235,7 +235,7 @@ function handlePrimaryAction() {
         :disabled="isLastBlock"
         @click="emit('next-block')"
       >
-        <ChevronRight class="size-5" />
+        <ChevronRight class="size-5" aria-hidden="true" />
       </Button>
     </div>
 
@@ -251,7 +251,7 @@ function handlePrimaryAction() {
         :disabled="isTransitioning"
         @click="emit('prev-exercise')"
       >
-        <ChevronLeft class="size-4" />
+        <ChevronLeft class="size-4" aria-hidden="true" />
         {{ t('workouts.active.footer.back') }}
       </Button>
     </div>

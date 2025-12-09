@@ -3,32 +3,37 @@
  * Tracks total elapsed time across all blocks.
  * Continues counting even when app closes by using timestamp-based calculation.
  */
-import { useIntervalFn } from '@vueuse/core'
+import { useTimestamp } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
 
 export function useBenchmarkGlobalTimer() {
   const startedAt = ref<number | null>(null)
   const isRunning = ref(false)
-  const currentTime = ref(Date.now())
 
-  // Update current time every second to trigger reactivity
-  const { pause: stopInterval, resume: startInterval } = useIntervalFn(
-    () => {
-      if (isRunning.value) {
-        currentTime.value = Date.now()
-      }
-    },
-    1000,
-    { immediate: false },
-  )
+  // Use useTimestamp for reactive updates (updates every second for display)
+  const { timestamp, pause: stopInterval, resume: startInterval } = useTimestamp({
+    controls: true,
+    interval: 1000,
+    immediate: false,
+  })
 
+  // Display value (updates every second)
   const elapsedSeconds = computed(() => {
     if (!startedAt.value) return 0
-    return Math.floor((currentTime.value - startedAt.value) / 1000)
+    return Math.floor((timestamp.value - startedAt.value) / 1000)
   })
 
   const formattedElapsed = computed(() => formatTime(elapsedSeconds.value))
+
+  /**
+   * Get precise elapsed seconds at the exact moment this is called.
+   * Use this when recording split times to avoid stale interval values.
+   */
+  function getPreciseElapsedSeconds(): number {
+    if (!startedAt.value) return 0
+    return Math.floor((Date.now() - startedAt.value) / 1000)
+  }
 
   /**
    * Initialize timer from saved workout state.
@@ -37,9 +42,25 @@ export function useBenchmarkGlobalTimer() {
   function initializeFromWorkout(globalTimerStartedAt: number | null) {
     if (!globalTimerStartedAt) return
 
+    // Validate timestamp is reasonable (not in future, not before 2020)
+    const now = Date.now()
+    const MIN_TIMESTAMP = 1577836800000 // 2020-01-01
+
+    if (globalTimerStartedAt > now) {
+      console.warn('[Timer] Timestamp is in future, using current time')
+      startedAt.value = now
+      isRunning.value = true
+      startInterval()
+      return
+    }
+
+    if (globalTimerStartedAt < MIN_TIMESTAMP) {
+      console.warn('[Timer] Invalid timestamp, resetting timer')
+      return
+    }
+
     startedAt.value = globalTimerStartedAt
     isRunning.value = true
-    currentTime.value = Date.now()
     startInterval()
   }
 
@@ -51,7 +72,6 @@ export function useBenchmarkGlobalTimer() {
       startedAt.value = Date.now()
     }
     isRunning.value = true
-    currentTime.value = Date.now()
     startInterval()
   }
 
@@ -80,7 +100,6 @@ export function useBenchmarkGlobalTimer() {
   function reset() {
     isRunning.value = false
     startedAt.value = null
-    currentTime.value = Date.now()
     stopInterval()
   }
 
@@ -96,6 +115,7 @@ export function useBenchmarkGlobalTimer() {
     isRunning,
     elapsedSeconds,
     formattedElapsed,
+    getPreciseElapsedSeconds,
     start,
     pause,
     toggle,

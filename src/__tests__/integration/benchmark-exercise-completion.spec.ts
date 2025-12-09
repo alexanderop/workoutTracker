@@ -79,7 +79,7 @@ describe('Benchmark Exercise Completion', () => {
 
       // Wait for exercise 2 to appear
       await waitFor(() => {
-        expect(screen.getByText(/2 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/2 of 2/i).length).toBeGreaterThan(0)
       })
 
       // Verify "Done" button still shows
@@ -96,7 +96,7 @@ describe('Benchmark Exercise Completion', () => {
 
       // Verify starting on Exercise 1
       expect(screen.getByText('Burpees')).toBeTruthy()
-      expect(screen.getByText(/1 of 2/i)).toBeTruthy()
+      expect(screen.getAllByText(/1 of 2/i).length).toBeGreaterThan(0)
 
       // Click "Done"
       const doneButton = screen.getByRole('button', { name: /done/i })
@@ -105,7 +105,7 @@ describe('Benchmark Exercise Completion', () => {
       // Wait for Exercise 2 to appear
       await waitFor(() => {
         expect(screen.getByText('Squats')).toBeTruthy()
-        expect(screen.getByText(/2 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/2 of 2/i).length).toBeGreaterThan(0)
       })
 
       // Verify Exercise 1 is no longer visible
@@ -149,11 +149,11 @@ describe('Benchmark Exercise Completion', () => {
       // Advance to Exercise 2 (last)
       const doneButton = screen.getByRole('button', { name: /done/i })
       await app.user.click(doneButton)
-      await waitFor(() => screen.getByText(/2 of 2/i))
+      await waitFor(() => { const elements = screen.getAllByText(/2 of 2/i); expect(elements.length).toBeGreaterThan(0) })
 
       // Verify we're on the last exercise (2 of 2)
       expect(screen.getByText('Squats')).toBeTruthy()
-      expect(screen.getByText(/2 of 2/i)).toBeTruthy()
+      expect(screen.getAllByText(/2 of 2/i).length).toBeGreaterThan(0)
 
       // Click "Done" on last exercise
       const doneButtonEx2 = screen.getByRole('button', { name: /done/i })
@@ -219,7 +219,7 @@ describe('Benchmark Exercise Completion', () => {
 
       // Verify starting on Round 1, Exercise 1
       expect(screen.getByText('Pull-ups')).toBeTruthy()
-      expect(screen.getByText(/1 of 2/i)).toBeTruthy()
+      expect(screen.getAllByText(/1 of 2/i).length).toBeGreaterThan(0)
 
       // Advance: R1E1 → R1E2
       await app.user.click(screen.getByRole('button', { name: /done/i }))
@@ -229,7 +229,7 @@ describe('Benchmark Exercise Completion', () => {
       await app.user.click(screen.getByRole('button', { name: /done/i }))
       await waitFor(() => {
         expect(screen.getByText('Pull-ups')).toBeTruthy() // Back to Ex 1
-        expect(screen.getByText(/1 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/1 of 2/i).length).toBeGreaterThan(0)
       })
 
       app.cleanup()
@@ -242,7 +242,7 @@ describe('Benchmark Exercise Completion', () => {
       const app = await startBenchmarkWorkout(benchmark.id)
 
       // Verify starting on Exercise 1
-      expect(screen.getByText(/1 of 2/i)).toBeTruthy()
+      expect(screen.getAllByText(/1 of 2/i).length).toBeGreaterThan(0)
 
       const doneButton = screen.getByRole('button', { name: /done/i })
 
@@ -258,7 +258,7 @@ describe('Benchmark Exercise Completion', () => {
 
       // Should only advance once (to Exercise 2, not complete)
       await waitFor(() => {
-        expect(screen.getByText(/2 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/2 of 2/i).length).toBeGreaterThan(0)
         expect(screen.queryByText(/Finish Workout\?/i)).toBeNull()
       })
 

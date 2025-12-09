@@ -5,8 +5,7 @@ import { useRestTimer } from '@/composables/timers/useRestTimer'
 import type { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
-import type { AmrapResult, EmomResult, ForTimeResult, TabataResult } from '@/types/blocks'
-import { BLOCK_LABELS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
@@ -15,8 +14,9 @@ import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
 import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
-
-type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
+import { useBenchmarkFirstAttempt } from '@/composables/workout/useBenchmarkFirstAttempt'
+import { useBenchmarkAnimation } from '@/composables/workout/useBenchmarkAnimation'
+import { createSplitTracker } from '@/lib/splitTracking'
 
 const {
   isBenchmarkMode = false,
@@ -57,6 +57,17 @@ const {
 
 const restTimer = useRestTimer()
 
+// First attempt detection (shared composable)
+const firstAttemptTracking = isBenchmarkMode
+  ? useBenchmarkFirstAttempt(() => workout.value.benchmarkId ?? null)
+  : null
+
+// Animation state (shared composable)
+const animation = isBenchmarkMode ? useBenchmarkAnimation() : null
+
+// Split time tracking (local to workout feature)
+const splitTracker = isBenchmarkMode ? createSplitTracker() : null
+
 // Template ref for timed view components - they expose timer methods
 const timedViewRef = useTemplateRef<{
   complete: () => unknown
@@ -73,11 +84,6 @@ const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentB
 
 // Timer running state - updated via emit from timer views
 const timerIsRunning = ref(false)
-
-// Animation state for exercise transitions (benchmark mode)
-const isExerciseTransitioning = ref(false)
-const showExerciseCheckmark = ref(false)
-const showBenchmarkCompletion = ref(false)
 
 function handleTimerRunningChange(isRunning: boolean) {
   timerIsRunning.value = isRunning
@@ -145,9 +151,8 @@ function handleToggleTimer() {
 function handleCompleteBlock() {
   if (!currentBlock.value || !isTimedBlock(currentBlock.value)) return
 
-  // @ts-expect-error - template ref returns unknown but runtime type is TimedBlockResult
-  const result: TimedBlockResult | undefined = timedViewRef.value?.complete()
-  if (result) {
+  const result = timedViewRef.value?.complete()
+  if (isTimedBlockResult(result)) {
     setBlockResult(currentBlockIndex.value, result)
   }
 
@@ -175,42 +180,39 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
   updateSetValue(setId, field, value)
 }
 
+function recordSplitTime() {
+  if (splitTracker && benchmarkTimer) {
+    splitTracker.recordSplit(benchmarkTimer.getPreciseElapsedSeconds())
+  }
+}
+
+async function handleBenchmarkCompletion() {
+  if (!animation) return
+
+  benchmarkTimer?.pause()
+
+  if (currentBlock.value?.kind === 'fortime') {
+    const completionTime = benchmarkTimer?.getPreciseElapsedSeconds() ?? 0
+    animation.showCompletion(completionTime)
+    setBlockResult(currentBlockIndex.value, {
+      completionTime,
+      completed: true,
+      splitTimes: splitTracker?.getSplits(),
+    })
+  }
+}
+
 async function handleNextExercise() {
-  if (isExerciseTransitioning.value) return // Prevent rapid tapping
+  if (!animation) return
+  if (animation.state.value.isTransitioning) return
 
-  isExerciseTransitioning.value = true
-  showExerciseCheckmark.value = true
+  recordSplitTime()
+  await animation.playExerciseTransition()
 
-  // Phase 1: Checkmark animation (300ms)
-  await new Promise(resolve => setTimeout(resolve, 300))
-
-  // Phase 2: Advance exercise + slide transition
   const result = advanceToNextExercise()
-  showExerciseCheckmark.value = false
-
-  // Wait for slide transition (500ms)
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  isExerciseTransitioning.value = false
 
   if (result === 'workout-complete') {
-    // Stop timer immediately
-    if (benchmarkTimer) {
-      benchmarkTimer.pause()
-    }
-
-    // Save ForTime result with completion time
-    if (currentBlock.value?.kind === 'fortime') {
-      const completionTime = benchmarkTimer?.elapsedSeconds.value ?? 0
-      setBlockResult(currentBlockIndex.value, {
-        completionTime,
-        completed: true,
-      })
-    }
-
-    // Show completion screen instead of emitting immediately
-    showBenchmarkCompletion.value = true
-    return // Don't emit 'workout-complete' yet
+    await handleBenchmarkCompletion()
   }
 }
 
@@ -297,14 +299,19 @@ watch(
       <BenchmarkForTimeView
         v-else-if="currentBlock.kind === 'fortime' && isBenchmarkMode"
         :block="currentBlock"
-        :exercise-number="currentExercisePosition?.current ?? 1"
-        :total-exercises-in-round="currentExercisePosition?.total ?? 1"
-        :global-exercise-index="globalExerciseIndex ?? 0"
-        :total-exercises="totalExerciseCount ?? 1"
-        :animation-state="{ showCheckmark: showExerciseCheckmark, isTransitioning: isExerciseTransitioning }"
-        :show-completion="showBenchmarkCompletion"
-        :completion-time="benchmarkTimer?.elapsedSeconds.value ?? 0"
-        :benchmark-name="workout.name"
+        :progress="{
+          current: currentExercisePosition?.current ?? 1,
+          totalInRound: currentExercisePosition?.total ?? 1,
+          globalIndex: globalExerciseIndex ?? 0,
+          totalCount: totalExerciseCount ?? 1,
+        }"
+        :completion="animation?.state.value.showCompletion ? {
+          isComplete: true,
+          time: animation.state.value.completionTime,
+          benchmarkName: workout.name,
+        } : undefined"
+        :animation-state="animation?.state.value"
+        :is-first-attempt="firstAttemptTracking?.isFirstAttempt.value ?? false"
         @view-details="handleViewDetails"
       />
     </template>
@@ -320,7 +327,7 @@ watch(
           isFirstBlock,
           isLastBlock,
           isBenchmarkMode,
-          isTransitioning: isExerciseTransitioning,
+          isTransitioning: animation?.state.value.isTransitioning ?? false,
         }"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"

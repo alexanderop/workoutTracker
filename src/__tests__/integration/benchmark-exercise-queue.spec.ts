@@ -73,9 +73,10 @@ describe('Benchmark Exercise Queue', () => {
     )
     await app.user.click(startButton)
 
-    // Wait for active mode to initialize
+    // Wait for active mode to initialize (screen reader also announces this text)
     await waitFor(() => {
-      expect(screen.getByText(/exercise 1 of/i)).toBeTruthy()
+      const elements = screen.getAllByText(/exercise 1 of/i)
+      expect(elements.length).toBeGreaterThan(0)
     })
 
     return app
@@ -131,7 +132,7 @@ describe('Benchmark Exercise Queue', () => {
 
       // Wait for Exercise 2
       await waitFor(() => {
-        expect(screen.getByText(/exercise 2 of 3/i)).toBeTruthy()
+        expect(screen.getAllByText(/exercise 2 of 3/i).length).toBeGreaterThan(0)
       })
 
       // Wait for animation to complete
@@ -232,14 +233,14 @@ describe('Benchmark Exercise Queue', () => {
       // Complete Exercise 1 (Thrusters)
       await app.user.click(doneButton)
       await waitFor(() => {
-        expect(screen.getByText(/exercise 2 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/exercise 2 of 2/i).length).toBeGreaterThan(0)
       })
       await new Promise(resolve => setTimeout(resolve, 900))
 
       // Complete Exercise 2 (Pull-ups) - advances to Round 2
       await app.user.click(doneButton)
       await waitFor(() => {
-        expect(screen.getByText(/exercise 1 of 2/i)).toBeTruthy()
+        expect(screen.getAllByText(/exercise 1 of 2/i).length).toBeGreaterThan(0)
       })
       await new Promise(resolve => setTimeout(resolve, 900))
 

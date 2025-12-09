@@ -54,7 +54,7 @@ Review the current changes using our specialized review agents.
 
 3. **If on main with no changes**: Report that there's nothing to review.
 
-Launch **8 Task tools in parallel** (single message, multiple tool calls) with these subagent types:
+Launch **9 Task tools in parallel** (single message, multiple tool calls) with these subagent types:
 
 ### 1. Fowler Refactoring Reviewer
 ```
@@ -176,6 +176,21 @@ prompt: |
   Return: Security vulnerabilities with OWASP category and fixes.
 ```
 
+### 9. VueUse Reviewer
+```
+subagent_type: vueuse-reviewer
+prompt: |
+  Review the following code changes for opportunities to use VueUse composables.
+
+  Changed files: [list from <*_changed_files>]
+
+  Diff:
+  [include relevant diffs]
+
+  Focus on: manual event listeners, storage patterns, intervals, observers, reactivity helpers.
+  Return: VueUse opportunities with code reduction estimates and implementation suggestions.
+```
+
 ## After All Agents Complete
 
 Compile the results into a single report:
@@ -187,7 +202,7 @@ Compile the results into a single report:
 [State whether reviewing uncommitted changes OR branch changes against main]
 
 ## Summary
-[Brief overview of findings across all 8 reviewers]
+[Brief overview of findings across all 9 reviewers]
 
 ## Critical Issues
 [Any high-severity items that must be fixed before committing/merging]
@@ -215,6 +230,9 @@ Compile the results into a single report:
 
 ## Security
 [Vulnerabilities with OWASP categories]
+
+## VueUse Opportunities
+[Composables that could simplify code]
 
 ## Recommended Actions
 [Top 5 actionable items to address before committing/merging, ordered by priority]

@@ -61,8 +61,11 @@ describe('ForTime Benchmark Completion', () => {
     // Wait for transition animation (800ms) + buffer
     await new Promise(resolve => setTimeout(resolve, 900))
 
-    // Wait for second exercise
-    await waitFor(() => screen.getByText(/2 of 2/i))
+    // Wait for second exercise (use getAllByText since screen reader also announces this)
+    await waitFor(() => {
+      const elements = screen.getAllByText(/2 of 2/i)
+      expect(elements.length).toBeGreaterThan(0)
+    })
 
     // Complete second exercise (last)
     const doneButton2 = screen.getByRole('button', { name: /done/i })

@@ -196,6 +196,7 @@ export default {
     personalBest: 'PERSÖNLICHE BESTLEISTUNG',
     noPbYet: 'Noch kein PB',
     pbLabel: 'PB',
+    firstAttempt: 'Erster Versuch - Setze deine PB!',
     detail: {
       workoutStructure: 'Trainingsstruktur',
       startWorkout: 'Training Starten',
@@ -232,4 +233,9 @@ export default {
     noAttempts: 'Noch keine Versuche',
     pbBadge: '🏆 Persönliche Bestleistung',
   },
+  progress: {
+    label: 'Übungsfortschritt',
+    announcement: 'Übung {current} von {total}',
+  },
+  exerciseCompleted: 'Übung abgeschlossen',
 } as const

@@ -28,7 +28,7 @@ const { isVisible } = useEnterAnimation(100)
       :class="isVisible ? 'animate-bounce-in' : 'opacity-0'"
     >
       <div class="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
-        <Trophy class="w-12 h-12 text-primary" />
+        <Trophy class="w-12 h-12 text-primary" aria-hidden="true" />
       </div>
       <div class="absolute inset-0 w-24 h-24 rounded-full bg-primary/10 blur-xl -z-10" />
     </div>
@@ -68,7 +68,7 @@ const { isVisible } = useEnterAnimation(100)
       :style="{ animationDelay: '600ms' }"
       @click="emit('view-details')"
     >
-      <Check class="size-5" />
+      <Check class="size-5" aria-hidden="true" />
       View Details
     </Button>
     <!-- eslint-enable @intlify/vue-i18n/no-raw-text -->

@@ -136,6 +136,7 @@ function forTimeResultToDb(result: Readonly<ForTimeResult>): DbForTimeResult {
   return {
     completionTime: result.completionTime,
     completed: result.completed,
+    splitTimes: result.splitTimes,
   }
 }
 
@@ -143,6 +144,7 @@ function dbToForTimeResult(dbResult: Readonly<DbForTimeResult>): ForTimeResult {
   return {
     completionTime: dbResult.completionTime,
     completed: dbResult.completed,
+    splitTimes: dbResult.splitTimes,
   }
 }
 

@@ -5,6 +5,8 @@
  * Each block has a type that determines its behavior and UI.
  */
 
+import { z } from 'zod'
+
 // ============================================
 // Set Types (used by strength blocks)
 // ============================================
@@ -80,7 +82,43 @@ export type TabataResult = {
 export type ForTimeResult = {
   completionTime: number
   completed: boolean
+  splitTimes?: ReadonlyArray<number>
 }
+
+// Union type for all timed block results
+export type TimedBlockResult = AmrapResult | EmomResult | TabataResult | ForTimeResult
+
+// ============================================
+// Zod Schemas for Runtime Validation
+// ============================================
+
+export const AmrapResultSchema = z.object({
+  rounds: z.number(),
+  partialReps: z.number(),
+  actualDuration: z.number(),
+})
+
+export const EmomResultSchema = z.object({
+  completedMinutes: z.number(),
+  missedMinutes: z.array(z.number()),
+})
+
+export const TabataResultSchema = z.object({
+  repsPerRound: z.array(z.number()),
+})
+
+export const ForTimeResultSchema = z.object({
+  completionTime: z.number(),
+  completed: z.boolean(),
+  splitTimes: z.array(z.number()).optional(),
+})
+
+export const TimedBlockResultSchema = z.union([
+  AmrapResultSchema,
+  EmomResultSchema,
+  TabataResultSchema,
+  ForTimeResultSchema,
+])
 
 // ============================================
 // Block Types (Discriminated Union)
@@ -156,6 +194,14 @@ export function isStrengthBlock(block: WorkoutBlock): block is StrengthBlock {
 
 export function isTimedBlock(block: WorkoutBlock): block is TimedBlock {
   return block.kind !== 'strength'
+}
+
+/**
+ * Type guard using Zod for runtime validation of timed block results.
+ * Provides both runtime safety and TypeScript type narrowing.
+ */
+export function isTimedBlockResult(value: unknown): value is TimedBlockResult {
+  return TimedBlockResultSchema.safeParse(value).success
 }
 
 // ============================================

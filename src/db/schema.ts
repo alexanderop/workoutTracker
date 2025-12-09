@@ -135,6 +135,7 @@ export type DbTabataResult = {
 export type DbForTimeResult = {
   completionTime: number
   completed: boolean
+  splitTimes?: ReadonlyArray<number>
 }
 
 // ============================================
