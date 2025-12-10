@@ -23,6 +23,7 @@ watch(
   (newExercises) => {
     exercisesList.value = [...newExercises]
   },
+  { deep: true },
 )
 
 useSortable(sortableContainer, exercisesList, {
