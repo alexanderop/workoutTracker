@@ -76,9 +76,55 @@ export class CommonPO {
     const searchInput = screen.getByRole('textbox')
     await this.ctx.user.type(searchInput, exerciseName)
     await waitFor(() => {
-      this.getDialogButton(exerciseName)
+      this.getExactDialogButton(exerciseName)
     })
-    await this.ctx.user.click(this.getDialogButton(exerciseName))
+    await this.ctx.user.click(this.getExactDialogButton(exerciseName))
+  }
+
+  /**
+   * Finds a button inside the currently open dialog by exact text match.
+   * Uses a more precise matching strategy than getDialogButton to avoid partial matches.
+   * For exercise selection, handles two presentation modes:
+   * - Dialog mode: <button><span>icon</span><div><p>name</p>...</div></button>
+   * - Overlay mode: <button><span>icon</span><span class="font-medium">name</span></button>
+   * @param text - The exact text to match
+   * @returns The matching button element
+   * @throws Error if no button with the exact text exists in the dialog
+   */
+  private getExactDialogButton(text: string): HTMLElement {
+    const dialog = screen.queryByRole('dialog')
+    const overlay = document.querySelector('[class*="absolute"][class*="inset-0"]')
+    const container = dialog ?? overlay
+
+    if (!container) {
+      throw new Error('No dialog or overlay found')
+    }
+
+    const buttons = container.querySelectorAll('button')
+
+    // First try: exact match of full button text (for simple buttons like "Add Block", "Confirm")
+    let btn = Array.from(buttons).find((b) => b.textContent?.trim() === text)
+
+    // Second try: find button containing a <p> tag with exact exercise name (dialog mode)
+    if (!btn) {
+      btn = Array.from(buttons).find((b) => {
+        const paragraphs = b.querySelectorAll('p')
+        return Array.from(paragraphs).some((p) => p.textContent?.trim() === text)
+      })
+    }
+
+    // Third try: find button containing a <span> with class "font-medium" (overlay mode)
+    if (!btn) {
+      btn = Array.from(buttons).find((b) => {
+        const spans = b.querySelectorAll('span.font-medium')
+        return Array.from(spans).some((span) => span.textContent?.trim() === text)
+      })
+    }
+
+    if (!btn) {
+      throw new Error(`Dialog button with exact text "${text}" not found`)
+    }
+    return btn
   }
 
   /**
