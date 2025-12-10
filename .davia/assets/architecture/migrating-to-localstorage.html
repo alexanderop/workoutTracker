@@ -1,0 +1,222 @@
+<h1>Migrating to localStorage</h1>
+<p><strong>Step-by-step guide</strong> to switch from IndexedDB to localStorage using the Repository Pattern.</p>
+<hr />
+<h2>🎯 Repository Pattern Benefits</h2>
+<p><strong>The Repository Pattern abstracts data storage.</strong> This means you can swap IndexedDB for localStorage without changing your app code!</p>
+<p></p>
+<excalidraw data-path="data/repository-abstraction.json"></excalidraw>
+<p></p>
+<blockquote>
+<p>💡 <strong>Key insight:</strong> Your components only know about repository <em>interfaces</em>, not implementations.</p>
+</blockquote>
+<hr />
+<h2>📋 Migration Process</h2>
+<p>Here's the complete migration flow:</p>
+<p></p>
+<excalidraw data-path="data/repository-migration-flow.json"></excalidraw>
+<p></p>
+<hr />
+<h2>🤔 Why Switch to localStorage?</h2>
+<p><strong>Pros:</strong></p>
+<ul>
+<li>✅ <strong>Simpler</strong> - No Dexie dependency, just native browser APIs</li>
+<li>✅ <strong>Synchronous</strong> - No async/await needed (easier debugging)</li>
+<li>✅ <strong>Smaller bundle</strong> - Remove Dexie from dependencies</li>
+<li>✅ <strong>Easier to inspect</strong> - View data directly in DevTools</li>
+</ul>
+<p><strong>Cons:</strong></p>
+<ul>
+<li>❌ <strong>Size limit</strong> - ~5-10MB max (IndexedDB handles GBs)</li>
+<li>❌ <strong>No indexing</strong> - Slower queries on large datasets</li>
+<li>❌ <strong>No transactions</strong> - Less robust data integrity</li>
+<li>❌ <strong>Blocking</strong> - Large reads/writes freeze UI</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Recommendation:</strong> Use localStorage only if your data stays small (&lt;1MB).</p>
+</blockquote>
+<hr />
+<h2>🛠️ Implementation Steps</h2>
+<h3>Step 1: Create localStorage Implementation Folder</h3>
+<pre><code>src/db/implementations/
+├── dexie/           # Current implementation
+└── localstorage/    # New implementation (create this)
+    ├── customExercises.ts
+    ├── workouts.ts
+    ├── settings.ts
+    └── ...</code></pre>
+<h3>Step 2: Implement One Repository</h3>
+<p><strong>Example:</strong> <code>src/db/implementations/localstorage/customExercises.ts</code></p>
+<pre><code>import type { CustomExercisesRepository } from '@/db/interfaces'
+import type { DbCustomExercise } from '@/db/schema'
+
+const STORAGE_KEY = 'customExercises'
+
+function getExercises(): Array&lt;DbCustomExercise&gt; {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  return raw ? JSON.parse(raw) : []
+}
+
+function saveExercises(exercises: Array&lt;DbCustomExercise&gt;): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises))
+}
+
+export function createLocalStorageCustomExercisesRepository(): CustomExercisesRepository {
+  return {
+    async getAll(): Promise&lt;ReadonlyArray&lt;DbCustomExercise&gt;&gt; {
+      return getExercises()
+    },
+
+    async getById(id: string): Promise&lt;DbCustomExercise | undefined&gt; {
+      const exercises = getExercises()
+      return exercises.find(ex =&gt; ex.id === id)
+    },
+
+    async add(exercise: Readonly&lt;DbCustomExercise&gt;): Promise&lt;void&gt; {
+      const exercises = getExercises()
+      exercises.push(exercise as DbCustomExercise)
+      saveExercises(exercises)
+    },
+
+    async update(
+      id: string,
+      updates: Partial&lt;Omit&lt;DbCustomExercise, 'id' | 'createdAt'&gt;&gt;
+    ): Promise&lt;void&gt; {
+      const exercises = getExercises()
+      const index = exercises.findIndex(ex =&gt; ex.id === id)
+
+      if (index === -1) {
+        throw new Error('Exercise not found')
+      }
+
+      exercises[index] = {
+        ...exercises[index],
+        ...updates,
+        updatedAt: Date.now(),
+      }
+
+      saveExercises(exercises)
+    },
+
+    async delete(id: string): Promise&lt;void&gt; {
+      const exercises = getExercises()
+      const filtered = exercises.filter(ex =&gt; ex.id !== id)
+      saveExercises(filtered)
+    },
+
+    async existsByName(name: string): Promise&lt;boolean&gt; {
+      const exercises = getExercises()
+      return exercises.some(
+        ex =&gt; ex.name.toLowerCase() === name.toLowerCase()
+      )
+    },
+
+    async searchByName(query: string): Promise&lt;ReadonlyArray&lt;DbCustomExercise&gt;&gt; {
+      const exercises = getExercises()
+      const lowerQuery = query.toLowerCase()
+      return exercises.filter(
+        ex =&gt; ex.name.toLowerCase().includes(lowerQuery)
+      )
+    },
+  }
+}</code></pre>
+<h3>Step 3: Update Provider</h3>
+<p>Modify <code>src/db/provider.ts</code> to use your new localStorage implementation:</p>
+<pre><code>// Change from:
+import { createDexieCustomExercisesRepository } from './implementations/dexie/customExercises'
+
+// To:
+import { createLocalStorageCustomExercisesRepository } from './implementations/localstorage/customExercises'
+
+// Then update the provider:
+function createRepositoryProvider(): RepositoryProvider {
+  return {
+    customExercises: createLocalStorageCustomExercisesRepository(),
+    // ... other repositories
+  }
+}</code></pre>
+<h3>Step 4: Implement Remaining Repositories</h3>
+<p><strong>Follow the same pattern for:</strong></p>
+<ul>
+<li><code>workouts.ts</code> - Use key <code>workouts</code></li>
+<li><code>settings.ts</code> - Use key <code>settings</code></li>
+<li><code>activeWorkout.ts</code> - Use key <code>activeWorkout</code></li>
+<li><code>templates.ts</code> - Use key <code>templates</code></li>
+<li><code>benchmarks.ts</code> - Use key <code>benchmarks</code></li>
+</ul>
+<blockquote>
+<p>💡 <strong>Tip:</strong> Migrate one repository at a time and test before moving to the next!</p>
+</blockquote>
+<h3>Step 5: Remove Dexie Dependency</h3>
+<p>Once all repositories are migrated:</p>
+<pre><code># Remove Dexie from package.json
+pnpm remove dexie
+
+# Delete old implementation
+rm -rf src/db/implementations/dexie</code></pre>
+<hr />
+<h2>🧪 Testing Considerations</h2>
+<p><strong>Mock localStorage in tests:</strong></p>
+<pre><code>// In your test setup
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+}
+
+// Reset before each test
+beforeEach(() =&gt; {
+  vi.clearAllMocks()
+  localStorage.clear()
+})</code></pre>
+<hr />
+<h2>⚡ Performance Optimization</h2>
+<p><strong>For larger datasets, consider:</strong></p>
+<ul>
+<li><strong>Debouncing writes</strong> - Don't save on every update</li>
+<li><strong>Lazy loading</strong> - Parse JSON only when needed</li>
+<li><strong>Separate keys</strong> - Don't store everything in one massive object</li>
+<li><strong>Compression</strong> - Use LZ-string library for large data</li>
+</ul>
+<pre><code>// Example: Debounced save
+import { debounce } from 'lodash-es'
+
+const debouncedSave = debounce((data) =&gt; {
+  localStorage.setItem(KEY, JSON.stringify(data))
+}, 300)</code></pre>
+<hr />
+<h2>🔄 Data Migration</h2>
+<p><strong>Moving existing IndexedDB data to localStorage:</strong></p>
+<pre><code>// 1. Export data from IndexedDB
+import { getDataManagementRepository } from '@/db'
+const data = await getDataManagementRepository().exportAllData()
+
+// 2. Save to localStorage
+localStorage.setItem('workouts', JSON.stringify(data.workouts))
+localStorage.setItem('customExercises', JSON.stringify(data.customExercises))
+// ... etc
+
+// 3. Switch implementation in provider.ts
+
+// 4. Reload app - data is now in localStorage!</code></pre>
+<blockquote>
+<p>⚠️ <strong>Important:</strong> Always backup data before migrating!</p>
+</blockquote>
+<hr />
+<h2>✅ Verification Checklist</h2>
+<ul>
+<li>All repository interfaces implemented</li>
+<li>Provider updated to use localStorage repos</li>
+<li>Data migrated from IndexedDB</li>
+<li>Tests updated for localStorage mocks</li>
+<li>App works without errors</li>
+<li>DevTools show data in localStorage</li>
+<li>Dexie dependency removed</li>
+</ul>
+<hr />
+<h2>📚 Related Documentation</h2>
+<ul>
+<li><strong>Database Layer</strong> - Overview of repository pattern</li>
+<li><strong>Repository Interfaces</strong> - All available repository contracts</li>
+<li><strong>Testing Guide</strong> - How to test repositories</li>
+</ul>

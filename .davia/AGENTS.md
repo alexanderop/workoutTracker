@@ -783,7 +783,37 @@ Excalidraw elements embed interactive whiteboards directly in HTML pages. Whiteb
 - Use HTML for text content, basic formatting, lists, headings, blockquotes, etc.
 - Follow strict Tiptap schema guidelines
 - Start every HTML page with a top-level H1 heading: `<h1>[title of the page]</h1>` - **CRITICAL: The title MUST be `<h1>` and NEVER `<h2>`**
-- The file path should be EXACTLY equal to the H1 title in kebab case. Example: for `<h1>Plant Tracker</h1>`, use file path `plant-tracker.html`
+
+**Navigation Ordering for Root-Level Pages:**
+- **Root-level pages** (pages at the documentation root, not in subdirectories) MUST use numeric prefixes for ordering
+- File naming format: `{number}-{title-in-kebab-case}.html`
+  - `{number}`: Two-digit prefix (01, 02, 03, etc.) indicating navigation order
+  - `{title-in-kebab-case}`: H1 title converted to kebab-case
+- The H1 title should NOT include the number - numbers are only in filenames
+- **Standard documentation order:**
+  1. `01-overview.html` - High-level introduction
+  2. `02-getting-started.html` - Quick start guide
+  3. `03-features.html` - Capabilities overview
+  4. Additional feature/topic pages (04, 05, 06, etc.)
+  5. `0X-architecture.html` - Technical deep-dive (near end)
+  6. `0Y-testing.html` - Quality assurance (near end)
+  7. `0Z-development.html` - Contribution workflow (last)
+
+**Examples:**
+- ✅ CORRECT: File `01-overview.html` with H1 `<h1>Overview</h1>`
+- ✅ CORRECT: File `02-getting-started.html` with H1 `<h1>Getting Started</h1>`
+- ❌ WRONG: File `overview.html` with H1 `<h1>Overview</h1>` (missing numeric prefix)
+- ❌ WRONG: File `01-overview.html` with H1 `<h1>01 Overview</h1>` (number in title)
+
+**Child pages** (subdirectory pages like `architecture/routing.html`) do NOT need numeric prefixes - they inherit parent ordering.
+
+**When creating new root-level pages:**
+1. Determine the logical position in the documentation flow
+2. Assign the next available number or insert between existing numbers
+3. Use format: `{number}-{kebab-case-title}.html`
+
+- For root-level pages: File path format is `{number}-{title-in-kebab-case}.html` (e.g., `01-overview.html` for `<h1>Overview</h1>`)
+- For child pages: File path is `{parent-folder}/{title-in-kebab-case}.html` (e.g., `architecture/routing.html` for `<h1>Routing</h1>`)
 - **MANDATORY: Every HTML page MUST contain at least ONE visual element** (Database View OR Excalidraw whiteboard - select one, not necessarily both)
 - **Keep text EXTREMELY concise** - use visuals to teach, not long paragraphs
 - **AVOID long sentences** - keep text concise and use bullet points whenever possible

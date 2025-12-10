@@ -174,6 +174,7 @@ export default {
     edit: 'Edit Benchmark',
     name: 'Workout Name',
     namePlaceholder: 'e.g., Murph, Fran, Cindy',
+    split: 'Split',
     type: {
       label: 'Type',
       fortime: 'For Time',

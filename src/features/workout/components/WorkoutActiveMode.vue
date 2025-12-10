@@ -16,6 +16,7 @@ import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue
 import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
 import { useBenchmarkFirstAttempt } from '@/composables/workout/useBenchmarkFirstAttempt'
 import { useBenchmarkAnimation } from '@/composables/workout/useBenchmarkAnimation'
+import { useBenchmarkSplitComparison, type SplitComparison } from '@/composables/workout/useBenchmarkSplitComparison'
 import { createSplitTracker } from '@/lib/splitTracking'
 
 const {
@@ -67,6 +68,14 @@ const animation = isBenchmarkMode ? useBenchmarkAnimation() : null
 
 // Split time tracking (local to workout feature)
 const splitTracker = isBenchmarkMode ? createSplitTracker() : null
+
+// Split comparison (shared composable)
+const splitComparison = isBenchmarkMode
+  ? useBenchmarkSplitComparison(() => workout.value.benchmarkId ?? null)
+  : null
+
+// Latest split comparison result
+const latestSplitComparison = ref<SplitComparison | null>(null)
 
 // Template ref for timed view components - they expose timer methods
 const timedViewRef = useTemplateRef<{
@@ -181,8 +190,18 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
 }
 
 function recordSplitTime() {
-  if (splitTracker && benchmarkTimer) {
-    splitTracker.recordSplit(benchmarkTimer.getPreciseElapsedSeconds())
+  if (!splitTracker || !benchmarkTimer) return
+
+  const currentSplitTime = benchmarkTimer.getPreciseElapsedSeconds()
+  splitTracker.recordSplit(currentSplitTime)
+
+  // Calculate comparison to PB split if available
+  if (splitComparison) {
+    // Get the index of the exercise that was just completed
+    // Split count = number of exercises completed so far
+    const exerciseIndex = splitTracker.getSplits().length - 1
+    const comparison = splitComparison.getComparison(exerciseIndex, currentSplitTime)
+    latestSplitComparison.value = comparison
   }
 }
 
@@ -312,6 +331,7 @@ watch(
         } : undefined"
         :animation-state="animation?.state.value"
         :is-first-attempt="firstAttemptTracking?.isFirstAttempt.value ?? false"
+        :split-comparison="latestSplitComparison"
         @view-details="handleViewDetails"
       />
     </template>

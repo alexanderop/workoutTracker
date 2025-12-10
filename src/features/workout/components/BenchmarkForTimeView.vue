@@ -6,6 +6,7 @@ import BenchmarkCompletionScreen from './BenchmarkCompletionScreen.vue'
 import ExerciseProgressDots from './ExerciseProgressDots.vue'
 import type { ForTimeBlock } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
+import type { SplitComparison } from '@/composables/workout/useBenchmarkSplitComparison'
 
 type AnimationState = {
   showCheckmark?: boolean
@@ -31,6 +32,7 @@ type Props = {
   completion?: BenchmarkCompletionState
   animationState?: AnimationState
   isFirstAttempt?: boolean
+  splitComparison?: SplitComparison | null
 }
 
 const {
@@ -39,6 +41,7 @@ const {
   completion,
   animationState = {},
   isFirstAttempt = false,
+  splitComparison = null,
 } = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -109,6 +112,7 @@ const currentExercise = computed(() => exercises.value[progress.current - 1])
             :exercise="currentExercise"
             :exercise-number="progress.current"
             :total-exercises="progress.totalInRound"
+            :split-comparison="splitComparison"
           />
         </div>
       </div>

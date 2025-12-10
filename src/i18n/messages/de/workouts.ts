@@ -173,6 +173,7 @@ export default {
     edit: 'Benchmark Bearbeiten',
     name: 'Trainingsname',
     namePlaceholder: 'z.B. Murph, Fran, Cindy',
+    split: 'Zwischenzeit',
     type: {
       label: 'Typ',
       fortime: 'Auf Zeit',

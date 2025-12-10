@@ -1,0 +1,149 @@
+<h1>Getting Started</h1>
+<p><strong>Welcome!</strong> This guide will take you from zero to your first contribution in minutes. Follow the steps below to get up and running.</p>
+<p></p>
+<blockquote>
+<p>💡 <strong>Tip:</strong> New to the project? This is your starting point. The visual flow below shows the complete journey from setup to your first PR.</p>
+</blockquote>
+<p></p>
+<hr />
+<h2>🗺️ Your Onboarding Journey</h2>
+<p>This flowchart shows every step from checking prerequisites to opening your first pull request:</p>
+<p></p>
+<excalidraw data-path="data/getting-started-flow.json"></excalidraw>
+<p></p>
+<hr />
+<h2>📋 Prerequisites</h2>
+<p><strong>Before you begin, ensure you have:</strong></p>
+<p></p>
+<ul>
+  <li><strong>Node.js</strong> - Version <code>^20.19.0</code> or <code>≥22.12.0</code></li>
+  <li><strong>pnpm</strong> - Version <code>10.24.0</code> or higher</li>
+  <li><strong>Git</strong> - For cloning the repository</li>
+</ul>
+<p></p>
+<p><strong>Check your versions:</strong></p>
+<pre><code>node -v    # Should show v20.19+ or v22.12+
+pnpm -v    # Should show 10.24+</code></pre>
+<p></p>
+<blockquote>
+<p>⚠️ <strong>Don't have these installed?</strong> Get Node.js from <a href="https://nodejs.org">nodejs.org</a> and install pnpm with <code>npm install -g pnpm</code></p>
+</blockquote>
+<p></p>
+<hr />
+<h2>🚀 Setup Walkthrough</h2>
+<p><strong>Step-by-step from clone to first run:</strong></p>
+<p></p>
+<h3>1. Clone the Repository</h3>
+<pre><code>git clone &lt;repository-url&gt;
+cd workoutTracker</code></pre>
+<p></p>
+<h3>2. Install Dependencies</h3>
+<pre><code>pnpm install</code></pre>
+<p>This installs all packages defined in <code>package.json</code>. Takes ~1-2 minutes.</p>
+<p></p>
+<h3>3. Start Development Server</h3>
+<pre><code>pnpm dev</code></pre>
+<p>Vite starts a dev server with <strong>hot module replacement (HMR)</strong>.</p>
+<p></p>
+<h3>4. Open in Browser</h3>
+<p>Navigate to <strong><code>http://localhost:5173</code></strong> in your browser. You should see the workout tracker app running!</p>
+<p></p>
+<blockquote>
+<p>💡 <strong>Common Issues:</strong></p>
+<ul>
+  <li><strong>Port 5173 in use?</strong> Vite will auto-select another port (check console)</li>
+  <li><strong>Module errors?</strong> Delete <code>node_modules/</code> and run <code>pnpm install</code> again</li>
+  <li><strong>TypeScript errors?</strong> Ensure you're using Node.js version from prerequisites</li>
+</ul>
+</blockquote>
+<p></p>
+<hr />
+<h2>📁 Project Structure Tour</h2>
+<p><strong>Understanding the codebase architecture:</strong></p>
+<p></p>
+<p>This project follows <strong>Bulletproof feature-based architecture</strong> with strict ESLint-enforced boundaries:</p>
+<p></p>
+<blockquote>
+<p>📐 <strong>Dependency Rule:</strong> <code>Views → Features → Shared</code> (features cannot import other features)</p>
+</blockquote>
+<p></p>
+<h3>Key Directories</h3>
+<p></p>
+<database-view data-path="data/project-structure.json"></database-view>
+<p></p>
+<blockquote>
+<p>📚 <strong>Learn more:</strong> See the <strong>Architecture</strong> page for detailed info on Bulletproof pattern, routing, state management, and database layer.</p>
+</blockquote>
+<p></p>
+<hr />
+<h2>🎯 Your First Contribution</h2>
+<p><strong>Ready to make a change? Follow this workflow:</strong></p>
+<p></p>
+<h3>1. Make a Small Change</h3>
+<p><strong>Example:</strong> Update a text label in a component or add a new exercise to the library.</p>
+<pre><code>// Example: Edit src/features/exercises/components/ExerciseCard.vue
+// Change a label or add a new prop</code></pre>
+<p></p>
+<h3>2. Run Quality Checks</h3>
+<p><strong>Before committing, ensure all checks pass:</strong></p>
+<p></p>
+<ul data-type="taskList">
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm type-check</code> - TypeScript validation (strict mode, no <code>any</code>)</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm lint</code> - Auto-fix with oxlint + ESLint</p>
+</li>
+<li data-type="taskItem" data-checked="false">
+<input type="checkbox">
+<p><code>pnpm test</code> - Run all tests (Playwright browser mode)</p>
+</li>
+</ul>
+<p></p>
+<blockquote>
+<p>⚡ <strong>Quick check:</strong> Run all three at once with <code>pnpm type-check &amp;&amp; pnpm lint &amp;&amp; pnpm test</code></p>
+</blockquote>
+<p></p>
+<h3>3. Create a Branch &amp; Commit</h3>
+<pre><code># Create feature branch
+git checkout -b feature/my-awesome-change
+
+# Stage your changes
+git add .
+
+# Commit with conventional format
+git commit -m "feat(exercises): add new exercise card layout"</code></pre>
+<p></p>
+<p><strong>Commit format:</strong> <code>type(scope): description</code></p>
+<ul>
+  <li><strong>Types:</strong> <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>test</code>, <code>docs</code>, <code>chore</code></li>
+  <li><strong>Scopes:</strong> <code>workout</code>, <code>exercises</code>, <code>templates</code>, <code>benchmarks</code>, <code>db</code>, etc.</li>
+</ul>
+<p></p>
+<h3>4. Push &amp; Open PR</h3>
+<pre><code># Push to remote
+git push -u origin feature/my-awesome-change
+
+# Open a pull request on GitHub
+# Describe what changed and why</code></pre>
+<p></p>
+<blockquote>
+<p>🎉 <strong>Congratulations!</strong> You've made your first contribution. Check the <strong>Development</strong> page for detailed commit guidelines and code style requirements.</p>
+</blockquote>
+<p></p>
+<hr />
+<h2>📚 Next Steps</h2>
+<p><strong>Explore the documentation in recommended order:</strong></p>
+<p></p>
+<ol>
+  <li><strong>Architecture</strong> - Deep dive into Bulletproof pattern, routing, database layer</li>
+  <li><strong>Features</strong> - Learn about workout execution, exercises, templates, benchmarks</li>
+  <li><strong>Testing</strong> - Integration-first approach with Playwright browser mode</li>
+  <li><strong>Development</strong> - Code conventions, commit format, definition of done</li>
+</ol>
+<p></p>
+<blockquote>
+<p>💬 <strong>Questions?</strong> Open an issue or discussion on GitHub. We're here to help!</p>
+</blockquote>
