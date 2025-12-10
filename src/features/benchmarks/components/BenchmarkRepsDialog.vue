@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import MobileNumberPicker from '@/components/MobileNumberPicker.vue'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,13 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  NumberField,
-  NumberFieldContent,
-  NumberFieldDecrement,
-  NumberFieldIncrement,
-  NumberFieldInput,
-} from '@/components/ui/number-field'
 import type { Exercise } from '@/composables/useExerciseSearch'
 
 type Emits = {
@@ -65,14 +59,14 @@ function handleCancel() {
         </DialogDescription>
       </DialogHeader>
 
-      <div class="py-6">
-        <NumberField v-model="reps" :min="1" :max="500">
-          <NumberFieldContent class="h-14">
-            <NumberFieldDecrement />
-            <NumberFieldInput class="text-lg" />
-            <NumberFieldIncrement />
-          </NumberFieldContent>
-        </NumberField>
+      <div class="py-4">
+        <MobileNumberPicker
+          v-model="reps"
+          :min="1"
+          :max="500"
+          :step="1"
+          :large-step="5"
+        />
       </div>
 
       <DialogFooter class="flex-row gap-2">

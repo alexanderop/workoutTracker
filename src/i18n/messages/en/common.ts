@@ -74,4 +74,11 @@ export default {
   units: {
     kg: 'kg',
   },
+  components: {
+    mobileNumberPicker: {
+      quickSelect: 'Quick Select',
+      customValue: 'Custom Value',
+      finetuneValue: 'Fine-tune',
+    },
+  },
 } as const
