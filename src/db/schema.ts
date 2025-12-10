@@ -196,6 +196,27 @@ type DbTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
 export type DbWorkoutBlock = DbStrengthBlock | DbTimedBlock
 
 // ============================================
+// Active Benchmark Workout
+// ============================================
+
+/**
+ * Active (in-progress) benchmark workout.
+ * Only one active benchmark exists at a time (id is always 'current-benchmark').
+ */
+export type DbActiveBenchmarkWorkout = {
+  id: 'current-benchmark'
+  name: string
+  benchmarkId: string
+  blocks: ReadonlyArray<DbForTimeBlock>
+  selectedBlockIndex: number
+  activeExerciseIndex: number
+  startedAt: number
+  lastModifiedAt: number
+  globalTimerStartedAt: number
+  mode: WorkoutMode
+}
+
+// ============================================
 // Active Workout Types
 // ============================================
 

@@ -2,6 +2,7 @@
 
 **Status:** Approved - Ready for Implementation
 **Date:** 2025-12-10
+**Updated:** 2025-12-10 (Post-Review)
 
 ---
 
@@ -22,13 +23,20 @@ Completely isolate benchmark workouts from normal workouts by creating a paralle
 
 **View Coupling:**
 - `src/views/ActiveWorkout.vue` conditionally handles both workout types
-- Cross-feature import: `BenchmarkExerciseQueueDrawer` imported from benchmarks feature
+- **Cross-feature import #1**: `BenchmarkExerciseQueueDrawer` imported from benchmarks feature into workout view
+- **Cross-feature import #2**: `WorkoutExercisePicker` imported from workout feature into `BenchmarkDetailView.vue:12`
 
 **Component Misplacement:**
 - 3 benchmark components live in `src/features/workout/components/`:
   - `BenchmarkForTimeView.vue`
   - `BenchmarkExerciseDisplay.vue`
   - `BenchmarkCompletionScreen.vue`
+
+**Composable Misplacement:**
+- 3 benchmark-only composables live in `src/composables/workout/`:
+  - `useBenchmarkAnimation.ts` (used by WorkoutActiveMode.vue:17, BenchmarkExerciseDisplay.vue)
+  - `useBenchmarkFirstAttempt.ts` (used by WorkoutActiveMode.vue:18)
+  - `useBenchmarkSplitComparison.ts` (used by WorkoutActiveMode.vue:19, BenchmarkForTimeView.vue:9)
 
 ## New Architecture
 
@@ -44,74 +52,194 @@ src/features/benchmarks/
 │   ├── useBenchmark.ts                     # NEW - Core state operations
 │   ├── useBenchmarkMode.ts                 # NEW - Mode transitions
 │   ├── useBenchmarkPersistence.ts          # NEW - Auto-save to IndexedDB
-│   └── useBenchmarkExerciseNavigation.ts   # NEW - Exercise progression
+│   ├── useBenchmarkExerciseNavigation.ts   # NEW - Exercise progression
+│   ├── useBenchmarkAnimation.ts            # MOVE from src/composables/workout/
+│   ├── useBenchmarkFirstAttempt.ts         # MOVE from src/composables/workout/
+│   └── useBenchmarkSplitComparison.ts      # MOVE from src/composables/workout/
 └── components/
     ├── BenchmarkActiveMode.vue             # NEW - Active mode container
     ├── BenchmarkForTimeView.vue            # MOVE from workout/components
     ├── BenchmarkExerciseDisplay.vue        # MOVE from workout/components
-    └── BenchmarkCompletionScreen.vue       # MOVE from workout/components
+    ├── BenchmarkCompletionScreen.vue       # MOVE from workout/components
+    └── BenchmarkExercisePicker.vue         # NEW - Benchmark-specific exercise picker
 ```
 
 ### Database Changes
 
 **New Types (`src/types/benchmark.ts`):**
-- `BenchmarkWorkout` type (separate from `Workout`)
-- Contains only: `benchmarkId`, `name`, `blocks`, `selectedBlockIndex`, `activeExerciseIndex`, `startedAt`, `globalTimerStartedAt`, `mode`
+
+```typescript
+export type BenchmarkWorkout = {
+  id: number
+  name: string
+  benchmarkId: string  // Reference to benchmark definition
+  blocks: Array<ForTimeBlock>  // Only ForTime blocks (can be multiple for rounds-type benchmarks)
+  selectedBlockIndex: number
+  activeExerciseIndex: number  // Exercise position across all blocks
+  startedAt: number
+  globalTimerStartedAt: number  // For overall benchmark timer
+  mode: WorkoutMode  // 'preparation' | 'active' | 'completed'
+}
+```
 
 **New Schema (`src/db/schema.ts`):**
-- `DbActiveBenchmarkWorkout` type with `id: 'current-benchmark'`
-- Separate table: `activeBenchmark`
+- Add `DbActiveBenchmarkWorkout` type (mirrors BenchmarkWorkout structure with `id: 'current-benchmark'`)
+- Add `activeBenchmark` table to Dexie schema
+- **KEEP** benchmark fields in existing tables (no migration needed):
+  - `DbActiveWorkout.benchmarkId` (keep as nullable)
+  - `DbActiveWorkout.globalTimerStartedAt` (keep as nullable)
+  - `DbActiveWorkout.activeExerciseIndex` (keep as nullable)
+  - `DbCompletedWorkout.benchmarkId` (REQUIRED for personal best tracking)
 
-**Remove from `src/types/workout.ts`:**
-- `benchmarkId: string | null`
-- `globalTimerStartedAt: number | null`
-- `activeExerciseIndex: number | null`
+**Strategy**: New benchmarks use `activeBenchmark` table, old tables remain unchanged for backward compatibility.
 
 ## Implementation Steps
 
 ### Step 1: Create Benchmark Infrastructure (No Breaking Changes)
 
 **1.1 Create Type System**
-- Create `src/types/benchmark.ts` with `BenchmarkWorkout` type
-- Create `src/db/schema.ts` additions for `DbActiveBenchmarkWorkout`
+- Create `src/types/benchmark.ts` with complete `BenchmarkWorkout` type (see Database Changes section above)
+- Update `src/db/schema.ts`:
+  - Add `DbActiveBenchmarkWorkout` type
+  - Keep existing benchmark fields in `DbActiveWorkout` and `DbCompletedWorkout` (backward compatibility)
 
 **1.2 Create Singleton State**
 - Create `src/features/benchmarks/state/benchmarkState.ts`
-- Exports: `getBenchmarkWorkoutRef()`, `resetBenchmarkWorkout()`, `restoreBenchmarkWorkout()`
+- Exports:
+  - `getBenchmarkWorkoutRef()` - Returns reactive ref to benchmark workout
+  - `resetBenchmarkWorkout()` - Clears state to initial values
+  - `restoreBenchmarkWorkout(workout: BenchmarkWorkout)` - Loads saved workout into state
 
 **1.3 Create Core Composables**
-- `src/features/benchmarks/composables/useBenchmark.ts` - State operations, current block/exercise, progress tracking
-- `src/features/benchmarks/composables/useBenchmarkMode.ts` - Mode transitions, block navigation
-- `src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts` - Exercise progression logic
-- `src/features/benchmarks/composables/useBenchmarkPersistence.ts` - Auto-save, load, complete, discard
+
+Create `src/features/benchmarks/composables/useBenchmark.ts`:
+- State operations: `updateBenchmarkWorkout()`, `getBenchmarkWorkout()`
+- Current block/exercise: `currentBlock`, `currentExercise`, `currentBlockExercises`
+- Progress tracking: `isFirstBlock`, `isLastBlock`, `blocksCompleted`
+
+Create `src/features/benchmarks/composables/useBenchmarkMode.ts`:
+- Mode transitions: `enterActiveMode()`, `enterCompletionMode()`
+- Block navigation: `advanceToNextBlock()`, `goToPreviousBlock()`
+- Initialization: `initializeTimestamps()`, `initializeFirstBlock()`
+
+Create `src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts`:
+- **API Specification:**
+  ```typescript
+  {
+    // Navigation functions
+    advanceToNextExercise: () => 'next-exercise' | 'next-block' | 'completed',
+    goToPreviousExercise: () => 'previous-exercise' | 'previous-block' | 'at-start',
+
+    // Position tracking (mirrors useWorkout.ts:455-573 logic)
+    currentExercisePosition: ComputedRef<number>,  // 1-based position within current block
+    totalExerciseCount: ComputedRef<number>,       // Total exercises in current block
+    globalExerciseIndex: ComputedRef<number>,      // 0-based index across ALL blocks
+
+    // Block boundary detection
+    isFirstExerciseInBlock: ComputedRef<boolean>,
+    isLastExerciseInBlock: ComputedRef<boolean>,
+  }
+  ```
+- Handles crossing round boundaries for rounds-type benchmarks
+- Updates `activeExerciseIndex` and `selectedBlockIndex` in state
+
+Create `src/features/benchmarks/composables/useBenchmarkPersistence.ts`:
+- Auto-save: `saveNow()`, watch-based auto-save
+- Load/restore: `loadActiveBenchmark()`, `hasActiveBenchmark()`
+- Completion: `completeBenchmark()` - saves to completed workouts with `benchmarkId`
+- Discard: `discardActiveBenchmark()`
 
 **1.4 Create Database Layer**
-- Add `activeBenchmark` table to Dexie schema
-- Create `src/db/interfaces.ts` addition for `ActiveBenchmarkWorkoutRepository`
-- Create `src/db/implementations/dexie/activeBenchmarkWorkout.ts`
-- Create converters: `benchmarkWorkoutToDb()`, `dbToBenchmarkWorkout()` in `src/db/converters.ts`
-- Export repository getter in `src/db/index.ts`
+- Update `src/db/implementations/dexie/database.ts`:
+  - Bump version from 1 to 2
+  - Add `activeBenchmark: 'id'` to stores
+- Create `src/db/interfaces.ts` addition for `ActiveBenchmarkWorkoutRepository` interface
+- Create `src/db/implementations/dexie/activeBenchmarkWorkout.ts` repository implementation
+- Create converters in `src/db/converters.ts`:
+  - `benchmarkWorkoutToDb(workout: BenchmarkWorkout): DbActiveBenchmarkWorkout`
+  - `dbToBenchmarkWorkout(db: DbActiveBenchmarkWorkout): BenchmarkWorkout`
+- Export repository getter `getActiveBenchmarkWorkoutRepository()` in `src/db/index.ts`
 
 ### Step 2: Create Benchmark View & Components
 
-**2.1 Move Existing Components**
-- Move `src/features/workout/components/BenchmarkForTimeView.vue` → `src/features/benchmarks/components/`
-- Move `src/features/workout/components/BenchmarkExerciseDisplay.vue` → `src/features/benchmarks/components/`
-- Move `src/features/workout/components/BenchmarkCompletionScreen.vue` → `src/features/benchmarks/components/`
-- Update all imports in moved components
+**2.1 Move Benchmark-Specific Files**
 
-**2.2 Create New Components**
-- Create `src/features/benchmarks/components/BenchmarkActiveMode.vue` - Active mode orchestration (mirrors WorkoutActiveMode but benchmark-specific)
+Move components:
+- `src/features/workout/components/BenchmarkForTimeView.vue` → `src/features/benchmarks/components/`
+- `src/features/workout/components/BenchmarkExerciseDisplay.vue` → `src/features/benchmarks/components/`
+- `src/features/workout/components/BenchmarkCompletionScreen.vue` → `src/features/benchmarks/components/`
 
-**2.3 Create View**
-- Create `src/features/benchmarks/views/ActiveBenchmarkWorkout.vue` - Main benchmark execution view
-- Uses benchmark composables exclusively
-- Initializes benchmark timer
-- Handles load/restore/complete/discard flows
+Move composables:
+- `src/composables/workout/useBenchmarkAnimation.ts` → `src/features/benchmarks/composables/`
+- `src/composables/workout/useBenchmarkFirstAttempt.ts` → `src/features/benchmarks/composables/`
+- `src/composables/workout/useBenchmarkSplitComparison.ts` → `src/features/benchmarks/composables/`
 
-**2.4 Add Route**
+Update imports in moved files:
+- All moved components should import from `@/features/benchmarks/composables/` instead of `@/composables/workout/`
+- Update any cross-feature imports to use shared components
+
+**2.2 Create Benchmark Exercise Picker**
+- Create `src/features/benchmarks/components/BenchmarkExercisePicker.vue`
+- Either duplicate logic from `WorkoutExercisePicker` or extract shared logic to `src/components/`
+- This eliminates the cross-feature import from `BenchmarkDetailView.vue:12`
+
+**2.3 Create New Components**
+- Create `src/features/benchmarks/components/BenchmarkActiveMode.vue`
+- Mirrors `WorkoutActiveMode.vue` structure but benchmark-specific
+- Uses: `useBenchmark`, `useBenchmarkMode`, `useBenchmarkExerciseNavigation`, `useBenchmarkAnimation`, `useBenchmarkFirstAttempt`, `useBenchmarkSplitComparison`
+- Renders: `BenchmarkForTimeView`, `BenchmarkExerciseDisplay`, `BenchmarkCompletionScreen`
+
+**2.4 Create Benchmark View**
+- Create `src/features/benchmarks/views/ActiveBenchmarkWorkout.vue`
+- **Completion Flow Specification:**
+  ```typescript
+  // On mount: Load or restore active benchmark
+  const { loadActiveBenchmark, hasActiveBenchmark } = useBenchmarkPersistence()
+  const benchmarkTimer = useBenchmarkGlobalTimer()
+
+  onMounted(async () => {
+    if (await hasActiveBenchmark()) {
+      const workout = await loadActiveBenchmark()
+      restoreBenchmarkWorkout(workout)
+      // Restore timer from globalTimerStartedAt if in active mode
+      if (workout.mode === 'active' && workout.globalTimerStartedAt) {
+        benchmarkTimer.initializeFromWorkout(workout.globalTimerStartedAt)
+      }
+    }
+  })
+
+  // Completion handler
+  async function handleConfirmFinish(name: string) {
+    const workout = getBenchmarkWorkout()
+    workout.name = name
+    await saveNow()
+
+    // Save to completed workouts with benchmarkId
+    const completed = await completeBenchmark()
+
+    if (completed) {
+      resetBenchmarkWorkout()
+      // Navigate to WorkoutSummary (reuse existing view)
+      router.push({ name: RouteNames.WorkoutSummary, params: { id: completed.id } })
+
+      // Update benchmark lastUsedAt timestamp
+      await updateBenchmarkUsage(workout.benchmarkId)
+    }
+  }
+
+  // Discard handler
+  async function handleDiscard() {
+    await discardActiveBenchmark()
+    resetBenchmarkWorkout()
+    router.push({ name: RouteNames.Benchmarks })
+  }
+  ```
+- Includes `BenchmarkExerciseQueueDrawer` (same feature, no cross-feature import)
+- Uses `useBenchmarkGlobalTimer` from `src/composables/timers/` (shared timer infrastructure)
+
+**2.5 Add Route** (after view is created and tested)
 - Add `RouteNames.ActiveBenchmark = 'ActiveBenchmark'` to `src/router/index.ts`
-- Add route: `{ path: '/benchmark/active', name: RouteNames.ActiveBenchmark, component: ActiveBenchmarkWorkout }`
+- Add route: `{ path: '/benchmark/active', name: RouteNames.ActiveBenchmark, component: () => import('@/features/benchmarks/views/ActiveBenchmarkWorkout.vue') }`
 
 ### Step 3: Switch Benchmark Flows
 
@@ -129,136 +257,261 @@ src/features/benchmarks/
 
 ### Step 4: Remove Workout Feature Coupling
 
-**4.1 Clean Up Workout Composables**
-- Remove from `src/features/workout/composables/useWorkout.ts`:
-  - Lines 455-573: `advanceToNextExercise()`, `goToPreviousExercise()`
-  - Computed properties: `currentExercisePosition`, `totalExerciseCount`, `globalExerciseIndex`
+**CRITICAL: Steps 4.1-4.3 must be completed BEFORE 4.4 to avoid breaking changes**
 
-- Remove from `src/features/workout/composables/useWorkoutMode.ts`:
-  - Benchmark initialization in `initializeTimestamps()`
-  - Benchmark exercise index in `initializeFirstBlock()`
-  - Benchmark reset in `advanceToNextBlock()`
+**4.1 Clean Up Workout Components FIRST**
+- Update `src/features/workout/components/WorkoutActiveMode.vue`:
+  - Remove props: `isBenchmarkMode`, `benchmarkTimer`
+  - Remove imports: `useBenchmarkAnimation`, `useBenchmarkFirstAttempt`, `useBenchmarkSplitComparison`
+  - Remove imports: `BenchmarkForTimeView`, `BenchmarkExerciseDisplay`, `BenchmarkCompletionScreen`
+  - Remove conditional rendering for benchmark views
+  - Remove benchmark-specific header logic
+  - Remove calls to: `advanceToNextExercise`, `goToPreviousExercise`, `currentExercisePosition`, `totalExerciseCount`, `globalExerciseIndex`
 
-**4.2 Clean Up Workout Components**
-- Remove from `src/features/workout/components/WorkoutActiveMode.vue`:
-  - Props: `isBenchmarkMode`, `benchmarkTimer`
-  - Benchmark composables: `useBenchmarkAnimation`, `useBenchmarkFirstAttempt`, `useBenchmarkSplitComparison`
-  - Conditional rendering for `BenchmarkForTimeView`
-  - Benchmark-specific header logic
+- Update `src/features/workout/components/WorkoutActiveModeFooter.vue`:
+  - Remove benchmark-specific "Done" button logic
+  - Remove benchmark-specific back button
 
-- Remove from `src/features/workout/components/WorkoutActiveModeFooter.vue`:
-  - Benchmark-specific "Done" button logic
-  - Benchmark-specific back button
+**4.2 Clean Up Active Workout View**
+- Update `src/views/ActiveWorkout.vue`:
+  - Remove benchmark mode detection (`isBenchmarkMode` computed)
+  - Remove benchmark timer initialization (`useBenchmarkGlobalTimer` import and usage)
+  - Remove import: `BenchmarkExerciseQueueDrawer`
+  - Remove conditional queue drawer rendering
+  - Remove all benchmark-specific props passed to `WorkoutActiveMode`
+  - Simplify to only handle regular workouts
 
-**4.3 Clean Up Active Workout View**
-- Remove from `src/views/ActiveWorkout.vue`:
-  - Benchmark mode detection (`isBenchmarkMode`)
-  - Benchmark timer initialization
-  - Import of `BenchmarkExerciseQueueDrawer`
-  - Conditional queue drawer rendering
-  - All benchmark-specific props passed to components
+**4.3 Update Benchmark Detail View**
+- Update `src/views/BenchmarkDetailView.vue`:
+  - Remove import: `WorkoutExercisePicker` from workout feature
+  - Add import: `BenchmarkExercisePicker` from benchmarks feature
+  - Update component reference
 
-**4.4 Clean Up Types**
-- Remove from `src/types/workout.ts`:
-  - `benchmarkId: string | null`
-  - `globalTimerStartedAt: number | null`
-  - `activeExerciseIndex: number | null`
+**4.4 Clean Up Composables AFTER Components Updated**
+- Update `src/features/workout/composables/useWorkout.ts`:
+  - Remove lines 455-573: `advanceToNextExercise()`, `goToPreviousExercise()`
+  - Remove computed properties: `currentExercisePosition`, `totalExerciseCount`, `globalExerciseIndex`
+  - These are now safe to remove since WorkoutActiveMode no longer uses them
 
-- Remove from `src/stores/workoutState.ts`:
-  - Same three fields from initial state
+- Update `src/features/workout/composables/useWorkoutMode.ts`:
+  - Remove benchmark-specific logic from `initializeTimestamps()`
+  - Remove benchmark exercise index from `initializeFirstBlock()`
+  - Remove benchmark reset from `advanceToNextBlock()`
 
-### Step 5: Database Schema Cleanup
+**4.5 Clean Up Types and State**
+- Update `src/types/workout.ts`:
+  - Remove `benchmarkId: string | null`
+  - Remove `globalTimerStartedAt: number | null`
+  - Remove `activeExerciseIndex: number | null`
 
-**5.1 Migration Strategy**
-- Keep benchmark fields in `DbActiveWorkout` as nullable temporarily
-- Once all flows tested, create migration to:
-  - Move any active benchmark workouts to new table
-  - Remove benchmark fields from schema
-  - Bump database version
+- Update `src/stores/workoutState.ts`:
+  - Remove same three fields from initial state
+  - Remove from type definitions
 
-**5.2 Remove Benchmark Fields**
-- Remove from `src/db/schema.ts`:
-  - `DbActiveWorkout.benchmarkId`
-  - `DbActiveWorkout.globalTimerStartedAt`
-  - `DbActiveWorkout.activeExerciseIndex`
-  - `DbCompletedWorkout.benchmarkId`
+### Step 5: Verify Database Isolation (No Migration Needed)
 
-- Keep `DbForTimeResult.splitTimes` (can be useful for regular ForTime blocks)
+**5.1 Verification Checklist**
+- ✅ New benchmarks use `activeBenchmark` table via `ActiveBenchmarkWorkoutRepository`
+- ✅ Benchmark fields remain in `DbActiveWorkout` and `DbCompletedWorkout` (backward compatibility)
+- ✅ `DbCompletedWorkout.benchmarkId` is **REQUIRED** and must be kept for personal best queries
+- ✅ `DbForTimeResult.splitTimes` kept (useful for regular ForTime blocks too)
+- ✅ Database version bumped to 2 with new `activeBenchmark` table
 
-**5.3 Update Converters**
-- Remove benchmark field handling from `src/db/converters.ts`:
-  - `workoutToDb()` - Remove benchmark fields
-  - `dbToWorkout()` - Remove benchmark fields
+**5.2 Test Data Integrity**
+- Verify existing completed benchmarks still display in history
+- Verify personal best calculation still works (queries `workouts` table by `benchmarkId`)
+- Verify old workouts with `benchmarkId !== null` don't break anything
+- Run `pnpm type-check` to ensure no type errors
+
+**Note**: No data migration required. Old tables keep benchmark fields for backward compatibility. New benchmark workouts use the new `activeBenchmark` table going forward.
 
 ### Step 6: Testing & Verification
 
-**6.1 Unit Tests**
-- Test `useBenchmark()` composable
-- Test `useBenchmarkMode()` composable
-- Test `useBenchmarkExerciseNavigation()` composable
-- Test `useBenchmarkPersistence()` composable
+**6.1 Unit Tests - New Composables**
+Create tests in `src/__tests__/composables/`:
+- `useBenchmark.spec.ts` - State operations, current block/exercise, progress tracking
+- `useBenchmarkMode.spec.ts` - Mode transitions, block navigation, initialization
+- `useBenchmarkExerciseNavigation.spec.ts` - Exercise navigation, position tracking, boundary crossing
+- `useBenchmarkPersistence.spec.ts` - Auto-save, load, complete, discard operations
 
-**6.2 Integration Tests**
-- Test full benchmark creation flow
-- Test benchmark execution with exercise progression
-- Test benchmark completion and history saving
-- Test benchmark resume after app close
+**6.2 Update Existing Integration Tests**
+Update `src/__tests__/integration/benchmark-flows.spec.ts`:
+- **Complete rewrite required** (~623 lines)
+- Change route from `RouteNames.ActiveWorkout` to `RouteNames.ActiveBenchmark`
+- Update all component selectors (new component structure)
+- Test against `ActiveBenchmarkWorkout.vue` instead of `ActiveWorkout.vue`
+- Verify benchmark-specific features work in isolation
 
-**6.3 Manual Testing**
-- Create new benchmark
-- Start benchmark workout
-- Complete benchmark workout
-- Verify history and personal best tracking
-- Verify no regression in normal workout flows
+Update `src/__tests__/components/BenchmarkExerciseList.spec.ts`:
+- Update imports to reflect moved components
+- Update paths from `@/features/workout/components/` to `@/features/benchmarks/components/`
+
+**6.3 Integration Test Coverage**
+Ensure tests cover:
+- Benchmark creation and starting from BenchmarkDetailView
+- Exercise progression with `advanceToNextExercise()`
+- Exercise navigation across round boundaries (rounds-type benchmarks)
+- Split time tracking during execution
+- Personal best comparison display
+- Benchmark completion and save to completed workouts
+- App close/resume with active benchmark (restore from IndexedDB)
+- Navigation from completed benchmark to WorkoutSummary view
+
+**6.4 Edge Case Testing**
+Add tests for:
+- **Migration scenario**: Existing completed benchmarks still display correctly
+- **Personal best with 10+ attempts**: Performance and accuracy
+- **Rapid exercise navigation**: No race conditions in state updates
+- **App background/foreground**: Timer synchronization during benchmark
+- **Rounds-type benchmark with 20+ rounds**: Stress test exercise navigation
+- **Timer restoration**: Correct time display after app reload during active benchmark
+- **Cross-feature isolation**: Verify ESLint catches any cross-feature imports
+
+**6.5 Regression Testing**
+- Verify normal workout flows unchanged (create, execute, complete)
+- Verify workout exercise navigation still works
+- Verify workout completion still works
+- Run full test suite: `pnpm test`
+
+**6.6 Manual Testing Checklist**
+- [ ] Create new single-block benchmark (e.g., "Cindy")
+- [ ] Create new rounds-type benchmark (e.g., "Murph" - 10 rounds)
+- [ ] Start benchmark, navigate through exercises
+- [ ] Complete benchmark, verify personal best recorded
+- [ ] Start second attempt, verify personal best comparison shows
+- [ ] Close app mid-benchmark, reopen, verify state restored
+- [ ] Complete benchmark, verify appears in history
+- [ ] Create and complete normal workout, verify no regression
+- [ ] Check browser console for errors
+- [ ] Run `pnpm lint` and `pnpm type-check` - both pass
 
 ### Step 7: Documentation & Cleanup
 
 **7.1 Update CLAUDE.md Files**
-- Update `src/features/CLAUDE.md` to reflect benchmark isolation
-- Update `src/features/benchmarks/CLAUDE.md` with new architecture
-- Document the separation between workout and benchmark features
+
+Update `src/features/CLAUDE.md`:
+- Update benchmarks row in feature table to reflect complete isolation
+- Document that benchmarks no longer share state/composables with workouts
+- Add note about cross-feature import rules being enforced
+
+Create/Update `src/features/benchmarks/CLAUDE.md`:
+- Document new composables:
+  - `useBenchmark` - Core state operations
+  - `useBenchmarkMode` - Mode transitions
+  - `useBenchmarkExerciseNavigation` - Exercise progression API
+  - `useBenchmarkPersistence` - Database operations
+- Document component architecture (ActiveBenchmarkWorkout → BenchmarkActiveMode → specific views)
+- Document state management pattern (benchmarkState.ts singleton)
+- Document timer integration (useBenchmarkGlobalTimer from shared composables)
+- Add examples of typical flows (create, execute, complete)
+
+Update `src/db/CLAUDE.md`:
+- Document `activeBenchmark` table and `ActiveBenchmarkWorkoutRepository`
+- Document `DbActiveBenchmarkWorkout` schema
+- Note that benchmark fields remain in old tables for backward compatibility
 
 **7.2 Remove Dead Code**
-- Search for any remaining benchmark-related code in workout feature
-- Remove unused imports
-- Run `pnpm knip` to find unused exports
+- Search for any remaining benchmark-related code in workout feature:
+  ```bash
+  rg -n "benchmark" src/features/workout --type vue --type ts
+  ```
+- Remove unused imports from moved components
+- Run `pnpm knip` to find unused exports:
+  ```bash
+  pnpm knip
+  ```
+- Remove any exports flagged by knip that are no longer used
+
+**7.3 Verify ESLint Rules**
+- Run `pnpm lint` to ensure no cross-feature imports
+- Verify ESLint catches violations:
+  - Features cannot import from other features (except benchmarks can use shared UI)
+  - Views can import from any feature
+  - Shared composables/components can be imported by anyone
 
 ---
 
-## Critical Files
+## Critical Files Summary
 
-### New Files (Create)
-- `src/types/benchmark.ts`
-- `src/features/benchmarks/state/benchmarkState.ts`
-- `src/features/benchmarks/composables/useBenchmark.ts`
-- `src/features/benchmarks/composables/useBenchmarkMode.ts`
-- `src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts`
-- `src/features/benchmarks/composables/useBenchmarkPersistence.ts`
-- `src/features/benchmarks/components/BenchmarkActiveMode.vue`
-- `src/features/benchmarks/views/ActiveBenchmarkWorkout.vue`
-- `src/db/implementations/dexie/activeBenchmarkWorkout.ts`
+### New Files to Create (10 files)
 
-### Files to Modify
+**Types & State:**
+- `src/types/benchmark.ts` - BenchmarkWorkout type definition
+- `src/features/benchmarks/state/benchmarkState.ts` - Singleton state management
 
-- `src/types/workout.ts` - Remove benchmark fields
-- `src/stores/workoutState.ts` - Remove benchmark fields
-- `src/db/schema.ts` - Add `DbActiveBenchmarkWorkout`, remove benchmark fields from workout types
-- `src/db/converters.ts` - Add benchmark converters, remove from workout converters
-- `src/db/index.ts` - Export benchmark repository
-- `src/router/index.ts` - Add benchmark route
-- `src/features/workout/composables/useWorkout.ts` - Remove exercise navigation (lines 455-573)
-- `src/features/workout/composables/useWorkoutMode.ts` - Remove benchmark initialization
-- `src/features/workout/components/WorkoutActiveMode.vue` - Remove benchmark rendering
-- `src/features/workout/components/WorkoutActiveModeFooter.vue` - Remove benchmark buttons
-- `src/views/ActiveWorkout.vue` - Remove benchmark handling
-- `src/views/BenchmarkDetailView.vue` - Route to new benchmark view
-- `src/features/benchmarks/composables/useBenchmarkDetail.ts` - Use new repository
+**Composables:**
+- `src/features/benchmarks/composables/useBenchmark.ts` - Core state operations
+- `src/features/benchmarks/composables/useBenchmarkMode.ts` - Mode transitions
+- `src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts` - Exercise progression
+- `src/features/benchmarks/composables/useBenchmarkPersistence.ts` - Database operations
 
-### Files to Move
+**Components & Views:**
+- `src/features/benchmarks/components/BenchmarkActiveMode.vue` - Active mode container
+- `src/features/benchmarks/components/BenchmarkExercisePicker.vue` - Exercise picker (eliminates cross-feature import)
+- `src/features/benchmarks/views/ActiveBenchmarkWorkout.vue` - Main benchmark view
 
+**Database:**
+- `src/db/implementations/dexie/activeBenchmarkWorkout.ts` - Repository implementation
+
+### Files to Move (6 files)
+
+**Components:**
 - `src/features/workout/components/BenchmarkForTimeView.vue` → `src/features/benchmarks/components/`
 - `src/features/workout/components/BenchmarkExerciseDisplay.vue` → `src/features/benchmarks/components/`
 - `src/features/workout/components/BenchmarkCompletionScreen.vue` → `src/features/benchmarks/components/`
+
+**Composables:**
+- `src/composables/workout/useBenchmarkAnimation.ts` → `src/features/benchmarks/composables/`
+- `src/composables/workout/useBenchmarkFirstAttempt.ts` → `src/features/benchmarks/composables/`
+- `src/composables/workout/useBenchmarkSplitComparison.ts` → `src/features/benchmarks/composables/`
+
+### Files to Modify (20+ files)
+
+**Database Layer:**
+- `src/db/schema.ts` - Add DbActiveBenchmarkWorkout, keep old benchmark fields
+- `src/db/converters.ts` - Add benchmark converters
+- `src/db/interfaces.ts` - Add ActiveBenchmarkWorkoutRepository interface
+- `src/db/index.ts` - Export benchmark repository getter
+- `src/db/implementations/dexie/database.ts` - Bump version to 2, add activeBenchmark table
+
+**Router:**
+- `src/router/index.ts` - Add ActiveBenchmark route
+
+**Workout Feature (Remove Benchmark Code):**
+- `src/features/workout/composables/useWorkout.ts` - Remove lines 455-573 (exercise navigation)
+- `src/features/workout/composables/useWorkoutMode.ts` - Remove benchmark initialization
+- `src/features/workout/components/WorkoutActiveMode.vue` - Remove benchmark props/composables/rendering
+- `src/features/workout/components/WorkoutActiveModeFooter.vue` - Remove benchmark buttons
+
+**Views:**
+- `src/views/ActiveWorkout.vue` - Remove benchmark handling and cross-feature import
+- `src/views/BenchmarkDetailView.vue` - Route to ActiveBenchmark, use BenchmarkExercisePicker
+
+**Benchmarks Feature:**
+- `src/features/benchmarks/composables/useBenchmarkDetail.ts` - Use ActiveBenchmarkWorkoutRepository
+
+**Types & State:**
+- `src/types/workout.ts` - Remove benchmarkId, globalTimerStartedAt, activeExerciseIndex
+- `src/stores/workoutState.ts` - Remove same three fields
+
+**Tests:**
+- `src/__tests__/integration/benchmark-flows.spec.ts` - Complete rewrite for new view
+- `src/__tests__/components/BenchmarkExerciseList.spec.ts` - Update imports
+
+**Documentation:**
+- `src/features/CLAUDE.md` - Update benchmarks row
+- `src/features/benchmarks/CLAUDE.md` - Document new architecture (create or update)
+- `src/db/CLAUDE.md` - Document activeBenchmark table
+
+### Test Files to Create (4 files)
+- `src/__tests__/composables/useBenchmark.spec.ts`
+- `src/__tests__/composables/useBenchmarkMode.spec.ts`
+- `src/__tests__/composables/useBenchmarkExerciseNavigation.spec.ts`
+- `src/__tests__/composables/useBenchmarkPersistence.spec.ts`
+
+---
+
+**Total Files Affected**: 40+ files (10 new, 6 moved, 20+ modified, 4 new tests)
 
 ---
 
@@ -273,36 +526,86 @@ src/features/benchmarks/
 
 ---
 
-## Migration Risk Assessment
+## Risk Assessment & Mitigation
 
-**Low Risk:**
-- Creating parallel infrastructure has no impact on existing flows
-- Can test thoroughly before switching flows
-- Can rollback easily by routing back to old view
+**Low Risk Areas:**
+- ✅ Creating parallel infrastructure (Steps 1-2) has no impact on existing flows
+- ✅ No data migration required - old tables remain unchanged
+- ✅ Can test thoroughly before switching flows (Step 3)
+- ✅ Can rollback easily by reverting route change in BenchmarkDetailView
 
-**Testing Focus:**
-- Benchmark creation and starting
-- Exercise progression and navigation
-- Split time tracking
-- Personal best comparison
-- Completion and history saving
-- App close/resume with active benchmark
+**Medium Risk Areas:**
+- ⚠️ Step 4 cleanup requires careful ordering (components before composables)
+- ⚠️ Integration test rewrite (~623 lines) is substantial work
+- ⚠️ Cross-feature import fixes require creating new components
+
+**Mitigation Strategies:**
+- Follow step order exactly (especially Step 4.1 → 4.4 sequence)
+- Run `pnpm type-check && pnpm lint && pnpm test` after each major step
+- Test benchmark flows manually before Step 4 cleanup
+- Keep git commits atomic per step for easy rollback
+
+**Critical Testing Focus:**
+- Benchmark creation and starting from BenchmarkDetailView
+- Exercise progression and navigation across round boundaries
+- Split time tracking and personal best comparison
+- Completion flow and save to completed workouts
+- App close/resume with active benchmark (IndexedDB restore)
+- Personal best calculation with existing historical data
+- No regression in normal workout flows
+
+---
+
+## Complexity Estimate
+
+| Phase | Files Affected | Estimated Time | Risk Level |
+|-------|----------------|----------------|------------|
+| **Step 1**: Infrastructure | 10 new files | 8-10 hours | Low |
+| **Step 2**: View & Components | 7 moved, 3 new, 3 modified | 6-8 hours | Medium |
+| **Step 3**: Switch Flows | 2 modified | 2-3 hours | Low |
+| **Step 4**: Cleanup | 7 modified | 4-6 hours | High |
+| **Step 5**: Verify DB | Testing only | 1-2 hours | Low |
+| **Step 6**: Testing | 6 modified, 4 new tests | 10-12 hours | High |
+| **Step 7**: Documentation | 3 docs | 2-3 hours | Low |
+| **TOTAL** | **40+ files** | **33-44 hours** | **Medium** |
+
+**Notes:**
+- Complexity reduced from initial estimate due to no data migration
+- Integration test rewrite is most time-consuming task (Step 6.2)
+- Database version bump is straightforward (just add new table)
+- BenchmarkExercisePicker creation adds 2-3 hours to Step 2
 
 ---
 
 ## Quick Start for Developers
 
-1. **Review this plan**: Read through the entire plan before starting
-2. **Follow steps sequentially**: Each step is designed to be non-breaking until Step 4
-3. **Run tests after each step**: Ensure no regressions
-4. **Key commands**:
+**Before Starting:**
+1. Read this entire plan thoroughly
+2. Understand Bulletproof architecture rules (no cross-feature imports)
+3. Review existing benchmark implementation in `ActiveWorkout.vue` and related files
+
+**Implementation:**
+1. Follow steps **sequentially** (1 → 7)
+2. **Do not skip Step 4.1-4.3** before 4.4 (breaking change risk)
+3. Run validation after each step:
    ```bash
    pnpm type-check  # TypeScript validation
-   pnpm lint        # Code quality
+   pnpm lint        # Code quality & cross-feature import detection
    pnpm test        # Run all tests
-   pnpm knip        # Find unused exports
    ```
+4. Commit atomically per step for easy rollback
+5. Test manually after Steps 2, 3, and 6
 
----
+**Key Commands:**
+```bash
+# Validation
+pnpm type-check && pnpm lint && pnpm test
+
+# Find unused exports after cleanup
+pnpm knip
+
+# Search for remaining benchmark code in workout feature
+rg -n "benchmark" src/features/workout --type vue --type ts
+```
 
 **Questions or issues?** Review this plan or check the codebase documentation in `CLAUDE.md` files.

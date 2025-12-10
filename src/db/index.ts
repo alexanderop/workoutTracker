@@ -1,4 +1,5 @@
 import type {
+  ActiveBenchmarkWorkoutRepository,
   ActiveWorkoutRepository,
   BenchmarksRepository,
   CustomExercisesRepository,
@@ -18,6 +19,10 @@ export * from './interfaces'
 
 export function getActiveWorkoutRepository(): ActiveWorkoutRepository {
   return getRepositoryProvider().activeWorkout
+}
+
+export function getActiveBenchmarkWorkoutRepository(): ActiveBenchmarkWorkoutRepository {
+  return getRepositoryProvider().activeBenchmark
 }
 
 export function getWorkoutsRepository(): WorkoutsRepository {

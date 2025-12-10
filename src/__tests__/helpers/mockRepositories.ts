@@ -49,6 +49,22 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       clear: vi.fn().mockResolvedValue(undefined),
       exists: vi.fn().mockResolvedValue(false),
     },
+    activeBenchmark: {
+      load: vi.fn().mockResolvedValue(undefined),
+      save: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+      exists: vi.fn().mockResolvedValue(false),
+      complete: vi.fn().mockResolvedValue({
+        id: 'completed-1',
+        name: 'Test Benchmark',
+        blocks: [],
+        startedAt: Date.now(),
+        completedAt: Date.now(),
+        durationSeconds: 180,
+        notes: '',
+        benchmarkId: 'benchmark-1',
+      }),
+    },
     workouts: {
       completeWorkout: vi.fn().mockResolvedValue({
         id: 'completed-1',
