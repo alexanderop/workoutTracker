@@ -7,6 +7,7 @@ import pluginOxlint from 'eslint-plugin-oxlint'
 import pluginUnicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
+import localRules from './eslint-local-rules'
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -291,6 +292,19 @@ export default defineConfigWithVueTs(
           '/.+/': ['title', 'aria-label', 'aria-placeholder', 'placeholder', 'alt'],
         },
       }],
+    },
+  },
+
+  // Enforce tryCatch() wrapper for repository calls
+  {
+    name: 'app/repository-trycatch',
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/**/__tests__/**'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/repository-trycatch': 'error',
     },
   },
 

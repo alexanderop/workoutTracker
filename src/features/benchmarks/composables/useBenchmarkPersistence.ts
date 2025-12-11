@@ -45,7 +45,11 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
 
       // No blocks means no active benchmark to save
       if (newWorkout.blocks.length === 0) {
-        await getActiveBenchmarkWorkoutRepository().delete()
+        const [deleteError] = await tryCatch(getActiveBenchmarkWorkoutRepository().delete())
+        if (deleteError) {
+          persistenceState.value = { status: 'error', error: deleteError }
+          return
+        }
         hasUnsavedChanges.value = false
         return
       }
@@ -97,14 +101,27 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
    * Check if an active benchmark workout exists in the database.
    */
   async function hasActiveBenchmark(): Promise<boolean> {
-    return getActiveBenchmarkWorkoutRepository().exists()
+    const [error, exists] = await tryCatch(getActiveBenchmarkWorkoutRepository().exists())
+
+    if (error) {
+      persistenceState.value = { status: 'error', error }
+      return false
+    }
+
+    return exists
   }
 
   /**
    * Discard the active benchmark without saving to history.
    */
   async function discardActiveBenchmark(): Promise<void> {
-    await getActiveBenchmarkWorkoutRepository().delete()
+    const [error] = await tryCatch(getActiveBenchmarkWorkoutRepository().delete())
+
+    if (error) {
+      persistenceState.value = { status: 'error', error }
+      return
+    }
+
     hasUnsavedChanges.value = false
   }
 
@@ -114,11 +131,25 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
    * Returns the completed workout for navigation to summary.
    */
   async function completeBenchmark(): Promise<DbCompletedWorkout | null> {
-    const dbBenchmark = await getActiveBenchmarkWorkoutRepository().load()
+    const [loadError, dbBenchmark] = await tryCatch(getActiveBenchmarkWorkoutRepository().load())
+
+    if (loadError) {
+      persistenceState.value = { status: 'error', error: loadError }
+      return null
+    }
+
     if (!dbBenchmark) return null
 
     // Convert benchmark workout to completed workout format
-    const completed = await getActiveBenchmarkWorkoutRepository().complete(dbBenchmark)
+    const [completeError, completed] = await tryCatch(
+      getActiveBenchmarkWorkoutRepository().complete(dbBenchmark),
+    )
+
+    if (completeError) {
+      persistenceState.value = { status: 'error', error: completeError }
+      return null
+    }
+
     hasUnsavedChanges.value = false
     return completed
   }

@@ -32,11 +32,13 @@ export const useExercisesStore = defineStore('exercises', () => {
    */
   async function addExercise(
     exercise: Omit<CustomExercise, 'id' | 'createdAt'>,
-  ): Promise<CustomExercise> {
+  ): Promise<CustomExercise | null> {
     const dbExercise = createDbCustomExercise(exercise)
 
     // Save to DB first
-    await getCustomExercisesRepository().add(dbExercise)
+    const [error] = await tryCatch(getCustomExercisesRepository().add(dbExercise))
+
+    if (error) return null
 
     // Then update local state
     const newExercise = dbToCustomExercise(dbExercise)
@@ -56,7 +58,10 @@ export const useExercisesStore = defineStore('exercises', () => {
    * Delete a custom exercise from both DB and local state.
    */
   async function deleteExercise(id: string): Promise<void> {
-    await getCustomExercisesRepository().delete(id)
+    const [error] = await tryCatch(getCustomExercisesRepository().delete(id))
+
+    if (error) return
+
     customExercises.value = customExercises.value.filter((e) => e.id !== id)
   }
 

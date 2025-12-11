@@ -58,7 +58,11 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
 
       // No blocks means no active workout to save
       if (newWorkout.blocks.length === 0) {
-        await getActiveWorkoutRepository().clear()
+        const [clearError] = await tryCatch(getActiveWorkoutRepository().clear())
+        if (clearError) {
+          persistenceState.value = { status: 'error', error: clearError }
+          return
+        }
         currentWorkoutStartedAt = null
         hasUnsavedChanges.value = false
         return
@@ -107,14 +111,27 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Check if an active workout exists in the database.
    */
   async function hasActiveWorkout(): Promise<boolean> {
-    return getActiveWorkoutRepository().exists()
+    const [error, exists] = await tryCatch(getActiveWorkoutRepository().exists())
+
+    if (error) {
+      persistenceState.value = { status: 'error', error }
+      return false
+    }
+
+    return exists
   }
 
   /**
    * Discard the active workout without saving to history.
    */
   async function discardActiveWorkout(): Promise<void> {
-    await getActiveWorkoutRepository().clear()
+    const [error] = await tryCatch(getActiveWorkoutRepository().clear())
+
+    if (error) {
+      persistenceState.value = { status: 'error', error }
+      return
+    }
+
     currentWorkoutStartedAt = null
     hasUnsavedChanges.value = false
   }
@@ -125,13 +142,27 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Returns the completed workout for navigation to summary.
    */
   async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
-    const dbWorkout = await getActiveWorkoutRepository().get()
+    const [getError, dbWorkout] = await tryCatch(getActiveWorkoutRepository().get())
+
+    if (getError) {
+      persistenceState.value = { status: 'error', error: getError }
+      return null
+    }
+
     if (!dbWorkout) return null
 
     // Set mode to 'completed' before persisting to DB
     dbWorkout.mode = 'completed'
 
-    const completed = await getWorkoutsRepository().completeWorkout(dbWorkout, notes)
+    const [completeError, completed] = await tryCatch(
+      getWorkoutsRepository().completeWorkout(dbWorkout, notes),
+    )
+
+    if (completeError) {
+      persistenceState.value = { status: 'error', error: completeError }
+      return null
+    }
+
     currentWorkoutStartedAt = null
     hasUnsavedChanges.value = false
     return completed

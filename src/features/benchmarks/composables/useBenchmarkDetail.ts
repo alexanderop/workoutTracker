@@ -86,7 +86,14 @@ export function useBenchmarkDetail(benchmarkId: string) {
     }
 
     // Save to active benchmark repository (not regular workout repository)
-    await getActiveBenchmarkWorkoutRepository().save(dbBenchmarkWorkout)
+    const [saveError] = await tryCatch(
+      getActiveBenchmarkWorkoutRepository().save(dbBenchmarkWorkout),
+    )
+
+    if (saveError) {
+      isStarting.value = false
+      return false
+    }
 
     // Convert to in-memory format and restore to benchmark singleton state
     const inMemoryWorkout = dbToBenchmarkWorkout(dbBenchmarkWorkout)
@@ -120,7 +127,7 @@ export function useBenchmarkDetail(benchmarkId: string) {
 
   async function deleteBenchmark(): Promise<void> {
     if (state.value.status !== 'success') return
-    await getBenchmarksRepository().delete(state.value.benchmark.id)
+    await tryCatch(getBenchmarksRepository().delete(state.value.benchmark.id))
   }
 
   // Lifecycle Hooks
