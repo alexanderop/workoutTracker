@@ -26,14 +26,6 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
   const hasUnsavedChanges = ref(false)
   const isInitialized = ref(false)
 
-  // Track if the composable scope is disposed (component unmounted)
-  // This prevents pending debounced callbacks from writing stale data
-  let isDisposed = false
-
-  onScopeDispose(() => {
-    isDisposed = true
-  })
-
   // Track changes for unsaved indicator
   watch(
     benchmarkWorkout,
@@ -46,11 +38,9 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
   )
 
   // Auto-save on changes (debounced)
-  watchDebounced(
+  const stopAutoSave = watchDebounced(
     benchmarkWorkout,
     async (newWorkout) => {
-      // Skip save if scope is disposed (component unmounted)
-      if (isDisposed) return
       if (!isInitialized.value) return
 
       // No blocks means no active benchmark to save
@@ -75,6 +65,11 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
     },
     { debounce: AUTO_SAVE_DEBOUNCE_MS, deep: true },
   )
+
+  // Stop the auto-save watcher when scope is disposed
+  onScopeDispose(() => {
+    stopAutoSave()
+  })
 
   /**
    * Load the active benchmark workout from the database.

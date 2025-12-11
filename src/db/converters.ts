@@ -394,7 +394,7 @@ export function workoutToDb(
  * Convert database ActiveWorkout to in-memory Workout format.
  */
 export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
-  const sortedBlocks = [...dbWorkout.blocks]
+  const sortedBlocks = dbWorkout.blocks
     .toSorted((a, b) => a.orderIndex - b.orderIndex)
     .map(dbToBlock)
 
@@ -479,7 +479,7 @@ export function benchmarkWorkoutToDb(
  * Convert database ActiveBenchmarkWorkout to in-memory format.
  */
 export function dbToBenchmarkWorkout(dbWorkout: Readonly<DbActiveBenchmarkWorkout>): BenchmarkWorkout {
-  const sortedBlocks = [...dbWorkout.blocks]
+  const sortedBlocks = dbWorkout.blocks
     .toSorted((a, b) => a.orderIndex - b.orderIndex)
     .map(dbToForTimeBlock)
 

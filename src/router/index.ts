@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
-import ActiveBenchmarkWorkout from '@/features/benchmarks/views/ActiveBenchmarkWorkout.vue'
+import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
 import CreateBenchmarkView from '@/views/CreateBenchmarkView.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'

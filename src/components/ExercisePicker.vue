@@ -149,6 +149,7 @@ function handleClose() {
         </h3>
         <Button variant="ghost" size="icon-sm" @click="handleClose">
           <X class="w-4 h-4" />
+          <span class="sr-only">{{ t('common.buttons.close') }}</span>
         </Button>
       </div>
 

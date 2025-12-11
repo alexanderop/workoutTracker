@@ -112,6 +112,7 @@ function handleClose() {
             </div>
             <Button variant="ghost" size="icon-sm" class="text-destructive" @click="removeExercise">
               <Trash2 class="w-4 h-4" />
+              <span class="sr-only">{{ t('common.aria.removeExercise') }}</span>
             </Button>
           </div>
 
