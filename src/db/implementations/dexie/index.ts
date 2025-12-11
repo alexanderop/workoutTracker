@@ -1,5 +1,6 @@
 import type { RepositoryProvider } from '@/db/interfaces'
 import { db } from './database'
+import { createDexieActiveBenchmarkWorkoutRepository } from './activeBenchmarkWorkout'
 import { createDexieActiveWorkoutRepository } from './activeWorkout'
 import { createDexieBenchmarksRepository } from './benchmarks'
 import { createDexieCustomExercisesRepository } from './customExercises'
@@ -11,6 +12,7 @@ import { createDexieWorkoutsRepository } from './workouts'
 export function createDexieRepositoryProvider(): RepositoryProvider {
   return {
     activeWorkout: createDexieActiveWorkoutRepository(db),
+    activeBenchmark: createDexieActiveBenchmarkWorkoutRepository(db),
     workouts: createDexieWorkoutsRepository(db),
     templates: createDexieTemplatesRepository(db),
     customExercises: createDexieCustomExercisesRepository(db),

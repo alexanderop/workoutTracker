@@ -68,7 +68,7 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
       const now = Date.now()
 
       // Sort blocks by orderIndex to ensure correct order
-      const sortedBlocks = [...completedWorkout.blocks].toSorted(
+      const sortedBlocks = completedWorkout.blocks.toSorted(
         (a, b) => a.orderIndex - b.orderIndex,
       )
 

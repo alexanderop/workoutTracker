@@ -96,8 +96,9 @@ export function useTemplateDetail(templateId: string) {
   async function loadTemplate(): Promise<boolean> {
     state.value = { status: 'loading' }
 
-    const loaded = await getTemplatesRepository().getById(templateId)
-    if (!loaded) {
+    const [error, loaded] = await tryCatch(getTemplatesRepository().getById(templateId))
+
+    if (error || !loaded) {
       state.value = { status: 'not-found' }
       return false
     }
@@ -131,7 +132,7 @@ export function useTemplateDetail(templateId: string) {
 
   async function deleteTemplate(): Promise<void> {
     if (state.value.status !== 'success') return
-    await getTemplatesRepository().delete(state.value.template.id)
+    await tryCatch(getTemplatesRepository().delete(state.value.template.id))
   }
 
   async function startWorkout(): Promise<boolean> {
@@ -147,7 +148,13 @@ export function useTemplateDetail(templateId: string) {
       return false
     }
 
-    await getActiveWorkoutRepository().save(activeWorkout)
+    const [saveError] = await tryCatch(getActiveWorkoutRepository().save(activeWorkout))
+
+    if (saveError) {
+      isStarting.value = false
+      return false
+    }
+
     const inMemoryWorkout = dbToWorkout(activeWorkout)
     restoreWorkout(inMemoryWorkout)
     isStarting.value = false

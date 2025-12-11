@@ -38,33 +38,33 @@ export const useSettingsStore = defineStore('settings', () => {
 
   async function setWeightUnit(unit: WeightUnit): Promise<void> {
     weightUnit.value = unit
-    await getSettingsRepository().set({ key: 'weightUnit', value: unit })
+    await tryCatch(getSettingsRepository().set({ key: 'weightUnit', value: unit }))
   }
 
   async function setHeightUnit(unit: HeightUnit): Promise<void> {
     heightUnit.value = unit
-    await getSettingsRepository().set({ key: 'heightUnit', value: unit })
+    await tryCatch(getSettingsRepository().set({ key: 'heightUnit', value: unit }))
   }
 
   async function setScreenWakeLock(enabled: boolean): Promise<void> {
     screenWakeLock.value = enabled
-    await getSettingsRepository().set({ key: 'screenWakeLock', value: enabled })
+    await tryCatch(getSettingsRepository().set({ key: 'screenWakeLock', value: enabled }))
   }
 
   async function setLanguage(lang: Language): Promise<void> {
     language.value = lang
-    await getSettingsRepository().set({ key: 'language', value: lang })
+    await tryCatch(getSettingsRepository().set({ key: 'language', value: lang }))
   }
 
   async function setTimerSoundEnabled(enabled: boolean): Promise<void> {
     timerSoundEnabled.value = enabled
-    await getSettingsRepository().set({ key: 'timerSoundEnabled', value: enabled })
+    await tryCatch(getSettingsRepository().set({ key: 'timerSoundEnabled', value: enabled }))
   }
 
   async function setTimerSoundVolume(volume: number): Promise<void> {
     const clampedVolume = Math.min(Math.max(volume, 0.5), 1.0)
     timerSoundVolume.value = clampedVolume
-    await getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume })
+    await tryCatch(getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume }))
   }
 
   return {

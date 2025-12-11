@@ -84,6 +84,9 @@ importers:
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.5
+      '@types/estree':
+        specifier: ^1.0.8
+        version: 1.0.8
       '@types/jsdom':
         specifier: ^27.0.0
         version: 27.0.0

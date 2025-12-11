@@ -10,6 +10,7 @@ async function endWorkoutViaMenu(
   user: Awaited<ReturnType<typeof createTestApp>>['user'],
   getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole'],
   queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
+  queryByText: Awaited<ReturnType<typeof createTestApp>>['queryByText'],
 ) {
   await waitFor(() => {
     expect(workout.getMenuTrigger()).toBeTruthy()
@@ -23,6 +24,27 @@ async function endWorkoutViaMenu(
 
   await common.waitForDialog()
   await user.click(common.getDialogButton('Finish Workout'))
+
+  // Wait for completion screen
+  await waitFor(() => {
+    expect(queryByText(/workout complete/i)).toBeTruthy()
+  })
+
+  // Wait for View Details button to be clickable (animation needs to complete)
+  const viewDetailsButton = await waitFor(
+    () => {
+      const button = getByRole('button', { name: /view details/i })
+      // Ensure button animation has started (not opacity-0)
+      if (button.classList.contains('opacity-0')) {
+        throw new Error('Button still has opacity-0')
+      }
+      return button
+    },
+    { timeout: 2000 },
+  )
+  // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
+  await new Promise((resolve) => setTimeout(resolve, 700))
+  await user.click(viewDetailsButton)
 
   await common.waitForRoute(/^\/workout\/summary\//)
 }
@@ -158,7 +180,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /\+1/i })).toBeTruthy()
 
       // End workout via menu
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
+      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       cleanup()
@@ -247,6 +269,27 @@ describe('Timed Block Workflows', () => {
       // Should show finish workout dialog
       await common.waitForDialog()
       await user.click(common.getDialogButton('Finish Workout'))
+
+      // Wait for completion screen
+      await waitFor(() => {
+        expect(queryByText(/workout complete/i)).toBeTruthy()
+      })
+
+      // Wait for View Details button to be clickable (animation needs to complete)
+      const viewDetailsButton = await waitFor(
+        () => {
+          const button = getByRole('button', { name: /view details/i })
+          // Ensure button animation has started (not opacity-0)
+          if (button.classList.contains('opacity-0')) {
+            throw new Error('Button still has opacity-0')
+          }
+          return button
+        },
+        { timeout: 2000 },
+      )
+      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
+      await new Promise((resolve) => setTimeout(resolve, 700))
+      await user.click(viewDetailsButton)
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -347,7 +390,7 @@ describe('Timed Block Workflows', () => {
       await user.click(getByRole('button', { name: /\+1/i }))
 
       // End workout via menu
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
+      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
 
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
@@ -430,7 +473,7 @@ describe('Timed Block Workflows', () => {
       })
 
       // End workout via menu and verify summary page
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
+      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows the workout completed
@@ -466,7 +509,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
       // End workout via menu and verify we reach summary
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole)
+      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows workout completed

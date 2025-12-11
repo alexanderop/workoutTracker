@@ -5,6 +5,7 @@ import type {
   DbWorkoutTemplate,
 } from '@/db/schema'
 import { getDataManagementRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 
 /**
  * Current export format version.
@@ -30,8 +31,10 @@ export type ExportData = {
  * Collect all user data from the database for export.
  * Excludes active workout (in-progress).
  */
-async function collectExportData(): Promise<ExportData> {
-  const data = await getDataManagementRepository().exportAll()
+async function collectExportData(): Promise<ExportData | null> {
+  const [error, data] = await tryCatch(getDataManagementRepository().exportAll())
+
+  if (error) return null
 
   return {
     version: EXPORT_VERSION,
@@ -69,8 +72,11 @@ function downloadFile(content: string, filename: string): void {
  * Export all user data and trigger a download.
  * Returns the export data for display purposes (e.g., showing counts).
  */
-export async function exportAllData(): Promise<ExportData> {
+export async function exportAllData(): Promise<ExportData | null> {
   const exportData = await collectExportData()
+
+  if (!exportData) return null
+
   const json = JSON.stringify(exportData, null, 2)
   const filename = generateExportFilename()
 

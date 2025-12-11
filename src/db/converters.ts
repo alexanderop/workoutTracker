@@ -1,5 +1,6 @@
 import type { Set, Workout } from '@/types/workout'
 import type { CustomExercise } from '@/types/exercises'
+import type { BenchmarkWorkout } from '@/types/benchmark'
 import type {
   AmrapBlock,
   AmrapResult,
@@ -14,6 +15,7 @@ import type {
   WorkoutBlock,
 } from '@/types/blocks'
 import type {
+  DbActiveBenchmarkWorkout,
   DbActiveWorkout,
   DbAmrapBlock,
   DbAmrapResult,
@@ -381,9 +383,10 @@ export function workoutToDb(
     lastModifiedAt: Date.now(),
     mode: workout.mode,
     activeSetIndex: workout.activeSetIndex,
-    activeExerciseIndex: workout.activeExerciseIndex,
-    benchmarkId: workout.benchmarkId,
-    globalTimerStartedAt: workout.globalTimerStartedAt,
+    // Legacy benchmark fields kept for backward compatibility with existing DB entries
+    activeExerciseIndex: null,
+    benchmarkId: null,
+    globalTimerStartedAt: null,
   }
 }
 
@@ -391,7 +394,7 @@ export function workoutToDb(
  * Convert database ActiveWorkout to in-memory Workout format.
  */
 export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
-  const sortedBlocks = [...dbWorkout.blocks]
+  const sortedBlocks = dbWorkout.blocks
     .toSorted((a, b) => a.orderIndex - b.orderIndex)
     .map(dbToBlock)
 
@@ -403,9 +406,8 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
     startedAt: dbWorkout.startedAt,
     mode: dbWorkout.mode ?? 'builder',
     activeSetIndex: dbWorkout.activeSetIndex ?? null,
-    activeExerciseIndex: dbWorkout.activeExerciseIndex ?? null,
-    benchmarkId: dbWorkout.benchmarkId,
-    globalTimerStartedAt: dbWorkout.globalTimerStartedAt,
+    // Note: activeExerciseIndex, benchmarkId, globalTimerStartedAt are ignored
+    // from DB - they're only kept in schema for backward compatibility
   }
 }
 
@@ -448,3 +450,49 @@ export function createDbCustomExercise(
     updatedAt: now,
   }
 }
+
+// ============================================
+// Benchmark Workout Converters
+// ============================================
+
+/**
+ * Convert BenchmarkWorkout to database format.
+ */
+export function benchmarkWorkoutToDb(
+  workout: Readonly<BenchmarkWorkout>,
+): DbActiveBenchmarkWorkout {
+  return {
+    id: "current-benchmark",
+    name: workout.name,
+    benchmarkId: workout.benchmarkId,
+    blocks: workout.blocks.map((block, index) => forTimeBlockToDb(block, index)),
+    selectedBlockIndex: workout.selectedBlockIndex,
+    activeExerciseIndex: workout.activeExerciseIndex,
+    startedAt: workout.startedAt,
+    lastModifiedAt: Date.now(),
+    globalTimerStartedAt: workout.globalTimerStartedAt,
+    mode: workout.mode,
+  }
+}
+
+/**
+ * Convert database ActiveBenchmarkWorkout to in-memory format.
+ */
+export function dbToBenchmarkWorkout(dbWorkout: Readonly<DbActiveBenchmarkWorkout>): BenchmarkWorkout {
+  const sortedBlocks = dbWorkout.blocks
+    .toSorted((a, b) => a.orderIndex - b.orderIndex)
+    .map(dbToForTimeBlock)
+
+  return {
+    id: dbWorkout.id,
+    name: dbWorkout.name,
+    benchmarkId: dbWorkout.benchmarkId,
+    blocks: sortedBlocks,
+    selectedBlockIndex: dbWorkout.selectedBlockIndex,
+    activeExerciseIndex: dbWorkout.activeExerciseIndex,
+    startedAt: dbWorkout.startedAt,
+    globalTimerStartedAt: dbWorkout.globalTimerStartedAt,
+    mode: dbWorkout.mode ?? "builder",
+  }
+}
+

@@ -12,6 +12,7 @@ export function useWorkoutMode() {
   const mode = computed(() => workout.value.mode)
   const isBuilderMode = computed(() => mode.value === 'builder')
   const isActiveMode = computed(() => mode.value === 'active')
+  const isCompletedMode = computed(() => mode.value === 'completed')
 
   const currentBlockIndex = computed(() => workout.value.selectedBlockIndex)
   const totalBlocks = computed(() => workout.value.blocks.length)
@@ -47,10 +48,6 @@ export function useWorkoutMode() {
     if (hasStarted.value) return
 
     workout.value.startedAt = Date.now()
-
-    if (workout.value.benchmarkId && !workout.value.globalTimerStartedAt) {
-      workout.value.globalTimerStartedAt = Date.now()
-    }
   }
 
   function activateFirstSet(firstBlock: WorkoutBlock) {
@@ -68,10 +65,6 @@ export function useWorkoutMode() {
     if (!firstBlock) return
 
     activateFirstSet(firstBlock)
-
-    if (isTimedBlock(firstBlock) && workout.value.benchmarkId) {
-      workout.value.activeExerciseIndex = 0
-    }
   }
 
   /**
@@ -100,6 +93,14 @@ export function useWorkoutMode() {
   }
 
   /**
+   * Enter completion mode - marks the workout as completed.
+   * Used when the user finishes all blocks before persisting to database.
+   */
+  function enterCompletionMode() {
+    workout.value.mode = 'completed'
+  }
+
+  /**
    * Advance to the next block in active mode.
    * Initializes the new block's active state if needed.
    * Returns true if advanced, false if already at last block.
@@ -121,11 +122,6 @@ export function useWorkoutMode() {
       if (firstSet && firstSet.status === 'planned') {
         firstSet.status = 'active'
       }
-    }
-
-    // Reset exercise index for benchmark blocks
-    if (nextBlock && isTimedBlock(nextBlock) && workout.value.benchmarkId) {
-      workout.value.activeExerciseIndex = 0
     }
 
     return true
@@ -183,6 +179,7 @@ export function useWorkoutMode() {
     mode,
     isBuilderMode,
     isActiveMode,
+    isCompletedMode,
     hasStarted,
 
     // Block navigation
@@ -199,6 +196,7 @@ export function useWorkoutMode() {
     // Mode transitions
     startWorkout,
     returnToBuilder,
+    enterCompletionMode,
     advanceToNextBlock,
     goToPreviousBlock,
   }

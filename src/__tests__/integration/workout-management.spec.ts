@@ -101,6 +101,27 @@ describe('Workout Management', () => {
 
       await user.click(common.getDialogButton('Finish Workout'))
 
+      // Wait for completion screen
+      await waitFor(() => {
+        expect(queryByText(/workout complete/i)).toBeTruthy()
+      })
+
+      // Wait for View Details button to be clickable (animation needs to complete)
+      const viewDetailsButton = await waitFor(
+        () => {
+          const button = getByRole('button', { name: /view details/i })
+          // Ensure button animation has started (not opacity-0)
+          if (button.classList.contains('opacity-0')) {
+            throw new Error('Button still has opacity-0')
+          }
+          return button
+        },
+        { timeout: 2000 },
+      )
+      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
+      await new Promise((resolve) => setTimeout(resolve, 700))
+      await user.click(viewDetailsButton)
+
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 

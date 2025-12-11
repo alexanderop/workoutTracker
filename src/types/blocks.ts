@@ -179,7 +179,7 @@ export type WorkoutBlock = StrengthBlock | TimedBlock
 // Workout Mode
 // ============================================
 
-export type WorkoutMode = 'builder' | 'active'
+export type WorkoutMode = 'builder' | 'active' | 'completed'
 
 // ============================================
 // Helper Types

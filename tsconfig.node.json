@@ -15,6 +15,7 @@
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "eslint.config.*"
+    "eslint.config.*",
+    "eslint-local-rules/**/*.ts"
   ]
 }

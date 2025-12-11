@@ -1,4 +1,5 @@
 import type {
+  DbActiveBenchmarkWorkout,
   DbActiveWorkout,
   DbBenchmark,
   DbCompletedWorkout,
@@ -143,6 +144,34 @@ export type ActiveWorkoutRepository = {
    * Check if an active workout is currently in progress.
    */
   exists(): Promise<boolean>
+}
+
+// ============================================
+// Active Benchmark Workout Repository
+// ============================================
+
+export type ActiveBenchmarkWorkoutRepository = {
+  /**
+   * Retrieve the current active benchmark workout.
+   */
+  load(): Promise<DbActiveBenchmarkWorkout | undefined>
+  /**
+   * Save or update the active benchmark workout. Automatically updates lastModifiedAt timestamp.
+   */
+  save(workout: Readonly<DbActiveBenchmarkWorkout>): Promise<void>
+  /**
+   * Remove the active benchmark workout from the database.
+   */
+  delete(): Promise<void>
+  /**
+   * Check if an active benchmark workout is currently in progress.
+   */
+  exists(): Promise<boolean>
+  /**
+   * Complete the benchmark workout and save to history with benchmarkId.
+   * Removes the active benchmark from database in a transaction.
+   */
+  complete(activeBenchmark: Readonly<DbActiveBenchmarkWorkout>): Promise<DbCompletedWorkout>
 }
 
 // ============================================
@@ -373,6 +402,7 @@ export type BenchmarkAttempt = {
  */
 export type RepositoryProvider = {
   activeWorkout: ActiveWorkoutRepository
+  activeBenchmark: ActiveBenchmarkWorkoutRepository
   workouts: WorkoutsRepository
   templates: TemplatesRepository
   customExercises: CustomExercisesRepository

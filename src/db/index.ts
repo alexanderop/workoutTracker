@@ -1,4 +1,5 @@
 import type {
+  ActiveBenchmarkWorkoutRepository,
   ActiveWorkoutRepository,
   BenchmarksRepository,
   CustomExercisesRepository,
@@ -8,6 +9,7 @@ import type {
   WorkoutsRepository,
 } from './interfaces'
 import { getRepositoryProvider } from './provider'
+import { tryCatch } from '@/lib/tryCatch'
 
 // Re-export types for consumers
 export * from './interfaces'
@@ -18,6 +20,10 @@ export * from './interfaces'
 
 export function getActiveWorkoutRepository(): ActiveWorkoutRepository {
   return getRepositoryProvider().activeWorkout
+}
+
+export function getActiveBenchmarkWorkoutRepository(): ActiveBenchmarkWorkoutRepository {
+  return getRepositoryProvider().activeBenchmark
 }
 
 export function getWorkoutsRepository(): WorkoutsRepository {
@@ -59,7 +65,7 @@ export function generateId(): string {
  * Delete all data from the database and recreate it.
  */
 export async function deleteAllData(): Promise<void> {
-  await getDataManagementRepository().deleteAll()
+  await tryCatch(getDataManagementRepository().deleteAll())
 }
 
 // ============================================

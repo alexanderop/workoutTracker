@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import { WorkoutExercisePicker } from '@/features/workout'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -95,7 +95,7 @@ function handleCancel(): void {
     </template>
 
     <!-- Add Exercise Dialog -->
-    <WorkoutExercisePicker
+    <ExercisePicker
       v-model:open="isAddExerciseOpen"
       presentation="dialog"
       :show-create="true"

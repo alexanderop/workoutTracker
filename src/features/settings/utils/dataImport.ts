@@ -93,19 +93,23 @@ export async function parseExportFile(file: File): Promise<ParseResult> {
  * Import all data from a validated export, replacing existing data.
  * Uses a transaction to ensure atomicity.
  */
-export async function importAllData(exportData: ExportData): Promise<void> {
+export async function importAllData(exportData: ExportData): Promise<boolean> {
   // Use JSON round-trip to strip Vue reactivity proxies
   // before IndexedDB's structured clone algorithm runs
   const serialized = JSON.stringify(exportData.data)
   const rawData = JSON.parse(serialized)
 
-  await getDataManagementRepository().importAll({
-    settings: rawData.settings,
-    customExercises: rawData.customExercises,
-    templates: rawData.templates,
-    workouts: rawData.workouts,
-    benchmarks: rawData.benchmarks ?? [],
-  })
+  const [error] = await tryCatch(
+    getDataManagementRepository().importAll({
+      settings: rawData.settings,
+      customExercises: rawData.customExercises,
+      templates: rawData.templates,
+      workouts: rawData.workouts,
+      benchmarks: rawData.benchmarks ?? [],
+    }),
+  )
+
+  return !error
 }
 
 /**
