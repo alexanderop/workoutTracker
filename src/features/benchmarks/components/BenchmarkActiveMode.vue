@@ -10,7 +10,7 @@ import { useBenchmarkFirstAttempt } from '@/features/benchmarks/composables/useB
 import { useBenchmarkSplitComparison, type SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 import { createSplitTracker } from '@/lib/splitTracking'
 import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
-import WorkoutActiveModeHeaderActions from '@/features/workout/components/WorkoutActiveModeHeaderActions.vue'
+import BenchmarkActiveModeHeaderActions from './BenchmarkActiveModeHeaderActions.vue'
 
 const emit = defineEmits<{
   'end-workout': []
@@ -114,8 +114,7 @@ function returnToBuilder() {
     @back="returnToBuilder"
   >
     <template #header-actions>
-      <WorkoutActiveModeHeaderActions
-        :can-skip-block="false"
+      <BenchmarkActiveModeHeaderActions
         @open-queue="emit('open-queue')"
         @end-workout="emit('end-workout')"
         @cancel-workout="emit('cancel-workout')"

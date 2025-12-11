@@ -461,9 +461,9 @@ describe('Benchmark Flows', () => {
       // Verify navigation to active benchmark
       expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
 
-      // Verify timer starts at 0:00 and exercise is displayed
+      // Verify timer starts at 0:00 (displayed in subtitle as "⏱ 0:00") and exercise is displayed
       await waitFor(() => {
-        expect(screen.getByText('0:00')).toBeTruthy()
+        expect(screen.getByText(/⏱\s*0:00/)).toBeTruthy()
         const elements = screen.getAllByText(/exercise 1 of \d+/i)
         expect(elements.length).toBeGreaterThan(0)
       })
