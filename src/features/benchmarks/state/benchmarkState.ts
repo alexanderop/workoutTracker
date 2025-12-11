@@ -3,7 +3,7 @@ import type { BenchmarkWorkout } from '@/types/benchmark'
 
 function createInitialBenchmarkWorkout(): BenchmarkWorkout {
   return {
-    id: 1,
+    id: 'current-benchmark',
     name: 'New Benchmark',
     benchmarkId: '',
     blocks: [],

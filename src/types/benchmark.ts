@@ -20,7 +20,7 @@ export type BenchmarkType = 'fortime' | 'rounds'
  * Benchmarks only use ForTime blocks, even for rounds-type benchmarks.
  */
 export type BenchmarkWorkout = {
-  id: number
+  id: 'current-benchmark'
   name: string
   benchmarkId: string // Reference to benchmark definition
   blocks: Array<ForTimeBlock> // Only ForTime blocks (can be multiple for rounds-type benchmarks)

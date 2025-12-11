@@ -484,7 +484,7 @@ export function dbToBenchmarkWorkout(dbWorkout: Readonly<DbActiveBenchmarkWorkou
     .map(dbToForTimeBlock)
 
   return {
-    id: 1,
+    id: dbWorkout.id,
     name: dbWorkout.name,
     benchmarkId: dbWorkout.benchmarkId,
     blocks: sortedBlocks,
