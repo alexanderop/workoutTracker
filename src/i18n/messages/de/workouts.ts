@@ -68,6 +68,7 @@ export default {
       title: 'Workout-Warteschlange',
       description: 'Workout-Blöcke verwalten',
       open: 'Workout-Warteschlange öffnen',
+      viewExercises: 'Übungen anzeigen',
       addBlock: 'Übung hinzufügen',
       active: '(Aktiv)',
       exercises: '{count} Übungen',
@@ -198,6 +199,7 @@ export default {
     noPbYet: 'Noch kein PB',
     pbLabel: 'PB',
     firstAttempt: 'Erster Versuch - Setze deine PB!',
+    tapToAdvance: 'Tippen um zur nächsten Übung zu wechseln',
     detail: {
       workoutStructure: 'Trainingsstruktur',
       startWorkout: 'Training Starten',

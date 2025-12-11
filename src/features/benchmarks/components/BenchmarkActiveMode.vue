@@ -19,15 +19,13 @@ const emit = defineEmits<{
   'open-queue': []
 }>()
 
-const { benchmarkWorkout: workout, currentBlock, isLastBlock } = useBenchmark()
+const { benchmarkWorkout: workout, currentBlock } = useBenchmark()
 const { isActive, enterCompletionMode } = useBenchmarkMode()
 const {
   advanceToNextExercise,
-  goToPreviousExercise,
   currentExercisePosition,
   totalExerciseCount,
   globalExerciseIndex,
-  isLastExerciseInBlock,
 } = useBenchmarkExerciseNavigation()
 
 // Timer and tracking
@@ -42,7 +40,6 @@ const latestSplitComparison = ref<SplitComparison | null>(null)
 
 // Header content
 const headerTitle = computed(() => workout.value.name || 'Benchmark')
-const headerSubtitle = computed(() => `⏱ ${benchmarkTimer.formattedElapsed.value}`)
 
 // Start timer when entering active mode
 if (isActive.value && !benchmarkTimer.isRunning.value) {
@@ -92,11 +89,6 @@ async function handleNextExercise() {
   }
 }
 
-function handlePreviousExercise() {
-  // No animation - instant transition for correction action
-  goToPreviousExercise()
-}
-
 function handleViewDetails() {
   emit('workout-complete')
 }
@@ -109,7 +101,6 @@ function returnToBuilder() {
 <template>
   <PageLayout
     :title="headerTitle"
-    :subtitle="headerSubtitle"
     :scrollable="false"
     prevent-navigation
     @back="returnToBuilder"
@@ -132,6 +123,7 @@ function returnToBuilder() {
           totalInRound: totalExerciseCount,
           globalIndex: globalExerciseIndex,
           totalCount: totalExerciseCount,
+          isFirstAttempt: firstAttemptTracking.isFirstAttempt.value,
         }"
         :completion="animation.state.value.showCompletion ? {
           isComplete: true,
@@ -139,35 +131,11 @@ function returnToBuilder() {
           benchmarkName: workout.name,
         } : undefined"
         :animation-state="animation.state.value"
-        :is-first-attempt="firstAttemptTracking.isFirstAttempt.value"
         :split-comparison="latestSplitComparison"
+        :elapsed-time="benchmarkTimer.formattedElapsed.value"
         @view-details="handleViewDetails"
+        @tap-advance="handleNextExercise"
       />
-    </template>
-
-    <!-- Footer with benchmark-specific actions -->
-    <template v-if="currentBlock && !animation.state.value.showCompletion" #footer>
-      <div class="p-4 border-t bg-background">
-        <div class="flex gap-2">
-          <!-- Back button (disabled if first exercise) -->
-          <button
-            class="flex-1 px-4 py-3 rounded-lg border border-border bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-muted"
-            :disabled="globalExerciseIndex === 0 || animation.state.value.isTransitioning"
-            @click="handlePreviousExercise"
-          >
-            {{ $t('common.aria.goBack') }}
-          </button>
-
-          <!-- Done button (advances to next exercise or completes) -->
-          <button
-            class="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-primary/90"
-            :disabled="animation.state.value.isTransitioning"
-            @click="handleNextExercise"
-          >
-            {{ isLastBlock && isLastExerciseInBlock ? $t('common.buttons.finish') : $t('common.buttons.done') }}
-          </button>
-        </div>
-      </div>
     </template>
   </PageLayout>
 </template>

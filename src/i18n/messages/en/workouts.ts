@@ -68,6 +68,7 @@ export default {
       title: 'Workout Queue',
       description: 'Manage workout blocks',
       open: 'Open workout queue',
+      viewExercises: 'View Exercises',
       addBlock: 'Add Exercise',
       active: '(Active)',
       exercises: '{count} exercises',
@@ -199,6 +200,7 @@ export default {
     noPbYet: 'No PB yet',
     pbLabel: 'PB',
     firstAttempt: 'First attempt - set your PB!',
+    tapToAdvance: 'Tap to advance to next exercise',
     detail: {
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',
