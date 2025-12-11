@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/main.ts", "src/**/*.vue"],
-  "project": ["src/**/*.ts", "src/**/*.vue"],
+  "entry": ["src/main.ts", "src/**/*.vue", "eslint-local-rules/**/*.ts"],
+  "project": ["src/**/*.ts", "src/**/*.vue", "eslint-local-rules/**/*.ts"],
   "ignore": [
     ".claude/**",
     "env.d.ts",
