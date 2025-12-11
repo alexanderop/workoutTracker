@@ -121,11 +121,15 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
 
   /**
    * Complete the active workout and save to history.
+   * Sets mode to 'completed' before persisting to ensure the final state is captured.
    * Returns the completed workout for navigation to summary.
    */
   async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
     const dbWorkout = await getActiveWorkoutRepository().get()
     if (!dbWorkout) return null
+
+    // Set mode to 'completed' before persisting to DB
+    dbWorkout.mode = 'completed'
 
     const completed = await getWorkoutsRepository().completeWorkout(dbWorkout, notes)
     currentWorkoutStartedAt = null

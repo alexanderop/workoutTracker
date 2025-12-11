@@ -12,6 +12,7 @@ export function useWorkoutMode() {
   const mode = computed(() => workout.value.mode)
   const isBuilderMode = computed(() => mode.value === 'builder')
   const isActiveMode = computed(() => mode.value === 'active')
+  const isCompletedMode = computed(() => mode.value === 'completed')
 
   const currentBlockIndex = computed(() => workout.value.selectedBlockIndex)
   const totalBlocks = computed(() => workout.value.blocks.length)
@@ -89,6 +90,14 @@ export function useWorkoutMode() {
   function returnToBuilder() {
     workout.value.mode = 'builder'
     workout.value.activeSetIndex = null
+  }
+
+  /**
+   * Enter completion mode - marks the workout as completed.
+   * Used when the user finishes all blocks before persisting to database.
+   */
+  function enterCompletionMode() {
+    workout.value.mode = 'completed'
   }
 
   /**
@@ -170,6 +179,7 @@ export function useWorkoutMode() {
     mode,
     isBuilderMode,
     isActiveMode,
+    isCompletedMode,
     hasStarted,
 
     // Block navigation
@@ -186,6 +196,7 @@ export function useWorkoutMode() {
     // Mode transitions
     startWorkout,
     returnToBuilder,
+    enterCompletionMode,
     advanceToNextBlock,
     goToPreviousBlock,
   }

@@ -25,17 +25,29 @@ export function useBenchmarkExerciseNavigation() {
 
   /**
    * Global exercise index (0-based) across all blocks.
-   * Example: Round 2, Exercise 3 of 4 exercises per round = index 7 (4 + 3)
+   * Sums actual exercise counts from preceding blocks.
    */
   const globalExerciseIndex = computed(() => {
     const blockIndex = benchmarkWorkout.value.selectedBlockIndex
     const exerciseIndex = benchmarkWorkout.value.activeExerciseIndex
-    const firstBlock = benchmarkWorkout.value.blocks[0]
+    const blocks = benchmarkWorkout.value.blocks
 
-    if (!firstBlock) return 0
+    // Edge case: invalid block index
+    if (blockIndex < 0 || blockIndex >= blocks.length) return 0
 
-    const exercisesPerRound = getBlockExerciseList(firstBlock).length
-    return blockIndex * exercisesPerRound + exerciseIndex
+    // Sum exercises in all preceding blocks
+    let sum = 0
+    for (let i = 0; i < blockIndex; i++) {
+      const block = blocks[i]
+      if (block) {
+        sum += getBlockExerciseList(block).length
+      }
+    }
+
+    // Edge case: invalid exercise index - clamp to 0
+    if (exerciseIndex < 0) return sum
+
+    return sum + exerciseIndex
   })
 
   /**

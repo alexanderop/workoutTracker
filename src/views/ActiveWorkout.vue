@@ -4,6 +4,7 @@ import { useDialogState } from '@/composables/useDialogState'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.vue'
+import WorkoutCompletionScreen from '@/features/workout/components/WorkoutCompletionScreen.vue'
 import WorkoutAddBlockDialog from '@/features/workout/components/WorkoutAddBlockDialog.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
 import WorkoutCancelDialog from '@/components/WorkoutCancelDialog.vue'
@@ -41,7 +42,7 @@ const {
   addForTimeBlock,
 } = useWorkout()
 
-const { isBuilderMode, isActiveMode } = useWorkoutMode()
+const { isBuilderMode, isActiveMode, isCompletedMode, enterCompletionMode } = useWorkoutMode()
 
 // Initialize persistence for this workout session
 const workoutRef = getWorkoutRef()
@@ -88,6 +89,9 @@ const configureForTimeOpen = createDialogModel('configureForTime')
 const editingBlockIndex = ref<number | null>(null)
 const queueDrawerOpen = ref(false)
 
+// Track completion data for the completion screen
+const completionData = ref<{ name: string; duration: number; id: string } | null>(null)
+
 // Computed for exercise edit dialog
 const selectedExerciseData = computed<ExerciseEditData | null>(() => {
   if (!selectedExercise.value) return null
@@ -103,13 +107,32 @@ const selectedExerciseData = computed<ExerciseEditData | null>(() => {
 async function handleConfirmFinish(name: string) {
   workout.value.name = name
   await saveNow()
+
+  // Enter completion mode to show the completion screen
+  enterCompletionMode()
+
   const completed = await completeWorkout()
   if (completed) {
-    resetWorkout()
-    router.push({ name: RouteNames.WorkoutSummary, params: { id: completed.id } })
+    // Store data for completion screen, wait for user to proceed
+    completionData.value = {
+      name,
+      duration: completed.durationSeconds,
+      id: completed.id,
+    }
     return
   }
+
+  // Fallback if completion fails
+  resetWorkout()
   router.push({ name: RouteNames.Home })
+}
+
+// Handler for completion screen button
+function handleViewDetails() {
+  if (!completionData.value) return
+  const id = completionData.value.id
+  resetWorkout()
+  router.push({ name: RouteNames.WorkoutSummary, params: { id } })
 }
 
 async function handleConfirmCancel() {
@@ -196,6 +219,14 @@ function handleQueueAddBlock() {
       @cancel-workout="openDialog('cancel')"
       @workout-complete="handleWorkoutComplete"
       @open-queue="handleOpenQueue"
+    />
+
+    <!-- Completed Mode -->
+    <WorkoutCompletionScreen
+      v-if="isCompletedMode && completionData"
+      :workout-name="completionData.name"
+      :duration="completionData.duration"
+      @view-details="handleViewDetails"
     />
 
     <!-- Dialogs (shared across modes) -->

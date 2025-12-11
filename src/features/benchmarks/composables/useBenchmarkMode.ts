@@ -101,9 +101,10 @@ export function useBenchmarkMode() {
     const prevBlock = benchmarkWorkout.value.blocks[prevIndex]
     if (prevBlock) {
       const exercises = prevBlock.exercises
+      const lastExerciseIndex = exercises.length > 0 ? exercises.length - 1 : 0
       updateBenchmarkWorkout({
         selectedBlockIndex: prevIndex,
-        activeExerciseIndex: exercises.length - 1,
+        activeExerciseIndex: lastExerciseIndex,
       })
     }
 

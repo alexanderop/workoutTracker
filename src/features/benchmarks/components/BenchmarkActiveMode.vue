@@ -19,7 +19,7 @@ const emit = defineEmits<{
   'open-queue': []
 }>()
 
-const { benchmarkWorkout: workout, currentBlock } = useBenchmark()
+const { benchmarkWorkout: workout, currentBlock, isLastBlock } = useBenchmark()
 const { isActive, enterCompletionMode } = useBenchmarkMode()
 const {
   advanceToNextExercise,
@@ -27,6 +27,7 @@ const {
   currentExercisePosition,
   totalExerciseCount,
   globalExerciseIndex,
+  isLastExerciseInBlock,
 } = useBenchmarkExerciseNavigation()
 
 // Timer and tracking
@@ -163,7 +164,7 @@ function returnToBuilder() {
             :disabled="animation.state.value.isTransitioning"
             @click="handleNextExercise"
           >
-            {{ globalExerciseIndex === totalExerciseCount - 1 ? $t('common.buttons.finish') : $t('common.buttons.done') }}
+            {{ isLastBlock && isLastExerciseInBlock ? $t('common.buttons.finish') : $t('common.buttons.done') }}
           </button>
         </div>
       </div>

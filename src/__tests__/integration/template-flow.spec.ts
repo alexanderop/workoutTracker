@@ -56,15 +56,44 @@ describe('Template Flow', () => {
 
       await user.click(common.getDialogButton('Finish Workout'))
 
-      await common.waitForRoute(/^\/workout\/summary\//)
-
-      // Wait for summary page to finish loading
+      // Wait for completion screen
       await waitFor(() => {
-        expect(queryByText('Workout Complete!')).toBeTruthy()
+        expect(queryByText(/workout complete/i)).toBeTruthy()
       })
 
-      // Click "Save as Template" button
-      await user.click(getByRole('button', { name: /save as template/i }))
+      // Wait for View Details button to be clickable (animation needs to complete)
+      const viewDetailsButton = await waitFor(
+        () => {
+          const button = getByRole('button', { name: /view details/i })
+          // Ensure button animation has started (not opacity-0)
+          if (button.classList.contains('opacity-0')) {
+            throw new Error('Button still has opacity-0')
+          }
+          return button
+        },
+        { timeout: 2000 },
+      )
+      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
+      await new Promise((resolve) => setTimeout(resolve, 700))
+      await user.click(viewDetailsButton)
+
+      await common.waitForRoute(/^\/workout\/summary\//)
+
+      // Wait for summary page to load and animation to complete
+      const saveTemplateButton = await waitFor(
+        () => {
+          const button = getByRole('button', { name: /save as template/i })
+          // Ensure button animation has started (not opacity-0)
+          if (button.parentElement?.classList.contains('opacity-0')) {
+            throw new Error('Button container still has opacity-0')
+          }
+          return button
+        },
+        { timeout: 3000 },
+      )
+      // Wait for animation to complete (100ms enter delay + 1000ms animation delay + 500ms animation)
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      await user.click(saveTemplateButton)
       await common.waitForDialog()
 
       // Verify dialog opened and template name is pre-filled
