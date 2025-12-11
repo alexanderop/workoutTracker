@@ -19,15 +19,6 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <Button
-    variant="ghost"
-    size="icon"
-    class="flex-shrink-0"
-    :aria-label="t('workouts.active.queue.open')"
-    @click="emit('open-queue')"
-  >
-    <List class="size-5" />
-  </Button>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
       <Button
@@ -40,6 +31,10 @@ const { t } = useI18n()
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-48">
+      <DropdownMenuItem @click="emit('open-queue')">
+        <List class="size-4 mr-2" />
+        {{ t('workouts.active.queue.viewExercises') }}
+      </DropdownMenuItem>
       <DropdownMenuItem @click="emit('end-workout')">
         <Square class="size-4 mr-2" />
         {{ t('workouts.active.mode.endWorkout') }}

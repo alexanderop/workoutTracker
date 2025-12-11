@@ -18,6 +18,7 @@ type ExerciseProgressState = {
   totalInRound: number
   globalIndex: number
   totalCount: number
+  isFirstAttempt?: boolean
 }
 
 type BenchmarkCompletionState = {
@@ -31,8 +32,8 @@ type Props = {
   progress: ExerciseProgressState
   completion?: BenchmarkCompletionState
   animationState?: AnimationState
-  isFirstAttempt?: boolean
   splitComparison?: SplitComparison | null
+  elapsedTime?: string
 }
 
 const {
@@ -40,12 +41,13 @@ const {
   progress,
   completion,
   animationState = {},
-  isFirstAttempt = false,
   splitComparison = null,
+  elapsedTime = '00:00',
 } = defineProps<Props>()
 
 const emit = defineEmits<{
   'view-details': []
+  'tap-advance': []
 }>()
 
 const showCheckmark = computed(() => animationState.showCheckmark ?? false)
@@ -53,6 +55,11 @@ const isTransitioning = computed(() => animationState.isTransitioning ?? false)
 
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[progress.current - 1])
+
+function handleTap() {
+  if (isTransitioning.value) return
+  emit('tap-advance')
+}
 </script>
 
 <template>
@@ -65,25 +72,38 @@ const currentExercise = computed(() => exercises.value[progress.current - 1])
       @view-details="emit('view-details')"
     />
 
-    <!-- Normal Exercise Display (when not completed) -->
-    <template v-else>
-      <!-- Progress dots (top) -->
-      <ExerciseProgressDots :total-exercises="progress.totalCount" :current-index="progress.globalIndex" />
-
-      <!-- First Attempt Message (positioned above exercise) -->
-      <div
-        v-if="isFirstAttempt && !completion?.isComplete"
-        role="status"
-        aria-live="polite"
-        class="px-4 py-3 mb-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg"
-      >
-        <p class="text-center text-sm font-medium text-primary">
-          {{ $t('workouts.benchmarks.firstAttempt') }}
-        </p>
+    <!-- Focus Mode Display (tappable area) -->
+    <div
+      v-else
+      role="button"
+      tabindex="0"
+      :aria-label="$t('workouts.benchmarks.tapToAdvance')"
+      class="flex-1 flex flex-col justify-between cursor-pointer select-none active:bg-muted/30 transition-colors"
+      @click="handleTap"
+      @keydown.enter="handleTap"
+      @keydown.space.prevent="handleTap"
+    >
+      <!-- Top section: Timer -->
+      <div class="pt-8 text-center">
+        <span class="text-3xl font-mono tabular-nums text-muted-foreground">
+          {{ elapsedTime }}
+        </span>
       </div>
 
-      <!-- Exercise display with animation (center) -->
-      <div class="flex-1 flex items-center justify-center relative overflow-hidden">
+      <!-- Middle section: Exercise display -->
+      <div class="flex flex-col items-center justify-center relative overflow-hidden">
+        <!-- First Attempt Message -->
+        <div
+          v-if="progress.isFirstAttempt"
+          role="status"
+          aria-live="polite"
+          class="mx-4 mb-4 px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg"
+        >
+          <p class="text-center text-sm font-medium text-primary">
+            {{ $t('workouts.benchmarks.firstAttempt') }}
+          </p>
+        </div>
+
         <!-- Checkmark overlay -->
         <div
           v-if="showCheckmark"
@@ -110,12 +130,17 @@ const currentExercise = computed(() => exercises.value[progress.current - 1])
           <BenchmarkExerciseDisplay
             v-if="currentExercise"
             :exercise="currentExercise"
-            :exercise-number="progress.current"
-            :total-exercises="progress.totalInRound"
             :split-comparison="splitComparison"
           />
         </div>
       </div>
-    </template>
+
+      <!-- Bottom section: Progress dots -->
+      <ExerciseProgressDots
+        class="pb-8"
+        :total-exercises="progress.totalCount"
+        :current-index="progress.globalIndex"
+      />
+    </div>
   </div>
 </template>

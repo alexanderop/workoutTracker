@@ -77,21 +77,20 @@ async function startBenchmarkWorkout(
   await app.benchmarkDetail.navigateToDetail(benchmarkId)
   await app.benchmarkDetail.clickStartWorkout()
 
-  // Wait for active mode to initialize (benchmark shows "Exercise 1 of X")
+  // Wait for active mode to initialize (focus mode shows tappable area)
   await waitFor(() => {
-    const elements = screen.getAllByText(/exercise 1 of \d+/i)
-    expect(elements.length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: /tap to advance/i })).toBeTruthy()
   })
 }
 
 /**
- * Completes the current exercise by clicking "Done" (or "Finish" on last exercise) and waiting for transition.
+ * Completes the current exercise by tapping the focus mode area and waiting for transition.
  */
 async function completeExercise(
   app: Awaited<ReturnType<typeof createTestApp>>
 ): Promise<void> {
-  const doneButton = screen.getByRole('button', { name: /done|finish/i })
-  await app.user.click(doneButton)
+  const focusModeArea = screen.getByRole('button', { name: /tap to advance/i })
+  await app.user.click(focusModeArea)
 
   // Wait for transition animation (800ms) + buffer
   await new Promise(resolve => setTimeout(resolve, 900))
@@ -227,8 +226,6 @@ describe('Benchmark Flows', () => {
 
       // Step 5: Verify Exercise 2 (Pull-ups)
       await waitFor(() => {
-        const elements = screen.getAllByText(/2 of 2/i)
-        expect(elements.length).toBeGreaterThan(0)
         expect(screen.getByText('Pull-ups')).toBeTruthy()
       })
 
@@ -461,17 +458,16 @@ describe('Benchmark Flows', () => {
       // Verify navigation to active benchmark
       expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
 
-      // Verify timer starts at 0:00 (displayed in subtitle as "⏱ 0:00") and exercise is displayed
+      // Verify focus mode is active with tappable area and first exercise displayed
       await waitFor(() => {
-        expect(screen.getByText(/⏱\s*0:00/)).toBeTruthy()
-        const elements = screen.getAllByText(/exercise 1 of \d+/i)
-        expect(elements.length).toBeGreaterThan(0)
+        expect(screen.getByRole('button', { name: /tap to advance/i })).toBeTruthy()
+        expect(screen.getByText('Thrusters')).toBeTruthy()
       })
 
       app.cleanup()
     })
 
-    it('advances to next exercise with Done button', async () => {
+    it('advances to next exercise with tap-to-advance', async () => {
       const benchmark = await createForTimeBenchmark()
       const app = await createTestApp()
 
@@ -479,64 +475,51 @@ describe('Benchmark Flows', () => {
 
       // Verify Exercise 1 displayed
       await waitFor(() => {
-        const elements = screen.getAllByText(/1 of 2/i)
-        expect(elements.length).toBeGreaterThan(0)
         expect(screen.getByText('Thrusters')).toBeTruthy()
       })
 
-      // Click Done
+      // Tap to advance to next exercise
       await completeExercise(app)
 
       // Verify Exercise 2 displayed
       await waitFor(() => {
-        const elements = screen.getAllByText(/2 of 2/i)
-        expect(elements.length).toBeGreaterThan(0)
         expect(screen.getByText('Pull-ups')).toBeTruthy()
       })
 
       app.cleanup()
     })
 
-    it('navigates back to previous exercise with timer continuity', async () => {
+    it('focus mode has no back button (intentional design)', async () => {
+      // In focus mode, users cannot go back to previous exercises.
+      // This is intentional: once an exercise is done, it's done (matches real workout intensity).
       const benchmark = await createForTimeBenchmark({
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-          { name: 'Exercise 3', reps: 10 },
         ]
       })
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
 
-      // Advance to Exercise 2
-      await completeExercise(app)
+      // Verify Exercise 1 displayed
       await waitFor(() => {
-        const elements = screen.getAllByText(/2 of 3/i)
-        expect(elements.length).toBeGreaterThan(0)
-      })
-
-      // Click "Go back" button to previous exercise (footer button, not header back button)
-      const allBackButtons = screen.getAllByRole('button', { name: /go back|back/i })
-      const footerBackButton = allBackButtons.find(btn => btn.textContent?.trim() === 'Go back')
-      if (!footerBackButton) throw new Error('Footer "Go back" button not found')
-      await app.user.click(footerBackButton)
-
-      // Wait for navigation
-      await new Promise(resolve => setTimeout(resolve, 900))
-
-      // Verify Exercise 1 displayed again
-      await waitFor(() => {
-        const elements = screen.getAllByText(/1 of 3/i)
-        expect(elements.length).toBeGreaterThan(0)
         expect(screen.getByText('Exercise 1')).toBeTruthy()
       })
 
-      // Verify timer still running (should have incremented from 0:00)
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      const timerElements = screen.getAllByText(/\d+:\d{2}/)
-      const timerText = timerElements[0]?.textContent
-      expect(timerText).not.toBe('0:00')
+      // Advance to Exercise 2
+      await completeExercise(app)
+      await waitFor(() => {
+        expect(screen.getByText('Exercise 2')).toBeTruthy()
+      })
+
+      // Verify there is no "Go back" or "Back" button in the footer (focus mode design)
+      const backButtons = screen.queryAllByRole('button', { name: /go back|^back$/i })
+      // Filter out header back button (for navigation out of workout)
+      const footerBackButtons = backButtons.filter(btn =>
+        btn.textContent?.trim() === 'Go back' || btn.textContent?.trim() === 'Back'
+      )
+      expect(footerBackButtons).toHaveLength(0)
 
       app.cleanup()
     })
@@ -590,9 +573,16 @@ describe('Benchmark Flows', () => {
 
       await startBenchmarkWorkout(app, benchmark.id)
 
-      // Open queue drawer
-      const queueButton = screen.getByRole('button', { name: /queue/i })
-      await app.user.click(queueButton)
+      // Open menu and click "View Exercises" to open queue drawer
+      const menuButton = screen.getByRole('button', { name: /workout options/i })
+      await app.user.click(menuButton)
+
+      // Wait for menu to open and click "View Exercises"
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
+      })
+      const viewExercisesItem = screen.getByRole('menuitem', { name: /view exercises/i })
+      await app.user.click(viewExercisesItem)
 
       // Wait for drawer to open
       await waitFor(() => {
@@ -608,22 +598,28 @@ describe('Benchmark Flows', () => {
       const activeElements = screen.getAllByText(/active/i)
       expect(activeElements.length).toBeGreaterThan(0)
 
-      // Close drawer by clicking outside or wait for it to auto-close
-      // For now, skip closing drawer and just proceed since drawer should allow interaction with main view
-      // Or click outside the drawer to close it
+      // Close drawer by pressing Escape
       await app.user.keyboard('{Escape}')
 
-      // Wait for drawer to close
+      // Wait for drawer to close and animations to complete
       await waitFor(() => {
         expect(screen.queryByRole('heading', { name: /exercise queue/i })).toBeNull()
       })
+      // Allow animation to fully complete
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Complete Exercise 1
       await completeExercise(app)
 
-      // Open drawer again
-      const queueButton2 = screen.getByRole('button', { name: /queue/i })
-      await app.user.click(queueButton2)
+      // Open drawer again through menu
+      const menuButton2 = screen.getByRole('button', { name: /workout options/i })
+      await app.user.click(menuButton2)
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
+      })
+      const viewExercisesItem2 = screen.getByRole('menuitem', { name: /view exercises/i })
+      await app.user.click(viewExercisesItem2)
 
       // Wait for drawer to open again
       await waitFor(() => {
@@ -873,8 +869,6 @@ describe('Benchmark Flows', () => {
       // Verify we're on Exercise 1 (Thrusters)
       await waitFor(() => {
         expect(screen.getByText('Thrusters')).toBeTruthy()
-        const elements = screen.getAllByText(/1 of 2/i)
-        expect(elements.length).toBeGreaterThan(0)
       })
 
       // Complete Exercise 1
@@ -883,8 +877,6 @@ describe('Benchmark Flows', () => {
       // Verify we're now on Exercise 2 (Pull-ups)
       await waitFor(() => {
         expect(screen.getByText('Pull-ups')).toBeTruthy()
-        const elements = screen.getAllByText(/2 of 2/i)
-        expect(elements.length).toBeGreaterThan(0)
       })
 
       // VERIFY: Split time comparison should be visible
