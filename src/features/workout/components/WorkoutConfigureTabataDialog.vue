@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { generateId } from '@/db/index'
 import type { BlockExercise, TabataConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutExercisePicker from './WorkoutExercisePicker.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutTabataConfig, { type TabataConfigModel } from './WorkoutTabataConfig.vue'
 
 const { t } = useI18n()
@@ -127,7 +127,7 @@ function handleClose() {
         </div>
       </div>
 
-      <WorkoutExercisePicker
+      <ExercisePicker
         v-model:open="showExercisePicker"
         presentation="overlay"
         mode="single"

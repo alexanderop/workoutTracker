@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
 import type { BlockExercise, ForTimeConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutExercisePicker from './WorkoutExercisePicker.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutForTimeConfig, { type ForTimeConfigModel } from './WorkoutForTimeConfig.vue'
 import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
 
@@ -101,7 +101,7 @@ function handleClose() {
         </div>
       </div>
 
-      <WorkoutExercisePicker
+      <ExercisePicker
         v-model:open="showExercisePicker"
         presentation="overlay"
         mode="multi"

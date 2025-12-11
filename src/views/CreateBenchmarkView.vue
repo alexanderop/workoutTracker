@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import { ArrowLeft, Clock, Plus, RotateCw } from 'lucide-vue-next'
-import WorkoutExercisePicker from '@/features/workout/components/WorkoutExercisePicker.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
 import BenchmarkTypeCard from '@/features/benchmarks/components/BenchmarkTypeCard.vue'
@@ -166,7 +166,7 @@ async function handleSave() {
     </div>
 
     <!-- Exercise Picker Dialog -->
-    <WorkoutExercisePicker
+    <ExercisePicker
       v-model:open="showExercisePicker"
       presentation="dialog"
       mode="single"

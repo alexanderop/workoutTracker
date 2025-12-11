@@ -90,9 +90,9 @@ export class BenchmarkDetailPO {
     )
     await this.ctx.user.click(startButton)
 
-    // Wait for navigation to active workout
+    // Wait for navigation to active benchmark
     await waitFor(() => {
-      expect(this.ctx.router.currentRoute.value.path).toBe('/workout/active')
+      expect(this.ctx.router.currentRoute.value.path).toBe('/benchmark/active')
     })
   }
 

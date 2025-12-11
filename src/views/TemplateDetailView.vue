@@ -9,7 +9,7 @@ import TemplateExerciseList from '@/features/templates/components/TemplateExerci
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { WorkoutExercisePicker } from '@/features/workout'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import { useTemplateDetail } from '@/features/templates/composables/useTemplateDetail'
 
 const { t } = useI18n()
@@ -145,7 +145,7 @@ function handleCancel(): void {
     </template>
 
     <!-- Add Exercise Dialog -->
-    <WorkoutExercisePicker
+    <ExercisePicker
       v-model:open="isAddExerciseOpen"
       presentation="dialog"
       :show-create="true"

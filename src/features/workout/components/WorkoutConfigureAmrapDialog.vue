@@ -11,7 +11,7 @@ import { useTimedBlockExercises } from '@/features/workout/composables/useTimedB
 import type { AmrapConfig, BlockExercise } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
 import WorkoutAmrapConfig, { type AmrapConfigModel } from './WorkoutAmrapConfig.vue'
-import WorkoutExercisePicker from './WorkoutExercisePicker.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
 
 const { t } = useI18n()
@@ -97,7 +97,7 @@ function handleClose() {
         </div>
       </div>
 
-      <WorkoutExercisePicker
+      <ExercisePicker
         v-model:open="showExercisePicker"
         presentation="overlay"
         mode="multi"

@@ -1,8 +1,8 @@
 /**
- * Integration tests for WorkoutExercisePicker component
+ * Integration tests for ExercisePicker component (formerly WorkoutExercisePicker)
  *
  * These tests verify the behavior that must be preserved when consolidating
- * WorkoutAddExerciseDialog and WorkoutExercisePicker into a unified component.
+ * WorkoutAddExerciseDialog and ExercisePicker into a unified component.
  *
  * Key behaviors tested:
  * - Dialog presentation mode (template views)
@@ -16,7 +16,7 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-describe('WorkoutExercisePicker', () => {
+describe('ExercisePicker', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 

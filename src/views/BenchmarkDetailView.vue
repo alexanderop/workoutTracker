@@ -9,7 +9,7 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import BenchmarkViewMode from '@/features/benchmarks/components/BenchmarkViewMode.vue'
 import BenchmarkEditMode from '@/features/benchmarks/components/BenchmarkEditMode.vue'
 import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
-import WorkoutExercisePicker from '@/features/workout/components/WorkoutExercisePicker.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useBenchmarkDetail } from '@/features/benchmarks/composables/useBenchmarkDetail'
 import { useBenchmarkForm } from '@/features/benchmarks/composables/useBenchmarkForm'
@@ -50,7 +50,7 @@ const showDeleteDialog = ref(false)
 async function handleStartWorkout() {
   const success = await startWorkout()
   if (success) {
-    router.push({ name: RouteNames.ActiveWorkout })
+    router.push({ name: RouteNames.ActiveBenchmark })
   }
 }
 
@@ -188,7 +188,7 @@ async function handleDeleteBenchmark(): Promise<void> {
     </template>
 
     <!-- Exercise Picker Dialog -->
-    <WorkoutExercisePicker
+    <ExercisePicker
       v-model:open="showExercisePicker"
       presentation="dialog"
       mode="single"

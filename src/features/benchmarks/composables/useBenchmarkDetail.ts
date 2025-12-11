@@ -1,9 +1,9 @@
 import { onMounted, ref } from 'vue'
-import { getActiveWorkoutRepository, getBenchmarksRepository } from '@/db'
-import { dbToWorkout } from '@/db/converters'
-import { restoreWorkout } from '@/stores/workoutState'
+import { getActiveBenchmarkWorkoutRepository, getBenchmarksRepository } from '@/db'
+import { dbToBenchmarkWorkout } from '@/db/converters'
+import { restoreBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbBenchmark } from '@/db/schema'
+import type { DbActiveBenchmarkWorkout, DbBenchmark, DbForTimeBlock } from '@/db/schema'
 import type { BenchmarkFormExercise } from './useBenchmarkForm'
 
 // ============================================
@@ -66,17 +66,31 @@ export function useBenchmarkDetail(benchmarkId: string) {
       getBenchmarksRepository().startFromBenchmark(state.value.benchmark.id),
     )
 
-    if (error) {
+    if (error || !activeWorkout.benchmarkId) {
       isStarting.value = false
       return false
     }
 
-    // Save to active workout repository
-    await getActiveWorkoutRepository().save(activeWorkout)
+    // Convert DbActiveWorkout to DbActiveBenchmarkWorkout format
+    const dbBenchmarkWorkout: DbActiveBenchmarkWorkout = {
+      id: 'current-benchmark',
+      name: activeWorkout.name,
+      benchmarkId: activeWorkout.benchmarkId,
+      blocks: activeWorkout.blocks.filter((b): b is DbForTimeBlock => b.kind === 'fortime'),
+      selectedBlockIndex: activeWorkout.selectedBlockIndex,
+      activeExerciseIndex: activeWorkout.activeExerciseIndex ?? 0,
+      startedAt: activeWorkout.startedAt,
+      lastModifiedAt: Date.now(),
+      globalTimerStartedAt: activeWorkout.globalTimerStartedAt ?? Date.now(),
+      mode: 'builder',
+    }
 
-    // Convert to in-memory format and restore to singleton state
-    const inMemoryWorkout = dbToWorkout(activeWorkout)
-    restoreWorkout(inMemoryWorkout)
+    // Save to active benchmark repository (not regular workout repository)
+    await getActiveBenchmarkWorkoutRepository().save(dbBenchmarkWorkout)
+
+    // Convert to in-memory format and restore to benchmark singleton state
+    const inMemoryWorkout = dbToBenchmarkWorkout(dbBenchmarkWorkout)
+    restoreBenchmarkWorkout(inMemoryWorkout)
 
     isStarting.value = false
     return true

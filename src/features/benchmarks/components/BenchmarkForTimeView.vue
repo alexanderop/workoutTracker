@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { Check } from 'lucide-vue-next'
 import BenchmarkExerciseDisplay from './BenchmarkExerciseDisplay.vue'
 import BenchmarkCompletionScreen from './BenchmarkCompletionScreen.vue'
-import ExerciseProgressDots from './ExerciseProgressDots.vue'
+import ExerciseProgressDots from '@/features/workout/components/ExerciseProgressDots.vue'
 import type { ForTimeBlock } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
-import type { SplitComparison } from '@/composables/workout/useBenchmarkSplitComparison'
+import type { SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 
 type AnimationState = {
   showCheckmark?: boolean

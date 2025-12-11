@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
+import ActiveBenchmarkWorkout from '@/features/benchmarks/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
 import CreateBenchmarkView from '@/views/CreateBenchmarkView.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
@@ -21,6 +22,7 @@ export const RouteNames = {
   Settings: 'Settings',
   Timers: 'Timers',
   ActiveWorkout: 'ActiveWorkout',
+  ActiveBenchmark: 'ActiveBenchmark',
   CreateCustomExercise: 'CreateCustomExercise',
   WorkoutSummary: 'WorkoutSummary',
   CreateTemplate: 'CreateTemplate',
@@ -67,6 +69,11 @@ export const routes = [
     path: '/workout/active',
     name: RouteNames.ActiveWorkout,
     component: ActiveWorkout,
+  },
+  {
+    path: '/benchmark/active',
+    name: RouteNames.ActiveBenchmark,
+    component: ActiveBenchmarkWorkout,
   },
   {
     path: '/create-exercise',

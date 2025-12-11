@@ -77,26 +77,20 @@ async function startBenchmarkWorkout(
   await app.benchmarkDetail.navigateToDetail(benchmarkId)
   await app.benchmarkDetail.clickStartWorkout()
 
-  // Click "Start Workout" button to enter active mode from builder
-  const startButton = await waitFor(() =>
-    screen.getByRole('button', { name: /start workout/i })
-  )
-  await app.user.click(startButton)
-
-  // Wait for active mode to initialize
+  // Wait for active mode to initialize (benchmark shows "Exercise 1 of X")
   await waitFor(() => {
-    const elements = screen.getAllByText(/1 of \d+/i)
+    const elements = screen.getAllByText(/exercise 1 of \d+/i)
     expect(elements.length).toBeGreaterThan(0)
   })
 }
 
 /**
- * Completes the current exercise by clicking "Done" and waiting for transition.
+ * Completes the current exercise by clicking "Done" (or "Finish" on last exercise) and waiting for transition.
  */
 async function completeExercise(
   app: Awaited<ReturnType<typeof createTestApp>>
 ): Promise<void> {
-  const doneButton = screen.getByRole('button', { name: /done/i })
+  const doneButton = screen.getByRole('button', { name: /done|finish/i })
   await app.user.click(doneButton)
 
   // Wait for transition animation (800ms) + buffer
@@ -464,18 +458,14 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.clickStartWorkout()
 
-      // Verify navigation to active workout
-      expect(app.router.currentRoute.value.path).toBe('/workout/active')
+      // Verify navigation to active benchmark
+      expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
 
-      // Click "Start Workout" to enter active mode
-      const startButton = await waitFor(() =>
-        screen.getByRole('button', { name: /start workout/i })
-      )
-      await app.user.click(startButton)
-
-      // Verify timer starts at 0:00
+      // Verify timer starts at 0:00 and exercise is displayed
       await waitFor(() => {
         expect(screen.getByText('0:00')).toBeTruthy()
+        const elements = screen.getAllByText(/exercise 1 of \d+/i)
+        expect(elements.length).toBeGreaterThan(0)
       })
 
       app.cleanup()
@@ -526,10 +516,10 @@ describe('Benchmark Flows', () => {
         expect(elements.length).toBeGreaterThan(0)
       })
 
-      // Click Back button to previous exercise (footer button, not header "Go back")
-      const allBackButtons = screen.getAllByRole('button', { name: /back/i })
-      const footerBackButton = allBackButtons.find(btn => btn.textContent?.trim() === 'Back')
-      if (!footerBackButton) throw new Error('Footer Back button not found')
+      // Click "Go back" button to previous exercise (footer button, not header back button)
+      const allBackButtons = screen.getAllByRole('button', { name: /go back|back/i })
+      const footerBackButton = allBackButtons.find(btn => btn.textContent?.trim() === 'Go back')
+      if (!footerBackButton) throw new Error('Footer "Go back" button not found')
       await app.user.click(footerBackButton)
 
       // Wait for navigation
@@ -557,21 +547,33 @@ describe('Benchmark Flows', () => {
 
       await startBenchmarkWorkout(app, benchmark.id)
 
-      // Wait for timer to increment
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // Capture timer value before transition
-      const beforeTransition = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+      // Wait for timer to increment from 0:00
+      // useTimestamp has 1000ms interval, so we need to wait at least 1s + buffer
+      let beforeTransition: string | undefined
+      await waitFor(
+        () => {
+          const timerText = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+          // Wait until timer shows non-zero value
+          expect(timerText).toBeTruthy()
+          expect(timerText).not.toContain('0:00')
+          beforeTransition = timerText
+        },
+        { timeout: 3000 } // Increased timeout to 3s to allow timer interval to fire
+      )
 
       // Advance to Exercise 2
       await completeExercise(app)
 
       // Verify timer still running on Exercise 2 (value should have increased)
-      await waitFor(() => {
-        const afterTransition = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
-        expect(afterTransition).not.toBe('0:00')
-        expect(afterTransition).not.toBe(beforeTransition) // Should have incremented
-      })
+      await waitFor(
+        () => {
+          const afterTransition = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+          expect(afterTransition).toBeTruthy()
+          expect(afterTransition).not.toContain('0:00')
+          expect(afterTransition).not.toBe(beforeTransition) // Should have incremented
+        },
+        { timeout: 3000 }
+      )
 
       app.cleanup()
     })
