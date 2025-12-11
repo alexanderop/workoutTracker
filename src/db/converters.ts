@@ -383,9 +383,10 @@ export function workoutToDb(
     lastModifiedAt: Date.now(),
     mode: workout.mode,
     activeSetIndex: workout.activeSetIndex,
-    activeExerciseIndex: workout.activeExerciseIndex,
-    benchmarkId: workout.benchmarkId,
-    globalTimerStartedAt: workout.globalTimerStartedAt,
+    // Legacy benchmark fields kept for backward compatibility with existing DB entries
+    activeExerciseIndex: null,
+    benchmarkId: null,
+    globalTimerStartedAt: null,
   }
 }
 
@@ -405,9 +406,8 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
     startedAt: dbWorkout.startedAt,
     mode: dbWorkout.mode ?? 'builder',
     activeSetIndex: dbWorkout.activeSetIndex ?? null,
-    activeExerciseIndex: dbWorkout.activeExerciseIndex ?? null,
-    benchmarkId: dbWorkout.benchmarkId,
-    globalTimerStartedAt: dbWorkout.globalTimerStartedAt,
+    // Note: activeExerciseIndex, benchmarkId, globalTimerStartedAt are ignored
+    // from DB - they're only kept in schema for backward compatibility
   }
 }
 

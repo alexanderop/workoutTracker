@@ -19,7 +19,7 @@ import type {
   TimedBlock,
   WorkoutBlock,
 } from '@/types/blocks'
-import { getBlockExerciseList, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
@@ -451,127 +451,6 @@ export function useWorkout() {
     if (update) updateBlockAtIndex(blockIndex, update)
   }
 
-  // ============================================
-  // Exercise Navigation (Benchmarks)
-  // ============================================
-
-  /**
-   * Advance to the next exercise in the current timed block.
-   * Handles round boundaries by advancing to next block when needed.
-   * Returns the action taken for UI feedback.
-   */
-  function advanceToNextExercise(): 'next-exercise' | 'next-block' | 'workout-complete' {
-    const blockIndex = workout.value.selectedBlockIndex
-    const block = workout.value.blocks[blockIndex]
-
-    if (!block || !isTimedBlock(block)) return 'workout-complete'
-
-    const currentExerciseIndex = workout.value.activeExerciseIndex ?? 0
-    const exercises = getBlockExerciseList(block)
-
-    // Try: Move to next exercise in current block
-    if (currentExerciseIndex < exercises.length - 1) {
-      updateWorkout({ activeExerciseIndex: currentExerciseIndex + 1 })
-      return 'next-exercise'
-    }
-
-    // Try: Advance to next block (next round)
-    const nextBlockIndex = blockIndex + 1
-    if (nextBlockIndex < workout.value.blocks.length) {
-      updateWorkout({
-        selectedBlockIndex: nextBlockIndex,
-        activeExerciseIndex: 0,
-      })
-      return 'next-block'
-    }
-
-    return 'workout-complete'
-  }
-
-  /**
-   * Go back to the previous exercise in the current timed block.
-   * Handles round boundaries by going to previous block when needed.
-   */
-  function goToPreviousExercise(): 'prev-exercise' | 'prev-block' | 'at-start' {
-    const blockIndex = workout.value.selectedBlockIndex
-    const block = workout.value.blocks[blockIndex]
-
-    if (!block || !isTimedBlock(block)) return 'at-start'
-
-    const currentExerciseIndex = workout.value.activeExerciseIndex ?? 0
-
-    // Try: Move to previous exercise in current block
-    if (currentExerciseIndex > 0) {
-      updateWorkout({ activeExerciseIndex: currentExerciseIndex - 1 })
-      return 'prev-exercise'
-    }
-
-    // Try: Go to previous block (previous round)
-    const prevBlockIndex = blockIndex - 1
-    if (prevBlockIndex >= 0) {
-      const prevBlock = workout.value.blocks[prevBlockIndex]
-      if (prevBlock && isTimedBlock(prevBlock)) {
-        const exercises = getBlockExerciseList(prevBlock)
-        updateWorkout({
-          selectedBlockIndex: prevBlockIndex,
-          activeExerciseIndex: exercises.length - 1,
-        })
-        return 'prev-block'
-      }
-    }
-
-    return 'at-start'
-  }
-
-  /**
-   * Get current exercise position within the current round.
-   * Returns 1-based indexing for UI display.
-   */
-  const currentExercisePosition = computed(() => {
-    const block = selectedBlock.value
-    if (!block || !isTimedBlock(block)) return null
-
-    const index = workout.value.activeExerciseIndex ?? 0
-    return {
-      current: index + 1,
-      total: getBlockExerciseList(block).length,
-    }
-  })
-
-  /**
-   * Get total exercise count across ALL rounds for progress dots.
-   * For "rounds" type benchmarks: exercises.length × totalBlocks
-   * For "fortime" type benchmarks: exercises.length
-   */
-  const totalExerciseCount = computed(() => {
-    if (!workout.value.benchmarkId) return null
-
-    const firstBlock = workout.value.blocks[0]
-    if (!firstBlock || !isTimedBlock(firstBlock)) return null
-
-    const exercisesPerRound = getBlockExerciseList(firstBlock).length
-    const totalBlocks = workout.value.blocks.length
-
-    return exercisesPerRound * totalBlocks
-  })
-
-  /**
-   * Get global exercise index (0-based) across all rounds.
-   * Example: Round 2, Exercise 3 of 4 exercises = index 7 (4 + 3)
-   */
-  const globalExerciseIndex = computed(() => {
-    if (!workout.value.benchmarkId) return null
-
-    const blockIndex = workout.value.selectedBlockIndex
-    const exerciseIndex = workout.value.activeExerciseIndex ?? 0
-    const firstBlock = workout.value.blocks[0]
-
-    if (!firstBlock || !isTimedBlock(firstBlock)) return null
-
-    const exercisesPerRound = getBlockExerciseList(firstBlock).length
-    return blockIndex * exercisesPerRound + exerciseIndex
-  })
-
   return {
     workout,
     selectedBlock,
@@ -600,12 +479,5 @@ export function useWorkout() {
     setSetCount,
     updateSetValue,
     reorderExercises,
-
-    // Exercise navigation (benchmarks)
-    advanceToNextExercise,
-    goToPreviousExercise,
-    currentExercisePosition,
-    totalExerciseCount,
-    globalExerciseIndex,
   }
 }

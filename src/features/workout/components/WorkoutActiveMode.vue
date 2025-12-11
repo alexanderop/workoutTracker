@@ -87,6 +87,13 @@ const canCompleteSet = computed(() => {
   return isSetReady(activeSet.value)
 })
 
+const footerState = computed(() => ({
+  canComplete: canCompleteSet.value,
+  isFirstBlock: isFirstBlock.value,
+  isLastBlock: isLastBlock.value,
+  isTransitioning: false,
+}))
+
 function handleCompleteSet() {
   if (!activeSet.value) return
 
@@ -203,13 +210,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         :block="currentBlock"
         :timer="timerDisplayData"
         :rest-timer="restTimer"
-        :state="{
-          canComplete: canCompleteSet,
-          isFirstBlock,
-          isLastBlock,
-          isBenchmarkMode: false,
-          isTransitioning: false,
-        }"
+        :state="footerState"
         @prev-block="handlePrevBlock"
         @next-block="handleNextBlock"
         @complete-set="handleCompleteSet"

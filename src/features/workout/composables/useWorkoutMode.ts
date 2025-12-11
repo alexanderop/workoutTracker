@@ -47,10 +47,6 @@ export function useWorkoutMode() {
     if (hasStarted.value) return
 
     workout.value.startedAt = Date.now()
-
-    if (workout.value.benchmarkId && !workout.value.globalTimerStartedAt) {
-      workout.value.globalTimerStartedAt = Date.now()
-    }
   }
 
   function activateFirstSet(firstBlock: WorkoutBlock) {
@@ -68,10 +64,6 @@ export function useWorkoutMode() {
     if (!firstBlock) return
 
     activateFirstSet(firstBlock)
-
-    if (isTimedBlock(firstBlock) && workout.value.benchmarkId) {
-      workout.value.activeExerciseIndex = 0
-    }
   }
 
   /**
@@ -121,11 +113,6 @@ export function useWorkoutMode() {
       if (firstSet && firstSet.status === 'planned') {
         firstSet.status = 'active'
       }
-    }
-
-    // Reset exercise index for benchmark blocks
-    if (nextBlock && isTimedBlock(nextBlock) && workout.value.benchmarkId) {
-      workout.value.activeExerciseIndex = 0
     }
 
     return true

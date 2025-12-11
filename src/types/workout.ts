@@ -18,7 +18,4 @@ export type Workout = {
   startedAt: number
   mode: WorkoutMode
   activeSetIndex: number | null
-  activeExerciseIndex: number | null
-  benchmarkId: string | null
-  globalTimerStartedAt: number | null
 }
