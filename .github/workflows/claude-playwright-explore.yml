@@ -96,92 +96,85 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You are a senior QA engineer performing manual exploratory testing.
-            The application is running at: http://localhost:5173
+            You are a senior QA engineer performing exploratory testing.
+            App URL: http://localhost:5173
 
-            ## Testing Approach
-            Think like a real user. Try to break things. Test edge cases.
+            ## IMPORTANT: Budget your turns wisely!
+            You have limited turns. Be efficient:
+            - Navigate directly, don't repeat actions
+            - Test 2-3 key flows, not everything
+            - Reserve your LAST 3 turns for writing the report
 
-            ## Test Scenarios (execute all)
-            1. **Navigation Flow**: Visit Home → Exercises → Workouts → Settings. Verify each page loads correctly.
-            2. **Exercise Search**: Search for "bench", verify filtering works. Try empty search, special characters.
-            3. **Create Workout Flow**: Start new workout → Add exercise → Add sets/reps → Verify data persists.
-            4. **Timer Functionality**: Test AMRAP/EMOM/Tabata timers. Start, pause, reset. Check time displays correctly.
-            5. **Settings**: Toggle dark mode, change units, verify changes apply immediately.
-            6. **Form Validation**: Try submitting empty forms, invalid inputs. Check error messages.
-            7. **Responsive Behavior**: Note any layout issues, overlapping elements, or broken UI.
+            ## Quick Test Plan (pick based on focus: ${{ github.event.inputs.exploration_focus || 'general' }})
 
-            ## For Each Issue Found, Record:
-            - **Severity**: Critical (blocks usage) / Major (significant problem) / Minor (cosmetic/UX)
-            - **Steps to Reproduce**: Exact clicks/actions
-            - **Expected vs Actual**: What should happen vs what happened
-            - **Screenshot**: Take one if visual issue
+            **If general**: Navigation (4 pages) → Exercise search → Start workout → Settings toggle
+            **If navigation**: Test all nav buttons, back buttons, deep links
+            **If forms**: Exercise creation, workout setup, settings forms
+            **If workout-flow**: Full workout: add exercises → log sets → complete
 
-            ## Final Report Format
-            After testing, output ONLY this structured report (no other commentary):
+            ## Track Issues As You Go
+            Keep a mental note of: Console errors, broken UI, unexpected behavior
+
+            ## FINAL STEP (MANDATORY - use your last turns for this!)
+            Write a file `qa-report.md` with this EXACT format:
 
             ```markdown
-            # QA Exploratory Test Report
+            # QA Report - ${{ github.event.inputs.exploration_focus || 'General' }}
 
-            **App Version**: [from footer/settings if visible]
-            **Test Date**: [today]
-            **Tester**: Claude QA Bot
+            **Date**: [today] | **Tester**: Claude QA
 
-            ## Executive Summary
-            [1-2 sentences: overall app health, critical issues count]
+            ## Summary
+            [1 sentence: pass/fail verdict]
 
-            ## Test Coverage
-            | Area | Status | Notes |
+            ## Test Results
+            | Test | Status | Notes |
             |------|--------|-------|
-            | Navigation | ✅/⚠️/❌ | ... |
-            | Exercise Management | ✅/⚠️/❌ | ... |
-            | Workout Creation | ✅/⚠️/❌ | ... |
-            | Timers | ✅/⚠️/❌ | ... |
-            | Settings | ✅/⚠️/❌ | ... |
-            | Forms/Validation | ✅/⚠️/❌ | ... |
+            | [test name] | ✅/❌ | [brief note] |
 
             ## Bugs Found
-
-            ### [BUG-001] Title
-            - **Severity**: Critical/Major/Minor
-            - **Steps**: 1. Go to... 2. Click... 3. ...
-            - **Expected**: ...
-            - **Actual**: ...
-
-            ### [BUG-002] Title
-            ...
+            [List any bugs with steps to reproduce, or "None found"]
 
             ## Console Errors
-            [List any JavaScript errors with context]
-
-            ## Recommendations
-            [Prioritized list of fixes needed]
+            [Any JS errors, or "None"]
             ```
 
+            After writing the file, read it back to confirm it was saved correctly.
+
           claude_args: |
-            --max-turns 25
+            --max-turns 40
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,Read"
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,Read,Write"
 
       - name: Post results to PR
         if: github.event.pull_request.number || github.event.inputs.pr_number
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
             const prNumber = context.payload.pull_request?.number ||
                             '${{ github.event.inputs.pr_number }}';
 
             if (!prNumber) return;
 
-            const body = `## Claude Exploratory Testing (PoC)
+            // Try to read Claude's QA report
+            let qaReport = '';
+            try {
+              qaReport = fs.readFileSync('qa-report.md', 'utf8');
+            } catch (e) {
+              qaReport = '⚠️ QA report file not generated. Check workflow logs for details.';
+            }
 
-            **Status:** Completed
-            **Run:** [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            const body = `## 🔍 Claude QA Exploration Report
 
-            See workflow logs for full exploration report.
+            **Focus**: ${{ github.event.inputs.exploration_focus || 'general' }}
+            **Run**: [View Full Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
 
             ---
-            *Experimental PoC - results may vary*`;
+
+            ${qaReport}
+
+            ---
+            *Automated QA by Claude Code*`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -189,6 +182,14 @@ jobs:
               issue_number: parseInt(prNumber),
               body: body
             });
+
+      - name: Upload QA report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report
+          path: qa-report.md
+          if-no-files-found: ignore
 
       - name: Remove label
         if: github.event_name == 'pull_request' && github.event.label.name == 'claude-explore'
