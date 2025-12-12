@@ -417,17 +417,21 @@ jobs:
 
             const mode = '${{ env.QA_MODE }}' === 'verify' ? 'Verification' : 'Exploration';
 
-            const body = `## 🔍 Claude QA ${mode} Report
-
-**Mode**: ${mode} | **Focus**: ${{ env.QA_FOCUS }}
-**Run**: [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-
----
-
-${qaReport}
-
----
-*Automated QA by Claude Code*`;
+            const focus = process.env.QA_FOCUS || 'general';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `## 🔍 Claude QA ${mode} Report`,
+              '',
+              `**Mode**: ${mode} | **Focus**: ${focus}`,
+              `**Run**: [View Logs](${runUrl})`,
+              '',
+              '---',
+              '',
+              qaReport,
+              '',
+              '---',
+              '_Automated QA by Claude Code_'
+            ].join('\n');
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
