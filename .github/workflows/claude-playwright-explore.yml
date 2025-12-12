@@ -54,8 +54,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers for MCP
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
+
+      - name: Install Playwright dependencies (cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - name: Start development server
         run: |
@@ -80,32 +96,66 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You have access to a Playwright MCP server for browser automation.
+            You are a senior QA engineer performing manual exploratory testing.
             The application is running at: http://localhost:5173
 
-            ## Your Mission
-            Explore the app and report any issues found.
+            ## Testing Approach
+            Think like a real user. Try to break things. Test edge cases.
 
-            ## Steps
-            1. Navigate to http://localhost:5173
-            2. Visit main sections: exercises, workouts, templates, settings
-            3. Check for console errors after each navigation
-            4. Interact with UI elements (buttons, forms, dialogs)
-            5. Note any broken layouts, missing content, or errors
+            ## Test Scenarios (execute all)
+            1. **Navigation Flow**: Visit Home → Exercises → Workouts → Settings. Verify each page loads correctly.
+            2. **Exercise Search**: Search for "bench", verify filtering works. Try empty search, special characters.
+            3. **Create Workout Flow**: Start new workout → Add exercise → Add sets/reps → Verify data persists.
+            4. **Timer Functionality**: Test AMRAP/EMOM/Tabata timers. Start, pause, reset. Check time displays correctly.
+            5. **Settings**: Toggle dark mode, change units, verify changes apply immediately.
+            6. **Form Validation**: Try submitting empty forms, invalid inputs. Check error messages.
+            7. **Responsive Behavior**: Note any layout issues, overlapping elements, or broken UI.
 
-            ## Output Format
+            ## For Each Issue Found, Record:
+            - **Severity**: Critical (blocks usage) / Major (significant problem) / Minor (cosmetic/UX)
+            - **Steps to Reproduce**: Exact clicks/actions
+            - **Expected vs Actual**: What should happen vs what happened
+            - **Screenshot**: Take one if visual issue
+
+            ## Final Report Format
+            After testing, output ONLY this structured report (no other commentary):
+
             ```markdown
-            ## Pages Visited
-            - [URL] - Status
+            # QA Exploratory Test Report
 
-            ## Issues Found
-            - [Severity] Description
+            **App Version**: [from footer/settings if visible]
+            **Test Date**: [today]
+            **Tester**: Claude QA Bot
+
+            ## Executive Summary
+            [1-2 sentences: overall app health, critical issues count]
+
+            ## Test Coverage
+            | Area | Status | Notes |
+            |------|--------|-------|
+            | Navigation | ✅/⚠️/❌ | ... |
+            | Exercise Management | ✅/⚠️/❌ | ... |
+            | Workout Creation | ✅/⚠️/❌ | ... |
+            | Timers | ✅/⚠️/❌ | ... |
+            | Settings | ✅/⚠️/❌ | ... |
+            | Forms/Validation | ✅/⚠️/❌ | ... |
+
+            ## Bugs Found
+
+            ### [BUG-001] Title
+            - **Severity**: Critical/Major/Minor
+            - **Steps**: 1. Go to... 2. Click... 3. ...
+            - **Expected**: ...
+            - **Actual**: ...
+
+            ### [BUG-002] Title
+            ...
 
             ## Console Errors
-            - [List any JS errors]
+            [List any JavaScript errors with context]
 
-            ## Summary
-            [Overall assessment]
+            ## Recommendations
+            [Prioritized list of fixes needed]
             ```
 
           claude_args: |
