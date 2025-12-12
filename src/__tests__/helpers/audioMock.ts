@@ -67,6 +67,8 @@ class MockAudioContext {
   createOscillator = mockCreateOscillator
   createGain = mockCreateGain
   close = vi.fn()
+  resume = vi.fn(() => Promise.resolve())
+  suspend = vi.fn(() => Promise.resolve())
 }
 
 /**
