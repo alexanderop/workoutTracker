@@ -236,7 +236,7 @@ jobs:
           claude_args: |
             --max-turns 40
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
 
       - name: Run Claude QA - Verify Mode
         if: env.QA_MODE == 'verify'
@@ -307,7 +307,7 @@ jobs:
           claude_args: |
             --max-turns 35
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
 
       - name: Check report exists
         id: check-report
