@@ -31,7 +31,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.18",
     "@vueuse/core": "^14.0.0",
     "@vueuse/integrations": "^14.1.0",
     "class-variance-authority": "^0.7.1",
@@ -39,13 +39,13 @@
     "dexie": "^4.2.1",
     "lucide-vue-next": "^0.556.0",
     "pinia": "^3.0.3",
-    "reka-ui": "^2.6.0",
+    "reka-ui": "^2.6.1",
     "sortablejs": "^1.15.6",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.17",
-    "vue": "^3.5.22",
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.25",
     "vue-i18n": "^11.2.2",
-    "vue-router": "^4.6.3",
+    "vue-router": "^4.6.4",
     "zod": "^4.1.13"
   },
   "lint-staged": {
