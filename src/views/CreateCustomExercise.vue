@@ -120,7 +120,7 @@ async function handleSave() {
       <div class="mb-6 flex gap-4">
         <!-- Icon Button -->
         <button
-          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-2xl transition-colors hover:bg-slate-600"
+          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-2xl transition-colors hover:bg-muted/80"
           @click="handleIconClick"
         >
           {{ form.icon }}

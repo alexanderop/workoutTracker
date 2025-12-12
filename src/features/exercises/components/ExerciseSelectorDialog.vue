@@ -39,7 +39,7 @@ function handleSelect(value: T) {
           :class="[
             selected === option.value
               ? 'border-primary bg-primary/10'
-              : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
+              : 'border-border hover:border-primary/50 hover:bg-muted',
           ]"
           @click="handleSelect(option.value)"
         >
@@ -59,7 +59,7 @@ function handleSelect(value: T) {
             :class="[
               selected === option.value
                 ? 'border-primary bg-primary/10'
-                : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
+                : 'border-border hover:border-primary/50 hover:bg-muted',
             ]"
             @click="handleSelect(option.value)"
           >
@@ -78,7 +78,7 @@ function handleSelect(value: T) {
             :class="[
               selected === option.value
                 ? 'border-primary bg-primary/10'
-                : 'border-border hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-900',
+                : 'border-border hover:border-primary/50 hover:bg-muted',
             ]"
             @click="handleSelect(option.value)"
           >

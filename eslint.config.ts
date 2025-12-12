@@ -308,6 +308,19 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Forbid hardcoded Tailwind color classes - use semantic colors
+  {
+    name: 'app/no-hardcoded-colors',
+    files: ['src/**/*.vue'],
+    ignores: ['src/components/ui/**'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/no-hardcoded-colors': 'error',
+    },
+  },
+
   ...pluginOxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
   skipFormatting,
   {
