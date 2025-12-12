@@ -354,6 +354,7 @@ jobs:
           fi
 
       - name: Set commit status
+        id: qa-status
         if: always()
         uses: actions/github-script@v7
         with:
@@ -391,6 +392,9 @@ jobs:
               description: description,
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
+
+            // Set output for job failure
+            core.setOutput('qa_state', state);
 
       - name: Post results to PR
         if: |
@@ -480,7 +484,14 @@ jobs:
           echo "- **Mode**: ${{ env.QA_MODE }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Focus**: ${{ env.QA_FOCUS }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Report generated**: ${{ steps.check-report.outputs.exists }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **QA Result**: ${{ steps.qa-status.outputs.qa_state }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Estimated Cost" >> $GITHUB_STEP_SUMMARY
           echo "- Claude API: ~\$0.20-0.40" >> $GITHUB_STEP_SUMMARY
           echo "- GitHub Actions: ~\$0.05" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail job if QA found issues
+        if: steps.qa-status.outputs.qa_state == 'failure'
+        run: |
+          echo "❌ QA found critical issues - failing the pipeline"
+          exit 1
