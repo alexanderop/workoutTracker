@@ -49,7 +49,7 @@ function isActive(routeName: RouteName) {
               ? 'text-primary border-t-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ]"
-          @click="router.push({ name: item.routeName })"
+          @click="item.routeName === RouteNames.Settings ? undefined : router.push({ name: item.routeName })"
         >
           <component :is="item.icon" :size="24" class="mb-1" />
           <span class="text-xs font-medium">{{ item.label }}</span>
