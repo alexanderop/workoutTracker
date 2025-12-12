@@ -60,10 +60,11 @@ const emit = defineEmits<{
           v-if="timer.elapsedSeconds.value > 0"
           variant="ghost"
           size="icon"
-          class="text-muted-foreground hover:text-foreground"
+          class="size-touch text-muted-foreground hover:text-foreground"
+          :aria-label="t('common.aria.resetTimer')"
           @click="timer.reset"
         >
-          <RotateCcw class="w-4 h-4" />
+          <RotateCcw class="w-4 h-4" aria-hidden="true" />
         </Button>
 
         <!-- Start/Stop toggle -->

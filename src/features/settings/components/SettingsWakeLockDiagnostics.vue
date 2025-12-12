@@ -29,7 +29,7 @@ function toggleVideoFallback() {
     <!-- Native Wake Lock API -->
     <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
       <div class="flex items-center gap-3 min-w-0">
-        <Monitor class="icon-sm text-muted-foreground shrink-0" />
+        <Monitor class="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
         <div class="min-w-0">
           <p class="text-sm font-medium">{{ t('settings.diagnostics.wakeLockApi') }}</p>
           <p class="text-xs text-muted-foreground">
@@ -57,7 +57,7 @@ function toggleVideoFallback() {
           variant="outline"
           size="sm"
           data-testid="wake-lock-test"
-          class="touch-target"
+          class="h-touch"
           @click="toggleNativeWakeLock"
         >
           {{
@@ -75,7 +75,7 @@ function toggleVideoFallback() {
     <!-- Video Fallback -->
     <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
       <div class="flex items-center gap-3 min-w-0">
-        <Video class="icon-sm text-muted-foreground shrink-0" />
+        <Video class="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
         <div class="min-w-0">
           <p class="text-sm font-medium">{{ t('settings.diagnostics.videoFallback') }}</p>
           <p class="text-xs text-muted-foreground">
@@ -98,7 +98,7 @@ function toggleVideoFallback() {
               : t('settings.diagnostics.inactive')
           }}
         </span>
-        <Button variant="outline" size="sm" class="touch-target" @click="toggleVideoFallback">
+        <Button variant="outline" size="sm" class="h-touch" @click="toggleVideoFallback">
           {{
             wakeLock.videoIsActive.value
               ? t('settings.diagnostics.stop')

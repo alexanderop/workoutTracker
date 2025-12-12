@@ -116,6 +116,7 @@ function handleOpenChange(value: boolean) {
           <div class="relative">
             <Search
               class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+              aria-hidden="true"
             />
             <Input
               v-model="searchQuery"
@@ -138,7 +139,7 @@ function handleOpenChange(value: boolean) {
             <!-- Empty State -->
             <Empty v-if="filteredExercises.length === 0" class="border-0 py-12">
               <EmptyMedia variant="icon" class="bg-muted text-muted-foreground">
-                <Search class="size-5" />
+                <Search class="size-5" aria-hidden="true" />
               </EmptyMedia>
               <EmptyDescription>
                 {{ t('dialogs.addBlock.noResults', { query: searchQuery }) }}

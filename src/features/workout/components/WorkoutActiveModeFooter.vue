@@ -183,7 +183,7 @@ function handlePrimaryAction() {
 
       <!-- Primary action -->
       <Button
-        :variant="primaryAction.variant as ButtonVariant"
+        :variant="primaryAction.variant"
         size="lg"
         :class="
           cn(
@@ -191,7 +191,7 @@ function handlePrimaryAction() {
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
-        :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
+        :disabled="(isStrengthBlock(props.block) && !canComplete) || isTransitioning"
         @click="handlePrimaryAction"
       >
         <component :is="primaryAction.icon" class="icon-md" aria-hidden="true" />

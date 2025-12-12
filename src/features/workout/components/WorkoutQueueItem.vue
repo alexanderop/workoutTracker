@@ -72,7 +72,7 @@ const isCompleted = computed(() => status === 'completed')
   >
     <!-- Drag handle -->
     <div class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle">
-      <GripVertical class="icon-md text-muted-foreground" />
+      <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
     </div>
 
     <!-- Block number -->
