@@ -55,6 +55,7 @@ function handleConfirm() {
           v-model="templateName"
           :placeholder="t('dialogs.saveTemplate.templateNamePlaceholder')"
           :aria-label="t('dialogs.saveTemplate.templateName')"
+          class="h-12"
         />
       </div>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
+import { Repeat, Search, Timer, Zap } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -7,6 +7,7 @@ import { RouteNames } from '@/router'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Empty, EmptyDescription, EmptyMedia } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -96,18 +97,8 @@ function handleOpenChange(value: boolean) {
 <template>
   <Dialog v-model:open="open" @update:open="handleOpenChange">
     <MobileDialogContent
-      :show-close-button="false"
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <!-- Mobile close button -->
-      <button
-        class="absolute right-4 top-4 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
-        @click="handleOpenChange(false)"
-      >
-        <X class="size-5" />
-        <span class="sr-only">{{ t('common.buttons.close') }}</span>
-      </button>
-
       <DialogHeader>
         <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
         <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
@@ -145,12 +136,14 @@ function handleOpenChange(value: boolean) {
             />
 
             <!-- Empty State -->
-            <div v-if="filteredExercises.length === 0" class="text-center py-12">
-              <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-              <p class="text-sm text-muted-foreground">
+            <Empty v-if="filteredExercises.length === 0" class="border-0 py-12">
+              <EmptyMedia variant="icon" class="bg-muted text-muted-foreground">
+                <Search class="size-5" />
+              </EmptyMedia>
+              <EmptyDescription>
                 {{ t('dialogs.addBlock.noResults', { query: searchQuery }) }}
-              </p>
-            </div>
+              </EmptyDescription>
+            </Empty>
           </div>
 
           <!-- Create Custom Exercise Button -->

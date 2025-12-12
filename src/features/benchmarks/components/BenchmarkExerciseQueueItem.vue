@@ -31,7 +31,7 @@ const statusIcon = computed(() => {
 const statusIconClass = computed(() => {
   switch (status) {
     case 'completed':
-      return 'text-green-500'
+      return 'text-primary'
     case 'active':
       return 'text-primary fill-primary'
     case 'pending':

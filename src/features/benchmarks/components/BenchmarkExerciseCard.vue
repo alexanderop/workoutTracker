@@ -17,7 +17,7 @@ const { t } = useI18n()
       <div class="flex items-center gap-4">
         <!-- Order number with bold typography -->
         <div
-          class="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold"
+          class="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold"
         >
           {{ index + 1 }}
         </div>
