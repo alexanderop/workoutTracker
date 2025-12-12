@@ -173,7 +173,7 @@ function handlePrimaryAction() {
       <Button
         variant="outline"
         size="icon"
-        class="h-12 w-12 flex-shrink-0"
+        class="size-touch flex-shrink-0"
         :aria-label="t('common.aria.previousBlock')"
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
@@ -187,7 +187,7 @@ function handlePrimaryAction() {
         size="lg"
         :class="
           cn(
-            'flex-1 h-14 text-lg font-semibold gap-2',
+            'flex-1 h-touch text-lg font-semibold gap-2',
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
@@ -202,7 +202,7 @@ function handlePrimaryAction() {
       <Button
         variant="outline"
         size="icon"
-        class="h-12 w-12 flex-shrink-0"
+        class="size-touch flex-shrink-0"
         :aria-label="t('common.aria.nextBlock')"
         :disabled="isLastBlock"
         @click="emit('next-block')"

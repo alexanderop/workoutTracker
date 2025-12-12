@@ -60,7 +60,7 @@ const emit = defineEmits<{
           v-if="timer.elapsedSeconds.value > 0"
           variant="ghost"
           size="icon"
-          class="h-9 w-9 text-muted-foreground hover:text-foreground"
+          class="text-muted-foreground hover:text-foreground"
           @click="timer.reset"
         >
           <RotateCcw class="w-4 h-4" />
@@ -82,13 +82,13 @@ const emit = defineEmits<{
     <div class="flex gap-3 px-4 pb-4">
       <Button
         variant="outline"
-        class="flex-1 h-12 text-base font-semibold"
+        class="flex-1 h-touch text-base font-semibold"
         size="lg"
         @click="emit('cancel')"
       >
         {{ t('common.rest.timer.cancel') }}
       </Button>
-      <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="emit('finish')">
+      <Button class="flex-1 h-touch text-base font-semibold" size="lg" @click="emit('finish')">
         {{ t('common.rest.timer.finishWorkout') }}
       </Button>
     </div>

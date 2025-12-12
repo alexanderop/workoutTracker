@@ -63,7 +63,7 @@ const { isVisible } = useEnterAnimation(100)
     <!-- eslint-disable @intlify/vue-i18n/no-raw-text -->
     <Button
       size="lg"
-      class="h-14 text-lg font-semibold gap-2"
+      class="h-touch text-lg font-semibold gap-2"
       :class="isVisible ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '600ms' }"
       @click="emit('view-details')"

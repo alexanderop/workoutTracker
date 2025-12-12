@@ -120,6 +120,15 @@
 }
 
 @layer utilities {
+  /* Touch-friendly button sizes (48px minimum touch target per iOS/Android guidelines) */
+  .h-touch {
+    height: 3rem;
+  }
+  .size-touch {
+    width: 3rem;
+    height: 3rem;
+  }
+
   /* Safe area utilities for mobile */
   .safe-area-top {
     padding-top: env(safe-area-inset-top, 0);

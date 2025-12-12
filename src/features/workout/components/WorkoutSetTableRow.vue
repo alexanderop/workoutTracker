@@ -171,8 +171,8 @@ function handleRirChange(value: number | undefined) {
       <Button
         v-if="canDelete"
         variant="ghost"
-        size="icon"
-        class="h-8 w-8 text-muted-foreground hover:text-destructive"
+        size="icon-sm"
+        class="text-muted-foreground hover:text-destructive"
         @click="emit('remove-set', set.id)"
       >
         <Trash2 class="w-4 h-4" />

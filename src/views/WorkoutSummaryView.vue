@@ -245,13 +245,13 @@ function handleDone() {
       <div class="flex gap-3">
         <Button
           variant="outline"
-          class="flex-1 h-12 text-base font-semibold"
+          class="flex-1 h-touch text-base font-semibold"
           size="lg"
           @click="showSaveTemplateDialog = true"
         >
           {{ t('workouts.summary.button.saveTemplate') }}
         </Button>
-        <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="handleDone">
+        <Button class="flex-1 h-touch text-base font-semibold" size="lg" @click="handleDone">
           {{ t('workouts.summary.button.done') }}
         </Button>
       </div>

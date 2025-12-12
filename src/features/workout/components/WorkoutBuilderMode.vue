@@ -129,7 +129,7 @@ function handleStartWorkout() {
       <div class="px-4 pb-4 pt-2 safe-area-bottom">
         <Button
           size="lg"
-          class="w-full h-14 text-lg font-semibold gap-2"
+          class="w-full h-touch text-lg font-semibold gap-2"
           :class="hasStarted && 'animate-pulse-ring'"
           @click="handleStartWorkout"
         >

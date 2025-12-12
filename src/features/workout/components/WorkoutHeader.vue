@@ -34,7 +34,7 @@ const router = useRouter()
       <Button
         variant="ghost"
         size="icon"
-        class="h-9 w-9 flex-shrink-0"
+        class="flex-shrink-0"
         :aria-label="t('common.aria.goBack')"
         @click="router.back()"
       >
@@ -53,8 +53,7 @@ const router = useRouter()
         <DropdownMenuTrigger as-child>
           <Button
             variant="ghost"
-            size="icon"
-            class="h-8 w-8"
+            size="icon-sm"
             :aria-label="t('common.aria.moreOptions')"
           >
             <MoreVertical class="w-4 h-4" />

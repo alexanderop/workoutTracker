@@ -103,7 +103,7 @@ function handleRunningChange(value: boolean) {
         <Button
           variant="outline"
           size="icon"
-          class="h-12 w-12"
+          class="size-touch"
           :aria-label="t('common.aria.exitTimer')"
           @click="handleExit"
         >
@@ -124,7 +124,7 @@ function handleRunningChange(value: boolean) {
         <Button
           variant="outline"
           size="icon"
-          class="h-12 w-12"
+          class="size-touch"
           :aria-label="t('common.aria.resetTimer')"
           @click="handleReset"
         >

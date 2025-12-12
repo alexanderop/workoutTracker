@@ -104,7 +104,7 @@ function handleSliderChange(sliderValue: Array<number> | undefined) {
           variant="outline"
           size="icon"
           :disabled="!canDecrement"
-          class="h-12 w-12 shrink-0"
+          class="size-touch shrink-0"
           @click="decrement(largeStep)"
         >
           <Minus :size="20" stroke-width="3" />
@@ -116,7 +116,7 @@ function handleSliderChange(sliderValue: Array<number> | undefined) {
           variant="outline"
           size="icon"
           :disabled="!canDecrement"
-          class="h-12 w-12 shrink-0"
+          class="size-touch shrink-0"
           @click="decrement(step)"
         >
           <Minus :size="16" stroke-width="2.5" />
@@ -137,7 +137,7 @@ function handleSliderChange(sliderValue: Array<number> | undefined) {
           variant="outline"
           size="icon"
           :disabled="!canIncrement"
-          class="h-12 w-12 shrink-0"
+          class="size-touch shrink-0"
           @click="increment(step)"
         >
           <Plus :size="16" stroke-width="2.5" />
@@ -149,7 +149,7 @@ function handleSliderChange(sliderValue: Array<number> | undefined) {
           variant="outline"
           size="icon"
           :disabled="!canIncrement"
-          class="h-12 w-12 shrink-0"
+          class="size-touch shrink-0"
           @click="increment(largeStep)"
         >
           <Plus :size="20" stroke-width="3" />
