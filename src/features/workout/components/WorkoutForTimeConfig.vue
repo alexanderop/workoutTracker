@@ -23,7 +23,7 @@ const presets = [10, 12, 15, 20, 30] as const
         id="has-cap"
         v-model="model.hasCap"
         type="checkbox"
-        class="h-4 w-4 rounded border-gray-300"
+        class="h-4 w-4 rounded border-border"
       />
       <Label for="has-cap">{{ t('dialogs.fortimeConfig.setTimeCap') }}</Label>
     </div>

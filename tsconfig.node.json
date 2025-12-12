@@ -16,6 +16,7 @@
     "nightwatch.conf.*",
     "playwright.config.*",
     "eslint.config.*",
-    "eslint-local-rules/**/*.ts"
+    "eslint-local-rules/**/*.ts",
+    "eslint-shims.d.ts"
   ]
 }

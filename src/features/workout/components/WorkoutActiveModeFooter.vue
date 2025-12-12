@@ -173,28 +173,28 @@ function handlePrimaryAction() {
       <Button
         variant="outline"
         size="icon"
-        class="h-12 w-12 flex-shrink-0"
+        class="size-touch flex-shrink-0"
         :aria-label="t('common.aria.previousBlock')"
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
       >
-        <ChevronLeft class="size-5" aria-hidden="true" />
+        <ChevronLeft class="icon-md" aria-hidden="true" />
       </Button>
 
       <!-- Primary action -->
       <Button
-        :variant="primaryAction.variant as ButtonVariant"
+        :variant="primaryAction.variant"
         size="lg"
         :class="
           cn(
-            'flex-1 h-14 text-lg font-semibold gap-2',
+            'flex-1 h-touch text-lg font-semibold gap-2',
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
-        :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
+        :disabled="(isStrengthBlock(props.block) && !canComplete) || isTransitioning"
         @click="handlePrimaryAction"
       >
-        <component :is="primaryAction.icon" class="size-5" aria-hidden="true" />
+        <component :is="primaryAction.icon" class="icon-md" aria-hidden="true" />
         {{ primaryAction.label }}
       </Button>
 
@@ -202,12 +202,12 @@ function handlePrimaryAction() {
       <Button
         variant="outline"
         size="icon"
-        class="h-12 w-12 flex-shrink-0"
+        class="size-touch flex-shrink-0"
         :aria-label="t('common.aria.nextBlock')"
         :disabled="isLastBlock"
         @click="emit('next-block')"
       >
-        <ChevronRight class="size-5" aria-hidden="true" />
+        <ChevronRight class="icon-md" aria-hidden="true" />
       </Button>
     </div>
   </footer>

@@ -119,12 +119,14 @@ async function handleSave() {
       <!-- Icon & Name Section -->
       <div class="mb-6 flex gap-4">
         <!-- Icon Button -->
-        <button
-          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-2xl transition-colors hover:bg-slate-600"
+        <Button
+          variant="ghost"
+          class="size-12 flex-shrink-0 rounded-full bg-muted text-2xl p-0 hover:bg-muted/80"
+          :aria-label="t('exercises.create.selectIcon')"
           @click="handleIconClick"
         >
           {{ form.icon }}
-        </button>
+        </Button>
 
         <!-- Name Input -->
         <div class="flex-1">

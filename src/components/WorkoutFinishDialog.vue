@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { getDefaultWorkoutName } from '@/lib/workoutName'
 
@@ -52,14 +53,14 @@ function handleConfirm() {
         />
       </div>
 
-      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" class="w-full sm:w-auto" @click="handleCancel">
+      <DialogActions v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleCancel">
           {{ t('common.buttons.cancel') }}
         </Button>
-        <Button class="w-full sm:w-auto" @click="handleConfirm">
+        <Button :class="buttonClass" @click="handleConfirm">
           {{ t('dialogs.finish.finishButton') }}
         </Button>
-      </div>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

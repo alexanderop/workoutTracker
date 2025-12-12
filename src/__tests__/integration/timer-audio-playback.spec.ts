@@ -134,12 +134,17 @@ describe('Timer Audio Playback', () => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
-      const mocks = getAudioMocksUnified()
-
-      // The timer should play work beep immediately on start (880Hz)
-      expect(mocks.createOscillator).toHaveBeenCalled()
-      const oscillator = mocks.createOscillator?.mock.results[0]?.value
-      expect(oscillator?.frequency.value).toBe(880)
+      // Wait for async audio playback (AudioContext.resume() is async)
+      await waitFor(
+        () => {
+          const mocks = getAudioMocksUnified()
+          // The timer should play work beep immediately on start (880Hz)
+          expect(mocks.createOscillator).toHaveBeenCalled()
+          const oscillator = mocks.createOscillator?.mock.results[0]?.value
+          expect(oscillator?.frequency.value).toBe(880)
+        },
+        { timeout: 3000 },
+      )
 
       testApp.cleanup()
     })

@@ -88,6 +88,8 @@ export default {
   },
   summary: {
     title: 'Workout abgeschlossen!',
+    totalDuration: 'Gesamtdauer',
+    viewDetails: 'Details anzeigen',
     stats: {
       duration: 'Dauer',
       exercises: 'Übungen',
@@ -216,6 +218,8 @@ export default {
       description: 'Übungsfortschritt anzeigen',
       roundHeader: 'Runde {round}',
       active: 'Aktiv',
+      roundInfo: 'Runde {n}, ',
+      exerciseInfo: 'Übung {n}, {name}, {reps} Wiederholungen',
       exerciseStatus: {
         completed: 'Abgeschlossen',
         active: 'Aktiv',
@@ -235,6 +239,9 @@ export default {
     attemptHistory: 'Versuchsverlauf',
     noAttempts: 'Noch keine Versuche',
     pbBadge: '🏆 Persönliche Bestleistung',
+    completion: {
+      finalTime: 'Endzeit',
+    },
   },
   progress: {
     label: 'Übungsfortschritt',

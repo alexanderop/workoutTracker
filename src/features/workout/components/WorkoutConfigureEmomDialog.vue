@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { X } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -11,7 +12,6 @@ import { useTimedBlockExercises } from '@/features/workout/composables/useTimedB
 import type { BlockExercise, EmomConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
 import WorkoutEmomConfig, { type EmomConfigModel } from './WorkoutEmomConfig.vue'
-import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
 
 const { t } = useI18n()
@@ -60,17 +60,8 @@ function handleClose() {
 <template>
   <Dialog v-model:open="open">
     <MobileDialogContent
-      :show-close-button="false"
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <button
-        class="absolute right-4 top-4 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
-        @click="handleClose"
-      >
-        <X class="size-5" />
-        <span class="sr-only">{{ t('common.buttons.close') }}</span>
-      </button>
-
       <DialogHeader>
         <div class="flex items-center gap-2">
           <span class="text-2xl">{{ BLOCK_ICONS.emom }}</span>
@@ -108,14 +99,14 @@ function handleClose() {
         @select="handleSelectExercise"
       />
 
-      <div class="pt-4 border-t flex gap-3">
-        <Button variant="outline" class="flex-1" @click="handleClose">{{
-          t('common.buttons.cancel')
-        }}</Button>
-        <Button class="flex-1" :disabled="!canConfirm" @click="handleConfirm">{{
-          t('dialogs.emomConfig.addBlock')
-        }}</Button>
-      </div>
+      <DialogActions variant="inline" class="pt-4" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleClose">
+          {{ t('common.buttons.cancel') }}
+        </Button>
+        <Button :class="buttonClass" :disabled="!canConfirm" @click="handleConfirm">
+          {{ t('dialogs.emomConfig.addBlock') }}
+        </Button>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

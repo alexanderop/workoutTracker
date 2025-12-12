@@ -85,15 +85,36 @@ async function startBenchmarkWorkout(
 
 /**
  * Completes the current exercise by tapping the focus mode area and waiting for transition.
+ * Waits for observable outcome (next exercise or completion screen) rather than fixed timeout.
  */
 async function completeExercise(
   app: Awaited<ReturnType<typeof createTestApp>>
 ): Promise<void> {
+  // Capture current exercise name before transition
+  const currentExerciseHeading = screen.queryByRole('heading', { level: 2 })
+  const currentExerciseName = currentExerciseHeading?.textContent
+
   const focusModeArea = screen.getByRole('button', { name: /tap to advance/i })
   await app.user.click(focusModeArea)
 
-  // Wait for transition animation (800ms) + buffer
-  await new Promise(resolve => setTimeout(resolve, 900))
+  // Wait for observable outcome: exercise changed OR completion screen appeared
+  await waitFor(
+    () => {
+      // Check if completion screen appeared
+      const completionScreen = screen.queryByText(/workout complete/i)
+      if (completionScreen) return
+
+      // Check if exercise changed (new heading with different text)
+      const newHeading = screen.queryByRole('heading', { level: 2 })
+      const newExerciseName = newHeading?.textContent
+
+      // If we had a previous exercise, verify it changed
+      if (currentExerciseName && newExerciseName) {
+        expect(newExerciseName).not.toBe(currentExerciseName)
+      }
+    },
+    { timeout: 2000 }
+  )
 }
 
 /**
@@ -107,8 +128,7 @@ async function completeAllExercises(
     await completeExercise(app)
   }
 
-  // Wait for completion screen to appear
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  // completeExercise already waits for completion screen on last exercise
 }
 
 /**

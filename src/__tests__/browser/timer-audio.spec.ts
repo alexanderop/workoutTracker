@@ -1,3 +1,4 @@
+import { waitFor } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
@@ -7,6 +8,7 @@ import { withSetup } from '../helpers/withSetup'
  * Browser tests for useTimerAudio with real Web Audio API.
  * These tests verify AudioContext behavior that cannot be simulated in jsdom.
  * Note: Each withSetup() call creates a fresh Pinia instance with default settings.
+ * Note: playWorkBeep etc. are fire-and-forget async operations, so tests use waitFor.
  */
 describe('useTimerAudio - browser mode', () => {
   describe('real AudioContext integration', () => {
@@ -19,7 +21,7 @@ describe('useTimerAudio - browser mode', () => {
       app.unmount()
     })
 
-    it('creates oscillator with correct frequency for work beep (880Hz)', () => {
+    it('creates oscillator with correct frequency for work beep (880Hz)', async () => {
       // Spy BEFORE composable is created
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
@@ -27,7 +29,10 @@ describe('useTimerAudio - browser mode', () => {
 
       result.playWorkBeep()
 
-      expect(createOscillatorSpy).toHaveBeenCalled()
+      // Wait for async audio playback (AudioContext.resume() is async)
+      await waitFor(() => {
+        expect(createOscillatorSpy).toHaveBeenCalled()
+      })
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(880)
 
@@ -35,14 +40,16 @@ describe('useTimerAudio - browser mode', () => {
       createOscillatorSpy.mockRestore()
     })
 
-    it('creates oscillator with correct frequency for rest beep (440Hz)', () => {
+    it('creates oscillator with correct frequency for rest beep (440Hz)', async () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playRestBeep()
 
-      expect(createOscillatorSpy).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(createOscillatorSpy).toHaveBeenCalled()
+      })
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(440)
 
@@ -50,14 +57,16 @@ describe('useTimerAudio - browser mode', () => {
       createOscillatorSpy.mockRestore()
     })
 
-    it('creates oscillator with correct frequency for round beep (660Hz)', () => {
+    it('creates oscillator with correct frequency for round beep (660Hz)', async () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playRoundBeep()
 
-      expect(createOscillatorSpy).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(createOscillatorSpy).toHaveBeenCalled()
+      })
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(660)
 
@@ -65,15 +74,20 @@ describe('useTimerAudio - browser mode', () => {
       createOscillatorSpy.mockRestore()
     })
 
-    it('plays complete sequence with ascending tones (440Hz, 660Hz, 880Hz)', () => {
+    it('plays complete sequence with ascending tones (440Hz, 660Hz, 880Hz)', async () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playComplete()
 
-      // Should create 3 oscillators for the ascending sequence
-      expect(createOscillatorSpy).toHaveBeenCalledTimes(3)
+      // Wait for all 3 oscillators (with delays: 0ms, 150ms, 300ms)
+      await waitFor(
+        () => {
+          expect(createOscillatorSpy).toHaveBeenCalledTimes(3)
+        },
+        { timeout: 1000 },
+      )
 
       const frequencies = createOscillatorSpy.mock.results.map(
         (result) => result.value?.frequency.value,
@@ -84,14 +98,16 @@ describe('useTimerAudio - browser mode', () => {
       createOscillatorSpy.mockRestore()
     })
 
-    it('creates gain node for audio processing', () => {
+    it('creates gain node for audio processing', async () => {
       const createGainSpy = vi.spyOn(AudioContext.prototype, 'createGain')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playWorkBeep()
 
-      expect(createGainSpy).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(createGainSpy).toHaveBeenCalled()
+      })
 
       app.unmount()
       createGainSpy.mockRestore()

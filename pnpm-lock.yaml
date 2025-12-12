@@ -60,6 +60,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^6.5.1
         version: 6.5.1(@vue/compiler-sfc@3.5.24)(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.15)
+      '@eslint-community/eslint-plugin-eslint-comments':
+        specifier: ^4.5.0
+        version: 4.5.0(eslint@9.39.1(jiti@2.6.1))
       '@faker-js/faker':
         specifier: ^10.1.0
         version: 10.1.0

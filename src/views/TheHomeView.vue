@@ -37,7 +37,7 @@ function goToTimers() {
       <CardContent class="pt-0">
         <Button class="w-full group/btn" size="lg">
           {{ t('common.buttons.getStarted') }}
-          <ArrowRight class="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+          <ArrowRight class="ml-2 icon-sm transition-transform group-hover/btn:translate-x-1" />
         </Button>
       </CardContent>
     </Card>

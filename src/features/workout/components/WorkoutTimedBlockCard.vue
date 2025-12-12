@@ -132,9 +132,9 @@ const roundsLabel = computed(() => t('workouts.builder.timedCard.rounds'))
         <!-- For Time: Completion Indicator -->
         <div
           v-if="block.kind === 'fortime' && block.result?.completed"
-          class="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 rounded-lg p-3"
+          class="flex items-center gap-2 status-success-bg rounded-lg p-3"
         >
-          <Check class="w-5 h-5" />
+          <Check class="icon-md" aria-hidden="true" />
           <span class="font-semibold">
             {{ t('workouts.builder.timedCard.completedIn')
             }}{{ Math.floor(block.result.completionTime / 60) }}:{{
@@ -146,7 +146,7 @@ const roundsLabel = computed(() => t('workouts.builder.timedCard.rounds'))
 
       <!-- Start Button (when not active) -->
       <Button v-if="!isActive" class="w-full mt-4" size="lg" @click="emit('start')">
-        <Play class="w-4 h-4 mr-2" />
+        <Play class="icon-sm mr-2" aria-hidden="true" />
         {{ t('workouts.builder.timedCard.startBlock') }}
       </Button>
 
@@ -158,7 +158,7 @@ const roundsLabel = computed(() => t('workouts.builder.timedCard.rounds'))
         size="lg"
         @click="emit('expand-focus')"
       >
-        <Maximize2 class="w-4 h-4 mr-2" />
+        <Maximize2 class="icon-sm mr-2" aria-hidden="true" />
         {{ t('workouts.builder.timedCard.focusMode') }}
       </Button>
     </CardContent>

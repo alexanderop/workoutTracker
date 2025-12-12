@@ -43,9 +43,9 @@ const completeButtonClass = computed(() =>
   cn(
     'h-9 w-9 rounded-lg transition-all duration-200',
     isCompleted.value
-      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+      ? 'bg-success hover:bg-success/90 text-success-foreground'
       : ready.value
-        ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
+        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
         : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
   ),
 )
@@ -171,11 +171,12 @@ function handleRirChange(value: number | undefined) {
       <Button
         v-if="canDelete"
         variant="ghost"
-        size="icon"
-        class="h-8 w-8 text-muted-foreground hover:text-destructive"
+        size="icon-sm"
+        :aria-label="t('common.aria.deleteSet', { index: index + 1 })"
+        class="text-muted-foreground hover:text-destructive"
         @click="emit('remove-set', set.id)"
       >
-        <Trash2 class="w-4 h-4" />
+        <Trash2 class="w-4 h-4" aria-hidden="true" />
       </Button>
     </TableCell>
   </TableRow>

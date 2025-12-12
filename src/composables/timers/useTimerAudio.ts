@@ -5,14 +5,33 @@ export function useTimerAudio() {
   let audioContext: AudioContext | null = null
 
   /**
-   * Play a beep at the specified frequency.
+   * Ensure AudioContext is created and attempt to resume if suspended.
+   * Mobile browsers start AudioContext in suspended state.
+   * Uses a timeout to prevent hanging if resume() doesn't resolve.
    */
-  function playBeep(frequency: number, duration = 0.15): void {
-    if (!settings.timerSoundEnabled) return
-
+  async function ensureAudioReady(): Promise<void> {
     if (!audioContext) {
       audioContext = new AudioContext()
     }
+
+    // Resume if suspended (required for mobile and when other apps have audio focus)
+    // Use Promise.race with timeout to prevent hanging in test environments
+    // Note: 'interrupted' is iOS Safari specific state not in standard typings
+    const state = audioContext.state
+    if (state === 'suspended' || state === 'interrupted') {
+      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 100))
+      await Promise.race([audioContext.resume(), timeout])
+    }
+  }
+
+  /**
+   * Play a beep at the specified frequency.
+   */
+  async function playBeep(frequency: number, duration = 0.15): Promise<void> {
+    if (!settings.timerSoundEnabled) return
+
+    await ensureAudioReady()
+    if (!audioContext) return
 
     const oscillator = audioContext.createOscillator()
     const gainNode = audioContext.createGain()
@@ -32,32 +51,32 @@ export function useTimerAudio() {
    * Play work interval beep (880Hz).
    */
   function playWorkBeep(): void {
-    playBeep(880)
+    void playBeep(880)
   }
 
   /**
    * Play rest interval beep (440Hz).
    */
   function playRestBeep(): void {
-    playBeep(440)
+    void playBeep(440)
   }
 
   /**
    * Play round transition beep (660Hz).
    */
   function playRoundBeep(): void {
-    playBeep(660)
+    void playBeep(660)
   }
 
   /**
    * Play completion sequence (ascending tones).
    */
-  function playComplete(): void {
+  async function playComplete(): Promise<void> {
     if (!settings.timerSoundEnabled) return
 
-    playBeep(440, 0.15)
-    playBeep(660, 0.15)
-    playBeep(880, 0.15)
+    await playBeep(440, 0.15)
+    setTimeout(() => void playBeep(660, 0.15), 150)
+    setTimeout(() => void playBeep(880, 0.15), 300)
   }
 
   return {

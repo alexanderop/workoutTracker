@@ -19,7 +19,7 @@ const displayValue = computed(() => value || placeholder || t('common.settings.p
 
 <template>
   <button
-    class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 border-b border-border last:border-b-0 transition-colors text-left"
+    class="w-full px-4 py-3 flex items-center justify-between hover:bg-muted border-b border-border last:border-b-0 transition-colors text-left"
     @click="emit('click')"
   >
     <span class="text-sm font-medium">{{ label }}</span>

@@ -25,7 +25,7 @@ const comparisonText = computed(() => {
 
 const comparisonColor = computed(() => {
   if (!splitComparison) return ''
-  return splitComparison.isFaster ? 'text-green-500' : 'text-red-500'
+  return splitComparison.isFaster ? 'status-success' : 'text-destructive'
 })
 </script>
 

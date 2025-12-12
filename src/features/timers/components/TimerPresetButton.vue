@@ -23,7 +23,7 @@ defineEmits<{
         <div class="font-semibold text-foreground">{{ label }}</div>
         <div class="text-sm text-muted-foreground">{{ description }}</div>
       </div>
-      <Play class="w-5 h-5" :class="colorClass" />
+      <Play class="icon-md" :class="colorClass" />
     </div>
   </button>
 </template>

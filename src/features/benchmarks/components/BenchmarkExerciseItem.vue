@@ -21,7 +21,7 @@ const { t } = useI18n()
   <div class="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
     <!-- Drag handle -->
     <div class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing">
-      <GripVertical class="size-5 text-muted-foreground" />
+      <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
     </div>
 
     <!-- Order number -->
@@ -47,9 +47,10 @@ const { t } = useI18n()
       variant="ghost"
       size="icon-sm"
       class="flex-shrink-0 text-muted-foreground hover:text-destructive"
+      :aria-label="t('common.aria.removeExercise')"
       @click="emit('remove')"
     >
-      <X class="size-4" />
+      <X class="icon-sm" aria-hidden="true" />
     </Button>
   </div>
 </template>

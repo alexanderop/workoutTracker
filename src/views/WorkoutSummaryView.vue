@@ -125,7 +125,7 @@ function handleDone() {
           :style="{ animationDelay: '400ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Clock class="w-5 h-5 text-muted-foreground" />
+            <Clock class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatDuration(stats.duration) }}
@@ -143,7 +143,7 @@ function handleDone() {
           :style="{ animationDelay: '500ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Dumbbell class="w-5 h-5 text-muted-foreground" />
+            <Dumbbell class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedExercises }}
@@ -161,7 +161,7 @@ function handleDone() {
           :style="{ animationDelay: '500ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Repeat class="w-5 h-5 text-muted-foreground" />
+            <Repeat class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedRounds }}
@@ -179,7 +179,7 @@ function handleDone() {
           :style="{ animationDelay: '600ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Target class="w-5 h-5 text-muted-foreground" />
+            <Target class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ animatedSets }}
@@ -197,7 +197,7 @@ function handleDone() {
           :style="{ animationDelay: '600ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Clock class="w-5 h-5 text-muted-foreground" />
+            <Clock class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ stats.timedBlockCount }}
@@ -215,7 +215,7 @@ function handleDone() {
           :style="{ animationDelay: '700ms' }"
         >
           <div class="flex justify-center mb-2">
-            <Flame class="w-5 h-5 text-muted-foreground" />
+            <Flame class="icon-md text-muted-foreground" />
           </div>
           <div class="text-2xl font-bold font-mono text-primary tabular-nums">
             {{ formatWeight(animatedWeight) }}
@@ -245,13 +245,13 @@ function handleDone() {
       <div class="flex gap-3">
         <Button
           variant="outline"
-          class="flex-1 h-12 text-base font-semibold"
+          class="flex-1 h-touch text-base font-semibold"
           size="lg"
           @click="showSaveTemplateDialog = true"
         >
           {{ t('workouts.summary.button.saveTemplate') }}
         </Button>
-        <Button class="flex-1 h-12 text-base font-semibold" size="lg" @click="handleDone">
+        <Button class="flex-1 h-touch text-base font-semibold" size="lg" @click="handleDone">
           {{ t('workouts.summary.button.done') }}
         </Button>
       </div>

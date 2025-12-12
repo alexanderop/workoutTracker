@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { AlertTriangle } from 'lucide-vue-next'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import type { ExportData } from '../utils/dataExport'
 import { getExportSummary } from '../utils/dataImport'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const { data, isImporting = false } = defineProps<{
@@ -74,18 +75,13 @@ function handleConfirm() {
         </ul>
       </div>
 
-      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button
-          variant="outline"
-          class="w-full sm:w-auto"
-          :disabled="isImporting"
-          @click="handleCancel"
-        >
+      <DialogActions v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" :disabled="isImporting" @click="handleCancel">
           {{ t('settings.dialogs.importData.cancel') }}
         </Button>
         <Button
           variant="destructive"
-          class="w-full sm:w-auto"
+          :class="buttonClass"
           :disabled="isImporting"
           @click="handleConfirm"
         >
@@ -95,7 +91,7 @@ function handleConfirm() {
               : t('settings.dialogs.importData.confirm')
           }}
         </Button>
-      </div>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

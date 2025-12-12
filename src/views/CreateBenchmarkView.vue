@@ -159,7 +159,7 @@ async function handleSave() {
 
         <!-- Add Exercise Button -->
         <Button variant="outline" class="w-full border-dashed" @click="handleAddExercise">
-          <Plus class="mr-2 size-5" />
+          <Plus class="mr-2 icon-md" />
           {{ t('workouts.benchmarks.addExercise') }}
         </Button>
       </div>
