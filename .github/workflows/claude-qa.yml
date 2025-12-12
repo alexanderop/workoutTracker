@@ -1,0 +1,487 @@
+# Consolidated Claude QA Workflow
+# Replaces both claude-playwright-explore.yml and claude-qa-verify.yml
+
+name: Claude QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'QA mode'
+        type: choice
+        options:
+          - explore
+          - verify
+        default: 'explore'
+      pr_number:
+        description: 'PR number (for posting results)'
+        required: false
+        type: string
+      focus:
+        description: 'Test focus area'
+        type: choice
+        options:
+          - general
+          - navigation
+          - forms
+          - workout-flow
+        default: 'general'
+  pull_request:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+jobs:
+  qa:
+    # Run on: manual trigger, specific labels, or @claude verify comment
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       contains(fromJson('["claude-explore", "qa-verify"]'), github.event.label.name)) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '@claude verify'))
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Prevent duplicate runs on same PR
+    concurrency:
+      group: claude-qa-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      statuses: write
+
+    env:
+      NODE_VERSION: '22'
+      # Determine mode from trigger
+      QA_MODE: ${{
+        github.event.label.name == 'qa-verify' && 'verify' ||
+        github.event.label.name == 'claude-explore' && 'explore' ||
+        (github.event_name == 'issue_comment' && 'verify') ||
+        github.event.inputs.mode || 'explore'
+      }}
+      QA_FOCUS: ${{ github.event.inputs.focus || 'general' }}
+
+    steps:
+      - name: Get PR ref for issue_comment
+        if: github.event_name == 'issue_comment'
+        id: pr-ref
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            core.setOutput('ref', pr.head.sha);
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr-ref.outputs.ref || github.event.pull_request.head.sha || github.sha }}
+
+      # Reuse existing composite action instead of duplicating setup
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Get PR context
+        if: env.QA_MODE == 'verify'
+        id: pr-context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber, prBody, prTitle;
+
+            if (context.eventName === 'pull_request') {
+              prNumber = context.payload.pull_request.number;
+              prBody = context.payload.pull_request.body || '';
+              prTitle = context.payload.pull_request.title;
+            } else if (context.eventName === 'issue_comment') {
+              // @claude verify comment on PR
+              prNumber = context.payload.issue.number;
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              prBody = pr.body || '';
+              prTitle = pr.title;
+            } else if ('${{ github.event.inputs.pr_number }}') {
+              prNumber = parseInt('${{ github.event.inputs.pr_number }}');
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              prBody = pr.body || '';
+              prTitle = pr.title;
+            }
+
+            // Fetch linked issues
+            let linkedIssues = '';
+            if (prBody) {
+              const matches = prBody.match(/(?:closes|fixes|resolves)\s+#(\d+)/gi) || [];
+              for (const match of matches) {
+                const issueNum = match.match(/\d+/)[0];
+                try {
+                  const { data: issue } = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: parseInt(issueNum)
+                  });
+                  linkedIssues += `\n### Issue #${issueNum}: ${issue.title}\n${issue.body || ''}\n`;
+                } catch (e) {}
+              }
+            }
+
+            core.setOutput('pr_number', prNumber || '');
+            core.setOutput('pr_title', prTitle || '');
+            core.setOutput('pr_body', prBody || '');
+            core.setOutput('linked_issues', linkedIssues);
+
+      - name: Start development server
+        run: |
+          pnpm dev --host 0.0.0.0 --port 5173 &
+          DEV_PID=$!
+          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
+
+          echo "Waiting for dev server with app mounted..."
+          for i in {1..90}; do
+            if curl -s http://localhost:5173 | grep -q '<div id="app"'; then
+              echo "Dev server ready!"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Dev server failed to start properly"
+          curl -v http://localhost:5173 || true
+          exit 1
+
+      - name: Run Claude QA - Explore Mode
+        if: env.QA_MODE == 'explore'
+        id: claude-explore
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are a senior QA engineer performing exploratory testing.
+            App URL: http://localhost:5173
+
+            ## Budget: 40 turns total
+            - Turns 1-5: Quick navigation smoke test
+            - Turns 6-30: Feature testing based on focus
+            - Turns 31-37: Edge cases, mobile viewport test
+            - Turns 38-40: WRITE REPORT (mandatory!)
+
+            ## Focus: ${{ env.QA_FOCUS }}
+
+            **Test Plan by Focus:**
+            - general: All pages load → Exercise CRUD → Workout flow → Settings
+            - navigation: Every nav link, back buttons, deep links, breadcrumbs
+            - forms: Exercise form validation, workout setup, settings forms
+            - workout-flow: Full workout from start to complete with all features
+
+            ## Automatic FAIL criteria:
+            - Any uncaught JavaScript error in console
+            - Any blank/white screen
+            - Buttons that don't respond
+            - 404 or network errors
+
+            ## Mobile Test (use browser_resize)
+            Resize to 375x667 and verify:
+            - Navigation works
+            - No horizontal scroll
+            - Forms are usable
+
+            ## If you find bugs:
+            Take a screenshot with descriptive name like `bug-description.png`
+
+            ## FINAL STEP (turns 38-40):
+            Write `qa-report.md`:
+
+            ```markdown
+            # QA Exploration Report
+
+            **Date**: [today] | **Focus**: ${{ env.QA_FOCUS }} | **Tester**: Claude QA
+
+            ## Summary
+            [1 sentence: overall health of the app]
+
+            ## Test Results
+            | Test | Status | Notes |
+            |------|--------|-------|
+            | ... | ✅/❌ | ... |
+
+            ## Mobile Responsive
+            | Check | Status |
+            |-------|--------|
+            | Navigation | ✅/❌ |
+            | Forms | ✅/❌ |
+            | No horizontal scroll | ✅/❌ |
+
+            ## Bugs Found
+            [List with screenshots, or "None"]
+
+            ## Console Errors
+            [List errors, or "None"]
+
+            ## Verdict
+            **[✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS]**
+            ```
+
+          claude_args: |
+            --max-turns 40
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
+
+      - name: Run Claude QA - Verify Mode
+        if: env.QA_MODE == 'verify'
+        id: claude-verify
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are a senior QA engineer performing PR acceptance testing.
+            App URL: http://localhost:5173
+
+            ## PR Context
+            **PR #${{ steps.pr-context.outputs.pr_number }}**: ${{ steps.pr-context.outputs.pr_title }}
+
+            ### Description:
+            ${{ steps.pr-context.outputs.pr_body }}
+
+            ### Linked Issues:
+            ${{ steps.pr-context.outputs.linked_issues }}
+
+            ## Budget: 35 turns
+            - Turns 1-3: Parse requirements from PR
+            - Turns 4-25: Verify each requirement
+            - Turns 26-30: Quick regression
+            - Turns 31-35: WRITE REPORT
+
+            ## Your Task:
+            1. Extract acceptance criteria from PR description
+            2. Test each requirement systematically
+            3. Quick regression: navigation, core UI
+            4. Write verdict: APPROVED / NEEDS FIXES / NEEDS CLARIFICATION
+
+            ## If you find bugs:
+            Take a screenshot: `bug-[description].png`
+
+            ## FINAL STEP:
+            Write `qa-report.md`:
+
+            ```markdown
+            # QA Verification Report
+
+            **PR**: #${{ steps.pr-context.outputs.pr_number }} - ${{ steps.pr-context.outputs.pr_title }}
+            **Date**: [today] | **Tester**: Claude QA
+
+            ## Requirements Extracted
+            [List from PR, or "No clear requirements"]
+
+            ## Verification Results
+            | # | Requirement | Status | Notes |
+            |---|-------------|--------|-------|
+            | 1 | ... | ✅/❌/⚠️ | ... |
+
+            ## Regression Check
+            | Area | Status |
+            |------|--------|
+            | Navigation | ✅/❌ |
+            | Core UI | ✅/❌ |
+
+            ## Console Errors
+            [List or "None"]
+
+            ## Verdict
+            **[✅ APPROVED / ❌ NEEDS FIXES / ⚠️ NEEDS CLARIFICATION]**
+
+            [Summary sentence]
+            ```
+
+          claude_args: |
+            --max-turns 35
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,mcp__playwright__browser_resize,Read,Write"
+
+      - name: Check report exists
+        id: check-report
+        if: always()
+        run: |
+          if [ -f "qa-report.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Report generated successfully"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Warning: No report generated"
+          fi
+
+      - name: Retry if no report generated
+        if: steps.check-report.outputs.exists == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            IMPORTANT: The previous QA run did not generate a report.
+
+            Do a quick navigation smoke test and write qa-report.md immediately:
+            1. Navigate to http://localhost:5173
+            2. Check 3-4 main pages load correctly
+            3. Write the report with what you observed
+
+            Write `qa-report.md` now with:
+            - Summary of pages tested
+            - Any errors found
+            - Verdict: ✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS
+          claude_args: |
+            --max-turns 10
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_console_messages,Read,Write"
+
+      - name: Verify report after retry
+        id: check-report-retry
+        if: steps.check-report.outputs.exists == 'false'
+        run: |
+          if [ -f "qa-report.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set commit status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let state = 'success';
+            let description = 'QA passed';
+
+            try {
+              const report = fs.readFileSync('qa-report.md', 'utf8');
+              if (report.includes('❌ NEEDS FIXES') || report.includes('❌ CRITICAL')) {
+                state = 'failure';
+                description = 'QA found critical issues';
+              } else if (report.includes('⚠️')) {
+                state = 'pending';
+                description = 'QA found minor issues';
+              } else if (report.includes('✅ APPROVED') || report.includes('✅ HEALTHY')) {
+                state = 'success';
+                description = 'QA passed';
+              }
+            } catch (e) {
+              state = 'error';
+              description = 'QA report not generated';
+            }
+
+            // Use PR head sha for issue_comment, otherwise use context.sha
+            const sha = '${{ steps.pr-ref.outputs.ref }}' || context.sha;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: sha,
+              state: state,
+              context: 'Claude QA',
+              description: description,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+      - name: Post results to PR
+        if: |
+          always() &&
+          (github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number || steps.pr-context.outputs.pr_number)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = context.payload.pull_request?.number ||
+                            context.payload.issue?.number ||
+                            '${{ github.event.inputs.pr_number }}' ||
+                            '${{ steps.pr-context.outputs.pr_number }}';
+
+            if (!prNumber) return;
+
+            let qaReport = '';
+            try {
+              qaReport = fs.readFileSync('qa-report.md', 'utf8');
+            } catch (e) {
+              qaReport = '⚠️ QA report not generated. Check [workflow logs](' +
+                `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            }
+
+            const mode = '${{ env.QA_MODE }}' === 'verify' ? 'Verification' : 'Exploration';
+
+            const body = `## 🔍 Claude QA ${mode} Report
+
+**Mode**: ${mode} | **Focus**: ${{ env.QA_FOCUS }}
+**Run**: [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+
+---
+
+${qaReport}
+
+---
+*Automated QA by Claude Code*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(prNumber),
+              body: body
+            });
+
+      - name: Upload QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-artifacts-${{ github.run_id }}
+          path: |
+            qa-report.md
+            *.png
+          if-no-files-found: ignore
+
+      - name: Remove trigger label
+        if: |
+          github.event_name == 'pull_request' &&
+          contains(fromJson('["claude-explore", "qa-verify"]'), github.event.label.name)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: '${{ github.event.label.name }}'
+              });
+            } catch (e) {
+              console.log('Label already removed');
+            }
+
+      - name: Cleanup
+        if: always()
+        run: kill $DEV_PID 2>/dev/null || true
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Claude QA Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode**: ${{ env.QA_MODE }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Focus**: ${{ env.QA_FOCUS }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Report generated**: ${{ steps.check-report.outputs.exists }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Estimated Cost" >> $GITHUB_STEP_SUMMARY
+          echo "- Claude API: ~\$0.20-0.40" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub Actions: ~\$0.05" >> $GITHUB_STEP_SUMMARY
