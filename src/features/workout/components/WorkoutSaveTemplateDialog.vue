@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -57,14 +58,14 @@ function handleConfirm() {
         />
       </div>
 
-      <div class="flex gap-3">
-        <Button variant="outline" class="flex-1" :disabled="isSaving" @click="open = false">
+      <DialogActions variant="inline" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" :disabled="isSaving" @click="open = false">
           {{ t('common.buttons.cancel') }}
         </Button>
-        <Button class="flex-1" :disabled="!templateName.trim() || isSaving" @click="handleConfirm">
+        <Button :class="buttonClass" :disabled="!templateName.trim() || isSaving" @click="handleConfirm">
           {{ isSaving ? t('dialogs.saveTemplate.saving') : t('dialogs.saveTemplate.saveTemplate') }}
         </Button>
-      </div>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

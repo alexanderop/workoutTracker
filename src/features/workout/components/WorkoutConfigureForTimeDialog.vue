@@ -2,6 +2,8 @@
 import { X } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -10,7 +12,6 @@ import { Separator } from '@/components/ui/separator'
 import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
 import type { BlockExercise, ForTimeConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutForTimeConfig, { type ForTimeConfigModel } from './WorkoutForTimeConfig.vue'
 import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
 
@@ -108,14 +109,14 @@ function handleClose() {
         @select="handleSelectExercise"
       />
 
-      <div class="pt-4 border-t flex gap-3">
-        <Button variant="outline" class="flex-1" @click="handleClose">{{
-          t('common.buttons.cancel')
-        }}</Button>
-        <Button class="flex-1" :disabled="!canConfirm" @click="handleConfirm">{{
-          t('dialogs.fortimeConfig.addBlock')
-        }}</Button>
-      </div>
+      <DialogActions variant="inline" class="pt-4 border-t" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleClose">
+          {{ t('common.buttons.cancel') }}
+        </Button>
+        <Button :class="buttonClass" :disabled="!canConfirm" @click="handleConfirm">
+          {{ t('dialogs.fortimeConfig.addBlock') }}
+        </Button>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

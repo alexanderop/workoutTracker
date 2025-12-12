@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -35,14 +36,14 @@ const { t } = useI18n()
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" class="w-full sm:w-auto" @click="emit('discard')">
+      <DialogActions v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="emit('discard')">
           {{ t('common.buttons.discard') }}
         </Button>
-        <Button class="w-full sm:w-auto" @click="emit('resume')">{{
-          t('dialogs.resume.resumeButton')
-        }}</Button>
-      </div>
+        <Button :class="buttonClass" @click="emit('resume')">
+          {{ t('dialogs.resume.resumeButton') }}
+        </Button>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

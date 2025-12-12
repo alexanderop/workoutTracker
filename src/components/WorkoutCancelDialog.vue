@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 
 const { t } = useI18n()
@@ -32,14 +33,14 @@ function handleConfirm() {
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" class="w-full sm:w-auto" @click="handleCancel">
+      <DialogActions v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleCancel">
           {{ t('dialogs.cancel.keepWorking') }}
         </Button>
-        <Button variant="destructive" class="w-full sm:w-auto" @click="handleConfirm">
+        <Button variant="destructive" :class="buttonClass" @click="handleConfirm">
           {{ t('dialogs.cancel.deleteWorkout') }}
         </Button>
-      </div>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

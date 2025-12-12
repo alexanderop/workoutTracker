@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -119,14 +114,14 @@ function handleCancel() {
         </NumberField>
       </div>
 
-      <DialogFooter class="flex-row gap-2">
-        <Button variant="outline" class="flex-1" @click="handleCancel">
+      <DialogActions variant="inline" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleCancel">
           {{ t('common.buttons.cancel') }}
         </Button>
-        <Button class="flex-1" @click="handleSave">
+        <Button :class="buttonClass" @click="handleSave">
           {{ t('dialogs.editExercise.saveChanges') }}
         </Button>
-      </DialogFooter>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

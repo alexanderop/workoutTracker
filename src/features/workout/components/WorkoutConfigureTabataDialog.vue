@@ -3,6 +3,8 @@ import { Plus, Trash2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
+import ExercisePicker from '@/components/ExercisePicker.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -11,7 +13,6 @@ import { Separator } from '@/components/ui/separator'
 import { generateId } from '@/db/index'
 import type { BlockExercise, TabataConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import ExercisePicker from '@/components/ExercisePicker.vue'
 import WorkoutTabataConfig, { type TabataConfigModel } from './WorkoutTabataConfig.vue'
 
 const { t } = useI18n()
@@ -135,14 +136,14 @@ function handleClose() {
         @select="handleSelectExercise"
       />
 
-      <div class="pt-4 border-t flex gap-3">
-        <Button variant="outline" class="flex-1" @click="handleClose">{{
-          t('common.buttons.cancel')
-        }}</Button>
-        <Button class="flex-1" :disabled="!canConfirm" @click="handleConfirm">{{
-          t('dialogs.tabataConfig.addBlock')
-        }}</Button>
-      </div>
+      <DialogActions variant="inline" class="pt-4 border-t" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleClose">
+          {{ t('common.buttons.cancel') }}
+        </Button>
+        <Button :class="buttonClass" :disabled="!canConfirm" @click="handleConfirm">
+          {{ t('dialogs.tabataConfig.addBlock') }}
+        </Button>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>

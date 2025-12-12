@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import MobileNumberPicker from '@/components/MobileNumberPicker.vue'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { Exercise } from '@/composables/useExerciseSearch'
 
 type Emits = {
@@ -69,14 +64,14 @@ function handleCancel() {
         />
       </div>
 
-      <DialogFooter class="flex-row gap-2">
-        <Button variant="outline" class="flex-1" @click="handleCancel">
+      <DialogActions variant="inline" v-slot="{ buttonClass }">
+        <Button variant="outline" :class="buttonClass" @click="handleCancel">
           {{ t('common.buttons.cancel') }}
         </Button>
-        <Button class="flex-1" @click="handleConfirm">
+        <Button :class="buttonClass" @click="handleConfirm">
           {{ t('common.buttons.add') }}
         </Button>
-      </DialogFooter>
+      </DialogActions>
     </MobileDialogContent>
   </Dialog>
 </template>
