@@ -1,0 +1,157 @@
+name: Claude Playwright Exploration (PoC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (optional)'
+        required: false
+        type: string
+      exploration_focus:
+        description: 'What to explore'
+        required: false
+        default: 'general'
+        type: choice
+        options:
+          - general
+          - navigation
+          - forms
+          - workout-flow
+  pull_request:
+    types: [labeled]
+
+jobs:
+  explore:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'claude-explore')
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    env:
+      NODE_VERSION: 22
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers for MCP
+        run: npx playwright install chromium --with-deps
+
+      - name: Start development server
+        run: |
+          pnpm dev --host 0.0.0.0 --port 5173 &
+          DEV_PID=$!
+          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
+
+          echo "Waiting for dev server..."
+          for i in {1..60}; do
+            if curl -s http://localhost:5173 > /dev/null 2>&1; then
+              echo "Dev server ready!"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Dev server failed to start"
+          exit 1
+
+      - name: Run Claude with Playwright MCP
+        id: claude-explore
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You have access to a Playwright MCP server for browser automation.
+            The application is running at: http://localhost:5173
+
+            ## Your Mission
+            Explore the app and report any issues found.
+
+            ## Steps
+            1. Navigate to http://localhost:5173
+            2. Visit main sections: exercises, workouts, templates, settings
+            3. Check for console errors after each navigation
+            4. Interact with UI elements (buttons, forms, dialogs)
+            5. Note any broken layouts, missing content, or errors
+
+            ## Output Format
+            ```markdown
+            ## Pages Visited
+            - [URL] - Status
+
+            ## Issues Found
+            - [Severity] Description
+
+            ## Console Errors
+            - [List any JS errors]
+
+            ## Summary
+            [Overall assessment]
+            ```
+
+          claude_args: |
+            --max-turns 25
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait,mcp__playwright__browser_hover,Read"
+
+      - name: Post results to PR
+        if: github.event.pull_request.number || github.event.inputs.pr_number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number ||
+                            '${{ github.event.inputs.pr_number }}';
+
+            if (!prNumber) return;
+
+            const body = `## Claude Exploratory Testing (PoC)
+
+            **Status:** Completed
+            **Run:** [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+
+            See workflow logs for full exploration report.
+
+            ---
+            *Experimental PoC - results may vary*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(prNumber),
+              body: body
+            });
+
+      - name: Remove label
+        if: github.event_name == 'pull_request' && github.event.label.name == 'claude-explore'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              name: 'claude-explore'
+            });
+
+      - name: Cleanup
+        if: always()
+        run: kill $DEV_PID 2>/dev/null || true
