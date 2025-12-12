@@ -1,3 +1,4 @@
+import pluginEslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
@@ -287,11 +288,26 @@ export default defineConfigWithVueTs(
     rules: {
       '@intlify/vue-i18n/no-raw-text': ['error', {
         ignorePattern: '^[-#:()&+×/°′″%]+$',
-        ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', 'Close'],
+        ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', '.', 'Close'],
         attributes: {
           '/.+/': ['title', 'aria-label', 'aria-placeholder', 'placeholder', 'alt'],
         },
       }],
+    },
+  },
+
+  // Prevent disabling vue-i18n rules - no eslint-disable for i18n
+  {
+    name: 'app/no-i18n-disable',
+    files: ['src/**/*.vue'],
+    plugins: {
+      '@eslint-community/eslint-comments': pluginEslintComments,
+    },
+    rules: {
+      '@eslint-community/eslint-comments/no-restricted-disable': [
+        'error',
+        '@intlify/vue-i18n/*',
+      ],
     },
   },
 

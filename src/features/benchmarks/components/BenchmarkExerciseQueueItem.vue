@@ -89,7 +89,6 @@ const ariaLabel = computed(() => {
     <div class="flex-1 min-w-0 flex items-center gap-2">
       <!-- Exercise number, thumbnail, and name -->
       <div class="flex items-center gap-1.5 min-w-0">
-        <!-- eslint-disable-next-line @intlify/vue-i18n/no-raw-text -->
         <span class="text-sm font-medium text-muted-foreground shrink-0">{{ exerciseNumber }}.</span>
         <span class="text-base shrink-0">{{ exercise.thumbnail }}</span>
         <span class="font-medium truncate">{{ exercise.name }}</span>

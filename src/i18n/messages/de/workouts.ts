@@ -88,6 +88,8 @@ export default {
   },
   summary: {
     title: 'Workout abgeschlossen!',
+    totalDuration: 'Gesamtdauer',
+    viewDetails: 'Details anzeigen',
     stats: {
       duration: 'Dauer',
       exercises: 'Übungen',
@@ -235,6 +237,9 @@ export default {
     attemptHistory: 'Versuchsverlauf',
     noAttempts: 'Noch keine Versuche',
     pbBadge: '🏆 Persönliche Bestleistung',
+    completion: {
+      finalTime: 'Endzeit',
+    },
   },
   progress: {
     label: 'Übungsfortschritt',

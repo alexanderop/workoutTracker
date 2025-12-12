@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.5.1",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.5.0",
     "@faker-js/faker": "^10.1.0",
     "@intlify/eslint-plugin-vue-i18n": "^4.1.0",
     "@lhci/cli": "^0.15.1",

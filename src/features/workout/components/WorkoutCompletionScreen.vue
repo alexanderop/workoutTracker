@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Trophy, Check } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { formatDuration } from '@/lib/formatters'
@@ -16,6 +17,7 @@ const emit = defineEmits<{
   'view-details': []
 }>()
 
+const { t } = useI18n()
 const formattedDuration = computed(() => formatDuration(duration))
 const { isVisible } = useEnterAnimation(100)
 </script>
@@ -39,9 +41,8 @@ const { isVisible } = useEnterAnimation(100)
       :class="isVisible ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '200ms' }"
     >
-      <!-- eslint-disable-next-line @intlify/vue-i18n/no-raw-text -->
       <h1 class="text-3xl font-bold tracking-tight mb-2">
-        Workout Complete!
+        {{ t('workouts.summary.title') }}
       </h1>
       <p class="text-muted-foreground text-lg">{{ workoutName }}</p>
     </div>
@@ -55,12 +56,10 @@ const { isVisible } = useEnterAnimation(100)
       <div class="text-6xl font-bold font-mono text-primary tabular-nums">
         {{ formattedDuration }}
       </div>
-      <!-- eslint-disable-next-line @intlify/vue-i18n/no-raw-text -->
-      <p class="text-muted-foreground mt-2">Total Duration</p>
+      <p class="text-muted-foreground mt-2">{{ t('workouts.summary.totalDuration') }}</p>
     </div>
 
     <!-- View Details Button -->
-    <!-- eslint-disable @intlify/vue-i18n/no-raw-text -->
     <Button
       size="lg"
       class="h-touch text-lg font-semibold gap-2"
@@ -69,8 +68,7 @@ const { isVisible } = useEnterAnimation(100)
       @click="emit('view-details')"
     >
       <Check class="size-5" aria-hidden="true" />
-      View Details
+      {{ t('workouts.summary.viewDetails') }}
     </Button>
-    <!-- eslint-enable @intlify/vue-i18n/no-raw-text -->
   </div>
 </template>
