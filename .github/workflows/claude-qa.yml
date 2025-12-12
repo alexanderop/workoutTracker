@@ -60,12 +60,7 @@ jobs:
     env:
       NODE_VERSION: '22'
       # Determine mode from trigger
-      QA_MODE: ${{
-        github.event.label.name == 'qa-verify' && 'verify' ||
-        github.event.label.name == 'claude-explore' && 'explore' ||
-        (github.event_name == 'issue_comment' && 'verify') ||
-        github.event.inputs.mode || 'explore'
-      }}
+      QA_MODE: ${{ github.event.label.name == 'qa-verify' && 'verify' || github.event.label.name == 'claude-explore' && 'explore' || (github.event_name == 'issue_comment' && 'verify') || github.event.inputs.mode || 'explore' }}
       QA_FOCUS: ${{ github.event.inputs.focus || 'general' }}
 
     steps:
