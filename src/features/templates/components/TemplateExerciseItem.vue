@@ -76,15 +76,16 @@ function decrementSetCount(): void {
           t('workouts.templates.sets')
         }}</span>
         <div class="flex items-center bg-background rounded-lg border border-border shadow-sm">
-          <button
-            type="button"
-            class="flex items-center justify-center size-10 hover:bg-muted active:bg-muted/80 transition-colors rounded-l-lg disabled:opacity-40"
+          <Button
+            variant="ghost"
+            size="icon"
+            class="rounded-l-lg rounded-r-none"
             :disabled="exercise.defaultSetCount === 1"
             :aria-label="t('common.aria.decreaseSetCount')"
             @click="decrementSetCount"
           >
             <Minus class="size-4" />
-          </button>
+          </Button>
           <input
             type="number"
             :value="exercise.defaultSetCount"
@@ -93,14 +94,15 @@ function decrementSetCount(): void {
             class="w-10 text-center text-base font-semibold border-0 bg-transparent focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             @change="handleSetCountChange"
           />
-          <button
-            type="button"
-            class="flex items-center justify-center size-10 hover:bg-muted active:bg-muted/80 transition-colors rounded-r-lg"
+          <Button
+            variant="ghost"
+            size="icon"
+            class="rounded-r-lg rounded-l-none"
             :aria-label="t('common.aria.increaseSetCount')"
             @click="incrementSetCount"
           >
             <Plus class="size-4" />
-          </button>
+          </Button>
         </div>
       </div>
 

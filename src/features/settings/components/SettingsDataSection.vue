@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { exportAllData, type ExportData } from '@/features/settings/utils/dataExport'
 import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
 import { tryCatch } from '@/lib/tryCatch'
+import { Button } from '@/components/ui/button'
 import SettingsImportDataDialog from './SettingsImportDataDialog.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 
@@ -79,10 +80,10 @@ async function handleImportConfirm() {
     </h2>
     <div class="space-y-3">
       <!-- Export -->
-      <button
-        type="button"
+      <Button
+        variant="outline"
         :aria-label="t('settings.labels.ariaExportData')"
-        class="flex items-center justify-between w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left disabled:opacity-50"
+        class="flex items-center justify-between w-full h-auto p-4 text-left bg-card hover:bg-accent/50"
         :disabled="isExporting"
         @click="handleExport"
       >
@@ -98,13 +99,13 @@ async function handleImportConfirm() {
         <span v-if="isExporting" class="text-sm text-muted-foreground">{{
           t('settings.labels.exporting')
         }}</span>
-      </button>
+      </Button>
 
       <!-- Import -->
-      <button
-        type="button"
+      <Button
+        variant="outline"
         :aria-label="t('settings.labels.ariaImportData')"
-        class="flex items-center gap-3 w-full p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left"
+        class="flex items-center gap-3 w-full h-auto p-4 text-left bg-card hover:bg-accent/50"
         @click="handleImportClick"
       >
         <Upload class="size-5 text-muted-foreground" />
@@ -114,7 +115,7 @@ async function handleImportConfirm() {
             {{ t('settings.labels.restoreFromBackup') }}
           </p>
         </div>
-      </button>
+      </Button>
       <input
         ref="fileInput"
         type="file"

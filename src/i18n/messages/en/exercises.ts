@@ -31,6 +31,7 @@ export default {
     customShort: 'Create Custom',
     namePlaceholder: 'Name (e.g., Bulgarian Split Squat)',
     save: 'Save',
+    selectIcon: 'Select exercise icon',
   },
   selectors: {
     equipment: {
