@@ -83,12 +83,12 @@ async function handleImportConfirm() {
       <Button
         variant="outline"
         :aria-label="t('settings.labels.ariaExportData')"
-        class="flex items-center justify-between w-full h-auto p-4 text-left bg-card hover:bg-accent/50"
+        class="flex items-center justify-between w-full h-auto p-4 text-left bg-card hover:bg-accent/50 touch-target"
         :disabled="isExporting"
         @click="handleExport"
       >
         <div class="flex items-center gap-3">
-          <Download class="size-5 text-muted-foreground" />
+          <Download class="icon-md text-muted-foreground" />
           <div>
             <p class="font-medium">{{ t('settings.labels.exportData') }}</p>
             <p class="text-sm text-muted-foreground">
@@ -105,10 +105,10 @@ async function handleImportConfirm() {
       <Button
         variant="outline"
         :aria-label="t('settings.labels.ariaImportData')"
-        class="flex items-center gap-3 w-full h-auto p-4 text-left bg-card hover:bg-accent/50"
+        class="flex items-center gap-3 w-full h-auto p-4 text-left bg-card hover:bg-accent/50 touch-target"
         @click="handleImportClick"
       >
-        <Upload class="size-5 text-muted-foreground" />
+        <Upload class="icon-md text-muted-foreground" />
         <div>
           <p class="font-medium">{{ t('settings.labels.importData') }}</p>
           <p class="text-sm text-muted-foreground">

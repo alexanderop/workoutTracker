@@ -31,7 +31,7 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
       <!-- Weight -->
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Label class="flex items-center gap-3 text-base">
-          <Scale class="size-5 text-muted-foreground" />
+          <Scale class="icon-md text-muted-foreground" />
           {{ t('settings.labels.weight') }}
         </Label>
         <ToggleGroup
@@ -62,7 +62,7 @@ function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<Acceptabl
       <!-- Height -->
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Label class="flex items-center gap-3 text-base">
-          <Ruler class="size-5 text-muted-foreground" />
+          <Ruler class="icon-md text-muted-foreground" />
           {{ t('settings.labels.height') }}
         </Label>
         <ToggleGroup

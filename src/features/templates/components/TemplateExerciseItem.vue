@@ -84,7 +84,7 @@ function decrementSetCount(): void {
             :aria-label="t('common.aria.decreaseSetCount')"
             @click="decrementSetCount"
           >
-            <Minus class="size-4" />
+            <Minus class="icon-sm" />
           </Button>
           <input
             type="number"
@@ -101,7 +101,7 @@ function decrementSetCount(): void {
             :aria-label="t('common.aria.increaseSetCount')"
             @click="incrementSetCount"
           >
-            <Plus class="size-4" />
+            <Plus class="icon-sm" />
           </Button>
         </div>
       </div>
@@ -115,7 +115,7 @@ function decrementSetCount(): void {
           :aria-label="t('common.aria.moveUp')"
           @click="$emit('move-up')"
         >
-          <ChevronUp class="size-5" />
+          <ChevronUp class="icon-md" />
         </Button>
         <Button
           variant="ghost"
@@ -124,7 +124,7 @@ function decrementSetCount(): void {
           :aria-label="t('common.aria.moveDown')"
           @click="$emit('move-down')"
         >
-          <ChevronDown class="size-5" />
+          <ChevronDown class="icon-md" />
         </Button>
         <Button
           variant="ghost"
@@ -133,7 +133,7 @@ function decrementSetCount(): void {
           :aria-label="t('common.aria.removeExercise')"
           @click="$emit('remove')"
         >
-          <Trash2 class="size-5" />
+          <Trash2 class="icon-md" />
         </Button>
       </div>
     </div>

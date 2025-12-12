@@ -72,7 +72,7 @@ const isCompleted = computed(() => status === 'completed')
   >
     <!-- Drag handle -->
     <div class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle">
-      <GripVertical class="size-5 text-muted-foreground" />
+      <GripVertical class="icon-md text-muted-foreground" />
     </div>
 
     <!-- Block number -->
@@ -112,7 +112,7 @@ const isCompleted = computed(() => status === 'completed')
       role="img"
       :aria-label="t('common.aria.blockCompleted')"
     >
-      <Check class="size-5 text-green-500" aria-hidden="true" />
+      <Check class="icon-md status-success" aria-hidden="true" />
     </div>
   </div>
 </template>

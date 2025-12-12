@@ -114,7 +114,7 @@ function handleTap() {
         >
           <div class="sr-only">{{ $t('workouts.exerciseCompleted') }}</div>
           <div class="animate-in zoom-in-50 duration-200 bg-white rounded-full p-6 shadow-2xl">
-            <Check class="size-24 text-green-500" aria-hidden="true" />
+            <Check class="size-24 status-success" aria-hidden="true" />
           </div>
         </div>
 

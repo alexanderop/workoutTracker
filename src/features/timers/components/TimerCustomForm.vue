@@ -134,7 +134,7 @@ function handleSubmit() {
         {{ t('timers.form.back') }}
       </Button>
       <Button class="flex-1" :class="colorClass" @click="handleSubmit">
-        <Play class="w-4 h-4 mr-2" />
+        <Play class="icon-sm mr-2" />
         {{ t('timers.form.start') }}
       </Button>
     </div>

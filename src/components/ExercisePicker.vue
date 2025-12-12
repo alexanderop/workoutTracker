@@ -78,18 +78,8 @@ function handleClose() {
   <!-- Dialog presentation mode -->
   <Dialog v-if="presentation === 'dialog'" :open="open" @update:open="handleOpenChange">
     <MobileDialogContent
-      :show-close-button="false"
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[80vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <!-- Mobile close button -->
-      <button
-        class="absolute right-4 top-4 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        @click="handleOpenChange(false)"
-      >
-        <X class="size-5" />
-        <span class="sr-only">{{ t('common.buttons.close') }}</span>
-      </button>
-
       <DialogHeader>
         <DialogTitle>{{ t('dialogs.addExercise.title') }}</DialogTitle>
         <DialogDescription>
@@ -100,7 +90,7 @@ function handleClose() {
       <!-- Search Input -->
       <div class="relative">
         <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+          class="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none"
         />
         <Input
           v-model="searchQuery"
@@ -148,14 +138,14 @@ function handleClose() {
           {{ mode === 'single' ? t('exercises.picker.selectTitle') : t('exercises.picker.addTitle') }}
         </h3>
         <Button variant="ghost" size="icon-sm" @click="handleClose">
-          <X class="w-4 h-4" />
+          <X class="icon-sm" />
           <span class="sr-only">{{ t('common.buttons.close') }}</span>
         </Button>
       </div>
 
       <div class="relative">
         <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+          class="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none"
         />
         <Input
           v-model="searchQuery"

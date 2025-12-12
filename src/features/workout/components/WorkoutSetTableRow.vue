@@ -43,9 +43,9 @@ const completeButtonClass = computed(() =>
   cn(
     'h-9 w-9 rounded-lg transition-all duration-200',
     isCompleted.value
-      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+      ? 'bg-success hover:bg-success/90 text-success-foreground'
       : ready.value
-        ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
+        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
         : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
   ),
 )

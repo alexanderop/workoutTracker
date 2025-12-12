@@ -93,7 +93,7 @@ const completedSets = computed(() => {
           class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle"
           :class="disabled && 'opacity-0'"
         >
-          <GripVertical class="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+          <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
         </div>
 
         <!-- Block icon -->
@@ -143,7 +143,7 @@ const completedSets = computed(() => {
           :aria-label="t('common.aria.editBlock', { name: block.name })"
           @click.stop="emit('edit')"
         >
-          <Pencil class="w-4 h-4" aria-hidden="true" />
+          <Pencil class="icon-sm" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
@@ -152,7 +152,7 @@ const completedSets = computed(() => {
           :aria-label="t('common.aria.removeBlock', { name: isStrengthBlock(block) ? block.name : label })"
           @click.stop="emit('remove')"
         >
-          <X class="w-4 h-4" aria-hidden="true" />
+          <X class="icon-sm" aria-hidden="true" />
         </Button>
       </div>
     </div>

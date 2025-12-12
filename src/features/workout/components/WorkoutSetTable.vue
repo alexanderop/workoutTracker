@@ -69,7 +69,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
     class="w-full mt-2 text-muted-foreground hover:text-foreground"
     @click="emit('add-set')"
   >
-    <Plus class="w-4 h-4 mr-2" />
+    <Plus class="icon-sm mr-2" />
     {{ t('workouts.sets.addSet') }}
   </Button>
 </template>

@@ -55,7 +55,7 @@ function handleCreateExercise() {
       <!-- Search Input -->
       <div class="relative mb-4">
         <Search
-          class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground/60 pointer-events-none transition-colors"
+          class="absolute left-4 top-1/2 -translate-y-1/2 icon-md text-muted-foreground/60 pointer-events-none transition-colors"
         />
         <Input
           v-model="searchQuery"
@@ -67,7 +67,7 @@ function handleCreateExercise() {
           class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted/80 text-muted-foreground/60 hover:text-foreground transition-colors"
           @click="clearSearch"
         >
-          <X class="size-4" />
+          <X class="icon-sm" />
         </button>
       </div>
 
@@ -116,20 +116,20 @@ function handleCreateExercise() {
           <template v-else>{{ t('exercises.empty.tryDifferent') }}</template>
         </p>
         <Button variant="outline" class="mt-4" @click="handleCreateExercise">
-          <Plus class="size-4 mr-2" />
+          <Plus class="icon-sm mr-2" />
           {{ t('exercises.create.customShort') }}
         </Button>
       </div>
     </div>
 
     <!-- Floating Create Button -->
-    <div class="fixed bottom-20 left-0 right-0 px-5 pb-4 pointer-events-none">
+    <div class="fixed bottom-20 left-0 right-0 px-5 pb-4 safe-area-bottom pointer-events-none">
       <div class="max-w-lg mx-auto">
         <Button
           class="w-full h-14 text-base font-medium rounded-2xl shadow-lg shadow-primary/20 pointer-events-auto"
           @click="handleCreateExercise"
         >
-          <Plus class="size-5 mr-2" />
+          <Plus class="icon-md mr-2" />
           {{ t('exercises.create.custom') }}
         </Button>
       </div>

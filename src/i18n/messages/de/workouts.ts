@@ -218,6 +218,8 @@ export default {
       description: 'Übungsfortschritt anzeigen',
       roundHeader: 'Runde {round}',
       active: 'Aktiv',
+      roundInfo: 'Runde {n}, ',
+      exerciseInfo: 'Übung {n}, {name}, {reps} Wiederholungen',
       exerciseStatus: {
         completed: 'Abgeschlossen',
         active: 'Aktiv',

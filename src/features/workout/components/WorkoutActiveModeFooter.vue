@@ -178,7 +178,7 @@ function handlePrimaryAction() {
         :disabled="isFirstBlock"
         @click="emit('prev-block')"
       >
-        <ChevronLeft class="size-5" aria-hidden="true" />
+        <ChevronLeft class="icon-md" aria-hidden="true" />
       </Button>
 
       <!-- Primary action -->
@@ -194,7 +194,7 @@ function handlePrimaryAction() {
         :disabled="isStrengthBlock(props.block) && !canComplete || isTransitioning"
         @click="handlePrimaryAction"
       >
-        <component :is="primaryAction.icon" class="size-5" aria-hidden="true" />
+        <component :is="primaryAction.icon" class="icon-md" aria-hidden="true" />
         {{ primaryAction.label }}
       </Button>
 
@@ -207,7 +207,7 @@ function handlePrimaryAction() {
         :disabled="isLastBlock"
         @click="emit('next-block')"
       >
-        <ChevronRight class="size-5" aria-hidden="true" />
+        <ChevronRight class="icon-md" aria-hidden="true" />
       </Button>
     </div>
   </footer>

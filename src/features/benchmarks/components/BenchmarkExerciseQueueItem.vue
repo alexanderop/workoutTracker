@@ -58,8 +58,15 @@ const isActive = computed(() => status === 'active')
 const isCompleted = computed(() => status === 'completed')
 
 const ariaLabel = computed(() => {
-  const roundInfo = roundNumber ? `Round ${roundNumber}, ` : ''
-  return `${roundInfo}Exercise ${exerciseNumber}, ${exercise.name}, ${exercise.prescribedReps} reps, ${statusLabel.value}`
+  const roundInfo = roundNumber
+    ? t('workouts.benchmarks.queue.roundInfo', { n: roundNumber })
+    : ''
+  const exerciseInfo = t('workouts.benchmarks.queue.exerciseInfo', {
+    n: exerciseNumber,
+    name: exercise.name,
+    reps: exercise.prescribedReps,
+  })
+  return `${roundInfo}${exerciseInfo}, ${statusLabel.value}`
 })
 </script>
 

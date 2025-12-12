@@ -109,7 +109,7 @@ function handleStartWorkout() {
       <Empty v-else class="border-0">
         <EmptyContent>
           <EmptyMedia variant="icon" class="bg-primary/10 text-primary">
-            <Dumbbell class="size-6" />
+            <Dumbbell class="icon-lg" />
           </EmptyMedia>
           <EmptyHeader>
             <EmptyTitle>{{ t('workouts.builder.startYourWorkout') }}</EmptyTitle>
@@ -118,7 +118,7 @@ function handleStartWorkout() {
             </EmptyDescription>
           </EmptyHeader>
           <Button class="gap-2" @click="emit('add-block')">
-            <Dumbbell class="size-4" />
+            <Dumbbell class="icon-sm" />
             {{ t('workouts.builder.addFirstBlock') }}
           </Button>
         </EmptyContent>
@@ -133,8 +133,8 @@ function handleStartWorkout() {
           :class="hasStarted && 'animate-pulse-ring'"
           @click="handleStartWorkout"
         >
-          <RotateCcw v-if="hasStarted" class="size-5" />
-          <Play v-else class="size-5" />
+          <RotateCcw v-if="hasStarted" class="icon-md" />
+          <Play v-else class="icon-md" />
           {{ hasStarted ? t('workouts.resume') : t('workouts.builder.startWorkout') }}
         </Button>
       </div>

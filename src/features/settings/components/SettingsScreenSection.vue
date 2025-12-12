@@ -38,7 +38,7 @@ function handleTimerSoundVolumeChange(event: Event) {
       <!-- Keep Screen On Toggle -->
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-start gap-3 min-w-0">
-          <Smartphone class="size-5 text-muted-foreground mt-0.5 shrink-0" />
+          <Smartphone class="icon-md text-muted-foreground mt-0.5 shrink-0" />
           <div class="min-w-0">
             <Label class="text-base cursor-pointer" for="wake-lock-toggle">{{
               t('settings.labels.keepScreenOn')
@@ -60,7 +60,7 @@ function handleTimerSoundVolumeChange(event: Event) {
       <!-- Timer Sounds Toggle -->
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-start gap-3 min-w-0">
-          <Volume2 class="size-5 text-muted-foreground mt-0.5 shrink-0" />
+          <Volume2 class="icon-md text-muted-foreground mt-0.5 shrink-0" />
           <div class="min-w-0">
             <Label class="text-base cursor-pointer" for="timer-sound-toggle">{{
               t('settings.labels.timerSounds')
@@ -109,7 +109,7 @@ function handleTimerSoundVolumeChange(event: Event) {
           class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
         >
           <ChevronDown
-            class="size-4 transition-transform duration-200"
+            class="icon-sm transition-transform duration-200"
             :class="{ '-rotate-180': advancedOpen }"
           />
           {{ t('settings.labels.advancedDiagnostics') }}

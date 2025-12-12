@@ -24,7 +24,7 @@ async function handleDeleteAllData() {
     <div class="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-start gap-3">
-          <Trash2 class="size-5 text-destructive mt-0.5 shrink-0" />
+          <Trash2 class="icon-md text-destructive mt-0.5 shrink-0" />
           <div>
             <p class="font-medium">{{ t('settings.labels.deleteAllData') }}</p>
             <p class="text-sm text-muted-foreground">

@@ -219,6 +219,8 @@ export default {
       description: 'View exercise progress',
       roundHeader: 'Round {round}',
       active: 'Active',
+      roundInfo: 'Round {n}, ',
+      exerciseInfo: 'Exercise {n}, {name}, {reps} reps',
       exerciseStatus: {
         completed: 'Completed',
         active: 'Active',

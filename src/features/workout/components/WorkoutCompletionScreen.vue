@@ -67,7 +67,7 @@ const { isVisible } = useEnterAnimation(100)
       :style="{ animationDelay: '600ms' }"
       @click="emit('view-details')"
     >
-      <Check class="size-5" aria-hidden="true" />
+      <Check class="icon-md" aria-hidden="true" />
       {{ t('workouts.summary.viewDetails') }}
     </Button>
   </div>

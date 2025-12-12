@@ -34,7 +34,7 @@ function handleLanguageChange(value: AcceptableValue) {
       <!-- Dark Mode -->
       <div class="flex items-center justify-between">
         <Label class="flex items-center gap-3 text-base cursor-pointer" for="theme-toggle">
-          <Moon class="size-5 text-muted-foreground" />
+          <Moon class="icon-md text-muted-foreground" />
           {{ t('settings.labels.darkMode') }}
         </Label>
         <Switch id="theme-toggle" v-model="isDark" data-testid="theme-toggle" />
@@ -43,7 +43,7 @@ function handleLanguageChange(value: AcceptableValue) {
       <!-- Language -->
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Label class="flex items-center gap-3 text-base">
-          <Globe class="size-5 text-muted-foreground" />
+          <Globe class="icon-md text-muted-foreground" />
           {{ t('settings.labels.language') }}
         </Label>
         <Select
