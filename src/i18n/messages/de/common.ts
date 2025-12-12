@@ -45,6 +45,9 @@ export default {
     completed: 'Abgeschlossen',
     editBlock: '{name} bearbeiten',
     removeBlock: '{name} entfernen',
+    deleteSet: 'Satz {index} löschen',
+    incrementByAmount: 'Um {amount} erhöhen',
+    decrementByAmount: 'Um {amount} verringern',
   },
   states: {
     loading: 'Lädt...',

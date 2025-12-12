@@ -172,10 +172,11 @@ function handleRirChange(value: number | undefined) {
         v-if="canDelete"
         variant="ghost"
         size="icon-sm"
+        :aria-label="t('common.aria.deleteSet', { index: index + 1 })"
         class="text-muted-foreground hover:text-destructive"
         @click="emit('remove-set', set.id)"
       >
-        <Trash2 class="w-4 h-4" />
+        <Trash2 class="w-4 h-4" aria-hidden="true" />
       </Button>
     </TableCell>
   </TableRow>

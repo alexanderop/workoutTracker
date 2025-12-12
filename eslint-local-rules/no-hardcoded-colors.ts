@@ -1,5 +1,10 @@
 import type { Rule } from 'eslint'
-import type { Node, Literal } from 'estree'
+import type { Node, Literal, TemplateLiteral } from 'estree'
+
+// Type guard for TemplateLiteral nodes
+function isTemplateLiteral(node: Node): node is TemplateLiteral {
+  return node.type === 'TemplateLiteral'
+}
 
 // Tailwind color palette names (excluding semantic colors)
 // Status colors are allowed: green/emerald (success), red (error), amber/yellow (warning)
@@ -108,8 +113,9 @@ const rule: Rule.RuleModule = {
 
       // Check template literals (backtick strings)
       TemplateLiteral(node: Rule.Node) {
-        const templateNode = node as unknown as { quasis: Array<{ value: { raw: string } }> }
-        for (const quasi of templateNode.quasis) {
+        if (!isTemplateLiteral(node)) return
+
+        for (const quasi of node.quasis) {
           const hardcodedColors = findHardcodedColors(quasi.value.raw)
           for (const color of hardcodedColors) {
             context.report({

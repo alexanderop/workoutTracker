@@ -47,6 +47,9 @@ export default {
     completed: 'Completed',
     editBlock: 'Edit {name}',
     removeBlock: 'Remove {name}',
+    deleteSet: 'Delete set {index}',
+    incrementByAmount: 'Increase by {amount}',
+    decrementByAmount: 'Decrease by {amount}',
   },
   states: {
     loading: 'Loading...',
