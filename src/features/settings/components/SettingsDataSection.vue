@@ -105,15 +105,17 @@ async function handleImportConfirm() {
       <Button
         variant="outline"
         :aria-label="t('settings.labels.ariaImportData')"
-        class="flex items-center gap-3 w-full h-auto p-4 text-left bg-card hover:bg-accent/50 touch-target"
+        class="flex items-center justify-between w-full h-auto p-4 text-left bg-card hover:bg-accent/50 touch-target"
         @click="handleImportClick"
       >
-        <Upload class="icon-md text-muted-foreground" />
-        <div>
-          <p class="font-medium">{{ t('settings.labels.importData') }}</p>
-          <p class="text-sm text-muted-foreground">
-            {{ t('settings.labels.restoreFromBackup') }}
-          </p>
+        <div class="flex items-center gap-3">
+          <Upload class="icon-md text-muted-foreground" />
+          <div>
+            <p class="font-medium">{{ t('settings.labels.importData') }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ t('settings.labels.restoreFromBackup') }}
+            </p>
+          </div>
         </div>
       </Button>
       <input
