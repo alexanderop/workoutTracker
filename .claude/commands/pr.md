@@ -62,7 +62,26 @@ git push -u origin <current-branch>
 
 4. **Generate a comprehensive PR body** with:
    - **Summary**: 2-4 bullet points describing the key changes
-   - **Test plan**: How to verify the changes work
+   - **Test plan**: Precise, actionable steps (see guidelines below)
+
+#### Test Plan Guidelines
+
+Write test plans for **handover to a QA engineer** using **Cucumber/Gherkin style** (Given/When/Then). Must be **completable in under 5 minutes**:
+
+- **Self-contained**: QA should execute without reading code or PR description
+- **Gherkin format**: Use Given (precondition), When (action), Then (expected result)
+- **Concrete examples**: Include specific text/values QA should see
+- **End with CI checks**: Always include `pnpm type-check && pnpm lint && pnpm test`
+- **3-5 scenarios max**: Focus on the most critical user-facing changes
+
+Example:
+```
+Scenario: German locale shows localized dates
+  Given I open the app and navigate to Settings
+  When I change the language to "Deutsch"
+  And I navigate to History
+  Then month headers display German format (e.g., "Dezember 2024")
+```
 
 ### Step 4: Create the PR
 
@@ -76,8 +95,19 @@ gh pr create --title "type(scope): description" --body "$(cat <<'EOF'
 - Key change 3
 
 ## Test plan
-- [ ] Step to verify change 1
-- [ ] Step to verify change 2
+Prerequisites: Run `pnpm dev` and open http://localhost:5173
+
+- [ ] **Scenario 1: [Brief description]**
+  - Given [precondition/starting state]
+  - When [action performed]
+  - Then [expected result with example]
+
+- [ ] **Scenario 2: [Brief description]**
+  - Given [precondition]
+  - When [action]
+  - Then [result]
+
+- [ ] Run `pnpm type-check && pnpm lint && pnpm test` - all pass
 EOF
 )"
 ```
