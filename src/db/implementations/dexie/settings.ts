@@ -36,30 +36,45 @@ function createGetFunction(db: WorkoutTrackerDb) {
       return SETTING_DEFAULTS[key]
     }
 
-    // Use switch to narrow the discriminated union
-    switch (setting.key) {
-      case 'theme':
-        return setting.value
-      case 'defaultRestTimer':
-        return setting.value
-      case 'weightUnit':
-        return setting.value
-      case 'heightUnit':
-        return setting.value
-      case 'autoSaveInterval':
-        return setting.value
-      case 'screenWakeLock':
-        return setting.value
-      case 'timerSoundEnabled':
-        return setting.value
-      case 'timerSoundVolume':
-        return setting.value
-      case 'language':
-        return setting.value
-    }
+    return setting.value
   }
 
   return get
+}
+
+/**
+ * Apply a single setting to the result object with proper type narrowing.
+ */
+function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
+  switch (setting.key) {
+    case 'theme':
+      result.theme = setting.value
+      break
+    case 'defaultRestTimer':
+      result.defaultRestTimer = setting.value
+      break
+    case 'weightUnit':
+      result.weightUnit = setting.value
+      break
+    case 'heightUnit':
+      result.heightUnit = setting.value
+      break
+    case 'autoSaveInterval':
+      result.autoSaveInterval = setting.value
+      break
+    case 'screenWakeLock':
+      result.screenWakeLock = setting.value
+      break
+    case 'timerSoundEnabled':
+      result.timerSoundEnabled = setting.value
+      break
+    case 'timerSoundVolume':
+      result.timerSoundVolume = setting.value
+      break
+    case 'language':
+      result.language = setting.value
+      break
+  }
 }
 
 export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRepository {
@@ -75,35 +90,7 @@ export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRep
       const result = { ...SETTING_DEFAULTS }
 
       for (const setting of settings) {
-        switch (setting.key) {
-          case 'theme':
-            result.theme = setting.value
-            break
-          case 'defaultRestTimer':
-            result.defaultRestTimer = setting.value
-            break
-          case 'weightUnit':
-            result.weightUnit = setting.value
-            break
-          case 'heightUnit':
-            result.heightUnit = setting.value
-            break
-          case 'autoSaveInterval':
-            result.autoSaveInterval = setting.value
-            break
-          case 'screenWakeLock':
-            result.screenWakeLock = setting.value
-            break
-          case 'timerSoundEnabled':
-            result.timerSoundEnabled = setting.value
-            break
-          case 'timerSoundVolume':
-            result.timerSoundVolume = setting.value
-            break
-          case 'language':
-            result.language = setting.value
-            break
-        }
+        applySetting(result, setting)
       }
 
       return result
