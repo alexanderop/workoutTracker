@@ -188,7 +188,6 @@ function handleRirChange(set: Set, value: number | undefined) {
                 :model-value="state.weightValue"
                 :min="0"
                 :max="999"
-                :disabled="!state.isActive"
                 @update:model-value="handleWeightChange(state.set, $event)"
               >
                 <NumberFieldInput
@@ -205,7 +204,6 @@ function handleRirChange(set: Set, value: number | undefined) {
                 :model-value="state.repsValue"
                 :min="0"
                 :max="999"
-                :disabled="!state.isActive"
                 @update:model-value="handleRepsChange(state.set, $event)"
               >
                 <NumberFieldInput
@@ -222,7 +220,6 @@ function handleRirChange(set: Set, value: number | undefined) {
                 :model-value="state.rirValue"
                 :min="0"
                 :max="10"
-                :disabled="!state.isActive"
                 @update:model-value="handleRirChange(state.set, $event)"
               >
                 <NumberFieldInput
@@ -244,7 +241,6 @@ function handleRirChange(set: Set, value: number | undefined) {
                 size="icon"
                 :aria-label="t('common.aria.markSetNumberComplete', { number: state.setNumber })"
                 :class="state.completeButtonClass"
-                :disabled="state.isPending"
                 @click="emit('toggle-complete', state.set)"
               >
                 <Check :class="state.checkIconClass" aria-hidden="true" />

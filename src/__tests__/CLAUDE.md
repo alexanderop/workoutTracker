@@ -11,6 +11,10 @@ AI agent guidance for testing in this Vue 3 PWA.
 **Test Types**:
 - **Unit tests** (`src/__tests__/composables/`) - Direct composable testing
 - **Integration tests** (`src/__tests__/integration/`) - Full user flow tests with router + Pinia
+- **Component tests** (`src/__tests__/components/`) - Isolated component tests
+- **Feature tests** (`src/__tests__/features/`) - Feature module tests
+- **Accessibility tests** (`src/__tests__/a11y/`) - A11y compliance tests
+- **Browser tests** (`src/__tests__/browser/`) - Browser-specific behavior tests
 - **Database tests** (`src/db/__tests__/`) - Repository pattern tests
 
 ## Setup & Run
@@ -243,23 +247,40 @@ afterEach(cleanupIntegrationTest) // Cleans up automatically
 - **Full app**: `src/__tests__/helpers/createTestApp.ts` - Router + Pinia + i18n
 - **Lifecycle**: `src/__tests__/helpers/withSetup.ts` - Composables with hooks
 - **Setup/teardown**: `src/__tests__/helpers/integrationSetup.ts`
-- **Database reset**: `src/__tests__/setup.ts` (`resetDatabase()`)
+- **Database reset**: `src/__tests__/helpers/resetDatabase.ts` and `src/__tests__/setup.ts`
+- **Audio mocking**: `src/__tests__/helpers/audioMock.ts` - Mock audio for timer tests
+- **Repository mocks**: `src/__tests__/helpers/mockRepositories.ts` - Mock database repositories
+- **Accessibility**: `src/__tests__/helpers/a11y.ts` - A11y testing utilities
 
 ### Page Objects
 - **Common**: `src/__tests__/helpers/pages/CommonPO.ts` - Dialogs, navigation
 - **Builder**: `src/__tests__/helpers/pages/BuilderPO.ts` - Workout builder
 - **Active workout**: `src/__tests__/helpers/pages/ActiveWorkoutPO.ts`
-- **Benchmarks**: `src/__tests__/helpers/pages/BenchmarksPO.ts`
+- **Benchmarks list**: `src/__tests__/helpers/pages/BenchmarksPO.ts`
+- **Benchmark detail**: `src/__tests__/helpers/pages/BenchmarkDetailPO.ts`
+- **Benchmark form**: `src/__tests__/helpers/pages/BenchmarkFormPO.ts`
+- **Queue**: `src/__tests__/helpers/pages/QueuePO.ts`
 
 ### Test Factories
 - **In-memory workout**: `src/__tests__/factories/workout.builder.ts`
+- **Workout factory**: `src/__tests__/factories/workout.factory.ts`
 - **Database workout**: `src/__tests__/factories/dbWorkout.factory.ts`
 - **Blocks**: `src/__tests__/factories/block.factory.ts`
+- **DB Blocks**: `src/__tests__/factories/dbBlock.factory.ts`
 - **Sets**: `src/__tests__/factories/set.factory.ts`
+- **DB Sets**: `src/__tests__/factories/dbSet.factory.ts`
 - **Exercises**: `src/__tests__/factories/exercise.factory.ts`
+- **DB Exercises**: `src/__tests__/factories/dbExercise.factory.ts`
+- **Custom exercises**: `src/__tests__/factories/customExercise.factory.ts`
+- **Templates**: `src/__tests__/factories/template.factory.ts`
 
 ### Example Tests
-- **Integration test**: `src/__tests__/integration/benchmark-timer-flow.spec.ts`
+- **Integration tests**: `src/__tests__/integration/`
+  - `benchmark-flows.spec.ts` - Benchmark workout flows
+  - `strength-workflows.spec.ts` - Strength workout flows
+  - `timed-block-workflows.spec.ts` - Timed block flows
+  - `timer-audio-playback.spec.ts` - Timer audio tests
+  - `workout-management.spec.ts` - Workout CRUD operations
 - **Composable test**: `src/__tests__/composables/timers/useRestTimer.spec.ts`
 - **Database test**: `src/db/__tests__/` (repository tests)
 
@@ -286,6 +307,15 @@ ls src/__tests__/helpers
 
 # Search for a specific test by name
 rg -n "it\('.*timer" src/__tests__ --type ts
+
+# Find a11y tests
+find src/__tests__/a11y -name "*.spec.ts"
+
+# Find browser-specific tests
+find src/__tests__/browser -name "*.spec.ts"
+
+# List all test directories
+ls src/__tests__/
 ```
 
 ## Common Gotchas

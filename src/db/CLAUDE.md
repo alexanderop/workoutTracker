@@ -23,13 +23,16 @@ src/db/
 ├── provider.ts               # Repository provider (singleton)
 ├── index.ts                  # Public API (getters)
 ├── converters.ts             # Domain ↔ Database type converters
+├── seedExercises.ts          # Default exercise data seeding
 ├── implementations/
 │   └── dexie/
-│       ├── database.ts       # Dexie schema definition
-│       ├── settings.ts       # Settings repository impl
+│       ├── database.ts           # Dexie schema definition
+│       ├── index.ts              # Dexie implementation exports
+│       ├── settings.ts           # Settings repository impl
 │       ├── customExercises.ts
 │       ├── workouts.ts
 │       ├── activeWorkout.ts
+│       ├── activeBenchmarkWorkout.ts  # Active benchmark workout state
 │       ├── templates.ts
 │       ├── benchmarks.ts
 │       └── dataManagement.ts
@@ -197,6 +200,7 @@ await getWorkoutsRepository().create(dbWorkout)
   - `CustomExercisesRepository` - Exercise library CRUD
   - `WorkoutsRepository` - Completed workout history
   - `ActiveWorkoutRepository` - Current workout state
+  - `ActiveBenchmarkWorkoutRepository` - Active benchmark workout state
   - `TemplatesRepository` - Workout templates
   - `BenchmarksRepository` - Benchmark workouts
   - `DataManagementRepository` - Export/import/delete
@@ -210,8 +214,10 @@ await getWorkoutsRepository().create(dbWorkout)
 - **Custom exercises**: `src/db/implementations/dexie/customExercises.ts`
 - **Workouts**: `src/db/implementations/dexie/workouts.ts`
 - **Active workout**: `src/db/implementations/dexie/activeWorkout.ts`
+- **Active benchmark workout**: `src/db/implementations/dexie/activeBenchmarkWorkout.ts`
 - **Templates**: `src/db/implementations/dexie/templates.ts`
 - **Benchmarks**: `src/db/implementations/dexie/benchmarks.ts`
+- **Data management**: `src/db/implementations/dexie/dataManagement.ts`
 
 ### Type Converters
 - **All converters**: `src/db/converters.ts`

@@ -17,7 +17,7 @@ AI agent guidance for feature modules in this Vue 3 PWA.
 | `workout/` | Active workout state & execution | `composables/useWorkout.ts` (singleton state) |
 | `exercises/` | Exercise library CRUD | `composables/useExerciseForm.ts` |
 | `templates/` | Workout template management | `composables/useTemplateForm.ts` |
-| `benchmarks/` | Benchmark workout tracking | `composables/useBenchmarkForm.ts` |
+| `benchmarks/` | Benchmark workout tracking & execution | `composables/useBenchmark.ts`, `useBenchmarkForm.ts` |
 | `settings/` | App settings & preferences | `composables/useLanguageSettings.ts` |
 | `timers/` | Standalone timer UI components | `components/TimerCard.vue` |
 
@@ -201,12 +201,28 @@ src/features/workout/components/WorkoutButton.vue
   - Shared `workout` ref across all components
   - Block operations: `selectBlock`, `removeBlock`, `reorderBlocks`
   - Set operations: `completeSet`, `addSet`, `removeSet`
+- **Workout mode**: `src/features/workout/composables/useWorkoutMode.ts`
+- **Duration timer**: `src/features/workout/composables/useWorkoutDurationTimer.ts`
+- **Timed block exercises**: `src/features/workout/composables/useTimedBlockExercises.ts`
+- **Summary stats**: `src/features/workout/composables/useSummaryStats.ts`
+- **Workout detail**: `src/features/workout/composables/useWorkoutDetail.ts`
 
 ### Persistence
 - **Auto-save**: `src/features/workout/composables/useWorkoutPersistence.ts`
   - `loadActiveWorkout()` - Load from IndexedDB
   - `completeWorkout()` - Save to history
   - `discardActiveWorkout()` - Delete without saving
+
+### Benchmark Feature
+- **Core state**: `src/features/benchmarks/composables/useBenchmark.ts`
+- **Form management**: `src/features/benchmarks/composables/useBenchmarkForm.ts`
+- **Persistence**: `src/features/benchmarks/composables/useBenchmarkPersistence.ts`
+- **Mode switching**: `src/features/benchmarks/composables/useBenchmarkMode.ts`
+- **Detail view**: `src/features/benchmarks/composables/useBenchmarkDetail.ts`
+- **Exercise navigation**: `src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts`
+- **Personal best display**: `src/features/benchmarks/composables/usePersonalBestDisplay.ts`
+- **Attempt history**: `src/features/benchmarks/composables/useBenchmarkAttemptHistory.ts`
+- **Split comparison**: `src/features/benchmarks/composables/useBenchmarkSplitComparison.ts`
 
 ### Exercise Library
 - **Exercise store**: `src/stores/exercises.ts` (Pinia store)
@@ -241,6 +257,15 @@ rg -n "from '@/(composables|stores|db|types|lib)" src/features/workout
 
 # Check for illegal cross-feature imports (should be empty)
 rg -n "from '@/features/" src/features/workout
+
+# List all benchmark composables
+ls src/features/benchmarks/composables
+
+# List all benchmark components
+ls src/features/benchmarks/components
+
+# Find benchmark state management
+rg -n "useBenchmark" src/features/benchmarks
 ```
 
 ## Common Gotchas
