@@ -1,15 +1,13 @@
+import { format, isToday, isYesterday, differenceInDays, isSameYear } from 'date-fns'
 import { i18n } from '@/i18n'
+import { getCurrentLocale, getDateLocale } from './dateLocale'
 
 /**
  * Format a timestamp to a human-readable date string.
  */
 export function formatDate(timestamp: number): string {
-  const locale = i18n.global.locale.value || 'en'
-  return new Date(timestamp).toLocaleDateString(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  const locale = getCurrentLocale()
+  return format(new Date(timestamp), 'MMM d, yyyy', { locale: getDateLocale(locale) })
 }
 
 /**
@@ -48,51 +46,36 @@ export function formatBenchmarkType(type: 'fortime' | 'rounds', rounds: number):
 }
 
 /**
- * Check if two dates are on the same calendar day.
- */
-function isSameDay(date1: Date, date2: Date): boolean {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  )
-}
-
-/**
  * Format a timestamp to a relative date string.
  * Returns: "Today", "Yesterday", weekday name, or formatted date.
  */
-export function formatRelativeDate(timestamp: number, locale?: string): string {
-  const effectiveLocale = locale ?? i18n.global.locale.value ?? 'en'
+export function formatRelativeDate(timestamp: number): string {
+  const locale = getCurrentLocale()
+  const dateLocale = getDateLocale(locale)
   const t = i18n.global.t
   const date = new Date(timestamp)
   const now = new Date()
-  const yesterday = new Date(now)
-  yesterday.setDate(yesterday.getDate() - 1)
 
-  // Today
-  if (isSameDay(date, now)) {
+  if (isToday(date)) {
     return t('common.dates.today')
   }
 
-  // Yesterday
-  if (isSameDay(date, yesterday)) {
+  if (isYesterday(date)) {
     return t('common.dates.yesterday')
   }
 
   // Within last 7 days - show day name
-  const daysDiff = Math.floor((now.getTime() - timestamp) / (1000 * 60 * 60 * 24))
-  if (daysDiff < 7) {
-    return date.toLocaleDateString(effectiveLocale, { weekday: 'long' })
+  if (differenceInDays(now, date) < 7) {
+    return format(date, 'EEEE', { locale: dateLocale })
   }
 
-  // Older - show date without year if same year
-  if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleDateString(effectiveLocale, { day: 'numeric', month: 'long' })
+  // Same year - show date without year
+  if (isSameYear(date, now)) {
+    return format(date, 'd MMMM', { locale: dateLocale })
   }
 
   // Different year - include year
-  return date.toLocaleDateString(effectiveLocale, { day: 'numeric', month: 'long', year: 'numeric' })
+  return format(date, 'd MMMM yyyy', { locale: dateLocale })
 }
 
 /**
