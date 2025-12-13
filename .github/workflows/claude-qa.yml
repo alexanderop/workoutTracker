@@ -231,7 +231,10 @@ jobs:
             - Forms are usable
 
             ## If you find bugs:
-            Take a screenshot with name format: `bug-[description].png` (e.g., bug-broken-nav.png)
+            1. Take a screenshot: `bug-[description].png`
+            2. Document what you observed (NOT what the code does)
+            3. CONTINUE TESTING - do NOT investigate source code or try to debug
+            A QA engineer reports bugs, they don't fix them.
 
             ## FINAL STEP (turns 56-60):
             Write `qa-report.md`:
@@ -266,10 +269,12 @@ jobs:
             **[✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS]**
             ```
 
+          # QA tester tools only - no source code access, no low-level JS execution
+          # A real QA tester only interacts through the UI
           claude_args: |
             --max-turns 60
-            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing,tracing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_evaluate,mcp__playwright__browser_network_requests,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_run_code,mcp__playwright__browser_install,mcp__playwright__browser_mouse_click_xy,mcp__playwright__browser_mouse_drag_xy,mcp__playwright__browser_mouse_move_xy,mcp__playwright__browser_generate_locator,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_list_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,mcp__playwright__browser_start_tracing,mcp__playwright__browser_stop_tracing,Read,Write"
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
       - name: Run Claude QA - Verify Mode
         if: env.QA_MODE == 'verify'
@@ -330,8 +335,11 @@ jobs:
             - Can you complete the main flow?
 
             ## If you find bugs:
-            Take screenshot with severity: `bug-[severity]-[description].png`
-            Examples: `bug-major-form-not-submitting.png`, `bug-minor-text-overflow.png`
+            1. Take screenshot: `bug-[severity]-[description].png`
+               Examples: `bug-major-form-not-submitting.png`, `bug-minor-text-overflow.png`
+            2. Document what you observed and steps to reproduce
+            3. CONTINUE TESTING - do NOT investigate code or try to debug
+            4. A QA engineer reports bugs, they don't fix them
 
             ## FINAL STEP - Write qa-report.md:
 
@@ -380,10 +388,12 @@ jobs:
             [One sentence summary explaining the verdict]
             ```
 
+          # QA tester tools only - no source code access, no low-level JS execution
+          # A real QA tester only interacts through the UI
           claude_args: |
             --max-turns 50
-            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing,tracing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_evaluate,mcp__playwright__browser_network_requests,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_run_code,mcp__playwright__browser_install,mcp__playwright__browser_mouse_click_xy,mcp__playwright__browser_mouse_drag_xy,mcp__playwright__browser_mouse_move_xy,mcp__playwright__browser_generate_locator,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_list_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,mcp__playwright__browser_start_tracing,mcp__playwright__browser_stop_tracing,Read,Write"
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
       - name: Check report exists
         id: check-report
@@ -418,8 +428,8 @@ jobs:
             - Verdict: ✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS
           claude_args: |
             --max-turns 15
-            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing,tracing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_evaluate,mcp__playwright__browser_network_requests,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_run_code,mcp__playwright__browser_install,mcp__playwright__browser_mouse_click_xy,mcp__playwright__browser_mouse_drag_xy,mcp__playwright__browser_mouse_move_xy,mcp__playwright__browser_generate_locator,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_list_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,mcp__playwright__browser_start_tracing,mcp__playwright__browser_stop_tracing,Read,Write"
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,Write"
 
       - name: Verify report after retry
         id: check-report-retry
