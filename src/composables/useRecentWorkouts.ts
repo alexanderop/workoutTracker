@@ -1,5 +1,4 @@
-import { computed, onMounted, readonly, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed, onMounted, readonly, ref, shallowRef } from 'vue'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { formatDurationMinutes, formatRelativeDate } from '@/lib/formatters'
@@ -22,11 +21,11 @@ export type RecentWorkout = {
 // Pure Functions (Functional Core)
 // ============================================
 
-function mapToRecentWorkout(workout: DbCompletedWorkout, locale: string): RecentWorkout {
+function mapToRecentWorkout(workout: DbCompletedWorkout): RecentWorkout {
   return {
     id: workout.id,
     name: workout.name,
-    relativeDate: formatRelativeDate(workout.completedAt, locale),
+    relativeDate: formatRelativeDate(workout.completedAt),
     durationMinutes: formatDurationMinutes(workout.durationSeconds),
     setCount: countCompletedSets(workout.blocks),
   }
@@ -37,10 +36,8 @@ function mapToRecentWorkout(workout: DbCompletedWorkout, locale: string): Recent
 // ============================================
 
 export function useRecentWorkouts(limit = 3) {
-  const { locale } = useI18n()
-
   // Primary State
-  const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+  const workouts = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
 
   // State Metadata
   const isLoading = ref(true)
@@ -49,7 +46,7 @@ export function useRecentWorkouts(limit = 3) {
   const hasHistory = computed(() => workouts.value.length > 0)
 
   const recentWorkouts = computed<ReadonlyArray<RecentWorkout>>(() =>
-    workouts.value.map((workout) => mapToRecentWorkout(workout, locale.value)),
+    workouts.value.map((workout) => mapToRecentWorkout(workout)),
   )
 
   // Methods

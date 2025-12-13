@@ -1,6 +1,6 @@
 import { onMounted, ref, shallowRef } from 'vue'
 import { getBenchmarksRepository } from '@/db'
-import { formatBenchmarkType } from '@/lib/formatters'
+import { formatBenchmarkType, formatDate } from '@/lib/formatters'
 import type { DbBenchmark } from '@/db/schema'
 
 // ============================================
@@ -12,7 +12,7 @@ import type { DbBenchmark } from '@/db/schema'
  */
 function formatBenchmarkDate(timestamp: number | null): string {
   if (!timestamp) return 'Never used'
-  return `Last used ${new Date(timestamp).toLocaleDateString()}`
+  return `Last used ${formatDate(timestamp)}`
 }
 
 // ============================================

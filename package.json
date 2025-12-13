@@ -36,6 +36,7 @@
     "@vueuse/integrations": "^14.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
     "lucide-vue-next": "^0.556.0",
     "pinia": "^3.0.3",

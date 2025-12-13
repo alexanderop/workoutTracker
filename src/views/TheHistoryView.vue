@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, shallowRef, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { format } from 'date-fns'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
+import { getDateLocale, isSupportedLocale } from '@/lib/dateLocale'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
@@ -36,7 +38,7 @@ const router = useRouter()
 // State
 // ============================================
 
-const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+const workouts = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
 const isLoading = ref(true)
 
 // ============================================
@@ -45,14 +47,16 @@ const isLoading = ref(true)
 
 const groupedByMonth = computed<ReadonlyArray<GroupedWorkouts>>(() => {
   const groups = new Map<string, WorkoutGroup>()
+  const currentLocale = isSupportedLocale(locale.value) ? locale.value : 'en'
+  const dateLocale = getDateLocale(currentLocale)
 
   for (const workout of workouts.value) {
     const date = new Date(workout.completedAt)
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`
+    const monthKey = format(date, 'yyyy-MM')
 
     const existing = groups.get(monthKey)
     if (!existing) {
-      const label = date.toLocaleDateString(locale.value, { month: 'long', year: 'numeric' })
+      const label = format(date, 'LLLL yyyy', { locale: dateLocale })
       groups.set(monthKey, { label, workouts: [workout] })
       continue
     }
