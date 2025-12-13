@@ -256,7 +256,7 @@ jobs:
           # QA tester tools only - no source code access, no low-level JS execution
           # A real QA tester only interacts through the UI
           claude_args: |
-            --max-turns 60
+            --max-turns 100
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
             --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
@@ -270,7 +270,7 @@ jobs:
           # QA tester tools only - no source code access, no low-level JS execution
           # A real QA tester only interacts through the UI
           claude_args: |
-            --max-turns 50
+            --max-turns 100
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
             --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
@@ -285,40 +285,6 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "Warning: No report generated"
-          fi
-
-      # Retry with full tools if main run failed to generate a report
-      - name: Retry if no report generated
-        if: steps.check-report.outputs.exists == 'false'
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            IMPORTANT: The previous QA run did not generate a report.
-
-            Do a quick navigation smoke test and write qa-report.md immediately:
-            1. Navigate to http://localhost:5173
-            2. Check 3-4 main pages load correctly
-            3. Write the report with what you observed
-
-            Write `qa-report.md` now with:
-            - Summary of pages tested
-            - Any errors found
-            - Verdict: ✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS
-          claude_args: |
-            --max-turns 15
-            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,Write"
-
-      - name: Verify report after retry
-        id: check-report-retry
-        if: steps.check-report.outputs.exists == 'false'
-        shell: bash
-        run: |
-          if [ -f "qa-report.md" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Set commit status
