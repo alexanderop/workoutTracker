@@ -212,12 +212,8 @@ describe('Workout Management', () => {
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      // Go back to builder mode - find back button by chevron icon
-      const backButton = document.querySelector('header button')
-      if (!(backButton instanceof HTMLElement)) {
-        throw new Error('Back button not found')
-      }
-      await user.click(backButton)
+      // Go back to builder mode
+      await user.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode to render
       await waitFor(() => {
@@ -252,12 +248,8 @@ describe('Workout Management', () => {
       await builder.startWorkout()
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      // Go back to builder mode - find back button in header
-      const backButton = document.querySelector('header button')
-      if (!(backButton instanceof HTMLElement)) {
-        throw new Error('Back button not found')
-      }
-      await user.click(backButton)
+      // Go back to builder mode
+      await user.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode
       await waitFor(() => {

@@ -309,11 +309,7 @@ describe('Workout Set Completion', () => {
       })
 
       // Go back to builder mode
-      const backButton = document.querySelector('header button')
-      if (!(backButton instanceof HTMLElement)) {
-        throw new Error('Back button not found')
-      }
-      await user.click(backButton)
+      await user.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode with Resume button
       await waitFor(() => {

@@ -96,11 +96,7 @@ const footerState = computed(() => ({
   isTransitioning: false,
 }))
 
-function handleCompleteSet() {
-  if (!activeSet.value) return
-
-  const result = completeSet(activeSet.value)
-
+function handleSetCompletion(result: ReturnType<typeof completeSet>) {
   if (result.kind !== 'completed') return
 
   if (result.nextAction === 'workout-complete') {
@@ -109,6 +105,11 @@ function handleCompleteSet() {
   }
 
   restTimer.start()
+}
+
+function handleCompleteSet() {
+  if (!activeSet.value) return
+  handleSetCompletion(completeSet(activeSet.value))
 }
 
 function handleToggleTimer() {
@@ -148,16 +149,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
 }
 
 function handleToggleComplete(set: Set) {
-  const result = completeSet(set)
-
-  if (result.kind !== 'completed') return
-
-  if (result.nextAction === 'workout-complete') {
-    emit('workout-complete')
-    return
-  }
-
-  restTimer.start()
+  handleSetCompletion(completeSet(set))
 }
 
 function handleAddSet() {
