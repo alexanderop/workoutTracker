@@ -54,6 +54,14 @@ describe('Template Flow', () => {
       await user.clear(nameInput)
       await user.type(nameInput, 'Push Day')
 
+      // Verify the input value was set correctly before proceeding
+      await waitFor(() => {
+        if (!(nameInput instanceof HTMLInputElement)) {
+          throw new Error('Name input is not an HTMLInputElement')
+        }
+        expect(nameInput.value).toBe('Push Day')
+      })
+
       await user.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen

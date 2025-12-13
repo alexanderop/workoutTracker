@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/vue'
+import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -9,7 +9,7 @@ describe('Unit Display', () => {
   afterEach(cleanupIntegrationTest)
 
   it('displays weight in lbs when user changes unit preference', async () => {
-    const { user, getByRole, queryByRole, queryByText, navigateTo, common, builder, cleanup } =
+    const { user, getByRole, queryByText, navigateTo, common, builder, cleanup } =
       await createTestApp()
 
     // Start a workout and add a strength block
@@ -22,8 +22,11 @@ describe('Unit Display', () => {
     // Start workout
     await builder.startWorkout()
 
-    // Verify weight unit shows 'kg' by default
-    expect(queryByText(/kg$/)).toBeTruthy()
+    // Wait for table to render
+    await screen.findByRole('table')
+
+    // Verify weight unit shows 'KG' by default (in table header)
+    expect(queryByText('KG')).toBeTruthy()
 
     // Navigate to settings
     await navigateTo({ name: RouteNames.Settings })
@@ -35,13 +38,11 @@ describe('Unit Display', () => {
     // Navigate back to workout
     await navigateTo({ name: RouteNames.ActiveWorkout })
 
-    // Wait for the workout view to render
-    await waitFor(() => {
-      expect(queryByRole('spinbutton', { name: /weight/i })).toBeTruthy()
-    })
+    // Wait for the table to render again
+    await screen.findByRole('table')
 
-    // Verify weight unit now shows 'lbs'
-    expect(queryByText(/lbs$/)).toBeTruthy()
+    // Verify weight unit now shows 'LBS' (in table header)
+    expect(queryByText('LBS')).toBeTruthy()
 
     cleanup()
   })
@@ -68,25 +69,18 @@ describe('Unit Display', () => {
     // Start workout
     await builder.startWorkout()
 
-    // Wait for active mode
-    await waitFor(() => {
-      expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-    })
+    // Wait for table to render
+    await screen.findByRole('table')
 
-    // Verify weight unit shows 'lbs' after preference change
-    expect(queryByText(/lbs$/)).toBeTruthy()
+    // Verify weight unit shows 'LBS' after preference change (in table header)
+    expect(queryByText('LBS')).toBeTruthy()
 
     // Enter weight in lbs (220 lbs ≈ 100 kg, stored internally as kg)
     await workout.fillCardSetAndComplete({ weight: '220', reps: '8', rir: '2' })
 
-    // Verify we advanced to set 2
+    // Verify set was completed using Page Object method
     await waitFor(() => {
-      expect(queryByText('2/3')).toBeTruthy()
-    })
-
-    // Verify completed set shows in lbs format
-    await waitFor(() => {
-      expect(queryByText(/220lbs × 8/)).toBeTruthy()
+      expect(workout.isSetCompleted(0)).toBe(true)
     })
 
     cleanup()

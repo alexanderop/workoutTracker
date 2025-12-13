@@ -45,8 +45,13 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         <TableHead class="text-center h-8 p-1 text-xs">{{
           t('workouts.table.headers.tenRm')
         }}</TableHead>
-        <TableHead class="text-center w-[50px] h-8 p-1">✓</TableHead>
-        <TableHead class="w-[40px] h-8 p-1" />
+        <TableHead class="text-center w-[50px] h-8 p-1">
+          <span aria-hidden="true">✓</span>
+          <span class="sr-only">{{ t('common.aria.statusColumn') }}</span>
+        </TableHead>
+        <TableHead class="w-[40px] h-8 p-1">
+          <span class="sr-only">{{ t('common.aria.actionsColumn') }}</span>
+        </TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>

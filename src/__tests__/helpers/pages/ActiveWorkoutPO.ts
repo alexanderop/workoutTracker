@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/vue'
+import { screen, within } from '@testing-library/vue'
+import { tryCatch } from '@/lib/tryCatch'
 import type { SetInputs, SetValues, TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 
@@ -13,36 +14,48 @@ export class ActiveWorkoutPO {
   ) {}
 
   /**
+   * Gets an input element from a table row by aria-label using semantic queries.
+   * @param row - The table row element to search within
+   * @param name - The accessible name pattern to match
+   * @returns The input element
+   */
+  private getInputFromRow(row: HTMLElement, name: RegExp): HTMLInputElement {
+    const input = within(row).getByRole('spinbutton', { name })
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error(`Input matching ${name} is not an HTMLInputElement`)
+    }
+    return input
+  }
+
+  /**
+   * Gets the complete button from a table row.
+   * @param row - The table row element to search within
+   * @returns The complete button element
+   */
+  private getCompleteButtonFromRow(row: HTMLElement): HTMLElement {
+    return within(row).getByRole('button', { name: /mark set.*(complete|done)/i })
+  }
+
+  /**
    * Retrieves input elements and complete button for a specific set row.
    * @param setIndex - Zero-based index of the set row in the table
    * @returns Object containing weight, reps, RIR inputs and complete button
    * @throws Error if the row or any required element is not found
    */
   getSetRow(setIndex: number): SetInputs {
-    const rows = document.querySelectorAll('tbody tr')
-    const row = rows[setIndex]
-    if (!row) {
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    // Skip header row (index 0)
+    const row = rows[setIndex + 1]
+    if (!row || !(row instanceof HTMLElement)) {
       throw new Error(`Set row at index ${setIndex} not found`)
     }
 
-    const getInput = (label: string): HTMLInputElement => {
-      const el = row.querySelector(`[aria-label="${label}"]`)
-      if (!(el instanceof HTMLInputElement)) {
-        throw new Error(`${label} input not found or not an HTMLInputElement`)
-      }
-      return el
-    }
-
-    const completeButton = row.querySelector('[aria-label="Mark set complete"]')
-    if (!(completeButton instanceof HTMLElement)) {
-      throw new Error('Complete button not found in set row')
-    }
-
     return {
-      kg: getInput('Weight'),
-      reps: getInput('Reps'),
-      rir: getInput('Reps in reserve'),
-      complete: completeButton,
+      kg: this.getInputFromRow(row, /weight for set/i),
+      reps: this.getInputFromRow(row, /^reps for set/i),
+      rir: this.getInputFromRow(row, /reps in reserve for set/i),
+      complete: this.getCompleteButtonFromRow(row),
     }
   }
 
@@ -129,17 +142,94 @@ export class ActiveWorkoutPO {
   }
 
   /**
-   * Fills strength set inputs using the card-based UI and clicks the complete button.
-   * Handles jsdom vs browser mode differences using CommonPO's fillStrengthSetAndWaitForButton.
+   * Gets the active set row (the one with editable inputs).
+   * The active row is identified by having enabled (non-disabled) input fields.
+   * @returns The active row element
+   * @throws Error if no active row is found
+   */
+  private getActiveRow(): HTMLElement {
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    // Skip header row, check data rows
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i]
+      if (!(row instanceof HTMLElement)) continue
+      // Check if weight input is enabled (active row has enabled inputs)
+      const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
+      if (weightInput && !weightInput.hasAttribute('disabled')) {
+        return row
+      }
+    }
+    throw new Error('No active set row found (no enabled weight input)')
+  }
+
+  /**
+   * Gets input values from the currently active row (the row with enabled inputs).
+   * Useful for verifying prefilled values after completing a set.
+   * @returns Object with weight, reps, rir inputs, or null if no active row
+   */
+  getActiveRowInputs(): { weight: HTMLInputElement; reps: HTMLInputElement; rir: HTMLInputElement } | null {
+    const [error, row] = tryCatch(() => this.getActiveRow())
+    if (error || !row) return null
+
+    return {
+      weight: this.getInputFromRow(row, /weight for set/i),
+      reps: this.getInputFromRow(row, /^reps for set/i),
+      rir: this.getInputFromRow(row, /reps in reserve for set/i),
+    }
+  }
+
+  /**
+   * Checks if a specific set row shows completed state.
+   * @param setIndex - Zero-based index of the set row
+   * @returns true if the row shows a completion indicator
+   */
+  isSetCompleted(setIndex: number): boolean {
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    const row = rows[setIndex + 1] // Skip header
+    if (!row) return false
+    // Check for completed indicator (checkmark icon or disabled inputs)
+    const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
+    return weightInput?.hasAttribute('disabled') ?? false
+  }
+
+  /**
+   * Gets the count of completed sets in the table.
+   * @returns Number of completed sets
+   */
+  getCompletedSetCount(): number {
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    let count = 0
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i]
+      if (!row) continue
+      const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
+      if (weightInput?.hasAttribute('disabled')) {
+        count++
+      }
+    }
+    return count
+  }
+
+  /**
+   * Fills strength set inputs using the table-based UI and clicks the complete button.
+   * Finds the active row (with enabled inputs) and fills it.
    * @param values - Object with weight, reps, rir values as strings
    */
   async fillCardSetAndComplete(values: { weight: string; reps: string; rir: string }): Promise<void> {
+    const row = this.getActiveRow()
+
     const inputs = {
-      weight: screen.getByRole('spinbutton', { name: /weight/i }),
-      reps: screen.getByRole('spinbutton', { name: /reps$/i }),
-      rir: screen.getByRole('spinbutton', { name: /reps in reserve/i }),
+      weight: this.getInputFromRow(row, /weight for set/i),
+      reps: this.getInputFromRow(row, /^reps for set/i),
+      rir: this.getInputFromRow(row, /reps in reserve for set/i),
     }
-    const completeButton = screen.getByRole('button', { name: /complete set/i })
+
+    const completeButton = this.getCompleteButtonFromRow(row)
+
     await this.common.fillStrengthSetAndWaitForButton(inputs, values, completeButton)
     await this.ctx.user.click(completeButton)
   }

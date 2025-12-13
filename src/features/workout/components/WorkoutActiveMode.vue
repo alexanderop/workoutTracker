@@ -5,6 +5,7 @@ import { useRestTimer } from '@/composables/timers/useRestTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
+import type { Set } from '@/types/workout'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
@@ -25,6 +26,7 @@ const {
   completeSet,
   setBlockResult,
   updateSetValue,
+  addSet,
 } = useWorkout()
 const {
   currentBlock,
@@ -94,11 +96,7 @@ const footerState = computed(() => ({
   isTransitioning: false,
 }))
 
-function handleCompleteSet() {
-  if (!activeSet.value) return
-
-  const result = completeSet(activeSet.value)
-
+function handleSetCompletion(result: ReturnType<typeof completeSet>) {
   if (result.kind !== 'completed') return
 
   if (result.nextAction === 'workout-complete') {
@@ -107,6 +105,11 @@ function handleCompleteSet() {
   }
 
   restTimer.start()
+}
+
+function handleCompleteSet() {
+  if (!activeSet.value) return
+  handleSetCompletion(completeSet(activeSet.value))
 }
 
 function handleToggleTimer() {
@@ -144,6 +147,14 @@ function handleSkipBlock() {
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
+
+function handleToggleComplete(set: Set) {
+  handleSetCompletion(completeSet(set))
+}
+
+function handleAddSet() {
+  addSet(currentBlockIndex.value)
+}
 </script>
 
 <template>
@@ -171,6 +182,8 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         :block="currentBlock"
         :active-set-index="workout.activeSetIndex ?? 0"
         @update-set="handleUpdateSet"
+        @toggle-complete="handleToggleComplete"
+        @add-set="handleAddSet"
       />
 
       <!-- Timed block views - each manages its own timer internally -->

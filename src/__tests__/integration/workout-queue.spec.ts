@@ -125,8 +125,8 @@ describe('Workout Queue', () => {
         expect(queryByText(/block 1 of 2/i)).toBeTruthy()
       })
 
-      // Wait for the strength view to render and fill first set
-      await screen.findByRole('spinbutton', { name: /weight/i })
+      // Wait for the strength view table to render
+      await screen.findByRole('table')
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
