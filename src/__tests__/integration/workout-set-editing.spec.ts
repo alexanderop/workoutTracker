@@ -1,14 +1,20 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Set Editing - Any Set', () => {
   beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
+
+  afterEach(async () => {
+    await flushPromises()
+    await cleanupIntegrationTest()
+  })
 
   it('allows editing a completed (past) set', async () => {
-    const { builder, workout, user } = await createTestApp()
+    const app = await createTestApp()
+    const { builder, workout, user } = app
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
@@ -25,10 +31,13 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Verify value changed
     expect(completedRow.kg).toHaveValue('110')
+
+    app.cleanup()
   })
 
   it('allows editing a pending (future) set', async () => {
-    const { builder, workout, user } = await createTestApp()
+    const app = await createTestApp()
+    const { builder, workout, user } = app
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
@@ -40,10 +49,13 @@ describe('Workout Set Editing - Any Set', () => {
     await user.type(pendingRow.kg, '150')
 
     expect(pendingRow.kg).toHaveValue('150')
+
+    app.cleanup()
   })
 
   it('allows completing a pending set out of order', async () => {
-    const { builder, workout, user } = await createTestApp()
+    const app = await createTestApp()
+    const { builder, workout, user } = app
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
@@ -60,5 +72,7 @@ describe('Workout Set Editing - Any Set', () => {
     await user.click(pendingRow.complete)
 
     await waitFor(() => expect(workout.isSetCompleted(2)).toBe(true))
+
+    app.cleanup()
   })
 })
