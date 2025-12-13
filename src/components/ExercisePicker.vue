@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Muscle } from '@/types/exercises'
+
 import { Search, X } from 'lucide-vue-next'
-import { watch } from 'vue'
+import { DialogClose } from '@/components/ui/dialog'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
+import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -39,12 +43,16 @@ const open = defineModel<boolean>('open', { required: true })
 const { presentation = 'dialog', mode = 'single', showCreate = false } = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { searchQuery, filteredExercises } = useExerciseSearch()
+const muscleFilter = ref<Muscle | 'all'>('all')
+const { searchQuery, filteredExercises } = useExerciseSearch({
+  muscleFilter,
+})
 
-// Clear search when picker opens
+// Clear search and filter when picker opens
 watch(open, (isOpen) => {
   if (isOpen) {
     searchQuery.value = ''
+    muscleFilter.value = 'all'
   }
 })
 
@@ -80,11 +88,17 @@ function handleClose() {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[80vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <DialogHeader>
+      <DialogHeader class="relative">
         <DialogTitle>{{ t('dialogs.addExercise.title') }}</DialogTitle>
         <DialogDescription>
           {{ t('dialogs.addExercise.description') }}
         </DialogDescription>
+        <DialogClose
+          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
+        >
+          <X class="icon-md text-muted-foreground" />
+          <span class="sr-only">{{ t('common.buttons.close') }}</span>
+        </DialogClose>
       </DialogHeader>
 
       <!-- Search Input -->
@@ -100,14 +114,16 @@ function handleClose() {
         />
       </div>
 
+      <!-- Filter Pills -->
+      <ExerciseMuscleFilter v-model="muscleFilter" class="-mx-4 px-4" />
+
       <!-- Exercises List -->
       <div class="flex-1 overflow-y-auto -mx-4 px-4">
-        <div class="divide-y divide-border/50">
+        <div class="space-y-1">
           <ExerciseListItem
             v-for="exercise in filteredExercises"
             :key="exercise.id ?? exercise.name"
             :exercise="exercise"
-            variant="dialog"
             @select="handleSelectExercise"
           />
         </div>
@@ -154,18 +170,20 @@ function handleClose() {
           autofocus
         />
       </div>
+
+      <!-- Filter Pills -->
+      <ExerciseMuscleFilter v-model="muscleFilter" class="mt-3" />
     </div>
 
     <div class="flex-1 overflow-y-auto p-4">
-      <button
-        v-for="exercise in filteredExercises"
-        :key="exercise.id ?? exercise.name"
-        class="w-full flex items-center gap-3 py-3 text-left hover:bg-muted/50 rounded-lg px-2 transition-colors"
-        @click="handleSelectExercise(exercise)"
-      >
-        <span class="text-2xl">{{ exercise.icon }}</span>
-        <span class="font-medium">{{ exercise.name }}</span>
-      </button>
+      <div class="space-y-1">
+        <ExerciseListItem
+          v-for="exercise in filteredExercises"
+          :key="exercise.id ?? exercise.name"
+          :exercise="exercise"
+          @select="handleSelectExercise"
+        />
+      </div>
 
       <!-- Empty State for overlay mode -->
       <div v-if="filteredExercises.length === 0" class="text-center py-12">
