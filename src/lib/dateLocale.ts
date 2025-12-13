@@ -11,7 +11,7 @@ const localeMap: Record<SupportedLocale, Locale> = {
 /**
  * Type guard to check if a locale string is supported.
  */
-export function isSupportedLocale(locale: string): locale is SupportedLocale {
+function isSupportedLocale(locale: string): locale is SupportedLocale {
   return locale === 'en' || locale === 'de'
 }
 
