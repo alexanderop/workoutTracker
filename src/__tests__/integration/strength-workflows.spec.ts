@@ -9,7 +9,7 @@ describe('Strength Workflows', () => {
 
   describe('Set Completion', () => {
     it('advances to the next set after completing a set', async () => {
-      const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
 
       // Click "Start New Workout" on home page to start a new workout
       await user.click(getByRole('button', { name: /start new workout/i }))
@@ -24,66 +24,48 @@ describe('Strength Workflows', () => {
       // Start the workout (transition from builder to active mode)
       await builder.startWorkout()
 
-      // Verify we're on set 1 of 3 (wait for active workout UI)
-      await waitFor(() => {
-        expect(queryByText('1/3')).toBeTruthy()
-      })
+      // Wait for table to render
+      await screen.findByRole('table')
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      // Verify the UI advanced to set 2 of 3 (this would have failed before the fix)
+      // Verify the first set shows completed state (inputs disabled)
       await waitFor(() => {
-        expect(queryByText('2/3')).toBeTruthy()
+        expect(workout.isSetCompleted(0)).toBe(true)
       })
-
-      // Verify the completed set appears in the history
-      expect(queryByText(/100kg × 8/)).toBeTruthy()
 
       cleanup()
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, workout, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
       await builder.startWorkout()
 
-      // Verify initial UI state (grouped assertions)
-      await waitFor(() => {
-        expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
-      })
+      // Verify initial UI state (table renders)
+      await screen.findByRole('table')
+      expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
       expect(queryByText('Strength')).toBeTruthy()
-      expect(queryByText('1/3')).toBeTruthy()
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
-      // Verify advancement to set 2
-      await waitFor(() => {
-        expect(queryByText('2/3')).toBeTruthy()
-      })
-
-      // Verify the completed set appears in the history
-      expect(queryByText(/80kg × 10/)).toBeTruthy()
-
       // Complete set 2 (values should be pre-filled from set 1)
-      await user.click(getByRole('button', { name: /complete set/i }))
+      await user.click(getByRole('button', { name: /mark set 2 complete/i }))
 
-      // Verify advancement to set 3
+      // Verify 2 sets completed before final set (table still visible)
       await waitFor(() => {
-        expect(queryByText('3/3')).toBeTruthy()
+        expect(workout.getCompletedSetCount()).toBe(2)
       })
 
-      // Complete set 3
-      await user.click(getByRole('button', { name: /complete set/i }))
+      // Complete set 3 - this triggers workout completion dialog for single-block workouts
+      await user.click(getByRole('button', { name: /mark set 3 complete/i }))
 
-      // Verify all three sets appear in the history
-      await waitFor(() => {
-        const completedSets = screen.queryAllByText(/80kg × 10/)
-        expect(completedSets.length).toBe(3)
-      })
+      // Verify completion dialog appears (table is hidden behind dialog)
+      await common.waitForDialog()
 
       cleanup()
     })
@@ -91,31 +73,25 @@ describe('Strength Workflows', () => {
 
   describe('Value Prefilling', () => {
     it('prefills values from previous set when advancing', async () => {
-      const { builder, workout, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, queryByRole, cleanup } = await createTestApp()
 
       await builder.addStrengthBlock('Squat')
       await builder.startWorkout()
 
-      // Wait for UI to be ready
-      await waitFor(() => {
-        expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
-      })
+      // Wait for table to render
+      await screen.findByRole('table')
+      expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
 
       // Fill and complete first set with specific values
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
-      // Wait for advancement to set 2
+      // Verify prefilled values in next set using Page Object method
       await waitFor(() => {
-        expect(queryByText('2/3')).toBeTruthy()
+        const inputs = workout.getActiveRowInputs()
+        expect(inputs).toBeTruthy()
+        expect(inputs?.weight.value).toBe('100')
+        expect(inputs?.reps.value).toBe('5')
       })
-
-      // Get fresh references to inputs for set 2
-      const weightInput2 = screen.getByRole('spinbutton', { name: /weight/i })
-      const repsInput2 = screen.getByRole('spinbutton', { name: /reps$/i })
-
-      // Verify prefilled values in next set
-      expect(weightInput2).toHaveProperty('value', '100')
-      expect(repsInput2).toHaveProperty('value', '5')
 
       cleanup()
     })

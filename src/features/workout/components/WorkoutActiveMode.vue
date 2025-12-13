@@ -5,6 +5,7 @@ import { useRestTimer } from '@/composables/timers/useRestTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
+import type { Set } from '@/types/workout'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
@@ -25,6 +26,7 @@ const {
   completeSet,
   setBlockResult,
   updateSetValue,
+  addSet,
 } = useWorkout()
 const {
   currentBlock,
@@ -144,6 +146,23 @@ function handleSkipBlock() {
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
+
+function handleToggleComplete(set: Set) {
+  const result = completeSet(set)
+
+  if (result.kind !== 'completed') return
+
+  if (result.nextAction === 'workout-complete') {
+    emit('workout-complete')
+    return
+  }
+
+  restTimer.start()
+}
+
+function handleAddSet() {
+  addSet(currentBlockIndex.value)
+}
 </script>
 
 <template>
@@ -171,6 +190,8 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         :block="currentBlock"
         :active-set-index="workout.activeSetIndex ?? 0"
         @update-set="handleUpdateSet"
+        @toggle-complete="handleToggleComplete"
+        @add-set="handleAddSet"
       />
 
       <!-- Timed block views - each manages its own timer internally -->

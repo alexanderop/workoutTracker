@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
+import { Button } from '@/components/ui/button'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
+import { isSetReady } from '@/features/workout/composables/useWorkout'
+import { calculate10RM } from '@/lib/workout-utils'
+import { cn } from '@/lib/utils'
 import type { StrengthBlock } from '@/types/blocks'
+import type { Set } from '@/types/workout'
+import { Check, Plus } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
@@ -14,164 +21,246 @@ type Props = {
 
 const emit = defineEmits<{
   'update-set': [setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined]
+  'toggle-complete': [set: Set]
+  'add-set': []
 }>()
 
 const { block, activeSetIndex } = defineProps<Props>()
 
 const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 
-const activeSet = computed(() => block.sets[activeSetIndex])
+const weightLabel = computed(() => unitLabel.value.toUpperCase())
 
-// Last completed set for smart hint
-const lastCompletedSet = computed(() => {
-  const completed = block.sets.slice(0, activeSetIndex).filter((s) => s.status === 'completed')
-  return completed.length > 0 ? completed[completed.length - 1] : null
-})
+const tableAriaLabel = computed(() =>
+  t('common.aria.workoutSetsTable', { exercise: block.name }),
+)
 
-const lastSetHint = computed(() => {
-  if (!lastCompletedSet.value) return null
-  const weight = lastCompletedSet.value.kg
-  if (!weight) return null
-  return `${t('workouts.active.strength.last')}${toDisplayValue(weight)}${unitLabel.value}`
-})
+// Class generation functions (extracted to reduce computed complexity)
+const baseInputClass = 'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 font-bold text-base tabular-nums rounded-lg text-center'
 
-function handleWeightChange(displayValue: number | undefined) {
-  if (!activeSet.value) return
-  emit('update-set', activeSet.value.id, 'kg', toStorageValue(displayValue))
+function getRowClass(isActive: boolean, isCompleted: boolean) {
+  return cn(
+    'border-none transition-all duration-200 hover:bg-transparent',
+    isActive && 'bg-primary/10',
+    isCompleted && 'opacity-50',
+  )
 }
 
-function getRepsValue() {
-  return activeSet.value?.reps ? Number(activeSet.value.reps) : undefined
+function getInputClass(isActive: boolean) {
+  return cn(baseInputClass, isActive ? 'bg-secondary' : 'bg-transparent')
 }
 
-function handleRepsChange(value: number | undefined) {
-  if (!activeSet.value) return
-  emit('update-set', activeSet.value.id, 'reps', value)
+function getRepsInputClass(isActive: boolean) {
+  return cn(baseInputClass, isActive ? 'bg-secondary text-primary' : 'bg-transparent')
 }
 
-function getRirValue() {
-  return activeSet.value?.rir ? Number(activeSet.value.rir) : undefined
+function getRirInputClass(isActive: boolean) {
+  const base = 'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 text-muted-foreground tabular-nums rounded-lg text-center'
+  return cn(base, isActive ? 'bg-secondary' : 'bg-transparent')
 }
 
-function handleRirChange(value: number | undefined) {
-  if (!activeSet.value) return
-  emit('update-set', activeSet.value.id, 'rir', value)
+function getCompleteButtonClass(isCompleted: boolean, ready: boolean) {
+  return cn(
+    'h-11 w-11 rounded-lg transition-all duration-200',
+    isCompleted
+      ? 'bg-success hover:bg-success/90 text-success-foreground'
+      : ready
+        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
+        : 'bg-secondary hover:bg-secondary/80 text-muted-foreground',
+  )
+}
+
+function getCheckIconClass(isCompleted: boolean, ready: boolean) {
+  return cn(
+    'w-4 h-4 transition-all',
+    isCompleted ? 'animate-in zoom-in-50 duration-200' : ready ? 'opacity-100' : 'opacity-30',
+  )
+}
+
+function getEstimated10RM(kg: string | number | undefined, reps: string | number | undefined) {
+  if (!kg || !reps) return '—'
+  const calculated = toDisplayValue(calculate10RM(Number(kg), Number(reps)))
+  return calculated?.toString() ?? '—'
+}
+
+// Pre-compute all derived state for each set
+const setStates = computed(() =>
+  block.sets.map((set, index) => {
+    const isCompleted = set.status === 'completed'
+    const isActive = index === activeSetIndex
+    const ready = isSetReady(set)
+
+    return {
+      set,
+      index,
+      setNumber: index + 1,
+      isCompleted,
+      isActive,
+      isPending: !isCompleted && !isActive,
+      ready,
+      weightValue: toDisplayValue(set.kg),
+      repsValue: set.reps ? Number(set.reps) : undefined,
+      rirValue: set.rir ? Number(set.rir) : undefined,
+      estimated10RM: getEstimated10RM(set.kg, set.reps),
+      rowClass: getRowClass(isActive, isCompleted),
+      inputClass: getInputClass(isActive),
+      repsInputClass: getRepsInputClass(isActive),
+      rirInputClass: getRirInputClass(isActive),
+      completeButtonClass: getCompleteButtonClass(isCompleted, ready),
+      checkIconClass: getCheckIconClass(isCompleted, ready),
+    }
+  }),
+)
+
+function handleWeightChange(set: Set, displayValue: number | undefined) {
+  emit('update-set', set.id, 'kg', toStorageValue(displayValue))
+}
+
+function handleRepsChange(set: Set, value: number | undefined) {
+  emit('update-set', set.id, 'reps', value)
+}
+
+function handleRirChange(set: Set, value: number | undefined) {
+  emit('update-set', set.id, 'rir', value)
 }
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col px-4 py-6">
-    <!-- Zone 1: Exercise Identity -->
-    <header class="text-center mb-6">
-      <h1 class="text-lg font-bold uppercase tracking-widest text-foreground/90">
+  <div class="flex-1 flex flex-col px-4 py-4">
+    <!-- Compact Header -->
+    <header class="mb-4">
+      <h1 class="text-base font-bold uppercase tracking-widest text-foreground/90">
         {{ block.name }}
       </h1>
-      <p class="text-sm text-muted-foreground mt-1">
+      <p class="text-sm text-muted-foreground">
         {{ block.equipment }}
       </p>
     </header>
 
-    <!-- Zone 2: Set Progress Dots -->
-    <div class="flex items-center justify-center gap-2 mb-8">
-      <div v-for="(set, index) in block.sets" :key="set.id" class="flex items-center gap-2">
-        <div
-          :class="[
-            'size-3 rounded-full transition-all duration-200',
-            set.status === 'completed'
-              ? 'bg-primary'
-              : index === activeSetIndex
-                ? 'ring-2 ring-primary ring-offset-2 ring-offset-background bg-transparent'
-                : 'bg-muted-foreground/30',
-          ]"
-        />
-        <span v-if="index < block.sets.length - 1" class="w-4 h-px bg-muted-foreground/20" />
-      </div>
-      <span class="ml-3 text-sm text-muted-foreground tabular-nums">
-        {{ activeSetIndex + 1 }}/{{ block.sets.length }}
-      </span>
+    <!-- Sets Table -->
+    <div class="flex-1 overflow-auto">
+      <Table :aria-label="tableAriaLabel">
+        <TableHeader>
+          <TableRow class="border-none hover:bg-transparent">
+            <TableHead class="w-12 h-8 p-1 text-xs">#</TableHead>
+            <TableHead class="h-8 p-1 text-xs text-center">{{ weightLabel }}</TableHead>
+            <TableHead class="h-8 p-1 text-xs text-center">{{
+              t('workouts.table.headers.reps').toUpperCase()
+            }}</TableHead>
+            <TableHead class="h-8 p-1 text-xs text-center">{{
+              t('workouts.table.headers.rir').toUpperCase()
+            }}</TableHead>
+            <TableHead class="h-8 p-1 text-xs text-center hidden sm:table-cell">{{
+              t('workouts.table.headers.tenRm')
+            }}</TableHead>
+            <TableHead class="w-14 h-8 p-1" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow
+            v-for="state in setStates"
+            :key="state.set.id"
+            :class="state.rowClass"
+            :aria-current="state.isActive ? 'true' : undefined"
+          >
+            <!-- Set Number -->
+            <TableCell class="p-1 h-14">
+              <div
+                v-if="state.isCompleted"
+                class="w-7 h-7 rounded-md bg-success/20 flex items-center justify-center"
+              >
+                <Check class="w-3.5 h-3.5 text-success" aria-hidden="true" />
+              </div>
+              <div
+                v-else-if="state.isActive"
+                class="w-7 h-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm tabular-nums"
+              >
+                {{ state.setNumber }}
+              </div>
+              <span v-else class="text-muted-foreground tabular-nums pl-2">{{ state.setNumber }}</span>
+            </TableCell>
+
+            <!-- Weight -->
+            <TableCell class="p-1 h-14">
+              <NumberField
+                :model-value="state.weightValue"
+                :min="0"
+                :max="999"
+                :disabled="!state.isActive"
+                @update:model-value="handleWeightChange(state.set, $event)"
+              >
+                <NumberFieldInput
+                  placeholder="—"
+                  :aria-label="t('common.aria.weightForSet', { number: state.setNumber })"
+                  :class="state.inputClass"
+                />
+              </NumberField>
+            </TableCell>
+
+            <!-- Reps -->
+            <TableCell class="p-1 h-14">
+              <NumberField
+                :model-value="state.repsValue"
+                :min="0"
+                :max="999"
+                :disabled="!state.isActive"
+                @update:model-value="handleRepsChange(state.set, $event)"
+              >
+                <NumberFieldInput
+                  placeholder="—"
+                  :aria-label="t('common.aria.repsForSet', { number: state.setNumber })"
+                  :class="state.repsInputClass"
+                />
+              </NumberField>
+            </TableCell>
+
+            <!-- RIR -->
+            <TableCell class="p-1 h-14">
+              <NumberField
+                :model-value="state.rirValue"
+                :min="0"
+                :max="10"
+                :disabled="!state.isActive"
+                @update:model-value="handleRirChange(state.set, $event)"
+              >
+                <NumberFieldInput
+                  placeholder="—"
+                  :aria-label="t('common.aria.repsInReserveForSet', { number: state.setNumber })"
+                  :class="state.rirInputClass"
+                />
+              </NumberField>
+            </TableCell>
+
+            <!-- 10RM (hidden on small screens) -->
+            <TableCell class="p-1 h-14 text-center text-xs text-muted-foreground hidden sm:table-cell">
+              {{ state.estimated10RM }}
+            </TableCell>
+
+            <!-- Complete Button -->
+            <TableCell class="p-1 h-14 text-center">
+              <Button
+                size="icon"
+                :aria-label="t('common.aria.markSetNumberComplete', { number: state.setNumber })"
+                :class="state.completeButtonClass"
+                :disabled="state.isPending"
+                @click="emit('toggle-complete', state.set)"
+              >
+                <Check :class="state.checkIconClass" aria-hidden="true" />
+              </Button>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
 
-    <!-- Zone 3: Hero Weight Input -->
-    <div v-if="activeSet" class="flex-1 flex flex-col items-center justify-center">
-      <div class="mb-8">
-        <div class="flex items-baseline justify-center gap-3">
-          <NumberField
-            :model-value="toDisplayValue(activeSet?.kg)"
-            :min="0"
-            :max="999"
-            @update:model-value="handleWeightChange"
-          >
-            <NumberFieldInput
-              placeholder="—"
-              :aria-label="t('common.aria.weight')"
-              class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-24 text-7xl font-extrabold tabular-nums rounded-2xl text-center w-44"
-            />
-          </NumberField>
-          <span class="text-3xl font-medium text-muted-foreground">{{ unitLabel }}</span>
-        </div>
-        <!-- Last set hint -->
-        <p v-if="lastSetHint" class="text-center text-sm text-muted-foreground/70 mt-2">
-          {{ lastSetHint }}
-        </p>
-      </div>
-
-      <!-- Zone 4: Secondary Inputs (Reps + RIR side-by-side) -->
-      <div class="flex items-center justify-center gap-6">
-        <!-- Reps -->
-        <div class="flex flex-col items-center">
-          <NumberField
-            :model-value="getRepsValue()"
-            :min="0"
-            :max="999"
-            @update:model-value="handleRepsChange"
-          >
-            <NumberFieldInput
-              placeholder="—"
-              :aria-label="t('common.aria.reps')"
-              class="bg-secondary/80 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-20 text-5xl font-bold text-primary tabular-nums rounded-xl text-center w-32"
-            />
-          </NumberField>
-          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{
-            t('workouts.active.strength.reps')
-          }}</span>
-        </div>
-
-        <!-- Divider -->
-        <div class="h-16 w-px bg-border/50" />
-
-        <!-- RIR -->
-        <div class="flex flex-col items-center">
-          <NumberField
-            :model-value="getRirValue()"
-            :min="0"
-            :max="10"
-            @update:model-value="handleRirChange"
-          >
-            <NumberFieldInput
-              placeholder="—"
-              :aria-label="t('common.aria.repsInReserve')"
-              class="bg-secondary/50 border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary h-16 text-3xl font-bold tabular-nums rounded-xl text-center w-20"
-            />
-          </NumberField>
-          <span class="text-sm text-muted-foreground mt-2 uppercase tracking-wide">{{
-            t('workouts.active.strength.rir')
-          }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Zone 5: Completed Sets History -->
-    <div v-if="block.sets.some((s) => s.status === 'completed')" class="mt-auto pt-6">
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <template v-for="set in block.sets" :key="set.id">
-          <div
-            v-if="set.status === 'completed'"
-            class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium tabular-nums"
-          >
-            {{ toDisplayValue(set.kg) }}{{ unitLabel }} × {{ set.reps }}
-          </div>
-        </template>
-      </div>
-    </div>
+    <!-- Add Set Button -->
+    <Button
+      variant="ghost"
+      class="w-full mt-3 h-11 text-muted-foreground hover:text-foreground"
+      @click="emit('add-set')"
+    >
+      <Plus class="w-4 h-4 mr-2" aria-hidden="true" />
+      {{ t('workouts.sets.addSet') }}
+    </Button>
   </div>
 </template>
