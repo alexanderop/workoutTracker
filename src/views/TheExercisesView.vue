@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
+import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
@@ -18,16 +19,6 @@ const { searchQuery, filteredExercises } = useExerciseSearch({
   muscleFilter: activeFilter,
   searchFields: ['name', 'muscle', 'equipment'],
 })
-
-const muscleFilters = computed<Array<{ value: Muscle | 'all'; label: string }>>(() => [
-  { value: 'all', label: t('exercises.filters.all') },
-  { value: 'chest', label: t('exercises.muscle.chest') },
-  { value: 'back', label: t('exercises.muscle.back') },
-  { value: 'legs', label: t('exercises.muscle.legs') },
-  { value: 'shoulders', label: t('exercises.muscle.shoulders') },
-  { value: 'arms', label: t('exercises.muscle.arms') },
-  { value: 'core', label: t('exercises.muscle.core') },
-])
 
 const exerciseCount = computed(() => filteredExercises.value.length)
 
@@ -72,21 +63,7 @@ function handleCreateExercise() {
       </div>
 
       <!-- Filter Pills -->
-      <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-1">
-        <button
-          v-for="filter in muscleFilters"
-          :key="filter.value"
-          class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
-          :class="
-            activeFilter === filter.value
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-          "
-          @click="activeFilter = filter.value"
-        >
-          {{ filter.label }}
-        </button>
-      </div>
+      <ExerciseMuscleFilter v-model="activeFilter" class="-mx-5 px-5 pb-1" />
     </div>
 
     <!-- Exercise List -->
@@ -96,7 +73,6 @@ function handleCreateExercise() {
           v-for="exercise in filteredExercises"
           :key="exercise.id ?? exercise.name"
           :exercise="exercise"
-          variant="list"
           @select="() => {}"
         />
       </div>

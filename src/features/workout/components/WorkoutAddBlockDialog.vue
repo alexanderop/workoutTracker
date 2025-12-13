@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { Repeat, Search, Timer, Zap } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Muscle } from '@/types/exercises'
+import type { TimedBlockKind } from '@/types/blocks'
+
+import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
+import ExerciseListItem from '@/components/ExerciseListItem.vue'
+import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogClose, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Empty, EmptyDescription, EmptyMedia } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import WorkoutAddBlockDialogExerciseItem from './WorkoutAddBlockDialogExerciseItem.vue'
-import { useExercisesStore } from '@/stores/exercises'
-import type { CustomExercise } from '@/types/exercises'
-import type { TimedBlockKind } from '@/types/blocks'
+import { useExerciseSearch } from '@/composables/useExerciseSearch'
 import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
 
 const { t } = useI18n()
@@ -27,17 +30,18 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const exercisesStore = useExercisesStore()
-const searchQuery = ref('')
 const activeTab = ref('exercises')
+const muscleFilter = ref<Muscle | 'all'>('all')
+const { searchQuery, filteredExercises } = useExerciseSearch({
+  muscleFilter,
+})
 
-const filteredExercises = computed(() => {
-  const allExercises = exercisesStore.customExercises
-  if (!searchQuery.value.trim()) {
-    return allExercises
+// Reset state when dialog opens
+watch(open, (isOpen) => {
+  if (isOpen) {
+    searchQuery.value = ''
+    muscleFilter.value = 'all'
   }
-  const query = searchQuery.value.toLowerCase()
-  return allExercises.filter((ex) => ex.name.toLowerCase().includes(query))
 })
 
 const timedBlockTypes: ReadonlyArray<{
@@ -67,10 +71,12 @@ const timedBlockTypes: ReadonlyArray<{
   },
 ]
 
-function handleSelectExercise(exercise: CustomExercise) {
-  emit('add-exercise', exercise.id, exercise.name)
+function handleSelectExercise(exercise: Exercise) {
+  const exerciseId = exercise.id ?? exercise.name
+  emit('add-exercise', exerciseId, exercise.name)
   open.value = false
   searchQuery.value = ''
+  muscleFilter.value = 'all'
 }
 
 function handleSelectTimedBlock(kind: TimedBlockKind) {
@@ -82,6 +88,7 @@ function handleSelectTimedBlock(kind: TimedBlockKind) {
 function handleCreateNew() {
   open.value = false
   searchQuery.value = ''
+  muscleFilter.value = 'all'
   router.push({ name: RouteNames.CreateCustomExercise })
 }
 
@@ -89,6 +96,7 @@ function handleOpenChange(value: boolean) {
   open.value = value
   if (!value) {
     searchQuery.value = ''
+    muscleFilter.value = 'all'
     activeTab.value = 'exercises'
   }
 }
@@ -99,9 +107,15 @@ function handleOpenChange(value: boolean) {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <DialogHeader>
+      <DialogHeader class="relative">
         <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
         <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
+        <DialogClose
+          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
+        >
+          <X class="icon-md text-muted-foreground" />
+          <span class="sr-only">{{ t('common.buttons.close') }}</span>
+        </DialogClose>
       </DialogHeader>
 
       <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
@@ -126,15 +140,19 @@ function handleOpenChange(value: boolean) {
             />
           </div>
 
+          <!-- Filter Pills -->
+          <ExerciseMuscleFilter v-model="muscleFilter" class="-mx-4 px-4 mt-3" />
+
           <!-- Exercise List -->
           <div class="flex-1 overflow-y-auto -mx-4 px-4 mt-4">
-            <WorkoutAddBlockDialogExerciseItem
-              v-for="(exercise, index) in filteredExercises"
-              :key="exercise.id"
-              :exercise="exercise"
-              :show-border="index !== filteredExercises.length - 1"
-              @select="handleSelectExercise(exercise)"
-            />
+            <div class="space-y-1">
+              <ExerciseListItem
+                v-for="exercise in filteredExercises"
+                :key="exercise.id ?? exercise.name"
+                :exercise="exercise"
+                @select="handleSelectExercise"
+              />
+            </div>
 
             <!-- Empty State -->
             <Empty v-if="filteredExercises.length === 0" class="border-0 py-12">
