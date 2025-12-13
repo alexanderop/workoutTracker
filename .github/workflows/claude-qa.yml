@@ -194,81 +194,63 @@ jobs:
           curl -v http://localhost:5173 || true
           exit 1
 
+      - name: Load QA prompts
+        id: load-prompts
+        shell: bash
+        env:
+          PR_BODY_RAW: ${{ steps.pr-context.outputs.pr_body }}
+          LINKED_ISSUES_RAW: ${{ steps.pr-context.outputs.linked_issues }}
+        run: |
+          # Get today's date
+          TODAY=$(date +%Y-%m-%d)
+
+          # Start building combined prompt with system prompt
+          {
+            echo 'prompt<<PROMPT_EOF'
+
+            # Add system prompt (personality & rules)
+            cat .claude/prompts/qa-system-prompt.md
+            echo ""
+            echo "---"
+            echo ""
+
+            # Add task prompt based on mode
+            if [[ "${{ env.QA_MODE }}" == "explore" ]]; then
+              TASK_CONTENT=$(cat .claude/prompts/qa-explore.md)
+            else
+              TASK_CONTENT=$(cat .claude/prompts/qa-verify.md)
+            fi
+
+            # Replace simple placeholders
+            TASK_CONTENT="${TASK_CONTENT//\{\{APP_URL\}\}/http://localhost:5173}"
+            TASK_CONTENT="${TASK_CONTENT//\{\{QA_FOCUS\}\}/${{ env.QA_FOCUS }}}"
+            TASK_CONTENT="${TASK_CONTENT//\{\{DATE\}\}/$TODAY}"
+
+            # For verify mode, add PR context
+            if [[ "${{ env.QA_MODE }}" == "verify" ]]; then
+              TASK_CONTENT="${TASK_CONTENT//\{\{PR_NUMBER\}\}/${{ steps.pr-context.outputs.pr_number }}}"
+              TASK_CONTENT="${TASK_CONTENT//\{\{PR_TITLE\}\}/${{ steps.pr-context.outputs.pr_title }}}"
+
+              # Use envsubst for complex multiline replacements
+              export PR_BODY="$PR_BODY_RAW"
+              export LINKED_ISSUES="$LINKED_ISSUES_RAW"
+
+              # Replace PR_BODY and LINKED_ISSUES placeholders
+              TASK_CONTENT=$(echo "$TASK_CONTENT" | sed "s|{{PR_BODY}}|$PR_BODY|g")
+              TASK_CONTENT=$(echo "$TASK_CONTENT" | sed "s|{{LINKED_ISSUES}}|$LINKED_ISSUES|g")
+            fi
+
+            echo "$TASK_CONTENT"
+            echo 'PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Run Claude QA - Explore Mode
         if: env.QA_MODE == 'explore'
         id: claude-explore
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            You are a senior QA engineer performing exploratory testing.
-            App URL: http://localhost:5173
-
-            ## Budget: 60 turns total
-            - Turns 1-5: Quick navigation smoke test
-            - Turns 6-45: Feature testing based on focus
-            - Turns 46-55: Edge cases, mobile viewport test
-            - Turns 56-60: WRITE REPORT (mandatory!)
-
-            ## Focus: ${{ env.QA_FOCUS }}
-
-            **Test Plan by Focus:**
-            - general: All pages load → Exercise CRUD → Workout flow → Settings
-            - navigation: Every nav link, back buttons, deep links, breadcrumbs
-            - forms: Exercise form validation, workout setup, settings forms
-            - workout-flow: Full workout from start to complete with all features
-
-            ## Automatic FAIL criteria:
-            - Any uncaught JavaScript error in console
-            - Any blank/white screen
-            - Buttons that don't respond
-            - 404 or network errors
-
-            ## Mobile Test (use browser_resize)
-            Resize to 375x667 and verify:
-            - Navigation works
-            - No horizontal scroll
-            - Forms are usable
-
-            ## If you find bugs:
-            1. Take a screenshot: `bug-[description].png`
-            2. Document what you observed (NOT what the code does)
-            3. CONTINUE TESTING - do NOT investigate source code or try to debug
-            A QA engineer reports bugs, they don't fix them.
-
-            ## FINAL STEP (turns 56-60):
-            Write `qa-report.md`:
-
-            ```markdown
-            # QA Exploration Report
-
-            **Date**: [today] | **Focus**: ${{ env.QA_FOCUS }} | **Tester**: Claude QA
-
-            ## Summary
-            [1 sentence: overall health of the app]
-
-            ## Test Results
-            | Test | Status | Notes |
-            |------|--------|-------|
-            | ... | ✅/❌ | ... |
-
-            ## Mobile Responsive
-            | Check | Status |
-            |-------|--------|
-            | Navigation | ✅/❌ |
-            | Forms | ✅/❌ |
-            | No horizontal scroll | ✅/❌ |
-
-            ## Bugs Found
-            [List with screenshots, or "None"]
-
-            ## Console Errors
-            [List errors, or "None"]
-
-            ## Verdict
-            **[✅ HEALTHY / ⚠️ MINOR ISSUES / ❌ CRITICAL BUGS]**
-            ```
-
+          prompt: ${{ steps.load-prompts.outputs.prompt }}
           # QA tester tools only - no source code access, no low-level JS execution
           # A real QA tester only interacts through the UI
           claude_args: |
@@ -282,112 +264,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            You are a senior QA engineer who TRIES TO BREAK THINGS. Your job is NOT just to verify happy paths - it's to find bugs before users do.
-
-            App URL: http://localhost:5173
-
-            ## PR Context
-            **PR #${{ steps.pr-context.outputs.pr_number }}**: ${{ steps.pr-context.outputs.pr_title }}
-
-            ### Description:
-            ${{ steps.pr-context.outputs.pr_body }}
-
-            ### Linked Issues:
-            ${{ steps.pr-context.outputs.linked_issues }}
-
-            ## QA Mindset - Think Like a Tester
-
-            For EACH feature you test, ask yourself:
-            - What happens with empty input?
-            - What happens with invalid input?
-            - What happens if I click rapidly?
-            - What happens if I navigate away mid-action?
-            - Does it work on mobile (375x667)?
-
-            ## Budget: 50 turns
-            - Turns 1-3: Parse requirements from PR description
-            - Turns 4-20: Test happy paths for each requirement
-            - Turns 21-35: TRY TO BREAK IT - edge cases, invalid inputs, rapid clicks
-            - Turns 36-42: Mobile viewport test (resize to 375x667)
-            - Turns 43-50: WRITE REPORT
-
-            ## Breaking Things - Be Adversarial
-
-            Test these for any input fields or interactive elements:
-            - Empty inputs: Submit forms with nothing filled in
-            - Boundary values: 0, -1, 999999, very long strings (100+ chars)
-            - Rapid interactions: Click same button 5 times fast
-            - Cancel mid-flow: Start an action, then navigate away or close dialog
-            - Special characters: Try emojis 🔥, quotes "test", angle brackets <test>
-
-            ## Bug Severity Guide
-            - 🔴 Critical: App crashes, data loss, security issue, blank screen
-            - 🟠 Major: Feature broken, blocks user from completing task
-            - 🟡 Minor: Visual glitch, typo, confusing UX but workaround exists
-            - ⚪ Suggestion: Works but could be better
-
-            ## Mobile Testing (REQUIRED)
-            Use browser_resize to test at 375x667 (iPhone SE):
-            - Does layout break?
-            - Are touch targets big enough?
-            - Is there horizontal scrolling?
-            - Can you complete the main flow?
-
-            ## If you find bugs:
-            1. Take screenshot: `bug-[severity]-[description].png`
-               Examples: `bug-major-form-not-submitting.png`, `bug-minor-text-overflow.png`
-            2. Document what you observed and steps to reproduce
-            3. CONTINUE TESTING - do NOT investigate code or try to debug
-            4. A QA engineer reports bugs, they don't fix them
-
-            ## FINAL STEP - Write qa-report.md:
-
-            ```markdown
-            # QA Verification Report
-
-            **PR**: #${{ steps.pr-context.outputs.pr_number }} - ${{ steps.pr-context.outputs.pr_title }}
-            **Date**: [today] | **Tester**: Claude QA
-
-            ## Summary
-            [One sentence: what was tested and overall health]
-
-            ## Requirements Verified
-            | # | Requirement | Status | How Tested |
-            |---|-------------|--------|------------|
-            | 1 | ... | ✅/❌ | [Specific actions taken] |
-
-            ## Edge Cases & Negative Testing
-            | Test | Result | Notes |
-            |------|--------|-------|
-            | Empty form submission | ✅/❌ | ... |
-            | Rapid button clicks | ✅/❌ | ... |
-            | Long text input | ✅/❌ | ... |
-            | Special characters | ✅/❌ | ... |
-
-            ## Mobile Testing (375x667)
-            | Check | Status |
-            |-------|--------|
-            | Layout intact | ✅/❌ |
-            | No horizontal scroll | ✅/❌ |
-            | Main flow completable | ✅/❌ |
-
-            ## Bugs Found
-            | Severity | Description | Screenshot |
-            |----------|-------------|------------|
-            | 🔴/🟠/🟡 | ... | `bug-xxx.png` |
-
-            (Or "None found")
-
-            ## Console Errors
-            [List or "None"]
-
-            ## Verdict
-            **[✅ APPROVED / ❌ NEEDS FIXES / ⚠️ NEEDS CLARIFICATION]**
-
-            [One sentence summary explaining the verdict]
-            ```
-
+          prompt: ${{ steps.load-prompts.outputs.prompt }}
           # QA tester tools only - no source code access, no low-level JS execution
           # A real QA tester only interacts through the UI
           claude_args: |
