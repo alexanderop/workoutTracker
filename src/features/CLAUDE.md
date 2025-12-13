@@ -68,7 +68,7 @@ export function useWorkout() {
 ```ts
 // ✅ GOOD - Import from shared
 import { useRestTimer } from '@/composables/timers/useRestTimer'
-import { workoutRepository } from '@/db/provider'
+import { getWorkoutsRepository } from '@/db'
 import { useExercisesStore } from '@/stores/exercises'
 import type { Workout } from '@/types/workout'
 
@@ -180,7 +180,7 @@ try {
 import { useTemplateForm } from '@/features/templates/composables/useTemplateForm'
 
 // ✅ GOOD - both features import from shared
-import { workoutRepository } from '@/db/provider'
+import { getWorkoutsRepository } from '@/db'
 ```
 
 ### ❌ DON'T: Modify shadcn-vue Components

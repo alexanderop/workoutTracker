@@ -8,7 +8,7 @@ describe('Workout Set Editing - Any Set', () => {
   afterEach(cleanupIntegrationTest)
 
   it('allows editing a completed (past) set', async () => {
-    const { builder, workout, user, cleanup } = await createTestApp()
+    const { builder, workout, user } = await createTestApp()
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
@@ -25,12 +25,10 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Verify value changed
     expect(completedRow.kg).toHaveValue('110')
-
-    cleanup()
   })
 
   it('allows editing a pending (future) set', async () => {
-    const { builder, workout, user, cleanup } = await createTestApp()
+    const { builder, workout, user } = await createTestApp()
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
@@ -42,12 +40,10 @@ describe('Workout Set Editing - Any Set', () => {
     await user.type(pendingRow.kg, '150')
 
     expect(pendingRow.kg).toHaveValue('150')
-
-    cleanup()
   })
 
   it('allows completing a pending set out of order', async () => {
-    const { builder, workout, user, cleanup } = await createTestApp()
+    const { builder, workout, user } = await createTestApp()
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
@@ -64,7 +60,5 @@ describe('Workout Set Editing - Any Set', () => {
     await user.click(pendingRow.complete)
 
     await waitFor(() => expect(workout.isSetCompleted(2)).toBe(true))
-
-    cleanup()
   })
 })
