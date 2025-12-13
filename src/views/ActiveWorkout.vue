@@ -96,8 +96,6 @@ const completionData = ref<{ name: string; duration: number; id: string } | null
 const selectedExerciseData = computed<ExerciseEditData | null>(() => {
   if (!selectedExercise.value) return null
   return {
-    name: selectedExercise.value.name,
-    equipment: selectedExercise.value.equipment,
     targetReps: selectedExercise.value.targetReps,
     setCount: selectedExercise.value.sets.length,
   }
@@ -168,14 +166,9 @@ function handleConfirmForTime(config: ForTimeConfig, exercises: ReadonlyArray<Bl
   addForTimeBlock(config, exercises)
 }
 
-function handleSaveExercise(data: {
-  name: string
-  equipment: string
-  targetReps: number
-  setCount: number
-}) {
+function handleSaveExercise(data: ExerciseEditData) {
   if (!selectedExercise.value) return
-  updateExercise(data)
+  updateExercise({ targetReps: data.targetReps })
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 
