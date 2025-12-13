@@ -142,8 +142,8 @@ export class ActiveWorkoutPO {
   }
 
   /**
-   * Gets the active set row (the one with editable inputs).
-   * The active row is identified by having enabled (non-disabled) input fields.
+   * Gets the active set row (the one currently highlighted).
+   * The active row is identified by having the primary-colored badge (bg-primary) in the first cell.
    * @returns The active row element
    * @throws Error if no active row is found
    */
@@ -154,17 +154,21 @@ export class ActiveWorkoutPO {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i]
       if (!(row instanceof HTMLElement)) continue
-      // Check if weight input is enabled (active row has enabled inputs)
-      const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
-      if (weightInput && !weightInput.hasAttribute('disabled')) {
+      // Check for active indicator (primary-colored badge in first cell)
+      const cells = within(row).getAllByRole('cell')
+      const firstCell = cells[0]
+      if (!firstCell) continue
+      // The active state shows a div with bg-primary containing the set number
+      const activeIndicator = firstCell.querySelector('.bg-primary')
+      if (activeIndicator) {
         return row
       }
     }
-    throw new Error('No active set row found (no enabled weight input)')
+    throw new Error('No active set row found (no bg-primary indicator)')
   }
 
   /**
-   * Gets input values from the currently active row (the row with enabled inputs).
+   * Gets input values from the currently active row (the row with the primary badge).
    * Useful for verifying prefilled values after completing a set.
    * @returns Object with weight, reps, rir inputs, or null if no active row
    */
@@ -181,21 +185,27 @@ export class ActiveWorkoutPO {
 
   /**
    * Checks if a specific set row shows completed state.
+   * Looks for the completion checkmark icon in the set number column.
    * @param setIndex - Zero-based index of the set row
-   * @returns true if the row shows a completion indicator
+   * @returns true if the row shows a completion indicator (checkmark)
    */
   isSetCompleted(setIndex: number): boolean {
     const table = screen.getByRole('table')
     const rows = within(table).getAllByRole('row')
     const row = rows[setIndex + 1] // Skip header
     if (!row) return false
-    // Check for completed indicator (checkmark icon or disabled inputs)
-    const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
-    return weightInput?.hasAttribute('disabled') ?? false
+    // Check for completed indicator (checkmark icon with success color in first cell)
+    const cells = within(row).getAllByRole('cell')
+    const firstCell = cells[0]
+    if (!firstCell) return false
+    // The completed state shows a div with bg-success/20 containing a Check icon
+    const completedIndicator = firstCell.querySelector('.bg-success\\/20')
+    return completedIndicator !== null
   }
 
   /**
    * Gets the count of completed sets in the table.
+   * Counts rows with the completion checkmark indicator.
    * @returns Number of completed sets
    */
   getCompletedSetCount(): number {
@@ -206,8 +216,12 @@ export class ActiveWorkoutPO {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i]
       if (!row) continue
-      const weightInput = within(row).queryByRole('spinbutton', { name: /weight/i })
-      if (weightInput?.hasAttribute('disabled')) {
+      const cells = within(row).getAllByRole('cell')
+      const firstCell = cells[0]
+      if (!firstCell) continue
+      // The completed state shows a div with bg-success/20 containing a Check icon
+      const completedIndicator = firstCell.querySelector('.bg-success\\/20')
+      if (completedIndicator) {
         count++
       }
     }

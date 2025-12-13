@@ -72,7 +72,7 @@ const completedSets = computed(() => {
     <div
       :class="
         cn(
-          'flex-1 flex items-center gap-3 rounded-lg transition-all min-h-[64px]',
+          'flex-1 min-w-0 overflow-hidden flex items-center gap-3 rounded-lg transition-all min-h-[64px]',
           'border border-transparent',
           isSelected && 'border-primary bg-primary/5',
           isCompleted && 'opacity-60',
@@ -111,8 +111,8 @@ const completedSets = computed(() => {
 
         <!-- Block info -->
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-medium truncate">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate min-w-0">
               {{ isStrengthBlock(block) ? block.name : label }}
             </span>
             <span

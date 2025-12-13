@@ -95,12 +95,20 @@ pnpm knip
 
 ### Supporting Directories
 - **Composables** (`src/composables/`) - Shared reactive logic
-  - `timers/` - Timer state machines (rest, AMRAP, EMOM, Tabata, ForTime)
+  - `timers/` - Timer state machines (rest, AMRAP, EMOM, Tabata, ForTime, benchmark global timer)
+  - `useDialogState` - Dialog open/close state management
+  - `useExerciseSearch` - Exercise filtering and search
+  - `useRecentWorkouts` - Recent workout display logic
+  - `useBenchmarksList` - Benchmark listing logic
 - **Components** (`src/components/`)
   - `ui/` - shadcn-vue primitives (**DO NOT EDIT**)
-  - `timers/` - Reusable timer UI
+  - `timers/` - Reusable timer UI components
+  - `charts/` - Chart/visualization components
 - **Views** (`src/views/`) - Route-level pages (orchestrate features)
-- **Stores** (`src/stores/`) - Pinia stores (exercises, settings only)
+- **Stores** (`src/stores/`) - Pinia stores
+  - `exercises.ts` - Exercise library store
+  - `settings.ts` - App settings store
+  - `workoutState.ts` - Workout singleton ref state
 - **Types** (`src/types/`) - Shared TypeScript types
 - **Router** (`src/router/`) - Vue Router config with `RouteNames`
 - **i18n** (`src/i18n/`) - Internationalization
