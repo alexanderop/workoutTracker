@@ -47,7 +47,7 @@ async function handleRedoWorkout() {
   <PageLayout
     :title="state.status === 'success' ? state.workout.name : ''"
     :subtitle="state.status === 'success' ? formatDate(state.workout.startedAt) : undefined"
-    back-to="/workouts"
+    back-to="/"
   >
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
@@ -101,7 +101,7 @@ async function handleRedoWorkout() {
       class="flex flex-col items-center justify-center py-16"
     >
       <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.error') }}</p>
-      <Button variant="outline" @click="router.push('/workouts')">{{
+      <Button variant="outline" @click="router.push('/')">{{
         t('workouts.detail.goBack')
       }}</Button>
     </div>
@@ -109,7 +109,7 @@ async function handleRedoWorkout() {
     <!-- Not found state -->
     <div v-else class="flex flex-col items-center justify-center py-16">
       <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.notFound') }}</p>
-      <Button variant="outline" @click="router.push('/workouts')">{{
+      <Button variant="outline" @click="router.push('/')">{{
         t('workouts.detail.goBack')
       }}</Button>
     </div>

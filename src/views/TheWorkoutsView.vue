@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
 import TemplateListCard from '@/components/TemplateListCard.vue'
 import BenchmarkListCard from '@/features/benchmarks/components/BenchmarkListCard.vue'
 import { useWorkoutsList } from '@/composables/useWorkoutsList'
@@ -14,12 +13,8 @@ import { useBenchmarksList } from '@/composables/useBenchmarksList'
 
 const { t } = useI18n()
 const router = useRouter()
-const { workouts, templates, isLoading, formatTemplateDate } = useWorkoutsList()
+const { templates, isLoading, formatTemplateDate } = useWorkoutsList()
 const { benchmarks, personalBests, formatBenchmarkType } = useBenchmarksList()
-
-function navigateToWorkoutDetail(workoutId: string): void {
-  router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
-}
 
 function navigateToTemplateDetail(templateId: string): void {
   router.push({ name: RouteNames.TemplateDetail, params: { id: templateId } })
@@ -43,7 +38,7 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
     <Card class="mb-6">
       <CardContent class="pt-6">
         <h1 class="mb-2 text-3xl font-bold">{{ t('workouts.title') }}</h1>
-        <p class="text-muted-foreground">{{ t('workouts.empty.description') }}</p>
+        <p class="text-muted-foreground">{{ t('workouts.subtitle') }}</p>
       </CardContent>
     </Card>
 
@@ -53,10 +48,9 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
     </div>
 
     <!-- Tabs -->
-    <Tabs v-else default-value="history" class="flex flex-1 flex-col">
-      <TabsList class="mb-6 grid w-full grid-cols-3">
+    <Tabs v-else default-value="templates" class="flex flex-1 flex-col">
+      <TabsList class="mb-6 grid w-full grid-cols-2">
         <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
-        <TabsTrigger value="history">{{ t('workouts.list.history') }}</TabsTrigger>
         <TabsTrigger value="benchmarks">{{ t('workouts.list.benchmarks') }}</TabsTrigger>
       </TabsList>
 
@@ -85,29 +79,6 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
             <EmptyHeader>
               <EmptyTitle>{{ t('workouts.empty.templates.title') }}</EmptyTitle>
               <EmptyDescription>{{ t('workouts.empty.templates.description') }}</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
-      </TabsContent>
-
-      <!-- History Tab -->
-      <TabsContent value="history" class="flex flex-1 flex-col">
-        <!-- Workouts list -->
-        <div v-if="workouts.length > 0" class="grid flex-1 gap-3 overflow-y-auto">
-          <WorkoutHistoryCard
-            v-for="workout in workouts"
-            :key="workout.id"
-            :workout="workout"
-            @click="navigateToWorkoutDetail"
-          />
-        </div>
-
-        <!-- Empty state -->
-        <div v-else class="flex flex-1 items-center justify-center">
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>{{ t('workouts.empty.history.title') }}</EmptyTitle>
-              <EmptyDescription>{{ t('workouts.empty.history.description') }}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </div>

@@ -1,5 +1,6 @@
 export default {
   title: 'Workouts',
+  subtitle: 'Plane und tracke deine Workouts',
   new: 'Neues Workout',
   start: 'Workout starten',
   resume: 'Workout fortsetzen',

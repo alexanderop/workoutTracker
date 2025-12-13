@@ -75,4 +75,8 @@ export default {
   units: {
     kg: 'kg',
   },
+  dates: {
+    today: 'Heute',
+    yesterday: 'Gestern',
+  },
 } as const

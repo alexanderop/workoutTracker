@@ -7,6 +7,7 @@ import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
 import CreateTemplateView from '@/views/CreateTemplateView.vue'
 import TemplateDetailView from '@/views/TemplateDetailView.vue'
 import TheExercisesView from '@/views/TheExercisesView.vue'
+import TheHistoryView from '@/views/TheHistoryView.vue'
 import TheHomeView from '@/views/TheHomeView.vue'
 import TheTimersView from '@/views/TheTimersView.vue'
 import TheSettingsView from '@/views/TheSettingsView.vue'
@@ -16,6 +17,7 @@ import WorkoutSummaryView from '@/views/WorkoutSummaryView.vue'
 
 export const RouteNames = {
   Home: 'Home',
+  History: 'History',
   Workouts: 'Workouts',
   WorkoutDetail: 'WorkoutDetail',
   Exercises: 'Exercises',
@@ -38,6 +40,11 @@ export const routes = [
     path: '/',
     name: RouteNames.Home,
     component: TheHomeView,
+  },
+  {
+    path: '/history',
+    name: RouteNames.History,
+    component: TheHistoryView,
   },
   {
     path: '/workouts',
