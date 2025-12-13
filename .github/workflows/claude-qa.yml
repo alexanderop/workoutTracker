@@ -237,13 +237,9 @@ jobs:
               TASK_CONTENT="${TASK_CONTENT//\{\{PR_NUMBER\}\}/${{ steps.pr-context.outputs.pr_number }}}"
               TASK_CONTENT="${TASK_CONTENT//\{\{PR_TITLE\}\}/${{ steps.pr-context.outputs.pr_title }}}"
 
-              # Use envsubst for complex multiline replacements
-              export PR_BODY="$PR_BODY_RAW"
-              export LINKED_ISSUES="$LINKED_ISSUES_RAW"
-
-              # Replace PR_BODY and LINKED_ISSUES placeholders
-              TASK_CONTENT=$(echo "$TASK_CONTENT" | sed "s|{{PR_BODY}}|$PR_BODY|g")
-              TASK_CONTENT=$(echo "$TASK_CONTENT" | sed "s|{{LINKED_ISSUES}}|$LINKED_ISSUES|g")
+              # Use bash parameter expansion for multiline replacements (sed breaks on newlines)
+              TASK_CONTENT="${TASK_CONTENT//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
+              TASK_CONTENT="${TASK_CONTENT//\{\{LINKED_ISSUES\}\}/$LINKED_ISSUES_RAW}"
             fi
 
             echo "$TASK_CONTENT"
