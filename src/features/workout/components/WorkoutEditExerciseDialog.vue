@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { whenever } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   NumberField,
@@ -18,8 +18,6 @@ import {
 const { t } = useI18n()
 
 export type ExerciseEditData = {
-  name: string
-  equipment: string
   targetReps: number
   setCount: number
 }
@@ -34,27 +32,16 @@ const emit = defineEmits<{
   save: [data: ExerciseEditData]
 }>()
 
-const name = ref(exercise.name)
-const equipment = ref(exercise.equipment)
 const targetReps = ref(exercise.targetReps)
 const setCount = ref(exercise.setCount)
 
-watch(
-  () => open.value,
-  (isOpen) => {
-    if (isOpen) {
-      name.value = exercise.name
-      equipment.value = exercise.equipment
-      targetReps.value = exercise.targetReps
-      setCount.value = exercise.setCount
-    }
-  },
-)
+whenever(open, () => {
+  targetReps.value = exercise.targetReps
+  setCount.value = exercise.setCount
+})
 
 function handleSave() {
   emit('save', {
-    name: name.value,
-    equipment: equipment.value,
     targetReps: targetReps.value,
     setCount: Math.max(1, setCount.value),
   })
@@ -75,26 +62,6 @@ function handleCancel() {
       </DialogHeader>
 
       <div class="grid gap-4 py-4">
-        <div class="grid gap-2">
-          <Label for="exercise-name">{{ t('dialogs.editExercise.exerciseName') }}</Label>
-          <Input
-            id="exercise-name"
-            v-model="name"
-            :placeholder="t('dialogs.editExercise.exerciseNamePlaceholder')"
-            class="h-12"
-          />
-        </div>
-
-        <div class="grid gap-2">
-          <Label for="equipment">{{ t('dialogs.editExercise.equipment') }}</Label>
-          <Input
-            id="equipment"
-            v-model="equipment"
-            :placeholder="t('dialogs.editExercise.equipmentPlaceholder')"
-            class="h-12"
-          />
-        </div>
-
         <NumberField id="target-reps" v-model="targetReps" :min="1" :max="100">
           <Label for="target-reps">{{ t('dialogs.editExercise.targetReps') }}</Label>
           <NumberFieldContent>
