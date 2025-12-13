@@ -28,7 +28,6 @@ function goToTimers() {
     <Card
       role="button"
       tabindex="0"
-      :aria-label="t('nav.homeView.startNewWorkout')"
       class="w-full max-w-md cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
       @click="startWorkout"
       @keydown.enter="startWorkout"
@@ -49,7 +48,6 @@ function goToTimers() {
     <Card
       role="button"
       tabindex="0"
-      :aria-label="t('nav.homeView.quickTimer')"
       class="w-full max-w-md cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
       @click="goToTimers"
       @keydown.enter="goToTimers"
