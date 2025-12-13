@@ -14,10 +14,10 @@ export class BuilderPO {
   ) {}
 
   /**
-   * Navigates to the workout builder by clicking the "Get Started" button.
+   * Navigates to the workout builder by clicking the "Start New Workout" card.
    */
   async navigateTo(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /get started/i }))
+    await this.ctx.user.click(screen.getByRole('button', { name: /start new workout/i }))
   }
 
   /**

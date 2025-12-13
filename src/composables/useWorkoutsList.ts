@@ -1,7 +1,8 @@
 import { onMounted, ref } from 'vue'
-import { getWorkoutsRepository, getTemplatesRepository } from '@/db'
+import { getTemplatesRepository } from '@/db'
 import { formatDate } from '@/lib/formatters'
-import type { DbCompletedWorkout, DbWorkoutTemplate } from '@/db/schema'
+import { tryCatch } from '@/lib/tryCatch'
+import type { DbWorkoutTemplate } from '@/db/schema'
 
 // ============================================
 // Pure Functions (Functional Core)
@@ -21,7 +22,6 @@ function formatTemplateDate(timestamp: number | null): string {
 
 export function useWorkoutsList() {
   // Primary State
-  const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
   const templates = ref<ReadonlyArray<DbWorkoutTemplate>>([])
 
   // State Metadata
@@ -30,10 +30,10 @@ export function useWorkoutsList() {
   // Methods
   async function loadAll(): Promise<void> {
     isLoading.value = true
-    ;[workouts.value, templates.value] = await Promise.all([
-      getWorkoutsRepository().getHistory(),
-      getTemplatesRepository().getAll(),
-    ])
+    const [error, result] = await tryCatch(getTemplatesRepository().getAll())
+    if (!error && result) {
+      templates.value = result
+    }
     isLoading.value = false
   }
 
@@ -44,7 +44,6 @@ export function useWorkoutsList() {
 
   return {
     // State
-    workouts,
     templates,
     isLoading,
     // Methods

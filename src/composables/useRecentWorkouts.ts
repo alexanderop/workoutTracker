@@ -1,0 +1,80 @@
+import { computed, onMounted, readonly, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getWorkoutsRepository } from '@/db'
+import type { DbCompletedWorkout } from '@/db/schema'
+import { formatDurationMinutes, formatRelativeDate } from '@/lib/formatters'
+import { tryCatch } from '@/lib/tryCatch'
+import { countCompletedSets } from '@/lib/workoutStats'
+
+// ============================================
+// Types
+// ============================================
+
+export type RecentWorkout = {
+  id: string
+  name: string
+  relativeDate: string
+  durationMinutes: string
+  setCount: number
+}
+
+// ============================================
+// Pure Functions (Functional Core)
+// ============================================
+
+function mapToRecentWorkout(workout: DbCompletedWorkout, locale: string): RecentWorkout {
+  return {
+    id: workout.id,
+    name: workout.name,
+    relativeDate: formatRelativeDate(workout.completedAt, locale),
+    durationMinutes: formatDurationMinutes(workout.durationSeconds),
+    setCount: countCompletedSets(workout.blocks),
+  }
+}
+
+// ============================================
+// Composable (Imperative Shell)
+// ============================================
+
+export function useRecentWorkouts(limit = 3) {
+  const { locale } = useI18n()
+
+  // Primary State
+  const workouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+
+  // State Metadata
+  const isLoading = ref(true)
+
+  // Computed
+  const hasHistory = computed(() => workouts.value.length > 0)
+
+  const recentWorkouts = computed<ReadonlyArray<RecentWorkout>>(() =>
+    workouts.value.map((workout) => mapToRecentWorkout(workout, locale.value)),
+  )
+
+  // Methods
+  async function loadRecent(): Promise<void> {
+    isLoading.value = true
+    const [error, result] = await tryCatch(getWorkoutsRepository().getHistory({ limit }))
+
+    if (!error && result) {
+      workouts.value = result
+    }
+
+    isLoading.value = false
+  }
+
+  // Lifecycle Hooks
+  onMounted(() => {
+    loadRecent()
+  })
+
+  return {
+    // State
+    recentWorkouts,
+    hasHistory,
+    isLoading: readonly(isLoading),
+    // Methods
+    loadRecent,
+  }
+}

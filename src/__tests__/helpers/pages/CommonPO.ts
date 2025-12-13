@@ -146,7 +146,7 @@ export class CommonPO {
    * Waits for the route to update before returning.
    */
   async navigateToExercises(): Promise<void> {
-    const exercisesNavButton = screen.getByRole('button', { name: /exercises/i })
+    const exercisesNavButton = screen.getByRole('button', { name: /^exercises$/i })
     await this.ctx.user.click(exercisesNavButton)
     await this.waitForRoute(/^\/exercises$/)
   }

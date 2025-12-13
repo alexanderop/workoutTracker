@@ -84,4 +84,8 @@ export default {
       finetuneValue: 'Fine-tune',
     },
   },
+  dates: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+  },
 } as const

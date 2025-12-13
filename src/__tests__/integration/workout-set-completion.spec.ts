@@ -13,7 +13,7 @@ describe('Workout Set Completion', () => {
         await createTestApp()
 
       // Setup: Create workout with strength block
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
@@ -45,7 +45,7 @@ describe('Workout Set Completion', () => {
       const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
@@ -86,7 +86,7 @@ describe('Workout Set Completion', () => {
       const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
@@ -127,7 +127,7 @@ describe('Workout Set Completion', () => {
       const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup workout with TWO strength blocks
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add first block
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -170,7 +170,7 @@ describe('Workout Set Completion', () => {
         await createTestApp()
 
       // Setup workout with ONE strength block
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
@@ -218,7 +218,7 @@ describe('Workout Set Completion', () => {
       const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))
@@ -252,7 +252,7 @@ describe('Workout Set Completion', () => {
         await createTestApp()
 
       // Setup workout with two blocks
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
@@ -298,7 +298,7 @@ describe('Workout Set Completion', () => {
         await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))

@@ -2,6 +2,7 @@ import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -185,9 +186,9 @@ describe('Data Management', () => {
 
       await db.workouts.add(completedWorkout)
 
-      // Act: Start at home and navigate to workouts page
-      const { common, user, router, queryByText, findByText, cleanup } = await createTestApp()
-      await common.navigateToWorkouts()
+      // Act: Start at home and navigate to history page
+      const { user, router, queryByText, findByText, cleanup } = await createTestApp()
+      await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
       const workoutCard = await findByText('Push Day')

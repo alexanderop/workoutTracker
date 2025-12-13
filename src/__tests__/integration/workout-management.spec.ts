@@ -12,7 +12,7 @@ describe('Workout Management', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, getByText, queryByText, cleanup } = await createTestApp()
 
       // Start new workout from home page
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add a strength block (Bench Press)
@@ -134,7 +134,7 @@ describe('Workout Management', () => {
       const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Start workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add two strength blocks
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -178,7 +178,7 @@ describe('Workout Management', () => {
       const { common, user, getByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add an exercise block
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -201,7 +201,7 @@ describe('Workout Management', () => {
       const { builder, workout, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add an exercise block
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -244,7 +244,7 @@ describe('Workout Management', () => {
         await createTestApp()
 
       // Navigate to workout builder
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add an exercise block
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -286,7 +286,7 @@ describe('Workout Management', () => {
       const { builder, common, user, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add an exercise block
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -320,7 +320,7 @@ describe('Workout Management', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start and add a block
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       await user.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await user.click(common.getDialogButton('Bench Press'))

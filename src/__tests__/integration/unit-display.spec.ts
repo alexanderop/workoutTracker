@@ -13,7 +13,7 @@ describe('Unit Display', () => {
       await createTestApp()
 
     // Start a workout and add a strength block
-    await user.click(getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /start new workout/i }))
     await user.click(getByRole('button', { name: /add first block/i }))
     await common.waitForDialog()
     await user.click(common.getDialogButton('Bench Press'))
@@ -57,7 +57,7 @@ describe('Unit Display', () => {
 
     // Navigate to home and start workout
     await navigateTo({ name: RouteNames.Home })
-    await user.click(getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /start new workout/i }))
 
     // Add a strength block
     await user.click(getByRole('button', { name: /add first block/i }))
