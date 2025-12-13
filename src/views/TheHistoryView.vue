@@ -7,7 +7,7 @@ import { RouteNames } from '@/router'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import { getDateLocale, isSupportedLocale } from '@/lib/dateLocale'
+import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
@@ -31,7 +31,7 @@ type GroupedWorkouts = {
 // Composable Setup
 // ============================================
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const router = useRouter()
 
 // ============================================
@@ -47,8 +47,7 @@ const isLoading = ref(true)
 
 const groupedByMonth = computed<ReadonlyArray<GroupedWorkouts>>(() => {
   const groups = new Map<string, WorkoutGroup>()
-  const currentLocale = isSupportedLocale(locale.value) ? locale.value : 'en'
-  const dateLocale = getDateLocale(currentLocale)
+  const dateLocale = getDateLocale(getCurrentLocale())
 
   for (const workout of workouts.value) {
     const date = new Date(workout.completedAt)
