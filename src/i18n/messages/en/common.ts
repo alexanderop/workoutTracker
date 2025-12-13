@@ -55,6 +55,8 @@ export default {
     deleteSet: 'Delete set {index}',
     incrementByAmount: 'Increase by {amount}',
     decrementByAmount: 'Decrease by {amount}',
+    statusColumn: 'Status',
+    actionsColumn: 'Actions',
   },
   states: {
     loading: 'Loading...',

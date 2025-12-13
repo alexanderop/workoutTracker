@@ -53,6 +53,8 @@ export default {
     deleteSet: 'Satz {index} löschen',
     incrementByAmount: 'Um {amount} erhöhen',
     decrementByAmount: 'Um {amount} verringern',
+    statusColumn: 'Status',
+    actionsColumn: 'Aktionen',
   },
   states: {
     loading: 'Lädt...',

@@ -153,7 +153,9 @@ function handleRirChange(set: Set, value: number | undefined) {
             <TableHead class="h-8 p-1 text-xs text-center hidden sm:table-cell">{{
               t('workouts.table.headers.tenRm')
             }}</TableHead>
-            <TableHead class="w-14 h-8 p-1" />
+            <TableHead class="w-14 h-8 p-1">
+              <span class="sr-only">{{ t('common.aria.statusColumn') }}</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
