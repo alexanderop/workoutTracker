@@ -8,6 +8,7 @@ export type Set = {
   reps: string
   rir: string
   status: SetStatus
+  isAutoFilled?: boolean
 }
 
 export type Workout = {

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Set } from '@/features/workout/composables/useWorkout'
+import type { Set, LastSessionData } from '@/features/workout/composables/useWorkout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import WorkoutSetTableRow from '@/features/workout/components/WorkoutSetTableRow.vue'
+import WorkoutLastSessionBanner from '@/features/workout/components/WorkoutLastSessionBanner.vue'
 
 const { t } = useI18n()
 const { unitLabel } = useWeightDisplay()
@@ -15,6 +16,7 @@ const weightLabel = computed(() => unitLabel.value.toUpperCase())
 
 type Props = {
   sets: Array<Set>
+  lastSession?: LastSessionData
 }
 
 defineProps<Props>()
@@ -31,6 +33,15 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
 </script>
 
 <template>
+  <!-- Last Session Banner -->
+  <WorkoutLastSessionBanner
+    v-if="lastSession"
+    :workout-id="lastSession.workoutId"
+    :completed-at="lastSession.completedAt"
+    :sets="lastSession.sets"
+    class="mb-3"
+  />
+
   <Table>
     <TableHeader>
       <TableRow class="border-none hover:bg-transparent">

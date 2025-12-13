@@ -4,19 +4,22 @@ import { useI18n } from 'vue-i18n'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { StrengthBlock } from '@/types/blocks'
+import type { LastSessionData } from '@/features/workout/composables/useWorkout'
+import WorkoutLastSessionBanner from './WorkoutLastSessionBanner.vue'
 
 const { t } = useI18n()
 
 type Props = {
   block: StrengthBlock
   activeSetIndex: number
+  lastSession?: LastSessionData
 }
 
 const emit = defineEmits<{
   'update-set': [setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined]
 }>()
 
-const { block, activeSetIndex } = defineProps<Props>()
+const { block, activeSetIndex, lastSession } = defineProps<Props>()
 
 const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 
@@ -62,7 +65,7 @@ function handleRirChange(value: number | undefined) {
 <template>
   <div class="flex-1 flex flex-col px-4 py-6">
     <!-- Zone 1: Exercise Identity -->
-    <header class="text-center mb-6">
+    <header class="text-center mb-4">
       <h1 class="text-lg font-bold uppercase tracking-widest text-foreground/90">
         {{ block.name }}
       </h1>
@@ -70,6 +73,15 @@ function handleRirChange(value: number | undefined) {
         {{ block.equipment }}
       </p>
     </header>
+
+    <!-- Last Session Banner -->
+    <WorkoutLastSessionBanner
+      v-if="lastSession"
+      :workout-id="lastSession.workoutId"
+      :completed-at="lastSession.completedAt"
+      :sets="lastSession.sets"
+      class="mb-4"
+    />
 
     <!-- Zone 2: Set Progress Dots -->
     <div class="flex items-center justify-center gap-2 mb-8">

@@ -61,6 +61,14 @@ const checkIconClass = computed(() =>
   ),
 )
 
+const weightInputClass = computed(() =>
+  cn(
+    'bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg',
+    // Subtle styling for auto-filled values (italic + slightly muted)
+    set.isAutoFilled && 'italic text-foreground/70',
+  ),
+)
+
 function getRepsValue() {
   return set.reps ? Number(set.reps) : undefined
 }
@@ -112,7 +120,7 @@ function handleRirChange(value: number | undefined) {
         <NumberFieldInput
           placeholder="—"
           :aria-label="t('common.aria.weight')"
-          class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
+          :class="weightInputClass"
         />
       </NumberField>
     </TableCell>

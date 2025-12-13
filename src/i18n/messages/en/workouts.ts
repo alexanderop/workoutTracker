@@ -142,6 +142,9 @@ export default {
     label: 'Previous ({date})',
     setLabel: 'Set {number}',
   },
+  lastSession: {
+    label: 'Last',
+  },
   stats: {
     duration: 'Duration',
     exercises: 'Exercises',

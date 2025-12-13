@@ -1,6 +1,10 @@
-import { computed } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
+import {
+  fetchLastExerciseSession,
+  type LastSessionData,
+} from '@/features/workout/composables/useLastExerciseSession'
 import type {
   AmrapBlock,
   AmrapConfig,
@@ -25,9 +29,13 @@ import type { Set, Workout } from '@/types/workout'
 // Re-export from shared locations for backward compatibility
 export type { Set, Workout } from '@/types/workout'
 export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
+export type { LastSessionData } from '@/features/workout/composables/useLastExerciseSession'
 
 // Get reference to shared workout singleton
 const workout = getWorkoutRef()
+
+// Store last session data per block (keyed by block ID)
+const lastSessionByBlock = shallowRef<Map<string, LastSessionData>>(new Map())
 
 type CompleteSetResult =
   | { kind: 'completed'; nextAction: 'next-set'; blockIndex: number; setId: number }
@@ -225,26 +233,55 @@ export function useWorkout() {
     return { kind: 'completed', nextAction: 'workout-complete' }
   }
 
-  function addExercise(exerciseId: string, name: string) {
+  async function addExercise(exerciseId: string, name: string) {
     if (!name.trim()) return
 
     const exercisesStore = useExercisesStore()
     const exercise = exercisesStore.getExerciseById(exerciseId)
     const icon = exercise?.icon ?? '🆕'
 
+    // Fetch last session data for this exercise
+    const lastSession = await fetchLastExerciseSession(exerciseId)
+
+    // Create sets with optional pre-fill from last session
+    const defaultSets: Array<Set> = [
+      { id: 1, kg: '', reps: '', rir: '', status: 'active' },
+      { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
+      { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
+    ]
+
+    const sets: Array<Set> = lastSession
+      ? defaultSets.map((set, index) => {
+          // Get corresponding set from last session, or use last available weight
+          const lastSetData = lastSession.sets[index] ?? lastSession.sets[lastSession.sets.length - 1]
+          if (!lastSetData) return set
+
+          return {
+            ...set,
+            kg: lastSetData.kg,
+            isAutoFilled: lastSetData.kg !== '',
+          }
+        })
+      : defaultSets
+
+    const blockId = generateBlockId()
+
     const newBlock: StrengthBlock = {
       kind: 'strength',
-      id: generateBlockId(),
+      id: blockId,
       exerciseDefinitionId: exerciseId,
       name,
       equipment: 'Equipment',
       targetReps: 8,
       thumbnail: icon,
-      sets: [
-        { id: 1, kg: '', reps: '', rir: '', status: 'active' },
-        { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
-        { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
-      ],
+      sets,
+    }
+
+    // Store last session data for banner display
+    if (lastSession) {
+      const newMap = new Map(lastSessionByBlock.value)
+      newMap.set(String(blockId), lastSession)
+      lastSessionByBlock.value = newMap
     }
 
     const newBlocks = [...workout.value.blocks, newBlock]
@@ -408,6 +445,8 @@ export function useWorkout() {
     updateSetInBlock(blockIndex, setId, (s) => ({
       ...s,
       [field]: value !== undefined ? String(value) : '',
+      // Clear auto-fill flag when user edits the weight field
+      isAutoFilled: field === 'kg' ? false : s.isAutoFilled,
     }))
   }
 
@@ -451,6 +490,14 @@ export function useWorkout() {
     if (update) updateBlockAtIndex(blockIndex, update)
   }
 
+  /**
+   * Get last session data for a specific block.
+   * Returns undefined if no last session data exists for this block.
+   */
+  function getLastSessionForBlock(blockId: number): LastSessionData | undefined {
+    return lastSessionByBlock.value.get(String(blockId))
+  }
+
   return {
     workout,
     selectedBlock,
@@ -479,5 +526,8 @@ export function useWorkout() {
     setSetCount,
     updateSetValue,
     reorderExercises,
+
+    // Last session data
+    getLastSessionForBlock,
   }
 }

@@ -25,6 +25,7 @@ const {
   completeSet,
   setBlockResult,
   updateSetValue,
+  getLastSessionForBlock,
 } = useWorkout()
 const {
   currentBlock,
@@ -52,6 +53,12 @@ const timedViewRef = useTemplateRef<{
 const isFirstBlock = computed(() => currentBlockIndex.value === 0)
 
 const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentBlock.value))
+
+// Last session data for current block (for auto-fill banner)
+const currentBlockLastSession = computed(() => {
+  if (!currentBlock.value) return undefined
+  return getLastSessionForBlock(currentBlock.value.id)
+})
 
 // Timer running state - updated via emit from timer views
 const timerIsRunning = ref(false)
@@ -170,6 +177,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
         v-if="isStrength && isStrengthBlock(currentBlock)"
         :block="currentBlock"
         :active-set-index="workout.activeSetIndex ?? 0"
+        :last-session="currentBlockLastSession"
         @update-set="handleUpdateSet"
       />
 

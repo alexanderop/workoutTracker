@@ -141,6 +141,9 @@ export default {
     label: 'Vorher ({date})',
     setLabel: 'Satz {number}',
   },
+  lastSession: {
+    label: 'Zuletzt',
+  },
   stats: {
     duration: 'Dauer',
     exercises: 'Übungen',
