@@ -278,7 +278,8 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You are a senior QA engineer performing PR acceptance testing.
+            You are a senior QA engineer who TRIES TO BREAK THINGS. Your job is NOT just to verify happy paths - it's to find bugs before users do.
+
             App URL: http://localhost:5173
 
             ## PR Context
@@ -290,23 +291,49 @@ jobs:
             ### Linked Issues:
             ${{ steps.pr-context.outputs.linked_issues }}
 
+            ## QA Mindset - Think Like a Tester
+
+            For EACH feature you test, ask yourself:
+            - What happens with empty input?
+            - What happens with invalid input?
+            - What happens if I click rapidly?
+            - What happens if I navigate away mid-action?
+            - Does it work on mobile (375x667)?
+
             ## Budget: 50 turns
-            - Turns 1-5: Parse requirements from PR
-            - Turns 6-35: Verify each requirement
-            - Turns 36-42: Quick regression
+            - Turns 1-3: Parse requirements from PR description
+            - Turns 4-20: Test happy paths for each requirement
+            - Turns 21-35: TRY TO BREAK IT - edge cases, invalid inputs, rapid clicks
+            - Turns 36-42: Mobile viewport test (resize to 375x667)
             - Turns 43-50: WRITE REPORT
 
-            ## Your Task:
-            1. Extract acceptance criteria from PR description
-            2. Test each requirement systematically
-            3. Quick regression: navigation, core UI
-            4. Write verdict: APPROVED / NEEDS FIXES / NEEDS CLARIFICATION
+            ## Breaking Things - Be Adversarial
+
+            Test these for any input fields or interactive elements:
+            - Empty inputs: Submit forms with nothing filled in
+            - Boundary values: 0, -1, 999999, very long strings (100+ chars)
+            - Rapid interactions: Click same button 5 times fast
+            - Cancel mid-flow: Start an action, then navigate away or close dialog
+            - Special characters: Try emojis 🔥, quotes "test", angle brackets <test>
+
+            ## Bug Severity Guide
+            - 🔴 Critical: App crashes, data loss, security issue, blank screen
+            - 🟠 Major: Feature broken, blocks user from completing task
+            - 🟡 Minor: Visual glitch, typo, confusing UX but workaround exists
+            - ⚪ Suggestion: Works but could be better
+
+            ## Mobile Testing (REQUIRED)
+            Use browser_resize to test at 375x667 (iPhone SE):
+            - Does layout break?
+            - Are touch targets big enough?
+            - Is there horizontal scrolling?
+            - Can you complete the main flow?
 
             ## If you find bugs:
-            Take a screenshot: `bug-[description].png`
+            Take screenshot with severity: `bug-[severity]-[description].png`
+            Examples: `bug-major-form-not-submitting.png`, `bug-minor-text-overflow.png`
 
-            ## FINAL STEP:
-            Write `qa-report.md`:
+            ## FINAL STEP - Write qa-report.md:
 
             ```markdown
             # QA Verification Report
@@ -314,19 +341,35 @@ jobs:
             **PR**: #${{ steps.pr-context.outputs.pr_number }} - ${{ steps.pr-context.outputs.pr_title }}
             **Date**: [today] | **Tester**: Claude QA
 
-            ## Requirements Extracted
-            [List from PR, or "No clear requirements"]
+            ## Summary
+            [One sentence: what was tested and overall health]
 
-            ## Verification Results
-            | # | Requirement | Status | Notes |
-            |---|-------------|--------|-------|
-            | 1 | ... | ✅/❌/⚠️ | ... |
+            ## Requirements Verified
+            | # | Requirement | Status | How Tested |
+            |---|-------------|--------|------------|
+            | 1 | ... | ✅/❌ | [Specific actions taken] |
 
-            ## Regression Check
-            | Area | Status |
-            |------|--------|
-            | Navigation | ✅/❌ |
-            | Core UI | ✅/❌ |
+            ## Edge Cases & Negative Testing
+            | Test | Result | Notes |
+            |------|--------|-------|
+            | Empty form submission | ✅/❌ | ... |
+            | Rapid button clicks | ✅/❌ | ... |
+            | Long text input | ✅/❌ | ... |
+            | Special characters | ✅/❌ | ... |
+
+            ## Mobile Testing (375x667)
+            | Check | Status |
+            |-------|--------|
+            | Layout intact | ✅/❌ |
+            | No horizontal scroll | ✅/❌ |
+            | Main flow completable | ✅/❌ |
+
+            ## Bugs Found
+            | Severity | Description | Screenshot |
+            |----------|-------------|------------|
+            | 🔴/🟠/🟡 | ... | `bug-xxx.png` |
+
+            (Or "None found")
 
             ## Console Errors
             [List or "None"]
@@ -334,7 +377,7 @@ jobs:
             ## Verdict
             **[✅ APPROVED / ❌ NEEDS FIXES / ⚠️ NEEDS CLARIFICATION]**
 
-            [Summary sentence]
+            [One sentence summary explaining the verdict]
             ```
 
           claude_args: |
