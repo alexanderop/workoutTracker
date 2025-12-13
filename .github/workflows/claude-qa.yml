@@ -45,9 +45,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # Prevent duplicate runs on same PR
+    # Prevent duplicate runs on same PR (use ref for workflow_dispatch branch deduplication)
     concurrency:
-      group: claude-qa-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+      group: claude-qa-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
       cancel-in-progress: true
 
     permissions:
@@ -59,11 +59,27 @@ jobs:
 
     env:
       NODE_VERSION: '22'
-      # Determine mode from trigger
-      QA_MODE: ${{ github.event.label.name == 'qa-verify' && 'verify' || github.event.label.name == 'claude-explore' && 'explore' || (github.event_name == 'issue_comment' && 'verify') || github.event.inputs.mode || 'explore' }}
       QA_FOCUS: ${{ github.event.inputs.focus || 'general' }}
 
     steps:
+      - name: Determine QA mode
+        id: qa-mode
+        shell: bash
+        run: |
+          MODE="explore"
+          if [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
+            MODE="verify"
+          elif [[ "${{ github.event.label.name }}" == "claude-explore" ]]; then
+            MODE="explore"
+          elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            MODE="verify"
+          elif [[ -n "${{ github.event.inputs.mode }}" ]]; then
+            MODE="${{ github.event.inputs.mode }}"
+          fi
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "QA_MODE=$MODE" >> $GITHUB_ENV
+          echo "Determined QA mode: $MODE"
+
       - name: Get PR ref for issue_comment
         if: github.event_name == 'issue_comment'
         id: pr-ref
@@ -92,6 +108,9 @@ jobs:
         if: env.QA_MODE == 'verify'
         id: pr-context
         uses: actions/github-script@v7
+        env:
+          # Avoid script injection by passing inputs via environment variables
+          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
         with:
           script: |
             let prNumber, prBody, prTitle;
@@ -110,8 +129,8 @@ jobs:
               });
               prBody = pr.body || '';
               prTitle = pr.title;
-            } else if ('${{ github.event.inputs.pr_number }}') {
-              prNumber = parseInt('${{ github.event.inputs.pr_number }}');
+            } else if (process.env.PR_NUMBER_INPUT) {
+              prNumber = parseInt(process.env.PR_NUMBER_INPUT, 10);
               const { data: pr } = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -144,16 +163,30 @@ jobs:
             core.setOutput('linked_issues', linkedIssues);
 
       - name: Start development server
+        shell: bash
         run: |
           pnpm dev --host 0.0.0.0 --port 5173 &
           DEV_PID=$!
           echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
 
+          # Early failure detection - check process is still alive after startup
+          sleep 2
+          if ! kill -0 "$DEV_PID" 2>/dev/null; then
+            echo "Dev server failed to start immediately"
+            exit 1
+          fi
+
           echo "Waiting for dev server with app mounted..."
           for i in {1..90}; do
-            if curl -s http://localhost:5173 | grep -q '<div id="app"'; then
+            # Check for HTTP 200 AND expected content (more robust pattern)
+            if curl -sf http://localhost:5173 | grep -qE '(id="app"|<title>)'; then
               echo "Dev server ready!"
               exit 0
+            fi
+            # Also check process is still running during wait
+            if ! kill -0 "$DEV_PID" 2>/dev/null; then
+              echo "Dev server process died during startup"
+              exit 1
             fi
             sleep 1
           done
@@ -198,7 +231,7 @@ jobs:
             - Forms are usable
 
             ## If you find bugs:
-            Take a screenshot with descriptive name like `bug-description.png`
+            Take a screenshot with name format: `bug-[description].png` (e.g., bug-broken-nav.png)
 
             ## FINAL STEP (turns 38-40):
             Write `qa-report.md`:
@@ -312,6 +345,7 @@ jobs:
       - name: Check report exists
         id: check-report
         if: always()
+        shell: bash
         run: |
           if [ -f "qa-report.md" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -321,6 +355,8 @@ jobs:
             echo "Warning: No report generated"
           fi
 
+      # Retry with limited tools - intentionally restricted to navigation-only for quick smoke test
+      # (no click/type/hover since this is just checking pages load, not testing interactions)
       - name: Retry if no report generated
         if: steps.check-report.outputs.exists == 'false'
         uses: anthropics/claude-code-action@v1
@@ -346,6 +382,7 @@ jobs:
       - name: Verify report after retry
         id: check-report-retry
         if: steps.check-report.outputs.exists == 'false'
+        shell: bash
         run: |
           if [ -f "qa-report.md" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -401,13 +438,18 @@ jobs:
           always() &&
           (github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number || steps.pr-context.outputs.pr_number)
         uses: actions/github-script@v7
+        env:
+          # Avoid script injection by passing inputs via environment variables
+          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+          PR_NUMBER_CONTEXT: ${{ steps.pr-context.outputs.pr_number }}
+          QA_MODE: ${{ env.QA_MODE }}
         with:
           script: |
             const fs = require('fs');
             const prNumber = context.payload.pull_request?.number ||
                             context.payload.issue?.number ||
-                            '${{ github.event.inputs.pr_number }}' ||
-                            '${{ steps.pr-context.outputs.pr_number }}';
+                            process.env.PR_NUMBER_INPUT ||
+                            process.env.PR_NUMBER_CONTEXT;
 
             if (!prNumber) return;
 
@@ -419,7 +461,7 @@ jobs:
                 `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
             }
 
-            const mode = '${{ env.QA_MODE }}' === 'verify' ? 'Verification' : 'Exploration';
+            const mode = process.env.QA_MODE === 'verify' ? 'Verification' : 'Exploration';
 
             const focus = process.env.QA_FOCUS || 'general';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
@@ -451,7 +493,7 @@ jobs:
           name: qa-artifacts-${{ github.run_id }}
           path: |
             qa-report.md
-            *.png
+            bug-*.png
           if-no-files-found: ignore
 
       - name: Remove trigger label
@@ -459,6 +501,8 @@ jobs:
           github.event_name == 'pull_request' &&
           contains(fromJson('["claude-explore", "qa-verify"]'), github.event.label.name)
         uses: actions/github-script@v7
+        env:
+          LABEL_NAME: ${{ github.event.label.name }}
         with:
           script: |
             try {
@@ -466,18 +510,23 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                name: '${{ github.event.label.name }}'
+                name: process.env.LABEL_NAME
               });
             } catch (e) {
-              console.log('Label already removed');
+              // Only suppress 404 (label not found), warn on other errors
+              if (e.status !== 404) {
+                core.warning(`Failed to remove label: ${e.message}`);
+              }
             }
 
       - name: Cleanup
         if: always()
+        shell: bash
         run: kill $DEV_PID 2>/dev/null || true
 
       - name: Job summary
         if: always()
+        shell: bash
         run: |
           echo "## Claude QA Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -492,6 +541,7 @@ jobs:
 
       - name: Fail job if QA found issues
         if: steps.qa-status.outputs.qa_state == 'failure'
+        shell: bash
         run: |
           echo "❌ QA found critical issues - failing the pipeline"
           exit 1

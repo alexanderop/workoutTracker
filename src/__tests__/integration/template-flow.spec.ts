@@ -16,7 +16,7 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Start new workout from home page
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add a strength block (Bench Press)

@@ -11,8 +11,8 @@ describe('Strength Workflows', () => {
     it('advances to the next set after completing a set', async () => {
       const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
 
-      // Click "Get Started" on home page to start a new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      // Click "Start New Workout" on home page to start a new workout
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // We should now be on the workout builder page
       // Add an exercise by clicking "Add First Block"

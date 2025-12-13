@@ -151,7 +151,7 @@ describe('Timed Block Workflows', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add AMRAP block
@@ -190,7 +190,7 @@ describe('Timed Block Workflows', () => {
       const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')
@@ -219,7 +219,7 @@ describe('Timed Block Workflows', () => {
       const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add Tabata block
       await builder.addTimedBlock('Tabata')
@@ -245,7 +245,7 @@ describe('Timed Block Workflows', () => {
       const { builder, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add For Time block
       await builder.addTimedBlock('For Time')
@@ -301,7 +301,7 @@ describe('Timed Block Workflows', () => {
       const { builder, workout, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add strength block first
       await user.click(getByRole('button', { name: /add first block/i }))
@@ -354,7 +354,7 @@ describe('Timed Block Workflows', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add AMRAP block
       await builder.addTimedBlock('AMRAP')
@@ -401,7 +401,7 @@ describe('Timed Block Workflows', () => {
       const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')
@@ -434,7 +434,7 @@ describe('Timed Block Workflows', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add AMRAP block
@@ -488,7 +488,7 @@ describe('Timed Block Workflows', () => {
       const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')

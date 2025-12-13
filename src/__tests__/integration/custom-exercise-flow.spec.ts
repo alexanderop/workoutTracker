@@ -57,7 +57,7 @@ describe('Custom Exercise Flow', () => {
 
     // Now start a workout and check the add exercise dialog
     await router.push({ name: RouteNames.Home })
-    await user.click(getByRole('button', { name: /get started/i }))
+    await user.click(getByRole('button', { name: /start new workout/i }))
     await user.click(getByRole('button', { name: /add.*block/i }))
     await common.waitForDialog()
 
@@ -179,7 +179,7 @@ describe('Custom Exercise Flow', () => {
       // PHASE 2: Start new workout
       // ========================================
       await router.push({ name: RouteNames.Home })
-      await user.click(getByRole('button', { name: /get started/i }))
+      await user.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // ========================================

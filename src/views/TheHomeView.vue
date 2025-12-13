@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ArrowRight, Play, Timer } from 'lucide-vue-next'
+import { Play, Timer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
 
 const { t } = useI18n()
@@ -41,21 +40,16 @@ function goToTimers() {
         >
           <Play class="w-8 h-8 text-primary ml-1" aria-hidden="true" />
         </div>
-        <CardTitle class="text-2xl">{{ t('nav.homeView.startNewWorkout') }}</CardTitle>
+        <h2 class="leading-none font-semibold text-2xl">{{ t('nav.homeView.startNewWorkout') }}</h2>
         <CardDescription>{{ t('nav.homeView.trackDescription') }}</CardDescription>
       </CardHeader>
-      <CardContent class="pt-0">
-        <Button class="w-full group/btn" size="lg">
-          {{ t('common.buttons.getStarted') }}
-          <ArrowRight class="ml-2 icon-sm transition-transform group-hover/btn:translate-x-1" aria-hidden="true" />
-        </Button>
-      </CardContent>
     </Card>
 
     <!-- Quick Timer card -->
     <Card
       role="button"
       tabindex="0"
+      :aria-label="t('nav.homeView.quickTimer')"
       class="w-full max-w-md cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
       @click="goToTimers"
       @keydown.enter="goToTimers"
@@ -67,7 +61,7 @@ function goToTimers() {
         >
           <Timer class="w-7 h-7 text-orange-500" aria-hidden="true" />
         </div>
-        <CardTitle class="text-xl">{{ t('nav.homeView.quickTimer') }}</CardTitle>
+        <h2 class="leading-none font-semibold text-xl">{{ t('nav.homeView.quickTimer') }}</h2>
         <CardDescription>{{ t('nav.homeView.quickTimerDescription') }}</CardDescription>
       </CardHeader>
     </Card>
