@@ -25,6 +25,8 @@ on:
           - navigation
           - forms
           - workout-flow
+          - security
+          - accessibility
         default: 'general'
   pull_request:
     types: [labeled]
@@ -214,11 +216,15 @@ jobs:
             echo "---"
             echo ""
 
-            # Add task prompt based on mode
-            if [[ "${{ env.QA_MODE }}" == "explore" ]]; then
-              TASK_CONTENT=$(cat .claude/prompts/qa-explore.md)
-            else
+            # Add task prompt based on mode and focus
+            if [[ "${{ env.QA_MODE }}" == "verify" ]]; then
               TASK_CONTENT=$(cat .claude/prompts/qa-verify.md)
+            elif [[ "${{ env.QA_FOCUS }}" == "security" ]]; then
+              TASK_CONTENT=$(cat .claude/prompts/qa-focus-security.md)
+            elif [[ "${{ env.QA_FOCUS }}" == "accessibility" ]]; then
+              TASK_CONTENT=$(cat .claude/prompts/qa-focus-a11y.md)
+            else
+              TASK_CONTENT=$(cat .claude/prompts/qa-explore.md)
             fi
 
             # Replace simple placeholders
