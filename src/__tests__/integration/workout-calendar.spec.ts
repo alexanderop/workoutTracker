@@ -182,6 +182,58 @@ describe('Workout Calendar', () => {
       cleanup()
     })
 
+    it('updates calendar grid when navigating months (not just heading)', async () => {
+      // Seed a workout for a specific date in previous month
+      const today = new Date()
+      const prevMonthDate = subDays(today, 35) // ~5 weeks ago, definitely in previous month
+
+      const workout = dbWorkoutBuilder()
+        .withName('Previous Month Workout')
+        .withDuration(1800)
+        .withTimestamps(prevMonthDate.getTime() - 1800000, prevMonthDate.getTime())
+        .withStrengthBlock({ name: 'Squat' })
+        .build()
+
+      await db.workouts.add(workout)
+
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Current month should NOT show the workout (it's in previous month)
+      // The calendar grid uses CalendarHeading for its internal heading display
+      const currentMonthHeading = format(today, 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: currentMonthHeading, exact: true })).toBeVisible()
+
+      // Navigate to previous month
+      const prevButton = page.getByRole('button', { name: /previous month/i })
+      await userEvent.click(prevButton)
+
+      // Sheet title should update to previous month
+      const prevMonthHeading = format(subDays(today, 30), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: prevMonthHeading, exact: true })).toBeVisible()
+
+      // CRITICAL: The CalendarRoot's internal heading should ALSO show previous month
+      // If bug exists, CalendarHeading stays on current month while sheet title changes
+      // CalendarHeading renders inside CalendarHeader and shows the month the grid displays
+      const calendarHeadingLocator = page.getByText(prevMonthHeading)
+      await expect.element(calendarHeadingLocator.first()).toBeVisible()
+
+      // Click on the day that has the workout (verify grid actually changed)
+      // Use data-slot attribute to find calendar cell triggers, then filter by day number
+      const workoutDayNumber = format(prevMonthDate, 'd')
+      const dayCell = page.getByRole('gridcell').filter({ hasText: workoutDayNumber }).first()
+      await dayCell.click()
+
+      // If the grid updated correctly, clicking this day should show the workout
+      await expect.element(page.getByText('Previous Month Workout')).toBeVisible()
+
+      cleanup()
+    })
+
     it('shows prompt to select a day when calendar opens', async () => {
       const { cleanup } = await createTestApp()
 

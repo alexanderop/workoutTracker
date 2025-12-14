@@ -32,18 +32,18 @@ import type { CalendarWorkout, WorkoutDay } from '@/composables/useWorkoutCalend
 
 type Props = {
   open: boolean
-  currentMonthYear: string
   monthDays: ReadonlyArray<WorkoutDay>
   selectedDate: Date | null
+  selectedMonth: Date
   selectedDayWorkouts: ReadonlyArray<CalendarWorkout>
   selectedDateFormatted: string
 }
 
 const {
   open,
-  currentMonthYear,
   monthDays,
   selectedDate,
+  selectedMonth,
   selectedDayWorkouts,
   selectedDateFormatted,
 } = defineProps<Props>()
@@ -58,6 +58,11 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const router = useRouter()
 const locale = getCurrentLocale()
+
+// Derive month/year heading from selectedMonth
+const currentMonthYear = computed(() => {
+  return format(selectedMonth, 'MMMM yyyy')
+})
 
 // Create a map of dates with workouts for quick lookup
 const workoutDatesMap = computed(() => {
@@ -74,6 +79,11 @@ const workoutDatesMap = computed(() => {
 const calendarValue = computed(() => {
   if (!selectedDate) return undefined
   return fromDate(selectedDate, getLocalTimeZone())
+})
+
+// Convert selectedMonth to DateValue to control which month CalendarRoot displays
+const calendarPlaceholder = computed(() => {
+  return fromDate(selectedMonth, getLocalTimeZone())
 })
 
 function handleDateSelect(dateValue: DateValue) {
@@ -115,6 +125,7 @@ function handleNextMonth() {
       <CalendarRoot
         v-slot="{ grid, weekDays }"
         :model-value="calendarValue"
+        :placeholder="calendarPlaceholder"
         class="w-full"
         weekday-format="short"
         :locale="locale"

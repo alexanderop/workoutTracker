@@ -16,8 +16,8 @@ const router = useRouter()
 // Calendar state
 const calendarSheetOpen = ref(false)
 const {
-  currentMonthYear,
   monthDays,
+  selectedMonth,
   selectedDate,
   selectedDayWorkouts,
   selectedDateFormatted,
@@ -49,8 +49,8 @@ function openCalendarSheet() {
     <!-- Calendar Sheet -->
     <WorkoutCalendarSheet
       v-model:open="calendarSheetOpen"
-      :current-month-year="currentMonthYear"
       :month-days="monthDays"
+      :selected-month="selectedMonth"
       :selected-date="selectedDate"
       :selected-day-workouts="selectedDayWorkouts"
       :selected-date-formatted="selectedDateFormatted"
