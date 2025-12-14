@@ -62,14 +62,39 @@ function exercisesToBlocks(
 
 /**
  * Checks if template has been edited compared to original.
+ * Compares name, exercise count, order, and set counts.
  */
 function checkIsEdited(
   template: DbWorkoutTemplate,
   currentName: string,
-  currentExerciseCount: number,
+  currentExercises: ReadonlyArray<TemplateExercise>,
 ): boolean {
-  const strengthBlocks = template.blocks.filter((b) => b.kind === 'strength')
-  return currentName !== template.name || currentExerciseCount !== strengthBlocks.length
+  // Check name change
+  if (currentName !== template.name) return true
+
+  const originalBlocks = template.blocks.filter(
+    (b): b is DbTemplateStrengthBlock => b.kind === 'strength',
+  )
+
+  // Check exercise count change
+  if (currentExercises.length !== originalBlocks.length) return true
+
+  // Check exercise order and set count changes
+  for (let i = 0; i < currentExercises.length; i++) {
+    const current = currentExercises[i]
+    const original = originalBlocks[i]
+    if (!current || !original) return true
+
+    // Check if exercise changed (order change) or set count changed
+    if (
+      current.name !== original.name ||
+      current.defaultSetCount !== original.defaultSetCount
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
 
 // ============================================
@@ -89,7 +114,7 @@ export function useTemplateDetail(templateId: string) {
   // Computed - derived state
   const isEdited = computed(() => {
     if (state.value.status !== 'success') return false
-    return checkIsEdited(state.value.template, templateName.value, exercises.value.length)
+    return checkIsEdited(state.value.template, templateName.value, exercises.value)
   })
 
   // Methods
