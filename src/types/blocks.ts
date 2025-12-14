@@ -319,6 +319,14 @@ export function getBlockExerciseList(block: TimedBlock): ReadonlyArray<BlockExer
 }
 
 /**
+ * Get the icon for a cardio activity.
+ */
+function getCardioActivityIcon(activity: CardioActivity): string {
+  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === activity)
+  return activityInfo?.icon ?? '🏃'
+}
+
+/**
  * Get the thumbnail/icon for a block.
  */
 export function getBlockThumbnail(block: WorkoutBlock): string {
@@ -329,32 +337,4 @@ export function getBlockThumbnail(block: WorkoutBlock): string {
     return getCardioActivityIcon(block.config.activity)
   }
   return BLOCK_ICONS[block.kind]
-}
-
-/**
- * Get the icon for a cardio activity.
- */
-export function getCardioActivityIcon(activity: CardioActivity): string {
-  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === activity)
-  return activityInfo?.icon ?? '🏃'
-}
-
-/**
- * Get display info for a cardio block.
- */
-export function getCardioBlockDisplay(block: CardioBlock): string {
-  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)
-  const label = activityInfo?.label ?? 'Cardio'
-
-  if (block.config.targetDurationSeconds) {
-    const minutes = Math.floor(block.config.targetDurationSeconds / 60)
-    return `${label} - ${minutes} min`
-  }
-
-  if (block.config.targetDistanceMeters) {
-    const km = block.config.targetDistanceMeters / 1000
-    return `${label} - ${km} km`
-  }
-
-  return label
 }
