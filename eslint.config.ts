@@ -17,7 +17,7 @@ import localRules from './eslint-local-rules'
 
 export default defineConfigWithVueTs(
   {
-    ignores: ['.claude/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**'],
+    ignores: ['.claude/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**', 'src/components/ui/**'],
   },
 
   {

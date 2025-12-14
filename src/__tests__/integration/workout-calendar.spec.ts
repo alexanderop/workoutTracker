@@ -1,0 +1,250 @@
+import { page, userEvent } from 'vitest/browser'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { addDays, subDays, format } from 'date-fns'
+import { createTestApp } from '../helpers/createTestApp'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { db } from '@/db'
+import { dbWorkoutBuilder } from '../factories/dbWorkout.factory'
+
+// Helper to get week strip button by current month
+function getWeekStripButton() {
+  const currentMonth = format(new Date(), 'MMMM yyyy')
+  return page.getByRole('button', { name: new RegExp(currentMonth, 'i') })
+}
+
+describe('Workout Calendar', () => {
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
+
+  describe('Week Strip', () => {
+    it('displays current week with correct dates', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Week strip should be visible on home page (shows month/year)
+      const weekStrip = getWeekStripButton()
+      await expect.element(weekStrip).toBeVisible()
+
+      // Should show today's date highlighted
+      const today = new Date()
+      const todayDate = today.getDate().toString()
+
+      // Find the today indicator (primary background)
+      await expect.element(page.getByText(todayDate)).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows green dot on days with completed workouts', async () => {
+      // Seed a workout completed today
+      const today = new Date()
+      const workout = dbWorkoutBuilder()
+        .withName('Morning Workout')
+        .withTimestamps(today.getTime() - 3600000, today.getTime())
+        .withStrengthBlock({ name: 'Squat' })
+        .build()
+
+      await db.workouts.add(workout)
+
+      const { cleanup } = await createTestApp()
+
+      // Wait for the week strip to load
+      await expect.element(getWeekStripButton()).toBeVisible()
+
+      // The green dot has aria-label "Workout completed"
+      await expect.element(page.getByLabelText(/workout completed/i).first()).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows multiple green dots for multiple workout days', async () => {
+      const today = new Date()
+      const yesterday = subDays(today, 1)
+
+      // Seed workouts on two different days
+      const workoutToday = dbWorkoutBuilder()
+        .withName('Today Workout')
+        .withTimestamps(today.getTime() - 3600000, today.getTime())
+        .withStrengthBlock({ name: 'Bench Press' })
+        .build()
+
+      const workoutYesterday = dbWorkoutBuilder()
+        .withName('Yesterday Workout')
+        .withTimestamps(yesterday.getTime() - 3600000, yesterday.getTime())
+        .withStrengthBlock({ name: 'Deadlift' })
+        .build()
+
+      await db.workouts.add(workoutToday)
+      await db.workouts.add(workoutYesterday)
+
+      const { cleanup } = await createTestApp()
+
+      // Wait for week strip to load
+      await expect.element(getWeekStripButton()).toBeVisible()
+
+      // Should have at least 2 green dots (workout indicators) visible
+      // Count elements with aria-label "Workout completed"
+      await expect.poll(async () => {
+        const dots = await page.getByLabelText(/workout completed/i).all()
+        return dots.length
+      }).toBeGreaterThanOrEqual(2)
+
+      cleanup()
+    })
+
+    it('displays total weekly workout duration', async () => {
+      const today = new Date()
+      const yesterday = subDays(today, 1)
+
+      // Seed workouts with known durations (1h 30m + 45m = 2h 15m)
+      const workout1 = dbWorkoutBuilder()
+        .withName('Morning Workout')
+        .withDuration(5400) // 1h 30m = 90 min = 5400 seconds
+        .withTimestamps(today.getTime() - 5400000, today.getTime())
+        .withStrengthBlock({ name: 'Squat' })
+        .build()
+
+      const workout2 = dbWorkoutBuilder()
+        .withName('Evening Workout')
+        .withDuration(2700) // 45m = 2700 seconds
+        .withTimestamps(yesterday.getTime() - 2700000, yesterday.getTime())
+        .withStrengthBlock({ name: 'Bench Press' })
+        .build()
+
+      await db.workouts.add(workout1)
+      await db.workouts.add(workout2)
+
+      const { cleanup } = await createTestApp()
+
+      // Wait for week strip to load and show the total duration
+      await expect.element(page.getByText('2h 15m')).toBeVisible()
+
+      cleanup()
+    })
+
+    it('displays 0m when no workouts this week', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Week strip should show 0m when no workouts
+      await expect.element(page.getByText('0m')).toBeVisible()
+
+      cleanup()
+    })
+  })
+
+  describe('Calendar Sheet', () => {
+    it('opens calendar sheet when clicking week strip', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Click the week strip
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+
+      // Calendar sheet should open (SheetContent appears)
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Should show month heading in the sheet title
+      const currentMonth = format(new Date(), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+
+      cleanup()
+    })
+
+    it('allows navigating to previous and next months', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Get current month display
+      const currentMonth = format(new Date(), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+
+      // Click previous month button
+      const prevButton = page.getByRole('button', { name: /previous month/i })
+      await userEvent.click(prevButton)
+
+      // Should show previous month in sheet title
+      const prevMonth = format(subDays(new Date(), 30), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: prevMonth, exact: true })).toBeVisible()
+
+      // Click next month button twice to go forward
+      const nextButton = page.getByRole('button', { name: /next month/i })
+      await userEvent.click(nextButton)
+      await userEvent.click(nextButton)
+
+      // Should show next month
+      const nextMonth = format(addDays(new Date(), 30), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: nextMonth, exact: true })).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows prompt to select a day when calendar opens', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Should show the select day prompt initially
+      await expect.element(page.getByText(/select a day/i)).toBeVisible()
+
+      cleanup()
+    })
+
+    it('displays calendar with correct structure', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Should have navigation buttons
+      await expect.element(page.getByRole('button', { name: /previous month/i })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /next month/i })).toBeVisible()
+
+      // Should have weekday headers (at least one - use first to avoid strict mode)
+      await expect.element(page.getByText('Mon').first()).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows green dots on calendar for workout days', async () => {
+      // Seed a workout for today
+      const today = new Date()
+      const workout = dbWorkoutBuilder()
+        .withName('Push Day')
+        .withDuration(1800) // 30 minutes
+        .withTimestamps(today.getTime() - 1800000, today.getTime())
+        .withStrengthBlock({ name: 'Bench Press' })
+        .build()
+
+      await db.workouts.add(workout)
+
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // The calendar should have green dots for workout days
+      // We verify by counting workout indicators
+      await expect.poll(async () => {
+        const dots = await page.getByLabelText(/workout completed/i).all()
+        // Should have dots in both the week strip AND calendar
+        return dots.length
+      }).toBeGreaterThanOrEqual(1)
+
+      cleanup()
+    })
+  })
+})

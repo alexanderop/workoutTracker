@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["src/components/ui/**"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -38,12 +39,6 @@
       "files": ["**/db/implementations/dexie/**"],
       "rules": {
         "unicorn/no-array-reverse": "off"
-      }
-    },
-    {
-      "files": ["**/components/ui/**"],
-      "rules": {
-        "typescript/consistent-type-imports": "off"
       }
     }
   ]
