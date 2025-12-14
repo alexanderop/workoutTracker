@@ -5,6 +5,8 @@ import type {
   AmrapBlock,
   AmrapResult,
   BlockExercise,
+  CardioBlock,
+  CardioResult,
   EmomBlock,
   EmomResult,
   ForTimeBlock,
@@ -20,6 +22,8 @@ import type {
   DbAmrapBlock,
   DbAmrapResult,
   DbBlockExercise,
+  DbCardioBlock,
+  DbCardioResult,
   DbCustomExercise,
   DbEmomBlock,
   DbEmomResult,
@@ -147,6 +151,26 @@ function dbToForTimeResult(dbResult: Readonly<DbForTimeResult>): ForTimeResult {
     completionTime: dbResult.completionTime,
     completed: dbResult.completed,
     splitTimes: dbResult.splitTimes,
+  }
+}
+
+function cardioResultToDb(result: Readonly<CardioResult>): DbCardioResult {
+  return {
+    actualDurationSeconds: result.actualDurationSeconds,
+    distanceMeters: result.distanceMeters,
+    avgPaceSecondsPerKm: result.avgPaceSecondsPerKm,
+    calories: result.calories,
+    notes: result.notes,
+  }
+}
+
+function dbToCardioResult(dbResult: Readonly<DbCardioResult>): CardioResult {
+  return {
+    actualDurationSeconds: dbResult.actualDurationSeconds,
+    distanceMeters: dbResult.distanceMeters,
+    avgPaceSecondsPerKm: dbResult.avgPaceSecondsPerKm,
+    calories: dbResult.calories,
+    notes: dbResult.notes,
   }
 }
 
@@ -306,6 +330,33 @@ function dbToForTimeBlock(dbBlock: Readonly<DbForTimeBlock>, index: number): For
   }
 }
 
+function cardioBlockToDb(block: Readonly<CardioBlock>, orderIndex: number): DbCardioBlock {
+  return {
+    kind: 'cardio',
+    id: String(block.id),
+    config: {
+      activity: block.config.activity,
+      targetDurationSeconds: block.config.targetDurationSeconds,
+      targetDistanceMeters: block.config.targetDistanceMeters,
+    },
+    result: block.result ? cardioResultToDb(block.result) : null,
+    orderIndex,
+  }
+}
+
+function dbToCardioBlock(dbBlock: Readonly<DbCardioBlock>, index: number): CardioBlock {
+  return {
+    kind: 'cardio',
+    id: index + 1,
+    config: {
+      activity: dbBlock.config.activity,
+      targetDurationSeconds: dbBlock.config.targetDurationSeconds,
+      targetDistanceMeters: dbBlock.config.targetDistanceMeters,
+    },
+    result: dbBlock.result ? dbToCardioResult(dbBlock.result) : null,
+  }
+}
+
 // ============================================
 // Block Converter Registry (compile-time exhaustiveness check)
 // ============================================
@@ -320,6 +371,7 @@ const BLOCK_CONVERTERS: BlockConverterRegistry = {
   emom: { toDb: emomBlockToDb, fromDb: dbToEmomBlock },
   tabata: { toDb: tabataBlockToDb, fromDb: dbToTabataBlock },
   fortime: { toDb: forTimeBlockToDb, fromDb: dbToForTimeBlock },
+  cardio: { toDb: cardioBlockToDb, fromDb: dbToCardioBlock },
 }
 
 // Ensure registry covers all kinds (unused at runtime, enforced at compile time)
@@ -341,6 +393,8 @@ function blockToDb(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkout
       return tabataBlockToDb(block, orderIndex)
     case 'fortime':
       return forTimeBlockToDb(block, orderIndex)
+    case 'cardio':
+      return cardioBlockToDb(block, orderIndex)
   }
 }
 
@@ -360,6 +414,8 @@ function dbToBlock(dbBlock: Readonly<DbWorkoutBlock>, index: number): WorkoutBlo
       return dbToTabataBlock(dbBlock, index)
     case 'fortime':
       return dbToForTimeBlock(dbBlock, index)
+    case 'cardio':
+      return dbToCardioBlock(dbBlock, index)
   }
 }
 

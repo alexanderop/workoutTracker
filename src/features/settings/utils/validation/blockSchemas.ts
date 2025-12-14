@@ -74,6 +74,24 @@ const dbForTimeConfigSchema = z
   })
   .strict()
 
+const dbCardioActivitySchema = z.enum([
+  'running',
+  'cycling',
+  'rowing',
+  'elliptical',
+  'swimming',
+  'stairclimber',
+  'walking',
+])
+
+const dbCardioConfigSchema = z
+  .object({
+    activity: dbCardioActivitySchema,
+    targetDurationSeconds: z.number().int().min(1).max(36000).nullable(), // max 10 hours
+    targetDistanceMeters: z.number().int().min(1).max(1000000).nullable(), // max 1000km
+  })
+  .strict()
+
 // ============================================
 // Block Result Schemas
 // ============================================
@@ -103,6 +121,16 @@ const dbForTimeResultSchema = z
   .object({
     completionTime: z.number().int().min(0),
     completed: z.boolean(),
+  })
+  .strict()
+
+const dbCardioResultSchema = z
+  .object({
+    actualDurationSeconds: z.number().int().min(0),
+    distanceMeters: z.number().int().min(0).nullable(),
+    avgPaceSecondsPerKm: z.number().int().min(0).nullable(),
+    calories: z.number().int().min(0).nullable(),
+    notes: z.string().max(1000).nullable(),
   })
   .strict()
 
@@ -184,6 +212,19 @@ const dbForTimeBlockSchema = z
   .strict()
 
 /**
+ * DbCardioBlock schema matching src/db/schema.ts DbCardioBlock type.
+ */
+const dbCardioBlockSchema = z
+  .object({
+    kind: z.literal('cardio'),
+    id: safeIdSchema,
+    config: dbCardioConfigSchema,
+    result: dbCardioResultSchema.nullable(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict()
+
+/**
  * DbWorkoutBlock discriminated union schema.
  * Matches src/db/schema.ts DbWorkoutBlock type.
  */
@@ -193,4 +234,5 @@ export const dbWorkoutBlockSchema = z.discriminatedUnion('kind', [
   dbAmrapBlockSchema,
   dbTabataBlockSchema,
   dbForTimeBlockSchema,
+  dbCardioBlockSchema,
 ])

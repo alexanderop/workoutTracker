@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { useRestTimer } from '@/composables/timers/useRestTimer'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
-import { BLOCK_COLORS, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { BLOCK_COLORS, isCardioBlock, isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 const { t } = useI18n()
 
@@ -119,8 +119,19 @@ function getForTimeAction(): PrimaryAction {
   }
 }
 
+// Strategy: Cardio blocks show "Done" when completed
+function getCardioAction(): PrimaryAction {
+  return {
+    label: t('workouts.active.footer.done'),
+    icon: Check,
+    emit: 'complete-block',
+    variant: 'default',
+  }
+}
+
 const primaryAction = computed((): PrimaryAction => {
   if (isStrengthBlock(props.block)) return getStrengthAction()
+  if (isCardioBlock(props.block)) return getCardioAction()
 
   const isRunning = props.timer?.isRunning ?? false
   const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {

@@ -124,4 +124,26 @@ export class BuilderPO {
     await userEvent.click(this.common.getDialogButton('Add Block'))
     await this.common.waitForDialogClose()
   }
+
+  /**
+   * Adds a cardio block to the workout.
+   * Opens the add block dialog, switches to timed blocks tab, configures cardio,
+   * and confirms.
+   * @param activity - The cardio activity to select (defaults to 'Running')
+   */
+  async addCardioBlock(activity = 'Running'): Promise<void> {
+    await this.openAddBlockDialog()
+    await this.switchToTimedBlocksTab()
+    await userEvent.click(this.common.getDialogButton('Cardio'))
+
+    // Wait for configure dialog
+    await expect.element(page.getByText('Configure')).toBeVisible()
+
+    // Select activity by clicking the button with matching text
+    await userEvent.click(page.getByRole('button', { name: new RegExp(activity, 'i') }))
+
+    // Duration defaults to 30 minutes, just confirm
+    await userEvent.click(this.common.getDialogButton('Add Block'))
+    await this.common.waitForDialogClose()
+  }
 }

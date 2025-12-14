@@ -12,6 +12,7 @@ import WorkoutConfigureAmrapDialog from '@/features/workout/components/WorkoutCo
 import WorkoutConfigureEmomDialog from '@/features/workout/components/WorkoutConfigureEmomDialog.vue'
 import WorkoutConfigureForTimeDialog from '@/features/workout/components/WorkoutConfigureForTimeDialog.vue'
 import WorkoutConfigureTabataDialog from '@/features/workout/components/WorkoutConfigureTabataDialog.vue'
+import WorkoutConfigureCardioDialog from '@/features/workout/components/WorkoutConfigureCardioDialog.vue'
 import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
@@ -22,6 +23,7 @@ import { useWorkoutPersistence } from '@/features/workout/composables/useWorkout
 import type {
   AmrapConfig,
   BlockExercise,
+  CardioConfig,
   EmomConfig,
   ForTimeConfig,
   TabataConfig,
@@ -40,6 +42,7 @@ const {
   addEmomBlock,
   addTabataBlock,
   addForTimeBlock,
+  addCardioBlock,
 } = useWorkout()
 
 const { isBuilderMode, isActiveMode, isCompletedMode, enterCompletionMode } = useWorkoutMode()
@@ -74,6 +77,7 @@ type WorkoutDialog =
   | 'configureEmom'
   | 'configureTabata'
   | 'configureForTime'
+  | 'configureCardio'
 
 const { createDialogModel, open: openDialog } = useDialogState<WorkoutDialog>()
 
@@ -85,6 +89,7 @@ const configureAmrapOpen = createDialogModel('configureAmrap')
 const configureEmomOpen = createDialogModel('configureEmom')
 const configureTabataOpen = createDialogModel('configureTabata')
 const configureForTimeOpen = createDialogModel('configureForTime')
+const configureCardioOpen = createDialogModel('configureCardio')
 
 const editingBlockIndex = ref<number | null>(null)
 const queueDrawerOpen = ref(false)
@@ -166,6 +171,14 @@ function handleConfirmForTime(config: ForTimeConfig, exercises: ReadonlyArray<Bl
   addForTimeBlock(config, exercises)
 }
 
+function handleAddCardioBlock() {
+  openDialog('configureCardio')
+}
+
+function handleConfirmCardio(config: CardioConfig) {
+  addCardioBlock(config)
+}
+
 function handleSaveExercise(data: ExerciseEditData) {
   if (!selectedExercise.value) return
   updateExercise({ targetReps: data.targetReps })
@@ -227,6 +240,7 @@ function handleQueueAddBlock() {
       v-model:open="addBlockDialogOpen"
       @add-exercise="(id, name) => addExercise(id, name)"
       @add-timed-block="handleAddTimedBlock"
+      @add-cardio-block="handleAddCardioBlock"
     />
 
     <WorkoutConfigureAmrapDialog
@@ -244,6 +258,10 @@ function handleQueueAddBlock() {
     <WorkoutConfigureForTimeDialog
       v-model:open="configureForTimeOpen"
       @confirm="handleConfirmForTime"
+    />
+    <WorkoutConfigureCardioDialog
+      v-model:open="configureCardioOpen"
+      @confirm="handleConfirmCardio"
     />
 
     <WorkoutEditExerciseDialog

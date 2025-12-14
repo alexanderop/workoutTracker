@@ -72,6 +72,18 @@ async function handleRedoWorkout() {
             :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
             :style="{ animationDelay: `${150 + index * 50}ms` }"
           />
+          <!-- Cardio block display -->
+          <div
+            v-else-if="block.kind === 'cardio'"
+            class="rounded-lg border bg-card p-4"
+            :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+            :style="{ animationDelay: `${150 + index * 50}ms` }"
+          >
+            <div class="font-semibold uppercase">{{ t('workouts.blocks.cardio') }}</div>
+            <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
+              {{ Math.floor(block.result.actualDurationSeconds / 60) }} {{ t('workouts.detail.minutesCompleted') }}
+            </div>
+          </div>
           <TimedBlockCard
             v-else
             :block="block"

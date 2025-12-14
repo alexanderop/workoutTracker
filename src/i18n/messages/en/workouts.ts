@@ -115,6 +115,9 @@ export default {
     capped: 'Capped',
     minutesCompleted: 'minutes completed',
   },
+  blocks: {
+    cardio: 'Cardio',
+  },
   redo: {
     button: 'Redo Workout',
     starting: 'Starting...',
