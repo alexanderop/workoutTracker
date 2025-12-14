@@ -44,6 +44,7 @@ export default {
     createCustomExercise: '+ Create Custom Exercise',
     timedBlocksInfo: 'Timed blocks let you add CrossFit-style workouts to your session.',
     timedBlocksMixing: 'You can mix strength and timed blocks in the same workout!',
+    cardioDescription: 'Running, cycling, rowing, and more',
   },
   addExercise: {
     title: 'Add Exercise',
@@ -119,5 +120,13 @@ export default {
   benchmarkReps: {
     title: 'Set Prescribed Reps',
     description: 'How many reps of {exercise} per round?',
+  },
+  cardioConfig: {
+    title: 'Configure Cardio',
+    description: 'Select an activity and set your target',
+    activity: 'Activity',
+    targetDuration: 'Target Duration',
+    targetDistance: 'Target Distance',
+    addBlock: 'Add Block',
   },
 } as const

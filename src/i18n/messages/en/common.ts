@@ -83,6 +83,12 @@ export default {
   },
   units: {
     kg: 'kg',
+    km: 'km',
+    minutes: 'min',
+    laps: 'laps',
+  },
+  labels: {
+    optional: 'optional',
   },
   components: {
     mobileNumberPicker: {

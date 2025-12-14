@@ -114,6 +114,21 @@ type DbForTimeConfig = {
   timeCapSeconds: number | null
 }
 
+type DbCardioActivity =
+  | 'running'
+  | 'cycling'
+  | 'rowing'
+  | 'elliptical'
+  | 'swimming'
+  | 'stairclimber'
+  | 'walking'
+
+type DbCardioConfig = {
+  activity: DbCardioActivity
+  targetDurationSeconds: number | null
+  targetDistanceMeters: number | null
+}
+
 // ============================================
 // Block Results
 // ============================================
@@ -137,6 +152,14 @@ export type DbForTimeResult = {
   completionTime: number
   completed: boolean
   splitTimes?: ReadonlyArray<number>
+}
+
+export type DbCardioResult = {
+  actualDurationSeconds: number
+  distanceMeters: number | null
+  avgPaceSecondsPerKm: number | null
+  calories: number | null
+  notes: string | null
 }
 
 // ============================================
@@ -191,9 +214,17 @@ export type DbForTimeBlock = {
   orderIndex: number
 }
 
+export type DbCardioBlock = {
+  kind: 'cardio'
+  id: string
+  config: DbCardioConfig
+  result: DbCardioResult | null
+  orderIndex: number
+}
+
 type DbTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
 
-export type DbWorkoutBlock = DbStrengthBlock | DbTimedBlock
+export type DbWorkoutBlock = DbStrengthBlock | DbTimedBlock | DbCardioBlock
 
 // ============================================
 // Active Benchmark Workout
@@ -304,12 +335,18 @@ type DbTemplateForTimeBlock = {
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
+type DbTemplateCardioBlock = {
+  kind: 'cardio'
+  config: DbCardioConfig
+}
+
 export type DbTemplateBlock =
   | DbTemplateStrengthBlock
   | DbTemplateEmomBlock
   | DbTemplateAmrapBlock
   | DbTemplateTabataBlock
   | DbTemplateForTimeBlock
+  | DbTemplateCardioBlock
 
 /**
  * Workout template for reusable workout structures.

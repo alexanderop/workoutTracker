@@ -61,6 +61,41 @@ export type ForTimeConfig = {
 }
 
 // ============================================
+// Cardio Types
+// ============================================
+
+export type CardioActivity =
+  | 'running'
+  | 'cycling'
+  | 'rowing'
+  | 'elliptical'
+  | 'swimming'
+  | 'stairclimber'
+  | 'walking'
+
+export type CardioConfig = {
+  activity: CardioActivity
+  targetDurationSeconds: number | null
+  targetDistanceMeters: number | null
+}
+
+export const CARDIO_ACTIVITIES: ReadonlyArray<{
+  value: CardioActivity
+  label: string
+  icon: string
+  supportsDistance: boolean
+  distanceUnit: 'km' | 'laps' | null
+}> = [
+  { value: 'running', label: 'Running', icon: '🏃', supportsDistance: true, distanceUnit: 'km' },
+  { value: 'cycling', label: 'Cycling', icon: '🚴', supportsDistance: true, distanceUnit: 'km' },
+  { value: 'rowing', label: 'Rowing', icon: '🚣', supportsDistance: true, distanceUnit: 'km' },
+  { value: 'elliptical', label: 'Elliptical', icon: '🏋️', supportsDistance: false, distanceUnit: null },
+  { value: 'swimming', label: 'Swimming', icon: '🏊', supportsDistance: true, distanceUnit: 'laps' },
+  { value: 'stairclimber', label: 'Stair Climber', icon: '🪜', supportsDistance: false, distanceUnit: null },
+  { value: 'walking', label: 'Walking', icon: '🚶', supportsDistance: true, distanceUnit: 'km' },
+] as const
+
+// ============================================
 // Block Results
 // ============================================
 
@@ -83,6 +118,14 @@ export type ForTimeResult = {
   completionTime: number
   completed: boolean
   splitTimes?: ReadonlyArray<number>
+}
+
+export type CardioResult = {
+  actualDurationSeconds: number
+  distanceMeters: number | null
+  avgPaceSecondsPerKm: number | null
+  calories: number | null
+  notes: string | null
 }
 
 /**
@@ -171,9 +214,16 @@ export type ForTimeBlock = {
   result: ForTimeResult | null
 }
 
+export type CardioBlock = {
+  kind: 'cardio'
+  id: number
+  config: CardioConfig
+  result: CardioResult | null
+}
+
 export type TimedBlock = EmomBlock | AmrapBlock | TabataBlock | ForTimeBlock
 
-export type WorkoutBlock = StrengthBlock | TimedBlock
+export type WorkoutBlock = StrengthBlock | TimedBlock | CardioBlock
 
 // ============================================
 // Workout Mode
@@ -197,7 +247,11 @@ export function isStrengthBlock(block: WorkoutBlock): block is StrengthBlock {
 }
 
 export function isTimedBlock(block: WorkoutBlock): block is TimedBlock {
-  return block.kind !== 'strength'
+  return block.kind !== 'strength' && block.kind !== 'cardio'
+}
+
+export function isCardioBlock(block: WorkoutBlock): block is CardioBlock {
+  return block.kind === 'cardio'
 }
 
 /**
@@ -218,6 +272,7 @@ export const BLOCK_LABELS: Record<BlockKind, string> = {
   amrap: 'AMRAP',
   tabata: 'Tabata',
   fortime: 'For Time',
+  cardio: 'Cardio',
 }
 
 export const BLOCK_ICONS: Record<BlockKind, string> = {
@@ -226,6 +281,7 @@ export const BLOCK_ICONS: Record<BlockKind, string> = {
   amrap: '',
   tabata: '',
   fortime: '',
+  cardio: '',
 }
 
 export const BLOCK_COLORS = {
@@ -234,6 +290,7 @@ export const BLOCK_COLORS = {
   emom: { bg: 'bg-orange-500/20', text: 'text-orange-500', accent: 'bg-orange-500' },
   tabata: { bg: 'bg-emerald-500/20', text: 'text-emerald-500', accent: 'bg-emerald-500' },
   fortime: { bg: 'bg-rose-500/20', text: 'text-rose-500', accent: 'bg-rose-500' },
+  cardio: { bg: 'bg-cyan-500/20', text: 'text-cyan-500', accent: 'bg-cyan-500' },
 } as const
 
 export function getBlockDurationDisplay(block: TimedBlock): string {
@@ -268,5 +325,36 @@ export function getBlockThumbnail(block: WorkoutBlock): string {
   if (block.kind === 'strength') {
     return block.thumbnail
   }
+  if (block.kind === 'cardio') {
+    return getCardioActivityIcon(block.config.activity)
+  }
   return BLOCK_ICONS[block.kind]
+}
+
+/**
+ * Get the icon for a cardio activity.
+ */
+export function getCardioActivityIcon(activity: CardioActivity): string {
+  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === activity)
+  return activityInfo?.icon ?? '🏃'
+}
+
+/**
+ * Get display info for a cardio block.
+ */
+export function getCardioBlockDisplay(block: CardioBlock): string {
+  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)
+  const label = activityInfo?.label ?? 'Cardio'
+
+  if (block.config.targetDurationSeconds) {
+    const minutes = Math.floor(block.config.targetDurationSeconds / 60)
+    return `${label} - ${minutes} min`
+  }
+
+  if (block.config.targetDistanceMeters) {
+    const km = block.config.targetDistanceMeters / 1000
+    return `${label} - ${km} km`
+  }
+
+  return label
 }

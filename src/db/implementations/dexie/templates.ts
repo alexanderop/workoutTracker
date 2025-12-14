@@ -93,6 +93,11 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
           thumbnail: ex.thumbnail,
         })),
       }
+    case 'cardio':
+      return {
+        kind: 'cardio',
+        config: block.config,
+      }
     default: {
       // Exhaustive check - if this is reached, a new block kind was added
       const exhaustiveCheck: never = block
@@ -175,6 +180,14 @@ function templateBlockToWorkoutBlock(
         id: generateId(),
         config: templateBlock.config,
         exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
+        result: null,
+        orderIndex,
+      }
+    case 'cardio':
+      return {
+        kind: 'cardio',
+        id: generateId(),
+        config: templateBlock.config,
         result: null,
         orderIndex,
       }

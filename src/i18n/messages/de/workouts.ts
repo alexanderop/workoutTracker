@@ -114,6 +114,9 @@ export default {
     capped: 'Zeitlimit erreicht',
     minutesCompleted: 'Minuten abgeschlossen',
   },
+  blocks: {
+    cardio: 'Cardio',
+  },
   redo: {
     button: 'Workout wiederholen',
     starting: 'Startet...',

@@ -81,6 +81,12 @@ export default {
   reps: 'Wdh.',
   units: {
     kg: 'kg',
+    km: 'km',
+    minutes: 'Min',
+    laps: 'Bahnen',
+  },
+  labels: {
+    optional: 'optional',
   },
   dates: {
     today: 'Heute',

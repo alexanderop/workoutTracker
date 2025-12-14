@@ -6,6 +6,8 @@ import type {
   AmrapConfig,
   AmrapResult,
   BlockExercise,
+  CardioBlock,
+  CardioConfig,
   EmomBlock,
   EmomConfig,
   EmomResult,
@@ -303,6 +305,18 @@ export function useWorkout() {
     updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
   }
 
+  function addCardioBlock(config: CardioConfig) {
+    const newBlock: CardioBlock = {
+      kind: 'cardio',
+      id: generateBlockId(),
+      config,
+      result: null,
+    }
+
+    const newBlocks = [...workout.value.blocks, newBlock]
+    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+  }
+
   function removeBlock(blockIndex: number) {
     if (blockIndex < 0 || blockIndex >= workout.value.blocks.length) return
 
@@ -465,6 +479,7 @@ export function useWorkout() {
     addEmomBlock,
     addTabataBlock,
     addForTimeBlock,
+    addCardioBlock,
     updateStrengthBlock,
     setBlockResult,
 

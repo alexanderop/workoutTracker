@@ -3,7 +3,7 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Muscle } from '@/types/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 
-import { Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
+import { Activity, Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -27,6 +27,7 @@ const open = defineModel<boolean>('open', { required: true })
 const emit = defineEmits<{
   'add-exercise': [exerciseId: string, name: string]
   'add-timed-block': [kind: TimedBlockKind]
+  'add-cardio-block': []
 }>()
 
 const router = useRouter()
@@ -83,6 +84,10 @@ function handleSelectTimedBlock(kind: TimedBlockKind) {
   // Don't set open.value = false here - the parent will change activeDialog
   // which will automatically close this dialog via the computed getter
   emit('add-timed-block', kind)
+}
+
+function handleSelectCardio() {
+  emit('add-cardio-block')
 }
 
 function handleCreateNew() {
@@ -192,6 +197,23 @@ function handleOpenChange(value: boolean) {
                 <p class="text-sm text-muted-foreground">{{ blockType.description }}</p>
               </div>
               <span class="text-muted-foreground/50 text-xl">›</span>
+            </button>
+
+            <!-- Cardio Block -->
+            <button
+              class="w-full flex items-center gap-4 p-4 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors text-left border border-cyan-500/20"
+              @click="handleSelectCardio"
+            >
+              <div
+                class="flex items-center justify-center w-12 h-12 rounded-lg bg-cyan-500/20 text-cyan-500"
+              >
+                <Activity class="size-6" />
+              </div>
+              <div class="flex-1">
+                <p class="font-semibold text-lg text-cyan-500">{{ BLOCK_LABELS.cardio }}</p>
+                <p class="text-sm text-muted-foreground">{{ t('dialogs.addBlock.cardioDescription') }}</p>
+              </div>
+              <span class="text-cyan-500/50 text-xl">›</span>
             </button>
           </div>
 

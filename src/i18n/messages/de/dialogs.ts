@@ -49,6 +49,7 @@ export default {
     timedBlocksInfo:
       'Mit Zeitblöcken kannst du CrossFit-ähnliche Einheiten zu deinem Training hinzufügen.',
     timedBlocksMixing: 'Du kannst Kraft- und Zeitblöcke im selben Workout kombinieren!',
+    cardioDescription: 'Laufen, Radfahren, Rudern und mehr',
   },
   addExercise: {
     title: 'Übung hinzufügen',
@@ -120,6 +121,14 @@ export default {
     repPlaceholder: 'Wdh.',
     loadPlaceholder: 'Gewicht (optional)',
     addExercise: 'Übung hinzufügen',
+    addBlock: 'Block hinzufügen',
+  },
+  cardioConfig: {
+    title: 'Cardio konfigurieren',
+    description: 'Wähle eine Aktivität und setze dein Ziel',
+    activity: 'Aktivität',
+    targetDuration: 'Zieldauer',
+    targetDistance: 'Zieldistanz',
     addBlock: 'Block hinzufügen',
   },
 } as const
