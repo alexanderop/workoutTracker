@@ -31,6 +31,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@internationalized/date": "^3.10.0",
     "@tailwindcss/vite": "^4.1.17",
     "@vueuse/core": "^14.0.0",
     "@vueuse/integrations": "^14.1.0",

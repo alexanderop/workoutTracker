@@ -84,3 +84,25 @@ export function formatRelativeDate(timestamp: number): string {
 export function formatDurationMinutes(seconds: number): string {
   return `${Math.round(seconds / 60)} min`
 }
+
+/**
+ * Format seconds to hours, minutes, and seconds string (e.g., "2h 45m", "45m", or "30s").
+ */
+export function formatDurationHoursMinutes(seconds: number): string {
+  const totalMinutes = Math.round(seconds / 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+
+  // Less than 1 minute - show seconds
+  if (seconds > 0 && seconds < 60) {
+    return `${seconds}s`
+  }
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}m`
+  }
+  if (hours > 0) {
+    return `${hours}h`
+  }
+  return `${minutes}m`
+}
