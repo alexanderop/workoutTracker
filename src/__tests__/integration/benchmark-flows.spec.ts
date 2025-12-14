@@ -793,9 +793,9 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
 
-      // Verify PB displayed on detail page
+      // Verify PB displayed on detail page (multiple elements may show "Personal Best")
       await waitFor(() => {
-        expect(screen.getByText(/personal best/i)).toBeTruthy()
+        expect(screen.getAllByText(/personal best/i).length).toBeGreaterThan(0)
         expect(screen.getByText('1:00')).toBeTruthy()
       })
 
