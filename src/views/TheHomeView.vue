@@ -65,12 +65,12 @@ function openCalendarSheet() {
       <Card
         role="button"
         tabindex="0"
-        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full"
         @click="startWorkout"
         @keydown.enter="startWorkout"
         @keydown.space.prevent="startWorkout"
       >
-        <CardHeader class="flex-col items-center text-center p-3 sm:py-6">
+        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 h-full">
           <div
             class="mb-2 sm:mb-4 w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
           >
@@ -85,12 +85,12 @@ function openCalendarSheet() {
       <Card
         role="button"
         tabindex="0"
-        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full"
         @click="goToTimers"
         @keydown.enter="goToTimers"
         @keydown.space.prevent="goToTimers"
       >
-        <CardHeader class="flex-col items-center text-center p-3 sm:py-6">
+        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 h-full">
           <div
             class="mb-2 sm:mb-4 w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"
           >
