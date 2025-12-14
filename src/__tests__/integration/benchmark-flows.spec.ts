@@ -4,6 +4,7 @@ import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db, getBenchmarksRepository, getWorkoutsRepository } from '@/db'
 import type { DbBenchmark, DbCompletedWorkout, DbForTimeBlock } from '@/db/schema'
+import { RouteNames } from '@/router'
 
 /**
  * Comprehensive integration tests for the Benchmark feature.
@@ -202,7 +203,7 @@ describe('Benchmark Flows', () => {
       const app = await createTestApp()
 
       // Step 1: Create "Fran" benchmark (For Time, 2 exercises)
-      await app.navigateTo('/benchmarks/create')
+      await app.navigateTo({ name: RouteNames.CreateBenchmark })
       await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 
       await app.benchmarkForm.fillName('Fran')
@@ -348,7 +349,7 @@ describe('Benchmark Flows', () => {
 
     it('validates form: cannot save without exercises', async () => {
       const app = await createTestApp()
-      await app.navigateTo('/benchmarks/create')
+      await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
       await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 

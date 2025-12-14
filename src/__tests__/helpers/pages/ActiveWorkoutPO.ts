@@ -1,17 +1,9 @@
 import { page, userEvent } from 'vitest/browser'
+import { expect } from 'vitest'
 import { tryCatch } from '@/lib/tryCatch'
 import type { SetInputs, SetValues, TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
-
-/**
- * Type guard to ensure element is HTMLElement (not SVGElement)
- */
-function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
-  if (!(el instanceof HTMLElement)) {
-    throw new Error('Expected HTMLElement, got SVGElement')
-  }
-  return el
-}
+import { ensureHTMLElement } from '../domHelpers'
 
 /**
  * Page Object for the active workout view.
@@ -273,5 +265,38 @@ export class ActiveWorkoutPO {
       }
     }
     throw new Error('Active row not found in table')
+  }
+
+  /**
+   * Ends the current workout via the menu and navigates to the summary page.
+   * Handles the full flow: menu → end workout → confirm dialog → completion screen → view details.
+   */
+  async endWorkoutAndNavigateToSummary(): Promise<void> {
+    // Open menu and click End Workout
+    await expect.poll(() => this.getMenuTrigger()).toBeTruthy()
+    await userEvent.click(await this.getMenuTrigger())
+
+    await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+    await page.getByRole('menuitem', { name: /end workout/i }).click()
+
+    // Confirm the dialog
+    await this.common.waitForDialog()
+    await userEvent.click(this.common.getDialogButton('Finish Workout'))
+
+    // Wait for completion screen
+    await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+
+    // Wait for View Details button to be clickable (animation needs to complete)
+    const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+    await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+    // Poll for animation to complete (opacity becomes 1)
+    await expect.poll(async () => {
+      const el = await viewDetailsButton.element()
+      return getComputedStyle(el).opacity
+    }, { timeout: 2000 }).toBe('1')
+    await viewDetailsButton.click()
+
+    // Wait for navigation to summary
+    await this.common.waitForRoute(/^\/workout\/summary\//)
   }
 }

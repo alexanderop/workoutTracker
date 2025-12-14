@@ -85,7 +85,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -97,8 +97,8 @@ describe('Data Management', () => {
 
       // Assert: Confirmation dialog appears with correct count
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /import data/i })).toBeTruthy()
-      expect(queryByText(/1 workout/i)).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /import data/i })).toBeVisible()
+      await expect.element(page.getByText(/1 workout/i)).toBeVisible()
 
       // Act: Confirm import
       await userEvent.click(common.getDialogButton('Import Data'))
@@ -114,7 +114,7 @@ describe('Data Management', () => {
     it('shows error dialog when importing invalid JSON', async () => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload invalid file
@@ -126,8 +126,8 @@ describe('Data Management', () => {
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /import failed/i })).toBeTruthy()
-      expect(queryByText(/not valid JSON/i)).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
+      await expect.element(page.getByText(/not valid JSON/i)).toBeVisible()
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
@@ -141,7 +141,7 @@ describe('Data Management', () => {
       await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
       expect(await db.workouts.count()).toBe(1)
 
-      const { getByRole, queryByRole, common, cleanup } = await createTestApp()
+      const { getByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
@@ -150,7 +150,7 @@ describe('Data Management', () => {
 
       // Assert: Confirmation dialog appears
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /delete all data/i })).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Confirm deletion
       await userEvent.click(common.getDialogButton('Delete All Data'))
@@ -179,7 +179,7 @@ describe('Data Management', () => {
       await db.workouts.add(completedWorkout)
 
       // Act: Start at home and navigate to history page
-      const { router, queryByText, findByText, cleanup } = await createTestApp()
+      const { router, findByText, cleanup } = await createTestApp()
       await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
@@ -191,7 +191,7 @@ describe('Data Management', () => {
 
       // Assert: Verify workout details are displayed (wait for page render)
       await expect.element(page.getByText('Push Day')).toBeVisible()
-      expect(queryByText('Bench Press')).toBeTruthy()
+      await expect.element(page.getByText('Bench Press')).toBeVisible()
 
       // Expand the exercise card to see set details
       const exerciseCard = await findByText('Bench Press')
@@ -199,7 +199,7 @@ describe('Data Management', () => {
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
       await expect.element(page.getByText('100kg')).toBeVisible()
-      expect(queryByText('10')).toBeTruthy() // reps value
+      await expect.element(page.getByText('10', { exact: true })).toBeVisible() // reps value
 
       cleanup()
     })

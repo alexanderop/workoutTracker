@@ -95,7 +95,7 @@ describe('Timed Block Workflows', () => {
 
   describe('Execution', () => {
     it('creates AMRAP block and shows timer UI', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+      const { builder, workout, router, cleanup } = await createTestApp()
 
       // Start new workout
       await page.getByRole('button', { name: /start new workout/i }).click()
@@ -124,28 +124,8 @@ describe('Timed Block Workflows', () => {
       // Verify +1 button exists
       await expect.element(page.getByRole('button', { name: /\+1/i })).toBeInTheDocument()
 
-      // End workout via menu
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(await workout.getMenuTrigger())
-
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await page.getByRole('menuitem', { name: /end workout/i }).click()
-
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
-
-      // Wait for completion screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
-
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
-
-      await common.waitForRoute(/^\/workout\/summary\//)
+      // End workout via menu and navigate to summary
+      await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       cleanup()
@@ -235,9 +215,11 @@ describe('Timed Block Workflows', () => {
       // Wait for View Details button to be clickable (animation needs to complete)
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
+      // Poll for animation to complete (opacity becomes 1)
+      await expect.poll(async () => {
+        const el = await viewDetailsButton.element()
+        return getComputedStyle(el).opacity
+      }, { timeout: 2000 }).toBe('1')
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
@@ -294,7 +276,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('AMRAP block allows incrementing rounds with +1 button', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+      const { builder, workout, router, cleanup } = await createTestApp()
 
       // Start new workout
       await page.getByRole('button', { name: /start new workout/i }).click()
@@ -332,29 +314,8 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /\+1/i }).click()
       await page.getByRole('button', { name: /\+1/i }).click()
 
-      // End workout via menu
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(await workout.getMenuTrigger())
-
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await page.getByRole('menuitem', { name: /end workout/i }).click()
-
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
-
-      // Wait for completion screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
-
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
-
-      await common.waitForRoute(/^\/workout\/summary\//)
-
+      // End workout via menu and navigate to summary
+      await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       cleanup()
@@ -390,7 +351,7 @@ describe('Timed Block Workflows', () => {
 
   describe('Complete Journeys', () => {
     it('completes AMRAP workout with rounds recorded', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+      const { builder, workout, router, cleanup } = await createTestApp()
 
       // Start new workout
       await page.getByRole('button', { name: /start new workout/i }).click()
@@ -429,28 +390,8 @@ describe('Timed Block Workflows', () => {
       // Verify rounds count shows 3
       await expect.element(page.getByText('3')).toBeVisible()
 
-      // End workout via menu and verify summary page
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(await workout.getMenuTrigger())
-
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await page.getByRole('menuitem', { name: /end workout/i }).click()
-
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
-
-      // Wait for completion screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
-
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
-
-      await common.waitForRoute(/^\/workout\/summary\//)
+      // End workout via menu and navigate to summary
+      await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows the workout completed
@@ -460,7 +401,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('runs EMOM workout and completes full journey', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+      const { builder, workout, router, cleanup } = await createTestApp()
 
       // Start new workout
       await page.getByRole('button', { name: /start new workout/i }).click()
@@ -481,28 +422,8 @@ describe('Timed Block Workflows', () => {
       // Verify Start button is available
       await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
 
-      // End workout via menu and verify we reach summary
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(await workout.getMenuTrigger())
-
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await page.getByRole('menuitem', { name: /end workout/i }).click()
-
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
-
-      // Wait for completion screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
-
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
-
-      await common.waitForRoute(/^\/workout\/summary\//)
+      // End workout via menu and navigate to summary
+      await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows workout completed

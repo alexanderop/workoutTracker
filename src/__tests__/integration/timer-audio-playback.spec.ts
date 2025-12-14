@@ -46,34 +46,14 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await page.getByRole('button', { name: /start/i }).click()
 
   // Wait for timer UI
-  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+  await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
 
-  // Click play button to actually start the timer (the large round button in footer)
-  const buttons = await page.getByRole('button').all()
-  const playBtnElement = await Promise.all(
-    buttons.map(async (btn) => {
-      const el = await btn.element()
-      return el.classList.contains('rounded-full') ? el : null
-    })
-  )
-  const playBtn = playBtnElement.find((el) => el !== null)
-  if (!playBtn) {
-    throw new Error('Play button not found')
-  }
+  // Click play button to actually start the timer using semantic query
+  const playBtn = await testApp.workout.getTimerPlayPauseButton()
   await userEvent.click(playBtn)
 
-  // Wait for timer to be running
-  await expect.poll(async () => {
-    // The button should now show pause icon (timer is running)
-    const buttons = await page.getByRole('button').all()
-    const pauseBtnElements = await Promise.all(
-      buttons.map(async (btn) => {
-        const el = await btn.element()
-        return el.classList.contains('rounded-full') ? el : null
-      })
-    )
-    return pauseBtnElements.some((el) => el !== null)
-  }).toBeTruthy()
+  // Wait for timer to be running (button changes to pause)
+  await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 }
 
 // Helper to start an EMOM timer with short duration for testing
@@ -99,20 +79,10 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await page.getByRole('button', { name: /start/i }).click()
 
   // Wait for timer UI
-  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+  await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
 
-  // Click play button to actually start the timer
-  const buttons = await page.getByRole('button').all()
-  const playBtnElement = await Promise.all(
-    buttons.map(async (btn) => {
-      const el = await btn.element()
-      return el.classList.contains('rounded-full') ? el : null
-    })
-  )
-  const playBtn = playBtnElement.find((el) => el !== null)
-  if (!playBtn) {
-    throw new Error('Play button not found')
-  }
+  // Click play button to actually start the timer using semantic query
+  const playBtn = await testApp.workout.getTimerPlayPauseButton()
   await userEvent.click(playBtn)
 }
 

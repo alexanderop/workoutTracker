@@ -11,13 +11,7 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-
-function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
-  if (!(el instanceof HTMLElement)) {
-    throw new Error('Expected HTMLElement, got SVGElement')
-  }
-  return el
-}
+import { ensureHTMLElement } from '../helpers/domHelpers'
 
 // Helper to open AMRAP config dialog
 async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestApp>>) {
@@ -228,14 +222,12 @@ describe('Timed Block Exercise List', () => {
       expect(dialog.textContent).toContain('Push-ups')
       expect(dialog.textContent).toContain('Pull-ups')
 
-      // Find remove buttons
-      const removeButtons = Array.from(dialog.querySelectorAll('button')).filter((btn) =>
-        btn.getAttribute('aria-label')?.toLowerCase().includes('remove'),
-      )
-      expect(removeButtons.length).toBe(2)
+      // Find remove buttons using page locators
+      const removeButtonLocators = await page.getByRole('button', { name: /remove exercise/i }).all()
+      expect(removeButtonLocators.length).toBe(2)
 
       // Click first remove button
-      await userEvent.click(removeButtons[0]!)
+      await removeButtonLocators[0]!.click()
 
       // First exercise should be removed, second should remain
       await expect.poll(async () => {

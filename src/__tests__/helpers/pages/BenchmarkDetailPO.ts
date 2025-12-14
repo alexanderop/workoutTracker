@@ -2,13 +2,7 @@ import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
-
-function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
-  if (!(el instanceof HTMLElement)) {
-    throw new Error('Expected HTMLElement, got SVGElement')
-  }
-  return el
-}
+import { ensureHTMLElement } from '../domHelpers'
 
 /**
  * Page Object for the benchmark detail view.
