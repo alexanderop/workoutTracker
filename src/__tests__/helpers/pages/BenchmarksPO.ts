@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -9,7 +10,7 @@ import type { CommonPO } from './CommonPO'
  */
 export class BenchmarksPO {
   constructor(
-    private ctx: TestContext,
+    private _ctx: TestContext,
     private common: CommonPO,
   ) {}
 
@@ -27,7 +28,7 @@ export class BenchmarksPO {
     })
 
     // Click on Benchmarks tab
-    await this.ctx.user.click(screen.getByRole('tab', { name: /benchmarks/i }))
+    await userEvent.click(screen.getByRole('tab', { name: /benchmarks/i }))
   }
 
   /**
@@ -36,7 +37,7 @@ export class BenchmarksPO {
    */
   async clickBenchmarkCard(benchmarkName: string): Promise<void> {
     const benchmarkText = screen.getByText(benchmarkName)
-    await this.ctx.user.click(benchmarkText)
+    await userEvent.click(benchmarkText)
   }
 
   /**
@@ -44,7 +45,7 @@ export class BenchmarksPO {
    */
   async clickCreateBenchmark(): Promise<void> {
     const button = screen.getByRole('button', { name: /create benchmark/i })
-    await this.ctx.user.click(button)
+    await userEvent.click(button)
   }
 
   /**

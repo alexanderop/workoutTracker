@@ -1,12 +1,13 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Helper to navigate to timers page from home
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
-  await testApp.user.click(quickTimerCard)
+  await userEvent.click(quickTimerCard)
   await waitFor(() => {
     expect(testApp.queryByText(/AMRAP/)).toBeTruthy()
   })
@@ -17,13 +18,13 @@ describe('Standalone Timers Flow', () => {
   afterEach(cleanupIntegrationTest)
 
   it('navigates from home to timers page via Quick Timer card', async () => {
-    const { user, getByText, queryByText, router, cleanup } = await createTestApp()
+    const { getByText, queryByText, router, cleanup } = await createTestApp()
 
     // Find and click the Quick Timer card on home page
     const quickTimerCard = getByText(/quick timer/i)
     expect(quickTimerCard).toBeTruthy()
 
-    await user.click(quickTimerCard)
+    await userEvent.click(quickTimerCard)
 
     // Verify navigation to timers page
     expect(router.currentRoute.value.path).toBe('/timers')
@@ -63,7 +64,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click AMRAP button
-    await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+    await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
 
     // Verify presets are shown - use exact text to avoid matching "15 min"
     await waitFor(() => {
@@ -82,7 +83,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click Tabata button
-    await testApp.user.click(screen.getByRole('button', { name: /Tabata/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Tabata/i }))
 
     // Verify presets are shown
     await waitFor(() => {
@@ -102,13 +103,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select AMRAP
-    await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+    await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
 
     // Wait for presets and select 5 min preset
     await waitFor(() => {
       expect(testApp.queryByText('5 min')).toBeTruthy()
     })
-    await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Quick burst/i }))
 
     // Verify timer runner is shown with controls - use semantic queries with aria-labels
     await waitFor(() => {
@@ -130,7 +131,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select EMOM
-    await testApp.user.click(screen.getByRole('button', { name: /EMOM/i }))
+    await userEvent.click(screen.getByRole('button', { name: /EMOM/i }))
 
     // Wait for presets
     await waitFor(() => {
@@ -138,7 +139,7 @@ describe('Standalone Timers Flow', () => {
     })
 
     // Click back button
-    await testApp.user.click(screen.getByRole('button', { name: /go back/i }))
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
 
     // Should be back at timer selection
     await waitFor(() => {
@@ -153,13 +154,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select Tabata
-    await testApp.user.click(screen.getByRole('button', { name: /Tabata/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Tabata/i }))
 
     // Wait for presets and click Custom
     await waitFor(() => {
       expect(testApp.queryByText(/Custom/)).toBeTruthy()
     })
-    await testApp.user.click(screen.getByRole('button', { name: /Custom/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Custom/i }))
 
     // Verify custom form fields appear
     await waitFor(() => {
@@ -179,7 +180,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click For Time button
-    await testApp.user.click(screen.getByRole('button', { name: /For Time/i }))
+    await userEvent.click(screen.getByRole('button', { name: /For Time/i }))
 
     // Verify presets are shown
     await waitFor(() => {
@@ -197,11 +198,11 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select AMRAP and start 5 min preset
-    await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+    await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
     await waitFor(() => {
       expect(testApp.queryByText('5 min')).toBeTruthy()
     })
-    await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Quick burst/i }))
 
     // Wait for timer UI using semantic query
     await waitFor(() => {
@@ -209,7 +210,7 @@ describe('Standalone Timers Flow', () => {
     })
 
     // Find and click exit button using semantic query
-    await testApp.user.click(testApp.workout.getTimerControlButton('exit'))
+    await userEvent.click(testApp.workout.getTimerControlButton('exit'))
 
     // Should return to timer selection
     await waitFor(() => {
@@ -224,13 +225,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select EMOM
-    await testApp.user.click(screen.getByRole('button', { name: /EMOM/i }))
+    await userEvent.click(screen.getByRole('button', { name: /EMOM/i }))
 
     // Select 10 min preset
     await waitFor(() => {
       expect(testApp.queryByText('10 min')).toBeTruthy()
     })
-    await testApp.user.click(screen.getByRole('button', { name: /Quick session/i }))
+    await userEvent.click(screen.getByRole('button', { name: /Quick session/i }))
 
     // Verify timer UI is shown with minute counter (format: "1 / 10 MIN")
     await waitFor(() => {
@@ -246,11 +247,11 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP and start 5 min preset
-      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+      await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
       await waitFor(() => {
         expect(testApp.queryByText('5 min')).toBeTruthy()
       })
-      await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+      await userEvent.click(screen.getByRole('button', { name: /Quick burst/i }))
 
       // Wait for timer UI
       await waitFor(() => {
@@ -262,7 +263,7 @@ describe('Standalone Timers Flow', () => {
 
       // Click play button
       const playPauseBtn = testApp.workout.getTimerPlayPauseButton()
-      await testApp.user.click(playPauseBtn)
+      await userEvent.click(playPauseBtn)
 
       // Should now show pause icon (timer running)
       await waitFor(() => {
@@ -277,11 +278,11 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select Tabata and start Classic preset
-      await testApp.user.click(screen.getByRole('button', { name: /Tabata/i }))
+      await userEvent.click(screen.getByRole('button', { name: /Tabata/i }))
       await waitFor(() => {
         expect(testApp.queryByText(/Classic/)).toBeTruthy()
       })
-      await testApp.user.click(screen.getByRole('button', { name: /Classic/i }))
+      await userEvent.click(screen.getByRole('button', { name: /Classic/i }))
 
       // Wait for timer UI
       await waitFor(() => {
@@ -290,7 +291,7 @@ describe('Standalone Timers Flow', () => {
 
       // Start the timer
       const playPauseBtn = testApp.workout.getTimerPlayPauseButton()
-      await testApp.user.click(playPauseBtn)
+      await userEvent.click(playPauseBtn)
 
       // Verify running
       await waitFor(() => {
@@ -298,7 +299,7 @@ describe('Standalone Timers Flow', () => {
       })
 
       // Pause the timer
-      await testApp.user.click(playPauseBtn)
+      await userEvent.click(playPauseBtn)
 
       // Should now show play icon (timer paused)
       await waitFor(() => {
@@ -315,7 +316,7 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP timer type
-      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+      await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
 
       // Wait for preset screen
       await waitFor(() => {
@@ -334,11 +335,11 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP and start timer
-      await testApp.user.click(screen.getByRole('button', { name: /AMRAP/i }))
+      await userEvent.click(screen.getByRole('button', { name: /AMRAP/i }))
       await waitFor(() => {
         expect(testApp.queryByText('5 min')).toBeTruthy()
       })
-      await testApp.user.click(screen.getByRole('button', { name: /Quick burst/i }))
+      await userEvent.click(screen.getByRole('button', { name: /Quick burst/i }))
 
       // Wait for timer UI
       await waitFor(() => {
@@ -356,11 +357,11 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select EMOM and start timer
-      await testApp.user.click(screen.getByRole('button', { name: /EMOM/i }))
+      await userEvent.click(screen.getByRole('button', { name: /EMOM/i }))
       await waitFor(() => {
         expect(testApp.queryByText('10 min')).toBeTruthy()
       })
-      await testApp.user.click(screen.getByRole('button', { name: /Quick session/i }))
+      await userEvent.click(screen.getByRole('button', { name: /Quick session/i }))
 
       // Wait for timer UI
       await waitFor(() => {

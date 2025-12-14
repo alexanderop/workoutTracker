@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -88,7 +89,7 @@ export class BenchmarkDetailPO {
     const startButton = await waitFor(() =>
       screen.getByRole('button', { name: /start workout/i }),
     )
-    await this.ctx.user.click(startButton)
+    await userEvent.click(startButton)
 
     // Wait for navigation to active benchmark
     await waitFor(() => {
@@ -143,7 +144,7 @@ export class BenchmarkDetailPO {
    */
   async clickGoBack(): Promise<void> {
     const goBackButton = screen.getByRole('button', { name: 'Go Back' })
-    await this.ctx.user.click(goBackButton)
+    await userEvent.click(goBackButton)
 
     // Wait for navigation back to workouts
     await waitFor(() => {
@@ -156,7 +157,7 @@ export class BenchmarkDetailPO {
    */
   async clickEdit(): Promise<void> {
     const editButton = await waitFor(() => screen.getByRole('button', { name: /edit/i }))
-    await this.ctx.user.click(editButton)
+    await userEvent.click(editButton)
   }
 
   /**
@@ -166,7 +167,7 @@ export class BenchmarkDetailPO {
     const saveButton = await waitFor(() =>
       screen.getByRole('button', { name: /save changes|save/i }),
     )
-    await this.ctx.user.click(saveButton)
+    await userEvent.click(saveButton)
   }
 
   /**
@@ -174,7 +175,7 @@ export class BenchmarkDetailPO {
    */
   async clickCancel(): Promise<void> {
     const cancelButton = await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
-    await this.ctx.user.click(cancelButton)
+    await userEvent.click(cancelButton)
   }
 
   /**
@@ -185,8 +186,7 @@ export class BenchmarkDetailPO {
     const nameInput = await waitFor(() =>
       screen.getByRole('textbox', { name: /workout name|name/i }),
     )
-    await this.ctx.user.clear(nameInput)
-    await this.ctx.user.type(nameInput, newName)
+    await userEvent.fill(nameInput, newName)
   }
 
   /**
@@ -231,7 +231,7 @@ export class BenchmarkDetailPO {
     const deleteButton = await waitFor(() =>
       screen.getByRole('button', { name: /delete benchmark/i }),
     )
-    await this.ctx.user.click(deleteButton)
+    await userEvent.click(deleteButton)
   }
 
   /**
@@ -247,7 +247,7 @@ export class BenchmarkDetailPO {
    */
   async clickDeleteCancel(): Promise<void> {
     const cancelButton = await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
-    await this.ctx.user.click(cancelButton)
+    await userEvent.click(cancelButton)
   }
 
   /**
@@ -261,7 +261,7 @@ export class BenchmarkDetailPO {
       throw new Error('Delete button not found in dialog')
     }
 
-    await this.ctx.user.click(dialogDeleteButton)
+    await userEvent.click(dialogDeleteButton)
 
     await waitFor(() => {
       expect(this.ctx.router.currentRoute.value.path).toBe('/workouts')
@@ -280,6 +280,6 @@ export class BenchmarkDetailPO {
    */
   async clickBackButton(): Promise<void> {
     const backButton = screen.getByRole('button', { name: /go back/i })
-    await this.ctx.user.click(backButton)
+    await userEvent.click(backButton)
   }
 }

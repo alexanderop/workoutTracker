@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -87,15 +88,13 @@ async function startBenchmarkWorkout(
  * Completes the current exercise by tapping the focus mode area and waiting for transition.
  * Waits for observable outcome (next exercise or completion screen) rather than fixed timeout.
  */
-async function completeExercise(
-  app: Awaited<ReturnType<typeof createTestApp>>
-): Promise<void> {
+async function completeExercise(): Promise<void> {
   // Capture current exercise name before transition
   const currentExerciseHeading = screen.queryByRole('heading', { level: 2 })
   const currentExerciseName = currentExerciseHeading?.textContent
 
   const focusModeArea = screen.getByRole('button', { name: /tap to advance/i })
-  await app.user.click(focusModeArea)
+  await userEvent.click(focusModeArea)
 
   // Wait for observable outcome: exercise changed OR completion screen appeared
   await waitFor(
@@ -120,12 +119,9 @@ async function completeExercise(
 /**
  * Completes all exercises in sequence.
  */
-async function completeAllExercises(
-  app: Awaited<ReturnType<typeof createTestApp>>,
-  exerciseCount: number
-): Promise<void> {
+async function completeAllExercises(exerciseCount: number): Promise<void> {
   for (let i = 0; i < exerciseCount; i++) {
-    await completeExercise(app)
+    await completeExercise()
   }
 
   // completeExercise already waits for completion screen on last exercise
@@ -242,7 +238,7 @@ describe('Benchmark Flows', () => {
       await waitFor(() => {
         expect(screen.getByText('Thrusters')).toBeTruthy()
       })
-      await completeExercise(app)
+      await completeExercise()
 
       // Step 5: Verify Exercise 2 (Pull-ups)
       await waitFor(() => {
@@ -250,7 +246,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Step 6: Complete Exercise 2
-      await completeExercise(app)
+      await completeExercise()
 
       // Step 7: Verify completion screen
       await waitForCompletionScreen()
@@ -262,7 +258,7 @@ describe('Benchmark Flows', () => {
       const viewDetailsButton = await waitFor(() =>
         screen.getByRole('button', { name: /view details/i })
       )
-      await app.user.click(viewDetailsButton)
+      await userEvent.click(viewDetailsButton)
 
       await waitFor(() => {
         expect(app.router.currentRoute.value.name).toBe('WorkoutSummary')
@@ -313,7 +309,7 @@ describe('Benchmark Flows', () => {
         expect(screen.getByRole('dialog')).toBeTruthy()
       })
       const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await app.user.click(deleteButton)
+      await userEvent.click(deleteButton)
 
       // Verify navigation to /workouts
       await waitFor(() => {
@@ -435,7 +431,7 @@ describe('Benchmark Flows', () => {
 
       // Test cancel flow
       const cancelButton = screen.getByRole('button', { name: /cancel/i })
-      await app.user.click(cancelButton)
+      await userEvent.click(cancelButton)
 
       // Dialog should close, benchmark should remain
       await waitFor(() => {
@@ -450,7 +446,7 @@ describe('Benchmark Flows', () => {
         expect(screen.getByRole('dialog')).toBeTruthy()
       })
       const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await app.user.click(deleteButton)
+      await userEvent.click(deleteButton)
 
       // Verify navigation and deletion
       await waitFor(() => {
@@ -499,7 +495,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Tap to advance to next exercise
-      await completeExercise(app)
+      await completeExercise()
 
       // Verify Exercise 2 displayed
       await waitFor(() => {
@@ -528,7 +524,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Advance to Exercise 2
-      await completeExercise(app)
+      await completeExercise()
       await waitFor(() => {
         expect(screen.getByText('Exercise 2')).toBeTruthy()
       })
@@ -565,7 +561,7 @@ describe('Benchmark Flows', () => {
       )
 
       // Advance to Exercise 2
-      await completeExercise(app)
+      await completeExercise()
 
       // Verify timer still running on Exercise 2 (value should have increased)
       await waitFor(
@@ -595,14 +591,14 @@ describe('Benchmark Flows', () => {
 
       // Open menu and click "View Exercises" to open queue drawer
       const menuButton = screen.getByRole('button', { name: /workout options/i })
-      await app.user.click(menuButton)
+      await userEvent.click(menuButton)
 
       // Wait for menu to open and click "View Exercises"
       await waitFor(() => {
         expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
       })
       const viewExercisesItem = screen.getByRole('menuitem', { name: /view exercises/i })
-      await app.user.click(viewExercisesItem)
+      await userEvent.click(viewExercisesItem)
 
       // Wait for drawer to open
       await waitFor(() => {
@@ -619,7 +615,7 @@ describe('Benchmark Flows', () => {
       expect(activeElements.length).toBeGreaterThan(0)
 
       // Close drawer by pressing Escape
-      await app.user.keyboard('{Escape}')
+      await userEvent.keyboard('{Escape}')
 
       // Wait for drawer to close and animations to complete
       await waitFor(() => {
@@ -629,17 +625,17 @@ describe('Benchmark Flows', () => {
       await new Promise(resolve => setTimeout(resolve, 500))
 
       // Complete Exercise 1
-      await completeExercise(app)
+      await completeExercise()
 
       // Open drawer again through menu
       const menuButton2 = screen.getByRole('button', { name: /workout options/i })
-      await app.user.click(menuButton2)
+      await userEvent.click(menuButton2)
 
       await waitFor(() => {
         expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
       })
       const viewExercisesItem2 = screen.getByRole('menuitem', { name: /view exercises/i })
-      await app.user.click(viewExercisesItem2)
+      await userEvent.click(viewExercisesItem2)
 
       // Wait for drawer to open again
       await waitFor(() => {
@@ -673,7 +669,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Complete Round 1, Exercise 1
-      await completeExercise(app)
+      await completeExercise()
 
       // Verify advanced to Exercise 2
       await waitFor(() => {
@@ -682,7 +678,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Complete Round 1, Exercise 2 (last in round)
-      await completeExercise(app)
+      await completeExercise()
 
       // Verify we advanced (either to Round 2 Exercise 1 or completion screen)
       // The exact UI depends on implementation - just verify we moved forward
@@ -704,7 +700,7 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Complete all exercises
-      await completeAllExercises(app, 2)
+      await completeAllExercises(2)
 
       // Verify completion screen
       await waitForCompletionScreen()
@@ -720,7 +716,7 @@ describe('Benchmark Flows', () => {
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await completeAllExercises(app, 2)
+      await completeAllExercises(2)
 
       // Capture completion time
       const completionTime = await waitFor(() => {
@@ -743,13 +739,13 @@ describe('Benchmark Flows', () => {
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await completeAllExercises(app, 2)
+      await completeAllExercises(2)
 
       // Click "View Details"
       const viewDetailsButton = await waitFor(() =>
         screen.getByRole('button', { name: /view details/i })
       )
-      await app.user.click(viewDetailsButton)
+      await userEvent.click(viewDetailsButton)
 
       // Wait for save
       await waitFor(() => {
@@ -892,7 +888,7 @@ describe('Benchmark Flows', () => {
       })
 
       // Complete Exercise 1
-      await completeExercise(app)
+      await completeExercise()
 
       // Verify we're now on Exercise 2 (Pull-ups)
       await waitFor(() => {

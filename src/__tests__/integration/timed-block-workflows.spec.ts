@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -7,7 +8,6 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 async function endWorkoutViaMenu(
   workout: Awaited<ReturnType<typeof createTestApp>>['workout'],
   common: Awaited<ReturnType<typeof createTestApp>>['common'],
-  user: Awaited<ReturnType<typeof createTestApp>>['user'],
   getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole'],
   queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
   queryByText: Awaited<ReturnType<typeof createTestApp>>['queryByText'],
@@ -15,15 +15,15 @@ async function endWorkoutViaMenu(
   await waitFor(() => {
     expect(workout.getMenuTrigger()).toBeTruthy()
   })
-  await user.click(workout.getMenuTrigger())
+  await userEvent.click(workout.getMenuTrigger())
 
   await waitFor(() => {
     expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
   })
-  await user.click(getByRole('menuitem', { name: /end workout/i }))
+  await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
   await common.waitForDialog()
-  await user.click(common.getDialogButton('Finish Workout'))
+  await userEvent.click(common.getDialogButton('Finish Workout'))
 
   // Wait for completion screen
   await waitFor(() => {
@@ -44,7 +44,7 @@ async function endWorkoutViaMenu(
   )
   // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
   await new Promise((resolve) => setTimeout(resolve, 700))
-  await user.click(viewDetailsButton)
+  await userEvent.click(viewDetailsButton)
 
   await common.waitForRoute(/^\/workout\/summary\//)
 }
@@ -55,7 +55,7 @@ describe('Timed Block Workflows', () => {
 
   describe('Configuration', () => {
     it('allows user to add timed blocks from the dialog and start workout', async () => {
-      const { builder, user, getByRole, queryByText, queryByRole, common, cleanup } =
+      const { builder, getByRole, queryByText, queryByRole, common, cleanup } =
         await createTestApp()
 
       await builder.navigateTo()
@@ -75,7 +75,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByText('For Time')).toBeTruthy()
 
       // Select AMRAP - this opens a configuration dialog
-      await user.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Wait for configuration dialog
       await waitFor(() => {
@@ -84,11 +84,11 @@ describe('Timed Block Workflows', () => {
       })
 
       // Add an exercise to the AMRAP
-      await user.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(common.getDialogButton('Add Exercise'))
       await common.selectExercise('Push-ups')
 
       // Confirm the block by clicking "Add Block"
-      await user.click(common.getDialogButton('Add Block'))
+      await userEvent.click(common.getDialogButton('Add Block'))
 
       // Wait for dialog AND overlay to fully close
       await common.waitForDialogClose()
@@ -112,7 +112,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('filters exercises when searching in add block dialog', async () => {
-      const { builder, user, getByRole, queryByText, common, cleanup } =
+      const { builder, getByRole, queryByText, common, cleanup } =
         await createTestApp()
 
       await builder.navigateTo()
@@ -124,7 +124,7 @@ describe('Timed Block Workflows', () => {
 
       // Type in search input
       const searchInput = getByRole('textbox')
-      await user.type(searchInput, 'bench')
+      await userEvent.fill(searchInput, 'bench')
 
       // Only matching exercise should remain
       await waitFor(() => {
@@ -133,7 +133,7 @@ describe('Timed Block Workflows', () => {
       })
 
       // Select the filtered exercise and verify it adds to workout
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
 
       // Wait for dialog AND overlay to fully close
       await common.waitForDialogClose()
@@ -148,10 +148,10 @@ describe('Timed Block Workflows', () => {
 
   describe('Execution', () => {
     it('creates AMRAP block and shows timer UI', async () => {
-      const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add AMRAP block
@@ -180,17 +180,17 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /\+1/i })).toBeTruthy()
 
       // End workout via menu
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
+      await endWorkoutViaMenu(workout, common, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       cleanup()
     })
 
     it('creates EMOM block and shows minute display', async () => {
-      const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')
@@ -216,10 +216,10 @@ describe('Timed Block Workflows', () => {
     })
 
     it('creates Tabata block and shows round/phase info', async () => {
-      const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add Tabata block
       await builder.addTimedBlock('Tabata')
@@ -242,10 +242,10 @@ describe('Timed Block Workflows', () => {
     })
 
     it('creates For Time block and completes with Done button', async () => {
-      const { builder, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add For Time block
       await builder.addTimedBlock('For Time')
@@ -264,11 +264,11 @@ describe('Timed Block Workflows', () => {
       expect(doneButton).toBeTruthy()
 
       // Click Done to complete the block
-      await user.click(doneButton!)
+      await userEvent.click(doneButton!)
 
       // Should show finish workout dialog
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
       await waitFor(() => {
@@ -289,7 +289,7 @@ describe('Timed Block Workflows', () => {
       )
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
-      await user.click(viewDetailsButton)
+      await userEvent.click(viewDetailsButton)
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -298,15 +298,15 @@ describe('Timed Block Workflows', () => {
     })
 
     it('navigates between strength and timed blocks in hybrid workout', async () => {
-      const { builder, workout, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add strength block first
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add AMRAP block
@@ -328,7 +328,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /complete set/i })).toBeTruthy()
 
       // Navigate to AMRAP block
-      await user.click(workout.getFooterButton('next'))
+      await userEvent.click(workout.getFooterButton('next'))
 
       await waitFor(() => {
         expect(queryByText(/block 2 of 2/i)).toBeTruthy()
@@ -338,7 +338,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
       // Navigate back to strength block
-      await user.click(workout.getFooterButton('prev'))
+      await userEvent.click(workout.getFooterButton('prev'))
 
       await waitFor(() => {
         expect(queryByText(/block 1 of 2/i)).toBeTruthy()
@@ -351,10 +351,10 @@ describe('Timed Block Workflows', () => {
     })
 
     it('AMRAP block allows incrementing rounds with +1 button', async () => {
-      const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add AMRAP block
       await builder.addTimedBlock('AMRAP')
@@ -376,7 +376,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByText(/rounds/i)).toBeTruthy()
 
       // Start the timer by clicking Start
-      await user.click(getByRole('button', { name: /start/i }))
+      await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Wait for +1 button to be enabled (timer must be running)
       await waitFor(() => {
@@ -386,11 +386,11 @@ describe('Timed Block Workflows', () => {
       })
 
       // Increment rounds
-      await user.click(getByRole('button', { name: /\+1/i }))
-      await user.click(getByRole('button', { name: /\+1/i }))
+      await userEvent.click(getByRole('button', { name: /\+1/i }))
+      await userEvent.click(getByRole('button', { name: /\+1/i }))
 
       // End workout via menu
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
+      await endWorkoutViaMenu(workout, common, getByRole, queryByRole, queryByText)
 
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
@@ -398,10 +398,10 @@ describe('Timed Block Workflows', () => {
     })
 
     it('timer button changes to Pause when running', async () => {
-      const { builder, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')
@@ -417,7 +417,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /pause/i })).toBeNull()
 
       // Click Start
-      await user.click(getByRole('button', { name: /start/i }))
+      await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Verify button changed to Pause
       await waitFor(() => {
@@ -431,10 +431,10 @@ describe('Timed Block Workflows', () => {
 
   describe('Complete Journeys', () => {
     it('completes AMRAP workout with rounds recorded', async () => {
-      const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add AMRAP block
@@ -453,7 +453,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByText(/rounds/i)).toBeTruthy()
 
       // Start the timer
-      await user.click(getByRole('button', { name: /start/i }))
+      await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Wait for +1 button to be enabled (timer must be running)
       await waitFor(() => {
@@ -463,9 +463,9 @@ describe('Timed Block Workflows', () => {
       })
 
       // Click +1 to record rounds
-      await user.click(getByRole('button', { name: /\+1/i }))
-      await user.click(getByRole('button', { name: /\+1/i }))
-      await user.click(getByRole('button', { name: /\+1/i }))
+      await userEvent.click(getByRole('button', { name: /\+1/i }))
+      await userEvent.click(getByRole('button', { name: /\+1/i }))
+      await userEvent.click(getByRole('button', { name: /\+1/i }))
 
       // Verify rounds count shows 3
       await waitFor(() => {
@@ -473,7 +473,7 @@ describe('Timed Block Workflows', () => {
       })
 
       // End workout via menu and verify summary page
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
+      await endWorkoutViaMenu(workout, common, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows the workout completed
@@ -485,10 +485,10 @@ describe('Timed Block Workflows', () => {
     })
 
     it('runs EMOM workout and completes full journey', async () => {
-      const { builder, workout, common, user, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Start new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add EMOM block
       await builder.addTimedBlock('EMOM')
@@ -509,7 +509,7 @@ describe('Timed Block Workflows', () => {
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
 
       // End workout via menu and verify we reach summary
-      await endWorkoutViaMenu(workout, common, user, getByRole, queryByRole, queryByText)
+      await endWorkoutViaMenu(workout, common, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows workout completed

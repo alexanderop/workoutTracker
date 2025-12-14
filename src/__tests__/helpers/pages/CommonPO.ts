@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { flushPromises } from '@vue/test-utils'
 import type { TestContext } from '../types'
 
@@ -74,11 +75,11 @@ export class CommonPO {
    */
   async selectExercise(exerciseName: string): Promise<void> {
     const searchInput = screen.getByRole('textbox')
-    await this.ctx.user.type(searchInput, exerciseName)
+    await userEvent.fill(searchInput, exerciseName)
     await waitFor(() => {
       this.getExactDialogButton(exerciseName)
     })
-    await this.ctx.user.click(this.getExactDialogButton(exerciseName))
+    await userEvent.click(this.getExactDialogButton(exerciseName))
   }
 
   /**
@@ -147,7 +148,7 @@ export class CommonPO {
    */
   async navigateToExercises(): Promise<void> {
     const exercisesNavButton = screen.getByRole('button', { name: /^exercises$/i })
-    await this.ctx.user.click(exercisesNavButton)
+    await userEvent.click(exercisesNavButton)
     await this.waitForRoute(/^\/exercises$/)
   }
 
@@ -157,7 +158,7 @@ export class CommonPO {
    */
   async navigateToSettings(): Promise<void> {
     const settingsNavButton = screen.getByRole('button', { name: /settings/i })
-    await this.ctx.user.click(settingsNavButton)
+    await userEvent.click(settingsNavButton)
     await this.waitForRoute(/^\/settings$/)
   }
 
@@ -167,21 +168,13 @@ export class CommonPO {
    */
   async navigateToWorkouts(): Promise<void> {
     const workoutsNavButton = screen.getByRole('button', { name: /workouts/i })
-    await this.ctx.user.click(workoutsNavButton)
+    await userEvent.click(workoutsNavButton)
     await this.waitForRoute(/^\/workouts$/)
   }
 
   /**
-   * Detects if we're running in jsdom vs a real browser.
-   * jsdom includes 'jsdom' in the userAgent string.
-   */
-  isJsdomMode(): boolean {
-    return navigator.userAgent.toLowerCase().includes('jsdom')
-  }
-
-  /**
    * Sets the value of an input element directly and dispatches events.
-   * Use in browser mode where user.type() doesn't work reliably with NumberField.
+   * Works around NumberField input quirks in browser mode.
    * @param input - The input element (from getByRole or similar query)
    * @param value - The value to set
    */
@@ -205,10 +198,8 @@ export class CommonPO {
 
   /**
    * Fills strength set inputs (weight, reps, rir) and waits for button to be enabled.
-   * Handles both jsdom and browser mode differences:
-   * - jsdom: uses user.type() and skips button enable wait (jsdom doesn't enforce CSS disabled)
-   * - browser: uses direct DOM manipulation and waits for button to enable
-   * @param inputs - Object with weightInput, repsInput, rirInput elements
+   * Uses direct DOM manipulation to work around NumberField input quirks.
+   * @param inputs - Object with weight, reps, rir input elements
    * @param values - Object with weight, reps, rir values as strings
    * @param completeButton - The Complete Set button element to wait for
    */
@@ -217,16 +208,6 @@ export class CommonPO {
     values: { weight: string; reps: string; rir: string },
     completeButton: Element,
   ): Promise<void> {
-    if (this.isJsdomMode()) {
-      // jsdom mode: use user.type() - it triggers Vue reactivity properly
-      await this.ctx.user.type(inputs.weight, values.weight)
-      await this.ctx.user.type(inputs.reps, values.reps)
-      await this.ctx.user.type(inputs.rir, values.rir)
-      // Skip button wait - jsdom doesn't enforce CSS disabled state
-      return
-    }
-
-    // Browser mode: direct DOM manipulation + wait for button
     this.setInputValueDirectly(inputs.weight, values.weight)
     this.setInputValueDirectly(inputs.reps, values.reps)
     this.setInputValueDirectly(inputs.rir, values.rir)

@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -17,7 +18,7 @@ export class BuilderPO {
    * Navigates to the workout builder by clicking the "Start New Workout" card.
    */
   async navigateTo(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /start new workout/i }))
+    await userEvent.click(screen.getByRole('button', { name: /start new workout/i }))
   }
 
   /**
@@ -28,7 +29,7 @@ export class BuilderPO {
     const addBlockBtn =
       screen.queryByRole('button', { name: /add first block/i }) ??
       screen.getByRole('button', { name: /add block/i })
-    await this.ctx.user.click(addBlockBtn)
+    await userEvent.click(addBlockBtn)
     await this.common.waitForDialog()
   }
 
@@ -40,7 +41,7 @@ export class BuilderPO {
   async addStrengthBlock(exerciseName: string): Promise<void> {
     await this.navigateTo()
     await this.openAddBlockDialog()
-    await this.ctx.user.click(this.common.getDialogButton(exerciseName))
+    await userEvent.click(this.common.getDialogButton(exerciseName))
     this.common.assertDialogClosed()
   }
 
@@ -48,14 +49,14 @@ export class BuilderPO {
    * Starts the workout by clicking the "Start Workout" button.
    */
   async startWorkout(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /start workout/i }))
+    await userEvent.click(screen.getByRole('button', { name: /start workout/i }))
   }
 
   /**
    * Switches to the timed blocks tab in the add block dialog.
    */
   async switchToTimedBlocksTab(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('tab', { name: /timed blocks/i }))
+    await userEvent.click(screen.getByRole('tab', { name: /timed blocks/i }))
   }
 
   /**
@@ -93,7 +94,7 @@ export class BuilderPO {
   ): Promise<void> {
     await this.openAddBlockDialog()
     await this.switchToTimedBlocksTab()
-    await this.ctx.user.click(this.common.getDialogButton(blockType))
+    await userEvent.click(this.common.getDialogButton(blockType))
 
     // Wait for configure dialog
     await waitFor(() => {
@@ -103,11 +104,11 @@ export class BuilderPO {
 
     // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
     const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
-    await this.ctx.user.click(this.common.getDialogButton(exerciseButtonText))
+    await userEvent.click(this.common.getDialogButton(exerciseButtonText))
     await this.common.selectExercise(exerciseName)
 
     // Confirm block
-    await this.ctx.user.click(this.common.getDialogButton('Add Block'))
+    await userEvent.click(this.common.getDialogButton('Add Block'))
     await this.common.waitForDialogClose()
   }
 }

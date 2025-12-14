@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
@@ -50,11 +51,11 @@ describe('Data Management', () => {
       const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
       await db.workouts.add(workout)
 
-      const { common, user, getByRole, cleanup } = await createTestApp()
+      const { common, getByRole, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click export button
-      await user.click(getByRole('button', { name: /^export data$/i }))
+      await userEvent.click(getByRole('button', { name: /^export data$/i }))
 
       // Assert: Blob was created and cleaned up
       await waitFor(() => {
@@ -87,7 +88,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { user, queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -95,7 +96,7 @@ describe('Data Management', () => {
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new Error('File input not found')
       }
-      await user.upload(fileInput, file)
+      await userEvent.upload(fileInput, file)
 
       // Assert: Confirmation dialog appears with correct count
       await common.waitForDialog()
@@ -103,7 +104,7 @@ describe('Data Management', () => {
       expect(queryByText(/1 workout/i)).toBeTruthy()
 
       // Act: Confirm import
-      await user.click(common.getDialogButton('Import Data'))
+      await userEvent.click(common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
       await waitFor(async () => {
@@ -118,7 +119,7 @@ describe('Data Management', () => {
     it('shows error dialog when importing invalid JSON', async () => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { user, queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload invalid file
@@ -126,7 +127,7 @@ describe('Data Management', () => {
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new Error('File input not found')
       }
-      await user.upload(fileInput, file)
+      await userEvent.upload(fileInput, file)
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
@@ -134,7 +135,7 @@ describe('Data Management', () => {
       expect(queryByText(/not valid JSON/i)).toBeTruthy()
 
       // Dismiss dialog
-      await user.click(common.getDialogButton('OK'))
+      await userEvent.click(common.getDialogButton('OK'))
       await waitFor(() => {
         expect(queryByRole('dialog')).toBeNull()
       })
@@ -147,19 +148,19 @@ describe('Data Management', () => {
       await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
       expect(await db.workouts.count()).toBe(1)
 
-      const { user, getByRole, queryByRole, common, cleanup } = await createTestApp()
+      const { getByRole, queryByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
       const deleteButton = getByRole('button', { name: /^delete all data$/i })
-      await user.click(deleteButton)
+      await userEvent.click(deleteButton)
 
       // Assert: Confirmation dialog appears
       await common.waitForDialog()
       expect(queryByRole('heading', { name: /delete all data/i })).toBeTruthy()
 
       // Confirm deletion
-      await user.click(common.getDialogButton('Delete All Data'))
+      await userEvent.click(common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
       await waitFor(async () => {
@@ -187,12 +188,12 @@ describe('Data Management', () => {
       await db.workouts.add(completedWorkout)
 
       // Act: Start at home and navigate to history page
-      const { user, router, queryByText, findByText, cleanup } = await createTestApp()
+      const { router, queryByText, findByText, cleanup } = await createTestApp()
       await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
       const workoutCard = await findByText('Push Day')
-      await user.click(workoutCard)
+      await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
       await waitFor(() => {
@@ -207,7 +208,7 @@ describe('Data Management', () => {
 
       // Expand the exercise card to see set details
       const exerciseCard = await findByText('Bench Press')
-      await user.click(exerciseCard)
+      await userEvent.click(exerciseCard)
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
       await waitFor(() => {

@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 
@@ -17,7 +18,7 @@ export class QueuePO {
    * Waits for the dialog to appear before returning.
    */
   async open(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /open workout queue/i }))
+    await userEvent.click(screen.getByRole('button', { name: /open workout queue/i }))
     await this.common.waitForDialog()
   }
 

@@ -6,7 +6,7 @@ AI agent guidance for testing in this Vue 3 PWA.
 
 **Framework**: Vitest 4 with **Playwright browser mode** (NOT jsdom)
 
-**Libraries**: Testing Library (Vue), fake-indexeddb, user-event
+**Libraries**: Testing Library (Vue), fake-indexeddb, Vitest Browser userEvent
 
 **Test Types**:
 - **Unit tests** (`src/__tests__/composables/`) - Direct composable testing
@@ -103,6 +103,8 @@ For full app rendering with router, Pinia, and i18n:
 ```ts
 import { createTestApp } from '@/__tests__/helpers/createTestApp'
 
+import { userEvent } from '@vitest/browser/context'
+
 it('navigates through workout flow', async () => {
   const app = await createTestApp({ initialRoute: '/' })
 
@@ -115,7 +117,7 @@ it('navigates through workout flow', async () => {
 
   // Or use raw Testing Library queries
   const button = app.getByRole('button', { name: /start/i })
-  await app.user.click(button)
+  await userEvent.click(button)
 
   app.cleanup()
 })
@@ -179,7 +181,7 @@ await app.queue.selectBlock(0)
 // Common page object (dialogs, navigation)
 await app.common.waitForDialog()
 const confirmButton = app.common.getDialogButton('Confirm')
-await app.user.click(confirmButton)
+await userEvent.click(confirmButton) // import { userEvent } from '@vitest/browser/context'
 app.common.assertDialogClosed()
 ```
 
@@ -371,20 +373,21 @@ it('my test', async () => {
 })
 ```
 
-### 4. Use `user-event`, Not `fireEvent`
+### 4. Use Vitest Browser `userEvent`, Not `fireEvent`
 
 ```ts
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@vitest/browser/context'
 
 // ❌ BAD - fireEvent is low-level
 fireEvent.click(button)
 
-// ✅ GOOD - user-event simulates real user interaction
-const user = userEvent.setup()
-await user.click(button)
+// ✅ GOOD - userEvent uses real browser automation
+await userEvent.click(button)
+await userEvent.fill(input, 'text') // fill() clears then types
+await userEvent.keyboard('{Escape}')
 ```
 
-Already provided via `app.user` in `createTestApp()`.
+Import `userEvent` from `@vitest/browser/context` in any test file where you need user interactions.
 
 ## Pre-PR Checks
 

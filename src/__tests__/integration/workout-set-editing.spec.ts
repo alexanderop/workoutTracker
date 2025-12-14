@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -14,7 +15,7 @@ describe('Workout Set Editing - Any Set', () => {
 
   it('allows editing a completed (past) set', async () => {
     const app = await createTestApp()
-    const { builder, workout, user } = app
+    const { builder, workout} = app
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
@@ -26,8 +27,8 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Try editing the completed set (set 0)
     const completedRow = workout.getSetRow(0)
-    await user.clear(completedRow.kg)
-    await user.type(completedRow.kg, '110')
+    await userEvent.clear(completedRow.kg)
+    await userEvent.fill(completedRow.kg, '110')
 
     // Verify value changed
     expect(completedRow.kg).toHaveValue('110')
@@ -37,7 +38,7 @@ describe('Workout Set Editing - Any Set', () => {
 
   it('allows editing a pending (future) set', async () => {
     const app = await createTestApp()
-    const { builder, workout, user } = app
+    const { builder, workout} = app
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
@@ -45,8 +46,8 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Set 0 is active, try editing set 2 (pending/future)
     const pendingRow = workout.getSetRow(2)
-    await user.clear(pendingRow.kg)
-    await user.type(pendingRow.kg, '150')
+    await userEvent.clear(pendingRow.kg)
+    await userEvent.fill(pendingRow.kg, '150')
 
     expect(pendingRow.kg).toHaveValue('150')
 
@@ -55,7 +56,7 @@ describe('Workout Set Editing - Any Set', () => {
 
   it('allows completing a pending set out of order', async () => {
     const app = await createTestApp()
-    const { builder, workout, user } = app
+    const { builder, workout} = app
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
@@ -63,13 +64,13 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Fill pending set 2 and mark complete (skip sets 0 and 1)
     const pendingRow = workout.getSetRow(2)
-    await user.clear(pendingRow.kg)
-    await user.type(pendingRow.kg, '200')
-    await user.clear(pendingRow.reps)
-    await user.type(pendingRow.reps, '5')
-    await user.clear(pendingRow.rir)
-    await user.type(pendingRow.rir, '2')
-    await user.click(pendingRow.complete)
+    await userEvent.clear(pendingRow.kg)
+    await userEvent.fill(pendingRow.kg, '200')
+    await userEvent.clear(pendingRow.reps)
+    await userEvent.fill(pendingRow.reps, '5')
+    await userEvent.clear(pendingRow.rir)
+    await userEvent.fill(pendingRow.rir, '2')
+    await userEvent.click(pendingRow.complete)
 
     await waitFor(() => expect(workout.isSetCompleted(2)).toBe(true))
 

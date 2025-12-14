@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { tryCatch } from '@/lib/tryCatch'
 import type { SetInputs, SetValues, TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -68,23 +69,22 @@ export class ActiveWorkoutPO {
   async fillSet(setIndex: number, values: SetValues): Promise<void> {
     const inputs = this.getSetRow(setIndex)
 
-    const typeValue = async (el: HTMLInputElement, val?: number): Promise<void> => {
+    const fillValue = async (el: HTMLInputElement, val?: number): Promise<void> => {
       if (val !== undefined) {
-        await this.ctx.user.clear(el)
-        await this.ctx.user.type(el, String(val))
+        await userEvent.fill(el, String(val))
       }
     }
 
-    await typeValue(inputs.kg, values.kg)
-    await typeValue(inputs.reps, values.reps)
-    await typeValue(inputs.rir, values.rir)
+    await fillValue(inputs.kg, values.kg)
+    await fillValue(inputs.reps, values.reps)
+    await fillValue(inputs.rir, values.rir)
   }
 
   /**
    * Opens the workout options menu by clicking the menu trigger button.
    */
   async openMenu(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /workout options|more options/i }))
+    await userEvent.click(screen.getByRole('button', { name: /workout options|more options/i }))
   }
 
   /**
@@ -245,6 +245,6 @@ export class ActiveWorkoutPO {
     const completeButton = this.getCompleteButtonFromRow(row)
 
     await this.common.fillStrengthSetAndWaitForButton(inputs, values, completeButton)
-    await this.ctx.user.click(completeButton)
+    await userEvent.click(completeButton)
   }
 }

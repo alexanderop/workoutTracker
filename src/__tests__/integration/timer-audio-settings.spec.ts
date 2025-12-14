@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -32,14 +33,14 @@ describe('Timer Audio Settings', () => {
     })
 
     it('toggles timer sounds setting when clicked', async () => {
-      const { common, user, getByRole, cleanup } = await createTestApp()
+      const { common, getByRole, cleanup } = await createTestApp()
 
       await common.navigateToSettings()
 
       const toggle = getByRole('switch', { name: /timer sounds/i })
       expect(toggle.getAttribute('aria-checked')).toBe('true')
 
-      await user.click(toggle)
+      await userEvent.click(toggle)
 
       await waitFor(() => {
         expect(toggle.getAttribute('aria-checked')).toBe('false')
@@ -52,12 +53,12 @@ describe('Timer Audio Settings', () => {
     })
 
     it('persists timer sounds setting across page navigation', async () => {
-      const { common, user, getByRole, cleanup } = await createTestApp()
+      const { common, getByRole, cleanup } = await createTestApp()
 
       await common.navigateToSettings()
 
       const toggle = getByRole('switch', { name: /timer sounds/i })
-      await user.click(toggle)
+      await userEvent.click(toggle)
 
       await waitFor(() => {
         expect(toggle.getAttribute('aria-checked')).toBe('false')

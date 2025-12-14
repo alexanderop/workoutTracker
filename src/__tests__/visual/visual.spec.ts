@@ -1,5 +1,6 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -50,11 +51,11 @@ describe('Visual Regression', () => {
     })
 
     it('matches screenshot with dark mode enabled', async () => {
-      const { common, user, getByTestId, cleanup } = await createTestApp()
+      const { common, getByTestId, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       const themeToggle = getByTestId('theme-toggle')
-      await user.click(themeToggle)
+      await userEvent.click(themeToggle)
 
       await expect(page.getByTestId('app')).toMatchScreenshot('settings-dark-mode')
       cleanup()
