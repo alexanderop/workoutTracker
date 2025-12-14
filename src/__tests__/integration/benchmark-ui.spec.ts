@@ -8,7 +8,6 @@ import {
   startBenchmarkWorkout,
   completeExercise,
   createCompletedAttempt,
-  getBenchmarksRepository,
 } from './helpers/benchmarkHelpers'
 
 describe('Benchmark UI', () => {
