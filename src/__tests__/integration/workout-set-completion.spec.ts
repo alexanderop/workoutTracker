@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -9,13 +10,13 @@ describe('Workout Set Completion', () => {
 
   describe('Set Completion Flow', () => {
     it('completes set and shows completed badge', async () => {
-      const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Setup: Create workout with strength block
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Start workout
@@ -36,13 +37,13 @@ describe('Workout Set Completion', () => {
     })
 
     it('pre-fills next set with values from completed set', async () => {
-      const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -65,19 +66,19 @@ describe('Workout Set Completion', () => {
     })
 
     it('can complete multiple sets in sequence', async () => {
-      const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup workout with 2 blocks (so completing first block doesn't end workout)
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second block to prevent app from ending after completing first block
-      await user.click(getByRole('button', { name: /add block/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -98,7 +99,7 @@ describe('Workout Set Completion', () => {
       })
 
       // Complete third set (pre-filled values, just click button)
-      await user.click(getByRole('button', { name: /mark set 3 complete/i }))
+      await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
 
       // After completing all sets in block 1, app auto-advances to block 2
       await waitFor(() => {
@@ -109,21 +110,21 @@ describe('Workout Set Completion', () => {
     })
 
     it('auto-advances to next block when all sets are complete', async () => {
-      const { builder, workout, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup workout with TWO strength blocks
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // Add first block
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second block
-      await user.click(getByRole('button', { name: /add block/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       // Start workout
@@ -151,14 +152,14 @@ describe('Workout Set Completion', () => {
     })
 
     it('can end workout and see completion screen', async () => {
-      const { builder, workout, common, user, getByRole, queryByText, queryByRole, cleanup } =
+      const { builder, workout, common, getByRole, queryByText, queryByRole, cleanup } =
         await createTestApp()
 
       // Setup workout with ONE strength block
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -178,19 +179,19 @@ describe('Workout Set Completion', () => {
       await waitFor(() => {
         expect(workout.getMenuTrigger()).toBeTruthy()
       })
-      await user.click(workout.getMenuTrigger())
+      await userEvent.click(workout.getMenuTrigger())
 
       await waitFor(() => {
         expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
       })
-      await user.click(getByRole('menuitem', { name: /end workout/i }))
+      await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       // Confirm finish workout dialog
       await common.waitForDialog()
       const nameInput = getByRole('textbox', { name: /workout name/i })
-      await user.clear(nameInput)
-      await user.type(nameInput, 'Test Complete')
-      await user.click(common.getDialogButton('Finish Workout'))
+      await userEvent.clear(nameInput)
+      await userEvent.fill(nameInput, 'Test Complete')
+      await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
       await waitFor(() => {
@@ -203,13 +204,13 @@ describe('Workout Set Completion', () => {
 
   describe('Rest Timer Integration', () => {
     it('shows rest timer in footer after completing a set', async () => {
-      const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -236,20 +237,20 @@ describe('Workout Set Completion', () => {
 
   describe('Data Persistence', () => {
     it('completed set values persist after navigating away and back', async () => {
-      const { builder, workout, common, user, getByRole, queryByText, cleanup } =
+      const { builder, workout, common, getByRole, queryByText, cleanup } =
         await createTestApp()
 
       // Setup workout with two blocks
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
-      await user.click(getByRole('button', { name: /add block/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       // Start workout
@@ -267,13 +268,13 @@ describe('Workout Set Completion', () => {
       })
 
       // Navigate to block 2
-      await user.click(workout.getFooterButton('next'))
+      await userEvent.click(workout.getFooterButton('next'))
       await waitFor(() => {
         expect(queryByText(/block 2 of 2/i)).toBeTruthy()
       })
 
       // Navigate back to block 1
-      await user.click(workout.getFooterButton('prev'))
+      await userEvent.click(workout.getFooterButton('prev'))
       await waitFor(() => {
         expect(queryByText(/block 1 of 2/i)).toBeTruthy()
       })
@@ -285,14 +286,14 @@ describe('Workout Set Completion', () => {
     })
 
     it('workout state survives returning to builder and resuming', async () => {
-      const { builder, workout, common, user, getByRole, queryByRole, cleanup } =
+      const { builder, workout, common, getByRole, queryByRole, cleanup } =
         await createTestApp()
 
       // Setup workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Start and complete a set
@@ -309,7 +310,7 @@ describe('Workout Set Completion', () => {
       })
 
       // Go back to builder mode
-      await user.click(getByRole('button', { name: /go back/i }))
+      await userEvent.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode with Resume button
       await waitFor(() => {
@@ -317,7 +318,7 @@ describe('Workout Set Completion', () => {
       })
 
       // Resume the workout
-      await user.click(getByRole('button', { name: /resume workout/i }))
+      await userEvent.click(getByRole('button', { name: /resume workout/i }))
 
       // Verify we're back in active mode and completed set is preserved
       await waitFor(() => {

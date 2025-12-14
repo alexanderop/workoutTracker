@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -19,7 +20,7 @@ export class BenchmarkFormPO {
    */
   async fillName(name: string): Promise<void> {
     const nameInput = screen.getByLabelText(/workout name/i)
-    await this.ctx.user.type(nameInput, name)
+    await userEvent.fill(nameInput, name)
   }
 
   /**
@@ -36,7 +37,7 @@ export class BenchmarkFormPO {
     if (!typeCard) {
       throw new Error(`Type card button for "${type}" not found`)
     }
-    await this.ctx.user.click(typeCard)
+    await userEvent.click(typeCard)
   }
 
   /**
@@ -46,8 +47,7 @@ export class BenchmarkFormPO {
    */
   async setRounds(rounds: number): Promise<void> {
     const roundsInput = screen.getByLabelText(/number of rounds/i)
-    await this.ctx.user.clear(roundsInput)
-    await this.ctx.user.type(roundsInput, String(rounds))
+    await userEvent.fill(roundsInput, String(rounds))
   }
 
   /**
@@ -55,7 +55,7 @@ export class BenchmarkFormPO {
    * Waits for the dialog to appear before returning.
    */
   async openExercisePicker(): Promise<void> {
-    await this.ctx.user.click(screen.getByRole('button', { name: /add exercise/i }))
+    await userEvent.click(screen.getByRole('button', { name: /add exercise/i }))
     await this.common.waitForDialog()
   }
 
@@ -80,11 +80,10 @@ export class BenchmarkFormPO {
 
     // Fill reps
     const repsInput = screen.getByRole('spinbutton')
-    await this.ctx.user.clear(repsInput)
-    await this.ctx.user.type(repsInput, String(reps))
+    await userEvent.fill(repsInput, String(reps))
 
     // Confirm
-    await this.ctx.user.click(this.common.getDialogButton('Add'))
+    await userEvent.click(this.common.getDialogButton('Add'))
 
     // Wait for dialog to fully close
     await waitFor(() => {
@@ -111,7 +110,7 @@ export class BenchmarkFormPO {
     if (!deleteButton) {
       throw new Error(`Delete button not found for exercise at index ${index}`)
     }
-    await this.ctx.user.click(deleteButton)
+    await userEvent.click(deleteButton)
   }
 
   /**
@@ -119,7 +118,7 @@ export class BenchmarkFormPO {
    */
   async clickSave(): Promise<void> {
     const saveButton = screen.getByRole('button', { name: /save/i })
-    await this.ctx.user.click(saveButton)
+    await userEvent.click(saveButton)
   }
 
   /**
@@ -127,7 +126,7 @@ export class BenchmarkFormPO {
    */
   async clickBack(): Promise<void> {
     const backButton = screen.getByRole('button', { name: /back/i })
-    await this.ctx.user.click(backButton)
+    await userEvent.click(backButton)
   }
 
   /**

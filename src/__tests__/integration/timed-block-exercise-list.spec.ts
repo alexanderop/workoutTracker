@@ -9,17 +9,18 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Helper to open AMRAP config dialog
 async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestApp>>) {
-  const { builder, user, getByRole, common } = app
+  const { builder, getByRole, common } = app
 
   await builder.navigateTo()
   await builder.openAddBlockDialog()
   await builder.switchToTimedBlocksTab()
-  await user.click(common.getDialogButton('AMRAP'))
+  await userEvent.click(common.getDialogButton('AMRAP'))
 
   // Wait for config dialog to open
   await waitFor(() => {
@@ -33,10 +34,10 @@ async function addExerciseViaOverlay(
   app: Awaited<ReturnType<typeof createTestApp>>,
   exerciseName: string,
 ) {
-  const { user, common, getByRole } = app
+  const {  common, getByRole } = app
 
   // Click Add Exercise button in the config dialog
-  await user.click(common.getDialogButton('Add Exercise'))
+  await userEvent.click(common.getDialogButton('Add Exercise'))
 
   // Wait for overlay to appear (it has a search input)
   await waitFor(() => {
@@ -49,7 +50,7 @@ async function addExerciseViaOverlay(
   const searchInput = inputs[inputs.length - 1]
   if (!searchInput) throw new Error('Search input not found')
 
-  await user.type(searchInput, exerciseName)
+  await userEvent.fill(searchInput, exerciseName)
 
   // Wait for filtered results and click the exercise button
   await waitFor(() => {
@@ -61,7 +62,7 @@ async function addExerciseViaOverlay(
   const exerciseButton = buttons.find((btn) => btn.textContent?.includes(exerciseName))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
 
-  await user.click(exerciseButton)
+  await userEvent.click(exerciseButton)
 
   // Wait for exercise to appear in the list (overlay should close in multi mode but exercise stays)
   await waitFor(() => {
@@ -156,7 +157,7 @@ describe('Timed Block Exercise List', () => {
   describe('editing exercise values', () => {
     it('allows setting reps value', async () => {
       const app = await createTestApp()
-      const { user, getByRole } = app
+      const {  getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Push-ups')
@@ -171,8 +172,8 @@ describe('Timed Block Exercise List', () => {
         throw new Error('Rep input not found')
       }
 
-      await user.clear(repInput)
-      await user.type(repInput, '15')
+      await userEvent.clear(repInput)
+      await userEvent.fill(repInput, '15')
 
       // Verify value was set
       expect(repInput.value).toBe('15')
@@ -182,7 +183,7 @@ describe('Timed Block Exercise List', () => {
 
     it('allows setting load value', async () => {
       const app = await createTestApp()
-      const { user, getByRole } = app
+      const {  getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Kettlebell Swing')
@@ -197,8 +198,8 @@ describe('Timed Block Exercise List', () => {
         throw new Error('Load input not found')
       }
 
-      await user.clear(loadInput)
-      await user.type(loadInput, '24kg')
+      await userEvent.clear(loadInput)
+      await userEvent.fill(loadInput, '24kg')
 
       // Verify value was set
       expect(loadInput.value).toBe('24kg')
@@ -210,7 +211,7 @@ describe('Timed Block Exercise List', () => {
   describe('removing exercises', () => {
     it('removes exercise when delete button clicked', async () => {
       const app = await createTestApp()
-      const { user, getByRole } = app
+      const {  getByRole } = app
 
       await openAmrapConfigDialog(app)
 
@@ -230,7 +231,7 @@ describe('Timed Block Exercise List', () => {
       expect(removeButtons.length).toBe(2)
 
       // Click first remove button
-      await user.click(removeButtons[0]!)
+      await userEvent.click(removeButtons[0]!)
 
       // First exercise should be removed, second should remain
       await waitFor(() => {
@@ -245,12 +246,12 @@ describe('Timed Block Exercise List', () => {
   describe('add exercise button', () => {
     it('opens exercise picker when add button clicked', async () => {
       const app = await createTestApp()
-      const { user, common } = app
+      const {  common } = app
 
       await openAmrapConfigDialog(app)
 
       // Click Add Exercise button
-      await user.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Exercise picker overlay should open (has a search input and exercise list)
       await waitFor(() => {

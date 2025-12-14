@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise } from '@/db/converters'
 import { createTestApp } from '../helpers/createTestApp'
@@ -21,18 +22,18 @@ describe('Timed Block Exercise Picker', () => {
       await getCustomExercisesRepository().add(customExercise)
 
       // When: I navigate to workout builder and add an EMOM block
-      const { builder, user, common, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, common, getByRole, queryByText, cleanup } = await createTestApp()
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await user.click(common.getDialogButton('EMOM'))
+      await userEvent.click(common.getDialogButton('EMOM'))
 
       // And: wait for configure dialog and open exercise picker
       await waitFor(() => {
         const dialog = getByRole('dialog')
         expect(dialog.textContent).toContain('Configure')
       })
-      await user.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Then: I should see my custom exercise in the picker (it's first alphabetically)
       await waitFor(() => {

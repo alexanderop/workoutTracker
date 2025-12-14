@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -9,12 +10,12 @@ describe('Workout Queue', () => {
 
   describe('opening the queue drawer', () => {
     it('user can open queue from header button during active workout', async () => {
-      const { builder, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, common, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -23,7 +24,7 @@ describe('Workout Queue', () => {
       })
 
       // Action: Click queue button in header
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
 
       // Assert: Dialog opens with "Workout Queue" title
       await common.waitForDialog()
@@ -33,15 +34,15 @@ describe('Workout Queue', () => {
     })
 
     it('user sees all blocks listed with current block marked as active', async () => {
-      const { builder, workout, queue, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, queue, common, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Start workout with 3 blocks, navigate to block 2
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Squat'))
+      await userEvent.click(common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -50,13 +51,13 @@ describe('Workout Queue', () => {
       })
 
       // Navigate to block 2
-      await user.click(workout.getFooterButton('next'))
+      await userEvent.click(workout.getFooterButton('next'))
       await waitFor(() => {
         expect(queryByText(/block 2 of 3/i)).toBeTruthy()
       })
 
       // Action: Open queue
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
       await common.waitForDialog()
 
       // Assert: All 3 blocks visible in the queue dialog
@@ -74,15 +75,15 @@ describe('Workout Queue', () => {
 
   describe('switching blocks', () => {
     it('user can tap a block to switch to it immediately', async () => {
-      const { builder, queue, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, queue, common, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Start workout with 3 blocks on block 1
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Squat'))
+      await userEvent.click(common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -91,14 +92,14 @@ describe('Workout Queue', () => {
       })
 
       // Action: Open queue, tap block 3 (Squat)
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
       await common.waitForDialog()
 
       // Click on Squat block item
       const queueItems = queue.getItems()
       const squatItem = queueItems.find((item) => item.textContent?.includes('Squat'))
       if (!squatItem) throw new Error('Squat item not found in queue')
-      await user.click(squatItem)
+      await userEvent.click(squatItem)
 
       // Assert: Dialog closes, block 3 is now active view
       await waitFor(() => {
@@ -112,12 +113,12 @@ describe('Workout Queue', () => {
     })
 
     it('user sees completed blocks marked with checkmark', async () => {
-      const { builder, workout, queue, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, queue, common, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -133,7 +134,7 @@ describe('Workout Queue', () => {
 
       // Complete remaining 2 sets (values are pre-filled after first)
       for (let i = 0; i < 2; i++) {
-        await user.click(getByRole('button', { name: /complete set/i }))
+        await userEvent.click(getByRole('button', { name: /complete set/i }))
       }
 
       // Should be on block 2 now
@@ -142,7 +143,7 @@ describe('Workout Queue', () => {
       })
 
       // Action: Open queue
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
       await common.waitForDialog()
 
       // Assert: Block 1 shows completed indicator via accessible role
@@ -161,7 +162,7 @@ describe('Workout Queue', () => {
 
   describe('adding blocks', () => {
     it('user can add new exercise from queue drawer', async () => {
-      const { builder, common, user, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, common, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Start workout with 1 block
       await builder.addStrengthBlock('Bench Press')
@@ -172,10 +173,10 @@ describe('Workout Queue', () => {
       })
 
       // Action: Open queue, click "Add Exercise"
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
       await common.waitForDialog()
 
-      await user.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Wait for queue to close and add block dialog to open
       await waitFor(() => {
@@ -185,7 +186,7 @@ describe('Workout Queue', () => {
       })
 
       // Select an exercise
-      await user.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       // Verify 2 blocks now (check the header text)
@@ -199,13 +200,13 @@ describe('Workout Queue', () => {
 
   describe('timed block display', () => {
     it('user sees timed blocks with type badge in queue', async () => {
-      const { builder, queue, common, user, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, queue, common, getByRole, queryByText, cleanup } = await createTestApp()
 
       // Setup: Add a strength block and then an AMRAP block
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await user.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog
       await waitFor(() => {
@@ -213,10 +214,10 @@ describe('Workout Queue', () => {
         expect(dialog.textContent).toContain('Configure')
       })
 
-      await user.click(common.getDialogButton('8'))
-      await user.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(common.getDialogButton('8'))
+      await userEvent.click(common.getDialogButton('Add Exercise'))
       await common.selectExercise('Push-ups')
-      await user.click(common.getDialogButton('Add Block'))
+      await userEvent.click(common.getDialogButton('Add Block'))
 
       await common.waitForDialogClose()
 
@@ -226,7 +227,7 @@ describe('Workout Queue', () => {
       })
 
       // Action: Open queue
-      await user.click(getByRole('button', { name: /open workout queue/i }))
+      await userEvent.click(getByRole('button', { name: /open workout queue/i }))
       await common.waitForDialog()
 
       // Assert: Shows both blocks, AMRAP block has type badge

@@ -1,4 +1,5 @@
 import { waitFor } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
@@ -37,7 +38,7 @@ describe('Localization', () => {
 
   describe('Language Switching', () => {
     it('displays English translations when switching from German to English via UI', async () => {
-      const { user, navigateTo, queryByText, queryByRole, getByRole, findByText, cleanup } =
+      const { navigateTo, queryByText, queryByRole, getByRole, findByText, cleanup } =
         await createTestApp()
 
       // Set German as the starting language
@@ -62,11 +63,11 @@ describe('Localization', () => {
 
       // Open the language select dropdown (aria-label is "Sprache" in German)
       const languageSelect = getByRole('combobox', { name: /sprache/i })
-      await user.click(languageSelect)
+      await userEvent.click(languageSelect)
 
       // Select English from the dropdown options
       const englishOption = await findByText('English')
-      await user.click(englishOption)
+      await userEvent.click(englishOption)
 
       // Wait for UI to update to English
       await waitFor(

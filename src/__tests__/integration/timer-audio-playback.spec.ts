@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
@@ -13,7 +14,7 @@ import {
 // Helper to navigate to Quick Timer page
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
-  await testApp.user.click(quickTimerCard)
+  await userEvent.click(quickTimerCard)
   await waitFor(() => {
     expect(testApp.queryByText(/AMRAP/)).toBeTruthy()
   })
@@ -24,13 +25,13 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await goToTimersPage(testApp)
 
   // Select Tabata
-  await testApp.user.click(screen.getByRole('button', { name: /Tabata/i }))
+  await userEvent.click(screen.getByRole('button', { name: /Tabata/i }))
 
   // Wait for presets and click Custom
   await waitFor(() => {
     expect(testApp.queryByText(/Custom/)).toBeTruthy()
   })
-  await testApp.user.click(screen.getByRole('button', { name: /Custom/i }))
+  await userEvent.click(screen.getByRole('button', { name: /Custom/i }))
 
   // Wait for custom form
   await waitFor(() => {
@@ -42,15 +43,15 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   const workInput = screen.getByRole('spinbutton', { name: /work/i })
   const restInput = screen.getByRole('spinbutton', { name: /rest/i })
 
-  await testApp.user.clear(roundsInput)
-  await testApp.user.type(roundsInput, '2')
-  await testApp.user.clear(workInput)
-  await testApp.user.type(workInput, '2')
-  await testApp.user.clear(restInput)
-  await testApp.user.type(restInput, '2')
+  await userEvent.clear(roundsInput)
+  await userEvent.fill(roundsInput, '2')
+  await userEvent.clear(workInput)
+  await userEvent.fill(workInput, '2')
+  await userEvent.clear(restInput)
+  await userEvent.fill(restInput, '2')
 
   // Start the timer (navigates to timer runner)
-  await testApp.user.click(screen.getByRole('button', { name: /start/i }))
+  await userEvent.click(screen.getByRole('button', { name: /start/i }))
 
   // Wait for timer UI
   await waitFor(() => {
@@ -63,7 +64,7 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   if (!playBtn) {
     throw new Error('Play button not found')
   }
-  await testApp.user.click(playBtn)
+  await userEvent.click(playBtn)
 
   // Wait for timer to be running
   await waitFor(() => {
@@ -78,13 +79,13 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await goToTimersPage(testApp)
 
   // Select EMOM
-  await testApp.user.click(screen.getByRole('button', { name: /EMOM/i }))
+  await userEvent.click(screen.getByRole('button', { name: /EMOM/i }))
 
   // Wait for presets and click Custom
   await waitFor(() => {
     expect(testApp.queryByText(/Custom/)).toBeTruthy()
   })
-  await testApp.user.click(screen.getByRole('button', { name: /Custom/i }))
+  await userEvent.click(screen.getByRole('button', { name: /Custom/i }))
 
   // Wait for custom form
   await waitFor(() => {
@@ -93,11 +94,11 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
 
   // Configure short duration: 2 minutes
   const minutesInput = screen.getByRole('spinbutton', { name: /minutes/i })
-  await testApp.user.clear(minutesInput)
-  await testApp.user.type(minutesInput, '2')
+  await userEvent.clear(minutesInput)
+  await userEvent.fill(minutesInput, '2')
 
   // Start the timer (navigates to timer runner)
-  await testApp.user.click(screen.getByRole('button', { name: /start/i }))
+  await userEvent.click(screen.getByRole('button', { name: /start/i }))
 
   // Wait for timer UI
   await waitFor(() => {
@@ -110,7 +111,7 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   if (!playBtn) {
     throw new Error('Play button not found')
   }
-  await testApp.user.click(playBtn)
+  await userEvent.click(playBtn)
 }
 
 describe('Timer Audio Playback', () => {
@@ -197,14 +198,14 @@ describe('Timer Audio Playback', () => {
       // First disable timer sounds
       await testApp.common.navigateToSettings()
       const toggle = testApp.getByRole('switch', { name: /timer sounds/i })
-      await testApp.user.click(toggle)
+      await userEvent.click(toggle)
 
       await waitFor(() => {
         expect(toggle.getAttribute('aria-checked')).toBe('false')
       })
 
       // Navigate back to home and start timer
-      await testApp.user.click(screen.getByRole('button', { name: /home/i }))
+      await userEvent.click(screen.getByRole('button', { name: /home/i }))
       await waitFor(() => {
         expect(testApp.queryByText(/quick timer/i)).toBeTruthy()
       })

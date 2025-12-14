@@ -1,6 +1,5 @@
 import type { RouteLocationRaw, Router } from 'vue-router'
 import { render, screen, waitFor, cleanup as rtlCleanup } from '@testing-library/vue'
-import userEvent from '@testing-library/user-event'
 import { flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -25,7 +24,6 @@ type CreateTestAppOptions = {
 
 type TestApp = {
   router: Router
-  user: ReturnType<typeof userEvent.setup>
   container: Element
   // Page Objects
   common: CommonPO
@@ -61,8 +59,6 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     router.push(initialRoute)
   }
 
-  const user = userEvent.setup()
-
   // Preload English messages for tests
   i18n.global.setLocaleMessage('en', en)
   i18n.global.locale.value = 'en'
@@ -90,7 +86,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   )
 
   // Create context for page objects
-  const context = { router, user }
+  const context = { router }
 
   // Instantiate page objects
   const common = new CommonPO(context)
@@ -112,7 +108,6 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   return {
     router,
-    user,
     container,
     // Page Objects
     common,

@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -9,16 +10,16 @@ describe('Strength Workflows', () => {
 
   describe('Set Completion', () => {
     it('advances to the next set after completing a set', async () => {
-      const { builder, workout, common, user, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Click "Start New Workout" on home page to start a new workout
-      await user.click(getByRole('button', { name: /start new workout/i }))
+      await userEvent.click(getByRole('button', { name: /start new workout/i }))
 
       // We should now be on the workout builder page
       // Add an exercise by clicking "Add First Block"
-      await user.click(getByRole('button', { name: /add first block/i }))
+      await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await user.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Bench Press'))
       common.assertDialogClosed()
 
       // Start the workout (transition from builder to active mode)
@@ -39,7 +40,7 @@ describe('Strength Workflows', () => {
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, workout, common, user, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
@@ -54,7 +55,7 @@ describe('Strength Workflows', () => {
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Complete set 2 (values should be pre-filled from set 1)
-      await user.click(getByRole('button', { name: /mark set 2 complete/i }))
+      await userEvent.click(getByRole('button', { name: /mark set 2 complete/i }))
 
       // Verify 2 sets completed before final set (table still visible)
       await waitFor(() => {
@@ -62,7 +63,7 @@ describe('Strength Workflows', () => {
       })
 
       // Complete set 3 - this triggers workout completion dialog for single-block workouts
-      await user.click(getByRole('button', { name: /mark set 3 complete/i }))
+      await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
 
       // Verify completion dialog appears (table is hidden behind dialog)
       await common.waitForDialog()
