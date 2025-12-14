@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check } from 'lucide-vue-next'
+import { Check, Timer } from 'lucide-vue-next'
 import BenchmarkExerciseDisplay from './BenchmarkExerciseDisplay.vue'
 import BenchmarkCompletionScreen from './BenchmarkCompletionScreen.vue'
-import ExerciseProgressDots from '@/components/ExerciseProgressDots.vue'
+import BenchmarkProgressBar from './BenchmarkProgressBar.vue'
+import BenchmarkNextExercise from './BenchmarkNextExercise.vue'
 import type { ForTimeBlock } from '@/types/blocks'
 import { getBlockExerciseList } from '@/types/blocks'
 import type { SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
@@ -56,6 +57,14 @@ const isTransitioning = computed(() => animationState.isTransitioning ?? false)
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[progress.current - 1])
 
+const nextExercise = computed(() => {
+  const nextIndex = progress.current // current is 1-based, so this gives next (0-based)
+  if (nextIndex >= exercises.value.length) return null
+  return exercises.value[nextIndex]
+})
+
+const isLastExercise = computed(() => progress.current >= progress.totalCount)
+
 function handleTap() {
   if (isTransitioning.value) return
   emit('tap-advance')
@@ -64,7 +73,7 @@ function handleTap() {
 
 <template>
   <div class="flex-1 flex flex-col">
-    <!-- Completion Screen (replaces exercise display when shown) -->
+    <!-- Completion Screen -->
     <BenchmarkCompletionScreen
       v-if="completion?.isComplete"
       :completion-time="completion.time"
@@ -72,38 +81,48 @@ function handleTap() {
       @view-details="emit('view-details')"
     />
 
-    <!-- Focus Mode Display (tappable area) -->
+    <!-- Active workout display -->
     <div
       v-else
       role="button"
       tabindex="0"
       :aria-label="$t('workouts.benchmarks.tapToAdvance')"
-      class="flex-1 flex flex-col justify-between cursor-pointer select-none active:bg-muted/30 transition-colors"
+      class="flex-1 flex flex-col cursor-pointer select-none active:bg-muted/30 transition-colors"
       @click="handleTap"
       @keydown.enter="handleTap"
       @keydown.space.prevent="handleTap"
     >
-      <!-- Top section: Timer -->
-      <div class="pt-8 text-center">
-        <span class="text-3xl font-mono tabular-nums text-muted-foreground">
-          {{ elapsedTime }}
-        </span>
-      </div>
-
-      <!-- Middle section: Exercise display -->
-      <div class="flex flex-col items-center justify-center relative overflow-hidden">
-        <!-- First Attempt Message -->
+      <!-- Header zone: First attempt badge + Timer + Progress -->
+      <div class="pt-6 px-4 space-y-4">
+        <!-- First Attempt Badge -->
         <div
           v-if="progress.isFirstAttempt"
           role="status"
           aria-live="polite"
-          class="mx-4 mb-4 px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg"
+          class="mx-auto w-fit px-4 py-2 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-full"
         >
-          <p class="text-center text-sm font-medium text-primary">
+          <p class="text-center text-sm font-semibold text-primary">
             {{ $t('workouts.benchmarks.firstAttempt') }}
           </p>
         </div>
 
+        <!-- Timer - Large and prominent -->
+        <div class="flex items-center justify-center gap-2">
+          <Timer class="size-5 text-muted-foreground" aria-hidden="true" />
+          <span class="text-4xl font-mono font-bold tabular-nums text-foreground tracking-tight">
+            {{ elapsedTime }}
+          </span>
+        </div>
+
+        <!-- Progress bar -->
+        <BenchmarkProgressBar
+          :current="progress.current"
+          :total="progress.totalCount"
+        />
+      </div>
+
+      <!-- Exercise zone: Current exercise display -->
+      <div class="flex-1 flex flex-col items-center justify-center relative overflow-hidden py-8">
         <!-- Checkmark overlay -->
         <div
           v-if="showCheckmark"
@@ -114,14 +133,14 @@ function handleTap() {
         >
           <div class="sr-only">{{ $t('workouts.exerciseCompleted') }}</div>
           <div class="animate-in zoom-in-50 duration-200 bg-white rounded-full p-6 shadow-2xl">
-            <Check class="size-24 status-success" aria-hidden="true" />
+            <Check class="size-24 text-green-500" aria-hidden="true" />
           </div>
         </div>
 
         <!-- Exercise display with slide transition -->
         <div
           :key="progress.current"
-          class="transition-all duration-500 ease-out"
+          class="w-full transition-all duration-500 ease-out"
           :class="{
             'opacity-0 -translate-x-full': isTransitioning && !showCheckmark,
             'opacity-100 translate-x-0': !isTransitioning,
@@ -131,15 +150,15 @@ function handleTap() {
             v-if="currentExercise"
             :exercise="currentExercise"
             :split-comparison="splitComparison"
+            :is-first-attempt="progress.isFirstAttempt"
           />
         </div>
       </div>
 
-      <!-- Bottom section: Progress dots -->
-      <ExerciseProgressDots
-        class="pb-8"
-        :total-exercises="progress.totalCount"
-        :current-index="progress.globalIndex"
+      <!-- Footer zone: Next exercise preview -->
+      <BenchmarkNextExercise
+        :exercise="nextExercise"
+        :is-final-exercise="isLastExercise"
       />
     </div>
   </div>

@@ -243,10 +243,21 @@ export default {
     completion: {
       finalTime: 'Endzeit',
     },
+    splitComparison: {
+      ahead: 'Du bist {time} voraus!',
+      behind: 'Push! {time} zurück',
+      settingBaseline: 'Setze deine Basis',
+      goAllOut: 'Gib alles!',
+    },
+    next: {
+      label: 'NÄCHSTE',
+      finalExercise: 'LETZTE ÜBUNG',
+    },
   },
   progress: {
     label: 'Übungsfortschritt',
     announcement: 'Übung {current} von {total}',
+    exerciseCount: '{current}/{total}',
   },
   exerciseCompleted: 'Übung abgeschlossen',
 } as const
