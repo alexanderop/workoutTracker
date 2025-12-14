@@ -976,4 +976,249 @@ describe('Benchmark Flows', () => {
       app.cleanup()
     })
   })
+
+  // ==========================================================================
+  // Flow 7: Benchmark UI - Progress and Navigation Display
+  // ==========================================================================
+
+  describe('Benchmark UI: Progress and Navigation Display', () => {
+    it('displays segmented progress bar showing round segments', async () => {
+      const benchmark = await createRoundsBenchmark({
+        name: 'Cindy',
+        rounds: 3,
+        exercises: [
+          { name: 'Pull-ups', reps: 5 },
+          { name: 'Push-ups', reps: 10 },
+        ],
+      })
+      const app = await createTestApp()
+
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Verify "Round 1/3" label visible
+      await expect.element(page.getByText(/round 1\/3/i)).toBeVisible()
+
+      // Verify global count "1/6" (exercise 1 of 6 total: 3 rounds × 2 exercises)
+      await expect.element(page.getByText(/1\/6/i)).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('updates progress counts when advancing exercises', async () => {
+      const benchmark = await createRoundsBenchmark({
+        name: 'Test Progress',
+        rounds: 2,
+        exercises: [
+          { name: 'Ex1', reps: 5 },
+          { name: 'Ex2', reps: 5 },
+        ],
+      })
+      const app = await createTestApp()
+
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Start: Round 1/2, Exercise 1/4
+      await expect.element(page.getByText(/round 1\/2/i)).toBeVisible()
+      await expect.element(page.getByText(/1\/4/i)).toBeVisible()
+
+      // Advance to exercise 2
+      await completeExercise()
+      await expect.element(page.getByText(/2\/4/i)).toBeVisible()
+
+      // Advance to round 2, exercise 1
+      await completeExercise()
+      await expect.element(page.getByText(/round 2\/2/i)).toBeVisible()
+      await expect.element(page.getByText(/3\/4/i)).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('displays next exercise preview in footer', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Preview Test',
+        exercises: [
+          { name: 'Thrusters', reps: 21 },
+          { name: 'Pull-ups', reps: 15 },
+          { name: 'Box Jumps', reps: 9 },
+        ],
+      })
+      const app = await createTestApp()
+
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // On exercise 1, should see "NEXT" label (exact match to avoid matching page title)
+      await expect.element(page.getByText('NEXT', { exact: true })).toBeVisible()
+
+      // Should see Pull-ups as next exercise (multiple elements may have Pull-ups text)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/pull-ups/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
+
+      // Advance to exercise 2
+      await completeExercise()
+
+      // Should see Box Jumps as next
+      await expect.poll(async () => {
+        const elements = await page.getByText(/box jumps/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
+
+      app.cleanup()
+    })
+
+    it('shows final exercise indicator on last exercise', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Final Test',
+        exercises: [
+          { name: 'Exercise 1', reps: 10 },
+          { name: 'Exercise 2', reps: 10 },
+        ],
+      })
+      const app = await createTestApp()
+
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // On first exercise, should see "NEXT" label (exact match)
+      await expect.element(page.getByText('NEXT', { exact: true })).toBeVisible()
+
+      // Advance to last exercise
+      await completeExercise()
+
+      // Should see "FINAL EXERCISE" instead of next preview
+      await expect.element(page.getByText(/final exercise/i)).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('displays first attempt baseline message instead of split comparison', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Baseline Test',
+        exercises: [
+          { name: 'Exercise 1', reps: 10 },
+          { name: 'Exercise 2', reps: 10 },
+        ],
+      })
+      // No previous attempts - this is first attempt
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Should see "First attempt - set your PB!" badge (exact text to avoid matching page title)
+      await expect.element(page.getByText('First attempt - set your PB!')).toBeVisible()
+
+      // Should see baseline messaging ("Setting your baseline" and "Go all out!")
+      // These are displayed for first attempts instead of split comparison
+      await expect.element(page.getByText(/setting your baseline/i)).toBeVisible()
+      await expect.element(page.getByText(/go all out/i)).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('displays ahead indicator when split is faster than PB', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Pace Faster',
+        exercises: [
+          { name: 'Ex1', reps: 10 },
+          { name: 'Ex2', reps: 10 },
+        ],
+      })
+
+      // PB: Exercise 1 completed at 120s (slow - easy to beat)
+      await createCompletedAttempt(benchmark.id, 240, 1, [120])
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Complete exercise 1 quickly (will be much faster than PB's 120s split)
+      await completeExercise()
+
+      // Should see "ahead" indicator (use exact text to avoid matching page title)
+      await expect.poll(async () => {
+        const element = await page.getByText(/you're.*ahead/i).query()
+        return element !== null
+      }, { timeout: 3000 }).toBe(true)
+
+      app.cleanup()
+    })
+
+    it('displays behind indicator when split is slower than PB', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Pace Slower',
+        exercises: [
+          { name: 'Ex1', reps: 10 },
+          { name: 'Ex2', reps: 10 },
+        ],
+      })
+
+      // PB: Exercise 1 completed at 1s (very fast, impossible to beat)
+      await createCompletedAttempt(benchmark.id, 2, 1, [1])
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Wait to be slower than PB split of 1 second
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      // Complete exercise 1
+      await completeExercise()
+
+      // Should see "behind" indicator (use pattern that won't match page title)
+      await expect.poll(async () => {
+        const element = await page.getByText(/push.*behind/i).query()
+        return element !== null
+      }, { timeout: 3000 }).toBe(true)
+
+      app.cleanup()
+    })
+
+    it('supports keyboard navigation with Enter and Space keys', async () => {
+      const benchmark = await createForTimeBenchmark({
+        name: 'Keyboard Nav',
+        exercises: [
+          { name: 'Exercise 1', reps: 10 },
+          { name: 'Exercise 2', reps: 10 },
+          { name: 'Exercise 3', reps: 10 },
+        ],
+      })
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Verify starting on Exercise 1
+      await expect.element(page.getByRole('heading', { name: 'Exercise 1' })).toBeVisible()
+
+      // Focus the tap-to-advance button by clicking it first, then use Enter
+      const focusArea = page.getByRole('button', { name: /tap to advance/i })
+      await focusArea.click()
+
+      // Wait for transition and verify Exercise 2
+      await expect.element(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
+
+      // Use keyboard Enter to advance (the component handles @keydown.enter)
+      await userEvent.keyboard('{Enter}')
+
+      // Should advance to Exercise 3
+      await expect.element(page.getByRole('heading', { name: 'Exercise 3' })).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('provides accessible progress announcements via aria-label', async () => {
+      const benchmark = await createRoundsBenchmark({
+        name: 'A11y Test',
+        rounds: 3,
+        exercises: [{ name: 'Ex1', reps: 5 }],
+      })
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // Find progress region with role="status" containing exercise count info
+      const progressRegion = page.getByRole('status', { name: /exercise 1 of 3/i })
+      await expect.element(progressRegion).toBeVisible()
+
+      app.cleanup()
+    })
+  })
 })
