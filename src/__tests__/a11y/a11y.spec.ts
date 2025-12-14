@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { assertNoViolations } from '../helpers/a11y'
 import { createTestApp } from '../helpers/createTestApp'
@@ -57,7 +57,7 @@ describe('Accessibility', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
 
-      const dialog = await screen.findByRole('dialog')
+      const dialog = page.getByRole('dialog').element()
       await assertNoViolations(dialog)
 
       cleanup()
@@ -71,9 +71,9 @@ describe('Accessibility', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.startWorkout()
 
-      await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /bench press/i })).toBeTruthy()
-      })
+      await expect
+        .poll(() => page.getByRole('heading', { name: /bench press/i }).query())
+        .toBeTruthy()
 
       await assertNoViolations(container)
 

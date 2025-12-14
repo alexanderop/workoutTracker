@@ -1,4 +1,3 @@
-import { waitFor } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
@@ -8,7 +7,7 @@ import { withSetup } from '../helpers/withSetup'
  * Browser tests for useTimerAudio with real Web Audio API.
  * These tests verify AudioContext behavior that cannot be simulated in jsdom.
  * Note: Each withSetup() call creates a fresh Pinia instance with default settings.
- * Note: playWorkBeep etc. are fire-and-forget async operations, so tests use waitFor.
+ * Note: playWorkBeep etc. are fire-and-forget async operations, so tests use expect.poll().
  */
 describe('useTimerAudio - browser mode', () => {
   describe('real AudioContext integration', () => {
@@ -30,9 +29,7 @@ describe('useTimerAudio - browser mode', () => {
       result.playWorkBeep()
 
       // Wait for async audio playback (AudioContext.resume() is async)
-      await waitFor(() => {
-        expect(createOscillatorSpy).toHaveBeenCalled()
-      })
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(880)
 
@@ -47,9 +44,7 @@ describe('useTimerAudio - browser mode', () => {
 
       result.playRestBeep()
 
-      await waitFor(() => {
-        expect(createOscillatorSpy).toHaveBeenCalled()
-      })
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(440)
 
@@ -64,9 +59,7 @@ describe('useTimerAudio - browser mode', () => {
 
       result.playRoundBeep()
 
-      await waitFor(() => {
-        expect(createOscillatorSpy).toHaveBeenCalled()
-      })
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
       const oscillator = createOscillatorSpy.mock.results[0]?.value
       expect(oscillator?.frequency.value).toBe(660)
 
@@ -82,12 +75,9 @@ describe('useTimerAudio - browser mode', () => {
       result.playComplete()
 
       // Wait for all 3 oscillators (with delays: 0ms, 150ms, 300ms)
-      await waitFor(
-        () => {
-          expect(createOscillatorSpy).toHaveBeenCalledTimes(3)
-        },
-        { timeout: 1000 },
-      )
+      await expect
+        .poll(() => createOscillatorSpy.mock.calls.length, { timeout: 1000 })
+        .toBe(3)
 
       const frequencies = createOscillatorSpy.mock.results.map(
         (result) => result.value?.frequency.value,
@@ -105,9 +95,7 @@ describe('useTimerAudio - browser mode', () => {
 
       result.playWorkBeep()
 
-      await waitFor(() => {
-        expect(createGainSpy).toHaveBeenCalled()
-      })
+      await expect.poll(() => createGainSpy.mock.calls.length).toBeGreaterThan(0)
 
       app.unmount()
       createGainSpy.mockRestore()

@@ -222,7 +222,7 @@ export default defineConfigWithVueTs(
         {
           paths: [
             {
-              name: '@testing-library/vue',
+              name: 'vitest-browser-vue',
               importNames: ['render'],
               message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of render().',
             },

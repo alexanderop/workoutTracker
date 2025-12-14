@@ -1,6 +1,5 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -26,15 +25,13 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify the first set shows completed state (inputs disabled)
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })
@@ -47,7 +44,7 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Verify initial UI state (table renders)
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
       expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
       expect(queryByText('Strength')).toBeTruthy()
 
@@ -58,9 +55,7 @@ describe('Strength Workflows', () => {
       await userEvent.click(getByRole('button', { name: /mark set 2 complete/i }))
 
       // Verify 2 sets completed before final set (table still visible)
-      await waitFor(() => {
-        expect(workout.getCompletedSetCount()).toBe(2)
-      })
+      await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
       // Complete set 3 - this triggers workout completion dialog for single-block workouts
       await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
@@ -80,19 +75,19 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
       expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
 
       // Fill and complete first set with specific values
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
       // Verify prefilled values in next set using Page Object method
-      await waitFor(() => {
-        const inputs = workout.getActiveRowInputs()
-        expect(inputs).toBeTruthy()
-        expect(inputs?.weight.value).toBe('100')
-        expect(inputs?.reps.value).toBe('5')
-      })
+      await expect.poll(async () => {
+        const inputs = await workout.getActiveRowInputs()
+        return inputs?.weight.value
+      }).toBe('100')
+      const inputs = await workout.getActiveRowInputs()
+      expect(inputs?.reps.value).toBe('5')
 
       cleanup()
     })

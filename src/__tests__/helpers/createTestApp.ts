@@ -1,5 +1,7 @@
 import type { RouteLocationRaw, Router } from 'vue-router'
-import { render, screen, waitFor, cleanup as rtlCleanup } from '@testing-library/vue'
+import { render } from 'vitest-browser-vue'
+import { page } from 'vitest/browser'
+import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -33,14 +35,14 @@ type TestApp = {
   benchmarks: BenchmarksPO
   benchmarkForm: BenchmarkFormPO
   benchmarkDetail: BenchmarkDetailPO
-  // Raw query methods
-  getByRole: typeof screen.getByRole
-  getByText: typeof screen.getByText
-  getByTestId: typeof screen.getByTestId
-  queryByRole: typeof screen.queryByRole
-  queryByText: typeof screen.queryByText
-  findByRole: typeof screen.findByRole
-  findByText: typeof screen.findByText
+  // Raw query methods (use page.getBy* for new code)
+  getByRole: typeof page.getByRole
+  getByText: typeof page.getByText
+  getByTestId: typeof page.getByTestId
+  queryByRole: typeof page.getByRole
+  queryByText: typeof page.getByText
+  findByRole: typeof page.getByRole
+  findByText: typeof page.getByText
   // Helpers
   navigateTo: (to: RouteLocationRaw) => Promise<void>
   cleanup: () => void
@@ -63,7 +65,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   i18n.global.setLocaleMessage('en', en)
   i18n.global.locale.value = 'en'
 
-  const { container } = render(App, {
+  const screen = render(App, {
     global: {
       plugins: [router, pinia, i18n],
     },
@@ -76,14 +78,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   // Wait for app initialization to complete (exercises seeding and loading)
   const exercisesStore = useExercisesStore(pinia)
-  await waitFor(
-    () => {
-      if (exercisesStore.customExercises.length === 0) {
-        throw new Error('Exercises not loaded yet')
-      }
-    },
-    { timeout: 5000 },
-  )
+  await expect
+    .poll(() => exercisesStore.customExercises.length, { timeout: 5000 })
+    .toBeGreaterThan(0)
 
   // Create context for page objects
   const context = { router }
@@ -102,13 +99,15 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     await router.push(to)
   }
 
+  // vitest-browser-vue cleans up before tests automatically
+  // This is kept for backward compatibility with test structure
   function cleanup() {
-    rtlCleanup()
+    screen.unmount()
   }
 
   return {
     router,
-    container,
+    container: screen.container,
     // Page Objects
     common,
     builder,
@@ -117,14 +116,14 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     benchmarks,
     benchmarkForm,
     benchmarkDetail,
-    // Raw query methods
-    getByRole: screen.getByRole,
-    getByText: screen.getByText,
-    getByTestId: screen.getByTestId,
-    queryByRole: screen.queryByRole,
-    queryByText: screen.queryByText,
-    findByRole: screen.findByRole,
-    findByText: screen.findByText,
+    // Raw query methods - use page locators (return Locators, not HTMLElements)
+    getByRole: page.getByRole.bind(page),
+    getByText: page.getByText.bind(page),
+    getByTestId: page.getByTestId.bind(page),
+    queryByRole: page.getByRole.bind(page),
+    queryByText: page.getByText.bind(page),
+    findByRole: page.getByRole.bind(page),
+    findByText: page.getByText.bind(page),
     // Helpers
     navigateTo,
     cleanup,

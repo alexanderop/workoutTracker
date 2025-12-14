@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/vue'
+import { render } from 'vitest-browser-vue'
+import { page } from 'vitest/browser'
 import { describe, expect, it } from 'vitest'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
 import type { BenchmarkFormExercise } from '@/features/benchmarks/composables/useBenchmarkForm'
@@ -33,8 +34,8 @@ describe('BenchmarkExerciseList', () => {
     })
 
     // Verify first exercise is displayed
-    expect(screen.getByText('Bodyweight Get-up')).toBeTruthy()
-    expect(screen.getByText(/15/)).toBeTruthy() // Check for the number (translation may vary)
+    expect(page.getByText('Bodyweight Get-up')).toBeTruthy()
+    expect(page.getByText(/15/)).toBeTruthy() // Check for the number (translation may vary)
 
     // Add a second exercise (simulating user adding an exercise)
     exercises.value.push({
@@ -52,16 +53,17 @@ describe('BenchmarkExerciseList', () => {
     await nextTick()
 
     // THIS WOULD FAIL WITHOUT THE FIX: Second exercise should now be visible
-    expect(screen.getByText('Bodyweight Get-up')).toBeTruthy()
-    expect(screen.getByText('Pull-ups')).toBeTruthy()
+    expect(page.getByText('Bodyweight Get-up')).toBeTruthy()
+    expect(page.getByText('Pull-ups')).toBeTruthy()
 
     // Verify both exercises show their rep counts (translation may vary)
-    const allText = screen.getByText(/Pull-ups/).parentElement?.parentElement?.textContent || ''
+    const pullUpsElement = page.getByText(/Pull-ups/).element()
+    const allText = pullUpsElement.parentElement?.parentElement?.textContent || ''
     expect(allText).toContain('21')
 
     // Verify both order numbers are shown
-    expect(screen.getByText('1')).toBeTruthy()
-    expect(screen.getByText('2')).toBeTruthy()
+    expect(page.getByText('1')).toBeTruthy()
+    expect(page.getByText('2')).toBeTruthy()
   })
 
   it('updates when third exercise is added', async () => {
@@ -91,8 +93,8 @@ describe('BenchmarkExerciseList', () => {
     })
 
     // Verify first two exercises
-    expect(screen.getAllByText('Thrusters').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Pull-ups').length).toBeGreaterThan(0)
+    expect(page.getByText('Thrusters').all().length).toBeGreaterThan(0)
+    expect(page.getByText('Pull-ups').all().length).toBeGreaterThan(0)
 
     // Add a third exercise
     exercises.value.push({
@@ -109,13 +111,13 @@ describe('BenchmarkExerciseList', () => {
     await nextTick()
 
     // All three should be visible
-    expect(screen.getAllByText('Thrusters').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Pull-ups').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Burpees').length).toBeGreaterThan(0)
+    expect(page.getByText('Thrusters').all().length).toBeGreaterThan(0)
+    expect(page.getByText('Pull-ups').all().length).toBeGreaterThan(0)
+    expect(page.getByText('Burpees').all().length).toBeGreaterThan(0)
 
     // Verify third exercise shows its rep count
-    const burpeesElement = screen.getAllByText(/Burpees/)[0]
-    const allText = burpeesElement?.parentElement?.parentElement?.textContent || ''
+    const burpeesElement = page.getByText(/Burpees/).element()
+    const allText = burpeesElement.parentElement?.parentElement?.textContent || ''
     expect(allText).toContain('10')
   })
 

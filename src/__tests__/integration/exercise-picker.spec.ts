@@ -10,9 +10,8 @@
  * - Search and filter functionality
  * - Selection behavior (single vs multi mode)
  */
-import { screen, waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -23,92 +22,83 @@ describe('ExercisePicker', () => {
 
   describe('Dialog presentation mode (template views)', () => {
     it('opens dialog and shows exercise search', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Click to add an exercise
-      const addButton = await screen.findByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(addButton)
+      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await userEvent.click(await addButton.element())
 
       // Dialog should open with search input
-      await waitFor(() => {
-        expect(getByRole('dialog')).toBeDefined()
-        expect(screen.getByRole('textbox')).toBeDefined()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expect.element(page.getByRole('textbox')).toBeVisible()
 
       cleanup()
     })
 
     it('filters exercises by search query', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      const addButton = await screen.findByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(addButton)
+      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await userEvent.click(await addButton.element())
 
-      await waitFor(() => {
-        expect(getByRole('dialog')).toBeDefined()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Type to search
-      const searchInput = screen.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench')
+      const searchInput = page.getByRole('textbox')
+      await userEvent.fill(await searchInput.element(), 'Bench')
 
       // Should show matching exercises
-      await waitFor(() => {
-        expect(screen.queryAllByText(/Bench Press/i).length).toBeGreaterThan(0)
-      })
+      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
 
       cleanup()
     })
 
     it('closes dialog after selecting exercise', async () => {
-      const { navigateTo, getByRole, queryByRole, cleanup } = await createTestApp()
+      const { navigateTo, getByRole, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      const addButton = await screen.findByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(addButton)
+      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await userEvent.click(await addButton.element())
 
-      await waitFor(() => {
-        expect(getByRole('dialog')).toBeDefined()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Search and select
-      const searchInput = screen.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench')
+      const searchInput = page.getByRole('textbox')
+      await userEvent.fill(await searchInput.element(), 'Bench')
 
-      await waitFor(() => {
-        expect(screen.queryAllByText(/Bench Press/i).length).toBeGreaterThan(0)
-      })
+      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
 
       // Click on exercise
-      const dialog = getByRole('dialog')
+      const dialog = await getByRole('dialog').element()
       const benchButton = Array.from(dialog.querySelectorAll('button')).find((btn) =>
         btn.textContent?.includes('Bench Press')
       )
       if (benchButton) await userEvent.click(benchButton)
 
       // Dialog should close
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
     })
 
     it('shows Create Custom Exercise button', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      const addButton = await screen.findByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(addButton)
+      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await userEvent.click(await addButton.element())
 
-      await waitFor(() => {
-        expect(getByRole('dialog')).toBeDefined()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Should show create button
-      expect(screen.queryByRole('button', { name: /create.*exercise/i })).toBeTruthy()
+      const createButton = await page.getByRole('button', { name: /create.*exercise/i }).query()
+      expect(createButton).toBeTruthy()
 
       cleanup()
     })
@@ -116,29 +106,26 @@ describe('ExercisePicker', () => {
 
   describe('Exercise list integrity', () => {
     it('shows each exercise only once (no duplicates)', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Open the exercise picker dialog
-      const addButton = await screen.findByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(addButton)
+      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await userEvent.click(await addButton.element())
 
-      await waitFor(() => {
-        expect(getByRole('dialog')).toBeDefined()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Search for a common exercise that should exist
-      const searchInput = screen.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench Press')
+      const searchInput = page.getByRole('textbox')
+      await userEvent.fill(await searchInput.element(), 'Bench Press')
 
       // Wait for search results
-      await waitFor(() => {
-        expect(screen.queryAllByText(/Bench Press/i).length).toBeGreaterThan(0)
-      })
+      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
 
       // Count exercise buttons containing "Bench Press"
-      const dialog = getByRole('dialog')
-      const benchButtons = Array.from(dialog.querySelectorAll('button')).filter((btn) =>
+      const dialog = await page.getByRole('dialog').element()
+      const benchButtons = Array.from(dialog.querySelectorAll('button')).filter((btn: HTMLButtonElement) =>
         btn.textContent?.includes('Bench Press')
       )
 

@@ -1,5 +1,4 @@
-import { screen } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { page } from 'vitest/browser'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 
@@ -18,7 +17,7 @@ export class QueuePO {
    * Waits for the dialog to appear before returning.
    */
   async open(): Promise<void> {
-    await userEvent.click(screen.getByRole('button', { name: /open workout queue/i }))
+    await page.getByRole('button', { name: /open workout queue/i }).click()
     await this.common.waitForDialog()
   }
 
@@ -27,7 +26,10 @@ export class QueuePO {
    * @returns Array of queue item elements marked with data-queue-item attribute
    */
   getItems(): ReadonlyArray<HTMLElement> {
-    const dialog = screen.getByRole('dialog')
+    const dialog = page.getByRole('dialog').query()
+    if (!dialog) {
+      return []
+    }
     const items = dialog.querySelectorAll('[data-queue-item]')
     return Array.from(items).filter((item): item is HTMLElement => item instanceof HTMLElement)
   }

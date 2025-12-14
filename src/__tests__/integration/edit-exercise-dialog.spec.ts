@@ -1,6 +1,5 @@
-import { screen, waitFor, within } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -16,11 +15,12 @@ describe('Edit Exercise Dialog', () => {
 
     // Click the edit button on the block (pencil icon)
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
 
     // Verify dialog opens
     await common.waitForDialog()
-    expect(screen.getByRole('heading', { name: /edit sets & reps/i })).toBeTruthy()
+    const heading = await page.getByRole('heading', { name: /edit sets & reps/i }).query()
+    expect(heading).toBeTruthy()
 
     cleanup()
   })
@@ -32,32 +32,32 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
-    const dialog = screen.getByRole('dialog')
-    const incrementButtons = within(dialog).getAllByRole('button', { name: /increase/i })
+    const dialog = page.getByRole('dialog')
+    const incrementButtons = await dialog.getByRole('button', { name: /increase/i }).all()
     const targetRepsIncrement = incrementButtons[0]!
 
     // Click increment 3 times (default is 8, should become 11)
-    await userEvent.click(targetRepsIncrement)
-    await userEvent.click(targetRepsIncrement)
-    await userEvent.click(targetRepsIncrement)
+    await userEvent.click(await targetRepsIncrement.element())
+    await userEvent.click(await targetRepsIncrement.element())
+    await userEvent.click(await targetRepsIncrement.element())
 
     // Save changes
-    const saveButton = screen.getByRole('button', { name: /save changes/i })
-    await userEvent.click(saveButton)
+    const saveButton = page.getByRole('button', { name: /save changes/i })
+    await userEvent.click(await saveButton.element())
 
     // Verify dialog closes
     common.assertDialogClosed()
 
     // Re-open dialog and verify target reps persisted
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
     await common.waitForDialog()
 
-    const spinbuttons = within(screen.getByRole('dialog')).getAllByRole('spinbutton')
-    expect(spinbuttons[0]).toHaveValue('11') // targetReps changed from 8 to 11
+    const spinbuttons = await page.getByRole('dialog').getByRole('spinbutton').all()
+    await expect.element(spinbuttons[0]!).toHaveValue('11') // targetReps changed from 8 to 11
 
     cleanup()
   })
@@ -69,32 +69,32 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit barbell row/i })
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
-    const dialog = screen.getByRole('dialog')
-    const incrementButtons = within(dialog).getAllByRole('button', { name: /increase/i })
+    const dialog = page.getByRole('dialog')
+    const incrementButtons = await dialog.getByRole('button', { name: /increase/i }).all()
     const setCountIncrement = incrementButtons[1]!
 
     // Add 2 more sets (3 -> 5)
-    await userEvent.click(setCountIncrement)
-    await userEvent.click(setCountIncrement)
+    await userEvent.click(await setCountIncrement.element())
+    await userEvent.click(await setCountIncrement.element())
 
     // Save changes
-    const saveButton = screen.getByRole('button', { name: /save changes/i })
-    await userEvent.click(saveButton)
+    const saveButton = page.getByRole('button', { name: /save changes/i })
+    await userEvent.click(await saveButton.element())
     common.assertDialogClosed()
 
     // Start workout to verify set count
     await builder.startWorkout()
-    await screen.findByRole('table')
+    await expect.element(page.getByRole('table')).toBeVisible()
 
     // Verify table has 5 sets
-    await waitFor(() => {
-      const rows = within(screen.getByRole('table')).getAllByRole('row')
-      expect(rows.length).toBe(6) // 1 header + 5 data rows
-    })
+    await expect.poll(async () => {
+      const rows = await page.getByRole('table').getByRole('row').all()
+      return rows.length
+    }).toBe(6) // 1 header + 5 data rows
 
     cleanup()
   })
@@ -106,26 +106,26 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
     await common.waitForDialog()
 
     // Get all increment buttons and increment set count
-    const dialog = screen.getByRole('dialog')
-    const incrementButtons = within(dialog).getAllByRole('button', { name: /increase/i })
+    const dialog = page.getByRole('dialog')
+    const incrementButtons = await dialog.getByRole('button', { name: /increase/i }).all()
     const setCountIncrement = incrementButtons[1]!
-    await userEvent.click(setCountIncrement)
-    await userEvent.click(setCountIncrement)
+    await userEvent.click(await setCountIncrement.element())
+    await userEvent.click(await setCountIncrement.element())
 
     // Cancel instead of save
-    const cancelButton = screen.getByRole('button', { name: /cancel/i })
-    await userEvent.click(cancelButton)
+    const cancelButton = page.getByRole('button', { name: /cancel/i })
+    await userEvent.click(await cancelButton.element())
     common.assertDialogClosed()
 
     // Start workout and verify original set count (3 sets)
     await builder.startWorkout()
-    await screen.findByRole('table')
+    await expect.element(page.getByRole('table')).toBeVisible()
 
-    const rows = within(screen.getByRole('table')).getAllByRole('row')
+    const rows = await page.getByRole('table').getByRole('row').all()
     expect(rows.length).toBe(4) // 1 header + 3 data rows (unchanged)
 
     cleanup()
@@ -138,16 +138,16 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await userEvent.click(await editButton.element())
     await common.waitForDialog()
 
     // Verify no text inputs exist (only spinbuttons for numbers)
-    const dialog = screen.getByRole('dialog')
-    const textInputs = within(dialog).queryAllByRole('textbox')
+    const dialog = page.getByRole('dialog')
+    const textInputs = await dialog.getByRole('textbox').all()
     expect(textInputs.length).toBe(0)
 
     // Verify spinbuttons exist for number inputs
-    const spinbuttons = within(dialog).getAllByRole('spinbutton')
+    const spinbuttons = await dialog.getByRole('spinbutton').all()
     expect(spinbuttons.length).toBe(2) // target reps and set count
 
     cleanup()

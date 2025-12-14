@@ -1,8 +1,8 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
+import { ensureHTMLElement } from '../domHelpers'
 
 /**
  * Page Object for the workout builder view.
@@ -18,7 +18,7 @@ export class BuilderPO {
    * Navigates to the workout builder by clicking the "Start New Workout" card.
    */
   async navigateTo(): Promise<void> {
-    await userEvent.click(screen.getByRole('button', { name: /start new workout/i }))
+    await page.getByRole('button', { name: /start new workout/i }).click()
   }
 
   /**
@@ -26,10 +26,13 @@ export class BuilderPO {
    * Handles both empty state ("Add first block") and populated state ("Add block").
    */
   async openAddBlockDialog(): Promise<void> {
-    const addBlockBtn =
-      screen.queryByRole('button', { name: /add first block/i }) ??
-      screen.getByRole('button', { name: /add block/i })
-    await userEvent.click(addBlockBtn)
+    const addFirstBlock = page.getByRole('button', { name: /add first block/i }).query()
+    if (addFirstBlock) {
+      await userEvent.click(addFirstBlock)
+      await this.common.waitForDialog()
+      return
+    }
+    await page.getByRole('button', { name: /add block/i }).click()
     await this.common.waitForDialog()
   }
 
@@ -49,36 +52,49 @@ export class BuilderPO {
    * Starts the workout by clicking the "Start Workout" button.
    */
   async startWorkout(): Promise<void> {
-    await userEvent.click(screen.getByRole('button', { name: /start workout/i }))
+    await page.getByRole('button', { name: /start workout/i }).click()
   }
 
   /**
    * Switches to the timed blocks tab in the add block dialog.
    */
   async switchToTimedBlocksTab(): Promise<void> {
-    await userEvent.click(screen.getByRole('tab', { name: /timed blocks/i }))
+    await page.getByRole('tab', { name: /timed blocks/i }).click()
   }
 
   /**
    * Retrieves all exercise buttons in the carousel, excluding the "Add exercise" button.
    * @returns Array of toggle button elements representing exercises
    */
-  getCarouselExerciseButtons(): ReadonlyArray<HTMLElement> {
-    const allButtons = screen.getAllByRole('button')
-    return allButtons.filter(
-      (btn) =>
-        btn.getAttribute('aria-pressed') !== null &&
-        btn.getAttribute('aria-label') !== 'Add exercise',
-    )
+  async getCarouselExerciseButtons(): Promise<ReadonlyArray<HTMLElement>> {
+    const allButtons = await page.getByRole('button').all()
+    const htmlButtons: Array<HTMLElement> = []
+    for (const locator of allButtons) {
+      const el = ensureHTMLElement(await locator.element())
+      if (
+        el.getAttribute('aria-pressed') !== null &&
+        el.getAttribute('aria-label') !== 'Add exercise'
+      ) {
+        htmlButtons.push(el)
+      }
+    }
+    return htmlButtons
   }
 
   /**
    * Retrieves all block buttons in the workout playlist.
    * @returns Array of toggle button elements representing workout blocks
    */
-  getPlaylistBlockButtons(): ReadonlyArray<HTMLElement> {
-    const allButtons = screen.getAllByRole('button')
-    return allButtons.filter((btn) => btn.getAttribute('aria-pressed') !== null)
+  async getPlaylistBlockButtons(): Promise<ReadonlyArray<HTMLElement>> {
+    const allButtons = await page.getByRole('button').all()
+    const htmlButtons: Array<HTMLElement> = []
+    for (const locator of allButtons) {
+      const el = ensureHTMLElement(await locator.element())
+      if (el.getAttribute('aria-pressed') !== null) {
+        htmlButtons.push(el)
+      }
+    }
+    return htmlButtons
   }
 
   /**
@@ -97,10 +113,7 @@ export class BuilderPO {
     await userEvent.click(this.common.getDialogButton(blockType))
 
     // Wait for configure dialog
-    await waitFor(() => {
-      const dialog = screen.getByRole('dialog')
-      expect(dialog.textContent).toContain('Configure')
-    })
+    await expect.element(page.getByText('Configure')).toBeVisible()
 
     // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
     const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'

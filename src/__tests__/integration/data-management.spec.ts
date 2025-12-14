@@ -1,6 +1,5 @@
-import { waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
@@ -58,9 +57,7 @@ describe('Data Management', () => {
       await userEvent.click(getByRole('button', { name: /^export data$/i }))
 
       // Assert: Blob was created and cleaned up
-      await waitFor(() => {
-        expect(URL.createObjectURL).toHaveBeenCalled()
-      })
+      await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
       expect(URL.revokeObjectURL).toHaveBeenCalled()
 
       cleanup()
@@ -88,7 +85,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -100,16 +97,14 @@ describe('Data Management', () => {
 
       // Assert: Confirmation dialog appears with correct count
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /import data/i })).toBeTruthy()
-      expect(queryByText(/1 workout/i)).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /import data/i })).toBeVisible()
+      await expect.element(page.getByText(/1 workout/i)).toBeVisible()
 
       // Act: Confirm import
       await userEvent.click(common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
-      await waitFor(async () => {
-        expect(await db.workouts.count()).toBe(1)
-      })
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
       const workouts = await db.workouts.toArray()
       expect(workouts[0]?.name).toBe('Imported Workout')
 
@@ -119,7 +114,7 @@ describe('Data Management', () => {
     it('shows error dialog when importing invalid JSON', async () => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { queryByRole, queryByText, common, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload invalid file
@@ -131,14 +126,12 @@ describe('Data Management', () => {
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /import failed/i })).toBeTruthy()
-      expect(queryByText(/not valid JSON/i)).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
+      await expect.element(page.getByText(/not valid JSON/i)).toBeVisible()
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -148,7 +141,7 @@ describe('Data Management', () => {
       await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
       expect(await db.workouts.count()).toBe(1)
 
-      const { getByRole, queryByRole, common, cleanup } = await createTestApp()
+      const { getByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
@@ -157,15 +150,13 @@ describe('Data Management', () => {
 
       // Assert: Confirmation dialog appears
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /delete all data/i })).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Confirm deletion
       await userEvent.click(common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
-      await waitFor(async () => {
-        expect(await db.workouts.count()).toBe(0)
-      })
+      await expect.poll(async () => await db.workouts.count()).toBe(0)
 
       cleanup()
     })
@@ -188,7 +179,7 @@ describe('Data Management', () => {
       await db.workouts.add(completedWorkout)
 
       // Act: Start at home and navigate to history page
-      const { router, queryByText, findByText, cleanup } = await createTestApp()
+      const { router, findByText, cleanup } = await createTestApp()
       await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
@@ -196,25 +187,19 @@ describe('Data Management', () => {
       await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
-      await waitFor(() => {
-        expect(router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
-      })
+      await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
-      await waitFor(() => {
-        expect(queryByText('Push Day')).toBeTruthy()
-      })
-      expect(queryByText('Bench Press')).toBeTruthy()
+      await expect.element(page.getByText('Push Day')).toBeVisible()
+      await expect.element(page.getByText('Bench Press')).toBeVisible()
 
       // Expand the exercise card to see set details
       const exerciseCard = await findByText('Bench Press')
       await userEvent.click(exerciseCard)
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
-      await waitFor(() => {
-        expect(queryByText('100kg')).toBeTruthy()
-      })
-      expect(queryByText('10')).toBeTruthy() // reps value
+      await expect.element(page.getByText('100kg')).toBeVisible()
+      await expect.element(page.getByText('10', { exact: true })).toBeVisible() // reps value
 
       cleanup()
     })

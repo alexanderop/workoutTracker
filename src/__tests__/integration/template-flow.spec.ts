@@ -1,6 +1,5 @@
-import { waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -13,7 +12,7 @@ describe('Template Flow', () => {
 
   describe('Test 1a: Create template from finished workout', () => {
     it('saves a completed workout as a template', async () => {
-      const { builder, workout, getByRole, queryByRole, queryByText, common, router, navigateTo, cleanup } =
+      const { builder, workout, getByRole, queryByRole, common, router, navigateTo, cleanup } =
         await createTestApp()
 
       // Start new workout from home page
@@ -34,18 +33,16 @@ describe('Template Flow', () => {
 
       // Start workout
       await builder.startWorkout()
-      await waitFor(() => expect(queryByText(/block 1 of 2/i)).toBeTruthy())
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Complete one set in Bench Press
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Finish the workout via menu
-      await waitFor(() => expect(workout.getMenuTrigger()).toBeTruthy())
-      await userEvent.click(workout.getMenuTrigger())
+      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
+      await userEvent.click(await workout.getMenuTrigger())
 
-      await waitFor(() => {
-        expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       await common.waitForDialog()
@@ -56,53 +53,39 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Push Day')
 
       // Verify the input value was set correctly before proceeding
-      await waitFor(() => {
-        if (!(nameInput instanceof HTMLInputElement)) {
-          throw new Error('Name input is not an HTMLInputElement')
+      await expect.poll(async () => {
+        const el = await nameInput.element()
+        if (!(el instanceof HTMLInputElement)) {
+          return null
         }
-        expect(nameInput.value).toBe('Push Day')
-      })
+        return el.value
+      }).toBe('Push Day')
 
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
-      await waitFor(() => {
-        expect(queryByText(/workout complete/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = await waitFor(
-        () => {
-          const button = getByRole('button', { name: /view details/i })
-          // Ensure button animation has started (not opacity-0)
-          if (button.classList.contains('opacity-0')) {
-            throw new Error('Button still has opacity-0')
-          }
-          return button
-        },
-        { timeout: 2000 },
-      )
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
-      await userEvent.click(viewDetailsButton)
+      await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
 
       // Wait for summary page to load and animation to complete
-      const saveTemplateButton = await waitFor(
-        () => {
-          const button = getByRole('button', { name: /save as template/i })
-          // Ensure button animation has started (not opacity-0)
-          if (button.parentElement?.classList.contains('opacity-0')) {
-            throw new Error('Button container still has opacity-0')
-          }
-          return button
-        },
-        { timeout: 3000 },
-      )
+      const saveTemplateButton = page.getByRole('button', { name: /save as template/i })
+      await expect.element(saveTemplateButton, { timeout: 3000 }).toBeVisible()
+      await expect.poll(() => {
+        const btn = document.querySelector('button[name*="template"], button:has([name*="template"])')
+        return !btn?.parentElement?.classList.contains('opacity-0')
+      }).toBe(true)
       // Wait for animation to complete (100ms enter delay + 1000ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 800))
-      await userEvent.click(saveTemplateButton)
+      await saveTemplateButton.click()
       await common.waitForDialog()
 
       // Verify dialog opened and template name is pre-filled
@@ -112,9 +95,7 @@ describe('Template Flow', () => {
       await userEvent.click(common.getDialogButton('Save Template'))
 
       // Wait for dialog to close
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Verify template saved to DB
       const templates = await db.templates.toArray()
@@ -126,15 +107,11 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.Workouts })
 
       // Wait for the page to finish loading
-      await waitFor(() => {
-        expect(queryByRole('tab', { name: /templates/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
 
       await userEvent.click(getByRole('tab', { name: /templates/i }))
 
-      await waitFor(() => {
-        expect(queryByText('Push Day')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Push Day')).toBeVisible()
 
       cleanup()
     })
@@ -142,7 +119,7 @@ describe('Template Flow', () => {
 
   describe('Test 1b: Start workout from template', () => {
     it('starts a new workout from an existing template', async () => {
-      const { builder, getByRole, queryByRole, queryByText, getByText, common, router, navigateTo, cleanup } =
+      const { builder, getByRole, getByText, common, router, navigateTo, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -160,20 +137,17 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.Workouts })
 
       // Wait for page to finish loading
-      await waitFor(() => {
-        expect(queryByRole('tab', { name: /templates/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
 
       // Click Templates tab
       await userEvent.click(getByRole('tab', { name: /templates/i }))
 
       // Wait for template to appear and click it
-      await waitFor(() => {
-        expect(queryByText('Leg Day')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Leg Day')).toBeVisible()
 
       // Click on the template card
-      const templateCard = getByText('Leg Day').closest('[role="button"]')
+      const legDayEl = await getByText('Leg Day').element()
+      const templateCard = legDayEl.closest('[role="button"]')
       if (!(templateCard instanceof HTMLElement)) {
         throw new Error('Template card not found')
       }
@@ -184,9 +158,7 @@ describe('Template Flow', () => {
       expect(router.currentRoute.value.path).toBe('/templates/tpl-leg-day')
 
       // Wait for template detail to load
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /start workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Click "Start Workout" button
       await userEvent.click(getByRole('button', { name: /start workout/i }))
@@ -196,7 +168,7 @@ describe('Template Flow', () => {
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Verify blocks match template - we should see 2 blocks in builder mode
-      const playlistButtons = builder.getPlaylistBlockButtons()
+      const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons.length).toBe(2)
 
       // Verify template lastUsedAt was updated
@@ -209,7 +181,7 @@ describe('Template Flow', () => {
 
   describe('Test 1c: Edit and delete template', () => {
     it('edits a template name and adds an exercise', async () => {
-      const {  getByRole, queryByRole, common, navigateTo, cleanup } =
+      const { getByRole, common, navigateTo, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -224,9 +196,7 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-edit-test' } })
 
       // Wait for template page to finish loading
-      await waitFor(() => {
-        expect(queryByRole('textbox', { name: /template name/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Change the template name
       const nameInput = getByRole('textbox', { name: /template name/i })
@@ -243,11 +213,12 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify changes persisted in DB
-      await waitFor(async () => {
+      await expect.poll(async () => {
         const updated = await db.templates.get('tpl-edit-test')
-        expect(updated?.name).toBe('Updated Name')
-        expect(updated?.blocks).toHaveLength(2)
-      })
+        return updated?.name
+      }).toBe('Updated Name')
+      const updatedBlocks = await db.templates.get('tpl-edit-test')
+      expect(updatedBlocks?.blocks).toHaveLength(2)
 
       cleanup()
     })
@@ -268,9 +239,7 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-test' } })
 
       // Wait for template page to finish loading
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /delete template/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete button
       await userEvent.click(getByRole('button', { name: /delete template/i }))

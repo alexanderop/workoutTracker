@@ -1,10 +1,10 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db, getBenchmarksRepository, getWorkoutsRepository } from '@/db'
 import type { DbBenchmark, DbCompletedWorkout, DbForTimeBlock } from '@/db/schema'
+import { RouteNames } from '@/router'
 
 /**
  * Comprehensive integration tests for the Benchmark feature.
@@ -79,9 +79,7 @@ async function startBenchmarkWorkout(
   await app.benchmarkDetail.clickStartWorkout()
 
   // Wait for active mode to initialize (focus mode shows tappable area)
-  await waitFor(() => {
-    expect(screen.getByRole('button', { name: /tap to advance/i })).toBeTruthy()
-  })
+  await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
 }
 
 /**
@@ -90,30 +88,31 @@ async function startBenchmarkWorkout(
  */
 async function completeExercise(): Promise<void> {
   // Capture current exercise name before transition
-  const currentExerciseHeading = screen.queryByRole('heading', { level: 2 })
-  const currentExerciseName = currentExerciseHeading?.textContent
+  const currentExerciseHeading = await page.getByRole('heading', { level: 2 }).query()
+  const currentExerciseName = currentExerciseHeading ? await currentExerciseHeading.textContent : null
 
-  const focusModeArea = screen.getByRole('button', { name: /tap to advance/i })
-  await userEvent.click(focusModeArea)
+  const focusModeArea = page.getByRole('button', { name: /tap to advance/i })
+  await userEvent.click(await focusModeArea.element())
 
   // Wait for observable outcome: exercise changed OR completion screen appeared
-  await waitFor(
-    () => {
+  await expect.poll(
+    async () => {
       // Check if completion screen appeared
-      const completionScreen = screen.queryByText(/workout complete/i)
-      if (completionScreen) return
+      const completionScreen = await page.getByText(/workout complete/i).query()
+      if (completionScreen) return true
 
       // Check if exercise changed (new heading with different text)
-      const newHeading = screen.queryByRole('heading', { level: 2 })
-      const newExerciseName = newHeading?.textContent
+      const newHeading = await page.getByRole('heading', { level: 2 }).query()
+      const newExerciseName = newHeading ? await newHeading.textContent : null
 
       // If we had a previous exercise, verify it changed
       if (currentExerciseName && newExerciseName) {
-        expect(newExerciseName).not.toBe(currentExerciseName)
+        return newExerciseName !== currentExerciseName
       }
+      return false
     },
     { timeout: 2000 }
-  )
+  ).toBe(true)
 }
 
 /**
@@ -184,9 +183,7 @@ async function createCompletedAttempt(
  * Waits for the completion screen to appear.
  */
 async function waitForCompletionScreen(): Promise<void> {
-  await waitFor(() => {
-    expect(screen.getByText(/workout complete/i)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 }
 
 // ============================================================================
@@ -206,10 +203,8 @@ describe('Benchmark Flows', () => {
       const app = await createTestApp()
 
       // Step 1: Create "Fran" benchmark (For Time, 2 exercises)
-      await app.navigateTo('/benchmarks/create')
-      await waitFor(() => {
-        expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
-      })
+      await app.navigateTo({ name: RouteNames.CreateBenchmark })
+      await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 
       await app.benchmarkForm.fillName('Fran')
       await app.benchmarkForm.selectType('fortime')
@@ -235,34 +230,28 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Step 4: Complete Exercise 1 (Thrusters)
-      await waitFor(() => {
-        expect(screen.getByText('Thrusters')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Thrusters')).toBeVisible()
       await completeExercise()
 
       // Step 5: Verify Exercise 2 (Pull-ups)
-      await waitFor(() => {
-        expect(screen.getByText('Pull-ups')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
       // Step 6: Complete Exercise 2
       await completeExercise()
 
       // Step 7: Verify completion screen
       await waitForCompletionScreen()
-      const franElements = screen.getAllByText('Fran')
+      const franElements = await page.getByText('Fran').all()
       expect(franElements.length).toBeGreaterThan(0) // Benchmark name appears
-      expect(screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThan(0) // Timer
+      const timerElements = await page.getByText(/\d+:\d{2}/).all()
+      expect(timerElements.length).toBeGreaterThan(0) // Timer
 
       // Step 8: Save workout
-      const viewDetailsButton = await waitFor(() =>
-        screen.getByRole('button', { name: /view details/i })
-      )
-      await userEvent.click(viewDetailsButton)
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton).toBeVisible()
+      await viewDetailsButton.click()
 
-      await waitFor(() => {
-        expect(app.router.currentRoute.value.name).toBe('WorkoutSummary')
-      })
+      await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
       // Verify database has 1 completed workout with benchmarkId
       const workouts = await getWorkoutsRepository().getHistory()
@@ -272,11 +261,12 @@ describe('Benchmark Flows', () => {
 
       // Step 9: Navigate to benchmarks list and verify PB displayed
       await app.benchmarks.navigateToTab()
-      await waitFor(() => {
-        expect(screen.getByText('Fran')).toBeTruthy()
-        // PB should be displayed (MM:SS format)
-        expect(screen.getAllByText(/PB: \d+:\d{2}/).length).toBeGreaterThan(0)
-      })
+      await expect.element(page.getByText('Fran')).toBeVisible()
+      // PB should be displayed (MM:SS format)
+      await expect.poll(async () => {
+        const pbElements = await page.getByText(/PB: \d+:\d{2}/).all()
+        return pbElements.length
+      }).toBeGreaterThan(0)
 
       // Step 10: Edit benchmark
       await app.benchmarks.clickBenchmarkCard('Fran')
@@ -284,18 +274,14 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.clickEdit()
 
       // Verify form is in edit mode
-      await waitFor(() => {
-        expect(screen.getByRole('textbox', { name: /workout name/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 
       // Change name
       await app.benchmarkDetail.editBenchmarkName('Modified Fran')
       await app.benchmarkDetail.clickSave()
 
       // Verify view mode shows new name
-      await waitFor(() => {
-        expect(screen.getByText('Modified Fran')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Modified Fran')).toBeVisible()
 
       // Verify database updated
       const updatedBenchmark = await getBenchmarksRepository().getById(benchmark.id)
@@ -305,16 +291,12 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.clickDelete()
 
       // Confirm deletion
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeTruthy()
-      })
-      const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await userEvent.click(deleteButton)
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      const deleteButton = page.getByRole('button', { name: /^delete$/i })
+      await userEvent.click(await deleteButton.element())
 
       // Verify navigation to /workouts
-      await waitFor(() => {
-        expect(app.router.currentRoute.value.path).toBe('/workouts')
-      })
+      await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
 
       // Verify benchmark removed from database
       const deleted = await getBenchmarksRepository().getById(benchmark.id)
@@ -367,11 +349,9 @@ describe('Benchmark Flows', () => {
 
     it('validates form: cannot save without exercises', async () => {
       const app = await createTestApp()
-      await app.navigateTo('/benchmarks/create')
+      await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
-      await waitFor(() => {
-        expect(app.queryByRole('textbox', { name: /workout name/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 
       // Fill name without exercises
       await app.benchmarkForm.fillName('Test Benchmark')
@@ -393,18 +373,14 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.clickEdit()
 
       // Verify form is in edit mode
-      await waitFor(() => {
-        expect(screen.getByRole('textbox', { name: /workout name/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('textbox', { name: /workout name/i })).toBeVisible()
 
       // Change name
       await app.benchmarkDetail.editBenchmarkName('Updated Name')
       await app.benchmarkDetail.clickSave()
 
       // Verify view mode shows new name
-      await waitFor(() => {
-        expect(screen.getByText('Updated Name')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Updated Name')).toBeVisible()
 
       // Verify database updated
       const updated = await getBenchmarksRepository().getById(benchmark.id)
@@ -425,33 +401,25 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.clickDelete()
 
       // Verify confirmation dialog appears
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Test cancel flow
-      const cancelButton = screen.getByRole('button', { name: /cancel/i })
-      await userEvent.click(cancelButton)
+      const cancelButton = page.getByRole('button', { name: /cancel/i })
+      await userEvent.click(await cancelButton.element())
 
       // Dialog should close, benchmark should remain
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).toBeNull()
-      })
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       const stillExists = await getBenchmarksRepository().getById(benchmark.id)
       expect(stillExists).toBeTruthy()
 
       // Click delete again and confirm
       await app.benchmarkDetail.clickDelete()
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeTruthy()
-      })
-      const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await userEvent.click(deleteButton)
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      const deleteButton = page.getByRole('button', { name: /^delete$/i })
+      await userEvent.click(await deleteButton.element())
 
       // Verify navigation and deletion
-      await waitFor(() => {
-        expect(app.router.currentRoute.value.path).toBe('/workouts')
-      })
+      await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
       const deleted = await getBenchmarksRepository().getById(benchmark.id)
       expect(deleted).toBeFalsy() // Returns undefined when not found
 
@@ -475,10 +443,8 @@ describe('Benchmark Flows', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
 
       // Verify focus mode is active with tappable area and first exercise displayed
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /tap to advance/i })).toBeTruthy()
-        expect(screen.getByText('Thrusters')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
+      await expect.element(page.getByText('Thrusters')).toBeVisible()
 
       app.cleanup()
     })
@@ -490,17 +456,13 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Verify Exercise 1 displayed
-      await waitFor(() => {
-        expect(screen.getByText('Thrusters')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Thrusters')).toBeVisible()
 
       // Tap to advance to next exercise
       await completeExercise()
 
       // Verify Exercise 2 displayed
-      await waitFor(() => {
-        expect(screen.getByText('Pull-ups')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
       app.cleanup()
     })
@@ -519,22 +481,22 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Verify Exercise 1 displayed
-      await waitFor(() => {
-        expect(screen.getByText('Exercise 1')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: 'Exercise 1' })).toBeVisible()
 
       // Advance to Exercise 2
       await completeExercise()
-      await waitFor(() => {
-        expect(screen.getByText('Exercise 2')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
 
       // Verify there is no "Go back" or "Back" button in the footer (focus mode design)
-      const backButtons = screen.queryAllByRole('button', { name: /go back|^back$/i })
+      const backButtons = await page.getByRole('button', { name: /go back|^back$/i }).all()
       // Filter out header back button (for navigation out of workout)
-      const footerBackButtons = backButtons.filter(btn =>
-        btn.textContent?.trim() === 'Go back' || btn.textContent?.trim() === 'Back'
-      )
+      const footerBackButtons = await Promise.all(
+        backButtons.map(async btn => {
+          const el = await btn.element()
+          const text = el.textContent
+          return text?.trim() === 'Go back' || text?.trim() === 'Back' ? btn : null
+        })
+      ).then(results => results.filter(Boolean))
       expect(footerBackButtons).toHaveLength(0)
 
       app.cleanup()
@@ -549,30 +511,37 @@ describe('Benchmark Flows', () => {
       // Wait for timer to increment from 0:00
       // useTimestamp has 1000ms interval, so we need to wait at least 1s + buffer
       let beforeTransition: string | undefined
-      await waitFor(
-        () => {
-          const timerText = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+      await expect.poll(
+        async () => {
+          const timerElements = await page.getByText(/\d+:\d{2}/).all()
+          const el = timerElements[0] ? await timerElements[0].element() : null
+          const timerText = el?.textContent ?? null
           // Wait until timer shows non-zero value
-          expect(timerText).toBeTruthy()
-          expect(timerText).not.toContain('0:00')
-          beforeTransition = timerText
+          if (timerText && !timerText.includes('0:00')) {
+            beforeTransition = timerText
+            return true
+          }
+          return false
         },
         { timeout: 3000 } // Increased timeout to 3s to allow timer interval to fire
-      )
+      ).toBe(true)
 
       // Advance to Exercise 2
       await completeExercise()
 
       // Verify timer still running on Exercise 2 (value should have increased)
-      await waitFor(
-        () => {
-          const afterTransition = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
-          expect(afterTransition).toBeTruthy()
-          expect(afterTransition).not.toContain('0:00')
-          expect(afterTransition).not.toBe(beforeTransition) // Should have incremented
+      await expect.poll(
+        async () => {
+          const timerElements = await page.getByText(/\d+:\d{2}/).all()
+          const el = timerElements[0] ? await timerElements[0].element() : null
+          const afterTransition = el?.textContent ?? null
+          if (afterTransition && !afterTransition.includes('0:00') && afterTransition !== beforeTransition) {
+            return true
+          }
+          return false
         },
         { timeout: 3000 }
-      )
+      ).toBe(true)
 
       app.cleanup()
     })
@@ -590,37 +559,34 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Open menu and click "View Exercises" to open queue drawer
-      const menuButton = screen.getByRole('button', { name: /workout options/i })
-      await userEvent.click(menuButton)
+      const menuButton = page.getByRole('button', { name: /workout options/i })
+      await userEvent.click(await menuButton.element())
 
       // Wait for menu to open and click "View Exercises"
-      await waitFor(() => {
-        expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
-      })
-      const viewExercisesItem = screen.getByRole('menuitem', { name: /view exercises/i })
-      await userEvent.click(viewExercisesItem)
+      await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
+      const viewExercisesItem = page.getByRole('menuitem', { name: /view exercises/i })
+      await userEvent.click(await viewExercisesItem.element())
 
       // Wait for drawer to open
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /exercise queue/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
 
       // Verify all exercises listed (use getAllByText since they appear in main view and queue)
-      expect(screen.getAllByText(/exercise 1/i).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/exercise 2/i).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/exercise 3/i).length).toBeGreaterThan(0)
+      const ex1Elements = await page.getByText(/exercise 1/i).all()
+      expect(ex1Elements.length).toBeGreaterThan(0)
+      const ex2Elements = await page.getByText(/exercise 2/i).all()
+      expect(ex2Elements.length).toBeGreaterThan(0)
+      const ex3Elements = await page.getByText(/exercise 3/i).all()
+      expect(ex3Elements.length).toBeGreaterThan(0)
 
       // Verify Exercise 1 is Active
-      const activeElements = screen.getAllByText(/active/i)
+      const activeElements = await page.getByText(/active/i).all()
       expect(activeElements.length).toBeGreaterThan(0)
 
       // Close drawer by pressing Escape
       await userEvent.keyboard('{Escape}')
 
       // Wait for drawer to close and animations to complete
-      await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /exercise queue/i })).toBeNull()
-      })
+      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
       // Allow animation to fully complete
       await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -628,22 +594,18 @@ describe('Benchmark Flows', () => {
       await completeExercise()
 
       // Open drawer again through menu
-      const menuButton2 = screen.getByRole('button', { name: /workout options/i })
-      await userEvent.click(menuButton2)
+      const menuButton2 = page.getByRole('button', { name: /workout options/i })
+      await userEvent.click(await menuButton2.element())
 
-      await waitFor(() => {
-        expect(screen.getByRole('menuitem', { name: /view exercises/i })).toBeTruthy()
-      })
-      const viewExercisesItem2 = screen.getByRole('menuitem', { name: /view exercises/i })
-      await userEvent.click(viewExercisesItem2)
+      await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
+      const viewExercisesItem2 = page.getByRole('menuitem', { name: /view exercises/i })
+      await userEvent.click(await viewExercisesItem2.element())
 
       // Wait for drawer to open again
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /exercise queue/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
 
       // Verify status badges present
-      const statusElements = screen.queryAllByText(/completed|active/i)
+      const statusElements = await page.getByText(/completed|active/i).all()
       expect(statusElements.length).toBeGreaterThan(0)
 
       app.cleanup()
@@ -663,19 +625,19 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Verify first exercise of round 1
-      await waitFor(() => {
-        const elements = screen.getAllByText(/exercise 1/i)
-        expect(elements.length).toBeGreaterThan(0)
-      })
+      await expect.poll(async () => {
+        const elements = await page.getByText(/exercise 1/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
 
       // Complete Round 1, Exercise 1
       await completeExercise()
 
       // Verify advanced to Exercise 2
-      await waitFor(() => {
-        const elements = screen.getAllByText(/exercise 2/i)
-        expect(elements.length).toBeGreaterThan(0)
-      })
+      await expect.poll(async () => {
+        const elements = await page.getByText(/exercise 2/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
 
       // Complete Round 1, Exercise 2 (last in round)
       await completeExercise()
@@ -704,9 +666,10 @@ describe('Benchmark Flows', () => {
 
       // Verify completion screen
       await waitForCompletionScreen()
-      const franElements = screen.getAllByText('Fran')
+      const franElements = await page.getByText('Fran').all()
       expect(franElements.length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThan(0)
+      const timerElements = await page.getByText(/\d+:\d{2}/).all()
+      expect(timerElements.length).toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -719,16 +682,22 @@ describe('Benchmark Flows', () => {
       await completeAllExercises(2)
 
       // Capture completion time
-      const completionTime = await waitFor(() => {
-        const largeTime = screen.getByText(/\d+:\d{2}/, { selector: '.text-6xl' })
-        return largeTime.textContent
-      })
+      let completionTime: string | null = null
+      await expect.poll(async () => {
+        const largeTimeEl = await page.getByText(/\d+:\d{2}/).element()
+        if (largeTimeEl.classList.contains('text-6xl')) {
+          completionTime = await largeTimeEl.textContent
+          return completionTime
+        }
+        return null
+      }).toBeTruthy()
 
       // Wait 2 seconds
       await new Promise(resolve => setTimeout(resolve, 2000))
 
       // Verify timer hasn't changed (stopped)
-      const currentTime = screen.getByText(/\d+:\d{2}/, { selector: '.text-6xl' }).textContent
+      const currentTimeEl = await page.getByText(/\d+:\d{2}/).element()
+      const currentTime = currentTimeEl.classList.contains('text-6xl') ? await currentTimeEl.textContent : null
       expect(currentTime).toBe(completionTime)
 
       app.cleanup()
@@ -742,15 +711,12 @@ describe('Benchmark Flows', () => {
       await completeAllExercises(2)
 
       // Click "View Details"
-      const viewDetailsButton = await waitFor(() =>
-        screen.getByRole('button', { name: /view details/i })
-      )
-      await userEvent.click(viewDetailsButton)
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton).toBeVisible()
+      await viewDetailsButton.click()
 
       // Wait for save
-      await waitFor(() => {
-        expect(app.router.currentRoute.value.name).toBe('WorkoutSummary')
-      })
+      await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
       // Verify database
       const workouts = await getWorkoutsRepository().getHistory()
@@ -784,20 +750,19 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
 
       // Verify PB displayed
-      await waitFor(() => {
-        expect(screen.getByText('Fran')).toBeTruthy()
-        expect(screen.getByText('PB: 1:00')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Fran')).toBeVisible()
+      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
 
       // Navigate to detail page
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify PB displayed on detail page (multiple elements may show "Personal Best")
-      await waitFor(() => {
-        expect(screen.getAllByText(/personal best/i).length).toBeGreaterThan(0)
-        expect(screen.getByText('1:00')).toBeTruthy()
-      })
+      await expect.poll(async () => {
+        const elements = await page.getByText(/personal best/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
+      await expect.element(page.getByText('1:00').first()).toBeVisible()
 
       app.cleanup()
     })
@@ -812,9 +777,7 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
 
       // Verify new PB displayed
-      await waitFor(() => {
-        expect(screen.getByText('PB: 0:45')).toBeTruthy()
-      })
+      await expect.element(page.getByText('PB: 0:45')).toBeVisible()
 
       app.cleanup()
     })
@@ -828,9 +791,7 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
 
       // Verify PB unchanged
-      await waitFor(() => {
-        expect(screen.getByText('PB: 1:00')).toBeTruthy()
-      })
+      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
 
       app.cleanup()
     })
@@ -843,17 +804,13 @@ describe('Benchmark Flows', () => {
 
       // Check list
       await app.benchmarks.navigateToTab()
-      await waitFor(() => {
-        expect(screen.getByText('PB: 1:00')).toBeTruthy()
-      })
+      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
 
       // Check detail page
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
-      await waitFor(() => {
-        expect(screen.getByText(/personal best/i)).toBeTruthy()
-        expect(screen.getByText('1:00')).toBeTruthy()
-      })
+      await expect.element(page.getByText(/personal best/i).first()).toBeVisible()
+      await expect.element(page.getByText('1:00').first()).toBeVisible()
 
       app.cleanup()
     })
@@ -883,17 +840,13 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Verify we're on Exercise 1 (Thrusters)
-      await waitFor(() => {
-        expect(screen.getByText('Thrusters')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Thrusters')).toBeVisible()
 
       // Complete Exercise 1
       await completeExercise()
 
       // Verify we're now on Exercise 2 (Pull-ups)
-      await waitFor(() => {
-        expect(screen.getByText('Pull-ups')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
       // VERIFY: Split time comparison should be visible
       // The UI should show how the current split compares to the PB split time of 1:30
@@ -902,15 +855,15 @@ describe('Benchmark Flows', () => {
       // - "Split: 1:35 (+5s)" if slower
       // - "1:25 / 1:30" showing current vs PB
       // - A visual indicator (green/red) with the delta
-      await waitFor(() => {
+      await expect.poll(async () => {
         // Look for any indication of split comparison
         // This could be: split time display, comparison indicator, or pace feedback
-        const hasSplitDisplay = screen.queryByText(/split/i) !== null
-        const hasComparisonDisplay = screen.queryByText(/[+-]\d+:\d{2}|[+-]\d+s/i) !== null
-        const hasPaceIndicator = screen.queryByText(/ahead|behind|on pace/i) !== null
+        const hasSplitDisplay = await page.getByText(/split/i).query() !== null
+        const hasComparisonDisplay = await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query() !== null
+        const hasPaceIndicator = await page.getByText(/ahead|behind|on pace/i).query() !== null
 
-        expect(hasSplitDisplay || hasComparisonDisplay || hasPaceIndicator).toBeTruthy()
-      })
+        return hasSplitDisplay || hasComparisonDisplay || hasPaceIndicator
+      }).toBe(true)
 
       app.cleanup()
     })
@@ -927,9 +880,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
 
       // Verify empty state
-      await waitFor(() => {
+      await expect.poll(() => {
         app.benchmarks.assertEmptyState()
-      })
+        return true
+      }).toBe(true)
 
       app.cleanup()
     })
@@ -943,19 +897,15 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
 
       // Verify all 3 listed
-      await waitFor(() => {
-        expect(screen.getByText('Benchmark 1')).toBeTruthy()
-        expect(screen.getByText('Benchmark 2')).toBeTruthy()
-        expect(screen.getByText('Benchmark 3')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Benchmark 1')).toBeVisible()
+      await expect.element(page.getByText('Benchmark 2')).toBeVisible()
+      await expect.element(page.getByText('Benchmark 3')).toBeVisible()
 
       // Click second benchmark
       await app.benchmarks.clickBenchmarkCard('Benchmark 2')
 
       // Verify navigation and detail page loaded
-      await waitFor(() => {
-        expect(app.router.currentRoute.value.path).toContain('/benchmarks/')
-      })
+      await expect.poll(() => app.router.currentRoute.value.path).toContain('/benchmarks/')
       await app.benchmarkDetail.waitForLoad('Benchmark 2')
 
       app.cleanup()
@@ -972,10 +922,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify 3 attempts displayed
-      await waitFor(() => {
-        const attempts = screen.getAllByText(/\d+:\d{2}/)
-        expect(attempts.length).toBeGreaterThanOrEqual(3)
-      })
+      await expect.poll(async () => {
+        const elements = await page.getByText(/\d+:\d{2}/).all()
+        return elements.length
+      }).toBeGreaterThanOrEqual(3)
 
       // Newest should be first (today's 1:00 attempt)
       // Note: Exact ordering verification would require more specific selectors
@@ -994,10 +944,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify attempts are displayed (multiple time entries)
-      await waitFor(() => {
-        const timeElements = screen.getAllByText(/\d+:\d{2}/)
-        expect(timeElements.length).toBeGreaterThanOrEqual(3) // At least 3 attempts shown
-      })
+      await expect.poll(async () => {
+        const elements = await page.getByText(/\d+:\d{2}/).all()
+        return elements.length
+      }).toBeGreaterThanOrEqual(3)
 
       app.cleanup()
     })
@@ -1008,9 +958,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.navigateToDetail('invalid-id')
 
       // Wait for not-found state
-      await waitFor(() => {
+      await expect.poll(() => {
         app.benchmarkDetail.assertNotFoundState()
-      })
+        return true
+      }).toBe(true)
 
       // Click "Go Back"
       await app.benchmarkDetail.clickGoBack()
