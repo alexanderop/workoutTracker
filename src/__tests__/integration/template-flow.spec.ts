@@ -40,7 +40,7 @@ describe('Template Flow', () => {
 
       // Finish the workout via menu
       await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(workout.getMenuTrigger())
+      await userEvent.click(await workout.getMenuTrigger())
 
       await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
@@ -53,11 +53,12 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Push Day')
 
       // Verify the input value was set correctly before proceeding
-      await expect.poll(() => {
-        if (!(nameInput instanceof HTMLInputElement)) {
+      await expect.poll(async () => {
+        const el = await nameInput.element()
+        if (!(el instanceof HTMLInputElement)) {
           return null
         }
-        return nameInput.value
+        return el.value
       }).toBe('Push Day')
 
       await userEvent.click(common.getDialogButton('Finish Workout'))
@@ -145,7 +146,8 @@ describe('Template Flow', () => {
       await expect.element(page.getByText('Leg Day')).toBeVisible()
 
       // Click on the template card
-      const templateCard = getByText('Leg Day').closest('[role="button"]')
+      const legDayEl = await getByText('Leg Day').element()
+      const templateCard = legDayEl.closest('[role="button"]')
       if (!(templateCard instanceof HTMLElement)) {
         throw new Error('Template card not found')
       }
@@ -166,7 +168,7 @@ describe('Template Flow', () => {
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Verify blocks match template - we should see 2 blocks in builder mode
-      const playlistButtons = builder.getPlaylistBlockButtons()
+      const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons.length).toBe(2)
 
       // Verify template lastUsedAt was updated

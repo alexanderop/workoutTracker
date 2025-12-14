@@ -1,8 +1,14 @@
-import { screen } from '@testing-library/vue'
-import { page, userEvent } from 'vitest/browser'
+import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
+
+function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
+  if (!(el instanceof HTMLElement)) {
+    throw new Error('Expected HTMLElement, got SVGElement')
+  }
+  return el
+}
 
 /**
  * Page Object for the benchmark detail view.
@@ -29,7 +35,7 @@ export class BenchmarkDetailPO {
    * @returns The benchmark name text
    */
   getBenchmarkName(): string {
-    const nameElement = screen.queryByRole('heading', { level: 1 })
+    const nameElement = page.getByRole('heading', { level: 1 }).query()
     if (!nameElement) {
       throw new Error('Benchmark name heading not found')
     }
@@ -41,13 +47,14 @@ export class BenchmarkDetailPO {
    * Looks for the type in the "Workout Structure" section.
    * @returns The benchmark type text
    */
-  getBenchmarkType(): string {
+  async getBenchmarkType(): Promise<string> {
     // Look for type text near "Workout Structure"
-    const typeElements = screen.queryAllByText(/for time|rounds/i)
-    const firstElement = typeElements[0]
-    if (!firstElement) {
+    const typeElements = await page.getByText(/for time|rounds/i).all()
+    const firstLocator = typeElements[0]
+    if (!firstLocator) {
       throw new Error('Benchmark type not found')
     }
+    const firstElement = ensureHTMLElement(await firstLocator.element())
     // Return the first occurrence (should be in the workout structure section)
     return firstElement.textContent ?? ''
   }
@@ -56,16 +63,17 @@ export class BenchmarkDetailPO {
    * Returns all exercise cards displayed in the benchmark detail.
    * @returns Array of exercise card elements
    */
-  getExerciseCards(): ReadonlyArray<HTMLElement> {
+  async getExerciseCards(): Promise<ReadonlyArray<HTMLElement>> {
     // Exercise cards contain exercise names and rep counts
     const exercises: Array<HTMLElement> = []
-    const allText = screen.queryAllByText(/\d+/)
-    allText.forEach((el) => {
+    const allText = await page.getByText(/\d+/).all()
+    for (const locator of allText) {
+      const el = await locator.element()
       const card = el.closest('[class*="card"]') ?? el.closest('div')
       if (card instanceof HTMLElement && !exercises.includes(card)) {
         exercises.push(card)
       }
-    })
+    }
     return exercises
   }
 
@@ -74,9 +82,9 @@ export class BenchmarkDetailPO {
    * @param exerciseName - The name of the exercise to verify
    * @param reps - The number of prescribed reps
    */
-  assertExerciseExists(exerciseName: string, reps: number): void {
-    expect(screen.getByText(exerciseName)).toBeTruthy()
-    const repsElements = screen.getAllByText(String(reps))
+  async assertExerciseExists(exerciseName: string, reps: number): Promise<void> {
+    await expect.element(page.getByText(exerciseName)).toBeInTheDocument()
+    const repsElements = await page.getByText(String(reps)).all()
     expect(repsElements.length).toBeGreaterThan(0)
   }
 
@@ -96,15 +104,15 @@ export class BenchmarkDetailPO {
    * Returns the "Start Workout" button element.
    * @returns The start workout button element
    */
-  getStartButton(): HTMLElement {
-    return screen.getByRole('button', { name: /start workout/i })
+  async getStartButton(): Promise<HTMLElement> {
+    return ensureHTMLElement(await page.getByRole('button', { name: /start workout/i }).element())
   }
 
   /**
    * Asserts that the start workout button is enabled (not disabled).
    */
-  assertStartButtonEnabled(): void {
-    const startButton = this.getStartButton()
+  async assertStartButtonEnabled(): Promise<void> {
+    const startButton = await this.getStartButton()
     expect(startButton.hasAttribute('disabled')).toBe(false)
   }
 
@@ -126,8 +134,8 @@ export class BenchmarkDetailPO {
   /**
    * Asserts that the not-found error state is displayed.
    */
-  assertNotFoundState(): void {
-    expect(screen.getByText('Benchmark not found')).toBeTruthy()
+  async assertNotFoundState(): Promise<void> {
+    await expect.element(page.getByText('Benchmark not found')).toBeInTheDocument()
   }
 
   /**
@@ -183,34 +191,34 @@ export class BenchmarkDetailPO {
    * Asserts that the view is in edit mode.
    * Checks for presence of save and cancel buttons.
    */
-  assertEditMode(): void {
-    expect(screen.queryByRole('button', { name: /save changes|save/i })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /cancel/i })).toBeTruthy()
+  async assertEditMode(): Promise<void> {
+    await expect.element(page.getByRole('button', { name: /save changes|save/i })).toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   }
 
   /**
    * Asserts that the view is in view mode (not editing).
    * Checks for presence of edit button and absence of save/cancel.
    */
-  assertViewMode(): void {
-    expect(screen.queryByRole('button', { name: /edit/i })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /save changes|save/i })).toBeFalsy()
-    expect(screen.queryByRole('button', { name: /cancel/i })).toBeFalsy()
+  async assertViewMode(): Promise<void> {
+    await expect.element(page.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: /save changes|save/i })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
   }
 
   /**
    * Asserts that the save button is disabled.
    */
-  assertSaveDisabled(): void {
-    const saveButton = screen.getByRole('button', { name: /save changes|save/i })
+  async assertSaveDisabled(): Promise<void> {
+    const saveButton = await page.getByRole('button', { name: /save changes|save/i }).element()
     expect(saveButton.hasAttribute('disabled')).toBe(true)
   }
 
   /**
    * Asserts that the save button is enabled.
    */
-  assertSaveEnabled(): void {
-    const saveButton = screen.getByRole('button', { name: /save changes|save/i })
+  async assertSaveEnabled(): Promise<void> {
+    const saveButton = await page.getByRole('button', { name: /save changes|save/i }).element()
     expect(saveButton.hasAttribute('disabled')).toBe(false)
   }
 
@@ -226,9 +234,9 @@ export class BenchmarkDetailPO {
   /**
    * Asserts that the delete confirmation dialog is displayed.
    */
-  assertDeleteDialogOpen(): void {
-    expect(screen.getByText(/delete benchmark\?/i)).toBeTruthy()
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy()
+  async assertDeleteDialogOpen(): Promise<void> {
+    await expect.element(page.getByText(/delete benchmark\?/i)).toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   }
 
   /**
@@ -245,13 +253,13 @@ export class BenchmarkDetailPO {
    * Waits for navigation to /workouts after deletion.
    */
   async confirmDelete(): Promise<void> {
-    const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
+    const deleteButtons = await page.getByRole('button', { name: /^delete$/i }).all()
     const dialogDeleteButton = deleteButtons[deleteButtons.length - 1]
     if (!dialogDeleteButton) {
       throw new Error('Delete button not found in dialog')
     }
 
-    await userEvent.click(dialogDeleteButton)
+    await dialogDeleteButton.click()
 
     await expect.poll(() => this.ctx.router.currentRoute.value.path).toBe('/workouts')
   }
@@ -259,15 +267,14 @@ export class BenchmarkDetailPO {
   /**
    * Asserts that delete button is visible in view mode.
    */
-  assertDeleteButtonVisible(): void {
-    expect(screen.getByRole('button', { name: /delete benchmark/i })).toBeTruthy()
+  async assertDeleteButtonVisible(): Promise<void> {
+    await expect.element(page.getByRole('button', { name: /delete benchmark/i })).toBeInTheDocument()
   }
 
   /**
    * Clicks the back button in the PageLayout header.
    */
   async clickBackButton(): Promise<void> {
-    const backButton = screen.getByRole('button', { name: /go back/i })
-    await userEvent.click(backButton)
+    await page.getByRole('button', { name: /go back/i }).click()
   }
 }

@@ -1,5 +1,4 @@
-import { screen } from '@testing-library/vue'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -26,7 +25,7 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -45,7 +44,7 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Verify initial UI state (table renders)
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
       expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
       expect(queryByText('Strength')).toBeTruthy()
 
@@ -76,18 +75,18 @@ describe('Strength Workflows', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
       expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
 
       // Fill and complete first set with specific values
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
       // Verify prefilled values in next set using Page Object method
-      await expect.poll(() => {
-        const inputs = workout.getActiveRowInputs()
+      await expect.poll(async () => {
+        const inputs = await workout.getActiveRowInputs()
         return inputs?.weight.value
       }).toBe('100')
-      const inputs = workout.getActiveRowInputs()
+      const inputs = await workout.getActiveRowInputs()
       expect(inputs?.reps.value).toBe('5')
 
       cleanup()

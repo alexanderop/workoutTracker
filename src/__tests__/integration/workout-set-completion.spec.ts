@@ -1,4 +1,3 @@
-import { screen } from '@testing-library/vue'
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
@@ -10,11 +9,11 @@ describe('Workout Set Completion', () => {
 
   describe('Set Completion Flow', () => {
     it('completes set and shows completed badge', async () => {
-      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Setup: Create workout with strength block
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
@@ -23,7 +22,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Verify table renders with sets
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Action: Fill and complete first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -35,25 +34,25 @@ describe('Workout Set Completion', () => {
     })
 
     it('pre-fills next set with values from completed set', async () => {
-      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Setup workout
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Complete first set with specific values
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Check that the next active row's inputs are pre-filled with previous set's values
-      await expect.poll(() => {
-        const inputs = workout.getActiveRowInputs()
+      await expect.poll(async () => {
+        const inputs = await workout.getActiveRowInputs()
         if (!inputs) return null
         return {
           weight: inputs.weight.value,
@@ -66,17 +65,17 @@ describe('Workout Set Completion', () => {
     })
 
     it('can complete multiple sets in sequence', async () => {
-      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Setup workout with 2 blocks (so completing first block doesn't end workout)
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second block to prevent app from ending after completing first block
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
@@ -84,7 +83,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Complete first set and verify
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -95,7 +94,7 @@ describe('Workout Set Completion', () => {
       await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
       // Complete third set (pre-filled values, just click button)
-      await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
+      await page.getByRole('button', { name: /mark set 3 complete/i }).click()
 
       // After completing all sets in block 1, app auto-advances to block 2
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
@@ -104,19 +103,19 @@ describe('Workout Set Completion', () => {
     })
 
     it('auto-advances to next block when all sets are complete', async () => {
-      const { builder, workout, common, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Setup workout with TWO strength blocks
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
 
       // Add first block
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second block
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
@@ -136,18 +135,18 @@ describe('Workout Set Completion', () => {
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Verify we're on Deadlift block
-      expect(queryByText('Deadlift')).toBeTruthy()
+      await expect.element(page.getByText('Deadlift')).toBeInTheDocument()
 
       cleanup()
     })
 
     it('can end workout and see completion screen', async () => {
-      const { builder, workout, common, getByRole, cleanup } =
+      const { builder, workout, common, cleanup } =
         await createTestApp()
 
       // Setup workout with ONE strength block
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
@@ -155,7 +154,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Complete just the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -165,16 +164,16 @@ describe('Workout Set Completion', () => {
 
       // Open menu and end workout
       await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(workout.getMenuTrigger())
+      await userEvent.click(await workout.getMenuTrigger())
 
       await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
+      await page.getByRole('menuitem', { name: /end workout/i }).click()
 
       // Confirm finish workout dialog
       await common.waitForDialog()
-      const nameInput = getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Test Complete')
+      const nameInput = page.getByRole('textbox', { name: /workout name/i })
+      await userEvent.clear(await nameInput.element())
+      await userEvent.fill(await nameInput.element(), 'Test Complete')
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
@@ -186,11 +185,11 @@ describe('Workout Set Completion', () => {
 
   describe('Rest Timer Integration', () => {
     it('shows rest timer in footer after completing a set', async () => {
-      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Setup workout
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
@@ -215,18 +214,18 @@ describe('Workout Set Completion', () => {
 
   describe('Data Persistence', () => {
     it('completed set values persist after navigating away and back', async () => {
-      const { builder, workout, common, getByRole, cleanup } =
+      const { builder, workout, common, cleanup } =
         await createTestApp()
 
       // Setup workout with two blocks
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
 
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
@@ -235,7 +234,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       // Complete a set on block 1
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -244,26 +243,26 @@ describe('Workout Set Completion', () => {
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Navigate to block 2
-      await userEvent.click(workout.getFooterButton('next'))
+      await userEvent.click(await workout.getFooterButton('next'))
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Navigate back to block 1
-      await userEvent.click(workout.getFooterButton('prev'))
+      await userEvent.click(await workout.getFooterButton('prev'))
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Verify completed set is still visible
-      expect(workout.getCompletedSetCount()).toBeGreaterThan(0)
+      await expect.poll(() => workout.getCompletedSetCount()).toBeGreaterThan(0)
 
       cleanup()
     })
 
     it('workout state survives returning to builder and resuming', async () => {
-      const { builder, workout, common, getByRole, cleanup } =
+      const { builder, workout, common, cleanup } =
         await createTestApp()
 
       // Setup workout
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
@@ -272,7 +271,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Wait for table to render
-      await screen.findByRole('table')
+      await expect.element(page.getByRole('table')).toBeVisible()
 
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
@@ -280,20 +279,20 @@ describe('Workout Set Completion', () => {
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Go back to builder mode
-      await userEvent.click(getByRole('button', { name: /go back/i }))
+      await page.getByRole('button', { name: /go back/i }).click()
 
       // Wait for builder mode with Resume button
       await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Resume the workout
-      await userEvent.click(getByRole('button', { name: /resume workout/i }))
+      await page.getByRole('button', { name: /resume workout/i }).click()
 
       // Verify we're back in active mode and completed set is preserved
       await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Completed set should still be visible
-      await screen.findByRole('table')
-      expect(workout.getCompletedSetCount()).toBeGreaterThan(0)
+      await expect.element(page.getByRole('table')).toBeVisible()
+      await expect.poll(() => workout.getCompletedSetCount()).toBeGreaterThan(0)
 
       cleanup()
     })

@@ -67,7 +67,7 @@ describe('Localization', () => {
       await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
 
       // Verify English labels display correctly
-      const settingsHeading = getByRole('heading', { level: 1 })
+      const settingsHeading = await getByRole('heading', { level: 1 }).element()
       expect(settingsHeading.textContent).toBe('Settings')
 
       const weightLabel = queryByText(/^weight$/i)

@@ -1,8 +1,14 @@
-import { screen } from '@testing-library/vue'
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
+
+function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
+  if (!(el instanceof HTMLElement)) {
+    throw new Error('Expected HTMLElement, got SVGElement')
+  }
+  return el
+}
 
 /**
  * Page Object for the create benchmark form.
@@ -19,8 +25,7 @@ export class BenchmarkFormPO {
    * @param name - The workout name to enter
    */
   async fillName(name: string): Promise<void> {
-    const nameInput = screen.getByLabelText(/workout name/i)
-    await userEvent.fill(nameInput, name)
+    await page.getByLabelText(/workout name/i).fill(name)
   }
 
   /**
@@ -29,11 +34,13 @@ export class BenchmarkFormPO {
    */
   async selectType(type: 'fortime' | 'rounds'): Promise<void> {
     const text = type === 'fortime' ? /^for time$/i : /^rounds$/i
-    const typeElement = screen.getAllByText(text)[0]
+    const typeElements = await page.getByText(text).all()
+    const typeElement = typeElements[0]
     if (!typeElement) {
       throw new Error(`Type element for "${type}" not found`)
     }
-    const typeCard = typeElement.closest('button')
+    const el = await typeElement.element()
+    const typeCard = el.closest('button')
     if (!typeCard) {
       throw new Error(`Type card button for "${type}" not found`)
     }
@@ -46,8 +53,7 @@ export class BenchmarkFormPO {
    * @param rounds - The number of rounds to set
    */
   async setRounds(rounds: number): Promise<void> {
-    const roundsInput = screen.getByLabelText(/number of rounds/i)
-    await userEvent.fill(roundsInput, String(rounds))
+    await page.getByLabelText(/number of rounds/i).fill(String(rounds))
   }
 
   /**
@@ -55,7 +61,7 @@ export class BenchmarkFormPO {
    * Waits for the dialog to appear before returning.
    */
   async openExercisePicker(): Promise<void> {
-    await userEvent.click(screen.getByRole('button', { name: /add exercise/i }))
+    await page.getByRole('button', { name: /add exercise/i }).click()
     await this.common.waitForDialog()
   }
 
@@ -110,16 +116,14 @@ export class BenchmarkFormPO {
    * Clicks the save button to create the benchmark.
    */
   async clickSave(): Promise<void> {
-    const saveButton = screen.getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    await page.getByRole('button', { name: /save/i }).click()
   }
 
   /**
    * Clicks the back button to return to the workouts page.
    */
   async clickBack(): Promise<void> {
-    const backButton = screen.getByRole('button', { name: /back/i })
-    await userEvent.click(backButton)
+    await page.getByRole('button', { name: /back/i }).click()
   }
 
   /**
@@ -127,8 +131,8 @@ export class BenchmarkFormPO {
    * Useful for checking disabled state or other attributes.
    * @returns The save button element
    */
-  getSaveButton(): HTMLElement {
-    return screen.getByRole('button', { name: /save/i })
+  async getSaveButton(): Promise<HTMLElement> {
+    return ensureHTMLElement(await page.getByRole('button', { name: /save/i }).element())
   }
 
   /**
@@ -136,7 +140,10 @@ export class BenchmarkFormPO {
    * @returns The rounds input element or null
    */
   getRoundsInput(): HTMLElement | null {
-    return screen.queryByLabelText(/number of rounds/i)
+    const el = page.getByLabelText(/number of rounds/i).query()
+    if (!el) return null
+    if (!(el instanceof HTMLElement)) return null
+    return el
   }
 
   /**
@@ -159,16 +166,16 @@ export class BenchmarkFormPO {
   /**
    * Asserts that the save button is disabled.
    */
-  assertSaveDisabled(): void {
-    const saveButton = this.getSaveButton()
+  async assertSaveDisabled(): Promise<void> {
+    const saveButton = await this.getSaveButton()
     expect(saveButton).toHaveAttribute('disabled')
   }
 
   /**
    * Asserts that the save button is enabled (not disabled).
    */
-  assertSaveEnabled(): void {
-    const saveButton = this.getSaveButton()
+  async assertSaveEnabled(): Promise<void> {
+    const saveButton = await this.getSaveButton()
     expect(saveButton).not.toHaveAttribute('disabled')
   }
 }

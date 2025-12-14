@@ -6,7 +6,7 @@ AI agent guidance for testing in this Vue 3 PWA.
 
 **Framework**: Vitest 4 with **Playwright browser mode** (NOT jsdom)
 
-**Libraries**: Testing Library (Vue), Vitest Browser locators (`page.getBy*`), fake-indexeddb
+**Libraries**: vitest-browser-vue, Vitest Browser locators (`page.getBy*`), fake-indexeddb
 
 **Test Types**:
 - **Unit tests** (`src/__tests__/composables/`) - Direct composable testing
@@ -114,7 +114,7 @@ it('navigates through workout flow', async () => {
   await app.workout.clickStartWorkout()
   await app.workout.fillExerciseInput('Squat')
 
-  // Or use Vitest Browser locators for assertions with built-in retry
+  // Use Vitest Browser locators (page.getBy*) for queries and assertions
   await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
   await page.getByRole('button', { name: /start/i }).click()
 
@@ -162,6 +162,8 @@ const dbWorkout = await dbWorkoutBuilder()
 The `createTestApp()` helper provides page objects for common workflows:
 
 ```ts
+import { page, userEvent } from 'vitest/browser'
+
 const app = await createTestApp()
 
 // Benchmark page object
@@ -180,31 +182,33 @@ await app.queue.selectBlock(0)
 // Common page object (dialogs, navigation)
 await app.common.waitForDialog()
 const confirmButton = app.common.getDialogButton('Confirm')
-await userEvent.click(confirmButton) // import { page, userEvent } from 'vitest/browser'
+await userEvent.click(confirmButton)
 app.common.assertDialogClosed()
 ```
 
 **Files**: `src/__tests__/helpers/pages/` (page object implementations)
 
-### ✅ DO: Use Testing Library Query Priority
+### ✅ DO: Use Vitest Browser Locator Query Priority
 
-Follow Testing Library's query priority:
+Follow query priority using `page` from `vitest/browser`:
 
-1. **`getByRole`** (best) - Accessible queries
-2. **`getByLabelText`** - Form fields
-3. **`getByPlaceholderText`** - Form fields
-4. **`getByText`** - Non-interactive elements
-5. **`getByTestId`** (last resort) - Only when no other option
+1. **`page.getByRole`** (best) - Accessible queries
+2. **`page.getByLabelText`** - Form fields
+3. **`page.getByPlaceholderText`** - Form fields
+4. **`page.getByText`** - Non-interactive elements
+5. **`page.getByTestId`** (last resort) - Only when no other option
 
 ```ts
+import { page } from 'vitest/browser'
+
 // ✅ GOOD - accessible
-const button = app.getByRole('button', { name: /start workout/i })
+const button = page.getByRole('button', { name: /start workout/i })
 
 // ⚠️ OK - for non-interactive text
-const heading = app.getByText('My Workout')
+const heading = page.getByText('My Workout')
 
 // ❌ LAST RESORT - only when necessary
-const element = app.getByTestId('workout-timer')
+const element = page.getByTestId('workout-timer')
 ```
 
 ### ❌ DON'T: Use jsdom-Specific APIs
@@ -212,11 +216,13 @@ const element = app.getByTestId('workout-timer')
 Tests run in **Playwright browser**, not jsdom:
 
 ```ts
-// ❌ BAD - jsdom-specific
+import { page } from 'vitest/browser'
+
+// ❌ BAD - avoid raw DOM queries
 document.querySelector('.my-class')
 
-// ✅ GOOD - Testing Library queries
-app.getByRole('button', { name: /submit/i })
+// ✅ GOOD - use Vitest Browser locators
+page.getByRole('button', { name: /submit/i })
 ```
 
 ### ❌ DON'T: Forget to Clean Up
@@ -342,7 +348,7 @@ beforeEach(async () => {
 
 ### 2. Wait for Async Operations with `expect.element` / `expect.poll`
 
-Use Vitest Browser's built-in retry-able assertions instead of Testing Library's `waitFor`:
+Use Vitest Browser's built-in retry-able assertions (NOT `waitFor` from `@testing-library/vue`):
 
 ```ts
 import { page } from 'vitest/browser'
@@ -363,8 +369,12 @@ await expect.poll(async () => {
 // ✅ Element state checks - use expect.poll() for non-locator values
 await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
+// ✅ Spy/mock call counts - use expect.poll()
+await expect.poll(() => spy.mock.calls.length).toBeGreaterThan(0)
+
 // ✅ Custom timeout when needed
 await expect.element(page.getByText(/loading/i), { timeout: 5000 }).toBeVisible()
+await expect.poll(() => spy.mock.calls.length, { timeout: 1000 }).toBe(3)
 ```
 
 ### 3. Cleanup Is Required

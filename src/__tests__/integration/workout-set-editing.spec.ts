@@ -1,6 +1,5 @@
-import { screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -19,14 +18,14 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
-    await screen.findByRole('table')
+    await expect.element(page.getByRole('table')).toBeVisible()
 
     // Complete first set
     await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
     await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
     // Try editing the completed set (set 0)
-    const completedRow = workout.getSetRow(0)
+    const completedRow = await workout.getSetRow(0)
     await userEvent.clear(completedRow.kg)
     await userEvent.fill(completedRow.kg, '110')
 
@@ -42,10 +41,10 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
-    await screen.findByRole('table')
+    await expect.element(page.getByRole('table')).toBeVisible()
 
     // Set 0 is active, try editing set 2 (pending/future)
-    const pendingRow = workout.getSetRow(2)
+    const pendingRow = await workout.getSetRow(2)
     await userEvent.clear(pendingRow.kg)
     await userEvent.fill(pendingRow.kg, '150')
 
@@ -60,10 +59,10 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
-    await screen.findByRole('table')
+    await expect.element(page.getByRole('table')).toBeVisible()
 
     // Fill pending set 2 and mark complete (skip sets 0 and 1)
-    const pendingRow = workout.getSetRow(2)
+    const pendingRow = await workout.getSetRow(2)
     await userEvent.clear(pendingRow.kg)
     await userEvent.fill(pendingRow.kg, '200')
     await userEvent.clear(pendingRow.reps)

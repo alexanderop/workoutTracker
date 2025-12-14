@@ -1,4 +1,3 @@
-import { screen } from '@testing-library/vue'
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
@@ -88,22 +87,22 @@ async function startBenchmarkWorkout(
  */
 async function completeExercise(): Promise<void> {
   // Capture current exercise name before transition
-  const currentExerciseHeading = screen.queryByRole('heading', { level: 2 })
-  const currentExerciseName = currentExerciseHeading?.textContent
+  const currentExerciseHeading = await page.getByRole('heading', { level: 2 }).query()
+  const currentExerciseName = currentExerciseHeading ? await currentExerciseHeading.textContent : null
 
-  const focusModeArea = screen.getByRole('button', { name: /tap to advance/i })
-  await userEvent.click(focusModeArea)
+  const focusModeArea = page.getByRole('button', { name: /tap to advance/i })
+  await userEvent.click(await focusModeArea.element())
 
   // Wait for observable outcome: exercise changed OR completion screen appeared
   await expect.poll(
-    () => {
+    async () => {
       // Check if completion screen appeared
-      const completionScreen = screen.queryByText(/workout complete/i)
+      const completionScreen = await page.getByText(/workout complete/i).query()
       if (completionScreen) return true
 
       // Check if exercise changed (new heading with different text)
-      const newHeading = screen.queryByRole('heading', { level: 2 })
-      const newExerciseName = newHeading?.textContent
+      const newHeading = await page.getByRole('heading', { level: 2 }).query()
+      const newExerciseName = newHeading ? await newHeading.textContent : null
 
       // If we had a previous exercise, verify it changed
       if (currentExerciseName && newExerciseName) {
@@ -241,9 +240,10 @@ describe('Benchmark Flows', () => {
 
       // Step 7: Verify completion screen
       await waitForCompletionScreen()
-      const franElements = screen.getAllByText('Fran')
+      const franElements = await page.getByText('Fran').all()
       expect(franElements.length).toBeGreaterThan(0) // Benchmark name appears
-      expect(screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThan(0) // Timer
+      const timerElements = await page.getByText(/\d+:\d{2}/).all()
+      expect(timerElements.length).toBeGreaterThan(0) // Timer
 
       // Step 8: Save workout
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
@@ -262,7 +262,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarks.navigateToTab()
       await expect.element(page.getByText('Fran')).toBeVisible()
       // PB should be displayed (MM:SS format)
-      await expect.poll(() => screen.getAllByText(/PB: \d+:\d{2}/).length).toBeGreaterThan(0)
+      await expect.poll(async () => {
+        const pbElements = await page.getByText(/PB: \d+:\d{2}/).all()
+        return pbElements.length
+      }).toBeGreaterThan(0)
 
       // Step 10: Edit benchmark
       await app.benchmarks.clickBenchmarkCard('Fran')
@@ -288,8 +291,8 @@ describe('Benchmark Flows', () => {
 
       // Confirm deletion
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await userEvent.click(deleteButton)
+      const deleteButton = page.getByRole('button', { name: /^delete$/i })
+      await userEvent.click(await deleteButton.element())
 
       // Verify navigation to /workouts
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
@@ -400,8 +403,8 @@ describe('Benchmark Flows', () => {
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Test cancel flow
-      const cancelButton = screen.getByRole('button', { name: /cancel/i })
-      await userEvent.click(cancelButton)
+      const cancelButton = page.getByRole('button', { name: /cancel/i })
+      await userEvent.click(await cancelButton.element())
 
       // Dialog should close, benchmark should remain
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -411,8 +414,8 @@ describe('Benchmark Flows', () => {
       // Click delete again and confirm
       await app.benchmarkDetail.clickDelete()
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      const deleteButton = screen.getByRole('button', { name: /^delete$/i })
-      await userEvent.click(deleteButton)
+      const deleteButton = page.getByRole('button', { name: /^delete$/i })
+      await userEvent.click(await deleteButton.element())
 
       // Verify navigation and deletion
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
@@ -484,11 +487,15 @@ describe('Benchmark Flows', () => {
       await expect.element(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
 
       // Verify there is no "Go back" or "Back" button in the footer (focus mode design)
-      const backButtons = screen.queryAllByRole('button', { name: /go back|^back$/i })
+      const backButtons = await page.getByRole('button', { name: /go back|^back$/i }).all()
       // Filter out header back button (for navigation out of workout)
-      const footerBackButtons = backButtons.filter(btn =>
-        btn.textContent?.trim() === 'Go back' || btn.textContent?.trim() === 'Back'
-      )
+      const footerBackButtons = await Promise.all(
+        backButtons.map(async btn => {
+          const el = await btn.element()
+          const text = el.textContent
+          return text?.trim() === 'Go back' || text?.trim() === 'Back' ? btn : null
+        })
+      ).then(results => results.filter(Boolean))
       expect(footerBackButtons).toHaveLength(0)
 
       app.cleanup()
@@ -504,8 +511,10 @@ describe('Benchmark Flows', () => {
       // useTimestamp has 1000ms interval, so we need to wait at least 1s + buffer
       let beforeTransition: string | undefined
       await expect.poll(
-        () => {
-          const timerText = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+        async () => {
+          const timerElements = await page.getByText(/\d+:\d{2}/).all()
+          const el = timerElements[0] ? await timerElements[0].element() : null
+          const timerText = el?.textContent ?? null
           // Wait until timer shows non-zero value
           if (timerText && !timerText.includes('0:00')) {
             beforeTransition = timerText
@@ -521,8 +530,10 @@ describe('Benchmark Flows', () => {
 
       // Verify timer still running on Exercise 2 (value should have increased)
       await expect.poll(
-        () => {
-          const afterTransition = screen.getAllByText(/\d+:\d{2}/)[0]?.textContent
+        async () => {
+          const timerElements = await page.getByText(/\d+:\d{2}/).all()
+          const el = timerElements[0] ? await timerElements[0].element() : null
+          const afterTransition = el?.textContent ?? null
           if (afterTransition && !afterTransition.includes('0:00') && afterTransition !== beforeTransition) {
             return true
           }
@@ -547,24 +558,27 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Open menu and click "View Exercises" to open queue drawer
-      const menuButton = screen.getByRole('button', { name: /workout options/i })
-      await userEvent.click(menuButton)
+      const menuButton = page.getByRole('button', { name: /workout options/i })
+      await userEvent.click(await menuButton.element())
 
       // Wait for menu to open and click "View Exercises"
       await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
-      const viewExercisesItem = screen.getByRole('menuitem', { name: /view exercises/i })
-      await userEvent.click(viewExercisesItem)
+      const viewExercisesItem = page.getByRole('menuitem', { name: /view exercises/i })
+      await userEvent.click(await viewExercisesItem.element())
 
       // Wait for drawer to open
       await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
 
       // Verify all exercises listed (use getAllByText since they appear in main view and queue)
-      expect(screen.getAllByText(/exercise 1/i).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/exercise 2/i).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/exercise 3/i).length).toBeGreaterThan(0)
+      const ex1Elements = await page.getByText(/exercise 1/i).all()
+      expect(ex1Elements.length).toBeGreaterThan(0)
+      const ex2Elements = await page.getByText(/exercise 2/i).all()
+      expect(ex2Elements.length).toBeGreaterThan(0)
+      const ex3Elements = await page.getByText(/exercise 3/i).all()
+      expect(ex3Elements.length).toBeGreaterThan(0)
 
       // Verify Exercise 1 is Active
-      const activeElements = screen.getAllByText(/active/i)
+      const activeElements = await page.getByText(/active/i).all()
       expect(activeElements.length).toBeGreaterThan(0)
 
       // Close drawer by pressing Escape
@@ -579,18 +593,18 @@ describe('Benchmark Flows', () => {
       await completeExercise()
 
       // Open drawer again through menu
-      const menuButton2 = screen.getByRole('button', { name: /workout options/i })
-      await userEvent.click(menuButton2)
+      const menuButton2 = page.getByRole('button', { name: /workout options/i })
+      await userEvent.click(await menuButton2.element())
 
       await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
-      const viewExercisesItem2 = screen.getByRole('menuitem', { name: /view exercises/i })
-      await userEvent.click(viewExercisesItem2)
+      const viewExercisesItem2 = page.getByRole('menuitem', { name: /view exercises/i })
+      await userEvent.click(await viewExercisesItem2.element())
 
       // Wait for drawer to open again
       await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
 
       // Verify status badges present
-      const statusElements = screen.queryAllByText(/completed|active/i)
+      const statusElements = await page.getByText(/completed|active/i).all()
       expect(statusElements.length).toBeGreaterThan(0)
 
       app.cleanup()
@@ -610,13 +624,19 @@ describe('Benchmark Flows', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Verify first exercise of round 1
-      await expect.poll(() => screen.getAllByText(/exercise 1/i).length).toBeGreaterThan(0)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/exercise 1/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
 
       // Complete Round 1, Exercise 1
       await completeExercise()
 
       // Verify advanced to Exercise 2
-      await expect.poll(() => screen.getAllByText(/exercise 2/i).length).toBeGreaterThan(0)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/exercise 2/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
 
       // Complete Round 1, Exercise 2 (last in round)
       await completeExercise()
@@ -645,9 +665,10 @@ describe('Benchmark Flows', () => {
 
       // Verify completion screen
       await waitForCompletionScreen()
-      const franElements = screen.getAllByText('Fran')
+      const franElements = await page.getByText('Fran').all()
       expect(franElements.length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThan(0)
+      const timerElements = await page.getByText(/\d+:\d{2}/).all()
+      expect(timerElements.length).toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -661,17 +682,21 @@ describe('Benchmark Flows', () => {
 
       // Capture completion time
       let completionTime: string | null = null
-      await expect.poll(() => {
-        const largeTime = screen.getByText(/\d+:\d{2}/, { selector: '.text-6xl' })
-        completionTime = largeTime.textContent
-        return completionTime
+      await expect.poll(async () => {
+        const largeTimeEl = await page.getByText(/\d+:\d{2}/).element()
+        if (largeTimeEl.classList.contains('text-6xl')) {
+          completionTime = await largeTimeEl.textContent
+          return completionTime
+        }
+        return null
       }).toBeTruthy()
 
       // Wait 2 seconds
       await new Promise(resolve => setTimeout(resolve, 2000))
 
       // Verify timer hasn't changed (stopped)
-      const currentTime = screen.getByText(/\d+:\d{2}/, { selector: '.text-6xl' }).textContent
+      const currentTimeEl = await page.getByText(/\d+:\d{2}/).element()
+      const currentTime = currentTimeEl.classList.contains('text-6xl') ? await currentTimeEl.textContent : null
       expect(currentTime).toBe(completionTime)
 
       app.cleanup()
@@ -732,7 +757,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify PB displayed on detail page (multiple elements may show "Personal Best")
-      await expect.poll(() => screen.getAllByText(/personal best/i).length).toBeGreaterThan(0)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/personal best/i).all()
+        return elements.length
+      }).toBeGreaterThan(0)
       await expect.element(page.getByText('1:00').first()).toBeVisible()
 
       app.cleanup()
@@ -826,12 +854,12 @@ describe('Benchmark Flows', () => {
       // - "Split: 1:35 (+5s)" if slower
       // - "1:25 / 1:30" showing current vs PB
       // - A visual indicator (green/red) with the delta
-      await expect.poll(() => {
+      await expect.poll(async () => {
         // Look for any indication of split comparison
         // This could be: split time display, comparison indicator, or pace feedback
-        const hasSplitDisplay = screen.queryByText(/split/i) !== null
-        const hasComparisonDisplay = screen.queryByText(/[+-]\d+:\d{2}|[+-]\d+s/i) !== null
-        const hasPaceIndicator = screen.queryByText(/ahead|behind|on pace/i) !== null
+        const hasSplitDisplay = await page.getByText(/split/i).query() !== null
+        const hasComparisonDisplay = await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query() !== null
+        const hasPaceIndicator = await page.getByText(/ahead|behind|on pace/i).query() !== null
 
         return hasSplitDisplay || hasComparisonDisplay || hasPaceIndicator
       }).toBe(true)
@@ -893,7 +921,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify 3 attempts displayed
-      await expect.poll(() => screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThanOrEqual(3)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/\d+:\d{2}/).all()
+        return elements.length
+      }).toBeGreaterThanOrEqual(3)
 
       // Newest should be first (today's 1:00 attempt)
       // Note: Exact ordering verification would require more specific selectors
@@ -912,7 +943,10 @@ describe('Benchmark Flows', () => {
       await app.benchmarkDetail.waitForLoad('Fran')
 
       // Verify attempts are displayed (multiple time entries)
-      await expect.poll(() => screen.getAllByText(/\d+:\d{2}/).length).toBeGreaterThanOrEqual(3)
+      await expect.poll(async () => {
+        const elements = await page.getByText(/\d+:\d{2}/).all()
+        return elements.length
+      }).toBeGreaterThanOrEqual(3)
 
       app.cleanup()
     })

@@ -1,6 +1,5 @@
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
