@@ -19,6 +19,8 @@ type ExerciseProgressState = {
   totalInRound: number
   globalIndex: number
   totalCount: number
+  currentRound: number
+  totalRounds: number
   isFirstAttempt?: boolean
 }
 
@@ -63,7 +65,7 @@ const nextExercise = computed(() => {
   return exercises.value[nextIndex]
 })
 
-const isLastExercise = computed(() => progress.current >= progress.totalCount)
+const isLastExercise = computed(() => progress.globalIndex + 1 >= progress.totalCount)
 
 function handleTap() {
   if (isTransitioning.value) return
@@ -114,10 +116,14 @@ function handleTap() {
           </span>
         </div>
 
-        <!-- Progress bar -->
+        <!-- Segmented progress bar showing rounds -->
         <BenchmarkProgressBar
-          :current="progress.current"
-          :total="progress.totalCount"
+          :current-exercise="progress.current"
+          :exercises-per-round="progress.totalInRound"
+          :current-round="progress.currentRound"
+          :total-rounds="progress.totalRounds"
+          :global-current="progress.globalIndex + 1"
+          :global-total="progress.totalCount"
         />
       </div>
 

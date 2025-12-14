@@ -26,6 +26,7 @@ const {
   currentExercisePosition,
   totalExerciseCount,
   globalExerciseIndex,
+  totalGlobalExerciseCount,
 } = useBenchmarkExerciseNavigation()
 
 // Timer and tracking
@@ -122,7 +123,9 @@ function returnToBuilder() {
           current: currentExercisePosition,
           totalInRound: totalExerciseCount,
           globalIndex: globalExerciseIndex,
-          totalCount: totalExerciseCount,
+          totalCount: totalGlobalExerciseCount,
+          currentRound: workout.selectedBlockIndex + 1,
+          totalRounds: workout.blocks.length,
           isFirstAttempt: firstAttemptTracking.isFirstAttempt.value,
         }"
         :completion="animation.state.value.showCompletion ? {

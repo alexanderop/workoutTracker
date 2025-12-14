@@ -258,6 +258,7 @@ export default {
     label: 'Übungsfortschritt',
     announcement: 'Übung {current} von {total}',
     exerciseCount: '{current}/{total}',
+    round: 'Runde {current}/{total}',
   },
   exerciseCompleted: 'Übung abgeschlossen',
 } as const

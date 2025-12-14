@@ -259,6 +259,7 @@ export default {
     label: 'Exercise progress',
     announcement: 'Exercise {current} of {total}',
     exerciseCount: '{current}/{total}',
+    round: 'Round {current}/{total}',
   },
   exerciseCompleted: 'Exercise completed',
 } as const
