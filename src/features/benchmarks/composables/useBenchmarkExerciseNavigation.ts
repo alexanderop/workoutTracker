@@ -51,6 +51,21 @@ export function useBenchmarkExerciseNavigation() {
   })
 
   /**
+   * Total exercise count across ALL blocks (rounds).
+   * Used for global progress display.
+   */
+  const totalGlobalExerciseCount = computed(() => {
+    const blocks = benchmarkWorkout.value.blocks
+    let total = 0
+    for (const block of blocks) {
+      if (block) {
+        total += getBlockExerciseList(block).length
+      }
+    }
+    return total
+  })
+
+  /**
    * Check if currently on the first exercise in the block.
    */
   const isFirstExerciseInBlock = computed(() => {
@@ -143,6 +158,7 @@ export function useBenchmarkExerciseNavigation() {
     currentExercisePosition,
     totalExerciseCount,
     globalExerciseIndex,
+    totalGlobalExerciseCount,
 
     // Block boundary detection
     isFirstExerciseInBlock,

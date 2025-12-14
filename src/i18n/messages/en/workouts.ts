@@ -244,10 +244,22 @@ export default {
     completion: {
       finalTime: 'Final Time',
     },
+    splitComparison: {
+      ahead: "You're {time} ahead!",
+      behind: 'Push! {time} behind',
+      settingBaseline: 'Setting your baseline',
+      goAllOut: 'Go all out!',
+    },
+    next: {
+      label: 'NEXT',
+      finalExercise: 'FINAL EXERCISE',
+    },
   },
   progress: {
     label: 'Exercise progress',
     announcement: 'Exercise {current} of {total}',
+    exerciseCount: '{current}/{total}',
+    round: 'Round {current}/{total}',
   },
   exerciseCompleted: 'Exercise completed',
 } as const
