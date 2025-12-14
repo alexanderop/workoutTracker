@@ -1,6 +1,7 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
+import { expect } from 'vitest'
 import type { TestContext } from '../types'
 
 /**
@@ -12,10 +13,9 @@ export class CommonPO {
 
   /**
    * Waits for a dialog element to appear in the DOM.
-   * @returns The dialog element once it becomes visible
    */
-  async waitForDialog(): Promise<HTMLElement> {
-    return await waitFor(() => screen.getByRole('dialog'))
+  async waitForDialog(): Promise<void> {
+    await expect.element(page.getByRole('dialog')).toBeVisible()
   }
 
   /**
@@ -24,18 +24,8 @@ export class CommonPO {
    * This method waits for both the dialog element AND overlay to be removed.
    */
   async waitForDialogClose(): Promise<void> {
-    await waitFor(() => {
-      // Check that dialog role element is gone
-      const dialog = screen.queryByRole('dialog')
-      if (dialog) {
-        throw new Error('Dialog still open')
-      }
-      // Check that dialog overlay is gone (fixed overlay with z-50)
-      const overlay = document.querySelector('[data-slot="dialog-overlay"]')
-      if (overlay) {
-        throw new Error('Dialog overlay still present')
-      }
-    })
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+    await expect.poll(() => document.querySelector('[data-slot="dialog-overlay"]')).toBeNull()
     // Flush any pending Vue updates after dialog unmount
     await flushPromises()
   }
@@ -76,9 +66,7 @@ export class CommonPO {
   async selectExercise(exerciseName: string): Promise<void> {
     const searchInput = screen.getByRole('textbox')
     await userEvent.fill(searchInput, exerciseName)
-    await waitFor(() => {
-      this.getExactDialogButton(exerciseName)
-    })
+    await expect.poll(() => this.getExactDialogButton(exerciseName)).toBeTruthy()
     await userEvent.click(this.getExactDialogButton(exerciseName))
   }
 
@@ -131,15 +119,9 @@ export class CommonPO {
   /**
    * Waits for the router to navigate to a path matching the given pattern.
    * @param pathPattern - Regular expression to match against the current route path
-   * @throws Error if the route does not match within the waitFor timeout
    */
   async waitForRoute(pathPattern: RegExp): Promise<void> {
-    await waitFor(() => {
-      const currentPath = this.ctx.router.currentRoute.value.path
-      if (!pathPattern.test(currentPath)) {
-        throw new Error(`Expected route to match ${pathPattern}, got ${currentPath}`)
-      }
-    })
+    await expect.poll(() => this.ctx.router.currentRoute.value.path).toMatch(pathPattern)
   }
 
   /**
@@ -212,10 +194,6 @@ export class CommonPO {
     this.setInputValueDirectly(inputs.reps, values.reps)
     this.setInputValueDirectly(inputs.rir, values.rir)
     await flushPromises()
-    await waitFor(() => {
-      if (completeButton.hasAttribute('disabled')) {
-        throw new Error('Button still disabled')
-      }
-    })
+    await expect.poll(() => !completeButton.hasAttribute('disabled')).toBe(true)
   }
 }

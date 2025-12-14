@@ -1,6 +1,5 @@
-import { waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
@@ -58,9 +57,7 @@ describe('Data Management', () => {
       await userEvent.click(getByRole('button', { name: /^export data$/i }))
 
       // Assert: Blob was created and cleaned up
-      await waitFor(() => {
-        expect(URL.createObjectURL).toHaveBeenCalled()
-      })
+      await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
       expect(URL.revokeObjectURL).toHaveBeenCalled()
 
       cleanup()
@@ -107,9 +104,7 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
-      await waitFor(async () => {
-        expect(await db.workouts.count()).toBe(1)
-      })
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
       const workouts = await db.workouts.toArray()
       expect(workouts[0]?.name).toBe('Imported Workout')
 
@@ -136,9 +131,7 @@ describe('Data Management', () => {
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
-      await waitFor(() => {
-        expect(queryByRole('dialog')).toBeNull()
-      })
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -163,9 +156,7 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
-      await waitFor(async () => {
-        expect(await db.workouts.count()).toBe(0)
-      })
+      await expect.poll(async () => await db.workouts.count()).toBe(0)
 
       cleanup()
     })
@@ -196,14 +187,10 @@ describe('Data Management', () => {
       await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
-      await waitFor(() => {
-        expect(router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
-      })
+      await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
-      await waitFor(() => {
-        expect(queryByText('Push Day')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Push Day')).toBeVisible()
       expect(queryByText('Bench Press')).toBeTruthy()
 
       // Expand the exercise card to see set details
@@ -211,9 +198,7 @@ describe('Data Management', () => {
       await userEvent.click(exerciseCard)
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
-      await waitFor(() => {
-        expect(queryByText('100kg')).toBeTruthy()
-      })
+      await expect.element(page.getByText('100kg')).toBeVisible()
       expect(queryByText('10')).toBeTruthy() // reps value
 
       cleanup()

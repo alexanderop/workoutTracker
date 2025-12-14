@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -23,12 +23,11 @@ export class BenchmarksPO {
     await this.common.navigateToWorkouts()
 
     // Wait for tabs to load
-    await waitFor(() => {
-      expect(screen.queryByRole('tab', { name: /benchmarks/i })).toBeTruthy()
-    })
+    const benchmarksTab = page.getByRole('tab', { name: /benchmarks/i })
+    await expect.element(benchmarksTab).toBeVisible()
 
     // Click on Benchmarks tab
-    await userEvent.click(screen.getByRole('tab', { name: /benchmarks/i }))
+    await benchmarksTab.click()
   }
 
   /**

@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -29,9 +29,7 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Assert: First row shows completed state (inputs disabled)
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })
@@ -54,19 +52,21 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Check that the next active row's inputs are pre-filled with previous set's values
-      await waitFor(() => {
+      await expect.poll(() => {
         const inputs = workout.getActiveRowInputs()
-        expect(inputs).toBeTruthy()
-        expect(inputs?.weight.value).toBe('100')
-        expect(inputs?.reps.value).toBe('8')
-        expect(inputs?.rir.value).toBe('2')
-      })
+        if (!inputs) return null
+        return {
+          weight: inputs.weight.value,
+          reps: inputs.reps.value,
+          rir: inputs.rir.value,
+        }
+      }).toEqual({ weight: '100', reps: '8', rir: '2' })
 
       cleanup()
     })
 
     it('can complete multiple sets in sequence', async () => {
-      const { builder, workout, common, getByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Setup workout with 2 blocks (so completing first block doesn't end workout)
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -88,23 +88,17 @@ describe('Workout Set Completion', () => {
 
       // Complete first set and verify
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Complete second set and verify
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-      await waitFor(() => {
-        expect(workout.getCompletedSetCount()).toBe(2)
-      })
+      await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
       // Complete third set (pre-filled values, just click button)
       await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
 
       // After completing all sets in block 1, app auto-advances to block 2
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -131,9 +125,7 @@ describe('Workout Set Completion', () => {
       await builder.startWorkout()
 
       // Verify we're on block 1 of 2
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Complete all 3 sets in first block
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
@@ -141,9 +133,7 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Verify we auto-advanced to block 2 of 2
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Verify we're on Deadlift block
       expect(queryByText('Deadlift')).toBeTruthy()
@@ -152,7 +142,7 @@ describe('Workout Set Completion', () => {
     })
 
     it('can end workout and see completion screen', async () => {
-      const { builder, workout, common, getByRole, queryByText, queryByRole, cleanup } =
+      const { builder, workout, common, getByRole, cleanup } =
         await createTestApp()
 
       // Setup workout with ONE strength block
@@ -171,19 +161,13 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify we completed a set using Page Object method
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Open menu and end workout
-      await waitFor(() => {
-        expect(workout.getMenuTrigger()).toBeTruthy()
-      })
+      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(workout.getMenuTrigger())
 
-      await waitFor(() => {
-        expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       // Confirm finish workout dialog
@@ -194,9 +178,7 @@ describe('Workout Set Completion', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
-      await waitFor(() => {
-        expect(queryByText(/workout complete/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       cleanup()
     })
@@ -219,17 +201,13 @@ describe('Workout Set Completion', () => {
 
       // Verify rest timer appears in footer (look for a timer display)
       // The rest timer should be visible with a counting time display
-      await waitFor(
-        () => {
-          // Look for timer digits format (M:SS)
-          const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
-          const hasRestTimer = Array.from(timerElements).some((el) =>
-            el.textContent?.match(/^\d+:\d{2}$/),
-          )
-          expect(hasRestTimer).toBe(true)
-        },
-        { timeout: 2000 },
-      )
+      await expect.poll(() => {
+        // Look for timer digits format (M:SS)
+        const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
+        return Array.from(timerElements).some((el) =>
+          el.textContent?.match(/^\d+:\d{2}$/),
+        )
+      }, { timeout: 2000 }).toBe(true)
 
       cleanup()
     })
@@ -237,7 +215,7 @@ describe('Workout Set Completion', () => {
 
   describe('Data Persistence', () => {
     it('completed set values persist after navigating away and back', async () => {
-      const { builder, workout, common, getByRole, queryByText, cleanup } =
+      const { builder, workout, common, getByRole, cleanup } =
         await createTestApp()
 
       // Setup workout with two blocks
@@ -263,21 +241,15 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify set is completed using Page Object method
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Navigate to block 2
       await userEvent.click(workout.getFooterButton('next'))
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Navigate back to block 1
       await userEvent.click(workout.getFooterButton('prev'))
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Verify completed set is still visible
       expect(workout.getCompletedSetCount()).toBeGreaterThan(0)
@@ -286,7 +258,7 @@ describe('Workout Set Completion', () => {
     })
 
     it('workout state survives returning to builder and resuming', async () => {
-      const { builder, workout, common, getByRole, queryByRole, cleanup } =
+      const { builder, workout, common, getByRole, cleanup } =
         await createTestApp()
 
       // Setup workout
@@ -305,25 +277,19 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify set is completed using Page Object method
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Go back to builder mode
       await userEvent.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode with Resume button
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /resume workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Resume the workout
       await userEvent.click(getByRole('button', { name: /resume workout/i }))
 
       // Verify we're back in active mode and completed set is preserved
-      await waitFor(() => {
-        expect(queryByRole('timer')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Completed set should still be visible
       await screen.findByRole('table')

@@ -1,7 +1,7 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -23,7 +23,7 @@ describe('Workout Set Editing - Any Set', () => {
 
     // Complete first set
     await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-    await waitFor(() => expect(workout.isSetCompleted(0)).toBe(true))
+    await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
     // Try editing the completed set (set 0)
     const completedRow = workout.getSetRow(0)
@@ -72,7 +72,7 @@ describe('Workout Set Editing - Any Set', () => {
     await userEvent.fill(pendingRow.rir, '2')
     await userEvent.click(pendingRow.complete)
 
-    await waitFor(() => expect(workout.isSetCompleted(2)).toBe(true))
+    await expect.poll(() => workout.isSetCompleted(2)).toBe(true)
 
     app.cleanup()
   })

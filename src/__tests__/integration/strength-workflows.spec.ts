@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -32,9 +32,7 @@ describe('Strength Workflows', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify the first set shows completed state (inputs disabled)
-      await waitFor(() => {
-        expect(workout.isSetCompleted(0)).toBe(true)
-      })
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })
@@ -58,9 +56,7 @@ describe('Strength Workflows', () => {
       await userEvent.click(getByRole('button', { name: /mark set 2 complete/i }))
 
       // Verify 2 sets completed before final set (table still visible)
-      await waitFor(() => {
-        expect(workout.getCompletedSetCount()).toBe(2)
-      })
+      await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
       // Complete set 3 - this triggers workout completion dialog for single-block workouts
       await userEvent.click(getByRole('button', { name: /mark set 3 complete/i }))
@@ -87,12 +83,12 @@ describe('Strength Workflows', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
       // Verify prefilled values in next set using Page Object method
-      await waitFor(() => {
+      await expect.poll(() => {
         const inputs = workout.getActiveRowInputs()
-        expect(inputs).toBeTruthy()
-        expect(inputs?.weight.value).toBe('100')
-        expect(inputs?.reps.value).toBe('5')
-      })
+        return inputs?.weight.value
+      }).toBe('100')
+      const inputs = workout.getActiveRowInputs()
+      expect(inputs?.reps.value).toBe('5')
 
       cleanup()
     })

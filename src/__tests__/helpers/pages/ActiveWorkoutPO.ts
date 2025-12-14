@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { userEvent } from 'vitest/browser'
 import { tryCatch } from '@/lib/tryCatch'
 import type { SetInputs, SetValues, TestContext } from '../types'
 import type { CommonPO } from './CommonPO'

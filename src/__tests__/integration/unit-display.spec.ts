@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { screen } from '@testing-library/vue'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -80,9 +80,7 @@ describe('Unit Display', () => {
     await workout.fillCardSetAndComplete({ weight: '220', reps: '8', rir: '2' })
 
     // Verify set was completed using Page Object method
-    await waitFor(() => {
-      expect(workout.isSetCompleted(0)).toBe(true)
-    })
+    await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
     cleanup()
   })

@@ -1,5 +1,4 @@
-import { waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
@@ -38,7 +37,7 @@ describe('Localization', () => {
 
   describe('Language Switching', () => {
     it('displays English translations when switching from German to English via UI', async () => {
-      const { navigateTo, queryByText, queryByRole, getByRole, findByText, cleanup } =
+      const { navigateTo, queryByText, getByRole, findByText, cleanup } =
         await createTestApp()
 
       // Set German as the starting language
@@ -49,14 +48,9 @@ describe('Localization', () => {
       await navigateTo({ name: RouteNames.Settings })
 
       // Wait for settings page to render in German
-      await waitFor(
-        () => {
-          const heading = queryByRole('heading', { name: /einstellungen/i })
-          expect(heading).toBeTruthy()
-          expect(heading?.textContent).toBe('Einstellungen')
-        },
-        { timeout: 3000 },
-      )
+      const heading = page.getByRole('heading', { name: /einstellungen/i })
+      await expect.element(heading, { timeout: 3000 }).toBeVisible()
+      await expect.element(heading).toHaveTextContent('Einstellungen')
 
       // Verify German labels display
       expect(queryByText(/gewicht/i)).toBeTruthy() // "Gewicht" = Weight in German
@@ -70,13 +64,7 @@ describe('Localization', () => {
       await userEvent.click(englishOption)
 
       // Wait for UI to update to English
-      await waitFor(
-        () => {
-          const heading = queryByRole('heading', { level: 1 })
-          expect(heading?.textContent).toBe('Settings')
-        },
-        { timeout: 3000 },
-      )
+      await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
 
       // Verify English labels display correctly
       const settingsHeading = getByRole('heading', { level: 1 })

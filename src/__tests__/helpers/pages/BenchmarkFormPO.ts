@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
@@ -74,27 +74,20 @@ export class BenchmarkFormPO {
     await this.common.selectExercise(exerciseName)
 
     // Wait for reps dialog to appear
-    await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /set prescribed reps/i })).toBeTruthy()
-    })
+    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).toBeVisible()
 
     // Fill reps
-    const repsInput = screen.getByRole('spinbutton')
-    await userEvent.fill(repsInput, String(reps))
+    const repsInput = page.getByRole('spinbutton')
+    await repsInput.fill(String(reps))
 
     // Confirm
     await userEvent.click(this.common.getDialogButton('Add'))
 
     // Wait for dialog to fully close
-    await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /set prescribed reps/i })).toBeFalsy()
-    })
+    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).not.toBeInTheDocument()
 
     // Ensure body is clickable (no pointer-events: none from overlay)
-    await waitFor(() => {
-      const pointerEvents = window.getComputedStyle(document.body).pointerEvents
-      expect(pointerEvents).not.toBe('none')
-    })
+    await expect.poll(() => window.getComputedStyle(document.body).pointerEvents).not.toBe('none')
   }
 
   /**

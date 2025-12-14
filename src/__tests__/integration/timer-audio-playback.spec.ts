@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
@@ -15,9 +15,7 @@ import {
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
   await userEvent.click(quickTimerCard)
-  await waitFor(() => {
-    expect(testApp.queryByText(/AMRAP/)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
 }
 
 // Helper to start a Tabata timer with short intervals for testing
@@ -28,15 +26,11 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await userEvent.click(screen.getByRole('button', { name: /Tabata/i }))
 
   // Wait for presets and click Custom
-  await waitFor(() => {
-    expect(testApp.queryByText(/Custom/)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/Custom/)).toBeVisible()
   await userEvent.click(screen.getByRole('button', { name: /Custom/i }))
 
   // Wait for custom form
-  await waitFor(() => {
-    expect(testApp.queryByText(/Rounds/)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/Rounds/)).toBeVisible()
 
   // Configure short intervals: 2 rounds, 2s work, 2s rest
   const roundsInput = screen.getByRole('spinbutton', { name: /rounds/i })
@@ -54,9 +48,7 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await userEvent.click(screen.getByRole('button', { name: /start/i }))
 
   // Wait for timer UI
-  await waitFor(() => {
-    expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
-  })
+  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
 
   // Click play button to actually start the timer (the large round button in footer)
   const buttons = screen.getAllByRole('button')
@@ -67,11 +59,11 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await userEvent.click(playBtn)
 
   // Wait for timer to be running
-  await waitFor(() => {
+  await expect.poll(() => {
     // The button should now show pause icon (timer is running)
     const pauseBtn = buttons.find((btn) => btn.classList.contains('rounded-full'))
-    expect(pauseBtn).toBeTruthy()
-  })
+    return pauseBtn
+  }).toBeTruthy()
 }
 
 // Helper to start an EMOM timer with short duration for testing
@@ -82,15 +74,11 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await userEvent.click(screen.getByRole('button', { name: /EMOM/i }))
 
   // Wait for presets and click Custom
-  await waitFor(() => {
-    expect(testApp.queryByText(/Custom/)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/Custom/)).toBeVisible()
   await userEvent.click(screen.getByRole('button', { name: /Custom/i }))
 
   // Wait for custom form
-  await waitFor(() => {
-    expect(testApp.queryByText(/minutes/i)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/minutes/i)).toBeVisible()
 
   // Configure short duration: 2 minutes
   const minutesInput = screen.getByRole('spinbutton', { name: /minutes/i })
@@ -101,9 +89,7 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await userEvent.click(screen.getByRole('button', { name: /start/i }))
 
   // Wait for timer UI
-  await waitFor(() => {
-    expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
-  })
+  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
 
   // Click play button to actually start the timer
   const buttons = screen.getAllByRole('button')
@@ -136,16 +122,12 @@ describe('Timer Audio Playback', () => {
       await startShortTabata(testApp)
 
       // Wait for async audio playback (AudioContext.resume() is async)
-      await waitFor(
-        () => {
-          const mocks = getAudioMocksUnified()
-          // The timer should play work beep immediately on start (880Hz)
-          expect(mocks.createOscillator).toHaveBeenCalled()
-          const oscillator = mocks.createOscillator?.mock.results[0]?.value
-          expect(oscillator?.frequency.value).toBe(880)
-        },
-        { timeout: 3000 },
-      )
+      await expect.poll(() => {
+        const mocks = getAudioMocksUnified()
+        // The timer should play work beep immediately on start (880Hz)
+        const oscillator = mocks.createOscillator?.mock.results[0]?.value
+        return oscillator?.frequency.value
+      }, { timeout: 3000 }).toBe(880)
 
       testApp.cleanup()
     })
@@ -160,13 +142,13 @@ describe('Timer Audio Playback', () => {
       await new Promise((resolve) => setTimeout(resolve, 2500))
 
       // Verify rest beep played (440Hz)
-      await waitFor(() => {
+      await expect.poll(() => {
         const mocks = getAudioMocksUnified()
         const restBeep = mocks.createOscillator?.mock.results.find(
           (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
         )
-        expect(restBeep).toBeDefined()
-      })
+        return restBeep
+      }).toBeDefined()
 
       testApp.cleanup()
     })
@@ -181,13 +163,13 @@ describe('Timer Audio Playback', () => {
       await new Promise((resolve) => setTimeout(resolve, 4500))
 
       // Verify round beep played (660Hz)
-      await waitFor(() => {
+      await expect.poll(() => {
         const mocks = getAudioMocksUnified()
         const roundBeep = mocks.createOscillator?.mock.results.find(
           (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
         )
-        expect(roundBeep).toBeDefined()
-      })
+        return roundBeep
+      }).toBeDefined()
 
       testApp.cleanup()
     })
@@ -200,15 +182,11 @@ describe('Timer Audio Playback', () => {
       const toggle = testApp.getByRole('switch', { name: /timer sounds/i })
       await userEvent.click(toggle)
 
-      await waitFor(() => {
-        expect(toggle.getAttribute('aria-checked')).toBe('false')
-      })
+      await expect.poll(() => toggle.getAttribute('aria-checked')).toBe('false')
 
       // Navigate back to home and start timer
       await userEvent.click(screen.getByRole('button', { name: /home/i }))
-      await waitFor(() => {
-        expect(testApp.queryByText(/quick timer/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/quick timer/i)).toBeVisible()
 
       clearAudioMocksUnified()
 

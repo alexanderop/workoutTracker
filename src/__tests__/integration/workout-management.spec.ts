@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -10,7 +10,7 @@ describe('Workout Management', () => {
 
   describe('Hybrid Workouts', () => {
     it('creates a workout with strength and timed blocks, executes it, and finishes', async () => {
-      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, cleanup } = await createTestApp()
 
       // Start new workout from home page
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -33,10 +33,8 @@ describe('Workout Management', () => {
       await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog opens - wait for it
-      await waitFor(() => {
-        const dialog = getByRole('dialog')
-        expect(dialog.textContent).toContain('Configure')
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expect.element(page.getByText(/Configure/)).toBeVisible()
 
       // Set duration to 8 minutes and add exercise
       await userEvent.click(common.getDialogButton('8'))
@@ -56,9 +54,7 @@ describe('Workout Management', () => {
       await builder.startWorkout()
 
       // Verify we're in active mode showing "Block 1 of 2"
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Complete a set in the strength block - wait for table to render
       await screen.findByRole('table')
@@ -68,29 +64,23 @@ describe('Workout Management', () => {
       await userEvent.click(workout.getFooterButton('next'))
 
       // Verify we're on AMRAP block
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
-      expect(queryByText('Push-ups')).toBeTruthy()
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
+      await expect.element(page.getByText('Push-ups')).toBeVisible()
 
       // Verify AMRAP Start button exists
-      expect(queryByRole('button', { name: /start/i })).toBeTruthy()
+      await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
 
       // Finish the workout via menu
-      await waitFor(() => {
-        expect(workout.getMenuTrigger()).toBeTruthy()
-      })
+      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(workout.getMenuTrigger())
 
       // Wait for menu to open and click End Workout
-      await waitFor(() => {
-        expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       await common.waitForDialog()
       // Dialog title is "Finish Workout?" - verify dialog is open
-      expect(queryByRole('heading', { name: /finish workout/i })).toBeTruthy()
+      await expect.element(page.getByRole('heading', { name: /finish workout/i })).toBeVisible()
 
       const nameInput = getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(nameInput)
@@ -99,25 +89,15 @@ describe('Workout Management', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
-      await waitFor(() => {
-        expect(queryByText(/workout complete/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = await waitFor(
-        () => {
-          const button = getByRole('button', { name: /view details/i })
-          // Ensure button animation has started (not opacity-0)
-          if (button.classList.contains('opacity-0')) {
-            throw new Error('Button still has opacity-0')
-          }
-          return button
-        },
-        { timeout: 2000 },
-      )
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
-      await userEvent.click(viewDetailsButton)
+      await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -146,24 +126,18 @@ describe('Workout Management', () => {
 
       // Start workout
       await builder.startWorkout()
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Navigate to next block
       await userEvent.click(workout.getFooterButton('next'))
 
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
       expect(queryByText('Deadlift')).toBeTruthy()
 
       // Navigate back to first block
       await userEvent.click(workout.getFooterButton('prev'))
 
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
       expect(queryByText('Bench Press')).toBeTruthy()
 
       cleanup()
@@ -195,7 +169,7 @@ describe('Workout Management', () => {
     })
 
     it('shows "Resume Workout" with RotateCcw icon after completing a set', async () => {
-      const { builder, workout, common, getByRole, queryByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -217,9 +191,7 @@ describe('Workout Management', () => {
       await userEvent.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode to render
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /resume workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Verify the button shows "Resume Workout"
       // Button text "Resume Workout" indicates workout in progress
@@ -233,7 +205,7 @@ describe('Workout Management', () => {
     })
 
     it('allows resuming workout from Continue button', async () => {
-      const { builder, workout, common, getByRole, queryByRole, cleanup } =
+      const { builder, workout, common, getByRole, cleanup } =
         await createTestApp()
 
       // Navigate to workout builder
@@ -253,17 +225,13 @@ describe('Workout Management', () => {
       await userEvent.click(getByRole('button', { name: /go back/i }))
 
       // Wait for builder mode
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /resume workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Click Resume Workout
       await userEvent.click(getByRole('button', { name: /resume workout/i }))
 
       // Verify we're back in active mode by checking for timer badge
-      await waitFor(() => {
-        expect(queryByRole('timer')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Verify table is visible with the resumed workout data
       await screen.findByRole('table')
@@ -272,7 +240,7 @@ describe('Workout Management', () => {
     })
 
     it('shows duration badge with timer icon and pulsing indicator in active mode', async () => {
-      const { builder, common, getByRole, queryByRole, cleanup } = await createTestApp()
+      const { builder, common, getByRole, cleanup } = await createTestApp()
 
       // Navigate to workout builder
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -287,9 +255,7 @@ describe('Workout Management', () => {
       await builder.startWorkout()
 
       // Wait for active mode to render and verify duration badge appears
-      await waitFor(() => {
-        expect(queryByRole('timer')).toBeTruthy()
-      })
+      await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Verify the badge contains a time format (m:ss or mm:ss)
       const badge = document.querySelector('.tabular-nums')
@@ -306,7 +272,7 @@ describe('Workout Management', () => {
 
   describe('Cancel', () => {
     it('can cancel a workout and return to home', async () => {
-      const { builder, workout, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, router, getByRole, cleanup } = await createTestApp()
 
       // Start and add a block
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -319,20 +285,14 @@ describe('Workout Management', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Open menu and cancel - wait for the menu trigger to be available
-      await waitFor(() => {
-        expect(workout.getMenuTrigger()).toBeTruthy()
-      })
+      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(workout.getMenuTrigger())
 
       // Wait for menu to open and click Cancel Workout
-      await waitFor(() => {
-        expect(queryByRole('menuitem', { name: /cancel workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('menuitem', { name: /cancel workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /cancel workout/i }))
 
       // Confirm cancel dialog (button is "Delete Workout")

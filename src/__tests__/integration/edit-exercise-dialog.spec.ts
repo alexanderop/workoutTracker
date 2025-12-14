@@ -1,6 +1,6 @@
-import { screen, waitFor, within } from '@testing-library/vue'
+import { screen, within } from '@testing-library/vue'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -91,10 +91,10 @@ describe('Edit Exercise Dialog', () => {
     await screen.findByRole('table')
 
     // Verify table has 5 sets
-    await waitFor(() => {
+    await expect.poll(() => {
       const rows = within(screen.getByRole('table')).getAllByRole('row')
-      expect(rows.length).toBe(6) // 1 header + 5 data rows
-    })
+      return rows.length
+    }).toBe(6) // 1 header + 5 data rows
 
     cleanup()
   })

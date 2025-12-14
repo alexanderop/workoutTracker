@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/vue'
-import { userEvent } from '@vitest/browser/context'
+import { userEvent } from 'vitest/browser'
 import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 

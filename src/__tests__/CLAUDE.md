@@ -6,7 +6,7 @@ AI agent guidance for testing in this Vue 3 PWA.
 
 **Framework**: Vitest 4 with **Playwright browser mode** (NOT jsdom)
 
-**Libraries**: Testing Library (Vue), fake-indexeddb, Vitest Browser userEvent
+**Libraries**: Testing Library (Vue), Vitest Browser locators (`page.getBy*`), fake-indexeddb
 
 **Test Types**:
 - **Unit tests** (`src/__tests__/composables/`) - Direct composable testing
@@ -102,8 +102,7 @@ For full app rendering with router, Pinia, and i18n:
 
 ```ts
 import { createTestApp } from '@/__tests__/helpers/createTestApp'
-
-import { userEvent } from '@vitest/browser/context'
+import { page, userEvent } from 'vitest/browser'
 
 it('navigates through workout flow', async () => {
   const app = await createTestApp({ initialRoute: '/' })
@@ -115,9 +114,9 @@ it('navigates through workout flow', async () => {
   await app.workout.clickStartWorkout()
   await app.workout.fillExerciseInput('Squat')
 
-  // Or use raw Testing Library queries
-  const button = app.getByRole('button', { name: /start/i })
-  await userEvent.click(button)
+  // Or use Vitest Browser locators for assertions with built-in retry
+  await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
+  await page.getByRole('button', { name: /start/i }).click()
 
   app.cleanup()
 })
@@ -181,7 +180,7 @@ await app.queue.selectBlock(0)
 // Common page object (dialogs, navigation)
 await app.common.waitForDialog()
 const confirmButton = app.common.getDialogButton('Confirm')
-await userEvent.click(confirmButton) // import { userEvent } from '@vitest/browser/context'
+await userEvent.click(confirmButton) // import { page, userEvent } from 'vitest/browser'
 app.common.assertDialogClosed()
 ```
 
@@ -341,18 +340,31 @@ beforeEach(async () => {
 })
 ```
 
-### 2. Wait for Async Operations
+### 2. Wait for Async Operations with `expect.element` / `expect.poll`
+
+Use Vitest Browser's built-in retry-able assertions instead of Testing Library's `waitFor`:
 
 ```ts
-// ❌ BAD - doesn't wait for navigation
-await app.navigateTo('/workout')
-expect(app.router.currentRoute.value.path).toBe('/workout') // May fail
+import { page } from 'vitest/browser'
 
-// ✅ GOOD - wait for route change
-await app.navigateTo('/workout')
-await waitFor(() => {
-  expect(app.router.currentRoute.value.path).toBe('/workout')
-})
+// ✅ Element visibility - use expect.element() with retry
+await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+
+// ✅ Non-DOM state (router, objects) - use expect.poll()
+await expect.poll(() => app.router.currentRoute.value.path).toBe('/workout')
+
+// ✅ Database assertions - use expect.poll() with async callback
+await expect.poll(async () => {
+  const template = await db.templates.get('id')
+  return template?.name
+}).toBe('My Template')
+
+// ✅ Element state checks - use expect.poll() for non-locator values
+await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
+
+// ✅ Custom timeout when needed
+await expect.element(page.getByText(/loading/i), { timeout: 5000 }).toBeVisible()
 ```
 
 ### 3. Cleanup Is Required
@@ -373,10 +385,10 @@ it('my test', async () => {
 })
 ```
 
-### 4. Use Vitest Browser `userEvent`, Not `fireEvent`
+### 4. Use Vitest Browser `userEvent` and Locators
 
 ```ts
-import { userEvent } from '@vitest/browser/context'
+import { page, userEvent } from 'vitest/browser'
 
 // ❌ BAD - fireEvent is low-level
 fireEvent.click(button)
@@ -385,9 +397,12 @@ fireEvent.click(button)
 await userEvent.click(button)
 await userEvent.fill(input, 'text') // fill() clears then types
 await userEvent.keyboard('{Escape}')
+
+// ✅ EVEN BETTER - use locators directly for clicks
+await page.getByRole('button', { name: /start/i }).click()
 ```
 
-Import `userEvent` from `@vitest/browser/context` in any test file where you need user interactions.
+Import `page` and `userEvent` from `vitest/browser` in any test file.
 
 ## Pre-PR Checks
 
@@ -408,5 +423,5 @@ pnpm lint src/__tests__
 - [ ] Database reset in `beforeEach`
 - [ ] `app.cleanup()` called at end of test
 - [ ] Uses page objects (not raw DOM queries)
-- [ ] Waits for async operations (`waitFor`, `flushPromises`)
-- [ ] Uses `getByRole` for interactive elements
+- [ ] Waits for async: `expect.element()` for DOM, `expect.poll()` for state
+- [ ] Uses `page.getByRole` for interactive elements (prefer over Testing Library queries)

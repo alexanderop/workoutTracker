@@ -1,6 +1,5 @@
-import { waitFor } from '@testing-library/vue'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -42,9 +41,7 @@ describe('Timer Audio Settings', () => {
 
       await userEvent.click(toggle)
 
-      await waitFor(() => {
-        expect(toggle.getAttribute('aria-checked')).toBe('false')
-      })
+      await expect.poll(() => toggle.getAttribute('aria-checked')).toBe('false')
 
       const settings = useSettingsStore()
       expect(settings.timerSoundEnabled).toBe(false)
@@ -60,9 +57,7 @@ describe('Timer Audio Settings', () => {
       const toggle = getByRole('switch', { name: /timer sounds/i })
       await userEvent.click(toggle)
 
-      await waitFor(() => {
-        expect(toggle.getAttribute('aria-checked')).toBe('false')
-      })
+      await expect.poll(() => toggle.getAttribute('aria-checked')).toBe('false')
 
       await common.navigateToExercises()
       await common.navigateToSettings()

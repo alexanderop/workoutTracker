@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -10,7 +10,7 @@ describe('Custom Exercise Flow', () => {
   afterEach(cleanupIntegrationTest)
 
   it('creates a custom exercise and displays it in the exercises view', async () => {
-    const { common, getByRole, queryByText, cleanup } = await createTestApp()
+    const { common, getByRole, cleanup } = await createTestApp()
 
     // Step 1: Navigate to exercises view
     await common.navigateToExercises()
@@ -32,15 +32,13 @@ describe('Custom Exercise Flow', () => {
     await common.waitForRoute(/^\/exercises$/)
 
     // Step 6: Assert custom exercise appears in the list
-    await waitFor(() => {
-      expect(queryByText('My Awesome Lift')).toBeTruthy()
-    })
+    await expect.element(page.getByText('My Awesome Lift')).toBeVisible()
 
     cleanup()
   })
 
   it('creates a custom exercise and shows it in the add exercise dialog', async () => {
-    const { common, router, getByRole, queryByText, cleanup } = await createTestApp()
+    const { common, router, getByRole, cleanup } = await createTestApp()
 
     // Create custom exercise via UI
     await common.navigateToExercises()
@@ -63,15 +61,13 @@ describe('Custom Exercise Flow', () => {
     await common.waitForDialog()
 
     // Assert: Custom exercise appears in the dialog
-    await waitFor(() => {
-      expect(queryByText('Custom Compound Move')).toBeTruthy()
-    })
+    await expect.element(page.getByText('Custom Compound Move')).toBeVisible()
 
     cleanup()
   })
 
   it('finds created custom exercise via search', async () => {
-    const { common, getByRole, queryByText, cleanup } = await createTestApp()
+    const { common, getByRole, cleanup } = await createTestApp()
 
     // Create custom exercise with unique name
     await common.navigateToExercises()
@@ -92,9 +88,7 @@ describe('Custom Exercise Flow', () => {
     await userEvent.fill(searchInput, 'Zyzz')
 
     // Assert: Custom exercise found via search
-    await waitFor(() => {
-      expect(queryByText('Zyzz Special Curl')).toBeTruthy()
-    })
+    await expect.element(page.getByText('Zyzz Special Curl')).toBeVisible()
 
     cleanup()
   })
@@ -151,9 +145,7 @@ describe('Custom Exercise Flow', () => {
       await userEvent.fill(nameInput, 'Valid Exercise')
 
       // Assert save button is now enabled
-      await waitFor(() => {
-        expect(saveButton.hasAttribute('disabled')).toBe(false)
-      })
+      await expect.poll(() => saveButton.hasAttribute('disabled')).toBe(false)
 
       cleanup()
     })
@@ -161,7 +153,7 @@ describe('Custom Exercise Flow', () => {
 
   describe('Full User Journey', () => {
     it('creates custom exercise and uses it to complete a workout', async () => {
-      const { builder, common, workout, router, getByRole, queryByText, queryByRole, cleanup } =
+      const { builder, common, workout, router, getByRole, cleanup } =
         await createTestApp()
 
       // ========================================
@@ -195,9 +187,7 @@ describe('Custom Exercise Flow', () => {
       // PHASE 4: Start workout and complete a set
       // ========================================
       await builder.startWorkout()
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Fill and complete a set
       await workout.fillCardSetAndComplete({ weight: '60', reps: '12', rir: '3' })
@@ -205,12 +195,10 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 5: Finish workout
       // ========================================
-      await waitFor(() => expect(workout.getMenuTrigger()).toBeTruthy())
+      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(workout.getMenuTrigger())
 
-      await waitFor(() => {
-        expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       await common.waitForDialog()
@@ -222,25 +210,15 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 6: Wait for completion screen
       // ========================================
-      await waitFor(() => {
-        expect(queryByText(/workout complete/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = await waitFor(
-        () => {
-          const button = getByRole('button', { name: /view details/i })
-          // Ensure button animation has started (not opacity-0)
-          if (button.classList.contains('opacity-0')) {
-            throw new Error('Button still has opacity-0')
-          }
-          return button
-        },
-        { timeout: 2000 },
-      )
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
-      await userEvent.click(viewDetailsButton)
+      await viewDetailsButton.click()
 
       // ========================================
       // PHASE 7: Verify summary

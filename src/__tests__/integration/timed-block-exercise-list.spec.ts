@@ -6,16 +6,16 @@
  * - Editing reps and load values
  * - Removing exercises
  */
-import { screen, waitFor } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Helper to open AMRAP config dialog
 async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestApp>>) {
-  const { builder, getByRole, common } = app
+  const { builder, common } = app
 
   await builder.navigateTo()
   await builder.openAddBlockDialog()
@@ -23,10 +23,7 @@ async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestAp
   await userEvent.click(common.getDialogButton('AMRAP'))
 
   // Wait for config dialog to open
-  await waitFor(() => {
-    const dialog = getByRole('dialog')
-    expect(dialog.textContent).toContain('Configure')
-  })
+  await expect.element(page.getByText('Configure')).toBeVisible()
 }
 
 // Helper to add exercise via the overlay picker (not dialog mode)
@@ -39,23 +36,16 @@ async function addExerciseViaOverlay(
   // Click Add Exercise button in the config dialog
   await userEvent.click(common.getDialogButton('Add Exercise'))
 
-  // Wait for overlay to appear (it has a search input)
-  await waitFor(() => {
-    const inputs = screen.getAllByRole('textbox')
-    expect(inputs.length).toBeGreaterThan(0)
-  })
+  // Wait for exercise picker overlay to appear by looking for the search placeholder
+  await expect.element(page.getByPlaceholder(/search exercises/i)).toBeVisible()
 
-  // Find the search input in the overlay (the second textbox, after the duration input)
-  const inputs = screen.getAllByRole('textbox')
-  const searchInput = inputs[inputs.length - 1]
-  if (!searchInput) throw new Error('Search input not found')
+  // Find the search input using placeholder
+  const searchInput = screen.getByPlaceholderText(/search exercises/i)
 
   await userEvent.fill(searchInput, exerciseName)
 
   // Wait for filtered results and click the exercise button
-  await waitFor(() => {
-    expect(screen.queryByText(exerciseName)).toBeTruthy()
-  })
+  await expect.element(page.getByText(exerciseName, { exact: true })).toBeVisible()
 
   // Find and click the exercise button (it's a button containing the exercise name)
   const buttons = screen.getAllByRole('button')
@@ -65,10 +55,10 @@ async function addExerciseViaOverlay(
   await userEvent.click(exerciseButton)
 
   // Wait for exercise to appear in the list (overlay should close in multi mode but exercise stays)
-  await waitFor(() => {
+  await expect.poll(() => {
     const dialog = getByRole('dialog')
-    expect(dialog.textContent).toContain(exerciseName)
-  })
+    return dialog.textContent?.includes(exerciseName)
+  }).toBe(true)
 }
 
 // Type guard for HTMLInputElement
@@ -234,9 +224,7 @@ describe('Timed Block Exercise List', () => {
       await userEvent.click(removeButtons[0]!)
 
       // First exercise should be removed, second should remain
-      await waitFor(() => {
-        expect(dialog.textContent).not.toContain('Push-ups')
-      })
+      await expect.poll(() => dialog.textContent?.includes('Push-ups')).toBe(false)
       expect(dialog.textContent).toContain('Pull-ups')
 
       app.cleanup()
@@ -254,10 +242,7 @@ describe('Timed Block Exercise List', () => {
       await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Exercise picker overlay should open (has a search input and exercise list)
-      await waitFor(() => {
-        // The overlay should show exercises to pick from
-        expect(screen.queryByText('Push-ups')).toBeTruthy()
-      })
+      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       app.cleanup()
     })

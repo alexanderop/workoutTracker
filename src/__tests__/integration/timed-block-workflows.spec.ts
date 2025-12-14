@@ -1,6 +1,5 @@
-import { waitFor } from '@testing-library/vue'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { userEvent } from '@vitest/browser/context'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -9,42 +8,28 @@ async function endWorkoutViaMenu(
   workout: Awaited<ReturnType<typeof createTestApp>>['workout'],
   common: Awaited<ReturnType<typeof createTestApp>>['common'],
   getByRole: Awaited<ReturnType<typeof createTestApp>>['getByRole'],
-  queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
-  queryByText: Awaited<ReturnType<typeof createTestApp>>['queryByText'],
+  _queryByRole: Awaited<ReturnType<typeof createTestApp>>['queryByRole'],
+  _queryByText: Awaited<ReturnType<typeof createTestApp>>['queryByText'],
 ) {
-  await waitFor(() => {
-    expect(workout.getMenuTrigger()).toBeTruthy()
-  })
+  await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
   await userEvent.click(workout.getMenuTrigger())
 
-  await waitFor(() => {
-    expect(queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-  })
+  await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
   await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
   await common.waitForDialog()
   await userEvent.click(common.getDialogButton('Finish Workout'))
 
   // Wait for completion screen
-  await waitFor(() => {
-    expect(queryByText(/workout complete/i)).toBeTruthy()
-  })
+  await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
   // Wait for View Details button to be clickable (animation needs to complete)
-  const viewDetailsButton = await waitFor(
-    () => {
-      const button = getByRole('button', { name: /view details/i })
-      // Ensure button animation has started (not opacity-0)
-      if (button.classList.contains('opacity-0')) {
-        throw new Error('Button still has opacity-0')
-      }
-      return button
-    },
-    { timeout: 2000 },
-  )
+  const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+  await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+  await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
   // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
   await new Promise((resolve) => setTimeout(resolve, 700))
-  await userEvent.click(viewDetailsButton)
+  await viewDetailsButton.click()
 
   await common.waitForRoute(/^\/workout\/summary\//)
 }
@@ -78,10 +63,8 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Wait for configuration dialog
-      await waitFor(() => {
-        const dialog = getByRole('dialog')
-        expect(dialog.textContent).toContain('Configure')
-      })
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expect.element(page.getByText(/Configure/)).toBeVisible()
 
       // Add an exercise to the AMRAP
       await userEvent.click(common.getDialogButton('Add Exercise'))
@@ -101,9 +84,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Timer should display (verify Start button appears)
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
@@ -127,10 +108,8 @@ describe('Timed Block Workflows', () => {
       await userEvent.fill(searchInput, 'bench')
 
       // Only matching exercise should remain
-      await waitFor(() => {
-        expect(queryByText('Bench Press')).toBeTruthy()
-        expect(queryByText('Squat')).toBeFalsy()
-      })
+      await expect.element(page.getByText('Bench Press')).toBeVisible()
+      await expect.element(page.getByText('Squat')).not.toBeInTheDocument()
 
       // Select the filtered exercise and verify it adds to workout
       await userEvent.click(common.getDialogButton('Bench Press'))
@@ -165,9 +144,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify AMRAP view is shown with Start button
       expect(queryByRole('heading', { name: /amrap/i })).toBeTruthy()
@@ -187,7 +164,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('creates EMOM block and shows minute display', async () => {
-      const { builder, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, getByRole, cleanup } = await createTestApp()
 
       // Start new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -199,18 +176,16 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode with EMOM
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify EMOM view shows minute counter (format: "1 / 10 MIN")
-      expect(queryByText(/min/i)).toBeTruthy()
+      await expect.element(page.getByText(/min/i)).toBeVisible()
 
       // Verify Start button exists
-      expect(queryByRole('button', { name: /start/i })).toBeTruthy()
+      await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
 
       // Verify exercise is displayed
-      expect(queryByText('Push-ups')).toBeTruthy()
+      await expect.element(page.getByText('Push-ups')).toBeVisible()
 
       cleanup()
     })
@@ -228,9 +203,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode with Tabata
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify Tabata view shows phase badge (exact uppercase match)
       expect(queryByText('WORK')).toBeTruthy()
@@ -242,7 +215,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('creates For Time block and completes with Done button', async () => {
-      const { builder, common, router, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, common, router, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Start new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -254,9 +227,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify For Time view is shown with Done button (not Start/Pause)
       expect(queryByRole('heading', { name: /for time/i })).toBeTruthy()
@@ -271,25 +242,15 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
-      await waitFor(() => {
-        expect(queryByText(/workout complete/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = await waitFor(
-        () => {
-          const button = getByRole('button', { name: /view details/i })
-          // Ensure button animation has started (not opacity-0)
-          if (button.classList.contains('opacity-0')) {
-            throw new Error('Button still has opacity-0')
-          }
-          return button
-        },
-        { timeout: 2000 },
-      )
+      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
+      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
-      await userEvent.click(viewDetailsButton)
+      await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -298,7 +259,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('navigates between strength and timed blocks in hybrid workout', async () => {
-      const { builder, workout, common, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, workout, common, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Start new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -320,9 +281,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode on first block (strength)
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Verify strength view shows Complete Set button
       expect(queryByRole('button', { name: /complete set/i })).toBeTruthy()
@@ -330,9 +289,7 @@ describe('Timed Block Workflows', () => {
       // Navigate to AMRAP block
       await userEvent.click(workout.getFooterButton('next'))
 
-      await waitFor(() => {
-        expect(queryByText(/block 2 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Verify AMRAP view shows Start button
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
@@ -340,9 +297,7 @@ describe('Timed Block Workflows', () => {
       // Navigate back to strength block
       await userEvent.click(workout.getFooterButton('prev'))
 
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 2/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Verify back on strength view
       expect(queryByRole('button', { name: /complete set/i })).toBeTruthy()
@@ -366,9 +321,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify AMRAP UI elements
       expect(queryByRole('heading', { name: /amrap/i })).toBeTruthy()
@@ -379,11 +332,13 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Wait for +1 button to be enabled (timer must be running)
-      await waitFor(() => {
+      await expect.poll(() => {
         const plusButton = queryByRole('button', { name: /\+1/i })
-        expect(plusButton).toBeTruthy()
-        expect(plusButton).toHaveProperty('disabled', false)
-      })
+        if (plusButton instanceof HTMLButtonElement) {
+          return !plusButton.disabled
+        }
+        return false
+      }).toBe(true)
 
       // Increment rounds
       await userEvent.click(getByRole('button', { name: /\+1/i }))
@@ -398,7 +353,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('timer button changes to Pause when running', async () => {
-      const { builder, getByRole, queryByRole, queryByText, cleanup } = await createTestApp()
+      const { builder, getByRole, queryByRole, cleanup } = await createTestApp()
 
       // Start new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -408,9 +363,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify Start button exists
       expect(queryByRole('button', { name: /start/i })).toBeTruthy()
@@ -420,9 +373,7 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Verify button changed to Pause
-      await waitFor(() => {
-        expect(queryByRole('button', { name: /pause/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('button', { name: /pause/i })).toBeVisible()
       expect(queryByRole('button', { name: /start/i })).toBeNull()
 
       cleanup()
@@ -444,9 +395,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify AMRAP UI shows
       expect(queryByRole('heading', { name: /amrap/i })).toBeTruthy()
@@ -456,11 +405,13 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(getByRole('button', { name: /start/i }))
 
       // Wait for +1 button to be enabled (timer must be running)
-      await waitFor(() => {
+      await expect.poll(() => {
         const plusButton = queryByRole('button', { name: /\+1/i })
-        expect(plusButton).toBeTruthy()
-        expect(plusButton).toHaveProperty('disabled', false)
-      })
+        if (plusButton instanceof HTMLButtonElement) {
+          return !plusButton.disabled
+        }
+        return false
+      }).toBe(true)
 
       // Click +1 to record rounds
       await userEvent.click(getByRole('button', { name: /\+1/i }))
@@ -468,18 +419,14 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(getByRole('button', { name: /\+1/i }))
 
       // Verify rounds count shows 3
-      await waitFor(() => {
-        expect(queryByText('3')).toBeTruthy()
-      })
+      await expect.element(page.getByText('3')).toBeVisible()
 
       // End workout via menu and verify summary page
       await endWorkoutViaMenu(workout, common, getByRole, queryByRole, queryByText)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows the workout completed
-      await waitFor(() => {
-        expect(queryByRole('heading', { name: /workout complete/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
 
       cleanup()
     })
@@ -497,9 +444,7 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode with EMOM
-      await waitFor(() => {
-        expect(queryByText(/block 1 of 1/i)).toBeTruthy()
-      })
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Verify EMOM view shows minute counter (format: "1 / 10 MIN")
       expect(queryByText(/min/i)).toBeTruthy()
@@ -513,9 +458,7 @@ describe('Timed Block Workflows', () => {
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
       // Verify summary page shows workout completed
-      await waitFor(() => {
-        expect(queryByRole('heading', { name: /workout complete/i })).toBeTruthy()
-      })
+      await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
 
       cleanup()
     })
