@@ -12,3 +12,23 @@ export { createDbStrengthBlock, createDbStrengthBlockWithSets } from './dbBlock.
 export { createDbExercise, createDbExerciseWithSets } from './dbExercise.factory'
 export { createDbCompletedWorkout, DbWorkoutBuilder, dbWorkoutBuilder } from './dbWorkout.factory'
 export { createDbTemplate, createDbTemplateStrengthBlock } from './template.factory'
+
+// Benchmark factories
+export {
+  createDbBenchmark,
+  createDbBenchmarkExercise,
+  createDbForTimeBenchmark,
+  createDbRoundsBenchmark,
+} from './benchmark.factory'
+
+// Timed block factories
+export {
+  createDbAmrapBlock,
+  createDbAmrapResult,
+  createDbBlockExercise,
+  createDbForTimeBlock,
+  createDbForTimeResult,
+} from './timedBlock.factory'
+
+// Utility
+export { generateId } from '@/db'

@@ -3,8 +3,15 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db, getBenchmarksRepository, getWorkoutsRepository } from '@/db'
-import type { DbBenchmark, DbCompletedWorkout, DbForTimeBlock } from '@/db/schema'
+import type { DbBenchmark, DbCompletedWorkout } from '@/db/schema'
 import { RouteNames } from '@/router'
+import {
+  createDbBenchmarkExercise,
+  createDbBlockExercise,
+  createDbForTimeBlock,
+  createDbForTimeResult,
+  generateId,
+} from '../factories'
 
 /**
  * Comprehensive integration tests for the Benchmark feature.
@@ -34,14 +41,15 @@ async function createForTimeBenchmark(options?: {
     name: options?.name ?? 'Fran',
     type: 'fortime',
     rounds: 1,
-    exercises: options?.exercises?.map(ex => ({
-      exerciseDefinitionId: null,
-      name: ex.name,
-      prescribedReps: ex.reps,
-      thumbnail: '💪',
-    })) ?? [
-      { exerciseDefinitionId: null, name: 'Thrusters', prescribedReps: 21, thumbnail: '🏋️' },
-      { exerciseDefinitionId: null, name: 'Pull-ups', prescribedReps: 21, thumbnail: '💪' },
+    exercises: options?.exercises?.map(ex =>
+      createDbBenchmarkExercise({
+        name: ex.name,
+        prescribedReps: ex.reps,
+        thumbnail: '💪',
+      }),
+    ) ?? [
+      createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21, thumbnail: '🏋️' }),
+      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21, thumbnail: '💪' }),
     ],
   })
 }
@@ -58,12 +66,13 @@ async function createRoundsBenchmark(options: {
     name: options.name,
     type: 'rounds',
     rounds: options.rounds,
-    exercises: options.exercises.map(ex => ({
-      exerciseDefinitionId: null,
-      name: ex.name,
-      prescribedReps: ex.reps,
-      thumbnail: '💪',
-    })),
+    exercises: options.exercises.map(ex =>
+      createDbBenchmarkExercise({
+        name: ex.name,
+        prescribedReps: ex.reps,
+        thumbnail: '💪',
+      }),
+    ),
   })
 }
 
@@ -146,27 +155,22 @@ async function createCompletedAttempt(
   const startedAt = now - (daysAgo * 24 * 60 * 60 * 1000) - (completionTime * 1000)
   const completedAt = now - (daysAgo * 24 * 60 * 60 * 1000)
 
-  const forTimeBlock: DbForTimeBlock = {
-    kind: 'fortime',
-    id: `block-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-    config: { timeCapSeconds: null },
-    exercises: benchmark.exercises.map((ex) => ({
-      id: `ex-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      name: ex.name,
-      prescribedReps: ex.prescribedReps,
-      load: null,
-      thumbnail: ex.thumbnail,
-    })),
-    result: {
+  const forTimeBlock = createDbForTimeBlock({
+    exercises: benchmark.exercises.map(ex =>
+      createDbBlockExercise({
+        name: ex.name,
+        prescribedReps: ex.prescribedReps,
+        thumbnail: ex.thumbnail,
+      }),
+    ),
+    result: createDbForTimeResult({
       completionTime,
-      completed: true,
       splitTimes: splitTimes ?? [],
-    },
-    orderIndex: 0,
-  }
+    }),
+  })
 
   const workout: DbCompletedWorkout = {
-    id: `workout-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+    id: generateId(),
     name: benchmark.name,
     benchmarkId,
     startedAt,
