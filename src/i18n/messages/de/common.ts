@@ -86,4 +86,5 @@ export default {
     today: 'Heute',
     yesterday: 'Gestern',
   },
+  goBack: 'Zurück',
 } as const

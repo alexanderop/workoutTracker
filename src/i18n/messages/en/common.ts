@@ -95,4 +95,6 @@ export default {
     today: 'Today',
     yesterday: 'Yesterday',
   },
+  goBack: 'Go back',
+  reps: 'reps',
 } as const
