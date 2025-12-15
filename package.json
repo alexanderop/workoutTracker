@@ -48,7 +48,7 @@
     "vue": "^3.5.22",
     "vue-i18n": "^11.2.2",
     "vue-router": "^4.6.3",
-    "zod": "^4.1.13"
+    "zod": "^4.2.0"
   },
   "lint-staged": {
     "*.{ts,vue,js}": "eslint --fix --cache"
