@@ -377,6 +377,7 @@ export type DbUserSetting =
   | { key: 'timerSoundEnabled'; value: boolean }
   | { key: 'timerSoundVolume'; value: number }
   | { key: 'language'; value: 'en' | 'de' }
+  | { key: 'workoutHoursPerWeek'; value: number | null }
 
 export type UserSettingKey = DbUserSetting['key']
 

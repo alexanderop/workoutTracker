@@ -4,6 +4,7 @@ export default {
   sections: {
     units: 'Einheiten',
     appearance: 'Erscheinungsbild',
+    goals: 'Ziele',
     screen: 'Bildschirm',
     data: 'Daten',
     dangerZone: 'Gefahrenzone',
@@ -35,6 +36,9 @@ export default {
     ariaExportData: 'Daten exportieren',
     ariaImportData: 'Daten importieren',
     ariaDeleteAllData: 'Alle Daten löschen',
+    workoutHoursPerWeek: 'Wöchentliches Trainingsziel',
+    workoutHoursPlaceholder: 'z.B. 5',
+    workoutHoursDescription: 'Legen Sie Ihr Ziel für Trainingsstunden pro Woche fest (0-168)',
   },
   languages: {
     en: 'English',

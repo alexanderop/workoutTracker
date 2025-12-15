@@ -81,6 +81,16 @@ const languageSettingSchema = z
   .strict()
 
 /**
+ * Workout hours per week setting schema.
+ */
+const workoutHoursPerWeekSettingSchema = z
+  .object({
+    key: z.literal('workoutHoursPerWeek'),
+    value: z.number().min(0).max(168).nullable(), // max 168 hours per week
+  })
+  .strict()
+
+/**
  * DbUserSetting discriminated union schema.
  * Matches src/db/schema.ts DbUserSetting type.
  */
@@ -93,4 +103,5 @@ export const dbUserSettingSchema = z.discriminatedUnion('key', [
   screenWakeLockSettingSchema,
   timerSoundEnabledSettingSchema,
   languageSettingSchema,
+  workoutHoursPerWeekSettingSchema,
 ])

@@ -4,6 +4,7 @@ export default {
   sections: {
     units: 'Units',
     appearance: 'Appearance',
+    goals: 'Goals',
     screen: 'Screen',
     data: 'Data',
     dangerZone: 'Danger Zone',
@@ -35,6 +36,9 @@ export default {
     ariaExportData: 'Export Data',
     ariaImportData: 'Import Data',
     ariaDeleteAllData: 'Delete All Data',
+    workoutHoursPerWeek: 'Weekly Workout Goal',
+    workoutHoursPlaceholder: 'e.g., 5',
+    workoutHoursDescription: 'Set your target workout hours per week (0-168)',
   },
   languages: {
     en: 'English',

@@ -27,6 +27,7 @@ export type SettingDefaults = {
   timerSoundEnabled: boolean
   timerSoundVolume: number
   language: 'en' | 'de' | undefined
+  workoutHoursPerWeek: number | null
 }
 
 export type SettingsRepository = {
@@ -66,6 +67,10 @@ export type SettingsRepository = {
    * Retrieve language setting with fallback to default (undefined).
    */
   get(key: 'language'): Promise<'en' | 'de' | undefined>
+  /**
+   * Retrieve workout hours per week setting with fallback to default (null).
+   */
+  get(key: 'workoutHoursPerWeek'): Promise<number | null>
   /**
    * Save or update a user setting in the database.
    */

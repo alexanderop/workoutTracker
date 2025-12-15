@@ -15,6 +15,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
   timerSoundEnabled: true,
   timerSoundVolume: 0.8,
   language: undefined,
+  workoutHoursPerWeek: null,
 }
 
 /**
@@ -30,6 +31,7 @@ function createGetFunction(db: WorkoutTrackerDb) {
   async function get(key: 'timerSoundEnabled'): Promise<boolean>
   async function get(key: 'timerSoundVolume'): Promise<number>
   async function get(key: 'language'): Promise<'en' | 'de' | undefined>
+  async function get(key: 'workoutHoursPerWeek'): Promise<number | null>
   async function get(key: UserSettingKey) {
     const setting = await db.settings.get(key)
     if (!setting) {
@@ -73,6 +75,9 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
       break
     case 'language':
       result.language = setting.value
+      break
+    case 'workoutHoursPerWeek':
+      result.workoutHoursPerWeek = setting.value
       break
   }
 }

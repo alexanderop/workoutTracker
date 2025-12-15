@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator'
 import { useI18n } from 'vue-i18n'
 import SettingsUnitsSection from '@/features/settings/components/SettingsUnitsSection.vue'
 import SettingsAppearanceSection from '@/features/settings/components/SettingsAppearanceSection.vue'
+import SettingsGoalsSection from '@/features/settings/components/SettingsGoalsSection.vue'
 import SettingsScreenSection from '@/features/settings/components/SettingsScreenSection.vue'
 import SettingsDataSection from '@/features/settings/components/SettingsDataSection.vue'
 import SettingsDangerZoneSection from '@/features/settings/components/SettingsDangerZoneSection.vue'
@@ -23,6 +24,9 @@ const { t } = useI18n()
       <Separator />
 
       <SettingsAppearanceSection />
+      <Separator />
+
+      <SettingsGoalsSection />
       <Separator />
 
       <SettingsScreenSection />

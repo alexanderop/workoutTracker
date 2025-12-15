@@ -11,6 +11,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const timerSoundEnabled = ref(true)
   const timerSoundVolume = ref(0.8)
   const language = ref<Language | undefined>(undefined)
+  const workoutHoursPerWeek = ref<number | null>(null)
   const isLoaded = ref(false)
   const isLoading = ref(false)
 
@@ -33,6 +34,7 @@ export const useSettingsStore = defineStore('settings', () => {
     timerSoundEnabled.value = settings.timerSoundEnabled
     timerSoundVolume.value = settings.timerSoundVolume
     language.value = settings.language
+    workoutHoursPerWeek.value = settings.workoutHoursPerWeek
     isLoaded.value = true
   }
 
@@ -67,6 +69,11 @@ export const useSettingsStore = defineStore('settings', () => {
     await tryCatch(getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume }))
   }
 
+  async function setWorkoutHoursPerWeek(hours: number | null): Promise<void> {
+    workoutHoursPerWeek.value = hours
+    await tryCatch(getSettingsRepository().set({ key: 'workoutHoursPerWeek', value: hours }))
+  }
+
   return {
     weightUnit,
     heightUnit,
@@ -74,6 +81,7 @@ export const useSettingsStore = defineStore('settings', () => {
     timerSoundEnabled,
     timerSoundVolume,
     language,
+    workoutHoursPerWeek,
     isLoaded,
     isLoading,
     loadFromDb,
@@ -83,5 +91,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setLanguage,
     setTimerSoundEnabled,
     setTimerSoundVolume,
+    setWorkoutHoursPerWeek,
   }
 })

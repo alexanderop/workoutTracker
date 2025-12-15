@@ -40,6 +40,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
     timerSoundEnabled: true,
     timerSoundVolume: 0.8,
     language: undefined,
+    workoutHoursPerWeek: null,
   }
 
   return {
