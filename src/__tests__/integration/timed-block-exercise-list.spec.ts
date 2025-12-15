@@ -42,7 +42,7 @@ async function addExerciseViaOverlay(
   // Find the search input using placeholder
   const searchInput = page.getByPlaceholder(/search exercises/i)
 
-  await userEvent.fill(await searchInput.element(), exerciseName)
+  await userEvent.fill(searchInput, exerciseName)
 
   // Wait for filtered results and click the exercise button
   await expect.element(page.getByText(exerciseName, { exact: true })).toBeVisible()
@@ -58,13 +58,10 @@ async function addExerciseViaOverlay(
   ).then(results => results.find(Boolean))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
 
-  await userEvent.click(await exerciseButton.element())
+  await userEvent.click(exerciseButton)
 
   // Wait for exercise to appear in the list (overlay should close in multi mode but exercise stays)
-  await expect.poll(async () => {
-    const dialog = await getByRole('dialog').element()
-    return dialog.textContent?.includes(exerciseName) ?? false
-  }).toBe(true)
+  await expect.element(page.getByRole('dialog').getByText(exerciseName)).toBeVisible()
 }
 
 // Type guard for HTMLInputElement

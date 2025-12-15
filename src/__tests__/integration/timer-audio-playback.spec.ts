@@ -35,12 +35,12 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   const workInput = page.getByRole('spinbutton', { name: /work/i })
   const restInput = page.getByRole('spinbutton', { name: /rest/i })
 
-  await userEvent.clear(await roundsInput.element())
-  await userEvent.fill(await roundsInput.element(), '2')
-  await userEvent.clear(await workInput.element())
-  await userEvent.fill(await workInput.element(), '2')
-  await userEvent.clear(await restInput.element())
-  await userEvent.fill(await restInput.element(), '2')
+  await userEvent.clear(roundsInput)
+  await userEvent.fill(roundsInput, '2')
+  await userEvent.clear(workInput)
+  await userEvent.fill(workInput, '2')
+  await userEvent.clear(restInput)
+  await userEvent.fill(restInput, '2')
 
   // Start the timer (navigates to timer runner)
   await page.getByRole('button', { name: /start/i }).click()
@@ -72,8 +72,8 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
 
   // Configure short duration: 2 minutes
   const minutesInput = page.getByRole('spinbutton', { name: /minutes/i })
-  await userEvent.clear(await minutesInput.element())
-  await userEvent.fill(await minutesInput.element(), '2')
+  await userEvent.clear(minutesInput)
+  await userEvent.fill(minutesInput, '2')
 
   // Start the timer (navigates to timer runner)
   await page.getByRole('button', { name: /start/i }).click()

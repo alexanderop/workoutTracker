@@ -21,7 +21,7 @@ describe('Standalone Timers Flow', () => {
     const quickTimerCard = page.getByText(/quick timer/i)
     await expect.element(quickTimerCard).toBeVisible()
 
-    await userEvent.click(await quickTimerCard.element())
+    await userEvent.click(quickTimerCard)
 
     // Verify navigation to timers page
     expect(router.currentRoute.value.path).toBe('/timers')
@@ -59,7 +59,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click AMRAP button
-    await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
 
     // Verify presets are shown - use exact text to avoid matching "15 min"
     await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
@@ -76,7 +76,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click Tabata button
-    await userEvent.click(await page.getByRole('button', { name: /Tabata/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Tabata/i }))
 
     // Verify presets are shown
     await expect.element(page.getByText(/Classic/)).toBeVisible()
@@ -94,11 +94,11 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select AMRAP
-    await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
 
     // Wait for presets and select 5 min preset
     await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-    await userEvent.click(await page.getByRole('button', { name: /Quick burst/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Quick burst/i }))
 
     // Verify timer runner is shown with controls - use semantic queries with aria-labels
     await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
@@ -118,13 +118,13 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select EMOM
-    await userEvent.click(await page.getByRole('button', { name: /EMOM/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /EMOM/i }))
 
     // Wait for presets
     await expect.element(page.getByText('10 min', { exact: true })).toBeVisible()
 
     // Click back button
-    await userEvent.click(await page.getByRole('button', { name: /go back/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /go back/i }))
 
     // Should be back at timer selection
     await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
@@ -137,11 +137,11 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select Tabata
-    await userEvent.click(await page.getByRole('button', { name: /Tabata/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Tabata/i }))
 
     // Wait for presets and click Custom
     await expect.element(page.getByText(/Custom/)).toBeVisible()
-    await userEvent.click(await page.getByRole('button', { name: /Custom/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Custom/i }))
 
     // Verify custom form fields appear
     await expect.element(page.getByText(/Rounds/)).toBeVisible()
@@ -159,7 +159,7 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Click For Time button
-    await userEvent.click(await page.getByRole('button', { name: /For Time/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /For Time/i }))
 
     // Verify presets are shown
     await expect.element(page.getByText('10 min cap')).toBeVisible()
@@ -175,9 +175,9 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select AMRAP and start 5 min preset
-    await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
     await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-    await userEvent.click(await page.getByRole('button', { name: /Quick burst/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Quick burst/i }))
 
     // Wait for timer UI using semantic query
     await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
@@ -196,11 +196,11 @@ describe('Standalone Timers Flow', () => {
     await goToTimersPage(testApp)
 
     // Select EMOM
-    await userEvent.click(await page.getByRole('button', { name: /EMOM/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /EMOM/i }))
 
     // Select 10 min preset
     await expect.element(page.getByText('10 min', { exact: true })).toBeVisible()
-    await userEvent.click(await page.getByRole('button', { name: /Quick session/i }).element())
+    await userEvent.click(page.getByRole('button', { name: /Quick session/i }))
 
     // Verify timer UI is shown with minute counter (format: "1 / 10 MIN")
     await expect.element(page.getByText(/min/i)).toBeVisible()
@@ -214,9 +214,9 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP and start 5 min preset
-      await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
       await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /Quick burst/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /Quick burst/i }))
 
       // Wait for timer UI
       await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
@@ -239,9 +239,9 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select Tabata and start Classic preset
-      await userEvent.click(await page.getByRole('button', { name: /Tabata/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /Tabata/i }))
       await expect.element(page.getByText(/Classic/)).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /Classic/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /Classic/i }))
 
       // Wait for timer UI
       await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
@@ -270,7 +270,7 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP timer type
-      await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
 
       // Wait for preset screen
       await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
@@ -287,9 +287,9 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP and start timer
-      await userEvent.click(await page.getByRole('button', { name: /AMRAP/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
       await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /Quick burst/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /Quick burst/i }))
 
       // Wait for timer UI
       await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
@@ -305,9 +305,9 @@ describe('Standalone Timers Flow', () => {
       await goToTimersPage(testApp)
 
       // Select EMOM and start timer
-      await userEvent.click(await page.getByRole('button', { name: /EMOM/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /EMOM/i }))
       await expect.element(page.getByText('10 min', { exact: true })).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /Quick session/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /Quick session/i }))
 
       // Wait for timer UI
       await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()

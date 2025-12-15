@@ -172,8 +172,8 @@ describe('Workout Set Completion', () => {
       // Confirm finish workout dialog
       await common.waitForDialog()
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(await nameInput.element())
-      await userEvent.fill(await nameInput.element(), 'Test Complete')
+      await userEvent.clear(nameInput)
+      await userEvent.fill(nameInput, 'Test Complete')
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen

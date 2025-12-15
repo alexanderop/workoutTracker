@@ -174,13 +174,41 @@ it('my test', async () => {
 ```ts
 import { userEvent, page } from 'vitest/browser'
 
-// ✅ Real browser automation
-await userEvent.click(button)
-await userEvent.fill(input, 'text')
+// ✅ Pass locators directly - they retry automatically
+await userEvent.click(page.getByRole('button'))
+await userEvent.fill(page.getByRole('textbox'), 'text')
+
+// ✅ Locator's click method also works
 await page.getByRole('button').click()
+
+// ❌ DON'T use .element() for userEvent - no retry, more verbose
+await userEvent.click(await button.element())
 ```
 
-### 4. No jsdom APIs
+### 4. When to Use `.element()`
+
+Only use `.element()` when you need the actual DOM element:
+
+```ts
+// ✅ DOM property access - MUST use .element()
+const el = await input.element()
+return el.value
+return el.textContent
+return el.classList.contains('active')
+
+// ✅ DOM traversal - MUST use .element()
+const card = (await page.getByText('name').element()).closest('.card')
+
+// ✅ Pass to helper expecting Element
+const dialog = await page.getByRole('dialog').element()
+await assertNoViolations(dialog)
+
+// ❌ DON'T use for userEvent - locators work directly
+await userEvent.click(await btn.element())  // Bad
+await userEvent.click(btn)                   // Good
+```
+
+### 5. No jsdom APIs
 
 Tests run in Playwright browser:
 

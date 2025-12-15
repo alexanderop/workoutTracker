@@ -82,8 +82,8 @@ describe('Workout Management', () => {
       await expect.element(page.getByRole('heading', { name: /finish workout/i })).toBeVisible()
 
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(await nameInput.element())
-      await userEvent.fill(await nameInput.element(), 'Hybrid Session')
+      await userEvent.clear(nameInput)
+      await userEvent.fill(nameInput, 'Hybrid Session')
 
       await userEvent.click(common.getDialogButton('Finish Workout'))
 

@@ -140,9 +140,9 @@ describe('Benchmark Execution', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Open queue drawer
-      await userEvent.click(await page.getByRole('button', { name: /workout options/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /workout options/i }))
       await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
-      await userEvent.click(await page.getByRole('menuitem', { name: /view exercises/i }).element())
+      await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
 
       await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
       expect((await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
@@ -156,8 +156,8 @@ describe('Benchmark Execution', () => {
       await completeExercise()
 
       // Reopen and verify status
-      await userEvent.click(await page.getByRole('button', { name: /workout options/i }).element())
-      await userEvent.click(await page.getByRole('menuitem', { name: /view exercises/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /workout options/i }))
+      await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
       expect((await page.getByText(/completed|active/i).all()).length).toBeGreaterThan(0)
 
       app.cleanup()

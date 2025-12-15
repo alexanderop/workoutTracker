@@ -63,7 +63,7 @@ describe('Benchmark Management', () => {
       // Delete benchmark
       await app.benchmarkDetail.clickDelete()
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /^delete$/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
 
       const deleted = await getBenchmarksRepository().getById(benchmark.id)
@@ -144,13 +144,13 @@ describe('Benchmark Management', () => {
       // Test cancel
       await app.benchmarkDetail.clickDelete()
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      await userEvent.click(await page.getByRole('button', { name: /cancel/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /cancel/i }))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeTruthy()
 
       // Test confirm
       await app.benchmarkDetail.clickDelete()
-      await userEvent.click(await page.getByRole('button', { name: /^delete$/i }).element())
+      await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeFalsy()
 

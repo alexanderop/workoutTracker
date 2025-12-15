@@ -16,16 +16,16 @@ describe('Custom Exercise Flow', () => {
 
     // Step 2: Click create custom exercise button
     const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(await createButton.element())
+    await userEvent.click(createButton)
     await common.waitForRoute(/^\/create-exercise$/)
 
     // Step 3: Fill in exercise name
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(await nameInput.element(), 'My Awesome Lift')
+    await userEvent.fill(nameInput, 'My Awesome Lift')
 
     // Step 4: Save the exercise
     const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(await saveButton.element())
+    await userEvent.click(saveButton)
 
     // Step 5: Should navigate back to exercises view
     await common.waitForRoute(/^\/exercises$/)
@@ -43,22 +43,22 @@ describe('Custom Exercise Flow', () => {
     await common.navigateToExercises()
 
     const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(await createButton.element())
+    await userEvent.click(createButton)
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(await nameInput.element(), 'Custom Compound Move')
+    await userEvent.fill(nameInput, 'Custom Compound Move')
 
     const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(await saveButton.element())
+    await userEvent.click(saveButton)
     await common.waitForRoute(/^\/exercises$/)
 
     // Now start a workout and check the add exercise dialog
     await router.push({ name: RouteNames.Home })
     const startButton = getByRole('button', { name: /start new workout/i })
-    await userEvent.click(await startButton.element())
+    await userEvent.click(startButton)
     const addBlockButton = getByRole('button', { name: /add.*block/i })
-    await userEvent.click(await addBlockButton.element())
+    await userEvent.click(addBlockButton)
     await common.waitForDialog()
 
     // Assert: Custom exercise appears in the dialog
@@ -74,19 +74,19 @@ describe('Custom Exercise Flow', () => {
     await common.navigateToExercises()
 
     const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(await createButton.element())
+    await userEvent.click(createButton)
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(await nameInput.element(), 'Zyzz Special Curl')
+    await userEvent.fill(nameInput, 'Zyzz Special Curl')
 
     const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(await saveButton.element())
+    await userEvent.click(saveButton)
     await common.waitForRoute(/^\/exercises$/)
 
     // Search for the custom exercise
     const searchInput = page.getByPlaceholder(/search/i)
-    await userEvent.fill(await searchInput.element(), 'Zyzz')
+    await userEvent.fill(searchInput, 'Zyzz')
 
     // Assert: Custom exercise found via search
     await expect.element(page.getByText('Zyzz Special Curl')).toBeVisible()
@@ -101,13 +101,12 @@ describe('Custom Exercise Flow', () => {
       // Navigate to create exercise page
       await common.navigateToExercises()
       const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(await createButton.element())
+      await userEvent.click(createButton)
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Assert save button is disabled when name is empty
       const saveButton = getByRole('button', { name: /save/i })
-      const saveButtonEl = await saveButton.element()
-      expect(saveButtonEl.hasAttribute('disabled')).toBe(true)
+      await expect.element(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -118,17 +117,16 @@ describe('Custom Exercise Flow', () => {
       // Navigate to create exercise page
       await common.navigateToExercises()
       const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(await createButton.element())
+      await userEvent.click(createButton)
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Type whitespace-only name
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(await nameInput.element(), '   ')
+      await userEvent.fill(nameInput, '   ')
 
       // Assert save button remains disabled
       const saveButton = getByRole('button', { name: /save/i })
-      const saveButtonEl = await saveButton.element()
-      expect(saveButtonEl.hasAttribute('disabled')).toBe(true)
+      await expect.element(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -139,23 +137,19 @@ describe('Custom Exercise Flow', () => {
       // Navigate to create exercise page
       await common.navigateToExercises()
       const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(await createButton.element())
+      await userEvent.click(createButton)
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Initially disabled
       const saveButton = getByRole('button', { name: /save/i })
-      const saveButtonEl = await saveButton.element()
-      expect(saveButtonEl.hasAttribute('disabled')).toBe(true)
+      await expect.element(saveButton).toBeDisabled()
 
       // Type valid name
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(await nameInput.element(), 'Valid Exercise')
+      await userEvent.fill(nameInput, 'Valid Exercise')
 
       // Assert save button is now enabled
-      await expect.poll(async () => {
-        const btn = await saveButton.element()
-        return btn.hasAttribute('disabled')
-      }).toBe(false)
+      await expect.element(saveButton).not.toBeDisabled()
 
       cleanup()
     })
@@ -171,13 +165,13 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       await common.navigateToExercises()
       const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(await createButton.element())
+      await userEvent.click(createButton)
       await common.waitForRoute(/^\/create-exercise$/)
 
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(await nameInput.element(), 'My Custom Lift')
+      await userEvent.fill(nameInput, 'My Custom Lift')
       const saveButton = getByRole('button', { name: /save/i })
-      await userEvent.click(await saveButton.element())
+      await userEvent.click(saveButton)
       await common.waitForRoute(/^\/exercises$/)
 
       // ========================================
@@ -185,14 +179,14 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       await router.push({ name: RouteNames.Home })
       const startButton = getByRole('button', { name: /start new workout/i })
-      await userEvent.click(await startButton.element())
+      await userEvent.click(startButton)
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // ========================================
       // PHASE 3: Add custom exercise as block
       // ========================================
       const addBlockButton = getByRole('button', { name: /add first block/i })
-      await userEvent.click(await addBlockButton.element())
+      await userEvent.click(addBlockButton)
       await common.waitForDialog()
       const dialogButton = common.getDialogButton('My Custom Lift')
       await userEvent.click(dialogButton)
@@ -216,12 +210,12 @@ describe('Custom Exercise Flow', () => {
 
       await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       const endWorkoutItem = getByRole('menuitem', { name: /end workout/i })
-      await userEvent.click(await endWorkoutItem.element())
+      await userEvent.click(endWorkoutItem)
 
       await common.waitForDialog()
       const workoutNameInput = getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(await workoutNameInput.element())
-      await userEvent.fill(await workoutNameInput.element(), 'Custom Exercise Session')
+      await userEvent.clear(workoutNameInput)
+      await userEvent.fill(workoutNameInput, 'Custom Exercise Session')
       const finishButton = common.getDialogButton('Finish Workout')
       await userEvent.click(finishButton)
 

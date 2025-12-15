@@ -28,7 +28,7 @@ describe('ExercisePicker', () => {
       // Click to add an exercise
       await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(await addButton.element())
+      await userEvent.click(addButton)
 
       // Dialog should open with search input
       await expect.element(page.getByRole('dialog')).toBeVisible()
@@ -43,13 +43,13 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(await addButton.element())
+      await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Type to search
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(await searchInput.element(), 'Bench')
+      await userEvent.fill(searchInput, 'Bench')
 
       // Should show matching exercises
       await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
@@ -63,13 +63,13 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(await addButton.element())
+      await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Search and select
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(await searchInput.element(), 'Bench')
+      await userEvent.fill(searchInput, 'Bench')
 
       await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
 
@@ -92,7 +92,7 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(await addButton.element())
+      await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
@@ -112,13 +112,13 @@ describe('ExercisePicker', () => {
       // Open the exercise picker dialog
       await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add exercise/i })
-      await userEvent.click(await addButton.element())
+      await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // Search for a common exercise that should exist
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(await searchInput.element(), 'Bench Press')
+      await userEvent.fill(searchInput, 'Bench Press')
 
       // Wait for search results
       await expect.element(page.getByText(/Bench Press/i)).toBeVisible()

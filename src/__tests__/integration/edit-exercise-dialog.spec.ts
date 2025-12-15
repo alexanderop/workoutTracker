@@ -15,7 +15,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Click the edit button on the block (pencil icon)
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
 
     // Verify dialog opens
     await common.waitForDialog()
@@ -32,7 +32,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
@@ -41,19 +41,19 @@ describe('Edit Exercise Dialog', () => {
     const targetRepsIncrement = incrementButtons[0]!
 
     // Click increment 3 times (default is 8, should become 11)
-    await userEvent.click(await targetRepsIncrement.element())
-    await userEvent.click(await targetRepsIncrement.element())
-    await userEvent.click(await targetRepsIncrement.element())
+    await userEvent.click(targetRepsIncrement)
+    await userEvent.click(targetRepsIncrement)
+    await userEvent.click(targetRepsIncrement)
 
     // Save changes
     const saveButton = page.getByRole('button', { name: /save changes/i })
-    await userEvent.click(await saveButton.element())
+    await userEvent.click(saveButton)
 
     // Verify dialog closes
     common.assertDialogClosed()
 
     // Re-open dialog and verify target reps persisted
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
     await common.waitForDialog()
 
     const spinbuttons = await page.getByRole('dialog').getByRole('spinbutton').all()
@@ -69,7 +69,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit barbell row/i })
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
@@ -78,12 +78,12 @@ describe('Edit Exercise Dialog', () => {
     const setCountIncrement = incrementButtons[1]!
 
     // Add 2 more sets (3 -> 5)
-    await userEvent.click(await setCountIncrement.element())
-    await userEvent.click(await setCountIncrement.element())
+    await userEvent.click(setCountIncrement)
+    await userEvent.click(setCountIncrement)
 
     // Save changes
     const saveButton = page.getByRole('button', { name: /save changes/i })
-    await userEvent.click(await saveButton.element())
+    await userEvent.click(saveButton)
     common.assertDialogClosed()
 
     // Start workout to verify set count
@@ -106,19 +106,19 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
     await common.waitForDialog()
 
     // Get all increment buttons and increment set count
     const dialog = page.getByRole('dialog')
     const incrementButtons = await dialog.getByRole('button', { name: /increase/i }).all()
     const setCountIncrement = incrementButtons[1]!
-    await userEvent.click(await setCountIncrement.element())
-    await userEvent.click(await setCountIncrement.element())
+    await userEvent.click(setCountIncrement)
+    await userEvent.click(setCountIncrement)
 
     // Cancel instead of save
     const cancelButton = page.getByRole('button', { name: /cancel/i })
-    await userEvent.click(await cancelButton.element())
+    await userEvent.click(cancelButton)
     common.assertDialogClosed()
 
     // Start workout and verify original set count (3 sets)
@@ -138,7 +138,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(await editButton.element())
+    await userEvent.click(editButton)
     await common.waitForDialog()
 
     // Verify no text inputs exist (only spinbuttons for numbers)
