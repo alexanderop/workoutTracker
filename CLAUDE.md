@@ -1,153 +1,53 @@
 # CLAUDE.md
 
-AI agent guidance for this Vue 3 PWA workout tracker.
+AI agent guidance for Vue 3 PWA workout tracker.
 
-## Project Snapshot
+## Project
 
-**Single-project Vue 3 PWA** using Bulletproof feature-based architecture for strength and CrossFit workout tracking.
+**Stack**: Vue 3.5+, TypeScript (strict), Vite, Pinia, Dexie (IndexedDB), Vitest, shadcn-vue, Tailwind
 
-**Tech**: Vue 3.5+, TypeScript (strict), Vite, Pinia, Dexie (IndexedDB), Vitest (Playwright browser mode), shadcn-vue, Tailwind CSS
+**Architecture**: Bulletproof feature-based. ESLint enforces `Views → Features → Shared` boundaries.
 
-**Architecture**: ESLint-enforced dependency rules: `Views → Features → Shared` (features cannot import other features)
-
-📖 **Sub-guides**: Features, testing, and database patterns have dedicated CLAUDE.md files below.
-
-## Root Setup Commands
+## Commands
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Development server with HMR
-pnpm dev
-
-# Type-check entire project
-pnpm type-check
-
-# Run all tests (Playwright browser mode)
-pnpm test
-
-# Lint with oxlint + eslint (auto-fix)
-pnpm lint
-
-# Production build (includes type-check)
-pnpm build
-
-# Find unused exports/dependencies
-pnpm knip
+pnpm dev          # Development server
+pnpm test         # Run tests
+pnpm lint         # Fix lint errors (enforces ALL code style rules)
+pnpm type-check   # TypeScript checking
+pnpm build        # Production build
+pnpm knip         # Find unused exports
 ```
 
-## Universal Conventions
+## Before Committing
 
-### Code Style
-- **TypeScript strict mode**: NO `any`, `enum`, or type assertions (`as T`)
-- Use `type` over `interface`; `Array<T>` over `T[]`
-- Use `unknown` + type guards instead of `any`
-- Active voice in all comments and documentation
-
-### Vue 3.5+ Required APIs
-- Reactive props destructuring: `const { count = 0 } = defineProps<{ count?: number }>()`
-- Two-way binding: `const open = defineModel<boolean>('open', { required: true })`
-- Template refs: `const inputRef = useTemplateRef('input')`
-
-### Enforced Patterns (ESLint)
-- Error handling: Use `tryCatch()` from `@/lib/tryCatch` (NOT native `try/catch`)
-- Routing: Use `RouteNames` from `@/router` (NOT string literals)
-- Import boundaries: Features cannot import other features or views
-
-### Commit Format
-- Conventional Commits with scope: `feat(workout): add rest timer`
-- Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
-- Run `pnpm lint` and `pnpm type-check` before committing
-
-### Branch Strategy
-- Main branch: `main`
-- Feature branches: `feature/description` or descriptive names
-- Check git status output for current branch name
-
-## Security & Secrets
-
-- **Never commit** tokens, API keys, or credentials
-- Environment variables: Use `.env.local` (gitignored)
-- **No PII tracking**: App is fully local (IndexedDB only)
-
-## JIT Index - Directory Map
-
-### Core Directories
-- **Features** (`src/features/`) → [see src/features/CLAUDE.md](src/features/CLAUDE.md)
-  - `exercises/` - Exercise library CRUD
-  - `workout/` - Workout execution state & logic
-  - `templates/` - Workout template management
-  - `benchmarks/` - Benchmark workout tracking
-  - `settings/` - App settings & preferences
-  - `timers/` - Standalone timer UI components
-
-- **Testing** (`src/__tests__/`) → [see src/__tests__/CLAUDE.md](src/__tests__/CLAUDE.md)
-  - `integration/` - Full user flow tests
-  - `composables/` - Composable unit tests
-  - `factories/` - Test data builders
-  - `helpers/` - Test utilities (`createTestApp`, `withSetup`)
-
-- **Database** (`src/db/`) → [see src/db/CLAUDE.md](src/db/CLAUDE.md)
-  - Repository pattern with Dexie (IndexedDB)
-  - Schema: `schema.ts` (runtime types with `Db` prefix)
-  - Interfaces: `interfaces.ts` (repository abstractions)
-
-### Supporting Directories
-- **Composables** (`src/composables/`) - Shared reactive logic
-  - `timers/` - Timer state machines (rest, AMRAP, EMOM, Tabata, ForTime, benchmark global timer)
-  - `useDialogState` - Dialog open/close state management
-  - `useExerciseSearch` - Exercise filtering and search
-  - `useRecentWorkouts` - Recent workout display logic
-  - `useBenchmarksList` - Benchmark listing logic
-- **Components** (`src/components/`)
-  - `ui/` - shadcn-vue primitives (**DO NOT EDIT**)
-  - `timers/` - Reusable timer UI components
-  - `charts/` - Chart/visualization components
-- **Views** (`src/views/`) - Route-level pages (orchestrate features)
-- **Stores** (`src/stores/`) - Pinia stores
-  - `exercises.ts` - Exercise library store
-  - `settings.ts` - App settings store
-  - `workoutState.ts` - Workout singleton ref state
-- **Types** (`src/types/`) - Shared TypeScript types
-- **Router** (`src/router/`) - Vue Router config with `RouteNames`
-- **i18n** (`src/i18n/`) - Internationalization
-
-### Quick Find Commands
-
-```bash
-# Find a composable by name
-rg -n "export (const|function) use" src/composables src/features
-
-# Find a component
-rg -n "export default" src/components src/features --type vue
-
-# Find route definitions
-rg -n "RouteNames\." src/router
-
-# Find a specific exercise or workout type
-rg -n "kind: '(strength|amrap|emom|tabata|fortime)'" src/
-
-# Find test files for a feature
-find src/__tests__ -name "*workout*.spec.ts"
-
-# Find database repositories
-ls src/db/implementations/
-```
-
-## Definition of Done
-
-Before creating a PR, ensure:
-
-- [ ] `pnpm type-check` passes (no TypeScript errors)
-- [ ] `pnpm lint` passes (oxlint + eslint)
-- [ ] `pnpm test` passes (all tests green)
-- [ ] No `any`, `enum`, or type assertions added
-- [ ] No cross-feature imports (ESLint will catch this)
-- [ ] shadcn-vue components in `src/components/ui/` not modified
-- [ ] Followed Vue 3.5+ APIs (`defineProps` destructuring, `defineModel`, `useTemplateRef`)
-
-**Quick check command:**
 ```bash
 pnpm type-check && pnpm lint && pnpm test
+```
+
+Conventional Commits with scope: `feat(workout): add rest timer`
+
+## Directory Map
+
+- `src/features/` - [Feature modules](src/features/CLAUDE.md) (workout, exercises, templates, benchmarks, settings, timers)
+- `src/__tests__/` - [Testing patterns](src/__tests__/CLAUDE.md)
+- `src/db/` - [Database/repositories](src/db/CLAUDE.md)
+- `src/composables/` - Shared reactive logic (timers, dialogs, search)
+- `src/views/` - Route-level pages
+- `src/components/ui/` - shadcn-vue primitives (**do not edit**)
+
+## Vue Pattern (No ESLint Rule)
+
+Use `defineModel` for two-way binding: `const open = defineModel<boolean>('open')`
+
+## Available Tools
+
+`gh` (GitHub CLI), `tree`, `rg` (ripgrep) are installed.
+
+## Quick Find
+
+```bash
+rg -n "export (const|function) use" src/composables src/features  # Composables
+rg -n "RouteNames\." src/router                                    # Routes
+tree src/features -L 2                                             # Directory structure
 ```

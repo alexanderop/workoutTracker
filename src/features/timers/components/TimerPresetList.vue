@@ -11,7 +11,7 @@ type Preset = {
   [key: string]: unknown
 }
 
-defineProps<{
+const { presets, colorClass } = defineProps<{
   presets: Array<Preset>
   colorClass: string
 }>()

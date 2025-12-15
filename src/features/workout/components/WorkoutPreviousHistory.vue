@@ -10,7 +10,7 @@ type Props = {
   date?: string
 }
 
-const props = defineProps<Props>()
+const { sets, date } = defineProps<Props>()
 
 const { t } = useI18n()
 const { toDisplayValue, unitLabel } = useWeightDisplay()
@@ -21,9 +21,7 @@ function formatSetWeight(kgValue: string): string {
   return display !== undefined ? String(display) : '—'
 }
 
-const hasHistoryData = computed(
-  () => props.sets.length > 0 && props.sets.some((set) => set.kg !== '' || set.reps !== ''),
-)
+const hasHistoryData = computed(() => sets.some((set) => set.kg !== '' || set.reps !== ''))
 </script>
 
 <template>

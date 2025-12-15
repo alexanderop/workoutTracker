@@ -19,7 +19,7 @@ type Props = {
   targetReps: number
 }
 
-defineProps<Props>()
+const { exerciseName, equipment, targetReps } = defineProps<Props>()
 defineEmits<{
   delete: []
   edit: []

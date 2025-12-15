@@ -39,9 +39,9 @@ type Props = {
   state?: WorkoutState
 }
 
-const props = defineProps<Props>()
+const { block, timer, restTimer, state: propsState } = defineProps<Props>()
 
-const state = computed(() => props.state ?? {})
+const state = computed(() => propsState ?? {})
 
 const canComplete = computed(() => state.value.canComplete ?? true)
 const isFirstBlock = computed(() => state.value.isFirstBlock ?? false)
@@ -56,13 +56,13 @@ const emit = defineEmits<{
   'complete-block': []
 }>()
 
-const blockColors = computed(() => BLOCK_COLORS[props.block.kind])
+const blockColors = computed(() => BLOCK_COLORS[block.kind])
 
 // Timer display for footer - uses props for timed blocks, computes for rest timer
 const displayedTimer = computed((): string | null => {
   // For strength blocks, show rest timer
-  if (isStrengthBlock(props.block) && props.restTimer) {
-    const elapsed = props.restTimer.elapsedSeconds.value
+  if (isStrengthBlock(block) && restTimer) {
+    const elapsed = restTimer.elapsedSeconds.value
     if (elapsed === 0) return null
     const mins = Math.floor(elapsed / 60)
     const secs = elapsed % 60
@@ -70,19 +70,19 @@ const displayedTimer = computed((): string | null => {
   }
 
   // For timed blocks, use the prop value passed from parent
-  if (isTimedBlock(props.block) && props.timer?.display) {
-    return props.timer.display
+  if (isTimedBlock(block) && timer?.display) {
+    return timer.display
   }
 
   return null
 })
 
 const displayedTimerLabel = computed((): string | null => {
-  if (isStrengthBlock(props.block) && props.restTimer?.elapsedSeconds.value) {
+  if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
     return t('workouts.active.footer.rest')
   }
-  if (isTimedBlock(props.block) && props.timer?.label) {
-    return props.timer.label
+  if (isTimedBlock(block) && timer?.label) {
+    return timer.label
   }
   return null
 })
@@ -130,10 +130,10 @@ function getCardioAction(): PrimaryAction {
 }
 
 const primaryAction = computed((): PrimaryAction => {
-  if (isStrengthBlock(props.block)) return getStrengthAction()
-  if (isCardioBlock(props.block)) return getCardioAction()
+  if (isStrengthBlock(block)) return getStrengthAction()
+  if (isCardioBlock(block)) return getCardioAction()
 
-  const isRunning = props.timer?.isRunning ?? false
+  const isRunning = timer?.isRunning ?? false
   const actionByKind: Record<'amrap' | 'emom' | 'tabata' | 'fortime', () => PrimaryAction> = {
     amrap: () => getTimerToggleAction(isRunning),
     emom: () => getTimerToggleAction(isRunning),
@@ -141,7 +141,7 @@ const primaryAction = computed((): PrimaryAction => {
     fortime: getForTimeAction,
   }
 
-  return actionByKind[props.block.kind]()
+  return actionByKind[block.kind]()
 })
 
 function handlePrimaryAction() {
@@ -202,7 +202,7 @@ function handlePrimaryAction() {
             primaryAction.variant === 'default' && blockColors.accent,
           )
         "
-        :disabled="(isStrengthBlock(props.block) && !canComplete) || isTransitioning"
+        :disabled="(isStrengthBlock(block) && !canComplete) || isTransitioning"
         @click="handlePrimaryAction"
       >
         <component :is="primaryAction.icon" class="icon-md" aria-hidden="true" />

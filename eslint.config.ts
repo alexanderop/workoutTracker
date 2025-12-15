@@ -70,6 +70,10 @@ export default defineConfigWithVueTs(
       // Explicit APIs
       'vue/require-expose': 'warn',
       'vue/require-explicit-slots': 'warn',
+
+      // Vue 3.5+ API enforcement
+      'vue/define-props-destructuring': 'error',
+      'vue/prefer-use-template-ref': 'error',
     },
   },
 

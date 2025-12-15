@@ -17,7 +17,7 @@ type Props = {
   sets: Array<Set>
 }
 
-defineProps<Props>()
+const { sets } = defineProps<Props>()
 const emit = defineEmits<{
   'toggle-complete': [set: Set]
   'add-set': []

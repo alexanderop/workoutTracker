@@ -6,7 +6,7 @@ import WorkoutDetailSetRow from './WorkoutDetailSetRow.vue'
 
 const { t } = useI18n()
 
-defineProps<{
+const { sets } = defineProps<{
   sets: ReadonlyArray<DbSet>
 }>()
 </script>

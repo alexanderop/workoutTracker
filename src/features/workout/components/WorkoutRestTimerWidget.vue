@@ -12,7 +12,7 @@ type Props = {
   timer: ReturnType<typeof useRestTimer>
 }
 
-defineProps<Props>()
+const { timer } = defineProps<Props>()
 
 const emit = defineEmits<{
   finish: []

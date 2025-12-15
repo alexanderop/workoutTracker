@@ -23,7 +23,7 @@ type Props = {
   isRunning: boolean
 }
 
-const props = defineProps<Props>()
+const { block, isActive, isRunning } = defineProps<Props>()
 
 const emit = defineEmits<{
   start: []
@@ -32,18 +32,18 @@ const emit = defineEmits<{
   'expand-focus': []
 }>()
 
-const exercises = computed(() => getBlockExerciseList(props.block))
+const exercises = computed(() => getBlockExerciseList(block))
 
-const durationDisplay = computed(() => getBlockDurationDisplay(props.block))
+const durationDisplay = computed(() => getBlockDurationDisplay(block))
 
-const blockIcon = computed(() => BLOCK_ICONS[props.block.kind])
+const blockIcon = computed(() => BLOCK_ICONS[block.kind])
 
-const blockLabel = computed(() => BLOCK_LABELS[props.block.kind])
+const blockLabel = computed(() => BLOCK_LABELS[block.kind])
 
 // For AMRAP - show current round count
 const roundCount = computed(() => {
-  if (props.block.kind === 'amrap' && props.block.result) {
-    return props.block.result.rounds
+  if (block.kind === 'amrap' && block.result) {
+    return block.result.rounds
   }
   return 0
 })

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import type { StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 
-const props = defineProps<{
+const { block, blockIndex } = defineProps<{
   block: StrengthBlock
   blockIndex: number
 }>()
@@ -21,19 +21,19 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 function updateSetValue(setIndex: number, field: 'kg' | 'reps' | 'rir', value: string) {
-  const newSets = props.block.sets.map((set, idx) => {
+  const newSets = block.sets.map((set, idx) => {
     if (idx !== setIndex) return set
     return { ...set, [field]: value }
   })
-  emit('update-sets', props.block.id, newSets)
+  emit('update-sets', block.id, newSets)
 }
 
 function handleAddSet() {
-  emit('add-set', props.block.id)
+  emit('add-set', block.id)
 }
 
 function handleRemoveSet(setIndex: number) {
-  emit('remove-set', props.block.id, setIndex)
+  emit('remove-set', block.id, setIndex)
 }
 </script>
 

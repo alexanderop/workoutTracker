@@ -11,7 +11,7 @@ import type { WorkoutBlock, StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { useExercisesStore } from '@/stores/exercises'
 
-const props = defineProps<{
+const { blocks } = defineProps<{
   blocks: ReadonlyArray<WorkoutBlock>
 }>()
 
@@ -32,7 +32,7 @@ function handleAddBlock() {
 function selectExercise(exercise: { id: string; name: string; icon: string; equipment?: string }) {
   const newBlock: StrengthBlock = {
     kind: 'strength',
-    id: props.blocks.length + 1,
+    id: blocks.length + 1,
     exerciseDefinitionId: exercise.id,
     name: exercise.name,
     equipment: exercise.equipment ?? '',
@@ -54,7 +54,7 @@ function handleUpdateSets(blockId: number, sets: Array<Set>) {
 }
 
 function handleAddSet(blockId: number) {
-  const block = props.blocks.find((b) => b.id === blockId)
+  const block = blocks.find((b) => b.id === blockId)
   if (!block || !isStrengthBlock(block)) return
 
   const lastSet = block.sets[block.sets.length - 1]
@@ -70,14 +70,14 @@ function handleAddSet(blockId: number) {
 }
 
 function handleRemoveSet(blockId: number, setIndex: number) {
-  const block = props.blocks.find((b) => b.id === blockId)
+  const block = blocks.find((b) => b.id === blockId)
   if (!block || !isStrengthBlock(block)) return
 
   const newSets = block.sets.filter((_, idx) => idx !== setIndex)
   emit('update-sets', blockId, newSets)
 }
 
-const strengthBlocks = computed(() => props.blocks.filter(isStrengthBlock))
+const strengthBlocks = computed(() => blocks.filter(isStrengthBlock))
 </script>
 
 <template>

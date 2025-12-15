@@ -4,7 +4,7 @@ import type { DbEmomBlock, DbAmrapBlock, DbForTimeBlock, DbTabataBlock } from '@
 
 type TimedBlock = DbEmomBlock | DbAmrapBlock | DbForTimeBlock | DbTabataBlock
 
-defineProps<{
+const { block } = defineProps<{
   block: TimedBlock
 }>()
 
