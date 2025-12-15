@@ -5,6 +5,7 @@ import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
 import CreateBenchmarkView from '@/views/CreateBenchmarkView.vue'
 import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
 import CreateTemplateView from '@/views/CreateTemplateView.vue'
+import LogPastWorkoutView from '@/views/LogPastWorkoutView.vue'
 import TemplateDetailView from '@/views/TemplateDetailView.vue'
 import TheExercisesView from '@/views/TheExercisesView.vue'
 import TheHistoryView from '@/views/TheHistoryView.vue'
@@ -31,6 +32,7 @@ export const RouteNames = {
   TemplateDetail: 'TemplateDetail',
   CreateBenchmark: 'CreateBenchmark',
   BenchmarkDetail: 'BenchmarkDetail',
+  LogPastWorkout: 'LogPastWorkout',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -114,6 +116,11 @@ export const routes = [
     name: RouteNames.BenchmarkDetail,
     component: BenchmarkDetailView,
     props: true,
+  },
+  {
+    path: '/log-past-workout',
+    name: RouteNames.LogPastWorkout,
+    component: LogPastWorkoutView,
   },
 ]
 

@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { addDays, subDays, format } from 'date-fns'
+import { addDays, subDays, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db } from '@/db'
@@ -57,56 +57,63 @@ describe('Workout Calendar', () => {
     })
 
     it('shows multiple green dots for multiple workout days', async () => {
+      // Use dates guaranteed to be in the same week (Mon-Sun with weekStartsOn: 1)
+      // Start from Monday of current week to avoid week boundary issues
       const today = new Date()
-      const yesterday = subDays(today, 1)
+      const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Monday
+      const tuesday = addDays(weekStart, 1)
+      const wednesday = addDays(weekStart, 2)
 
-      // Seed workouts on two different days
-      const workoutToday = dbWorkoutBuilder()
-        .withName('Today Workout')
-        .withTimestamps(today.getTime() - 3600000, today.getTime())
+      // Seed workouts on two different days within the same week
+      const workoutTuesday = dbWorkoutBuilder()
+        .withName('Tuesday Workout')
+        .withTimestamps(tuesday.getTime() - 3600000, tuesday.getTime())
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      const workoutYesterday = dbWorkoutBuilder()
-        .withName('Yesterday Workout')
-        .withTimestamps(yesterday.getTime() - 3600000, yesterday.getTime())
+      const workoutWednesday = dbWorkoutBuilder()
+        .withName('Wednesday Workout')
+        .withTimestamps(wednesday.getTime() - 3600000, wednesday.getTime())
         .withStrengthBlock({ name: 'Deadlift' })
         .build()
 
-      await db.workouts.add(workoutToday)
-      await db.workouts.add(workoutYesterday)
+      await db.workouts.add(workoutTuesday)
+      await db.workouts.add(workoutWednesday)
 
       const { cleanup } = await createTestApp()
 
       // Wait for week strip to load
       await expect.element(getWeekStripButton()).toBeVisible()
 
-      // Should have at least 2 green dots (workout indicators) visible
-      // Count elements with aria-label "Workout completed"
+      // Wait for workout data to load and render (async loadWorkouts in onMounted)
+      // Use longer timeout to handle race condition with IndexedDB
       await expect.poll(async () => {
         const dots = await page.getByLabelText(/workout completed/i).all()
         return dots.length
-      }).toBeGreaterThanOrEqual(2)
+      }, { timeout: 5000 }).toBeGreaterThanOrEqual(2)
 
       cleanup()
     })
 
     it('displays total weekly workout duration', async () => {
+      // Use dates guaranteed to be in the same week to avoid week boundary issues
       const today = new Date()
-      const yesterday = subDays(today, 1)
+      const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Monday
+      const tuesday = addDays(weekStart, 1)
+      const wednesday = addDays(weekStart, 2)
 
       // Seed workouts with known durations (1h 30m + 45m = 2h 15m)
       const workout1 = dbWorkoutBuilder()
         .withName('Morning Workout')
         .withDuration(5400) // 1h 30m = 90 min = 5400 seconds
-        .withTimestamps(today.getTime() - 5400000, today.getTime())
+        .withTimestamps(tuesday.getTime() - 5400000, tuesday.getTime())
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
       const workout2 = dbWorkoutBuilder()
         .withName('Evening Workout')
         .withDuration(2700) // 45m = 2700 seconds
-        .withTimestamps(yesterday.getTime() - 2700000, yesterday.getTime())
+        .withTimestamps(wednesday.getTime() - 2700000, wednesday.getTime())
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
@@ -116,7 +123,8 @@ describe('Workout Calendar', () => {
       const { cleanup } = await createTestApp()
 
       // Wait for week strip to load and show the total duration
-      await expect.element(page.getByText('2h 15m')).toBeVisible()
+      // Use longer timeout to handle async data loading
+      await expect.element(page.getByText('2h 15m'), { timeout: 5000 }).toBeVisible()
 
       cleanup()
     })
@@ -229,7 +237,8 @@ describe('Workout Calendar', () => {
       await dayCell.click()
 
       // If the grid updated correctly, clicking this day should show the workout
-      await expect.element(page.getByText('Previous Month Workout')).toBeVisible()
+      // Use .first() since the name appears in both the card and the calendar tooltip
+      await expect.element(page.getByText('Previous Month Workout').first()).toBeVisible()
 
       cleanup()
     })
