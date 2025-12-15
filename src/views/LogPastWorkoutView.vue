@@ -99,8 +99,8 @@ async function handleSave() {
   <div class="flex flex-1 flex-col p-4">
     <!-- Header -->
     <div class="flex items-center gap-2 mb-4">
-      <Button variant="ghost" size="icon" @click="goBack">
-        <ChevronLeft class="w-5 h-5" />
+      <Button variant="ghost" size="icon" :aria-label="t('common.back', 'Back')" @click="goBack">
+        <ChevronLeft class="w-5 h-5" aria-hidden="true" />
       </Button>
       <h1 class="text-xl font-semibold">{{ t('logPastWorkout.title', 'Log Past Workout') }}</h1>
     </div>
