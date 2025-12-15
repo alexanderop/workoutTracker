@@ -1,0 +1,288 @@
+import { page, userEvent } from 'vitest/browser'
+import { expect } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import type { TestContext, SetValues } from '../types'
+import type { CommonPO } from './CommonPO'
+
+type CardioResultValues = {
+  durationMinutes?: number
+  distanceKm?: number
+  calories?: number
+}
+
+/**
+ * Page Object for the Log Past Workout feature.
+ * Provides methods to interact with hindsight workout logging UI.
+ */
+export class LogPastWorkoutPO {
+  constructor(
+    private ctx: TestContext,
+    private common: CommonPO,
+  ) {}
+
+  /**
+   * Navigates to the Log Past Workout page from home.
+   */
+  async navigateFromHome(): Promise<void> {
+    await page.getByRole('button', { name: /log past workout/i }).click()
+    await this.common.waitForRoute(/^\/log-past-workout/)
+  }
+
+  /**
+   * Selects a source type for the past workout.
+   */
+  async selectSource(type: 'template' | 'history' | 'blank'): Promise<void> {
+    const buttonMap = {
+      template: /from template/i,
+      history: /from history/i,
+      blank: /blank workout/i,
+    }
+    await page.getByRole('button', { name: buttonMap[type] }).click()
+  }
+
+  /**
+   * Selects a template by name after choosing 'from template' source.
+   */
+  async selectTemplate(name: string): Promise<void> {
+    await this.common.waitForDialog()
+    const templateButton = page.getByRole('button', { name: new RegExp(name, 'i') })
+    await templateButton.click()
+    await this.common.waitForDialogClose()
+  }
+
+  /**
+   * Selects a workout from history by name after choosing 'from history' source.
+   */
+  async selectFromHistory(workoutName: string): Promise<void> {
+    await this.common.waitForDialog()
+    const workoutButton = page.getByRole('button', { name: new RegExp(workoutName, 'i') })
+    await workoutButton.click()
+    await this.common.waitForDialogClose()
+  }
+
+  /**
+   * Sets the workout date using the date picker.
+   * @param date - The date to set (defaults to today if not provided)
+   */
+  async setDate(date: Date): Promise<void> {
+    // Open date picker
+    await page.getByRole('button', { name: /select date/i }).click()
+    await this.common.waitForDialog()
+
+    // Select the date (simplified - click on day number)
+    const day = date.getDate()
+    await page.getByRole('button', { name: new RegExp(`^${day}$`) }).click()
+    await this.common.waitForDialogClose()
+  }
+
+  /**
+   * Sets the workout duration using preset buttons.
+   * @param minutes - Duration in minutes (15, 30, 45, 60, 90, 120)
+   */
+  async setDuration(minutes: number): Promise<void> {
+    const durationButton = page.getByRole('button', { name: new RegExp(`${minutes}\\s*min`, 'i') })
+    await durationButton.click()
+  }
+
+  /**
+   * Fills a strength set in the grid view.
+   * @param blockIndex - The index of the strength block (0-based)
+   * @param setIndex - The index of the set within the block (0-based)
+   * @param values - The set values to fill
+   */
+  async fillStrengthSet(blockIndex: number, setIndex: number, values: SetValues): Promise<void> {
+    const block = page.getByTestId(`strength-block-${blockIndex}`)
+    const row = block.getByTestId(`set-row-${setIndex}`)
+
+    if (values.kg !== undefined) {
+      const kgInput = row.getByRole('spinbutton', { name: /weight|kg/i })
+      await userEvent.fill(kgInput, String(values.kg))
+    }
+
+    if (values.reps !== undefined) {
+      const repsInput = row.getByRole('spinbutton', { name: /reps/i })
+      await userEvent.fill(repsInput, String(values.reps))
+    }
+
+    if (values.rir !== undefined) {
+      const rirInput = row.getByRole('spinbutton', { name: /rir/i })
+      await userEvent.fill(rirInput, String(values.rir))
+    }
+
+    await flushPromises()
+  }
+
+  /**
+   * Fills all sets in a strength block with the same values.
+   * @param blockIndex - The index of the strength block (0-based)
+   * @param values - The set values to apply to all sets
+   */
+  async fillAllSets(blockIndex: number, values: SetValues): Promise<void> {
+    const block = page.getByTestId(`strength-block-${blockIndex}`)
+    const rows = await block.getByTestId(/^set-row-/).all()
+
+    for (let i = 0; i < rows.length; i++) {
+      await this.fillStrengthSet(blockIndex, i, values)
+    }
+  }
+
+  /**
+   * Adds a new set to a strength block.
+   * @param blockIndex - The index of the strength block (0-based)
+   */
+  async addSet(blockIndex: number): Promise<void> {
+    const block = page.getByTestId(`strength-block-${blockIndex}`)
+    await block.getByRole('button', { name: /add set/i }).click()
+  }
+
+  /**
+   * Removes a set from a strength block.
+   * @param blockIndex - The index of the strength block (0-based)
+   * @param setIndex - The index of the set to remove (0-based)
+   */
+  async removeSet(blockIndex: number, setIndex: number): Promise<void> {
+    const block = page.getByTestId(`strength-block-${blockIndex}`)
+    const row = block.getByTestId(`set-row-${setIndex}`)
+    await row.getByRole('button', { name: /remove|delete/i }).click()
+  }
+
+  /**
+   * Fills an AMRAP result.
+   * @param rounds - Number of completed rounds
+   * @param extraReps - Additional reps beyond the last complete round
+   */
+  async fillAmrapResult(rounds: number, extraReps: number): Promise<void> {
+    const roundsInput = page.getByRole('spinbutton', { name: /rounds/i })
+    const repsInput = page.getByRole('spinbutton', { name: /extra reps|additional reps/i })
+
+    await userEvent.fill(roundsInput, String(rounds))
+    await userEvent.fill(repsInput, String(extraReps))
+    await flushPromises()
+  }
+
+  /**
+   * Fills a ForTime result.
+   * @param minutes - Minutes component of completion time
+   * @param seconds - Seconds component of completion time
+   */
+  async fillForTimeResult(minutes: number, seconds: number): Promise<void> {
+    const minutesInput = page.getByRole('spinbutton', { name: /minutes/i })
+    const secondsInput = page.getByRole('spinbutton', { name: /seconds/i })
+
+    await userEvent.fill(minutesInput, String(minutes))
+    await userEvent.fill(secondsInput, String(seconds))
+    await flushPromises()
+  }
+
+  /**
+   * Marks a timed workout as DNF (Did Not Finish).
+   */
+  async markAsDnf(): Promise<void> {
+    const dnfCheckbox = page.getByRole('checkbox', { name: /did not finish|dnf/i })
+    await dnfCheckbox.click()
+  }
+
+  /**
+   * Fills cardio block result.
+   * @param values - Cardio result values (duration, distance, calories)
+   */
+  async fillCardioResult(values: CardioResultValues): Promise<void> {
+    if (values.durationMinutes !== undefined) {
+      const durationInput = page.getByRole('spinbutton', { name: /duration/i })
+      await userEvent.fill(durationInput, String(values.durationMinutes))
+    }
+
+    if (values.distanceKm !== undefined) {
+      const distanceInput = page.getByRole('spinbutton', { name: /distance/i })
+      await userEvent.fill(distanceInput, String(values.distanceKm))
+    }
+
+    if (values.calories !== undefined) {
+      const caloriesInput = page.getByRole('spinbutton', { name: /calories/i })
+      await userEvent.fill(caloriesInput, String(values.calories))
+    }
+
+    await flushPromises()
+  }
+
+  /**
+   * Adds a strength block by selecting an exercise.
+   * @param exerciseName - The name of the exercise to add
+   */
+  async addStrengthBlock(exerciseName: string): Promise<void> {
+    await page.getByRole('button', { name: /add.*block/i }).click()
+    await this.common.waitForDialog()
+    await userEvent.click(this.common.getDialogButton(exerciseName))
+    await this.common.waitForDialogClose()
+  }
+
+  /**
+   * Sets the workout name.
+   * @param name - The workout name to set
+   */
+  async setWorkoutName(name: string): Promise<void> {
+    const nameInput = page.getByRole('textbox', { name: /workout name/i })
+    await userEvent.clear(nameInput)
+    await userEvent.fill(nameInput, name)
+  }
+
+  /**
+   * Saves the past workout.
+   */
+  async saveWorkout(): Promise<void> {
+    await page.getByRole('button', { name: /save workout/i }).click()
+  }
+
+  /**
+   * Gets the count of strength blocks currently displayed.
+   */
+  async getStrengthBlockCount(): Promise<number> {
+    const blocks = await page.getByTestId(/^strength-block-/).all()
+    return blocks.length
+  }
+
+  /**
+   * Gets the count of sets in a strength block.
+   * @param blockIndex - The index of the strength block (0-based)
+   */
+  async getSetCount(blockIndex: number): Promise<number> {
+    const block = page.getByTestId(`strength-block-${blockIndex}`)
+    const rows = await block.getByTestId(/^set-row-/).all()
+    return rows.length
+  }
+
+  /**
+   * Verifies that the source selection screen is visible.
+   */
+  async assertSourceSelectionVisible(): Promise<void> {
+    await expect.element(page.getByRole('button', { name: /from template/i })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /from history/i })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /blank workout/i })).toBeVisible()
+  }
+
+  /**
+   * Verifies that the date picker defaults to today.
+   */
+  async assertDateDefaultsToToday(): Promise<void> {
+    const today = new Date()
+    const formattedDate = today.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
+    await expect.element(page.getByText(new RegExp(formattedDate, 'i'))).toBeVisible()
+  }
+
+  /**
+   * Proceeds to the next step in the wizard flow.
+   */
+  async proceedToNextStep(): Promise<void> {
+    await page.getByRole('button', { name: /next|continue/i }).click()
+  }
+
+  /**
+   * Goes back to the previous step in the wizard flow.
+   */
+  async goBack(): Promise<void> {
+    await page.getByRole('button', { name: /back/i }).click()
+  }
+}

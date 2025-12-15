@@ -36,6 +36,10 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
       return completedWorkout
     },
 
+    async add(workout: Readonly<DbCompletedWorkout>): Promise<void> {
+      await db.workouts.add(workout)
+    },
+
     async getHistory(params: GetHistoryParams = {}): Promise<ReadonlyArray<DbCompletedWorkout>> {
       const { limit = 50, offset = 0 } = params
       return db.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()

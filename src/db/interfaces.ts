@@ -267,6 +267,10 @@ export type WorkoutsRepository = {
     notes?: string,
   ): Promise<DbCompletedWorkout>
   /**
+   * Add a completed workout directly to history. Used for hindsight logging (logging past workouts).
+   */
+  add(workout: Readonly<DbCompletedWorkout>): Promise<void>
+  /**
    * Retrieve completed workouts sorted by completion date (most recent first). Defaults to limit=50, offset=0.
    */
   getHistory(params?: GetHistoryParams): Promise<ReadonlyArray<DbCompletedWorkout>>

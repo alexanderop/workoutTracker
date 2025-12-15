@@ -83,6 +83,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       startFromCompleted: vi
         .fn()
         .mockResolvedValue(createMockActiveWorkout({ name: 'Test Workout' })),
+      add: vi.fn().mockResolvedValue(undefined),
     },
     templates: {
       getAll: vi.fn().mockResolvedValue([]),
