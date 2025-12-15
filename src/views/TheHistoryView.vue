@@ -98,19 +98,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageLayout :title="t('nav.history')" back-to="/">
+  <PageLayout :title="t('nav.history')" back-to="/" max-width="lg">
     <!-- Loading state -->
     <div v-if="isLoading" class="flex items-center justify-center py-16">
       <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
     </div>
 
     <!-- Workouts grouped by month -->
-    <div v-else-if="workouts.length > 0" class="space-y-6 p-4">
+    <div v-else-if="workouts.length > 0" class="space-y-6 py-4">
       <section v-for="group in groupedByMonth" :key="group.monthKey">
-        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground lg:text-base">
           {{ group.label }}
         </h2>
-        <div class="space-y-2">
+        <div class="grid gap-2 md:grid-cols-2 md:gap-3 lg:gap-4">
           <WorkoutHistoryCard
             v-for="workout in group.workouts"
             :key="workout.id"

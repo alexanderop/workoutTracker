@@ -42,9 +42,9 @@ function openCalendarSheet() {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4">
+  <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4 lg:p-8">
     <!-- Week Strip -->
-    <WeekStrip class="w-full max-w-md" @click="openCalendarSheet" />
+    <WeekStrip class="w-full max-w-md lg:max-w-2xl" @click="openCalendarSheet" />
 
     <!-- Calendar Sheet -->
     <WorkoutCalendarSheet
@@ -60,7 +60,7 @@ function openCalendarSheet() {
     />
 
     <!-- Action cards row -->
-    <div class="w-full max-w-md grid grid-cols-2 gap-3 sm:grid-cols-1 sm:gap-4">
+    <div class="w-full max-w-md lg:max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
       <!-- Main action card -->
       <Card
         role="button"
@@ -70,14 +70,14 @@ function openCalendarSheet() {
         @keydown.enter="startWorkout"
         @keydown.space.prevent="startWorkout"
       >
-        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 h-full">
+        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 lg:py-8 h-full">
           <div
-            class="mb-2 sm:mb-4 w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
+            class="mb-2 sm:mb-4 w-10 h-10 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
           >
-            <Play class="w-5 h-5 sm:w-8 sm:h-8 text-primary ml-0.5" aria-hidden="true" />
+            <Play class="w-5 h-5 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-primary ml-0.5" aria-hidden="true" />
           </div>
-          <h2 class="leading-tight font-semibold text-sm sm:text-2xl">{{ t('nav.homeView.startNewWorkout') }}</h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{ t('nav.homeView.trackDescription') }}</CardDescription>
+          <h2 class="leading-tight font-semibold text-sm sm:text-2xl lg:text-3xl">{{ t('nav.homeView.startNewWorkout') }}</h2>
+          <CardDescription class="text-xs sm:text-sm mt-1 hidden sm:block">{{ t('nav.homeView.trackDescription') }}</CardDescription>
         </CardHeader>
       </Card>
 
@@ -90,14 +90,14 @@ function openCalendarSheet() {
         @keydown.enter="goToTimers"
         @keydown.space.prevent="goToTimers"
       >
-        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 h-full">
+        <CardHeader class="flex-col items-center justify-center text-center p-3 sm:py-6 lg:py-8 h-full">
           <div
-            class="mb-2 sm:mb-4 w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"
+            class="mb-2 sm:mb-4 w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"
           >
-            <Timer class="w-5 h-5 sm:w-7 sm:h-7 text-orange-500" aria-hidden="true" />
+            <Timer class="w-5 h-5 sm:w-7 sm:h-7 lg:w-9 lg:h-9 text-orange-500" aria-hidden="true" />
           </div>
-          <h2 class="leading-tight font-semibold text-sm sm:text-xl">{{ t('nav.homeView.quickTimer') }}</h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{ t('nav.homeView.quickTimerDescription') }}</CardDescription>
+          <h2 class="leading-tight font-semibold text-sm sm:text-xl lg:text-2xl">{{ t('nav.homeView.quickTimer') }}</h2>
+          <CardDescription class="text-xs sm:text-sm mt-1 hidden sm:block">{{ t('nav.homeView.quickTimerDescription') }}</CardDescription>
         </CardHeader>
       </Card>
     </div>

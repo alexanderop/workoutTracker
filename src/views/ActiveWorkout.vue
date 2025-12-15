@@ -210,30 +210,32 @@ function handleQueueAddBlock() {
 </script>
 
 <template>
-  <div class="h-full">
-    <!-- Builder Mode -->
-    <WorkoutBuilderMode
-      v-if="isBuilderMode"
-      @add-block="openDialog('addBlock')"
-      @edit-block="handleEditBlock"
-    />
+  <div class="h-full flex flex-col">
+    <div class="flex-1 mx-auto w-full max-w-5xl">
+      <!-- Builder Mode -->
+      <WorkoutBuilderMode
+        v-if="isBuilderMode"
+        @add-block="openDialog('addBlock')"
+        @edit-block="handleEditBlock"
+      />
 
-    <!-- Active Mode -->
-    <WorkoutActiveMode
-      v-if="isActiveMode"
-      @end-workout="openDialog('finish')"
-      @cancel-workout="openDialog('cancel')"
-      @workout-complete="handleWorkoutComplete"
-      @open-queue="handleOpenQueue"
-    />
+      <!-- Active Mode -->
+      <WorkoutActiveMode
+        v-if="isActiveMode"
+        @end-workout="openDialog('finish')"
+        @cancel-workout="openDialog('cancel')"
+        @workout-complete="handleWorkoutComplete"
+        @open-queue="handleOpenQueue"
+      />
 
-    <!-- Completed Mode -->
-    <WorkoutCompletionScreen
-      v-if="isCompletedMode && completionData"
-      :workout-name="completionData.name"
-      :duration="completionData.duration"
-      @view-details="handleViewDetails"
-    />
+      <!-- Completed Mode -->
+      <WorkoutCompletionScreen
+        v-if="isCompletedMode && completionData"
+        :workout-name="completionData.name"
+        :duration="completionData.duration"
+        @view-details="handleViewDetails"
+      />
+    </div>
 
     <!-- Dialogs (shared across modes) -->
     <WorkoutAddBlockDialog

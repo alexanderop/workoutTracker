@@ -34,86 +34,88 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col p-4">
-    <Card class="mb-6">
-      <CardContent class="pt-6">
-        <h1 class="mb-2 text-3xl font-bold">{{ t('workouts.title') }}</h1>
-        <p class="text-muted-foreground">{{ t('workouts.subtitle') }}</p>
-      </CardContent>
-    </Card>
+  <div class="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+    <div class="mx-auto w-full max-w-7xl">
+      <Card class="mb-6">
+        <CardContent class="pt-6">
+          <h1 class="mb-2 text-3xl font-bold lg:text-4xl">{{ t('workouts.title') }}</h1>
+          <p class="text-muted-foreground lg:text-lg">{{ t('workouts.subtitle') }}</p>
+        </CardContent>
+      </Card>
 
-    <!-- Loading state -->
-    <div v-if="isLoading" class="flex flex-1 items-center justify-center py-8">
-      <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
+      <!-- Loading state -->
+      <div v-if="isLoading" class="flex flex-1 items-center justify-center py-8">
+        <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>
+      </div>
+
+      <!-- Tabs -->
+      <Tabs v-else default-value="templates" class="flex flex-1 flex-col">
+        <TabsList class="mb-6 grid w-full grid-cols-2 lg:max-w-md">
+          <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
+          <TabsTrigger value="benchmarks">{{ t('workouts.list.benchmarks') }}</TabsTrigger>
+        </TabsList>
+
+        <!-- Templates Tab -->
+        <TabsContent value="templates" class="flex flex-1 flex-col">
+          <div class="mb-4">
+            <Button class="w-full md:w-auto md:min-w-64" @click="handleCreateTemplate">{{
+              t('common.buttons.createTemplate')
+            }}</Button>
+          </div>
+
+          <!-- Templates list -->
+          <div v-if="templates.length > 0" class="grid flex-1 gap-3 md:grid-cols-2 lg:grid-cols-3 md:gap-4 overflow-y-auto">
+            <TemplateListCard
+              v-for="template in templates"
+              :key="template.id"
+              :template="template"
+              :format-date="formatTemplateDate"
+              @click="navigateToTemplateDetail"
+            />
+          </div>
+
+          <!-- Empty state -->
+          <div v-else class="flex flex-1 items-center justify-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>{{ t('workouts.empty.templates.title') }}</EmptyTitle>
+                <EmptyDescription>{{ t('workouts.empty.templates.description') }}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        </TabsContent>
+
+        <!-- Benchmarks Tab -->
+        <TabsContent value="benchmarks" class="flex flex-1 flex-col">
+          <div class="mb-4">
+            <Button class="w-full md:w-auto md:min-w-64" @click="handleCreateBenchmark">{{
+              t('common.buttons.createBenchmark')
+            }}</Button>
+          </div>
+
+          <!-- Benchmarks list -->
+          <div v-if="benchmarks.length > 0" class="grid flex-1 gap-3 md:grid-cols-2 lg:grid-cols-3 md:gap-4 overflow-y-auto">
+            <BenchmarkListCard
+              v-for="benchmark in benchmarks"
+              :key="benchmark.id"
+              :benchmark="benchmark"
+              :personal-best="personalBests.get(benchmark.id)"
+              :format-type="formatBenchmarkType"
+              @click="navigateToBenchmarkDetail"
+            />
+          </div>
+
+          <!-- Empty state -->
+          <div v-else class="flex flex-1 items-center justify-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>{{ t('workouts.empty.benchmarks.title') }}</EmptyTitle>
+                <EmptyDescription>{{ t('workouts.empty.benchmarks.description') }}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
-
-    <!-- Tabs -->
-    <Tabs v-else default-value="templates" class="flex flex-1 flex-col">
-      <TabsList class="mb-6 grid w-full grid-cols-2">
-        <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
-        <TabsTrigger value="benchmarks">{{ t('workouts.list.benchmarks') }}</TabsTrigger>
-      </TabsList>
-
-      <!-- Templates Tab -->
-      <TabsContent value="templates" class="flex flex-1 flex-col">
-        <div class="mb-4">
-          <Button class="w-full" @click="handleCreateTemplate">{{
-            t('common.buttons.createTemplate')
-          }}</Button>
-        </div>
-
-        <!-- Templates list -->
-        <div v-if="templates.length > 0" class="grid flex-1 gap-3 overflow-y-auto">
-          <TemplateListCard
-            v-for="template in templates"
-            :key="template.id"
-            :template="template"
-            :format-date="formatTemplateDate"
-            @click="navigateToTemplateDetail"
-          />
-        </div>
-
-        <!-- Empty state -->
-        <div v-else class="flex flex-1 items-center justify-center">
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>{{ t('workouts.empty.templates.title') }}</EmptyTitle>
-              <EmptyDescription>{{ t('workouts.empty.templates.description') }}</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
-      </TabsContent>
-
-      <!-- Benchmarks Tab -->
-      <TabsContent value="benchmarks" class="flex flex-1 flex-col">
-        <div class="mb-4">
-          <Button class="w-full" @click="handleCreateBenchmark">{{
-            t('common.buttons.createBenchmark')
-          }}</Button>
-        </div>
-
-        <!-- Benchmarks list -->
-        <div v-if="benchmarks.length > 0" class="grid flex-1 gap-3 overflow-y-auto">
-          <BenchmarkListCard
-            v-for="benchmark in benchmarks"
-            :key="benchmark.id"
-            :benchmark="benchmark"
-            :personal-best="personalBests.get(benchmark.id)"
-            :format-type="formatBenchmarkType"
-            @click="navigateToBenchmarkDetail"
-          />
-        </div>
-
-        <!-- Empty state -->
-        <div v-else class="flex flex-1 items-center justify-center">
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>{{ t('workouts.empty.benchmarks.title') }}</EmptyTitle>
-              <EmptyDescription>{{ t('workouts.empty.benchmarks.description') }}</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
-      </TabsContent>
-    </Tabs>
   </div>
 </template>

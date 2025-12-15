@@ -129,14 +129,16 @@ function handleOpenQueue() {
 </script>
 
 <template>
-  <div class="h-full">
-    <!-- Active Mode -->
-    <BenchmarkActiveMode
-      @end-workout="openDialog('finish')"
-      @cancel-workout="openDialog('cancel')"
-      @workout-complete="handleWorkoutComplete"
-      @open-queue="handleOpenQueue"
-    />
+  <div class="h-full flex flex-col">
+    <div class="flex-1 mx-auto w-full max-w-5xl">
+      <!-- Active Mode -->
+      <BenchmarkActiveMode
+        @end-workout="openDialog('finish')"
+        @cancel-workout="openDialog('cancel')"
+        @workout-complete="handleWorkoutComplete"
+        @open-queue="handleOpenQueue"
+      />
+    </div>
 
     <!-- Dialogs -->
     <WorkoutFinishDialog
