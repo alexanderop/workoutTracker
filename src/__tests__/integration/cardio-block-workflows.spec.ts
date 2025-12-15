@@ -133,6 +133,45 @@ describe('Cardio Block Workflows', () => {
       cleanup()
     })
 
+    it('clicking Done on cardio block advances to next block', async () => {
+      const { builder, common, router, cleanup } = await createTestApp()
+
+      // Start new workout
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      expect(router.currentRoute.value.path).toBe('/workout/active')
+
+      // Add cardio block first
+      await builder.addCardioBlock('Running')
+
+      // Add strength block after cardio - switch back to exercises tab
+      await builder.openAddBlockDialog()
+      await page.getByRole('tab', { name: /exercises/i }).click()
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
+
+      // Verify both blocks in playlist
+      const playlistButtons = await builder.getPlaylistBlockButtons()
+      expect(playlistButtons.length).toBe(2)
+
+      // Start workout - should show cardio block first
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      // Verify we're on the cardio block (shows Done button)
+      await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
+
+      // Click Done on cardio block - should advance to next block
+      await userEvent.click(page.getByRole('button', { name: /done/i }))
+
+      // BUG REPRODUCTION: Should advance to block 2 of 2 (strength block)
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
+
+      // Verify we're now on the strength block (shows set table)
+      await expect.element(page.getByRole('table')).toBeVisible()
+
+      cleanup()
+    })
+
     it('can complete cardio block and finish workout', async () => {
       const { builder, workout, router, cleanup } = await createTestApp()
 

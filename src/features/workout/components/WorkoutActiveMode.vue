@@ -117,12 +117,18 @@ function handleToggleTimer() {
 }
 
 function handleCompleteBlock() {
-  if (!currentBlock.value || !isTimedBlock(currentBlock.value)) return
+  if (!currentBlock.value) return
 
-  const result = timedViewRef.value?.complete()
-  if (isTimedBlockResult(result)) {
-    setBlockResult(currentBlockIndex.value, result)
+  // Handle timed blocks (AMRAP, EMOM, Tabata, ForTime) - capture result from timer
+  if (isTimedBlock(currentBlock.value)) {
+    const result = timedViewRef.value?.complete()
+    if (isTimedBlockResult(result)) {
+      setBlockResult(currentBlockIndex.value, result)
+    }
   }
+
+  // Cardio blocks don't have a timer to complete, just advance
+  // (Cardio result tracking would be added separately if needed)
 
   if (isLastBlock.value) {
     emit('workout-complete')
