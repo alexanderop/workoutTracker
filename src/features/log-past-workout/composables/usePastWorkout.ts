@@ -8,7 +8,7 @@ import { tryCatch } from '@/lib/tryCatch'
 
 function createStrengthBlockFromTemplate(
   templateBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; defaultSetCount?: number; thumbnail: string; exerciseDefinitionId?: string | null },
-  index: number,
+  newId: number,
 ): StrengthBlock {
   const setCount = templateBlock.defaultSetCount ?? 3
   const sets: Array<Set> = Array.from({ length: setCount }, (_, i) => ({
@@ -21,7 +21,7 @@ function createStrengthBlockFromTemplate(
 
   return {
     kind: 'strength',
-    id: index + 1,
+    id: newId,
     exerciseDefinitionId: templateBlock.exerciseDefinitionId ?? null,
     name: templateBlock.name,
     equipment: templateBlock.equipment,
@@ -33,7 +33,7 @@ function createStrengthBlockFromTemplate(
 
 function createStrengthBlockFromHistory(
   historyBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; thumbnail: string; exerciseDefinitionId?: string | null },
-  index: number,
+  newId: number,
 ): StrengthBlock {
   const sets: Array<Set> = historyBlock.sets.map((set, setIndex) => ({
     id: setIndex + 1,
@@ -45,7 +45,7 @@ function createStrengthBlockFromHistory(
 
   return {
     kind: 'strength',
-    id: index + 1,
+    id: newId,
     exerciseDefinitionId: historyBlock.exerciseDefinitionId ?? null,
     name: historyBlock.name,
     equipment: historyBlock.equipment,
@@ -216,6 +216,60 @@ function createCardioBlockFromHistory(
 }
 
 /**
+ * Converts a template block to a workout block based on its kind.
+ */
+function convertTemplateBlockToWorkoutBlock(
+  block: NonNullable<Awaited<ReturnType<ReturnType<typeof getTemplatesRepository>['getById']>>>['blocks'][number],
+  newId: number,
+): WorkoutBlock | null {
+  if (!block) return null
+
+  switch (block.kind) {
+    case 'strength':
+      return createStrengthBlockFromTemplate(block, newId)
+    case 'amrap':
+      return createAmrapBlockFromTemplate(block, newId)
+    case 'emom':
+      return createEmomBlockFromTemplate(block, newId)
+    case 'tabata':
+      return createTabataBlockFromTemplate(block, newId)
+    case 'fortime':
+      return createForTimeBlockFromTemplate(block, newId)
+    case 'cardio':
+      return createCardioBlockFromTemplate(block, newId)
+    default:
+      return null
+  }
+}
+
+/**
+ * Converts a history block to a workout block based on its kind.
+ */
+function convertHistoryBlockToWorkoutBlock(
+  block: NonNullable<Awaited<ReturnType<ReturnType<typeof getWorkoutsRepository>['getById']>>>['blocks'][number],
+  newId: number,
+): WorkoutBlock | null {
+  if (!block) return null
+
+  switch (block.kind) {
+    case 'strength':
+      return createStrengthBlockFromHistory(block, newId)
+    case 'amrap':
+      return createAmrapBlockFromHistory(block, newId)
+    case 'emom':
+      return createEmomBlockFromHistory(block, newId)
+    case 'tabata':
+      return createTabataBlockFromHistory(block, newId)
+    case 'fortime':
+      return createForTimeBlockFromHistory(block, newId)
+    case 'cardio':
+      return createCardioBlockFromHistory(block, newId)
+    default:
+      return null
+  }
+}
+
+/**
  * Composable for managing past workout state during hindsight logging.
  * Provides state management for the multi-step past workout entry flow.
  */
@@ -241,41 +295,9 @@ export function usePastWorkout() {
     workoutName.value = template.name
 
     // Convert template blocks to workout blocks with empty sets
-    const workoutBlocks: Array<WorkoutBlock> = []
-
-    for (let index = 0; index < template.blocks.length; index++) {
-      const block = template.blocks[index]
-      if (!block) continue
-
-      if (block.kind === 'strength') {
-        workoutBlocks.push(createStrengthBlockFromTemplate(block, index))
-        continue
-      }
-
-      if (block.kind === 'amrap') {
-        workoutBlocks.push(createAmrapBlockFromTemplate(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'emom') {
-        workoutBlocks.push(createEmomBlockFromTemplate(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'tabata') {
-        workoutBlocks.push(createTabataBlockFromTemplate(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'fortime') {
-        workoutBlocks.push(createForTimeBlockFromTemplate(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'cardio') {
-        workoutBlocks.push(createCardioBlockFromTemplate(block, index + 1))
-      }
-    }
+    const workoutBlocks: Array<WorkoutBlock> = template.blocks
+      .map((block, index) => convertTemplateBlockToWorkoutBlock(block, index + 1))
+      .filter((block): block is WorkoutBlock => block !== null)
 
     blocks.value = workoutBlocks
     sourceType.value = 'template'
@@ -296,41 +318,9 @@ export function usePastWorkout() {
     workoutName.value = `${historicalWorkout.name} (Copy)`
 
     // Convert DB blocks to workout blocks, preserving set values
-    const workoutBlocks: Array<WorkoutBlock> = []
-
-    for (let index = 0; index < historicalWorkout.blocks.length; index++) {
-      const block = historicalWorkout.blocks[index]
-      if (!block) continue
-
-      if (block.kind === 'strength') {
-        workoutBlocks.push(createStrengthBlockFromHistory(block, index))
-        continue
-      }
-
-      if (block.kind === 'amrap') {
-        workoutBlocks.push(createAmrapBlockFromHistory(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'emom') {
-        workoutBlocks.push(createEmomBlockFromHistory(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'tabata') {
-        workoutBlocks.push(createTabataBlockFromHistory(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'fortime') {
-        workoutBlocks.push(createForTimeBlockFromHistory(block, index + 1))
-        continue
-      }
-
-      if (block.kind === 'cardio') {
-        workoutBlocks.push(createCardioBlockFromHistory(block, index + 1))
-      }
-    }
+    const workoutBlocks: Array<WorkoutBlock> = historicalWorkout.blocks
+      .map((block, index) => convertHistoryBlockToWorkoutBlock(block, index + 1))
+      .filter((block): block is WorkoutBlock => block !== null)
 
     blocks.value = workoutBlocks
     sourceType.value = 'history'

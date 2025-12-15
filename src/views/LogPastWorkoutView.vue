@@ -7,6 +7,7 @@ import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import ErrorDialog from '@/components/ErrorDialog.vue'
 import SourceSelector from '@/features/log-past-workout/components/SourceSelector.vue'
 import DateDurationPicker from '@/features/log-past-workout/components/DateDurationPicker.vue'
 import WorkoutBuilder from '@/features/log-past-workout/components/WorkoutBuilder.vue'
@@ -32,7 +33,8 @@ const {
   reset,
 } = usePastWorkout()
 
-const { save, isSaving } = usePastWorkoutSave()
+const { save, isSaving, error } = usePastWorkoutSave()
+const showError = ref(false)
 
 const canSave = computed(() => {
   return workoutName.value.trim().length > 0 && blocks.value.length > 0
@@ -84,6 +86,11 @@ async function handleSave() {
 
   if (savedId) {
     router.push({ name: RouteNames.History })
+    return
+  }
+
+  if (error.value) {
+    showError.value = true
   }
 }
 </script>
@@ -141,5 +148,12 @@ async function handleSave() {
         {{ isSaving ? t('common.saving', 'Saving...') : t('logPastWorkout.saveWorkout', 'Save Workout') }}
       </Button>
     </div>
+
+    <!-- Error Dialog -->
+    <ErrorDialog
+      v-model:open="showError"
+      :error="error ?? t('logPastWorkout.saveError', 'Failed to save workout. Please try again.')"
+      :title="t('logPastWorkout.saveErrorTitle', 'Save Failed')"
+    />
   </div>
 </template>

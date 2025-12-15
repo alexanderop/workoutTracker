@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
+import { getCurrentLocale } from '@/lib/dateLocale'
 import type { DateValue } from '@internationalized/date'
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date'
 
@@ -39,7 +40,8 @@ const calendarValue = computed({
 const maxDate = today(getLocalTimeZone())
 
 const formattedDate = computed(() => {
-  return date.value.toLocaleDateString('en-US', {
+  const locale = getCurrentLocale()
+  return date.value.toLocaleDateString(locale === 'en' ? 'en-US' : 'de-DE', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',

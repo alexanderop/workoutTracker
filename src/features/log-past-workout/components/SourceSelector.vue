@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { getTemplatesRepository, getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import { getCurrentLocale } from '@/lib/dateLocale'
 import type { DbWorkoutTemplate, DbCompletedWorkout } from '@/db/schema'
 
 const emit = defineEmits<{
@@ -60,7 +61,8 @@ function selectWorkout(workout: DbCompletedWorkout) {
 }
 
 function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  const locale = getCurrentLocale()
+  return new Date(timestamp).toLocaleDateString(locale === 'en' ? 'en-US' : 'de-DE', {
     month: 'short',
     day: 'numeric',
   })

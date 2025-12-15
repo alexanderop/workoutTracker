@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -77,16 +77,14 @@ function handleRemoveSet(blockId: number, setIndex: number) {
   emit('update-sets', blockId, newSets)
 }
 
-function getStrengthBlocks(): ReadonlyArray<StrengthBlock> {
-  return props.blocks.filter(isStrengthBlock)
-}
+const strengthBlocks = computed(() => props.blocks.filter(isStrengthBlock))
 </script>
 
 <template>
   <div class="space-y-4">
     <!-- Strength Blocks -->
     <StrengthBlockGrid
-      v-for="(block, index) in getStrengthBlocks()"
+      v-for="(block, index) in strengthBlocks"
       :key="block.id"
       :block="block"
       :block-index="index"
