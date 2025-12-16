@@ -10,6 +10,7 @@ import {
   createDbForTimeResult,
   generateId,
 } from '../../factories'
+import { getRepositoryProvider } from '@/db/provider'
 
 /**
  * Creates a ForTime benchmark with customizable options.
@@ -137,8 +138,9 @@ export async function createCompletedAttempt(
     }),
   })
 
+  const workoutId = generateId()
   const workout: DbCompletedWorkout = {
-    id: generateId(),
+    id: workoutId,
     name: benchmark.name,
     benchmarkId,
     startedAt,
@@ -150,6 +152,13 @@ export async function createCompletedAttempt(
 
   // Use repository method which handles normalized table writes
   await getWorkoutsRepository().add(workout)
+
+  // Record attempt and update personal best
+  await getRepositoryProvider().benchmarks.recordAttempt({
+    benchmarkId,
+    workoutId,
+    completionTimeSeconds: completionTime,
+  })
 }
 
 /**

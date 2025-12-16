@@ -557,11 +557,6 @@ export type DbTemplateBlock =
 // ============================================
 
 /**
- * @deprecated Use DbExercise instead
- */
-export type DbCustomExercise = Omit<DbExercise, 'isBuiltIn'>
-
-/**
  * @deprecated Use DbWorkoutHeader with normalized blocks instead
  */
 export type DbCompletedWorkout = {
@@ -593,12 +588,4 @@ export type DbWorkoutTemplate = {
 
 export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlock {
   return block.kind === 'strength'
-}
-
-export function isDbTimedBlock(block: DbWorkoutBlock): block is DbTimedBlock {
-  return ['emom', 'amrap', 'tabata', 'fortime'].includes(block.kind)
-}
-
-export function isDbCardioBlock(block: DbWorkoutBlock): block is DbCardioBlock {
-  return block.kind === 'cardio'
 }

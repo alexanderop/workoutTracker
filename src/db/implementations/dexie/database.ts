@@ -17,7 +17,7 @@ import type {
   DbWorkoutHeader,
 } from '@/db/schema'
 
-export class WorkoutTrackerDb extends Dexie {
+class WorkoutTrackerDb extends Dexie {
   // Core entities
   exercises!: Table<DbExercise, string>
   workoutHeaders!: Table<DbWorkoutHeader, string>

@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getCustomExercisesRepository } from '@/db'
-import { createDbCustomExercise } from '@/db/converters'
+import { getExercisesRepository } from '@/db'
+import { createDbExercise } from '@/db/converters'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -12,13 +12,13 @@ describe('Timed Block Exercise Picker', () => {
   describe('Custom exercises', () => {
     it('shows custom exercises from IndexedDB when adding to EMOM block', async () => {
       // Given: a custom exercise exists in the database (name starts with 'A' to ensure it's in first 10 alphabetically)
-      const customExercise = createDbCustomExercise({
+      const customExercise = createDbExercise({
         name: 'AAA Custom Lift',
         icon: '🏋️',
         type: 'compound',
         metrics: 'weight-reps',
       })
-      await getCustomExercisesRepository().add(customExercise)
+      await getExercisesRepository().add(customExercise)
 
       // When: I navigate to workout builder and add an EMOM block
       const { builder, common, cleanup } = await createTestApp()

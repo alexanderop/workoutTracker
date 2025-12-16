@@ -11,14 +11,14 @@ export const useExercisesStore = defineStore('exercises', () => {
   const isLoading = ref(false)
 
   /**
-   * Load all custom (non-built-in) exercises from the database.
+   * Load all exercises from the database.
    * Call this on app initialization.
    */
   async function loadFromDb(): Promise<void> {
     if (isLoading.value) return
 
     isLoading.value = true
-    const [error, dbExercises] = await tryCatch(getExercisesRepository().getCustom())
+    const [error, dbExercises] = await tryCatch(getExercisesRepository().getAll())
     isLoading.value = false
 
     if (error) return

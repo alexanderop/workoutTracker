@@ -76,26 +76,91 @@ function createValidStrengthBlock(overrides: Record<string, unknown> = {}) {
 }
 
 /**
- * Creates a valid completed workout for testing.
+ * Creates a valid completed workout for testing (normalized format).
  */
 function createValidWorkout(overrides: Record<string, unknown> = {}) {
+  const now = Date.now()
   return {
-    id: 'workout-1',
-    name: 'Morning Workout',
-    blocks: [createValidStrengthBlock()],
-    startedAt: Date.now() - 3600000,
-    completedAt: Date.now(),
-    durationSeconds: 3600,
-    notes: '',
-    benchmarkId: null,
+    header: {
+      id: 'workout-1',
+      name: 'Morning Workout',
+      startedAt: now - 3600000,
+      completedAt: now,
+      durationSeconds: 3600,
+      notes: '',
+      benchmarkId: null,
+      templateId: null,
+      stats: { totalReps: 8, totalWeight: 800, exerciseCount: 1, setCount: 1 },
+    },
+    blocks: [
+      {
+        id: 'block-1',
+        workoutId: 'workout-1',
+        kind: 'strength',
+        orderIndex: 0,
+        config: { kind: 'strength' },
+        result: null,
+        exerciseId: 'exercise-1',
+        exerciseName: 'Squat',
+        equipment: 'barbell',
+        targetReps: 8,
+        thumbnail: '🏋️',
+      },
+    ],
+    sets: [
+      {
+        id: 'set-1',
+        blockId: 'block-1',
+        orderIndex: 0,
+        kg: '100',
+        reps: '8',
+        rir: '2',
+        status: 'completed',
+        completedAt: now,
+      },
+    ],
+    blockExercises: [],
     ...overrides,
   }
 }
 
 /**
- * Creates a valid workout template for testing.
+ * Creates a valid workout template for testing (normalized format).
  */
 function createValidTemplate(overrides: Record<string, unknown> = {}) {
+  const now = Date.now()
+  return {
+    header: {
+      id: 'template-1',
+      name: 'Push Day',
+      createdAt: now,
+      lastUsedAt: null,
+      usageCount: 0,
+      tags: [],
+    },
+    blocks: [
+      {
+        id: 'tblock-1',
+        templateId: 'template-1',
+        kind: 'strength',
+        orderIndex: 0,
+        exerciseId: 'exercise-1',
+        exerciseName: 'Bench Press',
+        equipment: 'barbell',
+        targetReps: 8,
+        thumbnail: '🏋️',
+        defaultSetCount: 3,
+      },
+    ],
+    blockExercises: [],
+    ...overrides,
+  }
+}
+
+/**
+ * Creates a valid workout template in legacy format for dbWorkoutTemplateSchema tests.
+ */
+function createLegacyTemplate(overrides: Record<string, unknown> = {}) {
   return {
     id: 'template-1',
     name: 'Push Day',
@@ -113,6 +178,24 @@ function createValidTemplate(overrides: Record<string, unknown> = {}) {
     createdAt: Date.now(),
     lastUsedAt: null,
     tags: ['push', 'chest'],
+    ...overrides,
+  }
+}
+
+/**
+ * Creates a valid completed workout in legacy format for dbCompletedWorkoutSchema tests.
+ */
+function createLegacyWorkout(overrides: Record<string, unknown> = {}) {
+  const now = Date.now()
+  return {
+    id: 'workout-1',
+    name: 'Morning Workout',
+    blocks: [createValidStrengthBlock()],
+    startedAt: now - 3600000,
+    completedAt: now,
+    durationSeconds: 3600,
+    notes: '',
+    benchmarkId: null,
     ...overrides,
   }
 }
@@ -502,19 +585,19 @@ describe('Block Schema Validation', () => {
 describe('Template Schema Validation', () => {
   describe('dbWorkoutTemplateSchema', () => {
     it('accepts valid template', () => {
-      const result = dbWorkoutTemplateSchema.safeParse(createValidTemplate())
+      const result = dbWorkoutTemplateSchema.safeParse(createLegacyTemplate())
       expect(result.success).toBe(true)
     })
 
     it('rejects template with too many tags', () => {
       const tooManyTags = Array.from({ length: 21 }, (_, i) => `tag-${i}`)
-      const result = dbWorkoutTemplateSchema.safeParse(createValidTemplate({ tags: tooManyTags }))
+      const result = dbWorkoutTemplateSchema.safeParse(createLegacyTemplate({ tags: tooManyTags }))
       expect(result.success).toBe(false)
     })
 
     it('rejects template with tag exceeding max length', () => {
       const longTag = 'a'.repeat(51)
-      const result = dbWorkoutTemplateSchema.safeParse(createValidTemplate({ tags: [longTag] }))
+      const result = dbWorkoutTemplateSchema.safeParse(createLegacyTemplate({ tags: [longTag] }))
       expect(result.success).toBe(false)
     })
   })
@@ -523,20 +606,20 @@ describe('Template Schema Validation', () => {
 describe('Workout Schema Validation', () => {
   describe('dbCompletedWorkoutSchema', () => {
     it('accepts valid workout', () => {
-      const result = dbCompletedWorkoutSchema.safeParse(createValidWorkout())
+      const result = dbCompletedWorkoutSchema.safeParse(createLegacyWorkout())
       expect(result.success).toBe(true)
     })
 
     it('rejects workout with duration exceeding max', () => {
       const result = dbCompletedWorkoutSchema.safeParse(
-        createValidWorkout({ durationSeconds: 86401 })
+        createLegacyWorkout({ durationSeconds: 86401 })
       )
       expect(result.success).toBe(false)
     })
 
     it('rejects workout with notes exceeding max length', () => {
       const longNotes = 'a'.repeat(10001)
-      const result = dbCompletedWorkoutSchema.safeParse(createValidWorkout({ notes: longNotes }))
+      const result = dbCompletedWorkoutSchema.safeParse(createLegacyWorkout({ notes: longNotes }))
       expect(result.success).toBe(false)
     })
   })
@@ -595,11 +678,11 @@ describe('Error Message Quality', () => {
     }
   })
 
-  it('identifies nested block validation errors', () => {
+  it('identifies nested workout validation errors', () => {
     const invalid = createValidExportData({
       workouts: [
         createValidWorkout({
-          blocks: [createValidStrengthBlock({ kind: 'invalid' })],
+          header: { id: 'workout-1', name: 'Test' }, // Missing required fields
         }),
       ],
     })
@@ -608,7 +691,7 @@ describe('Error Message Quality', () => {
     expect(result.success).toBe(false)
     if (!result.success) {
       const issue = result.error.issues[0]
-      expect(issue?.path.join('.')).toContain('blocks')
+      expect(issue?.path.join('.')).toContain('workouts')
     }
   })
 })

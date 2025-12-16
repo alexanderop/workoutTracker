@@ -1,18 +1,11 @@
 import type {
   ActiveBenchmarkWorkoutRepository,
   ActiveWorkoutRepository,
-  BenchmarkAttemptsRepository,
-  BenchmarkPersonalBestsRepository,
   BenchmarksRepository,
-  BlockExercisesRepository,
   DataManagementRepository,
   ExercisesRepository,
   SettingsRepository,
-  TemplateBlockExercisesRepository,
-  TemplateBlocksRepository,
   TemplatesRepository,
-  WorkoutBlocksRepository,
-  WorkoutSetsRepository,
   WorkoutsRepository,
 } from './interfaces'
 import { getRepositoryProvider } from './provider'
@@ -58,54 +51,11 @@ export function getWorkoutsRepository(): WorkoutsRepository {
 }
 
 // ============================================
-// Repository Getters - Normalized Data
-// ============================================
-
-export function getWorkoutBlocksRepository(): WorkoutBlocksRepository {
-  return getRepositoryProvider().workoutBlocks
-}
-
-export function getWorkoutSetsRepository(): WorkoutSetsRepository {
-  return getRepositoryProvider().workoutSets
-}
-
-export function getBlockExercisesRepository(): BlockExercisesRepository {
-  return getRepositoryProvider().blockExercises
-}
-
-export function getTemplateBlocksRepository(): TemplateBlocksRepository {
-  return getRepositoryProvider().templateBlocks
-}
-
-export function getTemplateBlockExercisesRepository(): TemplateBlockExercisesRepository {
-  return getRepositoryProvider().templateBlockExercises
-}
-
-export function getBenchmarkAttemptsRepository(): BenchmarkAttemptsRepository {
-  return getRepositoryProvider().benchmarkAttempts
-}
-
-export function getBenchmarkPersonalBestsRepository(): BenchmarkPersonalBestsRepository {
-  return getRepositoryProvider().benchmarkPersonalBests
-}
-
-// ============================================
 // Repository Getters - Data Management
 // ============================================
 
 export function getDataManagementRepository(): DataManagementRepository {
   return getRepositoryProvider().dataManagement
-}
-
-// ============================================
-// Legacy Getters (deprecated)
-// ============================================
-
-/**
- * @deprecated Use getExercisesRepository() instead
- */
-export function getCustomExercisesRepository(): ExercisesRepository {
-  return getRepositoryProvider().exercises
 }
 
 // ============================================

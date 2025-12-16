@@ -509,16 +509,6 @@ export function createDbExercise(
   }
 }
 
-/**
- * @deprecated Use dbToExercise instead
- */
-export const dbToCustomExercise = dbToExercise
-
-/**
- * @deprecated Use createDbExercise instead
- */
-export const createDbCustomExercise = createDbExercise
-
 // ============================================
 // Benchmark Workout Converters
 // ============================================

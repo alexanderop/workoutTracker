@@ -625,11 +625,3 @@ export type RepositoryProvider = {
   dataManagement: DataManagementRepository
 }
 
-// ============================================
-// Legacy type aliases (for backward compatibility)
-// ============================================
-
-/**
- * @deprecated Use ExercisesRepository instead
- */
-export type CustomExercisesRepository = ExercisesRepository

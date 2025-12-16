@@ -96,7 +96,7 @@ function normalizeStrengthBlock(
   }
 
   const sets: ReadonlyArray<DbNormalizedSet> = block.sets.map((set, idx) => ({
-    id: set.id,
+    id: `${block.id}-set-${idx}`,
     blockId: block.id,
     orderIndex: idx,
     kg: set.kg,
