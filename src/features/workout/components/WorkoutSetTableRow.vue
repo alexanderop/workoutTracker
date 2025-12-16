@@ -27,6 +27,12 @@ const emit = defineEmits<{
 
 const { toDisplayValue, toStorageValue } = useWeightDisplay()
 
+// Allow 2 decimal places for weight (micro plates like 0.25kg)
+const weightFormatOptions = {
+  maximumFractionDigits: 2,
+  useGrouping: false,
+}
+
 const isActive = computed(() => set.status === 'active')
 const isCompleted = computed(() => set.status === 'completed')
 const ready = computed(() => isSetReady(set))
@@ -107,6 +113,9 @@ function handleRirChange(value: number | undefined) {
         :model-value="toDisplayValue(set.kg)"
         :min="0"
         :max="999"
+        :step="0.01"
+        :format-options="weightFormatOptions"
+        locale="en-US"
         @update:model-value="handleWeightChange"
       >
         <NumberFieldInput
