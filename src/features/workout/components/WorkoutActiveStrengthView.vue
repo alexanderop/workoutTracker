@@ -38,6 +38,12 @@ const tableAriaLabel = computed(() =>
 // Class generation functions (extracted to reduce computed complexity)
 const baseInputClass = 'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 font-bold text-base tabular-nums rounded-lg text-center'
 
+// Allow 2 decimal places for weight (micro plates like 0.25kg)
+const weightFormatOptions = {
+  maximumFractionDigits: 2,
+  useGrouping: false,
+}
+
 function getRowClass(isActive: boolean, isCompleted: boolean) {
   return cn(
     'border-none transition-all duration-200 hover:bg-transparent',
@@ -188,6 +194,9 @@ function handleRirChange(set: Set, value: number | undefined) {
                 :model-value="state.weightValue"
                 :min="0"
                 :max="999"
+                :step="0.01"
+                :format-options="weightFormatOptions"
+                locale="en-US"
                 @update:model-value="handleWeightChange(state.set, $event)"
               >
                 <NumberFieldInput
