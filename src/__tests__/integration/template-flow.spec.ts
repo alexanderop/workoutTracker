@@ -6,6 +6,23 @@ import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
 
+async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
+  const textElement = await page.getByText(exerciseName).element()
+  const card = textElement.closest('.rounded-xl')
+  if (!(card instanceof HTMLElement)) {
+    throw new Error(`Exercise card not found for: ${exerciseName}`)
+  }
+  return card
+}
+
+function getMoveDownButton(card: HTMLElement): HTMLElement {
+  const button = card.querySelector('[aria-label*="move down" i], [aria-label*="Move down" i]')
+  if (!(button instanceof HTMLElement)) {
+    throw new Error('Move down button not found')
+  }
+  return button
+}
+
 describe('Template Flow', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
@@ -465,23 +482,14 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
-      // Find "move down" button for Exercise A
-      const exerciseAText = await page.getByText('Exercise A').element()
-      const exerciseACard = exerciseAText.closest('.rounded-xl')
-      if (!(exerciseACard instanceof HTMLElement)) throw new Error('Exercise A card not found')
-
-      const moveDownButton = exerciseACard.querySelector('[aria-label*="move down" i], [aria-label*="Move down" i]')
-      if (!(moveDownButton instanceof HTMLElement)) throw new Error('Move down button not found')
+      // Find "move down" button for Exercise A and click it
+      const exerciseACard = await getExerciseCard('Exercise A')
+      const moveDownButton = getMoveDownButton(exerciseACard)
       await userEvent.click(moveDownButton)
 
       // Verify UI shows reordered exercises (B is now first)
-      const exerciseBText = await page.getByText('Exercise B').element()
-      const exerciseBCard = exerciseBText.closest('.rounded-xl')
-      const exerciseACardAfter = (await page.getByText('Exercise A').element()).closest('.rounded-xl')
-
-      if (!exerciseBCard || !exerciseACardAfter) {
-        throw new Error('Exercise cards not found')
-      }
+      const exerciseBCard = await getExerciseCard('Exercise B')
+      const exerciseACardAfter = await getExerciseCard('Exercise A')
 
       // B should be before A in the document now
       expect(
