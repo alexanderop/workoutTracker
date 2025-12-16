@@ -1,10 +1,11 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, shallowRef } from 'vue'
 import { getTemplatesRepository, getActiveWorkoutRepository } from '@/db'
 import { dbToWorkout } from '@/db/converters'
 import { restoreWorkout } from '@/stores/workoutState'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
+import type { DbNormalizedTemplateBlock, DbTemplateBlock } from '@/db/schema'
+import type { TemplateWithBlocks } from '@/db/interfaces'
 import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
 
 // ============================================
@@ -21,7 +22,7 @@ type TemplateExercise = {
 
 type TemplateDetailState =
   | { status: 'loading' }
-  | { status: 'success'; template: DbWorkoutTemplate }
+  | { status: 'success'; template: TemplateWithBlocks }
   | { status: 'not-found' }
 
 // ============================================
@@ -29,18 +30,20 @@ type TemplateDetailState =
 // ============================================
 
 /**
- * Extracts template exercises from strength blocks.
+ * Extracts template exercises from normalized strength blocks.
  */
-function extractExercisesFromBlocks(
-  blocks: ReadonlyArray<DbTemplateStrengthBlock>,
+function extractExercisesFromNormalizedBlocks(
+  blocks: ReadonlyArray<DbNormalizedTemplateBlock>,
 ): ReadonlyArray<TemplateExercise> {
-  return blocks.map((block) => ({
-    exerciseId: block.name,
-    name: block.name,
-    equipment: block.equipment,
-    thumbnail: block.thumbnail,
-    defaultSetCount: block.defaultSetCount,
-  }))
+  return blocks
+    .filter((block) => block.kind === 'strength')
+    .map((block) => ({
+      exerciseId: block.exerciseName ?? '',
+      name: block.exerciseName ?? '',
+      equipment: block.equipment ?? '',
+      thumbnail: block.thumbnail ?? '',
+      defaultSetCount: block.defaultSetCount ?? 3,
+    }))
 }
 
 /**
@@ -48,7 +51,7 @@ function extractExercisesFromBlocks(
  */
 function exercisesToBlocks(
   exercises: ReadonlyArray<TemplateExercise>,
-): ReadonlyArray<DbTemplateStrengthBlock> {
+): ReadonlyArray<DbTemplateBlock> {
   return exercises.map((ex) => ({
     kind: 'strength' as const,
     exerciseDefinitionId: null,
@@ -65,16 +68,14 @@ function exercisesToBlocks(
  * Compares name, exercise count, order, and set counts.
  */
 function checkIsEdited(
-  template: DbWorkoutTemplate,
+  template: TemplateWithBlocks,
   currentName: string,
   currentExercises: ReadonlyArray<TemplateExercise>,
 ): boolean {
   // Check name change
   if (currentName !== template.name) return true
 
-  const originalBlocks = template.blocks.filter(
-    (b): b is DbTemplateStrengthBlock => b.kind === 'strength',
-  )
+  const originalBlocks = template.blocks.filter((b) => b.kind === 'strength')
 
   // Check exercise count change
   if (currentExercises.length !== originalBlocks.length) return true
@@ -87,7 +88,7 @@ function checkIsEdited(
 
     // Check if exercise changed (order change) or set count changed
     if (
-      current.name !== original.name ||
+      current.name !== original.exerciseName ||
       current.defaultSetCount !== original.defaultSetCount
     ) {
       return true
@@ -105,7 +106,7 @@ export function useTemplateDetail(templateId: string) {
   // Primary State
   const state = ref<TemplateDetailState>({ status: 'loading' })
   const templateName = ref('')
-  const exercises = ref<ReadonlyArray<TemplateExercise>>([])
+  const exercises = shallowRef<ReadonlyArray<TemplateExercise>>([])
 
   // Operation States
   const isSaving = ref(false)
@@ -121,7 +122,7 @@ export function useTemplateDetail(templateId: string) {
   async function loadTemplate(): Promise<boolean> {
     state.value = { status: 'loading' }
 
-    const [error, loaded] = await tryCatch(getTemplatesRepository().getById(templateId))
+    const [error, loaded] = await tryCatch(getTemplatesRepository().getByIdWithBlocks(templateId))
 
     if (error || !loaded) {
       state.value = { status: 'not-found' }
@@ -131,10 +132,7 @@ export function useTemplateDetail(templateId: string) {
     state.value = { status: 'success', template: loaded }
     templateName.value = loaded.name
 
-    const strengthBlocks = loaded.blocks.filter(
-      (b): b is DbTemplateStrengthBlock => b.kind === 'strength',
-    )
-    exercises.value = extractExercisesFromBlocks(strengthBlocks)
+    exercises.value = extractExercisesFromNormalizedBlocks(loaded.blocks)
 
     return true
   }
@@ -144,10 +142,11 @@ export function useTemplateDetail(templateId: string) {
 
     isSaving.value = true
     await tryCatch(
-      getTemplatesRepository().update(state.value.template.id, {
-        name: templateName.value.trim(),
-        blocks: exercisesToBlocks(exercises.value),
-      }),
+      getTemplatesRepository().updateWithBlocks(
+        state.value.template.id,
+        templateName.value.trim(),
+        exercisesToBlocks(exercises.value),
+      ),
     )
 
     // Reload to get updated data

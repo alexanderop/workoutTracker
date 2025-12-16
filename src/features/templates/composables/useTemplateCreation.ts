@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { getTemplatesRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbWorkoutTemplate } from '@/db/schema'
+import type { DbTemplateHeader } from '@/db/schema'
 import type { TemplateExercise } from '@/features/templates/components/TemplateExerciseList.vue'
 import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
 
@@ -59,7 +59,7 @@ export function useTemplateCreation() {
     exercises.value = updated
   }
 
-  async function save(): Promise<DbWorkoutTemplate | null> {
+  async function save(): Promise<DbTemplateHeader | null> {
     if (!isValid.value || isSaving.value) return null
 
     isSaving.value = true

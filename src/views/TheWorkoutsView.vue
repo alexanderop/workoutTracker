@@ -98,7 +98,7 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
             v-for="benchmark in benchmarks"
             :key="benchmark.id"
             :benchmark="benchmark"
-            :personal-best="personalBests.get(benchmark.id)"
+            :personal-best="personalBests.get(benchmark.id)?.completionTimeSeconds"
             :format-type="formatBenchmarkType"
             @click="navigateToBenchmarkDetail"
           />

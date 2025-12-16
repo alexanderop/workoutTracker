@@ -1,6 +1,6 @@
 import type { SettingDefaults, SettingsRepository } from '@/db/interfaces'
 import type { DbUserSetting, UserSettingKey } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import { db } from './database'
 
 /**
  * Default values for user settings.
@@ -20,7 +20,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
 /**
  * Get a setting value by key with proper type narrowing via function overloads.
  */
-function createGetFunction(db: WorkoutTrackerDb) {
+function createGetFunction() {
   async function get(key: 'theme'): Promise<'light' | 'dark' | 'system'>
   async function get(key: 'defaultRestTimer'): Promise<number>
   async function get(key: 'weightUnit'): Promise<'kg' | 'lbs'>
@@ -77,9 +77,9 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
   }
 }
 
-export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRepository {
+export function createDexieSettingsRepository(): SettingsRepository {
   return {
-    get: createGetFunction(db),
+    get: createGetFunction(),
 
     async set(setting: DbUserSetting): Promise<void> {
       await db.settings.put(setting)

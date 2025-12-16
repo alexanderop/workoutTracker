@@ -1,10 +1,10 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
+import { db, getTemplatesRepository } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
+import { addTemplateWithBlocks, createDbTemplateHeader, createDbTemplateStrengthBlock } from '../factories'
 
 describe('Template Flow', () => {
   beforeEach(setupIntegrationTest)
@@ -101,7 +101,9 @@ describe('Template Flow', () => {
       const templates = await db.templates.toArray()
       expect(templates).toHaveLength(1)
       expect(templates[0]?.name).toBe('Push Day')
-      expect(templates[0]?.blocks).toHaveLength(2)
+      // Check blocks via repository (normalized storage)
+      const templateWithBlocks = await getTemplatesRepository().getByIdWithBlocks(templates[0]!.id)
+      expect(templateWithBlocks?.blocks).toHaveLength(2)
 
       // Navigate to workouts page and verify template appears
       await navigateTo({ name: RouteNames.Workouts })
@@ -123,15 +125,13 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
-        id: 'tpl-leg-day',
+      const template = await addTemplateWithBlocks({
         name: 'Leg Day',
         blocks: [
           createDbTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
           createDbTemplateStrengthBlock({ name: 'Romanian Deadlift', equipment: 'Barbell' }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to workouts page
       await navigateTo({ name: RouteNames.Workouts })
@@ -154,8 +154,8 @@ describe('Template Flow', () => {
       await userEvent.click(templateCard)
 
       // Verify route is template detail
-      await common.waitForRoute(/^\/templates\/tpl-leg-day/)
-      expect(router.currentRoute.value.path).toBe('/templates/tpl-leg-day')
+      await common.waitForRoute(new RegExp(`^/templates/${template.id}`))
+      expect(router.currentRoute.value.path).toBe(`/templates/${template.id}`)
 
       // Wait for template detail to load
       await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
@@ -172,7 +172,7 @@ describe('Template Flow', () => {
       expect(playlistButtons.length).toBe(2)
 
       // Verify template lastUsedAt was updated
-      const updatedTemplate = await db.templates.get('tpl-leg-day')
+      const updatedTemplate = await db.templates.get(template.id)
       expect(updatedTemplate?.lastUsedAt).not.toBeNull()
 
       cleanup()
@@ -185,15 +185,13 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
-        id: 'tpl-edit-test',
+      const template = await addTemplateWithBlocks({
         name: 'Original Name',
         blocks: [createDbTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail page
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-edit-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       // Wait for template page to finish loading
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
@@ -214,11 +212,11 @@ describe('Template Flow', () => {
 
       // Verify changes persisted in DB
       await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-edit-test')
+        const updated = await db.templates.get(template.id)
         return updated?.name
       }).toBe('Updated Name')
-      const updatedBlocks = await db.templates.get('tpl-edit-test')
-      expect(updatedBlocks?.blocks).toHaveLength(2)
+      const updatedTemplate = await getTemplatesRepository().getByIdWithBlocks(template.id)
+      expect(updatedTemplate?.blocks).toHaveLength(2)
 
       cleanup()
     })
@@ -228,15 +226,13 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
-        id: 'tpl-delete-test',
+      const template = await addTemplateWithBlocks({
         name: 'Template to Delete',
         blocks: [createDbTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail page
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       // Wait for template page to finish loading
       await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
@@ -254,7 +250,7 @@ describe('Template Flow', () => {
       expect(router.currentRoute.value.path).toBe('/workouts')
 
       // Verify template removed from DB
-      const deleted = await db.templates.get('tpl-delete-test')
+      const deleted = await db.templates.get(template.id)
       expect(deleted).toBeUndefined()
 
       cleanup()
@@ -307,7 +303,9 @@ describe('Template Flow', () => {
 
       const templates = await db.templates.toArray()
       expect(templates[0]?.name).toBe('Upper Body')
-      expect(templates[0]?.blocks).toHaveLength(2)
+      // Check blocks via repository (normalized storage)
+      const templateWithBlocks = await getTemplatesRepository().getByIdWithBlocks(templates[0]!.id)
+      expect(templateWithBlocks?.blocks).toHaveLength(2)
 
       cleanup()
     })
@@ -320,20 +318,17 @@ describe('Template Flow', () => {
       const now = Date.now()
       const yesterday = now - 24 * 60 * 60 * 1000
 
-      // Seed templates with different lastUsedAt values
+      // Seed templates with different lastUsedAt values (headers only - blocks not needed for list view)
       await db.templates.bulkAdd([
-        createDbTemplate({
-          id: 'tpl-never-used',
+        createDbTemplateHeader({
           name: 'Never Used Template',
           lastUsedAt: null,
         }),
-        createDbTemplate({
-          id: 'tpl-yesterday',
+        createDbTemplateHeader({
           name: 'Used Yesterday',
           lastUsedAt: yesterday,
         }),
-        createDbTemplate({
-          id: 'tpl-today',
+        createDbTemplateHeader({
           name: 'Used Today',
           lastUsedAt: now,
         }),
@@ -397,8 +392,7 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 3 exercises
-      const template = createDbTemplate({
-        id: 'tpl-remove-test',
+      const template = await addTemplateWithBlocks({
         name: 'Template With Exercises',
         blocks: [
           createDbTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
@@ -406,10 +400,9 @@ describe('Template Flow', () => {
           createDbTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText('Bench Press')).toBeVisible()
       await expect.element(page.getByText('Squat')).toBeVisible()
       await expect.element(page.getByText('Deadlift')).toBeVisible()
@@ -431,14 +424,14 @@ describe('Template Flow', () => {
 
       // Verify DB has 2 blocks
       await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-remove-test')
+        const updated = await getTemplatesRepository().getByIdWithBlocks(template.id)
         return updated?.blocks.length
       }).toBe(2)
 
-      const updated = await db.templates.get('tpl-remove-test')
+      const updated = await getTemplatesRepository().getByIdWithBlocks(template.id)
       const exerciseNames = updated?.blocks
         .filter((b): b is typeof b & { kind: 'strength' } => b.kind === 'strength')
-        .map((b) => b.name)
+        .map((b) => b.exerciseName)
       expect(exerciseNames).toContain('Bench Press')
       expect(exerciseNames).toContain('Deadlift')
       expect(exerciseNames).not.toContain('Squat')
@@ -450,8 +443,7 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 3 exercises (A, B, C order)
-      const template = createDbTemplate({
-        id: 'tpl-reorder-test',
+      const template = await addTemplateWithBlocks({
         name: 'Template To Reorder',
         blocks: [
           createDbTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
@@ -459,10 +451,9 @@ describe('Template Flow', () => {
           createDbTemplateStrengthBlock({ name: 'Exercise C', equipment: 'Barbell' }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
       // Find "move down" button for Exercise A
@@ -493,18 +484,18 @@ describe('Template Flow', () => {
 
       // Verify DB block order is B, A, C
       await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-reorder-test')
+        const updated = await getTemplatesRepository().getByIdWithBlocks(template.id)
         const firstBlock = updated?.blocks[0]
-        return firstBlock?.kind === 'strength' ? firstBlock.name : undefined
+        return firstBlock?.kind === 'strength' ? firstBlock.exerciseName : undefined
       }).toBe('Exercise B')
 
-      const updated = await db.templates.get('tpl-reorder-test')
+      const updated = await getTemplatesRepository().getByIdWithBlocks(template.id)
       const strengthBlocks = updated?.blocks.filter(
         (b): b is typeof b & { kind: 'strength' } => b.kind === 'strength',
       )
-      expect(strengthBlocks?.[0]?.name).toBe('Exercise B')
-      expect(strengthBlocks?.[1]?.name).toBe('Exercise A')
-      expect(strengthBlocks?.[2]?.name).toBe('Exercise C')
+      expect(strengthBlocks?.[0]?.exerciseName).toBe('Exercise B')
+      expect(strengthBlocks?.[1]?.exerciseName).toBe('Exercise A')
+      expect(strengthBlocks?.[2]?.exerciseName).toBe('Exercise C')
 
       cleanup()
     })
@@ -554,15 +545,13 @@ describe('Template Flow', () => {
       const { builder, getByRole, navigateTo, router, cleanup } = await createTestApp()
 
       // Seed template with default 3 sets
-      const template = createDbTemplate({
-        id: 'tpl-setcount-test',
+      const template = await addTemplateWithBlocks({
         name: 'Set Count Template',
         blocks: [createDbTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 3 })],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-setcount-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Find the set count input and increase it
@@ -586,7 +575,7 @@ describe('Template Flow', () => {
 
       // Wait for save to complete
       await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-setcount-test')
+        const updated = await getTemplatesRepository().getByIdWithBlocks(template.id)
         const firstBlock = updated?.blocks[0]
         return firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined
       }).toBe(5)
@@ -602,7 +591,7 @@ describe('Template Flow', () => {
       expect(playlistButtons.length).toBe(1)
 
       // Verify in DB that defaultSetCount was saved as 5
-      const updatedTemplate = await db.templates.get('tpl-setcount-test')
+      const updatedTemplate = await getTemplatesRepository().getByIdWithBlocks(template.id)
       const firstBlock = updatedTemplate?.blocks[0]
       expect(firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined).toBe(5)
 
@@ -615,15 +604,13 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with original name
-      const template = createDbTemplate({
-        id: 'tpl-discard-test',
+      const template = await addTemplateWithBlocks({
         name: 'Original Name',
         blocks: [createDbTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-discard-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Modify the name
@@ -642,7 +629,7 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.Workouts })
 
       // Navigate back to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-discard-test' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Verify the name is back to original (unsaved changes were discarded)
@@ -654,7 +641,7 @@ describe('Template Flow', () => {
       }).toBe('Original Name')
 
       // Verify DB was never modified
-      const dbTemplate = await db.templates.get('tpl-discard-test')
+      const dbTemplate = await db.templates.get(template.id)
       expect(dbTemplate?.name).toBe('Original Name')
 
       cleanup()

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions -- Type assertions needed for discriminated union block conversion */
 import { ref, shallowRef } from 'vue'
 import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock } from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { getTemplatesRepository } from '@/db'
 import { getWorkoutsRepository } from '@/db'
+import type { DbNormalizedTemplateBlock, DbNormalizedTemplateBlockExercise } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 
 function createStrengthBlockFromTemplate(
@@ -216,27 +218,116 @@ function createCardioBlockFromHistory(
 }
 
 /**
- * Converts a template block to a workout block based on its kind.
+ * Converts a normalized template block to a workout block based on its kind.
  */
-function convertTemplateBlockToWorkoutBlock(
-  block: NonNullable<Awaited<ReturnType<ReturnType<typeof getTemplatesRepository>['getById']>>>['blocks'][number],
+function convertNormalizedTemplateBlockToWorkoutBlock(
+  block: DbNormalizedTemplateBlock,
+  blockExercisesMap: Map<string, ReadonlyArray<DbNormalizedTemplateBlockExercise>>,
   newId: number,
 ): WorkoutBlock | null {
   if (!block) return null
 
+  const blockExercises = blockExercisesMap.get(block.id) ?? []
+
   switch (block.kind) {
     case 'strength':
-      return createStrengthBlockFromTemplate(block, newId)
-    case 'amrap':
-      return createAmrapBlockFromTemplate(block, newId)
-    case 'emom':
-      return createEmomBlockFromTemplate(block, newId)
-    case 'tabata':
-      return createTabataBlockFromTemplate(block, newId)
-    case 'fortime':
-      return createForTimeBlockFromTemplate(block, newId)
-    case 'cardio':
-      return createCardioBlockFromTemplate(block, newId)
+      return createStrengthBlockFromTemplate(
+        {
+          kind: 'strength',
+          name: block.exerciseName ?? '',
+          equipment: block.equipment ?? '',
+          targetReps: block.targetReps ?? 8,
+          defaultSetCount: block.defaultSetCount ?? 3,
+          thumbnail: block.thumbnail ?? '',
+          exerciseDefinitionId: block.exerciseId,
+        },
+        newId,
+      )
+    case 'amrap': {
+      const config = block.config as { kind: 'amrap'; durationSeconds: number }
+      return createAmrapBlockFromTemplate(
+        {
+          kind: 'amrap',
+          config: { durationSeconds: config.durationSeconds },
+          exercises: blockExercises.map((ex) => ({
+            exerciseDefinitionId: ex.exerciseId,
+            name: ex.name,
+            prescribedReps: ex.prescribedReps,
+            load: ex.load,
+            thumbnail: ex.thumbnail,
+          })),
+        },
+        newId,
+      )
+    }
+    case 'emom': {
+      const config = block.config as { kind: 'emom'; minutes: number; exerciseRotation: 'each-minute' | 'full-round' }
+      return createEmomBlockFromTemplate(
+        {
+          kind: 'emom',
+          config: { minutes: config.minutes, exerciseRotation: config.exerciseRotation },
+          exercises: blockExercises.map((ex) => ({
+            exerciseDefinitionId: ex.exerciseId,
+            name: ex.name,
+            prescribedReps: ex.prescribedReps,
+            load: ex.load,
+            thumbnail: ex.thumbnail,
+          })),
+        },
+        newId,
+      )
+    }
+    case 'tabata': {
+      const config = block.config as { kind: 'tabata'; rounds: number; workSeconds: number; restSeconds: number }
+      const exercise = blockExercises[0]
+      return createTabataBlockFromTemplate(
+        {
+          kind: 'tabata',
+          config: { rounds: config.rounds, workSeconds: config.workSeconds, restSeconds: config.restSeconds },
+          exercise: exercise
+            ? {
+                exerciseDefinitionId: exercise.exerciseId,
+                name: exercise.name,
+                prescribedReps: exercise.prescribedReps,
+                load: exercise.load,
+                thumbnail: exercise.thumbnail,
+              }
+            : { exerciseDefinitionId: null, name: '', prescribedReps: 0, load: null, thumbnail: '' },
+        },
+        newId,
+      )
+    }
+    case 'fortime': {
+      const config = block.config as { kind: 'fortime'; timeCapSeconds: number | null }
+      return createForTimeBlockFromTemplate(
+        {
+          kind: 'fortime',
+          config: { timeCapSeconds: config.timeCapSeconds },
+          exercises: blockExercises.map((ex) => ({
+            exerciseDefinitionId: ex.exerciseId,
+            name: ex.name,
+            prescribedReps: ex.prescribedReps,
+            load: ex.load,
+            thumbnail: ex.thumbnail,
+          })),
+        },
+        newId,
+      )
+    }
+    case 'cardio': {
+      const config = block.config as { kind: 'cardio'; activity: CardioBlock['config']['activity']; targetDurationSeconds: number | null; targetDistanceMeters: number | null }
+      return createCardioBlockFromTemplate(
+        {
+          kind: 'cardio',
+          config: {
+            activity: config.activity,
+            targetDurationSeconds: config.targetDurationSeconds,
+            targetDistanceMeters: config.targetDistanceMeters,
+          },
+        },
+        newId,
+      )
+    }
     default:
       return null
   }
@@ -286,7 +377,7 @@ export function usePastWorkout() {
    */
   async function loadFromTemplate(templateId: string): Promise<void> {
     const [error, template] = await tryCatch(
-      getTemplatesRepository().getById(templateId),
+      getTemplatesRepository().getByIdWithBlocks(templateId),
     )
 
     if (error || !template) {
@@ -296,7 +387,7 @@ export function usePastWorkout() {
 
     // Convert template blocks to workout blocks with empty sets
     const workoutBlocks: Array<WorkoutBlock> = template.blocks
-      .map((block, index) => convertTemplateBlockToWorkoutBlock(block, index + 1))
+      .map((block, index) => convertNormalizedTemplateBlockToWorkoutBlock(block, template.blockExercises, index + 1))
       .filter((block): block is WorkoutBlock => block !== null)
 
     blocks.value = workoutBlocks

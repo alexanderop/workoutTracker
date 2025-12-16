@@ -1,4 +1,4 @@
-export { exportDataSchema } from './exportDataSchema'
+export { exportDataSchema, type ValidatedExportData } from './exportDataSchema'
 
 // Re-export individual schemas for testing
 export { dbUserSettingSchema } from './settingsSchema'

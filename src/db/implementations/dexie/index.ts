@@ -1,24 +1,43 @@
 import type { RepositoryProvider } from '@/db/interfaces'
-import { db } from './database'
 import { createDexieActiveBenchmarkWorkoutRepository } from './activeBenchmarkWorkout'
 import { createDexieActiveWorkoutRepository } from './activeWorkout'
+import { createDexieBenchmarkAttemptsRepository } from './benchmarkAttempts'
+import { createDexieBenchmarkPersonalBestsRepository } from './benchmarkPersonalBests'
 import { createDexieBenchmarksRepository } from './benchmarks'
-import { createDexieCustomExercisesRepository } from './customExercises'
+import { createDexieBlockExercisesRepository } from './blockExercises'
 import { createDexieDataManagementRepository } from './dataManagement'
+import { createDexieExercisesRepository } from './exercises'
 import { createDexieSettingsRepository } from './settings'
+import { createDexieTemplateBlockExercisesRepository } from './templateBlockExercises'
+import { createDexieTemplateBlocksRepository } from './templateBlocks'
 import { createDexieTemplatesRepository } from './templates'
+import { createDexieWorkoutBlocksRepository } from './workoutBlocks'
+import { createDexieWorkoutSetsRepository } from './workoutSets'
 import { createDexieWorkoutsRepository } from './workouts'
 
 export function createDexieRepositoryProvider(): RepositoryProvider {
   return {
-    activeWorkout: createDexieActiveWorkoutRepository(db),
-    activeBenchmark: createDexieActiveBenchmarkWorkoutRepository(db),
-    workouts: createDexieWorkoutsRepository(db),
-    templates: createDexieTemplatesRepository(db),
-    customExercises: createDexieCustomExercisesRepository(db),
-    settings: createDexieSettingsRepository(db),
-    dataManagement: createDexieDataManagementRepository(db),
-    benchmarks: createDexieBenchmarksRepository(db),
+    // Singletons
+    activeWorkout: createDexieActiveWorkoutRepository(),
+    activeBenchmark: createDexieActiveBenchmarkWorkoutRepository(),
+    settings: createDexieSettingsRepository(),
+
+    // Core entities
+    exercises: createDexieExercisesRepository(),
+    benchmarks: createDexieBenchmarksRepository(),
+    templates: createDexieTemplatesRepository(),
+    workouts: createDexieWorkoutsRepository(),
+
+    // Normalized data (internal use)
+    workoutBlocks: createDexieWorkoutBlocksRepository(),
+    workoutSets: createDexieWorkoutSetsRepository(),
+    blockExercises: createDexieBlockExercisesRepository(),
+    templateBlocks: createDexieTemplateBlocksRepository(),
+    templateBlockExercises: createDexieTemplateBlockExercisesRepository(),
+    benchmarkAttempts: createDexieBenchmarkAttemptsRepository(),
+    benchmarkPersonalBests: createDexieBenchmarkPersonalBestsRepository(),
+
+    // Data management
+    dataManagement: createDexieDataManagementRepository(),
   }
 }
-

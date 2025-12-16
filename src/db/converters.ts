@@ -24,9 +24,9 @@ import type {
   DbBlockExercise,
   DbCardioBlock,
   DbCardioResult,
-  DbCustomExercise,
   DbEmomBlock,
   DbEmomResult,
+  DbExercise,
   DbForTimeBlock,
   DbForTimeResult,
   DbSet,
@@ -468,13 +468,13 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
 }
 
 // ============================================
-// Custom Exercise Converters
+// Exercise Converters
 // ============================================
 
 /**
- * Convert database CustomExercise to in-memory format.
+ * Convert database Exercise to in-memory CustomExercise format.
  */
-export function dbToCustomExercise(dbExercise: Readonly<DbCustomExercise>): CustomExercise {
+export function dbToExercise(dbExercise: Readonly<DbExercise>): CustomExercise {
   return {
     id: dbExercise.id,
     icon: dbExercise.icon,
@@ -488,11 +488,12 @@ export function dbToCustomExercise(dbExercise: Readonly<DbCustomExercise>): Cust
 }
 
 /**
- * Create a new CustomExercise for database storage.
+ * Create a new custom exercise for database storage.
+ * Sets isBuiltIn to false for user-created exercises.
  */
-export function createDbCustomExercise(
+export function createDbExercise(
   exercise: Omit<CustomExercise, 'id' | 'createdAt'>,
-): DbCustomExercise {
+): DbExercise {
   const now = Date.now()
   return {
     id: generateId(),
@@ -502,10 +503,21 @@ export function createDbCustomExercise(
     muscle: exercise.muscle ?? null,
     type: exercise.type,
     metrics: exercise.metrics,
+    isBuiltIn: false,
     createdAt: now,
     updatedAt: now,
   }
 }
+
+/**
+ * @deprecated Use dbToExercise instead
+ */
+export const dbToCustomExercise = dbToExercise
+
+/**
+ * @deprecated Use createDbExercise instead
+ */
+export const createDbCustomExercise = createDbExercise
 
 // ============================================
 // Benchmark Workout Converters

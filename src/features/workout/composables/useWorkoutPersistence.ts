@@ -4,7 +4,7 @@ import { getActiveWorkoutRepository, getWorkoutsRepository } from '@/db'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Workout } from './useWorkout'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutHeader } from '@/db/schema'
 
 const AUTO_SAVE_DEBOUNCE_MS = 1000
 
@@ -139,9 +139,9 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
   /**
    * Complete the active workout and save to history.
    * Sets mode to 'completed' before persisting to ensure the final state is captured.
-   * Returns the completed workout for navigation to summary.
+   * Returns the completed workout header for navigation to summary.
    */
-  async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
+  async function completeWorkout(notes = ''): Promise<DbWorkoutHeader | null> {
     const [getError, dbWorkout] = await tryCatch(getActiveWorkoutRepository().get())
 
     if (getError) {

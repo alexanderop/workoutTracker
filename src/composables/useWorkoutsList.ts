@@ -1,8 +1,8 @@
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, shallowRef } from 'vue'
 import { getTemplatesRepository } from '@/db'
 import { formatDate } from '@/lib/formatters'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbWorkoutTemplate } from '@/db/schema'
+import type { DbTemplateHeader } from '@/db/schema'
 
 // ============================================
 // Pure Functions (Functional Core)
@@ -22,7 +22,7 @@ function formatTemplateDate(timestamp: number | null): string {
 
 export function useWorkoutsList() {
   // Primary State
-  const templates = ref<ReadonlyArray<DbWorkoutTemplate>>([])
+  const templates = shallowRef<ReadonlyArray<DbTemplateHeader>>([])
 
   // State Metadata
   const isLoading = ref(true)

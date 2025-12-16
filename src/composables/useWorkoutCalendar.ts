@@ -12,10 +12,9 @@ import {
   format,
 } from 'date-fns'
 import { getWorkoutsRepository } from '@/db'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutHeader } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { formatDurationMinutes, formatDurationHoursMinutes } from '@/lib/formatters'
-import { countCompletedSets } from '@/lib/workoutStats'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 
 // ============================================
@@ -40,19 +39,19 @@ export type WorkoutDay = {
 // Pure Functions (Functional Core)
 // ============================================
 
-function mapToCalendarWorkout(workout: DbCompletedWorkout): CalendarWorkout {
+function mapToCalendarWorkout(header: DbWorkoutHeader): CalendarWorkout {
   return {
-    id: workout.id,
-    name: workout.name,
-    durationMinutes: formatDurationMinutes(workout.durationSeconds),
-    setCount: countCompletedSets(workout.blocks),
+    id: header.id,
+    name: header.name,
+    durationMinutes: formatDurationMinutes(header.durationSeconds),
+    setCount: header.stats.completedSetCount,
   }
 }
 
 function groupWorkoutsByDay(
-  workouts: ReadonlyArray<DbCompletedWorkout>,
-): Map<string, ReadonlyArray<DbCompletedWorkout>> {
-  const grouped = new Map<string, Array<DbCompletedWorkout>>()
+  workouts: ReadonlyArray<DbWorkoutHeader>,
+): Map<string, ReadonlyArray<DbWorkoutHeader>> {
+  const grouped = new Map<string, Array<DbWorkoutHeader>>()
 
   for (const workout of workouts) {
     const dateKey = format(new Date(workout.completedAt), 'yyyy-MM-dd')
@@ -65,7 +64,7 @@ function groupWorkoutsByDay(
 
 function createWorkoutDay(
   date: Date,
-  workoutsForDay: ReadonlyArray<DbCompletedWorkout>,
+  workoutsForDay: ReadonlyArray<DbWorkoutHeader>,
   today: Date,
 ): WorkoutDay {
   return {
@@ -85,12 +84,15 @@ export function useWorkoutCalendar() {
   const dateLocale = getDateLocale(locale)
 
   // Primary State
-  const workoutsCache = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
+  const workoutsCache = shallowRef<ReadonlyArray<DbWorkoutHeader>>([])
   const selectedMonth = ref(new Date())
   const selectedDate = ref<Date | null>(null)
 
   // State Metadata
   const isLoading = ref(false)
+
+  // Memoized grouping - computed once per workoutsCache change
+  const workoutsByDay = computed(() => groupWorkoutsByDay(workoutsCache.value))
 
   // Computed: Current week (Mon-Sun)
   const currentWeek = computed<ReadonlyArray<WorkoutDay>>(() => {
@@ -98,11 +100,10 @@ export function useWorkoutCalendar() {
     const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Monday
     const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
     const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
-    const grouped = groupWorkoutsByDay(workoutsCache.value)
 
     return days.map((day) => {
       const dateKey = format(day, 'yyyy-MM-dd')
-      const workoutsForDay = grouped.get(dateKey) ?? []
+      const workoutsForDay = workoutsByDay.value.get(dateKey) ?? []
       return createWorkoutDay(day, workoutsForDay, today)
     })
   })
@@ -137,11 +138,10 @@ export function useWorkoutCalendar() {
     const monthStart = startOfMonth(selectedMonth.value)
     const monthEnd = endOfMonth(selectedMonth.value)
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-    const grouped = groupWorkoutsByDay(workoutsCache.value)
 
     return days.map((day) => {
       const dateKey = format(day, 'yyyy-MM-dd')
-      const workoutsForDay = grouped.get(dateKey) ?? []
+      const workoutsForDay = workoutsByDay.value.get(dateKey) ?? []
       return createWorkoutDay(day, workoutsForDay, today)
     })
   })
@@ -151,8 +151,7 @@ export function useWorkoutCalendar() {
     if (!selectedDate.value) return []
 
     const dateKey = format(selectedDate.value, 'yyyy-MM-dd')
-    const grouped = groupWorkoutsByDay(workoutsCache.value)
-    const workoutsForDay = grouped.get(dateKey) ?? []
+    const workoutsForDay = workoutsByDay.value.get(dateKey) ?? []
 
     return workoutsForDay.map(mapToCalendarWorkout)
   })

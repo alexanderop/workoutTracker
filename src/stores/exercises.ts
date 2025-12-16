@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getCustomExercisesRepository } from '@/db'
-import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
+import { getExercisesRepository } from '@/db'
+import { createDbExercise, dbToExercise } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import type { CustomExercise } from '@/types/exercises'
 
@@ -11,19 +11,19 @@ export const useExercisesStore = defineStore('exercises', () => {
   const isLoading = ref(false)
 
   /**
-   * Load all custom exercises from the database.
+   * Load all custom (non-built-in) exercises from the database.
    * Call this on app initialization.
    */
   async function loadFromDb(): Promise<void> {
     if (isLoading.value) return
 
     isLoading.value = true
-    const [error, dbExercises] = await tryCatch(getCustomExercisesRepository().getAll())
+    const [error, dbExercises] = await tryCatch(getExercisesRepository().getCustom())
     isLoading.value = false
 
     if (error) return
 
-    customExercises.value = dbExercises.map(dbToCustomExercise)
+    customExercises.value = dbExercises.map(dbToExercise)
     isLoaded.value = true
   }
 
@@ -33,15 +33,15 @@ export const useExercisesStore = defineStore('exercises', () => {
   async function addExercise(
     exercise: Omit<CustomExercise, 'id' | 'createdAt'>,
   ): Promise<CustomExercise | null> {
-    const dbExercise = createDbCustomExercise(exercise)
+    const dbExercise = createDbExercise(exercise)
 
     // Save to DB first
-    const [error] = await tryCatch(getCustomExercisesRepository().add(dbExercise))
+    const [error] = await tryCatch(getExercisesRepository().add(dbExercise))
 
     if (error) return null
 
     // Then update local state
-    const newExercise = dbToCustomExercise(dbExercise)
+    const newExercise = dbToExercise(dbExercise)
     customExercises.value = [...customExercises.value, newExercise]
     return newExercise
   }
@@ -58,7 +58,7 @@ export const useExercisesStore = defineStore('exercises', () => {
    * Delete a custom exercise from both DB and local state.
    */
   async function deleteExercise(id: string): Promise<void> {
-    const [error] = await tryCatch(getCustomExercisesRepository().delete(id))
+    const [error] = await tryCatch(getExercisesRepository().delete(id))
 
     if (error) return
 

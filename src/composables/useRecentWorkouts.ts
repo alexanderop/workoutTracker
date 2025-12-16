@@ -1,9 +1,8 @@
 import { computed, onMounted, readonly, ref, shallowRef } from 'vue'
 import { getWorkoutsRepository } from '@/db'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutHeader } from '@/db/schema'
 import { formatDurationMinutes, formatRelativeDate } from '@/lib/formatters'
 import { tryCatch } from '@/lib/tryCatch'
-import { countCompletedSets } from '@/lib/workoutStats'
 
 // ============================================
 // Types
@@ -21,13 +20,13 @@ export type RecentWorkout = {
 // Pure Functions (Functional Core)
 // ============================================
 
-function mapToRecentWorkout(workout: DbCompletedWorkout): RecentWorkout {
+function mapToRecentWorkout(header: DbWorkoutHeader): RecentWorkout {
   return {
-    id: workout.id,
-    name: workout.name,
-    relativeDate: formatRelativeDate(workout.completedAt),
-    durationMinutes: formatDurationMinutes(workout.durationSeconds),
-    setCount: countCompletedSets(workout.blocks),
+    id: header.id,
+    name: header.name,
+    relativeDate: formatRelativeDate(header.completedAt),
+    durationMinutes: formatDurationMinutes(header.durationSeconds),
+    setCount: header.stats.completedSetCount,
   }
 }
 
@@ -37,7 +36,7 @@ function mapToRecentWorkout(workout: DbCompletedWorkout): RecentWorkout {
 
 export function useRecentWorkouts(limit = 3) {
   // Primary State
-  const workouts = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
+  const workouts = shallowRef<ReadonlyArray<DbWorkoutHeader>>([])
 
   // State Metadata
   const isLoading = ref(true)

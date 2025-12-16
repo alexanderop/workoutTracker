@@ -1,10 +1,8 @@
 import type { ActiveWorkoutRepository } from '@/db/interfaces'
 import type { DbActiveWorkout } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import { db } from './database'
 
-export function createDexieActiveWorkoutRepository(
-  db: WorkoutTrackerDb,
-): ActiveWorkoutRepository {
+export function createDexieActiveWorkoutRepository(): ActiveWorkoutRepository {
   return {
     async get(): Promise<DbActiveWorkout | undefined> {
       return db.activeWorkout.get('current')

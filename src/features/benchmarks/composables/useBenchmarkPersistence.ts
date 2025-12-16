@@ -4,7 +4,7 @@ import { getActiveBenchmarkWorkoutRepository } from '@/db'
 import { benchmarkWorkoutToDb, dbToBenchmarkWorkout } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import type { BenchmarkWorkout } from '@/types/benchmark'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutHeader } from '@/db/schema'
 
 const AUTO_SAVE_DEBOUNCE_MS = 1000
 
@@ -45,7 +45,7 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
 
       // No blocks means no active benchmark to save
       if (newWorkout.blocks.length === 0) {
-        const [deleteError] = await tryCatch(getActiveBenchmarkWorkoutRepository().delete())
+        const [deleteError] = await tryCatch(getActiveBenchmarkWorkoutRepository().clear())
         if (deleteError) {
           persistenceState.value = { status: 'error', error: deleteError }
           return
@@ -82,7 +82,7 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
   async function loadActiveBenchmark(): Promise<BenchmarkWorkout | null> {
     persistenceState.value = { status: 'loading' }
 
-    const [loadError, dbWorkout] = await tryCatch(getActiveBenchmarkWorkoutRepository().load())
+    const [loadError, dbWorkout] = await tryCatch(getActiveBenchmarkWorkoutRepository().get())
 
     if (loadError) {
       persistenceState.value = { status: 'error', error: loadError }
@@ -115,7 +115,7 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
    * Discard the active benchmark without saving to history.
    */
   async function discardActiveBenchmark(): Promise<void> {
-    const [error] = await tryCatch(getActiveBenchmarkWorkoutRepository().delete())
+    const [error] = await tryCatch(getActiveBenchmarkWorkoutRepository().clear())
 
     if (error) {
       persistenceState.value = { status: 'error', error }
@@ -130,8 +130,8 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
    * Converts to a completed workout with benchmarkId for personal best tracking.
    * Returns the completed workout for navigation to summary.
    */
-  async function completeBenchmark(): Promise<DbCompletedWorkout | null> {
-    const [loadError, dbBenchmark] = await tryCatch(getActiveBenchmarkWorkoutRepository().load())
+  async function completeBenchmark(): Promise<DbWorkoutHeader | null> {
+    const [loadError, dbBenchmark] = await tryCatch(getActiveBenchmarkWorkoutRepository().get())
 
     if (loadError) {
       persistenceState.value = { status: 'error', error: loadError }

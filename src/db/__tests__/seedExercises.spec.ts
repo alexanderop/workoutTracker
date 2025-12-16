@@ -11,7 +11,7 @@ describe('seedPopularExercises', () => {
 
   it('seeds exercises on first run', async () => {
     await seedPopularExercises()
-    const count = await db.customExercises.count()
+    const count = await db.exercises.count()
     expect(count).toBe(popularExercises.length)
   })
 
@@ -23,18 +23,18 @@ describe('seedPopularExercises', () => {
     await seedPopularExercises()
 
     // Should detect empty IndexedDB and re-seed
-    const count = await db.customExercises.count()
+    const count = await db.exercises.count()
     expect(count).toBe(popularExercises.length)
   })
 
   it('skips seeding when exercises already exist', async () => {
     // First seed
     await seedPopularExercises()
-    const firstCount = await db.customExercises.count()
+    const firstCount = await db.exercises.count()
 
     // Second call should not duplicate
     await seedPopularExercises()
-    const secondCount = await db.customExercises.count()
+    const secondCount = await db.exercises.count()
 
     expect(secondCount).toBe(firstCount)
   })

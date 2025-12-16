@@ -4,43 +4,73 @@ import type {
   DbActiveBenchmarkWorkout,
   DbActiveWorkout,
   DbBenchmark,
-  DbCompletedWorkout,
-  DbCustomExercise,
+  DbBenchmarkAttempt,
+  DbBenchmarkPersonalBest,
+  DbExercise,
+  DbNormalizedBlock,
+  DbNormalizedBlockExercise,
+  DbNormalizedSet,
+  DbNormalizedTemplateBlock,
+  DbNormalizedTemplateBlockExercise,
+  DbTemplateHeader,
   DbUserSetting,
-  DbWorkoutTemplate,
+  DbWorkoutHeader,
 } from '@/db/schema'
 
 export class WorkoutTrackerDb extends Dexie {
-  customExercises!: Table<DbCustomExercise, string>
-  workouts!: Table<DbCompletedWorkout, string>
+  // Core entities
+  exercises!: Table<DbExercise, string>
+  workoutHeaders!: Table<DbWorkoutHeader, string>
+  benchmarks!: Table<DbBenchmark, string>
+  templates!: Table<DbTemplateHeader, string>
+
+  // Normalized workout data
+  workoutBlocks!: Table<DbNormalizedBlock, string>
+  workoutSets!: Table<DbNormalizedSet, string>
+  blockExercises!: Table<DbNormalizedBlockExercise, string>
+
+  // Normalized template data
+  templateBlocks!: Table<DbNormalizedTemplateBlock, string>
+  templateBlockExercises!: Table<DbNormalizedTemplateBlockExercise, string>
+
+  // Denormalized performance tables
+  benchmarkPersonalBests!: Table<DbBenchmarkPersonalBest, string>
+  benchmarkAttempts!: Table<DbBenchmarkAttempt, string>
+
+  // Singletons (embedded)
   activeWorkout!: Table<DbActiveWorkout, 'current'>
   activeBenchmark!: Table<DbActiveBenchmarkWorkout, 'current-benchmark'>
-  templates!: Table<DbWorkoutTemplate, string>
   settings!: Table<DbUserSetting, string>
-  benchmarks!: Table<DbBenchmark, string>
 
   constructor() {
     super('WorkoutTrackerDb')
 
-    // Version 1: Initial schema
+    // Version 1: Normalized schema (fresh start - no migration needed)
     this.version(1).stores({
-      customExercises: 'id, name, muscle, equipment, createdAt',
-      workouts: 'id, startedAt, completedAt, benchmarkId',
-      activeWorkout: 'id',
-      templates: 'id, name, createdAt, lastUsedAt',
-      settings: 'key',
+      // Core entities
+      exercises: 'id, name, muscle, equipment, createdAt, isBuiltIn',
+      workoutHeaders: 'id, completedAt, benchmarkId, startedAt, templateId',
       benchmarks: 'id, name, createdAt, lastUsedAt',
-    })
+      templates: 'id, name, createdAt, lastUsedAt, usageCount',
 
-    // Version 2: Add activeBenchmark table for benchmark isolation
-    this.version(2).stores({
-      customExercises: 'id, name, muscle, equipment, createdAt',
-      workouts: 'id, startedAt, completedAt, benchmarkId',
+      // Normalized workout data
+      // [workoutId+orderIndex] is a compound index for efficient ordered retrieval
+      workoutBlocks: 'id, workoutId, [workoutId+orderIndex], kind',
+      workoutSets: 'id, blockId, [blockId+orderIndex]',
+      blockExercises: 'id, blockId, [blockId+orderIndex]',
+
+      // Normalized template data
+      templateBlocks: 'id, templateId, [templateId+orderIndex]',
+      templateBlockExercises: 'id, blockId, [blockId+orderIndex]',
+
+      // Denormalized performance tables
+      benchmarkPersonalBests: 'benchmarkId',
+      benchmarkAttempts: 'id, benchmarkId, workoutId, [benchmarkId+completedAt]',
+
+      // Singletons (embedded - keep simple)
       activeWorkout: 'id',
       activeBenchmark: 'id',
-      templates: 'id, name, createdAt, lastUsedAt',
       settings: 'key',
-      benchmarks: 'id, name, createdAt, lastUsedAt',
     })
   }
 }

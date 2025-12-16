@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { addDays, subDays, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { db } from '@/db'
+import { getWorkoutsRepository } from '@/db'
 import { dbWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 // Helper to get week strip button by current month
@@ -43,7 +43,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
-      await db.workouts.add(workout)
+      await getWorkoutsRepository().add(workout)
 
       const { cleanup } = await createTestApp()
 
@@ -77,8 +77,8 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Deadlift' })
         .build()
 
-      await db.workouts.add(workoutTuesday)
-      await db.workouts.add(workoutWednesday)
+      await getWorkoutsRepository().add(workoutTuesday)
+      await getWorkoutsRepository().add(workoutWednesday)
 
       const { cleanup } = await createTestApp()
 
@@ -117,8 +117,8 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      await db.workouts.add(workout1)
-      await db.workouts.add(workout2)
+      await getWorkoutsRepository().add(workout1)
+      await getWorkoutsRepository().add(workout2)
 
       const { cleanup } = await createTestApp()
 
@@ -202,7 +202,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
-      await db.workouts.add(workout)
+      await getWorkoutsRepository().add(workout)
 
       const { cleanup } = await createTestApp()
 
@@ -287,7 +287,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      await db.workouts.add(workout)
+      await getWorkoutsRepository().add(workout)
 
       const { cleanup } = await createTestApp()
 

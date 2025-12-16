@@ -6,11 +6,11 @@ import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
-import type { DbWorkoutExercise } from '@/db/schema'
+import type { DbStrengthBlock } from '@/db/schema'
 import WorkoutDetailSetTable from './WorkoutDetailSetTable.vue'
 
 const { exercise } = defineProps<{
-  exercise: DbWorkoutExercise
+  exercise: DbStrengthBlock
 }>()
 
 const { t } = useI18n()

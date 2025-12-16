@@ -2,8 +2,8 @@
 import { ref, useTemplateRef } from 'vue'
 import { Download, Upload } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { exportAllData, type ExportData } from '@/features/settings/utils/dataExport'
-import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
+import { exportAllData } from '@/features/settings/utils/dataExport'
+import { importAllData, parseExportFile, type NormalizedExportData } from '@/features/settings/utils/dataImport'
 import { tryCatch } from '@/lib/tryCatch'
 import { Button } from '@/components/ui/button'
 import SettingsImportDataDialog from './SettingsImportDataDialog.vue'
@@ -16,7 +16,7 @@ const isImporting = ref(false)
 const showImportDialog = ref(false)
 const showImportErrorDialog = ref(false)
 const showExportErrorDialog = ref(false)
-const importData = ref<ExportData | null>(null)
+const importData = ref<NormalizedExportData | null>(null)
 const importError = ref('')
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInput')
 

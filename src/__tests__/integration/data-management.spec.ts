@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { db } from '@/db'
+import { db, getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -48,7 +48,7 @@ describe('Data Management', () => {
     it('exports data when clicking Export Data button', async () => {
       // Arrange: Add test data to DB
       const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
-      await db.workouts.add(workout)
+      await getWorkoutsRepository().add(workout)
 
       const { common, getByRole, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -65,7 +65,7 @@ describe('Data Management', () => {
 
     it('imports data from a valid backup file', async () => {
       // Arrange: Verify DB is empty
-      expect(await db.workouts.count()).toBe(0)
+      expect(await db.workoutHeaders.count()).toBe(0)
 
       const importedWorkout = dbWorkoutBuilder()
         .withName('Imported Workout')
@@ -104,8 +104,8 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
-      const workouts = await db.workouts.toArray()
+      await expect.poll(async () => await db.workoutHeaders.count()).toBe(1)
+      const workouts = await db.workoutHeaders.toArray()
       expect(workouts[0]?.name).toBe('Imported Workout')
 
       cleanup()
@@ -138,8 +138,8 @@ describe('Data Management', () => {
 
     it('deletes all data when confirmed', async () => {
       // Arrange: Add data to database
-      await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
-      expect(await db.workouts.count()).toBe(1)
+      await getWorkoutsRepository().add(dbWorkoutBuilder().withStrengthBlock().build())
+      expect(await db.workoutHeaders.count()).toBe(1)
 
       const { getByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -156,7 +156,7 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
-      await expect.poll(async () => await db.workouts.count()).toBe(0)
+      await expect.poll(async () => await db.workoutHeaders.count()).toBe(0)
 
       cleanup()
     })
@@ -176,7 +176,7 @@ describe('Data Management', () => {
         })
         .build()
 
-      await db.workouts.add(completedWorkout)
+      await getWorkoutsRepository().add(completedWorkout)
 
       // Act: Start at home and navigate to history page
       const { router, findByText, cleanup } = await createTestApp()

@@ -2,11 +2,20 @@ import type {
   DbActiveBenchmarkWorkout,
   DbActiveWorkout,
   DbBenchmark,
+  DbBenchmarkAttempt,
+  DbBenchmarkPersonalBest,
   DbCompletedWorkout,
-  DbCustomExercise,
+  DbExercise,
+  DbNormalizedBlock,
+  DbNormalizedBlockExercise,
+  DbNormalizedSet,
+  DbNormalizedTemplateBlock,
+  DbNormalizedTemplateBlockExercise,
   DbTemplateBlock,
+  DbTemplateHeader,
   DbUserSetting,
-  DbWorkoutTemplate,
+  DbWorkoutBlock,
+  DbWorkoutHeader,
   UserSettingKey,
 } from './schema'
 
@@ -30,97 +39,70 @@ export type SettingDefaults = {
 }
 
 export type SettingsRepository = {
-  /**
-   * Retrieve theme setting with fallback to default (system).
-   */
   get(key: 'theme'): Promise<'light' | 'dark' | 'system'>
-  /**
-   * Retrieve default rest timer setting in seconds with fallback to default (90).
-   */
   get(key: 'defaultRestTimer'): Promise<number>
-  /**
-   * Retrieve weight unit setting with fallback to default (kg).
-   */
   get(key: 'weightUnit'): Promise<'kg' | 'lbs'>
-  /**
-   * Retrieve height unit setting with fallback to default (cm).
-   */
   get(key: 'heightUnit'): Promise<'cm' | 'ft-in'>
-  /**
-   * Retrieve auto-save interval setting in milliseconds with fallback to default (1000).
-   */
   get(key: 'autoSaveInterval'): Promise<number>
-  /**
-   * Retrieve screen wake lock setting with fallback to default (true).
-   */
   get(key: 'screenWakeLock'): Promise<boolean>
-  /**
-   * Retrieve timer sound setting with fallback to default (true).
-   */
   get(key: 'timerSoundEnabled'): Promise<boolean>
-  /**
-   * Retrieve timer sound volume setting with fallback to default (0.8).
-   */
   get(key: 'timerSoundVolume'): Promise<number>
-  /**
-   * Retrieve language setting with fallback to default (undefined).
-   */
   get(key: 'language'): Promise<'en' | 'de' | undefined>
-  /**
-   * Save or update a user setting in the database.
-   */
   set(setting: DbUserSetting): Promise<void>
-  /**
-   * Retrieve all settings merged with defaults for missing keys.
-   */
   getAll(): Promise<SettingDefaults>
-  /**
-   * Reset a single setting to its default value by removing from database.
-   */
   reset(key: UserSettingKey): Promise<void>
-  /**
-   * Reset all settings to their defaults by clearing the database.
-   */
   resetAll(): Promise<void>
 }
 
 // ============================================
-// Custom Exercises Repository
+// Exercises Repository (renamed from CustomExercises)
 // ============================================
 
-export type CustomExercisesRepository = {
+export type ExercisesRepository = {
   /**
-   * Retrieve all custom exercises sorted by creation date (newest first).
+   * Retrieve all exercises sorted by creation date (newest first).
    */
-  getAll(): Promise<ReadonlyArray<DbCustomExercise>>
+  getAll(): Promise<ReadonlyArray<DbExercise>>
   /**
-   * Find custom exercise by ID.
+   * Retrieve only custom (user-created) exercises.
    */
-  getById(id: string): Promise<DbCustomExercise | undefined>
+  getCustom(): Promise<ReadonlyArray<DbExercise>>
   /**
-   * Add a new custom exercise to the database.
+   * Find exercise by ID.
    */
-  add(exercise: Readonly<DbCustomExercise>): Promise<void>
+  getById(id: string): Promise<DbExercise | undefined>
   /**
-   * Update an existing custom exercise. Automatically sets updatedAt timestamp.
+   * Add a new exercise to the database.
+   */
+  add(exercise: Readonly<DbExercise>): Promise<void>
+  /**
+   * Add multiple exercises in a single transaction.
+   */
+  bulkAdd(exercises: ReadonlyArray<DbExercise>): Promise<void>
+  /**
+   * Update an existing exercise. Automatically sets updatedAt timestamp.
    * @throws Error if exercise with id not found
    */
   update(
     id: string,
-    updates: Partial<Omit<DbCustomExercise, 'id' | 'createdAt'>>,
+    updates: Partial<Omit<DbExercise, 'id' | 'createdAt'>>,
   ): Promise<void>
   /**
-   * Delete a custom exercise by ID. Silently succeeds if ID doesn't exist.
+   * Delete an exercise by ID. Silently succeeds if ID doesn't exist.
    */
   delete(id: string): Promise<void>
+  /**
+   * Delete multiple exercises in a single transaction.
+   */
+  bulkDelete(ids: ReadonlyArray<string>): Promise<void>
   /**
    * Check if an exercise with the given name exists (case-insensitive).
    */
   existsByName(name: string): Promise<boolean>
   /**
-   * Search custom exercises by name using case-insensitive substring matching.
+   * Search exercises by name using case-insensitive substring matching.
    */
-  searchByName(query: string): Promise<ReadonlyArray<DbCustomExercise>>
+  searchByName(query: string): Promise<ReadonlyArray<DbExercise>>
 }
 
 // ============================================
@@ -148,35 +130,126 @@ export type ActiveWorkoutRepository = {
 
 // ============================================
 // Active Benchmark Workout Repository
+// (Standardized naming: get/save/clear)
 // ============================================
 
 export type ActiveBenchmarkWorkoutRepository = {
   /**
    * Retrieve the current active benchmark workout.
+   * (Renamed from load() for consistency with ActiveWorkoutRepository)
    */
-  load(): Promise<DbActiveBenchmarkWorkout | undefined>
+  get(): Promise<DbActiveBenchmarkWorkout | undefined>
   /**
    * Save or update the active benchmark workout. Automatically updates lastModifiedAt timestamp.
    */
   save(workout: Readonly<DbActiveBenchmarkWorkout>): Promise<void>
   /**
    * Remove the active benchmark workout from the database.
+   * (Renamed from delete() for consistency with ActiveWorkoutRepository)
    */
-  delete(): Promise<void>
+  clear(): Promise<void>
   /**
    * Check if an active benchmark workout is currently in progress.
    */
   exists(): Promise<boolean>
   /**
-   * Complete the benchmark workout and save to history with benchmarkId.
+   * Complete the benchmark workout and save to history.
+   * Also updates benchmark attempts and personal bests tables.
    * Removes the active benchmark from database in a transaction.
    */
-  complete(activeBenchmark: Readonly<DbActiveBenchmarkWorkout>): Promise<DbCompletedWorkout>
+  complete(activeBenchmark: Readonly<DbActiveBenchmarkWorkout>): Promise<DbWorkoutHeader>
 }
 
 // ============================================
-// Templates Repository
+// Workout Blocks Repository (NEW)
 // ============================================
+
+export type WorkoutBlocksRepository = {
+  /**
+   * Get all blocks for a workout, ordered by orderIndex.
+   */
+  getByWorkoutId(workoutId: string): Promise<ReadonlyArray<DbNormalizedBlock>>
+  /**
+   * Get a single block by ID.
+   */
+  getById(id: string): Promise<DbNormalizedBlock | undefined>
+  /**
+   * Add multiple blocks in a single transaction.
+   */
+  bulkAdd(blocks: ReadonlyArray<DbNormalizedBlock>): Promise<void>
+  /**
+   * Delete all blocks for a workout.
+   */
+  deleteByWorkoutId(workoutId: string): Promise<void>
+}
+
+// ============================================
+// Workout Sets Repository (NEW)
+// ============================================
+
+export type WorkoutSetsRepository = {
+  /**
+   * Get all sets for a block, ordered by orderIndex.
+   */
+  getByBlockId(blockId: string): Promise<ReadonlyArray<DbNormalizedSet>>
+  /**
+   * Get sets for multiple blocks in a single query.
+   */
+  getByBlockIds(blockIds: ReadonlyArray<string>): Promise<Map<string, ReadonlyArray<DbNormalizedSet>>>
+  /**
+   * Add multiple sets in a single transaction.
+   */
+  bulkAdd(sets: ReadonlyArray<DbNormalizedSet>): Promise<void>
+  /**
+   * Delete all sets for a block.
+   */
+  deleteByBlockId(blockId: string): Promise<void>
+  /**
+   * Delete sets for multiple blocks.
+   */
+  deleteByBlockIds(blockIds: ReadonlyArray<string>): Promise<void>
+}
+
+// ============================================
+// Block Exercises Repository (NEW)
+// ============================================
+
+export type BlockExercisesRepository = {
+  /**
+   * Get all exercises for a block, ordered by orderIndex.
+   */
+  getByBlockId(blockId: string): Promise<ReadonlyArray<DbNormalizedBlockExercise>>
+  /**
+   * Get exercises for multiple blocks in a single query.
+   */
+  getByBlockIds(
+    blockIds: ReadonlyArray<string>,
+  ): Promise<Map<string, ReadonlyArray<DbNormalizedBlockExercise>>>
+  /**
+   * Add multiple block exercises in a single transaction.
+   */
+  bulkAdd(exercises: ReadonlyArray<DbNormalizedBlockExercise>): Promise<void>
+  /**
+   * Delete all exercises for a block.
+   */
+  deleteByBlockId(blockId: string): Promise<void>
+  /**
+   * Delete exercises for multiple blocks.
+   */
+  deleteByBlockIds(blockIds: ReadonlyArray<string>): Promise<void>
+}
+
+// ============================================
+// Templates Repository (Updated for normalized blocks)
+// ============================================
+
+/**
+ * Full template with blocks hydrated (for editing/starting).
+ */
+export type TemplateWithBlocks = DbTemplateHeader & {
+  blocks: ReadonlyArray<DbNormalizedTemplateBlock>
+  blockExercises: Map<string, ReadonlyArray<DbNormalizedTemplateBlockExercise>>
+}
 
 /**
  * Data structure for creating a new workout template.
@@ -189,42 +262,52 @@ export type CreateTemplateData = {
 
 export type TemplatesRepository = {
   /**
-   * Retrieve all workout templates sorted by last used date (most recent first, never-used last).
+   * Retrieve all template headers sorted by last used date.
    */
-  getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>>
+  getAll(): Promise<ReadonlyArray<DbTemplateHeader>>
   /**
-   * Find workout template by ID.
+   * Find template header by ID.
    */
-  getById(id: string): Promise<DbWorkoutTemplate | undefined>
+  getById(id: string): Promise<DbTemplateHeader | undefined>
+  /**
+   * Get template with all blocks and exercises hydrated.
+   */
+  getByIdWithBlocks(id: string): Promise<TemplateWithBlocks | undefined>
   /**
    * Create a new template from an active workout by extracting block structure.
    */
   createFromWorkout(
     workout: Readonly<DbActiveWorkout>,
     templateName: string,
-  ): Promise<DbWorkoutTemplate>
+  ): Promise<DbTemplateHeader>
   /**
    * Create a new template from a completed workout by extracting block structure.
    */
   createFromCompletedWorkout(
-    workout: Readonly<DbCompletedWorkout>,
+    workoutId: string,
     templateName: string,
-  ): Promise<DbWorkoutTemplate>
+  ): Promise<DbTemplateHeader>
   /**
-   * Create a new active workout from a template. Updates template's last used timestamp.
+   * Create a new active workout from a template. Updates template's last used timestamp and usage count.
    * @throws Error if template not found
    */
   startFromTemplate(templateId: string): Promise<DbActiveWorkout>
   /**
-   * Update an existing template's properties.
+   * Update an existing template's header properties.
    * @throws Error if template with id not found
    */
-  update(
+  update(id: string, updates: Partial<Omit<DbTemplateHeader, 'id' | 'createdAt'>>): Promise<void>
+  /**
+   * Update a template's name and blocks (replaces all blocks).
+   * @throws Error if template with id not found
+   */
+  updateWithBlocks(
     id: string,
-    updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
+    name: string,
+    blocks: ReadonlyArray<DbTemplateBlock>,
   ): Promise<void>
   /**
-   * Delete a workout template by ID. Silently succeeds if ID doesn't exist.
+   * Delete a template and all its blocks/exercises.
    */
   delete(id: string): Promise<void>
   /**
@@ -235,11 +318,51 @@ export type TemplatesRepository = {
   /**
    * Create a new workout template from structured data.
    */
-  create(data: CreateTemplateData): Promise<DbWorkoutTemplate>
+  create(data: CreateTemplateData): Promise<DbTemplateHeader>
 }
 
 // ============================================
-// Workouts Repository (Completed Workouts)
+// Template Blocks Repository (NEW)
+// ============================================
+
+export type TemplateBlocksRepository = {
+  /**
+   * Get all blocks for a template, ordered by orderIndex.
+   */
+  getByTemplateId(templateId: string): Promise<ReadonlyArray<DbNormalizedTemplateBlock>>
+  /**
+   * Add multiple template blocks in a single transaction.
+   */
+  bulkAdd(blocks: ReadonlyArray<DbNormalizedTemplateBlock>): Promise<void>
+  /**
+   * Delete all blocks for a template.
+   */
+  deleteByTemplateId(templateId: string): Promise<void>
+}
+
+// ============================================
+// Template Block Exercises Repository (NEW)
+// ============================================
+
+export type TemplateBlockExercisesRepository = {
+  /**
+   * Get exercises for multiple template blocks.
+   */
+  getByBlockIds(
+    blockIds: ReadonlyArray<string>,
+  ): Promise<Map<string, ReadonlyArray<DbNormalizedTemplateBlockExercise>>>
+  /**
+   * Add multiple template block exercises in a single transaction.
+   */
+  bulkAdd(exercises: ReadonlyArray<DbNormalizedTemplateBlockExercise>): Promise<void>
+  /**
+   * Delete exercises for a template block.
+   */
+  deleteByBlockIds(blockIds: ReadonlyArray<string>): Promise<void>
+}
+
+// ============================================
+// Workouts Repository (Updated for normalized structure)
 // ============================================
 
 /**
@@ -251,89 +374,128 @@ export type GetHistoryParams = {
 }
 
 /**
- * Date range filter for querying completed workouts. Timestamps are in milliseconds.
+ * Date range filter for querying completed workouts.
  */
 export type GetByDateRangeParams = {
   startDate: number
   endDate: number
 }
 
+/**
+ * Full workout with blocks and sets hydrated.
+ */
+export type WorkoutWithBlocks = DbWorkoutHeader & {
+  blocks: ReadonlyArray<DbWorkoutBlock>
+}
+
 export type WorkoutsRepository = {
   /**
-   * Mark an active workout as completed and save to history. Removes active workout from database in a transaction.
+   * Mark an active workout as completed and save to history.
+   * Stores normalized blocks and sets, computes stats.
+   * Removes active workout from database in a transaction.
    */
-  completeWorkout(
-    activeWorkout: Readonly<DbActiveWorkout>,
-    notes?: string,
-  ): Promise<DbCompletedWorkout>
+  completeWorkout(activeWorkout: Readonly<DbActiveWorkout>, notes?: string): Promise<DbWorkoutHeader>
   /**
-   * Add a completed workout directly to history. Used for hindsight logging (logging past workouts).
+   * Add a completed workout directly to history (for hindsight logging).
+   * Accepts embedded blocks and normalizes them during save.
    */
   add(workout: Readonly<DbCompletedWorkout>): Promise<void>
   /**
-   * Retrieve completed workouts sorted by completion date (most recent first). Defaults to limit=50, offset=0.
+   * Retrieve workout headers sorted by completion date (most recent first).
+   * Does NOT include blocks - use getById for full workout.
    */
-  getHistory(params?: GetHistoryParams): Promise<ReadonlyArray<DbCompletedWorkout>>
+  getHistory(params?: GetHistoryParams): Promise<ReadonlyArray<DbWorkoutHeader>>
   /**
-   * Retrieve completed workouts within a specific date range (inclusive).
+   * Retrieve workout headers within a date range.
    */
-  getByDateRange(params: GetByDateRangeParams): Promise<ReadonlyArray<DbCompletedWorkout>>
+  getByDateRange(params: GetByDateRangeParams): Promise<ReadonlyArray<DbWorkoutHeader>>
   /**
-   * Find completed workout by ID.
+   * Get workout header by ID.
    */
-  getById(id: string): Promise<DbCompletedWorkout | undefined>
+  getHeaderById(id: string): Promise<DbWorkoutHeader | undefined>
   /**
-   * Delete a completed workout by ID. Silently succeeds if ID doesn't exist.
+   * Get full workout with blocks and sets hydrated.
+   */
+  getById(id: string): Promise<WorkoutWithBlocks | undefined>
+  /**
+   * Delete a completed workout and all associated blocks/sets.
    */
   delete(id: string): Promise<void>
+  /**
+   * Delete multiple workouts in a single transaction.
+   */
+  bulkDelete(ids: ReadonlyArray<string>): Promise<void>
   /**
    * Count total number of completed workouts.
    */
   count(): Promise<number>
   /**
-   * Create a new active workout by copying a completed workout. Resets set statuses and timed block results.
-   * @throws Error if workout with id not found
+   * Create a new active workout by copying a completed workout.
+   * Resets set statuses and timed block results.
    */
   startFromCompleted(id: string): Promise<DbActiveWorkout>
 }
 
 // ============================================
-// Data Management Repository (Export/Import)
+// Benchmark Attempts Repository (NEW)
 // ============================================
 
-/**
- * Complete user data export format containing all database tables.
- */
-export type ExportDataContents = {
-  settings: ReadonlyArray<DbUserSetting>
-  customExercises: ReadonlyArray<DbCustomExercise>
-  templates: ReadonlyArray<DbWorkoutTemplate>
-  workouts: ReadonlyArray<DbCompletedWorkout>
-  benchmarks: ReadonlyArray<DbBenchmark>
-}
-
-export type DataManagementRepository = {
+export type BenchmarkAttemptsRepository = {
   /**
-   * Export all user data (settings, exercises, templates, workouts) for backup.
+   * Get all attempts for a benchmark, sorted by completedAt (newest first).
    */
-  exportAll(): Promise<ExportDataContents>
+  getByBenchmarkId(benchmarkId: string): Promise<ReadonlyArray<DbBenchmarkAttempt>>
   /**
-   * Import user data from backup. Clears all existing data and replaces with imported data in a transaction.
+   * Add a new attempt.
    */
-  importAll(data: ExportDataContents): Promise<void>
+  add(attempt: Readonly<DbBenchmarkAttempt>): Promise<void>
   /**
-   * Permanently delete all user data including active workout. This action cannot be undone.
+   * Delete all attempts for a benchmark.
    */
-  deleteAll(): Promise<void>
+  deleteByBenchmarkId(benchmarkId: string): Promise<void>
+  /**
+   * Delete attempts for a specific workout.
+   */
+  deleteByWorkoutId(workoutId: string): Promise<void>
 }
 
 // ============================================
-// Repository Provider (All Repositories)
+// Benchmark Personal Bests Repository (NEW)
 // ============================================
+
+export type BenchmarkPersonalBestsRepository = {
+  /**
+   * Get personal best for a benchmark. O(1) lookup.
+   */
+  get(benchmarkId: string): Promise<DbBenchmarkPersonalBest | undefined>
+  /**
+   * Get personal bests for multiple benchmarks in a single query.
+   */
+  getMany(benchmarkIds: ReadonlyArray<string>): Promise<Map<string, DbBenchmarkPersonalBest>>
+  /**
+   * Set or update personal best for a benchmark.
+   */
+  set(pb: Readonly<DbBenchmarkPersonalBest>): Promise<void>
+  /**
+   * Delete personal best for a benchmark.
+   */
+  delete(benchmarkId: string): Promise<void>
+}
 
 // ============================================
 // Benchmarks Repository
 // ============================================
+
+/**
+ * Single attempt record for a benchmark workout (returned from getAttemptHistory).
+ */
+export type BenchmarkAttempt = {
+  id: string // attempt ID
+  workoutId: string
+  completedAt: number // timestamp (ms)
+  completionTime: number // seconds
+  isPersonalBest: boolean
+}
 
 export type BenchmarksRepository = {
   /**
@@ -352,12 +514,9 @@ export type BenchmarksRepository = {
    * Update an existing benchmark.
    * @throws Error if benchmark with id not found
    */
-  update(
-    id: string,
-    updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  update(id: string, updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>): Promise<void>
   /**
-   * Delete a benchmark by ID. Silently succeeds if ID doesn't exist.
+   * Delete a benchmark and all its attempts/personal bests.
    */
   delete(id: string): Promise<void>
   /**
@@ -370,31 +529,68 @@ export type BenchmarksRepository = {
    */
   startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout>
   /**
-   * Get the personal best (fastest completion time) for a benchmark.
-   * Returns the completion time in seconds, or null if no completions exist.
+   * Get the personal best completion time for a benchmark. O(1) lookup.
    */
-  getPersonalBest(benchmarkId: string): Promise<number | null>
+  getPersonalBest(benchmarkId: string): Promise<DbBenchmarkPersonalBest | null>
   /**
-   * Get personal bests for multiple benchmarks in a single batch query.
-   * Returns a Map of benchmark IDs to completion times (in seconds).
-   * Benchmarks without completions are omitted from the map.
+   * Get personal bests for multiple benchmarks. O(n) where n = benchmarkIds.length.
    */
-  getPersonalBests(benchmarkIds: ReadonlyArray<string>): Promise<ReadonlyMap<string, number>>
+  getPersonalBests(
+    benchmarkIds: ReadonlyArray<string>,
+  ): Promise<ReadonlyMap<string, DbBenchmarkPersonalBest>>
   /**
-   * Get all completed attempts for a benchmark, sorted by date (newest first).
-   * Returns empty array if no attempts exist.
+   * Get all attempts for a benchmark with isPersonalBest computed.
    */
   getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>>
+  /**
+   * Record a new benchmark attempt. Updates personal best if applicable.
+   */
+  recordAttempt(params: {
+    benchmarkId: string
+    workoutId: string
+    completionTimeSeconds: number
+  }): Promise<void>
 }
 
+// ============================================
+// Data Management Repository
+// ============================================
+
 /**
- * Single attempt record for a benchmark workout.
+ * Complete user data export format (legacy format for backward compatibility).
  */
-export type BenchmarkAttempt = {
-  id: string // workout ID
-  completedAt: number // timestamp (ms)
-  completionTime: number // seconds
-  isPersonalBest: boolean // true if this is the PB
+export type ExportDataContents = {
+  settings: ReadonlyArray<DbUserSetting>
+  customExercises: ReadonlyArray<DbExercise>
+  templates: ReadonlyArray<{
+    header: DbTemplateHeader
+    blocks: ReadonlyArray<DbNormalizedTemplateBlock>
+    blockExercises: ReadonlyArray<DbNormalizedTemplateBlockExercise>
+  }>
+  workouts: ReadonlyArray<{
+    header: DbWorkoutHeader
+    blocks: ReadonlyArray<DbNormalizedBlock>
+    sets: ReadonlyArray<DbNormalizedSet>
+    blockExercises: ReadonlyArray<DbNormalizedBlockExercise>
+  }>
+  benchmarks: ReadonlyArray<DbBenchmark>
+  benchmarkAttempts: ReadonlyArray<DbBenchmarkAttempt>
+  benchmarkPersonalBests: ReadonlyArray<DbBenchmarkPersonalBest>
+}
+
+export type DataManagementRepository = {
+  /**
+   * Export all user data for backup.
+   */
+  exportAll(): Promise<ExportDataContents>
+  /**
+   * Import user data from backup. Clears all existing data and replaces with imported data in a transaction.
+   */
+  importAll(data: ExportDataContents): Promise<void>
+  /**
+   * Permanently delete all user data including active workouts.
+   */
+  deleteAll(): Promise<void>
 }
 
 // ============================================
@@ -405,12 +601,35 @@ export type BenchmarkAttempt = {
  * Unified interface providing access to all repository instances.
  */
 export type RepositoryProvider = {
+  // Singletons
   activeWorkout: ActiveWorkoutRepository
   activeBenchmark: ActiveBenchmarkWorkoutRepository
-  workouts: WorkoutsRepository
-  templates: TemplatesRepository
-  customExercises: CustomExercisesRepository
   settings: SettingsRepository
-  dataManagement: DataManagementRepository
+
+  // Core entities
+  exercises: ExercisesRepository
   benchmarks: BenchmarksRepository
+  templates: TemplatesRepository
+  workouts: WorkoutsRepository
+
+  // Normalized data (internal use)
+  workoutBlocks: WorkoutBlocksRepository
+  workoutSets: WorkoutSetsRepository
+  blockExercises: BlockExercisesRepository
+  templateBlocks: TemplateBlocksRepository
+  templateBlockExercises: TemplateBlockExercisesRepository
+  benchmarkAttempts: BenchmarkAttemptsRepository
+  benchmarkPersonalBests: BenchmarkPersonalBestsRepository
+
+  // Data management
+  dataManagement: DataManagementRepository
 }
+
+// ============================================
+// Legacy type aliases (for backward compatibility)
+// ============================================
+
+/**
+ * @deprecated Use ExercisesRepository instead
+ */
+export type CustomExercisesRepository = ExercisesRepository

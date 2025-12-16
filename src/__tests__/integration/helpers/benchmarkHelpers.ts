@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { createTestApp } from '../../helpers/createTestApp'
-import { db, getBenchmarksRepository, getWorkoutsRepository } from '@/db'
+import { getBenchmarksRepository, getWorkoutsRepository } from '@/db'
 import type { DbBenchmark, DbCompletedWorkout } from '@/db/schema'
 import {
   createDbBenchmarkExercise,
@@ -148,7 +148,8 @@ export async function createCompletedAttempt(
     blocks: [forTimeBlock],
   }
 
-  await db.workouts.add(workout)
+  // Use repository method which handles normalized table writes
+  await getWorkoutsRepository().add(workout)
 }
 
 /**

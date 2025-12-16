@@ -1,7 +1,7 @@
 import { onMounted, ref, shallowRef } from 'vue'
 import { getBenchmarksRepository } from '@/db'
 import { formatBenchmarkType, formatDate } from '@/lib/formatters'
-import type { DbBenchmark } from '@/db/schema'
+import type { DbBenchmark, DbBenchmarkPersonalBest } from '@/db/schema'
 
 // ============================================
 // Pure Functions (Functional Core)
@@ -22,7 +22,7 @@ function formatBenchmarkDate(timestamp: number | null): string {
 export function useBenchmarksList() {
   // Primary State
   const benchmarks = shallowRef<ReadonlyArray<DbBenchmark>>([])
-  const personalBests = shallowRef<ReadonlyMap<string, number>>(new Map())
+  const personalBests = shallowRef<ReadonlyMap<string, DbBenchmarkPersonalBest>>(new Map())
 
   // State Metadata
   const isLoading = ref(true)

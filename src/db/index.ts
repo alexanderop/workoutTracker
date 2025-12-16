@@ -1,11 +1,18 @@
 import type {
   ActiveBenchmarkWorkoutRepository,
   ActiveWorkoutRepository,
+  BenchmarkAttemptsRepository,
+  BenchmarkPersonalBestsRepository,
   BenchmarksRepository,
-  CustomExercisesRepository,
+  BlockExercisesRepository,
   DataManagementRepository,
+  ExercisesRepository,
   SettingsRepository,
+  TemplateBlockExercisesRepository,
+  TemplateBlocksRepository,
   TemplatesRepository,
+  WorkoutBlocksRepository,
+  WorkoutSetsRepository,
   WorkoutsRepository,
 } from './interfaces'
 import { getRepositoryProvider } from './provider'
@@ -15,7 +22,7 @@ import { tryCatch } from '@/lib/tryCatch'
 export * from './interfaces'
 
 // ============================================
-// Repository Getters
+// Repository Getters - Singletons
 // ============================================
 
 export function getActiveWorkoutRepository(): ActiveWorkoutRepository {
@@ -26,28 +33,79 @@ export function getActiveBenchmarkWorkoutRepository(): ActiveBenchmarkWorkoutRep
   return getRepositoryProvider().activeBenchmark
 }
 
-export function getWorkoutsRepository(): WorkoutsRepository {
-  return getRepositoryProvider().workouts
+export function getSettingsRepository(): SettingsRepository {
+  return getRepositoryProvider().settings
+}
+
+// ============================================
+// Repository Getters - Core Entities
+// ============================================
+
+export function getExercisesRepository(): ExercisesRepository {
+  return getRepositoryProvider().exercises
+}
+
+export function getBenchmarksRepository(): BenchmarksRepository {
+  return getRepositoryProvider().benchmarks
 }
 
 export function getTemplatesRepository(): TemplatesRepository {
   return getRepositoryProvider().templates
 }
 
-export function getCustomExercisesRepository(): CustomExercisesRepository {
-  return getRepositoryProvider().customExercises
+export function getWorkoutsRepository(): WorkoutsRepository {
+  return getRepositoryProvider().workouts
 }
 
-export function getSettingsRepository(): SettingsRepository {
-  return getRepositoryProvider().settings
+// ============================================
+// Repository Getters - Normalized Data
+// ============================================
+
+export function getWorkoutBlocksRepository(): WorkoutBlocksRepository {
+  return getRepositoryProvider().workoutBlocks
 }
+
+export function getWorkoutSetsRepository(): WorkoutSetsRepository {
+  return getRepositoryProvider().workoutSets
+}
+
+export function getBlockExercisesRepository(): BlockExercisesRepository {
+  return getRepositoryProvider().blockExercises
+}
+
+export function getTemplateBlocksRepository(): TemplateBlocksRepository {
+  return getRepositoryProvider().templateBlocks
+}
+
+export function getTemplateBlockExercisesRepository(): TemplateBlockExercisesRepository {
+  return getRepositoryProvider().templateBlockExercises
+}
+
+export function getBenchmarkAttemptsRepository(): BenchmarkAttemptsRepository {
+  return getRepositoryProvider().benchmarkAttempts
+}
+
+export function getBenchmarkPersonalBestsRepository(): BenchmarkPersonalBestsRepository {
+  return getRepositoryProvider().benchmarkPersonalBests
+}
+
+// ============================================
+// Repository Getters - Data Management
+// ============================================
 
 export function getDataManagementRepository(): DataManagementRepository {
   return getRepositoryProvider().dataManagement
 }
 
-export function getBenchmarksRepository(): BenchmarksRepository {
-  return getRepositoryProvider().benchmarks
+// ============================================
+// Legacy Getters (deprecated)
+// ============================================
+
+/**
+ * @deprecated Use getExercisesRepository() instead
+ */
+export function getCustomExercisesRepository(): ExercisesRepository {
+  return getRepositoryProvider().exercises
 }
 
 // ============================================

@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { getTemplatesRepository, getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { getCurrentLocale } from '@/lib/dateLocale'
-import type { DbWorkoutTemplate, DbCompletedWorkout } from '@/db/schema'
+import type { DbTemplateHeader, DbWorkoutHeader } from '@/db/schema'
 
 const emit = defineEmits<{
   select: [source: 'template' | 'history' | 'blank', id?: string]
@@ -19,8 +19,8 @@ const { t } = useI18n()
 
 const templateDialogOpen = ref(false)
 const historyDialogOpen = ref(false)
-const templates = ref<ReadonlyArray<DbWorkoutTemplate>>([])
-const recentWorkouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
+const templates = ref<ReadonlyArray<DbTemplateHeader>>([])
+const recentWorkouts = ref<ReadonlyArray<DbWorkoutHeader>>([])
 
 onMounted(async () => {
   // Load templates and recent workouts for the dialogs
@@ -51,12 +51,12 @@ function handleBlank() {
   emit('select', 'blank')
 }
 
-function selectTemplate(template: DbWorkoutTemplate) {
+function selectTemplate(template: DbTemplateHeader) {
   templateDialogOpen.value = false
   emit('select', 'template', template.id)
 }
 
-function selectWorkout(workout: DbCompletedWorkout) {
+function selectWorkout(workout: DbWorkoutHeader) {
   historyDialogOpen.value = false
   emit('select', 'history', workout.id)
 }
@@ -155,9 +155,6 @@ function formatDate(timestamp: number): string {
             >
               <div class="text-left">
                 <div class="font-medium">{{ template.name }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ template.blocks.length }} {{ t('common.exercises', 'exercises') }}
-                </div>
               </div>
             </Button>
             <p v-if="templates.length === 0" class="text-center text-muted-foreground py-4">
@@ -186,7 +183,7 @@ function formatDate(timestamp: number): string {
               <div class="text-left">
                 <div class="font-medium">{{ workout.name }}</div>
                 <div class="text-xs text-muted-foreground">
-                  {{ formatDate(workout.completedAt) }} - {{ workout.blocks.length }} {{ t('common.blocks', 'blocks') }}
+                  {{ formatDate(workout.completedAt) }} - {{ workout.stats.blockCount }} {{ t('common.blocks', 'blocks') }}
                 </div>
               </div>
             </Button>

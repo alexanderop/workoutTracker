@@ -1,17 +1,12 @@
-import type {
-  DbCompletedWorkout,
-  DbCustomExercise,
-  DbUserSetting,
-  DbWorkoutTemplate,
-} from '@/db/schema'
 import { getDataManagementRepository } from '@/db'
+import type { ExportDataContents } from '@/db/interfaces'
 import { tryCatch } from '@/lib/tryCatch'
 
 /**
  * Current export format version.
  * Increment this when making breaking changes to the export format.
  */
-const EXPORT_VERSION = 1
+const EXPORT_VERSION = 2
 
 /**
  * Export data structure with versioning for future compatibility.
@@ -19,12 +14,7 @@ const EXPORT_VERSION = 1
 export type ExportData = {
   version: number
   exportedAt: string
-  data: {
-    settings: ReadonlyArray<DbUserSetting>
-    customExercises: ReadonlyArray<DbCustomExercise>
-    templates: ReadonlyArray<DbWorkoutTemplate>
-    workouts: ReadonlyArray<DbCompletedWorkout>
-  }
+  data: ExportDataContents
 }
 
 /**

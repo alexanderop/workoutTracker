@@ -1,14 +1,13 @@
 import { getDataManagementRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
-import type { ExportData } from './dataExport'
-import { exportDataSchema } from './validation'
+import { exportDataSchema, type ValidatedExportData } from './validation'
 
 /**
  * Maximum supported export version.
  * Import fails if file version exceeds this.
  */
-const MAX_SUPPORTED_VERSION = 1
+const MAX_SUPPORTED_VERSION = 2
 
 /**
  * Maximum file size for import (10MB).
@@ -17,10 +16,21 @@ const MAX_SUPPORTED_VERSION = 1
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
 
 /**
+ * Normalized export data with required benchmark fields.
+ */
+export type NormalizedExportData = ValidatedExportData & {
+  data: ValidatedExportData['data'] & {
+    benchmarks: NonNullable<ValidatedExportData['data']['benchmarks']>
+    benchmarkAttempts: NonNullable<ValidatedExportData['data']['benchmarkAttempts']>
+    benchmarkPersonalBests: NonNullable<ValidatedExportData['data']['benchmarkPersonalBests']>
+  }
+}
+
+/**
  * Result of parsing an export file.
  */
 type ParseResult =
-  | { success: true; data: ExportData }
+  | { success: true; data: NormalizedExportData }
   | { success: false; error: string; details?: string }
 
 /**
@@ -65,7 +75,22 @@ function validateExportData(data: unknown): ParseResult {
     return { success: false, error: 'newerVersion' }
   }
 
-  return { success: true, data: result.data }
+  // Normalize optional fields for backward compatibility with v1 exports
+  const normalizedData: NormalizedExportData = {
+    version: result.data.version,
+    exportedAt: result.data.exportedAt,
+    data: {
+      settings: result.data.data.settings,
+      customExercises: result.data.data.customExercises,
+      templates: result.data.data.templates,
+      workouts: result.data.data.workouts,
+      benchmarks: result.data.data.benchmarks ?? [],
+      benchmarkAttempts: result.data.data.benchmarkAttempts ?? [],
+      benchmarkPersonalBests: result.data.data.benchmarkPersonalBests ?? [],
+    },
+  }
+
+  return { success: true, data: normalizedData }
 }
 
 /**
@@ -93,7 +118,7 @@ export async function parseExportFile(file: File): Promise<ParseResult> {
  * Import all data from a validated export, replacing existing data.
  * Uses a transaction to ensure atomicity.
  */
-export async function importAllData(exportData: ExportData): Promise<boolean> {
+export async function importAllData(exportData: NormalizedExportData): Promise<boolean> {
   // Use JSON round-trip to strip Vue reactivity proxies
   // before IndexedDB's structured clone algorithm runs
   const serialized = JSON.stringify(exportData.data)
@@ -105,7 +130,9 @@ export async function importAllData(exportData: ExportData): Promise<boolean> {
       customExercises: rawData.customExercises,
       templates: rawData.templates,
       workouts: rawData.workouts,
-      benchmarks: rawData.benchmarks ?? [],
+      benchmarks: rawData.benchmarks,
+      benchmarkAttempts: rawData.benchmarkAttempts,
+      benchmarkPersonalBests: rawData.benchmarkPersonalBests,
     }),
   )
 
@@ -115,7 +142,7 @@ export async function importAllData(exportData: ExportData): Promise<boolean> {
 /**
  * Get summary counts from export data for display.
  */
-export function getExportSummary(data: ExportData): {
+export function getExportSummary(data: NormalizedExportData): {
   workouts: number
   templates: number
   exercises: number

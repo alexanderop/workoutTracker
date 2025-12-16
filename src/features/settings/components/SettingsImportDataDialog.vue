@@ -6,12 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import type { ExportData } from '../utils/dataExport'
-import { getExportSummary } from '../utils/dataImport'
+import { getExportSummary, type NormalizedExportData } from '../utils/dataImport'
 
 const { t } = useI18n()
 const { data, isImporting = false } = defineProps<{
-  data: ExportData
+  data: NormalizedExportData
   isImporting?: boolean
 }>()
 

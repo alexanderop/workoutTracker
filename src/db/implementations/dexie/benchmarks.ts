@@ -1,10 +1,15 @@
 import type { BenchmarkAttempt, BenchmarksRepository } from '@/db/interfaces'
-import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
+import type {
+  DbActiveWorkout,
+  DbBenchmark,
+  DbBenchmarkPersonalBest,
+  DbForTimeBlock,
+  DbWorkoutBlock,
+} from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
-import { generateId } from './database'
+import { db, generateId } from './database'
 
-export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): BenchmarksRepository {
+export function createDexieBenchmarksRepository(): BenchmarksRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbBenchmark>> {
       const benchmarks = await db.benchmarks.toArray()
@@ -47,7 +52,16 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
     },
 
     async delete(id: string): Promise<void> {
-      await db.benchmarks.delete(id)
+      // Delete benchmark and all associated data in a transaction
+      await db.transaction(
+        'rw',
+        [db.benchmarks, db.benchmarkAttempts, db.benchmarkPersonalBests],
+        async () => {
+          await db.benchmarkAttempts.where('benchmarkId').equals(id).delete()
+          await db.benchmarkPersonalBests.delete(id)
+          await db.benchmarks.delete(id)
+        },
+      )
     },
 
     async updateLastUsed(id: string): Promise<void> {
@@ -110,105 +124,94 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       return activeWorkout
     },
 
-    async getPersonalBest(benchmarkId: string): Promise<number | null> {
-      // Get all completed workouts for this benchmark
-      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
-
-      if (workouts.length === 0) {
-        return null
-      }
-
-      // Find the minimum completion time from all ForTime blocks
-      let bestTime: number | null = null
-
-      for (const workout of workouts) {
-        for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            const time = block.result.completionTime
-            if (bestTime === null || time < bestTime) {
-              bestTime = time
-            }
-          }
-        }
-      }
-
-      return bestTime
+    async getPersonalBest(benchmarkId: string): Promise<DbBenchmarkPersonalBest | null> {
+      // O(1) lookup from denormalized table
+      const pb = await db.benchmarkPersonalBests.get(benchmarkId)
+      return pb ?? null
     },
 
     async getPersonalBests(
-      benchmarkIds: ReadonlyArray<string>
-    ): Promise<ReadonlyMap<string, number>> {
-      // Early return for empty input
+      benchmarkIds: ReadonlyArray<string>,
+    ): Promise<ReadonlyMap<string, DbBenchmarkPersonalBest>> {
       if (benchmarkIds.length === 0) {
         return new Map()
       }
 
-      // Single query: Get all workouts for all benchmark IDs
-      const workouts = await db.workouts
-        .where('benchmarkId')
-        .anyOf(benchmarkIds)
-        .toArray()
+      // O(n) lookup from denormalized table where n = benchmarkIds.length
+      const pbs = await db.benchmarkPersonalBests.bulkGet([...benchmarkIds])
 
-      // Build map of benchmark ID -> best time
-      const bestTimes = new Map<string, number>()
-
-      for (const workout of workouts) {
-        // Skip workouts without benchmarkId (shouldn't happen with anyOf query)
-        if (workout.benchmarkId === null) continue
-
-        for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            const time = block.result.completionTime
-            const currentBest = bestTimes.get(workout.benchmarkId)
-
-            if (currentBest === undefined || time < currentBest) {
-              bestTimes.set(workout.benchmarkId, time)
-            }
-          }
+      const result = new Map<string, DbBenchmarkPersonalBest>()
+      for (const pb of pbs) {
+        if (pb) {
+          result.set(pb.benchmarkId, pb)
         }
       }
 
-      return bestTimes
+      return result
     },
 
     async getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>> {
-      // Get all completed workouts for this benchmark
-      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
+      // Get attempts from denormalized table
+      const attempts = await db.benchmarkAttempts
+        .where('benchmarkId')
+        .equals(benchmarkId)
+        .toArray()
 
-      if (workouts.length === 0) {
-        return []
-      }
-
-      // Extract completion times and build attempt records
-      const attempts: Array<{ id: string; completedAt: number; completionTime: number }> = []
-
-      for (const workout of workouts) {
-        for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            attempts.push({
-              id: workout.id,
-              completedAt: workout.completedAt,
-              completionTime: block.result.completionTime,
-            })
-            break // Only use first ForTime block
-          }
-        }
-      }
-
-      // Find PB time
       if (attempts.length === 0) {
         return []
       }
 
-      const bestTime = Math.min(...attempts.map((a) => a.completionTime))
+      // Get the personal best time for comparison
+      const pb = await db.benchmarkPersonalBests.get(benchmarkId)
+      const bestTime = pb?.completionTimeSeconds ?? null
 
-      // Mark PB attempts and sort by date (newest first)
+      // Map to BenchmarkAttempt format and sort by date (newest first)
       return attempts
         .map((a) => ({
-          ...a,
-          isPersonalBest: a.completionTime === bestTime,
+          id: a.id,
+          workoutId: a.workoutId,
+          completedAt: a.completedAt,
+          completionTime: a.completionTimeSeconds,
+          isPersonalBest: bestTime !== null && a.completionTimeSeconds === bestTime,
         }))
         .toSorted((a, b) => b.completedAt - a.completedAt)
+    },
+
+    async recordAttempt(params: {
+      benchmarkId: string
+      workoutId: string
+      completionTimeSeconds: number
+    }): Promise<void> {
+      const { benchmarkId, workoutId, completionTimeSeconds } = params
+      const now = Date.now()
+      const attemptId = generateId()
+
+      await db.transaction(
+        'rw',
+        [db.benchmarkAttempts, db.benchmarkPersonalBests],
+        async () => {
+          // Add the attempt
+          await db.benchmarkAttempts.add({
+            id: attemptId,
+            benchmarkId,
+            workoutId,
+            completionTimeSeconds,
+            completedAt: now,
+          })
+
+          // Check if this is a new personal best
+          const currentPb = await db.benchmarkPersonalBests.get(benchmarkId)
+
+          if (!currentPb || completionTimeSeconds < currentPb.completionTimeSeconds) {
+            await db.benchmarkPersonalBests.put({
+              benchmarkId,
+              completionTimeSeconds,
+              workoutId,
+              achievedAt: now,
+            })
+          }
+        },
+      )
     },
   }
 }

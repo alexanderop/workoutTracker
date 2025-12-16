@@ -1,7 +1,7 @@
 import { computed, onMounted, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { getBenchmarksRepository, getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutBlock } from '@/db/schema'
 
 /**
  * Comparison data for a single split time.
@@ -14,32 +14,10 @@ export type SplitComparison = {
 }
 
 /**
- * Find the workout that matches the PB time.
+ * Extract split times from workout blocks.
  */
-function findPbWorkout(
-  workouts: ReadonlyArray<DbCompletedWorkout>,
-  targetBenchmarkId: string,
-  pbTime: number
-): DbCompletedWorkout | null {
-  for (const workout of workouts) {
-    if (workout.benchmarkId !== targetBenchmarkId) continue
-
-    for (const block of workout.blocks) {
-      if (block.kind === 'fortime' && block.result?.completed) {
-        if (Math.abs(block.result.completionTime - pbTime) < 0.1) {
-          return workout
-        }
-      }
-    }
-  }
-  return null
-}
-
-/**
- * Extract split times from a completed workout.
- */
-function extractSplitTimes(workout: DbCompletedWorkout): ReadonlyArray<number> {
-  for (const block of workout.blocks) {
+function extractSplitTimes(blocks: ReadonlyArray<DbWorkoutBlock>): ReadonlyArray<number> {
+  for (const block of blocks) {
     if (block.kind === 'fortime' && block.result?.splitTimes) {
       return block.result.splitTimes
     }
@@ -68,37 +46,28 @@ export function useBenchmarkSplitComparison(benchmarkId: MaybeRefOrGetter<string
 
     isLoading.value = true
 
-    // Get PB time first
+    // Get PB record which contains the workoutId
     const benchmarksRepo = getBenchmarksRepository()
-    const [pbError, pbTime] = await tryCatch(benchmarksRepo.getPersonalBest(id))
+    const [pbError, pbRecord] = await tryCatch(benchmarksRepo.getPersonalBest(id))
 
-    if (pbError || pbTime === null) {
+    if (pbError || pbRecord === null) {
       pbSplitTimes.value = null
       isLoading.value = false
       return
     }
 
-    // Get all workouts for this benchmark
+    // Load the PB workout with blocks using the workoutId from the PB record
     const workoutsRepo = getWorkoutsRepository()
-    const [workoutsError, workouts] = await tryCatch(workoutsRepo.getHistory({ limit: 100 }))
+    const [workoutError, pbWorkout] = await tryCatch(workoutsRepo.getById(pbRecord.workoutId))
 
-    if (workoutsError || !workouts) {
+    if (workoutError || !pbWorkout) {
       pbSplitTimes.value = null
       isLoading.value = false
       return
     }
 
-    // Find the PB workout (matching the PB time)
-    const pbWorkout = findPbWorkout(workouts, id, pbTime)
-
-    if (!pbWorkout) {
-      pbSplitTimes.value = null
-      isLoading.value = false
-      return
-    }
-
-    // Extract split times from the PB workout
-    const splits = extractSplitTimes(pbWorkout)
+    // Extract split times from the PB workout blocks
+    const splits = extractSplitTimes(pbWorkout.blocks)
     pbSplitTimes.value = splits
     isLoading.value = false
   }

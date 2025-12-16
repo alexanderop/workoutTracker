@@ -78,11 +78,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   // Flush Vue's async operations to ensure onMounted fires
   await flushPromises()
 
-  // Wait for app initialization to complete (exercises seeding and loading)
+  // Wait for app initialization to complete (exercises store loading)
   const exercisesStore = useExercisesStore(pinia)
-  await expect
-    .poll(() => exercisesStore.customExercises.length, { timeout: 5000 })
-    .toBeGreaterThan(0)
+  await expect.poll(() => exercisesStore.isLoaded, { timeout: 5000 }).toBe(true)
 
   // Create context for page objects
   const context = { router }

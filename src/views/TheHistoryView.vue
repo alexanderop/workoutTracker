@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository } from '@/db'
-import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbWorkoutHeader } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 import PageLayout from '@/components/PageLayout.vue'
@@ -18,13 +18,13 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/u
 
 type WorkoutGroup = {
   label: string
-  workouts: Array<DbCompletedWorkout>
+  workouts: Array<DbWorkoutHeader>
 }
 
 type GroupedWorkouts = {
   monthKey: string
   label: string
-  workouts: ReadonlyArray<DbCompletedWorkout>
+  workouts: ReadonlyArray<DbWorkoutHeader>
 }
 
 // ============================================
@@ -38,7 +38,7 @@ const router = useRouter()
 // State
 // ============================================
 
-const workouts = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
+const workouts = shallowRef<ReadonlyArray<DbWorkoutHeader>>([])
 const isLoading = ref(true)
 
 // ============================================

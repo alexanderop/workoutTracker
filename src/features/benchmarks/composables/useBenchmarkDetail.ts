@@ -51,9 +51,9 @@ export function useBenchmarkDetail(benchmarkId: string) {
       return
     }
 
-    // Load personal best
-    const [pbError, pb] = await tryCatch(repo.getPersonalBest(benchmarkId))
-    const personalBest = pbError ? null : pb
+    // Load personal best (extract completion time from DbBenchmarkPersonalBest)
+    const [pbError, pbRecord] = await tryCatch(repo.getPersonalBest(benchmarkId))
+    const personalBest = pbError || !pbRecord ? null : pbRecord.completionTimeSeconds
 
     state.value = { status: 'success', benchmark: loaded, personalBest }
   }
