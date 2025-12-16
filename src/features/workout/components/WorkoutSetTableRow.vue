@@ -7,7 +7,7 @@ import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Check, Timer, Trash2 } from 'lucide-vue-next'
 
@@ -61,30 +61,51 @@ const checkIconClass = computed(() =>
   ),
 )
 
-function getRepsValue() {
-  return set.reps ? Number(set.reps) : undefined
-}
-
-function getRirValue() {
-  return set.rir ? Number(set.rir) : undefined
-}
-
 function getEstimated10RM() {
   if (!set.kg || !set.reps) return '—'
   const rm = calculate10RM(Number(set.kg), Number(set.reps))
   return toDisplayValue(rm)?.toString() ?? '—'
 }
 
-function handleWeightChange(displayValue: number | undefined) {
-  emit('update-set', set.id, 'kg', toStorageValue(displayValue))
+// Helper function to normalize and format decimal input
+function normalizeDecimalInput(value: string): number | undefined {
+  if (!value || value === '') return undefined
+
+  // Replace comma with period for decimal separator
+  const normalized = value.replace(',', '.')
+  const num = Number(normalized)
+
+  if (isNaN(num)) return undefined
+
+  // Round to 2 decimal places
+  return Math.round(num * 100) / 100
 }
 
-function handleRepsChange(value: number | undefined) {
-  emit('update-set', set.id, 'reps', value)
+function handleWeightInput(value: string) {
+  const normalized = normalizeDecimalInput(value)
+  emit('update-set', set.id, 'kg', normalized !== undefined ? toStorageValue(normalized) : undefined)
 }
 
-function handleRirChange(value: number | undefined) {
-  emit('update-set', set.id, 'rir', value)
+function handleRepsInput(value: string) {
+  const numValue = value ? Number(value) : undefined
+  emit('update-set', set.id, 'reps', numValue)
+}
+
+function handleRirInput(value: string) {
+  const numValue = value ? Number(value) : undefined
+  emit('update-set', set.id, 'rir', numValue)
+}
+
+// Format value for display (handle both comma and period)
+function formatWeightValue(kg: string | number | undefined): string {
+  const displayValue = toDisplayValue(kg)
+  if (displayValue === undefined) return ''
+  return displayValue.toString()
+}
+
+function formatNumberValue(value: string | number | undefined): string {
+  if (value === undefined || value === '') return ''
+  return value.toString()
 }
 </script>
 
@@ -103,50 +124,41 @@ function handleRirChange(value: number | undefined) {
 
     <!-- Weight -->
     <TableCell class="p-1 h-10">
-      <NumberField
-        :model-value="toDisplayValue(set.kg)"
-        :min="0"
-        :max="999"
-        @update:model-value="handleWeightChange"
-      >
-        <NumberFieldInput
-          placeholder="—"
-          :aria-label="t('common.aria.weight')"
-          class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
-        />
-      </NumberField>
+      <Input
+        type="text"
+        inputmode="decimal"
+        :model-value="formatWeightValue(set.kg)"
+        placeholder="—"
+        :aria-label="t('common.aria.weight')"
+        class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base tabular-nums rounded-lg"
+        @update:model-value="(v) => handleWeightInput(String(v))"
+      />
     </TableCell>
 
     <!-- Reps -->
     <TableCell class="p-1 h-10">
-      <NumberField
-        :model-value="getRepsValue()"
-        :min="0"
-        :max="999"
-        @update:model-value="handleRepsChange"
-      >
-        <NumberFieldInput
-          placeholder="—"
-          :aria-label="t('common.aria.reps')"
-          class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums rounded-lg"
-        />
-      </NumberField>
+      <Input
+        type="number"
+        inputmode="numeric"
+        :model-value="formatNumberValue(set.reps)"
+        placeholder="—"
+        :aria-label="t('common.aria.reps')"
+        class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 font-bold text-base text-primary tabular-nums rounded-lg"
+        @update:model-value="(v) => handleRepsInput(String(v))"
+      />
     </TableCell>
 
     <!-- RIR -->
     <TableCell class="p-1 h-10">
-      <NumberField
-        :model-value="getRirValue()"
-        :min="0"
-        :max="10"
-        @update:model-value="handleRirChange"
-      >
-        <NumberFieldInput
-          placeholder="—"
-          :aria-label="t('common.aria.repsInReserve')"
-          class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums rounded-lg"
-        />
-      </NumberField>
+      <Input
+        type="number"
+        inputmode="numeric"
+        :model-value="formatNumberValue(set.rir)"
+        placeholder="—"
+        :aria-label="t('common.aria.repsInReserve')"
+        class="bg-secondary border-0 shadow-none focus-visible:ring-0 h-8 text-muted-foreground tabular-nums rounded-lg"
+        @update:model-value="(v) => handleRirInput(String(v))"
+      />
     </TableCell>
 
     <!-- 10RM -->

@@ -31,7 +31,7 @@ async function addExerciseViaOverlay(
   app: Awaited<ReturnType<typeof createTestApp>>,
   exerciseName: string,
 ) {
-  const {  common, getByRole } = app
+  const {  common, getByRole: _getByRole } = app
 
   // Click Add Exercise button in the config dialog
   await userEvent.click(common.getDialogButton('Add Exercise'))
