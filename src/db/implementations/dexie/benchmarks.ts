@@ -7,8 +7,7 @@ import { generateId } from './database'
 export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): BenchmarksRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbBenchmark>> {
-      const benchmarks = await db.benchmarks.toArray()
-      return benchmarks.toSorted((a, b) => b.createdAt - a.createdAt)
+      return db.benchmarks.orderBy('createdAt').reverse().toArray()
     },
 
     async getById(id: string): Promise<DbBenchmark | undefined> {
