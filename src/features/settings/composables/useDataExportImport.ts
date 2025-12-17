@@ -4,7 +4,7 @@ import { exportAllData, type ExportData } from '@/features/settings/utils/dataEx
 import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
 import { tryCatch } from '@/lib/tryCatch'
 
-export interface DataExportImportReturn {
+interface DataExportImportReturn {
   isExporting: Readonly<Ref<boolean>>
   isImporting: Readonly<Ref<boolean>>
   showImportDialog: Ref<boolean>
