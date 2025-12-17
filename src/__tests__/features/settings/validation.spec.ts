@@ -17,6 +17,7 @@ function createValidExportData(overrides: {
   customExercises?: Array<unknown>
   templates?: Array<unknown>
   workouts?: Array<unknown>
+  benchmarks?: Array<unknown>
 } = {}) {
   return {
     version: 1,
@@ -26,6 +27,7 @@ function createValidExportData(overrides: {
       customExercises: overrides.customExercises ?? [],
       templates: overrides.templates ?? [],
       workouts: overrides.workouts ?? [],
+      benchmarks: overrides.benchmarks ?? [],
     },
   }
 }
@@ -139,7 +141,7 @@ describe('Export Data Validation', () => {
     it('rejects missing version', () => {
       const invalid = {
         exportedAt: new Date().toISOString(),
-        data: { settings: [], customExercises: [], templates: [], workouts: [] },
+        data: { settings: [], customExercises: [], templates: [], workouts: [], benchmarks: [] },
       }
       const result = exportDataSchema.safeParse(invalid)
       expect(result.success).toBe(false)

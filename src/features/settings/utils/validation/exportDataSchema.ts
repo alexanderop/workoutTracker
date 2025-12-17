@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { dbBenchmarkSchema, MAX_BENCHMARKS } from './benchmarkSchema'
 import { dbCustomExerciseSchema } from './exerciseSchema'
 import { dbUserSettingSchema } from './settingsSchema'
 import { dbWorkoutTemplateSchema } from './templateSchema'
@@ -28,6 +29,7 @@ export const exportDataSchema = z
         customExercises: z.array(dbCustomExerciseSchema).max(MAX_EXERCISES).readonly(),
         templates: z.array(dbWorkoutTemplateSchema).max(MAX_TEMPLATES).readonly(),
         workouts: z.array(dbCompletedWorkoutSchema).max(MAX_WORKOUTS).readonly(),
+        benchmarks: z.array(dbBenchmarkSchema).max(MAX_BENCHMARKS).readonly(),
       })
       .strict(),
   })

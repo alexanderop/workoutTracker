@@ -1,13 +1,13 @@
 import { computed } from 'vue'
 import { useWorkout } from './useWorkout'
-import { isStrengthBlock, isTimedBlock, type WorkoutBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 
 /**
  * Composable for managing workout mode transitions.
  * Handles switching between builder and active modes.
  */
 export function useWorkoutMode() {
-  const { workout, selectBlock } = useWorkout()
+  const { workout, selectBlock, activateSet } = useWorkout()
 
   const mode = computed(() => workout.value.mode)
   const isBuilderMode = computed(() => mode.value === 'builder')
@@ -50,21 +50,15 @@ export function useWorkoutMode() {
     workout.value.startedAt = Date.now()
   }
 
-  function activateFirstSet(firstBlock: WorkoutBlock) {
-    if (!isStrengthBlock(firstBlock)) return
-
-    workout.value.activeSetIndex = 0
-    const firstSet = firstBlock.sets[0]
-    if (firstSet && firstSet.status === 'planned') {
-      firstSet.status = 'active'
-    }
+  function activateFirstSet(blockIndex: number) {
+    activateSet(blockIndex, 0)
   }
 
   function initializeFirstBlock() {
     const firstBlock = workout.value.blocks[0]
-    if (!firstBlock) return
+    if (!firstBlock || !isStrengthBlock(firstBlock)) return
 
-    activateFirstSet(firstBlock)
+    activateFirstSet(0)
   }
 
   /**
@@ -117,11 +111,7 @@ export function useWorkoutMode() {
     // Initialize next block if it's a strength block
     const nextBlock = workout.value.blocks[nextIndex]
     if (nextBlock && isStrengthBlock(nextBlock)) {
-      workout.value.activeSetIndex = 0
-      const firstSet = nextBlock.sets[0]
-      if (firstSet && firstSet.status === 'planned') {
-        firstSet.status = 'active'
-      }
+      activateFirstSet(nextIndex)
     }
 
     return true

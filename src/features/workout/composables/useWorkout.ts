@@ -389,6 +389,17 @@ export function useWorkout() {
     })
   }
 
+  function activateSet(blockIndex: number, setIndex: number) {
+    const block = workout.value.blocks[blockIndex]
+    if (!block || !isStrengthBlock(block)) return
+
+    const set = block.sets[setIndex]
+    if (!set || set.status !== 'planned') return
+
+    updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'active' }))
+    updateWorkout({ activeSetIndex: setIndex })
+  }
+
   function setSetCount(blockIndex: number, count: number) {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return
@@ -494,5 +505,8 @@ export function useWorkout() {
     setSetCount,
     updateSetValue,
     reorderExercises,
+
+    // Set activation (for mode transitions)
+    activateSet,
   }
 }
