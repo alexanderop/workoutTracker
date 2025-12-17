@@ -1,26 +1,15 @@
 import { onMounted, readonly, ref, watch, type Ref } from 'vue'
 import { getBenchmarksRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import { transformAttempts, type AttemptWithComparison } from '@/features/benchmarks/lib/attemptStats'
 
-// ============================================
-// Types
-// ============================================
+// Re-export type for external consumers
+export type { AttemptWithComparison }
 
-export type AttemptWithComparison = {
-  id: string
-  completedAt: number
-  completionTime: number
-  isPersonalBest: boolean
-  comparison: {
-    delta: number | null // seconds diff from PB (null if this IS the PB)
-    isFaster: boolean
-  }
-}
-
-// ============================================
-// Composable
-// ============================================
-
+/**
+ * Loads benchmark attempt history with comparison data.
+ * Thin composable wrapper around pure transformation functions.
+ */
 export function useBenchmarkAttemptHistory(benchmarkId: Ref<string>) {
   const attempts = ref<Array<AttemptWithComparison>>([])
   const isLoading = ref(true)
@@ -44,21 +33,8 @@ export function useBenchmarkAttemptHistory(benchmarkId: Ref<string>) {
       return
     }
 
-    // Find PB time for delta calculations
-    const pbTime = Math.min(...rawAttempts.map((a) => a.completionTime))
-
-    // Transform to include comparison data
-    attempts.value = rawAttempts.map((attempt) => ({
-      id: attempt.id,
-      completedAt: attempt.completedAt,
-      completionTime: attempt.completionTime,
-      isPersonalBest: attempt.isPersonalBest,
-      comparison: {
-        delta: attempt.isPersonalBest ? null : attempt.completionTime - pbTime,
-        isFaster: attempt.completionTime < pbTime, // Should never be true if PB calculation is correct
-      },
-    }))
-
+    // Transform to include comparison data using pure function
+    attempts.value = transformAttempts(rawAttempts)
     isLoading.value = false
   }
 

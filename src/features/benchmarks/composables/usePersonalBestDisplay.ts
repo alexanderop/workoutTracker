@@ -1,19 +1,13 @@
 import { useI18n } from 'vue-i18n'
+import { hasPb, formatHeroPb } from '@/features/benchmarks/lib/pbFormatting'
 import { formatDuration } from '@/lib/formatters'
 
 /**
- * Check if a personal best exists (type guard).
- */
-function hasPb(pb: number | null | undefined): pb is number {
-  return pb !== null && pb !== undefined
-}
-
-/**
  * Display formatting for benchmark personal best times.
+ * Thin composable wrapper providing i18n-aware formatting.
  *
- * Provides consistent formatting across list and detail views:
- * - null/undefined: No PB section shown (detail) or "No PB yet" (list)
- * - number: Formatted time with "PB: " prefix (list) or large display (detail)
+ * Pure functions (hasPb, formatHeroPb) are exported from lib/pbFormatting.ts.
+ * This composable adds i18n dependency for translated strings.
  */
 export function usePersonalBestDisplay() {
   const { t } = useI18n()
@@ -27,14 +21,6 @@ export function usePersonalBestDisplay() {
       return t('workouts.benchmarks.noPbYet')
     }
     return `${t('workouts.benchmarks.pbLabel')}: ${formatDuration(pb)}`
-  }
-
-  /**
-   * Format PB time without prefix for hero/large display.
-   * Returns formatted duration like "14:45" or "1:23:45".
-   */
-  function formatHero(pb: number): string {
-    return formatDuration(pb)
   }
 
   /**
@@ -52,7 +38,7 @@ export function usePersonalBestDisplay() {
   return {
     hasPb,
     formatCompact,
-    formatHero,
+    formatHero: formatHeroPb,
     getAriaLabel,
   }
 }

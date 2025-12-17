@@ -45,22 +45,28 @@ type ExerciseListItem =
       globalIndex: number
     }
 
-// Build exercise list
-const exerciseList = computed<ReadonlyArray<ExerciseListItem>>(() => {
-  // ForTime: Flat list of exercises
-  if (benchmarkType === 'fortime') {
-    return exercises.map((ex, index) => ({
-      type: 'exercise' as const,
-      exercise: ex,
-      status: getExerciseStatus(index),
-      exerciseNumber: index + 1,
-      roundNumber: 1,
-      globalIndex: index,
-    }))
-  }
+/**
+ * ForTime list: Flat list of exercises (no round headers).
+ * Extract Conditional pattern - separate computed for each benchmark type.
+ */
+const forTimeList = computed<ReadonlyArray<ExerciseListItem>>(() => {
+  return exercises.map((ex, index) => ({
+    type: 'exercise' as const,
+    exercise: ex,
+    status: getExerciseStatus(index),
+    exerciseNumber: index + 1,
+    roundNumber: 1,
+    globalIndex: index,
+  }))
+})
 
-  // Rounds: Grouped by round with headers
+/**
+ * Rounds list: Grouped by round with headers.
+ * Extract Conditional pattern - separate computed for each benchmark type.
+ */
+const roundsList = computed<ReadonlyArray<ExerciseListItem>>(() => {
   const list: Array<ExerciseListItem> = []
+
   for (let round = 0; round < totalBlocks; round++) {
     // Add round header
     list.push({ type: 'round-header', roundNumber: round + 1 })
@@ -80,6 +86,14 @@ const exerciseList = computed<ReadonlyArray<ExerciseListItem>>(() => {
   }
 
   return list
+})
+
+/**
+ * Select list based on benchmark type.
+ * Strategy selector - chooses appropriate list builder.
+ */
+const exerciseList = computed<ReadonlyArray<ExerciseListItem>>(() => {
+  return benchmarkType === 'fortime' ? forTimeList.value : roundsList.value
 })
 </script>
 

@@ -19,11 +19,3 @@ export function createSplitTracker() {
   return { recordSplit, getSplits, reset }
 }
 
-/**
- * Check if benchmark has no previous attempts
- */
-export function isFirstBenchmarkAttempt(
-  attemptHistory: ReadonlyArray<unknown>,
-): boolean {
-  return attemptHistory.length === 0
-}

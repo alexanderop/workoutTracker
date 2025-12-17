@@ -267,6 +267,8 @@ export default defineConfigWithVueTs(
           { target: './src/features/settings', from: './src/features', except: ['./settings'] },
           { target: './src/features/timers', from: './src/features', except: ['./timers'] },
           { target: './src/features/templates', from: './src/features', except: ['./templates'] },
+          { target: './src/features/benchmarks', from: './src/features', except: ['./benchmarks'] },
+          { target: './src/features/log-past-workout', from: './src/features', except: ['./log-past-workout'] },
 
           // === UNIDIRECTIONAL FLOW ===
           // Shared code cannot import from features or views

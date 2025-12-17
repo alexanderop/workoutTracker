@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { Check, Circle } from 'lucide-vue-next'
+import { Check, Circle, type LucideIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
 import type { BlockExercise } from '@/types/blocks'
 
+type ExerciseStatus = 'completed' | 'active' | 'pending'
+
+type StatusConfig = {
+  icon: LucideIcon
+  iconClass: string
+  labelKey: string
+}
+
 type Props = {
   exercise: BlockExercise
-  status: 'completed' | 'active' | 'pending'
+  status: ExerciseStatus
   exerciseNumber: number
   roundNumber?: number
 }
@@ -16,43 +24,29 @@ const { exercise, status, exerciseNumber, roundNumber } = defineProps<Props>()
 
 const { t } = useI18n()
 
-const statusIcon = computed(() => {
-  switch (status) {
-    case 'completed':
-      return Check
-    case 'active':
-    case 'pending':
-      return Circle
-    default:
-      return Circle
-  }
-})
+// Strategy Pattern: Unify status-based configuration into single object
+const STATUS_CONFIG: Record<ExerciseStatus, StatusConfig> = {
+  completed: {
+    icon: Check,
+    iconClass: 'text-primary',
+    labelKey: 'workouts.benchmarks.queue.exerciseStatus.completed',
+  },
+  active: {
+    icon: Circle,
+    iconClass: 'text-primary fill-primary',
+    labelKey: 'workouts.benchmarks.queue.exerciseStatus.active',
+  },
+  pending: {
+    icon: Circle,
+    iconClass: 'text-muted-foreground',
+    labelKey: 'workouts.benchmarks.queue.exerciseStatus.pending',
+  },
+}
 
-const statusIconClass = computed(() => {
-  switch (status) {
-    case 'completed':
-      return 'text-primary'
-    case 'active':
-      return 'text-primary fill-primary'
-    case 'pending':
-      return 'text-muted-foreground'
-    default:
-      return 'text-muted-foreground'
-  }
-})
-
-const statusLabel = computed(() => {
-  switch (status) {
-    case 'completed':
-      return t('workouts.benchmarks.queue.exerciseStatus.completed')
-    case 'active':
-      return t('workouts.benchmarks.queue.exerciseStatus.active')
-    case 'pending':
-      return t('workouts.benchmarks.queue.exerciseStatus.pending')
-    default:
-      return t('workouts.benchmarks.queue.exerciseStatus.pending')
-  }
-})
+const statusConfig = computed(() => STATUS_CONFIG[status])
+const statusIcon = computed(() => statusConfig.value.icon)
+const statusIconClass = computed(() => statusConfig.value.iconClass)
+const statusLabel = computed(() => t(statusConfig.value.labelKey))
 
 const isActive = computed(() => status === 'active')
 const isCompleted = computed(() => status === 'completed')

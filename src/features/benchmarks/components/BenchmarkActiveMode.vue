@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { useBenchmark } from '@/features/benchmarks/composables/useBenchmark'
 import { useBenchmarkMode } from '@/features/benchmarks/composables/useBenchmarkMode'
 import { useBenchmarkExerciseNavigation } from '@/features/benchmarks/composables/useBenchmarkExerciseNavigation'
-import { useBenchmarkAnimation } from '@/features/benchmarks/composables/useBenchmarkAnimation'
-import { useBenchmarkFirstAttempt } from '@/features/benchmarks/composables/useBenchmarkFirstAttempt'
 import { useBenchmarkSplitComparison, type SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 import { createSplitTracker } from '@/lib/splitTracking'
 import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
@@ -31,10 +29,55 @@ const {
 
 // Timer and tracking
 const benchmarkTimer = useBenchmarkGlobalTimer()
-const animation = useBenchmarkAnimation()
 const splitTracker = createSplitTracker()
-const firstAttemptTracking = useBenchmarkFirstAttempt(() => workout.value.benchmarkId)
 const splitComparison = useBenchmarkSplitComparison(() => workout.value.benchmarkId)
+
+// ============================================
+// Inline Animation State (Thiessen's Inline Composables pattern)
+// Only used here, no need for separate file
+// ============================================
+const isTransitioning = ref(false)
+const showCheckmark = ref(false)
+const showCompletion = ref(false)
+const completionTime = ref(0)
+
+const timeoutIds = new Set<ReturnType<typeof setTimeout>>()
+onScopeDispose(() => {
+  timeoutIds.forEach(clearTimeout)
+  timeoutIds.clear()
+})
+
+const animationState = computed(() => ({
+  isTransitioning: isTransitioning.value,
+  showCheckmark: showCheckmark.value,
+  showCompletion: showCompletion.value,
+  completionTime: completionTime.value,
+}))
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    const id = setTimeout(() => {
+      timeoutIds.delete(id)
+      resolve()
+    }, ms)
+    timeoutIds.add(id)
+  })
+}
+
+async function playExerciseTransition() {
+  isTransitioning.value = true
+  showCheckmark.value = true
+  await delay(300)
+  showCheckmark.value = false
+  await delay(500)
+  isTransitioning.value = false
+}
+
+function showCompletionScreen(time: number) {
+  showCompletion.value = true
+  completionTime.value = time
+}
+// ============================================
 
 // Latest split comparison result
 const latestSplitComparison = ref<SplitComparison | null>(null)
@@ -61,13 +104,13 @@ async function handleBenchmarkCompletion() {
   benchmarkTimer.pause()
 
   if (currentBlock.value?.kind === 'fortime') {
-    const completionTime = benchmarkTimer.getPreciseElapsedSeconds()
-    animation.showCompletion(completionTime)
+    const time = benchmarkTimer.getPreciseElapsedSeconds()
+    showCompletionScreen(time)
 
     // Set result in current block
     if (currentBlock.value.result !== undefined) {
       currentBlock.value.result = {
-        completionTime,
+        completionTime: time,
         completed: true,
         splitTimes: splitTracker.getSplits(),
       }
@@ -78,10 +121,10 @@ async function handleBenchmarkCompletion() {
 }
 
 async function handleNextExercise() {
-  if (animation.state.value.isTransitioning) return
+  if (isTransitioning.value) return
 
   recordSplitTime()
-  await animation.playExerciseTransition()
+  await playExerciseTransition()
 
   const result = advanceToNextExercise()
 
@@ -126,14 +169,14 @@ function returnToBuilder() {
           totalCount: totalGlobalExerciseCount,
           currentRound: workout.selectedBlockIndex + 1,
           totalRounds: workout.blocks.length,
-          isFirstAttempt: firstAttemptTracking.isFirstAttempt.value,
+          isFirstAttempt: splitComparison.isFirstAttempt.value,
         }"
-        :completion="animation.state.value.showCompletion ? {
+        :completion="animationState.showCompletion ? {
           isComplete: true,
-          time: animation.state.value.completionTime,
+          time: animationState.completionTime,
           benchmarkName: workout.name,
         } : undefined"
-        :animation-state="animation.state.value"
+        :animation-state="animationState"
         :split-comparison="latestSplitComparison"
         :elapsed-time="benchmarkTimer.formattedElapsed.value"
         @view-details="handleViewDetails"
