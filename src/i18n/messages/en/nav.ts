@@ -11,6 +11,8 @@ export default {
     trackDescription: 'Track your exercises, sets, and reps',
     quickTimer: 'Quick Timer',
     quickTimerDescription: 'AMRAP, EMOM, Tabata, For Time',
+    logPastWorkout: 'Log Past Workout',
+    logPastWorkoutDescription: 'Log a workout from earlier',
     recentWorkouts: 'Recent Workouts',
     viewAll: 'View all',
     emptyHistory: {

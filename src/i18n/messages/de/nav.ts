@@ -11,6 +11,8 @@ export default {
     trackDescription: 'Übungen, Sätze und Wiederholungen tracken',
     quickTimer: 'Schnell-Timer',
     quickTimerDescription: 'AMRAP, EMOM, Tabata, For Time',
+    logPastWorkout: 'Vergangenes Workout eintragen',
+    logPastWorkoutDescription: 'Ein Workout von früher eintragen',
     recentWorkouts: 'Letzte Workouts',
     viewAll: 'Alle anzeigen',
     emptyHistory: {
