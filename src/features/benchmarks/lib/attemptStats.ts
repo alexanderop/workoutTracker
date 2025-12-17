@@ -1,7 +1,7 @@
 /**
  * Comparison data added to each benchmark attempt.
  */
-export type AttemptComparison = {
+type AttemptComparison = {
   delta: number | null // seconds diff from PB (null if this IS the PB)
   isFaster: boolean
 }
@@ -9,7 +9,7 @@ export type AttemptComparison = {
 /**
  * Raw attempt data from the database.
  */
-export type RawAttempt = {
+type RawAttempt = {
   id: string
   completedAt: number
   completionTime: number
@@ -27,7 +27,7 @@ export type AttemptWithComparison = RawAttempt & {
  * Calculate the personal best time from a list of attempts.
  * Pure function - no state dependencies.
  */
-export function calculatePbTime(attempts: ReadonlyArray<RawAttempt>): number {
+function calculatePbTime(attempts: ReadonlyArray<RawAttempt>): number {
   if (attempts.length === 0) {
     return Infinity
   }
@@ -42,7 +42,7 @@ export function calculatePbTime(attempts: ReadonlyArray<RawAttempt>): number {
  * @param pbTime - Personal best time for comparison
  * @returns Attempt with comparison data
  */
-export function createAttemptComparison(attempt: RawAttempt, pbTime: number): AttemptWithComparison {
+function createAttemptComparison(attempt: RawAttempt, pbTime: number): AttemptWithComparison {
   return {
     ...attempt,
     comparison: {
