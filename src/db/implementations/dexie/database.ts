@@ -51,6 +51,15 @@ export class WorkoutTrackerDb extends Dexie {
 export const db = new WorkoutTrackerDb()
 
 /**
+ * Handle database version changes from other tabs.
+ * When another tab upgrades the database schema, this tab must close
+ * its connection to allow the upgrade to proceed.
+ */
+db.on('versionchange', () => {
+  db.close()
+})
+
+/**
  * Generate a unique ID for database records.
  */
 export function generateId(): string {
