@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowUp, ArrowDown, Target } from 'lucide-vue-next'
 import type { BlockExercise } from '@/types/blocks'
 import type { SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 import { formatDuration } from '@/lib/formatters'
+
+type ComparisonDisplayState =
+  | { type: 'first-attempt' }
+  | { type: 'split-comparison'; icon: Component; time: string; message: string; isFaster: boolean }
+  | { type: 'none' }
 
 type Props = {
   exercise: BlockExercise
@@ -15,19 +20,35 @@ type Props = {
 const { exercise, splitComparison = null, isFirstAttempt = false } = defineProps<Props>()
 const { t } = useI18n()
 
-const comparisonTime = computed(() => {
-  if (!splitComparison) return null
-  return formatDuration(Math.abs(splitComparison.delta))
-})
+/**
+ * Unified comparison display state (Extract Conditional pattern).
+ * Returns all data needed for rendering the comparison section.
+ */
+const comparisonDisplay = computed<ComparisonDisplayState>(() => {
+  // First attempt: show baseline message
+  if (isFirstAttempt) {
+    return { type: 'first-attempt' }
+  }
 
-const isFaster = computed(() => splitComparison?.isFaster ?? false)
+  // Has split comparison data: show comparison
+  if (splitComparison) {
+    const isFaster = splitComparison.isFaster
+    const formattedTime = formatDuration(Math.abs(splitComparison.delta))
+    const message = isFaster
+      ? t('workouts.benchmarks.splitComparison.ahead', { time: formattedTime })
+      : t('workouts.benchmarks.splitComparison.behind', { time: formattedTime })
 
-const comparisonMessage = computed(() => {
-  if (!splitComparison || !comparisonTime.value) return null
+    return {
+      type: 'split-comparison',
+      icon: isFaster ? ArrowUp : ArrowDown,
+      time: formattedTime,
+      message,
+      isFaster,
+    }
+  }
 
-  return isFaster.value
-    ? t('workouts.benchmarks.splitComparison.ahead', { time: comparisonTime.value })
-    : t('workouts.benchmarks.splitComparison.behind', { time: comparisonTime.value })
+  // No comparison data available
+  return { type: 'none' }
 })
 </script>
 
@@ -59,7 +80,7 @@ const comparisonMessage = computed(() => {
     <!-- Split comparison OR First attempt message -->
     <div class="flex flex-col items-center gap-1 min-h-[4rem]">
       <!-- First attempt state -->
-      <template v-if="isFirstAttempt">
+      <template v-if="comparisonDisplay.type === 'first-attempt'">
         <div class="flex items-center gap-2 text-primary">
           <Target class="size-5" aria-hidden="true" />
           <span class="text-sm font-semibold uppercase tracking-wider">
@@ -72,26 +93,26 @@ const comparisonMessage = computed(() => {
       </template>
 
       <!-- Split comparison (when we have PB data) -->
-      <template v-else-if="splitComparison">
+      <template v-else-if="comparisonDisplay.type === 'split-comparison'">
         <div class="flex items-center gap-2">
           <component
-            :is="isFaster ? ArrowUp : ArrowDown"
+            :is="comparisonDisplay.icon"
             class="size-6"
-            :class="isFaster ? 'text-green-500' : 'text-destructive'"
+            :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
             aria-hidden="true"
           />
           <span
             class="text-3xl font-bold tabular-nums"
-            :class="isFaster ? 'text-green-500' : 'text-destructive'"
+            :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
           >
-            {{ isFaster ? '-' : '+' }}{{ comparisonTime }}
+            {{ comparisonDisplay.isFaster ? '-' : '+' }}{{ comparisonDisplay.time }}
           </span>
         </div>
         <span
           class="text-sm font-medium"
-          :class="isFaster ? 'text-green-500' : 'text-destructive'"
+          :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
         >
-          {{ comparisonMessage }}
+          {{ comparisonDisplay.message }}
         </span>
       </template>
     </div>

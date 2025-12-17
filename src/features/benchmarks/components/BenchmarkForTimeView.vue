@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { Check, Timer } from 'lucide-vue-next'
 import BenchmarkExerciseDisplay from './BenchmarkExerciseDisplay.vue'
-import BenchmarkCompletionScreen from './BenchmarkCompletionScreen.vue'
+import CompletionScreen from '@/components/CompletionScreen.vue'
 import BenchmarkProgressBar from './BenchmarkProgressBar.vue'
 import BenchmarkNextExercise from './BenchmarkNextExercise.vue'
 import type { ForTimeBlock } from '@/types/blocks'
@@ -76,10 +76,11 @@ function handleTap() {
 <template>
   <div class="flex-1 flex flex-col">
     <!-- Completion Screen -->
-    <BenchmarkCompletionScreen
+    <CompletionScreen
       v-if="completion?.isComplete"
-      :completion-time="completion.time"
-      :benchmark-name="completion.benchmarkName"
+      :name="completion.benchmarkName"
+      :duration="completion.time"
+      :duration-label="$t('workouts.benchmarks.completion.finalTime')"
       @view-details="emit('view-details')"
     />
 
