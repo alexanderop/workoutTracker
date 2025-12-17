@@ -12,7 +12,7 @@ AI agent guidance for Vue 3 PWA workout tracker.
 
 ```bash
 pnpm dev          # Development server
-pnpm test         # Run tests
+pnpm test         # Run tests (NOT test:unit - that doesn't exist!)
 pnpm lint         # Fix lint errors (enforces ALL code style rules)
 pnpm type-check   # TypeScript checking
 pnpm build        # Production build

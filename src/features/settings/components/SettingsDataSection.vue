@@ -1,33 +1,27 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { useTemplateRef } from 'vue'
 import { Download, Upload } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { exportAllData, type ExportData } from '@/features/settings/utils/dataExport'
-import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
-import { tryCatch } from '@/lib/tryCatch'
+import { useDataExportImport } from '../composables/useDataExportImport'
 import { Button } from '@/components/ui/button'
 import SettingsImportDataDialog from './SettingsImportDataDialog.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 
 const { t } = useI18n()
-
-const isExporting = ref(false)
-const isImporting = ref(false)
-const showImportDialog = ref(false)
-const showImportErrorDialog = ref(false)
-const showExportErrorDialog = ref(false)
-const importData = ref<ExportData | null>(null)
-const importError = ref('')
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInput')
 
-async function handleExport() {
-  isExporting.value = true
-  const [error] = await tryCatch(exportAllData())
-  if (error) {
-    showExportErrorDialog.value = true
-  }
-  isExporting.value = false
-}
+const {
+  isExporting,
+  isImporting,
+  showImportDialog,
+  showImportErrorDialog,
+  showExportErrorDialog,
+  importData,
+  importError,
+  handleExport,
+  processFile,
+  confirmImport,
+} = useDataExportImport()
 
 function handleImportClick() {
   fileInputRef.value?.click()
@@ -44,32 +38,7 @@ async function handleFileSelect(event: Event) {
 
   if (!file) return
 
-  const result = await parseExportFile(file)
-
-  if (!result.success) {
-    importError.value = t(`settings.errors.${result.error}`)
-    showImportErrorDialog.value = true
-    return
-  }
-
-  importData.value = result.data
-  showImportDialog.value = true
-}
-
-async function handleImportConfirm() {
-  if (!importData.value) return
-
-  isImporting.value = true
-  const [error] = await tryCatch(importAllData(importData.value))
-  isImporting.value = false
-
-  if (error) {
-    importError.value = t('settings.errors.importFailed')
-    showImportErrorDialog.value = true
-    return
-  }
-
-  window.location.reload()
+  await processFile(file)
 }
 </script>
 
@@ -132,7 +101,7 @@ async function handleImportConfirm() {
       v-model:open="showImportDialog"
       :data="importData"
       :is-importing="isImporting"
-      @confirm="handleImportConfirm"
+      @confirm="confirmImport"
     />
     <ErrorDialog v-model:open="showImportErrorDialog" :error="importError" />
     <ErrorDialog
