@@ -158,7 +158,7 @@ function decrementSetCount(): void {
       class="flex items-center justify-between gap-2 px-4 py-3 bg-background/50 border-t border-border/30"
     >
       <!-- Set count control (strength only) -->
-      <div v-if="isStrength && block.kind === 'strength'" class="flex items-center gap-3">
+      <div v-if="isStrength" class="flex items-center gap-3">
         <span class="text-sm text-muted-foreground font-medium">{{
           t('workouts.templates.sets')
         }}</span>
