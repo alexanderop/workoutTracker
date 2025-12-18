@@ -11,7 +11,16 @@ export { createDbSet, createDbPlannedSet } from './dbSet.factory'
 export { createDbStrengthBlock, createDbStrengthBlockWithSets } from './dbBlock.factory'
 export { createDbExercise, createDbExerciseWithSets } from './dbExercise.factory'
 export { createDbCompletedWorkout, DbWorkoutBuilder, dbWorkoutBuilder } from './dbWorkout.factory'
-export { createDbTemplate, createDbTemplateStrengthBlock } from './template.factory'
+export {
+  createDbTemplate,
+  createDbTemplateStrengthBlock,
+  createDbTemplateBlockExercise,
+  createDbTemplateAmrapBlock,
+  createDbTemplateEmomBlock,
+  createDbTemplateTabataBlock,
+  createDbTemplateForTimeBlock,
+  createDbTemplateCardioBlock,
+} from './template.factory'
 
 // Benchmark factories
 export {

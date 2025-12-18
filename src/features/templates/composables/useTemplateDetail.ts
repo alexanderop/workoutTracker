@@ -1,23 +1,30 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, shallowRef } from 'vue'
 import { getTemplatesRepository, getActiveWorkoutRepository } from '@/db'
 import { dbToWorkout } from '@/db/converters'
-import { restoreWorkout } from '@/stores/workoutState'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbWorkoutTemplate, DbTemplateStrengthBlock } from '@/db/schema'
-import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
+import type { DbTemplateBlock, DbWorkoutTemplate } from '@/db/schema'
+import type { Workout } from '@/types/workout'
+import type {
+  AmrapConfig,
+  BlockExercise,
+  CardioConfig,
+  EmomConfig,
+  ForTimeConfig,
+  TabataConfig,
+} from '@/types/blocks'
+import {
+  createTemplateAmrapBlock,
+  createTemplateCardioBlock,
+  createTemplateEmomBlock,
+  createTemplateForTimeBlock,
+  createTemplateStrengthBlock,
+  createTemplateTabataBlock,
+} from '@/features/templates/lib/templateBlock'
 
 // ============================================
 // Types
 // ============================================
-
-type TemplateExercise = {
-  exerciseId: string
-  name: string
-  equipment: string
-  thumbnail: string
-  defaultSetCount: number
-}
 
 type TemplateDetailState =
   | { status: 'loading' }
@@ -29,67 +36,29 @@ type TemplateDetailState =
 // ============================================
 
 /**
- * Extracts template exercises from strength blocks.
- */
-function extractExercisesFromBlocks(
-  blocks: ReadonlyArray<DbTemplateStrengthBlock>,
-): ReadonlyArray<TemplateExercise> {
-  return blocks.map((block) => ({
-    exerciseId: block.name,
-    name: block.name,
-    equipment: block.equipment,
-    thumbnail: block.thumbnail,
-    defaultSetCount: block.defaultSetCount,
-  }))
-}
-
-/**
- * Converts exercises back to template blocks for saving.
- */
-function exercisesToBlocks(
-  exercises: ReadonlyArray<TemplateExercise>,
-): ReadonlyArray<DbTemplateStrengthBlock> {
-  return exercises.map((ex) => ({
-    kind: 'strength' as const,
-    exerciseDefinitionId: null,
-    name: ex.name,
-    equipment: ex.equipment,
-    targetReps: 8,
-    thumbnail: ex.thumbnail,
-    defaultSetCount: ex.defaultSetCount,
-  }))
-}
-
-/**
  * Checks if template has been edited compared to original.
- * Compares name, exercise count, order, and set counts.
+ * Compares name and block count/types.
  */
 function checkIsEdited(
   template: DbWorkoutTemplate,
   currentName: string,
-  currentExercises: ReadonlyArray<TemplateExercise>,
+  currentBlocks: ReadonlyArray<DbTemplateBlock>,
 ): boolean {
   // Check name change
   if (currentName !== template.name) return true
 
-  const originalBlocks = template.blocks.filter(
-    (b): b is DbTemplateStrengthBlock => b.kind === 'strength',
-  )
+  // Check block count change
+  if (currentBlocks.length !== template.blocks.length) return true
 
-  // Check exercise count change
-  if (currentExercises.length !== originalBlocks.length) return true
-
-  // Check exercise order and set count changes
-  for (let i = 0; i < currentExercises.length; i++) {
-    const current = currentExercises[i]
-    const original = originalBlocks[i]
+  // Check each block for changes
+  for (let i = 0; i < currentBlocks.length; i++) {
+    const current = currentBlocks[i]
+    const original = template.blocks[i]
     if (!current || !original) return true
 
-    // Check if exercise changed (order change) or set count changed
-    if (
-      current.name !== original.name ||
-      current.defaultSetCount !== original.defaultSetCount
-    ) {
+    // Fast path: reference equality (same object = no change)
+    // Falls back to deep equality when references differ
+    if (current !== original && JSON.stringify(current) !== JSON.stringify(original)) {
       return true
     }
   }
@@ -105,7 +74,7 @@ export function useTemplateDetail(templateId: string) {
   // Primary State
   const state = ref<TemplateDetailState>({ status: 'loading' })
   const templateName = ref('')
-  const exercises = ref<ReadonlyArray<TemplateExercise>>([])
+  const blocks = shallowRef<ReadonlyArray<DbTemplateBlock>>([])
 
   // Operation States
   const isSaving = ref(false)
@@ -114,7 +83,7 @@ export function useTemplateDetail(templateId: string) {
   // Computed - derived state
   const isEdited = computed(() => {
     if (state.value.status !== 'success') return false
-    return checkIsEdited(state.value.template, templateName.value, exercises.value)
+    return checkIsEdited(state.value.template, templateName.value, blocks.value)
   })
 
   // Methods
@@ -130,11 +99,7 @@ export function useTemplateDetail(templateId: string) {
 
     state.value = { status: 'success', template: loaded }
     templateName.value = loaded.name
-
-    const strengthBlocks = loaded.blocks.filter(
-      (b): b is DbTemplateStrengthBlock => b.kind === 'strength',
-    )
-    exercises.value = extractExercisesFromBlocks(strengthBlocks)
+    blocks.value = loaded.blocks
 
     return true
   }
@@ -146,7 +111,7 @@ export function useTemplateDetail(templateId: string) {
     await tryCatch(
       getTemplatesRepository().update(state.value.template.id, {
         name: templateName.value.trim(),
-        blocks: exercisesToBlocks(exercises.value),
+        blocks: blocks.value,
       }),
     )
 
@@ -160,8 +125,8 @@ export function useTemplateDetail(templateId: string) {
     await tryCatch(getTemplatesRepository().delete(state.value.template.id))
   }
 
-  async function startWorkout(): Promise<boolean> {
-    if (state.value.status !== 'success' || isStarting.value) return false
+  async function startWorkout(): Promise<{ id: string; workout: Workout } | null> {
+    if (state.value.status !== 'success' || isStarting.value) return null
 
     isStarting.value = true
     const [error, activeWorkout] = await tryCatch(
@@ -170,34 +135,59 @@ export function useTemplateDetail(templateId: string) {
 
     if (error) {
       isStarting.value = false
-      return false
+      return null
     }
 
     const [saveError] = await tryCatch(getActiveWorkoutRepository().save(activeWorkout))
 
     if (saveError) {
       isStarting.value = false
-      return false
+      return null
     }
 
     const inMemoryWorkout = dbToWorkout(activeWorkout)
-    restoreWorkout(inMemoryWorkout)
     isStarting.value = false
-    return true
+    // Return data instead of mutating state - let view coordinate
+    return { id: activeWorkout.id, workout: inMemoryWorkout }
   }
 
-  // Exercise manipulation
-  function addExercise(exercise: Exercise): void {
-    const newExercise = createTemplateExercise(exercise)
-    exercises.value = [...exercises.value, newExercise]
+  // Block management methods
+  function addStrengthBlock(exercise: Exercise): void {
+    const block = createTemplateStrengthBlock(exercise)
+    blocks.value = [...blocks.value, block]
   }
 
-  function removeExercise(exerciseId: string): void {
-    exercises.value = exercises.value.filter((ex) => ex.exerciseId !== exerciseId)
+  function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateAmrapBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
   }
 
-  function updateExercises(updated: ReadonlyArray<TemplateExercise>): void {
-    exercises.value = updated
+  function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateEmomBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
+    const block = createTemplateTabataBlock(config, exercise)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateForTimeBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addCardioBlock(config: CardioConfig): void {
+    const block = createTemplateCardioBlock(config)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function removeBlock(index: number): void {
+    blocks.value = blocks.value.filter((_, i) => i !== index)
+  }
+
+  function updateBlocks(updated: ReadonlyArray<DbTemplateBlock>): void {
+    blocks.value = updated
   }
 
   // Lifecycle Hooks
@@ -208,7 +198,7 @@ export function useTemplateDetail(templateId: string) {
   return {
     state,
     templateName,
-    exercises,
+    blocks,
     isSaving,
     isStarting,
     isEdited,
@@ -216,8 +206,13 @@ export function useTemplateDetail(templateId: string) {
     saveTemplate,
     deleteTemplate,
     startWorkout,
-    addExercise,
-    removeExercise,
-    updateExercises,
+    addStrengthBlock,
+    addAmrapBlock,
+    addEmomBlock,
+    addTabataBlock,
+    addForTimeBlock,
+    addCardioBlock,
+    removeBlock,
+    updateBlocks,
   }
 }

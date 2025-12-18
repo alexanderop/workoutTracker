@@ -5,14 +5,16 @@ import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.vue'
 import WorkoutCompletionScreen from '@/features/workout/components/WorkoutCompletionScreen.vue'
-import WorkoutAddBlockDialog from '@/features/workout/components/WorkoutAddBlockDialog.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
 import WorkoutCancelDialog from '@/components/WorkoutCancelDialog.vue'
-import WorkoutConfigureAmrapDialog from '@/features/workout/components/WorkoutConfigureAmrapDialog.vue'
-import WorkoutConfigureEmomDialog from '@/features/workout/components/WorkoutConfigureEmomDialog.vue'
-import WorkoutConfigureForTimeDialog from '@/features/workout/components/WorkoutConfigureForTimeDialog.vue'
-import WorkoutConfigureTabataDialog from '@/features/workout/components/WorkoutConfigureTabataDialog.vue'
-import WorkoutConfigureCardioDialog from '@/features/workout/components/WorkoutConfigureCardioDialog.vue'
+import {
+  AddBlockDialog,
+  ConfigureAmrapDialog,
+  ConfigureEmomDialog,
+  ConfigureTabataDialog,
+  ConfigureForTimeDialog,
+  ConfigureCardioDialog,
+} from '@/components/blocks'
 import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
@@ -236,30 +238,30 @@ function handleQueueAddBlock() {
     />
 
     <!-- Dialogs (shared across modes) -->
-    <WorkoutAddBlockDialog
+    <AddBlockDialog
       v-model:open="addBlockDialogOpen"
-      @add-exercise="(id, name) => addExercise(id, name)"
+      @add-exercise="(exercise) => addExercise(exercise.id ?? exercise.name, exercise.name)"
       @add-timed-block="handleAddTimedBlock"
       @add-cardio-block="handleAddCardioBlock"
     />
 
-    <WorkoutConfigureAmrapDialog
+    <ConfigureAmrapDialog
       v-model:open="configureAmrapOpen"
       @confirm="handleConfirmAmrap"
     />
-    <WorkoutConfigureEmomDialog
+    <ConfigureEmomDialog
       v-model:open="configureEmomOpen"
       @confirm="handleConfirmEmom"
     />
-    <WorkoutConfigureTabataDialog
+    <ConfigureTabataDialog
       v-model:open="configureTabataOpen"
       @confirm="handleConfirmTabata"
     />
-    <WorkoutConfigureForTimeDialog
+    <ConfigureForTimeDialog
       v-model:open="configureForTimeOpen"
       @confirm="handleConfirmForTime"
     />
-    <WorkoutConfigureCardioDialog
+    <ConfigureCardioDialog
       v-model:open="configureCardioOpen"
       @confirm="handleConfirmCardio"
     />

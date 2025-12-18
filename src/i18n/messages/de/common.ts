@@ -37,6 +37,7 @@ export default {
     weightForSet: 'Gewicht für Satz {number}',
     repsForSet: 'Wiederholungen für Satz {number}',
     repsInReserveForSet: 'Reservewiederholungen für Satz {number}',
+    setCount: 'Satzanzahl',
     decreaseSetCount: 'Satzanzahl verringern',
     increaseSetCount: 'Satzanzahl erhöhen',
     moveUp: 'Nach oben',

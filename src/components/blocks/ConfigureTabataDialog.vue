@@ -11,14 +11,14 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { generateId } from '@/db/index'
-import type { BlockExercise, TabataConfig } from '@/types/blocks'
+import type { BlockExercise, TabataConfig as TabataBlockConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutTabataConfig, { type TabataConfigModel } from './WorkoutTabataConfig.vue'
+import TabataConfigComponent, { type TabataConfigModel } from './TabataConfig.vue'
 
 const { t } = useI18n()
 
 type Emits = {
-  confirm: [config: TabataConfig, exercise: BlockExercise]
+  confirm: [config: TabataBlockConfig, exercise: BlockExercise]
 }
 
 const open = defineModel<boolean>('open', { required: true })
@@ -86,7 +86,7 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <WorkoutTabataConfig v-model="config" />
+        <TabataConfigComponent v-model="config" />
 
         <Separator />
 

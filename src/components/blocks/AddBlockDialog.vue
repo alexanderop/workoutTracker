@@ -25,7 +25,7 @@ const { t } = useI18n()
 const open = defineModel<boolean>('open', { required: true })
 
 const emit = defineEmits<{
-  'add-exercise': [exerciseId: string, name: string]
+  'add-exercise': [exercise: Exercise]
   'add-timed-block': [kind: TimedBlockKind]
   'add-cardio-block': []
 }>()
@@ -73,8 +73,7 @@ const timedBlockTypes: ReadonlyArray<{
 ]
 
 function handleSelectExercise(exercise: Exercise) {
-  const exerciseId = exercise.id ?? exercise.name
-  emit('add-exercise', exerciseId, exercise.name)
+  emit('add-exercise', exercise)
   open.value = false
   searchQuery.value = ''
   muscleFilter.value = 'all'

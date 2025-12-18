@@ -220,8 +220,8 @@ describe('Template Flow', () => {
       await userEvent.clear(nameInput)
       await userEvent.fill(nameInput, 'Updated Name')
 
-      // Add an exercise
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      // Add an exercise (via Add Block dialog)
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Squat'))
       await common.waitForDialogClose()
@@ -302,13 +302,13 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Upper Body')
 
       // Add first exercise via picker dialog
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second exercise
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Overhead Press'))
       await common.waitForDialogClose()
@@ -527,7 +527,7 @@ describe('Template Flow', () => {
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Add an exercise (making that part valid)
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()

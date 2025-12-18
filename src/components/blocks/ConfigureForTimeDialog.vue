@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
-import type { BlockExercise, ForTimeConfig } from '@/types/blocks'
+import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
+import type { BlockExercise, ForTimeConfig as ForTimeBlockConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutForTimeConfig, { type ForTimeConfigModel } from './WorkoutForTimeConfig.vue'
-import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
+import ForTimeConfigComponent, { type ForTimeConfigModel } from './ForTimeConfig.vue'
+import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
 
 const { t } = useI18n()
 
 type Emits = {
-  confirm: [config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>]
+  confirm: [config: ForTimeBlockConfig, exercises: ReadonlyArray<BlockExercise>]
 }
 
 const open = defineModel<boolean>('open', { required: true })
@@ -71,14 +71,14 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <WorkoutForTimeConfig v-model="config" />
+        <ForTimeConfigComponent v-model="config" />
 
         <Separator />
 
         <div class="space-y-3">
           <Label>{{ t('dialogs.fortimeConfig.exercises') }}</Label>
 
-          <WorkoutTimedBlockExerciseList
+          <TimedBlockExerciseList
             :exercises="exercises"
             :empty-message="t('dialogs.fortimeConfig.noExercises')"
             :add-button-text="t('dialogs.fortimeConfig.addExercise')"

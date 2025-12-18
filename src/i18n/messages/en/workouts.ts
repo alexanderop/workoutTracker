@@ -160,6 +160,9 @@ export default {
     exercises: 'Exercises',
     exercisesCount: '{count} exercises',
     addExercise: 'Add Exercise',
+    blocks: 'Blocks',
+    blocksCount: '{count} blocks',
+    addBlock: 'Add Block',
     saveTemplate: 'Save Template',
     saveChanges: 'Save Changes',
     deleteTemplate: 'Delete Template',
@@ -172,8 +175,8 @@ export default {
     subtitle: 'Build a new workout template from scratch',
     sets: 'Sets',
     empty: {
-      title: 'No exercises yet',
-      description: 'Add exercises to build your template',
+      title: 'No blocks yet',
+      description: 'Add exercises or timed blocks to build your template',
     },
   },
   benchmarks: {

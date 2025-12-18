@@ -159,6 +159,9 @@ export default {
     exercises: 'Übungen',
     exercisesCount: '{count} Übungen',
     addExercise: 'Übung hinzufügen',
+    blocks: 'Blöcke',
+    blocksCount: '{count} Blöcke',
+    addBlock: 'Block hinzufügen',
     saveTemplate: 'Vorlage speichern',
     saveChanges: 'Änderungen speichern',
     deleteTemplate: 'Vorlage löschen',
@@ -171,8 +174,8 @@ export default {
     subtitle: 'Erstelle eine neue Workout-Vorlage von Grund auf',
     sets: 'Sätze',
     empty: {
-      title: 'Noch keine Übungen',
-      description: 'Füge Übungen hinzu um deine Vorlage zu erstellen',
+      title: 'Noch keine Blöcke',
+      description: 'Füge Übungen oder Zeitblöcke hinzu um deine Vorlage zu erstellen',
     },
   },
   benchmarks: {
