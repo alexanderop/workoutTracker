@@ -1,62 +1,79 @@
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { getTemplatesRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbWorkoutTemplate } from '@/db/schema'
-import type { TemplateExercise } from '@/features/templates/components/TemplateExerciseList.vue'
-import { createTemplateExercise } from '@/features/templates/lib/templateExercise'
+import type { DbTemplateBlock, DbWorkoutTemplate } from '@/db/schema'
+import type {
+  AmrapConfig,
+  BlockExercise,
+  CardioConfig,
+  EmomConfig,
+  ForTimeConfig,
+  TabataConfig,
+} from '@/types/blocks'
+import {
+  createTemplateAmrapBlock,
+  createTemplateCardioBlock,
+  createTemplateEmomBlock,
+  createTemplateForTimeBlock,
+  createTemplateStrengthBlock,
+  createTemplateTabataBlock,
+} from '@/features/templates/lib/templateBlock'
 
 // ============================================
-// Pure Functions (Functional Core)
-// ============================================
-
-/**
- * Converts template exercises to strength blocks for database storage.
- */
-function exercisesToBlocks(exercises: ReadonlyArray<TemplateExercise>) {
-  return exercises.map((ex) => ({
-    kind: 'strength' as const,
-    exerciseDefinitionId: null,
-    name: ex.name,
-    equipment: ex.equipment,
-    targetReps: 8,
-    thumbnail: ex.thumbnail,
-    defaultSetCount: ex.defaultSetCount,
-  }))
-}
-
-// ============================================
-// Composable (Imperative Shell)
+// Composable
 // ============================================
 
 export function useTemplateCreation() {
   // Primary State
   const templateName = ref('')
-  const exercises = ref<ReadonlyArray<TemplateExercise>>([])
-
-  // UI State
-  const isAddExerciseOpen = ref(false)
+  const blocks = shallowRef<ReadonlyArray<DbTemplateBlock>>([])
 
   // Operation State
   const isSaving = ref(false)
 
   // Computed
   const isValid = computed(
-    () => templateName.value.trim().length > 0 && exercises.value.length > 0,
+    () => templateName.value.trim().length > 0 && blocks.value.length > 0,
   )
 
-  // Methods
-  function addExercise(exercise: Exercise): void {
-    const templateExercise = createTemplateExercise(exercise)
-    exercises.value = [...exercises.value, templateExercise]
+  // Block Management Methods
+  function addStrengthBlock(exercise: Exercise): void {
+    const block = createTemplateStrengthBlock(exercise)
+    blocks.value = [...blocks.value, block]
   }
 
-  function removeExercise(exerciseId: string): void {
-    exercises.value = exercises.value.filter((ex) => ex.exerciseId !== exerciseId)
+  function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateAmrapBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
   }
 
-  function updateExercises(updated: ReadonlyArray<TemplateExercise>): void {
-    exercises.value = updated
+  function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateEmomBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
+    const block = createTemplateTabataBlock(config, exercise)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block = createTemplateForTimeBlock(config, exercises)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function addCardioBlock(config: CardioConfig): void {
+    const block = createTemplateCardioBlock(config)
+    blocks.value = [...blocks.value, block]
+  }
+
+  function removeBlock(index: number): void {
+    blocks.value = blocks.value.filter((_, i) => i !== index)
+  }
+
+  function updateBlocks(updated: ReadonlyArray<DbTemplateBlock>): void {
+    blocks.value = updated
   }
 
   async function save(): Promise<DbWorkoutTemplate | null> {
@@ -66,7 +83,7 @@ export function useTemplateCreation() {
     const [error, template] = await tryCatch(
       getTemplatesRepository().create({
         name: templateName.value.trim(),
-        blocks: exercisesToBlocks(exercises.value),
+        blocks: blocks.value,
       }),
     )
 
@@ -79,15 +96,19 @@ export function useTemplateCreation() {
   return {
     // State
     templateName,
-    exercises,
-    isAddExerciseOpen,
+    blocks,
     isSaving,
     // Computed
     isValid,
     // Methods
-    addExercise,
-    removeExercise,
-    updateExercises,
+    addStrengthBlock,
+    addAmrapBlock,
+    addEmomBlock,
+    addTabataBlock,
+    addForTimeBlock,
+    addCardioBlock,
+    removeBlock,
+    updateBlocks,
     save,
   }
 }

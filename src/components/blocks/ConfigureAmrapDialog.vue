@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
-import type { AmrapConfig, BlockExercise } from '@/types/blocks'
+import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
+import type { AmrapConfig as AmrapBlockConfig, BlockExercise } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutAmrapConfig, { type AmrapConfigModel } from './WorkoutAmrapConfig.vue'
-import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
+import AmrapConfigComponent, { type AmrapConfigModel } from './AmrapConfig.vue'
+import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
 
 const { t } = useI18n()
 
 type Emits = {
-  confirm: [config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>]
+  confirm: [config: AmrapBlockConfig, exercises: ReadonlyArray<BlockExercise>]
 }
 
 const open = defineModel<boolean>('open', { required: true })
@@ -67,14 +67,14 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <WorkoutAmrapConfig v-model="config" />
+        <AmrapConfigComponent v-model="config" />
 
         <Separator />
 
         <div class="space-y-3">
           <Label>{{ t('dialogs.amrapConfig.exercises') }}</Label>
 
-          <WorkoutTimedBlockExerciseList
+          <TimedBlockExerciseList
             :exercises="exercises"
             :empty-message="t('dialogs.amrapConfig.noExercises')"
             :add-button-text="t('dialogs.amrapConfig.addExercise')"

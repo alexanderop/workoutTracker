@@ -27,17 +27,15 @@ export function useTimedBlockExercises() {
   }
 
   function updateExerciseReps(index: number, reps: number) {
-    const exercise = exercises.value[index]
-    if (exercise) {
-      exercise.prescribedReps = reps
-    }
+    exercises.value = exercises.value.map((ex, i) =>
+      i === index ? { ...ex, prescribedReps: reps } : ex,
+    )
   }
 
   function updateExerciseLoad(index: number, load: string) {
-    const exercise = exercises.value[index]
-    if (exercise) {
-      exercise.load = load || null
-    }
+    exercises.value = exercises.value.map((ex, i) =>
+      i === index ? { ...ex, load: load || null } : ex,
+    )
   }
 
   function reset() {

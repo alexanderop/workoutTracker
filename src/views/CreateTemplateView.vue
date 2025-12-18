@@ -2,27 +2,101 @@
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import ExercisePicker from '@/components/ExercisePicker.vue'
-import TemplateExerciseList from '@/features/templates/components/TemplateExerciseList.vue'
+import {
+  AddBlockDialog,
+  ConfigureAmrapDialog,
+  ConfigureEmomDialog,
+  ConfigureTabataDialog,
+  ConfigureForTimeDialog,
+  ConfigureCardioDialog,
+} from '@/components/blocks'
+import TemplateBlockList from '@/features/templates/components/TemplateBlockList.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTemplateCreation } from '@/features/templates/composables/useTemplateCreation'
+import { useDialogState } from '@/composables/useDialogState'
+import type {
+  AmrapConfig,
+  BlockExercise,
+  CardioConfig,
+  EmomConfig,
+  ForTimeConfig,
+  TabataConfig,
+  TimedBlockKind,
+} from '@/types/blocks'
 
 const router = useRouter()
 const { t } = useI18n()
 
 const {
   templateName,
-  exercises,
-  isAddExerciseOpen,
+  blocks,
   isSaving,
   isValid,
-  addExercise,
-  removeExercise,
-  updateExercises,
+  addStrengthBlock,
+  addAmrapBlock,
+  addEmomBlock,
+  addTabataBlock,
+  addForTimeBlock,
+  addCardioBlock,
+  removeBlock,
+  updateBlocks,
   save,
 } = useTemplateCreation()
+
+// Dialog state management
+type TemplateDialog =
+  | 'addBlock'
+  | 'configureAmrap'
+  | 'configureEmom'
+  | 'configureTabata'
+  | 'configureForTime'
+  | 'configureCardio'
+
+const { createDialogModel, open: openDialog } = useDialogState<TemplateDialog>()
+
+const addBlockDialogOpen = createDialogModel('addBlock')
+const configureAmrapOpen = createDialogModel('configureAmrap')
+const configureEmomOpen = createDialogModel('configureEmom')
+const configureTabataOpen = createDialogModel('configureTabata')
+const configureForTimeOpen = createDialogModel('configureForTime')
+const configureCardioOpen = createDialogModel('configureCardio')
+
+// Handlers
+function handleAddTimedBlock(kind: TimedBlockKind): void {
+  const dialogMap: Record<TimedBlockKind, TemplateDialog> = {
+    amrap: 'configureAmrap',
+    emom: 'configureEmom',
+    tabata: 'configureTabata',
+    fortime: 'configureForTime',
+  }
+  openDialog(dialogMap[kind])
+}
+
+function handleAddCardioBlock(): void {
+  openDialog('configureCardio')
+}
+
+function handleConfirmAmrap(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
+  addAmrapBlock(config, exercises)
+}
+
+function handleConfirmEmom(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
+  addEmomBlock(config, exercises)
+}
+
+function handleConfirmTabata(config: TabataConfig, exercise: BlockExercise): void {
+  addTabataBlock(config, exercise)
+}
+
+function handleConfirmForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
+  addForTimeBlock(config, exercises)
+}
+
+function handleConfirmCardio(config: CardioConfig): void {
+  addCardioBlock(config)
+}
 
 async function handleSave(): Promise<void> {
   const template = await save()
@@ -52,18 +126,18 @@ function handleCancel(): void {
         />
       </div>
 
-      <!-- Exercises section -->
+      <!-- Blocks section -->
       <div class="mb-6 flex flex-1 flex-col">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">{{ t('workouts.templates.exercises') }}</h2>
-          <span class="text-sm text-muted-foreground">{{ exercises.length }}</span>
+          <h2 class="text-lg font-semibold">{{ t('workouts.templates.blocks') }}</h2>
+          <span class="text-sm text-muted-foreground">{{ blocks.length }}</span>
         </div>
 
-        <div v-if="exercises.length > 0" class="mb-4 flex-1 overflow-y-auto">
-          <TemplateExerciseList
-            :exercises="exercises"
-            @update:exercises="updateExercises"
-            @remove-exercise="removeExercise"
+        <div v-if="blocks.length > 0" class="mb-4 flex-1 overflow-y-auto">
+          <TemplateBlockList
+            :blocks="blocks"
+            @update:blocks="updateBlocks"
+            @remove-block="removeBlock"
           />
         </div>
 
@@ -77,8 +151,8 @@ function handleCancel(): void {
           </div>
         </div>
 
-        <Button variant="outline" class="w-full" @click="isAddExerciseOpen = true">
-          + {{ t('workouts.templates.addExercise') }}
+        <Button variant="outline" class="w-full" @click="openDialog('addBlock')">
+          + {{ t('workouts.templates.addBlock') }}
         </Button>
       </div>
     </div>
@@ -94,12 +168,33 @@ function handleCancel(): void {
       </div>
     </template>
 
-    <!-- Add Exercise Dialog -->
-    <ExercisePicker
-      v-model:open="isAddExerciseOpen"
-      presentation="dialog"
-      :show-create="true"
-      @select="addExercise"
+    <!-- Dialogs -->
+    <AddBlockDialog
+      v-model:open="addBlockDialogOpen"
+      @add-exercise="addStrengthBlock"
+      @add-timed-block="handleAddTimedBlock"
+      @add-cardio-block="handleAddCardioBlock"
+    />
+
+    <ConfigureAmrapDialog
+      v-model:open="configureAmrapOpen"
+      @confirm="handleConfirmAmrap"
+    />
+    <ConfigureEmomDialog
+      v-model:open="configureEmomOpen"
+      @confirm="handleConfirmEmom"
+    />
+    <ConfigureTabataDialog
+      v-model:open="configureTabataOpen"
+      @confirm="handleConfirmTabata"
+    />
+    <ConfigureForTimeDialog
+      v-model:open="configureForTimeOpen"
+      @confirm="handleConfirmForTime"
+    />
+    <ConfigureCardioDialog
+      v-model:open="configureCardioOpen"
+      @confirm="handleConfirmCardio"
     />
   </PageLayout>
 </template>

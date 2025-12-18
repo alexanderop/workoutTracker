@@ -39,6 +39,7 @@ export default {
     weightForSet: 'Weight for set {number}',
     repsForSet: 'Reps for set {number}',
     repsInReserveForSet: 'Reps in reserve for set {number}',
+    setCount: 'Set count',
     decreaseSetCount: 'Decrease set count',
     increaseSetCount: 'Increase set count',
     moveUp: 'Move up',

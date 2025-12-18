@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { useTimedBlockExercises } from '@/features/workout/composables/useTimedBlockExercises'
-import type { BlockExercise, EmomConfig } from '@/types/blocks'
+import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
+import type { BlockExercise, EmomConfig as EmomBlockConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
-import WorkoutEmomConfig, { type EmomConfigModel } from './WorkoutEmomConfig.vue'
-import WorkoutTimedBlockExerciseList from './WorkoutTimedBlockExerciseList.vue'
+import EmomConfigComponent, { type EmomConfigModel } from './EmomConfig.vue'
+import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
 
 const { t } = useI18n()
 
 type Emits = {
-  confirm: [config: EmomConfig, exercises: ReadonlyArray<BlockExercise>]
+  confirm: [config: EmomBlockConfig, exercises: ReadonlyArray<BlockExercise>]
 }
 
 const open = defineModel<boolean>('open', { required: true })
@@ -71,14 +71,14 @@ function handleClose() {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <WorkoutEmomConfig v-model="config" />
+        <EmomConfigComponent v-model="config" />
 
         <Separator />
 
         <div class="space-y-3">
           <Label>{{ t('dialogs.emomConfig.exercises') }}</Label>
 
-          <WorkoutTimedBlockExerciseList
+          <TimedBlockExerciseList
             :exercises="exercises"
             :empty-message="t('dialogs.emomConfig.noExercises')"
             :add-button-text="t('dialogs.emomConfig.addExercise')"

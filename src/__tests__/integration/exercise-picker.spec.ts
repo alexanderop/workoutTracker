@@ -25,12 +25,12 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      // Click to add an exercise
-      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
-      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      // Click to add a block (now uses AddBlockDialog which contains exercise picker)
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add block/i })
       await userEvent.click(addButton)
 
-      // Dialog should open with search input
+      // Dialog should open with search input (Exercises tab is active by default)
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.element(page.getByRole('textbox')).toBeVisible()
 
@@ -41,8 +41,8 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
-      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add block/i })
       await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
@@ -61,8 +61,8 @@ describe('ExercisePicker', () => {
       const { navigateTo, getByRole, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
-      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add block/i })
       await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
@@ -90,8 +90,8 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
-      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add block/i })
       await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
@@ -109,9 +109,9 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      // Open the exercise picker dialog
-      await expect.element(page.getByRole('button', { name: /\+ add exercise/i })).toBeVisible()
-      const addButton = page.getByRole('button', { name: /\+ add exercise/i })
+      // Open the add block dialog (contains exercise picker in Exercises tab)
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      const addButton = page.getByRole('button', { name: /\+ add block/i })
       await userEvent.click(addButton)
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
