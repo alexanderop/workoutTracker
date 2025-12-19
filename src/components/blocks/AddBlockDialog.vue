@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { Muscle } from '@/types/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 
-import { Activity, Clock, Gauge, RefreshCcw, Search, Zap } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { Activity, Clock, Gauge, RefreshCcw, Zap } from 'lucide-vue-next'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import ExerciseListItem from '@/components/ExerciseListItem.vue'
-import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
+import ExercisePickerContent from '@/components/ExercisePickerContent.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Empty, EmptyDescription, EmptyMedia } from '@/components/ui/empty'
-import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useExerciseSearch } from '@/composables/useExerciseSearch'
 import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
 
 const { t } = useI18n()
@@ -32,16 +26,12 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const activeTab = ref('exercises')
-const muscleFilter = ref<Muscle | 'all'>('all')
-const { searchQuery, filteredExercises } = useExerciseSearch({
-  muscleFilter,
-})
+const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
 
 // Reset state when dialog opens
 watch(open, (isOpen) => {
   if (isOpen) {
-    searchQuery.value = ''
-    muscleFilter.value = 'all'
+    pickerContent.value?.reset()
   }
 })
 
@@ -80,8 +70,6 @@ const timedBlockTypes: ReadonlyArray<{
 function handleSelectExercise(exercise: Exercise) {
   emit('add-exercise', exercise)
   open.value = false
-  searchQuery.value = ''
-  muscleFilter.value = 'all'
 }
 
 function handleSelectTimedBlock(kind: TimedBlockKind) {
@@ -96,16 +84,12 @@ function handleSelectCardio() {
 
 function handleCreateNew() {
   open.value = false
-  searchQuery.value = ''
-  muscleFilter.value = 'all'
   router.push({ name: RouteNames.CreateCustomExercise })
 }
 
 function handleOpenChange(value: boolean) {
   open.value = value
   if (!value) {
-    searchQuery.value = ''
-    muscleFilter.value = 'all'
     activeTab.value = 'exercises'
   }
 }
@@ -129,51 +113,15 @@ function handleOpenChange(value: boolean) {
 
         <!-- Exercises Tab -->
         <TabsContent value="exercises" class="flex-1 flex flex-col min-h-0 mt-4">
-          <!-- Search Input -->
-          <div class="relative">
-            <Search
-              class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
-              aria-hidden="true"
-            />
-            <Input
-              v-model="searchQuery"
-              :placeholder="t('dialogs.addBlock.searchPlaceholder')"
-              class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-              autofocus
-            />
-          </div>
-
-          <!-- Filter Pills -->
-          <ExerciseMuscleFilter v-model="muscleFilter" class="-mx-4 px-4 mt-3" />
-
-          <!-- Exercise List -->
-          <div class="flex-1 overflow-y-auto -mx-4 px-4 mt-4">
-            <div class="space-y-1">
-              <ExerciseListItem
-                v-for="exercise in filteredExercises"
-                :key="exercise.id ?? exercise.name"
-                :exercise="exercise"
-                @select="handleSelectExercise"
-              />
-            </div>
-
-            <!-- Empty State -->
-            <Empty v-if="filteredExercises.length === 0" class="border-0 py-12">
-              <EmptyMedia variant="icon" class="bg-muted text-muted-foreground">
-                <Search class="size-5" aria-hidden="true" />
-              </EmptyMedia>
-              <EmptyDescription>
-                {{ t('dialogs.addBlock.noResults', { query: searchQuery }) }}
-              </EmptyDescription>
-            </Empty>
-          </div>
-
-          <!-- Create Custom Exercise Button -->
-          <div class="pt-4 border-t border-border flex-shrink-0">
-            <Button variant="default" class="w-full" @click="handleCreateNew">
-              {{ t('dialogs.addBlock.createCustomExercise') }}
-            </Button>
-          </div>
+          <ExercisePickerContent
+            ref="pickerContent"
+            show-create
+            search-placeholder="dialogs.addBlock.searchPlaceholder"
+            empty-message="dialogs.addBlock.noResults"
+            create-button-text="dialogs.addBlock.createCustomExercise"
+            @select="handleSelectExercise"
+            @create="handleCreateNew"
+          />
         </TabsContent>
 
         <!-- Timed Blocks Tab -->

@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { PopularExercise } from '@/data/popularExercises'
-import type { Muscle } from '@/types/exercises'
+import type { Equipment, Muscle } from '@/types/exercises'
 
 import { computed, ref } from 'vue'
 import { useExercisesStore } from '@/stores/exercises'
@@ -35,6 +35,18 @@ function filterByMuscle(
 }
 
 /**
+ * Filters exercises by equipment type.
+ * Returns all exercises when equipment is 'all'.
+ */
+function filterByEquipment(
+  exercises: ReadonlyArray<Exercise>,
+  equipment: Equipment | 'all',
+): Array<Exercise> {
+  if (equipment === 'all') return [...exercises]
+  return exercises.filter((ex) => ex.equipment === equipment)
+}
+
+/**
  * Filters exercises by search query across specified fields.
  * Uses case-insensitive substring matching.
  */
@@ -53,6 +65,7 @@ function filterBySearchQuery(
 
 type UseExerciseSearchOptions = {
   muscleFilter?: Ref<Muscle | 'all'>
+  equipmentFilter?: Ref<Equipment | 'all'>
   searchFields?: ReadonlyArray<SearchField>
 }
 
@@ -85,6 +98,10 @@ export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerci
 
     if (options?.muscleFilter) {
       result = filterByMuscle(result, options.muscleFilter.value)
+    }
+
+    if (options?.equipmentFilter) {
+      result = filterByEquipment(result, options.equipmentFilter.value)
     }
 
     result = filterBySearchQuery(result, searchQuery.value, searchFields)
