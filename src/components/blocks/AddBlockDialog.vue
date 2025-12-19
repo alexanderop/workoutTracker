@@ -3,7 +3,7 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Muscle } from '@/types/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 
-import { Activity, Repeat, Search, Timer, X, Zap } from 'lucide-vue-next'
+import { Activity, Clock, Gauge, RefreshCcw, Search, Zap } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -12,13 +12,13 @@ import ExerciseListItem from '@/components/ExerciseListItem.vue'
 import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Empty, EmptyDescription, EmptyMedia } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
-import { BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
 
 const { t } = useI18n()
 
@@ -47,28 +47,33 @@ watch(open, (isOpen) => {
 
 const timedBlockTypes: ReadonlyArray<{
   kind: TimedBlockKind
-  icon: typeof Timer
+  icon: typeof Clock
   description: string
+  color: { bg: string; text: string; accent: string }
 }> = [
   {
     kind: 'amrap',
-    icon: Repeat,
+    icon: RefreshCcw,
     description: 'As Many Rounds As Possible in a set time',
+    color: BLOCK_COLORS.amrap,
   },
   {
     kind: 'emom',
-    icon: Timer,
+    icon: Clock,
     description: 'Every Minute On the Minute',
+    color: BLOCK_COLORS.emom,
   },
   {
     kind: 'tabata',
     icon: Zap,
     description: '20s work / 10s rest intervals',
+    color: BLOCK_COLORS.tabata,
   },
   {
     kind: 'fortime',
-    icon: Timer,
+    icon: Gauge,
     description: 'Complete the work as fast as possible',
+    color: BLOCK_COLORS.fortime,
   },
 ]
 
@@ -111,15 +116,9 @@ function handleOpenChange(value: boolean) {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <DialogHeader class="relative">
+      <DialogHeader>
         <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
         <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
-        <DialogClose
-          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
-        >
-          <X class="icon-md text-muted-foreground" />
-          <span class="sr-only">{{ t('common.buttons.close') }}</span>
-        </DialogClose>
       </DialogHeader>
 
       <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
@@ -183,19 +182,30 @@ function handleOpenChange(value: boolean) {
             <button
               v-for="blockType in timedBlockTypes"
               :key="blockType.kind"
-              class="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+              :class="[
+                'w-full flex items-center gap-4 p-4 rounded-xl transition-colors text-left border',
+                blockType.color.bg,
+                'hover:brightness-110',
+                'border-current/20',
+              ]"
               @click="handleSelectTimedBlock(blockType.kind)"
             >
               <div
-                class="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary"
+                :class="[
+                  'flex items-center justify-center w-12 h-12 rounded-lg',
+                  blockType.color.bg,
+                  blockType.color.text,
+                ]"
               >
-                <span class="text-2xl">{{ BLOCK_ICONS[blockType.kind] }}</span>
+                <component :is="blockType.icon" class="size-6" />
               </div>
               <div class="flex-1">
-                <p class="font-semibold text-lg">{{ BLOCK_LABELS[blockType.kind] }}</p>
+                <p :class="['font-semibold text-lg', blockType.color.text]">
+                  {{ BLOCK_LABELS[blockType.kind] }}
+                </p>
                 <p class="text-sm text-muted-foreground">{{ blockType.description }}</p>
               </div>
-              <span class="text-muted-foreground/50 text-xl">›</span>
+              <span :class="[blockType.color.text, 'opacity-50 text-xl']">›</span>
             </button>
 
             <!-- Cardio Block -->

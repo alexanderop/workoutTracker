@@ -1,41 +1,50 @@
 ---
 name: vue-integration-testing
-description: Write Vue 3 integration tests using Testing Library and createTestApp helper. Use when asked to "write integration tests", "test user flows", "add integration specs", or test complete user journeys through the app. Covers navigation, dialog interactions, form submissions, and multi-step workflows with real routing and state.
+description: Write Vue 3 integration tests using Vitest Browser Mode and Page Objects. Use proactively whenever adding tests for views, components with routing, user flows, or features that span multiple components. Triggers include "add tests", "write tests", "test this", "needs tests", "integration tests", "test the feature", "test user flow", or any task involving testing UI interactions, navigation, dialogs, forms, or multi-step workflows.
 ---
 
 # Vue Integration Testing
 
-Write integration tests that verify complete user flows through the Vue application using Testing Library with the `createTestApp` helper.
+Write integration tests that verify complete user flows using Vitest Browser Mode (Playwright) with the `createTestApp` helper and Page Objects.
+
+## Test Infrastructure
+
+- **Framework**: Vitest 4 with Playwright browser mode (real browser, not jsdom)
+- **Database**: `fake-indexeddb` polyfill for IndexedDB
+- **Queries**: Vitest Browser locators with automatic retry
+
+**Commands:**
+```bash
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode
+pnpm test:headed       # Visible browser (debugging)
+pnpm test:coverage     # With coverage
+```
 
 ## Test File Structure
 
 Place integration tests in `src/__tests__/integration/`:
 
 ```typescript
-import { waitFor } from '@testing-library/vue'
-import { afterEach, describe, expect, it } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Feature Name', () => {
-  afterEach(async () => {
-    resetWorkout()
-    await resetDatabase()
-    // Reset body styles left by dialogs (prevents pointer-events: none issues)
-    document.body.style.cssText = ''
-    document.body.removeAttribute('style')
-    document.body.innerHTML = ''
-  })
+  beforeEach(setupIntegrationTest)
+  afterEach(cleanupIntegrationTest)
 
   it('describes the user journey being tested', async () => {
     const app = await createTestApp()
 
-    // Test user interactions
-    await app.user.click(app.getByRole('button', { name: /action/i }))
+    // Use page objects for interactions
+    await app.builder.navigateTo()
+    await app.builder.addStrengthBlock('Squats')
+    await app.builder.startWorkout()
 
     // Assert outcomes
-    expect(app.router.currentRoute.value.path).toBe('/expected-path')
+    await expect.poll(() => app.router.currentRoute.value.path).toMatch(/^\/workout\/active/)
 
     app.cleanup()
   })
@@ -44,201 +53,244 @@ describe('Feature Name', () => {
 
 ## Test Isolation
 
-Tests use `fake-indexeddb` polyfill (configured in `src/__tests__/setup.ts`). Always reset state in `afterEach`:
-- `resetWorkout()` - Clears the singleton workout ref
-- `resetDatabase()` - Clears all IndexedDB tables
-- Reset body styles - Dialogs add `pointer-events: none` to body; must clear for subsequent tests
+Tests share `fake-indexeddb`. Always use the provided setup/cleanup helpers:
 
-```typescript
-afterEach(async () => {
-  resetWorkout()
-  await resetDatabase()
-  // Reset body styles left by dialogs
-  document.body.style.cssText = ''
-  document.body.removeAttribute('style')
-  document.body.innerHTML = ''
-})
-```
+- `setupIntegrationTest()` - Resets workout state, benchmark state, timers, and database
+- `cleanupIntegrationTest()` - Clears state and DOM after each test
 
 ## createTestApp API
 
-The helper returns a `TestApp` object with:
+Returns a `TestApp` object with:
 
 ### Core Properties
-- `router` - Vue Router instance for route assertions
-- `user` - userEvent instance for simulating interactions
+| Property | Type | Purpose |
+|----------|------|---------|
+| `router` | `Router` | Vue Router instance for navigation/assertions |
+| `container` | `Element` | Rendered DOM container |
+
+### Page Objects
+Pre-instantiated helpers for domain-specific UI workflows:
+
+| Property | Purpose |
+|----------|---------|
+| `common` | Shared UI: dialogs, navigation, exercise selection |
+| `builder` | Workout builder operations |
+| `workout` | Active workout view (sets, timers, menus) |
+| `queue` | Workout queue dialog |
+| `benchmarks` | Benchmarks list view |
+| `benchmarkForm` | Benchmark creation form |
+| `benchmarkDetail` | Benchmark detail view |
+| `logPastWorkout` | Past workout logging flow |
 
 ### Query Methods
-Use Testing Library role-based queries:
-- `getByRole(role, options)` - Find by ARIA role (throws if not found)
-- `queryByRole(role, options)` - Find by role (returns null if not found)
-- `findByRole(role, options)` - Async find by role (waits for element)
-- `getByText`, `queryByText`, `findByText` - Text-based queries
+Vitest Browser locators with automatic retry:
+- `getByRole(role, options?)` - Query by ARIA role
+- `getByText(text, options?)` - Query by text content
+- `getByTestId(testId)` - Query by data-testid
 
-### Dialog Helpers
-- `waitForDialog()` - Wait for dialog to appear, returns dialog element
-- `getDialogButton(text)` - Find button within current dialog by text content
-- `assertDialogClosed()` - Assert no dialog is open
+### Helper Methods
+- `navigateTo(route)` - Programmatic navigation
+- `cleanup()` - Unmount the app
 
-### Navigation
-- `navigateTo(path)` - Programmatic navigation
-- `waitForRoute(pattern)` - Wait for route to match a regex pattern (useful after async actions)
+### Options
+```typescript
+const app = await createTestApp({ initialRoute: '/workout/active' })
+```
 
-### Cleanup
-- `cleanup()` - Call in afterEach or at test end
+## Page Object Reference
+
+### CommonPO (Base)
+Shared across all page objects:
+
+```typescript
+await app.common.waitForDialog()           // Wait for dialog to appear
+await app.common.waitForDialogClose()      // Wait for dialog + overlay removal
+const button = app.common.getDialogButton('Confirm')  // Find button in dialog
+app.common.assertDialogClosed()            // Assert no dialog open
+await app.common.selectExercise('Squats')  // Search and select exercise
+await app.common.waitForRoute(/^\/workout/)  // Wait for route match
+```
+
+### ActiveWorkoutPO
+Active workout view interactions:
+
+```typescript
+await app.workout.fillCardSetAndComplete({ weight: '60', reps: '12', rir: '3' })
+await app.workout.endWorkoutAndNavigateToSummary()
+const menu = await app.workout.getMenuTrigger()
+const nextBtn = await app.workout.getFooterButton('next')
+await app.workout.isSetCompleted(0)  // Check set completion
+```
+
+### BuilderPO
+Workout builder operations:
+
+```typescript
+await app.builder.navigateTo()                    // Click "Start New Workout"
+await app.builder.addStrengthBlock('Squats')      // Full flow to add block
+await app.builder.addTimedBlock('AMRAP')          // Add timed block
+await app.builder.startWorkout()                  // Start the workout
+```
+
+### QueuePO
+Workout queue dialog:
+
+```typescript
+await app.queue.open()
+const items = app.queue.getItems()       // Get all queue items
+const active = app.queue.getActiveItem() // Get active item
+```
+
+## Query & Assertion Patterns
+
+### Vitest Browser Locators (Preferred)
+Locators have built-in retry, pass them directly to userEvent:
+
+```typescript
+import { page, userEvent } from 'vitest/browser'
+
+// Click with locator (retries automatically)
+await userEvent.click(page.getByRole('button', { name: /submit/i }))
+
+// Fill input
+await userEvent.fill(page.getByRole('textbox', { name: /email/i }), 'test@example.com')
+
+// Click directly on locator
+await page.getByRole('button', { name: /save/i }).click()
+```
+
+### DOM Assertions
+Use `expect.element()` for DOM element assertions:
+
+```typescript
+await expect.element(page.getByRole('dialog')).toBeVisible()
+await expect.element(page.getByRole('button')).toBeDisabled()
+await expect.element(page.getByRole('button')).toHaveClass('opacity-0')
+await expect.element(page.getByText('Success')).not.toBeInTheDocument()
+```
+
+### State/Async Assertions
+Use `expect.poll()` for non-DOM state or async values:
+
+```typescript
+// Router state
+await expect.poll(() => app.router.currentRoute.value.path).toBe('/workout')
+
+// Database queries
+await expect.poll(async () => {
+  const workout = await db.workouts.get('id')
+  return workout?.name
+}).toBe('My Workout')
+
+// With custom timeout
+await expect.element(page.getByText('Loaded'), { timeout: 5000 }).toBeVisible()
+```
+
+### When to Use .element()
+Only use `.element()` when you need the actual DOM element:
+
+```typescript
+// Need DOM properties
+const input = await page.getByRole('textbox').element()
+const value = input.value
+
+// DON'T pass .element() to userEvent (loses retry)
+// BAD: await userEvent.click(await button.element())
+// GOOD: await userEvent.click(button)
+```
 
 ## Interaction Patterns
 
-### Click Buttons
-```typescript
-await app.user.click(app.getByRole('button', { name: /submit/i }))
-```
-
 ### Dialog Flow
 ```typescript
-await app.user.click(app.getByRole('button', { name: /open dialog/i }))
-await app.waitForDialog()
-await app.user.click(app.getDialogButton('Confirm'))
-app.assertDialogClosed()
+await userEvent.click(page.getByRole('button', { name: /open/i }))
+await app.common.waitForDialog()
+await userEvent.click(app.common.getDialogButton('Confirm'))
+await app.common.waitForDialogClose()
 ```
 
-### Form Input
+### Dropdown Menu
 ```typescript
-await app.user.type(app.getByRole('textbox', { name: /email/i }), 'test@example.com')
-await app.user.clear(app.getByRole('textbox', { name: /email/i }))
+const menuTrigger = await app.workout.getMenuTrigger()
+await userEvent.click(menuTrigger)
+await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+await userEvent.click(page.getByRole('menuitem', { name: /end workout/i }))
 ```
 
-### Check Toggle State
+### Complete Workout Flow Example
 ```typescript
-const activeBtn = app.getByRole('button', { name: /item/i, pressed: true })
-const inactiveBtn = app.getByRole('button', { name: /other/i, pressed: false })
-```
+it('completes a strength workout', async () => {
+  const app = await createTestApp()
 
-### Route Assertions
-```typescript
-expect(app.router.currentRoute.value.path).toBe('/expected')
-expect(app.router.currentRoute.value.params.id).toBe('123')
-```
+  // Build workout
+  await app.builder.navigateTo()
+  await app.builder.addStrengthBlock('Squats')
+  await app.builder.startWorkout()
 
-### Wait for Async Navigation
-```typescript
-// After clicking a button that triggers async work + navigation
-await app.user.click(app.getDialogButton('Submit'))
-await app.waitForRoute(/^\/success\//)
-```
+  // Complete sets
+  await app.workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '2' })
+  await app.workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '2' })
 
-### Wait for Async UI Updates
-Use `waitFor` from `@testing-library/vue` for UI state changes after interactions:
+  // End workout
+  await app.workout.endWorkoutAndNavigateToSummary()
 
-```typescript
-import { waitFor } from '@testing-library/vue'
+  // Verify
+  await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
-// After mode transitions (builder → active)
-await app.startWorkout()
-await waitFor(() => {
-  expect(app.queryByText(/block 1 of 2/i)).toBeTruthy()
+  app.cleanup()
 })
-
-// After button clicks that change UI state
-await app.user.click(startButton)
-await waitFor(() => {
-  expect(app.queryByRole('button', { name: /pause/i })).toBeTruthy()
-})
-
-// After navigation between blocks
-await app.user.click(nextBlockButton)
-await waitFor(() => {
-  expect(app.queryByText(/block 2 of 2/i)).toBeTruthy()
-})
-```
-
-### Dropdown Menu Interaction
-For dropdown menus, wait for menu items to appear before clicking:
-
-```typescript
-// Find and click the dropdown trigger
-await waitFor(() => {
-  const trigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
-  expect(trigger).toBeTruthy()
-})
-const menuTrigger = document.querySelector('[data-slot="dropdown-menu-trigger"]')
-if (!(menuTrigger instanceof HTMLElement)) throw new Error('Menu trigger not found')
-await app.user.click(menuTrigger)
-
-// Wait for menu to open, then click item
-await waitFor(() => {
-  expect(app.queryByRole('menuitem', { name: /end workout/i })).toBeTruthy()
-})
-await app.user.click(app.getByRole('menuitem', { name: /end workout/i }))
 ```
 
 ## Query Selection Guide
 
 | Need | Query |
 |------|-------|
-| Button by label | `getByRole('button', { name: /label/i })` |
-| Link | `getByRole('link', { name: /text/i })` |
-| Heading | `getByRole('heading', { name: /title/i })` |
-| Text input | `getByRole('textbox', { name: /label/i })` |
-| Checkbox | `getByRole('checkbox', { name: /label/i })` |
-| Toggle button | `getByRole('button', { pressed: true/false })` |
-| Any text | `getByText(/partial text/i)` |
-| Menu item | `getByRole('menuitem', { name: /text/i })` |
-| Dialog title | `getByRole('heading', { name: /title/i })` |
+| Button by label | `page.getByRole('button', { name: /label/i })` |
+| Link | `page.getByRole('link', { name: /text/i })` |
+| Heading | `page.getByRole('heading', { name: /title/i })` |
+| Text input | `page.getByRole('textbox', { name: /label/i })` |
+| Checkbox | `page.getByRole('checkbox', { name: /label/i })` |
+| Menu item | `page.getByRole('menuitem', { name: /text/i })` |
+| Toggle button | `page.getByRole('button', { pressed: true })` |
+| Any text | `page.getByText(/partial text/i)` |
+| Test ID | `page.getByTestId('my-element')` |
 
-Use case-insensitive regex (`/text/i`) for resilience against text changes.
-
-### Avoiding Multiple Element Matches
-
-When text appears in multiple elements (e.g., "Finish Workout" as both dialog title and button), `queryByText` throws an error. Use specific role queries:
-
-```typescript
-// BAD: Matches both dialog title and button
-expect(app.queryByText(/finish workout/i)).toBeTruthy()
-
-// GOOD: Specifically target the heading
-expect(app.queryByRole('heading', { name: /finish workout/i })).toBeTruthy()
-
-// GOOD: Use getDialogButton for buttons within dialogs
-await app.user.click(app.getDialogButton('Finish Workout'))
-```
-
-### Type-Safe Element Selection
-
-ESLint forbids type assertions (`as`). Use helper functions with `instanceof` checks:
-
-```typescript
-// Helper function for footer navigation buttons
-function findFooterButton(selector: 'next' | 'prev'): HTMLElement {
-  const svgClass = selector === 'next' ? 'lucide-chevron-right' : 'lucide-chevron-left'
-  const buttons = [...document.querySelectorAll('footer button')]
-  for (const btn of buttons) {
-    if (btn.querySelector(`svg.${svgClass}`) && btn instanceof HTMLElement) {
-      return btn
-    }
-  }
-  throw new Error(`Footer ${selector} button not found`)
-}
-
-// Usage
-await app.user.click(findFooterButton('next'))
-```
-
-## Starting at Different Routes
-
-```typescript
-const app = await createTestApp({ initialRoute: '/workout/active' })
-```
+Use case-insensitive regex (`/text/i`) for resilience.
 
 ## Factory Usage
 
-Import factories for test data when needed:
-
+### In-Memory Factories (composable tests)
 ```typescript
-import { createExercise, createWorkout, WorkoutBuilder } from '../factories'
+import { workoutBuilder } from '@/__tests__/factories'
 
-const exercise = createExercise({ name: 'Custom Exercise' })
-const workout = new WorkoutBuilder().withExercise(exercise).build()
+const workout = workoutBuilder()
+  .withName('Leg Day')
+  .withStrengthBlock({ name: 'Squats' })
+  .build()
+```
+
+### Database Factories (integration tests)
+```typescript
+import { dbWorkoutBuilder } from '@/__tests__/factories'
+
+const workout = await dbWorkoutBuilder()
+  .withName('Test Workout')
+  .withStrengthBlock()
+  .withDuration(3600)
+  .build()
+
+await db.workouts.add(workout)
 ```
 
 See `src/__tests__/factories/` for available factories.
+
+## Common Gotchas
+
+| Problem | Solution |
+|---------|----------|
+| Dialog blocks clicks after close | Use `waitForDialogClose()` - waits for dialog AND overlay |
+| Number inputs not updating | Page objects use `setInputValueDirectly()` with native setter |
+| Animations prevent assertions | Wait for animation or use `.not.toHaveClass('opacity-0')` |
+| State leaks between tests | Always use `beforeEach(setupIntegrationTest)` |
+| Multiple elements match text | Use specific role query: `getByRole('heading', { name: /title/i })` |
+| SVG vs HTML element type | Use `ensureHTMLElement()` helper from `domHelpers.ts` |
