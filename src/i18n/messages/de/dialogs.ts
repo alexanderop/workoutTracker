@@ -19,11 +19,6 @@ export default {
       'Du hast ungespeicherte Änderungen. Bist du sicher, dass du die Seite verlassen möchtest?',
     confirmButton: 'Verlassen',
   },
-  pwaUpdate: {
-    title: 'Update verfügbar',
-    description: 'Eine neue Version von Workout Tracker ist verfügbar.',
-    updateButton: 'Jetzt aktualisieren',
-  },
   cancel: {
     title: 'Workout abbrechen?',
     description:

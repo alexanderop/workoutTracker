@@ -17,11 +17,6 @@ export default {
     description: 'You have unsaved changes. Are you sure you want to leave?',
     confirmButton: 'Leave',
   },
-  pwaUpdate: {
-    title: 'Update available',
-    description: 'A new version of Workout Tracker is ready.',
-    updateButton: 'Update now',
-  },
   cancel: {
     title: 'Cancel Workout?',
     description: 'Your workout will be deleted and cannot be recovered. All progress will be lost.',
