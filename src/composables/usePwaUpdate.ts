@@ -18,8 +18,8 @@ export function usePwaUpdate() {
     (routeName) => {
       if (!needRefresh.value) return
 
-      const isEnteringUnsafeRoute = UNSAFE_ROUTES.has(routeName)
-      if (!isEnteringUnsafeRoute) {
+      const isSafeToUpdate = !UNSAFE_ROUTES.has(routeName)
+      if (isSafeToUpdate) {
         updateServiceWorker(true)
       }
     },

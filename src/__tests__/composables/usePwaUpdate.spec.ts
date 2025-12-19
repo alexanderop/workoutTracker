@@ -26,7 +26,7 @@ function withRouterSetup<TResult>(
   composable: () => TResult,
   router: ReturnType<typeof createTestRouter>,
 ): [TResult, App] {
-  let result: TResult
+  let result!: TResult
   const app = createApp({
     setup() {
       result = composable()
@@ -35,13 +35,18 @@ function withRouterSetup<TResult>(
   })
   app.use(router)
   app.mount(document.createElement('div'))
-  // @ts-expect-error - result is assigned synchronously in setup
   return [result, app]
 }
 
 describe('usePwaUpdate', () => {
   let router: ReturnType<typeof createTestRouter>
   let app: App
+
+  async function setupPwaUpdate() {
+    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
+    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
+    app = testApp
+  }
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -56,9 +61,7 @@ describe('usePwaUpdate', () => {
   })
 
   it('does NOT call updateServiceWorker when needRefresh is false', async () => {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+    await setupPwaUpdate()
 
     mockNeedRefresh.value = false
     await router.push({ name: RouteNames.Settings })
@@ -67,9 +70,7 @@ describe('usePwaUpdate', () => {
   })
 
   it('calls updateServiceWorker on route change when needRefresh is true', async () => {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+    await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.Settings })
@@ -78,9 +79,7 @@ describe('usePwaUpdate', () => {
   })
 
   it('does NOT call updateServiceWorker when navigating TO ActiveWorkout', async () => {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+    await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.ActiveWorkout })
@@ -89,9 +88,7 @@ describe('usePwaUpdate', () => {
   })
 
   it('does NOT call updateServiceWorker when navigating TO ActiveBenchmark', async () => {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+    await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.ActiveBenchmark })
