@@ -188,7 +188,6 @@ function handleOpenChange(value: boolean) {
                 'hover:brightness-110',
                 'border-current/20',
               ]"
-              :style="{ borderColor: `color-mix(in srgb, currentColor 20%, transparent)` }"
               @click="handleSelectTimedBlock(blockType.kind)"
             >
               <div
