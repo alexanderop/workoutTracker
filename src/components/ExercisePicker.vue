@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { Muscle } from '@/types/exercises'
+import type { Equipment, Muscle } from '@/types/exercises'
 
 import { Search, X } from 'lucide-vue-next'
 import { DialogClose } from '@/components/ui/dialog'
-import { ref, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
+import ExerciseEquipmentFilter from '@/components/ExerciseEquipmentFilter.vue'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
 import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
+import ExercisePickerContent from '@/components/ExercisePickerContent.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -43,22 +45,31 @@ const open = defineModel<boolean>('open', { required: true })
 const { presentation = 'dialog', mode = 'single', showCreate = false } = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Template ref for the content component (dialog mode)
+const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
+
+// State for overlay mode (has different structure, so managed separately)
 const muscleFilter = ref<Muscle | 'all'>('all')
+const equipmentFilter = ref<Equipment | 'all'>('all')
 const { searchQuery, filteredExercises } = useExerciseSearch({
   muscleFilter,
+  equipmentFilter,
 })
 
-// Clear search and filter when picker opens
+// Reset state when picker opens
 watch(open, (isOpen) => {
   if (isOpen) {
+    // Reset dialog mode content
+    pickerContent.value?.reset()
+    // Reset overlay mode state
     searchQuery.value = ''
     muscleFilter.value = 'all'
+    equipmentFilter.value = 'all'
   }
 })
 
 function handleSelectExercise(exercise: Exercise) {
   emit('select', exercise)
-  searchQuery.value = ''
   if (mode === 'single') {
     open.value = false
   }
@@ -66,15 +77,11 @@ function handleSelectExercise(exercise: Exercise) {
 
 function handleCreateNew() {
   open.value = false
-  searchQuery.value = ''
   router.push({ name: RouteNames.CreateCustomExercise })
 }
 
 function handleOpenChange(value: boolean) {
   open.value = value
-  if (!value) {
-    searchQuery.value = ''
-  }
 }
 
 function handleClose() {
@@ -101,52 +108,17 @@ function handleClose() {
         </DialogClose>
       </DialogHeader>
 
-      <!-- Search Input -->
-      <div class="relative">
-        <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none"
-        />
-        <Input
-          v-model="searchQuery"
-          :placeholder="t('dialogs.addExercise.searchPlaceholder')"
-          class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-          autofocus
-        />
-      </div>
-
-      <!-- Filter Pills -->
-      <ExerciseMuscleFilter v-model="muscleFilter" class="-mx-4 px-4" />
-
-      <!-- Exercises List -->
-      <div class="flex-1 overflow-y-auto -mx-4 px-4">
-        <div class="space-y-1">
-          <ExerciseListItem
-            v-for="exercise in filteredExercises"
-            :key="exercise.id ?? exercise.name"
-            :exercise="exercise"
-            @select="handleSelectExercise"
-          />
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredExercises.length === 0" class="text-center py-12">
-          <Search class="size-8 text-muted-foreground/30 mx-auto mb-3" />
-          <p class="text-sm text-muted-foreground">
-            {{ t('dialogs.addExercise.noResults', { query: searchQuery }) }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Create Custom Exercise Button -->
-      <div v-if="showCreate" class="pt-4 border-t border-border flex-shrink-0">
-        <Button variant="default" class="w-full" @click="handleCreateNew">
-          {{ t('dialogs.addExercise.createCustomExercise') }}
-        </Button>
-      </div>
+      <ExercisePickerContent
+        ref="pickerContent"
+        :show-create="showCreate"
+        search-placeholder="dialogs.addExercise.searchPlaceholder"
+        @select="handleSelectExercise"
+        @create="handleCreateNew"
+      />
     </MobileDialogContent>
   </Dialog>
 
-  <!-- Overlay presentation mode -->
+  <!-- Overlay presentation mode (different structure, kept separate) -->
   <div v-else-if="open" class="absolute inset-0 bg-background flex flex-col z-20">
     <div class="p-4 border-b">
       <div class="flex items-center justify-between mb-4">
@@ -173,6 +145,7 @@ function handleClose() {
 
       <!-- Filter Pills -->
       <ExerciseMuscleFilter v-model="muscleFilter" class="mt-3" />
+      <ExerciseEquipmentFilter v-model="equipmentFilter" class="mt-2" />
     </div>
 
     <div class="flex-1 overflow-y-auto p-4">

@@ -136,6 +136,103 @@ describe('ExercisePicker', () => {
     })
   })
 
+  describe('Equipment filter', () => {
+    it('shows equipment filter pills below muscle filter', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.CreateTemplate })
+
+      // Open add block dialog
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Should show equipment filter options (use exact match to avoid matching exercise names)
+      await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
+
+      cleanup()
+    })
+
+    it('filters exercises by equipment type', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.CreateTemplate })
+
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Click bodyweight filter (exact match to avoid exercise names)
+      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+
+      // Should show bodyweight exercises (use exact match since there are many Push-up variants)
+      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+
+      // Should NOT show barbell exercises like Bench Press
+      await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('combines muscle and equipment filters with AND logic', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.CreateTemplate })
+
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Filter by Chest muscle (exact match)
+      await userEvent.click(page.getByRole('button', { name: 'Chest', exact: true }))
+
+      // Filter by Barbell equipment (exact match)
+      await userEvent.click(page.getByRole('button', { name: 'Barbell', exact: true }))
+
+      // Should show Bench Press (chest + barbell)
+      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+
+      // Should NOT show Push-ups (chest + bodyweight, not barbell)
+      await expect.element(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('resets equipment filter when dialog reopens', async () => {
+      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.CreateTemplate })
+
+      // First open - select equipment filter
+      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+
+      // Close dialog by selecting an exercise (use exact match for "Push-ups")
+      const dialog = await getByRole('dialog').element()
+      const exerciseBtn = Array.from(dialog.querySelectorAll('button')).find(
+        (btn) => btn.textContent?.trim() === '🏃Push-upsChest'
+      ) || Array.from(dialog.querySelectorAll('button')).find((btn) =>
+        btn.textContent?.includes('Push-ups') && !btn.textContent?.includes('Clap')
+      )
+      if (exerciseBtn) await userEvent.click(exerciseBtn)
+
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+
+      // Reopen dialog
+      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // Should show Bench Press again (filter reset to 'All')
+      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+
+      cleanup()
+    })
+  })
+
   // Overlay mode tests - these use the existing timed-block test patterns
   // The existing timed-block-exercise-picker.spec.ts already covers this flow
 })
