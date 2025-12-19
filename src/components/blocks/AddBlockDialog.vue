@@ -3,7 +3,7 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Muscle } from '@/types/exercises'
 import type { TimedBlockKind } from '@/types/blocks'
 
-import { Activity, Clock, Gauge, RefreshCcw, Search, X, Zap } from 'lucide-vue-next'
+import { Activity, Clock, Gauge, RefreshCcw, Search, Zap } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -12,7 +12,7 @@ import ExerciseListItem from '@/components/ExerciseListItem.vue'
 import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Empty, EmptyDescription, EmptyMedia } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -116,15 +116,9 @@ function handleOpenChange(value: boolean) {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <DialogHeader class="relative">
+      <DialogHeader>
         <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
         <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
-        <DialogClose
-          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
-        >
-          <X class="icon-md text-muted-foreground" />
-          <span class="sr-only">{{ t('common.buttons.close') }}</span>
-        </DialogClose>
       </DialogHeader>
 
       <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
