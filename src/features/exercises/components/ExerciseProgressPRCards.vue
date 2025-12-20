@@ -47,7 +47,7 @@ const prCards = computed<Array<PRCard>>(() => {
 
   if (maxVolume) {
     const volumeKg = maxVolume.volume >= 1000
-      ? `${(maxVolume.volume / 1000).toFixed(1)}t`
+      ? `${(maxVolume.volume / 1000).toFixed(1).replace(/\.0$/, '')}t`
       : `${maxVolume.volume} kg`
     cards.push({
       id: 'volume',
