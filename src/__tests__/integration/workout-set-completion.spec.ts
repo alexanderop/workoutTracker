@@ -52,13 +52,9 @@ describe('Workout Set Completion', () => {
 
       // Check that the next active row's inputs are pre-filled with previous set's values
       await expect.poll(async () => {
-        const inputs = await workout.getActiveRowInputs()
-        if (!inputs) return null
-        return {
-          weight: inputs.weight.value,
-          reps: inputs.reps.value,
-          rir: inputs.rir.value,
-        }
+        const activeSet = await workout.getActiveSet()
+        if (!activeSet) return null
+        return await activeSet.getValues()
       }).toEqual({ weight: '100', reps: '8', rir: '2' })
 
       cleanup()

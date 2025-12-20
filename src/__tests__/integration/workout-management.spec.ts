@@ -154,7 +154,7 @@ describe('Workout Management', () => {
       await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
-      common.assertDialogClosed()
+      expect(common.isDialogOpen()).toBe(false)
 
       // Verify the button shows "Start Workout" (not "Resume")
       // Button text "Start Workout" indicates fresh workout state
@@ -177,7 +177,7 @@ describe('Workout Management', () => {
       await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
-      common.assertDialogClosed()
+      expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout
       await builder.startWorkout()
@@ -214,7 +214,7 @@ describe('Workout Management', () => {
       await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
-      common.assertDialogClosed()
+      expect(common.isDialogOpen()).toBe(false)
 
       // Start workout, complete a set, go back
       await builder.startWorkout()
@@ -248,7 +248,7 @@ describe('Workout Management', () => {
       await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
-      common.assertDialogClosed()
+      expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout
       await builder.startWorkout()

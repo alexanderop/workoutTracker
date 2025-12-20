@@ -50,7 +50,7 @@ describe('Edit Exercise Dialog', () => {
     await userEvent.click(saveButton)
 
     // Verify dialog closes
-    common.assertDialogClosed()
+    expect(common.isDialogOpen()).toBe(false)
 
     // Re-open dialog and verify target reps persisted
     await userEvent.click(editButton)
@@ -84,7 +84,7 @@ describe('Edit Exercise Dialog', () => {
     // Save changes
     const saveButton = page.getByRole('button', { name: /save changes/i })
     await userEvent.click(saveButton)
-    common.assertDialogClosed()
+    expect(common.isDialogOpen()).toBe(false)
 
     // Start workout to verify set count
     await builder.startWorkout()
@@ -119,7 +119,7 @@ describe('Edit Exercise Dialog', () => {
     // Cancel instead of save
     const cancelButton = page.getByRole('button', { name: /cancel/i })
     await userEvent.click(cancelButton)
-    common.assertDialogClosed()
+    expect(common.isDialogOpen()).toBe(false)
 
     // Start workout and verify original set count (3 sets)
     await builder.startWorkout()
