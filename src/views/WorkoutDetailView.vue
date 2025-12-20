@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader } from '@/components/ui/card'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
 import WorkoutDetailStatsRow from '@/features/workout/components/WorkoutDetailStatsRow.vue'
@@ -14,6 +15,8 @@ import { formatDate } from '@/lib/formatters'
 import { getWorkoutsRepository } from '@/db'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { tryCatch } from '@/lib/tryCatch'
+import { CARDIO_ACTIVITIES } from '@/types/blocks'
+import type { DbCardioBlock } from '@/db/schema'
 
 const { t } = useI18n()
 
@@ -40,6 +43,31 @@ async function handleRedoWorkout() {
     return
   }
   await resumeWorkout()
+}
+
+function getCardioIcon(activity: string): string {
+  return CARDIO_ACTIVITIES.find((a) => a.value === activity)?.icon ?? '🏃'
+}
+
+function getCardioSummary(block: DbCardioBlock): string {
+  if (!block.result) {
+    return t('workouts.cardio.summary.notCompleted')
+  }
+
+  const minutes = Math.floor(block.result.actualDurationSeconds / 60)
+  const summary = t('workouts.cardio.summary.minutes', { count: minutes })
+
+  if (!block.result.distanceMeters) {
+    return summary
+  }
+
+  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)
+  const distanceSuffix =
+    activityInfo?.distanceUnit === 'laps'
+      ? t('workouts.cardio.summary.laps', { count: block.result.distanceMeters })
+      : `${(block.result.distanceMeters / 1000).toFixed(1)} km`
+
+  return `${summary} • ${distanceSuffix}`
 }
 </script>
 
@@ -73,17 +101,26 @@ async function handleRedoWorkout() {
             :style="{ animationDelay: `${150 + index * 50}ms` }"
           />
           <!-- Cardio block display -->
-          <div
+          <Card
             v-else-if="block.kind === 'cardio'"
-            class="rounded-lg border bg-card p-4"
+            class="overflow-hidden"
             :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
             :style="{ animationDelay: `${150 + index * 50}ms` }"
           >
-            <div class="font-semibold uppercase">{{ t('workouts.blocks.cardio') }}</div>
-            <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
-              {{ Math.floor(block.result.actualDurationSeconds / 60) }} {{ t('workouts.detail.minutesCompleted') }}
-            </div>
-          </div>
+            <CardHeader class="flex flex-row items-center gap-3">
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-xl"
+              >
+                {{ getCardioIcon(block.config.activity) }}
+              </span>
+              <h3 class="text-lg font-medium">
+                {{ t(`workouts.cardio.activities.${block.config.activity}`) }}
+                <span class="block text-sm font-normal text-muted-foreground">
+                  {{ getCardioSummary(block) }}
+                </span>
+              </h3>
+            </CardHeader>
+          </Card>
           <TimedBlockCard
             v-else
             :block="block"

@@ -118,6 +118,22 @@ export default {
   blocks: {
     cardio: 'Cardio',
   },
+  cardio: {
+    activities: {
+      running: 'Running',
+      cycling: 'Cycling',
+      rowing: 'Rowing',
+      elliptical: 'Elliptical',
+      swimming: 'Swimming',
+      stairclimber: 'Stair Climber',
+      walking: 'Walking',
+    },
+    summary: {
+      minutes: '{count} min',
+      laps: '{count} laps',
+      notCompleted: 'Not completed',
+    },
+  },
   redo: {
     button: 'Redo Workout',
     starting: 'Starting...',

@@ -117,6 +117,22 @@ export default {
   blocks: {
     cardio: 'Cardio',
   },
+  cardio: {
+    activities: {
+      running: 'Laufen',
+      cycling: 'Radfahren',
+      rowing: 'Rudern',
+      elliptical: 'Crosstrainer',
+      swimming: 'Schwimmen',
+      stairclimber: 'Treppensteiger',
+      walking: 'Gehen',
+    },
+    summary: {
+      minutes: '{count} Min.',
+      laps: '{count} Bahnen',
+      notCompleted: 'Nicht abgeschlossen',
+    },
+  },
   redo: {
     button: 'Workout wiederholen',
     starting: 'Startet...',

@@ -2,6 +2,7 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { RouteNames } from '@/router'
 
 describe('Cardio Block Workflows', () => {
   beforeEach(setupIntegrationTest)
@@ -304,6 +305,36 @@ describe('Cardio Block Workflows', () => {
       await viewDetailsButton.click()
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+
+      cleanup()
+    })
+  })
+
+  describe('Workout Detail View', () => {
+    it('shows cardio activity type and duration in workout history', async () => {
+      const { builder, workout, router, cleanup } = await createTestApp()
+
+      // Start a workout with cardio
+      await page.getByRole('button', { name: /start new workout/i }).click()
+      await builder.addCardioBlock('Running')
+      await builder.startWorkout()
+
+      // Wait for active mode
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+
+      // End workout and navigate to summary
+      await workout.endWorkoutAndNavigateToSummary()
+      expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
+
+      // Extract workout ID from URL and navigate to detail view
+      const workoutId = router.currentRoute.value.path.split('/').pop()
+      await router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
+
+      // Wait for workout detail view to load
+      await expect.element(page.getByText('Running')).toBeVisible()
+
+      // Verify summary is shown (could be duration or "Not completed" depending on whether block was finished)
+      await expect.element(page.getByText(/\d+ min|Not completed/)).toBeVisible()
 
       cleanup()
     })
