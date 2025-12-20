@@ -97,6 +97,15 @@ Vitest Browser locators with automatic retry:
 const app = await createTestApp({ initialRoute: '/workout/active' })
 ```
 
+## Page Object Design Principles
+
+Following Martin Fowler's Page Object pattern:
+
+1. **No assertions in POs** - Return predicates/values, let tests assert
+2. **Return value objects** - Not raw DOM elements (use SetRowPO instead of HTMLInputElement)
+3. **Encapsulate async** - POs handle `flushPromises()`, waits internally
+4. **Use data attributes** - Prefer `data-set-state="active"` over CSS class selectors
+
 ## Page Object Reference
 
 ### CommonPO (Base)
@@ -106,27 +115,69 @@ Shared across all page objects:
 await app.common.waitForDialog()           // Wait for dialog to appear
 await app.common.waitForDialogClose()      // Wait for dialog + overlay removal
 const button = app.common.getDialogButton('Confirm')  // Find button in dialog
-app.common.assertDialogClosed()            // Assert no dialog open
+app.common.isDialogOpen()                  // Returns boolean (use in assertions)
 await app.common.selectExercise('Squats')  // Search and select exercise
 await app.common.waitForRoute(/^\/workout/)  // Wait for route match
+
+// In tests, assert dialog state with:
+expect(app.common.isDialogOpen()).toBe(false)
 ```
 
 ### ActiveWorkoutPO
 Active workout view interactions:
 
 ```typescript
+// Wait for UI
+await app.workout.waitForTableVisible()
+
+// Set interactions via SetRowPO (preferred - abstracts DOM)
+const setRow = app.workout.getSet(0)           // Get SetRowPO by index
+const activeSet = await app.workout.getActiveSet()  // Get active SetRowPO
+const values = await setRow.getValues()        // { weight, reps, rir }
+await setRow.fill({ kg: 100, reps: 8, rir: 2 })
+await setRow.complete()
+await setRow.isCompleted()                     // Returns boolean
+
+// High-level operations
 await app.workout.fillCardSetAndComplete({ weight: '60', reps: '12', rir: '3' })
 await app.workout.endWorkoutAndNavigateToSummary()
+
+// UI queries
 const menu = await app.workout.getMenuTrigger()
 const nextBtn = await app.workout.getFooterButton('next')
 await app.workout.isSetCompleted(0)  // Check set completion
+```
+
+### SetRowPO
+Encapsulates a single set row (returned by `workout.getSet()` or `workout.getActiveSet()`):
+
+```typescript
+const setRow = app.workout.getSet(0)
+
+// Get current values as strings (not raw DOM)
+const { weight, reps, rir } = await setRow.getValues()
+
+// Fill values
+await setRow.fill({ kg: 100, reps: 8, rir: 2 })
+
+// Complete the set
+await setRow.complete()
+
+// Or fill and complete in one call
+await setRow.fillAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+// Check state (returns boolean for test assertions)
+await setRow.isCompleted()
+await setRow.isActive()
 ```
 
 ### BuilderPO
 Workout builder operations:
 
 ```typescript
-await app.builder.navigateTo()                    // Click "Start New Workout"
+await app.builder.clickStartNewWorkout()          // Click home page button
+await app.builder.navigateTo()                    // Alias for clickStartNewWorkout
+await app.builder.openAddBlockDialog()            // Open add block dialog
 await app.builder.addStrengthBlock('Squats')      // Full flow to add block
 await app.builder.addTimedBlock('AMRAP')          // Add timed block
 await app.builder.startWorkout()                  // Start the workout
@@ -227,8 +278,16 @@ it('completes a strength workout', async () => {
   await app.builder.addStrengthBlock('Squats')
   await app.builder.startWorkout()
 
-  // Complete sets
+  // Wait for table and complete sets
+  await app.workout.waitForTableVisible()
   await app.workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '2' })
+
+  // Verify prefilled values in next set using SetRowPO
+  const activeSet = await app.workout.getActiveSet()
+  const values = await activeSet!.getValues()
+  expect(values.weight).toBe('100')
+
+  // Complete remaining sets
   await app.workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '2' })
 
   // End workout
@@ -294,3 +353,6 @@ See `src/__tests__/factories/` for available factories.
 | State leaks between tests | Always use `beforeEach(setupIntegrationTest)` |
 | Multiple elements match text | Use specific role query: `getByRole('heading', { name: /title/i })` |
 | SVG vs HTML element type | Use `ensureHTMLElement()` helper from `domHelpers.ts` |
+| Need to check dialog state | Use `expect(common.isDialogOpen()).toBe(false)` - POs return predicates |
+| Accessing input values | Use `setRow.getValues()` not raw `.value` - POs return value objects |
+| CSS class selectors brittle | Components use `data-set-state` attributes for testability |

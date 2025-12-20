@@ -50,14 +50,11 @@ export class CommonPO {
   }
 
   /**
-   * Asserts that no dialog is currently open.
-   * @throws Error if a dialog element exists in the DOM
+   * Checks whether a dialog is currently open.
+   * @returns true if a dialog element exists in the DOM
    */
-  assertDialogClosed(): void {
-    const dialog = page.getByRole('dialog').query()
-    if (dialog) {
-      throw new Error('Expected dialog to be closed but it is still open')
-    }
+  isDialogOpen(): boolean {
+    return page.getByRole('dialog').query() !== null
   }
 
   /**

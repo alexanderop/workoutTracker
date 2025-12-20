@@ -100,9 +100,17 @@ function handleRirChange(value: number | undefined) {
     <TableCell class="font-medium p-1 h-10 tabular-nums">
       <div
         v-if="isActive"
+        data-set-state="active"
         class="bg-primary text-primary-foreground w-6 h-6 rounded-md flex items-center justify-center animate-in zoom-in-50 duration-200"
       >
         <Timer class="w-3 h-3" />
+      </div>
+      <div
+        v-else-if="isCompleted"
+        data-set-state="completed"
+        class="w-6 h-6 rounded-md flex items-center justify-center bg-success/20 text-success"
+      >
+        <Check class="w-3 h-3" />
       </div>
       <span v-else>{{ index + 1 }}</span>
     </TableCell>

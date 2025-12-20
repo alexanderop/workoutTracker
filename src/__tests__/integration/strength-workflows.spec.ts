@@ -19,7 +19,7 @@ describe('Strength Workflows', () => {
       await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
-      common.assertDialogClosed()
+      expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout (transition from builder to active mode)
       await builder.startWorkout()
@@ -81,13 +81,16 @@ describe('Strength Workflows', () => {
       // Fill and complete first set with specific values
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
-      // Verify prefilled values in next set using Page Object method
+      // Verify prefilled values in next set using SetRowPO
       await expect.poll(async () => {
-        const inputs = await workout.getActiveRowInputs()
-        return inputs?.weight.value
+        const activeSet = await workout.getActiveSet()
+        if (!activeSet) return null
+        const values = await activeSet.getValues()
+        return values.weight
       }).toBe('100')
-      const inputs = await workout.getActiveRowInputs()
-      expect(inputs?.reps.value).toBe('5')
+      const activeSet = await workout.getActiveSet()
+      const values = await activeSet!.getValues()
+      expect(values.reps).toBe('5')
 
       cleanup()
     })

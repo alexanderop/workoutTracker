@@ -8,9 +8,8 @@ import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import ExerciseEquipmentFilter from '@/components/ExerciseEquipmentFilter.vue'
+import ExerciseFilters from '@/components/ExerciseFilters.vue'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
-import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import ExercisePickerContent from '@/components/ExercisePickerContent.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
@@ -144,8 +143,12 @@ function handleClose() {
       </div>
 
       <!-- Filter Pills -->
-      <ExerciseMuscleFilter v-model="muscleFilter" class="mt-3" />
-      <ExerciseEquipmentFilter v-model="equipmentFilter" class="mt-2" />
+      <ExerciseFilters
+        v-model:muscle="muscleFilter"
+        v-model:equipment="equipmentFilter"
+        muscle-class="mt-3"
+        equipment-class="mt-2"
+      />
     </div>
 
     <div class="flex-1 overflow-y-auto p-4">

@@ -1,22 +1,25 @@
 <script setup lang="ts">
+import type { Equipment, Muscle } from '@/types/exercises'
+
 import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
+import ExerciseFilters from '@/components/ExerciseFilters.vue'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
-import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
-import type { Muscle } from '@/types/exercises'
 
 const router = useRouter()
 const { t } = useI18n()
 
-const activeFilter = ref<Muscle | 'all'>('all')
+const muscleFilter = ref<Muscle | 'all'>('all')
+const equipmentFilter = ref<Equipment | 'all'>('all')
 const { searchQuery, filteredExercises } = useExerciseSearch({
-  muscleFilter: activeFilter,
+  muscleFilter,
+  equipmentFilter,
   searchFields: ['name', 'muscle', 'equipment'],
 })
 
@@ -63,7 +66,12 @@ function handleCreateExercise() {
       </div>
 
       <!-- Filter Pills -->
-      <ExerciseMuscleFilter v-model="activeFilter" class="-mx-5 px-5 pb-1" />
+      <ExerciseFilters
+        v-model:muscle="muscleFilter"
+        v-model:equipment="equipmentFilter"
+        muscle-class="-mx-5 px-5"
+        equipment-class="-mx-5 px-5 mt-2 pb-1"
+      />
     </div>
 
     <!-- Exercise List -->

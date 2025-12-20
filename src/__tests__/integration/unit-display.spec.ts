@@ -17,7 +17,7 @@ describe('Unit Display', () => {
     await page.getByRole('button', { name: /add first block/i }).click()
     await common.waitForDialog()
     await userEvent.click(common.getDialogButton('Bench Press'))
-    common.assertDialogClosed()
+    expect(common.isDialogOpen()).toBe(false)
 
     // Start workout
     await builder.startWorkout()
@@ -62,7 +62,7 @@ describe('Unit Display', () => {
     await page.getByRole('button', { name: /add first block/i }).click()
     await common.waitForDialog()
     await userEvent.click(common.getDialogButton('Bench Press'))
-    common.assertDialogClosed()
+    expect(common.isDialogOpen()).toBe(false)
 
     // Start workout
     await builder.startWorkout()

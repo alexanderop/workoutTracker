@@ -29,7 +29,8 @@ describe('Workout Calendar', () => {
       const todayDate = today.getDate().toString()
 
       // Find the today indicator (primary background)
-      await expect.element(page.getByText(todayDate)).toBeVisible()
+      // Use .first() because todayDate (e.g. "20") also matches in "December 2025"
+      await expect.element(page.getByText(todayDate, { exact: true }).first()).toBeVisible()
 
       cleanup()
     })

@@ -34,15 +34,6 @@ Start by understanding the current project context, then ask questions one at a 
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
 
-## After the Design
-
-**Documentation:**
-- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
-
-**Implementation (if continuing):**
-- Ask: "Ready to set up for implementation?"
-- Use superpowers:writing-plans to create detailed implementation plan
-
 ## Key Principles
 
 - **One question at a time** - Don't overwhelm with multiple questions

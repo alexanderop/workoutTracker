@@ -4,6 +4,7 @@ import { tryCatch } from '@/lib/tryCatch'
 import type { SetInputs, SetValues, TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
+import { SetRowPO } from './SetRowPO'
 
 /**
  * Page Object for the active workout view.
@@ -57,6 +58,38 @@ export class ActiveWorkoutPO {
   }
 
   /**
+   * Gets a SetRowPO for interacting with a specific set row.
+   * Preferred over getSetRow() as it returns an abstracted Page Object.
+   * @param setIndex - Zero-based index of the set row in the table
+   * @returns SetRowPO for the specified row
+   */
+  getSet(setIndex: number): SetRowPO {
+    const rowLocator = page.getByRole('table').getByRole('row').nth(setIndex + 1)
+    return new SetRowPO(rowLocator, setIndex)
+  }
+
+  /**
+   * Gets a SetRowPO for the currently active set row.
+   * @returns SetRowPO for the active row, or null if no active row found
+   */
+  async getActiveSet(): Promise<SetRowPO | null> {
+    const rows = await page.getByRole('table').getByRole('row').all()
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i]
+      if (!row) continue
+      const cells = await row.getByRole('cell').all()
+      const firstCell = cells[0]
+      if (!firstCell) continue
+      const firstCellElement = ensureHTMLElement(await firstCell.element())
+      const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
+      if (activeIndicator) {
+        return this.getSet(i - 1) // Convert row index to set index
+      }
+    }
+    return null
+  }
+
+  /**
    * Fills in the values for a specific set row.
    * Clears existing values before typing new ones. Skips undefined values.
    * @param setIndex - Zero-based index of the set row to fill
@@ -74,6 +107,14 @@ export class ActiveWorkoutPO {
     await fillValue(inputs.kg, values.kg)
     await fillValue(inputs.reps, values.reps)
     await fillValue(inputs.rir, values.rir)
+  }
+
+  /**
+   * Waits for the workout table to be visible.
+   * Use this after starting a workout before interacting with sets.
+   */
+  async waitForTableVisible(): Promise<void> {
+    await expect.element(page.getByRole('table')).toBeVisible()
   }
 
   /**

@@ -15,10 +15,18 @@ export class BuilderPO {
   ) {}
 
   /**
+   * Clicks the "Start New Workout" button on the home page.
+   * Alias for navigateTo() with clearer intent.
+   */
+  async clickStartNewWorkout(): Promise<void> {
+    await page.getByRole('button', { name: /start new workout/i }).click()
+  }
+
+  /**
    * Navigates to the workout builder by clicking the "Start New Workout" card.
    */
   async navigateTo(): Promise<void> {
-    await page.getByRole('button', { name: /start new workout/i }).click()
+    await this.clickStartNewWorkout()
   }
 
   /**
@@ -45,7 +53,7 @@ export class BuilderPO {
     await this.navigateTo()
     await this.openAddBlockDialog()
     await userEvent.click(this.common.getDialogButton(exerciseName))
-    this.common.assertDialogClosed()
+    await this.common.waitForDialogClose()
   }
 
   /**
