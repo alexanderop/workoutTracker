@@ -1,5 +1,11 @@
-import type { SettingDefaults, SettingsRepository } from '@/db/interfaces'
+import type {
+  SettingDefaults,
+  SettingsRepository,
+  SubscribeCallback,
+  Subscription,
+} from '@/db/interfaces'
 import type { DbUserSetting, UserSettingKey } from '@/db/schema'
+import { liveQuery } from 'dexie'
 import type { WorkoutTrackerDb } from './database'
 
 /**
@@ -102,6 +108,22 @@ export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRep
 
     async resetAll(): Promise<void> {
       await db.settings.clear()
+    },
+
+    subscribeAll(callback: SubscribeCallback<SettingDefaults>): Subscription {
+      const observable = liveQuery(async () => {
+        const settings = await db.settings.toArray()
+        const result = { ...SETTING_DEFAULTS }
+        for (const setting of settings) {
+          applySetting(result, setting)
+        }
+        return result
+      })
+      const subscription = observable.subscribe({
+        next: callback,
+        error: (err) => console.error('[SettingsRepository] Live query error:', err),
+      })
+      return { unsubscribe: () => subscription.unsubscribe() }
     },
   }
 }

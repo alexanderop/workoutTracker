@@ -1,4 +1,9 @@
-import type { CreateTemplateData, TemplatesRepository } from '@/db/interfaces'
+import type {
+  CreateTemplateData,
+  SubscribeCallback,
+  Subscription,
+  TemplatesRepository,
+} from '@/db/interfaces'
 import type {
   DbActiveWorkout,
   DbBlockExercise,
@@ -12,6 +17,7 @@ import type {
   DbWorkoutTemplate,
 } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
+import { liveQuery } from 'dexie'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
 
@@ -246,34 +252,36 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     },
 
     async startFromTemplate(templateId: string): Promise<DbActiveWorkout> {
-      const template = await db.templates.get(templateId)
-      if (!template) {
-        throw createDatabaseError('NOT_FOUND', 'start workout from template')
-      }
+      return await db.transaction('rw', db.templates, async () => {
+        const template = await db.templates.get(templateId)
+        if (!template) {
+          throw createDatabaseError('NOT_FOUND', 'start workout from template')
+        }
 
-      const now = Date.now()
-      const blocks: ReadonlyArray<DbWorkoutBlock> = template.blocks.map((block, index) =>
-        templateBlockToWorkoutBlock(block, index),
-      )
+        const now = Date.now()
+        const blocks: ReadonlyArray<DbWorkoutBlock> = template.blocks.map((block, index) =>
+          templateBlockToWorkoutBlock(block, index),
+        )
 
-      const activeWorkout: DbActiveWorkout = {
-        id: 'current',
-        name: template.name,
-        blocks,
-        selectedBlockIndex: 0,
-        startedAt: now,
-        lastModifiedAt: now,
-        mode: 'builder',
-        activeSetIndex: null,
-        activeExerciseIndex: null,
-        benchmarkId: null,
-        globalTimerStartedAt: null,
-      }
+        const activeWorkout: DbActiveWorkout = {
+          id: 'current',
+          name: template.name,
+          blocks,
+          selectedBlockIndex: 0,
+          startedAt: now,
+          lastModifiedAt: now,
+          mode: 'builder',
+          activeSetIndex: null,
+          activeExerciseIndex: null,
+          benchmarkId: null,
+          globalTimerStartedAt: null,
+        }
 
-      // Update template usage tracking (template exists, so this will always succeed)
-      await db.templates.update(templateId, { lastUsedAt: now })
+        // Update template usage tracking (template exists, so this will always succeed)
+        await db.templates.update(templateId, { lastUsedAt: now })
 
-      return activeWorkout
+        return activeWorkout
+      })
     },
 
     async update(
@@ -309,6 +317,25 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
 
       await db.templates.add(template)
       return template
+    },
+
+    subscribeAll(
+      callback: SubscribeCallback<ReadonlyArray<DbWorkoutTemplate>>,
+    ): Subscription {
+      const observable = liveQuery(async () => {
+        const templates = await db.templates.toArray()
+        return templates.toSorted((a, b) => {
+          if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
+          if (a.lastUsedAt === null) return 1
+          if (b.lastUsedAt === null) return -1
+          return b.lastUsedAt - a.lastUsedAt
+        })
+      })
+      const subscription = observable.subscribe({
+        next: callback,
+        error: (err) => console.error('[TemplatesRepository] Live query error:', err),
+      })
+      return { unsubscribe: () => subscription.unsubscribe() }
     },
   }
 }

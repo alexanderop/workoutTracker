@@ -24,8 +24,7 @@ export function createDexieActiveBenchmarkWorkoutRepository(
     },
 
     async exists(): Promise<boolean> {
-      const workout = await db.activeBenchmark.get('current-benchmark')
-      return workout !== undefined
+      return (await db.activeBenchmark.count()) > 0
     },
 
     async complete(

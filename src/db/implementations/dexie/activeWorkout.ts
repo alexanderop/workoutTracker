@@ -1,5 +1,6 @@
-import type { ActiveWorkoutRepository } from '@/db/interfaces'
+import type { ActiveWorkoutRepository, SubscribeCallback, Subscription } from '@/db/interfaces'
 import type { DbActiveWorkout } from '@/db/schema'
+import { liveQuery } from 'dexie'
 import type { WorkoutTrackerDb } from './database'
 
 export function createDexieActiveWorkoutRepository(
@@ -23,8 +24,16 @@ export function createDexieActiveWorkoutRepository(
     },
 
     async exists(): Promise<boolean> {
-      const workout = await db.activeWorkout.get('current')
-      return workout !== undefined
+      return (await db.activeWorkout.count()) > 0
+    },
+
+    subscribe(callback: SubscribeCallback<DbActiveWorkout | undefined>): Subscription {
+      const observable = liveQuery(() => db.activeWorkout.get('current'))
+      const subscription = observable.subscribe({
+        next: callback,
+        error: (err) => console.error('[ActiveWorkoutRepository] Live query error:', err),
+      })
+      return { unsubscribe: () => subscription.unsubscribe() }
     },
   }
 }

@@ -15,6 +15,23 @@ import type {
 } from './schema'
 
 // ============================================
+// Subscription Types (for reactive queries)
+// ============================================
+
+/**
+ * Subscription handle returned by subscribe methods.
+ * Call unsubscribe() to stop receiving updates.
+ */
+export type Subscription = {
+  unsubscribe: () => void
+}
+
+/**
+ * Callback function for subscription updates.
+ */
+export type SubscribeCallback<T> = (data: T) => void
+
+// ============================================
 // Settings Repository
 // ============================================
 
@@ -86,6 +103,11 @@ export type SettingsRepository = {
    * Reset all settings to their defaults by clearing the database.
    */
   resetAll(): Promise<void>
+  /**
+   * Subscribe to live updates of all settings (merged with defaults).
+   * Automatically syncs across browser tabs via IndexedDB events.
+   */
+  subscribeAll(callback: SubscribeCallback<SettingDefaults>): Subscription
 }
 
 // ============================================
@@ -148,6 +170,11 @@ export type ActiveWorkoutRepository = {
    * Check if an active workout is currently in progress.
    */
   exists(): Promise<boolean>
+  /**
+   * Subscribe to live updates of the active workout.
+   * Automatically syncs across browser tabs via IndexedDB events.
+   */
+  subscribe(callback: SubscribeCallback<DbActiveWorkout | undefined>): Subscription
 }
 
 // ============================================
@@ -240,6 +267,13 @@ export type TemplatesRepository = {
    * Create a new workout template from structured data.
    */
   create(data: CreateTemplateData): Promise<DbWorkoutTemplate>
+  /**
+   * Subscribe to live updates of all templates (sorted by last used).
+   * Automatically syncs across browser tabs via IndexedDB events.
+   */
+  subscribeAll(
+    callback: SubscribeCallback<ReadonlyArray<DbWorkoutTemplate>>,
+  ): Subscription
 }
 
 // ============================================

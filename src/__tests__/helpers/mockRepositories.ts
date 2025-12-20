@@ -1,6 +1,13 @@
 import { vi } from 'vitest'
-import type { RepositoryProvider, SettingDefaults } from '@/db/interfaces'
+import type { RepositoryProvider, SettingDefaults, Subscription } from '@/db/interfaces'
 import type { DbActiveWorkout } from '@/db/schema'
+
+/**
+ * Create a mock subscription that does nothing.
+ */
+function createMockSubscription(): Subscription {
+  return { unsubscribe: vi.fn() }
+}
 
 /**
  * Create a mock DbActiveWorkout with sensible defaults.
@@ -48,6 +55,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       save: vi.fn().mockResolvedValue(undefined),
       clear: vi.fn().mockResolvedValue(undefined),
       exists: vi.fn().mockResolvedValue(false),
+      subscribe: vi.fn().mockReturnValue(createMockSubscription()),
     },
     activeBenchmark: {
       load: vi.fn().mockResolvedValue(undefined),
@@ -118,6 +126,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         lastUsedAt: null,
         tags: [],
       }),
+      subscribeAll: vi.fn().mockReturnValue(createMockSubscription()),
     },
     customExercises: {
       getAll: vi.fn().mockResolvedValue([]),
@@ -136,6 +145,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getAll: vi.fn().mockResolvedValue(defaultSettings),
       reset: vi.fn().mockResolvedValue(undefined),
       resetAll: vi.fn().mockResolvedValue(undefined),
+      subscribeAll: vi.fn().mockReturnValue(createMockSubscription()),
     },
     dataManagement: {
       exportAll: vi.fn().mockResolvedValue({

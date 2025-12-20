@@ -17,6 +17,9 @@ import { db } from './implementations/dexie/database'
 // Re-export types for consumers
 export * from './interfaces'
 
+// Re-export live query composables
+export * from './composables'
+
 // ============================================
 // Repository Getters
 // ============================================
