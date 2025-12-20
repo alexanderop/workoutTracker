@@ -102,4 +102,26 @@ export default {
     addTitle: 'Übung hinzufügen',
     searchPlaceholder: 'Übungen suchen...',
   },
+  progress: {
+    title: 'Übungsfortschritt',
+    notFound: 'Übung nicht gefunden',
+    empty: {
+      title: 'Noch keine Historie',
+      description: 'Absolviere ein Training mit {exercise}, um deinen Fortschritt zu verfolgen.',
+    },
+    pr: {
+      maxWeight: 'Max. Gewicht',
+      estimated1RM: 'Gesch. 1RM',
+      maxVolume: 'Volumen PR',
+      reps: '× {count} Wdh.',
+      fromReps: 'bei {count} Wdh.',
+      perSession: 'pro Einheit',
+    },
+    charts: {
+      maxWeight: 'Maximalgewicht',
+      estimated1RM: 'Geschätztes 1RM',
+      volume: 'Volumen',
+      sessions: '{count} Einheiten',
+    },
+  },
 } as const

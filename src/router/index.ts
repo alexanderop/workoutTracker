@@ -33,6 +33,7 @@ export const RouteNames = {
   CreateBenchmark: 'CreateBenchmark',
   BenchmarkDetail: 'BenchmarkDetail',
   LogPastWorkout: 'LogPastWorkout',
+  ExerciseProgress: 'ExerciseProgress',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -63,6 +64,12 @@ export const routes = [
     path: '/exercises',
     name: RouteNames.Exercises,
     component: TheExercisesView,
+  },
+  {
+    path: '/exercises/:id',
+    name: RouteNames.ExerciseProgress,
+    component: () => import('@/views/ExerciseProgressView.vue'),
+    props: true,
   },
   {
     path: '/settings',

@@ -4,12 +4,15 @@ import type {
   BenchmarksRepository,
   CustomExercisesRepository,
   DataManagementRepository,
+  ExerciseProgressRepository,
   SettingsRepository,
   TemplatesRepository,
   WorkoutsRepository,
 } from './interfaces'
 import { getRepositoryProvider } from './provider'
 import { tryCatch } from '@/lib/tryCatch'
+import { createDexieExerciseProgressRepository } from './implementations/dexie/exerciseProgress'
+import { db } from './implementations/dexie/database'
 
 // Re-export types for consumers
 export * from './interfaces'
@@ -48,6 +51,15 @@ export function getDataManagementRepository(): DataManagementRepository {
 
 export function getBenchmarksRepository(): BenchmarksRepository {
   return getRepositoryProvider().benchmarks
+}
+
+let exerciseProgressRepository: ExerciseProgressRepository | null = null
+
+export function getExerciseProgressRepository(): ExerciseProgressRepository {
+  if (!exerciseProgressRepository) {
+    exerciseProgressRepository = createDexieExerciseProgressRepository(db)
+  }
+  return exerciseProgressRepository
 }
 
 // ============================================

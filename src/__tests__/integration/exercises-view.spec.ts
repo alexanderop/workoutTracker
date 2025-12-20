@@ -13,6 +13,24 @@ describe('ExercisesView', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
+  describe('Exercise progress navigation', () => {
+    it('shows exercise name in header when viewing progress for pre-populated exercise', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.Exercises })
+
+      // Click on a pre-populated exercise (Bench Press)
+      await userEvent.click(page.getByText('Bench Press', { exact: true }))
+
+      // Should navigate to exercise progress and show the exercise name in header
+      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+
+      // Should NOT show "Unknown Exercise"
+      await expect.element(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
+
+      cleanup()
+    })
+  })
+
   describe('Equipment filter', () => {
     it('shows equipment filter pills below muscle filter', async () => {
       const { navigateTo, cleanup } = await createTestApp()
