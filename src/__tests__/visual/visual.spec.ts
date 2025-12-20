@@ -122,7 +122,7 @@ describe('Visual Regression', () => {
       const { router, cleanup } = await createTestApp()
 
       // Navigate to exercise progress view
-      await router.push({ name: RouteNames.ExerciseProgress, params: { exerciseId } })
+      await router.push({ name: RouteNames.ExerciseProgress, params: { id: exerciseId } })
 
       // Wait for charts to render (loading -> success state)
       await expect.element(page.getByText(/estimated 1rm/i)).toBeVisible()
