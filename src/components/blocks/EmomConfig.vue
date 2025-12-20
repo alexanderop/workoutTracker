@@ -1,15 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 
 const { t } = useI18n()
 
@@ -21,6 +16,11 @@ export type EmomConfigModel = {
 const model = defineModel<EmomConfigModel>({ required: true })
 
 const presets = [8, 10, 12, 15, 20] as const
+
+const rotationOptions = computed(() => [
+  { value: 'full-round' as const, label: t('dialogs.emomConfig.fullRound') },
+  { value: 'each-minute' as const, label: t('dialogs.emomConfig.onePerMinute') },
+])
 </script>
 
 <template>
@@ -43,15 +43,7 @@ const presets = [8, 10, 12, 15, 20] as const
 
     <div class="space-y-2">
       <Label>{{ t('dialogs.emomConfig.rotation') }}</Label>
-      <Select v-model="model.rotation">
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="full-round">{{ t('dialogs.emomConfig.fullRound') }}</SelectItem>
-          <SelectItem value="each-minute">{{ t('dialogs.emomConfig.onePerMinute') }}</SelectItem>
-        </SelectContent>
-      </Select>
+      <SegmentedControl v-model="model.rotation" :options="rotationOptions" />
     </div>
   </div>
 </template>

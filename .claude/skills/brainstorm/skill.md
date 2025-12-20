@@ -31,8 +31,16 @@ Start by understanding the current project context, then ask questions one at a 
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
 - Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
+- Cover: architecture, components, data flow, error handling
+- For each section, briefly ask: "How would we test this?"
 - Be ready to go back and clarify if something doesn't make sense
+
+**Test thinking prompts (while presenting each section):**
+- What user flow does this enable?
+- What's the happy path test?
+- Any edge cases worth testing?
+- Existing Page Objects to use or extend?
+- Test data/factories needed?
 
 ## Key Principles
 
@@ -41,4 +49,5 @@ Start by understanding the current project context, then ask questions one at a 
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design in sections, validate each
+- **Testability check** - For each design section, briefly consider how it would be tested
 - **Be flexible** - Go back and clarify when something doesn't make sense

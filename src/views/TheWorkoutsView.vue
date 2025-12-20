@@ -1,17 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TabsContent } from '@/components/ui/tabs'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 import TemplateListCard from '@/components/TemplateListCard.vue'
 import BenchmarkListCard from '@/features/benchmarks/components/BenchmarkListCard.vue'
 import { useWorkoutsList } from '@/composables/useWorkoutsList'
 import { useBenchmarksList } from '@/composables/useBenchmarksList'
 
 const { t } = useI18n()
+
+const tabOptions = computed(() => [
+  { value: 'templates' as const, label: t('workouts.list.templates') },
+  { value: 'benchmarks' as const, label: t('workouts.list.benchmarks') },
+])
 const router = useRouter()
 const { templates, isLoading, formatTemplateDate } = useWorkoutsList()
 const { benchmarks, personalBests, formatBenchmarkType } = useBenchmarksList()
@@ -48,12 +55,7 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
     </div>
 
     <!-- Tabs -->
-    <Tabs v-else default-value="templates" class="flex flex-1 flex-col">
-      <TabsList class="mb-6 grid w-full grid-cols-2">
-        <TabsTrigger value="templates">{{ t('workouts.list.templates') }}</TabsTrigger>
-        <TabsTrigger value="benchmarks">{{ t('workouts.list.benchmarks') }}</TabsTrigger>
-      </TabsList>
-
+    <SegmentedControl v-else :options="tabOptions" default-value="templates" list-class="mb-6">
       <!-- Templates Tab -->
       <TabsContent value="templates" class="flex flex-1 flex-col">
         <div class="mb-4">
@@ -114,6 +116,6 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
           </Empty>
         </div>
       </TabsContent>
-    </Tabs>
+    </SegmentedControl>
   </div>
 </template>
