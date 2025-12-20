@@ -103,7 +103,7 @@ importers:
         specifier: ^6.0.1
         version: 6.0.2(vite@7.2.7(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.24(typescript@5.9.3))
       '@vitest/browser':
-        specifier: 4.0.15
+        specifier: ^4.0.15
         version: 4.0.15(vite@7.2.7(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vitest@4.0.15)
       '@vitest/browser-playwright':
         specifier: ^4.0.15
@@ -115,7 +115,7 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.15)
       '@vitest/ui':
-        specifier: 4.0.15
+        specifier: ^4.0.15
         version: 4.0.15(vitest@4.0.15)
       '@vue/eslint-config-prettier':
         specifier: ^10.2.0
