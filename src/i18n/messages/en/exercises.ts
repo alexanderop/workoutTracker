@@ -102,4 +102,26 @@ export default {
     addTitle: 'Add Exercise',
     searchPlaceholder: 'Search exercises...',
   },
+  progress: {
+    title: 'Exercise Progress',
+    notFound: 'Exercise not found',
+    empty: {
+      title: 'No history yet',
+      description: 'Complete a workout with {exercise} to start tracking your progress.',
+    },
+    pr: {
+      maxWeight: 'Max Weight',
+      estimated1RM: 'Est. 1RM',
+      maxVolume: 'Volume PR',
+      reps: '× {count} reps',
+      fromReps: 'from {count} reps',
+      perSession: 'per session',
+    },
+    charts: {
+      maxWeight: 'Max Weight',
+      estimated1RM: 'Estimated 1RM',
+      volume: 'Volume',
+      sessions: '{count} sessions',
+    },
+  },
 } as const

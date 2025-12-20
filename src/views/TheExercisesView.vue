@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Equipment, Muscle } from '@/types/exercises'
+import type { Exercise } from '@/composables/useExerciseSearch'
 
 import { Plus, Search, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
@@ -32,6 +33,11 @@ function clearSearch() {
 function handleCreateExercise() {
   router.push({ name: RouteNames.CreateCustomExercise })
 }
+
+function handleExerciseSelect(exercise: Exercise) {
+  if (!exercise.id) return
+  router.push({ name: RouteNames.ExerciseProgress, params: { id: exercise.id } })
+}
 </script>
 
 <template>
@@ -49,19 +55,22 @@ function handleCreateExercise() {
       <!-- Search Input -->
       <div class="relative mb-4">
         <Search
+          aria-hidden="true"
           class="absolute left-4 top-1/2 -translate-y-1/2 icon-md text-muted-foreground/60 pointer-events-none transition-colors"
         />
         <Input
           v-model="searchQuery"
           :placeholder="t('exercises.searchPlaceholder')"
+          :aria-label="t('common.aria.searchExercises')"
           class="w-full pl-12 pr-10 h-14 text-base rounded-2xl bg-muted/40 border-transparent placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-200"
         />
         <button
           v-if="searchQuery"
+          :aria-label="t('common.aria.clearSearch')"
           class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted/80 text-muted-foreground/60 hover:text-foreground transition-colors"
           @click="clearSearch"
         >
-          <X class="icon-sm" />
+          <X aria-hidden="true" class="icon-sm" />
         </button>
       </div>
 
@@ -81,14 +90,14 @@ function handleCreateExercise() {
           v-for="exercise in filteredExercises"
           :key="exercise.id ?? exercise.name"
           :exercise="exercise"
-          @select="() => {}"
+          @select="handleExerciseSelect"
         />
       </div>
 
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center py-20 text-center">
         <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-          <Search class="size-7 text-muted-foreground/40" />
+          <Search aria-hidden="true" class="size-7 text-muted-foreground/40" />
         </div>
         <p class="text-base font-medium text-foreground/80 mb-1">
           {{ t('exercises.empty.title') }}

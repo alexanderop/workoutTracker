@@ -1,5 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { db } from '@/db'
+import { RouteNames } from '@/router'
+import { dbWorkoutBuilder } from '../factories'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -75,6 +78,59 @@ describe('Visual Regression', () => {
       const { common, cleanup } = await createTestApp()
       await common.navigateToWorkouts()
       await expect(page.getByTestId('app')).toMatchScreenshot('workouts')
+      cleanup()
+    })
+  })
+
+  describe('Exercise Progress Charts', () => {
+    it('shows charts when user has 2 workouts with improvement', async () => {
+      const exerciseId = 'bench-press-test'
+      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+      const today = Date.now()
+
+      // First workout - one week ago, 60kg
+      const workout1 = dbWorkoutBuilder()
+        .withName('Week 1 Workout')
+        .withTimestamps(oneWeekAgo, oneWeekAgo + 3600000)
+        .withExerciseAndSets(
+          [
+            { kg: '60', reps: '8', status: 'completed' },
+            { kg: '60', reps: '8', status: 'completed' },
+            { kg: '60', reps: '6', status: 'completed' },
+          ],
+          { exerciseDefinitionId: exerciseId, name: 'Bench Press' },
+        )
+        .build()
+
+      // Second workout - today, improved to 65kg
+      const workout2 = dbWorkoutBuilder()
+        .withName('Week 2 Workout')
+        .withTimestamps(today - 3600000, today)
+        .withExerciseAndSets(
+          [
+            { kg: '65', reps: '8', status: 'completed' },
+            { kg: '65', reps: '8', status: 'completed' },
+            { kg: '65', reps: '7', status: 'completed' },
+          ],
+          { exerciseDefinitionId: exerciseId, name: 'Bench Press' },
+        )
+        .build()
+
+      await db.workouts.add(workout1)
+      await db.workouts.add(workout2)
+
+      const { router, cleanup } = await createTestApp()
+
+      // Navigate to exercise progress view
+      await router.push({ name: RouteNames.ExerciseProgress, params: { id: exerciseId } })
+
+      // Wait for charts to render (loading -> success state)
+      await expect.element(page.getByText(/estimated 1rm/i)).toBeVisible()
+
+      // Allow chart animations to settle
+      await new Promise((r) => setTimeout(r, 300))
+
+      await expect(page.getByTestId('app')).toMatchScreenshot('exercise-progress-charts')
       cleanup()
     })
   })

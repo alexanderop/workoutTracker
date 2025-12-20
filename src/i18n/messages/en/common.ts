@@ -58,6 +58,8 @@ export default {
     decrementByAmount: 'Decrease by {amount}',
     statusColumn: 'Status',
     actionsColumn: 'Actions',
+    searchExercises: 'Search exercises',
+    clearSearch: 'Clear search',
   },
   states: {
     loading: 'Loading...',

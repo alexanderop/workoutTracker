@@ -387,3 +387,63 @@ export type UserSettingKey = DbUserSetting['key']
 export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlock {
   return block.kind === 'strength'
 }
+
+// ============================================
+// Exercise Progress Types
+// ============================================
+
+/**
+ * Performance data for a single set within an exercise session.
+ */
+export type SetPerformance = {
+  kg: number
+  reps: number
+  rir: number | null
+  estimated1RM: number
+}
+
+/**
+ * Exercise performance data from a single workout session.
+ */
+export type ExerciseSession = {
+  workoutId: string
+  workoutName: string
+  date: Date
+  sets: ReadonlyArray<SetPerformance>
+  totalVolume: number
+  maxWeight: number
+  totalReps: number
+}
+
+/**
+ * Aggregated statistics for an exercise across all sessions.
+ */
+export type ExerciseStats = {
+  exerciseDefinitionId: string
+  exerciseName: string
+  totalSessions: number
+  lastPerformed: Date | null
+  firstPerformed: Date | null
+  avgVolumePerSession: number
+  avgFrequencyDays: number | null
+}
+
+/**
+ * Personal record data for an exercise.
+ */
+export type PersonalRecords = {
+  maxWeight: { kg: number; date: Date; reps: number } | null
+  estimated1RM: { kg: number; date: Date; fromReps: number } | null
+  maxVolume: { volume: number; date: Date } | null
+  maxRepsAtWeight: ReadonlyMap<number, { reps: number; date: Date }>
+}
+
+/**
+ * Exercise with workout count for selection in progress views.
+ */
+export type PerformedExercise = {
+  exerciseDefinitionId: string
+  name: string
+  workoutCount: number
+  lastPerformed: Date
+}

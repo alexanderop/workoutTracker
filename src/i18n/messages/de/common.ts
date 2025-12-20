@@ -56,6 +56,8 @@ export default {
     decrementByAmount: 'Um {amount} verringern',
     statusColumn: 'Status',
     actionsColumn: 'Aktionen',
+    searchExercises: 'Übungen suchen',
+    clearSearch: 'Suche löschen',
   },
   states: {
     loading: 'Lädt...',

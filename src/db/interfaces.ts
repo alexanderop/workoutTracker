@@ -7,6 +7,10 @@ import type {
   DbTemplateBlock,
   DbUserSetting,
   DbWorkoutTemplate,
+  ExerciseSession,
+  ExerciseStats,
+  PerformedExercise,
+  PersonalRecords,
   UserSettingKey,
 } from './schema'
 
@@ -328,10 +332,6 @@ export type DataManagementRepository = {
 }
 
 // ============================================
-// Repository Provider (All Repositories)
-// ============================================
-
-// ============================================
 // Benchmarks Repository
 // ============================================
 
@@ -395,6 +395,48 @@ export type BenchmarkAttempt = {
   completedAt: number // timestamp (ms)
   completionTime: number // seconds
   isPersonalBest: boolean // true if this is the PB
+}
+
+// ============================================
+// Exercise Progress Repository
+// ============================================
+
+/**
+ * Options for filtering exercise history queries.
+ */
+export type GetExerciseHistoryOptions = {
+  limit?: number
+  offset?: number
+  dateRange?: { from: Date; to: Date }
+}
+
+/**
+ * Repository for querying exercise progress data from completed workouts.
+ * Calculates metrics on-demand from historical workout data.
+ */
+export type ExerciseProgressRepository = {
+  /**
+   * Get all workout sessions containing a specific exercise, sorted by date (newest first).
+   */
+  getExerciseHistory(
+    exerciseDefinitionId: string,
+    options?: GetExerciseHistoryOptions,
+  ): Promise<ReadonlyArray<ExerciseSession>>
+
+  /**
+   * Get aggregated statistics for an exercise across all sessions.
+   */
+  getExerciseStats(exerciseDefinitionId: string): Promise<ExerciseStats>
+
+  /**
+   * Get personal records for an exercise (max weight, estimated 1RM, volume PR).
+   */
+  getPersonalRecords(exerciseDefinitionId: string): Promise<PersonalRecords>
+
+  /**
+   * Get all exercises the user has performed, sorted by workout count (most frequent first).
+   */
+  getPerformedExercises(): Promise<ReadonlyArray<PerformedExercise>>
 }
 
 // ============================================
