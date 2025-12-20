@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type {
+  Equipment,
+  ExerciseType,
+  Metrics,
+  MovementPattern,
+  Muscle,
+  PatternColor,
+} from '@/types/exercises'
 import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -8,14 +15,32 @@ import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettin
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
 import {
+  COLOR_OPTIONS,
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
   MUSCLE_OPTIONS,
+  PATTERN_OPTIONS,
   TYPE_OPTIONS,
 } from '@/features/exercises/data/exerciseOptions'
-import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
+import {
+  COLOR_LABELS,
+  EQUIPMENT_LABELS,
+  METRICS_LABELS,
+  MUSCLE_LABELS,
+  PATTERN_LABELS,
+  TYPE_LABELS,
+} from '@/lib/exerciseLabels'
+import { PATTERN_COLOR_CLASSES } from '@/lib/patternIcons'
 import { useExercisesStore } from '@/stores/exercises'
 
 const router = useRouter()
@@ -32,6 +57,8 @@ type ModalState =
   | { kind: 'muscle' }
   | { kind: 'type' }
   | { kind: 'metrics' }
+  | { kind: 'pattern' }
+  | { kind: 'color' }
 
 const modalState = ref<ModalState>({ kind: 'closed' })
 
@@ -56,6 +83,18 @@ const showTypeModal = computed({
 })
 const showMetricsModal = computed({
   get: () => modalState.value.kind === 'metrics',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
+const showPatternModal = computed({
+  get: () => modalState.value.kind === 'pattern',
+  set: (val) => {
+    if (!val) modalState.value = { kind: 'closed' }
+  },
+})
+const showColorModal = computed({
+  get: () => modalState.value.kind === 'color',
   set: (val) => {
     if (!val) modalState.value = { kind: 'closed' }
   },
@@ -96,6 +135,15 @@ function handleTypeSelect(selected: ExerciseType) {
 
 function handleMetricsSelect(selected: Metrics) {
   form.value.metrics = selected
+}
+
+function handlePatternSelect(selected: MovementPattern) {
+  form.value.pattern = selected
+}
+
+function handleColorSelect(selected: PatternColor) {
+  form.value.color = selected
+  modalState.value = { kind: 'closed' }
 }
 
 async function handleSave() {
@@ -161,6 +209,22 @@ async function handleSave() {
           :value="METRICS_LABELS[form.metrics]"
           @click="openModal('metrics')"
         />
+        <ExerciseSettingsItem
+          :label="t('exercises.labels.pattern')"
+          :value="form.pattern ? PATTERN_LABELS[form.pattern] : ''"
+          @click="openModal('pattern')"
+        />
+        <ExerciseSettingsItem
+          :label="t('exercises.labels.color')"
+          :value="form.color ? COLOR_LABELS[form.color] : ''"
+          @click="openModal('color')"
+        >
+          <template v-if="form.color" #prefix>
+            <span
+              :class="[PATTERN_COLOR_CLASSES[form.color].bg, 'size-4 rounded-full']"
+            />
+          </template>
+        </ExerciseSettingsItem>
       </div>
     </div>
 
@@ -204,5 +268,44 @@ async function handleSave() {
       :selected="form.metrics"
       @select="handleMetricsSelect"
     />
+
+    <ExerciseSelectorDialog
+      v-model:open="showPatternModal"
+      :title="t('exercises.selectors.pattern.title')"
+      :description="t('exercises.selectors.pattern.description')"
+      :options="PATTERN_OPTIONS"
+      :selected="form.pattern"
+      @select="handlePatternSelect"
+    />
+
+    <!-- Color Picker Dialog using ToggleGroup -->
+    <Dialog v-model:open="showColorModal">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{{ t('exercises.selectors.color.title') }}</DialogTitle>
+          <DialogDescription>{{ t('exercises.selectors.color.description') }}</DialogDescription>
+        </DialogHeader>
+        <ToggleGroup
+          type="single"
+          :model-value="form.color"
+          class="flex flex-wrap gap-3 justify-center py-4"
+          @update:model-value="(val) => val && typeof val === 'string' && handleColorSelect(val as PatternColor)"
+        >
+          <ToggleGroupItem
+            v-for="color in COLOR_OPTIONS"
+            :key="color.value"
+            :value="color.value"
+            :aria-label="color.label"
+            :class="[
+              'size-10 rounded-full p-0 ring-2 ring-offset-2 ring-offset-background transition-all',
+              PATTERN_COLOR_CLASSES[color.value].bg,
+              form.color === color.value
+                ? PATTERN_COLOR_CLASSES[color.value].ring
+                : 'ring-transparent hover:ring-muted-foreground/30',
+            ]"
+          />
+        </ToggleGroup>
+      </DialogContent>
+    </Dialog>
   </PageLayout>
 </template>

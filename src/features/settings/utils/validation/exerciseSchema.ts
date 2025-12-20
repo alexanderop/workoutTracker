@@ -4,7 +4,9 @@ import {
   equipmentSchema,
   exerciseTypeSchema,
   metricsSchema,
+  movementPatternSchema,
   muscleSchema,
+  patternColorSchema,
   safeIdSchema,
   safeStringSchema,
   timestampSchema,
@@ -23,6 +25,8 @@ export const dbCustomExerciseSchema = z
     muscle: muscleSchema.nullable(),
     type: exerciseTypeSchema,
     metrics: metricsSchema,
+    pattern: movementPatternSchema.nullable(),
+    color: patternColorSchema.nullable(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })

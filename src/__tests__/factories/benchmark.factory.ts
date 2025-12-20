@@ -17,6 +17,8 @@ export function createDbBenchmarkExercise(
     name: 'Thrusters',
     prescribedReps: 21,
     thumbnail: '🏋️',
+    pattern: null,
+    color: null,
     ...overrides,
   }
 }

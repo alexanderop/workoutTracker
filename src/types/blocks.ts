@@ -7,6 +7,8 @@
 
 import { z } from 'zod'
 
+import type { MovementPattern, PatternColor } from '@/types/exercises'
+
 // ============================================
 // Set Types (used by strength blocks)
 // ============================================
@@ -36,6 +38,8 @@ export type BlockExercise = {
   load: string | null // "24kg", "bodyweight", "light band"
   thumbnail: string
   equipment?: string // For deriving MDI icon
+  pattern?: MovementPattern
+  color?: PatternColor
 }
 
 // ============================================
@@ -181,6 +185,8 @@ export type StrengthBlock = {
   targetReps: number
   sets: Array<WorkoutSet>
   thumbnail: string
+  pattern?: MovementPattern
+  color?: PatternColor
 }
 
 export type EmomBlock = {

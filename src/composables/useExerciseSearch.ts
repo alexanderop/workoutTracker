@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { PopularExercise } from '@/data/popularExercises'
-import type { Equipment, Muscle } from '@/types/exercises'
+import type { Equipment, MovementPattern, Muscle, PatternColor } from '@/types/exercises'
 
 import { computed, ref } from 'vue'
 import { useExercisesStore } from '@/stores/exercises'
@@ -16,6 +16,8 @@ export type Exercise = {
   muscle?: PopularExercise['muscle']
   type: PopularExercise['type']
   metrics: PopularExercise['metrics']
+  pattern?: MovementPattern
+  color?: PatternColor
   id?: string
   createdAt?: number
 }

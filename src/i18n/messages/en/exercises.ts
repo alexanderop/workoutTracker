@@ -18,6 +18,8 @@ export default {
     type: 'Type',
     exerciseType: 'Exercise Type',
     metrics: 'Metrics',
+    pattern: 'Movement Pattern',
+    color: 'Color',
   },
   empty: {
     title: 'No exercises found',
@@ -49,6 +51,14 @@ export default {
     metrics: {
       title: 'Select Tracking Method',
       description: 'Choose what data will be tracked when performing this exercise',
+    },
+    pattern: {
+      title: 'Select Movement Pattern',
+      description: 'Choose the primary movement pattern for this exercise',
+    },
+    color: {
+      title: 'Select Color',
+      description: 'Choose a color to identify this exercise',
     },
   },
   equipment: {
@@ -96,6 +106,32 @@ export default {
     duration: 'Time-based (e.g., Planks for 60 seconds)',
     'distance-duration': 'Cardio (e.g., 5km in 30 mins)',
     'weight-distance': 'Combined (e.g., Sled Push 100m)',
+  },
+  pattern: {
+    'push-horizontal': 'Push (Horizontal)',
+    'push-vertical': 'Push (Vertical)',
+    'pull-horizontal': 'Pull (Horizontal)',
+    'pull-vertical': 'Pull (Vertical)',
+    squat: 'Squat',
+    hinge: 'Hinge',
+    carry: 'Carry',
+    rotation: 'Rotation',
+    stability: 'Stability',
+    isolation: 'Isolation',
+  },
+  color: {
+    red: 'Red',
+    orange: 'Orange',
+    amber: 'Amber',
+    green: 'Green',
+    emerald: 'Emerald',
+    cyan: 'Cyan',
+    blue: 'Blue',
+    indigo: 'Indigo',
+    purple: 'Purple',
+    pink: 'Pink',
+    rose: 'Rose',
+    slate: 'Slate',
   },
   picker: {
     selectTitle: 'Select Exercise',

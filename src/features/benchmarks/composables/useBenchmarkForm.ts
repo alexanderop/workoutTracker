@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbBenchmark } from '@/db/schema'
 import type { BenchmarkType } from '@/types/benchmark'
+import type { MovementPattern, PatternColor } from '@/types/exercises'
 
 export type BenchmarkFormExercise = {
   exerciseDefinitionId: string | null
@@ -9,6 +10,8 @@ export type BenchmarkFormExercise = {
   prescribedReps: number
   thumbnail: string
   equipment?: string
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 type BenchmarkFormState = {
@@ -46,6 +49,8 @@ export function useBenchmarkForm() {
       prescribedReps: reps,
       thumbnail: exercise.icon,
       equipment: exercise.equipment,
+      pattern: exercise.pattern ?? null,
+      color: exercise.color ?? null,
     })
   }
 
@@ -82,6 +87,8 @@ export function useBenchmarkForm() {
         name: ex.name,
         prescribedReps: ex.prescribedReps,
         thumbnail: ex.thumbnail,
+        pattern: ex.pattern,
+        color: ex.color,
       })),
     }
   }

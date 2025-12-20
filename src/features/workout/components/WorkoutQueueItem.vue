@@ -12,6 +12,7 @@ import {
   isTimedBlock,
 } from '@/types/blocks'
 import { getBlockIcon } from '@/lib/equipmentIcons'
+import { getPatternColorClasses } from '@/lib/patternIcons'
 
 type Props = {
   block: WorkoutBlock
@@ -27,7 +28,13 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const blockColors = computed(() => BLOCK_COLORS[block.kind])
+const blockColors = computed(() => {
+  if (isStrengthBlock(block)) {
+    const patternClasses = getPatternColorClasses(block.pattern, block.color)
+    return { bg: patternClasses.bg, text: 'text-white' }
+  }
+  return BLOCK_COLORS[block.kind]
+})
 const blockIcon = computed(() => getBlockIcon(block))
 
 const blockName = computed(() => {
@@ -86,7 +93,7 @@ const isCompleted = computed(() => status === 'completed')
         cn('flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center', blockColors.bg)
       "
     >
-      <component :is="blockIcon" class="size-5" />
+      <component :is="blockIcon" :class="['size-5', blockColors.text]" />
     </div>
 
     <!-- Block info -->

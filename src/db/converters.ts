@@ -79,6 +79,8 @@ function blockExerciseToDb(exercise: Readonly<BlockExercise>): DbBlockExercise {
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
     thumbnail: exercise.thumbnail,
+    pattern: exercise.pattern ?? null,
+    color: exercise.color ?? null,
   }
 }
 
@@ -89,6 +91,8 @@ function dbToBlockExercise(dbExercise: Readonly<DbBlockExercise>): BlockExercise
     prescribedReps: dbExercise.prescribedReps,
     load: dbExercise.load,
     thumbnail: dbExercise.thumbnail,
+    pattern: dbExercise.pattern ?? undefined,
+    color: dbExercise.color ?? undefined,
   }
 }
 
@@ -208,6 +212,8 @@ function strengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: number): 
     thumbnail: block.thumbnail,
     sets: block.sets.map(setToDb),
     orderIndex,
+    pattern: block.pattern ?? null,
+    color: block.color ?? null,
   }
 }
 
@@ -221,6 +227,8 @@ function dbToStrengthBlock(dbBlock: Readonly<DbStrengthBlock>, index: number): S
     targetReps: dbBlock.targetReps,
     thumbnail: dbBlock.thumbnail,
     sets: dbBlock.sets.map(dbToSet),
+    pattern: dbBlock.pattern ?? undefined,
+    color: dbBlock.color ?? undefined,
   }
 }
 
@@ -483,6 +491,8 @@ export function dbToCustomExercise(dbExercise: Readonly<DbCustomExercise>): Cust
     muscle: dbExercise.muscle ?? undefined,
     type: dbExercise.type,
     metrics: dbExercise.metrics,
+    pattern: dbExercise.pattern ?? undefined,
+    color: dbExercise.color ?? undefined,
     createdAt: dbExercise.createdAt,
   }
 }
@@ -502,6 +512,8 @@ export function createDbCustomExercise(
     muscle: exercise.muscle ?? null,
     type: exercise.type,
     metrics: exercise.metrics,
+    pattern: exercise.pattern ?? null,
+    color: exercise.color ?? null,
     createdAt: now,
     updatedAt: now,
   }

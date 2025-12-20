@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { DbTemplateBlock } from '@/db/schema'
 import { BLOCK_COLORS, BLOCK_LABELS, CARDIO_ACTIVITIES } from '@/types/blocks'
 import { getCardioActivityIcon, getEquipmentIcon } from '@/lib/equipmentIcons'
+import { getPatternColorClasses } from '@/lib/patternIcons'
 import MdiTimer from '~icons/mdi/timer'
 
 const { t } = useI18n()
@@ -92,7 +93,13 @@ function formatCardioSubtitle(config: CardioConfig): string {
 
 const blockSubtitle = computed(() => getBlockSubtitle(block))
 
-const blockColors = computed(() => BLOCK_COLORS[block.kind])
+const blockColors = computed(() => {
+  if (block.kind === 'strength') {
+    const patternClasses = getPatternColorClasses(block.pattern, block.color)
+    return { bg: patternClasses.bg, text: 'text-white' }
+  }
+  return BLOCK_COLORS[block.kind]
+})
 
 const setCount = computed(() => {
   if (block.kind === 'strength') {
@@ -135,7 +142,7 @@ function decrementSetCount(): void {
         role="img"
         :aria-label="blockTitle"
       >
-        <component :is="blockIcon" class="size-6" />
+        <component :is="blockIcon" :class="['size-6', blockColors.text]" />
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">

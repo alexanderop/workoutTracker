@@ -3,6 +3,7 @@ import type { Component } from 'vue'
 import type { CardioActivity, WorkoutBlock } from '@/types/blocks'
 import type { Equipment } from '@/types/exercises'
 
+
 import MdiBicycle from '~icons/mdi/bicycle'
 import MdiBarbell from '~icons/mdi/barbell'
 import MdiCableData from '~icons/mdi/cable-data'

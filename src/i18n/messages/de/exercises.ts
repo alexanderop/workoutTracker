@@ -18,6 +18,8 @@ export default {
     type: 'Typ',
     exerciseType: 'Übungstyp',
     metrics: 'Metriken',
+    pattern: 'Bewegungsmuster',
+    color: 'Farbe',
   },
   empty: {
     title: 'Keine Übungen gefunden',
@@ -49,6 +51,14 @@ export default {
     metrics: {
       title: 'Tracking-Methode auswählen',
       description: 'Wähle welche Daten bei dieser Übung erfasst werden',
+    },
+    pattern: {
+      title: 'Bewegungsmuster auswählen',
+      description: 'Wähle das primäre Bewegungsmuster für diese Übung',
+    },
+    color: {
+      title: 'Farbe auswählen',
+      description: 'Wähle eine Farbe zur Identifikation dieser Übung',
     },
   },
   equipment: {
@@ -96,6 +106,32 @@ export default {
     duration: 'Zeitbasiert (z.B. Planks für 60 Sekunden)',
     'distance-duration': 'Kardio (z.B. 5km in 30 Min.)',
     'weight-distance': 'Kombiniert (z.B. Schlitten-Push 100m)',
+  },
+  pattern: {
+    'push-horizontal': 'Drücken (Horizontal)',
+    'push-vertical': 'Drücken (Vertikal)',
+    'pull-horizontal': 'Ziehen (Horizontal)',
+    'pull-vertical': 'Ziehen (Vertikal)',
+    squat: 'Kniebeuge',
+    hinge: 'Hüftbeugung',
+    carry: 'Tragen',
+    rotation: 'Rotation',
+    stability: 'Stabilität',
+    isolation: 'Isolation',
+  },
+  color: {
+    red: 'Rot',
+    orange: 'Orange',
+    amber: 'Bernstein',
+    green: 'Grün',
+    emerald: 'Smaragd',
+    cyan: 'Cyan',
+    blue: 'Blau',
+    indigo: 'Indigo',
+    purple: 'Lila',
+    pink: 'Rosa',
+    rose: 'Rosé',
+    slate: 'Schiefer',
   },
   picker: {
     selectTitle: 'Übung auswählen',

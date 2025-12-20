@@ -33,6 +33,8 @@ function templateExercisesToWorkoutExercises(
     prescribedReps: ex.prescribedReps,
     load: ex.load,
     thumbnail: ex.thumbnail,
+    pattern: ex.pattern,
+    color: ex.color,
   }))
 }
 
@@ -50,6 +52,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
         targetReps: block.targetReps,
         thumbnail: block.thumbnail,
         defaultSetCount: block.sets.length,
+        pattern: block.pattern,
+        color: block.color,
       } satisfies DbTemplateStrengthBlock
     case 'emom':
       return {
@@ -61,6 +65,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
           prescribedReps: ex.prescribedReps,
           load: ex.load,
           thumbnail: ex.thumbnail,
+          pattern: ex.pattern,
+          color: ex.color,
         })),
       }
     case 'amrap':
@@ -73,6 +79,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
           prescribedReps: ex.prescribedReps,
           load: ex.load,
           thumbnail: ex.thumbnail,
+          pattern: ex.pattern,
+          color: ex.color,
         })),
       }
     case 'tabata':
@@ -85,6 +93,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
           prescribedReps: block.exercise.prescribedReps,
           load: block.exercise.load,
           thumbnail: block.exercise.thumbnail,
+          pattern: block.exercise.pattern,
+          color: block.exercise.color,
         },
       }
     case 'fortime':
@@ -97,6 +107,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
           prescribedReps: ex.prescribedReps,
           load: ex.load,
           thumbnail: ex.thumbnail,
+          pattern: ex.pattern,
+          color: ex.color,
         })),
       }
     case 'cardio':
@@ -142,6 +154,8 @@ function templateBlockToWorkoutBlock(
       thumbnail: templateBlock.thumbnail,
       sets,
       orderIndex,
+      pattern: templateBlock.pattern,
+      color: templateBlock.color,
     } satisfies DbStrengthBlock
   }
 
@@ -176,6 +190,8 @@ function templateBlockToWorkoutBlock(
           prescribedReps: templateBlock.exercise.prescribedReps,
           load: templateBlock.exercise.load,
           thumbnail: templateBlock.exercise.thumbnail,
+          pattern: templateBlock.exercise.pattern,
+          color: templateBlock.exercise.color,
         },
         result: null,
         orderIndex,

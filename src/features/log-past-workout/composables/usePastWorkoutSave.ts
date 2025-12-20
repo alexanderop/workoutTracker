@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock } from '@/types/blocks'
+import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock, BlockExercise } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import type { DbCompletedWorkout, DbWorkoutBlock, DbStrengthBlock, DbSet, DbAmrapBlock, DbEmomBlock, DbTabataBlock, DbForTimeBlock, DbCardioBlock, DbBlockExercise } from '@/db/schema'
 import { getWorkoutsRepository, generateId } from '@/db'
@@ -34,16 +34,20 @@ function convertStrengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: nu
     thumbnail: block.thumbnail,
     sets: block.sets.map(convertSetToDb),
     orderIndex,
+    pattern: block.pattern ?? null,
+    color: block.color ?? null,
   }
 }
 
-function convertBlockExerciseToDb(exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }): DbBlockExercise {
+function convertBlockExerciseToDb(exercise: BlockExercise): DbBlockExercise {
   return {
     id: exercise.id,
     name: exercise.name,
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
     thumbnail: exercise.thumbnail,
+    pattern: exercise.pattern ?? null,
+    color: exercise.color ?? null,
   }
 }
 

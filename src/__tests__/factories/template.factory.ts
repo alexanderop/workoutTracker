@@ -16,6 +16,8 @@ const TEMPLATE_BLOCK_EXERCISE_DEFAULTS: Readonly<DbTemplateBlockExercise> = {
   prescribedReps: 10,
   load: null,
   thumbnail: '🔥',
+  pattern: null,
+  color: null,
 }
 
 export function createDbTemplateBlockExercise(
@@ -39,6 +41,8 @@ const TEMPLATE_STRENGTH_BLOCK_DEFAULTS: Readonly<DbTemplateStrengthBlock> = {
   targetReps: 8,
   thumbnail: '🏋️',
   defaultSetCount: 3,
+  pattern: null,
+  color: null,
 }
 
 export function createDbTemplateStrengthBlock(

@@ -72,3 +72,37 @@ export const exerciseRotationSchema = z.enum(['each-minute', 'full-round'])
  * Positive integer timestamp validator.
  */
 export const timestampSchema = z.number().int().min(0)
+
+/**
+ * Movement patterns matching src/types/exercises.ts
+ */
+export const movementPatternSchema = z.enum([
+  'push-horizontal',
+  'push-vertical',
+  'pull-horizontal',
+  'pull-vertical',
+  'squat',
+  'hinge',
+  'carry',
+  'rotation',
+  'stability',
+  'isolation',
+])
+
+/**
+ * Pattern colors matching src/types/exercises.ts
+ */
+export const patternColorSchema = z.enum([
+  'red',
+  'orange',
+  'amber',
+  'green',
+  'emerald',
+  'cyan',
+  'blue',
+  'indigo',
+  'purple',
+  'pink',
+  'rose',
+  'slate',
+])

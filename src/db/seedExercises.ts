@@ -16,12 +16,14 @@ export async function seedPopularExercises(): Promise<void> {
   const now = Date.now()
   const exercisesToSeed: Array<DbCustomExercise> = popularExercises.map((exercise) => ({
     id: generateId(),
-    icon: '', // Deprecated: icons are now derived from equipment
+    icon: '', // Deprecated: icons are now derived from pattern
     name: exercise.name,
     equipment: exercise.equipment,
     muscle: exercise.muscle,
     type: exercise.type,
     metrics: exercise.metrics,
+    pattern: exercise.pattern,
+    color: null, // Default to pattern's default color
     createdAt: now,
     updatedAt: now,
   }))

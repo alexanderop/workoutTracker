@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-import { safeIdSchema, safeStringSchema, timestampSchema } from './primitiveSchemas'
+import {
+  movementPatternSchema,
+  patternColorSchema,
+  safeIdSchema,
+  safeStringSchema,
+  timestampSchema,
+} from './primitiveSchemas'
 
 /**
  * Benchmark types matching src/types/benchmark.ts
@@ -16,6 +22,8 @@ const dbBenchmarkExerciseSchema = z
     name: safeStringSchema.min(1).max(200),
     prescribedReps: z.number().int().min(0).max(10000),
     thumbnail: z.string().min(1).max(10),
+    pattern: movementPatternSchema.nullable(),
+    color: patternColorSchema.nullable(),
   })
   .strict()
 

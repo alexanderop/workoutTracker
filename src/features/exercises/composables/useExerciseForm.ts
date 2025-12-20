@@ -1,4 +1,11 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type {
+  Equipment,
+  ExerciseType,
+  Metrics,
+  MovementPattern,
+  Muscle,
+  PatternColor,
+} from '@/types/exercises'
 import { computed, ref } from 'vue'
 
 type ExerciseFormState = {
@@ -8,6 +15,8 @@ type ExerciseFormState = {
   muscle: Muscle | undefined
   type: ExerciseType
   metrics: Metrics
+  pattern: MovementPattern | undefined
+  color: PatternColor | undefined
 }
 
 function createInitialState(): ExerciseFormState {
@@ -18,6 +27,8 @@ function createInitialState(): ExerciseFormState {
     muscle: undefined,
     type: 'isolation',
     metrics: 'weight-reps',
+    pattern: undefined,
+    color: undefined,
   }
 }
 

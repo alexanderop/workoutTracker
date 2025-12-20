@@ -4,7 +4,7 @@ import { Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { BlockExercise } from '@/types/blocks'
-import { getEquipmentIcon } from '@/lib/equipmentIcons'
+import ExerciseIcon from '@/components/ExerciseIcon.vue'
 
 const { t } = useI18n()
 
@@ -67,7 +67,12 @@ function handleAdd() {
       :key="exercise.id"
       class="flex items-center gap-3 bg-secondary/30 rounded-lg p-3"
     >
-      <component :is="getEquipmentIcon(exercise.equipment)" class="size-5" />
+      <ExerciseIcon
+        :equipment="exercise.equipment"
+        :pattern="exercise.pattern"
+        :color="exercise.color"
+        size="sm"
+      />
       <div class="flex-1 min-w-0">
         <p class="font-medium truncate">{{ exercise.name }}</p>
         <div class="flex gap-2 mt-1">

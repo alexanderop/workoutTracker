@@ -27,6 +27,32 @@ export type Metrics =
   | 'distance-duration'
   | 'weight-distance'
 
+export type MovementPattern =
+  | 'push-horizontal'
+  | 'push-vertical'
+  | 'pull-horizontal'
+  | 'pull-vertical'
+  | 'squat'
+  | 'hinge'
+  | 'carry'
+  | 'rotation'
+  | 'stability'
+  | 'isolation'
+
+export type PatternColor =
+  | 'red'
+  | 'orange'
+  | 'amber'
+  | 'green'
+  | 'emerald'
+  | 'cyan'
+  | 'blue'
+  | 'indigo'
+  | 'purple'
+  | 'pink'
+  | 'rose'
+  | 'slate'
+
 export type CustomExercise = {
   id: string
   icon: string
@@ -35,5 +61,7 @@ export type CustomExercise = {
   muscle?: Muscle
   type: ExerciseType
   metrics: Metrics
+  pattern?: MovementPattern
+  color?: PatternColor
   createdAt: number
 }

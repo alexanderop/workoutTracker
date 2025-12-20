@@ -20,6 +20,8 @@ export function createDbBlockExercise(
     prescribedReps: 21,
     load: null,
     thumbnail: '🏋️',
+    pattern: null,
+    color: null,
     ...overrides,
   }
 }

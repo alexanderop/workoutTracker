@@ -20,6 +20,8 @@ describe('BenchmarkExerciseList', () => {
         name: 'Bodyweight Get-up',
         prescribedReps: 15,
         thumbnail: '🧍',
+        pattern: null,
+        color: null,
       },
     ])
 
@@ -43,6 +45,8 @@ describe('BenchmarkExerciseList', () => {
       name: 'Pull-ups',
       prescribedReps: 21,
       thumbnail: '💪',
+      pattern: null,
+      color: null,
     })
 
     // Re-render with updated exercises
@@ -74,12 +78,16 @@ describe('BenchmarkExerciseList', () => {
         name: 'Thrusters',
         prescribedReps: 21,
         thumbnail: '🏋️',
+        pattern: null,
+        color: null,
       },
       {
         exerciseDefinitionId: '2',
         name: 'Pull-ups',
         prescribedReps: 21,
         thumbnail: '💪',
+        pattern: null,
+        color: null,
       },
     ])
 
@@ -102,6 +110,8 @@ describe('BenchmarkExerciseList', () => {
       name: 'Burpees',
       prescribedReps: 10,
       thumbnail: '🤸',
+      pattern: null,
+      color: null,
     })
 
     await rerender({

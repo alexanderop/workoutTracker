@@ -9,6 +9,8 @@ const DEFAULTS: Readonly<Omit<DbWorkoutExercise, 'id' | 'sets'>> = {
   targetReps: 8,
   thumbnail: '🏋️',
   orderIndex: 0,
+  pattern: null,
+  color: null,
 }
 
 export function createDbExercise(overrides: Partial<DbWorkoutExercise> = {}): DbWorkoutExercise {

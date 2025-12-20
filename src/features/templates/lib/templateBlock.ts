@@ -24,6 +24,8 @@ function toTemplateBlockExercise(exercise: BlockExercise): DbTemplateBlockExerci
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
     thumbnail: exercise.thumbnail,
+    pattern: exercise.pattern ?? null,
+    color: exercise.color ?? null,
   }
 }
 
@@ -40,8 +42,10 @@ export function createTemplateStrengthBlock(exercise: Exercise): DbTemplateStren
     name: exercise.name,
     equipment: popularExercise?.equipment ?? exercise.equipment ?? '',
     targetReps: 0,
-    thumbnail: '', // Deprecated: icons are now derived from equipment
+    thumbnail: '', // Deprecated: icons are now derived from pattern
     defaultSetCount: 3,
+    pattern: popularExercise?.pattern ?? exercise.pattern ?? null,
+    color: exercise.color ?? null,
   }
 }
 

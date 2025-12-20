@@ -10,6 +10,8 @@ const STRENGTH_DEFAULTS: Readonly<Omit<DbStrengthBlock, 'id' | 'sets'>> = {
   targetReps: 8,
   thumbnail: '🏋️',
   orderIndex: 0,
+  pattern: null,
+  color: null,
 }
 
 export function createDbStrengthBlock(overrides: Partial<DbStrengthBlock> = {}): DbStrengthBlock {

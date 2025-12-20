@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 import {
   exerciseRotationSchema,
+  movementPatternSchema,
+  patternColorSchema,
   safeIdSchema,
   safeStringSchema,
   setStatusSchema,
@@ -40,6 +42,8 @@ const dbBlockExerciseSchema = z
     prescribedReps: z.number().int().min(0).max(1000),
     load: z.string().max(50).nullable(),
     thumbnail: z.string().max(50),
+    pattern: movementPatternSchema.nullable(),
+    color: patternColorSchema.nullable(),
   })
   .strict()
 
@@ -152,6 +156,8 @@ const dbStrengthBlockSchema = z
     thumbnail: z.string().max(50),
     sets: z.array(dbSetSchema).max(50),
     orderIndex: z.number().int().min(0),
+    pattern: movementPatternSchema.nullable(),
+    color: patternColorSchema.nullable(),
   })
   .strict()
 

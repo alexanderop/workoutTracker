@@ -1,4 +1,11 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type {
+  Equipment,
+  ExerciseType,
+  Metrics,
+  MovementPattern,
+  Muscle,
+  PatternColor,
+} from '@/types/exercises'
 import type { SetStatus } from '@/types/workout'
 import type { WorkoutMode } from '@/types/blocks'
 import type { BenchmarkType } from '@/types/benchmark'
@@ -19,6 +26,8 @@ export type DbCustomExercise = {
   muscle: Muscle | null
   type: ExerciseType
   metrics: Metrics
+  pattern: MovementPattern | null
+  color: PatternColor | null
   createdAt: number
   updatedAt: number
 }
@@ -48,6 +57,8 @@ export type DbWorkoutExercise = {
   thumbnail: string
   sets: ReadonlyArray<DbSet>
   orderIndex: number
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 // ============================================
@@ -60,6 +71,8 @@ export type DbBlockExercise = {
   prescribedReps: number
   load: string | null
   thumbnail: string
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 // ============================================
@@ -75,6 +88,8 @@ export type DbBenchmarkExercise = {
   name: string
   prescribedReps: number
   thumbnail: string
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 /**
@@ -176,6 +191,8 @@ export type DbStrengthBlock = {
   thumbnail: string
   sets: ReadonlyArray<DbSet>
   orderIndex: number
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 export type DbEmomBlock = {
@@ -296,6 +313,8 @@ export type DbTemplateBlockExercise = {
   prescribedReps: number
   load: string | null
   thumbnail: string
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 /**
@@ -309,6 +328,8 @@ export type DbTemplateStrengthBlock = {
   targetReps: number
   thumbnail: string
   defaultSetCount: number
+  pattern: MovementPattern | null
+  color: PatternColor | null
 }
 
 type DbTemplateEmomBlock = {
