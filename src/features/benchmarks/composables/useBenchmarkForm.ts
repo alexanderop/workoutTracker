@@ -8,6 +8,7 @@ export type BenchmarkFormExercise = {
   name: string
   prescribedReps: number
   thumbnail: string
+  equipment?: string
 }
 
 type BenchmarkFormState = {
@@ -44,6 +45,7 @@ export function useBenchmarkForm() {
       name: exercise.name,
       prescribedReps: reps,
       thumbnail: exercise.icon,
+      equipment: exercise.equipment,
     })
   }
 

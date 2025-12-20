@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
+import Icons from 'unplugin-icons/vite'
 import type { PluginOption } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -19,6 +20,7 @@ const bundleVisualizer: PluginOption = visualizer({
 export default defineConfig({
   plugins: [
     vue(),
+    Icons({ compiler: 'vue3' }),
     tailwindcss(),
     vueDevTools(),
     VitePWA({

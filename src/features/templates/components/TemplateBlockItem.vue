@@ -4,8 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import type { DbTemplateBlock } from '@/db/schema'
-import { BLOCK_COLORS, BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
-import { CARDIO_ACTIVITIES } from '@/types/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS, CARDIO_ACTIVITIES } from '@/types/blocks'
+import { getCardioActivityIcon, getEquipmentIcon } from '@/lib/equipmentIcons'
+import MdiTimer from '~icons/mdi/timer'
 
 const { t } = useI18n()
 
@@ -33,12 +34,13 @@ const isStrength = computed(() => block.kind === 'strength')
 
 const blockIcon = computed(() => {
   if (block.kind === 'strength') {
-    return block.thumbnail
+    return getEquipmentIcon(block.equipment)
   }
   if (block.kind === 'cardio') {
-    return CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)?.icon ?? '🏃'
+    return getCardioActivityIcon(block.config.activity)
   }
-  return BLOCK_ICONS[block.kind]
+  // For timed blocks (amrap, emom, tabata, fortime)
+  return MdiTimer
 })
 
 const blockTitle = computed(() => {
@@ -127,13 +129,13 @@ function decrementSetCount(): void {
     <div class="flex items-center gap-3 p-4">
       <div
         :class="[
-          'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-2xl',
+          'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center',
           blockColors.bg,
         ]"
         role="img"
         :aria-label="blockTitle"
       >
-        {{ blockIcon }}
+        <component :is="blockIcon" class="size-6" />
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">

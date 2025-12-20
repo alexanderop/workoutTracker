@@ -35,6 +35,7 @@ export type BlockExercise = {
   prescribedReps: number
   load: string | null // "24kg", "bodyweight", "light band"
   thumbnail: string
+  equipment?: string // For deriving MDI icon
 }
 
 // ============================================

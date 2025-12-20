@@ -1,31 +1,49 @@
+import type { Component } from 'vue'
+
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+
+import MdiArmFlex from '~icons/mdi/arm-flex'
+import MdiArmFlexOutline from '~icons/mdi/arm-flex-outline'
+import MdiBarbell from '~icons/mdi/barbell'
+import MdiCableData from '~icons/mdi/cable-data'
+import MdiCog from '~icons/mdi/cog'
+import MdiDumbbell from '~icons/mdi/dumbbell'
+import MdiHexagonOutline from '~icons/mdi/hexagon-outline'
+import MdiHuman from '~icons/mdi/human'
+import MdiHumanHandsup from '~icons/mdi/human-handsup'
+import MdiKeyboardBackspace from '~icons/mdi/keyboard-backspace'
+import MdiKettlebell from '~icons/mdi/kettlebell'
+import MdiResistor from '~icons/mdi/resistor'
+import MdiStar from '~icons/mdi/star'
+import MdiWalk from '~icons/mdi/walk'
+import MdiWeightLifter from '~icons/mdi/weight-lifter'
 
 export type SelectorOption<T extends string = string> = {
   value: T
   label: string
-  icon?: string
+  icon?: Component
   description?: string
 }
 
 export const EQUIPMENT_OPTIONS: ReadonlyArray<SelectorOption<Equipment>> = [
-  { value: 'barbell', label: 'Barbell', icon: '🏋️' },
-  { value: 'dumbbell', label: 'Dumbbell', icon: '🪑' },
-  { value: 'machine', label: 'Machine', icon: '⚙️' },
-  { value: 'cable', label: 'Cable', icon: '📏' },
-  { value: 'bodyweight', label: 'Bodyweight', icon: '💪' },
-  { value: 'kettlebell', label: 'Kettlebell', icon: '🔔' },
-  { value: 'band', label: 'Band', icon: '〰️' },
-  { value: 'ez-bar', label: 'EZ Bar', icon: '↪️' },
-  { value: 'hex-bar', label: 'Hex Bar', icon: '⬡' },
+  { value: 'barbell', label: 'Barbell', icon: MdiWeightLifter },
+  { value: 'dumbbell', label: 'Dumbbell', icon: MdiDumbbell },
+  { value: 'machine', label: 'Machine', icon: MdiCog },
+  { value: 'cable', label: 'Cable', icon: MdiCableData },
+  { value: 'bodyweight', label: 'Bodyweight', icon: MdiHumanHandsup },
+  { value: 'kettlebell', label: 'Kettlebell', icon: MdiKettlebell },
+  { value: 'band', label: 'Band', icon: MdiResistor },
+  { value: 'ez-bar', label: 'EZ Bar', icon: MdiBarbell },
+  { value: 'hex-bar', label: 'Hex Bar', icon: MdiHexagonOutline },
 ]
 
 export const MUSCLE_OPTIONS: ReadonlyArray<SelectorOption<Muscle>> = [
-  { value: 'chest', label: 'Chest', icon: '🏔️' },
-  { value: 'back', label: 'Back', icon: '🔙' },
-  { value: 'legs', label: 'Legs', icon: '🦵' },
-  { value: 'shoulders', label: 'Shoulders', icon: '💪' },
-  { value: 'arms', label: 'Arms', icon: '💯' },
-  { value: 'core', label: 'Core', icon: '⭐' },
+  { value: 'chest', label: 'Chest', icon: MdiHuman },
+  { value: 'back', label: 'Back', icon: MdiKeyboardBackspace },
+  { value: 'legs', label: 'Legs', icon: MdiWalk },
+  { value: 'shoulders', label: 'Shoulders', icon: MdiArmFlex },
+  { value: 'arms', label: 'Arms', icon: MdiArmFlexOutline },
+  { value: 'core', label: 'Core', icon: MdiStar },
 ]
 
 export const TYPE_OPTIONS: ReadonlyArray<SelectorOption<ExerciseType>> = [

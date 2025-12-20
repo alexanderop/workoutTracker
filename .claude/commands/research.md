@@ -27,7 +27,13 @@ Use the Task tool to spawn these subagents **in parallel** (all in a single mess
    - Find highly-voted and accepted answers
    - Note common pitfalls and gotchas
 
-3. **Codebase Explorer Agent** (subagent_type: Explore)
+3. **Reddit Agent** (subagent_type: general-purpose)
+   - Search Reddit (r/vuejs, r/webdev, r/javascript, r/programming) for discussions
+   - Find real-world experiences and gotchas from developers
+   - Look for threads comparing different approaches
+   - Note any consensus or controversial opinions
+
+4. **Codebase Explorer Agent** (subagent_type: Explore)
    - Search the codebase for related patterns
    - Find existing solutions to similar problems
    - Identify relevant files, functions, or components

@@ -3,6 +3,7 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 
 import { ChevronRight } from 'lucide-vue-next'
 
+import { getEquipmentIcon } from '@/lib/equipmentIcons'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
 const { exercise } = defineProps<{
@@ -20,9 +21,9 @@ defineEmits<{
     @click="$emit('select', exercise)"
   >
     <div
-      class="flex-shrink-0 w-12 h-12 rounded-lg bg-muted/60 flex items-center justify-center text-2xl group-hover:bg-muted group-active:scale-95 transition-all duration-150"
+      class="flex-shrink-0 w-12 h-12 rounded-lg bg-muted/60 flex items-center justify-center group-hover:bg-muted group-active:scale-95 transition-all duration-150"
     >
-      {{ exercise.icon }}
+      <component :is="getEquipmentIcon(exercise.equipment)" class="size-6" />
     </div>
     <div class="min-w-0 flex-1">
       <p class="font-semibold text-base tracking-tight truncate">

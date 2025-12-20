@@ -2,6 +2,7 @@
 import { GripVertical, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
+import { getEquipmentIcon } from '@/lib/equipmentIcons'
 import { useI18n } from 'vue-i18n'
 
 type Emits = {
@@ -32,8 +33,8 @@ const { t } = useI18n()
     </div>
 
     <!-- Exercise icon -->
-    <div class="flex-shrink-0 text-2xl">
-      {{ exercise.thumbnail }}
+    <div class="flex-shrink-0">
+      <component :is="getEquipmentIcon(exercise.equipment)" class="size-6" />
     </div>
 
     <!-- Exercise info -->

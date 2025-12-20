@@ -43,7 +43,7 @@ function handleSelect(value: T) {
           ]"
           @click="handleSelect(option.value)"
         >
-          <span class="text-3xl">{{ option.icon }}</span>
+          <component :is="option.icon" v-if="option.icon" class="size-8" />
           <span class="text-xs font-medium text-center">{{ option.label }}</span>
         </button>
       </div>
@@ -63,7 +63,7 @@ function handleSelect(value: T) {
             ]"
             @click="handleSelect(option.value)"
           >
-            <span class="text-2xl">{{ option.icon }}</span>
+            <component :is="option.icon" v-if="option.icon" class="size-6" />
             <span class="font-medium">{{ option.label }}</span>
             <span v-if="selected === option.value" class="ml-auto text-primary">✓</span>
           </button>

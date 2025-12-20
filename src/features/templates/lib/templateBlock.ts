@@ -40,7 +40,7 @@ export function createTemplateStrengthBlock(exercise: Exercise): DbTemplateStren
     name: exercise.name,
     equipment: popularExercise?.equipment ?? exercise.equipment ?? '',
     targetReps: 0,
-    thumbnail: popularExercise?.icon ?? exercise.icon,
+    thumbnail: '', // Deprecated: icons are now derived from equipment
     defaultSetCount: 3,
   }
 }

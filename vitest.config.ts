@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { playwright } from '@vitest/browser-playwright'
+import Icons from 'unplugin-icons/vite'
 import { configDefaults, defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -18,7 +19,7 @@ const optimizeDeps = {
 }
 
 // Shared plugins for all projects
-const plugins = [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } })]
+const plugins = [vue(), Icons({ compiler: 'vue3' }), tailwindcss(), VitePWA({ devOptions: { enabled: true } })]
 
 // Shared base configuration for all projects
 // All tests run in Playwright browser mode for consistent, real-browser behavior

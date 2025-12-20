@@ -8,10 +8,10 @@ import {
   BLOCK_COLORS,
   BLOCK_LABELS,
   getBlockExerciseList,
-  getBlockThumbnail,
   isStrengthBlock,
   isTimedBlock,
 } from '@/types/blocks'
+import { getBlockIcon } from '@/lib/equipmentIcons'
 
 type Props = {
   block: WorkoutBlock
@@ -28,7 +28,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
-const thumbnail = computed(() => getBlockThumbnail(block))
+const blockIcon = computed(() => getBlockIcon(block))
 
 const blockName = computed(() => {
   if (isStrengthBlock(block)) {
@@ -83,10 +83,10 @@ const isCompleted = computed(() => status === 'completed')
     <!-- Block icon -->
     <div
       :class="
-        cn('flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl', blockColors.bg)
+        cn('flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center', blockColors.bg)
       "
     >
-      {{ thumbnail }}
+      <component :is="blockIcon" class="size-5" />
     </div>
 
     <!-- Block info -->

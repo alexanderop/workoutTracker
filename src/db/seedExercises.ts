@@ -16,7 +16,7 @@ export async function seedPopularExercises(): Promise<void> {
   const now = Date.now()
   const exercisesToSeed: Array<DbCustomExercise> = popularExercises.map((exercise) => ({
     id: generateId(),
-    icon: exercise.icon,
+    icon: '', // Deprecated: icons are now derived from equipment
     name: exercise.name,
     equipment: exercise.equipment,
     muscle: exercise.muscle,
