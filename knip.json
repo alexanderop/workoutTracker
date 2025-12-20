@@ -6,7 +6,8 @@
     ".claude/**",
     "env.d.ts",
     "src/components/ui/**",
-    "src/i18n/messages/de/**"
+    "src/i18n/messages/de/**",
+    "src/db/composables/**"
   ],
   "ignoreDependencies": [
     "@antfu/eslint-config",
