@@ -5,9 +5,8 @@ import type { Equipment, Muscle } from '@/types/exercises'
 import { Search } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import ExerciseEquipmentFilter from '@/components/ExerciseEquipmentFilter.vue'
+import ExerciseFilters from '@/components/ExerciseFilters.vue'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
-import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
@@ -89,8 +88,12 @@ defineExpose({ reset })
     </div>
 
     <!-- Filter Pills -->
-    <ExerciseMuscleFilter v-model="muscleFilter" class="-mx-4 px-4 mt-3" />
-    <ExerciseEquipmentFilter v-model="equipmentFilter" class="-mx-4 px-4 mt-2" />
+    <ExerciseFilters
+      v-model:muscle="muscleFilter"
+      v-model:equipment="equipmentFilter"
+      muscle-class="-mx-4 px-4 mt-3"
+      equipment-class="-mx-4 px-4 mt-2"
+    />
 
     <!-- Exercise List -->
     <div class="flex-1 overflow-y-auto -mx-4 px-4 mt-4">
