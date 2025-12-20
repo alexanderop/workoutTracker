@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import StrengthBlockGrid from './StrengthBlockGrid.vue'
 import { isStrengthBlock } from '@/types/blocks'
@@ -108,6 +108,9 @@ const strengthBlocks = computed(() => blocks.filter(isStrengthBlock))
       <DialogContent class="max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>{{ t('logPastWorkout.selectExercise', 'Select Exercise') }}</DialogTitle>
+          <DialogDescription class="sr-only">
+            {{ t('logPastWorkout.selectExerciseDesc', 'Choose an exercise to add to your workout') }}
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea class="max-h-[60vh]">
           <div class="space-y-2 pr-4">

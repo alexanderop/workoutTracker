@@ -9,11 +9,7 @@
     "typescript/no-explicit-any": "error",
     "typescript/consistent-type-definitions": "off",
     "typescript/array-type": ["error", { "default": "generic" }],
-    "typescript/consistent-type-imports": ["error", {
-      "prefer": "type-imports",
-      "fixStyle": "separate-type-imports"
-    }],
-    "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
+        "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
     "eslint/no-restricted-imports": ["error", {
       "paths": [{
         "name": "vue",

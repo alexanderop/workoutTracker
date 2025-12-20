@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ClipboardList, History, Plus } from 'lucide-vue-next'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { getTemplatesRepository, getWorkoutsRepository } from '@/db'
@@ -143,6 +143,9 @@ function formatDate(timestamp: number): string {
       <DialogContent class="max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>{{ t('logPastWorkout.selectTemplate', 'Select Template') }}</DialogTitle>
+          <DialogDescription class="sr-only">
+            {{ t('logPastWorkout.selectTemplateDesc', 'Choose a template to start your workout') }}
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea class="max-h-[60vh]">
           <div class="space-y-2 pr-4">
@@ -173,6 +176,9 @@ function formatDate(timestamp: number): string {
       <DialogContent class="max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>{{ t('logPastWorkout.selectWorkout', 'Select Workout') }}</DialogTitle>
+          <DialogDescription class="sr-only">
+            {{ t('logPastWorkout.selectWorkoutDesc', 'Choose a previous workout to copy') }}
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea class="max-h-[60vh]">
           <div class="space-y-2 pr-4">
