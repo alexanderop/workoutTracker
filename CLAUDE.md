@@ -44,6 +44,10 @@ Use `defineModel` for two-way binding: `const open = defineModel<boolean>('open'
 
 `gh` (GitHub CLI), `tree`, `rg` (ripgrep) are installed.
 
+## Slash Commands
+
+**Git Workflow**: `/push`, `/pr`, `/ship`, `/fix-pipeline`, `/review-coderabbit`, `/merge-and-branch`
+
 ## Quick Find
 
 ```bash
