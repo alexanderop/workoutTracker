@@ -1,6 +1,19 @@
 import { computed } from 'vue'
 import { useWorkout } from './useWorkout'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock, type WorkoutBlock } from '@/types/blocks'
+
+/**
+ * Check if a block is complete (all sets done or has result).
+ */
+function isBlockComplete(block: WorkoutBlock): boolean {
+  if (isStrengthBlock(block)) {
+    return block.sets.every((s) => s.status === 'completed')
+  }
+  if (isTimedBlock(block)) {
+    return block.result !== null
+  }
+  return false // cardio blocks - not yet tracked
+}
 
 /**
  * Composable for managing workout mode transitions.
@@ -24,8 +37,16 @@ export function useWorkoutMode() {
     return workout.value.blocks[index]
   })
 
+  /**
+   * True if no incomplete blocks remain after current position.
+   * Used to disable "Next" button and determine workout completion.
+   */
   const isLastBlock = computed(() => {
-    return currentBlockIndex.value === totalBlocks.value - 1
+    for (let i = currentBlockIndex.value + 1; i < workout.value.blocks.length; i++) {
+      const block = workout.value.blocks[i]
+      if (block && !isBlockComplete(block)) return false
+    }
+    return true
   })
 
   /**
@@ -95,14 +116,23 @@ export function useWorkoutMode() {
   }
 
   /**
-   * Advance to the next block in active mode.
-   * Initializes the new block's active state if needed.
-   * Returns true if advanced, false if already at last block.
+   * Advance to the next incomplete block in active mode.
+   * Skips completed blocks to find the next one that needs work.
+   * Returns true if advanced, false if no incomplete blocks remain.
    */
   function advanceToNextBlock(): boolean {
-    const nextIndex = workout.value.selectedBlockIndex + 1
-    if (nextIndex >= workout.value.blocks.length) {
-      return false
+    // Find next incomplete block (skip completed ones)
+    let nextIndex: number | null = null
+    for (let i = workout.value.selectedBlockIndex + 1; i < workout.value.blocks.length; i++) {
+      const block = workout.value.blocks[i]
+      if (block && !isBlockComplete(block)) {
+        nextIndex = i
+        break
+      }
+    }
+
+    if (nextIndex === null) {
+      return false // All remaining blocks complete
     }
 
     selectBlock(nextIndex)

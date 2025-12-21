@@ -291,4 +291,36 @@ describe('Workout Queue', () => {
       cleanup()
     })
   })
+
+  describe('reordering blocks', () => {
+    it('reordering blocks updates queue display', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      // Setup: Start workout with 3 blocks
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.waitForDialogClose()
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Squat'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+
+      // Open queue and verify initial order
+      await queue.open()
+      const initialOrder = queue.getBlockNames()
+      expect(initialOrder).toEqual(['Bench Press', 'Deadlift', 'Bodyweight Squat'])
+
+      // Action: Reorder blocks (simulates what drag would trigger)
+      // Move Bodyweight Squat (index 2) to the front (index 0)
+      await queue.reorderBlocks(2, 0)
+
+      // Assert: Order changed to Bodyweight Squat, Bench Press, Deadlift
+      await expect.poll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+
+      cleanup()
+    })
+  })
 })

@@ -79,4 +79,35 @@ export class QueuePO {
     await page.getByRole('button', { name: /close/i }).click()
     await this.common.waitForDialogClose()
   }
+
+  /**
+   * Reorders blocks in the queue by calling the underlying reorderBlocks function.
+   * This simulates what would happen when a user completes a drag operation.
+   * Note: Actual drag simulation doesn't work with Sortable.js synthetic events.
+   * @param fromIndex - Zero-based index of the block to move
+   * @param toIndex - Zero-based index of the target position
+   */
+  async reorderBlocks(fromIndex: number, toIndex: number): Promise<void> {
+    // Call the reorderBlocks function exposed on window by the test app
+    // This is what Sortable.js's onEnd handler calls
+    const { useWorkout } = await import('@/features/workout/composables/useWorkout')
+    const { reorderBlocks } = useWorkout()
+    reorderBlocks(fromIndex, toIndex)
+
+    // Wait for Vue to update the DOM
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+
+  /**
+   * Gets the block names in current order from the queue.
+   * @returns Array of block names in display order
+   */
+  getBlockNames(): Array<string> {
+    const items = this.getItems()
+    return items.map((item) => {
+      // Get the block name from the font-medium span
+      const nameSpan = item.querySelector('.font-medium.truncate')
+      return nameSpan?.textContent?.trim() ?? ''
+    })
+  }
 }
