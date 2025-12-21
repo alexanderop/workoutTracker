@@ -1,5 +1,4 @@
 import { page, userEvent } from 'vitest/browser'
-import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 
 /**
@@ -7,10 +6,7 @@ import type { CommonPO } from './CommonPO'
  * Provides methods to open the queue and query its items.
  */
 export class QueuePO {
-  constructor(
-    private ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Opens the workout queue dialog by clicking the queue button.

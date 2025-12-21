@@ -1,6 +1,5 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
-import type { TestContext } from '@/__tests__/helpers/types'
 import type { CommonPO } from './CommonPO'
 
 type CreateExerciseOptions = {
@@ -13,10 +12,7 @@ type CreateExerciseOptions = {
  * Provides methods to navigate, create custom exercises, and manage the exercise library.
  */
 export class ExercisesPO {
-  constructor(
-    private ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Navigates to the exercises view via the common navigation.

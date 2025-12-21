@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import type { TestContext, SetValues } from '../types'
+import type { SetValues } from '../types'
 import type { CommonPO } from './CommonPO'
 
 type CardioResultValues = {
@@ -15,10 +15,7 @@ type CardioResultValues = {
  * Provides methods to interact with hindsight workout logging UI.
  */
 export class LogPastWorkoutPO {
-  constructor(
-    private ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Navigates to the Log Past Workout page from home.

@@ -1,6 +1,5 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
-import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 
@@ -9,10 +8,7 @@ import { ensureHTMLElement } from '../domHelpers'
  * Provides methods to fill form fields, add exercises, and submit.
  */
 export class BenchmarkFormPO {
-  constructor(
-    private ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Types a workout name into the name input field.

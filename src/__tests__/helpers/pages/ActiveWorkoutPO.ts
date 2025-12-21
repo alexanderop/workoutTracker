@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import { tryCatch } from '@/lib/tryCatch'
-import type { SetInputs, SetValues, TestContext } from '../types'
+import type { SetInputs, SetValues } from '../types'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 import { SetRowPO } from './SetRowPO'
@@ -11,10 +11,7 @@ import { SetRowPO } from './SetRowPO'
  * Provides methods to interact with sets, navigate between blocks, and control timers.
  */
 export class ActiveWorkoutPO {
-  constructor(
-    private ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Gets an input element from a table row by aria-label using chained locators.

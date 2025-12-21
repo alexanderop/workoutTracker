@@ -91,14 +91,14 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   // Instantiate page objects
   const common = new CommonPO(context)
-  const builder = new BuilderPO(context, common)
-  const workout = new ActiveWorkoutPO(context, common)
-  const queue = new QueuePO(context, common)
-  const benchmarks = new BenchmarksPO(context, common)
-  const benchmarkForm = new BenchmarkFormPO(context, common)
-  const benchmarkDetail = new BenchmarkDetailPO(context, common)
-  const logPastWorkout = new LogPastWorkoutPO(context, common)
-  const exercises = new ExercisesPO(context, common)
+  const builder = new BuilderPO(common)
+  const workout = new ActiveWorkoutPO(common)
+  const queue = new QueuePO(common)
+  const benchmarks = new BenchmarksPO(common)
+  const benchmarkForm = new BenchmarkFormPO(common)
+  const benchmarkDetail = new BenchmarkDetailPO(context)
+  const logPastWorkout = new LogPastWorkoutPO(common)
+  const exercises = new ExercisesPO(common)
 
   // Navigation helper with flush to ensure route renders
   async function navigateTo(to: RouteLocationRaw) {
