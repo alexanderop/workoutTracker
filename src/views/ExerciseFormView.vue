@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
@@ -9,6 +9,7 @@ import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useDialogState } from '@/composables/useDialogState'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
 import { useImageConversion } from '@/composables/useImageConversion'
 import {
@@ -20,69 +21,92 @@ import {
 import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 
+const { id } = defineProps<{
+  id?: string
+}>()
+
 const router = useRouter()
 const { t } = useI18n()
 const exercisesStore = useExercisesStore()
 
+// Mode detection
+const isEditMode = computed(() => !!id)
+const pageTitle = computed(() =>
+  isEditMode.value ? t('exercises.edit.title') : t('exercises.create.title'),
+)
+const saveButtonText = computed(() =>
+  isEditMode.value ? t('exercises.edit.save') : t('exercises.create.save'),
+)
+
 // Form state and validation
-const { form, isNameValid, isSaveDisabled, getFormData } = useExerciseForm()
+const { form, isNameValid, isSaveDisabled, getFormData, populateFromExercise } = useExerciseForm()
 
-// Image conversion
-const { convert: convertImage } = useImageConversion()
-const imageInputRef = useTemplateRef<HTMLInputElement>('imageInput')
+// Load exercise data when in edit mode
+onMounted(() => {
+  if (!isEditMode.value || !id) return
 
-// Computed for image upload display
-const imageDisplayText = computed(() => {
-  if (form.value.image) {
+  const exercise = exercisesStore.getExerciseById(id)
+  if (exercise) {
+    populateFromExercise(exercise)
+  }
+})
+
+// Image upload - inline composable grouping related logic
+function useImageUpload() {
+  const { convert } = useImageConversion()
+  const inputRef = useTemplateRef<HTMLInputElement>('imageInput')
+
+  const displayText = computed(() => {
+    if (!form.value.image) return ''
     const sizeKb = Math.round(form.value.image.size / 1024)
     return `${t('exercises.create.imageUploaded')} (${sizeKb} KB)`
+  })
+
+  function trigger() {
+    inputRef.value?.click()
   }
-  return ''
-})
 
-function handleImageClick() {
-  imageInputRef.value?.click()
+  async function handleSelect(event: Event) {
+    const input = event.target
+    if (!(input instanceof HTMLInputElement)) return
+
+    const file = input.files?.[0]
+    input.value = '' // Reset for re-selection
+    if (!file) return
+
+    form.value.imageError = undefined
+    const result = await convert(file)
+
+    if (result.success) {
+      form.value.image = result.blob
+      return
+    }
+
+    form.value.imageError =
+      result.error === 'file-too-large'
+        ? t('exercises.create.errors.imageTooLarge')
+        : result.error === 'invalid-image'
+          ? t('exercises.create.errors.invalidImage')
+          : t('exercises.create.errors.conversionFailed')
+  }
+
+  return { displayText, trigger, handleSelect }
 }
 
-// Modal state machine - only one modal can be open at a time
-type ModalState =
-  | { kind: 'closed' }
-  | { kind: 'equipment' }
-  | { kind: 'muscle' }
-  | { kind: 'type' }
-  | { kind: 'metrics' }
+const {
+  displayText: imageDisplayText,
+  trigger: handleImageClick,
+  handleSelect: handleImageSelect,
+} = useImageUpload()
 
-const modalState = ref<ModalState>({ kind: 'closed' })
+// Modal state - only one modal can be open at a time
+type ModalKind = 'equipment' | 'muscle' | 'type' | 'metrics'
+const { open: openModal, createDialogModel } = useDialogState<ModalKind>()
 
-// Writable computed helpers for v-model compatibility
-const showEquipmentModal = computed({
-  get: () => modalState.value.kind === 'equipment',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showMuscleModal = computed({
-  get: () => modalState.value.kind === 'muscle',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showTypeModal = computed({
-  get: () => modalState.value.kind === 'type',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showMetricsModal = computed({
-  get: () => modalState.value.kind === 'metrics',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-
-function openModal(kind: ModalState['kind']) {
-  modalState.value = { kind }
-}
+const showEquipmentModal = createDialogModel('equipment')
+const showMuscleModal = createDialogModel('muscle')
+const showTypeModal = createDialogModel('type')
+const showMetricsModal = createDialogModel('metrics')
 
 function handleEquipmentSelect(selected: Equipment) {
   form.value.equipment = selected
@@ -100,45 +124,27 @@ function handleMetricsSelect(selected: Metrics) {
   form.value.metrics = selected
 }
 
-async function handleImageSelect(event: Event) {
-  const input = event.target
-  if (!(input instanceof HTMLInputElement)) return
-
-  const file = input.files?.[0]
-  input.value = '' // Reset for re-selection
-  if (!file) return
-
-  // Clear previous error
-  form.value.imageError = undefined
-
-  const result = await convertImage(file)
-
-  if (result.success) {
-    form.value.image = result.blob
-    return
-  }
-
-  form.value.imageError =
-    result.error === 'file-too-large'
-      ? t('exercises.create.errors.imageTooLarge')
-      : result.error === 'invalid-image'
-        ? t('exercises.create.errors.invalidImage')
-        : t('exercises.create.errors.conversionFailed')
-}
-
 async function handleSave() {
   if (!isNameValid.value) return
 
-  await exercisesStore.addExercise(getFormData())
+  const formData = getFormData()
+
+  if (isEditMode.value && id) {
+    await exercisesStore.updateExercise(id, formData)
+    router.back()
+    return
+  }
+
+  await exercisesStore.addExercise(formData)
   router.back()
 }
 </script>
 
 <template>
-  <PageLayout :title="t('exercises.create.title')">
+  <PageLayout :title="pageTitle">
     <template #header-actions>
       <Button :disabled="isSaveDisabled" @click="handleSave">{{
-        t('exercises.create.save')
+        saveButtonText
       }}</Button>
     </template>
 

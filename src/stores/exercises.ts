@@ -55,6 +55,34 @@ export const useExercisesStore = defineStore('exercises', () => {
   }
 
   /**
+   * Update an existing exercise in both DB and local state.
+   */
+  async function updateExercise(
+    id: string,
+    updates: Partial<Omit<CustomExercise, 'id' | 'createdAt'>>,
+  ): Promise<boolean> {
+    // Convert domain types (undefined) to database types (null)
+    const dbUpdates = {
+      name: updates.name,
+      equipment: updates.equipment ?? null,
+      muscle: updates.muscle ?? null,
+      type: updates.type,
+      metrics: updates.metrics,
+      image: updates.image ?? null,
+    }
+
+    const [error] = await tryCatch(getCustomExercisesRepository().update(id, dbUpdates))
+
+    if (error) return false
+
+    // Update local state
+    customExercises.value = customExercises.value.map((e) =>
+      e.id === id ? { ...e, ...updates } : e,
+    )
+    return true
+  }
+
+  /**
    * Delete a custom exercise from both DB and local state.
    */
   async function deleteExercise(id: string): Promise<void> {
@@ -71,6 +99,7 @@ export const useExercisesStore = defineStore('exercises', () => {
     isLoading,
     loadFromDb,
     addExercise,
+    updateExercise,
     getExerciseById,
     getAllExercises,
     deleteExercise,

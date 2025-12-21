@@ -31,7 +31,7 @@ function clearSearch() {
 }
 
 function handleCreateExercise() {
-  router.push({ name: RouteNames.CreateCustomExercise })
+  router.push({ name: RouteNames.ExerciseForm })
 }
 
 function handleExerciseSelect(exercise: Exercise) {
