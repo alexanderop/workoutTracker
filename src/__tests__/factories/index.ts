@@ -39,5 +39,8 @@ export {
   createDbForTimeResult,
 } from './timedBlock.factory'
 
+// Image factories
+export { createTestImageBlob, createTestImageFile } from './image'
+
 // Utility
 export { generateId } from '@/db'

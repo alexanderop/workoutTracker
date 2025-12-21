@@ -2,22 +2,24 @@ import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises
 import { computed, ref } from 'vue'
 
 type ExerciseFormState = {
-  icon: string
   name: string
   equipment: Equipment | undefined
   muscle: Muscle | undefined
   type: ExerciseType
   metrics: Metrics
+  image: Blob | undefined
+  imageError: string | undefined
 }
 
 function createInitialState(): ExerciseFormState {
   return {
-    icon: '💪',
     name: '',
     equipment: undefined,
     muscle: undefined,
     type: 'isolation',
     metrics: 'weight-reps',
+    image: undefined,
+    imageError: undefined,
   }
 }
 
@@ -25,7 +27,8 @@ export function useExerciseForm() {
   const form = ref<ExerciseFormState>(createInitialState())
 
   const isNameValid = computed(() => form.value.name.trim().length > 0)
-  const isSaveDisabled = computed(() => !isNameValid.value)
+  const hasImageError = computed(() => form.value.imageError !== undefined)
+  const isSaveDisabled = computed(() => !isNameValid.value || hasImageError.value)
 
   function reset() {
     form.value = createInitialState()
@@ -41,6 +44,7 @@ export function useExerciseForm() {
   return {
     form,
     isNameValid,
+    hasImageError,
     isSaveDisabled,
     reset,
     getFormData,

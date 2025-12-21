@@ -31,7 +31,13 @@ export default {
     customShort: 'Create Custom',
     namePlaceholder: 'Name (e.g., Bulgarian Split Squat)',
     save: 'Save',
-    selectIcon: 'Select exercise icon',
+    addImage: 'Add Image',
+    imageUploaded: 'Image added',
+    errors: {
+      imageTooLarge: 'Image exceeds 1MB after conversion. Please use a smaller image.',
+      invalidImage: 'Invalid image file. Please select a valid image.',
+      conversionFailed: 'Failed to convert image. Please try a different file.',
+    },
   },
   selectors: {
     equipment: {

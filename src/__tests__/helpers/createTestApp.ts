@@ -19,6 +19,7 @@ import {
   BenchmarkFormPO,
   BenchmarkDetailPO,
   LogPastWorkoutPO,
+  ExercisesPO,
 } from './pages'
 
 type CreateTestAppOptions = {
@@ -37,6 +38,7 @@ type TestApp = {
   benchmarkForm: BenchmarkFormPO
   benchmarkDetail: BenchmarkDetailPO
   logPastWorkout: LogPastWorkoutPO
+  exercises: ExercisesPO
   // Raw query methods (use page.getBy* for new code)
   getByRole: typeof page.getByRole
   getByText: typeof page.getByText
@@ -96,6 +98,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   const benchmarkForm = new BenchmarkFormPO(context, common)
   const benchmarkDetail = new BenchmarkDetailPO(context, common)
   const logPastWorkout = new LogPastWorkoutPO(context, common)
+  const exercises = new ExercisesPO(context, common)
 
   // Simple navigation helper
   async function navigateTo(to: RouteLocationRaw) {
@@ -120,6 +123,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     benchmarkForm,
     benchmarkDetail,
     logPastWorkout,
+    exercises,
     // Raw query methods - use page locators (return Locators, not HTMLElements)
     getByRole: page.getByRole.bind(page),
     getByText: page.getByText.bind(page),
