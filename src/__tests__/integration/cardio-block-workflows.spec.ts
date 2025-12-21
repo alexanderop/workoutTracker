@@ -108,24 +108,11 @@ describe('Cardio Block Workflows', () => {
 
   describe('Execution', () => {
     it('starts workout with cardio block and shows cardio UI', async () => {
-      const { builder, router, cleanup } = await createTestApp()
+      const { builder, cleanup } = await createTestApp()
 
-      // Start new workout
-      await page.getByRole('button', { name: /start new workout/i }).click()
-      expect(router.currentRoute.value.path).toBe('/workout/active')
-
-      // Add cardio block
+      await builder.navigateTo()
       await builder.addCardioBlock('Running')
-
-      // Verify block was added
-      const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
-
-      // Start workout
-      await builder.startWorkout()
-
-      // Wait for active mode
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify cardio block shows Done button (primary action)
       await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
@@ -134,13 +121,9 @@ describe('Cardio Block Workflows', () => {
     })
 
     it('clicking Done on cardio block advances to next block', async () => {
-      const { builder, common, router, cleanup } = await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
-      // Start new workout
-      await page.getByRole('button', { name: /start new workout/i }).click()
-      expect(router.currentRoute.value.path).toBe('/workout/active')
-
-      // Add cardio block first
+      await builder.navigateTo()
       await builder.addCardioBlock('Running')
 
       // Add strength block after cardio - switch back to exercises tab
@@ -149,13 +132,7 @@ describe('Cardio Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
-      // Verify both blocks in playlist
-      const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
-
-      // Start workout - should show cardio block first
-      await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await builder.startWorkoutAndVerifyBlocks(2)
 
       // Verify we're on the cardio block (shows Done button)
       await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
@@ -163,10 +140,8 @@ describe('Cardio Block Workflows', () => {
       // Click Done on cardio block - should advance to next block
       await userEvent.click(page.getByRole('button', { name: /done/i }))
 
-      // BUG REPRODUCTION: Should advance to block 2 of 2 (strength block)
+      // Should advance to block 2 of 2 (strength block)
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
-
-      // Verify we're now on the strength block (shows set table)
       await expect.element(page.getByRole('table')).toBeVisible()
 
       cleanup()
@@ -175,14 +150,10 @@ describe('Cardio Block Workflows', () => {
     it('can complete cardio block and finish workout', async () => {
       const { builder, workout, router, cleanup } = await createTestApp()
 
-      await page.getByRole('button', { name: /start new workout/i }).click()
+      await builder.navigateTo()
       await builder.addCardioBlock('Cycling')
-      await builder.startWorkout()
+      await builder.startWorkoutAndVerifyBlocks(1)
 
-      // Wait for active mode
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
-
-      // End workout via menu
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
 
@@ -203,16 +174,7 @@ describe('Cardio Block Workflows', () => {
 
       // Add cardio block
       await builder.addCardioBlock('Running')
-
-      // Verify both blocks in playlist
-      const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
-
-      // Start workout
-      await builder.startWorkout()
-
-      // Wait for active mode - should show first block (strength)
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await builder.startWorkoutAndVerifyBlocks(2)
 
       cleanup()
     })
@@ -221,22 +183,9 @@ describe('Cardio Block Workflows', () => {
       const { builder, cleanup } = await createTestApp()
 
       await builder.navigateTo()
-
-      // Add cardio block first
       await builder.addCardioBlock('Rowing')
-
-      // Add AMRAP block
       await builder.addTimedBlock('AMRAP')
-
-      // Verify both blocks in playlist
-      const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
-
-      // Start workout
-      await builder.startWorkout()
-
-      // Wait for active mode
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await builder.startWorkoutAndVerifyBlocks(2)
 
       cleanup()
     })

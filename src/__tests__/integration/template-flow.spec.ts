@@ -121,13 +121,7 @@ describe('Template Flow', () => {
       expect(templates[0]?.blocks).toHaveLength(2)
 
       // Navigate to workouts page and verify template appears
-      await navigateTo({ name: RouteNames.Workouts })
-
-      // Wait for the page to finish loading
-      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
-
-      await userEvent.click(getByRole('tab', { name: /templates/i }))
-
+      await common.navigateToWorkoutsAndClickTab('templates')
       await expect.element(page.getByText('Push Day')).toBeVisible()
 
       cleanup()
@@ -150,14 +144,8 @@ describe('Template Flow', () => {
       })
       await db.templates.add(template)
 
-      // Navigate to workouts page
-      await navigateTo({ name: RouteNames.Workouts })
-
-      // Wait for page to finish loading
-      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
-
-      // Click Templates tab
-      await userEvent.click(getByRole('tab', { name: /templates/i }))
+      // Navigate to workouts page and click Templates tab
+      await common.navigateToWorkoutsAndClickTab('templates')
 
       // Wait for template to appear and click it
       await expect.element(page.getByText('Leg Day')).toBeVisible()
@@ -282,12 +270,8 @@ describe('Template Flow', () => {
     it('creates a new template with name and exercises', async () => {
       const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
-      // Navigate to Workouts page
-      await navigateTo({ name: RouteNames.Workouts })
-
-      // Wait for page to load and click Templates tab
-      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
-      await userEvent.click(getByRole('tab', { name: /templates/i }))
+      // Navigate to Workouts page and click Templates tab
+      await common.navigateToWorkoutsAndClickTab('templates')
 
       // Click "Create Template" button
       await expect.element(page.getByRole('button', { name: /create template/i })).toBeVisible()
@@ -332,7 +316,7 @@ describe('Template Flow', () => {
 
   describe('Test 3: Browse templates list', () => {
     it('displays templates sorted by lastUsedAt (most recent first)', async () => {
-      const { getByRole, getByText, navigateTo, cleanup } = await createTestApp()
+      const { getByText, common, cleanup } = await createTestApp()
 
       const now = Date.now()
       const yesterday = now - 24 * 60 * 60 * 1000
@@ -357,9 +341,7 @@ describe('Template Flow', () => {
       ])
 
       // Navigate to Templates tab
-      await navigateTo({ name: RouteNames.Workouts })
-      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
-      await userEvent.click(getByRole('tab', { name: /templates/i }))
+      await common.navigateToWorkoutsAndClickTab('templates')
 
       // Wait for templates to appear
       await expect.element(page.getByText('Used Today')).toBeVisible()
@@ -392,12 +374,10 @@ describe('Template Flow', () => {
     })
 
     it('shows empty state when no templates exist', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
 
       // Navigate to Templates tab (no seeded data)
-      await navigateTo({ name: RouteNames.Workouts })
-      await expect.element(page.getByRole('tab', { name: /templates/i })).toBeVisible()
-      await userEvent.click(getByRole('tab', { name: /templates/i }))
+      await common.navigateToWorkoutsAndClickTab('templates')
 
       // Verify empty state is shown
       await expect.element(page.getByText(/no templates yet/i)).toBeVisible()

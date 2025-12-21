@@ -151,6 +151,17 @@ export class CommonPO {
   }
 
   /**
+   * Navigates to the workouts page and clicks a specific tab.
+   * @param tabName - Tab name to click (e.g., 'templates', 'history')
+   */
+  async navigateToWorkoutsAndClickTab(tabName: string): Promise<void> {
+    await this.navigateToWorkouts()
+    const tabLocator = page.getByRole('tab', { name: new RegExp(tabName, 'i') })
+    await expect.element(tabLocator).toBeVisible()
+    await userEvent.click(tabLocator)
+  }
+
+  /**
    * Sets the value of an input element directly and dispatches events.
    * Works around NumberField input quirks in browser mode.
    * @param input - The input element (from getByRole or similar query)

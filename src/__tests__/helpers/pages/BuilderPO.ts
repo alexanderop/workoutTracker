@@ -64,6 +64,36 @@ export class BuilderPO {
   }
 
   /**
+   * Verifies the expected number of blocks in the playlist and starts the workout.
+   * Waits for the active mode indicator showing current block position.
+   * @param expectedBlockCount - The number of blocks expected in the playlist
+   */
+  async startWorkoutAndVerifyBlocks(expectedBlockCount: number): Promise<void> {
+    const playlistButtons = await this.getPlaylistBlockButtons()
+    expect(playlistButtons.length).toBe(expectedBlockCount)
+    await this.startWorkout()
+    await expect
+      .element(page.getByText(new RegExp(`block 1 of ${expectedBlockCount}`, 'i')))
+      .toBeVisible()
+  }
+
+  /**
+   * Sets up a workout with one or more strength exercises and starts it.
+   * Combines navigation, adding blocks, and starting the workout in one call.
+   * @param exercises - Array of exercise names to add as blocks
+   */
+  async setupStrengthWorkoutAndStart(exercises: Array<string>): Promise<void> {
+    await this.navigateTo()
+    for (const exercise of exercises) {
+      await this.openAddBlockDialog()
+      await userEvent.click(this.common.getDialogButton(exercise))
+      await this.common.waitForDialogClose()
+    }
+    await this.startWorkout()
+    await expect.element(page.getByRole('table')).toBeVisible()
+  }
+
+  /**
    * Switches to the timed blocks tab in the add block dialog.
    */
   async switchToTimedBlocksTab(): Promise<void> {

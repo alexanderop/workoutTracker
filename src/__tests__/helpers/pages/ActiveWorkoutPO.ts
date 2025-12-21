@@ -276,6 +276,21 @@ export class ActiveWorkoutPO {
   }
 
   /**
+   * Fills and completes multiple sets with the same values.
+   * Useful for tests that need to complete several sets in sequence.
+   * @param count - Number of sets to complete
+   * @param values - Weight, reps, RIR values to use for each set
+   */
+  async completeMultipleSets(
+    count: number,
+    values: { weight: string; reps: string; rir: string },
+  ): Promise<void> {
+    for (let i = 0; i < count; i++) {
+      await this.fillCardSetAndComplete(values)
+    }
+  }
+
+  /**
    * Fills strength set inputs using the table-based UI and clicks the complete button.
    * Finds the active row (with enabled inputs) and fills it.
    * @param values - Object with weight, reps, rir values as strings

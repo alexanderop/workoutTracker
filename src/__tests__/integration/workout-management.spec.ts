@@ -12,23 +12,17 @@ describe('Workout Management', () => {
       const { builder, workout, common, router, cleanup } = await createTestApp()
 
       // Start new workout from home page
-      await page.getByRole('button', { name: /start new workout/i }).click()
+      await builder.navigateTo()
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add a strength block (Bench Press)
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add AMRAP block with exercise
-      await page.getByRole('button', { name: /add block/i }).click()
-      await common.waitForDialog()
-
-      // Switch to Timed Blocks tab
-      await page.getByRole('tab', { name: /timed blocks/i }).click()
-
-      // Click AMRAP option
+      await builder.openAddBlockDialog()
+      await builder.switchToTimedBlocksTab()
       await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog opens - wait for it
@@ -38,22 +32,13 @@ describe('Workout Management', () => {
       // Set duration to 8 minutes and add exercise
       await userEvent.click(common.getDialogButton('8'))
       await userEvent.click(common.getDialogButton('Add Exercise'))
-
-      // Use selectExercise helper to search and select (only 10 shown by default)
       await common.selectExercise('Push-ups')
 
       await userEvent.click(common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify both blocks exist and start workout
-      const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
-
-      // Start the workout
-      await builder.startWorkout()
-
-      // Verify we're in active mode showing "Block 1 of 2"
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await builder.startWorkoutAndVerifyBlocks(2)
 
       // Complete a set in the strength block - wait for table to render
       await expect.element(page.getByRole('table')).toBeVisible()
@@ -69,16 +54,14 @@ describe('Workout Management', () => {
       // Verify AMRAP Start button exists
       await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
 
-      // Finish the workout via menu
+      // Finish the workout via menu (needs custom name so can't use endWorkoutAndNavigateToSummary)
       await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(await workout.getMenuTrigger())
 
-      // Wait for menu to open and click End Workout
       await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await page.getByRole('menuitem', { name: /end workout/i }).click()
 
       await common.waitForDialog()
-      // Dialog title is "Finish Workout?" - verify dialog is open
       await expect.element(page.getByRole('heading', { name: /finish workout/i })).toBeVisible()
 
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
@@ -94,7 +77,6 @@ describe('Workout Management', () => {
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
       await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()
 
@@ -107,24 +89,10 @@ describe('Workout Management', () => {
 
   describe('Navigation', () => {
     it('navigates back and forth between blocks in active mode', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+      const { builder, workout, cleanup } = await createTestApp()
 
-      // Start workout
-      await page.getByRole('button', { name: /start new workout/i }).click()
-
-      // Add two strength blocks
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
-      await common.waitForDialogClose()
-
-      await page.getByRole('button', { name: /add block/i }).click()
-      await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
-      await common.waitForDialogClose()
-
-      // Start workout
-      await builder.startWorkout()
+      // Setup workout with two strength blocks and start
+      await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Navigate to next block
@@ -145,19 +113,15 @@ describe('Workout Management', () => {
 
   describe('Resume', () => {
     it('shows "Start Workout" with Play icon for fresh workout', async () => {
-      const { common, cleanup } = await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
-      // Navigate to workout builder
-      await page.getByRole('button', { name: /start new workout/i }).click()
-
-      // Add an exercise block
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      // Navigate to workout builder and add an exercise block
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Verify the button shows "Start Workout" (not "Resume")
-      // Button text "Start Workout" indicates fresh workout state
       const startButton = page.getByRole('button', { name: /start workout/i })
       await expect.element(startButton).toBeInTheDocument()
 
@@ -170,20 +134,14 @@ describe('Workout Management', () => {
     it('shows "Resume Workout" with RotateCcw icon after completing a set', async () => {
       const { builder, workout, common, cleanup } = await createTestApp()
 
-      // Navigate to workout builder
-      await page.getByRole('button', { name: /start new workout/i }).click()
-
-      // Add an exercise block
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      // Navigate to workout builder and add an exercise block
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
-      // Start the workout
+      // Start the workout and complete a set
       await builder.startWorkout()
-
-      // Fill in set values and complete the first set
-      // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Go back to builder mode
@@ -193,7 +151,6 @@ describe('Workout Management', () => {
       await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Verify the button shows "Resume Workout"
-      // Button text "Resume Workout" indicates workout in progress
       const resumeButton = page.getByRole('button', { name: /resume workout/i })
       await expect.element(resumeButton).toBeInTheDocument()
 
@@ -204,26 +161,20 @@ describe('Workout Management', () => {
     })
 
     it('allows resuming workout from Continue button', async () => {
-      const { builder, workout, common, cleanup } =
-        await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
-      // Navigate to workout builder
-      await page.getByRole('button', { name: /start new workout/i }).click()
-
-      // Add an exercise block
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      // Navigate to workout builder and add an exercise block
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
-      // Start workout, complete a set, go back
+      // Start workout, complete a set
       await builder.startWorkout()
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Go back to builder mode
       await page.getByRole('button', { name: /go back/i }).click()
-
-      // Wait for builder mode
       await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
 
       // Click Resume Workout
@@ -231,8 +182,6 @@ describe('Workout Management', () => {
 
       // Verify we're back in active mode by checking for timer badge
       await expect.element(page.getByRole('timer')).toBeVisible()
-
-      // Verify table is visible with the resumed workout data
       await expect.element(page.getByRole('table')).toBeVisible()
 
       cleanup()
@@ -241,12 +190,9 @@ describe('Workout Management', () => {
     it('shows duration badge with timer icon and pulsing indicator in active mode', async () => {
       const { builder, common, cleanup } = await createTestApp()
 
-      // Navigate to workout builder
-      await page.getByRole('button', { name: /start new workout/i }).click()
-
-      // Add an exercise block
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      // Navigate to workout builder and add an exercise block
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
@@ -276,17 +222,13 @@ describe('Workout Management', () => {
     it('can cancel a workout and return to home', async () => {
       const { builder, workout, common, router, cleanup } = await createTestApp()
 
-      // Start and add a block
-      await page.getByRole('button', { name: /start new workout/i }).click()
-      await page.getByRole('button', { name: /add first block/i }).click()
-      await common.waitForDialog()
+      // Navigate to builder, add a block, and start workout
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
-      // Start workout
       await builder.startWorkout()
-
-      // Wait for active mode
       await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Open menu and cancel - wait for the menu trigger to be available
