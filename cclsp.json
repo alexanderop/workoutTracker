@@ -1,0 +1,14 @@
+{
+  "servers": [
+    {
+      "extensions": ["ts", "tsx", "js", "jsx"],
+      "command": ["/Users/alex/Library/pnpm/typescript-language-server", "--stdio"],
+      "rootDir": "."
+    },
+    {
+      "extensions": ["vue"],
+      "command": ["/Users/alex/Library/pnpm/vue-language-server", "--stdio"],
+      "rootDir": "."
+    }
+  ]
+}

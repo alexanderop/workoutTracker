@@ -2,7 +2,7 @@ import { type Ref } from 'vue'
 import { getActiveWorkoutRepository, getWorkoutsRepository } from '@/db'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
-import { createPersistenceCore, type PersistenceState } from '@/composables/persistence/createPersistenceCore'
+import { createPersistenceCore } from '@/composables/persistence/createPersistenceCore'
 import type { Workout } from './useWorkout'
 import type { DbCompletedWorkout } from '@/db/schema'
 
@@ -119,6 +119,3 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     saveNow: core.saveNow,
   }
 }
-
-// Re-export PersistenceState for consumers
-export type { PersistenceState }

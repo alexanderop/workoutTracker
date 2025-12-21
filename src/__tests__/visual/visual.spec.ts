@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
+import { getCustomExercisesRepository, getWorkoutsRepository } from '@/db'
 import { RouteNames } from '@/router'
 import { dbWorkoutBuilder } from '../factories'
 import { createTestApp } from '../helpers/createTestApp'
@@ -84,7 +84,14 @@ describe('Visual Regression', () => {
 
   describe('Exercise Progress Charts', () => {
     it('shows charts when user has 2 workouts with improvement', async () => {
-      const exerciseId = 'bench-press-test'
+      // Create test app first so exercises are seeded
+      const { router, cleanup } = await createTestApp()
+
+      // Get a real seeded exercise ID
+      const exercises = await getCustomExercisesRepository().getAll()
+      const benchPress = exercises.find((e) => e.name === 'Bench Press')!
+      const exerciseId = benchPress.id
+
       const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
       const today = Date.now()
 
@@ -116,10 +123,8 @@ describe('Visual Regression', () => {
         )
         .build()
 
-      await db.workouts.add(workout1)
-      await db.workouts.add(workout2)
-
-      const { router, cleanup } = await createTestApp()
+      await getWorkoutsRepository().add(workout1)
+      await getWorkoutsRepository().add(workout2)
 
       // Navigate to exercise progress view
       await router.push({ name: RouteNames.ExerciseProgress, params: { id: exerciseId } })
