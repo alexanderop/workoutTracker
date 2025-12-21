@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { ref, useTemplateRef, watch } from 'vue'
-import { useSortable } from '@vueuse/integrations/useSortable'
+import { computed, nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import Sortable from 'sortablejs'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,7 +24,7 @@ const emit = defineEmits<{
   'add-block': []
 }>()
 
-const { workout, selectBlock, reorderBlocks } = useWorkout()
+const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
 
 // Create a mutable copy for sortable to work with
 const blocksList = ref([...workout.value.blocks])
@@ -39,17 +39,47 @@ watch(
 
 // Setup drag-drop
 const sortableContainer = useTemplateRef<HTMLElement>('sortableContainer')
+const sortableInstance = ref<Sortable | null>(null)
 
-useSortable(sortableContainer, blocksList, {
-  animation: 150,
-  ghostClass: 'opacity-50',
-  handle: '.drag-handle',
-  onEnd: (event) => {
-    const { oldIndex, newIndex } = event
-    if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
-      reorderBlocks(oldIndex, newIndex)
+// Initialize sortable when drawer opens and container is available
+// Sheet content is conditionally rendered, so we need to wait for the container
+watch(
+  [open, sortableContainer],
+  async ([isOpen, container]) => {
+    // Destroy previous instance
+    if (sortableInstance.value) {
+      sortableInstance.value.destroy()
+      sortableInstance.value = null
+    }
+
+    if (isOpen && container) {
+      await nextTick()
+      sortableInstance.value = new Sortable(container, {
+        animation: 150,
+        ghostClass: 'opacity-50',
+        handle: '.drag-handle',
+        // Required for modals/sheets: appends drag ghost to body to avoid
+        // clipping by overflow:hidden and z-index issues in portalled content
+        fallbackOnBody: true,
+        swapThreshold: 0.65,
+        onEnd: (event) => {
+          const { oldIndex, newIndex } = event
+          if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
+            reorderBlocks(oldIndex, newIndex)
+          }
+        },
+      })
     }
   },
+  { immediate: true },
+)
+
+// Cleanup on unmount to prevent memory leaks if component unmounts while drawer is open
+onUnmounted(() => {
+  if (sortableInstance.value) {
+    sortableInstance.value.destroy()
+    sortableInstance.value = null
+  }
 })
 
 function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
@@ -80,6 +110,9 @@ function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
   return 'planned'
 }
 
+// Cache block statuses to avoid recalculating in v-for on each render
+const blockStatuses = computed(() => blocksList.value.map((_, index) => getBlockStatus(index)))
+
 function handleSelectBlock(index: number) {
   selectBlock(index)
   open.value = false
@@ -88,6 +121,14 @@ function handleSelectBlock(index: number) {
 function handleAddBlock() {
   open.value = false
   emit('add-block')
+}
+
+function handleRemoveBlock(index: number) {
+  removeBlock(index)
+  // Close drawer if no blocks remain
+  if (workout.value.blocks.length === 0) {
+    open.value = false
+  }
 }
 </script>
 
@@ -133,8 +174,9 @@ function handleAddBlock() {
           :key="block.id"
           :block="block"
           :index="index"
-          :status="getBlockStatus(index)"
+          :status="blockStatuses[index] ?? 'planned'"
           @select="handleSelectBlock(index)"
+          @remove="handleRemoveBlock(index)"
         />
       </div>
 

@@ -217,4 +217,110 @@ describe('Workout Queue', () => {
       cleanup()
     })
   })
+
+  describe('removing blocks', () => {
+    it('user can remove a block from queue drawer', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      // Setup: Start workout with 3 blocks
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.waitForDialogClose()
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Squat'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+
+      // Action: Open queue, remove block 2 (Deadlift)
+      await queue.open()
+      await queue.removeBlock(1) // 0-indexed, Deadlift is at index 1
+
+      // Assert: Block removed, 2 blocks remain in queue
+      const queueItems = queue.getItems()
+      expect(queueItems.length).toBe(2)
+      expect(queueItems.find((item) => item.textContent?.includes('Deadlift'))).toBeFalsy()
+
+      // Close queue and verify header shows updated count
+      await queue.close()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      cleanup()
+    })
+
+    it('user can remove current block via header menu', async () => {
+      const { builder, workout, common, cleanup } = await createTestApp()
+
+      // Setup: Start workout with 2 blocks on block 1
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      // Action: Remove current block via header menu
+      await workout.removeCurrentBlock()
+
+      // Assert: Block removed, now viewing Deadlift (which was block 2, now block 1)
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expect.element(page.getByText(/deadlift/i)).toBeVisible()
+
+      cleanup()
+    })
+
+    it('removing last block returns to builder mode', async () => {
+      const { builder, workout, router, cleanup } = await createTestApp()
+
+      // Setup: Start workout with 1 block
+      await builder.addStrengthBlock('Bench Press')
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+
+      // Action: Remove the only block via header menu
+      await workout.removeCurrentBlock()
+
+      // Assert: Returns to builder mode (empty workout state)
+      await expect.poll(() => router.currentRoute.value.path).toBe('/workout/active')
+      await expect.element(page.getByText(/add first block/i)).toBeVisible()
+
+      cleanup()
+    })
+  })
+
+  describe('reordering blocks', () => {
+    it('reordering blocks updates queue display', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      // Setup: Start workout with 3 blocks
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.waitForDialogClose()
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Squat'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+
+      // Open queue and verify initial order
+      await queue.open()
+      const initialOrder = queue.getBlockNames()
+      expect(initialOrder).toEqual(['Bench Press', 'Deadlift', 'Bodyweight Squat'])
+
+      // Action: Reorder blocks (simulates what drag would trigger)
+      // Move Bodyweight Squat (index 2) to the front (index 0)
+      await queue.reorderBlocks(2, 0)
+
+      // Assert: Order changed to Bodyweight Squat, Bench Press, Deadlift
+      await expect.poll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+
+      cleanup()
+    })
+  })
 })

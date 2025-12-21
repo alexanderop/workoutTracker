@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { List, MoreVertical, SkipForward, Square, X } from 'lucide-vue-next'
+import { List, MoreVertical, SkipForward, Square, Trash2, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +20,7 @@ const emit = defineEmits<{
   'open-queue': []
   'end-workout': []
   'cancel-workout': []
+  'remove-block': []
 }>()
 
 const { t } = useI18n()
@@ -52,7 +53,11 @@ const { t } = useI18n()
         <SkipForward class="size-4 mr-2" />
         {{ t('workouts.active.mode.skipBlock') }}
       </DropdownMenuItem>
-      <DropdownMenuSeparator v-if="canSkipBlock" />
+      <DropdownMenuItem class="text-destructive" @click="emit('remove-block')">
+        <Trash2 class="size-4 mr-2" />
+        {{ t('workouts.active.mode.removeBlock') }}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
       <DropdownMenuItem @click="emit('end-workout')">
         <Square class="size-4 mr-2" />
         {{ t('workouts.active.mode.endWorkout') }}

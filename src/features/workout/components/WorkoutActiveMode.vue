@@ -27,6 +27,7 @@ const {
   setBlockResult,
   updateSetValue,
   addSet,
+  removeBlock,
 } = useWorkout()
 const {
   currentBlock,
@@ -150,6 +151,14 @@ function handleSkipBlock() {
   advanceToNextBlock()
 }
 
+function handleRemoveBlock() {
+  removeBlock(currentBlockIndex.value)
+  // If no blocks remain, return to builder mode
+  if (workout.value.blocks.length === 0) {
+    returnToBuilder()
+  }
+}
+
 function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
@@ -175,6 +184,7 @@ function handleAddSet() {
       <WorkoutActiveModeHeaderActions
         :can-skip-block="canSkipBlock"
         @skip-block="handleSkipBlock"
+        @remove-block="handleRemoveBlock"
         @open-queue="emit('open-queue')"
         @end-workout="emit('end-workout')"
         @cancel-workout="emit('cancel-workout')"

@@ -62,6 +62,7 @@ export default {
     inProgress: 'Workout läuft',
     mode: {
       skipBlock: 'Block überspringen',
+      removeBlock: 'Block entfernen',
       endWorkout: 'Workout beenden',
       cancelWorkout: 'Workout abbrechen',
     },
