@@ -1,0 +1,15 @@
+{
+  "threshold": 6,
+  "minTokens": 30,
+  "minLines": 3,
+  "reporters": ["console"],
+  "ignore": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/node_modules/**",
+    "**/dist/**",
+    "src/components/ui/**"
+  ],
+  "absolute": true,
+  "gitignore": true
+}

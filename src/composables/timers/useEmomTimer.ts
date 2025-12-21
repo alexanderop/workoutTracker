@@ -6,8 +6,7 @@
 
 import { computed, ref, shallowRef } from 'vue'
 import type { EmomBlock, EmomResult } from '@/types/blocks'
-import { formatTime } from '@/lib/workout-utils'
-import { useBaseTimer } from './useBaseTimer'
+import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 type EmomTimerConfig = Readonly<{
   onMinuteChange?: (minute: number) => void
@@ -69,8 +68,10 @@ export function useEmomTimer(config: EmomTimerConfig = {}) {
     return Math.min(100, (baseTimer.elapsedSeconds.value / totalSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
-  const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
+  const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(
+    baseTimer.elapsedSeconds,
+    remainingSeconds,
+  )
 
   // Methods
   function initialize(emomBlock: EmomBlock) {

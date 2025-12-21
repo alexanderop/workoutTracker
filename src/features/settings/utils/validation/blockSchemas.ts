@@ -1,12 +1,14 @@
 import { z } from 'zod'
 
 import {
-  exerciseRotationSchema,
-  safeIdSchema,
-  safeStringSchema,
-  setStatusSchema,
-  timestampSchema,
-} from './primitiveSchemas'
+  blockExerciseFieldsBase,
+  dbAmrapConfigSchema,
+  dbEmomConfigSchema,
+  dbForTimeConfigSchema,
+  dbTabataConfigSchema,
+  strengthBlockFieldsBase,
+} from './blockConfigSchemas'
+import { safeIdSchema, setStatusSchema, timestampSchema } from './primitiveSchemas'
 
 // ============================================
 // DbSet Schema
@@ -36,43 +38,13 @@ const dbSetSchema = z
 const dbBlockExerciseSchema = z
   .object({
     id: safeIdSchema,
-    name: safeStringSchema.min(1).max(200),
-    prescribedReps: z.number().int().min(0).max(1000),
-    load: z.string().max(50).nullable(),
-    thumbnail: z.string().max(50),
+    ...blockExerciseFieldsBase,
   })
   .strict()
 
 // ============================================
-// Block Config Schemas
+// Block Config Schemas (Cardio only - others imported from blockConfigSchemas.ts)
 // ============================================
-
-const dbEmomConfigSchema = z
-  .object({
-    minutes: z.number().int().min(1).max(120),
-    exerciseRotation: exerciseRotationSchema,
-  })
-  .strict()
-
-const dbAmrapConfigSchema = z
-  .object({
-    durationSeconds: z.number().int().min(1).max(7200), // max 2 hours
-  })
-  .strict()
-
-const dbTabataConfigSchema = z
-  .object({
-    rounds: z.number().int().min(1).max(100),
-    workSeconds: z.number().int().min(1).max(600),
-    restSeconds: z.number().int().min(0).max(600),
-  })
-  .strict()
-
-const dbForTimeConfigSchema = z
-  .object({
-    timeCapSeconds: z.number().int().min(1).max(7200).nullable(),
-  })
-  .strict()
 
 const dbCardioActivitySchema = z.enum([
   'running',
@@ -145,11 +117,7 @@ const dbStrengthBlockSchema = z
   .object({
     kind: z.literal('strength'),
     id: safeIdSchema,
-    exerciseDefinitionId: safeIdSchema.nullable(),
-    name: safeStringSchema.min(1).max(200),
-    equipment: z.string().max(100),
-    targetReps: z.number().int().min(1).max(1000),
-    thumbnail: z.string().max(50),
+    ...strengthBlockFieldsBase,
     sets: z.array(dbSetSchema).max(50),
     orderIndex: z.number().int().min(0),
   })

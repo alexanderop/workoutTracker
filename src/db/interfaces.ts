@@ -201,17 +201,11 @@ export type TemplatesRepository = {
    */
   getById(id: string): Promise<DbWorkoutTemplate | undefined>
   /**
-   * Create a new template from an active workout by extracting block structure.
+   * Create a new template from a workout by extracting block structure.
+   * Accepts either an active or completed workout.
    */
   createFromWorkout(
-    workout: Readonly<DbActiveWorkout>,
-    templateName: string,
-  ): Promise<DbWorkoutTemplate>
-  /**
-   * Create a new template from a completed workout by extracting block structure.
-   */
-  createFromCompletedWorkout(
-    workout: Readonly<DbCompletedWorkout>,
+    workout: Readonly<DbActiveWorkout | DbCompletedWorkout>,
     templateName: string,
   ): Promise<DbWorkoutTemplate>
   /**

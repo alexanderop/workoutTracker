@@ -2,20 +2,15 @@ import { computed } from 'vue'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
 import type {
-  AmrapBlock,
   AmrapConfig,
   AmrapResult,
   BlockExercise,
-  CardioBlock,
   CardioConfig,
-  EmomBlock,
   EmomConfig,
   EmomResult,
-  ForTimeBlock,
   ForTimeConfig,
   ForTimeResult,
   StrengthBlock,
-  TabataBlock,
   TabataConfig,
   TabataResult,
   TimedBlock,
@@ -57,6 +52,15 @@ function generateBlockId(): number {
  */
 function updateWorkout(updates: Partial<Workout>): void {
   workout.value = { ...workout.value, ...updates }
+}
+
+/**
+ * Append a block to the workout and select it.
+ * Extracted to avoid duplication in addXxxBlock functions.
+ */
+function appendBlock(block: WorkoutBlock): void {
+  const newBlocks = [...workout.value.blocks, block]
+  updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
 }
 
 /**
@@ -234,7 +238,7 @@ export function useWorkout() {
     const exercise = exercisesStore.getExerciseById(exerciseId)
     const icon = exercise?.icon ?? '🆕'
 
-    const newBlock: StrengthBlock = {
+    appendBlock({
       kind: 'strength',
       id: generateBlockId(),
       exerciseDefinitionId: exerciseId,
@@ -247,74 +251,56 @@ export function useWorkout() {
         { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
         { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
       ],
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
-    const newBlock: AmrapBlock = {
+    appendBlock({
       kind: 'amrap',
       id: generateBlockId(),
       config,
       exercises: [...exercises],
       result: null,
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>) {
-    const newBlock: EmomBlock = {
+    appendBlock({
       kind: 'emom',
       id: generateBlockId(),
       config,
       exercises: [...exercises],
       result: null,
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise) {
-    const newBlock: TabataBlock = {
+    appendBlock({
       kind: 'tabata',
       id: generateBlockId(),
       config,
       exercise,
       result: null,
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>) {
-    const newBlock: ForTimeBlock = {
+    appendBlock({
       kind: 'fortime',
       id: generateBlockId(),
       config,
       exercises: [...exercises],
       result: null,
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function addCardioBlock(config: CardioConfig) {
-    const newBlock: CardioBlock = {
+    appendBlock({
       kind: 'cardio',
       id: generateBlockId(),
       config,
       result: null,
-    }
-
-    const newBlocks = [...workout.value.blocks, newBlock]
-    updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+    })
   }
 
   function removeBlock(blockIndex: number) {

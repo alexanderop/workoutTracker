@@ -96,14 +96,6 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         lastUsedAt: null,
         tags: [],
       }),
-      createFromCompletedWorkout: vi.fn().mockResolvedValue({
-        id: 'template-1',
-        name: 'Test Template',
-        blocks: [],
-        createdAt: Date.now(),
-        lastUsedAt: null,
-        tags: [],
-      }),
       startFromTemplate: vi
         .fn()
         .mockResolvedValue(createMockActiveWorkout({ name: 'From Template' })),

@@ -55,16 +55,31 @@ function createStrengthBlockFromHistory(
   }
 }
 
-function convertTemplateBlockExerciseToBlockExercise(
-  exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string },
-): { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string } {
+type BlockExercise = { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }
+
+function buildBlockExercise(
+  id: string,
+  source: { name: string; prescribedReps: number; load: string | null; thumbnail: string },
+): BlockExercise {
   return {
-    id: exercise.exerciseDefinitionId ?? crypto.randomUUID(),
-    name: exercise.name,
-    prescribedReps: exercise.prescribedReps,
-    load: exercise.load,
-    thumbnail: exercise.thumbnail,
+    id,
+    name: source.name,
+    prescribedReps: source.prescribedReps,
+    load: source.load,
+    thumbnail: source.thumbnail,
   }
+}
+
+function convertTemplateBlockExercise(
+  exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string },
+): BlockExercise {
+  return buildBlockExercise(exercise.exerciseDefinitionId ?? crypto.randomUUID(), exercise)
+}
+
+function convertDbBlockExercise(
+  exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string },
+): BlockExercise {
+  return buildBlockExercise(exercise.id, exercise)
 }
 
 function createAmrapBlockFromTemplate(
@@ -75,7 +90,7 @@ function createAmrapBlockFromTemplate(
     kind: 'amrap',
     id: newId,
     config: { durationSeconds: templateBlock.config.durationSeconds },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExerciseToBlockExercise),
+    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
     result: null,
   }
 }
@@ -88,7 +103,7 @@ function createEmomBlockFromTemplate(
     kind: 'emom',
     id: newId,
     config: { minutes: templateBlock.config.minutes, exerciseRotation: templateBlock.config.exerciseRotation },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExerciseToBlockExercise),
+    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
     result: null,
   }
 }
@@ -101,7 +116,7 @@ function createTabataBlockFromTemplate(
     kind: 'tabata',
     id: newId,
     config: { rounds: templateBlock.config.rounds, workSeconds: templateBlock.config.workSeconds, restSeconds: templateBlock.config.restSeconds },
-    exercise: convertTemplateBlockExerciseToBlockExercise(templateBlock.exercise),
+    exercise: convertTemplateBlockExercise(templateBlock.exercise),
     result: null,
   }
 }
@@ -114,36 +129,28 @@ function createForTimeBlockFromTemplate(
     kind: 'fortime',
     id: newId,
     config: { timeCapSeconds: templateBlock.config.timeCapSeconds },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExerciseToBlockExercise),
+    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
     result: null,
   }
 }
 
-function createCardioBlockFromTemplate(
-  templateBlock: { kind: 'cardio'; config: { activity: CardioBlock['config']['activity']; targetDurationSeconds: number | null; targetDistanceMeters: number | null } },
+function createCardioBlock(
+  config: {
+    activity: CardioBlock['config']['activity']
+    targetDurationSeconds: number | null
+    targetDistanceMeters: number | null
+  },
   newId: number,
 ): CardioBlock {
   return {
     kind: 'cardio',
     id: newId,
     config: {
-      activity: templateBlock.config.activity,
-      targetDurationSeconds: templateBlock.config.targetDurationSeconds,
-      targetDistanceMeters: templateBlock.config.targetDistanceMeters,
+      activity: config.activity,
+      targetDurationSeconds: config.targetDurationSeconds,
+      targetDistanceMeters: config.targetDistanceMeters,
     },
     result: null,
-  }
-}
-
-function convertDbBlockExerciseToBlockExercise(
-  exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string },
-): { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string } {
-  return {
-    id: exercise.id,
-    name: exercise.name,
-    prescribedReps: exercise.prescribedReps,
-    load: exercise.load,
-    thumbnail: exercise.thumbnail,
   }
 }
 
@@ -155,7 +162,7 @@ function createAmrapBlockFromHistory(
     kind: 'amrap',
     id: newId,
     config: { durationSeconds: dbBlock.config.durationSeconds },
-    exercises: dbBlock.exercises.map(convertDbBlockExerciseToBlockExercise),
+    exercises: dbBlock.exercises.map(convertDbBlockExercise),
     result: null,
   }
 }
@@ -168,7 +175,7 @@ function createEmomBlockFromHistory(
     kind: 'emom',
     id: newId,
     config: { minutes: dbBlock.config.minutes, exerciseRotation: dbBlock.config.exerciseRotation },
-    exercises: dbBlock.exercises.map(convertDbBlockExerciseToBlockExercise),
+    exercises: dbBlock.exercises.map(convertDbBlockExercise),
     result: null,
   }
 }
@@ -181,7 +188,7 @@ function createTabataBlockFromHistory(
     kind: 'tabata',
     id: newId,
     config: { rounds: dbBlock.config.rounds, workSeconds: dbBlock.config.workSeconds, restSeconds: dbBlock.config.restSeconds },
-    exercise: convertDbBlockExerciseToBlockExercise(dbBlock.exercise),
+    exercise: convertDbBlockExercise(dbBlock.exercise),
     result: null,
   }
 }
@@ -194,23 +201,7 @@ function createForTimeBlockFromHistory(
     kind: 'fortime',
     id: newId,
     config: { timeCapSeconds: dbBlock.config.timeCapSeconds },
-    exercises: dbBlock.exercises.map(convertDbBlockExerciseToBlockExercise),
-    result: null,
-  }
-}
-
-function createCardioBlockFromHistory(
-  dbBlock: { kind: 'cardio'; config: { activity: CardioBlock['config']['activity']; targetDurationSeconds: number | null; targetDistanceMeters: number | null } },
-  newId: number,
-): CardioBlock {
-  return {
-    kind: 'cardio',
-    id: newId,
-    config: {
-      activity: dbBlock.config.activity,
-      targetDurationSeconds: dbBlock.config.targetDurationSeconds,
-      targetDistanceMeters: dbBlock.config.targetDistanceMeters,
-    },
+    exercises: dbBlock.exercises.map(convertDbBlockExercise),
     result: null,
   }
 }
@@ -236,7 +227,7 @@ function convertTemplateBlockToWorkoutBlock(
     case 'fortime':
       return createForTimeBlockFromTemplate(block, newId)
     case 'cardio':
-      return createCardioBlockFromTemplate(block, newId)
+      return createCardioBlock(block.config, newId)
     default:
       return null
   }
@@ -263,7 +254,7 @@ function convertHistoryBlockToWorkoutBlock(
     case 'fortime':
       return createForTimeBlockFromHistory(block, newId)
     case 'cardio':
-      return createCardioBlockFromHistory(block, newId)
+      return createCardioBlock(block.config, newId)
     default:
       return null
   }

@@ -48,7 +48,7 @@ async function handleSaveAsTemplate(name: string): Promise<void> {
   if (state.value.status !== 'success' || isSavingTemplate.value) return
 
   isSavingTemplate.value = true
-  await tryCatch(getTemplatesRepository().createFromCompletedWorkout(state.value.workout, name))
+  await tryCatch(getTemplatesRepository().createFromWorkout(state.value.workout, name))
   showSaveTemplateDialog.value = false
   isSavingTemplate.value = false
 }

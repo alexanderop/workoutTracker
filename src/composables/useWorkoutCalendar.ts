@@ -76,6 +76,23 @@ function createWorkoutDay(
   }
 }
 
+/**
+ * Maps an array of dates to WorkoutDay objects.
+ * Extracted to avoid duplication between currentWeek and monthDays computeds.
+ */
+function mapDaysToWorkoutDays(
+  days: Array<Date>,
+  workouts: ReadonlyArray<DbCompletedWorkout>,
+  today: Date,
+): Array<WorkoutDay> {
+  const grouped = groupWorkoutsByDay(workouts)
+  return days.map((day) => {
+    const dateKey = format(day, 'yyyy-MM-dd')
+    const workoutsForDay = grouped.get(dateKey) ?? []
+    return createWorkoutDay(day, workoutsForDay, today)
+  })
+}
+
 // ============================================
 // Composable (Imperative Shell)
 // ============================================
@@ -98,13 +115,7 @@ export function useWorkoutCalendar() {
     const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Monday
     const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
     const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
-    const grouped = groupWorkoutsByDay(workoutsCache.value)
-
-    return days.map((day) => {
-      const dateKey = format(day, 'yyyy-MM-dd')
-      const workoutsForDay = grouped.get(dateKey) ?? []
-      return createWorkoutDay(day, workoutsForDay, today)
-    })
+    return mapDaysToWorkoutDays(days, workoutsCache.value, today)
   })
 
   // Computed: Week number (ISO week)
@@ -137,13 +148,7 @@ export function useWorkoutCalendar() {
     const monthStart = startOfMonth(selectedMonth.value)
     const monthEnd = endOfMonth(selectedMonth.value)
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-    const grouped = groupWorkoutsByDay(workoutsCache.value)
-
-    return days.map((day) => {
-      const dateKey = format(day, 'yyyy-MM-dd')
-      const workoutsForDay = grouped.get(dateKey) ?? []
-      return createWorkoutDay(day, workoutsForDay, today)
-    })
+    return mapDaysToWorkoutDays(days, workoutsCache.value, today)
   })
 
   // Computed: Selected day workouts

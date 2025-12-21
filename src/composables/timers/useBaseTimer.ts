@@ -6,7 +6,9 @@
  */
 
 import { useIntervalFn } from '@vueuse/core'
+import type { ComputedRef } from 'vue'
 import { computed, readonly, ref } from 'vue'
+import { formatTime } from '@/lib/workout-utils'
 
 type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
 
@@ -25,6 +27,20 @@ type BaseTimerConfig = Readonly<{
   onComplete?: () => void
   tickInterval?: number
 }>
+
+/**
+ * Creates formatted time computed properties for timer displays.
+ * Shared by AMRAP, EMOM, and Tabata timers to reduce duplication.
+ */
+export function createFormattedTimeComputeds(
+  elapsedSeconds: ComputedRef<number>,
+  remainingSeconds: ComputedRef<number>,
+) {
+  return {
+    formattedElapsed: computed(() => formatTime(elapsedSeconds.value)),
+    formattedRemaining: computed(() => formatTime(remainingSeconds.value)),
+  }
+}
 
 export function useBaseTimer(config: BaseTimerConfig = {}) {
   const { tickInterval = 100 } = config

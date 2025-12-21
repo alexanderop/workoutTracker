@@ -31,6 +31,20 @@ function templateExercisesToWorkoutExercises(
 }
 
 /**
+ * Convert a workout block exercise to a template block exercise.
+ * Extracted to avoid duplication in workoutBlockToTemplateBlock.
+ */
+function blockExerciseToTemplateExercise(ex: DbBlockExercise): DbTemplateBlockExercise {
+  return {
+    exerciseDefinitionId: null,
+    name: ex.name,
+    prescribedReps: ex.prescribedReps,
+    load: ex.load,
+    thumbnail: ex.thumbnail,
+  }
+}
+
+/**
  * Convert a workout block to a template block.
  */
 function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplateBlock {
@@ -49,49 +63,25 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
       return {
         kind: 'emom',
         config: block.config,
-        exercises: block.exercises.map((ex) => ({
-          exerciseDefinitionId: null,
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
     case 'amrap':
       return {
         kind: 'amrap',
         config: block.config,
-        exercises: block.exercises.map((ex) => ({
-          exerciseDefinitionId: null,
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
     case 'tabata':
       return {
         kind: 'tabata',
         config: block.config,
-        exercise: {
-          exerciseDefinitionId: null,
-          name: block.exercise.name,
-          prescribedReps: block.exercise.prescribedReps,
-          load: block.exercise.load,
-          thumbnail: block.exercise.thumbnail,
-        },
+        exercise: blockExerciseToTemplateExercise(block.exercise),
       }
     case 'fortime':
       return {
         kind: 'fortime',
         config: block.config,
-        exercises: block.exercises.map((ex) => ({
-          exerciseDefinitionId: null,
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: ex.load,
-          thumbnail: ex.thumbnail,
-        })),
+        exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
     case 'cardio':
       return {
@@ -212,24 +202,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     },
 
     async createFromWorkout(
-      workout: Readonly<DbActiveWorkout>,
-      templateName: string,
-    ): Promise<DbWorkoutTemplate> {
-      const template: DbWorkoutTemplate = {
-        id: generateId(),
-        name: templateName,
-        blocks: workout.blocks.map(workoutBlockToTemplateBlock),
-        createdAt: Date.now(),
-        lastUsedAt: null,
-        tags: [],
-      }
-
-      await db.templates.add(template)
-      return template
-    },
-
-    async createFromCompletedWorkout(
-      workout: Readonly<DbCompletedWorkout>,
+      workout: Readonly<DbActiveWorkout | DbCompletedWorkout>,
       templateName: string,
     ): Promise<DbWorkoutTemplate> {
       const template: DbWorkoutTemplate = {

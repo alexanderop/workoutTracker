@@ -6,8 +6,7 @@
 
 import { computed, ref, shallowRef } from 'vue'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
-import { formatTime } from '@/lib/workout-utils'
-import { useBaseTimer } from './useBaseTimer'
+import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 type TabataTimerConfig = Readonly<{
   onPhaseChange?: (phase: 'work' | 'rest') => void
@@ -87,8 +86,10 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     return Math.min(100, (baseTimer.elapsedSeconds.value / totalSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
-  const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
+  const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(
+    baseTimer.elapsedSeconds,
+    remainingSeconds,
+  )
 
   // Methods
   function initialize(tabataBlock: TabataBlock) {

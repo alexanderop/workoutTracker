@@ -6,8 +6,7 @@
 
 import { computed, ref, shallowRef } from 'vue'
 import type { AmrapBlock, AmrapResult } from '@/types/blocks'
-import { formatTime } from '@/lib/workout-utils'
-import { useBaseTimer } from './useBaseTimer'
+import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 type AmrapTimerConfig = Readonly<{
   onComplete?: () => void
@@ -40,8 +39,10 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
     return Math.min(100, (baseTimer.elapsedSeconds.value / block.value.config.durationSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
-  const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
+  const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(
+    baseTimer.elapsedSeconds,
+    remainingSeconds,
+  )
 
   // Methods
   function initialize(amrapBlock: AmrapBlock) {
