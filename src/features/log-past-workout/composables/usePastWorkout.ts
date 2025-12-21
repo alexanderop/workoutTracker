@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue'
-import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock } from '@/types/blocks'
+import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock, BlockExercise } from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { getTemplatesRepository } from '@/db'
@@ -54,8 +54,6 @@ function createStrengthBlockFromHistory(
     image: historyBlock.image,
   }
 }
-
-type BlockExercise = { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }
 
 function buildBlockExercise(
   id: string,
