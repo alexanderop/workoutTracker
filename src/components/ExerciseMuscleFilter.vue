@@ -4,27 +4,19 @@ import type { Muscle } from '@/types/exercises'
 import { LayoutGrid } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { MUSCLE_COLORS } from '@/lib/exercises/muscleMetadata'
 
 const modelValue = defineModel<Muscle | 'all'>({ required: true })
 const { t } = useI18n()
 
-const muscleColors: Record<Muscle, string> = {
-  chest: 'bg-muscle-chest',
-  back: 'bg-muscle-back',
-  legs: 'bg-muscle-legs',
-  shoulders: 'bg-muscle-shoulders',
-  arms: 'bg-muscle-arms',
-  core: 'bg-muscle-core',
-}
-
 const filters = computed<Array<{ value: Muscle | 'all'; label: string; color?: string }>>(() => [
   { value: 'all', label: t('exercises.filters.all') },
-  { value: 'chest', label: t('exercises.muscle.chest'), color: muscleColors.chest },
-  { value: 'back', label: t('exercises.muscle.back'), color: muscleColors.back },
-  { value: 'legs', label: t('exercises.muscle.legs'), color: muscleColors.legs },
-  { value: 'shoulders', label: t('exercises.muscle.shoulders'), color: muscleColors.shoulders },
-  { value: 'arms', label: t('exercises.muscle.arms'), color: muscleColors.arms },
-  { value: 'core', label: t('exercises.muscle.core'), color: muscleColors.core },
+  { value: 'chest', label: t('exercises.muscle.chest'), color: MUSCLE_COLORS.chest },
+  { value: 'back', label: t('exercises.muscle.back'), color: MUSCLE_COLORS.back },
+  { value: 'legs', label: t('exercises.muscle.legs'), color: MUSCLE_COLORS.legs },
+  { value: 'shoulders', label: t('exercises.muscle.shoulders'), color: MUSCLE_COLORS.shoulders },
+  { value: 'arms', label: t('exercises.muscle.arms'), color: MUSCLE_COLORS.arms },
+  { value: 'core', label: t('exercises.muscle.core'), color: MUSCLE_COLORS.core },
 ])
 </script>
 

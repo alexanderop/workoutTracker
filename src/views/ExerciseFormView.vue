@@ -1,6 +1,7 @@
 <script setup lang="ts">
+/* eslint-disable vue/no-unused-refs -- imageInput ref used by useImageUpload composable */
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import { computed, onMounted, useTemplateRef } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDialogState } from '@/composables/useDialogState'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
-import { useImageConversion } from '@/composables/useImageConversion'
+import { useImageUpload } from '@/features/exercises/composables/useImageUpload'
 import {
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
@@ -51,53 +52,12 @@ onMounted(() => {
   }
 })
 
-// Image upload - inline composable grouping related logic
-function useImageUpload() {
-  const { convert } = useImageConversion()
-  const inputRef = useTemplateRef<HTMLInputElement>('imageInput')
-
-  const displayText = computed(() => {
-    if (!form.value.image) return ''
-    const sizeKb = Math.round(form.value.image.size / 1024)
-    return `${t('exercises.create.imageUploaded')} (${sizeKb} KB)`
-  })
-
-  function trigger() {
-    inputRef.value?.click()
-  }
-
-  async function handleSelect(event: Event) {
-    const input = event.target
-    if (!(input instanceof HTMLInputElement)) return
-
-    const file = input.files?.[0]
-    input.value = '' // Reset for re-selection
-    if (!file) return
-
-    form.value.imageError = undefined
-    const result = await convert(file)
-
-    if (result.success) {
-      form.value.image = result.blob
-      return
-    }
-
-    form.value.imageError =
-      result.error === 'file-too-large'
-        ? t('exercises.create.errors.imageTooLarge')
-        : result.error === 'invalid-image'
-          ? t('exercises.create.errors.invalidImage')
-          : t('exercises.create.errors.conversionFailed')
-  }
-
-  return { displayText, trigger, handleSelect }
-}
-
+// Image upload
 const {
   displayText: imageDisplayText,
   trigger: handleImageClick,
   handleSelect: handleImageSelect,
-} = useImageUpload()
+} = useImageUpload(form)
 
 // Modal state - only one modal can be open at a time
 type ModalKind = 'equipment' | 'muscle' | 'type' | 'metrics'
