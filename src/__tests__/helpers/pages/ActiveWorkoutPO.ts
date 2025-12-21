@@ -355,4 +355,16 @@ export class ActiveWorkoutPO {
     // Wait for navigation to summary
     await this.common.waitForRoute(/^\/workout\/summary\//)
   }
+
+  /**
+   * Removes the current block via the header menu.
+   * Opens the menu and clicks "Remove Block".
+   */
+  async removeCurrentBlock(): Promise<void> {
+    await expect.poll(() => this.getMenuTrigger()).toBeTruthy()
+    await userEvent.click(await this.getMenuTrigger())
+
+    await expect.element(page.getByRole('menuitem', { name: /remove block/i })).toBeVisible()
+    await page.getByRole('menuitem', { name: /remove block/i }).click()
+  }
 }

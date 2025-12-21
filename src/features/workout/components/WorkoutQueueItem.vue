@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, GripVertical } from 'lucide-vue-next'
+import { Check, GripVertical, X } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,7 @@ import {
   isTimedBlock,
 } from '@/types/blocks'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   block: WorkoutBlock
@@ -25,6 +26,7 @@ const { block, status, index } = defineProps<Props>()
 
 const emit = defineEmits<{
   select: []
+  remove: []
 }>()
 
 const { t } = useI18n()
@@ -111,5 +113,16 @@ const isCompleted = computed(() => status === 'completed')
     >
       <Check class="icon-md status-success" aria-hidden="true" />
     </div>
+
+    <!-- Remove button -->
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      class="flex-shrink-0 text-muted-foreground hover:text-destructive"
+      :aria-label="t('common.aria.removeBlock', { name: blockName })"
+      @click.stop="emit('remove')"
+    >
+      <X class="icon-sm" aria-hidden="true" />
+    </Button>
   </div>
 </template>

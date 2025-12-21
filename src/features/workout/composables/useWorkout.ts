@@ -36,7 +36,8 @@ export function isSetReady(set: Readonly<Set>): boolean {
   const kg = Number(set.kg)
   const reps = Number(set.reps)
   const rir = Number(set.rir)
-  return kg > 0 && reps > 0 && rir >= 0 && set.rir !== ''
+  // Allow 0 weight for bodyweight exercises, but require reps > 0
+  return set.kg !== '' && kg >= 0 && reps > 0 && rir >= 0 && set.rir !== ''
 }
 
 /**

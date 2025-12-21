@@ -24,7 +24,7 @@ const emit = defineEmits<{
   'add-block': []
 }>()
 
-const { workout, selectBlock, reorderBlocks } = useWorkout()
+const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
 
 // Create a mutable copy for sortable to work with
 const blocksList = ref([...workout.value.blocks])
@@ -89,6 +89,14 @@ function handleAddBlock() {
   open.value = false
   emit('add-block')
 }
+
+function handleRemoveBlock(index: number) {
+  removeBlock(index)
+  // Close drawer if no blocks remain
+  if (workout.value.blocks.length === 0) {
+    open.value = false
+  }
+}
 </script>
 
 <template>
@@ -135,6 +143,7 @@ function handleAddBlock() {
           :index="index"
           :status="getBlockStatus(index)"
           @select="handleSelectBlock(index)"
+          @remove="handleRemoveBlock(index)"
         />
       </div>
 
