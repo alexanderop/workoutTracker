@@ -49,7 +49,8 @@ export class ExercisesPO {
    * @param file - The File object to upload
    */
   async uploadImage(file: File): Promise<void> {
-    const fileInput = document.querySelector('[data-testid="exercise-image-upload"]')
+    const fileInputLocator = page.getByTestId('exercise-image-upload')
+    const fileInput = await fileInputLocator.element()
     if (!(fileInput instanceof HTMLInputElement)) {
       throw new Error('File input not found')
     }

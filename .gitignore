@@ -39,6 +39,9 @@ coverage
 test-results/
 playwright-report/
 
+# QA sandbox (test fixtures for Claude QA)
+.qa-sandbox/
+
 # Performance budget artifacts
 stats.html
 .lighthouseci/

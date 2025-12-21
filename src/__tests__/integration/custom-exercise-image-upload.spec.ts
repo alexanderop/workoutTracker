@@ -32,7 +32,8 @@ describe('Custom Exercise Image Upload', () => {
     const imageFile = await createTestImageFile('test-exercise-image.png')
 
     // Find file input and upload using DataTransfer (more reliable than userEvent.upload for image files)
-    const fileInput = document.querySelector('[data-testid="exercise-image-upload"]')
+    const fileInputLocator = page.getByTestId('exercise-image-upload')
+    const fileInput = await fileInputLocator.element()
     if (!(fileInput instanceof HTMLInputElement)) {
       throw new Error('File input not found')
     }

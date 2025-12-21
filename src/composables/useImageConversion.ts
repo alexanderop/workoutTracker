@@ -13,16 +13,9 @@ type UseImageConversionReturn = {
   state: Readonly<Ref<ConversionState>>
   isConverting: ComputedRef<boolean>
   hasError: ComputedRef<boolean>
-  errorMessage: ComputedRef<string | undefined>
   convertedBlob: ComputedRef<Blob | undefined>
   convert: (file: File) => Promise<ConversionResult>
   reset: () => void
-}
-
-const ERROR_MESSAGES: Record<ErrorCode, string> = {
-  'file-too-large': 'Image exceeds 1MB after conversion. Please use a smaller image.',
-  'conversion-failed': 'Failed to convert image. Please try a different file.',
-  'invalid-image': 'Invalid image file. Please select a valid image.',
 }
 
 /**
@@ -31,7 +24,6 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
  * Provides:
  * - Automatic WebP conversion with size/dimension limits
  * - Reactive state tracking (idle, converting, success, error)
- * - Error messages for user feedback
  */
 export function useImageConversion(): UseImageConversionReturn {
   const state = ref<ConversionState>({ status: 'idle' })
@@ -39,11 +31,6 @@ export function useImageConversion(): UseImageConversionReturn {
   const isConverting = computed(() => state.value.status === 'converting')
 
   const hasError = computed(() => state.value.status === 'error')
-
-  const errorMessage = computed(() => {
-    if (state.value.status !== 'error') return undefined
-    return ERROR_MESSAGES[state.value.error]
-  })
 
   const convertedBlob = computed(() => {
     if (state.value.status !== 'success') return undefined
@@ -68,7 +55,6 @@ export function useImageConversion(): UseImageConversionReturn {
     state: readonly(state),
     isConverting,
     hasError,
-    errorMessage,
     convertedBlob,
     convert,
     reset,
