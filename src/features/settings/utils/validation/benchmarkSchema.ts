@@ -15,7 +15,7 @@ const dbBenchmarkExerciseSchema = z
     exerciseDefinitionId: z.string().nullable(),
     name: safeStringSchema.min(1).max(200),
     prescribedReps: z.number().int().min(0).max(10000),
-    thumbnail: z.string().min(1).max(10),
+    image: z.null(), // Blob can't be serialized to JSON, so always null in exports
   })
   .strict()
 

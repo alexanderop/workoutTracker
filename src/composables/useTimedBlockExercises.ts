@@ -16,7 +16,7 @@ export function useTimedBlockExercises() {
       name: exercise.name,
       prescribedReps: 10,
       load: null,
-      thumbnail: exercise.icon,
+      image: exercise.image ?? null,
     }
     exercises.value = [...exercises.value, newExercise]
     toggleShowExercisePicker(false)

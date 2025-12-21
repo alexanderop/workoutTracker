@@ -7,7 +7,7 @@ const DEFAULTS: Readonly<Omit<DbWorkoutExercise, 'id' | 'sets'>> = {
   name: 'Bench Press',
   equipment: 'Barbell',
   targetReps: 8,
-  thumbnail: '🏋️',
+  image: null,
   orderIndex: 0,
 }
 

@@ -13,7 +13,6 @@ import type { BenchmarkType } from '@/types/benchmark'
  */
 export type DbCustomExercise = {
   id: string
-  icon: string
   name: string
   equipment: Equipment | null
   muscle: Muscle | null
@@ -21,6 +20,7 @@ export type DbCustomExercise = {
   metrics: Metrics
   createdAt: number
   updatedAt: number
+  image: Blob | null
 }
 
 /**
@@ -45,9 +45,9 @@ export type DbWorkoutExercise = {
   name: string
   equipment: string
   targetReps: number
-  thumbnail: string
   sets: ReadonlyArray<DbSet>
   orderIndex: number
+  image: Blob | null
 }
 
 // ============================================
@@ -59,7 +59,7 @@ export type DbBlockExercise = {
   name: string
   prescribedReps: number
   load: string | null
-  thumbnail: string
+  image: Blob | null
 }
 
 // ============================================
@@ -74,7 +74,7 @@ export type DbBenchmarkExercise = {
   exerciseDefinitionId: string | null
   name: string
   prescribedReps: number
-  thumbnail: string
+  image: Blob | null
 }
 
 /**
@@ -173,9 +173,9 @@ export type DbStrengthBlock = {
   name: string
   equipment: string
   targetReps: number
-  thumbnail: string
   sets: ReadonlyArray<DbSet>
   orderIndex: number
+  image: Blob | null
 }
 
 export type DbEmomBlock = {
@@ -295,7 +295,7 @@ export type DbTemplateBlockExercise = {
   name: string
   prescribedReps: number
   load: string | null
-  thumbnail: string
+  image: Blob | null
 }
 
 /**
@@ -307,8 +307,8 @@ export type DbTemplateStrengthBlock = {
   name: string
   equipment: string
   targetReps: number
-  thumbnail: string
   defaultSetCount: number
+  image: Blob | null
 }
 
 type DbTemplateEmomBlock = {

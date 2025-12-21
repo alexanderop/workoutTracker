@@ -16,7 +16,6 @@ export async function seedPopularExercises(): Promise<void> {
   const now = Date.now()
   const exercisesToSeed: Array<DbCustomExercise> = popularExercises.map((exercise) => ({
     id: generateId(),
-    icon: exercise.icon,
     name: exercise.name,
     equipment: exercise.equipment,
     muscle: exercise.muscle,
@@ -24,6 +23,7 @@ export async function seedPopularExercises(): Promise<void> {
     metrics: exercise.metrics,
     createdAt: now,
     updatedAt: now,
+    image: null,
   }))
 
   // Add each exercise using the repository

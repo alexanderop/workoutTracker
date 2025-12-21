@@ -3,6 +3,7 @@ import { Check, Circle, type LucideIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { BlockExercise } from '@/types/blocks'
 
 type ExerciseStatus = 'completed' | 'active' | 'pending'
@@ -91,7 +92,7 @@ const ariaLabel = computed(() => {
       <!-- Exercise number, thumbnail, and name -->
       <div class="flex items-center gap-1.5 min-w-0">
         <span class="text-sm font-medium text-muted-foreground shrink-0">{{ exerciseNumber }}.</span>
-        <span class="text-base shrink-0">{{ exercise.thumbnail }}</span>
+        <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="sm" />
         <span class="font-medium truncate">{{ exercise.name }}</span>
       </div>
 

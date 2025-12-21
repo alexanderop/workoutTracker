@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { BlockExercise } from '@/types/blocks'
 
 const { t } = useI18n()
@@ -66,7 +67,7 @@ function handleAdd() {
       :key="exercise.id"
       class="flex items-center gap-3 bg-secondary/30 rounded-lg p-3"
     >
-      <span class="text-xl">{{ exercise.thumbnail }}</span>
+      <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="md" />
       <div class="flex-1 min-w-0">
         <p class="font-medium truncate">{{ exercise.name }}</p>
         <div class="flex gap-2 mt-1">

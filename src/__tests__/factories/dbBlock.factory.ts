@@ -8,7 +8,7 @@ const STRENGTH_DEFAULTS: Readonly<Omit<DbStrengthBlock, 'id' | 'sets'>> = {
   name: 'Bench Press',
   equipment: 'Barbell',
   targetReps: 8,
-  thumbnail: '🏋️',
+  image: null,
   orderIndex: 0,
 }
 

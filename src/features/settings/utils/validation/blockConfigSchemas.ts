@@ -12,7 +12,7 @@ export const blockExerciseFieldsBase = {
   name: safeStringSchema.min(1).max(200),
   prescribedReps: z.number().int().min(0).max(1000),
   load: z.string().max(50).nullable(),
-  thumbnail: z.string().max(50),
+  image: z.null(), // Blob can't be serialized to JSON, so always null in exports
 }
 
 // ============================================
@@ -27,7 +27,7 @@ export const strengthBlockFieldsBase = {
   name: safeStringSchema.min(1).max(200),
   equipment: z.string().max(100),
   targetReps: z.number().int().min(1).max(1000),
-  thumbnail: z.string().max(50),
+  image: z.null(), // Blob can't be serialized to JSON, so always null in exports
 }
 
 // ============================================

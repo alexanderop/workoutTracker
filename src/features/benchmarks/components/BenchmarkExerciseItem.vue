@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { GripVertical, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
 import { useI18n } from 'vue-i18n'
 
@@ -32,9 +33,7 @@ const { t } = useI18n()
     </div>
 
     <!-- Exercise icon -->
-    <div class="flex-shrink-0 text-2xl">
-      {{ exercise.thumbnail }}
-    </div>
+    <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="md" />
 
     <!-- Exercise info -->
     <div class="min-w-0 flex-1">

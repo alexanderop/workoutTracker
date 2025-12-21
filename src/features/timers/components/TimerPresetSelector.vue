@@ -142,7 +142,7 @@ function createTabataBlock(rounds: number, workSeconds: number, restSeconds: num
     kind: 'tabata',
     id: Date.now(),
     config: { rounds, workSeconds, restSeconds },
-    exercise: { id: 'standalone', name: 'Work', prescribedReps: 0, load: null, thumbnail: '' },
+    exercise: { id: 'standalone', name: 'Work', prescribedReps: 0, load: null, image: null },
     result: null,
   }
 }

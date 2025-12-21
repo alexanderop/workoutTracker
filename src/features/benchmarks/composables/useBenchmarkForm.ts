@@ -7,7 +7,7 @@ export type BenchmarkFormExercise = {
   exerciseDefinitionId: string | null
   name: string
   prescribedReps: number
-  thumbnail: string
+  image: Blob | null
 }
 
 type BenchmarkFormState = {
@@ -43,7 +43,7 @@ export function useBenchmarkForm() {
       exerciseDefinitionId: exercise.id ?? null,
       name: exercise.name,
       prescribedReps: reps,
-      thumbnail: exercise.icon,
+      image: exercise.image ?? null,
     })
   }
 
@@ -79,7 +79,7 @@ export function useBenchmarkForm() {
         exerciseDefinitionId: ex.exerciseDefinitionId,
         name: ex.name,
         prescribedReps: ex.prescribedReps,
-        thumbnail: ex.thumbnail,
+        image: ex.image,
       })),
     }
   }

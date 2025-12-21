@@ -3,6 +3,7 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 
 import { ChevronRight } from 'lucide-vue-next'
 
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'
 
 const { exercise } = defineProps<{
@@ -19,11 +20,7 @@ defineEmits<{
     class="w-full flex items-center gap-4 px-4 py-4 text-left rounded-xl transition-all duration-150 hover:bg-muted/50 active:bg-muted active:scale-[0.99] group"
     @click="$emit('select', exercise)"
   >
-    <div
-      class="flex-shrink-0 w-12 h-12 rounded-lg bg-muted/60 flex items-center justify-center text-2xl group-hover:bg-muted group-active:scale-95 transition-all duration-150"
-    >
-      {{ exercise.icon }}
-    </div>
+    <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="lg" />
     <div class="min-w-0 flex-1">
       <p class="font-semibold text-base tracking-tight truncate">
         {{ exercise.name }}

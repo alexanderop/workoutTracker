@@ -29,7 +29,7 @@ describe('Template Flow', () => {
 
   describe('Test 1a: Create template from finished workout', () => {
     it('saves a completed workout as a template', async () => {
-      const { builder, workout, getByRole, queryByRole, common, router, navigateTo, cleanup } =
+      const { builder, workout, getByRole, queryByRole, common, router, cleanup } =
         await createTestApp()
 
       // Start new workout from home page
@@ -130,7 +130,7 @@ describe('Template Flow', () => {
 
   describe('Test 1b: Start workout from template', () => {
     it('starts a new workout from an existing template', async () => {
-      const { builder, getByRole, getByText, common, router, navigateTo, cleanup } =
+      const { builder, getByRole, getByText, common, router, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -268,7 +268,7 @@ describe('Template Flow', () => {
 
   describe('Test 2: Create template from scratch', () => {
     it('creates a new template with name and exercises', async () => {
-      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+      const { getByRole, common, router, cleanup } = await createTestApp()
 
       // Navigate to Workouts page and click Templates tab
       await common.navigateToWorkoutsAndClickTab('templates')

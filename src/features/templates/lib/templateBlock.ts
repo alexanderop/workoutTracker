@@ -23,7 +23,7 @@ function toTemplateBlockExercise(exercise: BlockExercise): DbTemplateBlockExerci
     name: exercise.name,
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
-    thumbnail: exercise.thumbnail,
+    image: exercise.image,
   }
 }
 
@@ -40,7 +40,7 @@ export function createTemplateStrengthBlock(exercise: Exercise): DbTemplateStren
     name: exercise.name,
     equipment: popularExercise?.equipment ?? exercise.equipment ?? '',
     targetReps: 0,
-    thumbnail: popularExercise?.icon ?? exercise.icon,
+    image: exercise.image ?? null,
     defaultSetCount: 3,
   }
 }

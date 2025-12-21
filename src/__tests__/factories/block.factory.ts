@@ -9,7 +9,7 @@ const STRENGTH_DEFAULTS: Readonly<Omit<StrengthBlock, 'sets'>> = {
   name: 'Bench Press',
   equipment: 'Barbell',
   targetReps: 8,
-  thumbnail: '🏋️',
+  image: null,
 }
 
 export function createStrengthBlock(overrides: Partial<StrengthBlock> = {}): StrengthBlock {

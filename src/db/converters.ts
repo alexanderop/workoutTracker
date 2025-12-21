@@ -78,7 +78,7 @@ function blockExerciseToDb(exercise: Readonly<BlockExercise>): DbBlockExercise {
     name: exercise.name,
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
-    thumbnail: exercise.thumbnail,
+    image: exercise.image,
   }
 }
 
@@ -88,7 +88,7 @@ function dbToBlockExercise(dbExercise: Readonly<DbBlockExercise>): BlockExercise
     name: dbExercise.name,
     prescribedReps: dbExercise.prescribedReps,
     load: dbExercise.load,
-    thumbnail: dbExercise.thumbnail,
+    image: dbExercise.image,
   }
 }
 
@@ -205,9 +205,9 @@ function strengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: number): 
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
-    thumbnail: block.thumbnail,
     sets: block.sets.map(setToDb),
     orderIndex,
+    image: block.image,
   }
 }
 
@@ -219,8 +219,8 @@ function dbToStrengthBlock(dbBlock: Readonly<DbStrengthBlock>, index: number): S
     name: dbBlock.name,
     equipment: dbBlock.equipment,
     targetReps: dbBlock.targetReps,
-    thumbnail: dbBlock.thumbnail,
     sets: dbBlock.sets.map(dbToSet),
+    image: dbBlock.image,
   }
 }
 
@@ -477,13 +477,13 @@ export function dbToWorkout(dbWorkout: Readonly<DbActiveWorkout>): Workout {
 export function dbToCustomExercise(dbExercise: Readonly<DbCustomExercise>): CustomExercise {
   return {
     id: dbExercise.id,
-    icon: dbExercise.icon,
     name: dbExercise.name,
     equipment: dbExercise.equipment ?? undefined,
     muscle: dbExercise.muscle ?? undefined,
     type: dbExercise.type,
     metrics: dbExercise.metrics,
     createdAt: dbExercise.createdAt,
+    image: dbExercise.image ?? undefined,
   }
 }
 
@@ -496,7 +496,6 @@ export function createDbCustomExercise(
   const now = Date.now()
   return {
     id: generateId(),
-    icon: exercise.icon,
     name: exercise.name,
     equipment: exercise.equipment ?? null,
     muscle: exercise.muscle ?? null,
@@ -504,6 +503,7 @@ export function createDbCustomExercise(
     metrics: exercise.metrics,
     createdAt: now,
     updatedAt: now,
+    image: exercise.image ?? null,
   }
 }
 

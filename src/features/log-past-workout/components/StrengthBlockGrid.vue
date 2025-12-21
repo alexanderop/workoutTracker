@@ -4,6 +4,7 @@ import { Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 
@@ -41,7 +42,7 @@ function handleRemoveSet(setIndex: number) {
   <Card :data-testid="`strength-block-${blockIndex}`">
     <CardHeader class="pb-3">
       <CardTitle class="text-base flex items-center gap-2">
-        <span class="text-xl">{{ block.thumbnail }}</span>
+        <ExerciseAvatar :name="block.name" :image="block.image" size="md" />
         {{ block.name }}
       </CardTitle>
     </CardHeader>

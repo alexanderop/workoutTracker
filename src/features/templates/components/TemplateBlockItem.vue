@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { DbTemplateBlock } from '@/db/schema'
 import { BLOCK_COLORS, BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
 import { CARDIO_ACTIVITIES } from '@/types/blocks'
@@ -31,9 +32,23 @@ const emit = defineEmits<Emits>()
 
 const isStrength = computed(() => block.kind === 'strength')
 
+const strengthImage = computed(() => {
+  if (block.kind === 'strength') {
+    return block.image
+  }
+  return null
+})
+
+const strengthName = computed(() => {
+  if (block.kind === 'strength') {
+    return block.name
+  }
+  return ''
+})
+
 const blockIcon = computed(() => {
   if (block.kind === 'strength') {
-    return block.thumbnail
+    return null // Use ExerciseAvatar instead
   }
   if (block.kind === 'cardio') {
     return CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)?.icon ?? '🏃'
@@ -125,7 +140,14 @@ function decrementSetCount(): void {
   <div class="bg-muted/30 rounded-xl border border-border/50 overflow-hidden">
     <!-- Top row: Block info -->
     <div class="flex items-center gap-3 p-4">
+      <ExerciseAvatar
+        v-if="block.kind === 'strength'"
+        :name="strengthName"
+        :image="strengthImage"
+        size="lg"
+      />
       <div
+        v-else
         :class="[
           'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-2xl',
           blockColors.bg,

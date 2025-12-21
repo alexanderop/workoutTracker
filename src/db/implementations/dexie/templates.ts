@@ -26,7 +26,7 @@ function templateExercisesToWorkoutExercises(
     name: ex.name,
     prescribedReps: ex.prescribedReps,
     load: ex.load,
-    thumbnail: ex.thumbnail,
+    image: ex.image,
   }))
 }
 
@@ -40,7 +40,7 @@ function blockExerciseToTemplateExercise(ex: DbBlockExercise): DbTemplateBlockEx
     name: ex.name,
     prescribedReps: ex.prescribedReps,
     load: ex.load,
-    thumbnail: ex.thumbnail,
+    image: ex.image,
   }
 }
 
@@ -56,8 +56,8 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
         name: block.name,
         equipment: block.equipment,
         targetReps: block.targetReps,
-        thumbnail: block.thumbnail,
         defaultSetCount: block.sets.length,
+        image: block.image,
       } satisfies DbTemplateStrengthBlock
     case 'emom':
       return {
@@ -123,9 +123,9 @@ function templateBlockToWorkoutBlock(
       name: templateBlock.name,
       equipment: templateBlock.equipment,
       targetReps: templateBlock.targetReps,
-      thumbnail: templateBlock.thumbnail,
       sets,
       orderIndex,
+      image: templateBlock.image,
     } satisfies DbStrengthBlock
   }
 
@@ -159,7 +159,7 @@ function templateBlockToWorkoutBlock(
           name: templateBlock.exercise.name,
           prescribedReps: templateBlock.exercise.prescribedReps,
           load: templateBlock.exercise.load,
-          thumbnail: templateBlock.exercise.thumbnail,
+          image: templateBlock.exercise.image,
         },
         result: null,
         orderIndex,

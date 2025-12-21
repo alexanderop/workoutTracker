@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { generateId } from '@/db/index'
 import type { BlockExercise, TabataConfig as TabataBlockConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
+import type { Exercise } from '@/composables/useExerciseSearch'
 import TabataConfigComponent, { type TabataConfigModel } from './TabataConfig.vue'
 
 const { t } = useI18n()
@@ -38,13 +40,13 @@ watch(open, (isOpen) => {
   }
 })
 
-function handleSelectExercise(selected: { name: string; icon: string }) {
+function handleSelectExercise(selected: Exercise) {
   exercise.value = {
     id: generateId(),
     name: selected.name,
     prescribedReps: 0,
     load: null,
-    thumbnail: selected.icon,
+    image: selected.image ?? null,
   }
 }
 
@@ -98,7 +100,7 @@ function handleClose() {
           </div>
 
           <div v-else class="flex items-center gap-3 bg-secondary/30 rounded-lg p-3">
-            <span class="text-xl">{{ exercise.thumbnail }}</span>
+            <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="md" />
             <div class="flex-1">
               <p class="font-medium">{{ exercise.name }}</p>
             </div>

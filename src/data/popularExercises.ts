@@ -2,7 +2,6 @@ import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises
 
 export type PopularExercise = {
   name: string
-  icon: string
   equipment: Equipment
   muscle: Muscle
   type: ExerciseType
@@ -42,7 +41,6 @@ function validateUniqueExercises<const T extends ReadonlyArray<PopularExercise>>
 export const popularExercises = validateUniqueExercises([
   {
     name: 'Bench Press',
-    icon: '🏋️',
     equipment: 'barbell',
     muscle: 'chest',
     type: 'compound',
@@ -50,7 +48,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Squat',
-    icon: '🦵',
     equipment: 'barbell',
     muscle: 'legs',
     type: 'compound',
@@ -58,7 +55,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Deadlift',
-    icon: '💀',
     equipment: 'barbell',
     muscle: 'back',
     type: 'compound',
@@ -66,7 +62,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Overhead Press',
-    icon: '⬆️',
     equipment: 'barbell',
     muscle: 'shoulders',
     type: 'compound',
@@ -74,7 +69,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Barbell Row',
-    icon: '📦',
     equipment: 'barbell',
     muscle: 'back',
     type: 'compound',
@@ -83,7 +77,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Upper Body Push
   {
     name: 'Push-ups',
-    icon: '🏃',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -91,7 +84,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Diamond Push-ups',
-    icon: '💎',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -99,7 +91,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Wide Push-ups',
-    icon: '🤸',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -107,7 +98,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Decline Push-ups',
-    icon: '📐',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -115,7 +105,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Pike Push-ups',
-    icon: '⛰️',
     equipment: 'bodyweight',
     muscle: 'shoulders',
     type: 'compound',
@@ -123,7 +112,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Handstand Push-ups',
-    icon: '🤸',
     equipment: 'bodyweight',
     muscle: 'shoulders',
     type: 'compound',
@@ -131,7 +119,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Beast Push-up',
-    icon: '🐻',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -139,7 +126,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Clap Push-ups',
-    icon: '👏',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -147,7 +133,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Dips',
-    icon: '💪',
     equipment: 'bodyweight',
     muscle: 'chest',
     type: 'compound',
@@ -155,7 +140,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bench Dips',
-    icon: '🪑',
     equipment: 'bodyweight',
     muscle: 'arms',
     type: 'compound',
@@ -164,7 +148,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Upper Body Pull
   {
     name: 'Pull-ups',
-    icon: '🤸',
     equipment: 'bodyweight',
     muscle: 'back',
     type: 'compound',
@@ -172,7 +155,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Chin-ups',
-    icon: '💪',
     equipment: 'bodyweight',
     muscle: 'back',
     type: 'compound',
@@ -180,7 +162,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Inverted Rows',
-    icon: '🚣',
     equipment: 'bodyweight',
     muscle: 'back',
     type: 'compound',
@@ -188,7 +169,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Prone Y-Raises',
-    icon: '🦅',
     equipment: 'bodyweight',
     muscle: 'back',
     type: 'isolation',
@@ -197,7 +177,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Legs
   {
     name: 'Bodyweight Squat',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -205,7 +184,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Jump Squats',
-    icon: '⬆️',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -213,7 +191,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Pistol Squats',
-    icon: '🔫',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -221,7 +198,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Lunges',
-    icon: '🚶',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -229,7 +205,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Reverse Lunges',
-    icon: '🔙',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -237,7 +212,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Walking Lunges',
-    icon: '🚶',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -245,7 +219,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Jump Lunges',
-    icon: '⚡',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -253,7 +226,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bulgarian Split Squat',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -261,7 +233,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Step-ups',
-    icon: '📶',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -269,7 +240,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Calf Raises',
-    icon: '🦶',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'isolation',
@@ -277,7 +247,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Glute Bridges',
-    icon: '🌉',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -285,7 +254,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Single Leg Glute Bridge',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'compound',
@@ -293,7 +261,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Wall Sit',
-    icon: '🧱',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'stability',
@@ -301,7 +268,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Donkey Kicks',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'isolation',
@@ -310,7 +276,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Core
   {
     name: 'Plank',
-    icon: '⭐',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -318,7 +283,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Side Plank',
-    icon: '⭐',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -326,7 +290,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Hollow Body Hold',
-    icon: '🥄',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -334,7 +297,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Sit-ups',
-    icon: '🔥',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -342,7 +304,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Crunches',
-    icon: '💯',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'isolation',
@@ -350,7 +311,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bicycle Crunches',
-    icon: '🚴',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -358,7 +318,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Reverse Crunches',
-    icon: '🔄',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'isolation',
@@ -366,7 +325,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Russian Twists',
-    icon: '🌀',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -374,7 +332,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Flutter Kicks',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'isolation',
@@ -382,7 +339,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Leg Raises',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'isolation',
@@ -390,7 +346,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'V-ups',
-    icon: 'V️',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -398,7 +353,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Toe Touches',
-    icon: '🦶',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'isolation',
@@ -406,7 +360,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Superman',
-    icon: '🦸',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -414,7 +367,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Dead Bug',
-    icon: '🪲',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -422,7 +374,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bird Dog',
-    icon: '🐕',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'stability',
@@ -430,7 +381,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Plank to Pike',
-    icon: '⛰️',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -438,7 +388,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bodyweight Get-up',
-    icon: '🧍',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -447,7 +396,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Shoulders
   {
     name: 'Shoulder Taps',
-    icon: '👉',
     equipment: 'bodyweight',
     muscle: 'shoulders',
     type: 'stability',
@@ -455,7 +403,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Pike Hold',
-    icon: '⛰️',
     equipment: 'bodyweight',
     muscle: 'shoulders',
     type: 'stability',
@@ -464,7 +411,6 @@ export const popularExercises = validateUniqueExercises([
   // Bodyweight Exercises - Full Body & Cardio
   {
     name: 'Burpees',
-    icon: '💥',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -472,7 +418,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Jumping Jacks',
-    icon: '⬆️',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -480,7 +425,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'High Knees',
-    icon: '🏃',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -488,7 +432,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Butt Kicks',
-    icon: '🦵',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -496,7 +439,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Tuck Jumps',
-    icon: '🚀',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -504,7 +446,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Bear Crawl',
-    icon: '🐻',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'cardio',
@@ -512,7 +453,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Inchworms',
-    icon: '🐛',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'compound',
@@ -520,7 +460,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Sprawls',
-    icon: '💨',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -528,7 +467,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Squat Thrusts',
-    icon: '⚡',
     equipment: 'bodyweight',
     muscle: 'legs',
     type: 'cardio',
@@ -536,7 +474,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Mountain Climbers',
-    icon: '⛰️',
     equipment: 'bodyweight',
     muscle: 'core',
     type: 'cardio',
@@ -544,7 +481,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Dumbbell Curl',
-    icon: '💪',
     equipment: 'dumbbell',
     muscle: 'arms',
     type: 'isolation',
@@ -552,7 +488,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Tricep Extension',
-    icon: '💪',
     equipment: 'cable',
     muscle: 'arms',
     type: 'isolation',
@@ -560,7 +495,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Lat Pulldown',
-    icon: '⬇️',
     equipment: 'cable',
     muscle: 'back',
     type: 'isolation',
@@ -568,7 +502,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Leg Press',
-    icon: '🦵',
     equipment: 'machine',
     muscle: 'legs',
     type: 'compound',
@@ -576,7 +509,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Leg Curl',
-    icon: '🦵',
     equipment: 'machine',
     muscle: 'legs',
     type: 'isolation',
@@ -584,7 +516,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Chest Fly',
-    icon: '🏔️',
     equipment: 'dumbbell',
     muscle: 'chest',
     type: 'isolation',
@@ -592,7 +523,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Lateral Raise',
-    icon: '💪',
     equipment: 'dumbbell',
     muscle: 'shoulders',
     type: 'isolation',
@@ -600,7 +530,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Swing',
-    icon: '🔔',
     equipment: 'kettlebell',
     muscle: 'back',
     type: 'compound',
@@ -608,7 +537,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Goblet Squat',
-    icon: '🏆',
     equipment: 'kettlebell',
     muscle: 'legs',
     type: 'compound',
@@ -616,7 +544,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Clean',
-    icon: '🔔',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'compound',
@@ -624,7 +551,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Snatch',
-    icon: '⚡',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'compound',
@@ -632,7 +558,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Turkish Get-up',
-    icon: '🇹🇷',
     equipment: 'kettlebell',
     muscle: 'core',
     type: 'compound',
@@ -640,7 +565,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Row',
-    icon: '🚣',
     equipment: 'kettlebell',
     muscle: 'back',
     type: 'compound',
@@ -648,7 +572,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Press',
-    icon: '⬆️',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'compound',
@@ -656,7 +579,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Windmill',
-    icon: '🌀',
     equipment: 'kettlebell',
     muscle: 'core',
     type: 'compound',
@@ -664,7 +586,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Thruster',
-    icon: '🚀',
     equipment: 'kettlebell',
     muscle: 'legs',
     type: 'compound',
@@ -672,7 +593,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Halo',
-    icon: '😇',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'stability',
@@ -680,7 +600,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Figure 8',
-    icon: '8️⃣',
     equipment: 'kettlebell',
     muscle: 'core',
     type: 'compound',
@@ -688,7 +607,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Clean and Press',
-    icon: '🔔',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'compound',
@@ -696,7 +614,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Single Arm Swing',
-    icon: '🔔',
     equipment: 'kettlebell',
     muscle: 'back',
     type: 'compound',
@@ -704,7 +621,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Gorilla Row',
-    icon: '🦍',
     equipment: 'kettlebell',
     muscle: 'back',
     type: 'compound',
@@ -712,7 +628,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Mill',
-    icon: '🏏',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -720,7 +635,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Shield Cast',
-    icon: '🛡️',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -728,7 +642,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Inside Circle',
-    icon: '🔄',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -736,7 +649,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Outside Circle',
-    icon: '🔃',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -744,7 +656,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Reverse Mill',
-    icon: '🏏',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -752,7 +663,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Swipe',
-    icon: '💨',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -760,7 +670,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Gama Cast',
-    icon: '🎯',
     equipment: 'club',
     muscle: 'shoulders',
     type: 'compound',
@@ -768,7 +677,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Pullover',
-    icon: '⬆️',
     equipment: 'club',
     muscle: 'back',
     type: 'compound',
@@ -776,7 +684,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Club Pendulum',
-    icon: '🕰️',
     equipment: 'club',
     muscle: 'core',
     type: 'compound',
@@ -784,7 +691,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Dead Clean',
-    icon: '🔔',
     equipment: 'kettlebell',
     muscle: 'back',
     type: 'compound',
@@ -792,7 +698,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell High Pull',
-    icon: '⬆️',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'compound',
@@ -800,7 +705,6 @@ export const popularExercises = validateUniqueExercises([
   },
   {
     name: 'Kettlebell Armbar',
-    icon: '💪',
     equipment: 'kettlebell',
     muscle: 'shoulders',
     type: 'stability',
