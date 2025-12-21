@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import Sortable from 'sortablejs'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -73,6 +73,14 @@ watch(
   },
   { immediate: true },
 )
+
+// Cleanup on unmount to prevent memory leaks if component unmounts while drawer is open
+onUnmounted(() => {
+  if (sortableInstance.value) {
+    sortableInstance.value.destroy()
+    sortableInstance.value = null
+  }
+})
 
 function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
   if (index === workout.value.selectedBlockIndex) {

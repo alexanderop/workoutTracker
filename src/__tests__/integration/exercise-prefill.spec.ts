@@ -63,6 +63,7 @@ describe('Exercise Pre-fill from Previous Workout', () => {
 
     // Assert: First set should be empty
     const activeSet = await workout.getActiveSet()
+    expect(activeSet).not.toBeNull()
     const values = await activeSet!.getValues()
 
     expect(values.weight).toBe('')

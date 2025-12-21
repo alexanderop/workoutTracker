@@ -93,9 +93,7 @@ export class QueuePO {
     const { useWorkout } = await import('@/features/workout/composables/useWorkout')
     const { reorderBlocks } = useWorkout()
     reorderBlocks(fromIndex, toIndex)
-
-    // Wait for Vue to update the DOM
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    // Callers should use expect.poll() to verify DOM updates
   }
 
   /**
