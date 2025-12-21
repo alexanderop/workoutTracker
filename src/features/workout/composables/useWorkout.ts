@@ -1,4 +1,6 @@
 import { computed } from 'vue'
+import { getExerciseProgressRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
 import type {
@@ -232,11 +234,29 @@ export function useWorkout() {
     return { kind: 'completed', nextAction: 'workout-complete' }
   }
 
-  function addExercise(exerciseId: string, name: string) {
+  async function addExercise(exerciseId: string, name: string) {
     if (!name.trim()) return
 
     const exercisesStore = useExercisesStore()
     const exercise = exercisesStore.getExerciseById(exerciseId)
+
+    // Fetch last workout data for this exercise (errors are silently ignored - we just don't pre-fill)
+    const [_error, history] = await tryCatch(
+      getExerciseProgressRepository().getExerciseHistory(exerciseId, { limit: 1 }),
+    )
+    const lastSession = history?.[0]
+    const lastSet = lastSession?.sets.at(-1) // Last set from last workout
+
+    // Pre-fill first set if we have history
+    const firstSet = lastSet
+      ? {
+          id: 1,
+          kg: String(lastSet.kg),
+          reps: String(lastSet.reps),
+          rir: lastSet.rir !== null ? String(lastSet.rir) : '',
+          status: 'active' as const,
+        }
+      : { id: 1, kg: '', reps: '', rir: '', status: 'active' as const }
 
     appendBlock({
       kind: 'strength',
@@ -247,7 +267,7 @@ export function useWorkout() {
       targetReps: 8,
       image: exercise?.image ?? null,
       sets: [
-        { id: 1, kg: '', reps: '', rir: '', status: 'active' },
+        firstSet,
         { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
         { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
       ],
