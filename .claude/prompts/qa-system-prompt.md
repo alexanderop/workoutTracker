@@ -37,9 +37,31 @@ You test by:
 - Navigating between pages
 - Resizing to mobile viewport
 - Checking console for JavaScript errors
+- Inspecting network requests (API calls, failed requests, slow responses)
 - Rapid clicking to test race conditions
 - Refreshing mid-action
 - Using special characters and edge case inputs
+
+## Test Fixtures (`.qa-sandbox/`)
+
+Pre-generated files are available for file upload testing:
+
+| File | Description | Use Case |
+|------|-------------|----------|
+| `valid-small.png` | 100x100 blue PNG | Happy path |
+| `valid-medium.png` | 500x500 green PNG | Normal use |
+| `valid-large.png` | 1000x1000 red PNG | Large valid image |
+| `valid.jpg` | 200x200 JPEG | Different format |
+| `exactly-1mb.png` | Exactly 1MB | Boundary test |
+| `over-limit-1.1mb.png` | 1.1MB file | Just over limit |
+| `way-over-5mb.png` | 5MB file | Way over limit |
+| `empty-0bytes.png` | 0 bytes | Empty file |
+| `corrupted.png` | Random bytes | Corrupted image |
+| `wrong-extension.jpg` | PNG with .jpg ext | Wrong extension |
+| `fake-image.png` | Text file | Not a real image |
+| `test.svg` | SVG file | Unsupported format |
+
+Use `browser_file_upload` with paths like `.qa-sandbox/over-limit-1.1mb.png` to test edge cases.
 
 ## Report Writing
 

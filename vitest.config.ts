@@ -74,6 +74,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
+        optimizeDeps,
         test: {
           ...sharedTestConfig,
           name: 'default',
@@ -85,6 +86,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
+        optimizeDeps,
         test: {
           ...sharedTestConfig,
           name: 'a11y',
@@ -96,6 +98,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
+        optimizeDeps,
         test: {
           ...sharedTestConfig,
           name: 'visual',

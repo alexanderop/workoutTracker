@@ -85,7 +85,7 @@ describe('Visual Regression', () => {
   describe('Exercise Progress Charts', () => {
     it('shows charts when user has 2 workouts with improvement', async () => {
       // Create test app first so exercises are seeded
-      const { router, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
 
       // Get a real seeded exercise ID
       const exercises = await getCustomExercisesRepository().getAll()
@@ -126,10 +126,13 @@ describe('Visual Regression', () => {
       await getWorkoutsRepository().add(workout1)
       await getWorkoutsRepository().add(workout2)
 
-      // Navigate to exercise progress view
-      await router.push({ name: RouteNames.ExerciseProgress, params: { id: exerciseId } })
+      // Navigate to exercise progress view using the consistent helper
+      await navigateTo({ name: RouteNames.ExerciseProgress, params: { id: exerciseId } })
 
-      // Wait for charts to render (loading -> success state)
+      // Wait for the exercise name heading to appear first (proves route loaded)
+      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+
+      // Then wait for charts to render (loading -> success state)
       await expect.element(page.getByText(/estimated 1rm/i)).toBeVisible()
 
       // Allow chart animations to settle

@@ -5,7 +5,7 @@
  */
 export function getExerciseInitials(name: string): string {
   const trimmed = name.trim()
-  if (!trimmed) return ''
+  if (!trimmed) return '💪'
 
   const words = trimmed.split(/\s+/)
   const firstWord = words[0]

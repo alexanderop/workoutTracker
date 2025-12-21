@@ -31,7 +31,13 @@ export default {
     customShort: 'Eigene erstellen',
     namePlaceholder: 'Name (z.B. Bulgarische Split Squats)',
     save: 'Speichern',
-    selectIcon: 'Übungs-Symbol auswählen',
+    addImage: 'Bild hinzufügen',
+    imageUploaded: 'Bild hinzugefügt',
+    errors: {
+      imageTooLarge: 'Bild überschreitet 1MB nach Konvertierung. Bitte ein kleineres Bild verwenden.',
+      invalidImage: 'Ungültige Bilddatei. Bitte ein gültiges Bild auswählen.',
+      conversionFailed: 'Konvertierung fehlgeschlagen. Bitte eine andere Datei verwenden.',
+    },
   },
   selectors: {
     equipment: {

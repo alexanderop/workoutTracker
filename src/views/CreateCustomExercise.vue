@@ -5,10 +5,12 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
+import { useImageConversion } from '@/composables/useImageConversion'
 import {
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
@@ -24,6 +26,23 @@ const exercisesStore = useExercisesStore()
 
 // Form state and validation
 const { form, isNameValid, isSaveDisabled, getFormData } = useExerciseForm()
+
+// Image conversion
+const { convert: convertImage } = useImageConversion()
+const imageInputRef = useTemplateRef<HTMLInputElement>('imageInput')
+
+// Computed for image upload display
+const imageDisplayText = computed(() => {
+  if (form.value.image) {
+    const sizeKb = Math.round(form.value.image.size / 1024)
+    return `${t('exercises.create.imageUploaded')} (${sizeKb} KB)`
+  }
+  return ''
+})
+
+function handleImageClick() {
+  imageInputRef.value?.click()
+}
 
 // Modal state machine - only one modal can be open at a time
 type ModalState =
@@ -65,23 +84,6 @@ function openModal(kind: ModalState['kind']) {
   modalState.value = { kind }
 }
 
-const emojiInputRef = useTemplateRef<HTMLInputElement>('emojiInput')
-
-function handleIconClick() {
-  emojiInputRef.value?.click()
-}
-
-function handleEmojiChange(event: Event) {
-  const input = event.target
-  if (!(input instanceof HTMLInputElement)) return
-  const value = input.value
-  if (value) {
-    // Take the last character which should be the emoji
-    form.value.icon = value.charAt(value.length - 1)
-    input.value = ''
-  }
-}
-
 function handleEquipmentSelect(selected: Equipment) {
   form.value.equipment = selected
 }
@@ -96,6 +98,32 @@ function handleTypeSelect(selected: ExerciseType) {
 
 function handleMetricsSelect(selected: Metrics) {
   form.value.metrics = selected
+}
+
+async function handleImageSelect(event: Event) {
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
+
+  const file = input.files?.[0]
+  input.value = '' // Reset for re-selection
+  if (!file) return
+
+  // Clear previous error
+  form.value.imageError = undefined
+
+  const result = await convertImage(file)
+
+  if (result.success) {
+    form.value.image = result.blob
+    return
+  }
+
+  form.value.imageError =
+    result.error === 'file-too-large'
+      ? t('exercises.create.errors.imageTooLarge')
+      : result.error === 'invalid-image'
+        ? t('exercises.create.errors.invalidImage')
+        : t('exercises.create.errors.conversionFailed')
 }
 
 async function handleSave() {
@@ -116,27 +144,46 @@ async function handleSave() {
 
     <!-- Main Content -->
     <div class="p-4">
-      <!-- Icon & Name Section -->
+      <!-- Avatar with image preview or initials -->
       <div class="mb-6 flex gap-4">
-        <!-- Icon Button -->
-        <Button
-          variant="ghost"
-          class="size-12 flex-shrink-0 rounded-full bg-muted text-2xl p-0 hover:bg-muted/80"
-          :aria-label="t('exercises.create.selectIcon')"
-          @click="handleIconClick"
+        <button
+          type="button"
+          :aria-label="t('exercises.create.addImage')"
+          class="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          @click="handleImageClick"
         >
-          {{ form.icon }}
-        </Button>
+          <ExerciseAvatar
+            :name="form.name"
+            :image="form.image"
+            size="lg"
+            class="flex-shrink-0 hover:opacity-80 transition-opacity"
+          />
+        </button>
 
         <!-- Name Input -->
         <div class="flex-1">
+          <label for="exercise-name" class="sr-only">
+            {{ t('exercises.create.namePlaceholder') }}
+          </label>
           <Input
+            id="exercise-name"
             v-model="form.name"
             :placeholder="t('exercises.create.namePlaceholder')"
             class="w-full"
             autofocus
           />
         </div>
+      </div>
+
+      <!-- Image Upload Error -->
+      <div
+        v-if="form.imageError"
+        role="alert"
+        aria-live="assertive"
+        data-testid="image-upload-error"
+        class="mt-2 text-sm text-destructive"
+      >
+        {{ form.imageError }}
       </div>
 
       <!-- Configuration List -->
@@ -161,11 +208,23 @@ async function handleSave() {
           :value="METRICS_LABELS[form.metrics]"
           @click="openModal('metrics')"
         />
+        <ExerciseSettingsItem
+          :label="t('exercises.create.addImage')"
+          :value="imageDisplayText"
+          @click="handleImageClick"
+        />
       </div>
     </div>
 
-    <!-- Hidden emoji input -->
-    <input ref="emojiInput" type="text" class="hidden" @change="handleEmojiChange" />
+    <!-- Hidden image file input -->
+    <input
+      ref="imageInput"
+      data-testid="exercise-image-upload"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleImageSelect"
+    />
 
     <!-- Selection Modals -->
     <ExerciseSelectorDialog

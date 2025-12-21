@@ -106,6 +106,52 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # Create test fixtures for QA agent to use during file upload testing
+      - name: Create QA test fixtures
+        shell: bash
+        run: |
+          # Ensure ImageMagick is available
+          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+
+          mkdir -p .qa-sandbox
+
+          # Valid images at different sizes
+          convert -size 100x100 xc:blue .qa-sandbox/valid-small.png
+          convert -size 500x500 xc:green .qa-sandbox/valid-medium.png
+          convert -size 1000x1000 xc:red .qa-sandbox/valid-large.png
+
+          # Edge case: exactly at 1MB limit (assuming 1MB = 1048576 bytes)
+          convert -size 100x100 xc:gray .qa-sandbox/temp.png
+          truncate -s 1048576 .qa-sandbox/exactly-1mb.png
+
+          # Edge case: just over limit (1.1MB)
+          truncate -s 1153434 .qa-sandbox/over-limit-1.1mb.png
+
+          # Edge case: way over limit (5MB)
+          truncate -s 5242880 .qa-sandbox/way-over-5mb.png
+
+          # Edge case: empty/zero-byte file
+          touch .qa-sandbox/empty-0bytes.png
+
+          # Edge case: corrupted file (random bytes with .png extension)
+          head -c 1024 /dev/urandom > .qa-sandbox/corrupted.png
+
+          # Edge case: wrong extension (valid PNG but .jpg extension)
+          convert -size 50x50 xc:yellow .qa-sandbox/wrong-extension.jpg
+
+          # Edge case: valid JPEG
+          convert -size 200x200 xc:purple .qa-sandbox/valid.jpg
+
+          # Edge case: SVG file (if not supported)
+          echo '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="blue"/></svg>' > .qa-sandbox/test.svg
+
+          # Edge case: text file with image extension
+          echo "This is not an image" > .qa-sandbox/fake-image.png
+
+          # List created files for visibility
+          echo "Created QA test fixtures:"
+          ls -lah .qa-sandbox/
+
       - name: Get PR context
         if: env.QA_MODE == 'verify'
         id: pr-context
@@ -257,7 +303,7 @@ jobs:
           claude_args: |
             --max-turns 60
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
       - name: Run Claude QA - Verify Mode
         if: env.QA_MODE == 'verify'
@@ -271,7 +317,7 @@ jobs:
           claude_args: |
             --max-turns 200
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
-            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
+            --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,Write"
 
       - name: Check report exists
         id: check-report
