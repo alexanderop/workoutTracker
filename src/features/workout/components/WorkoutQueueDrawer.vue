@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -80,6 +80,9 @@ function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
   return 'planned'
 }
 
+// Cache block statuses to avoid recalculating in v-for on each render
+const blockStatuses = computed(() => blocksList.value.map((_, index) => getBlockStatus(index)))
+
 function handleSelectBlock(index: number) {
   selectBlock(index)
   open.value = false
@@ -141,7 +144,7 @@ function handleRemoveBlock(index: number) {
           :key="block.id"
           :block="block"
           :index="index"
-          :status="getBlockStatus(index)"
+          :status="blockStatuses[index] ?? 'planned'"
           @select="handleSelectBlock(index)"
           @remove="handleRemoveBlock(index)"
         />

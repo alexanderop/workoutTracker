@@ -81,6 +81,7 @@ export class ActiveWorkoutPO {
       const firstCell = cells[0]
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
+      // The active state shows a div with data-set-state="active" and bg-primary class
       const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
         return this.getSet(i - 1) // Convert row index to set index
@@ -197,13 +198,13 @@ export class ActiveWorkoutPO {
       const firstCell = cells[0]
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
-      // The active state shows a div with bg-primary containing the set number
-      const activeIndicator = firstCellElement.querySelector('.bg-primary')
+      // The active state shows a div with data-set-state="active" and bg-primary class
+      const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
         return rowElement
       }
     }
-    throw new Error('No active set row found (no bg-primary indicator)')
+    throw new Error('No active set row found')
   }
 
   /**
@@ -245,8 +246,8 @@ export class ActiveWorkoutPO {
     const firstCell = cells[0]
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
-    // The completed state shows a div with bg-success/20 containing a Check icon
-    const completedIndicator = firstCellElement.querySelector('.bg-success\\/20')
+    // The completed state shows a div with data-set-state="completed" and bg-success/20 class
+    const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
     return completedIndicator !== null
   }
 
@@ -266,8 +267,8 @@ export class ActiveWorkoutPO {
       const firstCell = cells[0]
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
-      // The completed state shows a div with bg-success/20 containing a Check icon
-      const completedIndicator = firstCellElement.querySelector('.bg-success\\/20')
+      // The completed state shows a div with data-set-state="completed" and bg-success/20 class
+      const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
       if (completedIndicator) {
         count++
       }
