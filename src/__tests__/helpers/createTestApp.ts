@@ -100,9 +100,10 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   const logPastWorkout = new LogPastWorkoutPO(context, common)
   const exercises = new ExercisesPO(context, common)
 
-  // Simple navigation helper
+  // Navigation helper with flush to ensure route renders
   async function navigateTo(to: RouteLocationRaw) {
     await router.push(to)
+    await flushPromises()
   }
 
   // vitest-browser-vue cleans up before tests automatically
