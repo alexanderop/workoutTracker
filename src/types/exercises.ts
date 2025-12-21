@@ -29,11 +29,11 @@ export type Metrics =
 
 export type CustomExercise = {
   id: string
-  icon: string
   name: string
   equipment?: Equipment
   muscle?: Muscle
   type: ExerciseType
   metrics: Metrics
   createdAt: number
+  image?: Blob
 }

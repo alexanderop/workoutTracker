@@ -5,10 +5,12 @@ import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import StrengthBlockGrid from './StrengthBlockGrid.vue'
 import { isStrengthBlock } from '@/types/blocks'
 import type { WorkoutBlock, StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
+import type { CustomExercise } from '@/types/exercises'
 import { useExercisesStore } from '@/stores/exercises'
 
 const { blocks } = defineProps<{
@@ -29,7 +31,7 @@ function handleAddBlock() {
   exerciseDialogOpen.value = true
 }
 
-function selectExercise(exercise: { id: string; name: string; icon: string; equipment?: string }) {
+function selectExercise(exercise: CustomExercise) {
   const newBlock: StrengthBlock = {
     kind: 'strength',
     id: blocks.length + 1,
@@ -37,7 +39,7 @@ function selectExercise(exercise: { id: string; name: string; icon: string; equi
     name: exercise.name,
     equipment: exercise.equipment ?? '',
     targetReps: 8,
-    thumbnail: exercise.icon,
+    image: exercise.image ?? null,
     sets: [
       { id: 1, kg: '', reps: '', rir: '', status: 'completed' },
       { id: 2, kg: '', reps: '', rir: '', status: 'completed' },
@@ -121,7 +123,7 @@ const strengthBlocks = computed(() => blocks.filter(isStrengthBlock))
               class="w-full justify-start h-auto py-3"
               @click="selectExercise(exercise)"
             >
-              <span class="text-xl mr-3">{{ exercise.icon }}</span>
+              <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="md" class="mr-3" />
               <div class="text-left">
                 <div class="font-medium">{{ exercise.name }}</div>
                 <div v-if="exercise.equipment" class="text-xs text-muted-foreground">

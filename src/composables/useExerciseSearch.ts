@@ -11,7 +11,7 @@ import { useExercisesStore } from '@/stores/exercises'
  */
 export type Exercise = {
   name: string
-  icon: string
+  image?: Blob
   equipment?: PopularExercise['equipment']
   muscle?: PopularExercise['muscle']
   type: PopularExercise['type']

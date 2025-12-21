@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue'
-import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock } from '@/types/blocks'
+import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock, BlockExercise } from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { getTemplatesRepository } from '@/db'
@@ -7,7 +7,7 @@ import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
 function createStrengthBlockFromTemplate(
-  templateBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; defaultSetCount?: number; thumbnail: string; exerciseDefinitionId?: string | null },
+  templateBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const setCount = templateBlock.defaultSetCount ?? 3
@@ -27,12 +27,12 @@ function createStrengthBlockFromTemplate(
     equipment: templateBlock.equipment,
     targetReps: templateBlock.targetReps ?? 8,
     sets,
-    thumbnail: templateBlock.thumbnail,
+    image: templateBlock.image,
   }
 }
 
 function createStrengthBlockFromHistory(
-  historyBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; thumbnail: string; exerciseDefinitionId?: string | null },
+  historyBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const sets: Array<Set> = historyBlock.sets.map((set, setIndex) => ({
@@ -51,39 +51,37 @@ function createStrengthBlockFromHistory(
     equipment: historyBlock.equipment,
     targetReps: historyBlock.targetReps ?? 8,
     sets,
-    thumbnail: historyBlock.thumbnail,
+    image: historyBlock.image,
   }
 }
 
-type BlockExercise = { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }
-
 function buildBlockExercise(
   id: string,
-  source: { name: string; prescribedReps: number; load: string | null; thumbnail: string },
+  source: { name: string; prescribedReps: number; load: string | null; image: Blob | null },
 ): BlockExercise {
   return {
     id,
     name: source.name,
     prescribedReps: source.prescribedReps,
     load: source.load,
-    thumbnail: source.thumbnail,
+    image: source.image,
   }
 }
 
 function convertTemplateBlockExercise(
-  exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string },
+  exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null },
 ): BlockExercise {
   return buildBlockExercise(exercise.exerciseDefinitionId ?? crypto.randomUUID(), exercise)
 }
 
 function convertDbBlockExercise(
-  exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string },
+  exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null },
 ): BlockExercise {
   return buildBlockExercise(exercise.id, exercise)
 }
 
 function createAmrapBlockFromTemplate(
-  templateBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  templateBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): AmrapBlock {
   return {
@@ -96,7 +94,7 @@ function createAmrapBlockFromTemplate(
 }
 
 function createEmomBlockFromTemplate(
-  templateBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  templateBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): EmomBlock {
   return {
@@ -109,7 +107,7 @@ function createEmomBlockFromTemplate(
 }
 
 function createTabataBlockFromTemplate(
-  templateBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string } },
+  templateBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null } },
   newId: number,
 ): TabataBlock {
   return {
@@ -122,7 +120,7 @@ function createTabataBlockFromTemplate(
 }
 
 function createForTimeBlockFromTemplate(
-  templateBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  templateBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): ForTimeBlock {
   return {
@@ -155,7 +153,7 @@ function createCardioBlock(
 }
 
 function createAmrapBlockFromHistory(
-  dbBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  dbBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): AmrapBlock {
   return {
@@ -168,7 +166,7 @@ function createAmrapBlockFromHistory(
 }
 
 function createEmomBlockFromHistory(
-  dbBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  dbBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): EmomBlock {
   return {
@@ -181,7 +179,7 @@ function createEmomBlockFromHistory(
 }
 
 function createTabataBlockFromHistory(
-  dbBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string } },
+  dbBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null } },
   newId: number,
 ): TabataBlock {
   return {
@@ -194,7 +192,7 @@ function createTabataBlockFromHistory(
 }
 
 function createForTimeBlockFromHistory(
-  dbBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }> },
+  dbBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
   newId: number,
 ): ForTimeBlock {
   return {

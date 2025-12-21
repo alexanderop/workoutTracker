@@ -16,7 +16,7 @@ export function createDbBenchmarkExercise(
     exerciseDefinitionId: null,
     name: 'Thrusters',
     prescribedReps: 21,
-    thumbnail: '🏋️',
+    image: null,
     ...overrides,
   }
 }
@@ -39,7 +39,7 @@ export function createDbForTimeBenchmark(
     type: 'fortime',
     exercises: [
       createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21 }),
-      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21, thumbnail: '💪' }),
+      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21 }),
     ],
     ...overrides,
   })

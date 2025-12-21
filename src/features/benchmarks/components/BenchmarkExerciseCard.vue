@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
 import { useI18n } from 'vue-i18n'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { DbBenchmarkExercise } from '@/db/schema'
 
 const { exercise, index } = defineProps<{
@@ -23,9 +24,7 @@ const { t } = useI18n()
         </div>
 
         <!-- Exercise icon (large and prominent) -->
-        <div class="flex-shrink-0 text-4xl" aria-hidden="true">
-          {{ exercise.thumbnail }}
-        </div>
+        <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="lg" />
 
         <!-- Exercise info with editorial typography -->
         <div class="min-w-0 flex-1">

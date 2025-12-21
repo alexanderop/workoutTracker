@@ -34,7 +34,7 @@ export type BlockExercise = {
   name: string
   prescribedReps: number
   load: string | null // "24kg", "bodyweight", "light band"
-  thumbnail: string
+  image: Blob | null
 }
 
 // ============================================
@@ -179,7 +179,7 @@ export type StrengthBlock = {
   equipment: string
   targetReps: number
   sets: Array<WorkoutSet>
-  thumbnail: string
+  image: Blob | null
 }
 
 export type EmomBlock = {
@@ -319,22 +319,25 @@ export function getBlockExerciseList(block: TimedBlock): ReadonlyArray<BlockExer
 }
 
 /**
- * Get the icon for a cardio activity.
+ * Get the image for a block, if it has one.
  */
-function getCardioActivityIcon(activity: CardioActivity): string {
-  const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === activity)
-  return activityInfo?.icon ?? '🏃'
+export function getBlockImage(block: WorkoutBlock): Blob | null {
+  if (block.kind === 'strength') {
+    return block.image
+  }
+  return null
 }
 
 /**
- * Get the thumbnail/icon for a block.
+ * Get the name to derive initials from for a block.
  */
-export function getBlockThumbnail(block: WorkoutBlock): string {
+export function getBlockName(block: WorkoutBlock): string {
   if (block.kind === 'strength') {
-    return block.thumbnail
+    return block.name
   }
   if (block.kind === 'cardio') {
-    return getCardioActivityIcon(block.config.activity)
+    const activityInfo = CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)
+    return activityInfo?.label ?? 'Cardio'
   }
-  return BLOCK_ICONS[block.kind]
+  return BLOCK_LABELS[block.kind]
 }

@@ -15,7 +15,7 @@ const TEMPLATE_BLOCK_EXERCISE_DEFAULTS: Readonly<DbTemplateBlockExercise> = {
   name: 'Burpees',
   prescribedReps: 10,
   load: null,
-  thumbnail: '🔥',
+  image: null,
 }
 
 export function createDbTemplateBlockExercise(
@@ -37,7 +37,7 @@ const TEMPLATE_STRENGTH_BLOCK_DEFAULTS: Readonly<DbTemplateStrengthBlock> = {
   name: 'Bench Press',
   equipment: 'Barbell',
   targetReps: 8,
-  thumbnail: '🏋️',
+  image: null,
   defaultSetCount: 3,
 }
 

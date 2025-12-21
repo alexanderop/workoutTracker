@@ -38,7 +38,6 @@ function createValidExportData(overrides: {
 function createValidExercise(overrides: Record<string, unknown> = {}) {
   return {
     id: 'exercise-1',
-    icon: '🏋️',
     name: 'Squat',
     equipment: 'barbell',
     muscle: 'legs',
@@ -46,6 +45,7 @@ function createValidExercise(overrides: Record<string, unknown> = {}) {
     metrics: 'weight-reps',
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    image: null,
     ...overrides,
   }
 }
@@ -61,7 +61,7 @@ function createValidStrengthBlock(overrides: Record<string, unknown> = {}) {
     name: 'Squat',
     equipment: 'barbell',
     targetReps: 8,
-    thumbnail: '🏋️',
+    image: null,
     sets: [
       {
         id: 'set-1',
@@ -108,7 +108,7 @@ function createValidTemplate(overrides: Record<string, unknown> = {}) {
         name: 'Bench Press',
         equipment: 'barbell',
         targetReps: 8,
-        thumbnail: '🏋️',
+        image: null,
         defaultSetCount: 3,
       },
     ],
@@ -414,7 +414,7 @@ describe('Block Schema Validation', () => {
         id: 'block-1',
         config: { durationSeconds: 600 },
         exercises: [
-          { id: 'ex-1', name: 'Burpee', prescribedReps: 10, load: null, thumbnail: '🏃' },
+          { id: 'ex-1', name: 'Burpee', prescribedReps: 10, load: null, image: null },
         ],
         result: null,
         orderIndex: 0,
@@ -429,7 +429,7 @@ describe('Block Schema Validation', () => {
         id: 'block-1',
         config: { minutes: 10, exerciseRotation: 'each-minute' },
         exercises: [
-          { id: 'ex-1', name: 'Kettlebell Swing', prescribedReps: 15, load: '24kg', thumbnail: '🔔' },
+          { id: 'ex-1', name: 'Kettlebell Swing', prescribedReps: 15, load: '24kg', image: null },
         ],
         result: null,
         orderIndex: 0,
@@ -443,7 +443,7 @@ describe('Block Schema Validation', () => {
         kind: 'tabata',
         id: 'block-1',
         config: { rounds: 8, workSeconds: 20, restSeconds: 10 },
-        exercise: { id: 'ex-1', name: 'Squat Jump', prescribedReps: 0, load: null, thumbnail: '🦵' },
+        exercise: { id: 'ex-1', name: 'Squat Jump', prescribedReps: 0, load: null, image: null },
         result: null,
         orderIndex: 0,
       }
@@ -457,7 +457,7 @@ describe('Block Schema Validation', () => {
         id: 'block-1',
         config: { timeCapSeconds: 1200 },
         exercises: [
-          { id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, thumbnail: '🚣' },
+          { id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, image: null },
         ],
         result: null,
         orderIndex: 0,
@@ -474,7 +474,7 @@ describe('Block Schema Validation', () => {
         name: 'Test',
         equipment: '',
         targetReps: 8,
-        thumbnail: '',
+        image: null,
         sets: [],
         orderIndex: 0,
       }

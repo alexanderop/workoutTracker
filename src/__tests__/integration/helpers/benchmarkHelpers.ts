@@ -27,11 +27,10 @@ export async function createForTimeBenchmark(options?: {
       createDbBenchmarkExercise({
         name: ex.name,
         prescribedReps: ex.reps,
-        thumbnail: '',
       }),
     ) ?? [
-      createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21, thumbnail: '' }),
-      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21, thumbnail: '' }),
+      createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21 }),
+      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21 }),
     ],
   })
 }
@@ -52,7 +51,6 @@ export async function createRoundsBenchmark(options: {
       createDbBenchmarkExercise({
         name: ex.name,
         prescribedReps: ex.reps,
-        thumbnail: '',
       }),
     ),
   })
@@ -128,7 +126,7 @@ export async function createCompletedAttempt(
       createDbBlockExercise({
         name: ex.name,
         prescribedReps: ex.prescribedReps,
-        thumbnail: ex.thumbnail,
+        image: ex.image,
       }),
     ),
     result: createDbForTimeResult({

@@ -19,7 +19,7 @@ export function createDbBlockExercise(
     name: 'Thrusters',
     prescribedReps: 21,
     load: null,
-    thumbnail: '🏋️',
+    image: null,
     ...overrides,
   }
 }

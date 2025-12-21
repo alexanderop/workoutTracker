@@ -3,13 +3,15 @@ import { GripVertical, Pencil, X } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/types/blocks'
 import {
   BLOCK_COLORS,
   BLOCK_LABELS,
   getBlockDurationDisplay,
-  getBlockThumbnail,
+  getBlockImage,
+  getBlockName,
   isStrengthBlock,
   isTimedBlock,
 } from '@/types/blocks'
@@ -39,7 +41,8 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
-const thumbnail = computed(() => getBlockThumbnail(block))
+const blockName = computed(() => getBlockName(block))
+const blockImage = computed(() => getBlockImage(block))
 const label = computed(() => BLOCK_LABELS[block.kind])
 
 const subtitle = computed(() => {
@@ -97,17 +100,7 @@ const completedSets = computed(() => {
         </div>
 
         <!-- Block icon -->
-        <div
-          :class="
-            cn(
-              'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl',
-              blockColors.bg,
-            )
-          "
-          aria-hidden="true"
-        >
-          {{ thumbnail }}
-        </div>
+        <ExerciseAvatar :name="blockName" :image="blockImage" size="md" />
 
         <!-- Block info -->
         <div class="flex-1 min-w-0">

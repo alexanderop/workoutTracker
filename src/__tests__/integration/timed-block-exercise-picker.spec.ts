@@ -14,7 +14,6 @@ describe('Timed Block Exercise Picker', () => {
       // Given: a custom exercise exists in the database (name starts with 'A' to ensure it's in first 10 alphabetically)
       const customExercise = createDbCustomExercise({
         name: 'AAA Custom Lift',
-        icon: '🏋️',
         type: 'compound',
         metrics: 'weight-reps',
       })

@@ -3,7 +3,6 @@ import { faker } from '@faker-js/faker'
 
 const DEFAULTS: Readonly<CustomExercise> = {
   id: 'test-exercise-1',
-  icon: '🏋️',
   name: 'Custom Exercise',
   equipment: 'barbell',
   muscle: 'chest',

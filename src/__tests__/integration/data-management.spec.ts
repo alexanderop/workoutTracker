@@ -171,7 +171,7 @@ describe('Data Management', () => {
         .withExerciseAndSets([{ kg: '100', reps: '10', rir: '2' }], {
           name: 'Bench Press',
           equipment: 'Barbell',
-          thumbnail: '🏋️',
+          image: null,
           targetReps: 8,
         })
         .build()

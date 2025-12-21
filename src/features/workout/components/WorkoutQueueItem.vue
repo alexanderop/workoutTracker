@@ -8,10 +8,12 @@ import {
   BLOCK_COLORS,
   BLOCK_LABELS,
   getBlockExerciseList,
-  getBlockThumbnail,
+  getBlockImage,
+  getBlockName,
   isStrengthBlock,
   isTimedBlock,
 } from '@/types/blocks'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 
 type Props = {
   block: WorkoutBlock
@@ -28,7 +30,8 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
-const thumbnail = computed(() => getBlockThumbnail(block))
+const blockImage = computed(() => getBlockImage(block))
+const exerciseName = computed(() => getBlockName(block))
 
 const blockName = computed(() => {
   if (isStrengthBlock(block)) {
@@ -81,13 +84,7 @@ const isCompleted = computed(() => status === 'completed')
     </div>
 
     <!-- Block icon -->
-    <div
-      :class="
-        cn('flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl', blockColors.bg)
-      "
-    >
-      {{ thumbnail }}
-    </div>
+    <ExerciseAvatar :name="exerciseName" :image="blockImage" size="md" />
 
     <!-- Block info -->
     <div class="flex-1 min-w-0">

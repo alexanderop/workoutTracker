@@ -236,7 +236,6 @@ export function useWorkout() {
 
     const exercisesStore = useExercisesStore()
     const exercise = exercisesStore.getExerciseById(exerciseId)
-    const icon = exercise?.icon ?? '🆕'
 
     appendBlock({
       kind: 'strength',
@@ -245,7 +244,7 @@ export function useWorkout() {
       name,
       equipment: 'Equipment',
       targetReps: 8,
-      thumbnail: icon,
+      image: exercise?.image ?? null,
       sets: [
         { id: 1, kg: '', reps: '', rir: '', status: 'active' },
         { id: 2, kg: '', reps: '', rir: '', status: 'planned' },

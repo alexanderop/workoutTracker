@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { TimedBlock } from '@/types/blocks'
 import {
   BLOCK_ICONS,
@@ -76,7 +77,7 @@ const roundsLabel = computed(() => t('workouts.builder.timedCard.rounds'))
           class="flex items-center justify-between py-2"
         >
           <div class="flex items-center gap-3">
-            <span class="text-lg">{{ exercise.thumbnail }}</span>
+            <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="md" />
             <div>
               <p class="font-medium">{{ exercise.name }}</p>
               <p class="text-sm text-muted-foreground">

@@ -31,19 +31,19 @@ function convertStrengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: nu
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
-    thumbnail: block.thumbnail,
     sets: block.sets.map(convertSetToDb),
     orderIndex,
+    image: block.image,
   }
 }
 
-function convertBlockExerciseToDb(exercise: { id: string; name: string; prescribedReps: number; load: string | null; thumbnail: string }): DbBlockExercise {
+function convertBlockExerciseToDb(exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }): DbBlockExercise {
   return {
     id: exercise.id,
     name: exercise.name,
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
-    thumbnail: exercise.thumbnail,
+    image: exercise.image,
   }
 }
 

@@ -7,7 +7,7 @@ const AUTO_SAVE_DEBOUNCE_MS = 1000
 /**
  * Persistence state using discriminated union for type safety.
  */
-export type PersistenceState =
+type PersistenceState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'saving' }
@@ -16,7 +16,7 @@ export type PersistenceState =
 /**
  * Configuration for the persistence core factory.
  */
-export type PersistenceConfig<TDomain, TDb> = {
+type PersistenceConfig<TDomain, TDb> = {
   /** The reactive ref containing the domain data */
   source: Ref<TDomain>
   /** Convert domain model to database model */
