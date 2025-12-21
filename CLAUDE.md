@@ -44,6 +44,19 @@ Use `defineModel` for two-way binding: `const open = defineModel<boolean>('open'
 
 `gh` (GitHub CLI), `tree`, `rg` (ripgrep) are installed.
 
+## Code Intelligence (LSP)
+
+MCP LSP tools provide accurate code navigation. Prefer over grep for symbol lookups.
+
+| Use Case | Tool |
+|----------|------|
+| Find definition | `find_definition` |
+| Find all usages | `find_references` |
+| Rename symbol | `rename_symbol` (use `dry_run: true` to preview) |
+| Check type errors | `get_diagnostics` |
+
+**Use grep instead for**: text patterns, comments, strings, open-ended exploration.
+
 ## Slash Commands
 
 **Git Workflow**: `/push`, `/pr`, `/ship`, `/fix-pipeline`, `/review-coderabbit`, `/merge-and-branch`
