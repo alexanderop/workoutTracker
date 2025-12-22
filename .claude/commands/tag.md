@@ -28,11 +28,11 @@ Analyze the commits since the last tag using **Conventional Commits** rules:
 
 | Commit Pattern | Bump Type |
 |----------------|-----------|
-| `BREAKING CHANGE:` in body/footer | **MAJOR** |
-| `feat!:` or `fix!:` (with `!`) | **MAJOR** |
-| `feat:` | **MINOR** |
-| `fix:`, `perf:` | **PATCH** |
-| `docs:`, `style:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:` | **PATCH** |
+| BREAKING CHANGE: in body/footer | **MAJOR** |
+| feat! or fix! (breaking change marker) | **MAJOR** |
+| feat: | **MINOR** |
+| fix:, perf: | **PATCH** |
+| docs:, style:, refactor:, test:, build:, ci:, chore: | **PATCH** |
 
 **Priority**: MAJOR > MINOR > PATCH (use the highest applicable bump)
 
