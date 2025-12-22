@@ -59,15 +59,30 @@ type ForTimeSession = {
 
 type TimerSession = AmrapSession | EmomSession | TabataSession | ForTimeSession
 
-// Type guards for session types
+/**
+ * Check whether a TimerSession represents an AMRAP session.
+ *
+ * @returns `true` if `session` is an `AmrapSession`, `false` otherwise.
+ */
 function isAmrapSession(session: TimerSession): session is AmrapSession {
   return session.block.kind === 'amrap'
 }
 
+/**
+ * Type guard that determines whether a timer session represents an EMOM session.
+ *
+ * @param session - The timer session to check
+ * @returns `true` if the session is an EMOM session, `false` otherwise.
+ */
 function isEmomSession(session: TimerSession): session is EmomSession {
   return session.block.kind === 'emom'
 }
 
+/**
+ * Determines whether the given timer session represents a Tabata session.
+ *
+ * @returns `true` if the session's block kind is `'tabata'`, `false` otherwise.
+ */
 function isTabataSession(session: TimerSession): session is TabataSession {
   return session.block.kind === 'tabata'
 }
@@ -75,7 +90,11 @@ function isTabataSession(session: TimerSession): session is TabataSession {
 // isForTimeSession not needed - used as fallback in convertSessionToDbBlock
 
 /**
- * Generates a human-readable workout name from timer type and config.
+ * Create a human-readable workout name from a timer block using translations.
+ *
+ * @param block - The timer block (AMRAP, EMOM, Tabata, or For Time) whose config determines the name
+ * @param t - i18n translation function used to localize the timer type label
+ * @returns A formatted workout name, for example: `5 min AMRAP`, `EMOM 10 min`, `TABATA 8×20/10`, or `FOR TIME (10 min cap)`
  */
 function generateWorkoutName(block: TimedBlock, t: ReturnType<typeof useI18n>['t']): string {
   const timerType = t(`timers.types.${block.kind}`).toUpperCase()
@@ -102,6 +121,13 @@ function generateWorkoutName(block: TimedBlock, t: ReturnType<typeof useI18n>['t
   }
 }
 
+/**
+ * Create a database-ready AMRAP block from a timer block and its result for standalone storage.
+ *
+ * @param block - Source AMRAP timer block whose configuration will be copied into the DB block
+ * @param result - Result produced by the timer session to store with the DB block
+ * @returns A DbAmrapBlock with a generated `id`, `orderIndex` set to 0, `kind` set to `"amrap"`, a plain copy of `config`, an empty `exercises` array, and a copy of `result`
+ */
 function createAmrapDbBlock(block: AmrapBlock, result: AmrapResult): DbAmrapBlock {
   return {
     id: generateId(),
@@ -113,6 +139,17 @@ function createAmrapDbBlock(block: AmrapBlock, result: AmrapResult): DbAmrapBloc
   }
 }
 
+/**
+ * Create a database-ready EMOM block representing a standalone timer session.
+ *
+ * Produces a DbEmomBlock with a generated `id`, `orderIndex` set to 0, `kind` "emom",
+ * a plain `config` object copied from the source block, an empty `exercises` array,
+ * and the provided `result`.
+ *
+ * @param block - The EMOM timer block to convert
+ * @param result - The EMOM session result to attach to the DB block
+ * @returns The constructed DbEmomBlock ready for persistence
+ */
 function createEmomDbBlock(block: EmomBlock, result: EmomResult): DbEmomBlock {
   return {
     id: generateId(),
@@ -124,6 +161,16 @@ function createEmomDbBlock(block: EmomBlock, result: EmomResult): DbEmomBlock {
   }
 }
 
+/**
+ * Create a database-ready Tabata block from a timer Tabata block and its result.
+ *
+ * The returned block has new identifiers, orderIndex set to 0, and includes a single
+ * placeholder exercise named "Conditioning" for standalone workout logging.
+ *
+ * @param block - Source Tabata block configuration to convert
+ * @param result - Recorded result for the Tabata block
+ * @returns A DbTabataBlock populated with the provided config and result, ready for persistence
+ */
 function createTabataDbBlock(block: TabataBlock, result: TabataResult): DbTabataBlock {
   return {
     id: generateId(),
@@ -142,6 +189,16 @@ function createTabataDbBlock(block: TabataBlock, result: TabataResult): DbTabata
   }
 }
 
+/**
+ * Create a database-ready For Time block representing a standalone timer session.
+ *
+ * The returned block has a newly generated `id`, `orderIndex` set to 0, `kind` set to `"fortime"`,
+ * a shallow copy of the block's `config` and `result`, and an empty `exercises` array.
+ *
+ * @param block - The original For Time timer block to convert
+ * @param result - The completed result from the timer session
+ * @returns A `DbForTimeBlock` suitable for persisting as a standalone workout block
+ */
 function createForTimeDbBlock(block: ForTimeBlock, result: ForTimeResult): DbForTimeBlock {
   return {
     id: generateId(),
@@ -154,7 +211,10 @@ function createForTimeDbBlock(block: ForTimeBlock, result: ForTimeResult): DbFor
 }
 
 /**
- * Converts a timer session to a database block using type guards.
+ * Convert a timer session into a database-ready workout block.
+ *
+ * @param session - The timer session (AMRAP, EMOM, Tabata, or ForTime) to convert
+ * @returns A `DbWorkoutBlock` representing the session suitable for persistence
  */
 function convertSessionToDbBlock(session: TimerSession): DbWorkoutBlock {
   if (isAmrapSession(session)) {
@@ -173,6 +233,17 @@ function convertSessionToDbBlock(session: TimerSession): DbWorkoutBlock {
 // Export for external use
 export type { TimerSession, AmrapSession, EmomSession, TabataSession, ForTimeSession }
 
+/**
+ * Composable that logs standalone timer sessions as completed workouts and exposes logging state and helpers.
+ *
+ * Provides reactive flags to track whether a workout has been logged (`isLogged`) and whether a save is in progress (`isSaving`), helpers to persist AMRAP/EMOM/Tabata/For Time sessions as completed workouts, and a `reset` function to clear the logged state.
+ *
+ * @returns An object containing:
+ *  - `isLogged` — a reactive flag indicating a workout has been logged
+ *  - `isSaving` — a reactive flag indicating a save is in progress
+ *  - `logAmrap`, `logEmom`, `logTabata`, `logForTime` — functions that persist a session and return the created workout id or `null` on failure or when saving is blocked
+ *  - `reset` — clears the logged state so a new session can be recorded
+ */
 export function useTimerWorkoutLogger() {
   const { t } = useI18n()
   const isLogged = ref(false)
