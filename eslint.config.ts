@@ -17,7 +17,7 @@ import localRules from './eslint-local-rules'
 
 export default defineConfigWithVueTs(
   {
-    ignores: ['.claude/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**', 'src/components/ui/**'],
+    ignores: ['.claude/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**'],
   },
 
   {
@@ -74,20 +74,6 @@ export default defineConfigWithVueTs(
       // Vue 3.5+ API enforcement
       'vue/define-props-destructuring': 'error',
       'vue/prefer-use-template-ref': 'error',
-    },
-  },
-
-  {
-    name: 'app/shadcn-ui-components',
-    files: ['src/components/ui/**/*.vue'],
-    rules: {
-      'vue/multi-word-component-names': 'off',
-      'vue/max-props': 'off',
-      'vue/no-unused-properties': 'off',
-      'vue/no-unused-refs': 'off',
-      'vue/no-unused-emit-declarations': 'off',
-      'vue/require-expose': 'off',
-      'vue/require-explicit-slots': 'off',
     },
   },
 
@@ -334,12 +320,24 @@ export default defineConfigWithVueTs(
   {
     name: 'app/no-hardcoded-colors',
     files: ['src/**/*.vue'],
-    ignores: ['src/components/ui/**'],
     plugins: {
       local: localRules,
     },
     rules: {
       'local/no-hardcoded-colors': 'error',
+    },
+  },
+
+  // Ensure composables (use*.ts) import from Vue - distinguish from utilities
+  {
+    name: 'app/composable-must-use-vue',
+    files: ['src/**/*.ts'],
+    ignores: ['src/**/__tests__/**', 'src/**/*.d.ts'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/composable-must-use-vue': 'error',
     },
   },
 

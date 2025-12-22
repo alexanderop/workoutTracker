@@ -6,11 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-protect-shadcn.ts\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
             "command": "pnpm dlx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-no-else.ts\"",
             "timeout": 5
           },
