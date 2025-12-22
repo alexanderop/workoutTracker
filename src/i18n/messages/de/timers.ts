@@ -63,6 +63,8 @@ export default {
     complete: 'Fertig!',
     again: 'Nochmal',
     done: 'Fertig',
+    logWorkout: 'Training speichern',
+    logged: 'Gespeichert',
   },
   workout: {
     amrap: {

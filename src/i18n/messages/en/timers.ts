@@ -64,6 +64,8 @@ export default {
     complete: 'Complete!',
     again: 'Again',
     done: 'Done',
+    logWorkout: 'Log Workout',
+    logged: 'Logged',
   },
   workout: {
     amrap: {
