@@ -2,8 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
+import { buildPartialUpdate } from '@/db/partialUpdate'
 import { tryCatch } from '@/lib/tryCatch'
 import type { CustomExercise } from '@/types/exercises'
+
+/** Fields in DbCustomExercise that use null instead of undefined */
+const NULLABLE_EXERCISE_FIELDS = ['equipment', 'muscle', 'image'] as const
 
 export const useExercisesStore = defineStore('exercises', () => {
   const customExercises = ref<Array<CustomExercise>>([])
@@ -56,20 +60,15 @@ export const useExercisesStore = defineStore('exercises', () => {
 
   /**
    * Update an existing exercise in both DB and local state.
+   * Only updates fields that are explicitly provided in the updates object.
    */
   async function updateExercise(
     id: string,
     updates: Partial<Omit<CustomExercise, 'id' | 'createdAt'>>,
   ): Promise<boolean> {
-    // Convert domain types (undefined) to database types (null)
-    const dbUpdates = {
-      name: updates.name,
-      equipment: updates.equipment ?? null,
-      muscle: updates.muscle ?? null,
-      type: updates.type,
-      metrics: updates.metrics,
-      image: updates.image ?? null,
-    }
+    // Build partial update with only the fields that were provided
+    // Nullable fields (equipment, muscle, image) get undefined → null conversion
+    const dbUpdates = buildPartialUpdate(updates, NULLABLE_EXERCISE_FIELDS)
 
     const [error] = await tryCatch(getCustomExercisesRepository().update(id, dbUpdates))
 

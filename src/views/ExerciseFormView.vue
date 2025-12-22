@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /* eslint-disable vue/no-unused-refs -- imageInput ref used by useImageUpload composable */
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
+import ErrorDialog from '@/components/ErrorDialog.vue'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,10 @@ const saveButtonText = computed(() =>
 
 // Form state and validation
 const { form, isNameValid, isSaveDisabled, getFormData, populateFromExercise } = useExerciseForm()
+
+// Save operation state
+const isSaving = ref(false)
+const showError = ref(false)
 
 // Load exercise data when in edit mode
 onMounted(() => {
@@ -87,15 +92,26 @@ function handleMetricsSelect(selected: Metrics) {
 async function handleSave() {
   if (!isNameValid.value) return
 
+  isSaving.value = true
   const formData = getFormData()
 
   if (isEditMode.value && id) {
-    await exercisesStore.updateExercise(id, formData)
+    const success = await exercisesStore.updateExercise(id, formData)
+    isSaving.value = false
+    if (!success) {
+      showError.value = true
+      return
+    }
     router.back()
     return
   }
 
-  await exercisesStore.addExercise(formData)
+  const newExercise = await exercisesStore.addExercise(formData)
+  isSaving.value = false
+  if (!newExercise) {
+    showError.value = true
+    return
+  }
   router.back()
 }
 </script>
@@ -103,8 +119,8 @@ async function handleSave() {
 <template>
   <PageLayout :title="pageTitle">
     <template #header-actions>
-      <Button :disabled="isSaveDisabled" @click="handleSave">{{
-        saveButtonText
+      <Button :disabled="isSaveDisabled || isSaving" @click="handleSave">{{
+        isSaving ? t('common.states.saving') : saveButtonText
       }}</Button>
     </template>
 
@@ -228,6 +244,12 @@ async function handleSave() {
       :options="METRICS_OPTIONS"
       :selected="form.metrics"
       @select="handleMetricsSelect"
+    />
+
+    <ErrorDialog
+      v-model:open="showError"
+      :error="t('exercises.form.saveError', 'Failed to save exercise. Please try again.')"
+      :title="t('exercises.form.saveErrorTitle', 'Save Failed')"
     />
   </PageLayout>
 </template>
