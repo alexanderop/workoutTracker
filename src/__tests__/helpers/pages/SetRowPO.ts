@@ -2,12 +2,25 @@ import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
 import type { SetValues } from '../types'
 import { ensureHTMLElement } from '../domHelpers'
+import { NumericInputModalPO } from './NumericInputModalPO'
+
+/**
+ * Parses button text content to extract the display value.
+ * Used in modal mode to read values from trigger buttons.
+ */
+function parseButtonText(text: string | null): string {
+  if (!text || text === '—') return ''
+  return text.trim()
+}
 
 /**
  * Page Object for a single set row in the workout table.
  * Encapsulates DOM elements and provides an application-specific API.
+ * Supports both inline input (desktop) and modal input (touch devices).
  */
 export class SetRowPO {
+  private modalPO = new NumericInputModalPO()
+
   constructor(
     private rowLocator: ReturnType<typeof page.getByRole>,
     private setIndex: number,
@@ -36,7 +49,7 @@ export class SetRowPO {
   }
 
   /**
-   * Gets the RIR input element from the row.
+   * Gets the RIR input element from the row (desktop mode only).
    */
   private async getRirInput(): Promise<HTMLInputElement> {
     const input = await this.rowLocator.getByRole('spinbutton', { name: /reps in reserve for set/i }).element()
@@ -44,6 +57,38 @@ export class SetRowPO {
       throw new Error('RIR input is not an HTMLInputElement')
     }
     return input
+  }
+
+  /**
+   * Checks if the row is in modal mode (touch device) or inline mode (desktop).
+   * Modal mode uses button triggers instead of spinbutton inputs.
+   */
+  async isModalMode(): Promise<boolean> {
+    // Check if weight trigger button exists (modal mode)
+    const weightTrigger = this.rowLocator.getByRole('button', { name: /weight for set/i })
+    const element = weightTrigger.query()
+    return element !== null
+  }
+
+  /**
+   * Gets the weight trigger button (modal mode only).
+   */
+  private getWeightTrigger() {
+    return this.rowLocator.getByRole('button', { name: /weight for set/i })
+  }
+
+  /**
+   * Gets the reps trigger button (modal mode only).
+   */
+  private getRepsTrigger() {
+    return this.rowLocator.getByRole('button', { name: /^reps for set/i })
+  }
+
+  /**
+   * Gets the RIR trigger button (modal mode only).
+   */
+  private getRirTrigger() {
+    return this.rowLocator.getByRole('button', { name: /reps in reserve for set/i })
   }
 
   /**
@@ -56,10 +101,27 @@ export class SetRowPO {
   }
 
   /**
-   * Gets the current values from the set row inputs.
+   * Gets the current values from the set row.
+   * Works in both modal mode (reads button text) and inline mode (reads input values).
    * @returns Object with weight, reps, and rir as strings
    */
   async getValues(): Promise<{ weight: string; reps: string; rir: string }> {
+    const isModal = await this.isModalMode()
+
+    if (isModal) {
+      const [weightEl, repsEl, rirEl] = await Promise.all([
+        this.getWeightTrigger().element(),
+        this.getRepsTrigger().element(),
+        this.getRirTrigger().element(),
+      ])
+
+      return {
+        weight: parseButtonText(weightEl.textContent),
+        reps: parseButtonText(repsEl.textContent),
+        rir: parseButtonText(rirEl.textContent),
+      }
+    }
+
     const [weight, reps, rir] = await Promise.all([
       this.getWeightInput(),
       this.getRepsInput(),
@@ -75,9 +137,24 @@ export class SetRowPO {
   /**
    * Fills in the values for this set row.
    * Only fills values that are provided (undefined values are skipped).
+   * Automatically detects modal mode vs inline mode.
    * @param values - Object containing optional kg, reps, and rir values
    */
   async fill(values: SetValues): Promise<void> {
+    const isModal = await this.isModalMode()
+
+    if (isModal) {
+      await this.fillViaModal(values)
+      return
+    }
+
+    await this.fillInline(values)
+  }
+
+  /**
+   * Fills values using inline NumberField inputs (desktop mode).
+   */
+  private async fillInline(values: SetValues): Promise<void> {
     const fillValue = async (
       getInput: () => Promise<HTMLInputElement>,
       val?: number,
@@ -91,6 +168,37 @@ export class SetRowPO {
     await fillValue(() => this.getWeightInput(), values.kg)
     await fillValue(() => this.getRepsInput(), values.reps)
     await fillValue(() => this.getRirInput(), values.rir)
+    await flushPromises()
+  }
+
+  /**
+   * Fills values using the NumericInputModal (touch/modal mode).
+   */
+  private async fillViaModal(values: SetValues): Promise<void> {
+    // Fill weight
+    if (values.kg !== undefined) {
+      await userEvent.click(this.getWeightTrigger())
+      await this.modalPO.waitForOpen()
+      await this.modalPO.enterValueAndConfirm(values.kg)
+      await this.modalPO.waitForClose()
+    }
+
+    // Fill reps
+    if (values.reps !== undefined) {
+      await userEvent.click(this.getRepsTrigger())
+      await this.modalPO.waitForOpen()
+      await this.modalPO.enterValueAndConfirm(values.reps)
+      await this.modalPO.waitForClose()
+    }
+
+    // Fill RIR
+    if (values.rir !== undefined) {
+      await userEvent.click(this.getRirTrigger())
+      await this.modalPO.waitForOpen()
+      await this.modalPO.enterValueAndConfirm(values.rir)
+      await this.modalPO.waitForClose()
+    }
+
     await flushPromises()
   }
 

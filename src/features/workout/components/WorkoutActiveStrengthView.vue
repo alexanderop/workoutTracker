@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
+import { NumericInputModal, type InputType } from '@/components/ui/numeric-input'
 import { Button } from '@/components/ui/button'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
+import { useTouchDevice } from '@/composables/useTouchDevice'
 import { isSetReady } from '@/features/workout/composables/useWorkout'
 import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
@@ -13,6 +15,7 @@ import type { Set } from '@/types/workout'
 import { Check, Plus } from 'lucide-vue-next'
 
 const { t } = useI18n()
+const { isTouchDevice } = useTouchDevice()
 
 type Props = {
   block: StrengthBlock
@@ -129,6 +132,41 @@ function handleRepsChange(set: Set, value: number | undefined) {
 function handleRirChange(set: Set, value: number | undefined) {
   emit('update-set', set.id, 'rir', value)
 }
+
+// Modal state for touch input
+const modalOpen = ref(false)
+const modalType = ref<InputType>('weight')
+const modalSetId = ref<number | null>(null)
+const modalValue = ref(0)
+
+function openModal(type: InputType, set: Set, currentValue: number | undefined) {
+  modalType.value = type
+  modalSetId.value = set.id
+  modalValue.value = currentValue ?? 0
+  modalOpen.value = true
+}
+
+function handleModalConfirm(value: number) {
+  if (modalSetId.value === null) return
+
+  const fieldMap: Record<InputType, 'kg' | 'reps' | 'rir'> = {
+    weight: 'kg',
+    reps: 'reps',
+    rir: 'rir',
+  }
+  const field = fieldMap[modalType.value]
+  const emitValue = modalType.value === 'weight' ? toStorageValue(value) : value
+  emit('update-set', modalSetId.value, field, emitValue)
+}
+
+// Format value for display in touch trigger button
+function formatDisplayValue(value: number | undefined, type: InputType): string {
+  if (value === undefined || value === 0) return '—'
+  if (type === 'weight') {
+    return value.toLocaleString('en-US', { maximumFractionDigits: 2, useGrouping: false })
+  }
+  return String(value)
+}
 </script>
 
 <template>
@@ -190,7 +228,19 @@ function handleRirChange(set: Set, value: number | undefined) {
 
             <!-- Weight -->
             <TableCell class="p-1 h-14">
+              <!-- Touch: Trigger button -->
+              <button
+                v-if="isTouchDevice"
+                type="button"
+                :aria-label="t('common.aria.weightForSet', { number: state.setNumber })"
+                :class="cn(state.inputClass, 'w-full cursor-pointer')"
+                @click="openModal('weight', state.set, state.weightValue)"
+              >
+                {{ formatDisplayValue(state.weightValue, 'weight') }}
+              </button>
+              <!-- Desktop: Inline NumberField -->
               <NumberField
+                v-else
                 :model-value="state.weightValue"
                 :min="0"
                 :max="999"
@@ -209,7 +259,19 @@ function handleRirChange(set: Set, value: number | undefined) {
 
             <!-- Reps -->
             <TableCell class="p-1 h-14">
+              <!-- Touch: Trigger button -->
+              <button
+                v-if="isTouchDevice"
+                type="button"
+                :aria-label="t('common.aria.repsForSet', { number: state.setNumber })"
+                :class="cn(state.repsInputClass, 'w-full cursor-pointer')"
+                @click="openModal('reps', state.set, state.repsValue)"
+              >
+                {{ formatDisplayValue(state.repsValue, 'reps') }}
+              </button>
+              <!-- Desktop: Inline NumberField -->
               <NumberField
+                v-else
                 :model-value="state.repsValue"
                 :min="0"
                 :max="999"
@@ -225,7 +287,19 @@ function handleRirChange(set: Set, value: number | undefined) {
 
             <!-- RIR -->
             <TableCell class="p-1 h-14">
+              <!-- Touch: Trigger button -->
+              <button
+                v-if="isTouchDevice"
+                type="button"
+                :aria-label="t('common.aria.repsInReserveForSet', { number: state.setNumber })"
+                :class="cn(state.rirInputClass, 'w-full cursor-pointer')"
+                @click="openModal('rir', state.set, state.rirValue)"
+              >
+                {{ formatDisplayValue(state.rirValue, 'rir') }}
+              </button>
+              <!-- Desktop: Inline NumberField -->
               <NumberField
+                v-else
                 :model-value="state.rirValue"
                 :min="0"
                 :max="10"
@@ -269,5 +343,14 @@ function handleRirChange(set: Set, value: number | undefined) {
       <Plus class="w-4 h-4 mr-2" aria-hidden="true" />
       {{ t('workouts.sets.addSet') }}
     </Button>
+
+    <!-- Numeric Input Modal (touch devices only) -->
+    <NumericInputModal
+      v-model="modalValue"
+      v-model:open="modalOpen"
+      :type="modalType"
+      :unit="modalType === 'weight' ? unitLabel : ''"
+      @update:model-value="handleModalConfirm"
+    />
   </div>
 </template>
