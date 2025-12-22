@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Delete } from 'lucide-vue-next'
 import { useNumericInput } from './useNumericInput'
-import { Button } from '@/components/ui/button'
 
 type Props = {
   max?: number
@@ -28,6 +27,9 @@ function handleDigitClick(digit: string) {
 function handleBackspace() {
   modelValue.value = removeDigit(modelValue.value)
 }
+
+const buttonClass =
+  'flex h-14 items-center justify-center rounded-lg bg-secondary text-xl font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 active:bg-secondary/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 </script>
 
 <template>
@@ -36,39 +38,36 @@ function handleBackspace() {
     <div class="grid grid-cols-3 gap-2">
       <!-- Rows 1-3: digits 1-9 -->
       <template v-for="(row, rowIndex) in digits" :key="rowIndex">
-        <Button
+        <button
           v-for="digit in row"
           :key="digit"
           type="button"
-          variant="secondary"
-          class="h-14 text-xl font-semibold"
+          :class="buttonClass"
           @click="handleDigitClick(digit)"
         >
           {{ digit }}
-        </Button>
+        </button>
       </template>
 
       <!-- Bottom row: empty, 0, backspace -->
       <div class="h-14" />
 
-      <Button
+      <button
         type="button"
-        variant="secondary"
-        class="h-14 text-xl font-semibold"
+        :class="buttonClass"
         @click="handleDigitClick('0')"
       >
         0
-      </Button>
+      </button>
 
-      <Button
+      <button
         type="button"
-        variant="secondary"
-        class="h-14"
+        :class="buttonClass"
         aria-label="Backspace"
         @click="handleBackspace"
       >
         <Delete class="h-6 w-6" />
-      </Button>
+      </button>
     </div>
   </div>
 </template>
