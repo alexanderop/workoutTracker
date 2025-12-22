@@ -42,7 +42,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
-    "lucide-vue-next": "^0.556.0",
+    "lucide-vue-next": "^0.562.0",
     "pinia": "^3.0.3",
     "reka-ui": "^2.6.0",
     "sortablejs": "^1.15.6",
