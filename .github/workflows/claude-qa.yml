@@ -96,7 +96,7 @@ jobs:
             core.setOutput('ref', pr.head.sha);
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr-ref.outputs.ref || github.event.pull_request.head.sha || github.sha }}
 
