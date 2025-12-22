@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import { Pencil } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import PageLayout from '@/components/PageLayout.vue'
+import { Button } from '@/components/ui/button'
 import { useExerciseProgress } from '@/features/exercises/composables/useExerciseProgress'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import ExerciseProgressPRCards from '@/features/exercises/components/ExerciseProgressPRCards.vue'
 import ExerciseProgressChart from '@/features/exercises/components/ExerciseProgressChart.vue'
 import ExerciseProgressEmpty from '@/features/exercises/components/ExerciseProgressEmpty.vue'
+import { RouteNames } from '@/router'
 
 const { t } = useI18n()
+const router = useRouter()
 
 const { id } = defineProps<{
   id: string
@@ -15,10 +20,25 @@ const { id } = defineProps<{
 
 const { state, chartData, hasHistory, exerciseName, personalRecords } = useExerciseProgress(id)
 const { isVisible: showContent } = useEnterAnimation(100)
+
+function handleEditExercise() {
+  router.push({ name: RouteNames.EditExercise, params: { id } })
+}
 </script>
 
 <template>
   <PageLayout :title="exerciseName || t('exercises.progress.title')" back-to="/exercises">
+    <template #header-actions>
+      <Button
+        variant="ghost"
+        size="icon"
+        :aria-label="t('exercises.edit.title')"
+        @click="handleEditExercise"
+      >
+        <Pencil class="size-5" />
+      </Button>
+    </template>
+
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
       <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>

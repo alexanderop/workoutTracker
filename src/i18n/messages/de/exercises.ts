@@ -39,6 +39,10 @@ export default {
       conversionFailed: 'Konvertierung fehlgeschlagen. Bitte eine andere Datei verwenden.',
     },
   },
+  edit: {
+    title: 'Übung bearbeiten',
+    save: 'Speichern',
+  },
   selectors: {
     equipment: {
       title: 'Ausrüstung auswählen',

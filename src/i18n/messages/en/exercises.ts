@@ -39,6 +39,10 @@ export default {
       conversionFailed: 'Failed to convert image. Please try a different file.',
     },
   },
+  edit: {
+    title: 'Edit Exercise',
+    save: 'Save',
+  },
   selectors: {
     equipment: {
       title: 'Select Equipment',

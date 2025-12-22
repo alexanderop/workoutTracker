@@ -3,7 +3,7 @@ import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
 import CreateBenchmarkView from '@/views/CreateBenchmarkView.vue'
-import CreateCustomExercise from '@/views/CreateCustomExercise.vue'
+import ExerciseFormView from '@/views/ExerciseFormView.vue'
 import CreateTemplateView from '@/views/CreateTemplateView.vue'
 import LogPastWorkoutView from '@/views/LogPastWorkoutView.vue'
 import TemplateDetailView from '@/views/TemplateDetailView.vue'
@@ -26,7 +26,8 @@ export const RouteNames = {
   Timers: 'Timers',
   ActiveWorkout: 'ActiveWorkout',
   ActiveBenchmark: 'ActiveBenchmark',
-  CreateCustomExercise: 'CreateCustomExercise',
+  ExerciseForm: 'ExerciseForm',
+  EditExercise: 'EditExercise',
   WorkoutSummary: 'WorkoutSummary',
   CreateTemplate: 'CreateTemplate',
   TemplateDetail: 'TemplateDetail',
@@ -93,8 +94,14 @@ export const routes = [
   },
   {
     path: '/create-exercise',
-    name: RouteNames.CreateCustomExercise,
-    component: CreateCustomExercise,
+    name: RouteNames.ExerciseForm,
+    component: ExerciseFormView,
+  },
+  {
+    path: '/exercises/:id/edit',
+    name: RouteNames.EditExercise,
+    component: ExerciseFormView,
+    props: true,
   },
   {
     path: '/workout/summary/:id',

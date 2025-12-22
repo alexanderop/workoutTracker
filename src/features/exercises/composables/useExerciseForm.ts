@@ -1,4 +1,4 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type { CustomExercise, Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import { computed, ref } from 'vue'
 
 type ExerciseFormState = {
@@ -34,6 +34,18 @@ export function useExerciseForm() {
     form.value = createInitialState()
   }
 
+  function populateFromExercise(exercise: CustomExercise) {
+    form.value = {
+      name: exercise.name,
+      equipment: exercise.equipment,
+      muscle: exercise.muscle,
+      type: exercise.type,
+      metrics: exercise.metrics,
+      image: exercise.image,
+      imageError: undefined,
+    }
+  }
+
   function getFormData(): ExerciseFormState {
     return {
       ...form.value,
@@ -47,6 +59,7 @@ export function useExerciseForm() {
     hasImageError,
     isSaveDisabled,
     reset,
+    populateFromExercise,
     getFormData,
   }
 }

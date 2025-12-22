@@ -84,7 +84,7 @@ function handleSelectCardio() {
 
 function handleCreateNew() {
   open.value = false
-  router.push({ name: RouteNames.CreateCustomExercise })
+  router.push({ name: RouteNames.ExerciseForm })
 }
 
 function handleOpenChange(value: boolean) {

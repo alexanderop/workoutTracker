@@ -1,6 +1,5 @@
 import { page } from 'vitest/browser'
 import { expect } from 'vitest'
-import type { TestContext } from '../types'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 
@@ -9,10 +8,7 @@ import { ensureHTMLElement } from '../domHelpers'
  * Provides methods to navigate, view benchmarks, and access creation flow.
  */
 export class BenchmarksPO {
-  constructor(
-    private _ctx: TestContext,
-    private common: CommonPO,
-  ) {}
+  constructor(private common: CommonPO) {}
 
   /**
    * Navigates to the benchmarks tab from the workouts view.

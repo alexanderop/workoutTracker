@@ -1,11 +1,11 @@
 ---
 description: Review current changes with parallel subagents
-allowed-tools: Read, Glob, Grep, Bash(git diff:*), Bash(git status), Bash(git branch:*), Bash(git merge-base:*), Task
+allowed-tools: Bash(git diff:*), Bash(git status), Bash(git branch:*), Bash(git merge-base:*), Task
 ---
 
 # Code Review
 
-Review the current changes using our specialized review agents.
+Review current changes using specialized review agents.
 
 <git_status>
 !`git status`
@@ -41,201 +41,106 @@ Review the current changes using our specialized review agents.
 
 ## Instructions
 
-**Determine what to review:**
+Launch a single orchestrator agent (`general-purpose`) with the git context above. The orchestrator will:
 
-1. **If there are uncommitted changes** (staged or unstaged diff is not empty):
-   - Review the uncommitted changes using `<staged_diff>` and `<unstaged_diff>`
-   - Use `<uncommitted_changed_files>` for the file list
+1. Determine review mode (uncommitted vs branch changes)
+2. Select 2-4 relevant reviewers
+3. Launch them in parallel
+4. Compile a unified report
 
-2. **If on a branch other than main with no uncommitted changes** (current branch ≠ main AND staged/unstaged diffs are empty):
-   - Review all commits on the branch since diverging from main
-   - Use `<branch_diff>` for the diff
-   - Use `<branch_changed_files>` for the file list
+Use this prompt (substitute the actual values from the git context above):
 
-3. **If on main with no changes**: Report that there's nothing to review.
-
-Launch **9 Task tools in parallel** (single message, multiple tool calls) with these subagent types:
-
-### 1. Fowler Refactoring Reviewer
 ```
-subagent_type: fowler-refactoring-reviewer
+subagent_type: general-purpose
 prompt: |
-  Review the following code changes for refactoring opportunities using Martin Fowler's methodology.
+  You are a code review orchestrator. Analyze the changes and coordinate specialized reviewers.
 
-  Changed files: [list from appropriate <*_changed_files>]
+  ## Git Context
 
-  Diff:
-  [include appropriate diff based on mode]
+  Current branch: [value from <current_branch>]
 
-  Focus on: code smells, refactoring opportunities, technical debt reduction.
-  Return: Prioritized list of issues with specific refactoring suggestions.
+  Changed files:
+  [value from <uncommitted_changed_files> if uncommitted changes exist, else <branch_changed_files>]
+
+  Diff to review:
+  [value from <staged_diff> + <unstaged_diff> if uncommitted changes exist, else <branch_diff>]
+
+  ## Your Tasks
+
+  ### 1. Determine Review Mode
+
+  - If staged/unstaged diff is not empty: Review uncommitted changes
+  - Else if on branch other than main: Review branch changes vs main
+  - Else: Report nothing to review and stop
+
+  ### 2. Select Reviewers (2-4 based on relevance)
+
+  | Reviewer | Use When |
+  |----------|----------|
+  | vue-reviewer | `.vue` files changed |
+  | typescript-reviewer | Complex types, generics, type assertions |
+  | kcd-test-reviewer | `.spec.ts` or `.test.ts` files |
+  | accessibility-reviewer | UI: buttons, inputs, modals, forms |
+  | performance-reviewer | Reactivity, computed/watch, large lists |
+  | architecture-reviewer | Cross-feature imports, new feature files |
+  | security-reviewer | User input, v-html, external data |
+  | vueuse-reviewer | Manual listeners, localStorage, timers |
+  | fowler-refactoring-reviewer | Large functions, duplication |
+
+  Rules:
+  - Include vue-reviewer if any `.vue` files changed
+  - Include kcd-test-reviewer if any test files changed
+  - Pick remaining by diff content
+
+  ### 3. Launch Reviewers in Parallel
+
+  Launch 2-4 Task tools in a **single message**:
+
+  ```
+  subagent_type: [reviewer-type]
+  prompt: |
+    Review the following changes.
+
+    Changed files: [file list]
+    Diff: [relevant diff]
+    Focus: [from table below]
+  ```
+
+  | Reviewer | Focus | Output |
+  |----------|-------|--------|
+  | vue-reviewer | Component patterns, composables, templates | Violations with impact |
+  | typescript-reviewer | No `any`, proper generics | Type issues with severity |
+  | kcd-test-reviewer | Testing Trophy, query priority | Test quality issues |
+  | accessibility-reviewer | ARIA, keyboard nav, focus | WCAG violations |
+  | performance-reviewer | Reactivity efficiency | Performance issues |
+  | architecture-reviewer | Feature isolation | Boundary violations |
+  | security-reviewer | XSS, injection, validation | OWASP issues |
+  | vueuse-reviewer | VueUse opportunities | Code reduction |
+  | fowler-refactoring-reviewer | Code smells | Prioritized suggestions |
+
+  ### 4. Compile Final Report
+
+  ```markdown
+  # Code Review Report
+
+  ## Review Mode
+  [Uncommitted OR branch changes]
+
+  ## Reviewers Selected
+  [List and why]
+
+  ## Summary
+  [2-3 sentences]
+
+  ## Critical Issues
+  [Must fix - or "None"]
+
+  ## [Reviewer Name]
+  [Findings or "No issues"]
+
+  ...
+
+  ## Recommended Actions
+  1. [Priority actions]
+  ```
 ```
-
-### 2. Vue Component Reviewer
-```
-subagent_type: vue-reviewer
-prompt: |
-  Review the following Vue component changes for readability improvements.
-
-  Changed Vue files: [filter .vue files from <*_changed_files>]
-
-  Diff:
-  [include Vue file diffs]
-
-  Focus on: component patterns, composable usage, template readability.
-  Return: Pattern violations with impact ratings and refactoring suggestions.
-```
-
-### 3. Test Reviewer
-```
-subagent_type: kcd-test-reviewer
-prompt: |
-  Review the following test changes using Kent C. Dodds' testing philosophy.
-
-  Changed test files: [filter .spec.ts/.test.ts files from <*_changed_files>]
-
-  Diff:
-  [include test file diffs]
-
-  Focus on: Testing Trophy adherence, query priority, avoiding implementation details.
-  Return: Test quality issues with suggestions for improving test confidence.
-```
-
-### 4. TypeScript Reviewer
-```
-subagent_type: typescript-reviewer
-prompt: |
-  Review the following code changes for TypeScript strict mode compliance.
-
-  Changed files: [filter .ts/.vue files from <*_changed_files>]
-
-  Diff:
-  [include relevant diffs]
-
-  Focus on: no `any`, no type assertions, proper generics, discriminated unions.
-  Return: Type safety violations with severity and fixes.
-```
-
-### 5. Accessibility Reviewer
-```
-subagent_type: accessibility-reviewer
-prompt: |
-  Review the following Vue component changes for accessibility issues.
-
-  Changed Vue files: [filter .vue files from <*_changed_files>]
-
-  Diff:
-  [include Vue file diffs]
-
-  Focus on: ARIA attributes, keyboard navigation, focus management, touch targets.
-  Return: WCAG violations with severity and fixes.
-```
-
-### 6. Performance Reviewer
-```
-subagent_type: performance-reviewer
-prompt: |
-  Review the following code changes for performance issues.
-
-  Changed files: [list from <*_changed_files>]
-
-  Diff:
-  [include relevant diffs]
-
-  Focus on: reactivity efficiency, shallowRef usage, computed vs method, memory leaks.
-  Return: Performance issues with impact assessment and optimizations.
-```
-
-### 7. Architecture Reviewer
-```
-subagent_type: architecture-reviewer
-prompt: |
-  Review the following code changes for architecture boundary violations.
-
-  Changed files: [list from <*_changed_files>]
-
-  Diff:
-  [include relevant diffs]
-
-  Focus on: feature isolation, dependency direction, layer violations.
-  Return: Architecture violations with severity and refactoring suggestions.
-```
-
-### 8. Security Reviewer
-```
-subagent_type: security-reviewer
-prompt: |
-  Review the following code changes for security vulnerabilities.
-
-  Changed files: [list from <*_changed_files>]
-
-  Diff:
-  [include relevant diffs]
-
-  Focus on: XSS, injection, data validation, sensitive data exposure.
-  Return: Security vulnerabilities with OWASP category and fixes.
-```
-
-### 9. VueUse Reviewer
-```
-subagent_type: vueuse-reviewer
-prompt: |
-  Review the following code changes for opportunities to use VueUse composables.
-
-  Changed files: [list from <*_changed_files>]
-
-  Diff:
-  [include relevant diffs]
-
-  Focus on: manual event listeners, storage patterns, intervals, observers, reactivity helpers.
-  Return: VueUse opportunities with code reduction estimates and implementation suggestions.
-```
-
-## After All Agents Complete
-
-Compile the results into a single report:
-
-```markdown
-# Code Review Report
-
-## Review Mode
-[State whether reviewing uncommitted changes OR branch changes against main]
-
-## Summary
-[Brief overview of findings across all 9 reviewers]
-
-## Critical Issues
-[Any high-severity items that must be fixed before committing/merging]
-
-## Refactoring Opportunities (Fowler)
-[Code smells and refactoring suggestions]
-
-## Vue Component Issues
-[Pattern violations with impact ratings]
-
-## Test Quality
-[Test improvements needed]
-
-## TypeScript
-[Type safety violations]
-
-## Accessibility
-[WCAG violations and a11y issues]
-
-## Performance
-[Reactivity and optimization issues]
-
-## Architecture
-[Boundary violations and layering issues]
-
-## Security
-[Vulnerabilities with OWASP categories]
-
-## VueUse Opportunities
-[Composables that could simplify code]
-
-## Recommended Actions
-[Top 5 actionable items to address before committing/merging, ordered by priority]
-```
-
-If a reviewer finds no issues, note that section passes review.

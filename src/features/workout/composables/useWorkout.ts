@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { useExercisesStore } from '@/stores/exercises'
-import { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
+import { getWorkoutRef } from '@/stores/workoutState'
 import type {
   AmrapConfig,
   AmrapResult,

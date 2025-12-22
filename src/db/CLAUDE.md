@@ -81,6 +81,23 @@ const exercise = {
 }
 ```
 
+### Partial Updates
+
+Use `buildPartialUpdate` for Dexie updates that should only modify provided fields:
+
+```ts
+import { buildPartialUpdate } from '@/db/partialUpdate'
+
+const NULLABLE_FIELDS = ['equipment', 'muscle', 'image']
+
+// Only includes keys present in updates
+// Converts undefined → null for nullable fields
+const dbUpdates = buildPartialUpdate(updates, NULLABLE_FIELDS)
+await repo.update(id, dbUpdates)
+```
+
+**Why**: Dexie's `update()` overwrites all keys in the object. Without filtering, `{ name: 'Squat', equipment: undefined }` would set equipment to undefined/null even if you only meant to update the name.
+
 ## Available Repositories
 
 ### SettingsRepository

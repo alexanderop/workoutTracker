@@ -1,16 +1,19 @@
 <script setup lang="ts">
+/* eslint-disable vue/no-unused-refs -- imageInput ref used by useImageUpload composable */
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
+import ErrorDialog from '@/components/ErrorDialog.vue'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useDialogState } from '@/composables/useDialogState'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
-import { useImageConversion } from '@/composables/useImageConversion'
+import { useImageUpload } from '@/features/exercises/composables/useImageUpload'
 import {
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
@@ -20,69 +23,55 @@ import {
 import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
 import { useExercisesStore } from '@/stores/exercises'
 
+const { id } = defineProps<{
+  id?: string
+}>()
+
 const router = useRouter()
 const { t } = useI18n()
 const exercisesStore = useExercisesStore()
 
+// Mode detection
+const isEditMode = computed(() => !!id)
+const pageTitle = computed(() =>
+  isEditMode.value ? t('exercises.edit.title') : t('exercises.create.title'),
+)
+const saveButtonText = computed(() =>
+  isEditMode.value ? t('exercises.edit.save') : t('exercises.create.save'),
+)
+
 // Form state and validation
-const { form, isNameValid, isSaveDisabled, getFormData } = useExerciseForm()
+const { form, isNameValid, isSaveDisabled, getFormData, populateFromExercise } = useExerciseForm()
 
-// Image conversion
-const { convert: convertImage } = useImageConversion()
-const imageInputRef = useTemplateRef<HTMLInputElement>('imageInput')
+// Save operation state
+const isSaving = ref(false)
+const showError = ref(false)
 
-// Computed for image upload display
-const imageDisplayText = computed(() => {
-  if (form.value.image) {
-    const sizeKb = Math.round(form.value.image.size / 1024)
-    return `${t('exercises.create.imageUploaded')} (${sizeKb} KB)`
+// Load exercise data when in edit mode
+onMounted(() => {
+  if (!isEditMode.value || !id) return
+
+  const exercise = exercisesStore.getExerciseById(id)
+  if (exercise) {
+    populateFromExercise(exercise)
   }
-  return ''
 })
 
-function handleImageClick() {
-  imageInputRef.value?.click()
-}
+// Image upload
+const {
+  displayText: imageDisplayText,
+  trigger: handleImageClick,
+  handleSelect: handleImageSelect,
+} = useImageUpload(form)
 
-// Modal state machine - only one modal can be open at a time
-type ModalState =
-  | { kind: 'closed' }
-  | { kind: 'equipment' }
-  | { kind: 'muscle' }
-  | { kind: 'type' }
-  | { kind: 'metrics' }
+// Modal state - only one modal can be open at a time
+type ModalKind = 'equipment' | 'muscle' | 'type' | 'metrics'
+const { open: openModal, createDialogModel } = useDialogState<ModalKind>()
 
-const modalState = ref<ModalState>({ kind: 'closed' })
-
-// Writable computed helpers for v-model compatibility
-const showEquipmentModal = computed({
-  get: () => modalState.value.kind === 'equipment',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showMuscleModal = computed({
-  get: () => modalState.value.kind === 'muscle',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showTypeModal = computed({
-  get: () => modalState.value.kind === 'type',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-const showMetricsModal = computed({
-  get: () => modalState.value.kind === 'metrics',
-  set: (val) => {
-    if (!val) modalState.value = { kind: 'closed' }
-  },
-})
-
-function openModal(kind: ModalState['kind']) {
-  modalState.value = { kind }
-}
+const showEquipmentModal = createDialogModel('equipment')
+const showMuscleModal = createDialogModel('muscle')
+const showTypeModal = createDialogModel('type')
+const showMetricsModal = createDialogModel('metrics')
 
 function handleEquipmentSelect(selected: Equipment) {
   form.value.equipment = selected
@@ -100,45 +89,38 @@ function handleMetricsSelect(selected: Metrics) {
   form.value.metrics = selected
 }
 
-async function handleImageSelect(event: Event) {
-  const input = event.target
-  if (!(input instanceof HTMLInputElement)) return
-
-  const file = input.files?.[0]
-  input.value = '' // Reset for re-selection
-  if (!file) return
-
-  // Clear previous error
-  form.value.imageError = undefined
-
-  const result = await convertImage(file)
-
-  if (result.success) {
-    form.value.image = result.blob
-    return
-  }
-
-  form.value.imageError =
-    result.error === 'file-too-large'
-      ? t('exercises.create.errors.imageTooLarge')
-      : result.error === 'invalid-image'
-        ? t('exercises.create.errors.invalidImage')
-        : t('exercises.create.errors.conversionFailed')
-}
-
 async function handleSave() {
   if (!isNameValid.value) return
 
-  await exercisesStore.addExercise(getFormData())
+  isSaving.value = true
+  const formData = getFormData()
+
+  if (isEditMode.value && id) {
+    const success = await exercisesStore.updateExercise(id, formData)
+    isSaving.value = false
+    if (!success) {
+      showError.value = true
+      return
+    }
+    router.back()
+    return
+  }
+
+  const newExercise = await exercisesStore.addExercise(formData)
+  isSaving.value = false
+  if (!newExercise) {
+    showError.value = true
+    return
+  }
   router.back()
 }
 </script>
 
 <template>
-  <PageLayout :title="t('exercises.create.title')">
+  <PageLayout :title="pageTitle">
     <template #header-actions>
-      <Button :disabled="isSaveDisabled" @click="handleSave">{{
-        t('exercises.create.save')
+      <Button :disabled="isSaveDisabled || isSaving" @click="handleSave">{{
+        isSaving ? t('common.states.saving') : saveButtonText
       }}</Button>
     </template>
 
@@ -262,6 +244,12 @@ async function handleSave() {
       :options="METRICS_OPTIONS"
       :selected="form.metrics"
       @select="handleMetricsSelect"
+    />
+
+    <ErrorDialog
+      v-model:open="showError"
+      :error="t('exercises.form.saveError', 'Failed to save exercise. Please try again.')"
+      :title="t('exercises.form.saveErrorTitle', 'Save Failed')"
     />
   </PageLayout>
 </template>
