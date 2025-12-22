@@ -66,9 +66,8 @@ describe('NumericKeypad', () => {
 
     await userEvent.click(page.getByRole('button', { name: '0' }))
 
-    // Vue v-model doesn't emit when value doesn't change
-    // The important thing is value stays at 0 (verified by display)
-    await expect.element(page.getByTestId('keypad-display')).toHaveTextContent('0')
+    // Value stays at 0 - Vue doesn't emit when value doesn't change
+    expect(onUpdate).not.toHaveBeenCalled()
   })
 
   it('removes last digit on backspace', async () => {
@@ -100,28 +99,19 @@ describe('NumericKeypad', () => {
   })
 
   it('enforces max value constraint', async () => {
+    const onUpdate = vi.fn()
     render(NumericKeypad, {
       props: {
         modelValue: 99,
         max: 100,
+        'onUpdate:modelValue': onUpdate,
       },
     })
 
     // Try to make it 999
     await userEvent.click(page.getByRole('button', { name: '9' }))
 
-    // Should stay at 99 since 999 > 100
-    // Vue v-model doesn't emit when value doesn't change
-    await expect.element(page.getByTestId('keypad-display')).toHaveTextContent('99')
-  })
-
-  it('displays current value', async () => {
-    render(NumericKeypad, {
-      props: {
-        modelValue: 42,
-      },
-    })
-
-    await expect.element(page.getByTestId('keypad-display')).toHaveTextContent('42')
+    // Should stay at 99 since 999 > 100 - Vue doesn't emit when value doesn't change
+    expect(onUpdate).not.toHaveBeenCalled()
   })
 })

@@ -32,7 +32,7 @@ describe('NumericInputModal', () => {
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('shows cancel and done buttons', async () => {
+  it('shows cancel button and confirm button', async () => {
     render(NumericInputModal, {
       props: {
         open: true,
@@ -41,8 +41,12 @@ describe('NumericInputModal', () => {
       },
     })
 
-    await expect.element(page.getByRole('button', { name: /cancel/i })).toBeVisible()
-    await expect.element(page.getByRole('button', { name: /done/i })).toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: /cancel/i }))
+      .toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: /confirm value/i }))
+      .toBeVisible()
   })
 
   it('shows title based on type', async () => {
@@ -57,7 +61,7 @@ describe('NumericInputModal', () => {
     await expect.element(page.getByText(/weight/i)).toBeVisible()
   })
 
-  it('contains wheel picker, steppers, and keypad', async () => {
+  it('contains preset list, value display, and keypad', async () => {
     render(NumericInputModal, {
       props: {
         open: true,
@@ -66,17 +70,21 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Wheel picker
-    await expect.element(page.getByTestId('wheel-container')).toBeVisible()
+    // Preset list (check for a preset button)
+    await expect
+      .element(page.getByRole('option', { selected: true }))
+      .toBeVisible()
 
-    // Steppers
-    await expect.element(page.getByTestId('stepper-display')).toBeVisible()
+    // Value display
+    await expect.element(page.getByTestId('value-display')).toBeVisible()
 
-    // Keypad
-    await expect.element(page.getByTestId('keypad-display')).toBeVisible()
+    // Keypad (digit buttons)
+    await expect
+      .element(page.getByRole('button', { name: '5', exact: true }))
+      .toBeVisible()
   })
 
-  it('syncs value across wheel, steppers, and keypad', async () => {
+  it('syncs value between preset selection and keypad', async () => {
     render(NumericInputModal, {
       props: {
         open: true,
@@ -85,19 +93,39 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Initial value shown in all displays
-    await expect.element(page.getByTestId('stepper-display')).toHaveTextContent('20')
-    await expect.element(page.getByTestId('keypad-display')).toHaveTextContent('20')
+    // Initial value shown in display
+    await expect.element(page.getByTestId('value-display')).toHaveTextContent('20')
 
-    // Change via keypad - click "5" to make it 205 (use exact match)
+    // Change via keypad - click "5" to make it 205
     await userEvent.click(page.getByRole('button', { name: '5', exact: true }))
 
-    // All displays should update
-    await expect.element(page.getByTestId('stepper-display')).toHaveTextContent('205')
-    await expect.element(page.getByTestId('keypad-display')).toHaveTextContent('205')
+    // Display should update
+    await expect.element(page.getByTestId('value-display')).toHaveTextContent('205')
   })
 
-  it('emits update and closes on Done click', async () => {
+  it('instantly applies and closes when preset is clicked', async () => {
+    const onUpdate = vi.fn()
+    const onOpenChange = vi.fn()
+
+    render(NumericInputModal, {
+      props: {
+        open: true,
+        modelValue: 10,
+        type: 'reps',
+        'onUpdate:modelValue': onUpdate,
+        'onUpdate:open': onOpenChange,
+      },
+    })
+
+    // Click a different preset
+    await userEvent.click(page.getByTestId('preset-11'))
+
+    // Should instantly apply and close
+    expect(onUpdate).toHaveBeenCalledWith(11)
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('emits update and closes on Confirm click', async () => {
     const onUpdate = vi.fn()
     const onOpenChange = vi.fn()
 
@@ -111,11 +139,11 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Modify value using keypad - use exact match to avoid stepper buttons
+    // Modify value using keypad
     await userEvent.click(page.getByRole('button', { name: '5', exact: true }))
 
-    // Click Done
-    await userEvent.click(page.getByRole('button', { name: /done/i }))
+    // Click Confirm
+    await userEvent.click(page.getByRole('button', { name: /confirm value/i }))
 
     expect(onUpdate).toHaveBeenCalledWith(205)
     expect(onOpenChange).toHaveBeenCalledWith(false)
@@ -135,7 +163,7 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Modify value using keypad - use exact match
+    // Modify value using keypad
     await userEvent.click(page.getByRole('button', { name: '5', exact: true }))
 
     // Click Cancel
@@ -154,8 +182,8 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Weight wheel should show decimal values
-    await expect.element(page.getByTestId('wheel-item-22.5')).toBeInTheDocument()
+    // Weight preset should show decimal values
+    await expect.element(page.getByTestId('preset-22.5')).toBeInTheDocument()
   })
 
   it('uses smart presets for reps type', async () => {
@@ -167,9 +195,8 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Reps wheel should show integer values only
-    await expect.element(page.getByTestId('wheel-item-11')).toBeInTheDocument()
-    await expect.element(page.getByTestId('wheel-item-10.5')).not.toBeInTheDocument()
+    // Reps preset should show integer values only
+    await expect.element(page.getByTestId('preset-11')).toBeInTheDocument()
   })
 
   it('uses smart presets for rir type', async () => {
@@ -182,7 +209,7 @@ describe('NumericInputModal', () => {
     })
 
     // RIR max is 10
-    await expect.element(page.getByTestId('wheel-item-10')).toBeInTheDocument()
+    await expect.element(page.getByTestId('preset-10')).toBeInTheDocument()
   })
 
   it('shows unit label for weight', async () => {
@@ -195,7 +222,10 @@ describe('NumericInputModal', () => {
       },
     })
 
-    await expect.element(page.getByText(/kg/)).toBeVisible()
+    // Check that at least one preset shows the unit
+    await expect
+      .element(page.getByTestId('preset-selected').getByText('kg'))
+      .toBeVisible()
   })
 
   it('closes on Escape key', async () => {

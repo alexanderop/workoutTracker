@@ -32,19 +32,6 @@ function handleBackspace() {
 
 <template>
   <div class="flex flex-col gap-2">
-    <!-- Value Display -->
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      data-testid="keypad-display"
-      class="flex h-14 items-center justify-center rounded-lg bg-secondary/30"
-    >
-      <span class="text-3xl font-bold tabular-nums text-primary">
-        {{ modelValue }}
-      </span>
-    </div>
-
     <!-- Digit Grid -->
     <div class="grid grid-cols-3 gap-2">
       <!-- Rows 1-3: digits 1-9 -->

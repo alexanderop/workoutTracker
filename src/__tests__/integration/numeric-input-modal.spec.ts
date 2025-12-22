@@ -111,9 +111,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await weightTrigger.click()
       await modalPO.waitForOpen()
 
-      // Check for unit label in the wheel picker (inside the dialog)
-      const dialog = page.getByRole('dialog')
-      await expect.element(dialog.getByText('kg')).toBeVisible()
+      // Check for unit label in the selected preset (inside the dialog)
+      await expect
+        .element(page.getByTestId('preset-selected').getByText('kg'))
+        .toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()

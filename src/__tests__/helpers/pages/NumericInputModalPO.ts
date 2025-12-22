@@ -30,15 +30,23 @@ export class NumericInputModalPO {
   }
 
   /**
-   * Gets the current displayed value from the wheel picker.
+   * Gets the current displayed value from the value display.
    */
   async getCurrentValue(): Promise<number> {
-    const selectedOption = page.getByRole('option', { selected: true })
-    const element = await selectedOption.element()
+    const valueDisplay = page.getByTestId('value-display')
+    const element = await valueDisplay.element()
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
     const numericPart = text.trim().split(/\s/)[0] ?? ''
     return numericPart ? parseFloat(numericPart) : 0
+  }
+
+  /**
+   * Selects a preset value by clicking on it.
+   */
+  async selectPreset(value: number): Promise<void> {
+    const presetButton = page.getByRole('option', { name: new RegExp(`^${value}`) })
+    await userEvent.click(presetButton)
   }
 
   /**
@@ -62,41 +70,11 @@ export class NumericInputModalPO {
   }
 
   /**
-   * Uses the steppers to adjust the value.
-   * DOM order: increment buttons are [small, large], decrement buttons are [large, small]
+   * Clicks the Confirm button (checkmark) to confirm the value.
    */
-  async stepUp(large = false): Promise<void> {
-    const buttons = page.getByRole('button', { name: /increment by/i })
-    const allButtons = await buttons.all()
-    const buttonIndex = large ? 1 : 0
-
-    if (!allButtons[buttonIndex]) {
-      throw new Error(
-        `Expected ${large ? 'large' : 'small'} increment button not found. Found ${allButtons.length} increment buttons.`
-      )
-    }
-    await userEvent.click(allButtons[buttonIndex])
-  }
-
-  async stepDown(large = false): Promise<void> {
-    const buttons = page.getByRole('button', { name: /decrement by/i })
-    const allButtons = await buttons.all()
-    const buttonIndex = large ? 0 : 1
-
-    if (!allButtons[buttonIndex]) {
-      throw new Error(
-        `Expected ${large ? 'large' : 'small'} decrement button not found. Found ${allButtons.length} decrement buttons.`
-      )
-    }
-    await userEvent.click(allButtons[buttonIndex])
-  }
-
-  /**
-   * Clicks the Done button to confirm the value.
-   */
-  async clickDone(): Promise<void> {
-    const doneButton = page.getByRole('button', { name: /done/i })
-    await userEvent.click(doneButton)
+  async clickConfirm(): Promise<void> {
+    const confirmButton = page.getByRole('button', { name: /confirm value/i })
+    await userEvent.click(confirmButton)
   }
 
   /**
@@ -125,10 +103,10 @@ export class NumericInputModalPO {
   }
 
   /**
-   * Enters a value and confirms with Done.
+   * Enters a value and confirms.
    */
   async enterValueAndConfirm(value: number): Promise<void> {
     await this.enterValue(value)
-    await this.clickDone()
+    await this.clickConfirm()
   }
 }

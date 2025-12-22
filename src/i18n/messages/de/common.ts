@@ -96,4 +96,8 @@ export default {
     yesterday: 'Gestern',
   },
   goBack: 'Zurück',
+  back: 'Zurück',
+  saving: 'Speichert...',
+  exercises: 'Übungen',
+  blocks: 'Blöcke',
 } as const
