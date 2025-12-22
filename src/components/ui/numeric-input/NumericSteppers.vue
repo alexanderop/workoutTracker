@@ -76,6 +76,9 @@ function formatStep(step: number): string {
 
     <!-- Value Display -->
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       data-testid="stepper-display"
       class="flex h-14 flex-1 items-center justify-center rounded-lg border-2 border-primary/20 bg-secondary/30"
     >

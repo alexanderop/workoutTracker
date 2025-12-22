@@ -127,34 +127,4 @@ describe('useNumericInput', () => {
       expect(removeDigit(0)).toBe(0)
     })
   })
-
-  describe('appendDecimal', () => {
-    it('adds decimal point to integer', () => {
-      const { appendDecimal } = useNumericInput()
-      expect(appendDecimal(20)).toBe('20.')
-    })
-
-    it('does not add decimal if already has one', () => {
-      const { appendDecimal } = useNumericInput()
-      expect(appendDecimal(20.5)).toBe('20.5')
-    })
-  })
-
-  describe('formatDisplayValue', () => {
-    it('formats integer without decimals', () => {
-      const { formatDisplayValue } = useNumericInput()
-      expect(formatDisplayValue(20, { allowDecimal: false })).toBe('20')
-    })
-
-    it('formats weight with up to 2 decimals', () => {
-      const { formatDisplayValue } = useNumericInput()
-      expect(formatDisplayValue(20.5, { allowDecimal: true })).toBe('20.5')
-      expect(formatDisplayValue(20.25, { allowDecimal: true })).toBe('20.25')
-    })
-
-    it('removes trailing zeros', () => {
-      const { formatDisplayValue } = useNumericInput()
-      expect(formatDisplayValue(20.0, { allowDecimal: true })).toBe('20')
-    })
-  })
 })

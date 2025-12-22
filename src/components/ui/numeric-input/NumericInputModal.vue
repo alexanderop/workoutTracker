@@ -56,6 +56,7 @@ function handleCancel() {
   <Dialog v-model:open="open">
     <DialogContent
       :show-close-button="false"
+      aria-labelledby="numeric-input-title"
       class="flex h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0 sm:max-w-none"
     >
       <!-- Header -->
@@ -69,7 +70,7 @@ function handleCancel() {
           Cancel
         </Button>
 
-        <h2 class="text-sm font-semibold uppercase tracking-wider">
+        <h2 id="numeric-input-title" class="text-sm font-semibold uppercase tracking-wider">
           {{ title }}
         </h2>
 
@@ -109,7 +110,6 @@ function handleCancel() {
         <div class="border-t px-4 py-4">
           <NumericKeypad
             v-model="internalValue"
-            :allow-decimal="config.allowDecimal"
             :max="config.max"
           />
         </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useNumericInput, type InputType } from './useNumericInput'
 import { cn } from '@/lib/utils'
 
@@ -107,6 +107,13 @@ watch(modelValue, (newValue) => {
     scrollToValue(newValue)
   }
 })
+
+// Cleanup timeout on unmount
+onUnmounted(() => {
+  if (scrollTimeout.value) {
+    clearTimeout(scrollTimeout.value)
+  }
+})
 </script>
 
 <template>
@@ -127,6 +134,8 @@ watch(modelValue, (newValue) => {
     <!-- Scrollable wheel -->
     <div
       ref="containerRef"
+      role="listbox"
+      :aria-label="`Select ${type} value`"
       data-testid="wheel-container"
       class="h-full snap-y snap-mandatory overflow-y-auto scrollbar-hide"
       @scroll="handleScroll"
@@ -138,16 +147,21 @@ watch(modelValue, (newValue) => {
       <div
         v-for="value in wheelValues"
         :key="value"
+        role="option"
+        :aria-selected="value === modelValue"
+        tabindex="0"
         :data-testid="value === modelValue ? 'wheel-item-selected' : `wheel-item-${value}`"
         :class="
           cn(
-            'flex h-14 cursor-pointer snap-center items-center justify-center transition-all duration-150',
+            'flex h-14 cursor-pointer snap-center items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
             value === modelValue
               ? 'text-2xl font-bold text-foreground'
               : 'text-lg text-muted-foreground/70',
           )
         "
         @click="handleItemClick(value)"
+        @keydown.enter="handleItemClick(value)"
+        @keydown.space.prevent="handleItemClick(value)"
       >
         <span class="tabular-nums">{{ formatValue(value) }}</span>
         <span v-if="unit && value === modelValue" class="ml-1 text-base font-normal">

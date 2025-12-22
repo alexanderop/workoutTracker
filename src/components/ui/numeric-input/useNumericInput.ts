@@ -8,23 +8,19 @@ export type PresetConfig = {
   range: number
 }
 
-type GenerateOptions = {
+type GenerateOptions = Readonly<{
   step: number
   range: number
-}
+}>
 
-type ClampOptions = {
+type ClampOptions = Readonly<{
   min: number
   max: number
-}
+}>
 
-type AppendOptions = {
+type AppendOptions = Readonly<{
   max?: number
-}
-
-type FormatOptions = {
-  allowDecimal: boolean
-}
+}>
 
 const PRESET_CONFIGS: Record<InputType, PresetConfig> = {
   weight: {
@@ -54,9 +50,9 @@ export function useNumericInput() {
   function generateWheelValues(
     currentValue: number,
     options: GenerateOptions,
-  ): number[] {
+  ): Array<number> {
     const { step, range } = options
-    const values: number[] = []
+    const values: Array<number> = []
 
     const start = Math.max(0, currentValue - range)
     const end = currentValue + range
@@ -111,31 +107,11 @@ export function useNumericInput() {
     return Number(valueStr.slice(0, -1))
   }
 
-  function appendDecimal(currentValue: number): string {
-    const valueStr = String(currentValue)
-    if (valueStr.includes('.')) {
-      return valueStr
-    }
-    return `${valueStr}.`
-  }
-
-  function formatDisplayValue(value: number, options: FormatOptions): string {
-    if (!options.allowDecimal) {
-      return String(Math.round(value))
-    }
-
-    // Format with up to 2 decimal places, removing trailing zeros
-    const formatted = value.toFixed(2)
-    return formatted.replace(/\.?0+$/, '')
-  }
-
   return {
     generateWheelValues,
     getPresetConfig,
     clampValue,
     appendDigit,
     removeDigit,
-    appendDecimal,
-    formatDisplayValue,
   }
 }

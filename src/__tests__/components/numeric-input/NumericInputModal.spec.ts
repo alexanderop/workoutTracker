@@ -154,9 +154,6 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Weight should allow decimals - decimal button visible in keypad (exact match)
-    await expect.element(page.getByRole('button', { name: '.', exact: true })).toBeVisible()
-
     // Weight wheel should show decimal values
     await expect.element(page.getByTestId('wheel-item-22.5')).toBeInTheDocument()
   })
@@ -170,8 +167,9 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Reps should NOT allow decimals - decimal button hidden (exact match)
-    await expect.element(page.getByRole('button', { name: '.', exact: true })).not.toBeInTheDocument()
+    // Reps wheel should show integer values only
+    await expect.element(page.getByTestId('wheel-item-11')).toBeInTheDocument()
+    await expect.element(page.getByTestId('wheel-item-10.5')).not.toBeInTheDocument()
   })
 
   it('uses smart presets for rir type', async () => {
@@ -182,9 +180,6 @@ describe('NumericInputModal', () => {
         type: 'rir',
       },
     })
-
-    // RIR should NOT allow decimals (exact match)
-    await expect.element(page.getByRole('button', { name: '.', exact: true })).not.toBeInTheDocument()
 
     // RIR max is 10
     await expect.element(page.getByTestId('wheel-item-10')).toBeInTheDocument()

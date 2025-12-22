@@ -41,106 +41,48 @@ Review current changes using specialized review agents.
 
 ## Instructions
 
-Launch a single orchestrator agent (`general-purpose`) with the git context above. The orchestrator will:
+### Step 1: Analyze Changes
 
-1. Determine review mode (uncommitted vs branch changes)
-2. Select 2-4 relevant reviewers
-3. Launch them in parallel
-4. Compile a unified report
+Determine review mode:
+- **Uncommitted changes**: If `<staged_diff>` or `<unstaged_diff>` have content
+- **Branch changes**: Otherwise use `<branch_diff>`
 
-Use this prompt (substitute the actual values from the git context above):
+### Step 2: Select Reviewers
 
-```
-subagent_type: general-purpose
-prompt: |
-  You are a code review orchestrator. Analyze the changes and coordinate specialized reviewers.
+Based on changed files and diff content, select 2-4 reviewers:
 
-  ## Git Context
+| Reviewer | Select When |
+|----------|-------------|
+| vue-reviewer | Any `.vue` files |
+| typescript-reviewer | Complex types, generics, type assertions |
+| kcd-test-reviewer | Any `.spec.ts` or `.test.ts` files |
+| accessibility-reviewer | UI elements: buttons, inputs, modals, forms |
+| performance-reviewer | Reactivity patterns, computed/watch, large lists |
+| architecture-reviewer | Cross-feature imports, new feature files |
+| security-reviewer | User input handling, v-html, external data |
+| vueuse-reviewer | Manual event listeners, localStorage, timers |
+| fowler-refactoring-reviewer | Large functions, code duplication |
 
-  Current branch: [value from <current_branch>]
+### Step 3: Launch Reviewers in Parallel
 
-  Changed files:
-  [value from <uncommitted_changed_files> if uncommitted changes exist, else <branch_changed_files>]
+Launch 2-4 Task tools in a **single message** with all selected reviewers at once. Each reviewer prompt should include the changed files list and the relevant diff.
 
-  Diff to review:
-  [value from <staged_diff> + <unstaged_diff> if uncommitted changes exist, else <branch_diff>]
+### Step 4: Compile Report
 
-  ## Your Tasks
+After all reviewers complete, compile findings into:
 
-  ### 1. Determine Review Mode
+```markdown
+# Code Review Report
 
-  - If staged/unstaged diff is not empty: Review uncommitted changes
-  - Else if on branch other than main: Review branch changes vs main
-  - Else: Report nothing to review and stop
+## Summary
+[2-3 sentences]
 
-  ### 2. Select Reviewers (2-4 based on relevance)
+## Critical Issues
+[Must fix - or "None"]
 
-  | Reviewer | Use When |
-  |----------|----------|
-  | vue-reviewer | `.vue` files changed |
-  | typescript-reviewer | Complex types, generics, type assertions |
-  | kcd-test-reviewer | `.spec.ts` or `.test.ts` files |
-  | accessibility-reviewer | UI: buttons, inputs, modals, forms |
-  | performance-reviewer | Reactivity, computed/watch, large lists |
-  | architecture-reviewer | Cross-feature imports, new feature files |
-  | security-reviewer | User input, v-html, external data |
-  | vueuse-reviewer | Manual listeners, localStorage, timers |
-  | fowler-refactoring-reviewer | Large functions, duplication |
+## [Reviewer Name]
+[Findings or "No issues"]
 
-  Rules:
-  - Include vue-reviewer if any `.vue` files changed
-  - Include kcd-test-reviewer if any test files changed
-  - Pick remaining by diff content
-
-  ### 3. Launch Reviewers in Parallel
-
-  Launch 2-4 Task tools in a **single message**:
-
-  ```
-  subagent_type: [reviewer-type]
-  prompt: |
-    Review the following changes.
-
-    Changed files: [file list]
-    Diff: [relevant diff]
-    Focus: [from table below]
-  ```
-
-  | Reviewer | Focus | Output |
-  |----------|-------|--------|
-  | vue-reviewer | Component patterns, composables, templates | Violations with impact |
-  | typescript-reviewer | No `any`, proper generics | Type issues with severity |
-  | kcd-test-reviewer | Testing Trophy, query priority | Test quality issues |
-  | accessibility-reviewer | ARIA, keyboard nav, focus | WCAG violations |
-  | performance-reviewer | Reactivity efficiency | Performance issues |
-  | architecture-reviewer | Feature isolation | Boundary violations |
-  | security-reviewer | XSS, injection, validation | OWASP issues |
-  | vueuse-reviewer | VueUse opportunities | Code reduction |
-  | fowler-refactoring-reviewer | Code smells | Prioritized suggestions |
-
-  ### 4. Compile Final Report
-
-  ```markdown
-  # Code Review Report
-
-  ## Review Mode
-  [Uncommitted OR branch changes]
-
-  ## Reviewers Selected
-  [List and why]
-
-  ## Summary
-  [2-3 sentences]
-
-  ## Critical Issues
-  [Must fix - or "None"]
-
-  ## [Reviewer Name]
-  [Findings or "No issues"]
-
-  ...
-
-  ## Recommended Actions
-  1. [Priority actions]
-  ```
+## Recommended Actions
+1. [Priority actions]
 ```

@@ -99,28 +99,6 @@ describe('NumericKeypad', () => {
     expect(onUpdate).toHaveBeenCalledWith(0)
   })
 
-  it('shows decimal button when allowDecimal is true', async () => {
-    render(NumericKeypad, {
-      props: {
-        modelValue: 20,
-        allowDecimal: true,
-      },
-    })
-
-    await expect.element(page.getByRole('button', { name: '.' })).toBeVisible()
-  })
-
-  it('hides decimal button when allowDecimal is false', async () => {
-    render(NumericKeypad, {
-      props: {
-        modelValue: 20,
-        allowDecimal: false,
-      },
-    })
-
-    await expect.element(page.getByRole('button', { name: '.' })).not.toBeInTheDocument()
-  })
-
   it('enforces max value constraint', async () => {
     render(NumericKeypad, {
       props: {

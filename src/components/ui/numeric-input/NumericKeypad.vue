@@ -4,12 +4,10 @@ import { useNumericInput } from './useNumericInput'
 import { Button } from '@/components/ui/button'
 
 type Props = {
-  allowDecimal?: boolean
   max?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  allowDecimal: false,
   max: 999,
 })
 
@@ -30,18 +28,15 @@ function handleDigitClick(digit: string) {
 function handleBackspace() {
   modelValue.value = removeDigit(modelValue.value)
 }
-
-function handleDecimal() {
-  // For now, decimal handling would need string state
-  // We'll emit a special event or handle in parent
-  // Simplified: just append 0 (decimal support needs refinement)
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-2">
     <!-- Value Display -->
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       data-testid="keypad-display"
       class="flex h-14 items-center justify-center rounded-lg bg-secondary/30"
     >
@@ -66,17 +61,8 @@ function handleDecimal() {
         </Button>
       </template>
 
-      <!-- Bottom row: decimal/empty, 0, backspace -->
-      <Button
-        v-if="allowDecimal"
-        type="button"
-        variant="secondary"
-        class="h-14 text-xl font-semibold"
-        @click="handleDecimal"
-      >
-        .
-      </Button>
-      <div v-else class="h-14" />
+      <!-- Bottom row: empty, 0, backspace -->
+      <div class="h-14" />
 
       <Button
         type="button"
