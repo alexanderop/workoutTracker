@@ -230,9 +230,6 @@ function convertSessionToDbBlock(session: TimerSession): DbWorkoutBlock {
   return createForTimeDbBlock(session.block, session.result)
 }
 
-// Export for external use
-export type { TimerSession, AmrapSession, EmomSession, TabataSession, ForTimeSession }
-
 /**
  * Composable that logs standalone timer sessions as completed workouts and exposes logging state and helpers.
  *
