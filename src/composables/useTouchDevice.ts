@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 
 /**
@@ -11,7 +12,7 @@ import { useMediaQuery } from '@vueuse/core'
  *
  * @returns Object with `isTouchDevice` computed ref
  */
-export function useTouchDevice() {
+export function useTouchDevice(): { isTouchDevice: Ref<boolean> } {
   const isTouchDevice = useMediaQuery('(pointer: coarse)')
 
   return { isTouchDevice }

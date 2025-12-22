@@ -37,8 +37,8 @@ export class NumericInputModalPO {
     const element = await selectedOption.element()
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
-    const numericPart = text.trim().split(/\s/)[0]
-    return parseFloat(numericPart ?? '0')
+    const numericPart = text.trim().split(/\s/)[0] ?? ''
+    return numericPart ? parseFloat(numericPart) : 0
   }
 
   /**
@@ -63,26 +63,32 @@ export class NumericInputModalPO {
 
   /**
    * Uses the steppers to adjust the value.
+   * DOM order: increment buttons are [small, large], decrement buttons are [large, small]
    */
   async stepUp(large = false): Promise<void> {
-    const pattern = large ? /increment by.*\d+/i : /increment by.*\d+/i
-    const buttons = page.getByRole('button', { name: pattern })
-    // Get the appropriate button (small or large increment)
+    const buttons = page.getByRole('button', { name: /increment by/i })
     const allButtons = await buttons.all()
-    const buttonIndex = large ? allButtons.length - 1 : allButtons.length - 2
-    if (allButtons[buttonIndex]) {
-      await userEvent.click(allButtons[buttonIndex])
+    const buttonIndex = large ? 1 : 0
+
+    if (!allButtons[buttonIndex]) {
+      throw new Error(
+        `Expected ${large ? 'large' : 'small'} increment button not found. Found ${allButtons.length} increment buttons.`
+      )
     }
+    await userEvent.click(allButtons[buttonIndex])
   }
 
   async stepDown(large = false): Promise<void> {
-    const pattern = /decrement by/i
-    const buttons = page.getByRole('button', { name: pattern })
+    const buttons = page.getByRole('button', { name: /decrement by/i })
     const allButtons = await buttons.all()
     const buttonIndex = large ? 0 : 1
-    if (allButtons[buttonIndex]) {
-      await userEvent.click(allButtons[buttonIndex])
+
+    if (!allButtons[buttonIndex]) {
+      throw new Error(
+        `Expected ${large ? 'large' : 'small'} decrement button not found. Found ${allButtons.length} decrement buttons.`
+      )
     }
+    await userEvent.click(allButtons[buttonIndex])
   }
 
   /**

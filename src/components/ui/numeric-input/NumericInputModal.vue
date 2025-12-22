@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import NumericWheelPicker from './NumericWheelPicker.vue'
 import NumericKeypad from './NumericKeypad.vue'
@@ -56,7 +56,7 @@ function handleCancel() {
   <Dialog v-model:open="open">
     <DialogContent
       :show-close-button="false"
-      aria-labelledby="numeric-input-title"
+      :aria-describedby="undefined"
       class="flex h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0 sm:max-w-none"
     >
       <!-- Header -->
@@ -70,9 +70,9 @@ function handleCancel() {
           Cancel
         </Button>
 
-        <h2 id="numeric-input-title" class="text-sm font-semibold uppercase tracking-wider">
+        <DialogTitle class="text-sm font-semibold uppercase tracking-wider">
           {{ title }}
-        </h2>
+        </DialogTitle>
 
         <Button
           variant="ghost"
