@@ -328,6 +328,19 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Ensure composables (use*.ts) import from Vue - distinguish from utilities
+  {
+    name: 'app/composable-must-use-vue',
+    files: ['src/**/*.ts'],
+    ignores: ['src/**/__tests__/**', 'src/**/*.d.ts'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/composable-must-use-vue': 'error',
+    },
+  },
+
   ...pluginOxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
   skipFormatting,
   {

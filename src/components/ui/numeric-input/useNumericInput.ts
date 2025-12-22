@@ -11,6 +11,8 @@ export type PresetConfig = {
 type GenerateOptions = Readonly<{
   step: number
   range: number
+  min: number
+  max: number
 }>
 
 type ClampOptions = Readonly<{
@@ -51,16 +53,18 @@ export function useNumericInput() {
     currentValue: number,
     options: GenerateOptions,
   ): Array<number> {
-    const { step, range } = options
+    const { step, range, min, max } = options
     const values: Array<number> = []
 
-    const start = Math.max(0, currentValue - range)
-    const end = currentValue + range
+    // Clamp both bounds to min/max
+    const rawStart = Math.max(min, currentValue - range)
+    const rawEnd = Math.min(max, currentValue + range)
 
-    // Round start to nearest step
-    const roundedStart = Math.ceil(start / step) * step
+    // Align start UP to nearest step, end DOWN to nearest step
+    const start = Math.ceil(rawStart / step) * step
+    const end = Math.floor(rawEnd / step) * step
 
-    for (let value = roundedStart; value <= end; value += step) {
+    for (let value = start; value <= end; value += step) {
       // Handle floating point precision issues
       const roundedValue = Math.round(value * 100) / 100
       values.push(roundedValue)

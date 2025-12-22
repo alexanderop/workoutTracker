@@ -24,12 +24,7 @@ const config = computed(() => getPresetConfig(props.type))
 
 const wheelValues = computed(() => {
   const { step, range, min, max } = config.value
-  let values = generateWheelValues(modelValue.value, { step, range })
-
-  // Filter by min/max constraints
-  values = values.filter((v) => v >= min && v <= max)
-
-  return values
+  return generateWheelValues(modelValue.value, { step, range, min, max })
 })
 
 const itemHeight = 56 // h-14 = 56px

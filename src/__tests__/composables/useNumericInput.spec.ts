@@ -5,35 +5,78 @@ describe('useNumericInput', () => {
   describe('generateWheelValues', () => {
     it('generates values centered around current value', () => {
       const { generateWheelValues } = useNumericInput()
-      const values = generateWheelValues(20, { step: 2.5, range: 10 })
+      const values = generateWheelValues(20, { step: 2.5, range: 10, min: 0, max: 999 })
 
       expect(values).toContain(20) // Current value included
       expect(values[0]).toBe(10) // 20 - 10 = 10
       expect(values[values.length - 1]).toBe(30) // 20 + 10 = 30
     })
 
-    it('respects min bound of 0', () => {
+    it('respects min bound', () => {
       const { generateWheelValues } = useNumericInput()
-      const values = generateWheelValues(5, { step: 2.5, range: 10 })
+      const values = generateWheelValues(5, { step: 2.5, range: 10, min: 0, max: 999 })
 
-      expect(values[0]).toBe(0) // Should not go below 0
+      expect(values[0]).toBe(0) // Should not go below min
       expect(values).toContain(5)
+    })
+
+    it('respects custom min bound (e.g., reps min=1)', () => {
+      const { generateWheelValues } = useNumericInput()
+      const values = generateWheelValues(3, { step: 1, range: 5, min: 1, max: 999 })
+
+      expect(values[0]).toBe(1) // Should not go below 1
+      expect(values).not.toContain(0)
+    })
+
+    it('respects max bound', () => {
+      const { generateWheelValues } = useNumericInput()
+      const values = generateWheelValues(9, { step: 1, range: 10, min: 0, max: 10 })
+
+      expect(values[values.length - 1]).toBe(10) // Should not exceed max
+      expect(values).not.toContain(11)
+      expect(values).not.toContain(19)
+    })
+
+    it('aligns start up to nearest step when clamped by min', () => {
+      const { generateWheelValues } = useNumericInput()
+      // With step=2.5, min=1, value=3, range=5: rawStart would be -2, clamped to 1
+      // ceil(1 / 2.5) * 2.5 = 2.5
+      const values = generateWheelValues(3, { step: 2.5, range: 5, min: 1, max: 999 })
+
+      expect(values[0]).toBe(2.5) // Aligned up from min=1
+    })
+
+    it('aligns end down to nearest step when clamped by max', () => {
+      const { generateWheelValues } = useNumericInput()
+      // With step=2.5, max=10, value=8, range=5: rawEnd would be 13, clamped to 10
+      // floor(10 / 2.5) * 2.5 = 10
+      const values = generateWheelValues(8, { step: 2.5, range: 5, min: 0, max: 10 })
+
+      expect(values[values.length - 1]).toBe(10) // Aligned down to max
     })
 
     it('generates integer steps for reps', () => {
       const { generateWheelValues } = useNumericInput()
-      const values = generateWheelValues(10, { step: 1, range: 5 })
+      const values = generateWheelValues(10, { step: 1, range: 5, min: 1, max: 999 })
 
       expect(values).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
     })
 
     it('generates values with decimal steps for weight', () => {
       const { generateWheelValues } = useNumericInput()
-      const values = generateWheelValues(20, { step: 2.5, range: 5 })
+      const values = generateWheelValues(20, { step: 2.5, range: 5, min: 0, max: 999 })
 
       expect(values).toContain(17.5)
       expect(values).toContain(20)
       expect(values).toContain(22.5)
+    })
+
+    it('handles RIR config correctly (max=10)', () => {
+      const { generateWheelValues } = useNumericInput()
+      const values = generateWheelValues(5, { step: 1, range: 10, min: 0, max: 10 })
+
+      expect(values).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+      expect(values.every((v) => v >= 0 && v <= 10)).toBe(true)
     })
   })
 
