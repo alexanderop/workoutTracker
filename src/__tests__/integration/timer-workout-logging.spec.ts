@@ -242,4 +242,219 @@ describe('Timer Workout Logging', () => {
       app.cleanup()
     })
   })
+
+  describe('Edge cases and error scenarios', () => {
+    it('handles rapid clicking of Log Workout button', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+      await startAmrapTimer()
+      await completeTimer()
+
+      // Click multiple times rapidly
+      const logButton = page.getByRole('button', { name: /log workout/i })
+      await userEvent.click(logButton)
+      await userEvent.click(logButton)
+      await userEvent.click(logButton)
+
+      // Only one workout should be saved
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
+
+      app.cleanup()
+    })
+
+    it('preserves logged state when pausing and resuming timer', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+      await startAmrapTimer()
+
+      // Pause the timer
+      await userEvent.click(page.getByRole('button', { name: /pause/i }))
+
+      // Resume
+      await userEvent.click(page.getByRole('button', { name: /play/i }))
+
+      // Complete
+      await completeTimer()
+
+      // Log workout
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
+
+      expect(await db.workouts.count()).toBe(1)
+
+      app.cleanup()
+    })
+
+    it('does not show logged state after clicking Done without logging', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+      await startAmrapTimer()
+      await completeTimer()
+
+      // Click Done without logging
+      await userEvent.click(page.getByRole('button', { name: /^done$/i }))
+
+      // Start another timer
+      await startAmrapTimer()
+      await completeTimer()
+
+      // Log Workout button should be available (not Logged)
+      await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /logged/i })).not.toBeInTheDocument()
+
+      app.cleanup()
+    })
+
+    it('saves correct timestamps even with instant completion in test mode', async () => {
+      const app = await createTestApp()
+
+      const beforeTest = Date.now()
+
+      await goToTimersPage(app)
+      await startAmrapTimer()
+      await completeTimer()
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+
+      const afterTest = Date.now()
+
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+
+      const workouts = await db.workouts.toArray()
+      const workout = workouts[0]
+      if (!workout) throw new Error('No workout found')
+
+      // Timestamps should be within test execution window
+      expect(workout.startedAt).toBeGreaterThanOrEqual(beforeTest - 100)
+      expect(workout.startedAt).toBeLessThanOrEqual(afterTest + 100)
+      expect(workout.completedAt).toBeGreaterThanOrEqual(beforeTest - 100)
+      expect(workout.completedAt).toBeLessThanOrEqual(afterTest + 100)
+
+      app.cleanup()
+    })
+
+    it('maintains separate workout instances when logging multiple times', async () => {
+      const app = await createTestApp()
+
+      // First workout
+      await goToTimersPage(app)
+      await startAmrapTimer()
+      await completeTimer()
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+
+      // Second workout
+      await userEvent.click(page.getByRole('button', { name: /again/i }))
+      await completeTimer()
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await expect.poll(async () => await db.workouts.count()).toBe(2)
+
+      // Verify both workouts are distinct
+      const workouts = await db.workouts.toArray()
+      expect(workouts[0]?.id).not.toBe(workouts[1]?.id)
+      expect(workouts[0]?.startedAt).not.toBe(workouts[1]?.startedAt)
+
+      app.cleanup()
+    })
+
+    it('shows Log Workout button after reset and completion', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+      await startAmrapTimer()
+      await completeTimer()
+
+      // Log the workout
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
+
+      // Click Again
+      await userEvent.click(page.getByRole('button', { name: /again/i }))
+
+      // Reset the timer
+      await userEvent.click(page.getByRole('button', { name: /reset/i }))
+
+      // Complete again
+      await completeTimer()
+
+      // Should show Log Workout button again
+      await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /logged/i })).not.toBeInTheDocument()
+
+      app.cleanup()
+    })
+  })
+
+  describe('Different timer types', () => {
+    it('can log EMOM timer workouts', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+
+      // Start EMOM timer
+      await userEvent.click(page.getByRole('button', { name: /EMOM/i }))
+      await expect.element(page.getByText('10 min', { exact: true })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /Quick session/i }))
+
+      await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
+      await completeTimer()
+
+      // Log the workout
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+
+      const workouts = await db.workouts.toArray()
+      expect(workouts[0]?.blocks[0]?.kind).toBe('emom')
+      expect(workouts[0]?.name).toMatch(/emom/i)
+
+      app.cleanup()
+    })
+
+    it('can log Tabata timer workouts', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+
+      // Start Tabata timer
+      await userEvent.click(page.getByRole('button', { name: /Tabata/i }))
+      await expect.element(page.getByText(/8 rounds/i)).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /Classic/i }))
+
+      await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
+      await completeTimer()
+
+      // Log the workout
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+
+      const workouts = await db.workouts.toArray()
+      expect(workouts[0]?.blocks[0]?.kind).toBe('tabata')
+      expect(workouts[0]?.name).toMatch(/tabata/i)
+
+      app.cleanup()
+    })
+
+    it('can log For Time timer workouts', async () => {
+      const app = await createTestApp()
+      await goToTimersPage(app)
+
+      // Start For Time timer
+      await userEvent.click(page.getByRole('button', { name: /For Time/i }))
+      await expect.element(page.getByText(/Race Against/i)).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /Standard cap/i }))
+
+      await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
+      await completeTimer()
+
+      // Log the workout
+      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+
+      await expect.poll(async () => await db.workouts.count()).toBe(1)
+
+      const workouts = await db.workouts.toArray()
+      expect(workouts[0]?.blocks[0]?.kind).toBe('fortime')
+      expect(workouts[0]?.name).toMatch(/for time/i)
+
+      app.cleanup()
+    })
+  })
 })
