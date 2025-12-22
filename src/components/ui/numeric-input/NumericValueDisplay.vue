@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Check } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { useNumberLocale } from '@/composables/useNumberLocale'
 
 type Props = {
   unit?: string
@@ -17,12 +18,7 @@ const emit = defineEmits<{
   confirm: []
 }>()
 
-function formatValue(value: number): string {
-  if (props.allowDecimal) {
-    return value % 1 === 0 ? String(value) : value.toFixed(1)
-  }
-  return String(value)
-}
+const { formatInputValue } = useNumberLocale()
 </script>
 
 <template>
@@ -36,7 +32,7 @@ function formatValue(value: number): string {
       class="flex h-14 flex-1 items-center justify-center rounded-lg bg-secondary/30"
     >
       <span class="text-3xl font-bold tabular-nums text-foreground">
-        {{ formatValue(modelValue) }}
+        {{ formatInputValue(modelValue, allowDecimal) }}
       </span>
       <span v-if="unit" class="ml-2 text-lg text-muted-foreground">
         {{ unit }}

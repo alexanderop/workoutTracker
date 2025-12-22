@@ -7,6 +7,7 @@ import { NumericInputModal, type InputType } from '@/components/ui/numeric-input
 import { Button } from '@/components/ui/button'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { useTouchDevice } from '@/composables/useTouchDevice'
+import { useNumberLocale } from '@/composables/useNumberLocale'
 import { isSetReady } from '@/features/workout/composables/useWorkout'
 import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
@@ -16,6 +17,7 @@ import { Check, Plus } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()
+const { intlLocale, formatNumber } = useNumberLocale()
 
 type Props = {
   block: StrengthBlock
@@ -163,7 +165,7 @@ function handleModalConfirm(value: number) {
 function formatDisplayValue(value: number | undefined, type: InputType): string {
   if (value === undefined || value === 0) return '—'
   if (type === 'weight') {
-    return value.toLocaleString('en-US', { maximumFractionDigits: 2, useGrouping: false })
+    return formatNumber(value, { maximumFractionDigits: 2, useGrouping: false })
   }
   return String(value)
 }
@@ -246,7 +248,7 @@ function formatDisplayValue(value: number | undefined, type: InputType): string 
                 :max="999"
                 :step="0.01"
                 :format-options="weightFormatOptions"
-                locale="en-US"
+                :locale="intlLocale"
                 @update:model-value="handleWeightChange(state.set, $event)"
               >
                 <NumberFieldInput

@@ -112,7 +112,11 @@ function handleCancel() {
 
         <!-- Keypad -->
         <div class="border-t px-4 py-4">
-          <NumericKeypad v-model="internalValue" :max="config.max" />
+          <NumericKeypad
+            v-model="internalValue"
+            :max="config.max"
+            :allow-decimal="config.allowDecimal"
+          />
         </div>
       </div>
     </DialogContent>
