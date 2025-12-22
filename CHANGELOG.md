@@ -1,3 +1,12 @@
+# [1.2.0](https://github.com/alexanderop/workoutTracker/compare/v1.1.0...v1.2.0) (2025-12-22)
+
+
+### Features
+
+* **timers:** add workout logging for completed timer sessions ([#78](https://github.com/alexanderop/workoutTracker/issues/78)) ([ad88581](https://github.com/alexanderop/workoutTracker/commit/ad88581a0bc9af5ff1258f6469c76863710715c4)), closes [#79](https://github.com/alexanderop/workoutTracker/issues/79) [/github.com/alexanderop/workoutTracker/pull/78#issuecomment-3684350707](https://github.com//github.com/alexanderop/workoutTracker/pull/78/issues/issuecomment-3684350707)
+
+
+
 # [1.1.0](https://github.com/alexanderop/workoutTracker/compare/v1.0.0...v1.1.0) (2025-12-22)
 
 
