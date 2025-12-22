@@ -2,9 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import NumericWheelPicker from './NumericWheelPicker.vue'
+import NumericPresetList from './NumericPresetList.vue'
+import NumericValueDisplay from './NumericValueDisplay.vue'
 import NumericKeypad from './NumericKeypad.vue'
-import NumericSteppers from './NumericSteppers.vue'
 import { useNumericInput, type InputType } from './useNumericInput'
 
 type Props = {
@@ -19,9 +19,9 @@ const props = withDefaults(defineProps<Props>(), {
 const modelValue = defineModel<number>({ required: true })
 const open = defineModel<boolean>('open', { required: true })
 
-const { getPresetConfig } = useNumericInput()
+const { getPresetConfig, generateWheelValues } = useNumericInput()
 
-// Internal value for editing (doesn't emit until Done)
+// Internal value for editing (doesn't emit until confirmed)
 const internalValue = ref(modelValue.value)
 
 // Reset internal value when dialog opens
@@ -33,6 +33,11 @@ watch(open, (isOpen) => {
 
 const config = computed(() => getPresetConfig(props.type))
 
+const presets = computed(() => {
+  const { step, range, min, max } = config.value
+  return generateWheelValues(modelValue.value, { step, range, min, max })
+})
+
 const title = computed(() => {
   const titles: Record<InputType, string> = {
     weight: 'Weight',
@@ -42,8 +47,14 @@ const title = computed(() => {
   return titles[props.type]
 })
 
-function handleDone() {
+function handleConfirm() {
   modelValue.value = internalValue.value
+  open.value = false
+}
+
+function handlePresetSelect(value: number) {
+  // Instant apply: preset tap immediately applies and closes
+  modelValue.value = value
   open.value = false
 }
 
@@ -74,44 +85,34 @@ function handleCancel() {
           {{ title }}
         </DialogTitle>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          class="text-primary font-semibold"
-          @click="handleDone"
-        >
-          Done
-        </Button>
+        <!-- Spacer for centering title -->
+        <div class="w-[60px]" />
       </header>
 
       <!-- Content -->
       <div class="flex flex-1 flex-col overflow-hidden">
-        <!-- Wheel Picker -->
+        <!-- Preset List -->
         <div class="flex-1 overflow-hidden">
-          <NumericWheelPicker
+          <NumericPresetList
             v-model="internalValue"
-            :type="type"
+            :presets="presets"
             :unit="unit"
+            :allow-decimal="config.allowDecimal"
+            @select="handlePresetSelect"
           />
         </div>
 
-        <!-- Steppers -->
-        <div class="border-t px-4 py-3">
-          <NumericSteppers
-            v-model="internalValue"
-            :min="config.min"
-            :max="config.max"
-            :small-step="config.step"
-            :large-step="config.step * 2"
-          />
-        </div>
+        <!-- Value Display + Confirm Button -->
+        <NumericValueDisplay
+          v-model="internalValue"
+          :unit="unit"
+          :allow-decimal="config.allowDecimal"
+          @confirm="handleConfirm"
+        />
 
         <!-- Keypad -->
         <div class="border-t px-4 py-4">
-          <NumericKeypad
-            v-model="internalValue"
-            :max="config.max"
-          />
+          <NumericKeypad v-model="internalValue" :max="config.max" />
         </div>
       </div>
     </DialogContent>

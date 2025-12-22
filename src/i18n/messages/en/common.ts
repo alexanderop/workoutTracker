@@ -105,5 +105,9 @@ export default {
     yesterday: 'Yesterday',
   },
   goBack: 'Go back',
+  back: 'Back',
+  saving: 'Saving...',
+  exercises: 'exercises',
+  blocks: 'blocks',
   reps: 'reps',
 } as const

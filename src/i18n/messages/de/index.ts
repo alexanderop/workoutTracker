@@ -6,6 +6,7 @@ import exercises from './exercises'
 import settings from './settings'
 import timers from './timers'
 import dialogs from './dialogs'
+import logPastWorkout from './logPastWorkout'
 
 export default {
   calendar,
@@ -16,4 +17,5 @@ export default {
   settings,
   timers,
   dialogs,
+  logPastWorkout,
 } as const
