@@ -7,6 +7,7 @@ export default {
     screen: 'Bildschirm',
     data: 'Daten',
     dangerZone: 'Gefahrenzone',
+    about: 'Über',
   },
   labels: {
     weight: 'Gewicht',
@@ -35,6 +36,11 @@ export default {
     ariaExportData: 'Daten exportieren',
     ariaImportData: 'Daten importieren',
     ariaDeleteAllData: 'Alle Daten löschen',
+    version: 'Version',
+    commit: 'Commit',
+    buildTime: 'Erstellt',
+    updateAvailable: 'Update verfügbar',
+    refreshToUpdate: 'Aktualisieren Sie, um die neueste Version zu erhalten',
   },
   languages: {
     en: 'English',

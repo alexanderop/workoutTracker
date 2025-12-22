@@ -7,6 +7,7 @@ import type { PluginOption } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { versionPlugin } from './vite-plugins/versionPlugin'
 
 // @ts-expect-error Rollup plugin types differ from Vite 6's PluginOption interface
 const bundleVisualizer: PluginOption = visualizer({
@@ -19,6 +20,7 @@ const bundleVisualizer: PluginOption = visualizer({
 export default defineConfig({
   plugins: [
     vue(),
+    versionPlugin(),
     tailwindcss(),
     vueDevTools(),
     VitePWA({
@@ -39,6 +41,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        navigateFallbackDenylist: [/^\/version\.json$/],
         runtimeCaching: [
           {
             urlPattern: ({ request }) =>

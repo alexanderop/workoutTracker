@@ -21,6 +21,7 @@ export default {
     createBenchmark: 'Benchmark erstellen',
     getStarted: 'Loslegen',
     addExercise: '+ Übung hinzufügen',
+    refresh: 'Aktualisieren',
   },
   aria: {
     dismiss: 'Schließen',

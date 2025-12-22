@@ -6,6 +6,7 @@ import SettingsAppearanceSection from '@/features/settings/components/SettingsAp
 import SettingsScreenSection from '@/features/settings/components/SettingsScreenSection.vue'
 import SettingsDataSection from '@/features/settings/components/SettingsDataSection.vue'
 import SettingsDangerZoneSection from '@/features/settings/components/SettingsDangerZoneSection.vue'
+import SettingsAboutSection from '@/features/settings/components/SettingsAboutSection.vue'
 
 const { t } = useI18n()
 </script>
@@ -32,6 +33,9 @@ const { t } = useI18n()
       <Separator />
 
       <SettingsDangerZoneSection />
+      <Separator />
+
+      <SettingsAboutSection />
     </div>
   </div>
 </template>
