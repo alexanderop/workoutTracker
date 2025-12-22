@@ -42,7 +42,23 @@ Use `defineModel` for two-way binding: `const open = defineModel<boolean>('open'
 
 ## Available Tools
 
-`gh` (GitHub CLI), `tree`, `rg` (ripgrep) are installed.
+`gh` (GitHub CLI), `tree`, `rg` (ripgrep), `sg` (ast-grep) are installed.
+
+### ast-grep
+
+Structural search/replace using AST patterns. Install: `brew install ast-grep`
+
+```bash
+# Vue/TS patterns
+sg -p 'ref<$T>($$$)' src/                    # Find typed refs
+sg -p 'const $NAME = computed($$$)' src/    # Find computed properties
+sg -p 'watch($DEPS, $CALLBACK)' src/        # Find watch calls
+sg -p 'onMounted($$$)' src/                 # Find lifecycle hooks
+sg -p 'async function $NAME($$$) {$$$}' src/ # Find async functions
+
+# Debugging
+sg -p 'console.log($$$)' src/               # Find console.log calls
+```
 
 ## Code Intelligence (LSP)
 

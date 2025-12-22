@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { Set } from '@/features/workout/composables/useWorkout'
 import { isSetReady } from '@/features/workout/composables/useWorkout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
+import { useNumberLocale } from '@/composables/useNumberLocale'
 import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
 import { TableCell, TableRow } from '@/components/ui/table'
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Check, Timer, Trash2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
+const { intlLocale } = useNumberLocale()
 
 const { set, index, canDelete } = defineProps<{
   set: Set
@@ -123,7 +125,7 @@ function handleRirChange(value: number | undefined) {
         :max="999"
         :step="0.01"
         :format-options="weightFormatOptions"
-        locale="en-US"
+        :locale="intlLocale"
         @update:model-value="handleWeightChange"
       >
         <NumberFieldInput

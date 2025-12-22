@@ -1,18 +1,44 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { Delete } from 'lucide-vue-next'
 import { useNumericInput } from './useNumericInput'
+import { useNumberLocale } from '@/composables/useNumberLocale'
 
 type Props = {
   max?: number
+  allowDecimal?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   max: 999,
+  allowDecimal: false,
 })
 
 const modelValue = defineModel<number>({ required: true })
 
-const { appendDigit, removeDigit } = useNumericInput()
+const {
+  stringToNumber,
+  numberToString,
+  appendDigitToString,
+  appendDecimalToString,
+  removeLastChar,
+} = useNumericInput()
+
+const { decimalSeparator } = useNumberLocale()
+
+// Internal string representation for precise decimal editing
+const editingString = ref(numberToString(modelValue.value))
+
+// Sync editingString when modelValue changes externally
+watch(
+  () => modelValue.value,
+  (newValue) => {
+    const currentNumber = stringToNumber(editingString.value)
+    if (currentNumber !== newValue) {
+      editingString.value = numberToString(newValue)
+    }
+  },
+)
 
 const digits = [
   ['1', '2', '3'],
@@ -21,11 +47,21 @@ const digits = [
 ]
 
 function handleDigitClick(digit: string) {
-  modelValue.value = appendDigit(modelValue.value, digit, { max: props.max })
+  editingString.value = appendDigitToString(editingString.value, digit, {
+    max: props.max,
+    maxDecimals: 2,
+  })
+  modelValue.value = stringToNumber(editingString.value)
+}
+
+function handleDecimalClick() {
+  editingString.value = appendDecimalToString(editingString.value)
+  // Don't update modelValue yet - "70." should stay as 70 until more digits added
 }
 
 function handleBackspace() {
-  modelValue.value = removeDigit(modelValue.value)
+  editingString.value = removeLastChar(editingString.value)
+  modelValue.value = stringToNumber(editingString.value)
 }
 
 const buttonClass =
@@ -49,8 +85,18 @@ const buttonClass =
         </button>
       </template>
 
-      <!-- Bottom row: empty, 0, backspace -->
-      <div class="h-14" />
+      <!-- Bottom row: decimal (or empty), 0, backspace -->
+      <button
+        v-if="allowDecimal"
+        type="button"
+        :class="buttonClass"
+        aria-label="Add decimal point"
+        data-testid="keypad-decimal"
+        @click="handleDecimalClick"
+      >
+        {{ decimalSeparator }}
+      </button>
+      <div v-else class="h-14" />
 
       <button
         type="button"

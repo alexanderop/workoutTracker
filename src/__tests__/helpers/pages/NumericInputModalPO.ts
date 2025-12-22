@@ -50,8 +50,41 @@ export class NumericInputModalPO {
   }
 
   /**
+   * Gets the decimal button locator.
+   */
+  getDecimalButton() {
+    return page.getByTestId('keypad-decimal')
+  }
+
+  /**
+   * Clicks the decimal button.
+   */
+  async clickDecimal(): Promise<void> {
+    const button = this.getDecimalButton()
+    await userEvent.click(button)
+  }
+
+  /**
+   * Checks if the decimal button is visible.
+   */
+  isDecimalButtonVisible(): boolean {
+    const button = this.getDecimalButton().query()
+    return button !== null
+  }
+
+  /**
+   * Gets the decimal separator character displayed on the decimal button.
+   */
+  async getDecimalSeparator(): Promise<string> {
+    const button = this.getDecimalButton()
+    const element = await button.element()
+    return element.textContent?.trim() ?? ''
+  }
+
+  /**
    * Enters a value using the numeric keypad.
    * Clears the current value first, then types the new value.
+   * Supports decimals by clicking the decimal button when '.' is encountered.
    */
   async enterValue(value: number): Promise<void> {
     // Clear current value by clicking backspace multiple times
@@ -60,10 +93,14 @@ export class NumericInputModalPO {
       await userEvent.click(backspaceButton)
     }
 
-    // Type each digit
+    // Type each digit, handling decimals
     const digits = String(value).split('')
     for (const digit of digits) {
-      if (digit === '.') continue // Skip decimal for now - keypad handles integers
+      if (digit === '.') {
+        // Click decimal button
+        await this.clickDecimal()
+        continue
+      }
       const digitButton = page.getByRole('button', { name: new RegExp(`^${digit}$`) })
       await userEvent.click(digitButton)
     }

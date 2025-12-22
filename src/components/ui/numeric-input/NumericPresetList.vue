@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, nextTick } from 'vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { useNumberLocale } from '@/composables/useNumberLocale'
 
 type Props = {
   presets: Array<number>
@@ -21,12 +22,7 @@ const emit = defineEmits<{
 
 const scrollViewportRef = ref<HTMLElement | null>(null)
 
-function formatValue(value: number): string {
-  if (props.allowDecimal) {
-    return value % 1 === 0 ? String(value) : value.toFixed(1)
-  }
-  return String(value)
-}
+const { formatInputValue } = useNumberLocale()
 
 function selectPreset(value: number) {
   modelValue.value = value
@@ -77,7 +73,7 @@ watch(modelValue, scrollToSelected)
         "
         @click="selectPreset(value)"
       >
-        <span class="tabular-nums">{{ formatValue(value) }}</span>
+        <span class="tabular-nums">{{ formatInputValue(value, allowDecimal) }}</span>
         <span v-if="unit" class="ml-1 text-base font-normal opacity-70">
           {{ unit }}
         </span>
