@@ -25,15 +25,15 @@ function loadImage(file: File): Promise<HTMLImageElement> {
     const img = new Image()
     const url = URL.createObjectURL(file)
 
-    img.onload = () => {
+    img.addEventListener('load', () => {
       URL.revokeObjectURL(url)
       resolve(img)
-    }
+    })
 
-    img.onerror = () => {
+    img.addEventListener('error', () => {
       URL.revokeObjectURL(url)
       reject(new Error('Failed to load image'))
-    }
+    })
 
     img.src = url
   })

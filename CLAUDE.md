@@ -34,7 +34,7 @@ Conventional Commits with scope: `feat(workout): add rest timer`
 - `src/db/` - [Database/repositories](src/db/CLAUDE.md)
 - `src/composables/` - Shared reactive logic (timers, dialogs, search)
 - `src/views/` - Route-level pages
-- `src/components/ui/` - shadcn-vue primitives (**do not edit**)
+- `src/components/ui/` - shadcn-vue primitives
 
 ## Vue Pattern (No ESLint Rule)
 
