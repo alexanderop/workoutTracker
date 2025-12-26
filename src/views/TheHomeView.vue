@@ -8,7 +8,9 @@ import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
 import WeekStrip from '@/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/components/WorkoutCalendarSheet.vue'
+import StreakCard from '@/components/StreakCard.vue'
 import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
+import { useWorkoutStreaks } from '@/composables/useWorkoutStreaks'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -26,6 +28,9 @@ const {
   selectDate,
   resetToCurrentMonth,
 } = useWorkoutCalendar()
+
+// Workout streaks
+const { currentStreak, longestStreak, totalWorkouts } = useWorkoutStreaks()
 
 function startWorkout() {
   router.push({ name: RouteNames.ActiveWorkout })
@@ -49,6 +54,14 @@ function openCalendarSheet() {
   <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4">
     <!-- Week Strip -->
     <WeekStrip class="w-full max-w-md" @click="openCalendarSheet" />
+
+    <!-- Workout Streak Card -->
+    <StreakCard
+      class="w-full max-w-md"
+      :current-streak="currentStreak"
+      :longest-streak="longestStreak"
+      :total-workouts="totalWorkouts"
+    />
 
     <!-- Calendar Sheet -->
     <WorkoutCalendarSheet

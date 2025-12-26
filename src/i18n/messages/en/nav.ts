@@ -19,5 +19,13 @@ export default {
       title: 'No workouts yet',
       description: 'Start your first workout to see your progress',
     },
+    streak: {
+      currentStreak: 'day streak',
+      longestStreak: 'Best streak',
+      totalWorkouts: 'Total',
+      onFire: 'On fire!',
+      keepGoing: 'Keep going!',
+      goodStart: 'Good start!',
+    },
   },
 } as const

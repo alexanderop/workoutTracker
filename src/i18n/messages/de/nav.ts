@@ -19,5 +19,13 @@ export default {
       title: 'Noch keine Workouts',
       description: 'Starte dein erstes Workout um deinen Fortschritt zu sehen',
     },
+    streak: {
+      currentStreak: 'Tage Serie',
+      longestStreak: 'Beste Serie',
+      totalWorkouts: 'Gesamt',
+      onFire: 'In Feuer!',
+      keepGoing: 'Weiter so!',
+      goodStart: 'Guter Start!',
+    },
   },
 } as const
