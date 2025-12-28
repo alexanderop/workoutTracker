@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { createGlobalState } from '@vueuse/core'
+import { reactive, ref } from 'vue'
 import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise, dbToCustomExercise } from '@/db/converters'
 import { buildPartialUpdate } from '@/db/partialUpdate'
@@ -9,7 +9,7 @@ import type { CustomExercise } from '@/types/exercises'
 /** Fields in DbCustomExercise that use null instead of undefined */
 const NULLABLE_EXERCISE_FIELDS = ['equipment', 'muscle', 'image'] as const
 
-export const useExercisesStore = defineStore('exercises', () => {
+export const useExercisesStore = createGlobalState(() => {
   const customExercises = ref<Array<CustomExercise>>([])
   const isLoaded = ref(false)
   const isLoading = ref(false)
@@ -92,7 +92,14 @@ export const useExercisesStore = defineStore('exercises', () => {
     customExercises.value = customExercises.value.filter((e) => e.id !== id)
   }
 
-  return {
+  /** Reset state to defaults (for test isolation) */
+  function $reset(): void {
+    customExercises.value = []
+    isLoaded.value = false
+    isLoading.value = false
+  }
+
+  return reactive({
     customExercises,
     isLoaded,
     isLoading,
@@ -102,5 +109,6 @@ export const useExercisesStore = defineStore('exercises', () => {
     getExerciseById,
     getAllExercises,
     deleteExercise,
-  }
+    $reset,
+  })
 })

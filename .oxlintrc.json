@@ -20,6 +20,12 @@
   },
   "overrides": [
     {
+      "files": ["**/stores/**"],
+      "rules": {
+        "eslint/no-restricted-imports": "off"
+      }
+    },
+    {
       "files": ["**/__tests__/**"],
       "rules": {
         "typescript/no-explicit-any": "warn"
