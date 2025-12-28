@@ -2,6 +2,8 @@ import { computed, ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbBenchmark } from '@/db/schema'
 import type { BenchmarkType } from '@/types/benchmark'
+import { getBenchmarksRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 
 export type BenchmarkFormExercise = {
   exerciseDefinitionId: string | null
@@ -33,6 +35,9 @@ export function useBenchmarkForm() {
   const hasExercises = computed(() => form.value.exercises.length > 0)
   const isSaveDisabled = computed(() => !isNameValid.value || !hasExercises.value)
   const showRoundsInput = computed(() => form.value.type === 'rounds')
+
+  // Operation state
+  const isSaving = ref(false)
 
   function reset() {
     form.value = createInitialState()
@@ -70,6 +75,28 @@ export function useBenchmarkForm() {
     }
   }
 
+  async function save(): Promise<DbBenchmark | null> {
+    if (isSaveDisabled.value || isSaving.value) return null
+
+    isSaving.value = true
+    const data = getFormData()
+    const [error, benchmark] = await tryCatch(
+      getBenchmarksRepository().create({
+        name: data.name,
+        type: data.type,
+        rounds: data.rounds,
+        exercises: data.exercises,
+      }),
+    )
+    isSaving.value = false
+
+    if (error) {
+      console.error('Failed to save benchmark:', error)
+      return null
+    }
+    return benchmark
+  }
+
   function initialize(benchmark: DbBenchmark) {
     form.value = {
       name: benchmark.name,
@@ -89,12 +116,14 @@ export function useBenchmarkForm() {
     isNameValid,
     hasExercises,
     isSaveDisabled,
+    isSaving,
     showRoundsInput,
     reset,
     addExercise,
     removeExercise,
     reorderExercises,
     getFormData,
+    save,
     initialize,
   }
 }

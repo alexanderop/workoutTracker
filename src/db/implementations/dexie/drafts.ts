@@ -1,33 +1,26 @@
-import type { DbFormDraft } from '@/db/schema'
-import { db } from './database'
+import type { DraftsRepository } from '@/db/interfaces'
+import type { WorkoutTrackerDb } from './database'
 
 /**
- * Repository for managing form drafts.
+ * Create a Dexie implementation of the DraftsRepository.
  * Used by useFormDraft composable to persist creation form state.
  */
-export const draftsRepository = {
-  /**
-   * Get a draft by key.
-   */
-  async get(key: string): Promise<DbFormDraft | undefined> {
-    return db.drafts.get(key)
-  },
+export function createDexieDraftsRepository(database: WorkoutTrackerDb): DraftsRepository {
+  return {
+    async get(key) {
+      return database.drafts.get(key)
+    },
 
-  /**
-   * Save or update a draft.
-   */
-  async save(key: string, data: unknown): Promise<void> {
-    await db.drafts.put({
-      key,
-      data,
-      savedAt: Date.now(),
-    })
-  },
+    async save(key, data) {
+      await database.drafts.put({
+        key,
+        data,
+        savedAt: Date.now(),
+      })
+    },
 
-  /**
-   * Delete a draft by key.
-   */
-  async delete(key: string): Promise<void> {
-    await db.drafts.delete(key)
-  },
+    async delete(key) {
+      await database.drafts.delete(key)
+    },
+  }
 }

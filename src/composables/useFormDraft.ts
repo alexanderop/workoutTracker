@@ -1,6 +1,7 @@
-import { onMounted, readonly, ref, toRaw, type Ref } from 'vue'
+import { isRef, onMounted, readonly, ref, toRaw, type Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { draftsRepository } from '@/db/implementations/dexie/drafts'
+import { getDraftsRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 
 type FormDraftOptions = {
   /** Debounce delay in milliseconds (default: 1500) */
@@ -25,6 +26,16 @@ function jsonReplacer(_key: string, value: unknown): unknown {
 function toPlainObject<T>(obj: T): T {
   const raw = toRaw(obj)
   return JSON.parse(JSON.stringify(raw, jsonReplacer))
+}
+
+/**
+ * Validate that draft data only contains keys present in the template object.
+ * Protects against corrupted or outdated draft data being restored.
+ */
+function isValidDraftData<T extends object>(data: unknown, template: T): data is Partial<T> {
+  if (typeof data !== 'object' || data === null) return false
+  const templateKeys = new Set(Object.keys(template))
+  return Object.keys(data).every((key) => templateKeys.has(key))
 }
 
 /**
@@ -61,12 +72,21 @@ export function useFormDraft<T extends object>(
 
   // Load draft on mount
   onMounted(async () => {
-    const draft = await draftsRepository.get(key)
-    if (draft?.data) {
-      const state = 'value' in formState ? formState.value : formState
-      Object.assign(state, draft.data)
-      hasDraft.value = true
+    const draftsRepository = getDraftsRepository()
+    const [getError, draft] = await tryCatch(draftsRepository.get(key))
+    if (getError || !draft?.data) return
+
+    const state = isRef(formState) ? formState.value : formState
+
+    // Validate draft data before restoring to protect against corrupted/outdated data
+    if (!isValidDraftData(draft.data, state)) {
+      // Invalid draft schema - clear it
+      await tryCatch(draftsRepository.delete(key))
+      return
     }
+
+    Object.assign(state, draft.data)
+    hasDraft.value = true
   })
 
   // Auto-save with VueUse's watchDebounced
@@ -75,8 +95,10 @@ export function useFormDraft<T extends object>(
     formState,
     async (state) => {
       const plainState = toPlainObject(state)
-      await draftsRepository.save(key, plainState)
-      hasDraft.value = true
+      const [error] = await tryCatch(getDraftsRepository().save(key, plainState))
+      if (!error) {
+        hasDraft.value = true
+      }
     },
     { debounce, deep: true },
   )
@@ -86,8 +108,10 @@ export function useFormDraft<T extends object>(
    * Call this on successful save or when user discards the form.
    */
   async function clearDraft(): Promise<void> {
-    await draftsRepository.delete(key)
-    hasDraft.value = false
+    const [error] = await tryCatch(getDraftsRepository().delete(key))
+    if (!error) {
+      hasDraft.value = false
+    }
   }
 
   return {

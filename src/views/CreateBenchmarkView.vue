@@ -15,20 +15,19 @@ import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsD
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
 import BenchmarkTypeCard from '@/features/benchmarks/components/BenchmarkTypeCard.vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import { getRepositoryProvider } from '@/db/provider'
-import { tryCatch } from '@/lib/tryCatch'
 
 const { t } = useI18n()
 const router = useRouter()
 const {
   form,
   isSaveDisabled,
+  isSaving,
   showRoundsInput,
   reset,
   addExercise,
   removeExercise,
   reorderExercises,
-  getFormData,
+  save,
 } = useBenchmarkForm()
 
 // Auto-save draft to IndexedDB
@@ -68,22 +67,8 @@ function handleDiscard() {
 }
 
 async function handleSave() {
-  const data = getFormData()
-  const repo = getRepositoryProvider().benchmarks
-
-  const [error] = await tryCatch(
-    repo.create({
-      name: data.name,
-      type: data.type,
-      rounds: data.rounds,
-      exercises: data.exercises,
-    }),
-  )
-
-  if (error) {
-    console.error('Failed to save benchmark:', error)
-    return
-  }
+  const benchmark = await save()
+  if (!benchmark) return
 
   await clearDraft()
   router.push({ name: RouteNames.Workouts })
@@ -110,16 +95,17 @@ async function handleSave() {
           v-if="hasDraft"
           variant="ghost"
           size="sm"
+          :disabled="isSaving"
           @click="handleDiscard"
         >
           <Trash2 class="mr-1 icon-sm" />
           {{ t('common.buttons.discard') }}
         </Button>
         <Button
-          :disabled="isSaveDisabled"
+          :disabled="isSaveDisabled || isSaving"
           @click="handleSave"
         >
-          {{ t('common.buttons.save') }}
+          {{ isSaving ? t('common.states.saving') : t('common.buttons.save') }}
         </Button>
       </div>
     </header>

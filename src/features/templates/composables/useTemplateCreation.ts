@@ -1,5 +1,4 @@
-import { computed, ref, shallowRef } from 'vue'
-import { watchIgnorable } from '@vueuse/core'
+import { computed, ref, toRaw, type WritableComputedRef } from 'vue'
 import { getTemplatesRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { DbTemplateBlock, DbWorkoutTemplate } from '@/db/schema'
@@ -19,56 +18,27 @@ export type TemplateFormState = {
 // ============================================
 
 export function useTemplateCreation() {
-  // Primary State
-  const templateName = ref('')
-  const blocks = shallowRef<ReadonlyArray<DbTemplateBlock>>([])
-
-  // Form state for draft persistence (combines templateName and blocks)
+  // Single source of truth for form state
   const formState = ref<TemplateFormState>({
     name: '',
     blocks: [],
   })
 
-  // Use watchIgnorable to prevent infinite loops during bidirectional sync
-  // ignoreUpdates() wraps changes that shouldn't trigger the watcher
+  // Computed with getter/setter for backward compatibility with existing API
+  const templateName = computed({
+    get: () => formState.value.name,
+    set: (v: string) => {
+      formState.value.name = v
+    },
+  })
 
-  // Sync formState.name ↔ templateName
-  const { ignoreUpdates: ignoreNameUpdates } = watchIgnorable(
-    () => formState.value.name,
-    (v) => {
-      ignoreTemplateNameUpdates(() => {
-        templateName.value = v
-      })
+  // Blocks computed - Array<T> is assignable to ReadonlyArray<T>
+  const blocks: WritableComputedRef<ReadonlyArray<DbTemplateBlock>> = computed({
+    get: () => formState.value.blocks,
+    set: (v: ReadonlyArray<DbTemplateBlock>) => {
+      formState.value.blocks = Array.from(v)
     },
-  )
-  const { ignoreUpdates: ignoreTemplateNameUpdates } = watchIgnorable(
-    templateName,
-    (v) => {
-      ignoreNameUpdates(() => {
-        formState.value.name = v
-      })
-    },
-  )
-
-  // Sync formState.blocks ↔ blocks
-  const { ignoreUpdates: ignoreFormBlocksUpdates } = watchIgnorable(
-    () => formState.value.blocks,
-    (v) => {
-      ignoreBlocksUpdates(() => {
-        blocks.value = v
-      })
-    },
-    { deep: true },
-  )
-  const { ignoreUpdates: ignoreBlocksUpdates } = watchIgnorable(
-    blocks,
-    (v) => {
-      ignoreFormBlocksUpdates(() => {
-        formState.value.blocks = Array.from(v)
-      })
-    },
-    { deep: true },
-  )
+  })
 
   // Operation State
   const isSaving = ref(false)
@@ -82,20 +52,19 @@ export function useTemplateCreation() {
   const blockManagement = useTemplateBlockManagement(blocks)
 
   function reset(): void {
-    templateName.value = ''
-    blocks.value = []
-    formState.value.name = ''
-    formState.value.blocks = []
+    formState.value = { name: '', blocks: [] }
   }
 
   async function save(): Promise<DbWorkoutTemplate | null> {
     if (!isValid.value || isSaving.value) return null
 
     isSaving.value = true
+    // Deep clone to strip Vue reactivity - required for IndexedDB storage
+    const plainBlocks = JSON.parse(JSON.stringify(toRaw(formState.value.blocks)))
     const [error, template] = await tryCatch(
       getTemplatesRepository().create({
         name: templateName.value.trim(),
-        blocks: blocks.value,
+        blocks: plainBlocks,
       }),
     )
 
