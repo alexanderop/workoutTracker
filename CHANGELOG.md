@@ -1,3 +1,12 @@
+# [1.4.0](https://github.com/alexanderop/workoutTracker/compare/v1.3.0...v1.4.0) (2025-12-28)
+
+
+### Features
+
+* **weight:** add body weight tracking feature ([#84](https://github.com/alexanderop/workoutTracker/issues/84)) ([66ad828](https://github.com/alexanderop/workoutTracker/commit/66ad828672d1a2887f3aeb02acd278de22c7ffdf))
+
+
+
 # [1.3.0](https://github.com/alexanderop/workoutTracker/compare/v1.2.0...v1.3.0) (2025-12-28)
 
 
