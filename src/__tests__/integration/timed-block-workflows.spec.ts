@@ -68,19 +68,19 @@ describe('Timed Block Workflows', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
 
-      // Multiple exercises should be visible initially
-      await expect.element(page.getByText('Bench Press')).toBeInTheDocument()
-      await expect.element(page.getByText('Squat', { exact: true })).toBeInTheDocument()
+      // Multiple exercises should be visible initially (at top of alphabetical list)
+      await expect.element(page.getByText('Assisted Pull-up Machine')).toBeInTheDocument()
+      await expect.element(page.getByText('Barbell Row')).toBeInTheDocument()
 
-      // Type in search input
-      await userEvent.fill(page.getByRole('textbox'), 'bench')
+      // Type in search input to filter
+      await userEvent.fill(page.getByRole('textbox'), 'barbell row')
 
       // Only matching exercise should remain
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText('Squat', { exact: true })).not.toBeInTheDocument()
+      await expect.element(page.getByText('Barbell Row')).toBeVisible()
+      await expect.element(page.getByText('Assisted Pull-up Machine')).not.toBeInTheDocument()
 
       // Select the filtered exercise and verify it adds to workout
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(common.getDialogButton('Barbell Row'))
 
       // Wait for dialog AND overlay to fully close
       await common.waitForDialogClose()
@@ -176,12 +176,15 @@ describe('Timed Block Workflows', () => {
     })
 
     it('navigates between strength and timed blocks in hybrid workout', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+      const { builder, workout, common, cleanup } = await createTestApp()
 
       // Add strength block first, then AMRAP block
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(page.getByRole('button', { name: /bench press/i }))
+      // Search for exact exercise to avoid ambiguous matches with Smith Machine Bench Press
+      await userEvent.fill(page.getByRole('textbox'), 'Bench Press')
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
       await builder.addTimedBlock('AMRAP')
       await builder.startWorkoutAndVerifyBlocks(2)
 

@@ -220,6 +220,33 @@ document.querySelector('.my-class')
 page.getByRole('button')
 ```
 
+### 6. Exercise Selection in Tests
+
+The exercise seed data changes over time. Tests can break when new exercises are added due to:
+1. **Partial name matching** - "Squat" might match "Belt Squat Machine" before "Bodyweight Squat"
+2. **Virtualized lists** - Exercise dialogs only render visible items; exercises may scroll off-screen
+
+```ts
+// ❌ BAD - partial names are fragile
+await userEvent.click(common.getDialogButton('Squat'))
+
+// ❌ BAD - "Bench Press" may be scrolled off-screen in large lists
+await expect.element(page.getByText('Bench Press')).toBeVisible()
+
+// ✅ GOOD - use full exact names
+await userEvent.click(common.getDialogButton('Bodyweight Squat'))
+
+// ✅ GOOD - use exercises at START of alphabet (A-B visible without scrolling)
+await expect.element(page.getByText('Assisted Pull-up Machine')).toBeVisible()
+await expect.element(page.getByText('Barbell Row')).toBeVisible()
+```
+
+**Best practices:**
+- Use complete exercise names when selecting specific exercises
+- For visibility checks, use exercises starting with A-B (visible without scrolling)
+- When testing search/filter behavior, search first then check results
+- Consider that the exercise list has 130+ items and is virtualized
+
 ## Quick Find
 
 ```bash

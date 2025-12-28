@@ -49,10 +49,10 @@ describe('ExercisePicker', () => {
 
       // Type to search
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench')
+      await userEvent.fill(searchInput, 'Bench Press')
 
-      // Should show matching exercises
-      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
+      // Should show matching exercises (use exact match to avoid matching "Smith Machine Bench Press")
+      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -67,11 +67,11 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
-      // Search and select
+      // Search and select (use full name to avoid ambiguous matches)
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench')
+      await userEvent.fill(searchInput, 'Bench Press')
 
-      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
+      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       // Click on exercise
       const dialog = await getByRole('dialog').element()
@@ -116,21 +116,23 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
-      // Search for a common exercise that should exist
+      // Search for a unique exercise name to test no duplicates
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench Press')
+      await userEvent.fill(searchInput, 'Deadlift')
 
-      // Wait for search results
-      await expect.element(page.getByText(/Bench Press/i)).toBeVisible()
+      // Wait for search results (use exact to avoid matching other exercises)
+      await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
 
-      // Count exercise buttons containing "Bench Press"
+      // Count exercise buttons containing "Deadlift"
       const dialog = await page.getByRole('dialog').element()
-      const benchButtons = Array.from(dialog.querySelectorAll('button')).filter((btn: HTMLButtonElement) =>
-        btn.textContent?.includes('Bench Press')
+      const deadliftButtons = Array.from(dialog.querySelectorAll('button')).filter((btn: HTMLButtonElement) =>
+        btn.textContent?.includes('Deadlift')
       )
 
-      // Should only have one button for Bench Press, not duplicates
-      expect(benchButtons.length).toBe(1)
+      // Should only have one button for Deadlift, not duplicates
+      // (Note: Smith Machine Romanian Deadlift is a different exercise, so filter to exact match)
+      const exactMatches = deadliftButtons.filter((btn) => btn.textContent?.includes('Deadlift') && !btn.textContent?.includes('Romanian'))
+      expect(exactMatches.length).toBe(1)
 
       cleanup()
     })

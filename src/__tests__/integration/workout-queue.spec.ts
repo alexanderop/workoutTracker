@@ -302,7 +302,7 @@ describe('Workout Queue', () => {
       await userEvent.click(common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await userEvent.click(common.getDialogButton('Bodyweight Squat'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
