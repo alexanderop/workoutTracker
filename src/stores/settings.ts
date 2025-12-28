@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { createGlobalState } from '@vueuse/core'
+import { reactive, ref } from 'vue'
 import { getSettingsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { HeightUnit, Language, WeightUnit } from '@/types/settings'
 
-export const useSettingsStore = defineStore('settings', () => {
+export const useSettingsStore = createGlobalState(() => {
   const weightUnit = ref<WeightUnit>('kg')
   const heightUnit = ref<HeightUnit>('cm')
   const screenWakeLock = ref(true)
@@ -67,7 +67,19 @@ export const useSettingsStore = defineStore('settings', () => {
     await tryCatch(getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume }))
   }
 
-  return {
+  /** Reset state to defaults (for test isolation) */
+  function $reset(): void {
+    weightUnit.value = 'kg'
+    heightUnit.value = 'cm'
+    screenWakeLock.value = true
+    timerSoundEnabled.value = true
+    timerSoundVolume.value = 0.8
+    language.value = undefined
+    isLoaded.value = false
+    isLoading.value = false
+  }
+
+  return reactive({
     weightUnit,
     heightUnit,
     screenWakeLock,
@@ -83,5 +95,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setLanguage,
     setTimerSoundEnabled,
     setTimerSoundVolume,
-  }
+    $reset,
+  })
 })

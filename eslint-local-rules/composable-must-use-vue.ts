@@ -18,10 +18,9 @@ const VALID_VUE_SOURCES = [
   '@vueuse/core',
   'vue-router',
   'vue-i18n',
-  'pinia',
 ]
 
-// Path patterns that indicate Vue ecosystem usage (Pinia stores)
+// Path patterns that indicate Vue ecosystem usage (global state composables)
 const VALID_PATH_PATTERNS = [
   /^@\/stores\//,
 ]

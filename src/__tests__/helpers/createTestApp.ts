@@ -3,7 +3,6 @@ import { render } from 'vitest-browser-vue'
 import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '@/App.vue'
 import { routes } from '@/router'
@@ -55,7 +54,6 @@ type TestApp = {
 export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
   const { initialRoute = '/' } = options
 
-  const pinia = createPinia()
   const router = createRouter({
     history: createMemoryHistory(),
     routes,
@@ -71,7 +69,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   const screen = render(App, {
     global: {
-      plugins: [router, pinia, i18n],
+      plugins: [router, i18n],
     },
   })
 
@@ -81,7 +79,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   await flushPromises()
 
   // Wait for app initialization to complete (exercises seeding and loading)
-  const exercisesStore = useExercisesStore(pinia)
+  const exercisesStore = useExercisesStore()
   await expect
     .poll(() => exercisesStore.customExercises.length, { timeout: 5000 })
     .toBeGreaterThan(0)

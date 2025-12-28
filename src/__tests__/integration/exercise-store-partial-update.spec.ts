@@ -6,7 +6,6 @@
  * should not be deleted or overwritten in the database.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
 import { useExercisesStore } from '@/stores/exercises'
 import { getCustomExercisesRepository, generateId } from '@/db'
 import type { DbCustomExercise } from '@/db/schema'
@@ -15,7 +14,6 @@ import { resetDatabase } from '../helpers/resetDatabase'
 describe('Exercise Store Partial Updates', () => {
   beforeEach(async () => {
     await resetDatabase()
-    setActivePinia(createPinia())
   })
 
   afterEach(async () => {
