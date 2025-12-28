@@ -175,6 +175,9 @@ describe('Weight Tracking', () => {
       // Verify database is empty
       await expect.poll(async () => (await repo.getAll()).length).toBe(0)
 
+      // Verify empty state is shown
+      await expect.element(weight.getEmptyState()).toBeVisible()
+
       cleanup()
     })
 

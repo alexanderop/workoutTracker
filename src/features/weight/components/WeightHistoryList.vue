@@ -60,8 +60,8 @@ function cancelDelete() {
       <div v-if="entries.length === 0" class="p-4 text-center text-muted-foreground">
         {{ t('weight.noEntries') }}
       </div>
-      <div v-if="entries.length > 0" class="divide-y">
-        <div
+      <ul v-else class="divide-y" role="list">
+        <li
           v-for="entry in entries"
           :key="entry.id"
           class="flex items-center justify-between px-4 py-3"
@@ -75,12 +75,12 @@ function cancelDelete() {
             size="icon"
             class="text-muted-foreground hover:text-destructive"
             @click="confirmDelete(entry)"
-            :aria-label="t('weight.delete')"
+            :aria-label="t('weight.deleteEntryLabel', { weight: formatWithUnit(entry.weight, 1), date: formatDate(entry.date) })"
           >
             <Trash2 class="h-4 w-4" />
           </Button>
-        </div>
-      </div>
+        </li>
+      </ul>
     </CardContent>
   </Card>
 

@@ -16,4 +16,10 @@ export default {
   weight: 'Gewicht',
   increaseWeight: 'Gewicht erhöhen',
   decreaseWeight: 'Gewicht verringern',
+  chartLabel: 'Gewichtstrend-Diagramm mit {count} Datenpunkten',
+  timeRangeSelector: 'Zeitraum auswählen',
+  trendUp: 'steigend',
+  trendDown: 'fallend',
+  trendStable: 'stabil',
+  deleteEntryLabel: 'Eintrag löschen: {weight} am {date}',
 } as const

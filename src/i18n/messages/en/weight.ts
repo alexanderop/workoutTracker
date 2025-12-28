@@ -16,4 +16,10 @@ export default {
   weight: 'Weight',
   increaseWeight: 'Increase weight',
   decreaseWeight: 'Decrease weight',
+  chartLabel: 'Weight trend chart with {count} data points',
+  timeRangeSelector: 'Select time range',
+  trendUp: 'trending up',
+  trendDown: 'trending down',
+  trendStable: 'stable',
+  deleteEntryLabel: 'Delete entry: {weight} on {date}',
 } as const

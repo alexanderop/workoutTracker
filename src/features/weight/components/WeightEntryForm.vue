@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -36,6 +36,11 @@ function adjustWeight(delta: number) {
   const newValue = Math.max(0, current + delta)
   inputValue.value = newValue.toFixed(1)
 }
+
+const isValid = computed(() => {
+  const value = parseFloat(inputValue.value)
+  return !isNaN(value) && value > 0
+})
 </script>
 
 <template>
@@ -61,7 +66,6 @@ function adjustWeight(delta: number) {
           min="0"
           :placeholder="t('weight.placeholder')"
           class="pr-12 text-center text-lg"
-          :aria-label="t('weight.weight')"
           @keyup.enter="handleSave"
         />
         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -80,7 +84,7 @@ function adjustWeight(delta: number) {
     </div>
     <Button
       class="w-full"
-      :disabled="!inputValue || parseFloat(inputValue) <= 0"
+      :disabled="!isValid"
       @click="handleSave"
     >
       {{ t('weight.save') }}

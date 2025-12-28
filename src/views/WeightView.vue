@@ -48,7 +48,7 @@ async function handleDelete(id: string) {
       <WeightHistoryList :entries="entries" @delete="handleDelete" />
     </template>
 
-    <div v-if="!hasEntries" class="py-8 text-center text-muted-foreground">
+    <div v-else role="status" aria-live="polite" class="py-8 text-center text-muted-foreground">
       <p>{{ t('weight.emptyState') }}</p>
     </div>
   </div>

@@ -14,6 +14,7 @@ import {
 import type { ChartConfig } from '@/components/ui/chart'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { WeightChartDataPoint, TimeRange } from '../composables/useWeightEntries'
+import { formatDate } from '../lib/weightCalculations'
 
 const { data, selectedRange } = defineProps<{
   data: Array<WeightChartDataPoint>
@@ -42,11 +43,6 @@ const displayData = computed(() =>
   })),
 )
 
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
-
 function formatWeight(value: number): string {
   return `${Math.round(value)}`
 }
@@ -63,6 +59,7 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
         </CardTitle>
         <Tabs
           :model-value="selectedRange"
+          :aria-label="t('weight.timeRangeSelector')"
           @update:model-value="emit('update:selectedRange', $event as TimeRange)"
         >
           <TabsList class="h-7">
@@ -83,10 +80,12 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
         <p class="text-muted-foreground">{{ t('weight.noData') }}</p>
       </div>
       <ChartContainer
-        v-if="displayData.length > 0"
+        v-else
         :config="chartConfig"
         class="h-[200px] w-full"
         :cursor="true"
+        role="img"
+        :aria-label="t('weight.chartLabel', { count: displayData.length })"
       >
         <VisXYContainer :data="displayData" :margin="{ top: 10, right: 10, bottom: 30, left: 40 }">
           <VisLine

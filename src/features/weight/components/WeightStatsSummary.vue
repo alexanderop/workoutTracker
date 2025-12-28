@@ -37,6 +37,12 @@ const trendClass = computed(() => {
   if (stats.trend === 'down') return 'text-green-500'
   return 'text-muted-foreground'
 })
+
+const trendLabel = computed(() => {
+  if (stats.trend === 'up') return t('weight.trendUp')
+  if (stats.trend === 'down') return t('weight.trendDown')
+  return t('weight.trendStable')
+})
 </script>
 
 <template>
@@ -50,9 +56,10 @@ const trendClass = computed(() => {
         <div v-if="change7dDisplay" class="text-right">
           <p class="text-sm text-muted-foreground">{{ t('weight.change7d') }}</p>
           <div class="flex items-center justify-end gap-1">
-            <component :is="trendIcon" class="h-4 w-4" :class="trendClass" />
+            <component :is="trendIcon" class="h-4 w-4" :class="trendClass" aria-hidden="true" />
             <span class="text-lg font-medium" :class="trendClass">
               {{ change7dDisplay }}
+              <span class="sr-only">({{ trendLabel }})</span>
             </span>
           </div>
         </div>
