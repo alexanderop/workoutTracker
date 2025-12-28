@@ -8,7 +8,7 @@ import { getStartOfDay } from '../lib/weightCalculations'
 // Types
 // ============================================
 
-export type WeightEntriesState =
+type WeightEntriesState =
   | { status: 'loading' }
   | { status: 'success'; entries: ReadonlyArray<DbWeightEntry> }
   | { status: 'error'; error: Error }
