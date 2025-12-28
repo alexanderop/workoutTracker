@@ -1,3 +1,12 @@
+# [1.3.0](https://github.com/alexanderop/workoutTracker/compare/v1.2.0...v1.3.0) (2025-12-28)
+
+
+### Features
+
+* **exercises:** add cable and machine exercises ([4c5d1ef](https://github.com/alexanderop/workoutTracker/commit/4c5d1ef8aa5fd20c2da34a21b1647c2d104c7b5f))
+
+
+
 # [1.2.0](https://github.com/alexanderop/workoutTracker/compare/v1.1.0...v1.2.0) (2025-12-22)
 
 
