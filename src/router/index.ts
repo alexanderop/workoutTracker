@@ -24,6 +24,7 @@ export const RouteNames = {
   Exercises: 'Exercises',
   Settings: 'Settings',
   Timers: 'Timers',
+  Weight: 'Weight',
   ActiveWorkout: 'ActiveWorkout',
   ActiveBenchmark: 'ActiveBenchmark',
   ExerciseForm: 'ExerciseForm',
@@ -81,6 +82,11 @@ export const routes = [
     path: '/timers',
     name: RouteNames.Timers,
     component: TheTimersView,
+  },
+  {
+    path: '/weight',
+    name: RouteNames.Weight,
+    component: () => import('@/views/WeightView.vue'),
   },
   {
     path: '/workout/active',

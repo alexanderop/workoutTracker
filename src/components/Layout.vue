@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Activity, Dumbbell, Home, Settings } from 'lucide-vue-next'
+import { Activity, Dumbbell, Home, Scale, Settings } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -18,6 +18,7 @@ const navItems = computed<
   { routeName: RouteNames.Home, icon: Home, label: t('nav.home') },
   { routeName: RouteNames.Workouts, icon: Dumbbell, label: t('nav.workouts') },
   { routeName: RouteNames.Exercises, icon: Activity, label: t('nav.exercises') },
+  { routeName: RouteNames.Weight, icon: Scale, label: t('nav.weight') },
   { routeName: RouteNames.Settings, icon: Settings, label: t('nav.settings') },
 ])
 

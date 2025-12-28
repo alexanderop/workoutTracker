@@ -7,6 +7,7 @@ import type {
   ExerciseProgressRepository,
   SettingsRepository,
   TemplatesRepository,
+  WeightRepository,
   WorkoutsRepository,
 } from './interfaces'
 import { getRepositoryProvider } from './provider'
@@ -51,6 +52,10 @@ export function getDataManagementRepository(): DataManagementRepository {
 
 export function getBenchmarksRepository(): BenchmarksRepository {
   return getRepositoryProvider().benchmarks
+}
+
+export function getWeightRepository(): WeightRepository {
+  return getRepositoryProvider().weight
 }
 
 let exerciseProgressRepository: ExerciseProgressRepository | null = null

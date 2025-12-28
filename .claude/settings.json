@@ -50,6 +50,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/datetime-context.sh"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {}

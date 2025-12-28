@@ -447,3 +447,18 @@ export type PerformedExercise = {
   workoutCount: number
   lastPerformed: Date
 }
+
+// ============================================
+// Weight Tracking Types
+// ============================================
+
+/**
+ * Weight entry for daily body weight tracking.
+ * Weight is always stored in kg (converted on display based on user settings).
+ */
+export type DbWeightEntry = {
+  id: string
+  weight: number // Always stored in kg
+  date: number // Start of day timestamp (for one-entry-per-day deduplication)
+  recordedAt: number // When the entry was actually logged
+}

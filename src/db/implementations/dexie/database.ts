@@ -7,6 +7,7 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbUserSetting,
+  DbWeightEntry,
   DbWorkoutTemplate,
 } from '@/db/schema'
 
@@ -18,6 +19,7 @@ export class WorkoutTrackerDb extends Dexie {
   templates!: Table<DbWorkoutTemplate, string>
   settings!: Table<DbUserSetting, string>
   benchmarks!: Table<DbBenchmark, string>
+  weightEntries!: Table<DbWeightEntry, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -41,6 +43,18 @@ export class WorkoutTrackerDb extends Dexie {
       templates: 'id, name, createdAt, lastUsedAt',
       settings: 'key',
       benchmarks: 'id, name, createdAt, lastUsedAt',
+    })
+
+    // Version 3: Add weightEntries table for body weight tracking
+    this.version(3).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
     })
   }
 }
