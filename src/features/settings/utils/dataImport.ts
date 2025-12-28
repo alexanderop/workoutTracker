@@ -106,6 +106,7 @@ export async function importAllData(exportData: ExportData): Promise<boolean> {
       templates: rawData.templates,
       workouts: rawData.workouts,
       benchmarks: rawData.benchmarks ?? [],
+      weightEntries: rawData.weightEntries ?? [],
     }),
   )
 

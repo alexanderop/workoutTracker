@@ -4,6 +4,7 @@ import { dbBenchmarkSchema, MAX_BENCHMARKS } from './benchmarkSchema'
 import { dbCustomExerciseSchema } from './exerciseSchema'
 import { dbUserSettingSchema } from './settingsSchema'
 import { dbWorkoutTemplateSchema } from './templateSchema'
+import { dbWeightEntrySchema, MAX_WEIGHT_ENTRIES } from './weightEntrySchema'
 import { dbCompletedWorkoutSchema } from './workoutSchema'
 
 /**
@@ -30,6 +31,7 @@ export const exportDataSchema = z
         templates: z.array(dbWorkoutTemplateSchema).max(MAX_TEMPLATES).readonly(),
         workouts: z.array(dbCompletedWorkoutSchema).max(MAX_WORKOUTS).readonly(),
         benchmarks: z.array(dbBenchmarkSchema).max(MAX_BENCHMARKS).readonly(),
+        weightEntries: z.array(dbWeightEntrySchema).max(MAX_WEIGHT_ENTRIES).readonly().optional(),
       })
       .strict(),
   })

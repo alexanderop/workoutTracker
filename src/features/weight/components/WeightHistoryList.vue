@@ -94,10 +94,10 @@ function cancelDelete() {
       </DialogHeader>
       <DialogFooter>
         <Button variant="outline" @click="cancelDelete">
-          {{ t('common.cancel') }}
+          {{ t('common.buttons.cancel') }}
         </Button>
         <Button variant="destructive" @click="handleDelete">
-          {{ t('common.delete') }}
+          {{ t('common.buttons.delete') }}
         </Button>
       </DialogFooter>
     </DialogContent>

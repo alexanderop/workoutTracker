@@ -309,6 +309,7 @@ export type ExportDataContents = {
   templates: ReadonlyArray<DbWorkoutTemplate>
   workouts: ReadonlyArray<DbCompletedWorkout>
   benchmarks: ReadonlyArray<DbBenchmark>
+  weightEntries: ReadonlyArray<DbWeightEntry>
 }
 
 export type DataManagementRepository = {

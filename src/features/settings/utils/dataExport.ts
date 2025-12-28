@@ -3,6 +3,7 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbUserSetting,
+  DbWeightEntry,
   DbWorkoutTemplate,
 } from '@/db/schema'
 import { getDataManagementRepository } from '@/db'
@@ -26,6 +27,7 @@ export type ExportData = {
     templates: ReadonlyArray<DbWorkoutTemplate>
     workouts: ReadonlyArray<DbCompletedWorkout>
     benchmarks: ReadonlyArray<DbBenchmark>
+    weightEntries?: ReadonlyArray<DbWeightEntry>
   }
 }
 

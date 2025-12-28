@@ -1,14 +1,6 @@
 import type { DbWeightEntry } from '@/db/schema'
 import { generateId } from '@/db'
-
-/**
- * Get the start of day timestamp for a given date.
- */
-function getStartOfDay(date: Date = new Date()): number {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
+import { getStartOfDay } from '@/features/weight/lib/weightCalculations'
 
 const DEFAULTS: Readonly<Omit<DbWeightEntry, 'id'>> = {
   weight: 75,

@@ -14,6 +14,12 @@ export type WeightStats = {
 }
 
 // ============================================
+// Constants
+// ============================================
+
+const DATE_TOLERANCE_MS = 2 * 24 * 60 * 60 * 1000 // 2 days
+
+// ============================================
 // Pure Functions (Functional Core)
 // ============================================
 
@@ -26,12 +32,9 @@ function findEntryNearDate(
 ): DbWeightEntry | undefined {
   const targetTime = targetDate.getTime()
 
-  // Find entry within 2 days of target date
-  const tolerance = 2 * 24 * 60 * 60 * 1000
-
   return entries.find((entry) => {
     const diff = Math.abs(entry.date - targetTime)
-    return diff <= tolerance
+    return diff <= DATE_TOLERANCE_MS
   })
 }
 

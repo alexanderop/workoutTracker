@@ -30,22 +30,24 @@ export function createDexieDataManagementRepository(
 
   return {
     async exportAll(): Promise<ExportDataContents> {
-      const [settings, customExercises, templates, workouts, benchmarks] = await Promise.all([
-        db.settings.toArray(),
-        db.customExercises.toArray(),
-        db.templates.toArray(),
-        db.workouts.toArray(),
-        db.benchmarks.toArray(),
-      ])
+      const [settings, customExercises, templates, workouts, benchmarks, weightEntries] =
+        await Promise.all([
+          db.settings.toArray(),
+          db.customExercises.toArray(),
+          db.templates.toArray(),
+          db.workouts.toArray(),
+          db.benchmarks.toArray(),
+          db.weightEntries.toArray(),
+        ])
 
-      return { settings, customExercises, templates, workouts, benchmarks }
+      return { settings, customExercises, templates, workouts, benchmarks, weightEntries }
     },
 
     async importAll(data: ExportDataContents): Promise<void> {
       await db.transaction('rw', allTables, async () => {
         await clearAllTables()
 
-        const { settings, customExercises, templates, workouts, benchmarks } = data
+        const { settings, customExercises, templates, workouts, benchmarks, weightEntries } = data
 
         await Promise.all([
           settings.length > 0 ? db.settings.bulkAdd([...settings]) : Promise.resolve(),
@@ -55,6 +57,9 @@ export function createDexieDataManagementRepository(
           templates.length > 0 ? db.templates.bulkAdd([...templates]) : Promise.resolve(),
           workouts.length > 0 ? db.workouts.bulkAdd([...workouts]) : Promise.resolve(),
           benchmarks.length > 0 ? db.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
+          weightEntries?.length > 0
+            ? db.weightEntries.bulkAdd([...weightEntries])
+            : Promise.resolve(),
         ])
       })
     },
