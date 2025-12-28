@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBenchmarkForm } from '@/features/benchmarks/composables/useBenchmarkForm'
+import { useFormDraft } from '@/composables/useFormDraft'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,7 +9,7 @@ import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { ArrowLeft, Clock, Plus, RotateCw } from 'lucide-vue-next'
+import { ArrowLeft, Clock, Plus, RotateCw, Trash2 } from 'lucide-vue-next'
 import ExercisePicker from '@/components/ExercisePicker.vue'
 import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
@@ -23,11 +24,15 @@ const {
   form,
   isSaveDisabled,
   showRoundsInput,
+  reset,
   addExercise,
   removeExercise,
   reorderExercises,
   getFormData,
 } = useBenchmarkForm()
+
+// Auto-save draft to IndexedDB
+const { hasDraft, clearDraft } = useFormDraft('benchmark-create', form)
 
 const showExercisePicker = ref(false)
 const showRepsDialog = ref(false)
@@ -57,6 +62,11 @@ function handleRepsCancel() {
   selectedExercise.value = null
 }
 
+function handleDiscard() {
+  reset()
+  clearDraft()
+}
+
 async function handleSave() {
   const data = getFormData()
   const repo = getRepositoryProvider().benchmarks
@@ -75,6 +85,7 @@ async function handleSave() {
     return
   }
 
+  await clearDraft()
   router.push({ name: RouteNames.Workouts })
 }
 </script>
@@ -94,12 +105,23 @@ async function handleSave() {
         </Button>
         <h1 class="text-lg font-semibold">{{ t('workouts.benchmarks.create') }}</h1>
       </div>
-      <Button
-        :disabled="isSaveDisabled"
-        @click="handleSave"
-      >
-        {{ t('common.buttons.save') }}
-      </Button>
+      <div class="flex items-center gap-2">
+        <Button
+          v-if="hasDraft"
+          variant="ghost"
+          size="sm"
+          @click="handleDiscard"
+        >
+          <Trash2 class="mr-1 icon-sm" />
+          {{ t('common.buttons.discard') }}
+        </Button>
+        <Button
+          :disabled="isSaveDisabled"
+          @click="handleSave"
+        >
+          {{ t('common.buttons.save') }}
+        </Button>
+      </div>
     </header>
 
     <!-- Form Content -->

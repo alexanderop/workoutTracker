@@ -1,0 +1,99 @@
+import { onMounted, readonly, ref, toRaw, type Ref } from 'vue'
+import { watchDebounced } from '@vueuse/core'
+import { draftsRepository } from '@/db/implementations/dexie/drafts'
+
+type FormDraftOptions = {
+  /** Debounce delay in milliseconds (default: 1500) */
+  debounce?: number
+}
+
+/**
+ * JSON replacer that handles non-serializable values.
+ * Blobs are replaced with null (drafts don't preserve image previews).
+ */
+function jsonReplacer(_key: string, value: unknown): unknown {
+  if (value instanceof Blob) {
+    return null
+  }
+  return value
+}
+
+/**
+ * Create a plain JS object from a potentially reactive object.
+ * Removes Vue reactivity and handles Blobs by setting them to null.
+ */
+function toPlainObject<T>(obj: T): T {
+  const raw = toRaw(obj)
+  return JSON.parse(JSON.stringify(raw, jsonReplacer))
+}
+
+/**
+ * Auto-save form state to IndexedDB and restore on mount.
+ * Prevents users from losing progress when navigating away during form creation.
+ *
+ * @param key - Unique identifier for the draft (e.g., 'benchmark-create')
+ * @param formState - Reactive form state object to persist
+ * @param options - Configuration options
+ *
+ * @example
+ * const formState = reactive({ name: '', exercises: [] })
+ * const { hasDraft, clearDraft } = useFormDraft('benchmark-create', formState)
+ *
+ * // On successful save
+ * async function save() {
+ *   await saveBenchmark(formState)
+ *   await clearDraft()
+ * }
+ *
+ * // Discard button
+ * function discard() {
+ *   resetForm()
+ *   clearDraft()
+ * }
+ */
+export function useFormDraft<T extends object>(
+  key: string,
+  formState: T | Ref<T>,
+  options: FormDraftOptions = {},
+) {
+  const { debounce = 1500 } = options
+  const hasDraft = ref(false)
+
+  // Load draft on mount
+  onMounted(async () => {
+    const draft = await draftsRepository.get(key)
+    if (draft?.data) {
+      const state = 'value' in formState ? formState.value : formState
+      Object.assign(state, draft.data)
+      hasDraft.value = true
+    }
+  })
+
+  // Auto-save with VueUse's watchDebounced
+  // Use toPlainObject to remove Vue reactivity and handle Blobs
+  watchDebounced(
+    formState,
+    async (state) => {
+      const plainState = toPlainObject(state)
+      await draftsRepository.save(key, plainState)
+      hasDraft.value = true
+    },
+    { debounce, deep: true },
+  )
+
+  /**
+   * Clear the draft from IndexedDB.
+   * Call this on successful save or when user discards the form.
+   */
+  async function clearDraft(): Promise<void> {
+    await draftsRepository.delete(key)
+    hasDraft.value = false
+  }
+
+  return {
+    /** Whether a draft exists for this form */
+    hasDraft: readonly(hasDraft),
+    /** Clear the draft from storage */
+    clearDraft,
+  }
+}
