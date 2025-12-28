@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card'
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
@@ -119,6 +120,9 @@ function handleNextMonth() {
     <SheetContent side="bottom" class="max-h-[85vh] overflow-y-auto px-4 pb-8">
       <SheetHeader class="pb-2">
         <SheetTitle class="text-center">{{ currentMonthYear }}</SheetTitle>
+        <SheetDescription class="sr-only">
+          {{ t('calendar.description') }}
+        </SheetDescription>
       </SheetHeader>
 
       <!-- Custom Calendar -->

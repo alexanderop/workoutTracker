@@ -12,6 +12,7 @@ export function createDexieDataManagementRepository(
     db.workouts,
     db.benchmarks,
     db.activeWorkout,
+    db.weightEntries,
   ] as const
 
   // Shared helper to clear all tables
@@ -23,6 +24,7 @@ export function createDexieDataManagementRepository(
       db.workouts.clear(),
       db.benchmarks.clear(),
       db.activeWorkout.clear(),
+      db.weightEntries.clear(),
     ])
   }
 

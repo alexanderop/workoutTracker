@@ -165,5 +165,13 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getPersonalBests: vi.fn().mockResolvedValue(new Map()),
       getAttemptHistory: vi.fn().mockResolvedValue([]),
     },
+    weight: {
+      add: vi.fn().mockResolvedValue(undefined),
+      getAll: vi.fn().mockResolvedValue([]),
+      getByDateRange: vi.fn().mockResolvedValue([]),
+      getLatest: vi.fn().mockResolvedValue(undefined),
+      getByDate: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+    },
   }
 }

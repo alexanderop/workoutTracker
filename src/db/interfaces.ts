@@ -6,6 +6,7 @@ import type {
   DbCustomExercise,
   DbTemplateBlock,
   DbUserSetting,
+  DbWeightEntry,
   DbWorkoutTemplate,
   ExerciseSession,
   ExerciseStats,
@@ -434,6 +435,45 @@ export type ExerciseProgressRepository = {
 }
 
 // ============================================
+// Weight Repository
+// ============================================
+
+/**
+ * Repository for tracking daily body weight entries.
+ */
+export type WeightRepository = {
+  /**
+   * Add a new weight entry. If an entry for the same date exists, it will be replaced.
+   */
+  add(entry: Readonly<DbWeightEntry>): Promise<void>
+
+  /**
+   * Retrieve all weight entries sorted by date (newest first).
+   */
+  getAll(): Promise<ReadonlyArray<DbWeightEntry>>
+
+  /**
+   * Get weight entries within a specific date range (inclusive).
+   */
+  getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DbWeightEntry>>
+
+  /**
+   * Get the most recent weight entry.
+   */
+  getLatest(): Promise<DbWeightEntry | undefined>
+
+  /**
+   * Get a weight entry for a specific date.
+   */
+  getByDate(date: Date): Promise<DbWeightEntry | undefined>
+
+  /**
+   * Delete a weight entry by ID.
+   */
+  delete(id: string): Promise<void>
+}
+
+// ============================================
 // Repository Provider (All Repositories)
 // ============================================
 
@@ -449,4 +489,5 @@ export type RepositoryProvider = {
   settings: SettingsRepository
   dataManagement: DataManagementRepository
   benchmarks: BenchmarksRepository
+  weight: WeightRepository
 }

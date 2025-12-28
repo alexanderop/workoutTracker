@@ -2,6 +2,7 @@ export default {
   home: 'Home',
   workouts: 'Workouts',
   exercises: 'Exercises',
+  weight: 'Weight',
   settings: 'Settings',
   history: 'History',
   timers: 'Timers',
