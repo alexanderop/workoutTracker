@@ -61,6 +61,7 @@ export default {
     actionsColumn: 'Actions',
     searchExercises: 'Search exercises',
     clearSearch: 'Clear search',
+    activeWorkoutFab: 'Return to active workout',
   },
   states: {
     loading: 'Loading...',

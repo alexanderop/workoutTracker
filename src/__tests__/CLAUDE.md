@@ -247,6 +247,22 @@ await expect.element(page.getByText('Barbell Row')).toBeVisible()
 - When testing search/filter behavior, search first then check results
 - Consider that the exercise list has 130+ items and is virtualized
 
+### 7. Navigation Reliability
+
+UI button clicks for navigation can be flaky. Prefer direct router navigation when navigation isn't the behavior being tested:
+
+```ts
+// ❌ FLAKY - clicking UI buttons for navigation
+await userEvent.click(page.getByRole('button', { name: /go back/i }))
+await expect.element(page.getByRole('button', { name: /other button/i })).toBeVisible()
+
+// ✅ RELIABLE - direct router navigation
+await navigateTo('/exercises')
+await expect.element(page.getByRole('button', { name: /other button/i })).toBeVisible()
+```
+
+Use UI navigation only when testing the navigation behavior itself.
+
 ## Quick Find
 
 ```bash
