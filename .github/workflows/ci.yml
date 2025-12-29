@@ -246,6 +246,18 @@ jobs:
       - name: Run tests (shard ${{ matrix.shard }}/4)
         run: pnpm vitest --project=default --shard=${{ matrix.shard }}/4
 
+  test-arch:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Run architecture tests
+        run: pnpm test:arch
+
   test-a11y:
     needs: setup
     runs-on: ubuntu-latest
