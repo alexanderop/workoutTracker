@@ -25,3 +25,5 @@ jobs:
           skip-version-file: 'false'
           skip-commit: 'false'
           git-message: 'chore(release): {version}'
+          git-user-name: 'github-actions[bot]'
+          git-user-email: 'github-actions[bot]@users.noreply.github.com'
