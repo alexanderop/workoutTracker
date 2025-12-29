@@ -27,14 +27,14 @@ describe('Form Draft Persistence', () => {
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
-      // Wait for debounced auto-save (1500ms + buffer)
+      // Wait for debounced auto-save
       await vi.waitFor(
         async () => {
           const draft = await db.drafts.get('template-create')
           expect(draft).toBeTruthy()
           expect(draft?.data).toMatchObject({ name: 'My Draft Template' })
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Navigate away
@@ -77,7 +77,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('template-create')
           expect(draft).toBeTruthy()
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Save the template
@@ -115,7 +115,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('template-create')
           expect(draft).toBeTruthy()
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Wait for discard button to be visible
@@ -163,7 +163,7 @@ describe('Form Draft Persistence', () => {
           expect(draft).toBeTruthy()
           expect(draft?.data).toMatchObject({ name: 'My Draft Benchmark' })
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Navigate away
@@ -198,7 +198,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('benchmark-create')
           expect(draft).toBeTruthy()
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Add an exercise via dialog - click add, select exercise, add reps
@@ -242,7 +242,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('benchmark-create')
           expect(draft).toBeTruthy()
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Wait for discard button
@@ -287,7 +287,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('template-create')
           expect(draft?.data).toMatchObject({ name: 'Template Draft' })
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Create benchmark draft
@@ -301,7 +301,7 @@ describe('Form Draft Persistence', () => {
           const draft = await db.drafts.get('benchmark-create')
           expect(draft?.data).toMatchObject({ name: 'Benchmark Draft' })
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       )
 
       // Verify both drafts exist independently

@@ -1,7 +1,8 @@
-import { isRef, onMounted, readonly, ref, toRaw, type Ref } from 'vue'
+import { isRef, onMounted, onScopeDispose, readonly, ref, toRaw, type Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { getDraftsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import type { DraftKey } from '@/db/schema'
 
 type FormDraftOptions = {
   /** Debounce delay in milliseconds (default: 1500) */
@@ -62,13 +63,24 @@ function isValidDraftData<T extends object>(data: unknown, template: T): data is
  *   clearDraft()
  * }
  */
+// Use shorter debounce in tests to avoid long waits
+const DEFAULT_DEBOUNCE_MS = import.meta.env.MODE === 'test' ? 50 : 1500
+
 export function useFormDraft<T extends object>(
-  key: string,
+  key: DraftKey,
   formState: T | Ref<T>,
   options: FormDraftOptions = {},
 ) {
-  const { debounce = 1500 } = options
+  const { debounce = DEFAULT_DEBOUNCE_MS } = options
   const hasDraft = ref(false)
+
+  // Track disposal to prevent writes after component unmount
+  // This guards against race conditions where the debounced watcher
+  // fires after cleanup but before the watcher is fully stopped
+  let isDisposed = false
+  onScopeDispose(() => {
+    isDisposed = true
+  })
 
   // Load draft on mount
   onMounted(async () => {
@@ -94,6 +106,9 @@ export function useFormDraft<T extends object>(
   watchDebounced(
     formState,
     async (state) => {
+      // Skip save if component has been unmounted
+      if (isDisposed) return
+
       const plainState = toPlainObject(state)
       const [error] = await tryCatch(getDraftsRepository().save(key, plainState))
       if (!error) {

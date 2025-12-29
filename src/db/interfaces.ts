@@ -9,6 +9,7 @@ import type {
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
+  DraftKey,
   ExerciseSession,
   ExerciseStats,
   PerformedExercise,
@@ -486,15 +487,15 @@ export type DraftsRepository = {
   /**
    * Get a draft by key.
    */
-  get(key: string): Promise<DbFormDraft | undefined>
+  get(key: DraftKey): Promise<DbFormDraft | undefined>
   /**
    * Save or update a draft.
    */
-  save(key: string, data: unknown): Promise<void>
+  save(key: DraftKey, data: unknown): Promise<void>
   /**
    * Delete a draft by key.
    */
-  delete(key: string): Promise<void>
+  delete(key: DraftKey): Promise<void>
 }
 
 // ============================================

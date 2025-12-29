@@ -8,7 +8,7 @@ import { useTemplateBlockManagement } from './useTemplateBlockManagement'
 // Types
 // ============================================
 
-export type TemplateFormState = {
+type TemplateFormState = {
   name: string
   blocks: Array<DbTemplateBlock>
 }

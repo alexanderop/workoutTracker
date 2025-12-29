@@ -471,8 +471,10 @@ export type DbWeightEntry = {
  * Form draft for auto-saving creation forms.
  * Allows users to resume where they left off if they navigate away.
  */
+export type DraftKey = 'benchmark-create' | 'template-create'
+
 export type DbFormDraft = {
-  key: string // 'benchmark-create' | 'template-create'
+  key: DraftKey
   data: unknown // Serialized form state (JSON-compatible)
   savedAt: number // Timestamp when draft was last saved
 }
