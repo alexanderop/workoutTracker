@@ -15,7 +15,7 @@ function isNestedObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function getKeys(obj: Record<string, unknown>, prefix = ''): string[] {
+function getKeys(obj: Record<string, unknown>, prefix = ''): Array<string> {
   return Object.entries(obj).flatMap(([key, value]) => {
     const fullKey = prefix ? `${prefix}.${key}` : key
     return isNestedObject(value) ? getKeys(value, fullKey) : [fullKey]
@@ -26,8 +26,8 @@ function checkLocales(): boolean {
   const enKeys = new Set(getKeys(en))
   const deKeys = new Set(getKeys(de))
 
-  const missingInDe = [...enKeys].filter((k) => !deKeys.has(k)).sort()
-  const missingInEn = [...deKeys].filter((k) => !enKeys.has(k)).sort()
+  const missingInDe = [...enKeys].filter((k) => !deKeys.has(k)).toSorted()
+  const missingInEn = [...deKeys].filter((k) => !enKeys.has(k)).toSorted()
 
   let hasErrors = false
 
@@ -44,8 +44,8 @@ function checkLocales(): boolean {
   }
 
   if (!hasErrors) {
-    console.log('✅ All locales have matching keys')
-    console.log(`   Total keys: ${enKeys.size}`)
+    console.warn('✅ All locales have matching keys')
+    console.warn(`   Total keys: ${enKeys.size}`)
   }
 
   return hasErrors
