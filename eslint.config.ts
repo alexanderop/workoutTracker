@@ -271,6 +271,8 @@ export default defineConfigWithVueTs(
   },
 
   // Vue i18n - enforce translation usage (no-raw-text)
+  // Note: no-missing-keys/no-unused-keys not enabled - use `pnpm i18n:check` instead
+  // (The eslint plugin doesn't fully support TypeScript locale files)
   {
     name: 'app/vue-i18n',
     files: ['src/**/*.vue'],
@@ -278,6 +280,7 @@ export default defineConfigWithVueTs(
       '@intlify/vue-i18n': pluginVueI18n,
     },
     rules: {
+      // Detect hardcoded strings in templates - catches 90% of i18n issues
       '@intlify/vue-i18n/no-raw-text': ['error', {
         ignorePattern: '^[-#:()&+×/°′″%]+$',
         ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', '.', 'Close'],

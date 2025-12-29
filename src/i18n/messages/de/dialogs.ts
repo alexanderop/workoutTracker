@@ -118,6 +118,10 @@ export default {
     addExercise: 'Übung hinzufügen',
     addBlock: 'Block hinzufügen',
   },
+  benchmarkReps: {
+    title: 'Wiederholungen festlegen',
+    description: 'Wie viele Wiederholungen von {exercise} pro Runde?',
+  },
   cardioConfig: {
     title: 'Cardio konfigurieren',
     description: 'Wähle eine Aktivität und setze dein Ziel',
