@@ -43,7 +43,7 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
     "lucide-vue-next": "^0.562.0",
-    "reka-ui": "^2.6.0",
+    "reka-ui": "^2.7.0",
     "sortablejs": "^1.15.6",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
