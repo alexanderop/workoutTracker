@@ -15,7 +15,9 @@ import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTemplateCreation } from '@/features/templates/composables/useTemplateCreation'
+import { useFormDraft } from '@/composables/useFormDraft'
 import { useDialogState } from '@/composables/useDialogState'
+import { Trash2 } from 'lucide-vue-next'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -32,8 +34,10 @@ const { t } = useI18n()
 const {
   templateName,
   blocks,
+  formState,
   isSaving,
   isValid,
+  reset,
   addStrengthBlock,
   addAmrapBlock,
   addEmomBlock,
@@ -44,6 +48,11 @@ const {
   updateBlocks,
   save,
 } = useTemplateCreation()
+
+// Auto-save draft to IndexedDB
+const { hasDraft, clearDraft } = useFormDraft('template-create', formState, {
+  isEmpty: (state) => !state.name && state.blocks.length === 0,
+})
 
 // Dialog state management
 type TemplateDialog =
@@ -98,9 +107,15 @@ function handleConfirmCardio(config: CardioConfig): void {
   addCardioBlock(config)
 }
 
+function handleDiscard(): void {
+  reset()
+  clearDraft()
+}
+
 async function handleSave(): Promise<void> {
   const template = await save()
   if (template) {
+    await clearDraft()
     await router.push({ name: RouteNames.TemplateDetail, params: { id: template.id } })
   }
 }
@@ -161,6 +176,16 @@ function handleCancel(): void {
       <div class="flex gap-3 p-4">
         <Button variant="outline" class="flex-1" :disabled="isSaving" @click="handleCancel">
           {{ t('common.buttons.cancel') }}
+        </Button>
+        <Button
+          v-if="hasDraft"
+          variant="ghost"
+          size="sm"
+          :disabled="isSaving"
+          @click="handleDiscard"
+        >
+          <Trash2 class="mr-1 icon-sm" />
+          {{ t('common.buttons.discard') }}
         </Button>
         <Button class="flex-1" :disabled="!isValid || isSaving" @click="handleSave">
           {{ isSaving ? t('common.states.saving') : t('workouts.templates.saveTemplate') }}

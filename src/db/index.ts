@@ -4,6 +4,7 @@ import type {
   BenchmarksRepository,
   CustomExercisesRepository,
   DataManagementRepository,
+  DraftsRepository,
   ExerciseProgressRepository,
   SettingsRepository,
   TemplatesRepository,
@@ -58,6 +59,10 @@ export function getWeightRepository(): WeightRepository {
   return getRepositoryProvider().weight
 }
 
+export function getDraftsRepository(): DraftsRepository {
+  return getRepositoryProvider().drafts
+}
+
 let exerciseProgressRepository: ExerciseProgressRepository | null = null
 
 export function getExerciseProgressRepository(): ExerciseProgressRepository {
@@ -65,6 +70,14 @@ export function getExerciseProgressRepository(): ExerciseProgressRepository {
     exerciseProgressRepository = createDexieExerciseProgressRepository(db)
   }
   return exerciseProgressRepository
+}
+
+/**
+ * Reset the exercise progress repository cache.
+ * Used in tests to ensure clean state between test files.
+ */
+export function resetExerciseProgressRepository(): void {
+  exerciseProgressRepository = null
 }
 
 // ============================================

@@ -462,3 +462,19 @@ export type DbWeightEntry = {
   date: number // Start of day timestamp (for one-entry-per-day deduplication)
   recordedAt: number // When the entry was actually logged
 }
+
+// ============================================
+// Form Draft Types
+// ============================================
+
+/**
+ * Form draft for auto-saving creation forms.
+ * Allows users to resume where they left off if they navigate away.
+ */
+export type DraftKey = 'benchmark-create' | 'template-create'
+
+export type DbFormDraft = {
+  key: DraftKey
+  data: unknown // Serialized form state (JSON-compatible)
+  savedAt: number // Timestamp when draft was last saved
+}

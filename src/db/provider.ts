@@ -14,3 +14,11 @@ export function getRepositoryProvider(): RepositoryProvider {
   return currentProvider
 }
 
+/**
+ * Reset the repository provider cache.
+ * Used in tests to ensure clean state between test files.
+ */
+export function resetRepositoryProvider(): void {
+  currentProvider = null
+}
+

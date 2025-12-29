@@ -6,6 +6,7 @@ import type {
   DbBenchmark,
   DbCompletedWorkout,
   DbCustomExercise,
+  DbFormDraft,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -20,6 +21,7 @@ export class WorkoutTrackerDb extends Dexie {
   settings!: Table<DbUserSetting, string>
   benchmarks!: Table<DbBenchmark, string>
   weightEntries!: Table<DbWeightEntry, string>
+  drafts!: Table<DbFormDraft, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -55,6 +57,19 @@ export class WorkoutTrackerDb extends Dexie {
       settings: 'key',
       benchmarks: 'id, name, createdAt, lastUsedAt',
       weightEntries: 'id, date, recordedAt',
+    })
+
+    // Version 4: Add drafts table for form auto-save
+    this.version(4).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
+      drafts: '&key',
     })
   }
 }

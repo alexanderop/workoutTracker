@@ -1,4 +1,4 @@
-import type { ShallowRef } from 'vue'
+import type { Ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbTemplateBlock } from '@/db/schema'
 import type {
@@ -20,10 +20,10 @@ import {
 
 /**
  * Shared block management logic for template composables.
- * Accepts a blocks ref and returns methods to manipulate it.
+ * Accepts a blocks ref (ShallowRef or WritableComputedRef) and returns methods to manipulate it.
  */
 export function useTemplateBlockManagement(
-  blocks: ShallowRef<ReadonlyArray<DbTemplateBlock>>,
+  blocks: Ref<ReadonlyArray<DbTemplateBlock>>,
 ) {
   function addStrengthBlock(exercise: Exercise): void {
     blocks.value = [...blocks.value, createTemplateStrengthBlock(exercise)]

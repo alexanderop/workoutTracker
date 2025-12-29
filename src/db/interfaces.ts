@@ -4,10 +4,12 @@ import type {
   DbBenchmark,
   DbCompletedWorkout,
   DbCustomExercise,
+  DbFormDraft,
   DbTemplateBlock,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
+  DraftKey,
   ExerciseSession,
   ExerciseStats,
   PerformedExercise,
@@ -475,6 +477,28 @@ export type WeightRepository = {
 }
 
 // ============================================
+// Drafts Repository
+// ============================================
+
+/**
+ * Repository for managing form drafts (auto-save during creation flows).
+ */
+export type DraftsRepository = {
+  /**
+   * Get a draft by key.
+   */
+  get(key: DraftKey): Promise<DbFormDraft | undefined>
+  /**
+   * Save or update a draft.
+   */
+  save(key: DraftKey, data: unknown): Promise<void>
+  /**
+   * Delete a draft by key.
+   */
+  delete(key: DraftKey): Promise<void>
+}
+
+// ============================================
 // Repository Provider (All Repositories)
 // ============================================
 
@@ -491,4 +515,5 @@ export type RepositoryProvider = {
   dataManagement: DataManagementRepository
   benchmarks: BenchmarksRepository
   weight: WeightRepository
+  drafts: DraftsRepository
 }

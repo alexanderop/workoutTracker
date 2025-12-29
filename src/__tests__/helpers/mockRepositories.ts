@@ -173,5 +173,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getByDate: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
     },
+    drafts: {
+      get: vi.fn().mockResolvedValue(undefined),
+      save: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+    },
   }
 }
