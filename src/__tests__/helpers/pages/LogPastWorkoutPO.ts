@@ -234,7 +234,7 @@ export class LogPastWorkoutPO {
    * Gets the count of blocks currently displayed.
    * In the new playlist UI, blocks are items with data-testid="workout-block-item".
    */
-  async getStrengthBlockCount(): Promise<number> {
+  async getBlockCount(): Promise<number> {
     const blockItems = await page.getByTestId('workout-block-item').all()
     return blockItems.length
   }

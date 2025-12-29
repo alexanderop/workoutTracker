@@ -66,7 +66,7 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByText('Overhead Press')).toBeVisible()
 
       // Verify block count
-      const blockCount = await logPastWorkout.getStrengthBlockCount()
+      const blockCount = await logPastWorkout.getBlockCount()
       expect(blockCount).toBe(2)
 
       cleanup()
@@ -120,7 +120,7 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByRole('button', { name: /add.*exercise|add.*block/i })).toBeVisible()
 
       // Verify no blocks exist
-      const blockCount = await logPastWorkout.getStrengthBlockCount()
+      const blockCount = await logPastWorkout.getBlockCount()
       expect(blockCount).toBe(0)
 
       cleanup()

@@ -18,4 +18,7 @@ export default {
   saveWorkout: 'Save Workout',
   saveError: 'Failed to save workout. Please try again.',
   saveErrorTitle: 'Save Failed',
+  noBlocks: 'No blocks yet',
+  noBlocksDescription: 'Add your first block to get started',
+  addFirstBlock: 'Add First Block',
 } as const

@@ -18,4 +18,7 @@ export default {
   saveWorkout: 'Workout speichern',
   saveError: 'Workout konnte nicht gespeichert werden. Bitte erneut versuchen.',
   saveErrorTitle: 'Speichern fehlgeschlagen',
+  noBlocks: 'Noch keine Blöcke',
+  noBlocksDescription: 'Füge deinen ersten Block hinzu, um zu beginnen',
+  addFirstBlock: 'Ersten Block hinzufügen',
 } as const
