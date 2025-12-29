@@ -356,3 +356,29 @@ See `src/__tests__/factories/` for available factories.
 | Need to check dialog state | Use `expect(common.isDialogOpen()).toBe(false)` - POs return predicates |
 | Accessing input values | Use `setRow.getValues()` not raw `.value` - POs return value objects |
 | CSS class selectors brittle | Components use `data-set-state` attributes for testability |
+| UI button navigation flaky | Use `navigateTo('/path')` instead of clicking nav buttons |
+
+## Navigation Reliability
+
+**Prefer direct router navigation over UI button clicks** when moving between pages in tests.
+
+UI button clicks for navigation can be flaky in Vitest Browser Mode due to timing issues with button visibility, element overlays, and Vue Router transitions.
+
+```typescript
+// ❌ FLAKY - clicking UI buttons for navigation
+await userEvent.click(page.getByRole('button', { name: /go back/i }))
+await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
+
+// ✅ RELIABLE - direct router navigation
+await navigateTo('/exercises')
+await expect.element(page.getByRole('button', { name: /some button/i })).toBeVisible()
+```
+
+**When to use direct navigation:**
+- Moving between pages to test a global component (e.g., FAB visibility)
+- Setting up test preconditions (navigating to a specific starting route)
+- Any navigation that isn't the primary behavior being tested
+
+**When to use UI navigation:**
+- Testing the navigation behavior itself (e.g., "clicking Submit navigates to success page")
+- User flow tests where the navigation is part of what's being verified

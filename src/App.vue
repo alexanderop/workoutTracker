@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
+import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
@@ -37,6 +38,8 @@ onMounted(() => {
     <Layout>
       <RouterView />
     </Layout>
+
+    <ActiveWorkoutFab />
 
     <!-- Resume workout dialog -->
     <ResumeWorkoutDialog
