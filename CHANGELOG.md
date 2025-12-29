@@ -1,3 +1,12 @@
+# [1.6.0](https://github.com/alexanderop/workoutTracker/compare/v1.5.1...v1.6.0) (2025-12-29)
+
+
+### Features
+
+* **log-past-workout:** refactor to playlist-based UI with shared components ([#91](https://github.com/alexanderop/workoutTracker/issues/91)) ([72114c7](https://github.com/alexanderop/workoutTracker/commit/72114c7c284560f6a6bd8a3ef4a43bacc6a64e0f))
+
+
+
 ## [1.5.1](https://github.com/alexanderop/workoutTracker/compare/v1.5.0...v1.5.1) (2025-12-29)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **exercises:** add cable and machine exercises ([4c5d1ef](https://github.com/alexanderop/workoutTracker/commit/4c5d1ef8aa5fd20c2da34a21b1647c2d104c7b5f))
-
-
-
-# [1.2.0](https://github.com/alexanderop/workoutTracker/compare/v1.1.0...v1.2.0) (2025-12-22)
-
-
-### Features
-
-* **timers:** add workout logging for completed timer sessions ([#78](https://github.com/alexanderop/workoutTracker/issues/78)) ([ad88581](https://github.com/alexanderop/workoutTracker/commit/ad88581a0bc9af5ff1258f6469c76863710715c4)), closes [#79](https://github.com/alexanderop/workoutTracker/issues/79) [/github.com/alexanderop/workoutTracker/pull/78#issuecomment-3684350707](https://github.com//github.com/alexanderop/workoutTracker/pull/78/issues/issuecomment-3684350707)
 
 
 
