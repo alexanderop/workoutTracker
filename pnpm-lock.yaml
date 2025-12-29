@@ -42,8 +42,8 @@ importers:
         specifier: ^0.562.0
         version: 0.562.0(vue@3.5.26(typescript@5.9.3))
       reka-ui:
-        specifier: ^2.6.0
-        version: 2.6.0(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
+        specifier: ^2.7.0
+        version: 2.7.0(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
       sortablejs:
         specifier: ^1.15.6
         version: 1.15.6
@@ -1997,11 +1997,11 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
 
-  '@tanstack/virtual-core@3.13.12':
-    resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
+  '@tanstack/virtual-core@3.13.13':
+    resolution: {integrity: sha512-uQFoSdKKf5S8k51W5t7b2qpfkyIbdHMzAn+AMQvHPxKUPeo1SsGaA4JRISQT87jm28b7z8OEqPcg1IOZagQHcA==}
 
-  '@tanstack/vue-virtual@3.13.12':
-    resolution: {integrity: sha512-vhF7kEU9EXWXh+HdAwKJ2m3xaOnTTmgcdXcF2pim8g4GvI7eRrk2YRuV5nUlZnd/NbCIX4/Ja2OZu5EjJL06Ww==}
+  '@tanstack/vue-virtual@3.13.13':
+    resolution: {integrity: sha512-Cf2xIEE8nWAfsX0N5nihkPYMeQRT+pHt4NEkuP8rNCn6lVnLDiV8rC8IeIxbKmQC0yPnj4SIBLwXYVf86xxKTQ==}
     peerDependencies:
       vue: ^2.7.0 || ^3.0.0
 
@@ -5766,8 +5766,8 @@ packages:
     resolution: {integrity: sha512-NZQZdC5wOE/H3UT28fVGL+ikOZcEzfMGk/c3iN9UGxzWHMa1op7274oyiUVrAG4B2EuFhus8SvkaYnhvW92p9Q==}
     hasBin: true
 
-  reka-ui@2.6.0:
-    resolution: {integrity: sha512-NrGMKrABD97l890mFS3TNUzB0BLUfbL3hh0NjcJRIUSUljb288bx3Mzo31nOyUcdiiW0HqFGXJwyCBh9cWgb0w==}
+  reka-ui@2.7.0:
+    resolution: {integrity: sha512-m+XmxQN2xtFzBP3OAdIafKq7C8OETo2fqfxcIIxYmNN2Ch3r5oAf6yEYCIJg5tL/yJU2mHqF70dCCekUkrAnXA==}
     peerDependencies:
       vue: '>= 3.2.0'
 
@@ -8817,11 +8817,11 @@ snapshots:
       tailwindcss: 4.1.18
       vite: 7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
-  '@tanstack/virtual-core@3.13.12': {}
+  '@tanstack/virtual-core@3.13.13': {}
 
-  '@tanstack/vue-virtual@3.13.12(vue@3.5.26(typescript@5.9.3))':
+  '@tanstack/vue-virtual@3.13.13(vue@3.5.26(typescript@5.9.3))':
     dependencies:
-      '@tanstack/virtual-core': 3.13.12
+      '@tanstack/virtual-core': 3.13.13
       vue: 3.5.26(typescript@5.9.3)
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
@@ -13283,13 +13283,13 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
-  reka-ui@2.6.0(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)):
+  reka-ui@2.7.0(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)):
     dependencies:
       '@floating-ui/dom': 1.7.4
       '@floating-ui/vue': 1.1.9(vue@3.5.26(typescript@5.9.3))
       '@internationalized/date': 3.10.1
       '@internationalized/number': 3.6.5
-      '@tanstack/vue-virtual': 3.13.12(vue@3.5.26(typescript@5.9.3))
+      '@tanstack/vue-virtual': 3.13.13(vue@3.5.26(typescript@5.9.3))
       '@vueuse/core': 12.8.2(typescript@5.9.3)
       '@vueuse/shared': 12.8.2(typescript@5.9.3)
       aria-hidden: 1.2.6
