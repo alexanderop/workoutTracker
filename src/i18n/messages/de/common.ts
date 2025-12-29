@@ -61,6 +61,7 @@ export default {
     actionsColumn: 'Aktionen',
     searchExercises: 'Übungen suchen',
     clearSearch: 'Suche löschen',
+    activeWorkoutFab: 'Zum aktiven Workout zurückkehren',
   },
   states: {
     loading: 'Lädt...',

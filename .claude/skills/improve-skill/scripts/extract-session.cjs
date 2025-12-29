@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 /**
  * Extract session transcript from Claude Code, Pi, or Codex session files.
@@ -103,7 +104,7 @@ function findCodexSession(targetCwd) {
       if (data.payload?.cwd === targetCwd) {
         return session.path;
       }
-    } catch (e) {
+    } catch {
       // Skip invalid files
     }
   }
@@ -150,7 +151,7 @@ function parseClaudeSession(content) {
           timestamp: entry.timestamp
         });
       }
-    } catch (e) {
+    } catch {
       // Skip invalid lines
     }
   }
@@ -175,7 +176,7 @@ function parsePiSession(content) {
           timestamp: entry.timestamp
         });
       }
-    } catch (e) {
+    } catch {
       // Skip invalid lines
     }
   }
@@ -201,7 +202,7 @@ function parseCodexSession(content) {
           timestamp: entry.timestamp
         });
       }
-    } catch (e) {
+    } catch {
       // Skip invalid lines
     }
   }
