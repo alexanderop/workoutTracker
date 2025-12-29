@@ -1,3 +1,12 @@
+## [1.5.1](https://github.com/alexanderop/workoutTracker/compare/v1.5.0...v1.5.1) (2025-12-29)
+
+
+### Bug Fixes
+
+* **ci:** add git user config to release workflow ([674b5d6](https://github.com/alexanderop/workoutTracker/commit/674b5d6dc738eba71ae64ce3257a981accfe945b))
+
+
+
 # [1.5.0](https://github.com/alexanderop/workoutTracker/compare/v1.4.0...v1.5.0) (2025-12-29)
 
 
@@ -31,20 +40,6 @@
 ### Features
 
 * **timers:** add workout logging for completed timer sessions ([#78](https://github.com/alexanderop/workoutTracker/issues/78)) ([ad88581](https://github.com/alexanderop/workoutTracker/commit/ad88581a0bc9af5ff1258f6469c76863710715c4)), closes [#79](https://github.com/alexanderop/workoutTracker/issues/79) [/github.com/alexanderop/workoutTracker/pull/78#issuecomment-3684350707](https://github.com//github.com/alexanderop/workoutTracker/pull/78/issues/issuecomment-3684350707)
-
-
-
-# [1.1.0](https://github.com/alexanderop/workoutTracker/compare/v1.0.0...v1.1.0) (2025-12-22)
-
-
-### Bug Fixes
-
-* **docs:** correct formatting of commit patterns in version bump instructions ([cf0e39c](https://github.com/alexanderop/workoutTracker/commit/cf0e39cf42ca621aa398d26a5151a1a285563521))
-
-
-### Features
-
-* **ui:** add locale-aware decimal input support ([#77](https://github.com/alexanderop/workoutTracker/issues/77)) ([e639982](https://github.com/alexanderop/workoutTracker/commit/e6399827d3e84f87dca4393e71ad109dcd1c743d))
 
 
 
