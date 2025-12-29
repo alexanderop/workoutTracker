@@ -25,8 +25,8 @@ const plugins = [vue(), tailwindcss(), VitePWA({ devOptions: { enabled: true } }
 const sharedTestConfig = {
   root: fileURLToPath(new URL('./', import.meta.url)),
   exclude: [...configDefaults.exclude, 'e2e/**'],
-  // Run test files sequentially to prevent module-level singleton state interference
-  fileParallelism: false,
+  // Run test files in parallel - resetDatabase() resets all singleton state
+  fileParallelism: true,
   // Stop test execution after first failure
   bail: 1,
   browser: {

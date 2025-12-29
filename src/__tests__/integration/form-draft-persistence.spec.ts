@@ -143,6 +143,45 @@ describe('Form Draft Persistence', () => {
 
       cleanup()
     })
+
+    it('discard button stays hidden after discarding (regression test)', async () => {
+      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+
+      // Navigate and fill form to create draft
+      await navigateTo({ name: RouteNames.CreateTemplate })
+      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Test Draft')
+      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
+
+      // Wait for draft to be saved
+      await vi.waitFor(
+        async () => {
+          const draft = await db.drafts.get('template-create')
+          expect(draft).toBeTruthy()
+        },
+        { timeout: 1000 },
+      )
+
+      // Click discard
+      await userEvent.click(getByRole('button', { name: /discard/i }))
+
+      // Verify discard button is hidden immediately
+      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+
+      // Wait longer than debounce period (test uses 50ms, wait 200ms to be safe)
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      // BUG: Discard button should STILL be hidden, but without the fix it reappears
+      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+
+      // Verify no draft exists in database
+      const draft = await db.drafts.get('template-create')
+      expect(draft).toBeUndefined()
+
+      cleanup()
+    })
   })
 
   describe('Benchmark Creation Draft', () => {

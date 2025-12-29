@@ -31,7 +31,9 @@ const {
 } = useBenchmarkForm()
 
 // Auto-save draft to IndexedDB
-const { hasDraft, clearDraft } = useFormDraft('benchmark-create', form)
+const { hasDraft, clearDraft } = useFormDraft('benchmark-create', form, {
+  isEmpty: (state) => !state.name && state.exercises.length === 0,
+})
 
 const showExercisePicker = ref(false)
 const showRepsDialog = ref(false)

@@ -72,6 +72,14 @@ export function getExerciseProgressRepository(): ExerciseProgressRepository {
   return exerciseProgressRepository
 }
 
+/**
+ * Reset the exercise progress repository cache.
+ * Used in tests to ensure clean state between test files.
+ */
+export function resetExerciseProgressRepository(): void {
+  exerciseProgressRepository = null
+}
+
 // ============================================
 // Utilities
 // ============================================

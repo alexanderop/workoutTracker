@@ -1,21 +1,19 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
-
-/**
- * Mock useTouchDevice to simulate a touch device.
- * This causes NumericInputModal to be used instead of inline NumberField.
- */
-vi.mock('@/composables/useTouchDevice', () => ({
-  useTouchDevice: () => ({ isTouchDevice: ref(true) }),
-}))
+import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('NumericKeypad (Touch Device)', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
+  beforeEach(async () => {
+    mockTouchDevice()
+    await setupIntegrationTest()
+  })
+  afterEach(async () => {
+    await cleanupIntegrationTest()
+    restoreMatchMedia()
+  })
 
   const modalPO = new NumericInputModalPO()
 

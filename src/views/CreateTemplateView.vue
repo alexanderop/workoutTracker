@@ -50,7 +50,9 @@ const {
 } = useTemplateCreation()
 
 // Auto-save draft to IndexedDB
-const { hasDraft, clearDraft } = useFormDraft('template-create', formState)
+const { hasDraft, clearDraft } = useFormDraft('template-create', formState, {
+  isEmpty: (state) => !state.name && state.blocks.length === 0,
+})
 
 // Dialog state management
 type TemplateDialog =

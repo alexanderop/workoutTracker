@@ -234,13 +234,17 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-test-env
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Run tests with coverage
-        run: pnpm test:coverage
+      - name: Run tests (shard ${{ matrix.shard }}/4)
+        run: pnpm vitest --project=default --shard=${{ matrix.shard }}/4
 
   test-a11y:
     needs: setup

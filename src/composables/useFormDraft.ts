@@ -4,9 +4,11 @@ import { getDraftsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { DraftKey } from '@/db/schema'
 
-type FormDraftOptions = {
+type FormDraftOptions<T> = {
   /** Debounce delay in milliseconds (default: 1500) */
   debounce?: number
+  /** Determine if form state is empty/default (should not be saved as draft) */
+  isEmpty?: (state: T) => boolean
 }
 
 /**
@@ -69,9 +71,9 @@ const DEFAULT_DEBOUNCE_MS = import.meta.env.MODE === 'test' ? 50 : 1500
 export function useFormDraft<T extends object>(
   key: DraftKey,
   formState: T | Ref<T>,
-  options: FormDraftOptions = {},
+  options: FormDraftOptions<T> = {},
 ) {
-  const { debounce = DEFAULT_DEBOUNCE_MS } = options
+  const { debounce = DEFAULT_DEBOUNCE_MS, isEmpty } = options
   const hasDraft = ref(false)
 
   // Track disposal to prevent writes after component unmount
@@ -108,6 +110,10 @@ export function useFormDraft<T extends object>(
     async (state) => {
       // Skip save if component has been unmounted
       if (isDisposed) return
+
+      // Skip save if form is empty/default state
+      const rawState = isRef(state) ? state.value : state
+      if (isEmpty?.(rawState)) return
 
       const plainState = toPlainObject(state)
       const [error] = await tryCatch(getDraftsRepository().save(key, plainState))

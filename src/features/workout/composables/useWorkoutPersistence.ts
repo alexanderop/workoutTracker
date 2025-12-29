@@ -10,6 +10,14 @@ import type { DbCompletedWorkout } from '@/db/schema'
 let currentWorkoutStartedAt: number | null = null
 
 /**
+ * Reset the workout persistence module state.
+ * Used in tests to ensure clean state between test files.
+ */
+export function resetWorkoutPersistence(): void {
+  currentWorkoutStartedAt = null
+}
+
+/**
  * Composable for managing workout persistence to IndexedDB.
  * Handles auto-save, loading, and completing workouts.
  */
