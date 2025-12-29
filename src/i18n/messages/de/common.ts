@@ -98,6 +98,7 @@ export default {
   },
   goBack: 'Zurück',
   back: 'Zurück',
+  continue: 'Weiter',
   saving: 'Speichert...',
   exercises: 'Übungen',
   blocks: 'Blöcke',

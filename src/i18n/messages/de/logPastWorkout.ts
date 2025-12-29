@@ -1,5 +1,8 @@
 export default {
   title: 'Vergangenes Workout erfassen',
+  whenDidYouWorkOut: 'Wann hast du trainiert?',
+  selectDate: 'Datum auswählen',
+  howLong: 'Wie lange war dein Workout?',
   sourcePrompt: 'Wie möchtest du beginnen?',
   fromTemplate: 'Aus Vorlage',
   fromTemplateDesc: 'Mit einer gespeicherten Vorlage starten',

@@ -1,5 +1,8 @@
 export default {
   title: 'Log Past Workout',
+  whenDidYouWorkOut: 'When did you work out?',
+  selectDate: 'Select date',
+  howLong: 'How long was your workout?',
   sourcePrompt: 'How would you like to start?',
   fromTemplate: 'From Template',
   fromTemplateDesc: 'Start from a saved template',
