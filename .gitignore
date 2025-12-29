@@ -46,6 +46,9 @@ playwright-report/
 stats.html
 .lighthouseci/
 
+# Architecture test reports (ArchUnitTS)
+reports/
+
 # Test screenshots (keep only visual regression baselines)
 src/__tests__/integration/__screenshots__/
 src/__tests__/a11y/__screenshots__/

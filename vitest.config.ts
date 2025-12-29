@@ -29,6 +29,8 @@ const sharedTestConfig = {
   fileParallelism: true,
   // Stop test execution after first failure
   bail: 1,
+  // Required for ArchUnitTS custom matchers
+  globals: true,
   browser: {
     enabled: true,
     provider: playwright(),
@@ -117,6 +119,18 @@ export default defineConfig({
               },
             },
           },
+        },
+      },
+
+      // Project 4: Architecture tests (ArchUnitTS)
+      // Runs in Node.js (not browser) for filesystem analysis
+      {
+        resolve,
+        test: {
+          name: 'arch',
+          globals: true,
+          include: ['src/__tests__/architecture/**/*.test.ts'],
+          // No browser config - runs in Node for filesystem access
         },
       },
     ],
