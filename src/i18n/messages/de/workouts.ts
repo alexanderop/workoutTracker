@@ -80,6 +80,7 @@ export default {
       pause: 'Pause',
       start: 'Start',
       done: 'Fertig',
+      back: 'Zurück',
       rest: 'Pause',
     },
     strength: {

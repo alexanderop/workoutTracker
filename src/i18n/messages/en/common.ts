@@ -107,6 +107,7 @@ export default {
   },
   goBack: 'Go back',
   back: 'Back',
+  continue: 'Continue',
   saving: 'Saving...',
   exercises: 'exercises',
   blocks: 'blocks',

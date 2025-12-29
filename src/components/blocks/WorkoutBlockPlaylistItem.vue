@@ -63,7 +63,7 @@ const completedSets = computed(() => {
 </script>
 
 <template>
-  <div class="relative flex w-full">
+  <div class="relative flex w-full" data-testid="workout-block-item">
     <!-- Timeline connector -->
     <div
       v-if="showConnector"

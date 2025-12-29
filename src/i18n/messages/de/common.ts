@@ -29,6 +29,8 @@ export default {
     moreOptions: 'Weitere Optionen',
     exitTimer: 'Timer beenden',
     resetTimer: 'Timer zurücksetzen',
+    playTimer: 'Timer starten',
+    pauseTimer: 'Timer pausieren',
     workoutOptions: 'Workout-Optionen',
     previousBlock: 'Vorheriger Block',
     nextBlock: 'Nächster Block',
@@ -81,6 +83,14 @@ export default {
   },
   settings: {
     placeholder: 'Bitte wählen',
+    reps: 'Wdh.',
+  },
+  components: {
+    mobileNumberPicker: {
+      quickSelect: 'Schnellauswahl',
+      customValue: 'Eigener Wert',
+      finetuneValue: 'Feinabstimmung',
+    },
   },
   reps: 'Wdh.',
   units: {
@@ -98,6 +108,7 @@ export default {
   },
   goBack: 'Zurück',
   back: 'Zurück',
+  continue: 'Weiter',
   saving: 'Speichert...',
   exercises: 'Übungen',
   blocks: 'Blöcke',

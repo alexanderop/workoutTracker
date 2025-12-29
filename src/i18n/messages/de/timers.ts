@@ -20,6 +20,7 @@ export default {
     rest: 'Pause',
     timeCap: 'Zeitlimit',
     minutes: 'Minuten',
+    minuteAbbr: 'Min',
     seconds: 'Sekunden',
   },
   status: {

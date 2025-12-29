@@ -1,5 +1,20 @@
 import { ref, shallowRef } from 'vue'
-import type { WorkoutBlock, StrengthBlock, AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock, CardioBlock, BlockExercise } from '@/types/blocks'
+import { createGlobalState } from '@vueuse/core'
+import type {
+  WorkoutBlock,
+  StrengthBlock,
+  AmrapBlock,
+  EmomBlock,
+  TabataBlock,
+  ForTimeBlock,
+  CardioBlock,
+  BlockExercise,
+  AmrapConfig,
+  EmomConfig,
+  TabataConfig,
+  ForTimeConfig,
+  CardioConfig,
+} from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { getTemplatesRepository } from '@/db'
@@ -261,14 +276,33 @@ function convertHistoryBlockToWorkoutBlock(
 /**
  * Composable for managing past workout state during hindsight logging.
  * Provides state management for the multi-step past workout entry flow.
+ * Uses createGlobalState to ensure singleton state across components.
  */
-export function usePastWorkout() {
+export const usePastWorkout = createGlobalState(() => {
   const workoutName = ref('')
   const workoutDate = ref(new Date())
   const durationMinutes = ref(45)
   const blocks = shallowRef<Array<WorkoutBlock>>([])
+  const selectedBlockIndex = ref(-1)
   const sourceType = ref<'template' | 'history' | 'blank' | undefined>(undefined)
   const sourceId = ref<string | undefined>(undefined)
+
+  /**
+   * Generates a unique block ID based on existing blocks.
+   */
+  function generateBlockId(): number {
+    const ids = blocks.value.map((b) => b.id)
+    return ids.length > 0 ? Math.max(...ids) + 1 : 1
+  }
+
+  /**
+   * Selects a block by index.
+   */
+  function selectBlock(index: number): void {
+    if (index >= -1 && index < blocks.value.length) {
+      selectedBlockIndex.value = index
+    }
+  }
 
   /**
    * Loads blocks from a template.
@@ -327,11 +361,92 @@ export function usePastWorkout() {
   }
 
   /**
-   * Adds a new block to the workout.
+   * Adds a new block to the workout and selects it.
    */
   function addBlock(block: WorkoutBlock): void {
-    const newId = blocks.value.length + 1
-    blocks.value = [...blocks.value, { ...block, id: newId }]
+    const newId = generateBlockId()
+    const newBlocks = [...blocks.value, { ...block, id: newId }]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
+  }
+
+  /**
+   * Adds an AMRAP block.
+   */
+  function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block: AmrapBlock = {
+      kind: 'amrap',
+      id: generateBlockId(),
+      config,
+      exercises: [...exercises],
+      result: null,
+    }
+    const newBlocks = [...blocks.value, block]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
+  }
+
+  /**
+   * Adds an EMOM block.
+   */
+  function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block: EmomBlock = {
+      kind: 'emom',
+      id: generateBlockId(),
+      config,
+      exercises: [...exercises],
+      result: null,
+    }
+    const newBlocks = [...blocks.value, block]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
+  }
+
+  /**
+   * Adds a Tabata block.
+   */
+  function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
+    const block: TabataBlock = {
+      kind: 'tabata',
+      id: generateBlockId(),
+      config,
+      exercise,
+      result: null,
+    }
+    const newBlocks = [...blocks.value, block]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
+  }
+
+  /**
+   * Adds a For Time block.
+   */
+  function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
+    const block: ForTimeBlock = {
+      kind: 'fortime',
+      id: generateBlockId(),
+      config,
+      exercises: [...exercises],
+      result: null,
+    }
+    const newBlocks = [...blocks.value, block]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
+  }
+
+  /**
+   * Adds a Cardio block.
+   */
+  function addCardioBlock(config: CardioConfig): void {
+    const block: CardioBlock = {
+      kind: 'cardio',
+      id: generateBlockId(),
+      config,
+      result: null,
+    }
+    const newBlocks = [...blocks.value, block]
+    blocks.value = newBlocks
+    selectedBlockIndex.value = newBlocks.length - 1
   }
 
   /**
@@ -339,6 +454,53 @@ export function usePastWorkout() {
    */
   function removeBlock(blockId: number): void {
     blocks.value = blocks.value.filter((b) => b.id !== blockId)
+  }
+
+  /**
+   * Removes a block by its index.
+   */
+  function removeBlockByIndex(index: number): void {
+    if (index < 0 || index >= blocks.value.length) return
+
+    const filtered = blocks.value.filter((_, i) => i !== index)
+    const currentSelected = selectedBlockIndex.value
+
+    blocks.value = filtered
+
+    // Calculate new selected index using ternary chain
+    selectedBlockIndex.value =
+      filtered.length === 0
+        ? -1
+        : currentSelected >= filtered.length
+          ? filtered.length - 1
+          : currentSelected > index
+            ? currentSelected - 1
+            : currentSelected
+  }
+
+  /**
+   * Reorders blocks by moving a block from one index to another.
+   */
+  function reorderBlocks(fromIndex: number, toIndex: number): void {
+    const newBlocks = [...blocks.value]
+    const movedBlock = newBlocks[fromIndex]
+    if (!movedBlock) return
+
+    newBlocks.splice(fromIndex, 1)
+    newBlocks.splice(toIndex, 0, movedBlock)
+    blocks.value = newBlocks
+
+    const currentSelected = selectedBlockIndex.value
+
+    // Calculate new selected index using ternary chain
+    selectedBlockIndex.value =
+      currentSelected === fromIndex
+        ? toIndex
+        : fromIndex < currentSelected && toIndex >= currentSelected
+          ? currentSelected - 1
+          : fromIndex > currentSelected && toIndex <= currentSelected
+            ? currentSelected + 1
+            : currentSelected
   }
 
   /**
@@ -431,6 +593,7 @@ export function usePastWorkout() {
     workoutDate.value = new Date()
     durationMinutes.value = 45
     blocks.value = []
+    selectedBlockIndex.value = -1
     sourceType.value = undefined
     sourceId.value = undefined
   }
@@ -441,6 +604,7 @@ export function usePastWorkout() {
     workoutDate,
     durationMinutes,
     blocks,
+    selectedBlockIndex,
     sourceType,
     sourceId,
 
@@ -449,11 +613,19 @@ export function usePastWorkout() {
     loadFromHistory,
     startBlank,
     addBlock,
+    addAmrapBlock,
+    addEmomBlock,
+    addTabataBlock,
+    addForTimeBlock,
+    addCardioBlock,
     removeBlock,
+    removeBlockByIndex,
+    reorderBlocks,
+    selectBlock,
     updateStrengthSets,
     updateSet,
     addSetToBlock,
     removeSetFromBlock,
     reset,
   }
-}
+})

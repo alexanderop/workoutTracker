@@ -1,5 +1,8 @@
 export default {
   title: 'Log Past Workout',
+  whenDidYouWorkOut: 'When did you work out?',
+  selectDate: 'Select date',
+  howLong: 'How long was your workout?',
   sourcePrompt: 'How would you like to start?',
   fromTemplate: 'From Template',
   fromTemplateDesc: 'Start from a saved template',
@@ -18,4 +21,7 @@ export default {
   saveWorkout: 'Save Workout',
   saveError: 'Failed to save workout. Please try again.',
   saveErrorTitle: 'Save Failed',
+  noBlocks: 'No blocks yet',
+  noBlocksDescription: 'Add your first block to get started',
+  addFirstBlock: 'Add First Block',
 } as const
