@@ -1,3 +1,12 @@
+# [1.7.0](https://github.com/alexanderop/workoutTracker/compare/v1.6.0...v1.7.0) (2025-12-29)
+
+
+### Features
+
+* **workout:** add active workout FAB for quick navigation ([#92](https://github.com/alexanderop/workoutTracker/issues/92)) ([b935b5f](https://github.com/alexanderop/workoutTracker/commit/b935b5fb3c3231df82bf51a820fbc970fbb7b505))
+
+
+
 # [1.6.0](https://github.com/alexanderop/workoutTracker/compare/v1.5.1...v1.6.0) (2025-12-29)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **weight:** add body weight tracking feature ([#84](https://github.com/alexanderop/workoutTracker/issues/84)) ([66ad828](https://github.com/alexanderop/workoutTracker/commit/66ad828672d1a2887f3aeb02acd278de22c7ffdf))
-
-
-
-# [1.3.0](https://github.com/alexanderop/workoutTracker/compare/v1.2.0...v1.3.0) (2025-12-28)
-
-
-### Features
-
-* **exercises:** add cable and machine exercises ([4c5d1ef](https://github.com/alexanderop/workoutTracker/commit/4c5d1ef8aa5fd20c2da34a21b1647c2d104c7b5f))
 
 
 
