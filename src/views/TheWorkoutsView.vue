@@ -10,18 +10,26 @@ import { TabsContent } from '@/components/ui/tabs'
 import SegmentedControl from '@/components/SegmentedControl.vue'
 import TemplateListCard from '@/components/TemplateListCard.vue'
 import BenchmarkListCard from '@/features/benchmarks/components/BenchmarkListCard.vue'
+import ProgressionCard from '@/features/progressions/components/ProgressionCard.vue'
 import { useWorkoutsList } from '@/composables/useWorkoutsList'
 import { useBenchmarksList } from '@/composables/useBenchmarksList'
+import { useProgressions } from '@/features/progressions/composables/useProgressions'
 
 const { t } = useI18n()
 
 const tabOptions = computed(() => [
   { value: 'templates' as const, label: t('workouts.list.templates') },
   { value: 'benchmarks' as const, label: t('workouts.list.benchmarks') },
+  { value: 'progressions' as const, label: t('workouts.list.progressions') },
 ])
 const router = useRouter()
 const { templates, isLoading, formatTemplateDate } = useWorkoutsList()
 const { benchmarks, personalBests, formatBenchmarkType } = useBenchmarksList()
+const { state: progressionsState } = useProgressions()
+
+const progressions = computed(() =>
+  progressionsState.value.status === 'success' ? progressionsState.value.items : [],
+)
 
 function navigateToTemplateDetail(templateId: string): void {
   router.push({ name: RouteNames.TemplateDetail, params: { id: templateId } })
@@ -37,6 +45,14 @@ function handleCreateBenchmark(): void {
 
 function navigateToBenchmarkDetail(benchmarkId: string): void {
   router.push({ name: RouteNames.BenchmarkDetail, params: { id: benchmarkId } })
+}
+
+function handleCreateProgression(): void {
+  router.push({ name: RouteNames.CreateProgression })
+}
+
+function navigateToProgressionDetail(progressionId: string): void {
+  router.push({ name: RouteNames.ProgressionDetail, params: { id: progressionId } })
 }
 </script>
 
@@ -112,6 +128,40 @@ function navigateToBenchmarkDetail(benchmarkId: string): void {
             <EmptyHeader>
               <EmptyTitle>{{ t('workouts.empty.benchmarks.title') }}</EmptyTitle>
               <EmptyDescription>{{ t('workouts.empty.benchmarks.description') }}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </TabsContent>
+
+      <!-- Progressions Tab -->
+      <TabsContent value="progressions" class="flex flex-1 flex-col">
+        <div class="mb-4">
+          <Button class="w-full" @click="handleCreateProgression">{{
+            t('progressions.buttons.create')
+          }}</Button>
+        </div>
+
+        <!-- Progressions list -->
+        <div v-if="progressions.length > 0" class="grid flex-1 gap-3 overflow-y-auto">
+          <ProgressionCard
+            v-for="item in progressions"
+            :key="item.id"
+            :id="item.id"
+            :name="item.name"
+            :level="item.level"
+            :progress="item.progress"
+            :is-complete="item.isComplete"
+            :sessions-completed="item.sessionsCompleted"
+            @click="navigateToProgressionDetail"
+          />
+        </div>
+
+        <!-- Empty state -->
+        <div v-else class="flex flex-1 items-center justify-center">
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>{{ t('progressions.empty.title') }}</EmptyTitle>
+              <EmptyDescription>{{ t('progressions.empty.description') }}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </div>

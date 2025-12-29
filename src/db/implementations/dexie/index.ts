@@ -6,6 +6,7 @@ import { createDexieBenchmarksRepository } from './benchmarks'
 import { createDexieCustomExercisesRepository } from './customExercises'
 import { createDexieDataManagementRepository } from './dataManagement'
 import { createDexieDraftsRepository } from './drafts'
+import { createDexieProgressionsRepository } from './progressions'
 import { createDexieSettingsRepository } from './settings'
 import { createDexieTemplatesRepository } from './templates'
 import { createDexieWeightRepository } from './weight'
@@ -23,6 +24,7 @@ export function createDexieRepositoryProvider(): RepositoryProvider {
     benchmarks: createDexieBenchmarksRepository(db),
     weight: createDexieWeightRepository(db),
     drafts: createDexieDraftsRepository(db),
+    progressions: createDexieProgressionsRepository(db),
   }
 }
 

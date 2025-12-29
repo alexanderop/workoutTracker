@@ -36,6 +36,10 @@ export const RouteNames = {
   BenchmarkDetail: 'BenchmarkDetail',
   LogPastWorkout: 'LogPastWorkout',
   ExerciseProgress: 'ExerciseProgress',
+  Progressions: 'Progressions',
+  CreateProgression: 'CreateProgression',
+  ProgressionDetail: 'ProgressionDetail',
+  ActiveProgression: 'ActiveProgression',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -141,6 +145,28 @@ export const routes = [
     path: '/log-past-workout',
     name: RouteNames.LogPastWorkout,
     component: LogPastWorkoutView,
+  },
+  {
+    path: '/progressions',
+    name: RouteNames.Progressions,
+    component: () => import('@/views/ProgressionsView.vue'),
+  },
+  {
+    path: '/progressions/create',
+    name: RouteNames.CreateProgression,
+    component: () => import('@/views/CreateProgressionView.vue'),
+  },
+  {
+    path: '/progressions/:id',
+    name: RouteNames.ProgressionDetail,
+    component: () => import('@/views/ProgressionDetailView.vue'),
+    props: true,
+  },
+  {
+    path: '/progressions/:id/session',
+    name: RouteNames.ActiveProgression,
+    component: () => import('@/views/ActiveProgressionView.vue'),
+    props: true,
   },
 ]
 
