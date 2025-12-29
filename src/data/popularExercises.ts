@@ -480,6 +480,13 @@ export const popularExercises = validateUniqueExercises([
     metrics: 'reps-only',
   },
   {
+    name: 'Jump Rope',
+    equipment: 'bodyweight',
+    muscle: 'legs',
+    type: 'cardio',
+    metrics: 'reps-only',
+  },
+  {
     name: 'Dumbbell Curl',
     equipment: 'dumbbell',
     muscle: 'arms',

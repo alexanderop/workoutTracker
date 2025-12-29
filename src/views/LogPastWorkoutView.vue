@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 import SourceSelector from '@/features/log-past-workout/components/SourceSelector.vue'
 import DateDurationPicker from '@/features/log-past-workout/components/DateDurationPicker.vue'
-import WorkoutBuilder from '@/features/log-past-workout/components/WorkoutBuilder.vue'
+import LogPastWorkoutBuilderStep from '@/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue'
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { usePastWorkoutSave } from '@/features/log-past-workout/composables/usePastWorkoutSave'
 
@@ -28,8 +28,6 @@ const {
   loadFromTemplate,
   loadFromHistory,
   startBlank,
-  addBlock,
-  updateStrengthSets,
   reset,
 } = usePastWorkout()
 
@@ -133,11 +131,7 @@ async function handleSave() {
       </div>
 
       <!-- Workout Builder -->
-      <WorkoutBuilder
-        :blocks="blocks"
-        @add-block="addBlock"
-        @update-sets="updateStrengthSets"
-      />
+      <LogPastWorkoutBuilderStep />
 
       <!-- Save Button -->
       <Button

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { Component } from 'vue'
 import { createApp, h } from 'vue'
 import { i18n } from '@/i18n'
-import WorkoutBlockPlaylist from '@/features/workout/components/WorkoutBlockPlaylist.vue'
+import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
 import { createStrengthBlock } from '@/__tests__/factories'
 
 /**

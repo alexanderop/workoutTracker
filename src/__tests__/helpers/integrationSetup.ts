@@ -2,6 +2,7 @@ import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
+import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { resetDatabase } from './resetDatabase'
 
 /**
@@ -12,6 +13,7 @@ export async function cleanupIntegrationTest(): Promise<void> {
   resetWorkout()
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
+  usePastWorkout().reset()
   await resetDatabase()
   document.body.style.cssText = ''
   document.body.removeAttribute('style')
@@ -26,5 +28,6 @@ export async function setupIntegrationTest(): Promise<void> {
   resetInitState()
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
+  usePastWorkout().reset()
   await resetDatabase()
 }
