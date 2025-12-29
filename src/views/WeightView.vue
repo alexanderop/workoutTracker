@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWeightEntries } from '@/features/weight/composables/useWeightEntries'
 import { useWeightStats } from '@/features/weight/composables/useWeightStats'
+import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import WeightEntryForm from '@/features/weight/components/WeightEntryForm.vue'
 import WeightStatsSummary from '@/features/weight/components/WeightStatsSummary.vue'
 import WeightChart from '@/features/weight/components/WeightChart.vue'
@@ -21,6 +23,15 @@ const {
 
 const { stats } = useWeightStats(() => entries.value)
 
+// Get last recorded weight in display units for preset centering
+const { toDisplayValue } = useWeightDisplay()
+const lastWeightDisplay = computed(() => {
+  const latestEntry = entries.value[0]
+  if (!latestEntry) return undefined
+  // entries are sorted by date descending, so first entry is the most recent
+  return toDisplayValue(latestEntry.weight)
+})
+
 async function handleSave(weightKg: number) {
   await addEntry(weightKg)
 }
@@ -34,7 +45,7 @@ async function handleDelete(id: string) {
   <div class="container mx-auto max-w-lg space-y-6 p-4">
     <h1 class="text-2xl font-bold">{{ t('weight.title') }}</h1>
 
-    <WeightEntryForm @save="handleSave" />
+    <WeightEntryForm :last-weight="lastWeightDisplay" @save="handleSave" />
 
     <template v-if="hasEntries">
       <WeightStatsSummary :stats="stats" />

@@ -60,7 +60,7 @@ function findMostRecentSession(dir) {
       path: path.join(dir, f),
       mtime: fs.statSync(path.join(dir, f)).mtime
     }))
-    .sort((a, b) => b.mtime - a.mtime);
+    .toSorted((a, b) => b.mtime - a.mtime);
 
   return files.length > 0 ? files[0].path : null;
 }
