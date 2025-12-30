@@ -3,6 +3,27 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getProgressionsRepository } from '@/db'
+import type { ProgressionsRepository } from '@/db/interfaces'
+import { calculateNextLevel } from '@/features/progressions/lib/progressionLogic'
+
+/**
+ * Record a session with proper advancement calculation.
+ * The repository requires nextLevel to be calculated in the feature layer.
+ */
+async function recordSessionWithAdvancement(
+  repo: ProgressionsRepository,
+  progressionId: string,
+  completed: boolean,
+): Promise<void> {
+  const progression = await repo.getById(progressionId)
+  if (!progression) throw new Error(`Progression ${progressionId} not found`)
+
+  const nextLevel = completed && !progression.isComplete
+    ? calculateNextLevel(progression)
+    : undefined
+
+  await repo.recordSession(progressionId, completed, nextLevel)
+}
 
 describe('Progression Management', () => {
   beforeEach(setupIntegrationTest)
@@ -95,7 +116,7 @@ describe('Progression Management', () => {
       await app.progressions.clickPlayButton()
 
       // Fast-forward: directly complete via API to avoid waiting for timer
-      await repo.recordSession(progression.id, true)
+      await recordSessionWithAdvancement(repo, progression.id, true)
 
       // Navigate back to detail to check advancement
       await app.navigateTo(`/progressions/${progression.id}`)
@@ -118,7 +139,7 @@ describe('Progression Management', () => {
       })
 
       // Record a failed session
-      await repo.recordSession(progression.id, false)
+      await recordSessionWithAdvancement(repo, progression.id, false)
 
       // Navigate to detail
       await app.navigateTo(`/progressions/${progression.id}`)
@@ -146,7 +167,7 @@ describe('Progression Management', () => {
 
       // Simulate completing 5 sessions: 10→12→14→16→18→20 reps
       for (let i = 0; i < 5; i++) {
-        await repo.recordSession(progression.id, true)
+        await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
       // Verify in database - should be at 20 reps, 10 min
@@ -155,7 +176,7 @@ describe('Progression Management', () => {
       expect(updated?.currentMinutes).toBe(10)
 
       // Complete another session - should advance to 12 min
-      await repo.recordSession(progression.id, true)
+      await recordSessionWithAdvancement(repo, progression.id, true)
 
       // Verify advancement
       updated = await repo.getById(progression.id)
@@ -177,7 +198,7 @@ describe('Progression Management', () => {
       // Time: 10→12→14→16→18→20 (5 more sessions to reach max time)
       // +1 session to trigger advance to next KB
       for (let i = 0; i < 11; i++) {
-        await repo.recordSession(progression.id, true)
+        await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
       // Verify in database - should have advanced to 20kg, reset to 10 reps, 10 min
@@ -200,7 +221,7 @@ describe('Progression Management', () => {
       // Complete all 11 sessions for the single KB:
       // 6 rep phases (10→12→14→16→18→20) + 5 time phases (10→12→14→16→18→20)
       for (let i = 0; i < 11; i++) {
-        await repo.recordSession(progression.id, true)
+        await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
       // Verify in database
@@ -220,7 +241,7 @@ describe('Progression Management', () => {
 
       // 11 sessions needed for single KB completion
       for (let i = 0; i < 11; i++) {
-        await repo.recordSession(progression.id, true)
+        await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
       // Navigate to detail (fresh component mount)
@@ -277,9 +298,9 @@ describe('Progression Management', () => {
       })
 
       // Record mixed sessions
-      await repo.recordSession(progression.id, true) // Completed
-      await repo.recordSession(progression.id, false) // Failed
-      await repo.recordSession(progression.id, true) // Completed
+      await recordSessionWithAdvancement(repo, progression.id, true) // Completed
+      await recordSessionWithAdvancement(repo, progression.id, false) // Failed
+      await recordSessionWithAdvancement(repo, progression.id, true) // Completed
 
       // Navigate to detail
       await app.navigateTo(`/progressions/${progression.id}`)
@@ -312,7 +333,7 @@ describe('Progression Management', () => {
       })
 
       // Advance the second one
-      await repo.recordSession(advanced.id, true)
+      await recordSessionWithAdvancement(repo, advanced.id, true)
 
       // Navigate to list
       await app.progressions.navigateToTab()
