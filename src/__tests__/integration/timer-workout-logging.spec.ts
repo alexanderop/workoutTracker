@@ -20,9 +20,9 @@ async function goToTimersPage(testApp: TestApp) {
  * Helper to start an AMRAP timer with 5 min preset
  */
 async function startAmrapTimer() {
-  await userEvent.click(page.getByRole('button', { name: /AMRAP/i }))
+  await userEvent.click(page.getByRole('button', { name: /amrap/i }))
   await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-  await userEvent.click(page.getByRole('button', { name: /Quick burst/i }))
+  await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
 
   // Wait for timer UI
   await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()

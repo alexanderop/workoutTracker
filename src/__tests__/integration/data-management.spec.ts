@@ -129,7 +129,7 @@ describe('Data Management', () => {
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
       await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
-      await expect.element(page.getByText(/not valid JSON/i)).toBeVisible()
+      await expect.element(page.getByText(/not valid json/i)).toBeVisible()
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))

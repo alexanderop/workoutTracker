@@ -76,7 +76,7 @@ describe('ExercisePicker', () => {
       // Click on exercise using semantic query within dialog
       // Use "BP Bench Press" prefix (includes the abbreviation shown in the UI)
       const dialog = page.getByRole('dialog')
-      await userEvent.click(dialog.getByRole('button', { name: /^BP Bench Press/i }))
+      await userEvent.click(dialog.getByRole('button', { name: /^bp bench press/i }))
 
       // Dialog should close
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -123,7 +123,7 @@ describe('ExercisePicker', () => {
 
       // Count exercise buttons - search for "Deadlift" should show all variants
       const dialog = page.getByRole('dialog')
-      const deadliftButtons = await dialog.getByRole('button', { name: /Deadlift/i }).all()
+      const deadliftButtons = await dialog.getByRole('button', { name: /deadlift/i }).all()
 
       // Get exercise names to check for true duplicates
       const exerciseNames = await Promise.all(
@@ -223,7 +223,7 @@ describe('ExercisePicker', () => {
 
       // Close dialog by selecting Push-ups exercise (button name includes abbreviation + muscle)
       const dialog = page.getByRole('dialog')
-      await userEvent.click(dialog.getByRole('button', { name: /PU.*Push-ups/i }))
+      await userEvent.click(dialog.getByRole('button', { name: /pu.*push-ups/i }))
 
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 

@@ -21,11 +21,11 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await goToTimersPage()
 
   // Select Tabata
-  await page.getByRole('button', { name: /Tabata/i }).click()
+  await page.getByRole('button', { name: /tabata/i }).click()
 
   // Wait for presets and click Custom
   await expect.element(page.getByText(/Custom/)).toBeVisible()
-  await page.getByRole('button', { name: /Custom/i }).click()
+  await page.getByRole('button', { name: /custom/i }).click()
 
   // Wait for custom form
   await expect.element(page.getByText(/Rounds/)).toBeVisible()
@@ -61,11 +61,11 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await goToTimersPage()
 
   // Select EMOM
-  await page.getByRole('button', { name: /EMOM/i }).click()
+  await page.getByRole('button', { name: /emom/i }).click()
 
   // Wait for presets and click Custom
   await expect.element(page.getByText(/Custom/)).toBeVisible()
-  await page.getByRole('button', { name: /Custom/i }).click()
+  await page.getByRole('button', { name: /custom/i }).click()
 
   // Wait for custom form
   await expect.element(page.getByText(/minutes/i)).toBeVisible()

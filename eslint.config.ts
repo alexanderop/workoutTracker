@@ -35,6 +35,17 @@ export default defineConfigWithVueTs(
   {
     name: 'app/unicorn-overrides',
     rules: {
+      // === Enable non-recommended rules that add value ===
+      // Improve regexes by making them shorter, consistent, and safer
+      'unicorn/better-regex': 'warn',
+      // Enforce correct Error subclassing (good for TypeScript strict mode)
+      'unicorn/custom-error-definition': 'error',
+      // Detect unused object properties (dead code detection)
+      'unicorn/no-unused-properties': 'warn',
+      // Use destructured variables consistently over properties
+      'unicorn/consistent-destructuring': 'warn',
+
+      // === Disable rules that conflict with project conventions ===
       // Project uses null extensively for database/optional values
       'unicorn/no-null': 'off',
       // Vue components use PascalCase, test files use camelCase
