@@ -29,6 +29,9 @@ const { decimalSeparator } = useNumberLocale()
 // Internal string representation for precise decimal editing
 const editingString = ref(numberToString(modelValue.value))
 
+// Fresh start mode: first digit replaces value instead of appending (calculator-style)
+const freshStart = ref(true)
+
 // Sync editingString when modelValue changes externally
 watch(
   () => modelValue.value,
@@ -36,6 +39,7 @@ watch(
     const currentNumber = stringToNumber(editingString.value)
     if (currentNumber !== newValue) {
       editingString.value = numberToString(newValue)
+      freshStart.value = true // Reset fresh start when value changes externally
     }
   },
 )
@@ -47,6 +51,13 @@ const digits = [
 ]
 
 function handleDigitClick(digit: string) {
+  if (freshStart.value) {
+    // First digit replaces entire value (calculator-style)
+    editingString.value = digit
+    freshStart.value = false
+    modelValue.value = stringToNumber(editingString.value)
+    return
+  }
   editingString.value = appendDigitToString(editingString.value, digit, {
     max: props.max,
     maxDecimals: 2,
@@ -55,11 +66,19 @@ function handleDigitClick(digit: string) {
 }
 
 function handleDecimalClick() {
+  if (freshStart.value) {
+    // Start fresh with "0."
+    editingString.value = '0.'
+    freshStart.value = false
+    return
+  }
   editingString.value = appendDecimalToString(editingString.value)
   // Don't update modelValue yet - "70." should stay as 70 until more digits added
 }
 
 function handleBackspace() {
+  // Backspace exits fresh-start mode (user wants to edit existing value)
+  freshStart.value = false
   editingString.value = removeLastChar(editingString.value)
   modelValue.value = stringToNumber(editingString.value)
 }
