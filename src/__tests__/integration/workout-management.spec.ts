@@ -204,12 +204,14 @@ describe('Workout Management', () => {
 
       // Verify the badge contains a time format (m:ss or mm:ss)
       await expect.poll(async () => {
+        // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
         const badge = document.querySelector('.tabular-nums')
         return badge?.textContent?.match(/^\d+:\d{2}$/)
       }).toBeTruthy()
 
       // Verify the pulsing dot indicator exists (animate-ping class)
       await expect.poll(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Finding animation indicator by CSS class
         const pulsingDot = document.querySelector('.animate-ping')
         return pulsingDot !== null
       }).toBe(true)

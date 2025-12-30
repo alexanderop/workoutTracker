@@ -71,17 +71,20 @@ function isInputElement(element: Element | null): element is HTMLInputElement {
 
 // Helper to get exercise rows in the timed block list (distinguished by bg-secondary/30 class)
 function getExerciseRows(dialog: HTMLElement): Array<Element> {
+  // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
   return Array.from(dialog.querySelectorAll('[class*="bg-secondary"]'))
 }
 
 // Helper to get the reps input within an exercise row
 function getRepsInputInRow(row: Element): HTMLInputElement | null {
+  // eslint-disable-next-line no-restricted-syntax -- Finding input within row scope
   const input = row.querySelector('input[type="number"]')
   return isInputElement(input) ? input : null
 }
 
 // Helper to get the load input within an exercise row
 function getLoadInputInRow(row: Element): HTMLInputElement | null {
+  // eslint-disable-next-line no-restricted-syntax -- Finding input within row scope
   const input = row.querySelector('input:not([type="number"])')
   return isInputElement(input) ? input : null
 }

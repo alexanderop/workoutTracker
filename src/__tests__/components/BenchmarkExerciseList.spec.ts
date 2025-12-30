@@ -132,6 +132,7 @@ describe('BenchmarkExerciseList', () => {
     })
 
     // Should not display any exercise items - check for exercise card structure
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
     const exerciseCards = container.querySelectorAll('.drag-handle')
     expect(exerciseCards.length).toBe(0)
   })

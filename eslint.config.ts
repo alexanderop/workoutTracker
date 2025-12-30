@@ -227,6 +227,21 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Prefer Vitest Browser locators over raw DOM queries
+  {
+    name: 'test/prefer-vitest-locators',
+    files: ['src/**/__tests__/**/*.{ts,spec.ts}'],
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'CallExpression[callee.property.name=/^querySelector(All)?$/]',
+          message: 'Prefer page.getByRole(), page.getByText(), or page.getByTestId() over querySelector*(). Vitest locators are more resilient to DOM changes.',
+        },
+      ],
+    },
+  },
+
   // Feature boundary enforcement - prevent cross-feature imports
   {
     name: 'app/feature-boundaries',

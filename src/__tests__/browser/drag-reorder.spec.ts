@@ -63,6 +63,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     })
     cleanup = unmount
 
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation, not user-facing behavior
     const dragHandles = container.querySelectorAll('.drag-handle')
     expect(dragHandles.length).toBe(3)
   })
@@ -76,6 +77,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     })
     cleanup = unmount
 
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
     const dragHandle = container.querySelector('.drag-handle')
     expect(dragHandle).toBeTruthy()
     expect(dragHandle?.classList.contains('cursor-grab')).toBe(true)
@@ -94,6 +96,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     cleanup = unmount
 
     // Container should have children for sortable
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS layout class implementation
     const sortableContainer = container.querySelector('.flex.flex-col')
     expect(sortableContainer).toBeTruthy()
     expect(sortableContainer?.children.length).toBeGreaterThan(0)
@@ -113,6 +116,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     cleanup = unmount
 
     // Drag handles still exist but should be hidden with opacity-0
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
     const dragHandles = container.querySelectorAll('.drag-handle')
     expect(dragHandles.length).toBe(2)
 
@@ -134,6 +138,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     })
     cleanup = unmount
 
+    // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed attribute values requires DOM access
     const blockItems = container.querySelectorAll('button[aria-pressed]')
     expect(blockItems.length).toBe(3)
     expect(blockItems[0]?.getAttribute('aria-pressed')).toBe('false')
@@ -152,6 +157,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     cleanup = unmount
 
     // Find button with "Add Block" text
+    // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
     const addButton = Array.from(container.querySelectorAll('button')).find((btn) =>
       btn.textContent?.includes('Add Block'),
     )
@@ -169,6 +175,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     cleanup = unmount
 
     // Should not find add block button when disabled
+    // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
     const addButton = Array.from(container.querySelectorAll('button')).find((btn) =>
       btn.textContent?.includes('Add Block'),
     )
@@ -190,6 +197,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     cleanup = unmount
 
     // Query for block containers using aria-pressed buttons, then find their parent containers
+    // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed + parent CSS classes requires DOM access
     const blockButtons = container.querySelectorAll('button[aria-pressed]')
     expect(blockButtons.length).toBe(3)
 
@@ -218,6 +226,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // Should have 2 connectors for 3 blocks (between first-second, second-third)
     // Connectors use bg-border class and aria-hidden
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class + aria-hidden implementation
     const connectors = container.querySelectorAll('[aria-hidden="true"].bg-border')
     expect(connectors.length).toBe(2)
   })

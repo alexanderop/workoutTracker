@@ -105,6 +105,7 @@ describe('Workout Set Completion', () => {
 
       // Verify rest timer appears in footer (look for a timer display)
       await expect.poll(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Finding timer element by CSS class
         const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
         return Array.from(timerElements).some((el) =>
           el.textContent?.match(/^\d+:\d{2}$/),

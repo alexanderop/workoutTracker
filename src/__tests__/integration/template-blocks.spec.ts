@@ -283,6 +283,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const amrapCard = amrapText.closest('.rounded-xl')
       if (!(amrapCard instanceof HTMLElement)) throw new Error('AMRAP card not found')
 
+      // eslint-disable-next-line no-restricted-syntax -- Finding move button within card scope
       const moveUpButton = amrapCard.querySelector('[aria-label*="move up" i]')
       if (!(moveUpButton instanceof HTMLElement)) throw new Error('Move up button not found')
 
@@ -290,6 +291,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(moveUpButton)
 
       // Verify new order: AMRAP is now first
+      // eslint-disable-next-line no-restricted-syntax -- Testing card ordering by CSS class
       const cards = document.querySelectorAll('.rounded-xl')
       const firstCard = cards[0]
       expect(firstCard?.textContent).toContain('AMRAP')
@@ -407,6 +409,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const amrapCard = amrapText.closest('.rounded-xl')
       if (!(amrapCard instanceof HTMLElement)) throw new Error('AMRAP card not found')
 
+      // eslint-disable-next-line no-restricted-syntax -- Finding remove button within card scope
       const removeButton = amrapCard.querySelector('[aria-label*="remove" i]')
       if (!(removeButton instanceof HTMLElement)) throw new Error('Remove button not found')
 

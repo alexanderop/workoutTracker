@@ -59,10 +59,12 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
 
       if (cardButton) {
         // Verify the icon is present with correct Lucide class
+        // eslint-disable-next-line no-restricted-syntax -- Testing icon CSS class implementation
         const icon = cardButton.querySelector(`svg.${block.iconClass}`)
         expect(icon, `${block.name} should have ${block.iconClass} icon`).toBeTruthy()
 
         // Verify the title has the correct color class
+        // eslint-disable-next-line no-restricted-syntax -- Testing color CSS class implementation
         const coloredTitle = cardButton.querySelector(`.${block.colorClass}`)
         expect(coloredTitle, `${block.name} should have ${block.colorClass} styling`).toBeTruthy()
       }
@@ -77,9 +79,11 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
     expect(cardioCard).toBeTruthy()
 
     if (cardioCard) {
+      // eslint-disable-next-line no-restricted-syntax -- Testing icon CSS class implementation
       const cardioIcon = cardioCard.querySelector('svg.lucide-activity')
       expect(cardioIcon, 'Cardio should have lucide-activity icon').toBeTruthy()
 
+      // eslint-disable-next-line no-restricted-syntax -- Testing color CSS class implementation
       const cardioColor = cardioCard.querySelector('.text-cyan-500')
       expect(cardioColor, 'Cardio should have text-cyan-500 styling').toBeTruthy()
     }

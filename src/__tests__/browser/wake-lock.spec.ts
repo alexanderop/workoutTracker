@@ -19,6 +19,7 @@ describe('useScreenWakeLock - browser mode', () => {
     await nextTick()
 
     // Clean up any remaining video elements
+    // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements, not rendered components
     document.querySelectorAll('video').forEach((video) => {
       video.pause()
       video.remove()
@@ -73,6 +74,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
       result.startVideoFallback()
 
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       const videoElement = document.querySelector('video')
       expect(videoElement).toBeTruthy()
       expect(videoElement?.muted).toBe(true)
@@ -86,6 +88,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
       result.startVideoFallback()
 
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       const videoElement = document.querySelector('video')
       expect(videoElement).toBeTruthy()
 
@@ -100,9 +103,11 @@ describe('useScreenWakeLock - browser mode', () => {
       cleanup = () => app.unmount()
 
       result.startVideoFallback()
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       expect(document.querySelector('video')).toBeTruthy()
 
       result.stopVideoFallback()
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       expect(document.querySelector('video')).toBeNull()
       expect(result.videoIsActive.value).toBe(false)
     })
@@ -115,6 +120,7 @@ describe('useScreenWakeLock - browser mode', () => {
       result.startVideoFallback()
       result.startVideoFallback()
 
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       const videos = document.querySelectorAll('video')
       expect(videos.length).toBe(1)
     })
@@ -125,6 +131,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
       result.startVideoFallback()
 
+      // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       const videoElement = document.querySelector('video')
       expect(videoElement?.hasAttribute('playsinline')).toBe(true)
     })

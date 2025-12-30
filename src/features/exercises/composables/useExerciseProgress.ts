@@ -101,30 +101,30 @@ export function useExerciseProgress(exerciseId: string) {
     const [statsError, stats] = statsResult
     const [prsError, prs] = prsResult
 
-    // Check for errors
-    if (historyError || statsError || prsError) {
-      const error = historyError ?? statsError ?? prsError
-      state.value = { status: 'error', error: error! }
+    // Check for errors or missing data
+    if (historyError || statsError || prsError || !sessions || !stats || !prs) {
+      const error = historyError ?? statsError ?? prsError ?? new Error('Missing data')
+      state.value = { status: 'error', error }
       return
     }
 
     // Determine exercise name - from stats or fallback
-    const exerciseName = stats!.exerciseName || 'Unknown Exercise'
+    const exerciseNameValue = stats.exerciseName || 'Unknown Exercise'
 
     state.value = {
       status: 'success',
       data: {
-        exerciseName,
-        sessions: sessions!,
-        stats: stats!,
-        personalRecords: prs!,
+        exerciseName: exerciseNameValue,
+        sessions,
+        stats,
+        personalRecords: prs,
       },
     }
   }
 
   // Lifecycle Hooks
   onMounted(() => {
-    loadProgress()
+    void loadProgress()
   })
 
   return {

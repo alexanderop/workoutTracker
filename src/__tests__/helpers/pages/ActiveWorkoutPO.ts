@@ -79,6 +79,7 @@ export class ActiveWorkoutPO {
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
       const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
         return this.getSet(i - 1) // Convert row index to set index
@@ -196,6 +197,7 @@ export class ActiveWorkoutPO {
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
       const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
         return rowElement
@@ -244,6 +246,7 @@ export class ActiveWorkoutPO {
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
     // The completed state shows a div with data-set-state="completed" and bg-success/20 class
+    // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
     const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
     return completedIndicator !== null
   }
@@ -265,6 +268,7 @@ export class ActiveWorkoutPO {
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The completed state shows a div with data-set-state="completed" and bg-success/20 class
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
       const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
       if (completedIndicator) {
         count++

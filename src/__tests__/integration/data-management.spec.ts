@@ -89,6 +89,7 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
+      // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
       const fileInput = document.querySelector('input[type="file"]')
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new Error('File input not found')
@@ -118,6 +119,7 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Upload invalid file
+      // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
       const fileInput = document.querySelector('input[type="file"]')
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new Error('File input not found')

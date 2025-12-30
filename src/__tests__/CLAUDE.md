@@ -131,6 +131,59 @@ page.getByRole('button', { name: /start workout/i })
 page.getByTestId('workout-timer')
 ```
 
+### When querySelector Is Acceptable
+
+**Note:** Vitest 4.x does not have a `locators.extend()` API for custom selectors. For non-semantic queries, `querySelector` with `eslint-disable` is the recommended approach.
+
+Use Vitest locators for user-facing behavior. Use `querySelector` only for:
+
+1. **CSS class assertions** (visual/animation state):
+```ts
+// Testing implementation detail - no semantic alternative
+await expect.poll(() => {
+  // eslint-disable-next-line no-restricted-syntax -- Testing animation class
+  return document.querySelector('.animate-ping') !== null
+}).toBe(true)
+```
+
+2. **Scoped queries within already-located elements** (prefer chained locators when possible):
+```ts
+// ✅ PREFERRED: Chained locator
+const card = page.getByRole('article', { name: 'Bench Press' })
+const removeBtn = card.getByRole('button', { name: /remove/i })
+
+// ⚠️ ACCEPTABLE: When card is already a DOM element
+// eslint-disable-next-line no-restricted-syntax -- Scoped query within card
+const removeBtn = card.querySelector('button[aria-label*="remove" i]')
+```
+
+3. **Raw DOM element tests** (video fallback, hidden file inputs):
+```ts
+// Testing composable that creates raw DOM elements
+// eslint-disable-next-line no-restricted-syntax -- Raw DOM test
+expect(document.querySelector('video')).toBeTruthy()
+
+// Hidden file inputs have no accessible role
+// eslint-disable-next-line no-restricted-syntax -- Hidden file input
+const fileInput = document.querySelector('input[type="file"]')
+```
+
+4. **Data attribute queries** (when no `data-testid` exists):
+```ts
+// Custom data attributes used by component logic
+// eslint-disable-next-line no-restricted-syntax -- Data attribute query
+const completedSets = dialog.querySelectorAll('[data-set-state="completed"]')
+
+// Prefer adding data-testid for new components instead
+```
+
+**For class/attribute assertions on located elements, prefer:**
+```ts
+const button = page.getByRole('button', { name: 'Submit' })
+await expect.element(button).toHaveClass('bg-primary')
+await expect.element(button).toHaveAttribute('data-state', 'active')
+```
+
 ## Assertions
 
 ```ts
@@ -208,16 +261,28 @@ await userEvent.click(await btn.element())  // Bad
 await userEvent.click(btn)                   // Good
 ```
 
-### 5. No jsdom APIs
+### 5. Prefer Vitest Locators Over querySelector
 
-Tests run in Playwright browser:
+Tests run in Playwright browser. Prefer Vitest locators for better retry behavior:
 
 ```ts
-// ❌ BAD
+// ❌ AVOID for user-facing elements
 document.querySelector('.my-class')
 
-// ✅ GOOD
+// ✅ PREFERRED - semantic, auto-retry
 page.getByRole('button')
+
+// ✅ ACCEPTABLE - for implementation tests (see "When querySelector Is Acceptable")
+// eslint-disable-next-line no-restricted-syntax -- Testing CSS class
+document.querySelector('.animate-ping')
+```
+
+**Converting DOM elements back to Locators** (for chaining after `.element()`):
+```ts
+const cardElement = await page.getByText('Bench Press').element()
+const card = cardElement.closest('.card')
+// Convert back to Locator for chaining
+const deleteBtn = page.elementLocator(card).getByRole('button', { name: /delete/i })
 ```
 
 ### 6. Exercise Selection in Tests

@@ -16,6 +16,7 @@ async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
 }
 
 function getMoveDownButton(card: HTMLElement): HTMLElement {
+  // eslint-disable-next-line no-restricted-syntax -- Finding move button within card scope
   const button = card.querySelector('[aria-label*="move down" i], [aria-label*="Move down" i]')
   if (!(button instanceof HTMLElement)) {
     throw new Error('Move down button not found')
@@ -97,6 +98,7 @@ describe('Template Flow', () => {
       const saveTemplateButton = page.getByRole('button', { name: /save as template/i })
       await expect.element(saveTemplateButton, { timeout: 3000 }).toBeVisible()
       await expect.poll(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Checking animation state by CSS class
         const btn = document.querySelector('button[name*="template"], button:has([name*="template"])')
         return !btn?.parentElement?.classList.contains('opacity-0')
       }).toBe(true)
@@ -420,6 +422,7 @@ describe('Template Flow', () => {
       const squatCard = squatText.closest('.rounded-xl')
       if (!(squatCard instanceof HTMLElement)) throw new Error('Squat card not found')
 
+      // eslint-disable-next-line no-restricted-syntax -- Finding remove button within card scope
       const removeButton = squatCard.querySelector('[aria-label*="remove" i], [aria-label*="Remove" i]')
       if (!(removeButton instanceof HTMLElement)) throw new Error('Remove button not found')
       await userEvent.click(removeButton)
@@ -563,12 +566,14 @@ describe('Template Flow', () => {
       if (!(squatCard instanceof HTMLElement)) throw new Error('Squat card not found')
 
       // Click the increment button twice (3 → 5)
+      // eslint-disable-next-line no-restricted-syntax -- Finding increment button within card scope
       const incrementButton = squatCard.querySelector('[aria-label*="increase" i]')
       if (!(incrementButton instanceof HTMLElement)) throw new Error('Increment button not found')
       await userEvent.click(incrementButton)
       await userEvent.click(incrementButton)
 
       // Verify UI shows 5 sets
+      // eslint-disable-next-line no-restricted-syntax -- Finding input within card scope
       const setCountInput = squatCard.querySelector('input[type="number"]')
       if (!(setCountInput instanceof HTMLInputElement)) throw new Error('Set count input not found')
       expect(setCountInput.value).toBe('5')

@@ -142,6 +142,7 @@ export class BenchmarkFormPO {
    */
   getExerciseItems(): ReadonlyArray<HTMLElement> {
     // Exercise items are in a list - find all delete buttons (lucide-x SVGs within buttons)
+    // eslint-disable-next-line no-restricted-syntax -- Finding icon by CSS class, no accessible equivalent
     const deleteButtons = document.querySelectorAll('button svg.lucide-x')
     const items: Array<HTMLElement> = []
     deleteButtons.forEach((svg) => {

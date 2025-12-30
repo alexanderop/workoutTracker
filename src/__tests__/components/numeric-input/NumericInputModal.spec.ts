@@ -126,7 +126,7 @@ describe('NumericInputModal', () => {
     })
 
     // Click a different preset
-    await userEvent.click(page.getByTestId('preset-11'))
+    await userEvent.click(page.getByRole('option', { name: /^11\b/ }))
 
     // Should instantly apply and close
     expect(onUpdate).toHaveBeenCalledWith(11)
@@ -192,7 +192,7 @@ describe('NumericInputModal', () => {
     })
 
     // Weight preset should show decimal values
-    await expect.element(page.getByTestId('preset-22.5')).toBeInTheDocument()
+    await expect.element(page.getByRole('option', { name: /22\.5/ })).toBeInTheDocument()
   })
 
   it('uses smart presets for reps type', async () => {
@@ -205,7 +205,7 @@ describe('NumericInputModal', () => {
     })
 
     // Reps preset should show integer values only
-    await expect.element(page.getByTestId('preset-11')).toBeInTheDocument()
+    await expect.element(page.getByRole('option', { name: /^11\b/ })).toBeInTheDocument()
   })
 
   it('uses smart presets for rir type', async () => {
@@ -218,7 +218,7 @@ describe('NumericInputModal', () => {
     })
 
     // RIR max is 10
-    await expect.element(page.getByTestId('preset-10')).toBeInTheDocument()
+    await expect.element(page.getByRole('option', { name: /^10\b/ })).toBeInTheDocument()
   })
 
   it('shows unit label for weight', async () => {
@@ -231,9 +231,9 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Check that at least one preset shows the unit
+    // Check that the selected preset shows the unit
     await expect
-      .element(page.getByTestId('preset-selected').getByText('kg'))
+      .element(page.getByRole('option', { selected: true }).getByText('kg'))
       .toBeVisible()
   })
 

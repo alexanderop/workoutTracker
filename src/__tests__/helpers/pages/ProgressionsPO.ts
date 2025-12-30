@@ -101,6 +101,7 @@ export class ProgressionsPO {
     const buttons = await page.getByRole('button').all()
     for (const btn of buttons) {
       const el = await btn.element()
+      // eslint-disable-next-line no-restricted-syntax -- Finding icon by CSS class, no accessible equivalent
       if (el.querySelector('[class*="lucide-trash"]') || el.innerHTML.includes('Trash')) {
         await btn.click()
         return

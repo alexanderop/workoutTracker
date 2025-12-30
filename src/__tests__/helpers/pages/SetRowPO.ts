@@ -232,6 +232,7 @@ export class SetRowPO {
     const firstCell = cells[0]
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
+    // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
     const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
     return completedIndicator !== null
   }
@@ -245,6 +246,7 @@ export class SetRowPO {
     const firstCell = cells[0]
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
+    // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
     const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
     return activeIndicator !== null
   }

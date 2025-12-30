@@ -24,6 +24,7 @@ export class CommonPO {
    */
   async waitForDialogClose(): Promise<void> {
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+    // eslint-disable-next-line no-restricted-syntax -- Checking overlay data attribute, no accessible equivalent
     await expect.poll(() => document.querySelector('[data-slot="dialog-overlay"]')).toBeNull()
     // Flush any pending Vue updates after dialog unmount
     await flushPromises()
@@ -40,6 +41,7 @@ export class CommonPO {
     if (!dialog) {
       throw new Error('No dialog found')
     }
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within dialog element
     const buttons = dialog.querySelectorAll('button')
     const btn = Array.from(buttons).find((b) => b.textContent?.includes(text))
 
@@ -81,6 +83,7 @@ export class CommonPO {
    */
   private getExactDialogButton(text: string): HTMLElement {
     const dialog = page.getByRole('dialog').query()
+    // eslint-disable-next-line no-restricted-syntax -- Finding overlay by CSS classes, no accessible equivalent
     const overlay = document.querySelector('[class*="absolute"][class*="inset-0"]')
     const container = dialog ?? overlay
 
@@ -88,6 +91,7 @@ export class CommonPO {
       throw new Error('No dialog or overlay found')
     }
 
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within container element
     const buttons = container.querySelectorAll('button')
 
     // First try: exact match of full button text (for simple buttons like "Add Block", "Confirm")
@@ -96,6 +100,7 @@ export class CommonPO {
     // Second try: find button containing a <p> tag with exact exercise name (dialog mode)
     if (!btn) {
       btn = Array.from(buttons).find((b) => {
+        // eslint-disable-next-line no-restricted-syntax -- DOM traversal within button element
         const paragraphs = b.querySelectorAll('p')
         return Array.from(paragraphs).some((p) => p.textContent?.trim() === text)
       })
@@ -104,6 +109,7 @@ export class CommonPO {
     // Third try: find button containing a <span> with class "font-medium" (overlay mode)
     if (!btn) {
       btn = Array.from(buttons).find((b) => {
+        // eslint-disable-next-line no-restricted-syntax -- Finding spans by CSS class within button
         const spans = b.querySelectorAll('span.font-medium')
         return Array.from(spans).some((span) => span.textContent?.trim() === text)
       })
