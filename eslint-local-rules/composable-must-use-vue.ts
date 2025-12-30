@@ -13,12 +13,12 @@ import path from 'node:path'
  * distinguishing true composables from utility functions that should be renamed.
  */
 
-const VALID_VUE_SOURCES = [
+const VALID_VUE_SOURCES = new Set([
   'vue',
   '@vueuse/core',
   'vue-router',
   'vue-i18n',
-]
+])
 
 // Path patterns that indicate Vue ecosystem usage (global state composables)
 const VALID_PATH_PATTERNS = [
@@ -41,7 +41,7 @@ function hasVueImport(node: ImportDeclaration): boolean {
   // Type-only imports count - composables can receive reactive parameters (Ref, ShallowRef, etc.)
 
   // Check for valid Vue package sources
-  if (VALID_VUE_SOURCES.includes(source)) {
+  if (VALID_VUE_SOURCES.has(source)) {
     return true
   }
 

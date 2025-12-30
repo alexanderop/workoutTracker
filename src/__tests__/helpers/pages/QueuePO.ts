@@ -26,8 +26,9 @@ export class QueuePO {
     if (!dialog) {
       return []
     }
+    // eslint-disable-next-line no-restricted-syntax -- Finding by data attribute, no accessible equivalent
     const items = dialog.querySelectorAll('[data-queue-item]')
-    return Array.from(items).filter((item): item is HTMLElement => item instanceof HTMLElement)
+    return [...items].filter((item): item is HTMLElement => item instanceof HTMLElement)
   }
 
   /**
@@ -48,9 +49,10 @@ export class QueuePO {
     const items = this.getItems()
     const item = items[index]
     if (!item) return null
-    const btn = item.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
-    if (btn instanceof HTMLElement) {
-      return btn
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within queue item element
+    const button = item.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
+    if (button instanceof HTMLElement) {
+      return button
     }
     return null
   }
@@ -61,11 +63,11 @@ export class QueuePO {
    * @param index - Zero-based index of the block to remove
    */
   async removeBlock(index: number): Promise<void> {
-    const removeBtn = this.getRemoveButton(index)
-    if (!removeBtn) {
+    const removeButton = this.getRemoveButton(index)
+    if (!removeButton) {
       throw new Error(`Remove button not found for queue item at index ${index}`)
     }
-    await userEvent.click(removeBtn)
+    await userEvent.click(removeButton)
   }
 
   /**
@@ -100,6 +102,7 @@ export class QueuePO {
     const items = this.getItems()
     return items.map((item) => {
       // Get the block name from the font-medium span
+      // eslint-disable-next-line no-restricted-syntax -- Finding element by CSS class, no accessible equivalent
       const nameSpan = item.querySelector('.font-medium.truncate')
       return nameSpan?.textContent?.trim() ?? ''
     })

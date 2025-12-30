@@ -1,13 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { createTestApp } from '../../helpers/createTestApp'
-import { db, getBenchmarksRepository, getWorkoutsRepository } from '@/db'
+import { db, getBenchmarksRepository,  } from '@/db'
 import type { DbBenchmark, DbCompletedWorkout } from '@/db/schema'
 import {
-  createDbBenchmarkExercise,
-  createDbBlockExercise,
-  createDbForTimeBlock,
-  createDbForTimeResult,
+  createDbBenchmarkExercise as createDatabaseBenchmarkExercise,
+  createDbBlockExercise as createDatabaseBlockExercise,
+  createDbForTimeBlock as createDatabaseForTimeBlock,
+  createDbForTimeResult as createDatabaseForTimeResult,
   generateId,
 } from '../../factories'
 
@@ -24,13 +24,13 @@ export async function createForTimeBenchmark(options?: {
     type: 'fortime',
     rounds: 1,
     exercises: options?.exercises?.map(ex =>
-      createDbBenchmarkExercise({
+      createDatabaseBenchmarkExercise({
         name: ex.name,
         prescribedReps: ex.reps,
       }),
     ) ?? [
-      createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21 }),
-      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21 }),
+      createDatabaseBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21 }),
+      createDatabaseBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21 }),
     ],
   })
 }
@@ -48,7 +48,7 @@ export async function createRoundsBenchmark(options: {
     type: 'rounds',
     rounds: options.rounds,
     exercises: options.exercises.map(ex =>
-      createDbBenchmarkExercise({
+      createDatabaseBenchmarkExercise({
         name: ex.name,
         prescribedReps: ex.reps,
       }),
@@ -100,7 +100,7 @@ export async function completeExercise(): Promise<void> {
  * Completes all exercises in sequence.
  */
 export async function completeAllExercises(exerciseCount: number): Promise<void> {
-  for (let i = 0; i < exerciseCount; i++) {
+  for (let index = 0; index < exerciseCount; index++) {
     await completeExercise()
   }
 }
@@ -121,15 +121,15 @@ export async function createCompletedAttempt(
   const startedAt = now - (daysAgo * 24 * 60 * 60 * 1000) - (completionTime * 1000)
   const completedAt = now - (daysAgo * 24 * 60 * 60 * 1000)
 
-  const forTimeBlock = createDbForTimeBlock({
+  const forTimeBlock = createDatabaseForTimeBlock({
     exercises: benchmark.exercises.map(ex =>
-      createDbBlockExercise({
+      createDatabaseBlockExercise({
         name: ex.name,
         prescribedReps: ex.prescribedReps,
         image: ex.image,
       }),
     ),
-    result: createDbForTimeResult({
+    result: createDatabaseForTimeResult({
       completionTime,
       splitTimes: splitTimes ?? [],
     }),
@@ -157,4 +157,6 @@ export async function waitForCompletionScreen(): Promise<void> {
 }
 
 // Re-export commonly used items
-export { getWorkoutsRepository, getBenchmarksRepository }
+
+
+export {getWorkoutsRepository, getBenchmarksRepository} from '@/db'

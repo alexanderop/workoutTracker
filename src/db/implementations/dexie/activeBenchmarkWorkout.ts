@@ -1,18 +1,18 @@
 import type { ActiveBenchmarkWorkoutRepository } from '@/db/interfaces'
 import type { DbActiveBenchmarkWorkout, DbCompletedWorkout } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
 export function createDexieActiveBenchmarkWorkoutRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): ActiveBenchmarkWorkoutRepository {
   return {
     async load(): Promise<DbActiveBenchmarkWorkout | undefined> {
-      return db.activeBenchmark.get('current-benchmark')
+      return database.activeBenchmark.get('current-benchmark')
     },
 
     async save(workout: Readonly<DbActiveBenchmarkWorkout>): Promise<void> {
-      await db.activeBenchmark.put({
+      await database.activeBenchmark.put({
         ...workout,
         id: 'current-benchmark',
         lastModifiedAt: Date.now(),
@@ -20,11 +20,11 @@ export function createDexieActiveBenchmarkWorkoutRepository(
     },
 
     async delete(): Promise<void> {
-      await db.activeBenchmark.delete('current-benchmark')
+      await database.activeBenchmark.delete('current-benchmark')
     },
 
     async exists(): Promise<boolean> {
-      const workout = await db.activeBenchmark.get('current-benchmark')
+      const workout = await database.activeBenchmark.get('current-benchmark')
       return workout !== undefined
     },
 
@@ -46,9 +46,9 @@ export function createDexieActiveBenchmarkWorkoutRepository(
       }
 
       // Transaction: Save completed workout and remove active benchmark
-      await db.transaction('rw', [db.workouts, db.activeBenchmark], async () => {
-        await db.workouts.add(completed)
-        await db.activeBenchmark.delete('current-benchmark')
+      await database.transaction('rw', [database.workouts, database.activeBenchmark], async () => {
+        await database.workouts.add(completed)
+        await database.activeBenchmark.delete('current-benchmark')
       })
 
       return completed

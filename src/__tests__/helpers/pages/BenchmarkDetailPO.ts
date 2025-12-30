@@ -8,7 +8,7 @@ import { ensureHTMLElement } from '../domHelpers'
  * Provides methods to view benchmark details and start workouts.
  */
 export class BenchmarkDetailPO {
-  constructor(private ctx: TestContext) {}
+  constructor(private context: TestContext) {}
 
   /**
    * Navigates to a specific benchmark detail page by ID.
@@ -16,8 +16,8 @@ export class BenchmarkDetailPO {
    * @param benchmarkId - The ID of the benchmark to view
    */
   async navigateToDetail(benchmarkId: string): Promise<void> {
-    await this.ctx.router.push(`/benchmarks/${benchmarkId}`)
-    await expect.poll(() => this.ctx.router.currentRoute.value.path).toBe(`/benchmarks/${benchmarkId}`)
+    await this.context.router.push(`/benchmarks/${benchmarkId}`)
+    await expect.poll(() => this.context.router.currentRoute.value.path).toBe(`/benchmarks/${benchmarkId}`)
   }
 
   /**
@@ -58,8 +58,8 @@ export class BenchmarkDetailPO {
     const exercises: Array<HTMLElement> = []
     const allText = await page.getByText(/\d+/).all()
     for (const locator of allText) {
-      const el = await locator.element()
-      const card = el.closest('[class*="card"]') ?? el.closest('div')
+      const element = await locator.element()
+      const card = element.closest('[class*="card"]') ?? element.closest('div')
       if (card instanceof HTMLElement && !exercises.includes(card)) {
         exercises.push(card)
       }
@@ -87,7 +87,7 @@ export class BenchmarkDetailPO {
     await startButton.click()
 
     // Wait for navigation to active benchmark
-    await expect.poll(() => this.ctx.router.currentRoute.value.path).toBe('/benchmark/active')
+    await expect.poll(() => this.context.router.currentRoute.value.path).toBe('/benchmark/active')
   }
 
   /**
@@ -137,7 +137,7 @@ export class BenchmarkDetailPO {
     await goBackButton.click()
 
     // Wait for navigation back to workouts
-    await expect.poll(() => this.ctx.router.currentRoute.value.path).toBe('/workouts')
+    await expect.poll(() => this.context.router.currentRoute.value.path).toBe('/workouts')
   }
 
   /**
@@ -244,14 +244,14 @@ export class BenchmarkDetailPO {
    */
   async confirmDelete(): Promise<void> {
     const deleteButtons = await page.getByRole('button', { name: /^delete$/i }).all()
-    const dialogDeleteButton = deleteButtons[deleteButtons.length - 1]
+    const dialogDeleteButton = deleteButtons.at(-1)
     if (!dialogDeleteButton) {
       throw new Error('Delete button not found in dialog')
     }
 
     await dialogDeleteButton.click()
 
-    await expect.poll(() => this.ctx.router.currentRoute.value.path).toBe('/workouts')
+    await expect.poll(() => this.context.router.currentRoute.value.path).toBe('/workouts')
   }
 
   /**

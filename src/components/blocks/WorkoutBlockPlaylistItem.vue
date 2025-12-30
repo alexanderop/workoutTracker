@@ -16,7 +16,7 @@ import {
   isTimedBlock,
 } from '@/types/blocks'
 
-type Props = {
+type Properties = {
   block: WorkoutBlock
   isSelected: boolean
   isCompleted?: boolean
@@ -30,7 +30,7 @@ const {
   isCompleted = false,
   showConnector = true,
   disabled = false,
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const emit = defineEmits<{
   select: []

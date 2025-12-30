@@ -4,15 +4,15 @@ import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Detect browser mode - location.reload is read-only in real browsers
 const isBrowserMode = (() => {
   const [error] = tryCatch(() => {
-    const original = window.location.reload
-    window.location.reload = vi.fn()
-    window.location.reload = original
+    const original = globalThis.location.reload
+    globalThis.location.reload = vi.fn()
+    globalThis.location.reload = original
   })
   return Boolean(error)
 })()
@@ -38,8 +38,8 @@ describe('Data Management', () => {
       })
 
       // Mock window.location.reload to prevent navigation errors (jsdom only)
-      Object.defineProperty(window, 'location', {
-        value: { ...window.location, reload: vi.fn() },
+      Object.defineProperty(globalThis, 'location', {
+        value: { ...globalThis.location, reload: vi.fn() },
         writable: true,
         configurable: true,
       })
@@ -47,7 +47,7 @@ describe('Data Management', () => {
 
     it('exports data when clicking Export Data button', async () => {
       // Arrange: Add test data to DB
-      const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
+      const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       const { common, getByRole, cleanup } = await createTestApp()
@@ -67,7 +67,7 @@ describe('Data Management', () => {
       // Arrange: Verify DB is empty
       expect(await db.workouts.count()).toBe(0)
 
-      const importedWorkout = dbWorkoutBuilder()
+      const importedWorkout = databaseWorkoutBuilder()
         .withName('Imported Workout')
         .withStrengthBlock()
         .build()
@@ -89,9 +89,10 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
+      // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
       const fileInput = document.querySelector('input[type="file"]')
       if (!(fileInput instanceof HTMLInputElement)) {
-        throw new Error('File input not found')
+        throw new TypeError('File input not found')
       }
       await userEvent.upload(fileInput, file)
 
@@ -118,16 +119,17 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Upload invalid file
+      // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
       const fileInput = document.querySelector('input[type="file"]')
       if (!(fileInput instanceof HTMLInputElement)) {
-        throw new Error('File input not found')
+        throw new TypeError('File input not found')
       }
       await userEvent.upload(fileInput, file)
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
       await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
-      await expect.element(page.getByText(/not valid JSON/i)).toBeVisible()
+      await expect.element(page.getByText(/not valid json/i)).toBeVisible()
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
@@ -138,7 +140,7 @@ describe('Data Management', () => {
 
     it('deletes all data when confirmed', async () => {
       // Arrange: Add data to database
-      await db.workouts.add(dbWorkoutBuilder().withStrengthBlock().build())
+      await db.workouts.add(databaseWorkoutBuilder().withStrengthBlock().build())
       expect(await db.workouts.count()).toBe(1)
 
       const { getByRole, common, cleanup } = await createTestApp()
@@ -165,7 +167,7 @@ describe('Data Management', () => {
   describe('History', () => {
     it('navigates to detail view when clicking a completed workout and displays exercise and set information', async () => {
       // Arrange: Create a completed workout in the database
-      const completedWorkout = dbWorkoutBuilder()
+      const completedWorkout = databaseWorkoutBuilder()
         .withName('Push Day')
         .withDuration(3600)
         .withExerciseAndSets([{ kg: '100', reps: '10', rir: '2' }], {

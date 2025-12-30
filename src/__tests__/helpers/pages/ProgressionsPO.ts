@@ -68,10 +68,10 @@ export class ProgressionsPO {
   async clickPlayButton(): Promise<void> {
     // Find the button with play icon (circular button)
     const buttons = await page.getByRole('button').all()
-    for (const btn of buttons) {
-      const el = await btn.element()
-      if (el.classList.contains('rounded-full')) {
-        await btn.click()
+    for (const button of buttons) {
+      const element = await button.element()
+      if (element.classList.contains('rounded-full')) {
+        await button.click()
         return
       }
     }
@@ -99,10 +99,11 @@ export class ProgressionsPO {
   async clickDelete(): Promise<void> {
     // Find the delete button (trash icon in header)
     const buttons = await page.getByRole('button').all()
-    for (const btn of buttons) {
-      const el = await btn.element()
-      if (el.querySelector('[class*="lucide-trash"]') || el.innerHTML.includes('Trash')) {
-        await btn.click()
+    for (const button of buttons) {
+      const element = await button.element()
+      // eslint-disable-next-line no-restricted-syntax -- Finding icon by CSS class, no accessible equivalent
+      if (element.querySelector('[class*="lucide-trash"]') || element.innerHTML.includes('Trash')) {
+        await button.click()
         return
       }
     }

@@ -33,7 +33,7 @@ export function useImageConversion(): UseImageConversionReturn {
   const hasError = computed(() => state.value.status === 'error')
 
   const convertedBlob = computed(() => {
-    if (state.value.status !== 'success') return undefined
+    if (state.value.status !== 'success') return
     return state.value.blob
   })
 

@@ -4,7 +4,7 @@ import { addDays, subDays, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db } from '@/db'
-import { dbWorkoutBuilder } from '../factories/dbWorkout.factory'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 // Helper to get week strip button by current month
 function getWeekStripButton() {
@@ -38,9 +38,9 @@ describe('Workout Calendar', () => {
     it('shows green dot on days with completed workouts', async () => {
       // Seed a workout completed today
       const today = new Date()
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Morning Workout')
-        .withTimestamps(today.getTime() - 3600000, today.getTime())
+        .withTimestamps(today.getTime() - 3_600_000, today.getTime())
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
@@ -66,15 +66,15 @@ describe('Workout Calendar', () => {
       const wednesday = addDays(weekStart, 2)
 
       // Seed workouts on two different days within the same week
-      const workoutTuesday = dbWorkoutBuilder()
+      const workoutTuesday = databaseWorkoutBuilder()
         .withName('Tuesday Workout')
-        .withTimestamps(tuesday.getTime() - 3600000, tuesday.getTime())
+        .withTimestamps(tuesday.getTime() - 3_600_000, tuesday.getTime())
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      const workoutWednesday = dbWorkoutBuilder()
+      const workoutWednesday = databaseWorkoutBuilder()
         .withName('Wednesday Workout')
-        .withTimestamps(wednesday.getTime() - 3600000, wednesday.getTime())
+        .withTimestamps(wednesday.getTime() - 3_600_000, wednesday.getTime())
         .withStrengthBlock({ name: 'Deadlift' })
         .build()
 
@@ -104,17 +104,17 @@ describe('Workout Calendar', () => {
       const wednesday = addDays(weekStart, 2)
 
       // Seed workouts with known durations (1h 30m + 45m = 2h 15m)
-      const workout1 = dbWorkoutBuilder()
+      const workout1 = databaseWorkoutBuilder()
         .withName('Morning Workout')
         .withDuration(5400) // 1h 30m = 90 min = 5400 seconds
-        .withTimestamps(tuesday.getTime() - 5400000, tuesday.getTime())
+        .withTimestamps(tuesday.getTime() - 5_400_000, tuesday.getTime())
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
-      const workout2 = dbWorkoutBuilder()
+      const workout2 = databaseWorkoutBuilder()
         .withName('Evening Workout')
         .withDuration(2700) // 45m = 2700 seconds
-        .withTimestamps(wednesday.getTime() - 2700000, wednesday.getTime())
+        .withTimestamps(wednesday.getTime() - 2_700_000, wednesday.getTime())
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
@@ -172,12 +172,12 @@ describe('Workout Calendar', () => {
       await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
 
       // Click previous month button
-      const prevButton = page.getByRole('button', { name: /previous month/i })
-      await userEvent.click(prevButton)
+      const previousButton = page.getByRole('button', { name: /previous month/i })
+      await userEvent.click(previousButton)
 
       // Should show previous month in sheet title
-      const prevMonth = format(subDays(new Date(), 30), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: prevMonth, exact: true })).toBeVisible()
+      const previousMonth = format(subDays(new Date(), 30), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: previousMonth, exact: true })).toBeVisible()
 
       // Click next month button twice to go forward
       const nextButton = page.getByRole('button', { name: /next month/i })
@@ -194,12 +194,12 @@ describe('Workout Calendar', () => {
     it('updates calendar grid when navigating months (not just heading)', async () => {
       // Seed a workout for a specific date in previous month
       const today = new Date()
-      const prevMonthDate = subDays(today, 35) // ~5 weeks ago, definitely in previous month
+      const previousMonthDate = subDays(today, 35) // ~5 weeks ago, definitely in previous month
 
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Previous Month Workout')
         .withDuration(1800)
-        .withTimestamps(prevMonthDate.getTime() - 1800000, prevMonthDate.getTime())
+        .withTimestamps(previousMonthDate.getTime() - 1_800_000, previousMonthDate.getTime())
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
@@ -218,22 +218,22 @@ describe('Workout Calendar', () => {
       await expect.element(page.getByRole('heading', { name: currentMonthHeading, exact: true })).toBeVisible()
 
       // Navigate to previous month
-      const prevButton = page.getByRole('button', { name: /previous month/i })
-      await userEvent.click(prevButton)
+      const previousButton = page.getByRole('button', { name: /previous month/i })
+      await userEvent.click(previousButton)
 
       // Sheet title should update to previous month
-      const prevMonthHeading = format(subDays(today, 30), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: prevMonthHeading, exact: true })).toBeVisible()
+      const previousMonthHeading = format(subDays(today, 30), 'MMMM yyyy')
+      await expect.element(page.getByRole('heading', { name: previousMonthHeading, exact: true })).toBeVisible()
 
       // CRITICAL: The CalendarRoot's internal heading should ALSO show previous month
       // If bug exists, CalendarHeading stays on current month while sheet title changes
       // CalendarHeading renders inside CalendarHeader and shows the month the grid displays
-      const calendarHeadingLocator = page.getByText(prevMonthHeading)
+      const calendarHeadingLocator = page.getByText(previousMonthHeading)
       await expect.element(calendarHeadingLocator.first()).toBeVisible()
 
       // Click on the day that has the workout (verify grid actually changed)
       // Use data-slot attribute to find calendar cell triggers, then filter by day number
-      const workoutDayNumber = format(prevMonthDate, 'd')
+      const workoutDayNumber = format(previousMonthDate, 'd')
       const dayCell = page.getByRole('gridcell').filter({ hasText: workoutDayNumber }).first()
       await dayCell.click()
 
@@ -281,10 +281,10 @@ describe('Workout Calendar', () => {
     it('shows green dots on calendar for workout days', async () => {
       // Seed a workout for today
       const today = new Date()
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Push Day')
         .withDuration(1800) // 30 minutes
-        .withTimestamps(today.getTime() - 1800000, today.getTime())
+        .withTimestamps(today.getTime() - 1_800_000, today.getTime())
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 

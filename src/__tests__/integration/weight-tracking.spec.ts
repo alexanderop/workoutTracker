@@ -4,7 +4,7 @@ import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbWeightEntriesForDays } from '../factories/dbWeightEntry.factory'
+import { createDbWeightEntriesForDays as createDatabaseWeightEntriesForDays } from '../factories/dbWeightEntry.factory'
 
 describe('Weight Tracking', () => {
   beforeEach(setupIntegrationTest)
@@ -93,7 +93,7 @@ describe('Weight Tracking', () => {
       // Seed data: entries over the past week
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 7)
-      const entries = createDbWeightEntriesForDays(startDate, [74, 74.5, 75, 75.5, 76, 75.8, 75.5, 75])
+      const entries = createDatabaseWeightEntriesForDays(startDate, [74, 74.5, 75, 75.5, 76, 75.8, 75.5, 75])
 
       const repo = getWeightRepository()
       for (const entry of entries) {
@@ -109,15 +109,15 @@ describe('Weight Tracking', () => {
       expect(latest?.weight).toBe(75)
 
       // Verify oldest entry (74 kg from 7 days ago)
-      expect(allEntries[allEntries.length - 1]?.weight).toBe(74)
+      expect(allEntries.at(-1)?.weight).toBe(74)
     })
 
     it('filters entries by time range in repository', async () => {
       // Seed data: 40 days of entries
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 40)
-      const weights = Array.from({ length: 41 }, (_, i) => 70 + i * 0.1)
-      const entries = createDbWeightEntriesForDays(startDate, weights)
+      const weights = Array.from({ length: 41 }, (_, index) => 70 + index * 0.1)
+      const entries = createDatabaseWeightEntriesForDays(startDate, weights)
 
       const repo = getWeightRepository()
       for (const entry of entries) {

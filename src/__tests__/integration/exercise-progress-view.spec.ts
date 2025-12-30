@@ -12,8 +12,8 @@ import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { dbWorkoutBuilder } from '../factories/dbWorkout.factory'
-import { createDbSet } from '../factories/dbSet.factory'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
+import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
 
 describe('ExerciseProgressView', () => {
   beforeEach(setupIntegrationTest)
@@ -28,12 +28,12 @@ describe('ExerciseProgressView', () => {
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
 
       // Create a workout with Bench Press history
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Push Day')
         .withExerciseAndSets(
           [
-            createDbSet({ kg: '100', reps: '5', status: 'completed' }),
-            createDbSet({ kg: '90', reps: '8', status: 'completed' }),
+            createDatabaseSet({ kg: '100', reps: '5', status: 'completed' }),
+            createDatabaseSet({ kg: '90', reps: '8', status: 'completed' }),
           ],
           { exerciseDefinitionId: benchPress.id, name: 'Bench Press' },
         )
@@ -59,9 +59,9 @@ describe('ExerciseProgressView', () => {
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
 
       // Create workout with 100kg x 5 reps (e1RM ~112.5kg via Brzycki, rounds to 113)
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withExerciseAndSets(
-          [createDbSet({ kg: '100', reps: '5', status: 'completed' })],
+          [createDatabaseSet({ kg: '100', reps: '5', status: 'completed' })],
           { exerciseDefinitionId: benchPress.id, name: 'Bench Press' },
         )
         .build()
@@ -82,12 +82,12 @@ describe('ExerciseProgressView', () => {
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
 
       // Create workout with high volume: 3 sets of 80kg x 10 = 2400kg
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withExerciseAndSets(
           [
-            createDbSet({ kg: '80', reps: '10', status: 'completed' }),
-            createDbSet({ kg: '80', reps: '10', status: 'completed' }),
-            createDbSet({ kg: '80', reps: '10', status: 'completed' }),
+            createDatabaseSet({ kg: '80', reps: '10', status: 'completed' }),
+            createDatabaseSet({ kg: '80', reps: '10', status: 'completed' }),
+            createDatabaseSet({ kg: '80', reps: '10', status: 'completed' }),
           ],
           { exerciseDefinitionId: benchPress.id, name: 'Bench Press' },
         )

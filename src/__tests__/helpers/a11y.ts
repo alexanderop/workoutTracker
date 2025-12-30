@@ -12,21 +12,21 @@ export async function assertNoViolations(container: Element): Promise<void> {
 
   if (results.violations.length > 0) {
     console.error('Accessibility violations found:')
-    results.violations.forEach((violation) => {
+    for (const violation of results.violations) {
       console.error(`- ${violation.id} (${violation.impact}): ${violation.description}`)
       console.error(`  Help: ${violation.helpUrl}`)
-      violation.nodes.forEach((node) => {
+      for (const node of violation.nodes) {
         console.error(`  Element: ${node.html}`)
         if (node.any && node.any.length > 0) {
-          node.any.forEach((check) => {
+          for (const check of node.any) {
             console.error(`  Check: ${check.id} - ${check.message}`)
             if (check.data) {
               console.error(`  Data: ${JSON.stringify(check.data)}`)
             }
-          })
+          }
         }
-      })
-    })
+      }
+    }
   }
 
   expect(results.violations).toHaveLength(0)

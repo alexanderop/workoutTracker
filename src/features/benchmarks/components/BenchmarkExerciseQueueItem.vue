@@ -14,14 +14,14 @@ type StatusConfig = {
   labelKey: string
 }
 
-type Props = {
+type Properties = {
   exercise: BlockExercise
   status: ExerciseStatus
   exerciseNumber: number
   roundNumber?: number
 }
 
-const { exercise, status, exerciseNumber, roundNumber } = defineProps<Props>()
+const { exercise, status, exerciseNumber, roundNumber } = defineProps<Properties>()
 
 const { t } = useI18n()
 

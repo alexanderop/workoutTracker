@@ -1,6 +1,6 @@
 import type { SettingDefaults, SettingsRepository } from '@/db/interfaces'
 import type { DbUserSetting, UserSettingKey } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
  * Default values for user settings.
@@ -20,7 +20,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
 /**
  * Get a setting value by key with proper type narrowing via function overloads.
  */
-function createGetFunction(db: WorkoutTrackerDb) {
+function createGetFunction(database: WorkoutTrackerDatabase) {
   async function get(key: 'theme'): Promise<'light' | 'dark' | 'system'>
   async function get(key: 'defaultRestTimer'): Promise<number>
   async function get(key: 'weightUnit'): Promise<'kg' | 'lbs'>
@@ -31,7 +31,7 @@ function createGetFunction(db: WorkoutTrackerDb) {
   async function get(key: 'timerSoundVolume'): Promise<number>
   async function get(key: 'language'): Promise<'en' | 'de' | undefined>
   async function get(key: UserSettingKey) {
-    const setting = await db.settings.get(key)
+    const setting = await database.settings.get(key)
     if (!setting) {
       return SETTING_DEFAULTS[key]
     }
@@ -47,46 +47,55 @@ function createGetFunction(db: WorkoutTrackerDb) {
  */
 function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
   switch (setting.key) {
-    case 'theme':
+    case 'theme': {
       result.theme = setting.value
       break
-    case 'defaultRestTimer':
+    }
+    case 'defaultRestTimer': {
       result.defaultRestTimer = setting.value
       break
-    case 'weightUnit':
+    }
+    case 'weightUnit': {
       result.weightUnit = setting.value
       break
-    case 'heightUnit':
+    }
+    case 'heightUnit': {
       result.heightUnit = setting.value
       break
-    case 'autoSaveInterval':
+    }
+    case 'autoSaveInterval': {
       result.autoSaveInterval = setting.value
       break
-    case 'screenWakeLock':
+    }
+    case 'screenWakeLock': {
       result.screenWakeLock = setting.value
       break
-    case 'timerSoundEnabled':
+    }
+    case 'timerSoundEnabled': {
       result.timerSoundEnabled = setting.value
       break
-    case 'timerSoundVolume':
+    }
+    case 'timerSoundVolume': {
       result.timerSoundVolume = setting.value
       break
-    case 'language':
+    }
+    case 'language': {
       result.language = setting.value
       break
+    }
   }
 }
 
-export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRepository {
+export function createDexieSettingsRepository(database: WorkoutTrackerDatabase): SettingsRepository {
   return {
-    get: createGetFunction(db),
+    get: createGetFunction(database),
 
     async set(setting: DbUserSetting): Promise<void> {
-      await db.settings.put(setting)
+      await database.settings.put(setting)
     },
 
     async getAll(): Promise<SettingDefaults> {
-      const settings = await db.settings.toArray()
+      const settings = await database.settings.toArray()
       const result = { ...SETTING_DEFAULTS }
 
       for (const setting of settings) {
@@ -97,11 +106,11 @@ export function createDexieSettingsRepository(db: WorkoutTrackerDb): SettingsRep
     },
 
     async reset(key: UserSettingKey): Promise<void> {
-      await db.settings.delete(key)
+      await database.settings.delete(key)
     },
 
     async resetAll(): Promise<void> {
-      await db.settings.clear()
+      await database.settings.clear()
     },
   }
 }

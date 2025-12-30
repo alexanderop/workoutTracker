@@ -50,7 +50,7 @@ export function useTemplateBlockManagement(
   }
 
   function removeBlock(index: number): void {
-    blocks.value = blocks.value.filter((_, i) => i !== index)
+    blocks.value = blocks.value.filter((_, index_) => index_ !== index)
   }
 
   function updateBlocks(updated: ReadonlyArray<DbTemplateBlock>): void {

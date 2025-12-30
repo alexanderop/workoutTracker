@@ -8,7 +8,7 @@ import SettingsImportDataDialog from './SettingsImportDataDialog.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 
 const { t } = useI18n()
-const fileInputRef = useTemplateRef<HTMLInputElement>('fileInput')
+const fileInputReference = useTemplateRef<HTMLInputElement>('fileInput')
 
 const {
   isExporting,
@@ -24,7 +24,7 @@ const {
 } = useDataExportImport()
 
 function handleImportClick() {
-  fileInputRef.value?.click()
+  fileInputReference.value?.click()
 }
 
 async function handleFileSelect(event: Event) {

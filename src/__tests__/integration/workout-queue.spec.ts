@@ -118,7 +118,7 @@ describe('Workout Queue', () => {
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Complete remaining 2 sets (values are pre-filled after first)
-      for (let i = 0; i < 2; i++) {
+      for (let index = 0; index < 2; index++) {
         await page.getByRole('button', { name: /complete set/i }).click()
       }
 
@@ -135,6 +135,7 @@ describe('Workout Queue', () => {
       if (!benchItem) throw new Error('Bench Press item not found')
 
       // Check for completed indicator by aria-label
+      // eslint-disable-next-line no-restricted-syntax -- Finding indicator within queue item scope
       const completedIndicator = benchItem.querySelector('[role="img"][aria-label]')
       expect(completedIndicator).toBeTruthy()
       expect(completedIndicator?.getAttribute('aria-label')).toContain('completed')
@@ -162,6 +163,7 @@ describe('Workout Queue', () => {
       // Wait for queue to close and add block dialog to open
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.poll(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
         const dialog = document.querySelector('[role="dialog"]')
         // The add block dialog should be open and have exercises tabs
         return dialog?.textContent?.includes('Exercises')

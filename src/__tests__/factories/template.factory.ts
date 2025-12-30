@@ -54,11 +54,11 @@ export function createDbTemplateStrengthBlock(
 // AMRAP Block
 // ============================================
 
-type DbTemplateAmrapBlock = Extract<DbTemplateBlock, { kind: 'amrap' }>
+type DatabaseTemplateAmrapBlock = Extract<DbTemplateBlock, { kind: 'amrap' }>
 
 export function createDbTemplateAmrapBlock(
-  overrides: Partial<Omit<DbTemplateAmrapBlock, 'kind'>> = {},
-): DbTemplateAmrapBlock {
+  overrides: Partial<Omit<DatabaseTemplateAmrapBlock, 'kind'>> = {},
+): DatabaseTemplateAmrapBlock {
   return {
     kind: 'amrap',
     config: overrides.config ?? { durationSeconds: 600 },
@@ -70,11 +70,11 @@ export function createDbTemplateAmrapBlock(
 // EMOM Block
 // ============================================
 
-type DbTemplateEmomBlock = Extract<DbTemplateBlock, { kind: 'emom' }>
+type DatabaseTemplateEmomBlock = Extract<DbTemplateBlock, { kind: 'emom' }>
 
 export function createDbTemplateEmomBlock(
-  overrides: Partial<Omit<DbTemplateEmomBlock, 'kind'>> = {},
-): DbTemplateEmomBlock {
+  overrides: Partial<Omit<DatabaseTemplateEmomBlock, 'kind'>> = {},
+): DatabaseTemplateEmomBlock {
   return {
     kind: 'emom',
     config: overrides.config ?? { minutes: 10, exerciseRotation: 'full-round' },
@@ -86,11 +86,11 @@ export function createDbTemplateEmomBlock(
 // Tabata Block
 // ============================================
 
-type DbTemplateTabataBlock = Extract<DbTemplateBlock, { kind: 'tabata' }>
+type DatabaseTemplateTabataBlock = Extract<DbTemplateBlock, { kind: 'tabata' }>
 
 export function createDbTemplateTabataBlock(
-  overrides: Partial<Omit<DbTemplateTabataBlock, 'kind'>> = {},
-): DbTemplateTabataBlock {
+  overrides: Partial<Omit<DatabaseTemplateTabataBlock, 'kind'>> = {},
+): DatabaseTemplateTabataBlock {
   return {
     kind: 'tabata',
     config: overrides.config ?? { rounds: 8, workSeconds: 20, restSeconds: 10 },
@@ -102,11 +102,11 @@ export function createDbTemplateTabataBlock(
 // ForTime Block
 // ============================================
 
-type DbTemplateForTimeBlock = Extract<DbTemplateBlock, { kind: 'fortime' }>
+type DatabaseTemplateForTimeBlock = Extract<DbTemplateBlock, { kind: 'fortime' }>
 
 export function createDbTemplateForTimeBlock(
-  overrides: Partial<Omit<DbTemplateForTimeBlock, 'kind'>> = {},
-): DbTemplateForTimeBlock {
+  overrides: Partial<Omit<DatabaseTemplateForTimeBlock, 'kind'>> = {},
+): DatabaseTemplateForTimeBlock {
   return {
     kind: 'fortime',
     config: overrides.config ?? { timeCapSeconds: 900 },
@@ -118,11 +118,11 @@ export function createDbTemplateForTimeBlock(
 // Cardio Block
 // ============================================
 
-type DbTemplateCardioBlock = Extract<DbTemplateBlock, { kind: 'cardio' }>
+type DatabaseTemplateCardioBlock = Extract<DbTemplateBlock, { kind: 'cardio' }>
 
 export function createDbTemplateCardioBlock(
-  overrides: Partial<Omit<DbTemplateCardioBlock, 'kind'>> = {},
-): DbTemplateCardioBlock {
+  overrides: Partial<Omit<DatabaseTemplateCardioBlock, 'kind'>> = {},
+): DatabaseTemplateCardioBlock {
   return {
     kind: 'cardio',
     config: overrides.config ?? {

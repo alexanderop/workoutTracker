@@ -131,6 +131,59 @@ page.getByRole('button', { name: /start workout/i })
 page.getByTestId('workout-timer')
 ```
 
+### When querySelector Is Acceptable
+
+**Note:** Vitest 4.x does not have a `locators.extend()` API for custom selectors. For non-semantic queries, `querySelector` with `eslint-disable` is the recommended approach.
+
+Use Vitest locators for user-facing behavior. Use `querySelector` only for:
+
+1. **CSS class assertions** (visual/animation state):
+```ts
+// Testing implementation detail - no semantic alternative
+await expect.poll(() => {
+  // eslint-disable-next-line no-restricted-syntax -- Testing animation class
+  return document.querySelector('.animate-ping') !== null
+}).toBe(true)
+```
+
+2. **Scoped queries within already-located elements** (prefer chained locators when possible):
+```ts
+// ✅ PREFERRED: Chained locator
+const card = page.getByRole('article', { name: 'Bench Press' })
+const removeBtn = card.getByRole('button', { name: /remove/i })
+
+// ⚠️ ACCEPTABLE: When card is already a DOM element
+// eslint-disable-next-line no-restricted-syntax -- Scoped query within card
+const removeBtn = card.querySelector('button[aria-label*="remove" i]')
+```
+
+3. **Raw DOM element tests** (video fallback, hidden file inputs):
+```ts
+// Testing composable that creates raw DOM elements
+// eslint-disable-next-line no-restricted-syntax -- Raw DOM test
+expect(document.querySelector('video')).toBeTruthy()
+
+// Hidden file inputs have no accessible role
+// eslint-disable-next-line no-restricted-syntax -- Hidden file input
+const fileInput = document.querySelector('input[type="file"]')
+```
+
+4. **Data attribute queries** (when no `data-testid` exists):
+```ts
+// Custom data attributes used by component logic
+// eslint-disable-next-line no-restricted-syntax -- Data attribute query
+const completedSets = dialog.querySelectorAll('[data-set-state="completed"]')
+
+// Prefer adding data-testid for new components instead
+```
+
+**For class/attribute assertions on located elements, prefer:**
+```ts
+const button = page.getByRole('button', { name: 'Submit' })
+await expect.element(button).toHaveClass('bg-primary')
+await expect.element(button).toHaveAttribute('data-state', 'active')
+```
+
 ## Assertions
 
 ```ts
@@ -208,16 +261,28 @@ await userEvent.click(await btn.element())  // Bad
 await userEvent.click(btn)                   // Good
 ```
 
-### 5. No jsdom APIs
+### 5. Prefer Vitest Locators Over querySelector
 
-Tests run in Playwright browser:
+Tests run in Playwright browser. Prefer Vitest locators for better retry behavior:
 
 ```ts
-// ❌ BAD
+// ❌ AVOID for user-facing elements
 document.querySelector('.my-class')
 
-// ✅ GOOD
+// ✅ PREFERRED - semantic, auto-retry
 page.getByRole('button')
+
+// ✅ ACCEPTABLE - for implementation tests (see "When querySelector Is Acceptable")
+// eslint-disable-next-line no-restricted-syntax -- Testing CSS class
+document.querySelector('.animate-ping')
+```
+
+**Converting DOM elements back to Locators** (for chaining after `.element()`):
+```ts
+const cardElement = await page.getByText('Bench Press').element()
+const card = cardElement.closest('.card')
+// Convert back to Locator for chaining
+const deleteBtn = page.elementLocator(card).getByRole('button', { name: /delete/i })
 ```
 
 ### 6. Exercise Selection in Tests
@@ -247,7 +312,109 @@ await expect.element(page.getByText('Barbell Row')).toBeVisible()
 - When testing search/filter behavior, search first then check results
 - Consider that the exercise list has 130+ items and is virtualized
 
-### 7. Navigation Reliability
+### 6a. Seed Data Resilience (IMPORTANT)
+
+Seed data (exercises, templates, benchmarks) evolves as features are added. Tests that make assumptions about specific seed data are fragile and break unexpectedly.
+
+**Pattern: Test Invariants, Not Specific Data**
+
+```ts
+// ❌ FRAGILE - assumes exactly 1 "Deadlift" exists (breaks when variants added)
+const matches = buttons.filter(btn => btn.textContent?.includes('Deadlift'))
+expect(matches.length).toBe(1)
+
+// ✅ RESILIENT - tests the actual invariant (no duplicates)
+const names = buttons.map(btn => btn.textContent?.trim())
+const uniqueNames = new Set(names)
+expect(names.length).toBe(uniqueNames.size) // All names are unique
+```
+
+**Pattern: Create Controlled Test Data**
+
+When you need specific data for assertions, create it in the test rather than relying on seed data:
+
+```ts
+// ❌ FRAGILE - depends on seed data having exactly these exercises
+await userEvent.fill(searchInput, 'Deadlift')
+await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
+expect(results.length).toBe(1)
+
+// ✅ RESILIENT - create custom exercise with unique name
+const { db } = await createTestApp()
+await db.exercises.add({
+  id: 'test-unique-exercise',
+  name: 'Zzzz Unique Test Exercise',
+  muscle: 'chest',
+  equipment: 'barbell',
+})
+await userEvent.fill(searchInput, 'Zzzz Unique')
+await expect.element(page.getByText('Zzzz Unique Test Exercise')).toBeVisible()
+```
+
+**Pattern: Test Behavior, Not Implementation**
+
+```ts
+// ❌ FRAGILE - tests specific count that changes with seed data
+expect(exercises.length).toBe(134)
+
+// ✅ RESILIENT - tests the behavior that matters
+expect(exercises.length).toBeGreaterThan(0)
+expect(exercises.every(e => e.name && e.muscle)).toBe(true)
+```
+
+**Pattern: Use Exact Matches When Filtering**
+
+```ts
+// ❌ FRAGILE - partial match catches unexpected exercises
+const deadlifts = exercises.filter(e => e.name.includes('Deadlift'))
+
+// ✅ RESILIENT - exact match or explicit list
+const deadlift = exercises.find(e => e.name === 'Deadlift')
+
+// ✅ RESILIENT - if testing "variants exist", be explicit
+const deadliftVariants = exercises.filter(e =>
+  e.name === 'Deadlift' ||
+  e.name === 'Romanian Deadlift' ||
+  e.name.includes('Single Leg Deadlift')
+)
+```
+
+**When seed data tests ARE appropriate:**
+
+1. **Smoke tests** - Verify seed data loads correctly
+2. **Regression tests** - Specific exercises must exist for features to work
+3. **Data integrity tests** - Check for duplicates, missing fields, etc.
+
+For these, put them in a dedicated file (`seedExercises.spec.ts`) with clear documentation that they intentionally depend on seed data.
+
+### 7. Test Realistic User Flows (Not Just Happy Paths)
+
+Tests should mirror real user behavior, not idealized flows. Common gap: testing only the "complete everything" path.
+
+**Workout Testing Example:**
+```ts
+// ❌ HAPPY PATH ONLY - user completes all sets before finishing
+await workout.completeMultipleSets(3, { weight: '80', reps: '10', rir: '2' })
+// Dialog auto-opens after completing all sets
+
+// ✅ REALISTIC - user enters data but finishes early via menu
+const setRow = workout.getSet(0)
+await setRow.fill({ kg: 80, reps: 10, rir: 2 })  // Enter data, DON'T click complete
+await workout.openMenu()
+await page.getByRole('menuitem', { name: /end workout/i }).click()  // Finish early
+```
+
+**Why this matters:**
+- The app auto-completes sets with data when finishing early (`autoCompleteSetsWithData`)
+- If you only test "complete all sets", you miss bugs in the early-finish path
+- Real users often enter data for a set, then finish without completing every set
+
+**Key flows to test for workouts:**
+1. Complete all sets → finish (happy path)
+2. Enter data → finish early via menu (realistic)
+3. No data entered → finish early (edge case)
+
+### 8. Navigation Reliability
 
 UI button clicks for navigation can be flaky. Prefer direct router navigation when navigation isn't the behavior being tested:
 

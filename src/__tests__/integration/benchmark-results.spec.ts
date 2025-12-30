@@ -40,9 +40,9 @@ describe('Benchmark Results', () => {
 
       let completionTime: string | null = null
       await expect.poll(async () => {
-        const el = await page.getByText(/\d+:\d{2}/).element()
-        if (el.classList.contains('text-6xl')) {
-          completionTime = el.textContent
+        const element = await page.getByText(/\d+:\d{2}/).element()
+        if (element.classList.contains('text-6xl')) {
+          completionTime = element.textContent
           return completionTime
         }
         return null
@@ -50,8 +50,8 @@ describe('Benchmark Results', () => {
 
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      const currentEl = await page.getByText(/\d+:\d{2}/).element()
-      const currentTime = currentEl.classList.contains('text-6xl') ? currentEl.textContent : null
+      const currentElement = await page.getByText(/\d+:\d{2}/).element()
+      const currentTime = currentElement.classList.contains('text-6xl') ? currentElement.textContent : null
       expect(currentTime).toBe(completionTime)
 
       app.cleanup()

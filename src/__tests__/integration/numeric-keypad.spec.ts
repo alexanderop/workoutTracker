@@ -17,6 +17,115 @@ describe('NumericKeypad (Touch Device)', () => {
 
   const modalPO = new NumericInputModalPO()
 
+  describe('Fresh start behavior (calculator-style)', () => {
+    it('first digit replaces existing value instead of appending', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Open the weight modal and set initial value via keypad
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Enter 70 via keypad and confirm
+      await modalPO.enterValueAndConfirm(70)
+      await modalPO.waitForClose()
+
+      // Reopen the modal - should show 70
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      const initialValue = await modalPO.getCurrentValue()
+      expect(initialValue).toBe(70)
+
+      // Type "8" - should REPLACE 70 with 8, not append to make 708
+      await userEvent.click(page.getByRole('button', { name: /^8$/ }))
+
+      const newValue = await modalPO.getCurrentValue()
+      expect(newValue).toBe(8) // Not 708!
+
+      cleanup()
+    })
+
+    it('subsequent digits append after first digit replaces', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Set initial value via keypad
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+      await modalPO.enterValueAndConfirm(70)
+      await modalPO.waitForClose()
+
+      // Reopen
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Type "8" (replaces), then "5" (appends)
+      await userEvent.click(page.getByRole('button', { name: /^8$/ }))
+      await userEvent.click(page.getByRole('button', { name: /^5$/ }))
+
+      const value = await modalPO.getCurrentValue()
+      expect(value).toBe(85) // First replaced, second appended
+
+      cleanup()
+    })
+
+    it('backspace edits existing value instead of replacing', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Set initial value to 75 via keypad
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+      await modalPO.enterValueAndConfirm(75)
+      await modalPO.waitForClose()
+
+      // Reopen
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Backspace should delete last digit of 75, leaving 7
+      await userEvent.click(page.getByRole('button', { name: /backspace/i }))
+
+      const value = await modalPO.getCurrentValue()
+      expect(value).toBe(7) // Edited from 75, not fresh start
+
+      cleanup()
+    })
+
+    it('decimal as first input starts with "0."', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Set initial value via keypad
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+      await modalPO.enterValueAndConfirm(70)
+      await modalPO.waitForClose()
+
+      // Reopen
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Click decimal first - should start fresh with "0."
+      await modalPO.clickDecimal()
+      await userEvent.click(page.getByRole('button', { name: /^5$/ }))
+
+      const value = await modalPO.getCurrentValue()
+      expect(value).toBe(0.5) // Started fresh with decimal
+
+      cleanup()
+    })
+  })
+
   describe('Keypad digit buttons', () => {
     it('updates value when tapping digit button', async () => {
       const { builder, cleanup } = await createTestApp()
@@ -30,7 +139,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 
@@ -57,7 +166,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 
@@ -85,7 +194,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear and enter 123
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 

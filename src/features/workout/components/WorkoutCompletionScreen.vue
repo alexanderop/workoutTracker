@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import CompletionScreen from '@/components/CompletionScreen.vue'
 
-type Props = {
+type Properties = {
   workoutName: string
   duration: number
 }
 
-const { workoutName, duration } = defineProps<Props>()
+const { workoutName, duration } = defineProps<Properties>()
 
 const emit = defineEmits<{
   'view-details': []

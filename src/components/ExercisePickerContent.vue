@@ -15,7 +15,7 @@ import { useExerciseSearch } from '@/composables/useExerciseSearch'
  * Reusable exercise picker content with search, filters, and exercise list.
  * Used by ExercisePicker (dialog/overlay modes) and AddBlockDialog (embedded in tab).
  */
-type Props = {
+type Properties = {
   /** Show "Create Custom Exercise" button at the bottom */
   showCreate?: boolean
   /** i18n key for search placeholder */
@@ -39,7 +39,7 @@ const {
   emptyMessage = 'dialogs.addExercise.noResults',
   createButtonText = 'dialogs.addExercise.createCustomExercise',
   autofocus = true,
-} = defineProps<Props>()
+} = defineProps<Properties>()
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
 

@@ -2,6 +2,7 @@
 name: vueuse-reviewer
 description: Review Vue code for opportunities to use VueUse composables. Use when asked to optimize code, simplify implementations, or find VueUse alternatives. Triggers include "vueuse", "simplify", "optimize", "better way", "boilerplate".
 tools: Read, Glob, Grep
+color: cyan
 ---
 
 # VueUse Composable Reviewer

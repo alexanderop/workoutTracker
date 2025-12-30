@@ -62,7 +62,7 @@ const groupedByMonth = computed<ReadonlyArray<GroupedWorkouts>>(() => {
     existing.workouts.push(workout)
   }
 
-  return Array.from(groups.entries()).map(([monthKey, group]) => ({
+  return [...groups.entries()].map(([monthKey, group]) => ({
     monthKey,
     label: group.label,
     workouts: group.workouts,

@@ -7,20 +7,57 @@ import type {
 } from '@/db/schema'
 import { isDbStrengthBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
-export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRepository {
+/**
+ * Auto-complete sets that have data (kg and reps) when finishing a workout early.
+ * This ensures exercise history includes all sets with actual performance data.
+ */
+function autoCompleteSetsWithData(
+  blocks: ReadonlyArray<DbWorkoutBlock>,
+  completedAt: number,
+): ReadonlyArray<DbWorkoutBlock> {
+  return blocks.map((block) => {
+    if (!isDbStrengthBlock(block)) return block
+
+    return {
+      ...block,
+      sets: block.sets.map((set) => {
+        // Skip already completed sets
+        if (set.status === 'completed') return set
+
+        // Auto-complete sets that have both kg and reps data
+        const hasData = set.kg.trim() !== '' && set.reps.trim() !== ''
+        if (hasData) {
+          return {
+            ...set,
+            status: 'completed' as const,
+            completedAt,
+          }
+        }
+
+        return set
+      }),
+    }
+  })
+}
+
+export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase): WorkoutsRepository {
   return {
     async completeWorkout(
       activeWorkout: Readonly<DbActiveWorkout>,
       notes = '',
     ): Promise<DbCompletedWorkout> {
       const completedAt = Date.now()
+
+      // Auto-complete sets with data when finishing workout
+      const completedBlocks = autoCompleteSetsWithData(activeWorkout.blocks, completedAt)
+
       const completedWorkout: DbCompletedWorkout = {
         id: generateId(),
         name: activeWorkout.name,
-        blocks: activeWorkout.blocks,
+        blocks: completedBlocks,
         startedAt: activeWorkout.startedAt,
         completedAt,
         durationSeconds: Math.floor((completedAt - activeWorkout.startedAt) / 1000),
@@ -28,43 +65,43 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
         benchmarkId: activeWorkout.benchmarkId,
       }
 
-      await db.transaction('rw', [db.workouts, db.activeWorkout], async () => {
-        await db.workouts.add(completedWorkout)
-        await db.activeWorkout.delete('current')
+      await database.transaction('rw', [database.workouts, database.activeWorkout], async () => {
+        await database.workouts.add(completedWorkout)
+        await database.activeWorkout.delete('current')
       })
 
       return completedWorkout
     },
 
     async add(workout: Readonly<DbCompletedWorkout>): Promise<void> {
-      await db.workouts.add(workout)
+      await database.workouts.add(workout)
     },
 
-    async getHistory(params: GetHistoryParams = {}): Promise<ReadonlyArray<DbCompletedWorkout>> {
-      const { limit = 50, offset = 0 } = params
-      return db.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()
+    async getHistory(parameters: GetHistoryParams = {}): Promise<ReadonlyArray<DbCompletedWorkout>> {
+      const { limit = 50, offset = 0 } = parameters
+      return database.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()
     },
 
     async getByDateRange(
-      params: GetByDateRangeParams,
+      parameters: GetByDateRangeParams,
     ): Promise<ReadonlyArray<DbCompletedWorkout>> {
-      return db.workouts.where('completedAt').between(params.startDate, params.endDate).toArray()
+      return database.workouts.where('completedAt').between(parameters.startDate, parameters.endDate).toArray()
     },
 
     async getById(id: string): Promise<DbCompletedWorkout | undefined> {
-      return db.workouts.get(id)
+      return database.workouts.get(id)
     },
 
     async delete(id: string): Promise<void> {
-      await db.workouts.delete(id)
+      await database.workouts.delete(id)
     },
 
     async count(): Promise<number> {
-      return db.workouts.count()
+      return database.workouts.count()
     },
 
     async startFromCompleted(id: string): Promise<DbActiveWorkout> {
-      const completedWorkout = await db.workouts.get(id)
+      const completedWorkout = await database.workouts.get(id)
       if (!completedWorkout) {
         throw createDatabaseError('NOT_FOUND', 'start workout from history')
       }
@@ -116,7 +153,7 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
         globalTimerStartedAt: null,
       }
 
-      await db.activeWorkout.put(activeWorkout)
+      await database.activeWorkout.put(activeWorkout)
       return activeWorkout
     },
   }

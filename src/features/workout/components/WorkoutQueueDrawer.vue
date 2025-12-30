@@ -95,17 +95,13 @@ function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
     if (allCompleted) return 'completed'
   }
 
-  if (isTimedBlock(block)) {
-    if (block.result !== null) return 'completed'
-  }
+  if (isTimedBlock(block) && block.result !== null) return 'completed'
 
   // If block is before the current block, check if it has any progress
-  if (index < workout.value.selectedBlockIndex) {
-    if (isStrengthBlock(block)) {
+  if (index < workout.value.selectedBlockIndex && isStrengthBlock(block)) {
       const hasCompleted = block.sets.some((s) => s.status === 'completed')
       if (hasCompleted) return 'completed'
     }
-  }
 
   return 'planned'
 }

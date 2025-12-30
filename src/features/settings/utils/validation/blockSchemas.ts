@@ -2,10 +2,10 @@ import { z } from 'zod'
 
 import {
   blockExerciseFieldsBase,
-  dbAmrapConfigSchema,
-  dbEmomConfigSchema,
-  dbForTimeConfigSchema,
-  dbTabataConfigSchema,
+  dbAmrapConfigSchema as databaseAmrapConfigSchema,
+  dbEmomConfigSchema as databaseEmomConfigSchema,
+  dbForTimeConfigSchema as databaseForTimeConfigSchema,
+  dbTabataConfigSchema as databaseTabataConfigSchema,
   strengthBlockFieldsBase,
 } from './blockConfigSchemas'
 import { safeIdSchema, setStatusSchema, timestampSchema } from './primitiveSchemas'
@@ -17,7 +17,7 @@ import { safeIdSchema, setStatusSchema, timestampSchema } from './primitiveSchem
 /**
  * DbSet schema matching src/db/schema.ts DbSet type.
  */
-const dbSetSchema = z
+const databaseSetSchema = z
   .object({
     id: safeIdSchema,
     kg: z.string().max(20),
@@ -35,7 +35,7 @@ const dbSetSchema = z
 /**
  * DbBlockExercise schema matching src/db/schema.ts DbBlockExercise type.
  */
-const dbBlockExerciseSchema = z
+const databaseBlockExerciseSchema = z
   .object({
     id: safeIdSchema,
     ...blockExerciseFieldsBase,
@@ -46,7 +46,7 @@ const dbBlockExerciseSchema = z
 // Block Config Schemas (Cardio only - others imported from blockConfigSchemas.ts)
 // ============================================
 
-const dbCardioActivitySchema = z.enum([
+const databaseCardioActivitySchema = z.enum([
   'running',
   'cycling',
   'rowing',
@@ -56,11 +56,11 @@ const dbCardioActivitySchema = z.enum([
   'walking',
 ])
 
-const dbCardioConfigSchema = z
+const databaseCardioConfigSchema = z
   .object({
-    activity: dbCardioActivitySchema,
-    targetDurationSeconds: z.number().int().min(1).max(36000).nullable(), // max 10 hours
-    targetDistanceMeters: z.number().int().min(1).max(1000000).nullable(), // max 1000km
+    activity: databaseCardioActivitySchema,
+    targetDurationSeconds: z.number().int().min(1).max(36_000).nullable(), // max 10 hours
+    targetDistanceMeters: z.number().int().min(1).max(1_000_000).nullable(), // max 1000km
   })
   .strict()
 
@@ -68,7 +68,7 @@ const dbCardioConfigSchema = z
 // Block Result Schemas
 // ============================================
 
-const dbAmrapResultSchema = z
+const databaseAmrapResultSchema = z
   .object({
     rounds: z.number().int().min(0),
     partialReps: z.number().int().min(0),
@@ -76,27 +76,27 @@ const dbAmrapResultSchema = z
   })
   .strict()
 
-const dbEmomResultSchema = z
+const databaseEmomResultSchema = z
   .object({
     completedMinutes: z.number().int().min(0),
     missedMinutes: z.array(z.number().int().min(0)).max(120),
   })
   .strict()
 
-const dbTabataResultSchema = z
+const databaseTabataResultSchema = z
   .object({
     repsPerRound: z.array(z.number().int().min(0)).max(100),
   })
   .strict()
 
-const dbForTimeResultSchema = z
+const databaseForTimeResultSchema = z
   .object({
     completionTime: z.number().int().min(0),
     completed: z.boolean(),
   })
   .strict()
 
-const dbCardioResultSchema = z
+const databaseCardioResultSchema = z
   .object({
     actualDurationSeconds: z.number().int().min(0),
     distanceMeters: z.number().int().min(0).nullable(),
@@ -113,12 +113,12 @@ const dbCardioResultSchema = z
 /**
  * DbStrengthBlock schema matching src/db/schema.ts DbStrengthBlock type.
  */
-const dbStrengthBlockSchema = z
+const databaseStrengthBlockSchema = z
   .object({
     kind: z.literal('strength'),
     id: safeIdSchema,
     ...strengthBlockFieldsBase,
-    sets: z.array(dbSetSchema).max(50),
+    sets: z.array(databaseSetSchema).max(50),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -126,13 +126,13 @@ const dbStrengthBlockSchema = z
 /**
  * DbEmomBlock schema matching src/db/schema.ts DbEmomBlock type.
  */
-const dbEmomBlockSchema = z
+const databaseEmomBlockSchema = z
   .object({
     kind: z.literal('emom'),
     id: safeIdSchema,
-    config: dbEmomConfigSchema,
-    exercises: z.array(dbBlockExerciseSchema).max(20),
-    result: dbEmomResultSchema.nullable(),
+    config: databaseEmomConfigSchema,
+    exercises: z.array(databaseBlockExerciseSchema).max(20),
+    result: databaseEmomResultSchema.nullable(),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -140,13 +140,13 @@ const dbEmomBlockSchema = z
 /**
  * DbAmrapBlock schema matching src/db/schema.ts DbAmrapBlock type.
  */
-const dbAmrapBlockSchema = z
+const databaseAmrapBlockSchema = z
   .object({
     kind: z.literal('amrap'),
     id: safeIdSchema,
-    config: dbAmrapConfigSchema,
-    exercises: z.array(dbBlockExerciseSchema).max(20),
-    result: dbAmrapResultSchema.nullable(),
+    config: databaseAmrapConfigSchema,
+    exercises: z.array(databaseBlockExerciseSchema).max(20),
+    result: databaseAmrapResultSchema.nullable(),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -154,13 +154,13 @@ const dbAmrapBlockSchema = z
 /**
  * DbTabataBlock schema matching src/db/schema.ts DbTabataBlock type.
  */
-const dbTabataBlockSchema = z
+const databaseTabataBlockSchema = z
   .object({
     kind: z.literal('tabata'),
     id: safeIdSchema,
-    config: dbTabataConfigSchema,
-    exercise: dbBlockExerciseSchema,
-    result: dbTabataResultSchema.nullable(),
+    config: databaseTabataConfigSchema,
+    exercise: databaseBlockExerciseSchema,
+    result: databaseTabataResultSchema.nullable(),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -168,13 +168,13 @@ const dbTabataBlockSchema = z
 /**
  * DbForTimeBlock schema matching src/db/schema.ts DbForTimeBlock type.
  */
-const dbForTimeBlockSchema = z
+const databaseForTimeBlockSchema = z
   .object({
     kind: z.literal('fortime'),
     id: safeIdSchema,
-    config: dbForTimeConfigSchema,
-    exercises: z.array(dbBlockExerciseSchema).max(20),
-    result: dbForTimeResultSchema.nullable(),
+    config: databaseForTimeConfigSchema,
+    exercises: z.array(databaseBlockExerciseSchema).max(20),
+    result: databaseForTimeResultSchema.nullable(),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -182,12 +182,12 @@ const dbForTimeBlockSchema = z
 /**
  * DbCardioBlock schema matching src/db/schema.ts DbCardioBlock type.
  */
-const dbCardioBlockSchema = z
+const databaseCardioBlockSchema = z
   .object({
     kind: z.literal('cardio'),
     id: safeIdSchema,
-    config: dbCardioConfigSchema,
-    result: dbCardioResultSchema.nullable(),
+    config: databaseCardioConfigSchema,
+    result: databaseCardioResultSchema.nullable(),
     orderIndex: z.number().int().min(0),
   })
   .strict()
@@ -197,10 +197,10 @@ const dbCardioBlockSchema = z
  * Matches src/db/schema.ts DbWorkoutBlock type.
  */
 export const dbWorkoutBlockSchema = z.discriminatedUnion('kind', [
-  dbStrengthBlockSchema,
-  dbEmomBlockSchema,
-  dbAmrapBlockSchema,
-  dbTabataBlockSchema,
-  dbForTimeBlockSchema,
-  dbCardioBlockSchema,
+  databaseStrengthBlockSchema,
+  databaseEmomBlockSchema,
+  databaseAmrapBlockSchema,
+  databaseTabataBlockSchema,
+  databaseForTimeBlockSchema,
+  databaseCardioBlockSchema,
 ])

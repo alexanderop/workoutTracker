@@ -1,7 +1,7 @@
 import { enUS, de } from 'date-fns/locale'
 import type { Locale } from 'date-fns'
 import type { SupportedLocale } from '@/i18n/types'
-export type { SupportedLocale }
+
 import { i18n } from '@/i18n'
 
 const localeMap: Record<SupportedLocale, Locale> = {
@@ -30,3 +30,5 @@ export function getCurrentLocale(): SupportedLocale {
 export function getDateLocale(locale: SupportedLocale): Locale {
   return localeMap[locale]
 }
+
+export {type SupportedLocale} from '@/i18n/types'

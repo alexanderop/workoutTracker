@@ -295,19 +295,22 @@ export const BLOCK_COLORS = {
 
 export function getBlockDurationDisplay(block: TimedBlock): string {
   switch (block.kind) {
-    case 'emom':
+    case 'emom': {
       return `${block.config.minutes} min`
-    case 'amrap':
+    }
+    case 'amrap': {
       return `${Math.floor(block.config.durationSeconds / 60)} min`
+    }
     case 'tabata': {
       const totalSeconds =
         block.config.rounds * (block.config.workSeconds + block.config.restSeconds)
       return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, '0')}`
     }
-    case 'fortime':
+    case 'fortime': {
       return block.config.timeCapSeconds
         ? `Cap: ${Math.floor(block.config.timeCapSeconds / 60)} min`
         : 'No cap'
+    }
   }
 }
 

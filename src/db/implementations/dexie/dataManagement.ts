@@ -1,34 +1,34 @@
 import type { DataManagementRepository, ExportDataContents } from '@/db/interfaces'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 export function createDexieDataManagementRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): DataManagementRepository {
   // Shared table list for transactions
   const allTables = [
-    db.settings,
-    db.customExercises,
-    db.templates,
-    db.workouts,
-    db.benchmarks,
-    db.activeWorkout,
-    db.activeBenchmark,
-    db.weightEntries,
-    db.drafts,
+    database.settings,
+    database.customExercises,
+    database.templates,
+    database.workouts,
+    database.benchmarks,
+    database.activeWorkout,
+    database.activeBenchmark,
+    database.weightEntries,
+    database.drafts,
   ] as const
 
   // Shared helper to clear all tables
   async function clearAllTables(): Promise<void> {
     await Promise.all([
-      db.settings.clear(),
-      db.customExercises.clear(),
-      db.templates.clear(),
-      db.workouts.clear(),
-      db.benchmarks.clear(),
-      db.activeWorkout.clear(),
-      db.activeBenchmark.clear(),
-      db.weightEntries.clear(),
-      db.drafts.clear(),
+      database.settings.clear(),
+      database.customExercises.clear(),
+      database.templates.clear(),
+      database.workouts.clear(),
+      database.benchmarks.clear(),
+      database.activeWorkout.clear(),
+      database.activeBenchmark.clear(),
+      database.weightEntries.clear(),
+      database.drafts.clear(),
     ])
   }
 
@@ -36,40 +36,40 @@ export function createDexieDataManagementRepository(
     async exportAll(): Promise<ExportDataContents> {
       const [settings, customExercises, templates, workouts, benchmarks, weightEntries] =
         await Promise.all([
-          db.settings.toArray(),
-          db.customExercises.toArray(),
-          db.templates.toArray(),
-          db.workouts.toArray(),
-          db.benchmarks.toArray(),
-          db.weightEntries.toArray(),
+          database.settings.toArray(),
+          database.customExercises.toArray(),
+          database.templates.toArray(),
+          database.workouts.toArray(),
+          database.benchmarks.toArray(),
+          database.weightEntries.toArray(),
         ])
 
       return { settings, customExercises, templates, workouts, benchmarks, weightEntries }
     },
 
     async importAll(data: ExportDataContents): Promise<void> {
-      await db.transaction('rw', allTables, async () => {
+      await database.transaction('rw', allTables, async () => {
         await clearAllTables()
 
         const { settings, customExercises, templates, workouts, benchmarks, weightEntries } = data
 
         await Promise.all([
-          settings.length > 0 ? db.settings.bulkAdd([...settings]) : Promise.resolve(),
+          settings.length > 0 ? database.settings.bulkAdd([...settings]) : Promise.resolve(),
           customExercises.length > 0
-            ? db.customExercises.bulkAdd([...customExercises])
+            ? database.customExercises.bulkAdd([...customExercises])
             : Promise.resolve(),
-          templates.length > 0 ? db.templates.bulkAdd([...templates]) : Promise.resolve(),
-          workouts.length > 0 ? db.workouts.bulkAdd([...workouts]) : Promise.resolve(),
-          benchmarks.length > 0 ? db.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
+          templates.length > 0 ? database.templates.bulkAdd([...templates]) : Promise.resolve(),
+          workouts.length > 0 ? database.workouts.bulkAdd([...workouts]) : Promise.resolve(),
+          benchmarks.length > 0 ? database.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
           weightEntries?.length > 0
-            ? db.weightEntries.bulkAdd([...weightEntries])
+            ? database.weightEntries.bulkAdd([...weightEntries])
             : Promise.resolve(),
         ])
       })
     },
 
     async deleteAll(): Promise<void> {
-      await db.transaction('rw', allTables, clearAllTables)
+      await database.transaction('rw', allTables, clearAllTables)
     },
   }
 }

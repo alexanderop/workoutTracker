@@ -58,7 +58,7 @@ describe('ExercisePicker', () => {
     })
 
     it('closes dialog after selecting exercise', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -73,12 +73,10 @@ describe('ExercisePicker', () => {
 
       await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
-      // Click on exercise
-      const dialog = await getByRole('dialog').element()
-      const benchButton = Array.from(dialog.querySelectorAll('button')).find((btn) =>
-        btn.textContent?.includes('Bench Press')
-      )
-      if (benchButton) await userEvent.click(benchButton)
+      // Click on exercise using semantic query within dialog
+      // Use "BP Bench Press" prefix (includes the abbreviation shown in the UI)
+      const dialog = page.getByRole('dialog')
+      await userEvent.click(dialog.getByRole('button', { name: /^bp bench press/i }))
 
       // Dialog should close
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -123,16 +121,21 @@ describe('ExercisePicker', () => {
       // Wait for search results (use exact to avoid matching other exercises)
       await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
 
-      // Count exercise buttons containing "Deadlift"
-      const dialog = await page.getByRole('dialog').element()
-      const deadliftButtons = Array.from(dialog.querySelectorAll('button')).filter((btn: HTMLButtonElement) =>
-        btn.textContent?.includes('Deadlift')
-      )
+      // Count exercise buttons - search for "Deadlift" should show all variants
+      const dialog = page.getByRole('dialog')
+      const deadliftButtons = await dialog.getByRole('button', { name: /deadlift/i }).all()
 
-      // Should only have one button for Deadlift, not duplicates
-      // (Note: Smith Machine Romanian Deadlift is a different exercise, so filter to exact match)
-      const exactMatches = deadliftButtons.filter((btn) => btn.textContent?.includes('Deadlift') && !btn.textContent?.includes('Romanian'))
-      expect(exactMatches.length).toBe(1)
+      // Get exercise names to check for true duplicates
+      const exerciseNames = await Promise.all(
+        deadliftButtons.map(async (button) => {
+          const element = await button.element()
+          return element.textContent?.trim()
+        })
+      )
+      const uniqueNames = new Set(exerciseNames)
+
+      // All exercise names should be unique (no duplicates)
+      expect(exerciseNames.length).toBe(uniqueNames.size)
 
       cleanup()
     })
@@ -203,7 +206,7 @@ describe('ExercisePicker', () => {
     })
 
     it('resets equipment filter when dialog reopens', async () => {
-      const { navigateTo, getByRole, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // First open - select equipment filter
@@ -213,14 +216,14 @@ describe('ExercisePicker', () => {
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
 
-      // Close dialog by selecting an exercise (use exact match for "Push-ups")
-      const dialog = await getByRole('dialog').element()
-      const exerciseBtn = Array.from(dialog.querySelectorAll('button')).find(
-        (btn) => btn.textContent?.trim() === '🏃Push-upsChest'
-      ) || Array.from(dialog.querySelectorAll('button')).find((btn) =>
-        btn.textContent?.includes('Push-ups') && !btn.textContent?.includes('Clap')
-      )
-      if (exerciseBtn) await userEvent.click(exerciseBtn)
+      // Search for Push-ups to find it in the filtered list
+      const searchInput = page.getByRole('textbox')
+      await userEvent.fill(searchInput, 'Push-ups')
+      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+
+      // Close dialog by selecting Push-ups exercise (button name includes abbreviation + muscle)
+      const dialog = page.getByRole('dialog')
+      await userEvent.click(dialog.getByRole('button', { name: /pu.*push-ups/i }))
 
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 

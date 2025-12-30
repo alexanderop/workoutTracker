@@ -1,6 +1,6 @@
-import type { DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/db/schema'
+import type { DbStrengthBlock, DbSet,  } from '@/db/schema'
 import { generateId } from '@/db'
-import { createDbSet } from './dbSet.factory'
+import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
 const STRENGTH_DEFAULTS: Readonly<Omit<DbStrengthBlock, 'id' | 'sets'>> = {
   kind: 'strength',
@@ -16,7 +16,7 @@ export function createDbStrengthBlock(overrides: Partial<DbStrengthBlock> = {}):
   return {
     id: generateId(),
     ...STRENGTH_DEFAULTS,
-    sets: overrides.sets ?? [createDbSet()],
+    sets: overrides.sets ?? [createDatabaseSet()],
     ...overrides,
   }
 }
@@ -27,11 +27,13 @@ export function createDbStrengthBlockWithSets(
 ): DbStrengthBlock {
   return createDbStrengthBlock({
     ...overrides,
-    sets: sets.map((s) => createDbSet(s)),
+    sets: sets.map((s) => createDatabaseSet(s)),
   })
 }
 
 // Backward compatible alias
 export const createDbExercise = createDbStrengthBlock
 export const createDbExerciseWithSets = createDbStrengthBlockWithSets
-export type { DbStrengthBlock, DbWorkoutBlock }
+
+
+export {type DbWorkoutBlock, type DbStrengthBlock} from '@/db/schema'

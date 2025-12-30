@@ -18,16 +18,16 @@ export const useExercisesStore = createGlobalState(() => {
    * Load all custom exercises from the database.
    * Call this on app initialization.
    */
-  async function loadFromDb(): Promise<void> {
+  async function loadFromDatabase(): Promise<void> {
     if (isLoading.value) return
 
     isLoading.value = true
-    const [error, dbExercises] = await tryCatch(getCustomExercisesRepository().getAll())
+    const [error, databaseExercises] = await tryCatch(getCustomExercisesRepository().getAll())
     isLoading.value = false
 
     if (error) return
 
-    customExercises.value = dbExercises.map(dbToCustomExercise)
+    customExercises.value = databaseExercises.map(dbToCustomExercise)
     isLoaded.value = true
   }
 
@@ -37,15 +37,15 @@ export const useExercisesStore = createGlobalState(() => {
   async function addExercise(
     exercise: Omit<CustomExercise, 'id' | 'createdAt'>,
   ): Promise<CustomExercise | null> {
-    const dbExercise = createDbCustomExercise(exercise)
+    const databaseExercise = createDbCustomExercise(exercise)
 
     // Save to DB first
-    const [error] = await tryCatch(getCustomExercisesRepository().add(dbExercise))
+    const [error] = await tryCatch(getCustomExercisesRepository().add(databaseExercise))
 
     if (error) return null
 
     // Then update local state
-    const newExercise = dbToCustomExercise(dbExercise)
+    const newExercise = dbToCustomExercise(databaseExercise)
     customExercises.value = [...customExercises.value, newExercise]
     return newExercise
   }
@@ -68,9 +68,9 @@ export const useExercisesStore = createGlobalState(() => {
   ): Promise<boolean> {
     // Build partial update with only the fields that were provided
     // Nullable fields (equipment, muscle, image) get undefined → null conversion
-    const dbUpdates = buildPartialUpdate(updates, NULLABLE_EXERCISE_FIELDS)
+    const databaseUpdates = buildPartialUpdate(updates, NULLABLE_EXERCISE_FIELDS)
 
-    const [error] = await tryCatch(getCustomExercisesRepository().update(id, dbUpdates))
+    const [error] = await tryCatch(getCustomExercisesRepository().update(id, databaseUpdates))
 
     if (error) return false
 
@@ -103,7 +103,7 @@ export const useExercisesStore = createGlobalState(() => {
     customExercises,
     isLoaded,
     isLoading,
-    loadFromDb,
+    loadFromDb: loadFromDatabase,
     addExercise,
     updateExercise,
     getExerciseById,

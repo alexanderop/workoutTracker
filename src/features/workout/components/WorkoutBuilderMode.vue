@@ -38,20 +38,24 @@ function getBlockDurationSeconds(block: (typeof workout.value.blocks)[number]): 
   }
 
   switch (block.kind) {
-    case 'amrap':
+    case 'amrap': {
       return block.config.durationSeconds
-    case 'emom':
+    }
+    case 'emom': {
       return block.config.minutes * 60
-    case 'tabata':
+    }
+    case 'tabata': {
       return block.config.rounds * (block.config.workSeconds + block.config.restSeconds)
-    case 'fortime':
+    }
+    case 'fortime': {
       return block.config.timeCapSeconds ?? 600
+    }
   }
 }
 
 const estimatedDuration = computed(() => {
   const totalSeconds = workout.value.blocks.reduce(
-    (acc, block) => acc + getBlockDurationSeconds(block),
+    (accumulator, block) => accumulator + getBlockDurationSeconds(block),
     0,
   )
 
@@ -65,7 +69,7 @@ const estimatedDuration = computed(() => {
 })
 
 const subtitle = computed(() => {
-  if (!hasBlocks.value) return undefined
+  if (!hasBlocks.value) return
   const blockCount = workout.value.blocks.length
   const blockLabel = blockCount === 1 ? 'block' : 'blocks'
   return `${blockCount} ${blockLabel} · ${estimatedDuration.value}`

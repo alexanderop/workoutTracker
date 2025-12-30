@@ -2,6 +2,7 @@
 name: architecture-reviewer
 description: Review code for architecture boundary violations and dependency rules. Use when asked to check architecture, verify feature isolation, review imports, or enforce layering. Triggers include "architecture", "boundaries", "feature isolation", "imports", "dependency", "layering".
 tools: Read, Glob, Grep
+color: purple
 ---
 
 # Bulletproof Architecture Reviewer

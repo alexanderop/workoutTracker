@@ -10,14 +10,14 @@ import WorkoutBlockPlaylistItem from './WorkoutBlockPlaylistItem.vue'
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   blocks: ReadonlyArray<WorkoutBlock>
   selectedIndex: number
   completedBlocks?: ReadonlyArray<number>
   disabled?: boolean
 }
 
-const { blocks, selectedIndex, completedBlocks = [], disabled = false } = defineProps<Props>()
+const { blocks, selectedIndex, completedBlocks = [], disabled = false } = defineProps<Properties>()
 
 const emit = defineEmits<{
   select: [index: number]

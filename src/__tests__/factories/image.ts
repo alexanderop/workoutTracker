@@ -17,14 +17,14 @@ export async function createTestImageBlob(): Promise<Blob> {
   canvas.width = DEFAULT_WIDTH
   canvas.height = DEFAULT_HEIGHT
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
+  const context = canvas.getContext('2d')
+  if (!context) {
     throw new Error('Failed to get canvas 2D context')
   }
 
   // Draw a simple colored rectangle
-  ctx.fillStyle = DEFAULT_COLOR
-  ctx.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT)
+  context.fillStyle = DEFAULT_COLOR
+  context.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT)
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {

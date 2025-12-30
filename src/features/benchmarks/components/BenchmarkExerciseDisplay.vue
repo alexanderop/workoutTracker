@@ -11,13 +11,13 @@ type ComparisonDisplayState =
   | { type: 'split-comparison'; icon: Component; time: string; message: string; isFaster: boolean }
   | { type: 'none' }
 
-type Props = {
+type Properties = {
   exercise: BlockExercise
   splitComparison?: SplitComparison | null
   isFirstAttempt?: boolean
 }
 
-const { exercise, splitComparison = null, isFirstAttempt = false } = defineProps<Props>()
+const { exercise, splitComparison = null, isFirstAttempt = false } = defineProps<Properties>()
 const { t } = useI18n()
 
 /**

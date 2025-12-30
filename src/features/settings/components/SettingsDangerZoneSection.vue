@@ -12,7 +12,7 @@ const showDeleteDialog = ref(false)
 
 async function handleDeleteAllData() {
   await deleteAllData()
-  window.location.reload()
+  globalThis.location.reload()
 }
 </script>
 

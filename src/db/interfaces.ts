@@ -1,16 +1,16 @@
 import type {
-  DbActiveBenchmarkWorkout,
-  DbActiveWorkout,
-  DbBenchmark,
-  DbCompletedWorkout,
-  DbCustomExercise,
-  DbFormDraft,
-  DbProgression,
-  DbProgressionSession,
-  DbTemplateBlock,
-  DbUserSetting,
-  DbWeightEntry,
-  DbWorkoutTemplate,
+  DbActiveBenchmarkWorkout as DatabaseActiveBenchmarkWorkout,
+  DbActiveWorkout as DatabaseActiveWorkout,
+  DbBenchmark as DatabaseBenchmark,
+  DbCompletedWorkout as DatabaseCompletedWorkout,
+  DbCustomExercise as DatabaseCustomExercise,
+  DbFormDraft as DatabaseFormDraft,
+  DbProgression as DatabaseProgression,
+  DbProgressionSession as DatabaseProgressionSession,
+  DbTemplateBlock as DatabaseTemplateBlock,
+  DbUserSetting as DatabaseUserSetting,
+  DbWeightEntry as DatabaseWeightEntry,
+  DbWorkoutTemplate as DatabaseWorkoutTemplate,
   DraftKey,
   ExerciseSession,
   ExerciseStats,
@@ -78,7 +78,7 @@ export type SettingsRepository = {
   /**
    * Save or update a user setting in the database.
    */
-  set(setting: DbUserSetting): Promise<void>
+  set(setting: DatabaseUserSetting): Promise<void>
   /**
    * Retrieve all settings merged with defaults for missing keys.
    */
@@ -101,22 +101,22 @@ export type CustomExercisesRepository = {
   /**
    * Retrieve all custom exercises sorted by creation date (newest first).
    */
-  getAll(): Promise<ReadonlyArray<DbCustomExercise>>
+  getAll(): Promise<ReadonlyArray<DatabaseCustomExercise>>
   /**
    * Find custom exercise by ID.
    */
-  getById(id: string): Promise<DbCustomExercise | undefined>
+  getById(id: string): Promise<DatabaseCustomExercise | undefined>
   /**
    * Add a new custom exercise to the database.
    */
-  add(exercise: Readonly<DbCustomExercise>): Promise<void>
+  add(exercise: Readonly<DatabaseCustomExercise>): Promise<void>
   /**
    * Update an existing custom exercise. Automatically sets updatedAt timestamp.
    * @throws Error if exercise with id not found
    */
   update(
     id: string,
-    updates: Partial<Omit<DbCustomExercise, 'id' | 'createdAt'>>,
+    updates: Partial<Omit<DatabaseCustomExercise, 'id' | 'createdAt'>>,
   ): Promise<void>
   /**
    * Delete a custom exercise by ID. Silently succeeds if ID doesn't exist.
@@ -129,7 +129,7 @@ export type CustomExercisesRepository = {
   /**
    * Search custom exercises by name using case-insensitive substring matching.
    */
-  searchByName(query: string): Promise<ReadonlyArray<DbCustomExercise>>
+  searchByName(query: string): Promise<ReadonlyArray<DatabaseCustomExercise>>
 }
 
 // ============================================
@@ -140,11 +140,11 @@ export type ActiveWorkoutRepository = {
   /**
    * Retrieve the current active workout.
    */
-  get(): Promise<DbActiveWorkout | undefined>
+  get(): Promise<DatabaseActiveWorkout | undefined>
   /**
    * Save or update the active workout. Automatically updates lastModifiedAt timestamp.
    */
-  save(workout: Readonly<DbActiveWorkout>): Promise<void>
+  save(workout: Readonly<DatabaseActiveWorkout>): Promise<void>
   /**
    * Remove the active workout from the database.
    */
@@ -163,11 +163,11 @@ export type ActiveBenchmarkWorkoutRepository = {
   /**
    * Retrieve the current active benchmark workout.
    */
-  load(): Promise<DbActiveBenchmarkWorkout | undefined>
+  load(): Promise<DatabaseActiveBenchmarkWorkout | undefined>
   /**
    * Save or update the active benchmark workout. Automatically updates lastModifiedAt timestamp.
    */
-  save(workout: Readonly<DbActiveBenchmarkWorkout>): Promise<void>
+  save(workout: Readonly<DatabaseActiveBenchmarkWorkout>): Promise<void>
   /**
    * Remove the active benchmark workout from the database.
    */
@@ -180,7 +180,7 @@ export type ActiveBenchmarkWorkoutRepository = {
    * Complete the benchmark workout and save to history with benchmarkId.
    * Removes the active benchmark from database in a transaction.
    */
-  complete(activeBenchmark: Readonly<DbActiveBenchmarkWorkout>): Promise<DbCompletedWorkout>
+  complete(activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>): Promise<DatabaseCompletedWorkout>
 }
 
 // ============================================
@@ -192,7 +192,7 @@ export type ActiveBenchmarkWorkoutRepository = {
  */
 export type CreateTemplateData = {
   name: string
-  blocks: ReadonlyArray<DbTemplateBlock>
+  blocks: ReadonlyArray<DatabaseTemplateBlock>
   tags?: ReadonlyArray<string>
 }
 
@@ -200,31 +200,31 @@ export type TemplatesRepository = {
   /**
    * Retrieve all workout templates sorted by last used date (most recent first, never-used last).
    */
-  getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>>
+  getAll(): Promise<ReadonlyArray<DatabaseWorkoutTemplate>>
   /**
    * Find workout template by ID.
    */
-  getById(id: string): Promise<DbWorkoutTemplate | undefined>
+  getById(id: string): Promise<DatabaseWorkoutTemplate | undefined>
   /**
    * Create a new template from a workout by extracting block structure.
    * Accepts either an active or completed workout.
    */
   createFromWorkout(
-    workout: Readonly<DbActiveWorkout | DbCompletedWorkout>,
+    workout: Readonly<DatabaseActiveWorkout | DatabaseCompletedWorkout>,
     templateName: string,
-  ): Promise<DbWorkoutTemplate>
+  ): Promise<DatabaseWorkoutTemplate>
   /**
    * Create a new active workout from a template. Updates template's last used timestamp.
    * @throws Error if template not found
    */
-  startFromTemplate(templateId: string): Promise<DbActiveWorkout>
+  startFromTemplate(templateId: string): Promise<DatabaseActiveWorkout>
   /**
    * Update an existing template's properties.
    * @throws Error if template with id not found
    */
   update(
     id: string,
-    updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
+    updates: Partial<Omit<DatabaseWorkoutTemplate, 'id' | 'createdAt'>>,
   ): Promise<void>
   /**
    * Delete a workout template by ID. Silently succeeds if ID doesn't exist.
@@ -238,7 +238,7 @@ export type TemplatesRepository = {
   /**
    * Create a new workout template from structured data.
    */
-  create(data: CreateTemplateData): Promise<DbWorkoutTemplate>
+  create(data: CreateTemplateData): Promise<DatabaseWorkoutTemplate>
 }
 
 // ============================================
@@ -266,25 +266,25 @@ export type WorkoutsRepository = {
    * Mark an active workout as completed and save to history. Removes active workout from database in a transaction.
    */
   completeWorkout(
-    activeWorkout: Readonly<DbActiveWorkout>,
+    activeWorkout: Readonly<DatabaseActiveWorkout>,
     notes?: string,
-  ): Promise<DbCompletedWorkout>
+  ): Promise<DatabaseCompletedWorkout>
   /**
    * Add a completed workout directly to history. Used for hindsight logging (logging past workouts).
    */
-  add(workout: Readonly<DbCompletedWorkout>): Promise<void>
+  add(workout: Readonly<DatabaseCompletedWorkout>): Promise<void>
   /**
    * Retrieve completed workouts sorted by completion date (most recent first). Defaults to limit=50, offset=0.
    */
-  getHistory(params?: GetHistoryParams): Promise<ReadonlyArray<DbCompletedWorkout>>
+  getHistory(parameters?: GetHistoryParams): Promise<ReadonlyArray<DatabaseCompletedWorkout>>
   /**
    * Retrieve completed workouts within a specific date range (inclusive).
    */
-  getByDateRange(params: GetByDateRangeParams): Promise<ReadonlyArray<DbCompletedWorkout>>
+  getByDateRange(parameters: GetByDateRangeParams): Promise<ReadonlyArray<DatabaseCompletedWorkout>>
   /**
    * Find completed workout by ID.
    */
-  getById(id: string): Promise<DbCompletedWorkout | undefined>
+  getById(id: string): Promise<DatabaseCompletedWorkout | undefined>
   /**
    * Delete a completed workout by ID. Silently succeeds if ID doesn't exist.
    */
@@ -297,7 +297,7 @@ export type WorkoutsRepository = {
    * Create a new active workout by copying a completed workout. Resets set statuses and timed block results.
    * @throws Error if workout with id not found
    */
-  startFromCompleted(id: string): Promise<DbActiveWorkout>
+  startFromCompleted(id: string): Promise<DatabaseActiveWorkout>
 }
 
 // ============================================
@@ -308,12 +308,12 @@ export type WorkoutsRepository = {
  * Complete user data export format containing all database tables.
  */
 export type ExportDataContents = {
-  settings: ReadonlyArray<DbUserSetting>
-  customExercises: ReadonlyArray<DbCustomExercise>
-  templates: ReadonlyArray<DbWorkoutTemplate>
-  workouts: ReadonlyArray<DbCompletedWorkout>
-  benchmarks: ReadonlyArray<DbBenchmark>
-  weightEntries: ReadonlyArray<DbWeightEntry>
+  settings: ReadonlyArray<DatabaseUserSetting>
+  customExercises: ReadonlyArray<DatabaseCustomExercise>
+  templates: ReadonlyArray<DatabaseWorkoutTemplate>
+  workouts: ReadonlyArray<DatabaseCompletedWorkout>
+  benchmarks: ReadonlyArray<DatabaseBenchmark>
+  weightEntries: ReadonlyArray<DatabaseWeightEntry>
 }
 
 export type DataManagementRepository = {
@@ -339,22 +339,22 @@ export type BenchmarksRepository = {
   /**
    * Retrieve all benchmarks sorted by creation date (newest first).
    */
-  getAll(): Promise<ReadonlyArray<DbBenchmark>>
+  getAll(): Promise<ReadonlyArray<DatabaseBenchmark>>
   /**
    * Find benchmark by ID.
    */
-  getById(id: string): Promise<DbBenchmark | undefined>
+  getById(id: string): Promise<DatabaseBenchmark | undefined>
   /**
    * Create a new benchmark.
    */
-  create(benchmark: Omit<DbBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>): Promise<DbBenchmark>
+  create(benchmark: Omit<DatabaseBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>): Promise<DatabaseBenchmark>
   /**
    * Update an existing benchmark.
    * @throws Error if benchmark with id not found
    */
   update(
     id: string,
-    updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>,
+    updates: Partial<Omit<DatabaseBenchmark, 'id' | 'createdAt'>>,
   ): Promise<void>
   /**
    * Delete a benchmark by ID. Silently succeeds if ID doesn't exist.
@@ -368,7 +368,7 @@ export type BenchmarksRepository = {
    * Create an active workout from a benchmark and update last used timestamp.
    * @throws Error if benchmark not found
    */
-  startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout>
+  startFromBenchmark(benchmarkId: string): Promise<DatabaseActiveWorkout>
   /**
    * Get the personal best (fastest completion time) for a benchmark.
    * Returns the completion time in seconds, or null if no completions exist.
@@ -450,27 +450,27 @@ export type WeightRepository = {
   /**
    * Add a new weight entry. If an entry for the same date exists, it will be replaced.
    */
-  add(entry: Readonly<DbWeightEntry>): Promise<void>
+  add(entry: Readonly<DatabaseWeightEntry>): Promise<void>
 
   /**
    * Retrieve all weight entries sorted by date (newest first).
    */
-  getAll(): Promise<ReadonlyArray<DbWeightEntry>>
+  getAll(): Promise<ReadonlyArray<DatabaseWeightEntry>>
 
   /**
    * Get weight entries within a specific date range (inclusive).
    */
-  getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DbWeightEntry>>
+  getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DatabaseWeightEntry>>
 
   /**
    * Get the most recent weight entry.
    */
-  getLatest(): Promise<DbWeightEntry | undefined>
+  getLatest(): Promise<DatabaseWeightEntry | undefined>
 
   /**
    * Get a weight entry for a specific date.
    */
-  getByDate(date: Date): Promise<DbWeightEntry | undefined>
+  getByDate(date: Date): Promise<DatabaseWeightEntry | undefined>
 
   /**
    * Delete a weight entry by ID.
@@ -489,7 +489,7 @@ export type DraftsRepository = {
   /**
    * Get a draft by key.
    */
-  get(key: DraftKey): Promise<DbFormDraft | undefined>
+  get(key: DraftKey): Promise<DatabaseFormDraft | undefined>
   /**
    * Save or update a draft.
    */
@@ -526,17 +526,17 @@ export type ProgressionsRepository = {
   /**
    * Retrieve all progressions sorted by last session date (most recent first).
    */
-  getAll(): Promise<ReadonlyArray<DbProgression>>
+  getAll(): Promise<ReadonlyArray<DatabaseProgression>>
 
   /**
    * Find progression by ID.
    */
-  getById(id: string): Promise<DbProgression | undefined>
+  getById(id: string): Promise<DatabaseProgression | undefined>
 
   /**
    * Create a new progression plan.
    */
-  create(data: CreateProgressionData): Promise<DbProgression>
+  create(data: CreateProgressionData): Promise<DatabaseProgression>
 
   /**
    * Update an existing progression.
@@ -544,7 +544,7 @@ export type ProgressionsRepository = {
    */
   update(
     id: string,
-    updates: Partial<Omit<DbProgression, 'id' | 'createdAt'>>,
+    updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>,
   ): Promise<void>
 
   /**
@@ -560,12 +560,12 @@ export type ProgressionsRepository = {
     progressionId: string,
     completed: boolean,
     nextLevel?: { reps: number; minutes: number; weightIndex: number; isComplete: boolean },
-  ): Promise<DbProgressionSession>
+  ): Promise<DatabaseProgressionSession>
 
   /**
    * Get all sessions for a progression, sorted by date (newest first).
    */
-  getSessionHistory(progressionId: string): Promise<ReadonlyArray<DbProgressionSession>>
+  getSessionHistory(progressionId: string): Promise<ReadonlyArray<DatabaseProgressionSession>>
 }
 
 // ============================================

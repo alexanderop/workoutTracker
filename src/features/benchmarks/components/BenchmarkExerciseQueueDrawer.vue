@@ -6,7 +6,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import type { BlockExercise } from '@/types/blocks'
 import BenchmarkExerciseQueueItem from './BenchmarkExerciseQueueItem.vue'
 
-type Props = {
+type Properties = {
   benchmarkType: 'fortime' | 'rounds'
   totalBlocks: number
   exercises: ReadonlyArray<BlockExercise>
@@ -15,7 +15,7 @@ type Props = {
 }
 
 const { benchmarkType, totalBlocks, exercises, currentBlockIndex, currentExerciseIndex } =
-  defineProps<Props>()
+  defineProps<Properties>()
 
 const open = defineModel<boolean>('open', { required: true })
 
@@ -72,7 +72,7 @@ const roundsList = computed<ReadonlyArray<ExerciseListItem>>(() => {
     list.push({ type: 'round-header', roundNumber: round + 1 })
 
     // Add exercises for this round
-    exercises.forEach((ex, exIndex) => {
+    for (const [exIndex, ex] of exercises.entries()) {
       const globalIndex = round * exercises.length + exIndex
       list.push({
         type: 'exercise',
@@ -82,7 +82,7 @@ const roundsList = computed<ReadonlyArray<ExerciseListItem>>(() => {
         roundNumber: round + 1,
         globalIndex,
       })
-    })
+    }
   }
 
   return list

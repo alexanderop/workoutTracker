@@ -2,7 +2,7 @@
 import { Card } from '@/components/ui/card'
 import { formatDate, formatDuration } from '@/lib/formatters'
 
-type Props = {
+type Properties = {
   workout: {
     id: string
     name: string
@@ -11,7 +11,7 @@ type Props = {
   }
 }
 
-const { workout } = defineProps<Props>()
+const { workout } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()

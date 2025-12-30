@@ -29,6 +29,49 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+  pluginUnicorn.configs.recommended,
+
+  // Unicorn overrides - disable rules that conflict with project conventions
+  {
+    name: 'app/unicorn-overrides',
+    rules: {
+      // === Enable non-recommended rules that add value ===
+      // Improve regexes by making them shorter, consistent, and safer
+      'unicorn/better-regex': 'warn',
+      // Enforce correct Error subclassing (good for TypeScript strict mode)
+      'unicorn/custom-error-definition': 'error',
+      // Detect unused object properties (dead code detection)
+      'unicorn/no-unused-properties': 'warn',
+      // Use destructured variables consistently over properties
+      'unicorn/consistent-destructuring': 'warn',
+
+      // === Disable rules that conflict with project conventions ===
+      // Project uses null extensively for database/optional values
+      'unicorn/no-null': 'off',
+      // Vue components use PascalCase, test files use camelCase
+      'unicorn/filename-case': 'off',
+      // Common abbreviations: Db, props, e, etc.
+      'unicorn/prevent-abbreviations': 'off',
+      // Project uses function references in array callbacks
+      'unicorn/no-array-callback-reference': 'off',
+      // Common pattern: (await fetch()).json()
+      'unicorn/no-await-expression-member': 'off',
+      // Array.reduce is acceptable for aggregations
+      'unicorn/no-array-reduce': 'off',
+      // mockResolvedValue(undefined) is required for TypeScript
+      'unicorn/no-useless-undefined': 'off',
+    },
+  },
+
+  // Allow process.exit() in CLI scripts
+  {
+    name: 'app/scripts-overrides',
+    files: ['scripts/**/*.ts', 'vite-plugins/**/*.ts'],
+    rules: {
+      'unicorn/no-process-exit': 'off',
+      'unicorn/import-style': 'off',
+    },
+  },
 
   {
     files: ['src/**/*.vue'],
@@ -104,15 +147,9 @@ export default defineConfigWithVueTs(
   {
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
-    plugins: {
-      unicorn: pluginUnicorn,
-    },
     rules: {
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
-
-      // Prefer ternary operators over simple if-return patterns
-      'unicorn/prefer-ternary': 'error',
 
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [
@@ -163,6 +200,24 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+    rules: {
+      ...pluginVitest.configs.recommended.rules,
+      // Consistency
+      'vitest/consistent-test-it': ['error', { fn: 'it' }],
+      'vitest/prefer-hooks-on-top': 'error',
+      'vitest/prefer-hooks-in-order': 'error',
+      'vitest/no-duplicate-hooks': 'error',
+      'vitest/require-top-level-describe': 'error',
+
+      // Cleaner assertions (auto-fixable)
+      'vitest/prefer-to-be': 'error',
+      'vitest/prefer-to-have-length': 'error',
+      'vitest/prefer-to-contain': 'error',
+      'vitest/prefer-mock-promise-shorthand': 'error',
+
+      // Prevent flaky tests
+      'vitest/no-conditional-in-test': 'warn',
+    },
   },
 
   // Allow native try/catch in tryCatch utility implementation
@@ -222,6 +277,21 @@ export default defineConfigWithVueTs(
               message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of mounting components directly.',
             },
           ],
+        },
+      ],
+    },
+  },
+
+  // Prefer Vitest Browser locators over raw DOM queries
+  {
+    name: 'test/prefer-vitest-locators',
+    files: ['src/**/__tests__/**/*.{ts,spec.ts}'],
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'CallExpression[callee.property.name=/^querySelector(All)?$/]',
+          message: 'Prefer page.getByRole(), page.getByText(), or page.getByTestId() over querySelector*(). Vitest locators are more resilient to DOM changes.',
         },
       ],
     },

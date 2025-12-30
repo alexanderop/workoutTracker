@@ -4,7 +4,7 @@ import '@/style.css'
 import 'vitest-browser-vue'
 
 // Seed faker for reproducible randomization across test runs
-faker.seed(12345)
+faker.seed(12_345)
 
 /**
  * Browser mode setup - no mocks needed since real browser APIs are available.

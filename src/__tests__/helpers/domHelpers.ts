@@ -4,9 +4,9 @@
  * but you need to access HTMLElement-specific properties.
  * @throws Error if element is SVGElement
  */
-export function ensureHTMLElement(el: HTMLElement | SVGElement): HTMLElement {
-  if (!(el instanceof HTMLElement)) {
-    throw new Error('Expected HTMLElement, got SVGElement')
+export function ensureHTMLElement(element: HTMLElement | SVGElement): HTMLElement {
+  if (!(element instanceof HTMLElement)) {
+    throw new TypeError('Expected HTMLElement, got SVGElement')
   }
-  return el
+  return element
 }

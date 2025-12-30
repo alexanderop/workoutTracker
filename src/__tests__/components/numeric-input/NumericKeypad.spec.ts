@@ -36,9 +36,14 @@ describe('NumericKeypad', () => {
       },
     })
 
+    // First press backspace to exit fresh-start mode (calculator-style behavior)
+    await userEvent.click(page.getByRole('button', { name: /backspace|delete/i }))
+
+    // Now press digit - should append
     await userEvent.click(page.getByRole('button', { name: '5' }))
 
-    expect(onUpdate).toHaveBeenCalledWith(205)
+    // 20 -> backspace -> 2 -> append 5 -> 25
+    expect(onUpdate).toHaveBeenCalledWith(25)
   })
 
   it('replaces zero with digit when current value is 0', async () => {
@@ -108,7 +113,17 @@ describe('NumericKeypad', () => {
       },
     })
 
-    // Try to make it 999
+    // First exit fresh-start mode by pressing backspace
+    await userEvent.click(page.getByRole('button', { name: /backspace|delete/i })) // 99 → 9
+    expect(onUpdate).toHaveBeenCalledWith(9)
+    onUpdate.mockClear()
+
+    // Append to get back to 99
+    await userEvent.click(page.getByRole('button', { name: '9' })) // 9 → 99
+    expect(onUpdate).toHaveBeenCalledWith(99)
+    onUpdate.mockClear()
+
+    // Try to make it 999 - should be blocked by max constraint
     await userEvent.click(page.getByRole('button', { name: '9' }))
 
     // Should stay at 99 since 999 > 100 - Vue doesn't emit when value doesn't change

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Delete } from 'lucide-vue-next'
 import { useNumericInput } from './useNumericInput'
 import { useNumberLocale } from '@/composables/useNumberLocale'
@@ -29,6 +29,14 @@ const { decimalSeparator } = useNumberLocale()
 // Internal string representation for precise decimal editing
 const editingString = ref(numberToString(modelValue.value))
 
+// Fresh start mode: first digit replaces value instead of appending (calculator-style)
+const freshStart = ref(true)
+
+// Screen reader announcement for input mode
+const inputModeAnnouncement = computed(() =>
+  freshStart.value ? 'Replace mode: next digit will replace current value' : '',
+)
+
 // Sync editingString when modelValue changes externally
 watch(
   () => modelValue.value,
@@ -36,6 +44,7 @@ watch(
     const currentNumber = stringToNumber(editingString.value)
     if (currentNumber !== newValue) {
       editingString.value = numberToString(newValue)
+      freshStart.value = true // Reset fresh start when value changes externally
     }
   },
 )
@@ -47,6 +56,13 @@ const digits = [
 ]
 
 function handleDigitClick(digit: string) {
+  if (freshStart.value) {
+    // First digit replaces entire value (calculator-style)
+    editingString.value = digit
+    freshStart.value = false
+    modelValue.value = stringToNumber(editingString.value)
+    return
+  }
   editingString.value = appendDigitToString(editingString.value, digit, {
     max: props.max,
     maxDecimals: 2,
@@ -55,11 +71,19 @@ function handleDigitClick(digit: string) {
 }
 
 function handleDecimalClick() {
+  if (freshStart.value) {
+    // Start fresh with "0."
+    editingString.value = '0.'
+    freshStart.value = false
+    return
+  }
   editingString.value = appendDecimalToString(editingString.value)
   // Don't update modelValue yet - "70." should stay as 70 until more digits added
 }
 
 function handleBackspace() {
+  // Backspace exits fresh-start mode (user wants to edit existing value)
+  freshStart.value = false
   editingString.value = removeLastChar(editingString.value)
   modelValue.value = stringToNumber(editingString.value)
 }
@@ -69,7 +93,12 @@ const buttonClass =
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2" role="group" aria-label="Numeric keypad">
+    <!-- Screen reader announcement for input mode -->
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {{ inputModeAnnouncement }}
+    </div>
+
     <!-- Digit Grid -->
     <div class="grid grid-cols-3 gap-2">
       <!-- Rows 1-3: digits 1-9 -->
@@ -91,7 +120,6 @@ const buttonClass =
         type="button"
         :class="buttonClass"
         aria-label="Add decimal point"
-        data-testid="keypad-decimal"
         @click="handleDecimalClick"
       >
         {{ decimalSeparator }}

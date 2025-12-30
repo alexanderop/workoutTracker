@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
-import { dbBenchmarkSchema, MAX_BENCHMARKS } from './benchmarkSchema'
-import { dbCustomExerciseSchema } from './exerciseSchema'
-import { dbUserSettingSchema } from './settingsSchema'
-import { dbWorkoutTemplateSchema } from './templateSchema'
-import { dbWeightEntrySchema, MAX_WEIGHT_ENTRIES } from './weightEntrySchema'
-import { dbCompletedWorkoutSchema } from './workoutSchema'
+import { dbBenchmarkSchema as databaseBenchmarkSchema, MAX_BENCHMARKS } from './benchmarkSchema'
+import { dbCustomExerciseSchema as databaseCustomExerciseSchema } from './exerciseSchema'
+import { dbUserSettingSchema as databaseUserSettingSchema } from './settingsSchema'
+import { dbWorkoutTemplateSchema as databaseWorkoutTemplateSchema } from './templateSchema'
+import { dbWeightEntrySchema as databaseWeightEntrySchema, MAX_WEIGHT_ENTRIES } from './weightEntrySchema'
+import { dbCompletedWorkoutSchema as databaseCompletedWorkoutSchema } from './workoutSchema'
 
 /**
  * Maximum array sizes to prevent DoS attacks.
@@ -26,12 +26,12 @@ export const exportDataSchema = z
     exportedAt: z.string().datetime(),
     data: z
       .object({
-        settings: z.array(dbUserSettingSchema).max(MAX_SETTINGS).readonly(),
-        customExercises: z.array(dbCustomExerciseSchema).max(MAX_EXERCISES).readonly(),
-        templates: z.array(dbWorkoutTemplateSchema).max(MAX_TEMPLATES).readonly(),
-        workouts: z.array(dbCompletedWorkoutSchema).max(MAX_WORKOUTS).readonly(),
-        benchmarks: z.array(dbBenchmarkSchema).max(MAX_BENCHMARKS).readonly(),
-        weightEntries: z.array(dbWeightEntrySchema).max(MAX_WEIGHT_ENTRIES).readonly().optional(),
+        settings: z.array(databaseUserSettingSchema).max(MAX_SETTINGS).readonly(),
+        customExercises: z.array(databaseCustomExerciseSchema).max(MAX_EXERCISES).readonly(),
+        templates: z.array(databaseWorkoutTemplateSchema).max(MAX_TEMPLATES).readonly(),
+        workouts: z.array(databaseCompletedWorkoutSchema).max(MAX_WORKOUTS).readonly(),
+        benchmarks: z.array(databaseBenchmarkSchema).max(MAX_BENCHMARKS).readonly(),
+        weightEntries: z.array(databaseWeightEntrySchema).max(MAX_WEIGHT_ENTRIES).readonly().optional(),
       })
       .strict(),
   })

@@ -14,7 +14,7 @@ const { t } = useI18n()
  * Displays a list of exercises with reps/load inputs and add/remove actions.
  * Used by AMRAP, EMOM, and ForTime config dialogs.
  */
-type Props = {
+type Properties = {
   exercises: ReadonlyArray<BlockExercise>
   repPlaceholder?: string
   loadPlaceholder?: string
@@ -35,7 +35,7 @@ const {
   loadPlaceholder = 'Load',
   emptyMessage = 'No exercises added yet',
   addButtonText = 'Add Exercise',
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const emit = defineEmits<Emits>()
 

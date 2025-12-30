@@ -22,7 +22,7 @@ export class ActiveWorkoutPO {
   private async getInputFromRow(rowLocator: ReturnType<typeof page.getByRole>, name: RegExp): Promise<HTMLInputElement> {
     const input = await rowLocator.getByRole('spinbutton', { name }).element()
     if (!(input instanceof HTMLInputElement)) {
-      throw new Error(`Input matching ${name} is not an HTMLInputElement`)
+      throw new TypeError(`Input matching ${name} is not an HTMLInputElement`)
     }
     return input
   }
@@ -71,17 +71,18 @@ export class ActiveWorkoutPO {
    */
   async getActiveSet(): Promise<SetRowPO | null> {
     const rows = await page.getByRole('table').getByRole('row').all()
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i]
+    for (let index = 1; index < rows.length; index++) {
+      const row = rows[index]
       if (!row) continue
       const cells = await row.getByRole('cell').all()
       const firstCell = cells[0]
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
       const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
-        return this.getSet(i - 1) // Convert row index to set index
+        return this.getSet(index - 1) // Convert row index to set index
       }
     }
     return null
@@ -96,9 +97,9 @@ export class ActiveWorkoutPO {
   async fillSet(setIndex: number, values: SetValues): Promise<void> {
     const inputs = await this.getSetRow(setIndex)
 
-    const fillValue = async (el: HTMLInputElement, val?: number): Promise<void> => {
-      if (val !== undefined) {
-        await userEvent.fill(el, String(val))
+    const fillValue = async (element: HTMLInputElement, value?: number): Promise<void> => {
+      if (value !== undefined) {
+        await userEvent.fill(element, String(value))
       }
     }
 
@@ -159,11 +160,11 @@ export class ActiveWorkoutPO {
    */
   async getTimerPlayPauseButton(): Promise<HTMLElement> {
     // Try pause button first (timer running), then play button (timer paused)
-    const pauseBtn = page.getByRole('button', { name: /pause timer/i }).query()
-    if (pauseBtn instanceof HTMLElement) return pauseBtn
+    const pauseButton = page.getByRole('button', { name: /pause timer/i }).query()
+    if (pauseButton instanceof HTMLElement) return pauseButton
 
-    const playBtn = page.getByRole('button', { name: /start timer/i }).query()
-    if (playBtn instanceof HTMLElement) return playBtn
+    const playButton = page.getByRole('button', { name: /start timer/i }).query()
+    if (playButton instanceof HTMLElement) return playButton
 
     throw new Error('Play/pause button not found - check aria-label is present')
   }
@@ -186,8 +187,8 @@ export class ActiveWorkoutPO {
     const table = page.getByRole('table')
     const rows = await table.getByRole('row').all()
     // Skip header row, check data rows
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i]
+    for (let index = 1; index < rows.length; index++) {
+      const row = rows[index]
       if (!row) continue
       const rowElement = ensureHTMLElement(await row.element())
       // Check for active indicator (primary-colored badge in first cell)
@@ -196,6 +197,7 @@ export class ActiveWorkoutPO {
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
       const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
       if (activeIndicator) {
         return rowElement
@@ -215,12 +217,12 @@ export class ActiveWorkoutPO {
 
     // Find the row index to use with getSetRow
     const rows = await page.getByRole('table').getByRole('row').all()
-    for (let i = 1; i < rows.length; i++) {
-      const currentRow = rows[i]
+    for (let index = 1; index < rows.length; index++) {
+      const currentRow = rows[index]
       if (!currentRow) continue
       const rowElement = ensureHTMLElement(await currentRow.element())
       if (rowElement === row) {
-        const rowLocator = page.getByRole('table').getByRole('row').nth(i)
+        const rowLocator = page.getByRole('table').getByRole('row').nth(index)
         return {
           weight: await this.getInputFromRow(rowLocator, /weight for set/i),
           reps: await this.getInputFromRow(rowLocator, /^reps for set/i),
@@ -244,7 +246,8 @@ export class ActiveWorkoutPO {
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
     // The completed state shows a div with data-set-state="completed" and bg-success/20 class
-    const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
+    // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
+    const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
     return completedIndicator !== null
   }
 
@@ -257,15 +260,16 @@ export class ActiveWorkoutPO {
     const rows = await page.getByRole('table').getByRole('row').all()
     let count = 0
     // Skip header row
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i]
+    for (let index = 1; index < rows.length; index++) {
+      const row = rows[index]
       if (!row) continue
       const cells = await row.getByRole('cell').all()
       const firstCell = cells[0]
       if (!firstCell) continue
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The completed state shows a div with data-set-state="completed" and bg-success/20 class
-      const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
+      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
+      const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
       if (completedIndicator) {
         count++
       }
@@ -283,7 +287,7 @@ export class ActiveWorkoutPO {
     count: number,
     values: { weight: string; reps: string; rir: string },
   ): Promise<void> {
-    for (let i = 0; i < count; i++) {
+    for (let index = 0; index < count; index++) {
       await this.fillCardSetAndComplete(values)
     }
   }
@@ -298,12 +302,12 @@ export class ActiveWorkoutPO {
 
     // Find the row index
     const rows = await page.getByRole('table').getByRole('row').all()
-    for (let i = 1; i < rows.length; i++) {
-      const currentRow = rows[i]
+    for (let index = 1; index < rows.length; index++) {
+      const currentRow = rows[index]
       if (!currentRow) continue
       const currentRowElement = ensureHTMLElement(await currentRow.element())
       if (currentRowElement === rowElement) {
-        const rowLocator = page.getByRole('table').getByRole('row').nth(i)
+        const rowLocator = page.getByRole('table').getByRole('row').nth(index)
 
         const inputs = {
           weight: await this.getInputFromRow(rowLocator, /weight for set/i),
@@ -345,8 +349,8 @@ export class ActiveWorkoutPO {
     await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
     // Poll for animation to complete (opacity becomes 1)
     await expect.poll(async () => {
-      const el = await viewDetailsButton.element()
-      return getComputedStyle(el).opacity
+      const element = await viewDetailsButton.element()
+      return getComputedStyle(element).opacity
     }, { timeout: 2000 }).toBe('1')
     await viewDetailsButton.click()
 

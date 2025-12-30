@@ -23,18 +23,18 @@ export function useTimedBlockExercises() {
   }
 
   function removeExercise(index: number) {
-    exercises.value = exercises.value.filter((_, i) => i !== index)
+    exercises.value = exercises.value.filter((_, index_) => index_ !== index)
   }
 
   function updateExerciseReps(index: number, reps: number) {
-    exercises.value = exercises.value.map((ex, i) =>
-      i === index ? { ...ex, prescribedReps: reps } : ex,
+    exercises.value = exercises.value.map((ex, index_) =>
+      index_ === index ? { ...ex, prescribedReps: reps } : ex,
     )
   }
 
   function updateExerciseLoad(index: number, load: string) {
-    exercises.value = exercises.value.map((ex, i) =>
-      i === index ? { ...ex, load: load || null } : ex,
+    exercises.value = exercises.value.map((ex, index_) =>
+      index_ === index ? { ...ex, load: load || null } : ex,
     )
   }
 

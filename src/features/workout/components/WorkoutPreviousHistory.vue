@@ -5,12 +5,12 @@ import { useI18n } from 'vue-i18n'
 import { Separator } from '@/components/ui/separator'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 
-type Props = {
+type Properties = {
   sets: ReadonlyArray<Set>
   date?: string
 }
 
-const { sets, date } = defineProps<Props>()
+const { sets, date } = defineProps<Properties>()
 
 const { t } = useI18n()
 const { toDisplayValue, unitLabel } = useWeightDisplay()
@@ -18,7 +18,7 @@ const { toDisplayValue, unitLabel } = useWeightDisplay()
 function formatSetWeight(kgValue: string): string {
   if (!kgValue) return '—'
   const display = toDisplayValue(kgValue)
-  return display !== undefined ? String(display) : '—'
+  return display === undefined ? '—' : String(display)
 }
 
 const hasHistoryData = computed(() => sets.some((set) => set.kg !== '' || set.reps !== ''))

@@ -36,9 +36,9 @@ function parseNumber(input: string): number | undefined {
 
   // Normalize: replace comma with period for JS parsing
   const normalized = input.replace(',', '.')
-  const parsed = parseFloat(normalized)
+  const parsed = Number.parseFloat(normalized)
 
-  return isNaN(parsed) ? undefined : parsed
+  return Number.isNaN(parsed) ? undefined : parsed
 }
 
 /**

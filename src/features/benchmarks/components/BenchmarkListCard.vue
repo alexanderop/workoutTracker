@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
 import { usePersonalBestDisplay } from '../composables/usePersonalBestDisplay'
 
-type Props = {
+type Properties = {
   benchmark: {
     id: string
     name: string
@@ -16,7 +16,7 @@ type Props = {
   formatType: (type: 'fortime' | 'rounds', rounds: number) => string
 }
 
-const { benchmark, personalBest, formatType } = defineProps<Props>()
+const { benchmark, personalBest, formatType } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()

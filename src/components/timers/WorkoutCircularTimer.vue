@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 
-type Props = {
+type Properties = {
   /** Progress value from 0-100 */
   progress: number
   /** Tailwind color class for progress arc (e.g., 'text-primary') */
@@ -21,7 +21,7 @@ const {
   urgent = false,
   showProgress = true,
   variant = 'default',
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 defineSlots<{
   default: () => unknown

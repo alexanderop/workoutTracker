@@ -166,7 +166,7 @@ describe('Progression Management', () => {
       })
 
       // Simulate completing 5 sessions: 10→12→14→16→18→20 reps
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
@@ -197,7 +197,7 @@ describe('Progression Management', () => {
       // Reps: 10→12→14→16→18→20 (5 sessions to reach max reps)
       // Time: 10→12→14→16→18→20 (5 more sessions to reach max time)
       // +1 session to trigger advance to next KB
-      for (let i = 0; i < 11; i++) {
+      for (let index = 0; index < 11; index++) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
@@ -220,7 +220,7 @@ describe('Progression Management', () => {
 
       // Complete all 11 sessions for the single KB:
       // 6 rep phases (10→12→14→16→18→20) + 5 time phases (10→12→14→16→18→20)
-      for (let i = 0; i < 11; i++) {
+      for (let index = 0; index < 11; index++) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
@@ -240,7 +240,7 @@ describe('Progression Management', () => {
       })
 
       // 11 sessions needed for single KB completion
-      for (let i = 0; i < 11; i++) {
+      for (let index = 0; index < 11; index++) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 

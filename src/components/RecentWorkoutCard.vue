@@ -3,11 +3,11 @@ import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
 import type { RecentWorkout } from '@/composables/useRecentWorkouts'
 
-type Props = {
+type Properties = {
   workout: RecentWorkout
 }
 
-const { workout } = defineProps<Props>()
+const { workout } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()

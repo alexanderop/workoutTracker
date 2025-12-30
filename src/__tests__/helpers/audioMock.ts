@@ -61,7 +61,7 @@ const mockCreateGain = vi.fn(() => createMockGainNode())
 
 class MockAudioContext {
   destination = {}
-  sampleRate = 44100
+  sampleRate = 44_100
   currentTime = 0
   state = 'running'
   createOscillator = mockCreateOscillator
@@ -77,7 +77,7 @@ class MockAudioContext {
  */
 export function setupAudioContextMock(): void {
   // @ts-expect-error - Mocking global AudioContext
-  global.AudioContext = MockAudioContext
+  globalThis.AudioContext = MockAudioContext
 }
 
 /**
@@ -162,7 +162,7 @@ export function restoreAudioSpies(): void {
  */
 export function isBrowserMode(): boolean {
   return (
-    typeof window !== 'undefined' && !window.navigator.userAgent.includes('jsdom')
+    globalThis.window !== undefined && !globalThis.navigator.userAgent.includes('jsdom')
   )
 }
 

@@ -2,6 +2,7 @@
 name: security-reviewer
 description: Review code for security vulnerabilities and OWASP issues. Use when asked to check security, find vulnerabilities, review for XSS, or audit data handling. Triggers include "security", "vulnerability", "XSS", "injection", "OWASP", "sanitize", "validate".
 tools: Read, Glob, Grep
+color: red
 ---
 
 # Frontend Security Reviewer

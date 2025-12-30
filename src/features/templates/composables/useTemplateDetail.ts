@@ -35,9 +35,8 @@ function checkIsEdited(
   if (currentBlocks.length !== template.blocks.length) return true
 
   // Check each block for changes
-  for (let i = 0; i < currentBlocks.length; i++) {
-    const current = currentBlocks[i]
-    const original = template.blocks[i]
+  for (const [index, current] of currentBlocks.entries()) {
+    const original = template.blocks[index]
     if (!current || !original) return true
 
     // Fast path: reference equality (same object = no change)

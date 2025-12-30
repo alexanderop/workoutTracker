@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Reserved keywords that could enable prototype pollution attacks.
  */
-const RESERVED_KEYWORDS = ['__proto__', 'constructor', 'prototype']
+const RESERVED_KEYWORDS = new Set(['__proto__', 'constructor', 'prototype'])
 
 /**
  * Safe ID validator that rejects prototype pollution attack vectors.
@@ -12,7 +12,7 @@ export const safeIdSchema = z
   .string()
   .min(1)
   .max(100)
-  .refine((val) => !RESERVED_KEYWORDS.includes(val), {
+  .refine((value) => !RESERVED_KEYWORDS.has(value), {
     message: 'Invalid ID: reserved keyword',
   })
 

@@ -9,12 +9,12 @@ import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   block: EmomBlock
   onComplete?: () => void
 }
 
-const { block, onComplete } = defineProps<Props>()
+const { block, onComplete } = defineProps<Properties>()
 
 const emit = defineEmits<{
   'update:isRunning': [value: boolean]

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import type { ProgressionLevel } from '../types'
 
-type Props = {
+type Properties = {
   id: string
   name: string
   level: ProgressionLevel
@@ -15,7 +15,7 @@ type Props = {
   sessionsCompleted: number
 }
 
-const { id, name, level, progress, isComplete, sessionsCompleted } = defineProps<Props>()
+const { id, name, level, progress, isComplete, sessionsCompleted } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()

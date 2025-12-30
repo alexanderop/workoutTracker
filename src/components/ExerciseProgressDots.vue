@@ -2,18 +2,18 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type Props = {
+type Properties = {
   totalExercises: number
   currentIndex: number // 0-based
 }
 
-const { totalExercises, currentIndex } = defineProps<Props>()
+const { totalExercises, currentIndex } = defineProps<Properties>()
 const { t } = useI18n()
 
 const dots = computed(() => {
-  return Array.from({ length: totalExercises }, (_, i) => {
-    if (i < currentIndex) return 'completed'
-    if (i === currentIndex) return 'active'
+  return Array.from({ length: totalExercises }, (_, index) => {
+    if (index < currentIndex) return 'completed'
+    if (index === currentIndex) return 'active'
     return 'upcoming'
   })
 })

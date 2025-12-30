@@ -1,5 +1,5 @@
 import type { Set } from '@/features/workout/composables/useWorkout'
-import type { StrengthBlock, WorkoutBlock } from '@/types/blocks'
+import type { StrengthBlock,  } from '@/types/blocks'
 import { createSet, createEmptySet } from './set.factory'
 
 const STRENGTH_DEFAULTS: Readonly<Omit<StrengthBlock, 'sets'>> = {
@@ -26,11 +26,13 @@ export function createStrengthBlockWithSets(
 ): StrengthBlock {
   return createStrengthBlock({
     ...overrides,
-    sets: sets.map((s, i) => createSet({ id: i + 1, ...s })),
+    sets: sets.map((s, index) => createSet({ id: index + 1, ...s })),
   })
 }
 
 // Re-export for backward compatibility with tests using Exercise terminology
 export const createExercise = createStrengthBlock
 export const createExerciseWithSets = createStrengthBlockWithSets
-export type { StrengthBlock as Exercise, WorkoutBlock }
+
+
+export {type WorkoutBlock, type StrengthBlock as Exercise} from '@/types/blocks'

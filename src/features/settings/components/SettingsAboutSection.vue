@@ -19,7 +19,7 @@ const formattedBuildTime = computed(() => {
 })
 
 function handleRefresh() {
-  window.location.reload()
+  globalThis.location.reload()
 }
 </script>
 

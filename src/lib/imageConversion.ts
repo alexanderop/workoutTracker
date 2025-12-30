@@ -120,12 +120,12 @@ export async function convertImageToWebP(file: File): Promise<ConversionResult> 
   canvas.width = width
   canvas.height = height
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
+  const context = canvas.getContext('2d')
+  if (!context) {
     return { success: false, error: 'conversion-failed' }
   }
 
-  ctx.drawImage(img, 0, 0, width, height)
+  context.drawImage(img, 0, 0, width, height)
 
   // Convert to WebP
   const [convertError, webpBlob] = await tryCatch(canvasToWebPBlob(canvas, WEBP_QUALITY))

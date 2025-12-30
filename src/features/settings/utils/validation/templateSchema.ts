@@ -2,10 +2,10 @@ import { z } from 'zod'
 
 import {
   blockExerciseFieldsBase,
-  dbAmrapConfigSchema,
-  dbEmomConfigSchema,
-  dbForTimeConfigSchema,
-  dbTabataConfigSchema,
+  dbAmrapConfigSchema as databaseAmrapConfigSchema,
+  dbEmomConfigSchema as databaseEmomConfigSchema,
+  dbForTimeConfigSchema as databaseForTimeConfigSchema,
+  dbTabataConfigSchema as databaseTabataConfigSchema,
   strengthBlockFieldsBase,
 } from './blockConfigSchemas'
 import { safeIdSchema, safeStringSchema, timestampSchema } from './primitiveSchemas'
@@ -17,7 +17,7 @@ import { safeIdSchema, safeStringSchema, timestampSchema } from './primitiveSche
 /**
  * DbTemplateBlockExercise schema matching src/db/schema.ts DbTemplateBlockExercise type.
  */
-const dbTemplateBlockExerciseSchema = z
+const databaseTemplateBlockExerciseSchema = z
   .object({
     exerciseDefinitionId: safeIdSchema.nullable(),
     ...blockExerciseFieldsBase,
@@ -32,7 +32,7 @@ const dbTemplateBlockExerciseSchema = z
 /**
  * DbTemplateStrengthBlock schema matching src/db/schema.ts DbTemplateStrengthBlock type.
  */
-const dbTemplateStrengthBlockSchema = z
+const databaseTemplateStrengthBlockSchema = z
   .object({
     kind: z.literal('strength'),
     ...strengthBlockFieldsBase,
@@ -43,44 +43,44 @@ const dbTemplateStrengthBlockSchema = z
 /**
  * DbTemplateEmomBlock schema matching src/db/schema.ts DbTemplateEmomBlock type.
  */
-const dbTemplateEmomBlockSchema = z
+const databaseTemplateEmomBlockSchema = z
   .object({
     kind: z.literal('emom'),
-    config: dbEmomConfigSchema,
-    exercises: z.array(dbTemplateBlockExerciseSchema).max(20),
+    config: databaseEmomConfigSchema,
+    exercises: z.array(databaseTemplateBlockExerciseSchema).max(20),
   })
   .strict()
 
 /**
  * DbTemplateAmrapBlock schema matching src/db/schema.ts DbTemplateAmrapBlock type.
  */
-const dbTemplateAmrapBlockSchema = z
+const databaseTemplateAmrapBlockSchema = z
   .object({
     kind: z.literal('amrap'),
-    config: dbAmrapConfigSchema,
-    exercises: z.array(dbTemplateBlockExerciseSchema).max(20),
+    config: databaseAmrapConfigSchema,
+    exercises: z.array(databaseTemplateBlockExerciseSchema).max(20),
   })
   .strict()
 
 /**
  * DbTemplateTabataBlock schema matching src/db/schema.ts DbTemplateTabataBlock type.
  */
-const dbTemplateTabataBlockSchema = z
+const databaseTemplateTabataBlockSchema = z
   .object({
     kind: z.literal('tabata'),
-    config: dbTabataConfigSchema,
-    exercise: dbTemplateBlockExerciseSchema,
+    config: databaseTabataConfigSchema,
+    exercise: databaseTemplateBlockExerciseSchema,
   })
   .strict()
 
 /**
  * DbTemplateForTimeBlock schema matching src/db/schema.ts DbTemplateForTimeBlock type.
  */
-const dbTemplateForTimeBlockSchema = z
+const databaseTemplateForTimeBlockSchema = z
   .object({
     kind: z.literal('fortime'),
-    config: dbForTimeConfigSchema,
-    exercises: z.array(dbTemplateBlockExerciseSchema).max(20),
+    config: databaseForTimeConfigSchema,
+    exercises: z.array(databaseTemplateBlockExerciseSchema).max(20),
   })
   .strict()
 
@@ -88,12 +88,12 @@ const dbTemplateForTimeBlockSchema = z
  * DbTemplateBlock discriminated union schema.
  * Matches src/db/schema.ts DbTemplateBlock type.
  */
-const dbTemplateBlockSchema = z.discriminatedUnion('kind', [
-  dbTemplateStrengthBlockSchema,
-  dbTemplateEmomBlockSchema,
-  dbTemplateAmrapBlockSchema,
-  dbTemplateTabataBlockSchema,
-  dbTemplateForTimeBlockSchema,
+const databaseTemplateBlockSchema = z.discriminatedUnion('kind', [
+  databaseTemplateStrengthBlockSchema,
+  databaseTemplateEmomBlockSchema,
+  databaseTemplateAmrapBlockSchema,
+  databaseTemplateTabataBlockSchema,
+  databaseTemplateForTimeBlockSchema,
 ])
 
 /**
@@ -103,7 +103,7 @@ export const dbWorkoutTemplateSchema = z
   .object({
     id: safeIdSchema,
     name: safeStringSchema.min(1).max(200),
-    blocks: z.array(dbTemplateBlockSchema).max(50),
+    blocks: z.array(databaseTemplateBlockSchema).max(50),
     createdAt: timestampSchema,
     lastUsedAt: timestampSchema.nullable(),
     tags: z.array(z.string().max(50)).max(20),

@@ -2,7 +2,7 @@ import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { db, getCustomExercisesRepository } from '@/db'
 
 describe('Exercise Pre-fill from Previous Workout', () => {
@@ -19,7 +19,7 @@ describe('Exercise Pre-fill from Previous Workout', () => {
     if (!benchPress) throw new Error('Bench Press not found in seeded exercises')
 
     // Arrange: Create completed workout with Bench Press (3 sets, different values)
-    const previousWorkout = dbWorkoutBuilder()
+    const previousWorkout = databaseWorkoutBuilder()
       .withName('Previous Workout')
       .withExerciseAndSets(
         [

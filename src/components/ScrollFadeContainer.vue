@@ -14,10 +14,10 @@ const showLeftFade = ref(false)
 const showRightFade = ref(false)
 
 function updateFadeIndicators(): void {
-  const el = scrollRef.value
-  if (!el) return
+  const element = scrollRef.value
+  if (!element) return
 
-  const { scrollLeft, scrollWidth, clientWidth } = el
+  const { scrollLeft, scrollWidth, clientWidth } = element
   const threshold = 5 // Small threshold to handle sub-pixel rendering
 
   showLeftFade.value = scrollLeft > threshold
@@ -25,18 +25,18 @@ function updateFadeIndicators(): void {
 }
 
 onMounted(() => {
-  const el = scrollRef.value
-  if (!el) return
+  const element = scrollRef.value
+  if (!element) return
 
   updateFadeIndicators()
-  el.addEventListener('scroll', updateFadeIndicators, { passive: true })
+  element.addEventListener('scroll', updateFadeIndicators, { passive: true })
 
   // Watch for size changes
   const resizeObserver = new ResizeObserver(updateFadeIndicators)
-  resizeObserver.observe(el)
+  resizeObserver.observe(element)
 
   onUnmounted(() => {
-    el.removeEventListener('scroll', updateFadeIndicators)
+    element.removeEventListener('scroll', updateFadeIndicators)
     resizeObserver.disconnect()
   })
 })

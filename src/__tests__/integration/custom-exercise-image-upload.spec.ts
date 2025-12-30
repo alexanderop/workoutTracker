@@ -35,7 +35,7 @@ describe('Custom Exercise Image Upload', () => {
     const fileInputLocator = page.getByTestId('exercise-image-upload')
     const fileInput = await fileInputLocator.element()
     if (!(fileInput instanceof HTMLInputElement)) {
-      throw new Error('File input not found')
+      throw new TypeError('File input not found')
     }
 
     const dataTransfer = new DataTransfer()

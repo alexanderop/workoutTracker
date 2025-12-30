@@ -37,8 +37,8 @@ export function useAppInitialization() {
   const router = useRouter()
   const exercisesStore = useExercisesStore()
   const settingsStore = useSettingsStore()
-  const workoutRef = getWorkoutRef()
-  const persistence = useWorkoutPersistence(workoutRef)
+  const workoutReference = getWorkoutRef()
+  const persistence = useWorkoutPersistence(workoutReference)
 
   /**
    * Initialize the app: load exercises and check for active workout.

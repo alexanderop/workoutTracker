@@ -21,11 +21,11 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await goToTimersPage()
 
   // Select Tabata
-  await page.getByRole('button', { name: /Tabata/i }).click()
+  await page.getByRole('button', { name: /tabata/i }).click()
 
   // Wait for presets and click Custom
   await expect.element(page.getByText(/Custom/)).toBeVisible()
-  await page.getByRole('button', { name: /Custom/i }).click()
+  await page.getByRole('button', { name: /custom/i }).click()
 
   // Wait for custom form
   await expect.element(page.getByText(/Rounds/)).toBeVisible()
@@ -49,8 +49,8 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
   await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
 
   // Click play button to actually start the timer using semantic query
-  const playBtn = await testApp.workout.getTimerPlayPauseButton()
-  await userEvent.click(playBtn)
+  const playButton = await testApp.workout.getTimerPlayPauseButton()
+  await userEvent.click(playButton)
 
   // Wait for timer to be running (button changes to pause)
   await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
@@ -61,11 +61,11 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await goToTimersPage()
 
   // Select EMOM
-  await page.getByRole('button', { name: /EMOM/i }).click()
+  await page.getByRole('button', { name: /emom/i }).click()
 
   // Wait for presets and click Custom
   await expect.element(page.getByText(/Custom/)).toBeVisible()
-  await page.getByRole('button', { name: /Custom/i }).click()
+  await page.getByRole('button', { name: /custom/i }).click()
 
   // Wait for custom form
   await expect.element(page.getByText(/minutes/i)).toBeVisible()
@@ -82,8 +82,8 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
 
   // Click play button to actually start the timer using semantic query
-  const playBtn = await testApp.workout.getTimerPlayPauseButton()
-  await userEvent.click(playBtn)
+  const playButton = await testApp.workout.getTimerPlayPauseButton()
+  await userEvent.click(playButton)
 }
 
 describe('Timer Audio Playback', () => {
@@ -139,7 +139,7 @@ describe('Timer Audio Playback', () => {
       testApp.cleanup()
     })
 
-    it('plays round beep on round transition', { timeout: 10000 }, async () => {
+    it('plays round beep on round transition', { timeout: 10_000 }, async () => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 

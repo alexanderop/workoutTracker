@@ -136,8 +136,8 @@ describe('tryCatch', () => {
     })
 
     it('works with tryCatch and preserves DatabaseError type', async () => {
-      const dbError = createDatabaseError('SAVE_FAILED', 'save workout')
-      const [error] = await tryCatch<void>(Promise.reject(dbError))
+      const databaseError = createDatabaseError('SAVE_FAILED', 'save workout')
+      const [error] = await tryCatch<void>(Promise.reject(databaseError))
 
       expect(error).toBeInstanceOf(DatabaseError)
       if (error instanceof DatabaseError) {

@@ -10,12 +10,12 @@ import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   block: AmrapBlock
   onComplete?: () => void
 }
 
-const { block, onComplete } = defineProps<Props>()
+const { block, onComplete } = defineProps<Properties>()
 
 const emit = defineEmits<{
   'increment-round': []

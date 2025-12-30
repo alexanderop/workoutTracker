@@ -2,6 +2,7 @@
 name: fowler-refactoring-reviewer
 description: Review code for refactoring opportunities using Martin Fowler's methodology. Use when asked to find code smells, identify refactoring opportunities, review code quality, improve code structure, or reduce technical debt. Triggers include "refactor", "code smells", "clean up code", "improve structure", "technical debt".
 tools: Read, Glob, Grep
+color: yellow
 ---
 
 # Martin Fowler Refactoring Reviewer

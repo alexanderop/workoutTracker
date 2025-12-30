@@ -8,7 +8,7 @@ import type { TestContext } from '../types'
  * Handles dialogs, routing, and exercise selection patterns used throughout integration tests.
  */
 export class CommonPO {
-  constructor(protected ctx: TestContext) {}
+  constructor(protected context: TestContext) {}
 
   /**
    * Waits for a dialog element to appear in the DOM.
@@ -24,6 +24,7 @@ export class CommonPO {
    */
   async waitForDialogClose(): Promise<void> {
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+    // eslint-disable-next-line no-restricted-syntax -- Checking overlay data attribute, no accessible equivalent
     await expect.poll(() => document.querySelector('[data-slot="dialog-overlay"]')).toBeNull()
     // Flush any pending Vue updates after dialog unmount
     await flushPromises()
@@ -40,13 +41,14 @@ export class CommonPO {
     if (!dialog) {
       throw new Error('No dialog found')
     }
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within dialog element
     const buttons = dialog.querySelectorAll('button')
-    const btn = Array.from(buttons).find((b) => b.textContent?.includes(text))
+    const button = [...buttons].find((b) => b.textContent?.includes(text))
 
-    if (!btn) {
+    if (!button) {
       throw new Error(`Dialog button with text "${text}" not found`)
     }
-    return btn
+    return button
   }
 
   /**
@@ -81,6 +83,7 @@ export class CommonPO {
    */
   private getExactDialogButton(text: string): HTMLElement {
     const dialog = page.getByRole('dialog').query()
+    // eslint-disable-next-line no-restricted-syntax -- Finding overlay by CSS classes, no accessible equivalent
     const overlay = document.querySelector('[class*="absolute"][class*="inset-0"]')
     const container = dialog ?? overlay
 
@@ -88,31 +91,34 @@ export class CommonPO {
       throw new Error('No dialog or overlay found')
     }
 
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within container element
     const buttons = container.querySelectorAll('button')
 
     // First try: exact match of full button text (for simple buttons like "Add Block", "Confirm")
-    let btn = Array.from(buttons).find((b) => b.textContent?.trim() === text)
+    let button = [...buttons].find((b) => b.textContent?.trim() === text)
 
     // Second try: find button containing a <p> tag with exact exercise name (dialog mode)
-    if (!btn) {
-      btn = Array.from(buttons).find((b) => {
+    if (!button) {
+      button = [...buttons].find((b) => {
+        // eslint-disable-next-line no-restricted-syntax -- DOM traversal within button element
         const paragraphs = b.querySelectorAll('p')
-        return Array.from(paragraphs).some((p) => p.textContent?.trim() === text)
+        return [...paragraphs].some((p) => p.textContent?.trim() === text)
       })
     }
 
     // Third try: find button containing a <span> with class "font-medium" (overlay mode)
-    if (!btn) {
-      btn = Array.from(buttons).find((b) => {
+    if (!button) {
+      button = [...buttons].find((b) => {
+        // eslint-disable-next-line no-restricted-syntax -- Finding spans by CSS class within button
         const spans = b.querySelectorAll('span.font-medium')
-        return Array.from(spans).some((span) => span.textContent?.trim() === text)
+        return [...spans].some((span) => span.textContent?.trim() === text)
       })
     }
 
-    if (!btn) {
+    if (!button) {
       throw new Error(`Dialog button with exact text "${text}" not found`)
     }
-    return btn
+    return button
   }
 
   /**
@@ -120,7 +126,7 @@ export class CommonPO {
    * @param pathPattern - Regular expression to match against the current route path
    */
   async waitForRoute(pathPattern: RegExp): Promise<void> {
-    await expect.poll(() => this.ctx.router.currentRoute.value.path).toMatch(pathPattern)
+    await expect.poll(() => this.context.router.currentRoute.value.path).toMatch(pathPattern)
   }
 
   /**
@@ -169,16 +175,16 @@ export class CommonPO {
    */
   private setInputValueDirectly(input: Element, value: string): void {
     if (!(input instanceof HTMLInputElement)) {
-      throw new Error('Expected HTMLInputElement')
+      throw new TypeError('Expected HTMLInputElement')
     }
     input.focus()
     // Use native setter to trigger React/Vue internals properly
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
+      globalThis.HTMLInputElement.prototype,
       'value',
     )?.set
-    const setterFn = nativeInputValueSetter ?? ((v: string) => { input.value = v })
-    setterFn.call(input, value)
+    const setterFunction = nativeInputValueSetter ?? ((v: string) => { input.value = v })
+    setterFunction.call(input, value)
     // Dispatch input and change events to trigger Vue reactivity
     input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }))
     input.dispatchEvent(new Event('change', { bubbles: true }))

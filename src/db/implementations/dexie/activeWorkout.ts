@@ -1,17 +1,17 @@
 import type { ActiveWorkoutRepository } from '@/db/interfaces'
 import type { DbActiveWorkout } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 export function createDexieActiveWorkoutRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): ActiveWorkoutRepository {
   return {
     async get(): Promise<DbActiveWorkout | undefined> {
-      return db.activeWorkout.get('current')
+      return database.activeWorkout.get('current')
     },
 
     async save(workout: Readonly<DbActiveWorkout>): Promise<void> {
-      await db.activeWorkout.put({
+      await database.activeWorkout.put({
         ...workout,
         id: 'current',
         lastModifiedAt: Date.now(),
@@ -19,11 +19,11 @@ export function createDexieActiveWorkoutRepository(
     },
 
     async clear(): Promise<void> {
-      await db.activeWorkout.delete('current')
+      await database.activeWorkout.delete('current')
     },
 
     async exists(): Promise<boolean> {
-      const workout = await db.activeWorkout.get('current')
+      const workout = await database.activeWorkout.get('current')
       return workout !== undefined
     },
   }

@@ -17,15 +17,18 @@ const imageUrl = useObjectUrl(() => image ?? undefined)
 
 const sizeClasses = computed(() => {
   switch (size) {
-    case 'sm':
+    case 'sm': {
       return 'h-8 w-8 text-xs'
-    case 'lg':
+    }
+    case 'lg': {
       return 'h-12 w-12 text-base'
-    case 'xl':
+    }
+    case 'xl': {
       return 'h-14 w-14 text-lg'
-    case 'md':
-    default:
+    }
+    default: {
       return 'h-10 w-10 text-sm'
+    }
   }
 })
 </script>

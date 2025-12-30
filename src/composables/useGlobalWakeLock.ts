@@ -58,7 +58,7 @@ export function useGlobalWakeLock() {
   )
 
   // Watch visibility changes
-  watch(visibility, (state, prevState) => {
+  watch(visibility, (state, previousState) => {
     if (!isBrowser) return
     if (!settingsStore.isLoaded || !settingsStore.screenWakeLock) return
 
@@ -68,7 +68,7 @@ export function useGlobalWakeLock() {
       return
     }
 
-    if (state === 'visible' && prevState === 'hidden') {
+    if (state === 'visible' && previousState === 'hidden') {
       wakeLock.acquireAll()
       shouldBeActive = true
     }

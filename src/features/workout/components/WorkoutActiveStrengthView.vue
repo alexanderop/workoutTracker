@@ -19,7 +19,7 @@ const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()
 const { intlLocale, formatNumber } = useNumberLocale()
 
-type Props = {
+type Properties = {
   block: StrengthBlock
   activeSetIndex: number
 }
@@ -30,7 +30,7 @@ const emit = defineEmits<{
   'add-set': []
 }>()
 
-const { block, activeSetIndex } = defineProps<Props>()
+const { block, activeSetIndex } = defineProps<Properties>()
 
 const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 

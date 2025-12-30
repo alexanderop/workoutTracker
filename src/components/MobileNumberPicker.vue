@@ -5,7 +5,7 @@ import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 
-type Props = {
+type Properties = {
   min?: number
   max?: number
   step?: number
@@ -19,7 +19,7 @@ const {
   step = 1,
   largeStep = 5,
   presets = [5, 10, 15, 20, 25, 30, 40, 50],
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const value = defineModel<number>({ required: true })
 

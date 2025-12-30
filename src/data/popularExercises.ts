@@ -1019,4 +1019,18 @@ export const popularExercises = validateUniqueExercises([
     type: 'stability',
     metrics: 'weight-reps',
   },
+  {
+    name: 'Dumbbell Single Leg Deadlift',
+    equipment: 'dumbbell',
+    muscle: 'legs',
+    type: 'compound',
+    metrics: 'weight-reps',
+  },
+  {
+    name: 'Kettlebell Single Leg Deadlift',
+    equipment: 'kettlebell',
+    muscle: 'legs',
+    type: 'compound',
+    metrics: 'weight-reps',
+  },
 ])

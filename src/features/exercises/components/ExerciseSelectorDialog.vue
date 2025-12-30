@@ -3,7 +3,7 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { SelectorOption } from '@/features/exercises/data/exerciseOptions'
 
-type Props = {
+type Properties = {
   title: string
   description: string
   options: ReadonlyArray<SelectorOption<T>>
@@ -12,7 +12,7 @@ type Props = {
   layout?: 'grid' | 'list'
 }
 
-const { title, description, options, selected, layout = 'list' } = defineProps<Props>()
+const { title, description, options, selected, layout = 'list' } = defineProps<Properties>()
 const open = defineModel<boolean>('open', { required: true })
 const emit = defineEmits<{ select: [value: T] }>()
 

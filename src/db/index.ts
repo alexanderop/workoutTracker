@@ -15,7 +15,7 @@ import type {
 import { getRepositoryProvider } from './provider'
 import { tryCatch } from '@/lib/tryCatch'
 import { createDexieExerciseProgressRepository } from './implementations/dexie/exerciseProgress'
-import { db } from './implementations/dexie/database'
+import { db as database } from './implementations/dexie/database'
 
 // Re-export types for consumers
 export * from './interfaces'
@@ -72,7 +72,7 @@ let exerciseProgressRepository: ExerciseProgressRepository | null = null
 
 export function getExerciseProgressRepository(): ExerciseProgressRepository {
   if (!exerciseProgressRepository) {
-    exerciseProgressRepository = createDexieExerciseProgressRepository(db)
+    exerciseProgressRepository = createDexieExerciseProgressRepository(database)
   }
   return exerciseProgressRepository
 }

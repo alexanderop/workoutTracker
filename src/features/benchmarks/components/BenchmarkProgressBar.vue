@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type Props = {
+type Properties = {
   currentExercise: number // 1-based position within current round
   exercisesPerRound: number
   currentRound: number // 1-based
@@ -18,7 +18,7 @@ const {
   totalRounds,
   globalCurrent,
   globalTotal,
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const { t } = useI18n()
 
@@ -30,11 +30,11 @@ const roundProgress = computed(() => {
 
 // Generate round segments
 const roundSegments = computed(() => {
-  return Array.from({ length: totalRounds }, (_, i) => {
-    const roundNum = i + 1
-    const isCompleted = roundNum < currentRound
-    const isCurrent = roundNum === currentRound
-    return { roundNum, isCompleted, isCurrent }
+  return Array.from({ length: totalRounds }, (_, index) => {
+    const roundNumber = index + 1
+    const isCompleted = roundNumber < currentRound
+    const isCurrent = roundNumber === currentRound
+    return { roundNum: roundNumber, isCompleted, isCurrent }
   })
 })
 </script>

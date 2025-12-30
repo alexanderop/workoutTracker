@@ -128,7 +128,7 @@ function generateWorkoutName(block: TimedBlock, t: ReturnType<typeof useI18n>['t
  * @param result - Result produced by the timer session to store with the DB block
  * @returns A DbAmrapBlock with a generated `id`, `orderIndex` set to 0, `kind` set to `"amrap"`, a plain copy of `config`, an empty `exercises` array, and a copy of `result`
  */
-function createAmrapDbBlock(block: AmrapBlock, result: AmrapResult): DbAmrapBlock {
+function createAmrapDatabaseBlock(block: AmrapBlock, result: AmrapResult): DbAmrapBlock {
   return {
     id: generateId(),
     orderIndex: 0,
@@ -150,7 +150,7 @@ function createAmrapDbBlock(block: AmrapBlock, result: AmrapResult): DbAmrapBloc
  * @param result - The EMOM session result to attach to the DB block
  * @returns The constructed DbEmomBlock ready for persistence
  */
-function createEmomDbBlock(block: EmomBlock, result: EmomResult): DbEmomBlock {
+function createEmomDatabaseBlock(block: EmomBlock, result: EmomResult): DbEmomBlock {
   return {
     id: generateId(),
     orderIndex: 0,
@@ -171,7 +171,7 @@ function createEmomDbBlock(block: EmomBlock, result: EmomResult): DbEmomBlock {
  * @param result - Recorded result for the Tabata block
  * @returns A DbTabataBlock populated with the provided config and result, ready for persistence
  */
-function createTabataDbBlock(block: TabataBlock, result: TabataResult): DbTabataBlock {
+function createTabataDatabaseBlock(block: TabataBlock, result: TabataResult): DbTabataBlock {
   return {
     id: generateId(),
     orderIndex: 0,
@@ -199,7 +199,7 @@ function createTabataDbBlock(block: TabataBlock, result: TabataResult): DbTabata
  * @param result - The completed result from the timer session
  * @returns A `DbForTimeBlock` suitable for persisting as a standalone workout block
  */
-function createForTimeDbBlock(block: ForTimeBlock, result: ForTimeResult): DbForTimeBlock {
+function createForTimeDatabaseBlock(block: ForTimeBlock, result: ForTimeResult): DbForTimeBlock {
   return {
     id: generateId(),
     orderIndex: 0,
@@ -216,18 +216,18 @@ function createForTimeDbBlock(block: ForTimeBlock, result: ForTimeResult): DbFor
  * @param session - The timer session (AMRAP, EMOM, Tabata, or ForTime) to convert
  * @returns A `DbWorkoutBlock` representing the session suitable for persistence
  */
-function convertSessionToDbBlock(session: TimerSession): DbWorkoutBlock {
+function convertSessionToDatabaseBlock(session: TimerSession): DbWorkoutBlock {
   if (isAmrapSession(session)) {
-    return createAmrapDbBlock(session.block, session.result)
+    return createAmrapDatabaseBlock(session.block, session.result)
   }
   if (isEmomSession(session)) {
-    return createEmomDbBlock(session.block, session.result)
+    return createEmomDatabaseBlock(session.block, session.result)
   }
   if (isTabataSession(session)) {
-    return createTabataDbBlock(session.block, session.result)
+    return createTabataDatabaseBlock(session.block, session.result)
   }
   // Must be ForTime at this point
-  return createForTimeDbBlock(session.block, session.result)
+  return createForTimeDatabaseBlock(session.block, session.result)
 }
 
 /**
@@ -305,12 +305,12 @@ export function useTimerWorkoutLogger() {
     isSaving.value = true
 
     const workoutName = generateWorkoutName(session.block, t)
-    const dbBlock = convertSessionToDbBlock(session)
+    const databaseBlock = convertSessionToDatabaseBlock(session)
 
     const workout: DbCompletedWorkout = {
       id: generateId(),
       name: workoutName,
-      blocks: [dbBlock],
+      blocks: [databaseBlock],
       startedAt: session.startedAt,
       completedAt: session.completedAt,
       durationSeconds: Math.floor((session.completedAt - session.startedAt) / 1000),

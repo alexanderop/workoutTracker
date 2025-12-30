@@ -36,7 +36,7 @@ export function useTemplateCreation() {
   const blocks: WritableComputedRef<ReadonlyArray<DbTemplateBlock>> = computed({
     get: () => formState.value.blocks,
     set: (v: ReadonlyArray<DbTemplateBlock>) => {
-      formState.value.blocks = Array.from(v)
+      formState.value.blocks = [...v]
     },
   })
 
@@ -60,6 +60,7 @@ export function useTemplateCreation() {
 
     isSaving.value = true
     // Deep clone to strip Vue reactivity - required for IndexedDB storage
+    // eslint-disable-next-line unicorn/prefer-structured-clone -- structuredClone fails on Vue reactive objects
     const plainBlocks = JSON.parse(JSON.stringify(toRaw(formState.value.blocks)))
     const [error, template] = await tryCatch(
       getTemplatesRepository().create({

@@ -1,11 +1,11 @@
 import type { DraftsRepository } from '@/db/interfaces'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
  * Create a Dexie implementation of the DraftsRepository.
  * Used by useFormDraft composable to persist creation form state.
  */
-export function createDexieDraftsRepository(database: WorkoutTrackerDb): DraftsRepository {
+export function createDexieDraftsRepository(database: WorkoutTrackerDatabase): DraftsRepository {
   return {
     async get(key) {
       return database.drafts.get(key)

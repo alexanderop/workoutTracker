@@ -62,7 +62,7 @@ export function versionPlugin(): Plugin {
 
     // Serve version.json in dev mode
     configureServer(server) {
-      server.middlewares.use('/version.json', (_req, res) => {
+      server.middlewares.use('/version.json', (_request, res) => {
         res.setHeader('Content-Type', 'application/json')
         res.setHeader('Cache-Control', 'no-cache')
         res.end(JSON.stringify(versionInfo))

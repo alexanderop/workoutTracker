@@ -96,7 +96,7 @@ describe('Locale-Aware Decimal Input', () => {
       await modalPO.waitForOpen()
 
       // Check that the value display shows comma format
-      const valueDisplay = page.getByTestId('value-display')
+      const valueDisplay = page.getByLabelText('Current value')
       await expect.element(valueDisplay).toHaveTextContent(/70,5/)
 
       await modalPO.clickCancel()

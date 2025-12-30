@@ -10,11 +10,11 @@ const benchmarkTypeSchema = z.enum(['fortime', 'rounds'])
 /**
  * Benchmark exercise schema matching DbBenchmarkExercise
  */
-const dbBenchmarkExerciseSchema = z
+const databaseBenchmarkExerciseSchema = z
   .object({
     exerciseDefinitionId: z.string().nullable(),
     name: safeStringSchema.min(1).max(200),
-    prescribedReps: z.number().int().min(0).max(10000),
+    prescribedReps: z.number().int().min(0).max(10_000),
     image: z.null(), // Blob can't be serialized to JSON, so always null in exports
   })
   .strict()
@@ -39,7 +39,7 @@ export const dbBenchmarkSchema = z
     name: safeStringSchema.min(1).max(200),
     type: benchmarkTypeSchema,
     rounds: z.number().int().min(1).max(100),
-    exercises: z.array(dbBenchmarkExerciseSchema).max(MAX_BENCHMARK_EXERCISES).readonly(),
+    exercises: z.array(databaseBenchmarkExerciseSchema).max(MAX_BENCHMARK_EXERCISES).readonly(),
     createdAt: timestampSchema,
     lastUsedAt: timestampSchema.nullable(),
   })

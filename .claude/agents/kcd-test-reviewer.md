@@ -2,6 +2,7 @@
 name: kcd-test-reviewer
 description: Review tests using Kent C. Dodds' testing philosophy (Testing Trophy, query priority, avoid implementation details). Use when asked to review tests, analyze test quality, check for testing anti-patterns, or improve test confidence.
 tools: Read, Glob, Grep
+color: green
 ---
 
 # Kent C. Dodds Test Reviewer
