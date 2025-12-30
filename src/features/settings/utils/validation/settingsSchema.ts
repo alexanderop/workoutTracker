@@ -46,7 +46,7 @@ const heightUnitSettingSchema = z
 const autoSaveIntervalSettingSchema = z
   .object({
     key: z.literal('autoSaveInterval'),
-    value: z.number().int().min(1000).max(300000), // 1s to 5min
+    value: z.number().int().min(1000).max(300_000), // 1s to 5min
   })
   .strict()
 

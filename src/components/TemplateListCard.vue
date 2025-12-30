@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
 
-type Props = {
+type Properties = {
   template: {
     id: string
     name: string
@@ -12,7 +12,7 @@ type Props = {
   formatDate: (timestamp: number | null) => string
 }
 
-const { template, formatDate } = defineProps<Props>()
+const { template, formatDate } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()

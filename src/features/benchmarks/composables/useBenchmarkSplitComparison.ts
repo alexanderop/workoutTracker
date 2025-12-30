@@ -9,7 +9,7 @@ import {
 } from '@/features/benchmarks/lib/splitComparison'
 
 // Re-export type for external consumers
-export type { SplitComparison }
+
 
 /**
  * Loads PB attempt with split times and provides comparison functionality.
@@ -117,3 +117,5 @@ export function useBenchmarkSplitComparison(benchmarkId: MaybeRefOrGetter<string
     reload: loadPbSplitTimes,
   }
 }
+
+export {type SplitComparison} from '@/features/benchmarks/lib/splitComparison'

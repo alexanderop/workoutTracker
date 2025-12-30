@@ -2,7 +2,7 @@
 import type { DbTemplateBlock } from '@/db/schema'
 import TemplateBlockItem from './TemplateBlockItem.vue'
 
-type Props = {
+type Properties = {
   blocks: ReadonlyArray<DbTemplateBlock>
 }
 
@@ -11,15 +11,15 @@ type Emits = {
   'remove-block': [index: number]
 }
 
-const { blocks } = defineProps<Props>()
+const { blocks } = defineProps<Properties>()
 const emit = defineEmits<Emits>()
 
 function handleSetCountChange(index: number, count: number): void {
   const block = blocks[index]
   if (!block || block.kind !== 'strength') return
 
-  const updated = blocks.map((b, i) =>
-    i === index && b.kind === 'strength' ? { ...b, defaultSetCount: count } : b,
+  const updated = blocks.map((b, index_) =>
+    index_ === index && b.kind === 'strength' ? { ...b, defaultSetCount: count } : b,
   )
   emit('update:blocks', updated)
 }
@@ -32,11 +32,11 @@ function handleMoveUp(index: number): void {
   if (index <= 0) return
 
   const updated = [...blocks]
-  const temp = updated[index - 1]
+  const temporary = updated[index - 1]
   const current = updated[index]
-  if (temp && current) {
+  if (temporary && current) {
     updated[index - 1] = current
-    updated[index] = temp
+    updated[index] = temporary
     emit('update:blocks', updated)
   }
 }
@@ -45,11 +45,11 @@ function handleMoveDown(index: number): void {
   if (index < 0 || index >= blocks.length - 1) return
 
   const updated = [...blocks]
-  const temp = updated[index]
+  const temporary = updated[index]
   const next = updated[index + 1]
-  if (temp && next) {
+  if (temporary && next) {
     updated[index] = next
-    updated[index + 1] = temp
+    updated[index + 1] = temporary
     emit('update:blocks', updated)
   }
 }

@@ -16,13 +16,13 @@ import {
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { Button } from '@/components/ui/button'
 
-type Props = {
+type Properties = {
   block: WorkoutBlock
   status: 'completed' | 'active' | 'planned'
   index: number
 }
 
-const { block, status, index } = defineProps<Props>()
+const { block, status, index } = defineProps<Properties>()
 
 const emit = defineEmits<{
   select: []

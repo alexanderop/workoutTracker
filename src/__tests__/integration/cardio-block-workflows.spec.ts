@@ -245,8 +245,8 @@ describe('Cardio Block Workflows', () => {
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
       await expect.poll(async () => {
-        const el = await viewDetailsButton.element()
-        return getComputedStyle(el).opacity
+        const element = await viewDetailsButton.element()
+        return getComputedStyle(element).opacity
       }, { timeout: 2000 }).toBe('1')
 
       // Navigate to summary

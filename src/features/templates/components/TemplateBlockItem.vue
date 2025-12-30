@@ -15,7 +15,7 @@ type Movement = {
   canMoveDown: boolean
 }
 
-type Props = {
+type Properties = {
   block: DbTemplateBlock
   movement: Movement
 }
@@ -27,7 +27,7 @@ type Emits = {
   'move-down': []
 }
 
-const { block, movement } = defineProps<Props>()
+const { block, movement } = defineProps<Properties>()
 const emit = defineEmits<Emits>()
 
 const isStrength = computed(() => block.kind === 'strength')
@@ -72,18 +72,24 @@ function formatExerciseCount(count: number): string {
 
 function getBlockSubtitle(blk: DbTemplateBlock): string {
   switch (blk.kind) {
-    case 'strength':
+    case 'strength': {
       return `${blk.equipment} · ${blk.defaultSetCount} ${t('workouts.templates.sets')}`
-    case 'amrap':
+    }
+    case 'amrap': {
       return `${Math.floor(blk.config.durationSeconds / 60)} min · ${formatExerciseCount(blk.exercises.length)}`
-    case 'emom':
+    }
+    case 'emom': {
       return `${blk.config.minutes} min · ${blk.config.exerciseRotation === 'full-round' ? 'Full Round' : 'Per Exercise'}`
-    case 'tabata':
+    }
+    case 'tabata': {
       return `${blk.config.rounds} rounds · ${Math.floor(blk.config.rounds * (blk.config.workSeconds + blk.config.restSeconds) / 60)} min`
-    case 'fortime':
+    }
+    case 'fortime': {
       return `${blk.config.timeCapSeconds ? `Cap: ${Math.floor(blk.config.timeCapSeconds / 60)} min` : 'No cap'} · ${formatExerciseCount(blk.exercises.length)}`
-    case 'cardio':
+    }
+    case 'cardio': {
       return formatCardioSubtitle(blk.config)
+    }
   }
 }
 
@@ -119,7 +125,7 @@ const MAX_SET_COUNT = 10
 function handleSetCountChange(event: Event): void {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
-  const count = parseInt(target.value, 10)
+  const count = Number.parseInt(target.value, 10)
   if (count > 0 && count <= MAX_SET_COUNT) {
     emit('update:setCount', count)
   }

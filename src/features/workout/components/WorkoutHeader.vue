@@ -13,13 +13,13 @@ import {
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   exerciseName: string
   equipment: string
   targetReps: number
 }
 
-const { exerciseName, equipment, targetReps } = defineProps<Props>()
+const { exerciseName, equipment, targetReps } = defineProps<Properties>()
 defineEmits<{
   delete: []
   edit: []

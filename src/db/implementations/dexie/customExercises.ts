@@ -1,29 +1,29 @@
 import type { CustomExercisesRepository } from '@/db/interfaces'
 import type { DbCustomExercise } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 export function createDexieCustomExercisesRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): CustomExercisesRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbCustomExercise>> {
-      return db.customExercises.orderBy('createdAt').reverse().toArray()
+      return database.customExercises.orderBy('createdAt').reverse().toArray()
     },
 
     async getById(id: string): Promise<DbCustomExercise | undefined> {
-      return db.customExercises.get(id)
+      return database.customExercises.get(id)
     },
 
     async add(exercise: Readonly<DbCustomExercise>): Promise<void> {
-      await db.customExercises.add(exercise)
+      await database.customExercises.add(exercise)
     },
 
     async update(
       id: string,
       updates: Partial<Omit<DbCustomExercise, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      const updated = await db.customExercises.update(id, {
+      const updated = await database.customExercises.update(id, {
         ...updates,
         updatedAt: Date.now(),
       })
@@ -33,17 +33,17 @@ export function createDexieCustomExercisesRepository(
     },
 
     async delete(id: string): Promise<void> {
-      await db.customExercises.delete(id)
+      await database.customExercises.delete(id)
     },
 
     async existsByName(name: string): Promise<boolean> {
-      const count = await db.customExercises.where('name').equalsIgnoreCase(name).count()
+      const count = await database.customExercises.where('name').equalsIgnoreCase(name).count()
       return count > 0
     },
 
     async searchByName(query: string): Promise<ReadonlyArray<DbCustomExercise>> {
       const lowerQuery = query.toLowerCase()
-      return db.customExercises
+      return database.customExercises
         .filter((exercise) => exercise.name.toLowerCase().includes(lowerQuery))
         .toArray()
     },

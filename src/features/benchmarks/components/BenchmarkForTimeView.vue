@@ -30,7 +30,7 @@ type BenchmarkCompletionState = {
   benchmarkName: string
 }
 
-type Props = {
+type Properties = {
   block: ForTimeBlock
   progress: ExerciseProgressState
   completion?: BenchmarkCompletionState
@@ -46,7 +46,7 @@ const {
   animationState = {},
   splitComparison = null,
   elapsedTime = '00:00',
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const emit = defineEmits<{
   'view-details': []

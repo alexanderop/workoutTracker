@@ -37,8 +37,8 @@ export function useBenchmarkExerciseNavigation() {
 
     // Sum exercises in all preceding blocks
     let sum = 0
-    for (let i = 0; i < blockIndex; i++) {
-      const block = blocks[i]
+    for (let index = 0; index < blockIndex; index++) {
+      const block = blocks[index]
       if (block) {
         sum += getBlockExerciseList(block).length
       }
@@ -132,13 +132,13 @@ export function useBenchmarkExerciseNavigation() {
     }
 
     // Try: Go to previous block (previous round)
-    const prevBlockIndex = blockIndex - 1
-    if (prevBlockIndex >= 0) {
-      const prevBlock = benchmarkWorkout.value.blocks[prevBlockIndex]
-      if (prevBlock) {
-        const exercises = getBlockExerciseList(prevBlock)
+    const previousBlockIndex = blockIndex - 1
+    if (previousBlockIndex >= 0) {
+      const previousBlock = benchmarkWorkout.value.blocks[previousBlockIndex]
+      if (previousBlock) {
+        const exercises = getBlockExerciseList(previousBlock)
         updateBenchmarkWorkout({
-          selectedBlockIndex: prevBlockIndex,
+          selectedBlockIndex: previousBlockIndex,
           activeExerciseIndex: exercises.length - 1,
         })
         return 'previous-block'

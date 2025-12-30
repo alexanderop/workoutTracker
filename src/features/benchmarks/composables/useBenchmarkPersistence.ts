@@ -19,7 +19,7 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
     fromDb: dbToBenchmarkWorkout,
     repository: {
       get: () => repo.load(),
-      save: (db) => repo.save(db),
+      save: (database) => repo.save(database),
       clear: () => repo.delete(),
       exists: () => repo.exists(),
     },
@@ -54,17 +54,17 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
    * Returns the completed workout for navigation to summary.
    */
   async function completeBenchmark(): Promise<DbCompletedWorkout | null> {
-    const [loadError, dbBenchmark] = await tryCatch(repo.load())
+    const [loadError, databaseBenchmark] = await tryCatch(repo.load())
 
     if (loadError) {
       core.persistenceState.value = { status: 'error', error: loadError }
       return null
     }
 
-    if (!dbBenchmark) return null
+    if (!databaseBenchmark) return null
 
     // Convert benchmark workout to completed workout format
-    const [completeError, completed] = await tryCatch(repo.complete(dbBenchmark))
+    const [completeError, completed] = await tryCatch(repo.complete(databaseBenchmark))
 
     if (completeError) {
       core.persistenceState.value = { status: 'error', error: completeError }

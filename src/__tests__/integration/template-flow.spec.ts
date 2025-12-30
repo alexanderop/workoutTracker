@@ -4,13 +4,13 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
+import { createDbTemplate as createDatabaseTemplate, createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 
 async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
   const textElement = await page.getByText(exerciseName).element()
   const card = textElement.closest('.rounded-xl')
   if (!(card instanceof HTMLElement)) {
-    throw new Error(`Exercise card not found for: ${exerciseName}`)
+    throw new TypeError(`Exercise card not found for: ${exerciseName}`)
   }
   return card
 }
@@ -19,7 +19,7 @@ function getMoveDownButton(card: HTMLElement): HTMLElement {
   // eslint-disable-next-line no-restricted-syntax -- Finding move button within card scope
   const button = card.querySelector('[aria-label*="move down" i], [aria-label*="Move down" i]')
   if (!(button instanceof HTMLElement)) {
-    throw new Error('Move down button not found')
+    throw new TypeError('Move down button not found')
   }
   return button
 }
@@ -72,11 +72,11 @@ describe('Template Flow', () => {
 
       // Verify the input value was set correctly before proceeding
       await expect.poll(async () => {
-        const el = await nameInput.element()
-        if (!(el instanceof HTMLInputElement)) {
+        const element = await nameInput.element()
+        if (!(element instanceof HTMLInputElement)) {
           return null
         }
-        return el.value
+        return element.value
       }).toBe('Push Day')
 
       await userEvent.click(common.getDialogButton('Finish Workout'))
@@ -99,8 +99,8 @@ describe('Template Flow', () => {
       await expect.element(saveTemplateButton, { timeout: 3000 }).toBeVisible()
       await expect.poll(() => {
         // eslint-disable-next-line no-restricted-syntax -- Checking animation state by CSS class
-        const btn = document.querySelector('button[name*="template"], button:has([name*="template"])')
-        return !btn?.parentElement?.classList.contains('opacity-0')
+        const button = document.querySelector('button[name*="template"], button:has([name*="template"])')
+        return !button?.parentElement?.classList.contains('opacity-0')
       }).toBe(true)
       // Wait for animation to complete (100ms enter delay + 1000ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 800))
@@ -136,12 +136,12 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-leg-day',
         name: 'Leg Day',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Romanian Deadlift', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Romanian Deadlift', equipment: 'Barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -153,10 +153,10 @@ describe('Template Flow', () => {
       await expect.element(page.getByText('Leg Day')).toBeVisible()
 
       // Click on the template card
-      const legDayEl = await getByText('Leg Day').element()
-      const templateCard = legDayEl.closest('[role="button"]')
+      const legDayElement = await getByText('Leg Day').element()
+      const templateCard = legDayElement.closest('[role="button"]')
       if (!(templateCard instanceof HTMLElement)) {
-        throw new Error('Template card not found')
+        throw new TypeError('Template card not found')
       }
       await userEvent.click(templateCard)
 
@@ -192,10 +192,10 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-edit-test',
         name: 'Original Name',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Bench Press' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
       await db.templates.add(template)
 
@@ -235,10 +235,10 @@ describe('Template Flow', () => {
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-delete-test',
         name: 'Template to Delete',
-        blocks: [createDbTemplateStrengthBlock()],
+        blocks: [createDatabaseTemplateStrengthBlock()],
       })
       await db.templates.add(template)
 
@@ -326,17 +326,17 @@ describe('Template Flow', () => {
 
       // Seed templates with different lastUsedAt values
       await db.templates.bulkAdd([
-        createDbTemplate({
+        createDatabaseTemplate({
           id: 'tpl-never-used',
           name: 'Never Used Template',
           lastUsedAt: null,
         }),
-        createDbTemplate({
+        createDatabaseTemplate({
           id: 'tpl-yesterday',
           name: 'Used Yesterday',
           lastUsedAt: yesterday,
         }),
-        createDbTemplate({
+        createDatabaseTemplate({
           id: 'tpl-today',
           name: 'Used Today',
           lastUsedAt: now,
@@ -352,14 +352,14 @@ describe('Template Flow', () => {
       await expect.element(page.getByText('Never Used Template')).toBeVisible()
 
       // Get all template cards to verify order
-      const todayEl = await getByText('Used Today').element()
-      const yesterdayEl = await getByText('Used Yesterday').element()
-      const neverUsedEl = await getByText('Never Used Template').element()
+      const todayElement = await getByText('Used Today').element()
+      const yesterdayElement = await getByText('Used Yesterday').element()
+      const neverUsedElement = await getByText('Never Used Template').element()
 
       // Get the index positions by comparing document positions
-      const todayCard = todayEl.closest('[role="button"]')
-      const yesterdayCard = yesterdayEl.closest('[role="button"]')
-      const neverUsedCard = neverUsedEl.closest('[role="button"]')
+      const todayCard = todayElement.closest('[role="button"]')
+      const yesterdayCard = yesterdayElement.closest('[role="button"]')
+      const neverUsedCard = neverUsedElement.closest('[role="button"]')
 
       if (!todayCard || !yesterdayCard || !neverUsedCard) {
         throw new Error('Template cards not found')
@@ -400,13 +400,13 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 3 exercises
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-remove-test',
         name: 'Template With Exercises',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -454,13 +454,13 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 3 exercises (A, B, C order)
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-reorder-test',
         name: 'Template To Reorder',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Exercise C', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise C', equipment: 'Barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -549,10 +549,10 @@ describe('Template Flow', () => {
       const { builder, getByRole, navigateTo, router, cleanup } = await createTestApp()
 
       // Seed template with default 3 sets
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-setcount-test',
         name: 'Set Count Template',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 3 })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 3 })],
       })
       await db.templates.add(template)
 
@@ -612,10 +612,10 @@ describe('Template Flow', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with original name
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-discard-test',
         name: 'Original Name',
-        blocks: [createDbTemplateStrengthBlock()],
+        blocks: [createDatabaseTemplateStrengthBlock()],
       })
       await db.templates.add(template)
 
@@ -630,9 +630,9 @@ describe('Template Flow', () => {
 
       // Verify input changed
       await expect.poll(async () => {
-        const el = await nameInput.element()
-        if (!(el instanceof HTMLInputElement)) return null
-        return el.value
+        const element = await nameInput.element()
+        if (!(element instanceof HTMLInputElement)) return null
+        return element.value
       }).toBe('Modified Name')
 
       // Navigate away without saving (go to workouts page)
@@ -645,14 +645,14 @@ describe('Template Flow', () => {
       // Verify the name is back to original (unsaved changes were discarded)
       const reloadedInput = getByRole('textbox', { name: /template name/i })
       await expect.poll(async () => {
-        const el = await reloadedInput.element()
-        if (!(el instanceof HTMLInputElement)) return null
-        return el.value
+        const element = await reloadedInput.element()
+        if (!(element instanceof HTMLInputElement)) return null
+        return element.value
       }).toBe('Original Name')
 
       // Verify DB was never modified
-      const dbTemplate = await db.templates.get('tpl-discard-test')
-      expect(dbTemplate?.name).toBe('Original Name')
+      const databaseTemplate = await db.templates.get('tpl-discard-test')
+      expect(databaseTemplate?.name).toBe('Original Name')
 
       cleanup()
     })

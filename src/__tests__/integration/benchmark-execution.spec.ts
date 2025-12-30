@@ -56,9 +56,9 @@ describe('Benchmark Execution', () => {
 
       const backButtons = await page.getByRole('button', { name: /go back|^back$/i }).all()
       const footerBackButtons = await Promise.all(
-        backButtons.map(async btn => {
-          const text = (await btn.element()).textContent?.trim()
-          return text === 'Go back' || text === 'Back' ? btn : null
+        backButtons.map(async button => {
+          const text = (await button.element()).textContent?.trim()
+          return text === 'Go back' || text === 'Back' ? button : null
         })
       ).then(results => results.filter(Boolean))
       expect(footerBackButtons).toHaveLength(0)

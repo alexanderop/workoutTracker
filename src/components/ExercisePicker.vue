@@ -27,7 +27,7 @@ const router = useRouter()
  * @prop mode - 'single' closes on selection, 'multi' stays open
  * @prop showCreate - Show "Create Custom Exercise" button (dialog mode only)
  */
-type Props = {
+type Properties = {
   /** 'dialog' for modal presentation, 'overlay' for inline absolute positioning */
   presentation?: 'dialog' | 'overlay'
   /** 'single' closes picker on selection, 'multi' stays open for multiple selections */
@@ -41,7 +41,7 @@ type Emits = {
 }
 
 const open = defineModel<boolean>('open', { required: true })
-const { presentation = 'dialog', mode = 'single', showCreate = false } = defineProps<Props>()
+const { presentation = 'dialog', mode = 'single', showCreate = false } = defineProps<Properties>()
 const emit = defineEmits<Emits>()
 
 // Template ref for the content component (dialog mode)

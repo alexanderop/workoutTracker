@@ -30,7 +30,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     fromDb: dbToWorkout,
     repository: {
       get: () => repo.get(),
-      save: (db) => repo.save(db),
+      save: (database) => repo.save(database),
       clear: () => repo.clear(),
       exists: () => repo.exists(),
     },
@@ -46,9 +46,9 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
 
     if (loaded) {
       // Get the startedAt from the database
-      const [, dbWorkout] = await tryCatch(repo.get())
-      if (dbWorkout) {
-        currentWorkoutStartedAt = dbWorkout.startedAt
+      const [, databaseWorkout] = await tryCatch(repo.get())
+      if (databaseWorkout) {
+        currentWorkoutStartedAt = databaseWorkout.startedAt
       }
     }
 
@@ -76,20 +76,20 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Returns the completed workout for navigation to summary.
    */
   async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
-    const [getError, dbWorkout] = await tryCatch(repo.get())
+    const [getError, databaseWorkout] = await tryCatch(repo.get())
 
     if (getError) {
       core.persistenceState.value = { status: 'error', error: getError }
       return null
     }
 
-    if (!dbWorkout) return null
+    if (!databaseWorkout) return null
 
     // Set mode to 'completed' before persisting to DB
-    dbWorkout.mode = 'completed'
+    databaseWorkout.mode = 'completed'
 
     const [completeError, completed] = await tryCatch(
-      getWorkoutsRepository().completeWorkout(dbWorkout, notes),
+      getWorkoutsRepository().completeWorkout(databaseWorkout, notes),
     )
 
     if (completeError) {

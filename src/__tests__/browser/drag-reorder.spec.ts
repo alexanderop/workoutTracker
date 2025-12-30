@@ -8,21 +8,21 @@ import { createStrengthBlock } from '@/__tests__/factories'
 /**
  * Gets the parent container of a block button element
  */
-const getBlockContainer = (btn: Element) => btn.parentElement
+const getBlockContainer = (button: Element) => button.parentElement
 
 /**
  * Helper to render component in browser mode
  */
 function renderComponent(
   component: Component,
-  props: Record<string, unknown>,
+  properties: Record<string, unknown>,
 ): { container: HTMLElement; unmount: () => void } {
   const container = document.createElement('div')
-  document.body.appendChild(container)
+  document.body.append(container)
 
   const app = createApp({
     render() {
-      return h(component, props)
+      return h(component, properties)
     },
   })
 
@@ -120,9 +120,9 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     const dragHandles = container.querySelectorAll('.drag-handle')
     expect(dragHandles.length).toBe(2)
 
-    dragHandles.forEach((handle) => {
+    for (const handle of dragHandles) {
       expect(handle.classList.contains('opacity-0')).toBe(true)
-    })
+    }
   })
 
   it('shows selected block with aria-pressed', () => {
@@ -158,8 +158,8 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // Find button with "Add Block" text
     // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
-    const addButton = Array.from(container.querySelectorAll('button')).find((btn) =>
-      btn.textContent?.includes('Add Block'),
+    const addButton = [...container.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Add Block'),
     )
     expect(addButton).toBeTruthy()
   })
@@ -176,8 +176,8 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // Should not find add block button when disabled
     // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
-    const addButton = Array.from(container.querySelectorAll('button')).find((btn) =>
-      btn.textContent?.includes('Add Block'),
+    const addButton = [...container.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Add Block'),
     )
     expect(addButton).toBeFalsy()
   })

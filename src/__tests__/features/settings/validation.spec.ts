@@ -85,7 +85,7 @@ function createValidWorkout(overrides: Record<string, unknown> = {}) {
     id: 'workout-1',
     name: 'Morning Workout',
     blocks: [createValidStrengthBlock()],
-    startedAt: Date.now() - 3600000,
+    startedAt: Date.now() - 3_600_000,
     completedAt: Date.now(),
     durationSeconds: 3600,
     notes: '',
@@ -509,7 +509,7 @@ describe('Template Schema Validation', () => {
     })
 
     it('rejects template with too many tags', () => {
-      const tooManyTags = Array.from({ length: 21 }, (_, i) => `tag-${i}`)
+      const tooManyTags = Array.from({ length: 21 }, (_, index) => `tag-${index}`)
       const result = dbWorkoutTemplateSchema.safeParse(createValidTemplate({ tags: tooManyTags }))
       expect(result.success).toBe(false)
     })
@@ -531,13 +531,13 @@ describe('Workout Schema Validation', () => {
 
     it('rejects workout with duration exceeding max', () => {
       const result = dbCompletedWorkoutSchema.safeParse(
-        createValidWorkout({ durationSeconds: 86401 })
+        createValidWorkout({ durationSeconds: 86_401 })
       )
       expect(result.success).toBe(false)
     })
 
     it('rejects workout with notes exceeding max length', () => {
-      const longNotes = 'a'.repeat(10001)
+      const longNotes = 'a'.repeat(10_001)
       const result = dbCompletedWorkoutSchema.safeParse(createValidWorkout({ notes: longNotes }))
       expect(result.success).toBe(false)
     })
@@ -558,24 +558,24 @@ describe('Size Limits', () => {
   })
 
   it('rejects exercises array exceeding max (500)', () => {
-    const customExercises = Array.from({ length: 501 }, (_, i) =>
-      createValidExercise({ id: `exercise-${i}` })
+    const customExercises = Array.from({ length: 501 }, (_, index) =>
+      createValidExercise({ id: `exercise-${index}` })
     )
     const result = exportDataSchema.safeParse(createValidExportData({ customExercises }))
     expect(result.success).toBe(false)
   })
 
   it('rejects templates array exceeding max (100)', () => {
-    const templates = Array.from({ length: 101 }, (_, i) =>
-      createValidTemplate({ id: `template-${i}` })
+    const templates = Array.from({ length: 101 }, (_, index) =>
+      createValidTemplate({ id: `template-${index}` })
     )
     const result = exportDataSchema.safeParse(createValidExportData({ templates }))
     expect(result.success).toBe(false)
   })
 
   it('rejects workouts array exceeding max (5000)', () => {
-    const workouts = Array.from({ length: 5001 }, (_, i) =>
-      createValidWorkout({ id: `workout-${i}` })
+    const workouts = Array.from({ length: 5001 }, (_, index) =>
+      createValidWorkout({ id: `workout-${index}` })
     )
     const result = exportDataSchema.safeParse(createValidExportData({ workouts }))
     expect(result.success).toBe(false)

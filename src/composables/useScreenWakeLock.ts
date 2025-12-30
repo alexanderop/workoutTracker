@@ -54,7 +54,7 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   const isStandaloneMedia = useMediaQuery('(display-mode: standalone)')
   // Safari-specific standalone property check
   const isSafariStandalone = computed(() =>
-    'standalone' in window.navigator && window.navigator.standalone === true
+    'standalone' in globalThis.navigator && globalThis.navigator.standalone === true
   )
   const isPWAStandalone = computed(() =>
     isStandaloneMedia.value || isSafariStandalone.value
@@ -99,12 +99,12 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     videoElement.src = SILENT_VIDEO_BASE64
     videoElement.loop = true
     videoElement.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px'
-    document.body.appendChild(videoElement)
+    document.body.append(videoElement)
     const playPromise = videoElement.play()
     // Handle browsers/jsdom where play() may return undefined
     if (playPromise) {
-      playPromise.catch((err) => {
-        console.warn('[WakeLock] Video fallback play failed:', err)
+      playPromise.catch((error) => {
+        console.warn('[WakeLock] Video fallback play failed:', error)
       })
     }
     videoIsActive.value = true

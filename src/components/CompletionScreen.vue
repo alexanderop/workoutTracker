@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { formatDuration } from '@/lib/formatters'
 
-type Props = {
+type Properties = {
   /** Name of the completed workout/benchmark */
   name: string
   /** Duration in seconds */
@@ -15,7 +15,7 @@ type Props = {
   durationLabel?: string
 }
 
-const { name, duration, durationLabel } = defineProps<Props>()
+const { name, duration, durationLabel } = defineProps<Properties>()
 
 const emit = defineEmits<{
   'view-details': []

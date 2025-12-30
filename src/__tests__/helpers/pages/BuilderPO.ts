@@ -104,12 +104,12 @@ export class BuilderPO {
     const allButtons = await page.getByRole('button').all()
     const htmlButtons: Array<HTMLElement> = []
     for (const locator of allButtons) {
-      const el = ensureHTMLElement(await locator.element())
+      const element = ensureHTMLElement(await locator.element())
       if (
-        el.getAttribute('aria-pressed') !== null &&
-        el.getAttribute('aria-label') !== 'Add exercise'
+        element.getAttribute('aria-pressed') !== null &&
+        element.getAttribute('aria-label') !== 'Add exercise'
       ) {
-        htmlButtons.push(el)
+        htmlButtons.push(element)
       }
     }
     return htmlButtons
@@ -123,9 +123,9 @@ export class BuilderPO {
     const allButtons = await page.getByRole('button').all()
     const htmlButtons: Array<HTMLElement> = []
     for (const locator of allButtons) {
-      const el = ensureHTMLElement(await locator.element())
-      if (el.getAttribute('aria-pressed') !== null) {
-        htmlButtons.push(el)
+      const element = ensureHTMLElement(await locator.element())
+      if (element.getAttribute('aria-pressed') !== null) {
+        htmlButtons.push(element)
       }
     }
     return htmlButtons

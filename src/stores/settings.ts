@@ -18,7 +18,7 @@ export const useSettingsStore = createGlobalState(() => {
    * Load all settings from the database.
    * Call this on app initialization.
    */
-  async function loadFromDb(): Promise<void> {
+  async function loadFromDatabase(): Promise<void> {
     if (isLoading.value) return
 
     isLoading.value = true
@@ -62,7 +62,7 @@ export const useSettingsStore = createGlobalState(() => {
   }
 
   async function setTimerSoundVolume(volume: number): Promise<void> {
-    const clampedVolume = Math.min(Math.max(volume, 0.5), 1.0)
+    const clampedVolume = Math.min(Math.max(volume, 0.5), 1)
     timerSoundVolume.value = clampedVolume
     await tryCatch(getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume }))
   }
@@ -88,7 +88,7 @@ export const useSettingsStore = createGlobalState(() => {
     language,
     isLoaded,
     isLoading,
-    loadFromDb,
+    loadFromDb: loadFromDatabase,
     setWeightUnit,
     setHeightUnit,
     setScreenWakeLock,

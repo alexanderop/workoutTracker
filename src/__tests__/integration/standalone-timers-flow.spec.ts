@@ -225,8 +225,8 @@ describe('Standalone Timers Flow', () => {
       expect(testApp.workout.isTimerRunning()).toBe(false)
 
       // Click play button
-      const playPauseBtn = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseBtn)
+      const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(playPauseButton)
 
       // Should now show pause icon (timer running)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
@@ -247,15 +247,15 @@ describe('Standalone Timers Flow', () => {
       await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
 
       // Start the timer
-      let playPauseBtn = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseBtn)
+      let playPauseButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(playPauseButton)
 
       // Verify running
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Pause the timer - get fresh reference as button may have changed
-      playPauseBtn = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseBtn)
+      playPauseButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(playPauseButton)
 
       // Should now show play icon (timer paused)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)

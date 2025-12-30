@@ -44,7 +44,7 @@ const SHARED_FOLDERS = ['components', 'composables', 'lib', 'db', 'types', 'stor
 // =============================================================================
 
 describe('circular dependencies', () => {
-  it('features should be free of cycles', { timeout: 30000 }, async () => {
+  it('features should be free of cycles', { timeout: 30_000 }, async () => {
     const rule = projectFiles().inFolder('src/features/**').should().haveNoCycles()
     await expect(rule).toPassAsync()
   })

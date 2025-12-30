@@ -50,10 +50,10 @@ async function addExerciseViaOverlay(
   // Find and click the exercise button (it's a button containing the exercise name)
   const buttons = await page.getByRole('button').all()
   const exerciseButton = await Promise.all(
-    buttons.map(async btn => {
-      const el = await btn.element()
-      const text = el.textContent
-      return text?.includes(exerciseName) ? btn : null
+    buttons.map(async button => {
+      const element = await button.element()
+      const text = element.textContent
+      return text?.includes(exerciseName) ? button : null
     })
   ).then(results => results.find(Boolean))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
@@ -72,7 +72,7 @@ function isInputElement(element: Element | null): element is HTMLInputElement {
 // Helper to get exercise rows in the timed block list (distinguished by bg-secondary/30 class)
 function getExerciseRows(dialog: HTMLElement): Array<Element> {
   // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
-  return Array.from(dialog.querySelectorAll('[class*="bg-secondary"]'))
+  return [...dialog.querySelectorAll('[class*="bg-secondary"]')]
 }
 
 // Helper to get the reps input within an exercise row

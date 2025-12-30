@@ -1,17 +1,17 @@
 import type { BenchmarkAttempt, BenchmarksRepository } from '@/db/interfaces'
 import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
-export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): BenchmarksRepository {
+export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase): BenchmarksRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbBenchmark>> {
-      return db.benchmarks.orderBy('createdAt').reverse().toArray()
+      return database.benchmarks.orderBy('createdAt').reverse().toArray()
     },
 
     async getById(id: string): Promise<DbBenchmark | undefined> {
-      return db.benchmarks.get(id)
+      return database.benchmarks.get(id)
     },
 
     async create(
@@ -31,7 +31,7 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
         createdAt: Date.now(),
         lastUsedAt: null,
       }
-      await db.benchmarks.add(benchmark)
+      await database.benchmarks.add(benchmark)
       return benchmark
     },
 
@@ -39,25 +39,25 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       id: string,
       updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      const updated = await db.benchmarks.update(id, updates)
+      const updated = await database.benchmarks.update(id, updates)
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'update benchmark')
       }
     },
 
     async delete(id: string): Promise<void> {
-      await db.benchmarks.delete(id)
+      await database.benchmarks.delete(id)
     },
 
     async updateLastUsed(id: string): Promise<void> {
-      const updated = await db.benchmarks.update(id, { lastUsedAt: Date.now() })
+      const updated = await database.benchmarks.update(id, { lastUsedAt: Date.now() })
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'update benchmark last used')
       }
     },
 
     async startFromBenchmark(benchmarkId: string): Promise<DbActiveWorkout> {
-      const benchmark = await db.benchmarks.get(benchmarkId)
+      const benchmark = await database.benchmarks.get(benchmarkId)
       if (!benchmark) {
         throw createDatabaseError('NOT_FOUND', 'start workout from benchmark')
       }
@@ -86,7 +86,7 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       // For "fortime" type, create single block
       const blocks: ReadonlyArray<DbWorkoutBlock> =
         benchmark.type === 'rounds'
-          ? Array.from({ length: benchmark.rounds }, (_, i) => createBlock(i))
+          ? Array.from({ length: benchmark.rounds }, (_, index) => createBlock(index))
           : [createBlock(0)]
 
       const activeWorkout: DbActiveWorkout = {
@@ -104,14 +104,14 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       }
 
       // Update benchmark usage tracking
-      await db.benchmarks.update(benchmarkId, { lastUsedAt: now })
+      await database.benchmarks.update(benchmarkId, { lastUsedAt: now })
 
       return activeWorkout
     },
 
     async getPersonalBest(benchmarkId: string): Promise<number | null> {
       // Get all completed workouts for this benchmark
-      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
+      const workouts = await database.workouts.where('benchmarkId').equals(benchmarkId).toArray()
 
       if (workouts.length === 0) {
         return null
@@ -143,7 +143,7 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
       }
 
       // Single query: Get all workouts for all benchmark IDs
-      const workouts = await db.workouts
+      const workouts = await database.workouts
         .where('benchmarkId')
         .anyOf(benchmarkIds)
         .toArray()
@@ -172,7 +172,7 @@ export function createDexieBenchmarksRepository(db: WorkoutTrackerDb): Benchmark
 
     async getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>> {
       // Get all completed workouts for this benchmark
-      const workouts = await db.workouts.where('benchmarkId').equals(benchmarkId).toArray()
+      const workouts = await database.workouts.where('benchmarkId').equals(benchmarkId).toArray()
 
       if (workouts.length === 0) {
         return []

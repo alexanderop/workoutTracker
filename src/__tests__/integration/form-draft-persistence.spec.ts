@@ -48,8 +48,8 @@ describe('Form Draft Persistence', () => {
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /template name/i })
       await expect.poll(async () => {
-        const el = await restoredNameInput.element()
-        return el instanceof HTMLInputElement ? el.value : null
+        const element = await restoredNameInput.element()
+        return element instanceof HTMLInputElement ? element.value : null
       }).toBe('My Draft Template')
 
       // Verify block was also restored
@@ -127,8 +127,8 @@ describe('Form Draft Persistence', () => {
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /template name/i })
       await expect.poll(async () => {
-        const el = await nameInput.element()
-        return el instanceof HTMLInputElement ? el.value : null
+        const element = await nameInput.element()
+        return element instanceof HTMLInputElement ? element.value : null
       }).toBe('')
 
       // Verify block is removed
@@ -215,8 +215,8 @@ describe('Form Draft Persistence', () => {
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /name/i })
       await expect.poll(async () => {
-        const el = await restoredNameInput.element()
-        return el instanceof HTMLInputElement ? el.value : null
+        const element = await restoredNameInput.element()
+        return element instanceof HTMLInputElement ? element.value : null
       }).toBe('My Draft Benchmark')
 
       cleanup()
@@ -293,8 +293,8 @@ describe('Form Draft Persistence', () => {
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /name/i })
       await expect.poll(async () => {
-        const el = await nameInput.element()
-        return el instanceof HTMLInputElement ? el.value : null
+        const element = await nameInput.element()
+        return element instanceof HTMLInputElement ? element.value : null
       }).toBe('')
 
       // Verify draft is cleared

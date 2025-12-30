@@ -4,8 +4,8 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate, createDbTemplateStrengthBlock } from '../factories'
-import { dbWorkoutBuilder } from '../factories/dbWorkout.factory'
+import { createDbTemplate as createDatabaseTemplate, createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 describe('Log Past Workout', () => {
   beforeEach(setupIntegrationTest)
@@ -40,12 +40,12 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a template
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-past-workout',
         name: 'Push Day',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
-          createDbTemplateStrengthBlock({ name: 'Overhead Press', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Overhead Press', equipment: 'Barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -76,7 +76,7 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a completed workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Previous Leg Day')
         .withExerciseAndSets(
           [
@@ -206,10 +206,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 4 sets
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-grid-test',
         name: 'Strength Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 4 })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 4 })],
       })
       await db.templates.add(template)
 
@@ -229,10 +229,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Template with target values
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-prefill-test',
         name: 'Prefill Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Bench Press', targetReps: 8 })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press', targetReps: 8 })],
       })
       await db.templates.add(template)
 
@@ -252,10 +252,10 @@ describe('Log Past Workout', () => {
     it('allows editing weight/reps/rir for each set', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-edit-test',
         name: 'Edit Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Deadlift' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift' })],
       })
       await db.templates.add(template)
 
@@ -284,10 +284,10 @@ describe('Log Past Workout', () => {
     it('allows adding new sets', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-add-set-test',
         name: 'Add Set Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Rows', defaultSetCount: 2 })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Rows', defaultSetCount: 2 })],
       })
       await db.templates.add(template)
 
@@ -313,10 +313,10 @@ describe('Log Past Workout', () => {
     it('allows removing sets', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-remove-set-test',
         name: 'Remove Set Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Curls', defaultSetCount: 4 })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Curls', defaultSetCount: 4 })],
       })
       await db.templates.add(template)
 
@@ -435,10 +435,10 @@ describe('Log Past Workout', () => {
     it('saves workout with backdated timestamp', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-save-test',
         name: 'Save Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Press' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Press' })],
       })
       await db.templates.add(template)
 
@@ -469,7 +469,7 @@ describe('Log Past Workout', () => {
         return workouts.length
       }).toBe(1)
 
-      const savedWorkout = (await db.workouts.toArray())[0]
+      const [savedWorkout] = await db.workouts.toArray()
       expect(savedWorkout?.name).toBe('My Past Workout')
 
       // Verify the startedAt is backdated (within 24 hours of 3 days ago)
@@ -484,17 +484,17 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
 
       // Seed an existing workout from today
-      const todayWorkout = dbWorkoutBuilder()
+      const todayWorkout = databaseWorkoutBuilder()
         .withName('Today Workout')
         .withExerciseAndSets([{ kg: '100', reps: '5', status: 'completed' }], { name: 'Squat' })
         .build()
       await db.workouts.add(todayWorkout)
 
       // Create a template for the past workout
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-history-test',
         name: 'History Test',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Bench Press' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
       await db.templates.add(template)
 
@@ -519,11 +519,11 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByText('Yesterday Workout')).toBeVisible()
 
       // Verify order: Today should appear before Yesterday
-      const todayEl = await page.getByText('Today Workout').element()
-      const yesterdayEl = await page.getByText('Yesterday Workout').element()
+      const todayElement = await page.getByText('Today Workout').element()
+      const yesterdayElement = await page.getByText('Yesterday Workout').element()
 
       expect(
-        todayEl.compareDocumentPosition(yesterdayEl) & Node.DOCUMENT_POSITION_FOLLOWING,
+        todayElement.compareDocumentPosition(yesterdayElement) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
 
       cleanup()

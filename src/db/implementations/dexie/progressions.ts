@@ -1,15 +1,15 @@
 import type { CreateProgressionData, ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
 export function createDexieProgressionsRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): ProgressionsRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbProgression>> {
       // Sort by lastSessionAt (most recent first), then createdAt for never-used
-      const all = await db.progressions.toArray()
+      const all = await database.progressions.toArray()
       return all.toSorted((a, b) => {
         const aTime = a.lastSessionAt ?? 0
         const bTime = b.lastSessionAt ?? 0
@@ -19,7 +19,7 @@ export function createDexieProgressionsRepository(
     },
 
     async getById(id: string): Promise<DbProgression | undefined> {
-      return db.progressions.get(id)
+      return database.progressions.get(id)
     },
 
     async create(data: CreateProgressionData): Promise<DbProgression> {
@@ -46,7 +46,7 @@ export function createDexieProgressionsRepository(
         lastSessionAt: null,
       }
 
-      await db.progressions.add(progression)
+      await database.progressions.add(progression)
       return progression
     },
 
@@ -54,16 +54,16 @@ export function createDexieProgressionsRepository(
       id: string,
       updates: Partial<Omit<DbProgression, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      const count = await db.progressions.where('id').equals(id).modify(updates)
+      const count = await database.progressions.where('id').equals(id).modify(updates)
       if (count === 0) {
         throw new Error(`Progression with id ${id} not found`)
       }
     },
 
     async delete(id: string): Promise<void> {
-      await db.transaction('rw', [db.progressions, db.progressionSessions], async () => {
-        await db.progressionSessions.where('progressionId').equals(id).delete()
-        await db.progressions.delete(id)
+      await database.transaction('rw', [database.progressions, database.progressionSessions], async () => {
+        await database.progressionSessions.where('progressionId').equals(id).delete()
+        await database.progressions.delete(id)
       })
     },
 
@@ -72,7 +72,7 @@ export function createDexieProgressionsRepository(
       completed: boolean,
       nextLevel?: { reps: number; minutes: number; weightIndex: number; isComplete: boolean },
     ): Promise<DbProgressionSession> {
-      const progression = await db.progressions.get(progressionId)
+      const progression = await database.progressions.get(progressionId)
       if (!progression) {
         throw new Error(`Progression with id ${progressionId} not found`)
       }
@@ -109,9 +109,9 @@ export function createDexieProgressionsRepository(
       }
 
       // Save both in a transaction
-      await db.transaction('rw', [db.progressions, db.progressionSessions], async () => {
-        await db.progressionSessions.add(session)
-        await db.progressions.update(progressionId, updates)
+      await database.transaction('rw', [database.progressions, database.progressionSessions], async () => {
+        await database.progressionSessions.add(session)
+        await database.progressions.update(progressionId, updates)
       })
 
       return session
@@ -120,7 +120,7 @@ export function createDexieProgressionsRepository(
     async getSessionHistory(
       progressionId: string,
     ): Promise<ReadonlyArray<DbProgressionSession>> {
-      return db.progressionSessions
+      return database.progressionSessions
         .where('progressionId')
         .equals(progressionId)
         .reverse()

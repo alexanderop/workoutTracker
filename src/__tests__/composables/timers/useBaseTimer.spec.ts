@@ -142,7 +142,7 @@ describe('useBaseTimer', () => {
       start()
       vi.advanceTimersByTime(3000)
       pause()
-      vi.advanceTimersByTime(10000) // Pause for 10 seconds
+      vi.advanceTimersByTime(10_000) // Pause for 10 seconds
       start() // Resume
       vi.advanceTimersByTime(2000)
 

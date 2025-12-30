@@ -4,12 +4,12 @@ import { useI18n } from 'vue-i18n'
 import { ChevronRight } from 'lucide-vue-next'
 import type { BlockExercise } from '@/types/blocks'
 
-type Props = {
+type Properties = {
   exercise?: BlockExercise | null
   isFinalExercise?: boolean
 }
 
-const { exercise, isFinalExercise = false } = defineProps<Props>()
+const { exercise, isFinalExercise = false } = defineProps<Properties>()
 const { t } = useI18n()
 
 const displayText = computed(() => {

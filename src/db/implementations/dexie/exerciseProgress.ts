@@ -11,7 +11,7 @@ import type {
   PersonalRecords,
   SetPerformance,
 } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
  * Calculate estimated 1RM using Brzycki formula.
@@ -31,8 +31,8 @@ function calculateEstimated1RM(kg: number, reps: number): number {
  * Parse a string value to number, returning 0 for invalid values.
  */
 function parseNumber(value: string): number {
-  const parsed = parseFloat(value)
-  return isNaN(parsed) ? 0 : parsed
+  const parsed = Number.parseFloat(value)
+  return Number.isNaN(parsed) ? 0 : parsed
 }
 
 /**
@@ -69,7 +69,7 @@ function extractSetPerformances(block: DbStrengthBlock): ReadonlyArray<SetPerfor
 }
 
 export function createDexieExerciseProgressRepository(
-  db: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): ExerciseProgressRepository {
   return {
     async getExerciseHistory(
@@ -79,7 +79,7 @@ export function createDexieExerciseProgressRepository(
       const { limit, offset = 0, dateRange } = options ?? {}
 
       // Get all completed workouts
-      const query = db.workouts.orderBy('completedAt').reverse()
+      const query = database.workouts.orderBy('completedAt').reverse()
 
       // Apply date range filter if provided
       const workouts = await query.toArray()
@@ -134,12 +134,12 @@ export function createDexieExerciseProgressRepository(
       const sessions = await this.getExerciseHistory(exerciseDefinitionId)
 
       // Look up exercise name from the exercises table first
-      const exercise = await db.customExercises.get(exerciseDefinitionId)
+      const exercise = await database.customExercises.get(exerciseDefinitionId)
       let exerciseName = exercise?.name ?? ''
 
       // If not found in exercises table, try to find from workouts (legacy support)
       if (!exerciseName) {
-        const workouts = await db.workouts.toArray()
+        const workouts = await database.workouts.toArray()
         for (const workout of workouts) {
           for (const block of workout.blocks) {
             if (
@@ -168,7 +168,7 @@ export function createDexieExerciseProgressRepository(
 
       // Sessions are sorted newest first (array is guaranteed non-empty from early return above)
       const lastPerformed = sessions[0]!.date
-      const firstPerformed = sessions[sessions.length - 1]!.date
+      const firstPerformed = sessions.at(-1)!.date
 
       // Calculate average volume
       const totalVolume = sessions.reduce((sum, s) => sum + s.totalVolume, 0)
@@ -251,7 +251,7 @@ export function createDexieExerciseProgressRepository(
     },
 
     async getPerformedExercises(): Promise<ReadonlyArray<PerformedExercise>> {
-      const workouts = await db.workouts.toArray()
+      const workouts = await database.workouts.toArray()
 
       // Track exercise occurrences
       const exerciseMap = new Map<
@@ -295,7 +295,7 @@ export function createDexieExerciseProgressRepository(
       }
 
       // Convert to array and sort by workout count (most frequent first)
-      return Array.from(exerciseMap.entries())
+      return [...exerciseMap.entries()]
         .map(([exerciseDefinitionId, data]) => ({
           exerciseDefinitionId,
           name: data.name,

@@ -139,7 +139,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 
@@ -166,7 +166,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 
@@ -194,7 +194,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Clear and enter 123
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
-      for (let i = 0; i < 5; i++) {
+      for (let index = 0; index < 5; index++) {
         await userEvent.click(backspaceButton)
       }
 

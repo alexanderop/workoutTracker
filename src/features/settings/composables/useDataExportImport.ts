@@ -63,7 +63,7 @@ export function useDataExportImport(): DataExportImportReturn {
       return
     }
 
-    window.location.reload()
+    globalThis.location.reload()
   }
 
   return {

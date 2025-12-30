@@ -29,8 +29,8 @@ const selectedActivityInfo = computed(() =>
 )
 
 const canConfirm = computed(() => {
-  const mins = parseInt(targetMinutes.value, 10)
-  return selectedActivity.value && (mins > 0 || parseFloat(targetDistance.value) > 0)
+  const mins = Number.parseInt(targetMinutes.value, 10)
+  return selectedActivity.value && (mins > 0 || Number.parseFloat(targetDistance.value) > 0)
 })
 
 watch(open, (isOpen) => {
@@ -42,13 +42,13 @@ watch(open, (isOpen) => {
 })
 
 function handleConfirm() {
-  const mins = parseInt(targetMinutes.value, 10)
-  const distKm = parseFloat(targetDistance.value)
+  const mins = Number.parseInt(targetMinutes.value, 10)
+  const distributionKm = Number.parseFloat(targetDistance.value)
 
   const config: CardioConfig = {
     activity: selectedActivity.value,
     targetDurationSeconds: mins > 0 ? mins * 60 : null,
-    targetDistanceMeters: distKm > 0 ? distKm * 1000 : null,
+    targetDistanceMeters: distributionKm > 0 ? distributionKm * 1000 : null,
   }
 
   emit('confirm', config)

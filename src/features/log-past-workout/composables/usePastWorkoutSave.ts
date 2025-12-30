@@ -12,7 +12,7 @@ type PastWorkoutData = {
   blocks: ReadonlyArray<WorkoutBlock>
 }
 
-function convertSetToDb(set: Readonly<Set>): DbSet {
+function convertSetToDatabase(set: Readonly<Set>): DbSet {
   return {
     id: generateId(),
     kg: set.kg,
@@ -23,7 +23,7 @@ function convertSetToDb(set: Readonly<Set>): DbSet {
   }
 }
 
-function convertStrengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: number): DbStrengthBlock {
+function convertStrengthBlockToDatabase(block: Readonly<StrengthBlock>, orderIndex: number): DbStrengthBlock {
   return {
     kind: 'strength',
     id: generateId(),
@@ -31,13 +31,13 @@ function convertStrengthBlockToDb(block: Readonly<StrengthBlock>, orderIndex: nu
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
-    sets: block.sets.map(convertSetToDb),
+    sets: block.sets.map(convertSetToDatabase),
     orderIndex,
     image: block.image,
   }
 }
 
-function convertBlockExerciseToDb(exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }): DbBlockExercise {
+function convertBlockExerciseToDatabase(exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }): DbBlockExercise {
   return {
     id: exercise.id,
     name: exercise.name,
@@ -47,14 +47,14 @@ function convertBlockExerciseToDb(exercise: { id: string; name: string; prescrib
   }
 }
 
-function convertAmrapBlockToDb(block: Readonly<AmrapBlock>, orderIndex: number): DbAmrapBlock {
+function convertAmrapBlockToDatabase(block: Readonly<AmrapBlock>, orderIndex: number): DbAmrapBlock {
   return {
     kind: 'amrap',
     id: generateId(),
     config: {
       durationSeconds: block.config.durationSeconds,
     },
-    exercises: block.exercises.map(convertBlockExerciseToDb),
+    exercises: block.exercises.map(convertBlockExerciseToDatabase),
     result: block.result ? {
       rounds: block.result.rounds,
       partialReps: block.result.partialReps,
@@ -64,7 +64,7 @@ function convertAmrapBlockToDb(block: Readonly<AmrapBlock>, orderIndex: number):
   }
 }
 
-function convertEmomBlockToDb(block: Readonly<EmomBlock>, orderIndex: number): DbEmomBlock {
+function convertEmomBlockToDatabase(block: Readonly<EmomBlock>, orderIndex: number): DbEmomBlock {
   return {
     kind: 'emom',
     id: generateId(),
@@ -72,7 +72,7 @@ function convertEmomBlockToDb(block: Readonly<EmomBlock>, orderIndex: number): D
       minutes: block.config.minutes,
       exerciseRotation: block.config.exerciseRotation,
     },
-    exercises: block.exercises.map(convertBlockExerciseToDb),
+    exercises: block.exercises.map(convertBlockExerciseToDatabase),
     result: block.result ? {
       completedMinutes: block.result.completedMinutes,
       missedMinutes: [...block.result.missedMinutes],
@@ -81,7 +81,7 @@ function convertEmomBlockToDb(block: Readonly<EmomBlock>, orderIndex: number): D
   }
 }
 
-function convertTabataBlockToDb(block: Readonly<TabataBlock>, orderIndex: number): DbTabataBlock {
+function convertTabataBlockToDatabase(block: Readonly<TabataBlock>, orderIndex: number): DbTabataBlock {
   return {
     kind: 'tabata',
     id: generateId(),
@@ -90,7 +90,7 @@ function convertTabataBlockToDb(block: Readonly<TabataBlock>, orderIndex: number
       workSeconds: block.config.workSeconds,
       restSeconds: block.config.restSeconds,
     },
-    exercise: convertBlockExerciseToDb(block.exercise),
+    exercise: convertBlockExerciseToDatabase(block.exercise),
     result: block.result ? {
       repsPerRound: [...block.result.repsPerRound],
     } : null,
@@ -98,14 +98,14 @@ function convertTabataBlockToDb(block: Readonly<TabataBlock>, orderIndex: number
   }
 }
 
-function convertForTimeBlockToDb(block: Readonly<ForTimeBlock>, orderIndex: number): DbForTimeBlock {
+function convertForTimeBlockToDatabase(block: Readonly<ForTimeBlock>, orderIndex: number): DbForTimeBlock {
   return {
     kind: 'fortime',
     id: generateId(),
     config: {
       timeCapSeconds: block.config.timeCapSeconds,
     },
-    exercises: block.exercises.map(convertBlockExerciseToDb),
+    exercises: block.exercises.map(convertBlockExerciseToDatabase),
     result: block.result ? {
       completionTime: block.result.completionTime,
       completed: block.result.completed,
@@ -115,7 +115,7 @@ function convertForTimeBlockToDb(block: Readonly<ForTimeBlock>, orderIndex: numb
   }
 }
 
-function convertCardioBlockToDb(block: Readonly<CardioBlock>, orderIndex: number): DbCardioBlock {
+function convertCardioBlockToDatabase(block: Readonly<CardioBlock>, orderIndex: number): DbCardioBlock {
   return {
     kind: 'cardio',
     id: generateId(),
@@ -135,20 +135,26 @@ function convertCardioBlockToDb(block: Readonly<CardioBlock>, orderIndex: number
   }
 }
 
-function convertBlockToDb(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkoutBlock {
+function convertBlockToDatabase(block: Readonly<WorkoutBlock>, orderIndex: number): DbWorkoutBlock {
   switch (block.kind) {
-    case 'strength':
-      return convertStrengthBlockToDb(block, orderIndex)
-    case 'amrap':
-      return convertAmrapBlockToDb(block, orderIndex)
-    case 'emom':
-      return convertEmomBlockToDb(block, orderIndex)
-    case 'tabata':
-      return convertTabataBlockToDb(block, orderIndex)
-    case 'fortime':
-      return convertForTimeBlockToDb(block, orderIndex)
-    case 'cardio':
-      return convertCardioBlockToDb(block, orderIndex)
+    case 'strength': {
+      return convertStrengthBlockToDatabase(block, orderIndex)
+    }
+    case 'amrap': {
+      return convertAmrapBlockToDatabase(block, orderIndex)
+    }
+    case 'emom': {
+      return convertEmomBlockToDatabase(block, orderIndex)
+    }
+    case 'tabata': {
+      return convertTabataBlockToDatabase(block, orderIndex)
+    }
+    case 'fortime': {
+      return convertForTimeBlockToDatabase(block, orderIndex)
+    }
+    case 'cardio': {
+      return convertCardioBlockToDatabase(block, orderIndex)
+    }
   }
 }
 
@@ -175,15 +181,15 @@ export function usePastWorkoutSave() {
     const durationSeconds = data.durationMinutes * 60
 
     // Convert blocks to database format
-    const dbBlocks: ReadonlyArray<DbWorkoutBlock> = data.blocks.map((block, index) =>
-      convertBlockToDb(block, index),
+    const databaseBlocks: ReadonlyArray<DbWorkoutBlock> = data.blocks.map((block, index) =>
+      convertBlockToDatabase(block, index),
     )
 
     const workoutId = generateId()
-    const dbWorkout: DbCompletedWorkout = {
+    const databaseWorkout: DbCompletedWorkout = {
       id: workoutId,
       name: data.name,
-      blocks: dbBlocks,
+      blocks: databaseBlocks,
       startedAt,
       completedAt,
       durationSeconds,
@@ -192,7 +198,7 @@ export function usePastWorkoutSave() {
     }
 
     const [saveError] = await tryCatch(
-      getWorkoutsRepository().add(dbWorkout),
+      getWorkoutsRepository().add(databaseWorkout),
     )
 
     isSaving.value = false

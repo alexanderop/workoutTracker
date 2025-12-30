@@ -77,7 +77,7 @@ export class LogPastWorkoutPO {
    * @param minutes - Duration in minutes (15, 30, 45, 60, 90, 120)
    */
   async setDuration(minutes: number): Promise<void> {
-    const durationButton = page.getByRole('button', { name: new RegExp(`${minutes}\\s*min`, 'i') })
+    const durationButton = page.getByRole('button', { name: new RegExp(String.raw`${minutes}\s*min`, 'i') })
     await durationButton.click()
   }
 
@@ -118,8 +118,8 @@ export class LogPastWorkoutPO {
     const block = page.getByTestId(`strength-block-${blockIndex}`)
     const rows = await block.getByTestId(/^set-row-/).all()
 
-    for (let i = 0; i < rows.length; i++) {
-      await this.fillStrengthSet(blockIndex, i, values)
+    for (let index = 0; index < rows.length; index++) {
+      await this.fillStrengthSet(blockIndex, index, values)
     }
   }
 

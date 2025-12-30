@@ -72,7 +72,7 @@ export function useBenchmarkDetail(benchmarkId: string) {
     }
 
     // Convert DbActiveWorkout to DbActiveBenchmarkWorkout format
-    const dbBenchmarkWorkout: DbActiveBenchmarkWorkout = {
+    const databaseBenchmarkWorkout: DbActiveBenchmarkWorkout = {
       id: 'current-benchmark',
       name: activeWorkout.name,
       benchmarkId: activeWorkout.benchmarkId,
@@ -87,7 +87,7 @@ export function useBenchmarkDetail(benchmarkId: string) {
 
     // Save to active benchmark repository (not regular workout repository)
     const [saveError] = await tryCatch(
-      getActiveBenchmarkWorkoutRepository().save(dbBenchmarkWorkout),
+      getActiveBenchmarkWorkoutRepository().save(databaseBenchmarkWorkout),
     )
 
     if (saveError) {
@@ -96,7 +96,7 @@ export function useBenchmarkDetail(benchmarkId: string) {
     }
 
     // Convert to in-memory format and restore to benchmark singleton state
-    const inMemoryWorkout = dbToBenchmarkWorkout(dbBenchmarkWorkout)
+    const inMemoryWorkout = dbToBenchmarkWorkout(databaseBenchmarkWorkout)
     restoreBenchmarkWorkout(inMemoryWorkout)
 
     isStarting.value = false

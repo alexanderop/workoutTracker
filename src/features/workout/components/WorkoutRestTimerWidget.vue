@@ -8,11 +8,11 @@ import { cn } from '@/lib/utils'
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   timer: ReturnType<typeof useRestTimer>
 }
 
-const { timer } = defineProps<Props>()
+const { timer } = defineProps<Properties>()
 
 const emit = defineEmits<{
   finish: []

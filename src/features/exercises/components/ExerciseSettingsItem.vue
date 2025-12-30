@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type Props = {
+type Properties = {
   label: string
   value: string
   placeholder?: string
@@ -10,7 +10,7 @@ type Props = {
 
 const { t } = useI18n()
 
-const { value, label, placeholder } = defineProps<Props>()
+const { value, label, placeholder } = defineProps<Properties>()
 
 const emit = defineEmits<{ click: [] }>()
 

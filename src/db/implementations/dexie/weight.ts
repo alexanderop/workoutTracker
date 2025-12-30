@@ -1,6 +1,6 @@
 import type { WeightRepository } from '@/db/interfaces'
 import type { DbWeightEntry } from '@/db/schema'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
  * Get the start of day timestamp for a given date.
@@ -12,29 +12,29 @@ function getStartOfDay(date: Date): number {
   return d.getTime()
 }
 
-export function createDexieWeightRepository(db: WorkoutTrackerDb): WeightRepository {
+export function createDexieWeightRepository(database: WorkoutTrackerDatabase): WeightRepository {
   return {
     async add(entry: Readonly<DbWeightEntry>): Promise<void> {
       // Check if entry for this date already exists
-      const existing = await db.weightEntries.where('date').equals(entry.date).first()
+      const existing = await database.weightEntries.where('date').equals(entry.date).first()
 
       if (existing) {
         // Replace existing entry for the same day
-        await db.weightEntries.delete(existing.id)
+        await database.weightEntries.delete(existing.id)
       }
 
-      await db.weightEntries.add(entry)
+      await database.weightEntries.add(entry)
     },
 
     async getAll(): Promise<ReadonlyArray<DbWeightEntry>> {
-      return db.weightEntries.orderBy('date').reverse().toArray()
+      return database.weightEntries.orderBy('date').reverse().toArray()
     },
 
     async getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DbWeightEntry>> {
       const startTimestamp = getStartOfDay(startDate)
       const endTimestamp = getStartOfDay(endDate)
 
-      return db.weightEntries
+      return database.weightEntries
         .where('date')
         .between(startTimestamp, endTimestamp, true, true)
         .reverse()
@@ -42,16 +42,16 @@ export function createDexieWeightRepository(db: WorkoutTrackerDb): WeightReposit
     },
 
     async getLatest(): Promise<DbWeightEntry | undefined> {
-      return db.weightEntries.orderBy('date').reverse().first()
+      return database.weightEntries.orderBy('date').reverse().first()
     },
 
     async getByDate(date: Date): Promise<DbWeightEntry | undefined> {
       const timestamp = getStartOfDay(date)
-      return db.weightEntries.where('date').equals(timestamp).first()
+      return database.weightEntries.where('date').equals(timestamp).first()
     },
 
     async delete(id: string): Promise<void> {
-      await db.weightEntries.delete(id)
+      await database.weightEntries.delete(id)
     },
   }
 }

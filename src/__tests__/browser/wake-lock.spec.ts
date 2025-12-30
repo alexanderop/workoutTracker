@@ -20,10 +20,10 @@ describe('useScreenWakeLock - browser mode', () => {
 
     // Clean up any remaining video elements
     // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements, not rendered components
-    document.querySelectorAll('video').forEach((video) => {
+    for (const video of document.querySelectorAll('video')) {
       video.pause()
       video.remove()
-    })
+    }
   })
 
   describe('native Wake Lock API', () => {
@@ -191,7 +191,7 @@ describe('useScreenWakeLock - browser mode', () => {
       const [, app] = withSetup(() => useScreenWakeLock())
       cleanup = () => app.unmount()
 
-      const standaloneMedia = window.matchMedia('(display-mode: standalone)')
+      const standaloneMedia = globalThis.matchMedia('(display-mode: standalone)')
       expect(standaloneMedia).toBeTruthy()
       expect(typeof standaloneMedia.matches).toBe('boolean')
     })

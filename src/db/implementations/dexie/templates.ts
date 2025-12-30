@@ -12,7 +12,7 @@ import type {
   DbWorkoutTemplate,
 } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
 /**
@@ -49,7 +49,7 @@ function blockExerciseToTemplateExercise(ex: DbBlockExercise): DbTemplateBlockEx
  */
 function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplateBlock {
   switch (block.kind) {
-    case 'strength':
+    case 'strength': {
       return {
         kind: 'strength',
         exerciseDefinitionId: block.exerciseDefinitionId,
@@ -59,35 +59,41 @@ function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplat
         defaultSetCount: block.sets.length,
         image: block.image,
       } satisfies DbTemplateStrengthBlock
-    case 'emom':
+    }
+    case 'emom': {
       return {
         kind: 'emom',
         config: block.config,
         exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
-    case 'amrap':
+    }
+    case 'amrap': {
       return {
         kind: 'amrap',
         config: block.config,
         exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
-    case 'tabata':
+    }
+    case 'tabata': {
       return {
         kind: 'tabata',
         config: block.config,
         exercise: blockExerciseToTemplateExercise(block.exercise),
       }
-    case 'fortime':
+    }
+    case 'fortime': {
       return {
         kind: 'fortime',
         config: block.config,
         exercises: block.exercises.map(blockExerciseToTemplateExercise),
       }
-    case 'cardio':
+    }
+    case 'cardio': {
       return {
         kind: 'cardio',
         config: block.config,
       }
+    }
     default: {
       // Exhaustive check - if this is reached, a new block kind was added
       const exhaustiveCheck: never = block
@@ -131,7 +137,7 @@ function templateBlockToWorkoutBlock(
 
   // Handle timed blocks
   switch (templateBlock.kind) {
-    case 'emom':
+    case 'emom': {
       return {
         kind: 'emom',
         id: generateId(),
@@ -140,7 +146,8 @@ function templateBlockToWorkoutBlock(
         result: null,
         orderIndex,
       }
-    case 'amrap':
+    }
+    case 'amrap': {
       return {
         kind: 'amrap',
         id: generateId(),
@@ -149,7 +156,8 @@ function templateBlockToWorkoutBlock(
         result: null,
         orderIndex,
       }
-    case 'tabata':
+    }
+    case 'tabata': {
       return {
         kind: 'tabata',
         id: generateId(),
@@ -164,7 +172,8 @@ function templateBlockToWorkoutBlock(
         result: null,
         orderIndex,
       }
-    case 'fortime':
+    }
+    case 'fortime': {
       return {
         kind: 'fortime',
         id: generateId(),
@@ -173,7 +182,8 @@ function templateBlockToWorkoutBlock(
         result: null,
         orderIndex,
       }
-    case 'cardio':
+    }
+    case 'cardio': {
       return {
         kind: 'cardio',
         id: generateId(),
@@ -181,13 +191,14 @@ function templateBlockToWorkoutBlock(
         result: null,
         orderIndex,
       }
+    }
   }
 }
 
-export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesRepository {
+export function createDexieTemplatesRepository(database: WorkoutTrackerDatabase): TemplatesRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
-      const templates = await db.templates.toArray()
+      const templates = await database.templates.toArray()
       // Sort by lastUsedAt descending, with null values at the end
       return templates.toSorted((a, b) => {
         if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
@@ -198,7 +209,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
     },
 
     async getById(id: string): Promise<DbWorkoutTemplate | undefined> {
-      return db.templates.get(id)
+      return database.templates.get(id)
     },
 
     async createFromWorkout(
@@ -214,12 +225,12 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
         tags: [],
       }
 
-      await db.templates.add(template)
+      await database.templates.add(template)
       return template
     },
 
     async startFromTemplate(templateId: string): Promise<DbActiveWorkout> {
-      const template = await db.templates.get(templateId)
+      const template = await database.templates.get(templateId)
       if (!template) {
         throw createDatabaseError('NOT_FOUND', 'start workout from template')
       }
@@ -244,7 +255,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
       }
 
       // Update template usage tracking (template exists, so this will always succeed)
-      await db.templates.update(templateId, { lastUsedAt: now })
+      await database.templates.update(templateId, { lastUsedAt: now })
 
       return activeWorkout
     },
@@ -253,18 +264,18 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
       id: string,
       updates: Partial<Omit<DbWorkoutTemplate, 'id' | 'createdAt'>>,
     ): Promise<void> {
-      const updated = await db.templates.update(id, updates)
+      const updated = await database.templates.update(id, updates)
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'update template')
       }
     },
 
     async delete(id: string): Promise<void> {
-      await db.templates.delete(id)
+      await database.templates.delete(id)
     },
 
     async rename(id: string, newName: string): Promise<void> {
-      const updated = await db.templates.update(id, { name: newName })
+      const updated = await database.templates.update(id, { name: newName })
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'rename template')
       }
@@ -280,7 +291,7 @@ export function createDexieTemplatesRepository(db: WorkoutTrackerDb): TemplatesR
         tags: data.tags ?? [],
       }
 
-      await db.templates.add(template)
+      await database.templates.add(template)
       return template
     },
   }

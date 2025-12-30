@@ -32,16 +32,16 @@ type WorkoutState = {
   isTransitioning?: boolean
 }
 
-type Props = {
+type Properties = {
   block: WorkoutBlock
   timer?: TimerDisplayData
   restTimer?: ReturnType<typeof useRestTimer>
   state?: WorkoutState
 }
 
-const { block, timer, restTimer, state: propsState } = defineProps<Props>()
+const { block, timer, restTimer, state: propertiesState } = defineProps<Properties>()
 
-const state = computed(() => propsState ?? {})
+const state = computed(() => propertiesState ?? {})
 
 const canComplete = computed(() => state.value.canComplete ?? true)
 const isFirstBlock = computed(() => state.value.isFirstBlock ?? false)
@@ -147,15 +147,18 @@ const primaryAction = computed((): PrimaryAction => {
 function handlePrimaryAction() {
   const action = primaryAction.value.emit
   switch (action) {
-    case 'complete-set':
+    case 'complete-set': {
       emit('complete-set')
       break
-    case 'toggle-timer':
+    }
+    case 'toggle-timer': {
       emit('toggle-timer')
       break
-    case 'complete-block':
+    }
+    case 'complete-block': {
       emit('complete-block')
       break
+    }
   }
 }
 </script>

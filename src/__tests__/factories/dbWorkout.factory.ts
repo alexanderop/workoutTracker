@@ -1,10 +1,10 @@
 import type { DbCompletedWorkout, DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/db/schema'
 import { generateId } from '@/db'
-import { createDbStrengthBlock, createDbStrengthBlockWithSets } from './dbBlock.factory'
+import { createDbStrengthBlock as createDatabaseStrengthBlock, createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets } from './dbBlock.factory'
 
 const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks'>> = {
   name: 'Test Workout',
-  startedAt: Date.now() - 3600000,
+  startedAt: Date.now() - 3_600_000,
   completedAt: Date.now(),
   durationSeconds: 3600,
   notes: '',
@@ -17,7 +17,7 @@ export function createDbCompletedWorkout(
   return {
     id: generateId(),
     ...DEFAULTS,
-    blocks: overrides.blocks ?? [createDbStrengthBlock()],
+    blocks: overrides.blocks ?? [createDatabaseStrengthBlock()],
     ...overrides,
   }
 }
@@ -59,7 +59,7 @@ export class DbWorkoutBuilder {
 
   withStrengthBlock(overrides: Partial<DbStrengthBlock> = {}): this {
     const orderIndex = this.workout.blocks.length
-    const block = createDbStrengthBlock({ orderIndex, ...overrides })
+    const block = createDatabaseStrengthBlock({ orderIndex, ...overrides })
     this.workout = {
       ...this.workout,
       blocks: [...this.workout.blocks, block],
@@ -77,7 +77,7 @@ export class DbWorkoutBuilder {
     exerciseOverrides: Partial<Omit<DbStrengthBlock, 'sets'>> = {},
   ): this {
     const orderIndex = this.workout.blocks.length
-    const block = createDbStrengthBlockWithSets(sets, { orderIndex, ...exerciseOverrides })
+    const block = createDatabaseStrengthBlockWithSets(sets, { orderIndex, ...exerciseOverrides })
     this.workout = {
       ...this.workout,
       blocks: [...this.workout.blocks, block],

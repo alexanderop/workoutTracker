@@ -8,7 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 // Shared resolve config for path aliases
 const resolve = {
   alias: {
-    '@': fileURLToPath(new URL('./src', import.meta.url)),
+    '@': fileURLToPath(new URL('src', import.meta.url)),
   },
 }
 

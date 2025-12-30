@@ -43,7 +43,7 @@ const {
 const restTimer = useRestTimer()
 
 // Template ref for timed view components - they expose timer methods
-const timedViewRef = useTemplateRef<{
+const timedViewReference = useTemplateRef<{
   complete: () => unknown
   toggle: () => void
   reset: () => void
@@ -65,11 +65,11 @@ function handleTimerRunningChange(isRunning: boolean) {
 
 // Grouped timer data from timed view for footer
 const timerDisplayData = computed<TimerDisplayData | undefined>(() => {
-  if (!timedViewRef.value) return undefined
+  if (!timedViewReference.value) return
   return {
     isRunning: timerIsRunning.value,
-    display: timedViewRef.value.formattedTime.value,
-    label: timedViewRef.value.timerLabel,
+    display: timedViewReference.value.formattedTime.value,
+    label: timedViewReference.value.timerLabel,
   }
 })
 
@@ -114,7 +114,7 @@ function handleCompleteSet() {
 }
 
 function handleToggleTimer() {
-  timedViewRef.value?.toggle()
+  timedViewReference.value?.toggle()
 }
 
 function handleCompleteBlock() {
@@ -122,7 +122,7 @@ function handleCompleteBlock() {
 
   // Handle timed blocks (AMRAP, EMOM, Tabata, ForTime) - capture result from timer
   if (isTimedBlock(currentBlock.value)) {
-    const result = timedViewRef.value?.complete()
+    const result = timedViewReference.value?.complete()
     if (isTimedBlockResult(result)) {
       setBlockResult(currentBlockIndex.value, result)
     }

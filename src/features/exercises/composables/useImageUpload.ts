@@ -20,7 +20,7 @@ type ImageFormState = {
 export function useImageUpload(form: Ref<ImageFormState>) {
   const { t } = useI18n()
   const { convert } = useImageConversion()
-  const inputRef = useTemplateRef<HTMLInputElement>('imageInput')
+  const inputReference = useTemplateRef<HTMLInputElement>('imageInput')
 
   const displayText = computed(() => {
     if (!form.value.image) return ''
@@ -29,7 +29,7 @@ export function useImageUpload(form: Ref<ImageFormState>) {
   })
 
   function trigger() {
-    inputRef.value?.click()
+    inputReference.value?.click()
   }
 
   async function handleSelect(event: Event) {

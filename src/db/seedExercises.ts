@@ -1,6 +1,6 @@
 import { generateId, getCustomExercisesRepository } from './index'
 import { popularExercises } from '@/data/popularExercises'
-import type { DbCustomExercise } from './schema'
+import type { DbCustomExercise as DatabaseCustomExercise } from './schema'
 
 /**
  * Seed popular exercises to IndexedDB if not already seeded.
@@ -14,7 +14,7 @@ export async function seedPopularExercises(): Promise<void> {
   }
 
   const now = Date.now()
-  const exercisesToSeed: Array<DbCustomExercise> = popularExercises.map((exercise) => ({
+  const exercisesToSeed: Array<DatabaseCustomExercise> = popularExercises.map((exercise) => ({
     id: generateId(),
     name: exercise.name,
     equipment: exercise.equipment,

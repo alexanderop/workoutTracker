@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/calendar'
 import type { CalendarWorkout, WorkoutDay } from '@/composables/useWorkoutCalendar'
 
-type Props = {
+type Properties = {
   open: boolean
   monthDays: ReadonlyArray<WorkoutDay>
   selectedDate: Date | null
@@ -47,7 +47,7 @@ const {
   selectedMonth,
   selectedDayWorkouts,
   selectedDateFormatted,
-} = defineProps<Props>()
+} = defineProps<Properties>()
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -78,7 +78,7 @@ const workoutDatesMap = computed(() => {
 
 // Convert selected date to DateValue for calendar
 const calendarValue = computed(() => {
-  if (!selectedDate) return undefined
+  if (!selectedDate) return
   return fromDate(selectedDate, getLocalTimeZone())
 })
 

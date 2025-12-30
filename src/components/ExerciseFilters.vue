@@ -8,14 +8,14 @@ import ExerciseMuscleFilter from '@/components/ExerciseMuscleFilter.vue'
  * Shared filter component combining muscle and equipment filters.
  * Used by exercise page, picker dialogs, and overlay mode.
  */
-type Props = {
+type Properties = {
   /** Class for muscle filter row */
   muscleClass?: string
   /** Class for equipment filter row */
   equipmentClass?: string
 }
 
-const { muscleClass = '', equipmentClass = 'mt-2' } = defineProps<Props>()
+const { muscleClass = '', equipmentClass = 'mt-2' } = defineProps<Properties>()
 
 const muscleFilter = defineModel<Muscle | 'all'>('muscle', { default: 'all' })
 const equipmentFilter = defineModel<Equipment | 'all'>('equipment', { default: 'all' })

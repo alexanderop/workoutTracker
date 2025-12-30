@@ -32,7 +32,7 @@ export class SetRowPO {
   private async getWeightInput(): Promise<HTMLInputElement> {
     const input = await this.rowLocator.getByRole('spinbutton', { name: /weight for set/i }).element()
     if (!(input instanceof HTMLInputElement)) {
-      throw new Error('Weight input is not an HTMLInputElement')
+      throw new TypeError('Weight input is not an HTMLInputElement')
     }
     return input
   }
@@ -43,7 +43,7 @@ export class SetRowPO {
   private async getRepsInput(): Promise<HTMLInputElement> {
     const input = await this.rowLocator.getByRole('spinbutton', { name: /^reps for set/i }).element()
     if (!(input instanceof HTMLInputElement)) {
-      throw new Error('Reps input is not an HTMLInputElement')
+      throw new TypeError('Reps input is not an HTMLInputElement')
     }
     return input
   }
@@ -54,7 +54,7 @@ export class SetRowPO {
   private async getRirInput(): Promise<HTMLInputElement> {
     const input = await this.rowLocator.getByRole('spinbutton', { name: /reps in reserve for set/i }).element()
     if (!(input instanceof HTMLInputElement)) {
-      throw new Error('RIR input is not an HTMLInputElement')
+      throw new TypeError('RIR input is not an HTMLInputElement')
     }
     return input
   }
@@ -109,16 +109,16 @@ export class SetRowPO {
     const isModal = await this.isModalMode()
 
     if (isModal) {
-      const [weightEl, repsEl, rirEl] = await Promise.all([
+      const [weightElement, repsElement, rirElement] = await Promise.all([
         this.getWeightTrigger().element(),
         this.getRepsTrigger().element(),
         this.getRirTrigger().element(),
       ])
 
       return {
-        weight: parseButtonText(weightEl.textContent),
-        reps: parseButtonText(repsEl.textContent),
-        rir: parseButtonText(rirEl.textContent),
+        weight: parseButtonText(weightElement.textContent),
+        reps: parseButtonText(repsElement.textContent),
+        rir: parseButtonText(rirElement.textContent),
       }
     }
 
@@ -157,11 +157,11 @@ export class SetRowPO {
   private async fillInline(values: SetValues): Promise<void> {
     const fillValue = async (
       getInput: () => Promise<HTMLInputElement>,
-      val?: number,
+      value?: number,
     ): Promise<void> => {
-      if (val !== undefined) {
-        const el = await getInput()
-        await userEvent.fill(el, String(val))
+      if (value !== undefined) {
+        const element = await getInput()
+        await userEvent.fill(element, String(value))
       }
     }
 
@@ -233,7 +233,7 @@ export class SetRowPO {
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
     // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-    const completedIndicator = firstCellElement.querySelector('[data-set-state="completed"], .bg-success\\/20')
+    const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
     return completedIndicator !== null
   }
 

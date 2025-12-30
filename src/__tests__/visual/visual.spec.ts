@@ -2,7 +2,7 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getCustomExercisesRepository, getWorkoutsRepository } from '@/db'
 import { RouteNames } from '@/router'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -96,9 +96,9 @@ describe('Visual Regression', () => {
       const today = Date.now()
 
       // First workout - one week ago, 60kg
-      const workout1 = dbWorkoutBuilder()
+      const workout1 = databaseWorkoutBuilder()
         .withName('Week 1 Workout')
-        .withTimestamps(oneWeekAgo, oneWeekAgo + 3600000)
+        .withTimestamps(oneWeekAgo, oneWeekAgo + 3_600_000)
         .withExerciseAndSets(
           [
             { kg: '60', reps: '8', status: 'completed' },
@@ -110,9 +110,9 @@ describe('Visual Regression', () => {
         .build()
 
       // Second workout - today, improved to 65kg
-      const workout2 = dbWorkoutBuilder()
+      const workout2 = databaseWorkoutBuilder()
         .withName('Week 2 Workout')
-        .withTimestamps(today - 3600000, today)
+        .withTimestamps(today - 3_600_000, today)
         .withExerciseAndSets(
           [
             { kg: '65', reps: '8', status: 'completed' },

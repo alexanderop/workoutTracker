@@ -29,8 +29,8 @@ export class BenchmarkFormPO {
     if (!typeElement) {
       throw new Error(`Type element for "${type}" not found`)
     }
-    const el = await typeElement.element()
-    const typeCard = el.closest('button')
+    const element = await typeElement.element()
+    const typeCard = element.closest('button')
     if (!typeCard) {
       throw new Error(`Type card button for "${type}" not found`)
     }
@@ -83,7 +83,7 @@ export class BenchmarkFormPO {
     await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).not.toBeInTheDocument()
 
     // Ensure body is clickable (no pointer-events: none from overlay)
-    await expect.poll(() => window.getComputedStyle(document.body).pointerEvents).not.toBe('none')
+    await expect.poll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
   }
 
   /**
@@ -130,10 +130,10 @@ export class BenchmarkFormPO {
    * @returns The rounds input element or null
    */
   getRoundsInput(): HTMLElement | null {
-    const el = page.getByLabelText(/number of rounds/i).query()
-    if (!el) return null
-    if (!(el instanceof HTMLElement)) return null
-    return el
+    const element = page.getByLabelText(/number of rounds/i).query()
+    if (!element) return null
+    if (!(element instanceof HTMLElement)) return null
+    return element
   }
 
   /**
@@ -145,12 +145,12 @@ export class BenchmarkFormPO {
     // eslint-disable-next-line no-restricted-syntax -- Finding icon by CSS class, no accessible equivalent
     const deleteButtons = document.querySelectorAll('button svg.lucide-x')
     const items: Array<HTMLElement> = []
-    deleteButtons.forEach((svg) => {
+    for (const svg of deleteButtons) {
       const button = svg.closest('button')
       if (button instanceof HTMLElement) {
         items.push(button)
       }
-    })
+    }
     return items
   }
 

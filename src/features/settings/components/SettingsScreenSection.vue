@@ -24,7 +24,7 @@ function handleTimerSoundChange(enabled: boolean) {
 function handleTimerSoundVolumeChange(event: Event) {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
-  const volume = parseFloat(target.value)
+  const volume = Number.parseFloat(target.value)
   settingsStore.setTimerSoundVolume(volume)
 }
 </script>

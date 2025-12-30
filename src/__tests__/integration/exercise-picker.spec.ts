@@ -127,9 +127,9 @@ describe('ExercisePicker', () => {
 
       // Get exercise names to check for true duplicates
       const exerciseNames = await Promise.all(
-        deadliftButtons.map(async (btn) => {
-          const el = await btn.element()
-          return el.textContent?.trim()
+        deadliftButtons.map(async (button) => {
+          const element = await button.element()
+          return element.textContent?.trim()
         })
       )
       const uniqueNames = new Set(exerciseNames)

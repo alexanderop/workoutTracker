@@ -50,11 +50,11 @@ export class BenchmarksPO {
     const allButtons = await page.getByRole('button').all()
     const cards: Array<HTMLElement> = []
     for (const locator of allButtons) {
-      const btn = ensureHTMLElement(await locator.element())
+      const button = ensureHTMLElement(await locator.element())
       // eslint-disable-next-line no-restricted-syntax -- Finding element by CSS class, no accessible equivalent
-      const hasName = btn.querySelector('[class*="font-semibold"]')
+      const hasName = button.querySelector('[class*="font-semibold"]')
       if (hasName !== null) {
-        cards.push(btn)
+        cards.push(button)
       }
     }
     return cards

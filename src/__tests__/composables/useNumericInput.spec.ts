@@ -9,7 +9,7 @@ describe('useNumericInput', () => {
 
       expect(values).toContain(20) // Current value included
       expect(values[0]).toBe(10) // 20 - 10 = 10
-      expect(values[values.length - 1]).toBe(30) // 20 + 10 = 30
+      expect(values.at(-1)).toBe(30) // 20 + 10 = 30
     })
 
     it('respects min bound', () => {
@@ -32,7 +32,7 @@ describe('useNumericInput', () => {
       const { generateWheelValues } = useNumericInput()
       const values = generateWheelValues(9, { step: 1, range: 10, min: 0, max: 10 })
 
-      expect(values[values.length - 1]).toBe(10) // Should not exceed max
+      expect(values.at(-1)).toBe(10) // Should not exceed max
       expect(values).not.toContain(11)
       expect(values).not.toContain(19)
     })
@@ -52,7 +52,7 @@ describe('useNumericInput', () => {
       // floor(10 / 2.5) * 2.5 = 10
       const values = generateWheelValues(8, { step: 2.5, range: 5, min: 0, max: 10 })
 
-      expect(values[values.length - 1]).toBe(10) // Aligned down to max
+      expect(values.at(-1)).toBe(10) // Aligned down to max
     })
 
     it('generates integer steps for reps', () => {

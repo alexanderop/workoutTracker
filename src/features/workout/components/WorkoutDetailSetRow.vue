@@ -17,14 +17,14 @@ const isCompleted = computed(() => set.status === 'completed')
 const displayedWeight = computed(() => {
   if (!set.kg) return '—'
   const display = toDisplayValue(set.kg)
-  return display !== undefined ? `${display}${unitLabel.value}` : '—'
+  return display === undefined ? '—' : `${display}${unitLabel.value}`
 })
 
 const estimatedRM = computed(() => {
-  const kgNum = Number.parseFloat(set.kg) || 0
-  const repsNum = Number.parseFloat(set.reps) || 0
-  if (kgNum === 0 || repsNum === 0) return '—'
-  return formatWithUnit(calculate10RM(kgNum, repsNum))
+  const kgNumber = Number.parseFloat(set.kg) || 0
+  const repsNumber = Number.parseFloat(set.reps) || 0
+  if (kgNumber === 0 || repsNumber === 0) return '—'
+  return formatWithUnit(calculate10RM(kgNumber, repsNumber))
 })
 </script>
 

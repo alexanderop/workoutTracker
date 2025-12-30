@@ -13,11 +13,11 @@ const { unitLabel } = useWeightDisplay()
 
 const weightLabel = computed(() => unitLabel.value.toUpperCase())
 
-type Props = {
+type Properties = {
   sets: Array<Set>
 }
 
-const { sets } = defineProps<Props>()
+const { sets } = defineProps<Properties>()
 const emit = defineEmits<{
   'toggle-complete': [set: Set]
   'add-set': []

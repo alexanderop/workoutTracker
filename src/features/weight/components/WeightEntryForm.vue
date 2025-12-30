@@ -14,12 +14,12 @@ import { NumericInputModal } from '@/components/ui/numeric-input'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { useTouchDevice } from '@/composables/useTouchDevice'
 
-type Props = {
+type Properties = {
   /** Last recorded weight in display units (kg or lbs), used to center presets */
   lastWeight?: number
 }
 
-const { lastWeight } = defineProps<Props>()
+const { lastWeight } = defineProps<Properties>()
 
 const emit = defineEmits<{
   save: [weightKg: number]

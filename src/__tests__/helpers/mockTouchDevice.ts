@@ -9,16 +9,16 @@
  * a touch device for tests that need NumericInputModal instead of NumberField.
  */
 
-let originalMatchMedia: typeof window.matchMedia | null = null
+let originalMatchMedia: typeof globalThis.matchMedia | null = null
 
 /**
  * Mock window.matchMedia to simulate a touch device.
  * Must be called BEFORE createTestApp() so the component uses the mocked value.
  */
 export function mockTouchDevice(): void {
-  originalMatchMedia = window.matchMedia
+  originalMatchMedia = globalThis.matchMedia
 
-  window.matchMedia = (query: string): MediaQueryList => {
+  globalThis.matchMedia = (query: string): MediaQueryList => {
     // Return true for touch device queries
     const isTouchQuery = query === '(pointer: coarse)'
 
@@ -41,7 +41,7 @@ export function mockTouchDevice(): void {
  */
 export function restoreMatchMedia(): void {
   if (originalMatchMedia) {
-    window.matchMedia = originalMatchMedia
+    globalThis.matchMedia = originalMatchMedia
     originalMatchMedia = null
   }
 }

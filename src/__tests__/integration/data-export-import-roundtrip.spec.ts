@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
 import { getDataManagementRepository } from '@/db'
 import { parseExportFile, importAllData } from '@/features/settings/utils/dataImport'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 /**
@@ -18,7 +18,7 @@ describe('Export/Import Round-Trip', () => {
 
   it('successfully imports data that was just exported', async () => {
     // Arrange: Create test data in the database
-    const workout = dbWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
+    const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
     await db.workouts.add(workout)
 
     // Verify data exists
@@ -63,7 +63,7 @@ describe('Export/Import Round-Trip', () => {
 
   it('preserves all data types through export/import cycle', async () => {
     // Arrange: Create various data types
-    const workout = dbWorkoutBuilder()
+    const workout = databaseWorkoutBuilder()
       .withName('Full Workout')
       .withStrengthBlock()
       .withDuration(3600)

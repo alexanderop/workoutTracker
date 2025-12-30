@@ -27,7 +27,7 @@ const { stats } = useWeightStats(() => entries.value)
 const { toDisplayValue } = useWeightDisplay()
 const lastWeightDisplay = computed(() => {
   const latestEntry = entries.value[0]
-  if (!latestEntry) return undefined
+  if (!latestEntry) return
   // entries are sorted by date descending, so first entry is the most recent
   return toDisplayValue(latestEntry.weight)
 })

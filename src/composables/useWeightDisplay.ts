@@ -17,11 +17,11 @@ export function useWeightDisplay() {
    */
   function toDisplayValue(kg: number | string | undefined): number | undefined {
     if (kg === undefined || kg === '') return undefined
-    const kgNum = typeof kg === 'string' ? Number(kg) : kg
+    const kgNumber = typeof kg === 'string' ? Number(kg) : kg
     if (settingsStore.weightUnit === 'lbs') {
-      return Math.round(kgToLbs(kgNum))
+      return Math.round(kgToLbs(kgNumber))
     }
-    return kgNum
+    return kgNumber
   }
 
   /**

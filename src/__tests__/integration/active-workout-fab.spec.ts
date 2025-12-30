@@ -80,8 +80,8 @@ describe('Active Workout FAB', () => {
 
       // Check timer format (should be like "0:XX" at start)
       await expect.poll(async () => {
-        const fabEl = await fab.element()
-        const timerText = fabEl.textContent?.trim()
+        const fabElement = await fab.element()
+        const timerText = fabElement.textContent?.trim()
         // Timer format: m:ss or mm:ss (e.g., "0:05", "1:30", "12:45")
         return timerText?.match(/^\d+:\d{2}$/) !== null
       }).toBe(true)

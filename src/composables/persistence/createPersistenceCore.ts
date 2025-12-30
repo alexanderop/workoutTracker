@@ -16,17 +16,17 @@ type PersistenceState =
 /**
  * Configuration for the persistence core factory.
  */
-type PersistenceConfig<TDomain, TDb> = {
+type PersistenceConfig<TDomain, TDatabase> = {
   /** The reactive ref containing the domain data */
   source: Ref<TDomain>
   /** Convert domain model to database model */
-  toDb: () => TDb
+  toDb: () => TDatabase
   /** Convert database model to domain model */
-  fromDb: (db: TDb) => TDomain
+  fromDb: (database: TDatabase) => TDomain
   /** Repository methods for persistence */
   repository: {
-    get: () => Promise<TDb | undefined>
-    save: (db: TDb) => Promise<void>
+    get: () => Promise<TDatabase | undefined>
+    save: (database: TDatabase) => Promise<void>
     clear: () => Promise<void>
     exists: () => Promise<boolean>
   }
@@ -51,7 +51,7 @@ type PersistenceConfig<TDomain, TDb> = {
  * })
  * ```
  */
-export function createPersistenceCore<TDomain, TDb>(config: PersistenceConfig<TDomain, TDb>) {
+export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceConfig<TDomain, TDatabase>) {
   const {
     source,
     toDb,
@@ -92,8 +92,8 @@ export function createPersistenceCore<TDomain, TDb>(config: PersistenceConfig<TD
   async function performSave(): Promise<void> {
     persistenceState.value = { status: 'saving' }
 
-    const dbData = toDb()
-    const [saveError] = await tryCatch(repository.save(dbData))
+    const databaseData = toDb()
+    const [saveError] = await tryCatch(repository.save(databaseData))
 
     if (saveError) {
       persistenceState.value = { status: 'error', error: saveError }
@@ -135,7 +135,7 @@ export function createPersistenceCore<TDomain, TDb>(config: PersistenceConfig<TD
   async function load(): Promise<TDomain | null> {
     persistenceState.value = { status: 'loading' }
 
-    const [loadError, dbData] = await tryCatch(repository.get())
+    const [loadError, databaseData] = await tryCatch(repository.get())
 
     if (loadError) {
       persistenceState.value = { status: 'error', error: loadError }
@@ -144,8 +144,8 @@ export function createPersistenceCore<TDomain, TDb>(config: PersistenceConfig<TD
 
     persistenceState.value = { status: 'idle' }
 
-    if (dbData) {
-      return fromDb(dbData)
+    if (databaseData) {
+      return fromDb(databaseData)
     }
     return null
   }

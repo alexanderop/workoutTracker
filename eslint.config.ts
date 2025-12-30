@@ -29,6 +29,38 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+  pluginUnicorn.configs.recommended,
+
+  // Unicorn overrides - disable rules that conflict with project conventions
+  {
+    name: 'app/unicorn-overrides',
+    rules: {
+      // Project uses null extensively for database/optional values
+      'unicorn/no-null': 'off',
+      // Vue components use PascalCase, test files use camelCase
+      'unicorn/filename-case': 'off',
+      // Common abbreviations: Db, props, e, etc.
+      'unicorn/prevent-abbreviations': 'off',
+      // Project uses function references in array callbacks
+      'unicorn/no-array-callback-reference': 'off',
+      // Common pattern: (await fetch()).json()
+      'unicorn/no-await-expression-member': 'off',
+      // Array.reduce is acceptable for aggregations
+      'unicorn/no-array-reduce': 'off',
+      // mockResolvedValue(undefined) is required for TypeScript
+      'unicorn/no-useless-undefined': 'off',
+    },
+  },
+
+  // Allow process.exit() in CLI scripts
+  {
+    name: 'app/scripts-overrides',
+    files: ['scripts/**/*.ts', 'vite-plugins/**/*.ts'],
+    rules: {
+      'unicorn/no-process-exit': 'off',
+      'unicorn/import-style': 'off',
+    },
+  },
 
   {
     files: ['src/**/*.vue'],
@@ -104,15 +136,9 @@ export default defineConfigWithVueTs(
   {
     name: 'app/typescript-style-guide',
     files: ['src/**/*.{ts,vue}'],
-    plugins: {
-      unicorn: pluginUnicorn,
-    },
     rules: {
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
-
-      // Prefer ternary operators over simple if-return patterns
-      'unicorn/prefer-ternary': 'error',
 
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [

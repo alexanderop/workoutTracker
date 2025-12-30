@@ -23,11 +23,9 @@ export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
   const baseTimer = useBaseTimer({
     onTick: () => {
       // Check for time cap
-      if (block.value?.config.timeCapSeconds) {
-        if (baseTimer.elapsedSeconds.value >= block.value.config.timeCapSeconds) {
+      if (block.value?.config.timeCapSeconds && baseTimer.elapsedSeconds.value >= block.value.config.timeCapSeconds) {
           complete()
         }
-      }
     },
     onComplete: config.onComplete,
   })

@@ -18,7 +18,7 @@ function normalizeError(error: unknown): Error {
  * Wraps a synchronous function in error-first tuple handling.
  * @returns [error, null] on failure, [null, data] on success
  */
-export function tryCatch<T>(fn: () => T): Result<T>
+export function tryCatch<T>(function_: () => T): Result<T>
 
 /**
  * Wraps a Promise in error-first tuple handling.

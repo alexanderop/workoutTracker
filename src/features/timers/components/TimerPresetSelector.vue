@@ -102,14 +102,18 @@ const timerLabel = computed(() => t(`timers.types.${timerType}`))
 
 const presets = computed(() => {
   switch (timerType) {
-    case 'amrap':
+    case 'amrap': {
       return getAmrapPresets()
-    case 'emom':
+    }
+    case 'emom': {
       return getEmomPresets()
-    case 'tabata':
+    }
+    case 'tabata': {
       return getTabataPresets()
-    case 'fortime':
+    }
+    case 'fortime': {
       return getForTimePresets()
+    }
     default: {
       const exhaustive: never = timerType
       return exhaustive
@@ -163,13 +167,15 @@ function handlePresetSelect(preset: {
   [key: string]: unknown
 }) {
   switch (timerType) {
-    case 'amrap':
+    case 'amrap': {
       emit('start', createAmrapBlock(Number(preset.durationSeconds)))
       break
-    case 'emom':
+    }
+    case 'emom': {
       emit('start', createEmomBlock(Number(preset.minutes)))
       break
-    case 'tabata':
+    }
+    case 'tabata': {
       emit(
         'start',
         createTabataBlock(
@@ -179,24 +185,28 @@ function handlePresetSelect(preset: {
         ),
       )
       break
-    case 'fortime':
+    }
+    case 'fortime': {
       emit(
         'start',
         createForTimeBlock(preset.timeCapSeconds === null ? null : Number(preset.timeCapSeconds)),
       )
       break
+    }
   }
 }
 
 function handleCustomSubmit(config: Record<string, number | boolean | null>) {
   switch (timerType) {
-    case 'amrap':
+    case 'amrap': {
       emit('start', createAmrapBlock(Number(config.durationSeconds)))
       break
-    case 'emom':
+    }
+    case 'emom': {
       emit('start', createEmomBlock(Number(config.minutes)))
       break
-    case 'tabata':
+    }
+    case 'tabata': {
       emit(
         'start',
         createTabataBlock(
@@ -206,12 +216,14 @@ function handleCustomSubmit(config: Record<string, number | boolean | null>) {
         ),
       )
       break
-    case 'fortime':
+    }
+    case 'fortime': {
       emit(
         'start',
         createForTimeBlock(config.timeCapSeconds === null ? null : Number(config.timeCapSeconds)),
       )
       break
+    }
   }
 }
 </script>

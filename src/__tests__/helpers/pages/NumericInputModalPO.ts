@@ -38,7 +38,7 @@ export class NumericInputModalPO {
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
     const numericPart = text.trim().split(/\s/)[0] ?? ''
-    return numericPart ? parseFloat(numericPart) : 0
+    return numericPart ? Number.parseFloat(numericPart) : 0
   }
 
   /**
@@ -89,12 +89,12 @@ export class NumericInputModalPO {
   async enterValue(value: number): Promise<void> {
     // Clear current value by clicking backspace multiple times
     const backspaceButton = page.getByRole('button', { name: /backspace/i })
-    for (let i = 0; i < 5; i++) {
+    for (let index = 0; index < 5; index++) {
       await userEvent.click(backspaceButton)
     }
 
     // Type each digit, handling decimals
-    const digits = String(value).split('')
+    const digits = [...String(value)]
     for (const digit of digits) {
       if (digit === '.') {
         // Click decimal button

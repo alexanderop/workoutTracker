@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/vue" />
 
-interface ImportMetaEnv {
+interface ImportMetaEnvironment {
   readonly APP_VERSION: string
   readonly APP_TAG: string | null
   readonly APP_COMMIT: string
@@ -9,5 +9,5 @@ interface ImportMetaEnv {
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv
+  readonly env: ImportMetaEnvironment
 }

@@ -1,6 +1,6 @@
 import type { WeightUnit } from '@/types/settings'
 
-const KG_TO_LBS = 2.20462
+const KG_TO_LBS = 2.204_62
 
 // ============================================
 // Weight Conversions (internal: kg)

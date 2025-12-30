@@ -65,7 +65,7 @@ function isLiteral(node: Node): node is Literal {
 function findHardcodedColors(value: string): Array<string> {
   const matches: Array<string> = []
   const regex = new RegExp(
-    `(?:^|\\s|:|/)((${utilityPattern})-(?:${colorPattern})-\\d{2,3}(?:\\/\\d+)?)`,
+    String.raw`(?:^|\s|:|/)((${utilityPattern})-(?:${colorPattern})-\d{2,3}(?:\/\d+)?)`,
     'g',
   )
   let match

@@ -28,20 +28,24 @@ const customForTime = ref({ minutes: 10, hasCap: true })
 
 function handleSubmit() {
   switch (timerType) {
-    case 'amrap':
+    case 'amrap': {
       emit('submit', { durationSeconds: customAmrap.value.minutes * 60 })
       break
-    case 'emom':
+    }
+    case 'emom': {
       emit('submit', { minutes: customEmom.value.minutes })
       break
-    case 'tabata':
+    }
+    case 'tabata': {
       emit('submit', { ...customTabata.value })
       break
-    case 'fortime':
+    }
+    case 'fortime': {
       emit('submit', {
         timeCapSeconds: customForTime.value.hasCap ? customForTime.value.minutes * 60 : null,
       })
       break
+    }
   }
 }
 </script>

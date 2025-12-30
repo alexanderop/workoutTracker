@@ -5,12 +5,12 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
-  createDbTemplate,
-  createDbTemplateStrengthBlock,
-  createDbTemplateAmrapBlock,
-  createDbTemplateEmomBlock,
-  createDbTemplateCardioBlock,
-  createDbTemplateBlockExercise,
+  createDbTemplate as createDatabaseTemplate,
+  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
+  createDbTemplateAmrapBlock as createDatabaseTemplateAmrapBlock,
+  createDbTemplateEmomBlock as createDatabaseTemplateEmomBlock,
+  createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock,
+  createDbTemplateBlockExercise as createDatabaseTemplateBlockExercise,
 } from '../factories'
 
 describe('Template Blocks - Timed and Cardio Support', () => {
@@ -181,10 +181,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength block
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-add-amrap',
         name: 'Original Template',
-        blocks: [createDbTemplateStrengthBlock({ name: 'Squat' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat' })],
       })
       await db.templates.add(template)
 
@@ -232,13 +232,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with AMRAP block
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-view-amrap',
         name: 'AMRAP Template',
         blocks: [
-          createDbTemplateAmrapBlock({
+          createDatabaseTemplateAmrapBlock({
             config: { durationSeconds: 600 },
-            exercises: [createDbTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 })],
+            exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 })],
           }),
         ],
       })
@@ -261,15 +261,15 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with mixed blocks: Strength, AMRAP, Cardio
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-reorder-mixed',
         name: 'Mixed Template',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Squat' }),
-          createDbTemplateAmrapBlock({
-            exercises: [createDbTemplateBlockExercise({ name: 'Burpees' })],
+          createDatabaseTemplateStrengthBlock({ name: 'Squat' }),
+          createDatabaseTemplateAmrapBlock({
+            exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees' })],
           }),
-          createDbTemplateCardioBlock({ config: { activity: 'running', targetDurationSeconds: 1800, targetDistanceMeters: null } }),
+          createDatabaseTemplateCardioBlock({ config: { activity: 'running', targetDurationSeconds: 1800, targetDistanceMeters: null } }),
         ],
       })
       await db.templates.add(template)
@@ -314,15 +314,15 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { builder, getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with AMRAP block
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-start-amrap',
         name: 'AMRAP Workout',
         blocks: [
-          createDbTemplateAmrapBlock({
+          createDatabaseTemplateAmrapBlock({
             config: { durationSeconds: 600 },
             exercises: [
-              createDbTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 }),
-              createDbTemplateBlockExercise({ name: 'Air Squats', prescribedReps: 15 }),
+              createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 }),
+              createDatabaseTemplateBlockExercise({ name: 'Air Squats', prescribedReps: 15 }),
             ],
           }),
         ],
@@ -354,14 +354,14 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { builder, getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength + EMOM
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-start-mixed',
         name: 'Mixed Workout',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Bench Press', defaultSetCount: 3 }),
-          createDbTemplateEmomBlock({
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', defaultSetCount: 3 }),
+          createDatabaseTemplateEmomBlock({
             config: { minutes: 10, exerciseRotation: 'full-round' },
-            exercises: [createDbTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 })],
+            exercises: [createDatabaseTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 })],
           }),
         ],
       })
@@ -388,13 +388,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength + AMRAP
-      const template = createDbTemplate({
+      const template = createDatabaseTemplate({
         id: 'tpl-remove-amrap',
         name: 'Template to Edit',
         blocks: [
-          createDbTemplateStrengthBlock({ name: 'Squat' }),
-          createDbTemplateAmrapBlock({
-            exercises: [createDbTemplateBlockExercise({ name: 'Burpees' })],
+          createDatabaseTemplateStrengthBlock({ name: 'Squat' }),
+          createDatabaseTemplateAmrapBlock({
+            exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees' })],
           }),
         ],
       })

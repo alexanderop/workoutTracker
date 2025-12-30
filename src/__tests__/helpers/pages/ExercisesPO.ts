@@ -48,7 +48,7 @@ export class ExercisesPO {
     const fileInputLocator = page.getByTestId('exercise-image-upload')
     const fileInput = await fileInputLocator.element()
     if (!(fileInput instanceof HTMLInputElement)) {
-      throw new Error('File input not found')
+      throw new TypeError('File input not found')
     }
 
     // Use DataTransfer for reliable image file handling (userEvent.upload doesn't work with canvas-generated images)

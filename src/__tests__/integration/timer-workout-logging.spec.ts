@@ -36,8 +36,8 @@ async function startAmrapTimer() {
  * component exposes a data-testid="complete-timer-test" button in test mode.
  */
 async function completeTimer() {
-  const completeTestBtn = page.getByTestId('complete-timer-test')
-  await userEvent.click(completeTestBtn)
+  const completeTestButton = page.getByTestId('complete-timer-test')
+  await userEvent.click(completeTestButton)
 
   // Wait for completion UI to appear
   await expect.element(page.getByText(/complete/i)).toBeVisible()

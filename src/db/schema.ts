@@ -95,26 +95,26 @@ export type DbBenchmark = {
 // Block Configurations
 // ============================================
 
-type DbEmomConfig = {
+type DatabaseEmomConfig = {
   minutes: number
   exerciseRotation: 'each-minute' | 'full-round'
 }
 
-type DbAmrapConfig = {
+type DatabaseAmrapConfig = {
   durationSeconds: number
 }
 
-type DbTabataConfig = {
+type DatabaseTabataConfig = {
   rounds: number
   workSeconds: number
   restSeconds: number
 }
 
-type DbForTimeConfig = {
+type DatabaseForTimeConfig = {
   timeCapSeconds: number | null
 }
 
-type DbCardioActivity =
+type DatabaseCardioActivity =
   | 'running'
   | 'cycling'
   | 'rowing'
@@ -123,8 +123,8 @@ type DbCardioActivity =
   | 'stairclimber'
   | 'walking'
 
-type DbCardioConfig = {
-  activity: DbCardioActivity
+type DatabaseCardioConfig = {
+  activity: DatabaseCardioActivity
   targetDurationSeconds: number | null
   targetDistanceMeters: number | null
 }
@@ -181,7 +181,7 @@ export type DbStrengthBlock = {
 export type DbEmomBlock = {
   kind: 'emom'
   id: string
-  config: DbEmomConfig
+  config: DatabaseEmomConfig
   exercises: ReadonlyArray<DbBlockExercise>
   result: DbEmomResult | null
   orderIndex: number
@@ -190,7 +190,7 @@ export type DbEmomBlock = {
 export type DbAmrapBlock = {
   kind: 'amrap'
   id: string
-  config: DbAmrapConfig
+  config: DatabaseAmrapConfig
   exercises: ReadonlyArray<DbBlockExercise>
   result: DbAmrapResult | null
   orderIndex: number
@@ -199,7 +199,7 @@ export type DbAmrapBlock = {
 export type DbTabataBlock = {
   kind: 'tabata'
   id: string
-  config: DbTabataConfig
+  config: DatabaseTabataConfig
   exercise: DbBlockExercise
   result: DbTabataResult | null
   orderIndex: number
@@ -208,7 +208,7 @@ export type DbTabataBlock = {
 export type DbForTimeBlock = {
   kind: 'fortime'
   id: string
-  config: DbForTimeConfig
+  config: DatabaseForTimeConfig
   exercises: ReadonlyArray<DbBlockExercise>
   result: DbForTimeResult | null
   orderIndex: number
@@ -217,14 +217,14 @@ export type DbForTimeBlock = {
 export type DbCardioBlock = {
   kind: 'cardio'
   id: string
-  config: DbCardioConfig
+  config: DatabaseCardioConfig
   result: DbCardioResult | null
   orderIndex: number
 }
 
-type DbTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
+type DatabaseTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
 
-export type DbWorkoutBlock = DbStrengthBlock | DbTimedBlock | DbCardioBlock
+export type DbWorkoutBlock = DbStrengthBlock | DatabaseTimedBlock | DbCardioBlock
 
 // ============================================
 // Active Benchmark Workout
@@ -311,42 +311,42 @@ export type DbTemplateStrengthBlock = {
   image: Blob | null
 }
 
-type DbTemplateEmomBlock = {
+type DatabaseTemplateEmomBlock = {
   kind: 'emom'
-  config: DbEmomConfig
+  config: DatabaseEmomConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
-type DbTemplateAmrapBlock = {
+type DatabaseTemplateAmrapBlock = {
   kind: 'amrap'
-  config: DbAmrapConfig
+  config: DatabaseAmrapConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
-type DbTemplateTabataBlock = {
+type DatabaseTemplateTabataBlock = {
   kind: 'tabata'
-  config: DbTabataConfig
+  config: DatabaseTabataConfig
   exercise: DbTemplateBlockExercise
 }
 
-type DbTemplateForTimeBlock = {
+type DatabaseTemplateForTimeBlock = {
   kind: 'fortime'
-  config: DbForTimeConfig
+  config: DatabaseForTimeConfig
   exercises: ReadonlyArray<DbTemplateBlockExercise>
 }
 
-type DbTemplateCardioBlock = {
+type DatabaseTemplateCardioBlock = {
   kind: 'cardio'
-  config: DbCardioConfig
+  config: DatabaseCardioConfig
 }
 
 export type DbTemplateBlock =
   | DbTemplateStrengthBlock
-  | DbTemplateEmomBlock
-  | DbTemplateAmrapBlock
-  | DbTemplateTabataBlock
-  | DbTemplateForTimeBlock
-  | DbTemplateCardioBlock
+  | DatabaseTemplateEmomBlock
+  | DatabaseTemplateAmrapBlock
+  | DatabaseTemplateTabataBlock
+  | DatabaseTemplateForTimeBlock
+  | DatabaseTemplateCardioBlock
 
 /**
  * Workout template for reusable workout structures.

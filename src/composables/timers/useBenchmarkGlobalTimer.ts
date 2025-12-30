@@ -48,7 +48,7 @@ export function useBenchmarkGlobalTimer() {
 
     // Validate timestamp is reasonable (not in future, not before 2020)
     const now = Date.now()
-    const MIN_TIMESTAMP = 1577836800000 // 2020-01-01
+    const MIN_TIMESTAMP = 1_577_836_800_000 // 2020-01-01
 
     if (globalTimerStartedAt > now) {
       console.warn('[Timer] Timestamp is in future, using current time')

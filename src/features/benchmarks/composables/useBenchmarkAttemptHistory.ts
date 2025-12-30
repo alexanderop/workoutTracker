@@ -4,7 +4,7 @@ import { tryCatch } from '@/lib/tryCatch'
 import { transformAttempts, type AttemptWithComparison } from '@/features/benchmarks/lib/attemptStats'
 
 // Re-export type for external consumers
-export type { AttemptWithComparison }
+
 
 /**
  * Loads benchmark attempt history with comparison data.
@@ -52,3 +52,5 @@ export function useBenchmarkAttemptHistory(benchmarkId: Ref<string>) {
     isLoading: readonly(isLoading),
   }
 }
+
+export {type AttemptWithComparison} from '@/features/benchmarks/lib/attemptStats'

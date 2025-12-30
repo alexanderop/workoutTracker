@@ -1,6 +1,6 @@
 import type { DbWorkoutExercise, DbSet } from '@/db/schema'
 import { generateId } from '@/db'
-import { createDbSet } from './dbSet.factory'
+import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
 const DEFAULTS: Readonly<Omit<DbWorkoutExercise, 'id' | 'sets'>> = {
   exerciseDefinitionId: null,
@@ -15,7 +15,7 @@ export function createDbExercise(overrides: Partial<DbWorkoutExercise> = {}): Db
   return {
     id: generateId(),
     ...DEFAULTS,
-    sets: overrides.sets ?? [createDbSet()],
+    sets: overrides.sets ?? [createDatabaseSet()],
     ...overrides,
   }
 }
@@ -26,6 +26,6 @@ export function createDbExerciseWithSets(
 ): DbWorkoutExercise {
   return createDbExercise({
     ...overrides,
-    sets: sets.map((s) => createDbSet(s)),
+    sets: sets.map((s) => createDatabaseSet(s)),
   })
 }

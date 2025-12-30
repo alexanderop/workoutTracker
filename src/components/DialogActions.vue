@@ -28,7 +28,7 @@ const buttonClass = computed(() => {
 })
 
 defineSlots<{
-  default: (props: { buttonClass: string }) => unknown
+  default: (properties: { buttonClass: string }) => unknown
 }>()
 </script>
 

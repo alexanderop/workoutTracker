@@ -92,18 +92,18 @@ export function useBenchmarkMode() {
    * Returns true if moved back, false if already at first block.
    */
   function goToPreviousBlock(): boolean {
-    const prevIndex = currentBlockIndex.value - 1
-    if (prevIndex < 0) {
+    const previousIndex = currentBlockIndex.value - 1
+    if (previousIndex < 0) {
       return false
     }
 
     // Go to the last exercise of the previous block
-    const prevBlock = benchmarkWorkout.value.blocks[prevIndex]
-    if (prevBlock) {
-      const exercises = prevBlock.exercises
+    const previousBlock = benchmarkWorkout.value.blocks[previousIndex]
+    if (previousBlock) {
+      const exercises = previousBlock.exercises
       const lastExerciseIndex = exercises.length > 0 ? exercises.length - 1 : 0
       updateBenchmarkWorkout({
-        selectedBlockIndex: prevIndex,
+        selectedBlockIndex: previousIndex,
         activeExerciseIndex: lastExerciseIndex,
       })
     }

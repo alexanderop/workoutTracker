@@ -57,7 +57,7 @@ export class WorkoutBuilder {
   // Backward compatible alias - selects by exercise ID (finds the block with that ID)
   selectExercise(exerciseId: number): this {
     const index = this.workout.blocks.findIndex((b) => b.id === exerciseId)
-    if (index >= 0) {
+    if (index !== -1) {
       this.workout.selectedBlockIndex = index
     }
     return this

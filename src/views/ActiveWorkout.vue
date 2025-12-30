@@ -50,7 +50,7 @@ const {
 const { isBuilderMode, isActiveMode, isCompletedMode, enterCompletionMode } = useWorkoutMode()
 
 // Initialize persistence for this workout session
-const workoutRef = getWorkoutRef()
+const workoutReference = getWorkoutRef()
 const {
   isInitialized,
   startNewWorkoutSession,
@@ -58,7 +58,7 @@ const {
   completeWorkout,
   saveNow,
   discardActiveWorkout,
-} = useWorkoutPersistence(workoutRef)
+} = useWorkoutPersistence(workoutReference)
 
 onMounted(() => {
   // If not already initialized (from resume), start a new session

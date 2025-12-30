@@ -23,11 +23,9 @@ export function findPbWorkout(
     if (workout.benchmarkId !== targetBenchmarkId) continue
 
     for (const block of workout.blocks) {
-      if (block.kind === 'fortime' && block.result?.completed) {
-        if (Math.abs(block.result.completionTime - pbTime) < 0.1) {
+      if (block.kind === 'fortime' && block.result?.completed && Math.abs(block.result.completionTime - pbTime) < 0.1) {
           return workout
         }
-      }
     }
   }
   return null

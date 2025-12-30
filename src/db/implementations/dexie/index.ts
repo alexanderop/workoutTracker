@@ -1,5 +1,5 @@
 import type { RepositoryProvider } from '@/db/interfaces'
-import { db } from './database'
+import { db as database } from './database'
 import { createDexieActiveBenchmarkWorkoutRepository } from './activeBenchmarkWorkout'
 import { createDexieActiveWorkoutRepository } from './activeWorkout'
 import { createDexieBenchmarksRepository } from './benchmarks'
@@ -14,17 +14,17 @@ import { createDexieWorkoutsRepository } from './workouts'
 
 export function createDexieRepositoryProvider(): RepositoryProvider {
   return {
-    activeWorkout: createDexieActiveWorkoutRepository(db),
-    activeBenchmark: createDexieActiveBenchmarkWorkoutRepository(db),
-    workouts: createDexieWorkoutsRepository(db),
-    templates: createDexieTemplatesRepository(db),
-    customExercises: createDexieCustomExercisesRepository(db),
-    settings: createDexieSettingsRepository(db),
-    dataManagement: createDexieDataManagementRepository(db),
-    benchmarks: createDexieBenchmarksRepository(db),
-    weight: createDexieWeightRepository(db),
-    drafts: createDexieDraftsRepository(db),
-    progressions: createDexieProgressionsRepository(db),
+    activeWorkout: createDexieActiveWorkoutRepository(database),
+    activeBenchmark: createDexieActiveBenchmarkWorkoutRepository(database),
+    workouts: createDexieWorkoutsRepository(database),
+    templates: createDexieTemplatesRepository(database),
+    customExercises: createDexieCustomExercisesRepository(database),
+    settings: createDexieSettingsRepository(database),
+    dataManagement: createDexieDataManagementRepository(database),
+    benchmarks: createDexieBenchmarksRepository(database),
+    weight: createDexieWeightRepository(database),
+    drafts: createDexieDraftsRepository(database),
+    progressions: createDexieProgressionsRepository(database),
   }
 }
 

@@ -26,8 +26,8 @@ function jsonReplacer(_key: string, value: unknown): unknown {
  * Create a plain JS object from a potentially reactive object.
  * Removes Vue reactivity and handles Blobs by setting them to null.
  */
-function toPlainObject<T>(obj: T): T {
-  const raw = toRaw(obj)
+function toPlainObject<T>(object: T): T {
+  const raw = toRaw(object)
   return JSON.parse(JSON.stringify(raw, jsonReplacer))
 }
 

@@ -49,7 +49,7 @@ async function handleSave(): Promise<void> {
 
 function handleStartingWeightChange(value: AcceptableValue): void {
   if (typeof value === 'string') {
-    startingWeightIndex.value = parseInt(value, 10)
+    startingWeightIndex.value = Number.parseInt(value, 10)
   }
 }
 </script>

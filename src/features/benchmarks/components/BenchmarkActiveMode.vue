@@ -43,7 +43,7 @@ const completionTime = ref(0)
 
 const timeoutIds = new Set<ReturnType<typeof setTimeout>>()
 onScopeDispose(() => {
-  timeoutIds.forEach(clearTimeout)
+  for (const id of timeoutIds) clearTimeout(id)
   timeoutIds.clear()
 })
 

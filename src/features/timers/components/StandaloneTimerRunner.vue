@@ -43,7 +43,7 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-const timerRef = useTemplateRef<TimerViewExposed>('timer')
+const timerReference = useTemplateRef<TimerViewExposed>('timer')
 const isComplete = ref(false)
 const isRunning = ref(false)
 
@@ -70,7 +70,7 @@ watch(isRunning, (running, wasRunning) => {
 })
 
 function handleToggle() {
-  timerRef.value?.toggle()
+  timerReference.value?.toggle()
 }
 
 function handleReset() {
@@ -80,7 +80,7 @@ function handleReset() {
   completedAt.value = null
   timerResult.value = null
   resetLogger()
-  timerRef.value?.reset()
+  timerReference.value?.reset()
 }
 
 function handleComplete() {
@@ -90,7 +90,7 @@ function handleComplete() {
   }
 
   // Capture the result from the timer
-  const result = timerRef.value?.complete()
+  const result = timerReference.value?.complete()
   if (result) {
     timerResult.value = result
     completedAt.value = Date.now()

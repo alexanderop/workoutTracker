@@ -18,13 +18,13 @@ import {
 
 const { t } = useI18n()
 
-type Props = {
+type Properties = {
   block: TimedBlock
   isActive: boolean
   isRunning: boolean
 }
 
-const { block, isActive, isRunning } = defineProps<Props>()
+const { block, isActive, isRunning } = defineProps<Properties>()
 
 const emit = defineEmits<{
   start: []

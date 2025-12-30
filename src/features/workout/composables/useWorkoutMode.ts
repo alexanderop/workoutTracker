@@ -42,8 +42,8 @@ export function useWorkoutMode() {
    * Used to disable "Next" button and determine workout completion.
    */
   const isLastBlock = computed(() => {
-    for (let i = currentBlockIndex.value + 1; i < workout.value.blocks.length; i++) {
-      const block = workout.value.blocks[i]
+    for (let index = currentBlockIndex.value + 1; index < workout.value.blocks.length; index++) {
+      const block = workout.value.blocks[index]
       if (block && !isBlockComplete(block)) return false
     }
     return true
@@ -123,10 +123,10 @@ export function useWorkoutMode() {
   function advanceToNextBlock(): boolean {
     // Find next incomplete block (skip completed ones)
     let nextIndex: number | null = null
-    for (let i = workout.value.selectedBlockIndex + 1; i < workout.value.blocks.length; i++) {
-      const block = workout.value.blocks[i]
+    for (let index = workout.value.selectedBlockIndex + 1; index < workout.value.blocks.length; index++) {
+      const block = workout.value.blocks[index]
       if (block && !isBlockComplete(block)) {
-        nextIndex = i
+        nextIndex = index
         break
       }
     }
@@ -152,22 +152,22 @@ export function useWorkoutMode() {
    * Returns true if moved back, false if already at first block.
    */
   function goToPreviousBlock(): boolean {
-    const prevIndex = workout.value.selectedBlockIndex - 1
-    if (prevIndex < 0) {
+    const previousIndex = workout.value.selectedBlockIndex - 1
+    if (previousIndex < 0) {
       return false
     }
 
-    selectBlock(prevIndex)
+    selectBlock(previousIndex)
     workout.value.activeSetIndex = null
 
     // Initialize block if it's a strength block
-    const prevBlock = workout.value.blocks[prevIndex]
-    if (prevBlock && isStrengthBlock(prevBlock)) {
+    const previousBlock = workout.value.blocks[previousIndex]
+    if (previousBlock && isStrengthBlock(previousBlock)) {
       // Find the last incomplete set or default to first
-      const incompleteSetIndex = prevBlock.sets.findIndex(
+      const incompleteSetIndex = previousBlock.sets.findIndex(
         (s) => s.status === 'planned' || s.status === 'active',
       )
-      workout.value.activeSetIndex = incompleteSetIndex >= 0 ? incompleteSetIndex : 0
+      workout.value.activeSetIndex = Math.max(incompleteSetIndex, 0)
     }
 
     return true
