@@ -3,57 +3,6 @@ import type { DbProgression, DbProgressionSession } from '@/db/schema'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
 
-/**
- * Calculate the next level after a successful session.
- * Progression order: reps → time → weight
- */
-function calculateNextLevel(current: DbProgression): {
-  reps: number
-  minutes: number
-  weightIndex: number
-  isComplete: boolean
-} {
-  // Phase 1: Increasing reps (10→12→14→16→18→20)
-  if (current.currentReps < current.maxReps) {
-    return {
-      reps: current.currentReps + current.repIncrement,
-      minutes: current.currentMinutes,
-      weightIndex: current.currentWeightIndex,
-      isComplete: false,
-    }
-  }
-
-  // Phase 2: At max reps, increase time (10→12→...→20 min)
-  if (current.currentMinutes < current.maxMinutes) {
-    return {
-      reps: current.maxReps, // Stay at max reps
-      minutes: current.currentMinutes + current.minuteIncrement,
-      weightIndex: current.currentWeightIndex,
-      isComplete: false,
-    }
-  }
-
-  // Phase 3: Both maxed → next kettlebell
-  const nextWeightIndex = current.currentWeightIndex + 1
-  if (nextWeightIndex >= current.availableWeights.length) {
-    // All kettlebells completed!
-    return {
-      reps: current.currentReps,
-      minutes: current.currentMinutes,
-      weightIndex: current.currentWeightIndex,
-      isComplete: true,
-    }
-  }
-
-  // Reset to starting values with new weight
-  return {
-    reps: current.startReps,
-    minutes: current.startMinutes,
-    weightIndex: nextWeightIndex,
-    isComplete: false,
-  }
-}
-
 export function createDexieProgressionsRepository(
   db: WorkoutTrackerDb,
 ): ProgressionsRepository {
@@ -121,6 +70,7 @@ export function createDexieProgressionsRepository(
     async recordSession(
       progressionId: string,
       completed: boolean,
+      nextLevel?: { reps: number; minutes: number; weightIndex: number; isComplete: boolean },
     ): Promise<DbProgressionSession> {
       const progression = await db.progressions.get(progressionId)
       if (!progression) {
@@ -150,13 +100,12 @@ export function createDexieProgressionsRepository(
         lastSessionAt: now,
       }
 
-      // Only advance if completed successfully
-      if (completed && !progression.isComplete) {
-        const next = calculateNextLevel(progression)
-        updates.currentReps = next.reps
-        updates.currentMinutes = next.minutes
-        updates.currentWeightIndex = next.weightIndex
-        updates.isComplete = next.isComplete
+      // Only advance if completed successfully and nextLevel is provided
+      if (completed && !progression.isComplete && nextLevel) {
+        updates.currentReps = nextLevel.reps
+        updates.currentMinutes = nextLevel.minutes
+        updates.currentWeightIndex = nextLevel.weightIndex
+        updates.isComplete = nextLevel.isComplete
       }
 
       // Save both in a transaction

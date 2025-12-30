@@ -2,7 +2,7 @@ import { computed, onUnmounted, ref } from 'vue'
 import { getProgressionsRepository } from '@/db'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import { getCurrentLevel } from '../lib/progressionLogic'
+import { calculateNextLevel, getCurrentLevel } from '../lib/progressionLogic'
 import type { ProgressionLevel } from '../types'
 
 // ============================================
@@ -127,9 +127,14 @@ export function useProgressionSession(progressionId: string) {
 
     state.value = { status: 'completing' }
 
+    // Compute next level in the feature layer, pass to repository
+    const nextLevel = completed && !currentProgression.isComplete
+      ? calculateNextLevel(currentProgression)
+      : undefined
+
     const repo = getProgressionsRepository()
     const [error, session] = await tryCatch(
-      repo.recordSession(progressionId, completed),
+      repo.recordSession(progressionId, completed, nextLevel),
     )
 
     if (error) {

@@ -1,5 +1,5 @@
 import type { DbProgression } from '@/db/schema'
-import type { ProgressionLevel, ProgressionPhase } from '../types'
+import type { NextLevelResult, ProgressionLevel, ProgressionPhase } from '../types'
 
 /**
  * Get the current level for display.
@@ -23,6 +23,52 @@ export function getProgressionPhase(progression: DbProgression): ProgressionPhas
     return 'reps'
   }
   return 'time'
+}
+
+/**
+ * Calculate the next level after a successful session.
+ * Progression order: reps → time → weight
+ */
+export function calculateNextLevel(current: DbProgression): NextLevelResult {
+  // Phase 1: Increasing reps (10→12→14→16→18→20)
+  if (current.currentReps < current.maxReps) {
+    return {
+      reps: current.currentReps + current.repIncrement,
+      minutes: current.currentMinutes,
+      weightIndex: current.currentWeightIndex,
+      isComplete: false,
+    }
+  }
+
+  // Phase 2: At max reps, increase time (10→12→...→20 min)
+  if (current.currentMinutes < current.maxMinutes) {
+    return {
+      reps: current.maxReps, // Stay at max reps
+      minutes: current.currentMinutes + current.minuteIncrement,
+      weightIndex: current.currentWeightIndex,
+      isComplete: false,
+    }
+  }
+
+  // Phase 3: Both maxed → next kettlebell
+  const nextWeightIndex = current.currentWeightIndex + 1
+  if (nextWeightIndex >= current.availableWeights.length) {
+    // All kettlebells completed!
+    return {
+      reps: current.currentReps,
+      minutes: current.currentMinutes,
+      weightIndex: current.currentWeightIndex,
+      isComplete: true,
+    }
+  }
+
+  // Reset to starting values with new weight
+  return {
+    reps: current.startReps,
+    minutes: current.startMinutes,
+    weightIndex: nextWeightIndex,
+    isComplete: false,
+  }
 }
 
 /**

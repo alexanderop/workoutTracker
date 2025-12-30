@@ -554,11 +554,12 @@ export type ProgressionsRepository = {
 
   /**
    * Record a completed session and update progression state.
-   * Automatically advances to next level if completed successfully.
+   * When completed is true, nextLevel must be provided to advance the progression.
    */
   recordSession(
     progressionId: string,
     completed: boolean,
+    nextLevel?: { reps: number; minutes: number; weightIndex: number; isComplete: boolean },
   ): Promise<DbProgressionSession>
 
   /**
