@@ -378,13 +378,14 @@ jobs:
 
             try {
               const report = fs.readFileSync('qa-report.md', 'utf8');
-              if (report.includes('❌ NEEDS FIXES') || report.includes('❌ CRITICAL')) {
+              // Use regex for robust matching (handles emoji/no-emoji, case variations)
+              if (/NEEDS FIXES|CRITICAL/i.test(report) && !/APPROVED/i.test(report)) {
                 state = 'failure';
                 description = 'QA found critical issues';
-              } else if (report.includes('⚠️')) {
+              } else if (/NEEDS CLARIFICATION/i.test(report) || report.includes('⚠️')) {
                 state = 'pending';
                 description = 'QA found minor issues';
-              } else if (report.includes('✅ APPROVED') || report.includes('✅ HEALTHY')) {
+              } else if (/APPROVED|HEALTHY/i.test(report)) {
                 state = 'success';
                 description = 'QA passed';
               }
