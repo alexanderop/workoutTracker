@@ -116,9 +116,9 @@ describe('Template Flow', () => {
 
       // Verify template saved to DB
       const templates = await db.templates.toArray()
-      expect(templates).toHaveLength(1)
-      expect(templates[0]?.name).toBe('Push Day')
-      expect(templates[0]?.blocks).toHaveLength(2)
+      const pushDayTemplate = templates.find((t) => t.name === 'Push Day')
+      expect(pushDayTemplate).toBeDefined()
+      expect(pushDayTemplate?.blocks).toHaveLength(2)
 
       // Navigate to workouts page and verify template appears
       await common.navigateToWorkoutsAndClickTab('templates')
@@ -303,12 +303,13 @@ describe('Template Flow', () => {
       // Verify template saved to DB
       await expect.poll(async () => {
         const templates = await db.templates.toArray()
-        return templates.length
-      }).toBe(1)
+        return templates.find((t) => t.name === 'Upper Body')
+      }).toBeDefined()
 
       const templates = await db.templates.toArray()
-      expect(templates[0]?.name).toBe('Upper Body')
-      expect(templates[0]?.blocks).toHaveLength(2)
+      const upperBodyTemplate = templates.find((t) => t.name === 'Upper Body')
+      expect(upperBodyTemplate).toBeDefined()
+      expect(upperBodyTemplate?.blocks).toHaveLength(2)
 
       cleanup()
     })
@@ -376,7 +377,10 @@ describe('Template Flow', () => {
     it('shows empty state when no templates exist', async () => {
       const { common, cleanup } = await createTestApp()
 
-      // Navigate to Templates tab (no seeded data)
+      // Clear any seeded templates to test empty state
+      await db.templates.clear()
+
+      // Navigate to Templates tab
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Verify empty state is shown

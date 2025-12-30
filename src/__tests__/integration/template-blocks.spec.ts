@@ -66,13 +66,14 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Verify template saved to DB with AMRAP block
       await expect.poll(async () => {
         const templates = await db.templates.toArray()
-        return templates.length
-      }).toBe(1)
+        return templates.find((t) => t.name === 'Full Body Circuit')
+      }).toBeDefined()
 
       const templates = await db.templates.toArray()
-      expect(templates[0]?.name).toBe('Full Body Circuit')
-      expect(templates[0]?.blocks).toHaveLength(1)
-      expect(templates[0]?.blocks[0]?.kind).toBe('amrap')
+      const template = templates.find((t) => t.name === 'Full Body Circuit')
+      expect(template).toBeDefined()
+      expect(template?.blocks).toHaveLength(1)
+      expect(template?.blocks[0]?.kind).toBe('amrap')
 
       cleanup()
     })
@@ -116,8 +117,9 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Verify template saved to DB with cardio block
       const templates = await db.templates.toArray()
-      expect(templates).toHaveLength(1)
-      expect(templates[0]?.blocks[0]?.kind).toBe('cardio')
+      const template = templates.find((t) => t.name === 'Cardio Day')
+      expect(template).toBeDefined()
+      expect(template?.blocks[0]?.kind).toBe('cardio')
 
       cleanup()
     })
@@ -165,9 +167,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Verify template saved with both blocks
       const templates = await db.templates.toArray()
-      expect(templates[0]?.blocks).toHaveLength(2)
-      expect(templates[0]?.blocks[0]?.kind).toBe('strength')
-      expect(templates[0]?.blocks[1]?.kind).toBe('emom')
+      const template = templates.find((t) => t.name === 'Mixed Workout')
+      expect(template?.blocks).toHaveLength(2)
+      expect(template?.blocks[0]?.kind).toBe('strength')
+      expect(template?.blocks[1]?.kind).toBe('emom')
 
       cleanup()
     })
