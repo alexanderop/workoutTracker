@@ -123,16 +123,18 @@ describe('ExercisePicker', () => {
       // Wait for search results (use exact to avoid matching other exercises)
       await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
 
-      // Count exercise buttons containing "Deadlift"
+      // Count exercise buttons - search for "Deadlift" should show all variants
       const dialog = await page.getByRole('dialog').element()
       const deadliftButtons = Array.from(dialog.querySelectorAll('button')).filter((btn: HTMLButtonElement) =>
         btn.textContent?.includes('Deadlift')
       )
 
-      // Should only have one button for Deadlift, not duplicates
-      // (Note: Smith Machine Romanian Deadlift is a different exercise, so filter to exact match)
-      const exactMatches = deadliftButtons.filter((btn) => btn.textContent?.includes('Deadlift') && !btn.textContent?.includes('Romanian'))
-      expect(exactMatches.length).toBe(1)
+      // Get exercise names to check for true duplicates
+      const exerciseNames = deadliftButtons.map((btn) => btn.textContent?.trim())
+      const uniqueNames = new Set(exerciseNames)
+
+      // All exercise names should be unique (no duplicates)
+      expect(exerciseNames.length).toBe(uniqueNames.size)
 
       cleanup()
     })

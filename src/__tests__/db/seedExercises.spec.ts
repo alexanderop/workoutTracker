@@ -4,6 +4,12 @@ import { seedPopularExercises } from '@/db/seedExercises'
 import { popularExercises } from '@/data/popularExercises'
 import { resetDatabase } from '@/__tests__/setup'
 
+/**
+ * Seed data integrity tests.
+ *
+ * These tests intentionally depend on seed data to verify data quality.
+ * Unlike integration tests, these SHOULD fail when seed data changes in breaking ways.
+ */
 describe('seedPopularExercises', () => {
   beforeEach(async () => {
     await resetDatabase()
@@ -37,5 +43,35 @@ describe('seedPopularExercises', () => {
     const secondCount = await db.customExercises.count()
 
     expect(secondCount).toBe(firstCount)
+  })
+})
+
+/**
+ * Seed data quality tests.
+ *
+ * Guard rails to catch data issues early, before they break integration tests.
+ * If these fail, fix the seed data - don't change the tests.
+ */
+describe('popularExercises data integrity', () => {
+  it('has no duplicate exercise names', () => {
+    const names = popularExercises.map((e) => e.name)
+    const uniqueNames = new Set(names)
+    expect(names.length).toBe(uniqueNames.size)
+  })
+
+  it('all exercises have required fields', () => {
+    for (const exercise of popularExercises) {
+      expect(exercise.name).toBeTruthy()
+      expect(exercise.muscle).toBeTruthy()
+      expect(exercise.equipment).toBeTruthy()
+      expect(exercise.type).toBeTruthy()
+      expect(exercise.metrics).toBeTruthy()
+    }
+  })
+
+  it('exercise names are properly formatted (no leading/trailing whitespace)', () => {
+    for (const exercise of popularExercises) {
+      expect(exercise.name).toBe(exercise.name.trim())
+    }
   })
 })

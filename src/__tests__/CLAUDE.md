@@ -247,6 +247,81 @@ await expect.element(page.getByText('Barbell Row')).toBeVisible()
 - When testing search/filter behavior, search first then check results
 - Consider that the exercise list has 130+ items and is virtualized
 
+### 6a. Seed Data Resilience (IMPORTANT)
+
+Seed data (exercises, templates, benchmarks) evolves as features are added. Tests that make assumptions about specific seed data are fragile and break unexpectedly.
+
+**Pattern: Test Invariants, Not Specific Data**
+
+```ts
+// ❌ FRAGILE - assumes exactly 1 "Deadlift" exists (breaks when variants added)
+const matches = buttons.filter(btn => btn.textContent?.includes('Deadlift'))
+expect(matches.length).toBe(1)
+
+// ✅ RESILIENT - tests the actual invariant (no duplicates)
+const names = buttons.map(btn => btn.textContent?.trim())
+const uniqueNames = new Set(names)
+expect(names.length).toBe(uniqueNames.size) // All names are unique
+```
+
+**Pattern: Create Controlled Test Data**
+
+When you need specific data for assertions, create it in the test rather than relying on seed data:
+
+```ts
+// ❌ FRAGILE - depends on seed data having exactly these exercises
+await userEvent.fill(searchInput, 'Deadlift')
+await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
+expect(results.length).toBe(1)
+
+// ✅ RESILIENT - create custom exercise with unique name
+const { db } = await createTestApp()
+await db.exercises.add({
+  id: 'test-unique-exercise',
+  name: 'Zzzz Unique Test Exercise',
+  muscle: 'chest',
+  equipment: 'barbell',
+})
+await userEvent.fill(searchInput, 'Zzzz Unique')
+await expect.element(page.getByText('Zzzz Unique Test Exercise')).toBeVisible()
+```
+
+**Pattern: Test Behavior, Not Implementation**
+
+```ts
+// ❌ FRAGILE - tests specific count that changes with seed data
+expect(exercises.length).toBe(134)
+
+// ✅ RESILIENT - tests the behavior that matters
+expect(exercises.length).toBeGreaterThan(0)
+expect(exercises.every(e => e.name && e.muscle)).toBe(true)
+```
+
+**Pattern: Use Exact Matches When Filtering**
+
+```ts
+// ❌ FRAGILE - partial match catches unexpected exercises
+const deadlifts = exercises.filter(e => e.name.includes('Deadlift'))
+
+// ✅ RESILIENT - exact match or explicit list
+const deadlift = exercises.find(e => e.name === 'Deadlift')
+
+// ✅ RESILIENT - if testing "variants exist", be explicit
+const deadliftVariants = exercises.filter(e =>
+  e.name === 'Deadlift' ||
+  e.name === 'Romanian Deadlift' ||
+  e.name.includes('Single Leg Deadlift')
+)
+```
+
+**When seed data tests ARE appropriate:**
+
+1. **Smoke tests** - Verify seed data loads correctly
+2. **Regression tests** - Specific exercises must exist for features to work
+3. **Data integrity tests** - Check for duplicates, missing fields, etc.
+
+For these, put them in a dedicated file (`seedExercises.spec.ts`) with clear documentation that they intentionally depend on seed data.
+
 ### 7. Test Realistic User Flows (Not Just Happy Paths)
 
 Tests should mirror real user behavior, not idealized flows. Common gap: testing only the "complete everything" path.

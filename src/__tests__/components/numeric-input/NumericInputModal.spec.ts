@@ -75,8 +75,10 @@ describe('NumericInputModal', () => {
       .element(page.getByRole('option', { selected: true }))
       .toBeVisible()
 
-    // Value display
-    await expect.element(page.getByTestId('value-display')).toBeVisible()
+    // Value display (uses role="status" with aria-label)
+    await expect
+      .element(page.getByRole('status', { name: /current value/i }))
+      .toBeVisible()
 
     // Keypad (digit buttons)
     await expect
@@ -93,14 +95,20 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Initial value shown in display
-    await expect.element(page.getByTestId('value-display')).toHaveTextContent('20')
+    const valueDisplay = page.getByRole('status', { name: /current value/i })
 
-    // Change via keypad - click "5" to make it 205
+    // Initial value shown in display
+    await expect.element(valueDisplay).toHaveTextContent('20')
+
+    // Change via keypad - first press replaces due to fresh-start mode (calculator-style)
     await userEvent.click(page.getByRole('button', { name: '5', exact: true }))
 
-    // Display should update
-    await expect.element(page.getByTestId('value-display')).toHaveTextContent('205')
+    // Display should update (5 replaces 20)
+    await expect.element(valueDisplay).toHaveTextContent('5')
+
+    // Second press appends
+    await userEvent.click(page.getByRole('button', { name: '0', exact: true }))
+    await expect.element(valueDisplay).toHaveTextContent('50')
   })
 
   it('instantly applies and closes when preset is clicked', async () => {
@@ -139,13 +147,14 @@ describe('NumericInputModal', () => {
       },
     })
 
-    // Modify value using keypad
-    await userEvent.click(page.getByRole('button', { name: '5', exact: true }))
+    // Modify value using keypad (fresh-start mode replaces, then append)
+    await userEvent.click(page.getByRole('button', { name: '5', exact: true })) // 20 → 5
+    await userEvent.click(page.getByRole('button', { name: '0', exact: true })) // 5 → 50
 
     // Click Confirm
     await userEvent.click(page.getByRole('button', { name: /confirm value/i }))
 
-    expect(onUpdate).toHaveBeenCalledWith(205)
+    expect(onUpdate).toHaveBeenCalledWith(50)
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
