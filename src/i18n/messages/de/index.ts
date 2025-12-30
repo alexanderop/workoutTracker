@@ -8,6 +8,7 @@ import timers from './timers'
 import dialogs from './dialogs'
 import logPastWorkout from './logPastWorkout'
 import weight from './weight'
+import progressions from './progressions'
 
 export default {
   calendar,
@@ -20,4 +21,5 @@ export default {
   dialogs,
   logPastWorkout,
   weight,
+  progressions,
 } as const

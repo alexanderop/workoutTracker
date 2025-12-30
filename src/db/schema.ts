@@ -478,3 +478,44 @@ export type DbFormDraft = {
   data: unknown // Serialized form state (JSON-compatible)
   savedAt: number // Timestamp when draft was last saved
 }
+
+// ============================================
+// Progression Types (Kettlebell Swing Tracker)
+// ============================================
+
+/**
+ * Kettlebell swing progression plan with automatic advancement.
+ * Tracks progress through reps → time → weight phases.
+ */
+export type DbProgression = {
+  id: string
+  name: string
+  availableWeights: ReadonlyArray<number> // [12, 16, 20, 24] kg
+  currentWeightIndex: number // Which KB we're on (0, 1, 2...)
+  currentReps: number // 10-20
+  currentMinutes: number // 10-20
+  startReps: number // 10 (config)
+  maxReps: number // 20 (config)
+  repIncrement: number // 2 (config)
+  startMinutes: number // 10 (config)
+  maxMinutes: number // 20 (config)
+  minuteIncrement: number // 2 (config)
+  sessionsCompleted: number // Total sessions done
+  isComplete: boolean // All KBs mastered
+  createdAt: number
+  lastSessionAt: number | null
+}
+
+/**
+ * Single session within a progression plan.
+ * Records whether the user completed all reps in each minute.
+ */
+export type DbProgressionSession = {
+  id: string
+  progressionId: string
+  weight: number // kg used in this session
+  reps: number // target reps per minute
+  minutes: number // total EMOM minutes
+  completed: boolean // Did user complete all reps each minute?
+  completedAt: number
+}

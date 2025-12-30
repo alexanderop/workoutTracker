@@ -26,6 +26,7 @@ export default {
     templates: 'Vorlagen',
     history: 'Verlauf',
     benchmarks: 'Benchmarks',
+    progressions: 'Progressionen',
   },
   builder: {
     title: 'Workout Builder',

@@ -56,6 +56,34 @@ Review TypeScript code for maximum type safety, enforcing both strict compilatio
 
 ```
 
+**Vue-Specific:** Check `onMounted`, `onUnmounted`, and `watch` callbacks for async calls:
+
+```typescript
+// Violation: Floating promise in lifecycle hook
+onMounted(() => {
+  loadData()  // async function called without void
+})
+
+// Fixed: Explicitly mark fire-and-forget
+onMounted(() => {
+  void loadData()
+})
+
+// Violation: watchEffect with async call
+watchEffect(() => {
+  if (id.value) {
+    fetchItem(id.value)  // Floating promise
+  }
+})
+
+// Fixed:
+watchEffect(() => {
+  if (id.value) {
+    void fetchItem(id.value)
+  }
+})
+```
+
 #### 5. Deep Readonly for State
 
 **Signal:** Mutable types used in Redux/State contexts.

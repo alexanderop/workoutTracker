@@ -5,6 +5,8 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
+  DbProgression,
+  DbProgressionSession,
   DbTemplateBlock,
   DbUserSetting,
   DbWeightEntry,
@@ -499,6 +501,74 @@ export type DraftsRepository = {
 }
 
 // ============================================
+// Progressions Repository
+// ============================================
+
+/**
+ * Data for creating a new progression plan.
+ */
+export type CreateProgressionData = {
+  name: string
+  availableWeights: ReadonlyArray<number>
+  startingWeightIndex?: number // Defaults to 0
+  startReps?: number // Defaults to 10
+  maxReps?: number // Defaults to 20
+  repIncrement?: number // Defaults to 2
+  startMinutes?: number // Defaults to 10
+  maxMinutes?: number // Defaults to 20
+  minuteIncrement?: number // Defaults to 2
+}
+
+/**
+ * Repository for kettlebell swing progression plans.
+ */
+export type ProgressionsRepository = {
+  /**
+   * Retrieve all progressions sorted by last session date (most recent first).
+   */
+  getAll(): Promise<ReadonlyArray<DbProgression>>
+
+  /**
+   * Find progression by ID.
+   */
+  getById(id: string): Promise<DbProgression | undefined>
+
+  /**
+   * Create a new progression plan.
+   */
+  create(data: CreateProgressionData): Promise<DbProgression>
+
+  /**
+   * Update an existing progression.
+   * @throws Error if progression with id not found
+   */
+  update(
+    id: string,
+    updates: Partial<Omit<DbProgression, 'id' | 'createdAt'>>,
+  ): Promise<void>
+
+  /**
+   * Delete a progression and all its sessions by ID.
+   */
+  delete(id: string): Promise<void>
+
+  /**
+   * Record a completed session and update progression state.
+   * When completed is true, nextLevel must be provided to advance the progression.
+   */
+  recordSession(
+    progressionId: string,
+    completed: boolean,
+    nextLevel?: { reps: number; minutes: number; weightIndex: number; isComplete: boolean },
+  ): Promise<DbProgressionSession>
+
+  /**
+   * Get all sessions for a progression, sorted by date (newest first).
+   */
+  getSessionHistory(progressionId: string): Promise<ReadonlyArray<DbProgressionSession>>
+}
+
+// ============================================
 // Repository Provider (All Repositories)
 // ============================================
 
@@ -516,4 +586,5 @@ export type RepositoryProvider = {
   benchmarks: BenchmarksRepository
   weight: WeightRepository
   drafts: DraftsRepository
+  progressions: ProgressionsRepository
 }

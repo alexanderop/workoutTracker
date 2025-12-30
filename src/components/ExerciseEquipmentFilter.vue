@@ -5,6 +5,7 @@ import type { Component } from 'vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { EQUIPMENT_ICONS } from '@/lib/exercises/equipmentMetadata'
+import ScrollFadeContainer from '@/components/ScrollFadeContainer.vue'
 
 const modelValue = defineModel<Equipment | 'all'>({ required: true })
 const { t } = useI18n()
@@ -25,17 +26,19 @@ const filters = computed<Array<{ value: Equipment | 'all'; label: string; icon: 
 </script>
 
 <template>
-  <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-    <button
-      v-for="filter in filters"
-      :key="filter.value"
-      type="button"
-      class="filter-pill flex items-center gap-1.5"
-      :class="modelValue === filter.value ? 'filter-pill-active' : 'filter-pill-inactive'"
-      @click="modelValue = filter.value"
-    >
-      <component :is="filter.icon" class="size-3.5" aria-hidden="true" />
-      {{ filter.label }}
-    </button>
-  </div>
+  <ScrollFadeContainer>
+    <div class="flex gap-2">
+      <button
+        v-for="filter in filters"
+        :key="filter.value"
+        type="button"
+        class="filter-pill flex items-center gap-1.5"
+        :class="modelValue === filter.value ? 'filter-pill-active' : 'filter-pill-inactive'"
+        @click="modelValue = filter.value"
+      >
+        <component :is="filter.icon" class="size-3.5" aria-hidden="true" />
+        {{ filter.label }}
+      </button>
+    </div>
+  </ScrollFadeContainer>
 </template>

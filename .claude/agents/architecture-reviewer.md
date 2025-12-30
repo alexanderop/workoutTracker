@@ -141,6 +141,35 @@ import { workoutRepository } from '@/db/repositories/workoutRepository'
 const workouts = await workoutRepository.getAll()
 ```
 
+### 6b. Duplicated Business Logic Between Layers
+**Signal:** Same function/algorithm exists in both `db/` and `features/` layers
+**Severity:** Medium
+**Risk:** Logic divergence when only one copy is updated
+
+```typescript
+// VIOLATION: Same calculateNextLevel function in two places
+// src/db/implementations/dexie/progressions.ts
+function calculateNextLevel(current: DbProgression) { /* logic */ }
+
+// src/features/progressions/lib/progressionLogic.ts
+function calculateNextLevel(progression: DbProgression) { /* same logic */ }
+```
+
+**Fix Options:**
+1. **Shared utility:** If logic is generic, move to `src/lib/` or `src/utils/`
+2. **Repository owns it:** Keep only in repository if it's persistence logic
+3. **Feature owns it:** Keep only in feature, pass result to repository
+4. **Document intentional duplication:** If layers must be decoupled, add comment explaining why
+
+```typescript
+// Option 1: Extract to shared
+// src/lib/progressionCalculations.ts
+export function calculateNextLevel(current: ProgressionState) { ... }
+
+// Then import in both places
+import { calculateNextLevel } from '@/lib/progressionCalculations'
+```
+
 ### 7. Composable Location Violations
 **Signal:** Shared composable in features, or feature-specific composable in shared
 **Severity:** Medium
@@ -240,4 +269,5 @@ import { anything } from '@/views/*'                   // ❌
 - [ ] Business logic in features, not views
 - [ ] Correct store usage
 - [ ] Repository pattern followed
+- [ ] No duplicated logic between db/ and features/ layers
 ```

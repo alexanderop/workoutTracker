@@ -7,6 +7,8 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
+  DbProgression,
+  DbProgressionSession,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -22,6 +24,8 @@ export class WorkoutTrackerDb extends Dexie {
   benchmarks!: Table<DbBenchmark, string>
   weightEntries!: Table<DbWeightEntry, string>
   drafts!: Table<DbFormDraft, string>
+  progressions!: Table<DbProgression, string>
+  progressionSessions!: Table<DbProgressionSession, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -70,6 +74,21 @@ export class WorkoutTrackerDb extends Dexie {
       benchmarks: 'id, name, createdAt, lastUsedAt',
       weightEntries: 'id, date, recordedAt',
       drafts: '&key',
+    })
+
+    // Version 5: Add progressions tables for kettlebell swing progression tracking
+    this.version(5).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
+      drafts: '&key',
+      progressions: 'id, createdAt, lastSessionAt',
+      progressionSessions: 'id, progressionId, completedAt',
     })
   }
 }
