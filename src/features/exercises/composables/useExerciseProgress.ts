@@ -88,7 +88,6 @@ export function useExerciseProgress(exerciseId: string) {
   // Methods
   async function loadProgress() {
     state.value = { status: 'loading' }
-
     const repo = getExerciseProgressRepository()
 
     // Load all data in parallel

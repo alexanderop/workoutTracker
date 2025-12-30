@@ -247,7 +247,34 @@ await expect.element(page.getByText('Barbell Row')).toBeVisible()
 - When testing search/filter behavior, search first then check results
 - Consider that the exercise list has 130+ items and is virtualized
 
-### 7. Navigation Reliability
+### 7. Test Realistic User Flows (Not Just Happy Paths)
+
+Tests should mirror real user behavior, not idealized flows. Common gap: testing only the "complete everything" path.
+
+**Workout Testing Example:**
+```ts
+// ❌ HAPPY PATH ONLY - user completes all sets before finishing
+await workout.completeMultipleSets(3, { weight: '80', reps: '10', rir: '2' })
+// Dialog auto-opens after completing all sets
+
+// ✅ REALISTIC - user enters data but finishes early via menu
+const setRow = workout.getSet(0)
+await setRow.fill({ kg: 80, reps: 10, rir: 2 })  // Enter data, DON'T click complete
+await workout.openMenu()
+await page.getByRole('menuitem', { name: /end workout/i }).click()  // Finish early
+```
+
+**Why this matters:**
+- The app auto-completes sets with data when finishing early (`autoCompleteSetsWithData`)
+- If you only test "complete all sets", you miss bugs in the early-finish path
+- Real users often enter data for a set, then finish without completing every set
+
+**Key flows to test for workouts:**
+1. Complete all sets → finish (happy path)
+2. Enter data → finish early via menu (realistic)
+3. No data entered → finish early (edge case)
+
+### 8. Navigation Reliability
 
 UI button clicks for navigation can be flaky. Prefer direct router navigation when navigation isn't the behavior being tested:
 

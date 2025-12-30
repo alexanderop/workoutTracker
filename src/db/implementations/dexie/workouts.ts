@@ -10,6 +10,39 @@ import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb } from './database'
 import { generateId } from './database'
 
+/**
+ * Auto-complete sets that have data (kg and reps) when finishing a workout early.
+ * This ensures exercise history includes all sets with actual performance data.
+ */
+function autoCompleteSetsWithData(
+  blocks: ReadonlyArray<DbWorkoutBlock>,
+  completedAt: number,
+): ReadonlyArray<DbWorkoutBlock> {
+  return blocks.map((block) => {
+    if (!isDbStrengthBlock(block)) return block
+
+    return {
+      ...block,
+      sets: block.sets.map((set) => {
+        // Skip already completed sets
+        if (set.status === 'completed') return set
+
+        // Auto-complete sets that have both kg and reps data
+        const hasData = set.kg.trim() !== '' && set.reps.trim() !== ''
+        if (hasData) {
+          return {
+            ...set,
+            status: 'completed' as const,
+            completedAt,
+          }
+        }
+
+        return set
+      }),
+    }
+  })
+}
+
 export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRepository {
   return {
     async completeWorkout(
@@ -17,10 +50,14 @@ export function createDexieWorkoutsRepository(db: WorkoutTrackerDb): WorkoutsRep
       notes = '',
     ): Promise<DbCompletedWorkout> {
       const completedAt = Date.now()
+
+      // Auto-complete sets with data when finishing workout
+      const completedBlocks = autoCompleteSetsWithData(activeWorkout.blocks, completedAt)
+
       const completedWorkout: DbCompletedWorkout = {
         id: generateId(),
         name: activeWorkout.name,
-        blocks: activeWorkout.blocks,
+        blocks: completedBlocks,
         startedAt: activeWorkout.startedAt,
         completedAt,
         durationSeconds: Math.floor((completedAt - activeWorkout.startedAt) / 1000),
