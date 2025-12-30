@@ -33,7 +33,7 @@ export class NumericInputModalPO {
    * Gets the current displayed value from the value display.
    */
   async getCurrentValue(): Promise<number> {
-    const valueDisplay = page.getByTestId('value-display')
+    const valueDisplay = page.getByRole('status', { name: /current value/i })
     const element = await valueDisplay.element()
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
@@ -53,7 +53,7 @@ export class NumericInputModalPO {
    * Gets the decimal button locator.
    */
   getDecimalButton() {
-    return page.getByTestId('keypad-decimal')
+    return page.getByRole('button', { name: /add decimal point/i })
   }
 
   /**

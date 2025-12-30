@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Delete } from 'lucide-vue-next'
 import { useNumericInput } from './useNumericInput'
 import { useNumberLocale } from '@/composables/useNumberLocale'
@@ -31,6 +31,11 @@ const editingString = ref(numberToString(modelValue.value))
 
 // Fresh start mode: first digit replaces value instead of appending (calculator-style)
 const freshStart = ref(true)
+
+// Screen reader announcement for input mode
+const inputModeAnnouncement = computed(() =>
+  freshStart.value ? 'Replace mode: next digit will replace current value' : '',
+)
 
 // Sync editingString when modelValue changes externally
 watch(
@@ -88,7 +93,12 @@ const buttonClass =
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2" role="group" aria-label="Numeric keypad">
+    <!-- Screen reader announcement for input mode -->
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {{ inputModeAnnouncement }}
+    </div>
+
     <!-- Digit Grid -->
     <div class="grid grid-cols-3 gap-2">
       <!-- Rows 1-3: digits 1-9 -->
@@ -110,7 +120,6 @@ const buttonClass =
         type="button"
         :class="buttonClass"
         aria-label="Add decimal point"
-        data-testid="keypad-decimal"
         @click="handleDecimalClick"
       >
         {{ decimalSeparator }}

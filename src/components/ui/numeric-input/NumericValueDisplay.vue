@@ -26,9 +26,9 @@ const { formatInputValue } = useNumberLocale()
     <!-- Value Display -->
     <div
       role="status"
+      aria-label="Current value"
       aria-live="polite"
       aria-atomic="true"
-      data-testid="value-display"
       class="flex h-14 flex-1 items-center justify-center rounded-lg bg-secondary/30"
     >
       <span class="text-3xl font-bold tabular-nums text-foreground">
