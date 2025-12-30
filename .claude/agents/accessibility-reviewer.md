@@ -41,6 +41,35 @@ Review Vue components for WCAG 2.1 AA compliance and accessibility best practice
 </button>
 ```
 
+**Common Patterns to Flag:**
+- Media controls: play, pause, stop, reset buttons
+- Navigation: back arrows, close buttons, menu toggles
+- Actions: delete (trash icon), edit (pencil), settings (gear)
+- Timer controls: circular play/pause buttons
+
+```vue
+<!-- Violation: Timer controls with no labels -->
+<Button size="icon" class="rounded-full" @click="isRunning ? pause() : start()">
+  <Icon :icon="isRunning ? 'lucide:pause' : 'lucide:play'" />
+</Button>
+<Button variant="outline" size="icon" @click="reset">
+  <Icon icon="lucide:rotate-ccw" />
+</Button>
+
+<!-- Fixed: Add aria-labels -->
+<Button
+  size="icon"
+  class="rounded-full"
+  :aria-label="isRunning ? 'Pause timer' : 'Start timer'"
+  @click="isRunning ? pause() : start()"
+>
+  <Icon :icon="isRunning ? 'lucide:pause' : 'lucide:play'" />
+</Button>
+<Button variant="outline" size="icon" aria-label="Reset timer" @click="reset">
+  <Icon icon="lucide:rotate-ccw" />
+</Button>
+```
+
 ### 2. Form Inputs Need Labels
 **Signal:** Input, select, or textarea without associated label
 **Severity:** High

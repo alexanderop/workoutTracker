@@ -28,12 +28,16 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { toDisplayValue } = useWeightDisplay()
 
+// Chart config defines colors that ChartStyle converts to --color-{key} CSS variables
 const chartConfig = computed<ChartConfig>(() => ({
   weight: {
     label: t('weight.weight'),
-    color: 'hsl(var(--primary))',
+    color: 'var(--primary)',
   },
 }))
+
+// Color reference for unovis components - uses the generated CSS variable
+const chartColor = 'var(--color-weight)'
 
 // Transform data for display unit
 const displayData = computed(() =>
@@ -91,14 +95,14 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
           <VisLine
             :x="(_d: WeightChartDataPoint, i: number) => i"
             :y="(d: WeightChartDataPoint) => d.weight"
-            color="hsl(var(--primary))"
+            :color="chartColor"
             curve-type="monotoneX"
             :line-width="2"
           />
           <VisScatter
             :x="(_d: WeightChartDataPoint, i: number) => i"
             :y="(d: WeightChartDataPoint) => d.weight"
-            color="hsl(var(--primary))"
+            :color="chartColor"
             :size="4"
           />
           <VisAxis
@@ -127,7 +131,7 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
                 },
               })
             "
-            color="hsl(var(--primary))"
+            :color="chartColor"
           />
         </VisXYContainer>
       </ChartContainer>

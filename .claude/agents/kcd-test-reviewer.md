@@ -45,6 +45,32 @@ screen.getByTestId('submit-button')
 screen.getByRole('button', { name: /submit/i })
 ```
 
+### 2b. CSS Class or Implementation Queries (Anti-pattern)
+**Check:** Does the test query by CSS classes, innerHTML, or DOM structure?
+**Signal:** Queries using `classList`, `className`, `querySelector('[class*=...]')`, or `innerHTML`
+**Impact:** High - These are pure implementation details that break on styling changes
+
+```ts
+// ❌ CSS class queries (implementation detail)
+const buttons = await page.getByRole('button').all()
+for (const btn of buttons) {
+  const el = await btn.element()
+  if (el.classList.contains('rounded-full')) {  // Fragile!
+    await btn.click()
+  }
+}
+
+// ❌ Icon class detection
+if (el.querySelector('[class*="lucide-trash"]')) { ... }
+if (el.innerHTML.includes('Trash')) { ... }
+
+// ✅ Query by accessible name (add aria-label to component if needed)
+await page.getByRole('button', { name: /play|start timer/i }).click()
+await page.getByRole('button', { name: /delete/i }).click()
+```
+
+**Fix:** If no accessible query works, the component has an accessibility issue. Add `aria-label` to the component, then query by name.
+
 ### 3. Excessive Mocking
 **Check:** Do mocks reduce confidence in real integration?
 **Signal:** Mocking components that should be tested together, mocking everything for "isolation"
@@ -146,3 +172,4 @@ expect(screen.getByRole('button', { name: /save/i })).toBeEnabled()
 - If you can't query by role, the UI might have accessibility issues.
 - Don't chase 100% coverage—diminishing returns past ~70%.
 - Integration tests provide the best confidence ROI.
+- **If a test needs CSS classes or DOM structure to find elements, flag it as both a test smell AND an accessibility issue.** The fix is to improve the component, not work around it in tests.

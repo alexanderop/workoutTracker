@@ -47,6 +47,23 @@ Use `defineModel` for two-way binding: `const open = defineModel<boolean>('open'
 
 - **Stores**: Use `createGlobalState()` from VueUse for store management in `src/stores/` (do not use Pinia)
 
+## Documentation Agents (ALWAYS Use)
+
+**Rule: Always fetch current documentation BEFORE implementing anything with these libraries.** Don't rely on training data — fetch first, then implement.
+
+| Library/Tool | Agent to Use |
+|--------------|--------------|
+| Vitest (testing, mocking, coverage) | `vitest-docs-specialist` |
+| VueUse (composables, utilities) | `vueuse-docs-specialist` |
+| Dexie (database, queries, IndexedDB) | `dexie-db-specialist` |
+| shadcn-vue (UI components, forms) | `shadcn-vue-specialist` |
+| Claude Code (hooks, MCP, features) | `claude-code-guide` |
+
+**Mandatory triggers:**
+- Any new feature touching these libraries → fetch docs first
+- Any error or unexpected behavior → fetch docs to verify correct usage
+- Any configuration changes → fetch docs for current options
+
 ## Available Tools
 
 `gh` (GitHub CLI), `tree`, `rg` (ripgrep), `sg` (ast-grep) are installed.
