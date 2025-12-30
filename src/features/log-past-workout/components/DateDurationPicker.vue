@@ -53,7 +53,10 @@ const durationString = computed({
     return String(duration.value)
   },
   set(value: string) {
-    duration.value = Number(value)
+    // Only update if a valid value is provided (prevents deselection causing NaN)
+    if (value) {
+      duration.value = Number(value)
+    }
   },
 })
 

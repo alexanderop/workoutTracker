@@ -245,10 +245,10 @@ describe('Timer Edge Cases', () => {
 
       // Select For Time with a time cap
       await userEvent.click(page.getByRole('button', { name: /for time/i }))
-      await expect.element(page.getByText('10 min')).toBeVisible()
+      await expect.element(page.getByText('10 min cap')).toBeVisible()
 
-      // Select a preset (look for 10 min option)
-      const tenMinButton = page.getByRole('button', { name: /standard challenge/i })
+      // Select a preset (look for 10 min cap option - "Quick challenge")
+      const tenMinButton = page.getByRole('button', { name: /quick challenge/i })
       await userEvent.click(tenMinButton)
 
       // Wait for timer UI

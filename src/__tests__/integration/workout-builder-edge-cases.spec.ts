@@ -282,7 +282,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Can still switch between tabs
       await page.getByRole('tab', { name: /exercises/i }).click()
-      await expect.element(page.getByRole('searchbox')).toBeVisible()
+      await expect.element(page.getByPlaceholder(/search/i)).toBeVisible()
 
       cleanup()
     })
