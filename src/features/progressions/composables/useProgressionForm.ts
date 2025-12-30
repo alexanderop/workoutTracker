@@ -3,16 +3,6 @@ import { getProgressionsRepository } from '@/db'
 import type { DbProgression } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 
-// ============================================
-// Types
-// ============================================
-
-export type ProgressionFormData = {
-  name: string
-  availableWeights: Array<number>
-  startingWeightIndex: number
-}
-
 // Common kettlebell weights in kg
 export const COMMON_KETTLEBELL_WEIGHTS = [8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48] as const
 

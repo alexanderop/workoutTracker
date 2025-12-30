@@ -9,7 +9,7 @@ import type { ProgressionLevel } from '../types'
 // Types
 // ============================================
 
-export type ProgressionListItem = {
+type ProgressionListItem = {
   id: string
   name: string
   level: ProgressionLevel

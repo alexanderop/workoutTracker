@@ -17,18 +17,3 @@ export type ProgressionLevel = {
  * Phase of the progression algorithm.
  */
 export type ProgressionPhase = 'reps' | 'time' | 'complete'
-
-/**
- * Result of calculating the next progression level.
- */
-export type NextLevelResult = {
-  reps: number
-  minutes: number
-  weightIndex: number
-  isComplete: boolean
-}
-
-/**
- * Session status for display.
- */
-export type SessionStatus = 'completed' | 'failed'
