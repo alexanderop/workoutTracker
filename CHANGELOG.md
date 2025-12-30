@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/alexanderop/workoutTracker/compare/v1.8.0...v1.9.0) (2025-12-30)
+
+
+### Features
+
+* **workout:** numeric keypad UX, auto-complete sets, and test improvements ([#94](https://github.com/alexanderop/workoutTracker/issues/94)) ([f208041](https://github.com/alexanderop/workoutTracker/commit/f208041bf17f7bdeeaa2036249d2b83010bb6de6))
+
+
+
 # [1.8.0](https://github.com/alexanderop/workoutTracker/compare/v1.7.0...v1.8.0) (2025-12-30)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** add git user config to release workflow ([674b5d6](https://github.com/alexanderop/workoutTracker/commit/674b5d6dc738eba71ae64ce3257a981accfe945b))
-
-
-
-# [1.5.0](https://github.com/alexanderop/workoutTracker/compare/v1.4.0...v1.5.0) (2025-12-29)
-
-
-### Features
-
-* **forms:** add auto-save draft persistence for creation forms ([#85](https://github.com/alexanderop/workoutTracker/issues/85)) ([796dad0](https://github.com/alexanderop/workoutTracker/commit/796dad03c2539d3a6ca26ab27c52d5260a349be3))
 
 
 
