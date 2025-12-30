@@ -189,6 +189,24 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+    rules: {
+      ...pluginVitest.configs.recommended.rules,
+      // Consistency
+      'vitest/consistent-test-it': ['error', { fn: 'it' }],
+      'vitest/prefer-hooks-on-top': 'error',
+      'vitest/prefer-hooks-in-order': 'error',
+      'vitest/no-duplicate-hooks': 'error',
+      'vitest/require-top-level-describe': 'error',
+
+      // Cleaner assertions (auto-fixable)
+      'vitest/prefer-to-be': 'error',
+      'vitest/prefer-to-have-length': 'error',
+      'vitest/prefer-to-contain': 'error',
+      'vitest/prefer-mock-promise-shorthand': 'error',
+
+      // Prevent flaky tests
+      'vitest/no-conditional-in-test': 'warn',
+    },
   },
 
   // Allow native try/catch in tryCatch utility implementation
