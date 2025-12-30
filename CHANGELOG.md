@@ -1,3 +1,12 @@
+# [1.8.0](https://github.com/alexanderop/workoutTracker/compare/v1.7.0...v1.8.0) (2025-12-30)
+
+
+### Features
+
+* **progressions:** add kettlebell swing progression tracking ([#93](https://github.com/alexanderop/workoutTracker/issues/93)) ([f76aa08](https://github.com/alexanderop/workoutTracker/commit/f76aa08e85512541d229cb70ce05b7985148df04))
+
+
+
 # [1.7.0](https://github.com/alexanderop/workoutTracker/compare/v1.6.0...v1.7.0) (2025-12-29)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **forms:** add auto-save draft persistence for creation forms ([#85](https://github.com/alexanderop/workoutTracker/issues/85)) ([796dad0](https://github.com/alexanderop/workoutTracker/commit/796dad03c2539d3a6ca26ab27c52d5260a349be3))
-
-
-
-# [1.4.0](https://github.com/alexanderop/workoutTracker/compare/v1.3.0...v1.4.0) (2025-12-28)
-
-
-### Features
-
-* **weight:** add body weight tracking feature ([#84](https://github.com/alexanderop/workoutTracker/issues/84)) ([66ad828](https://github.com/alexanderop/workoutTracker/commit/66ad828672d1a2887f3aeb02acd278de22c7ffdf))
 
 
 
