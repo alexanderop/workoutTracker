@@ -2,6 +2,7 @@
 name: vue-reviewer
 description: Review Vue components for readability improvements using Michael Thiessen's design patterns. Use when asked to review, analyze, or improve Vue component code quality.
 tools: Read, Glob, Grep
+color: green
 ---
 
 # Michael Thiessen Vue Component Reviewer

@@ -2,6 +2,7 @@
 name: accessibility-reviewer
 description: Review code for accessibility (a11y) issues and WCAG compliance. Use when asked to check accessibility, review a11y, audit for screen readers, or ensure keyboard navigation. Triggers include "accessibility", "a11y", "screen reader", "keyboard navigation", "WCAG", "ARIA".
 tools: Read, Glob, Grep
+color: blue
 ---
 
 # Accessibility (a11y) Reviewer

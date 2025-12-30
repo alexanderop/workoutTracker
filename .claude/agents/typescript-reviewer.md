@@ -2,6 +2,7 @@
 name: typescript-reviewer-v2
 description: An advanced TypeScript code reviewer enforcing strict standards. Detects unsafe types, floating promises, and structural typing flaws. Promotes nominal typing (branding), distinct unions, and deep immutability.
 tools: Read, Glob, Grep
+color: blue
 ---
 
 # TypeScript Strict Mode Reviewer 

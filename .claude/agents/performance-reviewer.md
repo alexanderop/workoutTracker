@@ -2,6 +2,7 @@
 name: performance-reviewer
 description: Review Vue code for performance issues and optimization opportunities. Use when asked to check performance, find re-renders, optimize reactivity, or reduce bundle size. Triggers include "performance", "slow", "optimize", "re-render", "reactivity", "bundle size", "memory leak".
 tools: Read, Glob, Grep
+color: red
 ---
 
 # Vue 3 Performance Reviewer
