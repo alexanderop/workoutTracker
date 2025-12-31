@@ -1,4 +1,4 @@
-export type InputType = 'weight' | 'reps' | 'rir'
+export type InputType = 'weight' | 'reps' | 'rir' | 'duration' | 'distance'
 
 export type PresetConfig = {
   step: number
@@ -62,6 +62,20 @@ const PRESET_CONFIGS: Record<InputType, PresetConfig> = {
     allowDecimal: false,
     min: 0,
     max: 10,
+    range: 10,
+  },
+  duration: {
+    step: 5,
+    allowDecimal: false,
+    min: 0,
+    max: 600,
+    range: 30,
+  },
+  distance: {
+    step: 0.5,
+    allowDecimal: true,
+    min: 0,
+    max: 999,
     range: 10,
   },
 }
