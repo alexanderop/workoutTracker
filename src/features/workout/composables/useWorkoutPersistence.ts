@@ -74,8 +74,10 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * Complete the active workout and save to history.
    * Sets mode to 'completed' before persisting to ensure the final state is captured.
    * Returns the completed workout for navigation to summary.
+   * @param notes - Optional notes for the workout
+   * @param durationOverrideSeconds - Optional duration override in seconds. If provided, completedAt is back-calculated.
    */
-  async function completeWorkout(notes = ''): Promise<DbCompletedWorkout | null> {
+  async function completeWorkout(notes = '', durationOverrideSeconds?: number): Promise<DbCompletedWorkout | null> {
     const [getError, databaseWorkout] = await tryCatch(repo.get())
 
     if (getError) {
@@ -89,7 +91,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     databaseWorkout.mode = 'completed'
 
     const [completeError, completed] = await tryCatch(
-      getWorkoutsRepository().completeWorkout(databaseWorkout, notes),
+      getWorkoutsRepository().completeWorkout(databaseWorkout, notes, durationOverrideSeconds),
     )
 
     if (completeError) {

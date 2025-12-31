@@ -48,8 +48,12 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
     async completeWorkout(
       activeWorkout: Readonly<DbActiveWorkout>,
       notes = '',
+      durationOverrideSeconds?: number,
     ): Promise<DbCompletedWorkout> {
-      const completedAt = Date.now()
+      // Calculate duration and completedAt
+      // If duration override is provided, back-calculate completedAt from startedAt + duration
+      const durationSeconds = durationOverrideSeconds ?? Math.floor((Date.now() - activeWorkout.startedAt) / 1000)
+      const completedAt = activeWorkout.startedAt + durationSeconds * 1000
 
       // Auto-complete sets with data when finishing workout
       const completedBlocks = autoCompleteSetsWithData(activeWorkout.blocks, completedAt)
@@ -60,7 +64,7 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
         blocks: completedBlocks,
         startedAt: activeWorkout.startedAt,
         completedAt,
-        durationSeconds: Math.floor((completedAt - activeWorkout.startedAt) / 1000),
+        durationSeconds,
         notes,
         benchmarkId: activeWorkout.benchmarkId,
       }

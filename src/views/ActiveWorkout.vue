@@ -96,6 +96,9 @@ const configureCardioOpen = createDialogModel('configureCardio')
 const editingBlockIndex = ref<number | null>(null)
 const queueDrawerOpen = ref(false)
 
+// Duration for finish dialog (in minutes, pre-filled with elapsed time)
+const finishDurationMinutes = ref(0)
+
 // Track completion data for the completion screen
 const completionData = ref<{ name: string; duration: number; id: string } | null>(null)
 
@@ -109,14 +112,14 @@ const selectedExerciseData = computed<ExerciseEditData | null>(() => {
 })
 
 // Handlers for finish/cancel
-async function handleConfirmFinish(name: string) {
+async function handleConfirmFinish(name: string, durationSeconds: number) {
   workout.value.name = name
   await saveNow()
 
   // Enter completion mode to show the completion screen
   enterCompletionMode()
 
-  const completed = await completeWorkout()
+  const completed = await completeWorkout('', durationSeconds)
   if (completed) {
     // Store data for completion screen, wait for user to proceed
     completionData.value = {
@@ -187,8 +190,15 @@ function handleSaveExercise(data: ExerciseEditData) {
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 
-async function handleWorkoutComplete() {
+function openFinishDialog() {
+  // Calculate elapsed time in minutes for the finish dialog
+  const elapsedMs = Date.now() - workout.value.startedAt
+  finishDurationMinutes.value = Math.round(elapsedMs / 60_000)
   openDialog('finish')
+}
+
+async function handleWorkoutComplete() {
+  openFinishDialog()
 }
 
 function handleEditBlock(index: number) {
@@ -223,7 +233,7 @@ function handleQueueAddBlock() {
     <!-- Active Mode -->
     <WorkoutActiveMode
       v-if="isActiveMode"
-      @end-workout="openDialog('finish')"
+      @end-workout="openFinishDialog"
       @cancel-workout="openDialog('cancel')"
       @workout-complete="handleWorkoutComplete"
       @open-queue="handleOpenQueue"
@@ -275,6 +285,7 @@ function handleQueueAddBlock() {
 
     <WorkoutFinishDialog
       v-model:open="finishDialogOpen"
+      v-model:duration-minutes="finishDurationMinutes"
       @confirm="handleConfirmFinish"
     />
 
