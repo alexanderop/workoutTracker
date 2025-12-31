@@ -20,4 +20,3 @@ Run TypeScript type checking:
 
 3. **If errors exist**
 fix it
-

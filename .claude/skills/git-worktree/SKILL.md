@@ -207,4 +207,3 @@ Ready to implement auth feature
 **Called by:**
 - **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
 - Any skill needing isolated workspace
-
