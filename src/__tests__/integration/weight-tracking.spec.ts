@@ -31,6 +31,44 @@ describe('Weight Tracking', () => {
       cleanup()
     })
 
+    it('preserves entered weight as default after first entry', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      // No entries exist - form defaults to 80kg
+      // User enters 100kg and saves
+      await weight.addEntry('100')
+
+      // After saving, form should show 100 (the value just entered)
+      // NOT 80 (the hardcoded default)
+      const input = page.getByRole('spinbutton', { name: /weight/i })
+      await expect.element(input).toHaveValue('100')
+
+      cleanup()
+    })
+
+    it('shows last saved weight after navigating away and back', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      // Add entry of 100kg
+      await weight.addEntry('100')
+
+      // Navigate away to a different page
+      await navigateTo({ name: RouteNames.Settings })
+
+      // Navigate back to weight page
+      await navigateTo({ name: RouteNames.Weight })
+
+      // Form should show 100 (from database), NOT 80 (default)
+      const input = page.getByRole('spinbutton', { name: /weight/i })
+      await expect.element(input).toHaveValue('100')
+
+      cleanup()
+    })
+
     it('replaces same-day entry with newest value', async () => {
       const { navigateTo, weight, cleanup } = await createTestApp()
 

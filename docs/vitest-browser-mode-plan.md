@@ -291,7 +291,7 @@ src/__tests__/
 - [ ] Install vitest-browser-vue
 - [ ] Run playwright install chromium
 - [ ] Update vitest.config.ts with projects configuration
-- [ ] Create src/__tests__/browser/setup.ts
+- [ ] Create src/**tests**/browser/setup.ts
 - [ ] Add npm scripts for browser tests
 - [ ] Verify existing jsdom tests still pass
 

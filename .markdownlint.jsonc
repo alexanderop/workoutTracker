@@ -1,0 +1,33 @@
+{
+  "default": true,
+  // Line length
+  "MD013": false,
+  // Duplicate headings (changelogs)
+  "MD024": false,
+  // Inline HTML
+  "MD033": false,
+  // First line h1
+  "MD041": false,
+  // Blanks around headings
+  "MD022": false,
+  // Blanks around fences
+  "MD031": false,
+  // Blanks around lists
+  "MD032": false,
+  // Code block language (137 violations)
+  "MD040": false,
+  // Table column style
+  "MD060": false,
+  // List indentation
+  "MD007": false,
+  // Trailing punctuation in heading
+  "MD026": false,
+  // Ordered list prefix
+  "MD029": false,
+  // Bare URLs
+  "MD034": false,
+  // Emphasis as heading
+  "MD036": false,
+  // Blanks around tables
+  "MD058": false
+}

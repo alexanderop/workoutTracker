@@ -1,12 +1,13 @@
-# Features Guide
+---
+name: vue-patterns
+description: Vue 3 patterns and best practices for this workout tracker: feature module architecture, createGlobalState() singleton state (not Pinia), defineModel two-way binding, and component gotchas. Use when creating/refactoring components, features, composables, managing shared state, or debugging reactivity issues. Triggers include "add component", "create feature", "refactor", "composable", "v-model", "defineModel", "global state", "createGlobalState", "singleton", "reactive", "two-way binding", "feature structure", "reka-ui", "shadcn-vue".
+---
 
-AI agent guidance for feature modules in this Vue 3 PWA.
+# Vue Patterns
 
-## Overview
+## Feature Module Architecture
 
-**Self-contained domain modules** following Bulletproof architecture. Each feature owns its UI components, composables, and business logic.
-
-## Feature Modules
+**Bulletproof architecture**: Self-contained domain modules. Each feature owns UI components, composables, and business logic.
 
 | Feature | Purpose | Entry Point |
 |---------|---------|-------------|
@@ -18,10 +19,9 @@ AI agent guidance for feature modules in this Vue 3 PWA.
 | `timers/` | Standalone timer UI | `components/TimerCard.vue` |
 | `log-past-workout/` | Retroactive workout entry | `composables/usePastWorkout.ts` |
 
-## Feature Structure
-
+**Structure:**
 ```
-src/features/workout/
+src/features/[feature]/
 ├── components/      # Feature-specific Vue components
 ├── composables/     # Feature-specific composables
 ├── lib/             # Feature utilities
@@ -30,9 +30,18 @@ src/features/workout/
 
 ## Singleton State Pattern
 
-The `useWorkout()` composable provides a **singleton ref** shared across all components:
+Use `createGlobalState()` from VueUse for shared state (NOT Pinia):
 
 ```ts
+// src/stores/workoutState.ts
+import { createGlobalState } from '@vueuse/core'
+
+export const useWorkoutState = createGlobalState(() => {
+  const workout = ref<Workout | null>(null)
+  return { workout }
+})
+
+// Feature composable provides singleton ref
 // src/features/workout/composables/useWorkout.ts
 import { getWorkoutRef } from '@/stores/workoutState'
 
@@ -42,73 +51,41 @@ export function useWorkout() {
   return {
     workout,           // Ref<Workout> - shared across all components
     selectBlock,
-    removeBlock,
     // ...
   }
 }
 ```
 
-**Why**: All components see the same workout state, no prop drilling needed.
+## Two-Way Binding
 
-## Block-Based Workout Model
-
-Workouts are sequences of **blocks** using discriminated unions via `kind`:
+Always use `defineModel` for v-model:
 
 ```ts
-type WorkoutBlock = StrengthBlock | TimedBlock | CardioBlock
-
-type TimedBlock = AmrapBlock | EmomBlock | TabataBlock | ForTimeBlock
-
-// Strength block
-type StrengthBlock = {
-  kind: 'strength'
-  id: number
-  exerciseName: string
-  sets: Array<Set>
-}
-
-// Timed blocks
-type AmrapBlock = {
-  kind: 'amrap'
-  id: number
-  config: AmrapConfig
-  exercises: Array<BlockExercise>
-  result?: AmrapResult
-}
+// Props with v-model
+const open = defineModel<boolean>('open')
+const value = defineModel<string>() // default model
 ```
-
-**Files**: `src/types/blocks.ts` (runtime), `src/db/schema.ts` (persistence with `Db` prefix)
-
-## Key Composables
-
-**Workout Feature:**
-- `useWorkout.ts` - Singleton state, block/set operations
-- `useWorkoutPersistence.ts` - Auto-save, complete, discard
-
-**Benchmark Feature:**
-- `useBenchmark.ts` - Core benchmark state
-- `useBenchmarkPersistence.ts` - Save attempts
 
 ## Gotchas
 
 ### 1. Wrap Destructured Props in Getters for Watchers
 
 ```ts
-// ❌ BAD - breaks reactivity
+// BAD - breaks reactivity
 const { count } = defineProps<{ count: number }>()
 watch(count, ...)
 
-// ✅ GOOD - wrap in getter
+// GOOD - wrap in getter
 watch(() => count, ...)
 ```
 
 ### 2. shadcn-vue Uses reka-ui (Not Radix)
 
 ```vue
-<!-- ❌ BAD - v-model:checked doesn't exist -->
+<!-- BAD - v-model:checked doesn't exist -->
 <Switch v-model:checked="enabled" />
 
-<!-- ✅ GOOD - use v-model -->
+<!-- GOOD - use v-model -->
 <Switch v-model="enabled" />
 ```
 

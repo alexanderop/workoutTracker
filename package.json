@@ -24,6 +24,7 @@
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "lint": "run-s lint:*",
     "i18n:check": "pnpm dlx tsx scripts/check-i18n.ts",
     "knip": "knip",
@@ -55,7 +56,8 @@
     "zod": "^4.2.1"
   },
   "lint-staged": {
-    "*.{ts,vue,js}": "eslint --fix --cache"
+    "*.{ts,vue,js}": "eslint --fix --cache",
+    "*.md": "markdownlint-cli2 --fix"
   },
   "pnpm": {
     "overrides": {
@@ -100,6 +102,7 @@
     "jsdom": "^27.4.0",
     "knip": "^5.78.0",
     "lint-staged": "^16.2.7",
+    "markdownlint-cli2": "^0.20.0",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.36.0",
     "playwright": "^1.57.0",

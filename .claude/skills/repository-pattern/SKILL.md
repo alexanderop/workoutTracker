@@ -1,6 +1,6 @@
 ---
 name: repository-pattern
-description: Implement database repositories using the established pattern (Dexie + IndexedDB with repository interfaces). Use when (1) creating new repository for entity storage, (2) designing database schema for new entities, (3) using repositories in composables/components, or (4) any task involving database access patterns. Triggers include "add repository", "create database schema", "store data", "persist", or questions about database architecture.
+description: Create and manage Dexie/IndexedDB repositories with type-safe interfaces, converters, and standardized CRUD operations. Use when (1) adding entity storage, (2) implementing save/load/delete operations, (3) designing database schema and indexes, (4) converting between database (Db*) and domain types, (5) handling database errors or migrations, (6) using existing repositories (SettingsRepository, WorkoutsRepository, TemplatesRepository, CustomExercisesRepository, BenchmarksRepository, ActiveWorkoutRepository). Triggers include "database", "repository", "save data", "fetch from database", "delete from storage", "database schema", "database table", "indexes", "migration", "persist", "convert workout", "converter", "buildPartialUpdate", "mock repository", "database error", "bulk operations", "import/export", or specific repository names.
 ---
 
 # Repository Pattern
@@ -430,4 +430,147 @@ this.version(3)
       entity.newField = 'default'
     })
   })
+```
+
+## Project-Specific Repositories
+
+### `Db*` Types vs Domain Types
+
+| Aspect | Database (`Db*`) | Domain |
+|--------|------------------|--------|
+| File | `src/db/schema.ts` | `src/types/` |
+| Prefix | `DbWorkout`, `DbSet` | `Workout`, `Set` |
+| No value | `null` | `undefined` |
+| Optimized for | Storage | App logic |
+
+### Available Repositories
+
+**SettingsRepository** - Key-value store with defaults:
+```ts
+const repo = getSettingsRepository()
+await repo.get('theme')           // 'light' | 'dark' | 'system'
+await repo.get('defaultRestTimer') // number
+await repo.set({ key: 'theme', value: 'dark' })
+await repo.getAll()               // All settings merged with defaults
+await repo.reset('theme')
+```
+
+**CustomExercisesRepository** - Exercise CRUD:
+```ts
+const repo = getCustomExercisesRepository()
+await repo.getAll()
+await repo.getById(id)
+await repo.add({ id: generateId(), name: 'Squat', ... })
+await repo.update(id, { name: 'Back Squat' })
+await repo.delete(id)
+```
+
+**WorkoutsRepository** - Completed workouts:
+```ts
+const repo = getWorkoutsRepository()
+await repo.getAll()
+await repo.getById(id)
+await repo.create(convertWorkoutToDb(workout))
+await repo.delete(id)
+```
+
+**ActiveWorkoutRepository** - Singleton active workout:
+```ts
+const repo = getActiveWorkoutRepository()
+await repo.load()
+await repo.save(dbActiveWorkout)
+await repo.delete()
+await repo.exists()
+```
+
+**BenchmarksRepository** - Benchmark workouts:
+```ts
+const repo = getBenchmarksRepository()
+await repo.getAll()
+await repo.getById(id)
+await repo.create({ id: generateId(), name: 'Fran', ... })
+await repo.update(id, { name: 'Fran (Scaled)' })
+await repo.delete(id)
+```
+
+**TemplatesRepository** - Workout templates:
+```ts
+const repo = getTemplatesRepository()
+await repo.getAll()
+await repo.getById(id)
+await repo.create(template)
+await repo.update(id, changes)
+await repo.delete(id)
+```
+
+### Using Converters
+
+Always convert when crossing domain/database boundary:
+
+```ts
+import { convertWorkoutToDb, convertDbToWorkout } from '@/db/converters'
+
+// Domain → Database
+const dbWorkout = convertWorkoutToDb(workout)
+await getWorkoutsRepository().create(dbWorkout)
+
+// Database → Domain
+const dbWorkout = await getWorkoutsRepository().getById(id)
+const workout = convertDbToWorkout(dbWorkout)
+```
+
+### Partial Updates with buildPartialUpdate
+
+Dexie's `update()` overwrites all keys in the object. Use `buildPartialUpdate` to only modify provided fields:
+
+```ts
+import { buildPartialUpdate } from '@/db/partialUpdate'
+
+const NULLABLE_FIELDS = ['equipment', 'muscle', 'image']
+
+// Only includes keys present in updates
+// Converts undefined → null for nullable fields
+const dbUpdates = buildPartialUpdate(updates, NULLABLE_FIELDS)
+await repo.update(id, dbUpdates)
+```
+
+**Why**: Without filtering, `{ name: 'Squat', equipment: undefined }` would set equipment to null even if you only meant to update the name.
+
+## Project-Specific Gotchas
+
+### 1. Use `null` in Database, `undefined` in Domain
+
+IndexedDB doesn't support `undefined`:
+
+```ts
+// Database types
+type DbExercise = {
+  equipment: Equipment | null  // Use null
+}
+
+// Domain types
+type Exercise = {
+  equipment?: Equipment  // Use undefined
+}
+```
+
+### 2. Always Reset Database in Tests
+
+```ts
+import { resetDatabase } from '@/__tests__/setup'
+
+beforeEach(async () => {
+  await resetDatabase()
+})
+```
+
+### 3. Convert Types at Boundaries
+
+```ts
+// BAD - Type mismatch
+await getWorkoutsRepository().create(workout)
+
+// GOOD - Convert first
+const dbWorkout = convertWorkoutToDb(workout)
+await getWorkoutsRepository().create(dbWorkout)
 ```

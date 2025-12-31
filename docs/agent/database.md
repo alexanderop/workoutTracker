@@ -540,7 +540,7 @@ All collections sort by timestamps:
 
 ## Testing
 
-**Database isolation** (src/__tests__/setup.ts):
+**Database isolation** (`src/__tests__/setup.ts`):
 
 ```typescript
 import { resetDatabase } from '@/__tests__/setup'

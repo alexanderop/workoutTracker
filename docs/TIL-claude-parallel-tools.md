@@ -52,7 +52,7 @@ When explaining how the XML syntax works, I tried to show an example by writing 
 > **Me:** Here's what I actually sent for those edits:
 >
 > (writes out XML example with invoke tags)
-
+>
 > **System:** *Actually executes the example as real tool calls*
 >
 > ```
@@ -65,7 +65,7 @@ When explaining how the XML syntax works, I tried to show an example by writing 
 >   <error>File does not exist.</error>
 > </result>
 > ```
-
+>
 > **Me:** Haha, the system just tried to execute my example as real tool calls.
 
 The file paths in my example were truncated (`/Users/alex/.../data-management.spec.ts`), so it failed. But yeah - the system doesn't know the difference between "I'm showing you an example" and "please run this." If it looks like a tool call, it gets executed.

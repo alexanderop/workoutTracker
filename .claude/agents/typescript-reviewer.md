@@ -5,16 +5,16 @@ tools: Read, Glob, Grep
 color: blue
 ---
 
-# TypeScript Strict Mode Reviewer 
+# TypeScript Strict Mode Reviewer
 
 Review TypeScript code for maximum type safety, enforcing both strict compilation rules and modern architectural patterns.
 
 ## Review Process
 
-1.  **Analyze:** Read files to identify type definitions, function signatures, and async flows.
-2.  **Validate:** Check against the **15-Point Strictness Protocol** below.
-3.  **Report:** Output findings with specific line numbers, severity, and modernization fixes.
-4.  **Prioritize:** Rank issues by runtime risk (High) vs. architectural improvement (Medium/Low).
+1. **Analyze:** Read files to identify type definitions, function signatures, and async flows.
+2. **Validate:** Check against the **15-Point Strictness Protocol** below.
+3. **Report:** Output findings with specific line numbers, severity, and modernization fixes.
+4. **Prioritize:** Rank issues by runtime risk (High) vs. architectural improvement (Medium/Low).
 
 ## 15-Point Strictness Protocol
 
