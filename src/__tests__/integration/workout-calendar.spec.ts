@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { addDays, subDays, format, startOfWeek } from 'date-fns'
+import { addDays, subDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db } from '@/db'
@@ -176,7 +176,7 @@ describe('Workout Calendar', () => {
       await userEvent.click(previousButton)
 
       // Should show previous month in sheet title
-      const previousMonth = format(subDays(new Date(), 30), 'MMMM yyyy')
+      const previousMonth = format(subMonths(new Date(), 1), 'MMMM yyyy')
       await expect.element(page.getByRole('heading', { name: previousMonth, exact: true })).toBeVisible()
 
       // Click next month button twice to go forward
@@ -185,7 +185,7 @@ describe('Workout Calendar', () => {
       await userEvent.click(nextButton)
 
       // Should show next month
-      const nextMonth = format(addDays(new Date(), 30), 'MMMM yyyy')
+      const nextMonth = format(addMonths(new Date(), 1), 'MMMM yyyy')
       await expect.element(page.getByRole('heading', { name: nextMonth, exact: true })).toBeVisible()
 
       cleanup()
@@ -222,7 +222,7 @@ describe('Workout Calendar', () => {
       await userEvent.click(previousButton)
 
       // Sheet title should update to previous month
-      const previousMonthHeading = format(subDays(today, 30), 'MMMM yyyy')
+      const previousMonthHeading = format(subMonths(today, 1), 'MMMM yyyy')
       await expect.element(page.getByRole('heading', { name: previousMonthHeading, exact: true })).toBeVisible()
 
       // CRITICAL: The CalendarRoot's internal heading should ALSO show previous month

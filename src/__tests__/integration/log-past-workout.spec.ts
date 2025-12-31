@@ -197,6 +197,40 @@ describe('Log Past Workout', () => {
 
       cleanup()
     })
+
+    it('clicking already-selected duration keeps it selected (prevents NaN)', async () => {
+      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+
+      // Default duration is 45 min - click it again (this could deselect in buggy implementations)
+      const durationButton = page.getByRole('button', { name: /45\s*min/i })
+      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+
+      // Click the already-selected button
+      await durationButton.click()
+
+      // Should still be selected (not deselected)
+      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+
+      // Add a block and save to verify duration is valid
+      await logPastWorkout.proceedToNextStep()
+      await logPastWorkout.addExerciseBlock('Barbell Row')
+      await logPastWorkout.setWorkoutName('Duration Test')
+      await logPastWorkout.saveWorkout()
+
+      // Verify navigation to history (save succeeded)
+      await common.waitForRoute(/^\/history/)
+
+      // Verify duration is valid (not NaN)
+      const workouts = await db.workouts.toArray()
+      expect(workouts.length).toBe(1)
+      expect(workouts[0]?.durationSeconds).toBe(45 * 60)
+      expect(Number.isNaN(workouts[0]?.durationSeconds)).toBe(false)
+
+      cleanup()
+    })
   })
 
   describe.skip('Strength Block Grid Entry', () => {
@@ -525,6 +559,317 @@ describe('Log Past Workout', () => {
       expect(
         todayElement.compareDocumentPosition(yesterdayElement) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
+
+      cleanup()
+    })
+  })
+
+  describe('Validation', () => {
+    it('disables save button when workout name is empty', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      // Seed a template to get a block
+      const template = createDatabaseTemplate({
+        id: 'tpl-validation-name',
+        name: 'Validation Name Test',
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' })],
+      })
+      await db.templates.add(template)
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('template')
+      await logPastWorkout.selectTemplate('Validation Name Test')
+      await logPastWorkout.proceedToNextStep()
+
+      // Verify we have a block
+      const blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(1)
+
+      // Clear the workout name (template sets a default name)
+      await logPastWorkout.setWorkoutName('')
+
+      // Save button should be disabled
+      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
+      expect(isDisabled).toBe(true)
+
+      cleanup()
+    })
+
+    it('disables save button when no blocks exist', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+      await logPastWorkout.proceedToNextStep()
+
+      // Set a workout name
+      await logPastWorkout.setWorkoutName('Empty Workout')
+
+      // No blocks exist
+      const blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(0)
+
+      // Save button should be disabled
+      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
+      expect(isDisabled).toBe(true)
+
+      cleanup()
+    })
+
+    it('enables save button when name and blocks are provided', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      // Seed a template
+      const template = createDatabaseTemplate({
+        id: 'tpl-validation-enabled',
+        name: 'Validation Enabled Test',
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' })],
+      })
+      await db.templates.add(template)
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('template')
+      await logPastWorkout.selectTemplate('Validation Enabled Test')
+      await logPastWorkout.proceedToNextStep()
+
+      // Template provides both name and blocks
+      const blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(1)
+
+      // Save button should be enabled
+      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
+      expect(isDisabled).toBe(false)
+
+      cleanup()
+    })
+  })
+
+  describe('Wizard Navigation', () => {
+    it('navigates back from builder to date-duration step', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+      await logPastWorkout.proceedToNextStep()
+
+      // We're on the builder step
+      await expect.element(page.getByRole('button', { name: /save workout/i })).toBeVisible()
+
+      // Go back
+      await logPastWorkout.goBack()
+
+      // We should be on the date-duration step (duration buttons visible)
+      await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
+
+      cleanup()
+    })
+
+    it('navigates back from date-duration to source selection step', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+
+      // We're on the date-duration step
+      await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
+
+      // Go back
+      await logPastWorkout.goBack()
+
+      // We should be back on source selection
+      await logPastWorkout.assertSourceSelectionVisible()
+
+      cleanup()
+    })
+
+    it('persists duration selection when navigating back and forth', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+
+      // Select 90 minutes
+      await logPastWorkout.setDuration(90)
+      const durationButton = page.getByRole('button', { name: /90\s*min/i })
+      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+
+      // Go to builder
+      await logPastWorkout.proceedToNextStep()
+
+      // Go back to date-duration
+      await logPastWorkout.goBack()
+
+      // 90 min should still be selected
+      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+
+      cleanup()
+    })
+  })
+
+  describe('Block Management', () => {
+    it('adds exercise block to blank workout', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+      await logPastWorkout.proceedToNextStep()
+
+      // Initially no blocks
+      let blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(0)
+
+      // Add a block using search (exercise names starting with A-B are visible without scrolling)
+      await logPastWorkout.addExerciseBlock('Barbell Row')
+
+      // Now we have 1 block
+      blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(1)
+
+      // Verify exercise name is shown
+      await expect.element(page.getByText('Barbell Row')).toBeVisible()
+
+      cleanup()
+    })
+
+    it('removes block from workout', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      // Seed a template with 2 blocks
+      const template = createDatabaseTemplate({
+        id: 'tpl-remove-block',
+        name: 'Remove Block Test',
+        blocks: [
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Dumbbell Fly', equipment: 'Dumbbell' }),
+        ],
+      })
+      await db.templates.add(template)
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('template')
+      await logPastWorkout.selectTemplate('Remove Block Test')
+      await logPastWorkout.proceedToNextStep()
+
+      // Initially 2 blocks
+      let blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(2)
+
+      // Remove the first block
+      await logPastWorkout.removeBlock(0)
+
+      // Now we have 1 block
+      blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(1)
+
+      // Only Dumbbell Fly should remain
+      await expect.element(page.getByText('Dumbbell Fly')).toBeVisible()
+      await expect.element(page.getByText('Bench Press')).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('adds multiple blocks to blank workout', async () => {
+      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+      await logPastWorkout.selectSource('blank')
+      await logPastWorkout.proceedToNextStep()
+
+      // Add first block - Back exercise
+      await logPastWorkout.addExerciseBlock('Barbell Row')
+      let blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(1)
+
+      // Add second block - Chest exercise (different muscle group)
+      await logPastWorkout.addExerciseBlock('Bench Press')
+      blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(2)
+
+      // Verify both exercises are shown
+      await expect.element(page.getByText('Barbell Row')).toBeVisible()
+      await expect.element(page.getByText('Bench Press')).toBeVisible()
+
+      cleanup()
+    })
+  })
+
+  describe('Complete Workflow', () => {
+    it('completes full blank workout flow: add blocks, name, and save', async () => {
+      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+
+      // Step 1: Select blank source
+      await logPastWorkout.selectSource('blank')
+
+      // Step 2: Set duration to 30 min (not the default 45, to avoid toggle deselect behavior)
+      await logPastWorkout.setDuration(30)
+      await logPastWorkout.proceedToNextStep()
+
+      // Step 3: Add exercise block
+      await logPastWorkout.addExerciseBlock('Barbell Row')
+
+      // Set workout name
+      await logPastWorkout.setWorkoutName('My Test Workout')
+
+      // Verify save button is enabled
+      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
+      expect(isDisabled).toBe(false)
+
+      // Save the workout
+      await logPastWorkout.saveWorkout()
+
+      // Verify navigation to history
+      await common.waitForRoute(/^\/history/)
+
+      // Verify workout was saved to DB
+      const workouts = await db.workouts.toArray()
+      expect(workouts.length).toBe(1)
+      expect(workouts[0]?.name).toBe('My Test Workout')
+      expect(workouts[0]?.durationSeconds).toBe(30 * 60)
+
+      cleanup()
+    })
+
+    it('completes template-based workflow with save', async () => {
+      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+
+      // Seed a template
+      const template = createDatabaseTemplate({
+        id: 'tpl-complete-workflow',
+        name: 'Complete Workflow Template',
+        blocks: [
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Leg Press', equipment: 'Machine' }),
+        ],
+      })
+      await db.templates.add(template)
+
+      await navigateTo({ name: RouteNames.LogPastWorkout })
+
+      // Step 1: Select template source
+      await logPastWorkout.selectSource('template')
+      await logPastWorkout.selectTemplate('Complete Workflow Template')
+
+      // Step 2: Set duration
+      await logPastWorkout.setDuration(60)
+      await logPastWorkout.proceedToNextStep()
+
+      // Verify blocks loaded
+      const blockCount = await logPastWorkout.getBlockCount()
+      expect(blockCount).toBe(2)
+
+      // Save the workout (template provides name)
+      await logPastWorkout.saveWorkout()
+
+      // Verify navigation to history
+      await common.waitForRoute(/^\/history/)
+
+      // Verify workout was saved with template name
+      const workouts = await db.workouts.toArray()
+      expect(workouts.length).toBe(1)
+      expect(workouts[0]?.name).toBe('Complete Workflow Template')
+      expect(workouts[0]?.blocks.length).toBe(2)
 
       cleanup()
     })

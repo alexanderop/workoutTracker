@@ -11,13 +11,13 @@ const { t } = useI18n()
 
 function handleWeightUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
   if (value === 'kg' || value === 'lbs') {
-    settingsStore.weightUnit = value
+    void settingsStore.setWeightUnit(value)
   }
 }
 
 function handleHeightUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
   if (value === 'cm' || value === 'ft-in') {
-    settingsStore.heightUnit = value
+    void settingsStore.setHeightUnit(value)
   }
 }
 </script>

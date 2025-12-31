@@ -103,6 +103,28 @@ function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
 }
 
 /**
+ * Check if a block is complete.
+ * - Strength blocks: all sets must have status 'completed'
+ * - Timed blocks (amrap, emom, tabata, fortime): result must not be null
+ * - Cardio blocks: result must not be null
+ */
+function isBlockComplete(block: WorkoutBlock): boolean {
+  if (isStrengthBlock(block)) {
+    return block.sets.every((s) => s.status === 'completed')
+  }
+  // Timed and cardio blocks are complete when they have a result
+  return block.result !== null
+}
+
+/**
+ * Find the first incomplete block in the workout.
+ * Returns the block index, or -1 if all blocks are complete.
+ */
+function findFirstIncompleteBlockIndex(blocks: ReadonlyArray<WorkoutBlock>): number {
+  return blocks.findIndex((block) => !isBlockComplete(block))
+}
+
+/**
  * Create a typed update function for block results.
  */
 function getTypedResultUpdate(
@@ -234,7 +256,15 @@ export function useWorkout() {
     const nextBlockResult = advanceToNextBlock(blockIndex + 1)
     if (nextBlockResult) return nextBlockResult
 
-    // Fallback: Workout complete
+    // Check if there are any incomplete blocks earlier in the workout
+    // (user may have skipped blocks manually)
+    const firstIncompleteIndex = findFirstIncompleteBlockIndex(workout.value.blocks)
+    if (firstIncompleteIndex !== -1) {
+      const incompleteBlockResult = advanceToNextBlock(firstIncompleteIndex)
+      if (incompleteBlockResult) return incompleteBlockResult
+    }
+
+    // Fallback: All blocks complete, workout is done
     return { kind: 'completed', nextAction: 'workout-complete' }
   }
 

@@ -283,4 +283,60 @@ export class LogPastWorkoutPO {
   async goBack(): Promise<void> {
     await page.getByRole('button', { name: /back/i }).click()
   }
+
+  /**
+   * Checks if the save button is disabled.
+   * @returns true if the save button is disabled
+   */
+  async isSaveButtonDisabled(): Promise<boolean> {
+    const saveButton = page.getByRole('button', { name: /save workout/i })
+    const element = await saveButton.element()
+    return element.hasAttribute('disabled')
+  }
+
+  /**
+   * Clicks a block item to select it.
+   * @param blockIndex - The index of the block (0-based)
+   */
+  async selectBlock(blockIndex: number): Promise<void> {
+    const blocks = await page.getByTestId('workout-block-item').all()
+    const block = blocks[blockIndex]
+    if (!block) {
+      throw new Error(`Block at index ${blockIndex} not found. Only ${blocks.length} blocks exist.`)
+    }
+    await block.click()
+  }
+
+  /**
+   * Removes a block using the remove button.
+   * Block items have a remove button with aria-label containing "remove".
+   * @param blockIndex - The index of the block to remove (0-based)
+   */
+  async removeBlock(blockIndex: number): Promise<void> {
+    const blocks = await page.getByTestId('workout-block-item').all()
+    const block = blocks[blockIndex]
+    if (!block) {
+      throw new Error(`Block at index ${blockIndex} not found. Only ${blocks.length} blocks exist.`)
+    }
+    // Each block item has a remove button - aria-label contains "remove"
+    const blockElement = await block.element()
+    // eslint-disable-next-line no-restricted-syntax -- Need to find button by aria-label pattern within block
+    const removeBtn = blockElement.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
+    if (!removeBtn || !(removeBtn instanceof HTMLButtonElement)) {
+      throw new Error(`Remove button not found for block at index ${blockIndex}`)
+    }
+    await userEvent.click(removeBtn)
+  }
+
+  /**
+   * Adds a strength block by selecting an exercise from the add block dialog.
+   * Uses the exercise picker's search functionality for reliable selection.
+   * @param exerciseName - The name of the exercise to add
+   */
+  async addExerciseBlock(exerciseName: string): Promise<void> {
+    await page.getByRole('button', { name: /add.*block|add.*exercise/i }).click()
+    await this.common.waitForDialog()
+    await this.common.selectExercise(exerciseName)
+    await this.common.waitForDialogClose()
+  }
 }
