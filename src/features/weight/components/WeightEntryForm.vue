@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -36,6 +36,16 @@ const defaultCenterValue = computed(() => toDisplayValue(DEFAULT_CENTER_KG) ?? D
 // Input value in display units
 const inputValue = ref<number>(lastWeight ?? defaultCenterValue.value)
 
+// Sync inputValue when lastWeight prop becomes available (e.g., after navigation)
+watch(
+  () => lastWeight,
+  (newValue) => {
+    if (newValue !== undefined) {
+      inputValue.value = newValue
+    }
+  },
+)
+
 // Modal state for touch devices
 const modalOpen = ref(false)
 
@@ -46,8 +56,8 @@ function handleSave() {
   if (kgValue === undefined) return
 
   emit('save', kgValue)
-  // Reset to last weight or default for next entry
-  inputValue.value = lastWeight ?? defaultCenterValue.value
+  // Keep the entered value - no reset needed
+  // On refresh, lastWeight prop will provide the latest saved value
 }
 
 function openModal() {
