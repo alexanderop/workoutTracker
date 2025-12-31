@@ -1,3 +1,12 @@
+## [1.9.1](https://github.com/alexanderop/workoutTracker/compare/v1.9.0...v1.9.1) (2025-12-31)
+
+
+### Bug Fixes
+
+* workout completion, settings preferences, and log-past-workout improvements ([#95](https://github.com/alexanderop/workoutTracker/issues/95)) ([7c9b962](https://github.com/alexanderop/workoutTracker/commit/7c9b96293f97eee22c72f82fc17a6327c2aa323d))
+
+
+
 # [1.9.0](https://github.com/alexanderop/workoutTracker/compare/v1.8.0...v1.9.0) (2025-12-30)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **log-past-workout:** refactor to playlist-based UI with shared components ([#91](https://github.com/alexanderop/workoutTracker/issues/91)) ([72114c7](https://github.com/alexanderop/workoutTracker/commit/72114c7c284560f6a6bd8a3ef4a43bacc6a64e0f))
-
-
-
-## [1.5.1](https://github.com/alexanderop/workoutTracker/compare/v1.5.0...v1.5.1) (2025-12-29)
-
-
-### Bug Fixes
-
-* **ci:** add git user config to release workflow ([674b5d6](https://github.com/alexanderop/workoutTracker/commit/674b5d6dc738eba71ae64ce3257a981accfe945b))
 
 
 
