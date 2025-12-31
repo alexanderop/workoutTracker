@@ -31,6 +31,8 @@ export default {
     description:
       'Dein Workout wird im Verlauf gespeichert. Diese Aktion kann nicht rückgängig gemacht werden.',
     workoutName: 'Workout-Name',
+    duration: 'Dauer',
+    durationWarning: 'Scheint länger als üblich',
     finishButton: 'Workout beenden',
   },
   addBlock: {
