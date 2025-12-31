@@ -114,12 +114,10 @@ describe('Workout Duration Editing', () => {
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has duration close to 30 minutes
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        const duration = workouts[0]?.durationSeconds ?? 0
-        // Allow some tolerance for test execution time
-        return duration >= 1790 && duration <= 1810
-      }).toBe(true)
+      const workouts = await db.workouts.toArray()
+      const duration = workouts[0]?.durationSeconds ?? 0
+      expect(duration).toBeGreaterThanOrEqual(1790)
+      expect(duration).toBeLessThanOrEqual(1810)
 
       cleanup()
     })

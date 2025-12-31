@@ -73,7 +73,7 @@ function handleConfirm() {
               :id="durationInputId"
               v-model.number="durationMinutes"
               type="number"
-              min="1"
+              min="0"
               :class="{ 'border-orange-500 text-orange-600': isLongDuration }"
               :aria-label="t('dialogs.finish.duration')"
             />
