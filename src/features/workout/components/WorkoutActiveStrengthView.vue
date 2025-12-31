@@ -15,6 +15,9 @@ import type { StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { Check, Plus } from 'lucide-vue-next'
 
+// Strength-specific input types (subset of InputType)
+type StrengthInputType = Extract<InputType, 'weight' | 'reps' | 'rir'>
+
 const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()
 const { intlLocale, formatNumber } = useNumberLocale()
@@ -137,11 +140,11 @@ function handleRirChange(set: Set, value: number | undefined) {
 
 // Modal state for touch input
 const modalOpen = ref(false)
-const modalType = ref<InputType>('weight')
+const modalType = ref<StrengthInputType>('weight')
 const modalSetId = ref<number | null>(null)
 const modalValue = ref(0)
 
-function openModal(type: InputType, set: Set, currentValue: number | undefined) {
+function openModal(type: StrengthInputType, set: Set, currentValue: number | undefined) {
   modalType.value = type
   modalSetId.value = set.id
   modalValue.value = currentValue ?? 0
@@ -151,7 +154,7 @@ function openModal(type: InputType, set: Set, currentValue: number | undefined) 
 function handleModalConfirm(value: number) {
   if (modalSetId.value === null) return
 
-  const fieldMap: Record<InputType, 'kg' | 'reps' | 'rir'> = {
+  const fieldMap: Record<StrengthInputType, 'kg' | 'reps' | 'rir'> = {
     weight: 'kg',
     reps: 'reps',
     rir: 'rir',
@@ -162,7 +165,7 @@ function handleModalConfirm(value: number) {
 }
 
 // Format value for display in touch trigger button
-function formatDisplayValue(value: number | undefined, type: InputType): string {
+function formatDisplayValue(value: number | undefined, type: StrengthInputType): string {
   if (value === undefined || value === 0) return '—'
   if (type === 'weight') {
     return formatNumber(value, { maximumFractionDigits: 2, useGrouping: false })

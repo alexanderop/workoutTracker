@@ -27,6 +27,8 @@ export default {
     title: 'Finish Workout?',
     description: 'Your workout will be saved to your history. This action cannot be undone.',
     workoutName: 'Workout Name',
+    duration: 'Duration',
+    durationWarning: 'Seems longer than usual',
     finishButton: 'Finish Workout',
   },
   addBlock: {

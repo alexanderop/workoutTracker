@@ -264,10 +264,12 @@ export type GetByDateRangeParams = {
 export type WorkoutsRepository = {
   /**
    * Mark an active workout as completed and save to history. Removes active workout from database in a transaction.
+   * @param durationOverrideSeconds - Optional duration override in seconds. If provided, completedAt is back-calculated.
    */
   completeWorkout(
     activeWorkout: Readonly<DatabaseActiveWorkout>,
     notes?: string,
+    durationOverrideSeconds?: number,
   ): Promise<DatabaseCompletedWorkout>
   /**
    * Add a completed workout directly to history. Used for hindsight logging (logging past workouts).

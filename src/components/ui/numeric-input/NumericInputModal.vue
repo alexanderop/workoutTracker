@@ -43,6 +43,8 @@ const title = computed(() => {
     weight: 'Weight',
     reps: 'Reps',
     rir: 'RIR',
+    duration: 'Duration',
+    distance: 'Distance',
   }
   return titles[props.type]
 })

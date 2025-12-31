@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NumericInputModal } from '@/components/ui/numeric-input'
+import { useTouchDevice } from '@/composables/useTouchDevice'
 import { cn } from '@/lib/utils'
 import type { CardioActivity, CardioConfig } from '@/types/blocks'
 import { CARDIO_ACTIVITIES } from '@/types/blocks'
 
 const { t } = useI18n()
+const { isTouchDevice } = useTouchDevice()
 
 type Emits = {
   confirm: [config: CardioConfig]
@@ -23,6 +26,25 @@ const emit = defineEmits<Emits>()
 const selectedActivity = ref<CardioActivity>('running')
 const targetMinutes = ref<string>('30')
 const targetDistance = ref<string>('')
+
+// Numeric modal state
+const durationModalOpen = ref(false)
+const distanceModalOpen = ref(false)
+
+// Numeric values for mobile modals
+const durationValue = computed({
+  get: () => Number.parseInt(targetMinutes.value, 10) || 0,
+  set: (val: number) => {
+    targetMinutes.value = String(val)
+  },
+})
+
+const distanceValue = computed({
+  get: () => Number.parseFloat(targetDistance.value) || 0,
+  set: (val: number) => {
+    targetDistance.value = val > 0 ? String(val) : ''
+  },
+})
 
 const selectedActivityInfo = computed(() =>
   CARDIO_ACTIVITIES.find((a) => a.value === selectedActivity.value),
@@ -103,6 +125,7 @@ function handleClose() {
           <Label for="target-duration">{{ t('dialogs.cardioConfig.targetDuration') }}</Label>
           <div class="flex items-center gap-2">
             <Input
+              v-if="!isTouchDevice"
               id="target-duration"
               v-model="targetMinutes"
               type="number"
@@ -111,6 +134,14 @@ function handleClose() {
               max="600"
               class="w-24"
             />
+            <Button
+              v-else
+              variant="outline"
+              class="w-24 justify-start font-mono"
+              @click="durationModalOpen = true"
+            >
+              {{ durationValue || '0' }}
+            </Button>
             <span class="text-sm text-muted-foreground">{{ t('common.units.minutes') }}</span>
           </div>
         </div>
@@ -123,6 +154,7 @@ function handleClose() {
           </Label>
           <div class="flex items-center gap-2">
             <Input
+              v-if="!isTouchDevice"
               id="target-distance"
               v-model="targetDistance"
               type="number"
@@ -131,12 +163,34 @@ function handleClose() {
               min="0"
               class="w-24"
             />
+            <Button
+              v-else
+              variant="outline"
+              class="w-24 justify-start font-mono"
+              @click="distanceModalOpen = true"
+            >
+              {{ distanceValue || '0' }}
+            </Button>
             <span class="text-sm text-muted-foreground">
               {{ selectedActivityInfo?.distanceUnit === 'laps' ? t('common.units.laps') : t('common.units.km') }}
             </span>
           </div>
         </div>
       </div>
+
+      <!-- Numeric Input Modals for mobile -->
+      <NumericInputModal
+        v-model="durationValue"
+        v-model:open="durationModalOpen"
+        type="duration"
+        :unit="t('common.units.minutes')"
+      />
+      <NumericInputModal
+        v-model="distanceValue"
+        v-model:open="distanceModalOpen"
+        type="distance"
+        :unit="selectedActivityInfo?.distanceUnit === 'laps' ? t('common.units.laps') : t('common.units.km')"
+      />
 
       <DialogActions variant="inline" class="pt-4" v-slot="{ buttonClass }">
         <Button variant="outline" :class="buttonClass" @click="handleClose">
