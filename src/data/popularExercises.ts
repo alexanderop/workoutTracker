@@ -623,6 +623,13 @@ export const popularExercises = validateUniqueExercises([
     metrics: 'weight-reps',
   },
   {
+    name: 'Chest Supported Row',
+    equipment: 'machine',
+    muscle: 'back',
+    type: 'compound',
+    metrics: 'weight-reps',
+  },
+  {
     name: 'Assisted Pull-up Machine',
     equipment: 'machine',
     muscle: 'back',
