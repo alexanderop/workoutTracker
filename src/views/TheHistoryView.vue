@@ -10,7 +10,10 @@ import { tryCatch } from '@/lib/tryCatch'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
+import SwipeableWorkoutCard from '@/components/SwipeableWorkoutCard.vue'
+import DeleteWorkoutDialog from '@/components/DeleteWorkoutDialog.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { useSwipeableDelete } from '@/composables/useSwipeableDelete'
 
 // ============================================
 // Types
@@ -84,7 +87,23 @@ async function loadHistory(): Promise<void> {
   isLoading.value = false
 }
 
+// Swipeable delete composable handles card state and deletion
+const {
+  openCardId,
+  deleteDialogOpen,
+  workoutToDelete,
+  handleCardOpen,
+  handleCardClose,
+  handleDeleteRequest,
+  handleDeleteConfirm,
+  isCardSwiped,
+} = useSwipeableDelete({
+  workouts,
+  onDeleted: loadHistory,
+})
+
 function navigateToWorkoutDetail(workoutId: string): void {
+  if (isCardSwiped.value) return
   router.push({ name: RouteNames.WorkoutDetail, params: { id: workoutId } })
 }
 
@@ -111,12 +130,20 @@ onMounted(() => {
           {{ group.label }}
         </h2>
         <div class="space-y-2">
-          <WorkoutHistoryCard
+          <SwipeableWorkoutCard
             v-for="workout in group.workouts"
             :key="workout.id"
-            :workout="workout"
-            @click="navigateToWorkoutDetail"
-          />
+            :workout-id="workout.id"
+            :is-open="openCardId === workout.id"
+            @open="handleCardOpen"
+            @close="handleCardClose"
+            @delete="handleDeleteRequest"
+          >
+            <WorkoutHistoryCard
+              :workout="workout"
+              @click="navigateToWorkoutDetail"
+            />
+          </SwipeableWorkoutCard>
         </div>
       </section>
     </div>
@@ -130,5 +157,12 @@ onMounted(() => {
         </EmptyHeader>
       </Empty>
     </div>
+
+    <!-- Delete confirmation dialog -->
+    <DeleteWorkoutDialog
+      v-model:open="deleteDialogOpen"
+      :workout-name="workoutToDelete?.name ?? ''"
+      @confirm="handleDeleteConfirm"
+    />
   </PageLayout>
 </template>

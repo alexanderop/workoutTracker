@@ -132,6 +132,14 @@ export default {
       message: 'Something went wrong. Please try again.',
     },
   },
+  deleteWorkout: {
+    title: 'Delete Workout',
+    description: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
+    confirmButton: 'Delete',
+  },
+  swipe: {
+    deleteRevealed: 'Delete button revealed. Press Delete key or activate button to delete.',
+  },
   table: {
     headers: {
       set: 'Set',

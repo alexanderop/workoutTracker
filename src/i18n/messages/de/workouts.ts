@@ -132,6 +132,14 @@ export default {
       message: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
     },
   },
+  deleteWorkout: {
+    title: 'Workout löschen',
+    description: 'Bist du sicher, dass du "{name}" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.',
+    confirmButton: 'Löschen',
+  },
+  swipe: {
+    deleteRevealed: 'Löschen-Button sichtbar. Drücke Entfernen-Taste oder aktiviere den Button zum Löschen.',
+  },
   table: {
     headers: {
       set: 'Satz',
