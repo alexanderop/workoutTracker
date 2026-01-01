@@ -31,6 +31,16 @@ TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
 echo "Found $TOTAL test files"
 echo ""
 
+# Check if pollution exists before we start
+if [ -e "$POLLUTION_CHECK" ]; then
+  echo "ERROR: Pollution already exists before running any tests!"
+  echo "   Found: $POLLUTION_CHECK"
+  echo ""
+  echo "Please clean up the pollution before running this script:"
+  echo "   rm -rf $POLLUTION_CHECK"
+  exit 1
+fi
+
 COUNT=0
 for TEST_FILE in $TEST_FILES; do
   COUNT=$((COUNT + 1))

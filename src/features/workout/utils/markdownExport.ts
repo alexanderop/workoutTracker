@@ -33,7 +33,7 @@ exported: ${exportedAt.toISOString()}
 // Metadata Section
 // ============================================
 
-export function formatMetadata(workout: DbCompletedWorkout): string {
+function formatMetadata(workout: DbCompletedWorkout): string {
   const date = new Date(workout.completedAt)
   const dateStr = date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -236,7 +236,7 @@ export function formatCardioBlock(block: DbCardioBlock): string {
 // Block Router
 // ============================================
 
-export function formatBlock(block: DbWorkoutBlock): string {
+function formatBlock(block: DbWorkoutBlock): string {
   switch (block.kind) {
     case 'strength': {
       return formatStrengthBlock(block)

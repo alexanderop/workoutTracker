@@ -99,6 +99,7 @@ const headerTitle = computed(() => {
 })
 
 const headerSubtitle = computed(() => {
+  if (!currentBlock.value) return ''
   return `Block ${currentBlockIndex.value + 1} of ${totalBlocks.value}`
 })
 

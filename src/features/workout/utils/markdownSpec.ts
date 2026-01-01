@@ -173,7 +173,7 @@ export function parseSuccess<T>(data: T): ParseSuccess<T> {
   return { success: true, data }
 }
 
-export function parseFailure(errors: ReadonlyArray<ParseError>): ParseFailure {
+function parseFailure(errors: ReadonlyArray<ParseError>): ParseFailure {
   return { success: false, errors }
 }
 

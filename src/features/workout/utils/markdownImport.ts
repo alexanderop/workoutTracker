@@ -158,7 +158,7 @@ export function parseMetadata(lines: ReadonlyArray<string>): ParseResult<ParsedW
 // Block Parser
 // ============================================
 
-export function parseBlocks(lines: ReadonlyArray<string>): ParseResult<ReadonlyArray<ParsedBlock>> {
+function parseBlocks(lines: ReadonlyArray<string>): ParseResult<ReadonlyArray<ParsedBlock>> {
   const blocks: Array<ParsedBlock> = []
   const blockSections = splitIntoBlockSections(lines)
 
@@ -196,7 +196,7 @@ function splitIntoBlockSections(lines: ReadonlyArray<string>): Array<Array<strin
   return sections
 }
 
-export function parseBlock(lines: ReadonlyArray<string>): ParseResult<ParsedBlock> {
+function parseBlock(lines: ReadonlyArray<string>): ParseResult<ParsedBlock> {
   const header = lines[0]
   if (!header) return singleError('Empty block section')
 
