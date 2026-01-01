@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Copy, Check } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutDetailExerciseCard from '@/features/workout/components/WorkoutDetailExerciseCard.vue'
@@ -14,6 +15,7 @@ import { formatDate } from '@/lib/formatters'
 import { getWorkoutsRepository } from '@/db'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { tryCatch } from '@/lib/tryCatch'
+import { exportWorkoutAsMarkdown } from '@/features/workout/utils/markdownExport'
 
 const { t } = useI18n()
 
@@ -28,6 +30,7 @@ const { resumeWorkout } = useAppInitialization()
 
 const isRedoing = ref(false)
 const showRedoError = ref(false)
+const isCopied = ref(false)
 
 async function handleRedoWorkout() {
   if (isRedoing.value) return
@@ -41,6 +44,18 @@ async function handleRedoWorkout() {
   }
   await resumeWorkout()
 }
+
+async function handleCopyMarkdown() {
+  if (state.value.status !== 'success') return
+
+  const markdown = exportWorkoutAsMarkdown(state.value.workout)
+  await navigator.clipboard.writeText(markdown)
+
+  isCopied.value = true
+  setTimeout(() => {
+    isCopied.value = false
+  }, 2000)
+}
 </script>
 
 <template>
@@ -49,6 +64,19 @@ async function handleRedoWorkout() {
     :subtitle="state.status === 'success' ? formatDate(state.workout.startedAt) : undefined"
     back-to="/"
   >
+    <template v-if="state.status === 'success'" #header-actions>
+      <Button
+        variant="ghost"
+        size="icon"
+        :aria-label="isCopied ? t('workouts.detail.copy.success') : t('workouts.detail.copy.button')"
+        @click="handleCopyMarkdown"
+      >
+        <Check v-if="isCopied" class="icon-sm text-green-500" />
+        <Copy v-else class="icon-sm" />
+      </Button>
+      <span v-if="isCopied" class="text-sm text-green-500">{{ t('workouts.detail.copy.success') }}</span>
+    </template>
+
     <!-- Loading state -->
     <div v-if="state.status === 'loading'" class="flex items-center justify-center py-16">
       <div class="text-muted-foreground">{{ t('common.states.loading') }}</div>

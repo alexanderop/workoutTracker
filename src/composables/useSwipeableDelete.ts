@@ -45,7 +45,12 @@ export function useSwipeableDelete<T extends WorkoutLike>(
   async function handleDeleteConfirm(): Promise<void> {
     if (!workoutToDelete.value) return
 
-    await tryCatch(getWorkoutsRepository().delete(workoutToDelete.value.id))
+    const [error] = await tryCatch(getWorkoutsRepository().delete(workoutToDelete.value.id))
+    if (error) {
+      console.error('Failed to delete workout:', error)
+      return
+    }
+
     workoutToDelete.value = null
     openCardId.value = null
 

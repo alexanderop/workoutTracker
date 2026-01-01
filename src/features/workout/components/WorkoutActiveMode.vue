@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AlertTriangle } from 'lucide-vue-next'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,14 @@ import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
+
+// Strategy pattern: Map block kinds to their view components
+const TIMED_VIEW_COMPONENTS: Record<string, Component> = {
+  amrap: WorkoutAmrapView,
+  emom: WorkoutEmomView,
+  tabata: WorkoutTabataView,
+  fortime: WorkoutForTimeView,
+}
 
 const { t } = useI18n()
 
@@ -61,6 +69,12 @@ const isFirstBlock = computed(() => currentBlockIndex.value === 0)
 
 const isStrength = computed(() => currentBlock.value && isStrengthBlock(currentBlock.value))
 
+// Get the appropriate timed view component for current block
+const timedViewComponent = computed(() => {
+  if (!currentBlock.value) return null
+  return TIMED_VIEW_COMPONENTS[currentBlock.value.kind] ?? null
+})
+
 // Timer running state - updated via emit from timer views
 const timerIsRunning = ref(false)
 
@@ -85,6 +99,7 @@ const headerTitle = computed(() => {
 })
 
 const headerSubtitle = computed(() => {
+  if (!currentBlock.value) return ''
   return `Block ${currentBlockIndex.value + 1} of ${totalBlocks.value}`
 })
 
@@ -207,30 +222,10 @@ function handleAddSet() {
         @add-set="handleAddSet"
       />
 
-      <!-- Timed block views - each manages its own timer internally -->
-      <WorkoutAmrapView
-        v-if="currentBlock.kind === 'amrap'"
-        ref="timedView"
-        :block="currentBlock"
-        :on-complete="handleCompleteBlock"
-        @update:is-running="handleTimerRunningChange"
-      />
-      <WorkoutEmomView
-        v-else-if="currentBlock.kind === 'emom'"
-        ref="timedView"
-        :block="currentBlock"
-        :on-complete="handleCompleteBlock"
-        @update:is-running="handleTimerRunningChange"
-      />
-      <WorkoutTabataView
-        v-else-if="currentBlock.kind === 'tabata'"
-        ref="timedView"
-        :block="currentBlock"
-        :on-complete="handleCompleteBlock"
-        @update:is-running="handleTimerRunningChange"
-      />
-      <WorkoutForTimeView
-        v-else-if="currentBlock.kind === 'fortime'"
+      <!-- Timed block views - dynamically rendered based on block kind -->
+      <component
+        :is="timedViewComponent"
+        v-if="timedViewComponent"
         ref="timedView"
         :block="currentBlock"
         :on-complete="handleCompleteBlock"

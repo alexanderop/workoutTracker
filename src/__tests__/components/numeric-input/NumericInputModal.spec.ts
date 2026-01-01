@@ -2,6 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { page, userEvent } from 'vitest/browser'
 import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.vue'
+import { i18n } from '@/i18n'
+import type { InputType } from '@/components/ui/numeric-input/useNumericInput'
+
+type ModalProps = {
+  open: boolean
+  modelValue: number
+  type: InputType
+  unit?: string
+  'onUpdate:modelValue'?: (value: number) => void
+  'onUpdate:open'?: (value: boolean) => void
+}
+
+function renderModal(props: ModalProps) {
+  return render(NumericInputModal, {
+    props,
+    global: { plugins: [i18n] },
+  })
+}
 
 describe('NumericInputModal', () => {
   beforeEach(() => {
@@ -9,36 +27,30 @@ describe('NumericInputModal', () => {
   })
 
   it('renders as fullscreen dialog when open', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
     })
 
     await expect.element(page.getByRole('dialog')).toBeVisible()
   })
 
   it('does not render when closed', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: false,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: false,
+      modelValue: 20,
+      type: 'weight',
     })
 
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('shows cancel button and confirm button', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
     })
 
     await expect
@@ -50,24 +62,20 @@ describe('NumericInputModal', () => {
   })
 
   it('shows title based on type', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
     })
 
     await expect.element(page.getByText(/weight/i)).toBeVisible()
   })
 
   it('contains preset list, value display, and keypad', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
     })
 
     // Preset list (check for a preset button)
@@ -87,12 +95,10 @@ describe('NumericInputModal', () => {
   })
 
   it('syncs value between preset selection and keypad', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'reps',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'reps',
     })
 
     const valueDisplay = page.getByRole('status', { name: /current value/i })
@@ -115,14 +121,12 @@ describe('NumericInputModal', () => {
     const onUpdate = vi.fn()
     const onOpenChange = vi.fn()
 
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 10,
-        type: 'reps',
-        'onUpdate:modelValue': onUpdate,
-        'onUpdate:open': onOpenChange,
-      },
+    renderModal({
+      open: true,
+      modelValue: 10,
+      type: 'reps',
+      'onUpdate:modelValue': onUpdate,
+      'onUpdate:open': onOpenChange,
     })
 
     // Click a different preset
@@ -137,14 +141,12 @@ describe('NumericInputModal', () => {
     const onUpdate = vi.fn()
     const onOpenChange = vi.fn()
 
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-        'onUpdate:modelValue': onUpdate,
-        'onUpdate:open': onOpenChange,
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
+      'onUpdate:modelValue': onUpdate,
+      'onUpdate:open': onOpenChange,
     })
 
     // Modify value using keypad (fresh-start mode replaces, then append)
@@ -162,14 +164,12 @@ describe('NumericInputModal', () => {
     const onUpdate = vi.fn()
     const onOpenChange = vi.fn()
 
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-        'onUpdate:modelValue': onUpdate,
-        'onUpdate:open': onOpenChange,
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
+      'onUpdate:modelValue': onUpdate,
+      'onUpdate:open': onOpenChange,
     })
 
     // Modify value using keypad
@@ -183,12 +183,10 @@ describe('NumericInputModal', () => {
   })
 
   it('uses smart presets for weight type', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
     })
 
     // Weight preset should show decimal values
@@ -196,12 +194,10 @@ describe('NumericInputModal', () => {
   })
 
   it('uses smart presets for reps type', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 10,
-        type: 'reps',
-      },
+    renderModal({
+      open: true,
+      modelValue: 10,
+      type: 'reps',
     })
 
     // Reps preset should show integer values only
@@ -209,12 +205,10 @@ describe('NumericInputModal', () => {
   })
 
   it('uses smart presets for rir type', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 5,
-        type: 'rir',
-      },
+    renderModal({
+      open: true,
+      modelValue: 5,
+      type: 'rir',
     })
 
     // RIR max is 10
@@ -222,13 +216,11 @@ describe('NumericInputModal', () => {
   })
 
   it('shows unit label for weight', async () => {
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-        unit: 'kg',
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
+      unit: 'kg',
     })
 
     // Check that the selected preset shows the unit
@@ -240,13 +232,11 @@ describe('NumericInputModal', () => {
   it('closes on Escape key', async () => {
     const onOpenChange = vi.fn()
 
-    render(NumericInputModal, {
-      props: {
-        open: true,
-        modelValue: 20,
-        type: 'weight',
-        'onUpdate:open': onOpenChange,
-      },
+    renderModal({
+      open: true,
+      modelValue: 20,
+      type: 'weight',
+      'onUpdate:open': onOpenChange,
     })
 
     await userEvent.keyboard('{Escape}')
