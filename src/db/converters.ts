@@ -460,19 +460,30 @@ export function workoutToDb(
 
 /**
  * Convert database ActiveWorkout to in-memory Workout format.
+ * Includes validation to handle corrupted data (e.g., selectedBlockIndex out of bounds).
  */
 export function dbToWorkout(databaseWorkout: Readonly<DatabaseActiveWorkout>): Workout {
   const sortedBlocks = databaseWorkout.blocks
     .toSorted((a, b) => a.orderIndex - b.orderIndex)
     .map(databaseToBlock)
 
+  // Validate and clamp selectedBlockIndex to prevent black screen on corrupted data
+  const maxIndex = sortedBlocks.length - 1
+  const rawIndex = databaseWorkout.selectedBlockIndex
+  const selectedBlockIndex = sortedBlocks.length === 0 ? -1 : Math.max(0, Math.min(rawIndex, maxIndex))
+
+  // Reset to builder mode if blocks are empty but mode was active/completed
+  // This prevents showing active mode UI with no blocks
+  const rawMode = databaseWorkout.mode ?? 'builder'
+  const mode = sortedBlocks.length === 0 && rawMode !== 'builder' ? 'builder' : rawMode
+
   return {
     id: 1,
     name: databaseWorkout.name,
     blocks: sortedBlocks,
-    selectedBlockIndex: databaseWorkout.selectedBlockIndex,
+    selectedBlockIndex,
     startedAt: databaseWorkout.startedAt,
-    mode: databaseWorkout.mode ?? 'builder',
+    mode,
     activeSetIndex: databaseWorkout.activeSetIndex ?? null,
     // Note: activeExerciseIndex, benchmarkId, globalTimerStartedAt are ignored
     // from DB - they're only kept in schema for backward compatibility

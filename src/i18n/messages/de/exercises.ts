@@ -72,6 +72,7 @@ export default {
     'ez-bar': 'SZ-Stange',
     'hex-bar': 'Trap Bar',
     club: 'Keule',
+    'battle-rope': 'Battle Rope',
   },
   muscle: {
     chest: 'Brust',

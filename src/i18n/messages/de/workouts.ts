@@ -61,6 +61,9 @@ export default {
   active: {
     title: 'Aktives Workout',
     inProgress: 'Workout läuft',
+    errorNoBlock: 'Block konnte nicht geladen werden',
+    errorNoBlockDescription: 'Beim Laden deines Workouts ist etwas schief gelaufen. Versuche, zum Workout-Plan zurückzukehren.',
+    returnToBuilder: 'Zurück zum Plan',
     mode: {
       skipBlock: 'Block überspringen',
       removeBlock: 'Block entfernen',
@@ -108,6 +111,7 @@ export default {
     },
   },
   detail: {
+    title: 'Workout-Details',
     error: 'Fehler beim Laden des Workouts',
     notFound: 'Workout nicht gefunden',
     goBack: 'Zurück',
@@ -127,6 +131,14 @@ export default {
       title: 'Workout konnte nicht gestartet werden',
       message: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
     },
+  },
+  deleteWorkout: {
+    title: 'Workout löschen',
+    description: 'Bist du sicher, dass du "{name}" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.',
+    confirmButton: 'Löschen',
+  },
+  swipe: {
+    deleteRevealed: 'Löschen-Button sichtbar. Drücke Entfernen-Taste oder aktiviere den Button zum Löschen.',
   },
   table: {
     headers: {
@@ -213,6 +225,7 @@ export default {
     firstAttempt: 'Erster Versuch - Setze deine PB!',
     tapToAdvance: 'Tippen um zur nächsten Übung zu wechseln',
     detail: {
+      title: 'Benchmark',
       workoutStructure: 'Trainingsstruktur',
       startWorkout: 'Training Starten',
       starting: 'Wird gestartet...',

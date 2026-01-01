@@ -31,6 +31,14 @@ watch(open, (isOpen) => {
   }
 })
 
+// Keep internalValue in sync with modelValue when dialog is closed
+// This ensures presets are centered correctly when external value changes
+watch(modelValue, (newValue) => {
+  if (!open.value) {
+    internalValue.value = newValue
+  }
+})
+
 const config = computed(() => getPresetConfig(props.type))
 
 const presets = computed(() => {

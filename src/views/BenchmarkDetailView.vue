@@ -106,7 +106,7 @@ async function handleDeleteBenchmark(): Promise<void> {
 
 <template>
   <PageLayout
-    :title="state.status === 'success' && !isEditMode ? state.benchmark.name : ''"
+    :title="state.status === 'success' && !isEditMode ? state.benchmark.name : t('workouts.benchmarks.detail.title')"
     :subtitle="
       state.status === 'success' && !isEditMode
         ? formatBenchmarkType(state.benchmark.type, state.benchmark.rounds)

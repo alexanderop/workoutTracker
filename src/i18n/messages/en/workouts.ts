@@ -61,6 +61,9 @@ export default {
   active: {
     title: 'Active Workout',
     inProgress: 'Workout in progress',
+    errorNoBlock: 'Unable to load block',
+    errorNoBlockDescription: 'Something went wrong loading your workout. Try returning to the workout plan.',
+    returnToBuilder: 'Return to Plan',
     mode: {
       skipBlock: 'Skip Block',
       removeBlock: 'Remove Block',
@@ -108,6 +111,7 @@ export default {
     },
   },
   detail: {
+    title: 'Workout Details',
     error: 'Error loading workout',
     notFound: 'Workout not found',
     goBack: 'Go Back',
@@ -127,6 +131,14 @@ export default {
       title: 'Unable to Start Workout',
       message: 'Something went wrong. Please try again.',
     },
+  },
+  deleteWorkout: {
+    title: 'Delete Workout',
+    description: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
+    confirmButton: 'Delete',
+  },
+  swipe: {
+    deleteRevealed: 'Delete button revealed. Press Delete key or activate button to delete.',
   },
   table: {
     headers: {
@@ -213,6 +225,7 @@ export default {
     firstAttempt: 'First attempt - set your PB!',
     tapToAdvance: 'Tap to advance to next exercise',
     detail: {
+      title: 'Benchmark',
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',
       starting: 'Starting...',
