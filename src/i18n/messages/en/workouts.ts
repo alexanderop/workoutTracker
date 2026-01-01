@@ -111,6 +111,7 @@ export default {
     },
   },
   detail: {
+    title: 'Workout Details',
     error: 'Error loading workout',
     notFound: 'Workout not found',
     goBack: 'Go Back',
@@ -216,6 +217,7 @@ export default {
     firstAttempt: 'First attempt - set your PB!',
     tapToAdvance: 'Tap to advance to next exercise',
     detail: {
+      title: 'Benchmark',
       workoutStructure: 'Workout Structure',
       startWorkout: 'Start Workout',
       starting: 'Starting...',

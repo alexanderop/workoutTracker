@@ -111,6 +111,7 @@ export default {
     },
   },
   detail: {
+    title: 'Workout-Details',
     error: 'Fehler beim Laden des Workouts',
     notFound: 'Workout nicht gefunden',
     goBack: 'Zurück',
@@ -216,6 +217,7 @@ export default {
     firstAttempt: 'Erster Versuch - Setze deine PB!',
     tapToAdvance: 'Tippen um zur nächsten Übung zu wechseln',
     detail: {
+      title: 'Benchmark',
       workoutStructure: 'Trainingsstruktur',
       startWorkout: 'Training Starten',
       starting: 'Wird gestartet...',

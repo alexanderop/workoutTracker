@@ -1033,4 +1033,12 @@ export const popularExercises = validateUniqueExercises([
     type: 'compound',
     metrics: 'weight-reps',
   },
+  // Battle Rope Exercises
+  {
+    name: 'Battle Rope Waves',
+    equipment: 'battle-rope',
+    muscle: 'shoulders',
+    type: 'cardio',
+    metrics: 'duration',
+  },
 ])

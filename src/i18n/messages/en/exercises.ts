@@ -72,6 +72,7 @@ export default {
     'ez-bar': 'EZ Bar',
     'hex-bar': 'Hex Bar',
     club: 'Club',
+    'battle-rope': 'Battle Rope',
   },
   muscle: {
     chest: 'Chest',

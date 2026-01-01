@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Link,
   PersonStanding,
+  Waves,
   Weight,
 } from 'lucide-vue-next'
 
@@ -28,4 +29,5 @@ export const EQUIPMENT_ICONS: Record<Equipment | 'all', Component> = {
   'ez-bar': Dumbbell,
   'hex-bar': Hexagon,
   club: CircleDot,
+  'battle-rope': Waves,
 }

@@ -49,6 +49,9 @@ export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
   get club() {
     return getEquipmentLabel('club')
   },
+  get 'battle-rope'() {
+    return getEquipmentLabel('battle-rope')
+  },
 } as const
 
 export const MUSCLE_LABELS: Readonly<Record<Muscle, string>> = {

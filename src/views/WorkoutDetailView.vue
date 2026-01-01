@@ -45,7 +45,7 @@ async function handleRedoWorkout() {
 
 <template>
   <PageLayout
-    :title="state.status === 'success' ? state.workout.name : ''"
+    :title="state.status === 'success' ? state.workout.name : t('workouts.detail.title')"
     :subtitle="state.status === 'success' ? formatDate(state.workout.startedAt) : undefined"
     back-to="/"
   >

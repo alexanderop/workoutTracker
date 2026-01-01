@@ -15,6 +15,7 @@ export type Equipment =
   | 'ez-bar'
   | 'hex-bar'
   | 'club'
+  | 'battle-rope'
 
 export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core'
 
