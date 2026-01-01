@@ -16,6 +16,11 @@ import {
   createDbCardioResult,
 } from '@/__tests__/factories/timedBlock.factory'
 
+function assertSuccess<T>(result: { success: boolean; data?: T }): asserts result is { success: true; data: T } {
+  expect(result.success).toBe(true)
+  if (!result.success) throw new Error('Parse failed unexpectedly')
+}
+
 describe('markdown round-trip', () => {
   describe('strength block', () => {
     it('preserves exercise name', () => {
@@ -27,12 +32,14 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.blocks[0]?.kind).toBe('strength')
-        if (result.data.blocks[0]?.kind === 'strength') {
-          expect(result.data.blocks[0].name).toBe('Barbell Squat')
-        }
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('strength')
+
+      const block = result.data.blocks[0]
+      expect(block?.kind).toBe('strength')
+      if (block?.kind === 'strength') {
+        expect(block.name).toBe('Barbell Squat')
       }
     })
 
@@ -51,12 +58,15 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'strength') {
-        const sets = result.data.blocks[0].sets
-        expect(sets).toHaveLength(2)
-        expect(sets[0]).toEqual({ kg: '100', reps: '5', rir: '2' })
-        expect(sets[1]).toEqual({ kg: '110', reps: '4', rir: '1' })
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('strength')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'strength') {
+        expect(block.sets).toHaveLength(2)
+        expect(block.sets[0]).toEqual({ kg: '100', reps: '5', rir: '2' })
+        expect(block.sets[1]).toEqual({ kg: '110', reps: '4', rir: '1' })
       }
     })
 
@@ -69,9 +79,13 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'strength') {
-        expect(result.data.blocks[0].equipment).toBe('dumbbell')
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('strength')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'strength') {
+        expect(block.equipment).toBe('dumbbell')
       }
     })
   })
@@ -95,9 +109,12 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'amrap') {
-        const block = result.data.blocks[0]
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('amrap')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'amrap') {
         expect(block.durationSeconds).toBe(600)
         expect(block.exercises).toHaveLength(2)
         expect(block.exercises[0]).toEqual({ name: 'Burpees', prescribedReps: 10, load: null })
@@ -123,9 +140,12 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'emom') {
-        const block = result.data.blocks[0]
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('emom')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'emom') {
         expect(block.minutes).toBe(12)
         expect(block.rotation).toBe('full-round')
         expect(block.result?.completedMinutes).toBe(10)
@@ -149,9 +169,12 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'tabata') {
-        const block = result.data.blocks[0]
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('tabata')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'tabata') {
         expect(block.rounds).toBe(8)
         expect(block.workSeconds).toBe(20)
         expect(block.restSeconds).toBe(10)
@@ -176,9 +199,12 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'fortime') {
-        const block = result.data.blocks[0]
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('fortime')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'fortime') {
         expect(block.timeCapSeconds).toBe(900)
         expect(block.result?.completionTime).toBe(512_000)
         expect(block.result?.completed).toBe(true)
@@ -207,9 +233,12 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success && result.data.blocks[0]?.kind === 'cardio') {
-        const block = result.data.blocks[0]
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(1)
+      expect(result.data.blocks[0]?.kind).toBe('cardio')
+
+      const block = result.data.blocks[0]
+      if (block?.kind === 'cardio') {
         expect(block.activity).toBe('running')
         expect(block.result?.actualDurationSeconds).toBe(1800)
         expect(block.result?.distanceMeters).toBe(5200)
@@ -243,13 +272,11 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.blocks).toHaveLength(3)
-        expect(result.data.blocks[0]?.kind).toBe('strength')
-        expect(result.data.blocks[1]?.kind).toBe('amrap')
-        expect(result.data.blocks[2]?.kind).toBe('cardio')
-      }
+      assertSuccess(result)
+      expect(result.data.blocks).toHaveLength(3)
+      expect(result.data.blocks[0]?.kind).toBe('strength')
+      expect(result.data.blocks[1]?.kind).toBe('amrap')
+      expect(result.data.blocks[2]?.kind).toBe('cardio')
     })
   })
 
@@ -263,10 +290,8 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.metadata.name).toBe('My Custom Workout Name')
-      }
+      assertSuccess(result)
+      expect(result.data.metadata.name).toBe('My Custom Workout Name')
     })
 
     it('preserves notes', () => {
@@ -279,10 +304,8 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.metadata.notes).toBe('Felt strong today!')
-      }
+      assertSuccess(result)
+      expect(result.data.metadata.notes).toBe('Felt strong today!')
     })
 
     it('preserves duration', () => {
@@ -295,10 +318,8 @@ describe('markdown round-trip', () => {
       const markdown = exportWorkoutAsMarkdown(workout)
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.metadata.durationSeconds).toBe(2700)
-      }
+      assertSuccess(result)
+      expect(result.data.metadata.durationSeconds).toBe(2700)
     })
   })
 })

@@ -73,7 +73,8 @@ export function formatStrengthBlock(block: DbStrengthBlock): string {
 
   lines.push('', '| Set | Weight | Reps | RIR |', '|-----|--------|------|-----|')
 
-  for (const [index, set] of block.sets.entries()) {
+  const completedSets = block.sets.filter((set) => !isSetEmpty(set))
+  for (const [index, set] of completedSets.entries()) {
     lines.push(formatSetRow(set, index + 1))
   }
 
@@ -83,8 +84,12 @@ export function formatStrengthBlock(block: DbStrengthBlock): string {
 function formatSetRow(set: DbSet, setNumber: number): string {
   const weight = set.kg ? `${set.kg}kg` : '-'
   const reps = set.reps || '-'
-  const rir = set.rir || '-'
-  return `| ${setNumber}   | ${weight} | ${reps}    | ${rir}   |`
+  const rir = set.rir ?? '-'
+  return `| ${setNumber} | ${weight} | ${reps} | ${rir} |`
+}
+
+function isSetEmpty(set: DbSet): boolean {
+  return !set.kg && !set.reps && !set.rir
 }
 
 // ============================================

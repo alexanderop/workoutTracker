@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import NumericPresetList from './NumericPresetList.vue'
@@ -15,6 +16,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   unit: '',
 })
+
+const { t } = useI18n()
 
 const modelValue = defineModel<number>({ required: true })
 const open = defineModel<boolean>('open', { required: true })
@@ -88,7 +91,7 @@ function handleCancel() {
           class="text-muted-foreground"
           @click="handleCancel"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </Button>
 
         <DialogTitle class="text-sm font-semibold uppercase tracking-wider">

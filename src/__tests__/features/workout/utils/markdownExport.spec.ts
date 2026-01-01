@@ -81,8 +81,8 @@ describe('markdownExport', () => {
       const result = formatStrengthBlock(block)
 
       expect(result).toContain('| Set | Weight | Reps | RIR |')
-      expect(result).toContain('| 1   | 80kg | 5    | 2   |')
-      expect(result).toContain('| 2   | 90kg | 5    | 1   |')
+      expect(result).toContain('| 1 | 80kg | 5 | 2 |')
+      expect(result).toContain('| 2 | 90kg | 5 | 1 |')
     })
 
     it('handles empty kg with dash', () => {
@@ -91,6 +91,58 @@ describe('markdownExport', () => {
       const result = formatStrengthBlock(block)
 
       expect(result).toContain('| -')
+    })
+
+    it('skips completely empty sets in the table', () => {
+      const block = createDbStrengthBlockWithSets([
+        { kg: '80', reps: '10', rir: '2' }, // completed
+        { kg: '', reps: '', rir: '' }, // empty
+        { kg: '', reps: '', rir: '' }, // empty
+      ])
+
+      const result = formatStrengthBlock(block)
+
+      // Should only have 1 data row (not 3)
+      const lines = result.split('\n')
+      const dataRows = lines.filter(
+        (l) => l.startsWith('|') && !l.includes('Set') && !l.includes('---'),
+      )
+
+      expect(dataRows).toHaveLength(1)
+      expect(dataRows[0]).toContain('80kg')
+      expect(dataRows[0]).toContain('10')
+    })
+
+    it('keeps sets with partial data (weight only)', () => {
+      const block = createDbStrengthBlockWithSets([
+        { kg: '80', reps: '', rir: '' }, // has weight only
+      ])
+
+      const result = formatStrengthBlock(block)
+
+      const lines = result.split('\n')
+      const dataRows = lines.filter(
+        (l) => l.startsWith('|') && !l.includes('Set') && !l.includes('---'),
+      )
+
+      expect(dataRows).toHaveLength(1)
+      expect(dataRows[0]).toContain('80kg')
+    })
+
+    it('keeps sets with partial data (reps only)', () => {
+      const block = createDbStrengthBlockWithSets([
+        { kg: '', reps: '15', rir: '' }, // has reps only (bodyweight)
+      ])
+
+      const result = formatStrengthBlock(block)
+
+      const lines = result.split('\n')
+      const dataRows = lines.filter(
+        (l) => l.startsWith('|') && !l.includes('Set') && !l.includes('---'),
+      )
+
+      expect(dataRows).toHaveLength(1)
+      expect(dataRows[0]).toContain('15')
     })
   })
 
@@ -276,7 +328,7 @@ describe('markdownExport', () => {
 
       // Block
       expect(result).toContain('## Bench Press (Strength)')
-      expect(result).toContain('| 1   | 100kg | 5    | 1   |')
+      expect(result).toContain('| 1 | 100kg | 5 | 1 |')
     })
 
     it('handles workout with multiple block types', () => {
