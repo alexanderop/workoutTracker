@@ -120,6 +120,11 @@ export default {
     completed: 'Completed',
     capped: 'Capped',
     minutesCompleted: 'minutes completed',
+    copy: {
+      button: 'Copy as Markdown',
+      success: 'Copied!',
+      error: 'Failed to copy',
+    },
   },
   blocks: {
     cardio: 'Cardio',

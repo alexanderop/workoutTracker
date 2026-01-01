@@ -120,6 +120,11 @@ export default {
     completed: 'Abgeschlossen',
     capped: 'Zeitlimit erreicht',
     minutesCompleted: 'Minuten abgeschlossen',
+    copy: {
+      button: 'Als Markdown kopieren',
+      success: 'Kopiert!',
+      error: 'Kopieren fehlgeschlagen',
+    },
   },
   blocks: {
     cardio: 'Cardio',
