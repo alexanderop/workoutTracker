@@ -78,7 +78,7 @@ const contentStyle = computed(() => ({
 const showDeleteButton = computed(() => offset.value < 0 || isOpen || isDragging.value)
 
 // Handle click on the content area (not the delete button)
-function handleContentClick(event: MouseEvent | KeyboardEvent): void {
+function handleContentClick(event: MouseEvent): void {
   // If card is open, close it and prevent navigation
   if (isOpen) {
     event.preventDefault()
@@ -132,6 +132,7 @@ function handleDeleteKeypress(event: KeyboardEvent): void {
     <!-- Sliding content wrapper with keyboard support -->
     <div
       class="relative z-10 bg-background"
+      data-testid="swipeable-content"
       :style="contentStyle"
       @click="handleContentClick"
       @keydown.delete="handleDeleteKeypress"
