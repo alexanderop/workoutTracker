@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { AlertTriangle } from 'lucide-vue-next'
 import { computed, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
+import { Button } from '@/components/ui/button'
 import { useRestTimer } from '@/composables/timers/useRestTimer'
 import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
@@ -13,6 +16,8 @@ import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'end-workout': []
@@ -232,6 +237,20 @@ function handleAddSet() {
         @update:is-running="handleTimerRunningChange"
       />
     </template>
+
+    <!-- Fallback state when currentBlock is null (corrupted state recovery) -->
+    <div v-else class="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
+      <div class="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+        <AlertTriangle class="w-8 h-8 text-destructive" aria-hidden="true" />
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-lg font-semibold">{{ t('workouts.active.errorNoBlock') }}</h2>
+        <p class="text-muted-foreground text-sm">{{ t('workouts.active.errorNoBlockDescription') }}</p>
+      </div>
+      <Button variant="outline" @click="returnToBuilder">
+        {{ t('workouts.active.returnToBuilder') }}
+      </Button>
+    </div>
 
     <!-- Footer with timer display and contextual actions -->
     <template v-if="currentBlock" #footer>

@@ -61,6 +61,9 @@ export default {
   active: {
     title: 'Active Workout',
     inProgress: 'Workout in progress',
+    errorNoBlock: 'Unable to load block',
+    errorNoBlockDescription: 'Something went wrong loading your workout. Try returning to the workout plan.',
+    returnToBuilder: 'Return to Plan',
     mode: {
       skipBlock: 'Skip Block',
       removeBlock: 'Remove Block',

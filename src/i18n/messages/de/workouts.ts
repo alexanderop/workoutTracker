@@ -61,6 +61,9 @@ export default {
   active: {
     title: 'Aktives Workout',
     inProgress: 'Workout läuft',
+    errorNoBlock: 'Block konnte nicht geladen werden',
+    errorNoBlockDescription: 'Beim Laden deines Workouts ist etwas schief gelaufen. Versuche, zum Workout-Plan zurückzukehren.',
+    returnToBuilder: 'Zurück zum Plan',
     mode: {
       skipBlock: 'Block überspringen',
       removeBlock: 'Block entfernen',
