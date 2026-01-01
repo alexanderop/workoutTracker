@@ -2,8 +2,14 @@ import type {
   DbAmrapBlock,
   DbAmrapResult,
   DbBlockExercise,
+  DbCardioBlock,
+  DbCardioResult,
+  DbEmomBlock,
+  DbEmomResult,
   DbForTimeBlock,
   DbForTimeResult,
+  DbTabataBlock,
+  DbTabataResult,
 } from '@/db/schema'
 import { generateId } from '@/db'
 
@@ -86,6 +92,107 @@ export function createDbAmrapResult(
     rounds: 5,
     partialReps: 3,
     actualDuration: 600,
+    ...overrides,
+  }
+}
+
+// ============================================
+// EMOM Block
+// ============================================
+
+const EMOM_DEFAULTS: Readonly<Omit<DbEmomBlock, 'id' | 'exercises'>> = {
+  kind: 'emom',
+  config: { minutes: 12, exerciseRotation: 'each-minute' },
+  result: null,
+  orderIndex: 0,
+}
+
+export function createDbEmomBlock(
+  overrides: Partial<DbEmomBlock> = {},
+): DbEmomBlock {
+  return {
+    id: generateId(),
+    ...EMOM_DEFAULTS,
+    exercises: [createDbBlockExercise({ name: 'Kettlebell Swings', prescribedReps: 10 })],
+    ...overrides,
+  }
+}
+
+export function createDbEmomResult(
+  overrides: Partial<DbEmomResult> = {},
+): DbEmomResult {
+  return {
+    completedMinutes: 12,
+    missedMinutes: [],
+    ...overrides,
+  }
+}
+
+// ============================================
+// Tabata Block
+// ============================================
+
+const TABATA_DEFAULTS: Readonly<Omit<DbTabataBlock, 'id' | 'exercise'>> = {
+  kind: 'tabata',
+  config: { rounds: 8, workSeconds: 20, restSeconds: 10 },
+  result: null,
+  orderIndex: 0,
+}
+
+export function createDbTabataBlock(
+  overrides: Partial<DbTabataBlock> = {},
+): DbTabataBlock {
+  return {
+    id: generateId(),
+    ...TABATA_DEFAULTS,
+    exercise: createDbBlockExercise({ name: 'Air Squats', prescribedReps: 0 }),
+    ...overrides,
+  }
+}
+
+export function createDbTabataResult(
+  overrides: Partial<DbTabataResult> = {},
+): DbTabataResult {
+  return {
+    repsPerRound: [15, 14, 13, 12, 11, 10, 10, 9],
+    ...overrides,
+  }
+}
+
+// ============================================
+// Cardio Block
+// ============================================
+
+const CARDIO_DEFAULTS: Readonly<Omit<DbCardioBlock, 'id'>> = {
+  kind: 'cardio',
+  config: {
+    activity: 'running',
+    targetDurationSeconds: null,
+    targetDistanceMeters: null,
+  },
+  result: null,
+  orderIndex: 0,
+}
+
+export function createDbCardioBlock(
+  overrides: Partial<DbCardioBlock> = {},
+): DbCardioBlock {
+  return {
+    id: generateId(),
+    ...CARDIO_DEFAULTS,
+    ...overrides,
+  }
+}
+
+export function createDbCardioResult(
+  overrides: Partial<DbCardioResult> = {},
+): DbCardioResult {
+  return {
+    actualDurationSeconds: 1800,
+    distanceMeters: 5000,
+    avgPaceSecondsPerKm: 360,
+    calories: 350,
+    notes: null,
     ...overrides,
   }
 }
