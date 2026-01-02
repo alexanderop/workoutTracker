@@ -117,6 +117,25 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await modalPO.clickCancel()
       cleanup()
     })
+
+    it('shows barbell plate hint when entering weight for barbell exercise', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      // Bench Press is a barbell exercise
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Open weight modal
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Barbell plate hint should be visible - look for the bar element with role="img"
+      const barbellHint = page.getByRole('img', { name: /barbell/i })
+      await expect.element(barbellHint).toBeVisible()
+
+      await modalPO.clickCancel()
+      cleanup()
+    })
   })
 
   describe('SetRowPO Integration', () => {

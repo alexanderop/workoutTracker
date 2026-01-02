@@ -355,6 +355,7 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
       v-model:open="modalOpen"
       :type="modalType"
       :unit="modalType === 'weight' ? unitLabel : ''"
+      :equipment="block.equipment"
       @update:model-value="handleModalConfirm"
     />
   </div>

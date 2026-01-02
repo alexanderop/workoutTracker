@@ -11,10 +11,12 @@ import { useNumericInput, type InputType } from './useNumericInput'
 type Props = {
   type: InputType
   unit?: string
+  equipment?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   unit: '',
+  equipment: undefined,
 })
 
 const { t } = useI18n()
@@ -91,7 +93,7 @@ function handleCancel() {
           class="text-muted-foreground"
           @click="handleCancel"
         >
-          {{ t('common.cancel') }}
+          {{ t('common.buttons.cancel') }}
         </Button>
 
         <DialogTitle class="text-sm font-semibold uppercase tracking-wider">
@@ -120,6 +122,8 @@ function handleCancel() {
           v-model="internalValue"
           :unit="unit"
           :allow-decimal="config.allowDecimal"
+          :equipment="equipment"
+          :input-type="type"
           @confirm="handleConfirm"
         />
 
