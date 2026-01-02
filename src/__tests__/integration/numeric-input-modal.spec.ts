@@ -118,7 +118,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       cleanup()
     })
 
-    it('shows barbell plate hint when entering weight for barbell exercise', async () => {
+    it('shows barbell plate hint with correct plate description', async () => {
       const { builder, cleanup } = await createTestApp()
 
       // Bench Press is a barbell exercise
@@ -129,9 +129,31 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await weightTrigger.click()
       await modalPO.waitForOpen()
 
-      // Barbell plate hint should be visible - look for the bar element with role="img"
-      const barbellHint = page.getByRole('img', { name: /barbell/i })
+      // Enter 60kg (= 20kg bar + 2x20kg plates)
+      await modalPO.enterValue(60)
+
+      // Barbell plate hint should show correct plate configuration
+      const barbellHint = page.getByRole('img', { name: /barbell with 20kg/i })
       await expect.element(barbellHint).toBeVisible()
+
+      await modalPO.clickCancel()
+      cleanup()
+    })
+
+    it('does not show barbell plate hint for non-barbell exercises', async () => {
+      const { builder, cleanup } = await createTestApp()
+
+      // Dumbbell Curl is a dumbbell exercise (not barbell)
+      await builder.setupStrengthWorkoutAndStart(['Dumbbell Curl'])
+
+      // Open weight modal
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Barbell plate hint should NOT be visible
+      const barbellHint = page.getByRole('img', { name: /barbell/i })
+      await expect.element(barbellHint).not.toBeInTheDocument()
 
       await modalPO.clickCancel()
       cleanup()

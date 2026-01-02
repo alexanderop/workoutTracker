@@ -4,14 +4,15 @@ import { Check } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { BarbellPlateHint } from '@/components/ui/barbell-hint'
 import { useNumberLocale } from '@/composables/useNumberLocale'
-import { useSettingsStore } from '@/stores/settings'
 import type { InputType } from './useNumericInput'
+import type { WeightUnit } from '@/types/settings'
 
 type Props = {
   unit?: string
   allowDecimal?: boolean
   equipment?: string
   inputType?: InputType
+  weightUnit?: WeightUnit
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,6 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
   allowDecimal: false,
   equipment: undefined,
   inputType: undefined,
+  weightUnit: undefined,
 })
 
 const modelValue = defineModel<number>({ required: true })
@@ -27,7 +29,6 @@ const emit = defineEmits<{
 }>()
 
 const { formatInputValue } = useNumberLocale()
-const settingsStore = useSettingsStore()
 
 // Show barbell hint only for barbell exercises when entering weight
 const showBarbellHint = computed(
@@ -39,9 +40,9 @@ const showBarbellHint = computed(
   <div class="flex items-center gap-3 border-t bg-background px-4 py-3">
     <!-- Barbell Plate Hint (for barbell exercises entering weight) -->
     <BarbellPlateHint
-      v-if="showBarbellHint"
+      v-if="showBarbellHint && weightUnit"
       :weight="modelValue"
-      :unit="settingsStore.weightUnit"
+      :unit="weightUnit"
       class="shrink-0"
     />
 

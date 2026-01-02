@@ -7,6 +7,7 @@ import NumericPresetList from './NumericPresetList.vue'
 import NumericValueDisplay from './NumericValueDisplay.vue'
 import NumericKeypad from './NumericKeypad.vue'
 import { useNumericInput, type InputType } from './useNumericInput'
+import { useSettingsStore } from '@/stores/settings'
 
 type Props = {
   type: InputType
@@ -20,6 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const settingsStore = useSettingsStore()
 
 const modelValue = defineModel<number>({ required: true })
 const open = defineModel<boolean>('open', { required: true })
@@ -124,6 +126,7 @@ function handleCancel() {
           :allow-decimal="config.allowDecimal"
           :equipment="equipment"
           :input-type="type"
+          :weight-unit="settingsStore.weightUnit"
           @confirm="handleConfirm"
         />
 

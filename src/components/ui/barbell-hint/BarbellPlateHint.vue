@@ -108,7 +108,7 @@ const ariaLabel = computed(() => {
           'w-2.5 rounded-sm flex items-center justify-center text-[7px] font-bold',
         ]"
       >
-        <span v-if="plate >= 10" class="-rotate-90">{{ plate }}</span>
+        <span v-if="plate >= 10" class="-rotate-90" aria-hidden="true">{{ plate }}</span>
       </div>
     </div>
 
