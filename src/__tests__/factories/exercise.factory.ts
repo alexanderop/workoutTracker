@@ -6,12 +6,13 @@ export {
 } from './block.factory'
 
 import type { StrengthBlock } from '@/types/blocks'
+import type { Equipment } from '@/types/exercises'
 import { faker } from '@faker-js/faker'
 import { createStrengthBlock } from './block.factory'
 
 export function createRandomExercise(overrides: Partial<StrengthBlock> = {}): StrengthBlock {
   const exerciseNames = ['Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Barbell Row']
-  const equipmentTypes = ['Barbell', 'Dumbbell', 'Cable', 'Machine']
+  const equipmentTypes: Array<Equipment> = ['barbell', 'dumbbell', 'cable', 'machine']
 
   return createStrengthBlock({
     name: faker.helpers.arrayElement(exerciseNames),

@@ -46,6 +46,7 @@ const {
   addCardioBlock,
   removeBlock,
   updateBlocks,
+  reorderBlocks,
   save,
 } = useTemplateCreation()
 
@@ -153,6 +154,7 @@ function handleCancel(): void {
             :blocks="blocks"
             @update:blocks="updateBlocks"
             @remove-block="removeBlock"
+            @reorder="reorderBlocks"
           />
         </div>
 

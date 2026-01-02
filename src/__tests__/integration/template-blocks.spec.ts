@@ -257,8 +257,9 @@ describe('Template Blocks - Timed and Cardio Support', () => {
   })
 
   describe('Reorder mixed block types', () => {
-    it('reorders blocks of different types using move buttons', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('displays mixed block types with drag handles for reordering', async () => {
+      // Note: Drag-and-drop reordering is tested in template-drag-reorder.spec.ts
+      const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with mixed blocks: Strength, AMRAP, Cardio
       const template = createDatabaseTemplate({
@@ -278,32 +279,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-mixed' } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
-      // Find the AMRAP block card and its move up button
-      const amrapText = await page.getByText(/amrap/i).first().element()
-      const amrapCard = amrapText.closest('.rounded-xl')
-      if (!(amrapCard instanceof HTMLElement)) throw new Error('AMRAP card not found')
-
-      // eslint-disable-next-line no-restricted-syntax -- Finding move button within card scope
-      const moveUpButton = amrapCard.querySelector('[aria-label*="move up" i]')
-      if (!(moveUpButton instanceof HTMLElement)) throw new Error('Move up button not found')
-
-      // Move AMRAP up (should swap with Squat)
-      await userEvent.click(moveUpButton)
-
-      // Verify new order: AMRAP is now first
-      // eslint-disable-next-line no-restricted-syntax -- Testing card ordering by CSS class
-      const cards = document.querySelectorAll('.rounded-xl')
-      const firstCard = cards[0]
-      expect(firstCard?.textContent).toContain('AMRAP')
-
-      // Save changes
-      await userEvent.click(getByRole('button', { name: /save changes/i }))
-
-      // Verify DB order
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-reorder-mixed')
-        return updated?.blocks[0]?.kind
-      }).toBe('amrap')
+      // Verify all block types have drag handles for reordering
+      // eslint-disable-next-line no-restricted-syntax -- Finding all block cards with drag handles
+      const dragHandles = document.querySelectorAll('.drag-handle')
+      expect(dragHandles.length).toBe(3) // One per block
 
       cleanup()
     })

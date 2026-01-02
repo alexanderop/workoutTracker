@@ -2,6 +2,21 @@ import { z } from 'zod'
 
 import { exerciseRotationSchema, safeIdSchema, safeStringSchema } from './primitiveSchemas'
 
+// Equipment values matching src/types/exercises.ts Equipment type
+const equipmentValues = [
+  'barbell',
+  'dumbbell',
+  'machine',
+  'cable',
+  'bodyweight',
+  'kettlebell',
+  'band',
+  'ez-bar',
+  'hex-bar',
+  'club',
+  'battle-rope',
+] as const
+
 // ============================================
 // Shared Block Exercise Fields
 // ============================================
@@ -25,7 +40,7 @@ export const blockExerciseFieldsBase = {
 export const strengthBlockFieldsBase = {
   exerciseDefinitionId: safeIdSchema.nullable(),
   name: safeStringSchema.min(1).max(200),
-  equipment: z.string().max(100),
+  equipment: z.enum(equipmentValues),
   targetReps: z.number().int().min(1).max(1000),
   image: z.null(), // Blob can't be serialized to JSON, so always null in exports
 }

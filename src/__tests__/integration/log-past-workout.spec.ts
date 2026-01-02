@@ -44,8 +44,8 @@ describe('Log Past Workout', () => {
         id: 'tpl-past-workout',
         name: 'Push Day',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Overhead Press', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Overhead Press', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -83,7 +83,7 @@ describe('Log Past Workout', () => {
             { kg: '100', reps: '5', rir: '2', status: 'completed' },
             { kg: '100', reps: '5', rir: '2', status: 'completed' },
           ],
-          { name: 'Squat', equipment: 'Barbell' },
+          { name: 'Squat', equipment: 'barbell' },
         )
         .build()
       await db.workouts.add(workout)
@@ -572,7 +572,7 @@ describe('Log Past Workout', () => {
       const template = createDatabaseTemplate({
         id: 'tpl-validation-name',
         name: 'Validation Name Test',
-        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' })],
       })
       await db.templates.add(template)
 
@@ -623,7 +623,7 @@ describe('Log Past Workout', () => {
       const template = createDatabaseTemplate({
         id: 'tpl-validation-enabled',
         name: 'Validation Enabled Test',
-        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' })],
+        blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'barbell' })],
       })
       await db.templates.add(template)
 
@@ -739,8 +739,8 @@ describe('Log Past Workout', () => {
         id: 'tpl-remove-block',
         name: 'Remove Block Test',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Dumbbell Fly', equipment: 'Dumbbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Dumbbell Fly', equipment: 'dumbbell' }),
         ],
       })
       await db.templates.add(template)
@@ -839,8 +839,8 @@ describe('Log Past Workout', () => {
         id: 'tpl-complete-workflow',
         name: 'Complete Workflow Template',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Leg Press', equipment: 'Machine' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Leg Press', equipment: 'machine' }),
         ],
       })
       await db.templates.add(template)

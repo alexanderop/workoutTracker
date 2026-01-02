@@ -172,7 +172,7 @@ describe('Data Management', () => {
         .withDuration(3600)
         .withExerciseAndSets([{ kg: '100', reps: '10', rir: '2' }], {
           name: 'Bench Press',
-          equipment: 'Barbell',
+          equipment: 'barbell',
           image: null,
           targetReps: 8,
         })

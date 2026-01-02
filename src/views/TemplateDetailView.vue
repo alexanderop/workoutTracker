@@ -53,6 +53,7 @@ const {
   addCardioBlock,
   removeBlock,
   updateBlocks,
+  reorderBlocks,
 } = useTemplateDetail(templateId)
 
 // Dialog state management
@@ -176,6 +177,7 @@ function handleCancel(): void {
             :blocks="blocks"
             @update:blocks="updateBlocks"
             @remove-block="removeBlock"
+            @reorder="reorderBlocks"
           />
         </div>
 

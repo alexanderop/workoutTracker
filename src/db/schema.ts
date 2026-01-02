@@ -43,7 +43,7 @@ export type DbWorkoutExercise = {
   id: string
   exerciseDefinitionId: string | null
   name: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
   sets: ReadonlyArray<DbSet>
   orderIndex: number
@@ -171,7 +171,7 @@ export type DbStrengthBlock = {
   id: string
   exerciseDefinitionId: string | null
   name: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
   sets: ReadonlyArray<DbSet>
   orderIndex: number
@@ -305,7 +305,7 @@ export type DbTemplateStrengthBlock = {
   kind: 'strength'
   exerciseDefinitionId: string | null
   name: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
   defaultSetCount: number
   image: Blob | null
