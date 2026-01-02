@@ -17,12 +17,13 @@ import type {
 } from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
+import type { Equipment } from '@/types/exercises'
 import { getTemplatesRepository } from '@/db'
 import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
 function createStrengthBlockFromTemplate(
-  templateBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
+  templateBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const setCount = templateBlock.defaultSetCount ?? 3
@@ -47,7 +48,7 @@ function createStrengthBlockFromTemplate(
 }
 
 function createStrengthBlockFromHistory(
-  historyBlock: { kind: 'strength'; name: string; equipment: string; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
+  historyBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const sets: Array<Set> = historyBlock.sets.map((set, setIndex) => ({

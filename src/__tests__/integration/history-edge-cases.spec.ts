@@ -192,7 +192,7 @@ describe('History Edge Cases', () => {
             { kg: '100', reps: '5', rir: '2' },
             { kg: '100', reps: '5', rir: '2' },
           ],
-          { name: 'Barbell Squat', equipment: 'Barbell' },
+          { name: 'Barbell Squat', equipment: 'barbell' },
         )
         .build()
       await db.workouts.add(workout)
@@ -215,11 +215,11 @@ describe('History Edge Cases', () => {
         .withName('Full Body Session')
         .withExerciseAndSets(
           [{ kg: '60', reps: '8', rir: '2' }],
-          { name: 'Bench Press', equipment: 'Barbell' },
+          { name: 'Bench Press', equipment: 'barbell' },
         )
         .withExerciseAndSets(
           [{ kg: '100', reps: '5', rir: '2' }],
-          { name: 'Squat', equipment: 'Barbell' },
+          { name: 'Squat', equipment: 'barbell' },
         )
         .build()
       await db.workouts.add(workout)

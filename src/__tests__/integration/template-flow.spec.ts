@@ -132,8 +132,8 @@ describe('Template Flow', () => {
         id: 'tpl-leg-day',
         name: 'Leg Day',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Romanian Deadlift', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Romanian Deadlift', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -396,9 +396,9 @@ describe('Template Flow', () => {
         id: 'tpl-remove-test',
         name: 'Template With Exercises',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -452,9 +452,9 @@ describe('Template Flow', () => {
         id: 'tpl-reorder-test',
         name: 'Template To Reorder',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise C', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise C', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)

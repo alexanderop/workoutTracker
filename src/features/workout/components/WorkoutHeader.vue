@@ -10,12 +10,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import type { Equipment } from '@/types/exercises'
 
 const { t } = useI18n()
 
 type Properties = {
   exerciseName: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
 }
 

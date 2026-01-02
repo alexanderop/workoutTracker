@@ -80,7 +80,7 @@ function createStrengthBlockFromExercise(exercise: Exercise): StrengthBlock {
     id: 0, // Will be assigned by addBlock
     exerciseDefinitionId: exercise.id ?? null,
     name: exercise.name,
-    equipment: exercise.equipment ?? '',
+    equipment: exercise.equipment ?? 'bodyweight',
     targetReps: 8,
     image: exercise.image ?? null,
     sets: [

@@ -5,6 +5,7 @@
  * Each block has a type that determines its behavior and UI.
  */
 
+import type { Equipment } from '@/types/exercises'
 import { z } from 'zod'
 
 // ============================================
@@ -176,7 +177,7 @@ export type StrengthBlock = {
   id: number
   exerciseDefinitionId: string | null
   name: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
   sets: Array<WorkoutSet>
   image: Blob | null

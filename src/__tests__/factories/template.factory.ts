@@ -35,7 +35,7 @@ const TEMPLATE_STRENGTH_BLOCK_DEFAULTS: Readonly<DbTemplateStrengthBlock> = {
   kind: 'strength',
   exerciseDefinitionId: null,
   name: 'Bench Press',
-  equipment: 'Barbell',
+  equipment: 'barbell',
   targetReps: 8,
   image: null,
   defaultSetCount: 3,

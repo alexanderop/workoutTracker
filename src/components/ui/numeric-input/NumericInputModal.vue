@@ -8,11 +8,12 @@ import NumericValueDisplay from './NumericValueDisplay.vue'
 import NumericKeypad from './NumericKeypad.vue'
 import { useNumericInput, type InputType } from './useNumericInput'
 import { useSettingsStore } from '@/stores/settings'
+import type { Equipment } from '@/types/exercises'
 
 type Props = {
   type: InputType
   unit?: string
-  equipment?: string
+  equipment?: Equipment
 }
 
 const props = withDefaults(defineProps<Props>(), {

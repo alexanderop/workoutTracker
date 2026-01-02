@@ -5,7 +5,7 @@ import { createDbSet as createDatabaseSet } from './dbSet.factory'
 const DEFAULTS: Readonly<Omit<DbWorkoutExercise, 'id' | 'sets'>> = {
   exerciseDefinitionId: null,
   name: 'Bench Press',
-  equipment: 'Barbell',
+  equipment: 'barbell',
   targetReps: 8,
   image: null,
   orderIndex: 0,

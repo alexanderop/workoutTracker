@@ -80,8 +80,8 @@ describe('Template Drag-and-Drop Reordering', () => {
         id: 'tpl-drag-handle-test',
         name: 'Drag Handle Test',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -113,8 +113,8 @@ describe('Template Drag-and-Drop Reordering', () => {
         id: 'tpl-no-arrows-test',
         name: 'No Arrows Test',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -143,8 +143,8 @@ describe('Template Drag-and-Drop Reordering', () => {
         id: 'tpl-sortable-test',
         name: 'Sortable Structure Test',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)
@@ -177,9 +177,9 @@ describe('Template Drag-and-Drop Reordering', () => {
         id: 'tpl-order-test',
         name: 'Order Test',
         blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'First Exercise', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Second Exercise', equipment: 'Barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Third Exercise', equipment: 'Barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'First Exercise', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Second Exercise', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Third Exercise', equipment: 'barbell' }),
         ],
       })
       await db.templates.add(template)

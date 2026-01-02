@@ -1,5 +1,4 @@
 export default {
-  cancel: 'Cancel',
   buttons: {
     cancel: 'Cancel',
     save: 'Save',

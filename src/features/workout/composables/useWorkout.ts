@@ -297,7 +297,7 @@ export function useWorkout() {
       id: generateBlockId(),
       exerciseDefinitionId: exerciseId,
       name,
-      equipment: exercise?.equipment ?? 'Unknown',
+      equipment: exercise?.equipment ?? 'bodyweight',
       targetReps: 8,
       image: exercise?.image ?? null,
       sets: [
