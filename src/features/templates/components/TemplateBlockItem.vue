@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-vue-next'
+import { GripVertical, Minus, Plus, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { DbTemplateBlock } from '@/db/schema'
@@ -10,24 +10,16 @@ import { CARDIO_ACTIVITIES } from '@/types/blocks'
 
 const { t } = useI18n()
 
-type Movement = {
-  canMoveUp: boolean
-  canMoveDown: boolean
-}
-
 type Properties = {
   block: DbTemplateBlock
-  movement: Movement
 }
 
 type Emits = {
   'update:setCount': [count: number]
   remove: []
-  'move-up': []
-  'move-down': []
 }
 
-const { block, movement } = defineProps<Properties>()
+const { block } = defineProps<Properties>()
 const emit = defineEmits<Emits>()
 
 const isStrength = computed(() => block.kind === 'strength')
@@ -146,6 +138,11 @@ function decrementSetCount(): void {
   <div class="bg-muted/30 rounded-xl border border-border/50 overflow-hidden">
     <!-- Top row: Block info -->
     <div class="flex items-center gap-3 p-4">
+      <!-- Drag handle -->
+      <div class="flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation drag-handle">
+        <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
+      </div>
+
       <ExerciseAvatar
         v-if="block.kind === 'strength'"
         :name="strengthName"
@@ -227,24 +224,6 @@ function decrementSetCount(): void {
 
       <!-- Action buttons -->
       <div class="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          :disabled="!movement.canMoveUp"
-          :aria-label="t('common.aria.moveUp')"
-          @click="$emit('move-up')"
-        >
-          <ChevronUp class="icon-md" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          :disabled="!movement.canMoveDown"
-          :aria-label="t('common.aria.moveDown')"
-          @click="$emit('move-down')"
-        >
-          <ChevronDown class="icon-md" />
-        </Button>
         <Button
           variant="ghost"
           size="icon"

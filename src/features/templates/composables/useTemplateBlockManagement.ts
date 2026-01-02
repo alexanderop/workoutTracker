@@ -57,6 +57,18 @@ export function useTemplateBlockManagement(
     blocks.value = updated
   }
 
+  function reorderBlocks(fromIndex: number, toIndex: number): void {
+    const updated = [...blocks.value]
+    const movedBlock = updated[fromIndex]
+    if (!movedBlock) return
+
+    // Remove from source position, insert at destination
+    updated.splice(fromIndex, 1)
+    updated.splice(toIndex, 0, movedBlock)
+
+    blocks.value = updated
+  }
+
   return {
     addStrengthBlock,
     addAmrapBlock,
@@ -66,5 +78,6 @@ export function useTemplateBlockManagement(
     addCardioBlock,
     removeBlock,
     updateBlocks,
+    reorderBlocks,
   }
 }

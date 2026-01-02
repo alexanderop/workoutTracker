@@ -15,14 +15,6 @@ async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
   return card
 }
 
-function getMoveDownButton(card: HTMLElement): HTMLElement {
-  // eslint-disable-next-line no-restricted-syntax -- Finding move button within card scope
-  const button = card.querySelector('[aria-label*="move down" i], [aria-label*="Move down" i]')
-  if (!(button instanceof HTMLElement)) {
-    throw new TypeError('Move down button not found')
-  }
-  return button
-}
 
 describe('Template Flow', () => {
   beforeEach(setupIntegrationTest)
@@ -450,10 +442,12 @@ describe('Template Flow', () => {
       cleanup()
     })
 
-    it('reorders exercises using move buttons', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('displays exercises with drag handles for reordering', async () => {
+      // Note: Drag-and-drop reordering is tested in template-drag-reorder.spec.ts
+      // This test verifies the drag handle is present for reordering
+      const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 3 exercises (A, B, C order)
+      // Seed template with 3 exercises
       const template = createDatabaseTemplate({
         id: 'tpl-reorder-test',
         name: 'Template To Reorder',
@@ -469,37 +463,11 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
-      // Find "move down" button for Exercise A and click it
+      // Verify all exercises have drag handles
       const exerciseACard = await getExerciseCard('Exercise A')
-      const moveDownButton = getMoveDownButton(exerciseACard)
-      await userEvent.click(moveDownButton)
-
-      // Verify UI shows reordered exercises (B is now first)
-      const exerciseBCard = await getExerciseCard('Exercise B')
-      const exerciseACardAfter = await getExerciseCard('Exercise A')
-
-      // B should be before A in the document now
-      expect(
-        exerciseBCard.compareDocumentPosition(exerciseACardAfter) & Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy()
-
-      // Save changes (isEdited now detects order changes)
-      await userEvent.click(getByRole('button', { name: /save changes/i }))
-
-      // Verify DB block order is B, A, C
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-reorder-test')
-        const firstBlock = updated?.blocks[0]
-        return firstBlock?.kind === 'strength' ? firstBlock.name : undefined
-      }).toBe('Exercise B')
-
-      const updated = await db.templates.get('tpl-reorder-test')
-      const strengthBlocks = updated?.blocks.filter(
-        (b): b is typeof b & { kind: 'strength' } => b.kind === 'strength',
-      )
-      expect(strengthBlocks?.[0]?.name).toBe('Exercise B')
-      expect(strengthBlocks?.[1]?.name).toBe('Exercise A')
-      expect(strengthBlocks?.[2]?.name).toBe('Exercise C')
+      // eslint-disable-next-line no-restricted-syntax -- Finding drag handle within card scope
+      const dragHandle = exerciseACard.querySelector('.drag-handle')
+      expect(dragHandle).toBeTruthy()
 
       cleanup()
     })

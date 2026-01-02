@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, watch, useTemplateRef } from 'vue'
+import { useSortable } from '@vueuse/integrations/useSortable'
 import type { DbTemplateBlock } from '@/db/schema'
 import TemplateBlockItem from './TemplateBlockItem.vue'
 
@@ -9,10 +11,35 @@ type Properties = {
 type Emits = {
   'update:blocks': [blocks: ReadonlyArray<DbTemplateBlock>]
   'remove-block': [index: number]
+  reorder: [fromIndex: number, toIndex: number]
 }
 
 const { blocks } = defineProps<Properties>()
 const emit = defineEmits<Emits>()
+
+const sortableContainer = useTemplateRef<HTMLElement>('sortableContainer')
+
+// Create a mutable shallow copy for sortable to work with
+const blocksList = ref([...blocks])
+
+watch(
+  () => blocks,
+  (newBlocks) => {
+    blocksList.value = [...newBlocks]
+  },
+)
+
+useSortable(sortableContainer, blocksList, {
+  animation: 150,
+  ghostClass: 'opacity-50',
+  handle: '.drag-handle',
+  onEnd: (event) => {
+    const { oldIndex, newIndex } = event
+    if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
+      emit('reorder', oldIndex, newIndex)
+    }
+  },
+})
 
 function handleSetCountChange(index: number, count: number): void {
   const block = blocks[index]
@@ -27,44 +54,15 @@ function handleSetCountChange(index: number, count: number): void {
 function handleRemove(index: number): void {
   emit('remove-block', index)
 }
-
-function handleMoveUp(index: number): void {
-  if (index <= 0) return
-
-  const updated = [...blocks]
-  const temporary = updated[index - 1]
-  const current = updated[index]
-  if (temporary && current) {
-    updated[index - 1] = current
-    updated[index] = temporary
-    emit('update:blocks', updated)
-  }
-}
-
-function handleMoveDown(index: number): void {
-  if (index < 0 || index >= blocks.length - 1) return
-
-  const updated = [...blocks]
-  const temporary = updated[index]
-  const next = updated[index + 1]
-  if (temporary && next) {
-    updated[index] = next
-    updated[index + 1] = temporary
-    emit('update:blocks', updated)
-  }
-}
 </script>
 
 <template>
-  <ul role="list" class="space-y-2">
-    <li v-for="(block, index) in blocks" :key="index">
+  <ul ref="sortableContainer" role="list" class="space-y-2">
+    <li v-for="(block, index) in blocksList" :key="index">
       <TemplateBlockItem
         :block="block"
-        :movement="{ canMoveUp: index > 0, canMoveDown: index < blocks.length - 1 }"
         @update:set-count="(count) => handleSetCountChange(index, count)"
         @remove="() => handleRemove(index)"
-        @move-up="() => handleMoveUp(index)"
-        @move-down="() => handleMoveDown(index)"
       />
     </li>
   </ul>
