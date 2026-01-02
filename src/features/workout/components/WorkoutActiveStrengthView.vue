@@ -114,7 +114,7 @@ const setStates = computed(() =>
       ready,
       weightValue: toDisplayValue(set.kg),
       repsValue: set.reps ? Number(set.reps) : undefined,
-      rirValue: set.rir ? Number(set.rir) : undefined,
+      rirValue: set.rir === undefined ? undefined : Number(set.rir),
       estimated10RM: getEstimated10RM(set.kg, set.reps),
       rowClass: getRowClass(isActive, isCompleted),
       inputClass: getInputClass(isActive),
@@ -166,7 +166,7 @@ function handleModalConfirm(value: number) {
 
 // Format value for display in touch trigger button
 function formatDisplayValue(value: number | undefined, type: StrengthInputType): string {
-  if (value === undefined || value === 0) return '—'
+  if (value === undefined) return '—'
   if (type === 'weight') {
     return formatNumber(value, { maximumFractionDigits: 2, useGrouping: false })
   }
