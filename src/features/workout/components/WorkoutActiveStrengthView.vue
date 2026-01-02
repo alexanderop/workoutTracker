@@ -114,7 +114,7 @@ const setStates = computed(() =>
       ready,
       weightValue: toDisplayValue(set.kg),
       repsValue: set.reps ? Number(set.reps) : undefined,
-      rirValue: set.rir === undefined ? undefined : Number(set.rir),
+      rirValue: set.rir === undefined || set.rir === '' ? undefined : Number(set.rir),
       estimated10RM: getEstimated10RM(set.kg, set.reps),
       rowClass: getRowClass(isActive, isCompleted),
       inputClass: getInputClass(isActive),
