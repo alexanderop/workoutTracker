@@ -1,3 +1,12 @@
+# [1.13.0](https://github.com/alexanderop/workoutTracker/compare/v1.12.0...v1.13.0) (2026-01-03)
+
+
+### Features
+
+* **onboarding:** add first-time user onboarding flow ([#101](https://github.com/alexanderop/workoutTracker/issues/101)) ([badf420](https://github.com/alexanderop/workoutTracker/commit/badf420dd60d7a16a59eb7211cc14dfaeaeeb728))
+
+
+
 # [1.12.0](https://github.com/alexanderop/workoutTracker/compare/v1.11.0...v1.12.0) (2026-01-02)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **workout:** add duration editing in finish dialog ([#97](https://github.com/alexanderop/workoutTracker/issues/97)) ([f0586e9](https://github.com/alexanderop/workoutTracker/commit/f0586e9c699af7889a09db23225b4791a4a187dd))
-
-
-
-## [1.9.2](https://github.com/alexanderop/workoutTracker/compare/v1.9.1...v1.9.2) (2025-12-31)
-
-
-### Bug Fixes
-
-* **weight:** preserve weight value and consolidate docs into skills ([#96](https://github.com/alexanderop/workoutTracker/issues/96)) ([b846ba4](https://github.com/alexanderop/workoutTracker/commit/b846ba40f7bab9d9e13dbbd4e329e0121cc1d9c3))
 
 
 
