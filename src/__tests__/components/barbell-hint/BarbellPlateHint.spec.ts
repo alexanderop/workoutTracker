@@ -92,6 +92,28 @@ describe('BarbellPlateHint', () => {
       const plates = page.getByText('45')
       await expect.element(plates.first()).toBeVisible()
     })
+
+    it('shows number on 2.5kg plate', async () => {
+      render(BarbellPlateHint, {
+        props: {
+          weight: 25, // 25kg = 20kg bar + 2.5kg per side
+          unit: 'kg',
+        },
+      })
+
+      await expect.element(page.getByText('2.5')).toBeVisible()
+    })
+
+    it('shows number on 5kg white plate', async () => {
+      render(BarbellPlateHint, {
+        props: {
+          weight: 30, // 30kg = 20kg bar + 5kg per side
+          unit: 'kg',
+        },
+      })
+
+      await expect.element(page.getByText('5')).toBeVisible()
+    })
   })
 
   describe('accessibility', () => {
