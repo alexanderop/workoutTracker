@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
@@ -40,6 +41,7 @@ export const RouteNames = {
   CreateProgression: 'CreateProgression',
   ProgressionDetail: 'ProgressionDetail',
   ActiveProgression: 'ActiveProgression',
+  Onboarding: 'Onboarding',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -168,11 +170,50 @@ export const routes = [
     component: () => import('@/views/ActiveProgressionView.vue'),
     props: true,
   },
+  {
+    path: '/onboarding',
+    name: RouteNames.Onboarding,
+    component: () => import('@/features/onboarding/views/OnboardingView.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+/**
+ * Navigation guard for onboarding flow.
+ * Redirects first-time users to onboarding, completed users to their destination.
+ */
+router.beforeEach(async (to) => {
+  const onboarding = useOnboarding()
+
+  // Initialize onboarding state if not already done
+  if (!onboarding.isInitialized.value) {
+    await onboarding.initialize()
+  }
+
+  // If navigating to onboarding route
+  if (to.name === RouteNames.Onboarding) {
+    // Completed users get redirected to home
+    if (onboarding.completed.value) {
+      return { name: RouteNames.Home }
+    }
+    // Check for returning user and set flag
+    const hasExistingData = await onboarding.checkExistingData()
+    onboarding.setReturningUser(hasExistingData)
+    return true
+  }
+
+  // For all other routes, check if onboarding is needed
+  if (!onboarding.completed.value) {
+    const hasExistingData = await onboarding.checkExistingData()
+    onboarding.setReturningUser(hasExistingData)
+    return { name: RouteNames.Onboarding }
+  }
+
+  return true
 })
 
 export { router }

@@ -519,3 +519,17 @@ export type DbProgressionSession = {
   completed: boolean // Did user complete all reps each minute?
   completedAt: number
 }
+
+// ============================================
+// Onboarding Types
+// ============================================
+
+/**
+ * Onboarding state for first-time user flow.
+ * Uses singleton pattern (id is always 'onboarding').
+ */
+export type DbOnboarding = {
+  id: 'onboarding'
+  completed: boolean
+  currentStep: number
+}
