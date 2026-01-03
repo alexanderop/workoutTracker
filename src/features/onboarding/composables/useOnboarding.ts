@@ -77,7 +77,10 @@ export const useOnboarding = createGlobalState(() => {
    */
   async function setStep(step: number): Promise<void> {
     currentStep.value = step
-    await tryCatch(getOnboardingRepository().save({ currentStep: step }))
+    const [error] = await tryCatch(getOnboardingRepository().save({ currentStep: step }))
+    if (error) {
+      console.error('Failed to persist onboarding step:', error)
+    }
   }
 
   /**
@@ -85,7 +88,10 @@ export const useOnboarding = createGlobalState(() => {
    */
   async function markComplete(): Promise<void> {
     completed.value = true
-    await tryCatch(getOnboardingRepository().markComplete())
+    const [error] = await tryCatch(getOnboardingRepository().markComplete())
+    if (error) {
+      console.error('Failed to persist onboarding completion:', error)
+    }
   }
 
   /**
