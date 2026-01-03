@@ -9,6 +9,7 @@ import dialogs from './dialogs'
 import logPastWorkout from './logPastWorkout'
 import weight from './weight'
 import progressions from './progressions'
+import onboarding from './onboarding'
 
 export default {
   calendar,
@@ -22,4 +23,5 @@ export default {
   logPastWorkout,
   weight,
   progressions,
+  onboarding,
 } as const

@@ -1,4 +1,5 @@
 ---
+name: claude-code-guide
 description: |
   Answer questions about Claude Code CLI, Claude Agent SDK, and Claude API.
   Use when asked about:

@@ -329,8 +329,9 @@ export type DataManagementRepository = {
   importAll(data: ExportDataContents): Promise<void>
   /**
    * Permanently delete all user data including active workout. This action cannot be undone.
+   * @param options.preserveOnboarding - If true, onboarding completion state is preserved (default: true)
    */
-  deleteAll(): Promise<void>
+  deleteAll(options?: { preserveOnboarding?: boolean }): Promise<void>
 }
 
 // ============================================
@@ -571,6 +572,30 @@ export type ProgressionsRepository = {
 }
 
 // ============================================
+// Onboarding Repository
+// ============================================
+
+/**
+ * Repository for managing onboarding state.
+ * Uses singleton pattern (always id: 'onboarding').
+ */
+export type OnboardingRepository = {
+  /**
+   * Retrieve the current onboarding state.
+   * Returns default state if no record exists.
+   */
+  get(): Promise<{ completed: boolean; currentStep: number }>
+  /**
+   * Save or update the onboarding state.
+   */
+  save(data: { completed?: boolean; currentStep?: number }): Promise<void>
+  /**
+   * Mark onboarding as complete.
+   */
+  markComplete(): Promise<void>
+}
+
+// ============================================
 // Repository Provider (All Repositories)
 // ============================================
 
@@ -589,4 +614,5 @@ export type RepositoryProvider = {
   weight: WeightRepository
   drafts: DraftsRepository
   progressions: ProgressionsRepository
+  onboarding: OnboardingRepository
 }

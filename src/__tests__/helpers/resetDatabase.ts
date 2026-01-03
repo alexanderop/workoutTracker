@@ -1,6 +1,7 @@
 import { getDataManagementRepository, resetExerciseProgressRepository } from '@/db'
 import { resetRepositoryProvider } from '@/db/provider'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
+import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
 import { useExercisesStore } from '@/stores/exercises'
@@ -13,8 +14,8 @@ import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobal
  * This enables fileParallelism by ensuring complete isolation.
  */
 export async function resetDatabase(): Promise<void> {
-  // Clear all database tables
-  await getDataManagementRepository().deleteAll()
+  // Clear all database tables (including onboarding for complete test isolation)
+  await getDataManagementRepository().deleteAll({ preserveOnboarding: false })
 
   // Clear seeding marker so exercises are re-seeded in each test
   localStorage.removeItem('exercises_seed_version')
@@ -22,6 +23,7 @@ export async function resetDatabase(): Promise<void> {
   // Reset global state stores (VueUse createGlobalState)
   useSettingsStore().$reset()
   useExercisesStore().$reset()
+  useOnboarding().$reset()
 
   // Reset singleton workout state
   resetWorkout()

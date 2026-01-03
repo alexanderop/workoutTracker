@@ -15,6 +15,7 @@ export function createDexieDataManagementRepository(
     database.activeBenchmark,
     database.weightEntries,
     database.drafts,
+    database.onboarding,
   ] as const
 
   // Shared helper to clear all tables
@@ -29,6 +30,7 @@ export function createDexieDataManagementRepository(
       database.activeBenchmark.clear(),
       database.weightEntries.clear(),
       database.drafts.clear(),
+      database.onboarding.clear(),
     ])
   }
 
@@ -68,8 +70,19 @@ export function createDexieDataManagementRepository(
       })
     },
 
-    async deleteAll(): Promise<void> {
-      await database.transaction('rw', allTables, clearAllTables)
+    async deleteAll(options?: { preserveOnboarding?: boolean }): Promise<void> {
+      const { preserveOnboarding = true } = options ?? {}
+
+      // Preserve onboarding state - users shouldn't have to re-onboard after deleting data
+      const onboardingData = preserveOnboarding ? await database.onboarding.toArray() : []
+
+      await database.transaction('rw', allTables, async () => {
+        await clearAllTables()
+        // Restore onboarding state if requested
+        if (onboardingData.length > 0) {
+          await database.onboarding.bulkAdd(onboardingData)
+        }
+      })
     },
   }
 }

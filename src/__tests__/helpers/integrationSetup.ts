@@ -3,6 +3,7 @@ import { resetInitState } from '@/features/workout/composables/useAppInitializat
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
+import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetDatabase } from './resetDatabase'
 
 /**
@@ -23,6 +24,7 @@ export async function cleanupIntegrationTest(): Promise<void> {
 /**
  * Sets up state before an integration test.
  * Resets initialization state, benchmark state, timer, and clears the database.
+ * By default, marks onboarding as complete so tests can proceed to the home page.
  */
 export async function setupIntegrationTest(): Promise<void> {
   resetInitState()
@@ -30,4 +32,10 @@ export async function setupIntegrationTest(): Promise<void> {
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
   await resetDatabase()
+
+  // Mark onboarding as complete by default to avoid redirect during tests
+  // Tests that need to test onboarding flow should call useOnboarding().$reset()
+  const onboarding = useOnboarding()
+  onboarding.completed.value = true
+  onboarding.isInitialized.value = true
 }

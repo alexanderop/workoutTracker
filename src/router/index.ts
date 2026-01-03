@@ -40,6 +40,7 @@ export const RouteNames = {
   CreateProgression: 'CreateProgression',
   ProgressionDetail: 'ProgressionDetail',
   ActiveProgression: 'ActiveProgression',
+  Onboarding: 'Onboarding',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -167,6 +168,11 @@ export const routes = [
     name: RouteNames.ActiveProgression,
     component: () => import('@/views/ActiveProgressionView.vue'),
     props: true,
+  },
+  {
+    path: '/onboarding',
+    name: RouteNames.Onboarding,
+    component: () => import('@/features/onboarding/views/OnboardingView.vue'),
   },
 ]
 

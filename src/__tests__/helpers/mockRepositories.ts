@@ -212,5 +212,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       }),
       getSessionHistory: vi.fn().mockResolvedValue([]),
     },
+    onboarding: {
+      get: vi.fn().mockResolvedValue({ completed: false, currentStep: 0 }),
+      save: vi.fn().mockResolvedValue(undefined),
+      markComplete: vi.fn().mockResolvedValue(undefined),
+    },
   }
 }

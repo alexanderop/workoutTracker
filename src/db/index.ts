@@ -6,6 +6,7 @@ import type {
   DataManagementRepository,
   DraftsRepository,
   ExerciseProgressRepository,
+  OnboardingRepository,
   ProgressionsRepository,
   SettingsRepository,
   TemplatesRepository,
@@ -66,6 +67,10 @@ export function getDraftsRepository(): DraftsRepository {
 
 export function getProgressionsRepository(): ProgressionsRepository {
   return getRepositoryProvider().progressions
+}
+
+export function getOnboardingRepository(): OnboardingRepository {
+  return getRepositoryProvider().onboarding
 }
 
 let exerciseProgressRepository: ExerciseProgressRepository | null = null
