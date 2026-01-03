@@ -16,8 +16,9 @@ export function createDexieOnboardingRepository(
       const [error, record] = await tryCatch(database.onboarding.get('onboarding'))
 
       if (error) {
-        // Fail-open: assume complete to avoid blocking app access on DB error
-        return { completed: true, currentStep: 0 }
+        // Fail-safe: assume NOT complete to ensure new users see onboarding
+        // If DB is truly broken, user can skip/complete onboarding to fix state
+        return DEFAULT_STATE
       }
 
       if (!record) {

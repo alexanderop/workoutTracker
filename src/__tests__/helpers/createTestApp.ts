@@ -5,7 +5,7 @@ import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '@/App.vue'
-import { routes } from '@/router'
+import { routes, setupOnboardingGuard } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
@@ -62,6 +62,9 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     history: createMemoryHistory(),
     routes,
   })
+
+  // Register onboarding guard (same as production router)
+  setupOnboardingGuard(router)
 
   if (initialRoute !== '/') {
     router.push(initialRoute)

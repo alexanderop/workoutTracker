@@ -15,6 +15,19 @@ function normalizeError(error: unknown): Error {
 }
 
 /**
+ * Check if a value is a Promise-like object (has .then method).
+ * More reliable than instanceof Promise which can fail with Dexie Promises.
+ */
+function isPromiseLike<T>(value: unknown): value is Promise<T> {
+  if (value === null || typeof value !== 'object') {
+    return false
+  }
+  // Check for thenable - an object with a 'then' method
+  // This is safer than instanceof Promise for cross-realm promises and Dexie
+  return 'then' in value && typeof Reflect.get(value, 'then') === 'function'
+}
+
+/**
  * Wraps a synchronous function in error-first tuple handling.
  * @returns [error, null] on failure, [null, data] on success
  */
@@ -32,8 +45,8 @@ export function tryCatch<T>(promise: Promise<T>): Promise<Result<T>>
 export function tryCatch<T>(
   input: Promise<T> | (() => T),
 ): Result<T> | Promise<Result<T>> {
-  // Handle async (Promise)
-  if (input instanceof Promise) {
+  // Handle async (Promise or Promise-like)
+  if (isPromiseLike<T>(input)) {
     return input
       .then((data): Result<T> => [null, data])
       .catch((error: unknown): Result<T> => [normalizeError(error), null])

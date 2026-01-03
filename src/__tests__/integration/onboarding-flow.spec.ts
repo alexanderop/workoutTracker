@@ -11,6 +11,23 @@ describe('Onboarding Flow', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
+  describe('First-Time User Redirect', () => {
+    it('redirects to onboarding when navigating to home with fresh database', async () => {
+      // Arrange: Reset onboarding to simulate fresh user
+      // (setupIntegrationTest marks onboarding complete by default)
+      const onboarding = useOnboarding()
+      onboarding.$reset()
+
+      // Act: Create app starting at home route (default behavior)
+      const { router, cleanup } = await createTestApp()
+
+      // Assert: Should have been redirected to onboarding
+      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
+
+      cleanup()
+    })
+  })
+
   describe('Onboarding State', () => {
     it('composable state reflects database state', async () => {
       const { cleanup } = await createTestApp()
@@ -101,6 +118,9 @@ describe('Onboarding Flow', () => {
 
   describe('Onboarding Route', () => {
     it('navigates to onboarding route', async () => {
+      // Reset onboarding so we can navigate to it
+      useOnboarding().$reset()
+
       const { router, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo('/onboarding')
@@ -112,6 +132,9 @@ describe('Onboarding Flow', () => {
     })
 
     it('onboarding view renders content', async () => {
+      // Reset onboarding so we can navigate to it
+      useOnboarding().$reset()
+
       const { navigateTo, cleanup } = await createTestApp()
 
       await navigateTo('/onboarding')
@@ -126,6 +149,9 @@ describe('Onboarding Flow', () => {
 
   describe('Skip Flow', () => {
     it('skip button marks onboarding complete and navigates home', async () => {
+      // Reset onboarding so we can test the skip flow
+      useOnboarding().$reset()
+
       const { router, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo('/onboarding')
@@ -166,6 +192,9 @@ describe('Onboarding Flow', () => {
 
   describe('Checklist Navigation', () => {
     it('navigate helper sets complete and returns correct route', async () => {
+      // Reset onboarding so we can navigate to it
+      useOnboarding().$reset()
+
       const { router, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo('/onboarding')

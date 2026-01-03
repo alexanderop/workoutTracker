@@ -183,37 +183,43 @@ const router = createRouter({
 })
 
 /**
- * Navigation guard for onboarding flow.
+ * Setup onboarding navigation guard on a router.
  * Redirects first-time users to onboarding, completed users to their destination.
+ * Exported for use in tests with custom routers.
  */
-router.beforeEach(async (to) => {
-  const onboarding = useOnboarding()
+export function setupOnboardingGuard(targetRouter: typeof router): void {
+  targetRouter.beforeEach(async (to) => {
+    const onboarding = useOnboarding()
 
-  // Initialize onboarding state if not already done
-  if (!onboarding.isInitialized.value) {
-    await onboarding.initialize()
-  }
-
-  // If navigating to onboarding route
-  if (to.name === RouteNames.Onboarding) {
-    // Completed users get redirected to home
-    if (onboarding.completed.value) {
-      return { name: RouteNames.Home }
+    // Initialize onboarding state if not already done
+    if (!onboarding.isInitialized.value) {
+      await onboarding.initialize()
     }
-    // Check for returning user and set flag
-    const hasExistingData = await onboarding.checkExistingData()
-    onboarding.setReturningUser(hasExistingData)
+
+    // If navigating to onboarding route
+    if (to.name === RouteNames.Onboarding) {
+      // Completed users get redirected to home
+      if (onboarding.completed.value) {
+        return { name: RouteNames.Home }
+      }
+      // Check for returning user and set flag
+      const hasExistingData = await onboarding.checkExistingData()
+      onboarding.setReturningUser(hasExistingData)
+      return true
+    }
+
+    // For all other routes, check if onboarding is needed
+    if (!onboarding.completed.value) {
+      const hasExistingData = await onboarding.checkExistingData()
+      onboarding.setReturningUser(hasExistingData)
+      return { name: RouteNames.Onboarding }
+    }
+
     return true
-  }
+  })
+}
 
-  // For all other routes, check if onboarding is needed
-  if (!onboarding.completed.value) {
-    const hasExistingData = await onboarding.checkExistingData()
-    onboarding.setReturningUser(hasExistingData)
-    return { name: RouteNames.Onboarding }
-  }
-
-  return true
-})
+// Register guard on the production router
+setupOnboardingGuard(router)
 
 export { router }

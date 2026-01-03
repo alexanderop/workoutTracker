@@ -37,8 +37,9 @@ export const useOnboarding = createGlobalState(() => {
     const [error, state] = await tryCatch(getOnboardingRepository().get())
 
     if (error) {
-      // Fail-open: assume complete to avoid blocking app access
-      completed.value = true
+      // Fail-safe: assume NOT complete to ensure new users see onboarding
+      // If DB is truly broken, user can skip/complete onboarding to fix state
+      completed.value = false
       isLoading.value = false
       isInitialized.value = true
       return
