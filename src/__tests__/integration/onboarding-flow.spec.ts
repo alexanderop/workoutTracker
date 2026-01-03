@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getOnboardingRepository, getWorkoutsRepository } from '@/db'
+import { getDataManagementRepository, getOnboardingRepository, getWorkoutsRepository } from '@/db'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -211,6 +211,34 @@ describe('Onboarding Flow', () => {
     })
   })
 
+  describe('Progress Indicator', () => {
+    it('updates progress when navigating to next slide', async () => {
+      useOnboarding().$reset()
+
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo('/onboarding')
+
+      // Get progress indicator
+      const progress = page.getByRole('progressbar')
+      await expect.element(progress).toBeVisible()
+
+      // Initial progress should be 0% (slide 1 of 6)
+      await expect.element(progress).toHaveAttribute('aria-valuenow', '0')
+
+      // Click Next button to go to slide 2
+      const nextButton = page.getByRole('button', { name: /next|weiter/i })
+      await userEvent.click(nextButton)
+
+      // Progress should update to 20% (slide 2 of 6)
+      await expect.poll(async () => {
+        const el = progress.element()
+        return el?.getAttribute('aria-valuenow')
+      }).toBe('20')
+
+      cleanup()
+    })
+  })
+
   describe('Navigation Controls', () => {
     it('composable tracks PWA state and slide count', async () => {
       const { cleanup } = await createTestApp()
@@ -258,6 +286,40 @@ describe('Onboarding Flow', () => {
       // After initialize, should be initialized
       await onboarding.initialize()
       expect(onboarding.isInitialized.value).toBe(true)
+
+      cleanup()
+    })
+  })
+
+  describe('Data Deletion', () => {
+    it('preserves onboarding state when user deletes all data', async () => {
+      // 1. Complete onboarding
+      const onboarding = useOnboarding()
+      await onboarding.markComplete()
+
+      // Verify onboarding is complete
+      expect(onboarding.completed.value).toBe(true)
+
+      // 2. Create app and add some workout data
+      const { router, cleanup } = await createTestApp()
+      const workout = createDbCompletedWorkout({ name: 'Test Workout' })
+      await getWorkoutsRepository().add(workout)
+
+      // 3. Delete all data via repository
+      const dataManagement = getDataManagementRepository()
+      await dataManagement.deleteAll()
+
+      // 4. Re-initialize onboarding state (simulates app reload)
+      onboarding.$reset()
+      await onboarding.initialize()
+
+      // 5. Assert: Onboarding should still be complete
+      // THIS WILL FAIL - proving the bug exists
+      expect(onboarding.completed.value).toBe(true)
+
+      // 6. Assert: User should NOT be redirected to onboarding
+      await router.push({ name: RouteNames.Home })
+      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
 
       cleanup()
     })

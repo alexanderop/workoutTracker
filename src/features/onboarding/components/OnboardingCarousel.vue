@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { ChevronLeft } from 'lucide-vue-next'
 import { RouteNames } from '@/router'
 import { useOnboarding } from '../composables/useOnboarding'
@@ -41,21 +42,23 @@ const slides = computed(() => {
 
 const isFirstSlide = computed(() => currentSlide.value === 0)
 const isLastSlide = computed(() => currentSlide.value === slides.value.length - 1)
+const progressPercentage = computed(() => {
+  const total = slides.value.length
+  return Math.round((currentSlide.value / (total - 1)) * 100)
+})
 
 function setApi(api: CarouselApi) {
   carouselApi.value = api
-}
 
-// Track slide changes and persist step
-watch(
-  () => carouselApi.value?.selectedScrollSnap(),
-  (newSlide) => {
-    if (newSlide !== undefined && newSlide !== currentSlide.value) {
+  // Track slide changes via carousel event
+  api?.on('select', () => {
+    const newSlide = api.selectedScrollSnap()
+    if (newSlide !== currentSlide.value) {
       currentSlide.value = newSlide
       void onboarding.setStep(newSlide)
     }
-  },
-)
+  })
+}
 
 // Resume to saved step on mount (instant jump)
 onMounted(() => {
@@ -64,10 +67,6 @@ onMounted(() => {
     currentSlide.value = onboarding.currentStep.value
   }
 })
-
-function goToSlide(index: number) {
-  carouselApi.value?.scrollTo(index)
-}
 
 function goBack() {
   carouselApi.value?.scrollPrev()
@@ -136,22 +135,10 @@ async function handleChecklistNavigate(routeName: string) {
       </CarouselContent>
     </Carousel>
 
-    <!-- Footer with progress dots and Next/Finish button -->
+    <!-- Footer with progress bar and Next/Finish button -->
     <footer class="flex shrink-0 flex-col gap-4 px-4 pb-8 pt-4">
-      <!-- Progress dots -->
-      <div class="flex justify-center gap-2">
-        <button
-          v-for="(_, index) in slides"
-          :key="index"
-          @click="goToSlide(index)"
-          :class="[
-            'h-2 w-2 rounded-full transition-colors',
-            index === currentSlide ? 'bg-primary' : 'bg-muted',
-          ]"
-          :aria-label="`${t('onboarding.navigation.goToSlide')} ${index + 1}`"
-          :aria-current="index === currentSlide ? 'step' : undefined"
-        />
-      </div>
+      <!-- Progress bar -->
+      <Progress :model-value="progressPercentage" class="h-1" />
 
       <!-- Next/Finish button -->
       <Button
