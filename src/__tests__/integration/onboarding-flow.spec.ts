@@ -314,7 +314,6 @@ describe('Onboarding Flow', () => {
       await onboarding.initialize()
 
       // 5. Assert: Onboarding should still be complete
-      // THIS WILL FAIL - proving the bug exists
       expect(onboarding.completed.value).toBe(true)
 
       // 6. Assert: User should NOT be redirected to onboarding

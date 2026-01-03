@@ -329,8 +329,9 @@ export type DataManagementRepository = {
   importAll(data: ExportDataContents): Promise<void>
   /**
    * Permanently delete all user data including active workout. This action cannot be undone.
+   * @param options.preserveOnboarding - If true, onboarding completion state is preserved (default: true)
    */
-  deleteAll(): Promise<void>
+  deleteAll(options?: { preserveOnboarding?: boolean }): Promise<void>
 }
 
 // ============================================

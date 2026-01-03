@@ -14,8 +14,8 @@ import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobal
  * This enables fileParallelism by ensuring complete isolation.
  */
 export async function resetDatabase(): Promise<void> {
-  // Clear all database tables
-  await getDataManagementRepository().deleteAll()
+  // Clear all database tables (including onboarding for complete test isolation)
+  await getDataManagementRepository().deleteAll({ preserveOnboarding: false })
 
   // Clear seeding marker so exercises are re-seeded in each test
   localStorage.removeItem('exercises_seed_version')
