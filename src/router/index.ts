@@ -1,4 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import {
+  getOnboardingRepository,
+  getWorkoutsRepository,
+  getTemplatesRepository,
+  getBenchmarksRepository,
+} from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
@@ -40,6 +47,7 @@ export const RouteNames = {
   CreateProgression: 'CreateProgression',
   ProgressionDetail: 'ProgressionDetail',
   ActiveProgression: 'ActiveProgression',
+  Onboarding: 'Onboarding',
 } as const
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
@@ -168,11 +176,76 @@ export const routes = [
     component: () => import('@/views/ActiveProgressionView.vue'),
     props: true,
   },
+  {
+    path: '/onboarding',
+    name: RouteNames.Onboarding,
+    component: () => import('@/features/onboarding/views/OnboardingView.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+/**
+ * Check if user has any existing data (workouts, templates, or benchmarks).
+ * Used to detect returning users for the onboarding flow.
+ */
+async function checkForExistingData(): Promise<boolean> {
+  const [workoutsError, workoutCount] = await tryCatch(getWorkoutsRepository().count())
+  if (workoutsError) return false
+  if (workoutCount > 0) return true
+
+  const [templatesError, templates] = await tryCatch(getTemplatesRepository().getAll())
+  if (templatesError) return false
+  if (templates.length > 0) return true
+
+  const [benchmarksError, benchmarks] = await tryCatch(getBenchmarksRepository().getAll())
+  if (benchmarksError) return false
+  if (benchmarks.length > 0) return true
+
+  return false
+}
+
+/**
+ * Router guard for onboarding flow.
+ * - Redirects first-time users to onboarding
+ * - Redirects completed users away from onboarding
+ * - Fails-open on DB errors (allows access to app)
+ */
+router.beforeEach(async (to) => {
+  // If navigating to onboarding, check if already completed
+  if (to.name === RouteNames.Onboarding) {
+    const [error, state] = await tryCatch(getOnboardingRepository().get())
+
+    // Fail-open: if DB fails, allow access
+    if (error) return true
+
+    // If completed, redirect to home
+    if (state.completed) {
+      return { name: RouteNames.Home }
+    }
+
+    return true
+  }
+
+  // For all other routes, check if onboarding is needed
+  const [error, state] = await tryCatch(getOnboardingRepository().get())
+
+  // Fail-open: on DB error, assume completed
+  if (error) return true
+
+  // If completed, allow normal navigation
+  if (state.completed) return true
+
+  // Check for existing data to determine if returning user
+  const hasExistingData = await checkForExistingData()
+
+  return {
+    name: RouteNames.Onboarding,
+    query: hasExistingData ? { returning: 'true' } : undefined,
+  }
 })
 
 export { router }

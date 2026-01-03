@@ -5,6 +5,7 @@ import type {
   DbCompletedWorkout as DatabaseCompletedWorkout,
   DbCustomExercise as DatabaseCustomExercise,
   DbFormDraft as DatabaseFormDraft,
+  DbOnboarding as DatabaseOnboarding,
   DbProgression as DatabaseProgression,
   DbProgressionSession as DatabaseProgressionSession,
   DbTemplateBlock as DatabaseTemplateBlock,
@@ -180,7 +181,9 @@ export type ActiveBenchmarkWorkoutRepository = {
    * Complete the benchmark workout and save to history with benchmarkId.
    * Removes the active benchmark from database in a transaction.
    */
-  complete(activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>): Promise<DatabaseCompletedWorkout>
+  complete(
+    activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>,
+  ): Promise<DatabaseCompletedWorkout>
 }
 
 // ============================================
@@ -349,15 +352,14 @@ export type BenchmarksRepository = {
   /**
    * Create a new benchmark.
    */
-  create(benchmark: Omit<DatabaseBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>): Promise<DatabaseBenchmark>
+  create(
+    benchmark: Omit<DatabaseBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>,
+  ): Promise<DatabaseBenchmark>
   /**
    * Update an existing benchmark.
    * @throws Error if benchmark with id not found
    */
-  update(
-    id: string,
-    updates: Partial<Omit<DatabaseBenchmark, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  update(id: string, updates: Partial<Omit<DatabaseBenchmark, 'id' | 'createdAt'>>): Promise<void>
   /**
    * Delete a benchmark by ID. Silently succeeds if ID doesn't exist.
    */
@@ -544,10 +546,7 @@ export type ProgressionsRepository = {
    * Update an existing progression.
    * @throws Error if progression with id not found
    */
-  update(
-    id: string,
-    updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  update(id: string, updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>): Promise<void>
 
   /**
    * Delete a progression and all its sessions by ID.
@@ -574,6 +573,41 @@ export type ProgressionsRepository = {
 // Repository Provider (All Repositories)
 // ============================================
 
+// ============================================
+// Onboarding Repository
+// ============================================
+
+/**
+ * Repository for managing onboarding state (singleton pattern).
+ * Tracks first-time user onboarding completion and progress.
+ */
+export type OnboardingRepository = {
+  /**
+   * Get the current onboarding state.
+   * Returns default state (not completed, step 0) if no record exists.
+   */
+  get(): Promise<DatabaseOnboarding>
+
+  /**
+   * Update onboarding state (creates if not exists).
+   */
+  update(data: Partial<Omit<DatabaseOnboarding, 'id'>>): Promise<void>
+
+  /**
+   * Mark onboarding as completed.
+   */
+  complete(): Promise<void>
+
+  /**
+   * Reset onboarding state (for testing or re-onboarding).
+   */
+  reset(): Promise<void>
+}
+
+// ============================================
+// Repository Provider (All Repositories)
+// ============================================
+
 /**
  * Unified interface providing access to all repository instances.
  */
@@ -589,4 +623,5 @@ export type RepositoryProvider = {
   weight: WeightRepository
   drafts: DraftsRepository
   progressions: ProgressionsRepository
+  onboarding: OnboardingRepository
 }

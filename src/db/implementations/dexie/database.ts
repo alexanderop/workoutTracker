@@ -7,6 +7,7 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
+  DbOnboarding,
   DbProgression,
   DbProgressionSession,
   DbUserSetting,
@@ -26,6 +27,7 @@ export class WorkoutTrackerDb extends Dexie {
   drafts!: Table<DbFormDraft, string>
   progressions!: Table<DbProgression, string>
   progressionSessions!: Table<DbProgressionSession, string>
+  onboarding!: Table<DbOnboarding, 'onboarding'>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -89,6 +91,22 @@ export class WorkoutTrackerDb extends Dexie {
       drafts: '&key',
       progressions: 'id, createdAt, lastSessionAt',
       progressionSessions: 'id, progressionId, completedAt',
+    })
+
+    // Version 6: Add onboarding table for first-time user experience
+    this.version(6).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
+      drafts: '&key',
+      progressions: 'id, createdAt, lastSessionAt',
+      progressionSessions: 'id, progressionId, completedAt',
+      onboarding: 'id',
     })
   }
 }
