@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
@@ -181,45 +180,5 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
-
-/**
- * Setup onboarding navigation guard on a router.
- * Redirects first-time users to onboarding, completed users to their destination.
- * Exported for use in tests with custom routers.
- */
-export function setupOnboardingGuard(targetRouter: typeof router): void {
-  targetRouter.beforeEach(async (to) => {
-    const onboarding = useOnboarding()
-
-    // Initialize onboarding state if not already done
-    if (!onboarding.isInitialized.value) {
-      await onboarding.initialize()
-    }
-
-    // If navigating to onboarding route
-    if (to.name === RouteNames.Onboarding) {
-      // Completed users get redirected to home
-      if (onboarding.completed.value) {
-        return { name: RouteNames.Home }
-      }
-      // Check for returning user and set flag
-      const hasExistingData = await onboarding.checkExistingData()
-      onboarding.setReturningUser(hasExistingData)
-      return true
-    }
-
-    // For all other routes, check if onboarding is needed
-    if (!onboarding.completed.value) {
-      const hasExistingData = await onboarding.checkExistingData()
-      onboarding.setReturningUser(hasExistingData)
-      return { name: RouteNames.Onboarding }
-    }
-
-    return true
-  })
-}
-
-// Register guard on the production router
-setupOnboardingGuard(router)
 
 export { router }
