@@ -1,3 +1,12 @@
+## [1.13.1](https://github.com/alexanderop/workoutTracker/compare/v1.13.0...v1.13.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* **barbell-hint:** show weight numbers on small plates ([2cfea51](https://github.com/alexanderop/workoutTracker/commit/2cfea5136f993d4275d5fd827b4bfe24c522e87b))
+
+
+
 # [1.13.0](https://github.com/alexanderop/workoutTracker/compare/v1.12.0...v1.13.0) (2026-01-03)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **numeric-input:** sync internal value with model when dialog closed ([#98](https://github.com/alexanderop/workoutTracker/issues/98)) ([2336255](https://github.com/alexanderop/workoutTracker/commit/233625513cb829f24d7d2aad4c9842d158f97267))
-
-
-
-# [1.10.0](https://github.com/alexanderop/workoutTracker/compare/v1.9.2...v1.10.0) (2025-12-31)
-
-
-### Features
-
-* **workout:** add duration editing in finish dialog ([#97](https://github.com/alexanderop/workoutTracker/issues/97)) ([f0586e9](https://github.com/alexanderop/workoutTracker/commit/f0586e9c699af7889a09db23225b4791a4a187dd))
 
 
 
