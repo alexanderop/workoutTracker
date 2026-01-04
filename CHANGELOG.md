@@ -1,3 +1,12 @@
+# [1.14.0](https://github.com/alexanderop/workoutTracker/compare/v1.13.1...v1.14.0) (2026-01-04)
+
+
+### Features
+
+* **lib:** add fractional indexing for sortable keys ([8e70585](https://github.com/alexanderop/workoutTracker/commit/8e7058563d66dc84e37ffb378314953c353835cb))
+
+
+
 ## [1.13.1](https://github.com/alexanderop/workoutTracker/compare/v1.13.0...v1.13.1) (2026-01-03)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * markdown import/export, swipe-to-delete, and debugging framework ([#99](https://github.com/alexanderop/workoutTracker/issues/99)) ([7fbcbb0](https://github.com/alexanderop/workoutTracker/commit/7fbcbb0fa16a134be7d37d7d2d6e476acf12b43c))
-
-
-
-## [1.10.1](https://github.com/alexanderop/workoutTracker/compare/v1.10.0...v1.10.1) (2026-01-01)
-
-
-### Bug Fixes
-
-* **numeric-input:** sync internal value with model when dialog closed ([#98](https://github.com/alexanderop/workoutTracker/issues/98)) ([2336255](https://github.com/alexanderop/workoutTracker/commit/233625513cb829f24d7d2aad4c9842d158f97267))
 
 
 
