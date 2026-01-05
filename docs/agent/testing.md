@@ -156,3 +156,69 @@ pnpm test:unit <file>                   # Run single file
 pnpm test:unit --watch                  # Watch mode
 pnpm test:unit --coverage               # With coverage
 ```
+
+## Component-Specific Testing Patterns
+
+### shadcn-vue DropdownMenu
+
+DropdownMenu uses `@select` event, not `@click`:
+
+```vue
+<!-- ✅ Correct -->
+<DropdownMenuItem @select="handleAction">Action</DropdownMenuItem>
+
+<!-- ❌ Won't work -->
+<DropdownMenuItem @click="handleAction">Action</DropdownMenuItem>
+```
+
+When testing, wait for `role="menu"` (not dialog):
+
+```ts
+await userEvent.click(menuButton)
+await expect.element(page.getByRole('menu')).toBeVisible()
+```
+
+### MobileNumberPicker
+
+Uses preset buttons, not spinbutton input. Click presets directly:
+
+```ts
+// ✅ Click preset button
+const presetButton = page.getByRole('button', { name: String(reps), exact: true })
+await userEvent.click(presetButton)
+
+// ❌ Won't work - no spinbutton exists
+const input = page.getByRole('spinbutton')
+```
+
+### Single-Visible-Element Pattern
+
+When UI shows one item at a time (tabs, carousels), don't index into element arrays. Navigate first, then interact:
+
+```ts
+// ✅ Navigate first, then interact with single visible element
+async openRoundMenu(roundIndex: number): Promise<void> {
+  if (roundCount > 1) {
+    await this.navigateToRound(roundIndex)
+  }
+  // Now there's only ONE menu button visible
+  const menuButton = page.getByRole('button', { name: /options/i })
+  await userEvent.click(menuButton)
+}
+
+// ❌ Don't try to index into array of elements that aren't all visible
+const roundHeaders = await page.getByText(/round \d+/i).all()
+const targetHeader = roundHeaders[roundIndex]  // May not exist!
+```
+
+### Avoiding Regex Collisions
+
+Use distinct patterns for tabs vs headers to avoid matching both:
+
+```ts
+// Header: "Round 1/3"
+const roundHeader = page.getByText(/round \d+\/\d+/i)
+
+// Tabs: "R1", "R2", "R3" (compact to avoid matching header)
+const tab = page.getByRole('tab', { name: new RegExp(`^R${index + 1}$`) })
+```

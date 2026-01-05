@@ -267,4 +267,65 @@ export class BenchmarkDetailPO {
   async clickBackButton(): Promise<void> {
     await page.getByRole('button', { name: /go back/i }).click()
   }
+
+  // ===========================================================================
+  // View mode round navigation (UX simplification)
+  // ===========================================================================
+
+  /**
+   * Returns all round tab elements in view mode.
+   * @returns Array of tab button elements
+   */
+  async getRoundTabs(): Promise<ReadonlyArray<HTMLElement>> {
+    const tabs = await page.getByRole('tab').all()
+    const elements: Array<HTMLElement> = []
+    for (const tab of tabs) {
+      elements.push(ensureHTMLElement(await tab.element()))
+    }
+    return elements
+  }
+
+  /**
+   * Returns the currently active round tab number (1-indexed).
+   * Checks aria-selected attribute to find the active tab.
+   */
+  async getActiveRoundTab(): Promise<number> {
+    const tabs = await this.getRoundTabs()
+    for (const [i, tab] of tabs.entries()) {
+      if (tab?.getAttribute('aria-selected') === 'true') {
+        return i + 1
+      }
+    }
+    return 1 // Default to first tab
+  }
+
+  /**
+   * Navigates to a specific round by clicking its tab button in view mode.
+   * Waits for the tab to become active.
+   * @param roundNumber - 1-indexed round number
+   */
+  async navigateToRound(roundNumber: number): Promise<void> {
+    const tab = page.getByRole('tab', { name: String(roundNumber), exact: true })
+    await tab.click()
+    await expect.poll(() => this.getActiveRoundTab()).toBe(roundNumber)
+  }
+
+  /**
+   * Asserts that the round heading shows the expected current/total format.
+   * @param current - Current round number (1-indexed)
+   * @param total - Total number of rounds
+   */
+  async assertRoundHeading(current: number, total: number): Promise<void> {
+    // Match patterns like "Runde 2/4" or "Round 2/4"
+    const heading = page.getByText(new RegExp(String.raw`(runde|round)\s*${current}/${total}`, 'i'))
+    await expect.element(heading).toBeVisible()
+  }
+
+  /**
+   * Returns the number of round tabs displayed.
+   */
+  async getRoundTabCount(): Promise<number> {
+    const tabs = await this.getRoundTabs()
+    return tabs.length
+  }
 }

@@ -2,10 +2,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { useI18n } from 'vue-i18n'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
-import type { DbBenchmarkExercise } from '@/db/schema'
+import type { DbBenchmarkRoundExercise } from '@/db/schema'
 
 const { exercise, index } = defineProps<{
-  exercise: DbBenchmarkExercise
+  exercise: DbBenchmarkRoundExercise
   index: number
 }>()
 

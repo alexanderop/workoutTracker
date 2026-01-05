@@ -16,6 +16,7 @@ describe('BenchmarkExerciseList', () => {
     // Start with one exercise
     const exercises = ref<Array<BenchmarkFormExercise>>([
       {
+        orderKey: 'a0',
         exerciseDefinitionId: '1',
         name: 'Bodyweight Get-up',
         prescribedReps: 15,
@@ -39,6 +40,7 @@ describe('BenchmarkExerciseList', () => {
 
     // Add a second exercise (simulating user adding an exercise)
     exercises.value.push({
+      orderKey: 'a1',
       exerciseDefinitionId: '2',
       name: 'Pull-ups',
       prescribedReps: 21,
@@ -70,12 +72,14 @@ describe('BenchmarkExerciseList', () => {
     // Start with two exercises
     const exercises = ref<Array<BenchmarkFormExercise>>([
       {
+        orderKey: 'a0',
         exerciseDefinitionId: '1',
         name: 'Thrusters',
         prescribedReps: 21,
         image: null,
       },
       {
+        orderKey: 'a1',
         exerciseDefinitionId: '2',
         name: 'Pull-ups',
         prescribedReps: 21,
@@ -98,6 +102,7 @@ describe('BenchmarkExerciseList', () => {
 
     // Add a third exercise
     exercises.value.push({
+      orderKey: 'a2',
       exerciseDefinitionId: '3',
       name: 'Burpees',
       prescribedReps: 10,

@@ -253,8 +253,8 @@ describe('Form Draft Persistence', () => {
       // Save the benchmark
       await userEvent.click(getByRole('button', { name: /save/i }))
 
-      // Wait for navigation back to workouts
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Workouts)
+      // Wait for navigation to benchmark detail (after save, user sees new benchmark)
+      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.BenchmarkDetail)
 
       // Verify draft was cleared
       const draft = await db.drafts.get('benchmark-create')

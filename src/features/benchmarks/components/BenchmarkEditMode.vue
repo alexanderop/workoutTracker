@@ -3,29 +3,45 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
-import { Clock, Plus, RotateCw } from 'lucide-vue-next'
-import BenchmarkTypeCard from './BenchmarkTypeCard.vue'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Plus, MoreHorizontal } from 'lucide-vue-next'
+import RoundTabs from './RoundTabs.vue'
 import BenchmarkExerciseList from './BenchmarkExerciseList.vue'
-import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
-import type { BenchmarkType } from '@/types/benchmark'
+import type { ExerciseFormState, RoundFormState } from '../composables/useBenchmarkForm'
 
 type BenchmarkFormState = {
   name: string
-  type: BenchmarkType
-  rounds: number
-  exercises: Array<BenchmarkFormExercise>
+  rounds: Array<RoundFormState>
 }
 
 type Emits = {
   'add-exercise': []
   'remove-exercise': [index: number]
   'reorder-exercises': [fromIndex: number, toIndex: number]
+  'click-exercise': [index: number]
+  'copy-round': []
+  'delete-round': []
+  'navigate-to-round': [index: number]
   'update:form': [value: BenchmarkFormState]
 }
 
-const { showRoundsInput } = defineProps<{
-  showRoundsInput: boolean
+const {
+  currentRoundIndex,
+  displayRounds,
+  currentExercises,
+  roundCount,
+  canDeleteRound,
+} = defineProps<{
+  currentRoundIndex: number
+  displayRounds: Array<RoundFormState>
+  currentExercises: Array<ExerciseFormState>
+  roundCount: number
+  canDeleteRound: boolean
 }>()
 
 const form = defineModel<BenchmarkFormState>('form', { required: true })
@@ -48,45 +64,50 @@ const { t } = useI18n()
         />
       </div>
 
-      <!-- Type Selection -->
-      <div class="space-y-2">
-        <Label>{{ t('workouts.benchmarks.type.label') }}</Label>
-        <div class="grid grid-cols-2 gap-3">
-          <BenchmarkTypeCard
-            type="fortime"
-            :is-selected="form.type === 'fortime'"
-            :icon="Clock"
-            :label="t('workouts.benchmarks.type.fortime')"
-            :description="t('workouts.benchmarks.type.fortimeDescription')"
-            @select="form.type = $event"
-          />
+      <!-- Round Tabs -->
+      <RoundTabs
+        :rounds="displayRounds"
+        :active-index="currentRoundIndex"
+        @select="emit('navigate-to-round', $event)"
+      />
 
-          <BenchmarkTypeCard
-            type="rounds"
-            :is-selected="form.type === 'rounds'"
-            :icon="RotateCw"
-            :label="t('workouts.benchmarks.type.rounds')"
-            :description="t('workouts.benchmarks.type.roundsDescription')"
-            @select="form.type = $event"
-          />
-        </div>
-      </div>
-
-      <!-- Rounds Input (Conditional) -->
-      <div v-if="showRoundsInput" class="space-y-2">
-        <Label for="rounds">{{ t('workouts.benchmarks.rounds.label') }}</Label>
-        <NumberField id="rounds" v-model="form.rounds" :min="1">
-          <NumberFieldInput />
-        </NumberField>
+      <!-- Round Header with Actions -->
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-medium text-muted-foreground">
+          {{ t('workouts.benchmarks.round', { current: currentRoundIndex + 1, total: roundCount }) }}
+        </h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              :aria-label="t('common.buttons.options')"
+            >
+              <MoreHorizontal class="icon-sm" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @select="emit('copy-round')">
+              {{ t('workouts.benchmarks.copyRound') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              :disabled="!canDeleteRound"
+              @select="emit('delete-round')"
+            >
+              {{ t('workouts.benchmarks.deleteRound') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <!-- Exercise List Section -->
-      <div v-if="form.exercises.length > 0" class="space-y-2">
+      <div v-if="currentExercises.length > 0" class="space-y-2">
         <Label>{{ t('workouts.benchmarks.exercises') }}</Label>
         <BenchmarkExerciseList
-          :exercises="form.exercises"
+          :exercises="currentExercises"
           @remove="(index) => emit('remove-exercise', index)"
           @reorder="(from, to) => emit('reorder-exercises', from, to)"
+          @click="(index) => emit('click-exercise', index)"
         />
       </div>
 

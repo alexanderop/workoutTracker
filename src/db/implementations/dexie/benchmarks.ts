@@ -1,6 +1,7 @@
 import type { BenchmarkAttempt, BenchmarksRepository } from '@/db/interfaces'
 import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
+import { generateStructureHash } from '@/lib/structureHash'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
@@ -15,19 +16,23 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
     },
 
     async create(
-      data: Omit<DbBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>,
+      data: Omit<DbBenchmark, 'id' | 'createdAt' | 'lastUsedAt' | 'structureHash'>,
     ): Promise<DbBenchmark> {
       const benchmark: DbBenchmark = {
+        id: generateId(),
         name: data.name,
         type: data.type,
-        rounds: data.rounds,
-        exercises: data.exercises.map((ex) => ({
-          exerciseDefinitionId: ex.exerciseDefinitionId,
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          image: ex.image,
+        rounds: data.rounds.map((round) => ({
+          orderKey: round.orderKey,
+          exercises: round.exercises.map((ex) => ({
+            orderKey: ex.orderKey,
+            exerciseDefinitionId: ex.exerciseDefinitionId,
+            name: ex.name,
+            prescribedReps: ex.prescribedReps,
+            image: ex.image,
+          })),
         })),
-        id: generateId(),
+        structureHash: generateStructureHash(data.rounds),
         createdAt: Date.now(),
         lastUsedAt: null,
       }
@@ -38,11 +43,24 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
     async update(
       id: string,
       updates: Partial<Omit<DbBenchmark, 'id' | 'createdAt'>>,
-    ): Promise<void> {
-      const updated = await database.benchmarks.update(id, updates)
+    ): Promise<DbBenchmark> {
+      // Build update object, recalculating structureHash if rounds changed
+      const updateData: Partial<DbBenchmark> = { ...updates }
+      if (updates.rounds) {
+        updateData.structureHash = generateStructureHash(updates.rounds)
+      }
+
+      const updated = await database.benchmarks.update(id, updateData)
       if (updated === 0) {
         throw createDatabaseError('NOT_FOUND', 'update benchmark')
       }
+
+      const benchmark = await database.benchmarks.get(id)
+      if (!benchmark) {
+        throw createDatabaseError('NOT_FOUND', 'get updated benchmark')
+      }
+
+      return benchmark
     },
 
     async delete(id: string): Promise<void> {
@@ -64,30 +82,37 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
 
       const now = Date.now()
 
-      // Create ForTime block with fresh exercise instances (unique IDs per block)
-      const createBlock = (orderIndex: number): DbForTimeBlock => ({
-        kind: 'fortime',
-        id: generateId(),
-        config: {
-          timeCapSeconds: null,
-        },
-        exercises: benchmark.exercises.map((ex) => ({
-          id: generateId(),
-          name: ex.name,
-          prescribedReps: ex.prescribedReps,
-          load: null,
-          image: ex.image,
-        })),
-        result: null,
-        orderIndex,
-      })
+      // Sort rounds by orderKey
+      const sortedRounds = [...benchmark.rounds].toSorted((a, b) =>
+        a.orderKey.localeCompare(b.orderKey),
+      )
 
-      // For "rounds" type, create multiple blocks (one per round)
-      // For "fortime" type, create single block
-      const blocks: ReadonlyArray<DbWorkoutBlock> =
-        benchmark.type === 'rounds'
-          ? Array.from({ length: benchmark.rounds }, (_, index) => createBlock(index))
-          : [createBlock(0)]
+      // Create one ForTime block per round with exercises from that round
+      const blocks: ReadonlyArray<DbWorkoutBlock> = sortedRounds.map(
+        (round, index): DbForTimeBlock => {
+          // Sort exercises within round by orderKey
+          const sortedExercises = [...round.exercises].toSorted((a, b) =>
+            a.orderKey.localeCompare(b.orderKey),
+          )
+
+          return {
+            kind: 'fortime',
+            id: generateId(),
+            config: {
+              timeCapSeconds: null,
+            },
+            exercises: sortedExercises.map((ex) => ({
+              id: generateId(),
+              name: ex.name,
+              prescribedReps: ex.prescribedReps,
+              load: null,
+              image: ex.image,
+            })),
+            result: null,
+            orderIndex: index,
+          }
+        },
+      )
 
       const activeWorkout: DbActiveWorkout = {
         id: 'current',
@@ -135,7 +160,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
     },
 
     async getPersonalBests(
-      benchmarkIds: ReadonlyArray<string>
+      benchmarkIds: ReadonlyArray<string>,
     ): Promise<ReadonlyMap<string, number>> {
       // Early return for empty input
       if (benchmarkIds.length === 0) {
@@ -208,6 +233,11 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
           isPersonalBest: a.completionTime === bestTime,
         }))
         .toSorted((a, b) => b.completedAt - a.completedAt)
+    },
+
+    async hasResults(benchmarkId: string): Promise<boolean> {
+      const count = await database.workouts.where('benchmarkId').equals(benchmarkId).count()
+      return count > 0
     },
   }
 }

@@ -25,10 +25,14 @@ export {
 // Benchmark factories
 export {
   createDbBenchmark,
-  createDbBenchmarkExercise,
+  createDbBenchmarkRound,
+  createDbBenchmarkRoundExercise,
   createDbForTimeBenchmark,
-  createDbRoundsBenchmark,
+  createDbPyramidBenchmark,
 } from './benchmark.factory'
+
+// Benchmark types
+export type { DbBenchmarkRound, DbBenchmarkRoundExercise } from './benchmark.factory'
 
 // Timed block factories
 export {

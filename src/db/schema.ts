@@ -67,10 +67,12 @@ export type DbBlockExercise = {
 // ============================================
 
 /**
- * Benchmark exercise (similar to DbTemplateBlockExercise).
- * Stores snapshot of exercise data at benchmark creation time.
+ * Exercise within a benchmark round.
+ * Each round can have different exercises with different rep counts.
+ * Uses orderKey for fractional indexing (efficient reordering).
  */
-export type DbBenchmarkExercise = {
+export type DbBenchmarkRoundExercise = {
+  orderKey: string
   exerciseDefinitionId: string | null
   name: string
   prescribedReps: number
@@ -78,15 +80,27 @@ export type DbBenchmarkExercise = {
 }
 
 /**
+ * A single round in a benchmark.
+ * Rounds are ordered by fractional indexing for efficient reordering.
+ */
+export type DbBenchmarkRound = {
+  orderKey: string
+  exercises: ReadonlyArray<DbBenchmarkRoundExercise>
+}
+
+/**
  * Benchmark workout definition for performance tracking.
- * Benchmarks are reusable workout templates optimized for time comparisons.
+ * Supports variable reps per round (pyramid/ladder workouts like 40-30-20-10).
+ *
+ * For ForTime benchmarks: Each round can have different exercises and reps.
+ * For AMRAP/EMOM benchmarks: Rounds sync - changing one updates all.
  */
 export type DbBenchmark = {
   id: string
   name: string
   type: BenchmarkType
-  rounds: number
-  exercises: ReadonlyArray<DbBenchmarkExercise>
+  rounds: ReadonlyArray<DbBenchmarkRound>
+  structureHash: string
   createdAt: number
   lastUsedAt: number | null
 }

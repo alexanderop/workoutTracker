@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import RoundTabs from './RoundTabs.vue'
 import BenchmarkExerciseCard from './BenchmarkExerciseCard.vue'
 import BenchmarkAttemptHistory from './BenchmarkAttemptHistory.vue'
 import { formatBenchmarkType } from '@/lib/formatters'
@@ -20,6 +21,21 @@ const { hasPb, formatHero } = usePersonalBestDisplay()
 // Load attempt history
 const benchmarkId = computed(() => benchmark.id)
 const { attempts } = useBenchmarkAttemptHistory(benchmarkId)
+
+// Active round for tabbed navigation
+const activeRoundIndex = ref(0)
+
+// Sort rounds and exercises by orderKey
+const sortedRounds = computed(() => {
+  return [...benchmark.rounds].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+})
+
+// Get the currently active round
+const activeRound = computed(() => sortedRounds.value[activeRoundIndex.value])
+
+function sortedExercises(round: (typeof sortedRounds.value)[number]) {
+  return [...round.exercises].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+}
 </script>
 
 <template>
@@ -52,20 +68,47 @@ const { attempts } = useBenchmarkAttemptHistory(benchmarkId)
       {{ t('workouts.benchmarks.detail.workoutStructure') }}
     </div>
     <div class="text-2xl font-bold">
-      {{ formatBenchmarkType(benchmark.type, benchmark.rounds) }}
+      {{ formatBenchmarkType(benchmark.type, sortedRounds.length) }}
     </div>
   </div>
 
-  <!-- Exercise list with staggered animations -->
-  <div class="space-y-3 p-4">
-    <BenchmarkExerciseCard
-      v-for="(exercise, index) in benchmark.exercises"
-      :key="index"
-      :exercise="exercise"
-      :index="index"
+  <!-- Round tabs and exercises -->
+  <div class="space-y-4 p-4">
+    <!-- Round tabs -->
+    <div
       :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
-      :style="{ animationDelay: `${150 + index * 50}ms` }"
-    />
+      :style="{ animationDelay: '150ms' }"
+    >
+      <RoundTabs
+        :rounds="sortedRounds"
+        :active-index="activeRoundIndex"
+        @select="activeRoundIndex = $event"
+      />
+    </div>
+
+    <!-- Round header -->
+    <div
+      :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+      :style="{ animationDelay: '200ms' }"
+      class="text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+    >
+      {{ t('workouts.benchmarks.round', { current: activeRoundIndex + 1, total: sortedRounds.length }) }}
+    </div>
+
+    <!-- Exercises for active round -->
+    <div
+      v-if="activeRound"
+      :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
+      :style="{ animationDelay: '250ms' }"
+      class="space-y-3"
+    >
+      <BenchmarkExerciseCard
+        v-for="(exercise, exerciseIndex) in sortedExercises(activeRound)"
+        :key="exercise.orderKey"
+        :exercise="exercise"
+        :index="exerciseIndex"
+      />
+    </div>
   </div>
 
   <!-- Attempt History Section -->

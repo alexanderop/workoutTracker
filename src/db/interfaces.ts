@@ -349,16 +349,20 @@ export type BenchmarksRepository = {
   getById(id: string): Promise<DatabaseBenchmark | undefined>
   /**
    * Create a new benchmark.
+   * structureHash is automatically generated from rounds.
    */
-  create(benchmark: Omit<DatabaseBenchmark, 'id' | 'createdAt' | 'lastUsedAt'>): Promise<DatabaseBenchmark>
+  create(
+    benchmark: Omit<DatabaseBenchmark, 'id' | 'createdAt' | 'lastUsedAt' | 'structureHash'>,
+  ): Promise<DatabaseBenchmark>
   /**
    * Update an existing benchmark.
+   * structureHash is automatically recalculated if rounds change.
    * @throws Error if benchmark with id not found
    */
   update(
     id: string,
     updates: Partial<Omit<DatabaseBenchmark, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  ): Promise<DatabaseBenchmark>
   /**
    * Delete a benchmark by ID. Silently succeeds if ID doesn't exist.
    */
@@ -388,6 +392,11 @@ export type BenchmarksRepository = {
    * Returns empty array if no attempts exist.
    */
   getAttemptHistory(benchmarkId: string): Promise<ReadonlyArray<BenchmarkAttempt>>
+  /**
+   * Check if a benchmark has any completed workout results.
+   * Used to determine if structure change warning should be shown.
+   */
+  hasResults(benchmarkId: string): Promise<boolean>
 }
 
 /**

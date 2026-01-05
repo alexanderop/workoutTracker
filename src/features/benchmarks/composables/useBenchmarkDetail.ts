@@ -3,9 +3,12 @@ import { getActiveBenchmarkWorkoutRepository, getBenchmarksRepository } from '@/
 import { dbToBenchmarkWorkout } from '@/db/converters'
 import { restoreBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbActiveBenchmarkWorkout, DbBenchmark, DbForTimeBlock } from '@/db/schema'
-import type { BenchmarkFormExercise } from './useBenchmarkForm'
-
+import type {
+  DbActiveBenchmarkWorkout,
+  DbBenchmark,
+  DbBenchmarkRound,
+  DbForTimeBlock,
+} from '@/db/schema'
 // ============================================
 // Types
 // ============================================
@@ -18,9 +21,7 @@ type BenchmarkDetailState =
 
 type BenchmarkFormState = {
   name: string
-  type: 'fortime' | 'rounds'
-  rounds: number
-  exercises: Array<BenchmarkFormExercise>
+  rounds: ReadonlyArray<DbBenchmarkRound>
 }
 
 // ============================================
@@ -111,9 +112,8 @@ export function useBenchmarkDetail(benchmarkId: string) {
     const [error] = await tryCatch(
       repo.update(benchmarkId, {
         name: data.name,
-        type: data.type,
+        type: 'fortime',
         rounds: data.rounds,
-        exercises: data.exercises,
       }),
     )
 
