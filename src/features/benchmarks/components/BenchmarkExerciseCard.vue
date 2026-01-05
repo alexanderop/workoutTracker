@@ -13,7 +13,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <Card class="overflow-hidden">
+  <Card data-testid="benchmark-exercise-card" class="overflow-hidden">
     <CardContent class="p-4">
       <div class="flex items-center gap-4">
         <!-- Order number with bold typography -->

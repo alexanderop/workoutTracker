@@ -54,17 +54,12 @@ export class BenchmarkDetailPO {
    * @returns Array of exercise card elements
    */
   async getExerciseCards(): Promise<ReadonlyArray<HTMLElement>> {
-    // Exercise cards contain exercise names and rep counts
-    const exercises: Array<HTMLElement> = []
-    const allText = await page.getByText(/\d+/).all()
-    for (const locator of allText) {
-      const element = await locator.element()
-      const card = element.closest('[class*="card"]') ?? element.closest('div')
-      if (card instanceof HTMLElement && !exercises.includes(card)) {
-        exercises.push(card)
-      }
+    const cards = await page.getByTestId('benchmark-exercise-card').all()
+    const elements: Array<HTMLElement> = []
+    for (const card of cards) {
+      elements.push(ensureHTMLElement(await card.element()))
     }
-    return exercises
+    return elements
   }
 
   /**

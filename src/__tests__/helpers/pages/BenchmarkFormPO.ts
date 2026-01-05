@@ -114,16 +114,14 @@ export class BenchmarkFormPO {
   }
 
   /**
-   * Returns all exercise items currently in the list.
-   * @returns Array of exercise item elements
+   * Returns all exercise delete buttons currently in the list.
+   * @returns Array of delete button elements
    */
   getExerciseItems(): ReadonlyArray<HTMLElement> {
-    // Exercise items are in a list - find all delete buttons (lucide-x SVGs within buttons)
-    // eslint-disable-next-line no-restricted-syntax -- Finding icon by CSS class, no accessible equivalent
-    const deleteButtons = document.querySelectorAll('button svg.lucide-x')
+    // Find delete buttons by their accessible name
+    const deleteButtons = document.querySelectorAll('button[aria-label="Remove exercise"]')
     const items: Array<HTMLElement> = []
-    for (const svg of deleteButtons) {
-      const button = svg.closest('button')
+    for (const button of deleteButtons) {
       if (button instanceof HTMLElement) {
         items.push(button)
       }

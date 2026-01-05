@@ -132,7 +132,7 @@ export function useBenchmarkDetail(benchmarkId: string) {
 
   // Lifecycle Hooks
   onMounted(() => {
-    loadBenchmark()
+    void loadBenchmark()
   })
 
   return {
