@@ -33,8 +33,8 @@ export class BenchmarkFormPO {
 
   /**
    * Adds an exercise with prescribed reps through the full dialog flow.
-   * Opens picker, selects exercise, sets reps in the second dialog, and confirms.
-   * Waits for both dialogs to fully close before returning.
+   * Opens picker, selects exercise (added with default 10 reps), then edits the reps.
+   * Waits for all dialogs to fully close before returning.
    * @param exerciseName - The name of the exercise to add
    * @param reps - The number of prescribed reps
    */
@@ -42,25 +42,44 @@ export class BenchmarkFormPO {
     // Open exercise picker
     await this.openExercisePicker()
 
-    // Select exercise (triggers reps dialog)
+    // Select exercise (added immediately with default 10 reps)
     await this.common.selectExercise(exerciseName)
 
-    // Wait for reps dialog to appear
-    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).toBeVisible()
-
-    // Set reps by clicking preset button (presets are: 5, 10, 15, 20, 25, 30, 40, 50)
-    // The MobileNumberPicker uses preset buttons, not a spinbutton input
-    const presetButton = page.getByRole('button', { name: String(reps), exact: true })
-    await userEvent.click(presetButton)
-
-    // Confirm
-    await userEvent.click(this.common.getDialogButton('Add'))
-
-    // Wait for dialog to fully close
-    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).not.toBeInTheDocument()
+    // Wait for exercise picker to close
+    await expect.element(page.getByRole('heading', { name: /add exercise/i })).not.toBeInTheDocument()
 
     // Ensure body is clickable (no pointer-events: none from overlay)
     await expect.poll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
+
+    // If reps is not the default (10), edit it
+    if (reps !== 10) {
+      // Click the newly added exercise (last one) to open reps modal
+      const exerciseItems = await page.getByTestId('benchmark-exercise-item').all()
+      const lastExercise = exerciseItems.at(-1)
+      if (!lastExercise) {
+        throw new Error('No exercise items found after adding')
+      }
+      await userEvent.click(await lastExercise.element())
+
+      // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
+      await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
+
+      // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
+      const repsStr = String(reps)
+      for (const digit of repsStr) {
+        const digitButton = page.getByRole('button', { name: digit, exact: true })
+        await userEvent.click(digitButton)
+      }
+
+      // Confirm the value
+      await userEvent.click(page.getByTestId('confirm-button'))
+
+      // Wait for modal to close
+      await expect.element(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
+
+      // Ensure body is clickable
+      await expect.poll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
+    }
   }
 
   /**
@@ -227,9 +246,9 @@ export class BenchmarkFormPO {
 
   /**
    * Edits the reps for an exercise in the current round.
-   * Clicks the exercise to open the reps dialog, changes the value, and confirms.
+   * Clicks the exercise to open the reps modal, changes the value via keypad, and confirms.
    * @param exerciseIndex - Zero-based index of the exercise in the current round
-   * @param newReps - The new rep count to set (must be one of the MobileNumberPicker presets: 5, 10, 15, 20, 25, 30, 40, 50)
+   * @param newReps - The new rep count to set
    */
   async editExerciseReps(exerciseIndex: number, newReps: number): Promise<void> {
     // Find exercise items in the current round and click the one at the given index
@@ -240,16 +259,21 @@ export class BenchmarkFormPO {
     }
     await userEvent.click(await exerciseItem.element())
 
-    // Wait for reps dialog to appear
-    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).toBeVisible()
+    // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
+    await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
 
-    // Set reps by clicking preset button (MobileNumberPicker uses presets: 5, 10, 15, 20, 25, 30, 40, 50)
-    const presetButton = page.getByRole('button', { name: String(newReps), exact: true })
-    await userEvent.click(presetButton)
+    // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
+    const repsStr = String(newReps)
+    for (const digit of repsStr) {
+      const digitButton = page.getByRole('button', { name: digit, exact: true })
+      await userEvent.click(digitButton)
+    }
 
-    // Confirm
-    await userEvent.click(this.common.getDialogButton('Save'))
-    await expect.element(page.getByRole('heading', { name: /set prescribed reps/i })).not.toBeInTheDocument()
+    // Confirm the value
+    await userEvent.click(page.getByTestId('confirm-button'))
+
+    // Wait for modal to close
+    await expect.element(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
   }
 
   /**

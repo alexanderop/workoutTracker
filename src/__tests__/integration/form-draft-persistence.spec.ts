@@ -240,14 +240,11 @@ describe('Form Draft Persistence', () => {
         { timeout: 1000 },
       )
 
-      // Add an exercise via dialog - click add, select exercise, add reps
+      // Add an exercise via dialog - click add, select exercise (added with default 10 reps)
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
       await common.waitForDialog()
       await common.selectExercise('Barbell Row')
-      await common.waitForDialog() // Wait for reps dialog
-
-      // The reps dialog uses MobileNumberPicker, so click Add directly (default is 10)
-      await userEvent.click(page.getByRole('button', { name: /add/i }))
+      // Exercise is added immediately with default 10 reps (no second reps dialog)
       await common.waitForDialogClose()
 
       // Save the benchmark
