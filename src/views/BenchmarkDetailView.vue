@@ -8,7 +8,7 @@ import PageLayout from '@/components/PageLayout.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import BenchmarkViewMode from '@/features/benchmarks/components/BenchmarkViewMode.vue'
 import BenchmarkEditMode from '@/features/benchmarks/components/BenchmarkEditMode.vue'
-import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
+import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.vue'
 import ExercisePicker from '@/components/ExercisePicker.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useBenchmarkDetail } from '@/features/benchmarks/composables/useBenchmarkDetail'
@@ -29,10 +29,18 @@ const { isVisible: showContent } = useEnterAnimation(100)
 const {
   form,
   isSaveDisabled,
-  showRoundsInput,
+  currentRoundIndex,
+  displayRounds,
+  currentExercises,
+  roundCount,
+  canDeleteRound,
   addExercise,
   removeExercise,
   reorderExercises,
+  updateExerciseReps,
+  copyRound,
+  deleteRound,
+  navigateToRound,
   getFormData,
   initialize,
 } = useBenchmarkForm()
@@ -41,8 +49,9 @@ const isSaving = ref(false)
 
 // Exercise picker state
 const showExercisePicker = ref(false)
-const showRepsDialog = ref(false)
-const selectedExercise = ref<Exercise | null>(null)
+const showRepsModal = ref(false)
+const editingExerciseIndex = ref<number | null>(null)
+const editingReps = ref<number>(10)
 
 // Delete dialog state
 const showDeleteDialog = ref(false)
@@ -83,19 +92,24 @@ function handleAddExercise() {
 }
 
 function handleExerciseSelected(exercise: Exercise) {
-  selectedExercise.value = exercise
-  showRepsDialog.value = true
+  // Add exercise immediately with default 10 reps
+  addExercise(exercise, 10)
 }
 
-function handleRepsConfirm(reps: number) {
-  if (selectedExercise.value) {
-    addExercise(selectedExercise.value, reps)
-    selectedExercise.value = null
+function handleExerciseClick(index: number) {
+  const exercise = currentExercises.value[index]
+  if (!exercise) return
+
+  // Open reps modal for editing
+  editingExerciseIndex.value = index
+  editingReps.value = exercise.prescribedReps
+  showRepsModal.value = true
+}
+
+function handleRepsChange(reps: number) {
+  if (editingExerciseIndex.value !== null) {
+    updateExerciseReps(editingExerciseIndex.value, reps)
   }
-}
-
-function handleRepsCancel() {
-  selectedExercise.value = null
 }
 
 async function handleDeleteBenchmark(): Promise<void> {
@@ -109,7 +123,7 @@ async function handleDeleteBenchmark(): Promise<void> {
     :title="state.status === 'success' && !isEditMode ? state.benchmark.name : t('workouts.benchmarks.detail.title')"
     :subtitle="
       state.status === 'success' && !isEditMode
-        ? formatBenchmarkType(state.benchmark.type, state.benchmark.rounds)
+        ? formatBenchmarkType(state.benchmark.type, state.benchmark.rounds.length)
         : undefined
     "
     back-to="/workouts"
@@ -131,10 +145,18 @@ async function handleDeleteBenchmark(): Promise<void> {
     <BenchmarkEditMode
       v-else-if="state.status === 'success' && isEditMode"
       v-model:form="form"
-      :show-rounds-input="showRoundsInput"
+      :current-round-index="currentRoundIndex"
+      :display-rounds="displayRounds"
+      :current-exercises="currentExercises"
+      :round-count="roundCount"
+      :can-delete-round="canDeleteRound"
       @add-exercise="handleAddExercise"
       @remove-exercise="removeExercise"
       @reorder-exercises="reorderExercises"
+      @click-exercise="handleExerciseClick"
+      @copy-round="copyRound(currentRoundIndex)"
+      @delete-round="deleteRound(currentRoundIndex)"
+      @navigate-to-round="navigateToRound"
     />
 
     <!-- Error state -->
@@ -196,12 +218,12 @@ async function handleDeleteBenchmark(): Promise<void> {
       @select="handleExerciseSelected"
     />
 
-    <!-- Reps Input Dialog -->
-    <BenchmarkRepsDialog
-      v-model:open="showRepsDialog"
-      :exercise="selectedExercise"
-      @confirm="handleRepsConfirm"
-      @cancel="handleRepsCancel"
+    <!-- Reps Input Modal -->
+    <NumericInputModal
+      v-model="editingReps"
+      v-model:open="showRepsModal"
+      type="reps"
+      @update:model-value="handleRepsChange"
     />
 
     <!-- Delete Confirmation Dialog -->

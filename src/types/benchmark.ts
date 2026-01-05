@@ -9,10 +9,9 @@ import type { WorkoutMode } from './blocks'
 
 /**
  * Benchmark workout type.
- * - 'fortime': Complete prescribed rounds/reps as fast as possible
- * - 'rounds': Complete as many rounds as possible in a fixed time
+ * Only 'fortime' is supported - complete prescribed rounds/reps as fast as possible.
  */
-export type BenchmarkType = 'fortime' | 'rounds'
+export type BenchmarkType = 'fortime'
 
 /**
  * Active benchmark workout state.

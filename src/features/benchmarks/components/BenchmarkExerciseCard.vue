@@ -2,10 +2,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { useI18n } from 'vue-i18n'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
-import type { DbBenchmarkExercise } from '@/db/schema'
+import type { DbBenchmarkRoundExercise } from '@/db/schema'
 
 const { exercise, index } = defineProps<{
-  exercise: DbBenchmarkExercise
+  exercise: DbBenchmarkRoundExercise
   index: number
 }>()
 
@@ -13,7 +13,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <Card class="overflow-hidden">
+  <Card data-testid="benchmark-exercise-card" class="overflow-hidden">
     <CardContent class="p-4">
       <div class="flex items-center gap-4">
         <!-- Order number with bold typography -->

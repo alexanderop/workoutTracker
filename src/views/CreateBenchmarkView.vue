@@ -5,15 +5,20 @@ import { useFormDraft } from '@/composables/useFormDraft'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { ArrowLeft, Clock, Plus, RotateCw, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Plus, Trash2, MoreHorizontal } from 'lucide-vue-next'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import ExercisePicker from '@/components/ExercisePicker.vue'
-import BenchmarkRepsDialog from '@/features/benchmarks/components/BenchmarkRepsDialog.vue'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
-import BenchmarkTypeCard from '@/features/benchmarks/components/BenchmarkTypeCard.vue'
+import RoundTabs from '@/features/benchmarks/components/RoundTabs.vue'
+import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
 
 const { t } = useI18n()
@@ -22,22 +27,31 @@ const {
   form,
   isSaveDisabled,
   isSaving,
-  showRoundsInput,
+  currentRoundIndex,
+  displayRounds,
+  currentExercises,
+  roundCount,
+  canDeleteRound,
   reset,
   addExercise,
   removeExercise,
+  updateExerciseReps,
   reorderExercises,
+  copyRound,
+  deleteRound,
+  navigateToRound,
   save,
 } = useBenchmarkForm()
 
 // Auto-save draft to IndexedDB
 const { hasDraft, clearDraft } = useFormDraft('benchmark-create', form, {
-  isEmpty: (state) => !state.name && state.exercises.length === 0,
+  isEmpty: (state) => !state.name && state.rounds.every((r) => r.exercises.length === 0),
 })
 
 const showExercisePicker = ref(false)
-const showRepsDialog = ref(false)
-const selectedExercise = ref<Exercise | null>(null)
+const showRepsModal = ref(false)
+const editingExerciseIndex = ref<number | null>(null)
+const editingReps = ref<number>(10)
 
 function handleBack() {
   router.push({ name: RouteNames.Workouts })
@@ -48,19 +62,24 @@ function handleAddExercise() {
 }
 
 function handleExerciseSelected(exercise: Exercise) {
-  selectedExercise.value = exercise
-  showRepsDialog.value = true
+  // Add exercise immediately with default 10 reps
+  addExercise(exercise, 10)
 }
 
-function handleRepsConfirm(reps: number) {
-  if (selectedExercise.value) {
-    addExercise(selectedExercise.value, reps)
-    selectedExercise.value = null
+function handleExerciseClick(index: number) {
+  const exercise = currentExercises.value[index]
+  if (!exercise) return
+
+  // Open reps modal for editing
+  editingExerciseIndex.value = index
+  editingReps.value = exercise.prescribedReps
+  showRepsModal.value = true
+}
+
+function handleRepsChange(reps: number) {
+  if (editingExerciseIndex.value !== null) {
+    updateExerciseReps(editingExerciseIndex.value, reps)
   }
-}
-
-function handleRepsCancel() {
-  selectedExercise.value = null
 }
 
 function handleDiscard() {
@@ -68,12 +87,22 @@ function handleDiscard() {
   clearDraft()
 }
 
+function handleCopyRound() {
+  copyRound(currentRoundIndex.value)
+  navigateToRound(roundCount.value - 1)
+}
+
+function handleDeleteRound() {
+  if (!canDeleteRound.value) return
+  deleteRound(currentRoundIndex.value)
+}
+
 async function handleSave() {
   const benchmark = await save()
   if (!benchmark) return
 
   await clearDraft()
-  router.push({ name: RouteNames.Workouts })
+  router.push({ name: RouteNames.BenchmarkDetail, params: { id: benchmark.id } })
 }
 </script>
 
@@ -125,45 +154,50 @@ async function handleSave() {
           />
         </div>
 
-        <!-- Type Selection -->
-        <div class="space-y-2">
-          <Label>{{ t('workouts.benchmarks.type.label') }}</Label>
-          <div class="grid grid-cols-2 gap-3">
-            <BenchmarkTypeCard
-              type="fortime"
-              :is-selected="form.type === 'fortime'"
-              :icon="Clock"
-              :label="t('workouts.benchmarks.type.fortime')"
-              :description="t('workouts.benchmarks.type.fortimeDescription')"
-              @select="form.type = $event"
-            />
+        <!-- Round Tabs -->
+        <RoundTabs
+          :rounds="displayRounds"
+          :active-index="currentRoundIndex"
+          @select="navigateToRound"
+        />
 
-            <BenchmarkTypeCard
-              type="rounds"
-              :is-selected="form.type === 'rounds'"
-              :icon="RotateCw"
-              :label="t('workouts.benchmarks.type.rounds')"
-              :description="t('workouts.benchmarks.type.roundsDescription')"
-              @select="form.type = $event"
-            />
-          </div>
-        </div>
-
-        <!-- Rounds Input (Conditional) -->
-        <div v-if="showRoundsInput" class="space-y-2">
-          <Label for="rounds">{{ t('workouts.benchmarks.rounds.label') }}</Label>
-          <NumberField id="rounds" v-model="form.rounds" :min="1">
-            <NumberFieldInput />
-          </NumberField>
+        <!-- Round Header with Actions -->
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-muted-foreground">
+            {{ t('workouts.benchmarks.round', { current: currentRoundIndex + 1, total: roundCount }) }}
+          </h2>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                :aria-label="t('common.buttons.options')"
+              >
+                <MoreHorizontal class="icon-sm" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @select="handleCopyRound">
+                {{ t('workouts.benchmarks.copyRound') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                :disabled="!canDeleteRound"
+                @select="handleDeleteRound"
+              >
+                {{ t('workouts.benchmarks.deleteRound') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <!-- Exercise List Section -->
-        <div v-if="form.exercises.length > 0" class="space-y-2">
+        <div v-if="currentExercises.length > 0" class="space-y-2">
           <Label>{{ t('workouts.benchmarks.exercises') }}</Label>
           <BenchmarkExerciseList
-            :exercises="form.exercises"
+            :exercises="currentExercises"
             @remove="removeExercise"
             @reorder="reorderExercises"
+            @click="handleExerciseClick"
           />
         </div>
 
@@ -184,12 +218,12 @@ async function handleSave() {
       @select="handleExerciseSelected"
     />
 
-    <!-- Reps Input Dialog -->
-    <BenchmarkRepsDialog
-      v-model:open="showRepsDialog"
-      :exercise="selectedExercise"
-      @confirm="handleRepsConfirm"
-      @cancel="handleRepsCancel"
+    <!-- Reps Input Modal -->
+    <NumericInputModal
+      v-model="editingReps"
+      v-model:open="showRepsModal"
+      type="reps"
+      @update:model-value="handleRepsChange"
     />
   </div>
 </template>

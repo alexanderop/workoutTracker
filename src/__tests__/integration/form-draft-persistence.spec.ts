@@ -240,21 +240,18 @@ describe('Form Draft Persistence', () => {
         { timeout: 1000 },
       )
 
-      // Add an exercise via dialog - click add, select exercise, add reps
+      // Add an exercise via dialog - click add, select exercise (added with default 10 reps)
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
       await common.waitForDialog()
       await common.selectExercise('Barbell Row')
-      await common.waitForDialog() // Wait for reps dialog
-
-      // The reps dialog uses MobileNumberPicker, so click Add directly (default is 10)
-      await userEvent.click(page.getByRole('button', { name: /add/i }))
+      // Exercise is added immediately with default 10 reps (no second reps dialog)
       await common.waitForDialogClose()
 
       // Save the benchmark
       await userEvent.click(getByRole('button', { name: /save/i }))
 
-      // Wait for navigation back to workouts
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Workouts)
+      // Wait for navigation to benchmark detail (after save, user sees new benchmark)
+      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.BenchmarkDetail)
 
       // Verify draft was cleared
       const draft = await db.drafts.get('benchmark-create')

@@ -7,6 +7,7 @@ import BenchmarkExerciseItem from './BenchmarkExerciseItem.vue'
 type Emits = {
   remove: [index: number]
   reorder: [fromIndex: number, toIndex: number]
+  click: [index: number]
 }
 
 const { exercises } = defineProps<{
@@ -47,6 +48,7 @@ useSortable(sortableContainer, exercisesList, {
       :exercise="exercise"
       :index="index"
       @remove="emit('remove', index)"
+      @click="emit('click', index)"
     />
   </div>
 </template>

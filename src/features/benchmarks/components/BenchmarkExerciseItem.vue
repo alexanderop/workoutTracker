@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 type Emits = {
   remove: []
+  click: []
 }
 
 const { exercise, index } = defineProps<{
@@ -15,13 +16,27 @@ const { exercise, index } = defineProps<{
 }>()
 
 const emit = defineEmits<Emits>()
+
+function handleClick(event: Event) {
+  // Don't emit click if clicking on delete button
+  const target = event.target
+  if (target instanceof HTMLElement && target.closest('button')) return
+  emit('click')
+}
 const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
+  <div
+    data-testid="benchmark-exercise-item"
+    class="flex cursor-pointer items-center gap-3 rounded-lg border bg-muted/30 p-3 hover:bg-muted/50"
+    role="button"
+    tabindex="0"
+    @click="handleClick"
+    @keydown.enter="emit('click')"
+  >
     <!-- Drag handle -->
-    <div class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing">
+    <div :data-testid="`exercise-drag-handle-${index}`" class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing">
       <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
     </div>
 

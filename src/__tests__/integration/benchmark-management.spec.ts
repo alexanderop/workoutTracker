@@ -77,13 +77,13 @@ describe('Benchmark Management', () => {
     it('creates benchmark with single exercise', async () => {
       await createForTimeBenchmark({
         name: 'Helen',
-        exercises: [{ name: 'Run', reps: 400 }]
+        exercises: [{ name: 'Run', reps: 400 }],
       })
 
       const benchmarks = await getBenchmarksRepository().getAll()
       expect(benchmarks).toHaveLength(1)
       expect(benchmarks[0]?.name).toBe('Helen')
-      expect(benchmarks[0]?.exercises).toHaveLength(1)
+      expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(1)
     })
 
     it('creates benchmark with multiple exercises and rounds', async () => {
@@ -94,12 +94,12 @@ describe('Benchmark Management', () => {
           { name: 'Pull-ups', reps: 5 },
           { name: 'Push-ups', reps: 10 },
           { name: 'Squats', reps: 15 },
-        ]
+        ],
       })
 
       const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks[0]?.rounds).toBe(5)
-      expect(benchmarks[0]?.exercises).toHaveLength(3)
+      expect(benchmarks[0]?.rounds).toHaveLength(5)
+      expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(3)
     })
 
     it('validates form: cannot save without exercises', async () => {
@@ -107,7 +107,7 @@ describe('Benchmark Management', () => {
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
       await app.benchmarkForm.fillName('Test Benchmark')
-      await app.benchmarkForm.selectType('fortime')
+      // No type selection needed - all benchmarks are ForTime
       app.benchmarkForm.assertSaveDisabled()
 
       app.cleanup()

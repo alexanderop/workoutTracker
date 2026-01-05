@@ -16,6 +16,7 @@ describe('BenchmarkExerciseList', () => {
     // Start with one exercise
     const exercises = ref<Array<BenchmarkFormExercise>>([
       {
+        orderKey: 'a0',
         exerciseDefinitionId: '1',
         name: 'Bodyweight Get-up',
         prescribedReps: 15,
@@ -34,11 +35,12 @@ describe('BenchmarkExerciseList', () => {
     })
 
     // Verify first exercise is displayed
-    expect(page.getByText('Bodyweight Get-up')).toBeTruthy()
-    expect(page.getByText(/15/)).toBeTruthy() // Check for the number (translation may vary)
+    await expect.element(page.getByText('Bodyweight Get-up')).toBeVisible()
+    await expect.element(page.getByText(/15 reps/i)).toBeVisible()
 
     // Add a second exercise (simulating user adding an exercise)
     exercises.value.push({
+      orderKey: 'a1',
       exerciseDefinitionId: '2',
       name: 'Pull-ups',
       prescribedReps: 21,
@@ -53,29 +55,26 @@ describe('BenchmarkExerciseList', () => {
     await nextTick()
 
     // THIS WOULD FAIL WITHOUT THE FIX: Second exercise should now be visible
-    expect(page.getByText('Bodyweight Get-up')).toBeTruthy()
-    expect(page.getByText('Pull-ups')).toBeTruthy()
+    await expect.element(page.getByText('Bodyweight Get-up')).toBeVisible()
+    await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
-    // Verify both exercises show their rep counts (translation may vary)
-    const pullUpsElement = page.getByText(/Pull-ups/).element()
-    const allText = pullUpsElement.parentElement?.parentElement?.textContent || ''
-    expect(allText).toContain('21')
-
-    // Verify both order numbers are shown
-    expect(page.getByText('1')).toBeTruthy()
-    expect(page.getByText('2')).toBeTruthy()
+    // Verify both exercises show their rep counts
+    await expect.element(page.getByText(/15 reps/i)).toBeVisible()
+    await expect.element(page.getByText(/21 reps/i)).toBeVisible()
   })
 
   it('updates when third exercise is added', async () => {
     // Start with two exercises
     const exercises = ref<Array<BenchmarkFormExercise>>([
       {
+        orderKey: 'a0',
         exerciseDefinitionId: '1',
         name: 'Thrusters',
         prescribedReps: 21,
         image: null,
       },
       {
+        orderKey: 'a1',
         exerciseDefinitionId: '2',
         name: 'Pull-ups',
         prescribedReps: 21,
@@ -93,11 +92,12 @@ describe('BenchmarkExerciseList', () => {
     })
 
     // Verify first two exercises
-    expect(page.getByText('Thrusters').all().length).toBeGreaterThan(0)
-    expect(page.getByText('Pull-ups').all().length).toBeGreaterThan(0)
+    await expect.element(page.getByText('Thrusters')).toBeVisible()
+    await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
     // Add a third exercise
     exercises.value.push({
+      orderKey: 'a2',
       exerciseDefinitionId: '3',
       name: 'Burpees',
       prescribedReps: 10,
@@ -111,18 +111,16 @@ describe('BenchmarkExerciseList', () => {
     await nextTick()
 
     // All three should be visible
-    expect(page.getByText('Thrusters').all().length).toBeGreaterThan(0)
-    expect(page.getByText('Pull-ups').all().length).toBeGreaterThan(0)
-    expect(page.getByText('Burpees').all().length).toBeGreaterThan(0)
+    await expect.element(page.getByText('Thrusters')).toBeVisible()
+    await expect.element(page.getByText('Pull-ups')).toBeVisible()
+    await expect.element(page.getByText('Burpees')).toBeVisible()
 
     // Verify third exercise shows its rep count
-    const burpeesElement = page.getByText(/Burpees/).element()
-    const allText = burpeesElement.parentElement?.parentElement?.textContent || ''
-    expect(allText).toContain('10')
+    await expect.element(page.getByText(/10 reps/i)).toBeVisible()
   })
 
-  it('displays empty list when no exercises provided', () => {
-    const { container } = render(BenchmarkExerciseList, {
+  it('displays empty list when no exercises provided', async () => {
+    render(BenchmarkExerciseList, {
       props: {
         exercises: [],
       },
@@ -131,9 +129,7 @@ describe('BenchmarkExerciseList', () => {
       },
     })
 
-    // Should not display any exercise items - check for exercise card structure
-    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
-    const exerciseCards = container.querySelectorAll('.drag-handle')
-    expect(exerciseCards.length).toBe(0)
+    // Should not display any exercise items
+    await expect.element(page.getByTestId('benchmark-exercise-item')).not.toBeInTheDocument()
   })
 })
