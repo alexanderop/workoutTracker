@@ -1,3 +1,12 @@
+# [1.15.0](https://github.com/alexanderop/workoutTracker/compare/v1.14.0...v1.15.0) (2026-01-05)
+
+
+### Features
+
+* **benchmarks:** add variable reps per round with tabbed UI ([#105](https://github.com/alexanderop/workoutTracker/issues/105)) ([c69b728](https://github.com/alexanderop/workoutTracker/commit/c69b728bf9175508079a39bf2d31ccc9d436925d))
+
+
+
 # [1.14.0](https://github.com/alexanderop/workoutTracker/compare/v1.13.1...v1.14.0) (2026-01-04)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **numeric-input:** add barbell plate hint visualization ([#100](https://github.com/alexanderop/workoutTracker/issues/100)) ([228fd75](https://github.com/alexanderop/workoutTracker/commit/228fd7547c02a289732bc20acc8804884b17e5a5))
-
-
-
-# [1.11.0](https://github.com/alexanderop/workoutTracker/compare/v1.10.1...v1.11.0) (2026-01-01)
-
-
-### Features
-
-* markdown import/export, swipe-to-delete, and debugging framework ([#99](https://github.com/alexanderop/workoutTracker/issues/99)) ([7fbcbb0](https://github.com/alexanderop/workoutTracker/commit/7fbcbb0fa16a134be7d37d7d2d6e476acf12b43c))
 
 
 
