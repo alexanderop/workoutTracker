@@ -8,7 +8,7 @@ import type { DbBenchmark } from '@/db/schema'
 type Properties = {
   benchmark: DbBenchmark
   personalBest?: number
-  formatType: (type: 'fortime' | 'rounds', rounds: number) => string
+  formatType: (type: 'fortime', rounds: number) => string
 }
 
 const { benchmark, personalBest, formatType } = defineProps<Properties>()

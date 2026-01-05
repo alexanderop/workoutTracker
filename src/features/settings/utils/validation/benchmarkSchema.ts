@@ -39,6 +39,7 @@ const databaseBenchmarkRoundSchema = z
     orderKey: safeStringSchema.min(1).max(50),
     exercises: z
       .array(databaseBenchmarkRoundExerciseSchema)
+      .min(1)
       .max(MAX_EXERCISES_PER_ROUND)
       .readonly(),
   })
@@ -58,7 +59,7 @@ export const dbBenchmarkSchema = z
     id: safeIdSchema,
     name: safeStringSchema.min(1).max(200),
     type: benchmarkTypeSchema,
-    rounds: z.array(databaseBenchmarkRoundSchema).max(MAX_ROUNDS_PER_BENCHMARK).readonly(),
+    rounds: z.array(databaseBenchmarkRoundSchema).min(1).max(MAX_ROUNDS_PER_BENCHMARK).readonly(),
     structureHash: safeStringSchema.max(100),
     createdAt: timestampSchema,
     lastUsedAt: timestampSchema.nullable(),

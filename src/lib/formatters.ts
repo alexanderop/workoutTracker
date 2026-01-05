@@ -36,13 +36,10 @@ export function formatWeight(weight: number): string {
 
 /**
  * Format benchmark type for display.
- * Returns "For Time" for fortime type, or "X Rounds" for rounds type.
+ * Returns "For Time" for fortime benchmarks.
  */
-export function formatBenchmarkType(type: 'fortime' | 'rounds', rounds: number): string {
-  if (type === 'fortime') {
-    return 'For Time'
-  }
-  return `${rounds} Rounds`
+export function formatBenchmarkType(type: 'fortime', rounds: number): string {
+  return `For Time (${rounds} ${rounds === 1 ? 'round' : 'rounds'})`
 }
 
 /**

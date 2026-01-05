@@ -146,8 +146,7 @@ export class BenchmarkFormPO {
   }
 
   // ===========================================================================
-  // NEW: Round management methods for variable reps feature
-  // These methods are stubs that throw until the UI is implemented
+  // Round management methods for variable reps feature
   // ===========================================================================
 
   /**
@@ -191,10 +190,12 @@ export class BenchmarkFormPO {
    * @param roundIndex - Zero-based index of the round to delete
    */
   async deleteRound(roundIndex: number): Promise<void> {
+    const initialCount = await this.getRoundCount()
     await this.openRoundMenu(roundIndex)
     const deleteButton = await page.getByRole('menuitem', { name: /delete round/i }).element()
     await userEvent.click(deleteButton)
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+    await expect.poll(() => this.getRoundCount()).toBe(initialCount - 1)
   }
 
   /**
