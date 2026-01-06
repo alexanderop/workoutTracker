@@ -28,6 +28,7 @@
     "lint": "run-s lint:*",
     "i18n:check": "pnpm dlx tsx scripts/check-i18n.ts",
     "knip": "knip",
+    "ralph": "./.ralph/ralph.sh",
     "cpd": "jscpd src",
     "check:composables": "bash scripts/check-composable-usage.sh",
     "lhci": "lhci autorun",
