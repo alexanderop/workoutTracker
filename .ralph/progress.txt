@@ -1,3 +1,24 @@
 === Ralph Wiggum Progress Log ===
 Started: 2026-01-06
 
+## 2026-01-06 Session 1
+
+### Features Completed
+1. **Feature 1: DB Schema Types** - Already implemented before session
+   - DbStrengthBlockTarget discriminated union exists in src/db/schema.ts
+   - DbStrengthBlock and DbTemplateStrengthBlock use target property
+
+2. **Feature 4: Backward-Compatible Converters** - Completed this session
+   - Updated strengthBlockToDatabase() to convert domain flat structure to DB discriminated union
+   - Updated databaseToStrengthBlock() to convert DB discriminated union back to domain flat structure
+   - Converters bridge between domain StrengthBlock (flat: targetReps/targetDuration/targetWeight)
+     and DbStrengthBlock (discriminated union: target.kind = 'reps' | 'isometric')
+
+### Notes for Next Session
+- Type-check currently fails because other features haven't been migrated yet
+- Domain types in src/types/blocks.ts still use flat structure (feature 2 needed)
+- popularTemplates.ts needs updating (feature 17)
+- Template handling in dexie/templates.ts needs updating
+- Test factories need updating
+- Priority: Feature 2 (domain types) or Feature 17 (popular templates) - both would reduce errors significantly
+

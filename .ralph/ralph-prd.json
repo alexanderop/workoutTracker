@@ -13,7 +13,7 @@
         "Update DbTemplateStrengthBlock to use target: DbStrengthBlockTarget",
         "Run pnpm type-check to verify"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "types",
@@ -50,7 +50,7 @@
         "Update databaseToStrengthBlock converter",
         "Run pnpm test to verify backward compatibility"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "composables",
