@@ -18,12 +18,22 @@ const currentVersion: VersionInfo = {
   buildTime: import.meta.env.APP_BUILD_TIME,
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function hasStringField(obj: Record<string, unknown>, key: string): boolean {
+  return key in obj && typeof obj[key] === 'string'
+}
+
 function isVersionInfo(value: unknown): value is VersionInfo {
-  if (typeof value !== 'object' || value === null) return false
-  if (!('version' in value) || typeof value.version !== 'string') return false
-  if (!('tag' in value) || (typeof value.tag !== 'string' && value.tag !== null)) return false
-  if (!('commit' in value) || typeof value.commit !== 'string') return false
-  if (!('buildTime' in value) || typeof value.buildTime !== 'string') return false
+  if (!isObject(value)) return false
+  if (!hasStringField(value, 'version')) return false
+  if (!hasStringField(value, 'commit')) return false
+  if (!hasStringField(value, 'buildTime')) return false
+  // tag can be string or null
+  if (!('tag' in value)) return false
+  if (typeof value.tag !== 'string' && value.tag !== null) return false
   return true
 }
 

@@ -46,3 +46,25 @@ Fix 24 ESLint warnings:
 **Note for next session:**
 - 22 complexity warnings remain (10 features left)
 - Start with feature 2 (useVersionCheck complexity) as it's the simplest single-function fix
+
+---
+
+## Session: 2026-01-06 22:45
+
+### Feature 2: composables - useVersionCheck complexity ✅
+
+**Changes made:**
+1. `src/composables/useVersionCheck.ts`:
+   - Extracted `isObject()` helper function to check if value is a non-null object
+   - Extracted `hasStringField()` helper function to validate string properties
+   - Refactored `isVersionInfo()` to use these helpers, reducing complexity from 12 to ≤10
+   - The `tag` field validation (string or null) remains inline as it's unique
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, all tests pass
+- `pnpm lint` - complexity warning for useVersionCheck is eliminated (21 warnings remain)
+
+**Note for next session:**
+- 21 complexity warnings remain (9 features left)
+- Next candidate: Feature 3 (exerciseProgress repository - 3 functions) or Feature 5 (useExerciseProgress - single function, simpler)

@@ -20,7 +20,7 @@
         "Extract validation logic into helper functions or use early returns",
         "Run pnpm lint to verify complexity warning is fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "database",
