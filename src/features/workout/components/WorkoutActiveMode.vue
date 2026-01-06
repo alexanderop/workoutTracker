@@ -179,7 +179,7 @@ function handleRemoveBlock() {
   }
 }
 
-function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
+function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'duration' | 'rir', value: number | undefined) {
   updateSetValue(setId, field, value)
 }
 

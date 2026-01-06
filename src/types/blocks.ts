@@ -18,6 +18,7 @@ type WorkoutSet = {
   id: number
   kg: string
   reps: string
+  duration: string
   rir: string
   status: SetStatus
 }
@@ -179,6 +180,8 @@ export type StrengthBlock = {
   name: string
   equipment: Equipment
   targetReps: number
+  targetDuration: number | null // seconds for isometric exercises
+  targetWeight: number | null // kg for weighted holds (optional)
   sets: Array<WorkoutSet>
   image: Blob | null
 }

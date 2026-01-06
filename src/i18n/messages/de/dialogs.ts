@@ -59,6 +59,8 @@ export default {
     title: 'Sätze & Wiederholungen',
     description: 'Ziel-Wiederholungen und Anzahl der Sätze anpassen',
     targetReps: 'Ziel-Wiederholungen',
+    targetDuration: 'Ziel-Dauer (Sekunden)',
+    targetWeight: 'Ziel-Gewicht (optional)',
     numberOfSets: 'Anzahl der Sätze',
     saveChanges: 'Änderungen speichern',
   },

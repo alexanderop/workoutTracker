@@ -106,7 +106,10 @@ const completionData = ref<{ name: string; duration: number; id: string } | null
 const selectedExerciseData = computed<ExerciseEditData | null>(() => {
   if (!selectedExercise.value) return null
   return {
+    exerciseDefinitionId: selectedExercise.value.exerciseDefinitionId,
     targetReps: selectedExercise.value.targetReps,
+    targetDuration: selectedExercise.value.targetDuration,
+    targetWeight: selectedExercise.value.targetWeight,
     setCount: selectedExercise.value.sets.length,
   }
 })
@@ -186,7 +189,11 @@ function handleConfirmCardio(config: CardioConfig) {
 
 function handleSaveExercise(data: ExerciseEditData) {
   if (!selectedExercise.value) return
-  updateExercise({ targetReps: data.targetReps })
+  updateExercise({
+    targetReps: data.targetReps,
+    targetDuration: data.targetDuration,
+    targetWeight: data.targetWeight,
+  })
   setSetCount(workout.value.selectedBlockIndex, data.setCount)
 }
 

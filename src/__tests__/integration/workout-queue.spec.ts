@@ -14,7 +14,7 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -36,10 +36,10 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 3 blocks, navigate to block 2
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.selectExercise('Squat')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -73,10 +73,10 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 3 blocks on block 1
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.selectExercise('Squat')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -105,7 +105,7 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -170,7 +170,7 @@ describe('Workout Queue', () => {
       }).toBe(true)
 
       // Select an exercise
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
 
       // Verify 2 blocks now (check the header text)
@@ -227,10 +227,10 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 3 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.selectExercise('Squat')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -258,7 +258,7 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 2 blocks on block 1
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -301,10 +301,10 @@ describe('Workout Queue', () => {
       // Setup: Start workout with 3 blocks
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.selectExercise('Deadlift')
       await common.waitForDialogClose()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bodyweight Squat'))
+      await common.selectExercise('Bodyweight Squat')
       await common.waitForDialogClose()
 
       await builder.startWorkout()

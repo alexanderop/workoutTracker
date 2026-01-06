@@ -43,6 +43,15 @@ export function isSetReady(set: Readonly<Set>): boolean {
 }
 
 /**
+ * Check if an isometric/duration-based set is ready to be marked complete.
+ * Requires duration > 0 (weight and RIR are optional for isometric exercises).
+ */
+export function isSetReadyForDuration(set: Readonly<Set>): boolean {
+  const duration = Number(set.duration)
+  return set.duration !== '' && duration > 0
+}
+
+/**
  * Generate a unique block ID.
  */
 function generateBlockId(): number {
@@ -229,6 +238,7 @@ export function useWorkout() {
 
   function completeSet(set: Set): CompleteSetResult {
     const blockIndex = workout.value.selectedBlockIndex
+    const currentBlock = workout.value.blocks[blockIndex]
 
     // Guard: Toggle completed set back to active
     if (set.status === 'completed') {
@@ -236,20 +246,27 @@ export function useWorkout() {
       return { kind: 'uncompleted' }
     }
 
-    // Guard: Reject invalid sets
-    if (!isSetReady(set)) return { kind: 'uncompleted' }
+    // Guard: Reject invalid sets (use appropriate check based on exercise metrics)
+    const isDurationBased = currentBlock && isStrengthBlock(currentBlock) && (() => {
+      const exercisesStore = useExercisesStore()
+      if (!currentBlock.exerciseDefinitionId) return false
+      const exercise = exercisesStore.getExerciseById(currentBlock.exerciseDefinitionId)
+      return exercise?.metrics === 'duration'
+    })()
+    const isReady = isDurationBased ? isSetReadyForDuration(set) : isSetReady(set)
+    if (!isReady) return { kind: 'uncompleted' }
 
     // Mark as completed
     updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'completed' }))
 
     // Get current block (re-fetch after update)
-    const currentBlock = workout.value.blocks[blockIndex]
-    if (!currentBlock || !isStrengthBlock(currentBlock)) {
+    const updatedBlock = workout.value.blocks[blockIndex]
+    if (!updatedBlock || !isStrengthBlock(updatedBlock)) {
       return { kind: 'completed', nextAction: 'workout-complete' }
     }
 
     // Try: Activate next set in current block
-    const nextSetResult = activateNextSetInBlock(blockIndex, currentBlock, set)
+    const nextSetResult = activateNextSetInBlock(blockIndex, updatedBlock, set)
     if (nextSetResult) return nextSetResult
 
     // Try: Advance to next block
@@ -287,10 +304,11 @@ export function useWorkout() {
           id: 1,
           kg: String(lastSet.kg),
           reps: String(lastSet.reps),
+          duration: '',
           rir: lastSet.rir === null ? '' : String(lastSet.rir),
           status: 'active' as const,
         }
-      : { id: 1, kg: '', reps: '', rir: '', status: 'active' as const }
+      : { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'active' as const }
 
     appendBlock({
       kind: 'strength',
@@ -299,11 +317,13 @@ export function useWorkout() {
       name,
       equipment: exercise?.equipment ?? 'bodyweight',
       targetReps: 8,
+      targetDuration: null,
+      targetWeight: null,
       image: exercise?.image ?? null,
       sets: [
         firstSet,
-        { id: 2, kg: '', reps: '', rir: '', status: 'planned' },
-        { id: 3, kg: '', reps: '', rir: '', status: 'planned' },
+        { id: 2, kg: '', reps: '', duration: '', rir: '', status: 'planned' },
+        { id: 3, kg: '', reps: '', duration: '', rir: '', status: 'planned' },
       ],
     })
   }
@@ -385,7 +405,7 @@ export function useWorkout() {
   }
 
   function updateStrengthBlock(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
+    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
   ) {
     const blockIndex = workout.value.selectedBlockIndex
     const block = workout.value.blocks[blockIndex]
@@ -399,7 +419,7 @@ export function useWorkout() {
 
   // For backward compatibility
   function updateExercise(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
+    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
   ) {
     updateStrengthBlock(updates)
   }
@@ -414,7 +434,7 @@ export function useWorkout() {
       const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
       return {
         ...b,
-        sets: [...b.sets, { id: newId, kg: '', reps: '', rir: '', status: 'planned' as const }],
+        sets: [...b.sets, { id: newId, kg: '', reps: '', duration: '', rir: '', status: 'planned' as const }],
       }
     })
   }
@@ -462,7 +482,7 @@ export function useWorkout() {
     }
   }
 
-  function updateSetValue(setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined) {
+  function updateSetValue(setId: number, field: 'kg' | 'reps' | 'duration' | 'rir', value: number | undefined) {
     const blockIndex = workout.value.selectedBlockIndex
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return

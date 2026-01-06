@@ -128,6 +128,7 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
               id: generateId(),
               kg: set.kg,
               reps: set.reps,
+              duration: set.duration,
               rir: set.rir,
               status: 'planned' as const,
               completedAt: null,

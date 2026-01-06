@@ -1,0 +1,15 @@
+{
+  "name": "{{TASK_NAME}}",
+  "goal": "{{GOAL}}",
+  "success_criteria": [],
+  "context": "{{CONTEXT}}",
+  "instructions": [
+    "Read memory.md to understand previous progress",
+    "Check codebase for previous iteration work",
+    "Continue from where you left off",
+    "Update memory.md with learnings after significant changes",
+    "Output <promise>DONE</promise> when all criteria met"
+  ],
+  "created_at": "{{CREATED_AT}}",
+  "status": "pending"
+}

@@ -22,6 +22,7 @@ const databaseSetSchema = z
     id: safeIdSchema,
     kg: z.string().max(20),
     reps: z.string().max(20),
+    duration: z.string().max(20).optional().default(''),
     rir: z.string().max(20),
     status: setStatusSchema,
     completedAt: timestampSchema.nullable(),

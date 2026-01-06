@@ -5,6 +5,7 @@ const DEFAULTS: Readonly<Set> = {
   id: 1,
   kg: '100',
   reps: '8',
+  duration: '',
   rir: '2',
   status: 'active',
 }
@@ -14,7 +15,7 @@ export function createSet(overrides: Partial<Set> = {}): Set {
 }
 
 export function createEmptySet(overrides: Partial<Set> = {}): Set {
-  return createSet({ kg: '', reps: '', rir: '', status: 'planned', ...overrides })
+  return createSet({ kg: '', reps: '', duration: '', rir: '', status: 'planned', ...overrides })
 }
 
 export function createCompletedSet(overrides: Partial<Set> = {}): Set {

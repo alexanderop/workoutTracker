@@ -23,7 +23,7 @@ import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
 function createStrengthBlockFromTemplate(
-  templateBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
+  templateBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; targetDuration?: number | null; targetWeight?: number | null; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const setCount = templateBlock.defaultSetCount ?? 3
@@ -31,6 +31,7 @@ function createStrengthBlockFromTemplate(
     id: index + 1,
     kg: '',
     reps: String(templateBlock.targetReps ?? ''),
+    duration: '',
     rir: '',
     status: 'completed',
   }))
@@ -42,19 +43,22 @@ function createStrengthBlockFromTemplate(
     name: templateBlock.name,
     equipment: templateBlock.equipment,
     targetReps: templateBlock.targetReps ?? 8,
+    targetDuration: templateBlock.targetDuration ?? null,
+    targetWeight: templateBlock.targetWeight ?? null,
     sets,
     image: templateBlock.image,
   }
 }
 
 function createStrengthBlockFromHistory(
-  historyBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
+  historyBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; targetDuration?: number | null; targetWeight?: number | null; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
 ): StrengthBlock {
   const sets: Array<Set> = historyBlock.sets.map((set, setIndex) => ({
     id: setIndex + 1,
     kg: set.kg,
     reps: set.reps,
+    duration: '',
     rir: set.rir,
     status: 'completed',
   }))
@@ -66,6 +70,8 @@ function createStrengthBlockFromHistory(
     name: historyBlock.name,
     equipment: historyBlock.equipment,
     targetReps: historyBlock.targetReps ?? 8,
+    targetDuration: historyBlock.targetDuration ?? null,
+    targetWeight: historyBlock.targetWeight ?? null,
     sets,
     image: historyBlock.image,
   }
@@ -571,6 +577,7 @@ export const usePastWorkout = createGlobalState(() => {
         id: block.sets.length + 1,
         kg: lastSet?.kg ?? '',
         reps: lastSet?.reps ?? '',
+        duration: lastSet?.duration ?? '',
         rir: lastSet?.rir ?? '',
         status: 'completed',
       }

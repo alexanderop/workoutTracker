@@ -150,6 +150,7 @@ export default {
       set: 'Satz',
       weight: 'Gewicht',
       reps: 'Wdh.',
+      duration: 'Sek.',
       rir: 'RIR',
       estRm: 'Gesch. 1RM',
       tenRm: '10RM',
