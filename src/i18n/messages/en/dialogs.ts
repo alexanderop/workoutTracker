@@ -54,6 +54,8 @@ export default {
     title: 'Edit Sets & Reps',
     description: 'Adjust the target reps and number of sets',
     targetReps: 'Target Reps',
+    targetDuration: 'Target Duration (seconds)',
+    targetWeight: 'Target Weight (optional)',
     numberOfSets: 'Number of Sets',
     saveChanges: 'Save Changes',
   },

@@ -37,6 +37,8 @@ const TEMPLATE_STRENGTH_BLOCK_DEFAULTS: Readonly<DbTemplateStrengthBlock> = {
   name: 'Bench Press',
   equipment: 'barbell',
   targetReps: 8,
+  targetDuration: null,
+  targetWeight: null,
   image: null,
   defaultSetCount: 3,
 }

@@ -32,6 +32,8 @@ function convertStrengthBlockToDatabase(block: Readonly<StrengthBlock>, orderInd
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
+    targetDuration: block.targetDuration,
+    targetWeight: block.targetWeight,
     sets: block.sets.map(convertSetToDatabase),
     orderIndex,
     image: block.image,

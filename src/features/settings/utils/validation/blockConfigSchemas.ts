@@ -41,7 +41,9 @@ export const strengthBlockFieldsBase = {
   exerciseDefinitionId: safeIdSchema.nullable(),
   name: safeStringSchema.min(1).max(200),
   equipment: z.enum(equipmentValues),
-  targetReps: z.number().int().min(1).max(1000),
+  targetReps: z.number().int().min(0).max(1000),
+  targetDuration: z.number().int().min(0).max(3600).nullable(), // seconds for isometric exercises
+  targetWeight: z.number().min(0).max(1000).nullable(), // kg for weighted holds
   image: z.null(), // Blob can't be serialized to JSON, so always null in exports
 }
 

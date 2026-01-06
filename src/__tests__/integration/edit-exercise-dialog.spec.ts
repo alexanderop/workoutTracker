@@ -152,4 +152,52 @@ describe('Edit Exercise Dialog', () => {
 
     cleanup()
   })
+
+  describe('Isometric exercises', () => {
+    it('shows target duration instead of target reps for isometric exercise', async () => {
+      const { builder, common, getByRole, cleanup } = await createTestApp()
+
+      // Add an isometric exercise (Plank)
+      await builder.addStrengthBlock('Plank')
+
+      // Open edit dialog
+      const editButton = getByRole('button', { name: /edit plank/i })
+      await userEvent.click(editButton)
+      await common.waitForDialog()
+
+      // Expect: Duration label is visible (not "Target Reps")
+      const dialog = page.getByRole('dialog')
+      const durationLabel = dialog.getByText(/target duration/i)
+      await expect.element(durationLabel).toBeVisible()
+
+      // Expect: Target Reps label is NOT visible
+      const repsLabel = dialog.getByText(/target reps/i)
+      await expect.element(repsLabel).not.toBeInTheDocument()
+
+      // Expect: Set count is still visible
+      const setCountLabel = dialog.getByText(/number of sets/i)
+      await expect.element(setCountLabel).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows optional weight field for weighted isometric exercise', async () => {
+      const { builder, common, getByRole, cleanup } = await createTestApp()
+
+      // Add weighted isometric exercise
+      await builder.addStrengthBlock('Weighted Plank')
+
+      // Open edit dialog
+      const editButton = getByRole('button', { name: /edit weighted plank/i })
+      await userEvent.click(editButton)
+      await common.waitForDialog()
+
+      // Expect: Weight field is visible for weighted holds
+      const dialog = page.getByRole('dialog')
+      const weightLabel = dialog.getByText(/target weight/i)
+      await expect.element(weightLabel).toBeVisible()
+
+      cleanup()
+    })
+  })
 })

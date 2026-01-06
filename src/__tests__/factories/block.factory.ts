@@ -9,6 +9,8 @@ const STRENGTH_DEFAULTS: Readonly<Omit<StrengthBlock, 'sets'>> = {
   name: 'Bench Press',
   equipment: 'barbell',
   targetReps: 8,
+  targetDuration: null,
+  targetWeight: null,
   image: null,
 }
 

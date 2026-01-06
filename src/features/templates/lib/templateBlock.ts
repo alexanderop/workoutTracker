@@ -40,6 +40,8 @@ export function createTemplateStrengthBlock(exercise: Exercise): DbTemplateStren
     name: exercise.name,
     equipment: popularExercise?.equipment ?? exercise.equipment ?? 'bodyweight',
     targetReps: 0,
+    targetDuration: null,
+    targetWeight: null,
     image: exercise.image ?? null,
     defaultSetCount: 3,
   }

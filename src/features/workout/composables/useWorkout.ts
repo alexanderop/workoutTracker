@@ -317,6 +317,8 @@ export function useWorkout() {
       name,
       equipment: exercise?.equipment ?? 'bodyweight',
       targetReps: 8,
+      targetDuration: null,
+      targetWeight: null,
       image: exercise?.image ?? null,
       sets: [
         firstSet,
@@ -403,7 +405,7 @@ export function useWorkout() {
   }
 
   function updateStrengthBlock(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
+    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
   ) {
     const blockIndex = workout.value.selectedBlockIndex
     const block = workout.value.blocks[blockIndex]
@@ -417,7 +419,7 @@ export function useWorkout() {
 
   // For backward compatibility
   function updateExercise(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps'>>,
+    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
   ) {
     updateStrengthBlock(updates)
   }

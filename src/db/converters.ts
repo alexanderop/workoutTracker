@@ -207,6 +207,8 @@ function strengthBlockToDatabase(block: Readonly<StrengthBlock>, orderIndex: num
     name: block.name,
     equipment: block.equipment,
     targetReps: block.targetReps,
+    targetDuration: block.targetDuration,
+    targetWeight: block.targetWeight,
     sets: block.sets.map(setToDatabase),
     orderIndex,
     image: block.image,
@@ -221,6 +223,8 @@ function databaseToStrengthBlock(databaseBlock: Readonly<DatabaseStrengthBlock>,
     name: databaseBlock.name,
     equipment: databaseBlock.equipment,
     targetReps: databaseBlock.targetReps,
+    targetDuration: databaseBlock.targetDuration ?? null, // backward compatibility
+    targetWeight: databaseBlock.targetWeight ?? null, // backward compatibility
     sets: databaseBlock.sets.map(databaseToSet),
     image: databaseBlock.image,
   }

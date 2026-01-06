@@ -82,6 +82,8 @@ function createStrengthBlockFromExercise(exercise: Exercise): StrengthBlock {
     name: exercise.name,
     equipment: exercise.equipment ?? 'bodyweight',
     targetReps: 8,
+    targetDuration: null,
+    targetWeight: null,
     image: exercise.image ?? null,
     sets: [
       { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'completed' },
