@@ -1,3 +1,12 @@
+# [1.16.0](https://github.com/alexanderop/workoutTracker/compare/v1.15.0...v1.16.0) (2026-01-06)
+
+
+### Features
+
+* add Ralph task automation and isometric exercise support ([#106](https://github.com/alexanderop/workoutTracker/issues/106)) ([f9d7859](https://github.com/alexanderop/workoutTracker/commit/f9d78595f22887ea5123cbd8045f4921e114e505))
+
+
+
 # [1.15.0](https://github.com/alexanderop/workoutTracker/compare/v1.14.0...v1.15.0) (2026-01-05)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **onboarding:** add first-time user onboarding flow ([#101](https://github.com/alexanderop/workoutTracker/issues/101)) ([badf420](https://github.com/alexanderop/workoutTracker/commit/badf420dd60d7a16a59eb7211cc14dfaeaeeb728))
-
-
-
-# [1.12.0](https://github.com/alexanderop/workoutTracker/compare/v1.11.0...v1.12.0) (2026-01-02)
-
-
-### Features
-
-* **numeric-input:** add barbell plate hint visualization ([#100](https://github.com/alexanderop/workoutTracker/issues/100)) ([228fd75](https://github.com/alexanderop/workoutTracker/commit/228fd7547c02a289732bc20acc8804884b17e5a5))
 
 
 
