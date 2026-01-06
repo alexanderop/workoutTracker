@@ -84,9 +84,9 @@ function createStrengthBlockFromExercise(exercise: Exercise): StrengthBlock {
     targetReps: 8,
     image: exercise.image ?? null,
     sets: [
-      { id: 1, kg: '', reps: '', rir: '', status: 'completed' },
-      { id: 2, kg: '', reps: '', rir: '', status: 'completed' },
-      { id: 3, kg: '', reps: '', rir: '', status: 'completed' },
+      { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'completed' },
+      { id: 2, kg: '', reps: '', duration: '', rir: '', status: 'completed' },
+      { id: 3, kg: '', reps: '', duration: '', rir: '', status: 'completed' },
     ],
   }
 }

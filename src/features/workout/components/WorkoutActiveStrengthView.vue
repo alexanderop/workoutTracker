@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { useTouchDevice } from '@/composables/useTouchDevice'
 import { useNumberLocale } from '@/composables/useNumberLocale'
-import { isSetReady } from '@/features/workout/composables/useWorkout'
+import { useExercisesStore } from '@/stores/exercises'
+import { isSetReady, isSetReadyForDuration } from '@/features/workout/composables/useWorkout'
 import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
 import type { StrengthBlock } from '@/types/blocks'
@@ -16,11 +17,12 @@ import type { Set } from '@/types/workout'
 import { Check, Plus } from 'lucide-vue-next'
 
 // Strength-specific input types (subset of InputType)
-type StrengthInputType = Extract<InputType, 'weight' | 'reps' | 'rir'>
+type StrengthInputType = Extract<InputType, 'weight' | 'reps' | 'rir' | 'duration'>
 
 const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()
 const { intlLocale, formatNumber } = useNumberLocale()
+const exercisesStore = useExercisesStore()
 
 type Properties = {
   block: StrengthBlock
@@ -28,12 +30,19 @@ type Properties = {
 }
 
 const emit = defineEmits<{
-  'update-set': [setId: number, field: 'kg' | 'reps' | 'rir', value: number | undefined]
+  'update-set': [setId: number, field: 'kg' | 'reps' | 'rir' | 'duration', value: number | undefined]
   'toggle-complete': [set: Set]
   'add-set': []
 }>()
 
 const { block, activeSetIndex } = defineProps<Properties>()
+
+// Check if this is a duration-based exercise (isometric)
+const isDurationBased = computed(() => {
+  if (!block.exerciseDefinitionId) return false
+  const exercise = exercisesStore.getExerciseById(block.exerciseDefinitionId)
+  return exercise?.metrics === 'duration'
+})
 
 const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 
@@ -102,7 +111,8 @@ const setStates = computed(() =>
   block.sets.map((set, index) => {
     const isCompleted = set.status === 'completed'
     const isActive = index === activeSetIndex
-    const ready = isSetReady(set)
+    // Use appropriate readiness check based on exercise metrics
+    const ready = isDurationBased.value ? isSetReadyForDuration(set) : isSetReady(set)
 
     return {
       set,
@@ -114,6 +124,7 @@ const setStates = computed(() =>
       ready,
       weightValue: toDisplayValue(set.kg),
       repsValue: set.reps ? Number(set.reps) : undefined,
+      durationValue: set.duration ? Number(set.duration) : undefined,
       rirValue: set.rir === undefined || set.rir === '' ? undefined : Number(set.rir),
       estimated10RM: getEstimated10RM(set.kg, set.reps),
       rowClass: getRowClass(isActive, isCompleted),
@@ -138,6 +149,10 @@ function handleRirChange(set: Set, value: number | undefined) {
   emit('update-set', set.id, 'rir', value)
 }
 
+function handleDurationChange(set: Set, value: number | undefined) {
+  emit('update-set', set.id, 'duration', value)
+}
+
 // Modal state for touch input
 const modalOpen = ref(false)
 const modalType = ref<StrengthInputType>('weight')
@@ -154,10 +169,11 @@ function openModal(type: StrengthInputType, set: Set, currentValue: number | und
 function handleModalConfirm(value: number) {
   if (modalSetId.value === null) return
 
-  const fieldMap: Record<StrengthInputType, 'kg' | 'reps' | 'rir'> = {
+  const fieldMap: Record<StrengthInputType, 'kg' | 'reps' | 'rir' | 'duration'> = {
     weight: 'kg',
     reps: 'reps',
     rir: 'rir',
+    duration: 'duration',
   }
   const field = fieldMap[modalType.value]
   const emitValue = modalType.value === 'weight' ? toStorageValue(value) : value
@@ -193,13 +209,13 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
           <TableRow class="border-none hover:bg-transparent">
             <TableHead class="w-12 h-8 p-1 text-xs">#</TableHead>
             <TableHead class="h-8 p-1 text-xs text-center">{{ weightLabel }}</TableHead>
-            <TableHead class="h-8 p-1 text-xs text-center">{{
-              t('workouts.table.headers.reps').toUpperCase()
-            }}</TableHead>
-            <TableHead class="h-8 p-1 text-xs text-center">{{
+            <TableHead class="h-8 p-1 text-xs text-center">
+              {{ isDurationBased ? t('workouts.table.headers.duration').toUpperCase() : t('workouts.table.headers.reps').toUpperCase() }}
+            </TableHead>
+            <TableHead v-if="!isDurationBased" class="h-8 p-1 text-xs text-center">{{
               t('workouts.table.headers.rir').toUpperCase()
             }}</TableHead>
-            <TableHead class="h-8 p-1 text-xs text-center hidden sm:table-cell">{{
+            <TableHead v-if="!isDurationBased" class="h-8 p-1 text-xs text-center hidden sm:table-cell">{{
               t('workouts.table.headers.tenRm')
             }}</TableHead>
             <TableHead class="w-14 h-8 p-1">
@@ -262,11 +278,35 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
               </NumberField>
             </TableCell>
 
-            <!-- Reps -->
+            <!-- Reps or Duration -->
             <TableCell class="p-1 h-14">
-              <!-- Touch: Trigger button -->
+              <!-- Duration mode: Touch trigger -->
               <button
-                v-if="isTouchDevice"
+                v-if="isDurationBased && isTouchDevice"
+                type="button"
+                :aria-label="t('common.aria.durationForSet', { number: state.setNumber })"
+                :class="cn(state.repsInputClass, 'w-full cursor-pointer')"
+                @click="openModal('duration', state.set, state.durationValue)"
+              >
+                {{ formatDisplayValue(state.durationValue, 'duration') }}
+              </button>
+              <!-- Duration mode: Desktop NumberField -->
+              <NumberField
+                v-else-if="isDurationBased"
+                :model-value="state.durationValue"
+                :min="0"
+                :max="9999"
+                @update:model-value="handleDurationChange(state.set, $event)"
+              >
+                <NumberFieldInput
+                  placeholder="—"
+                  :aria-label="t('common.aria.durationForSet', { number: state.setNumber })"
+                  :class="state.repsInputClass"
+                />
+              </NumberField>
+              <!-- Reps mode: Touch trigger -->
+              <button
+                v-else-if="isTouchDevice"
                 type="button"
                 :aria-label="t('common.aria.repsForSet', { number: state.setNumber })"
                 :class="cn(state.repsInputClass, 'w-full cursor-pointer')"
@@ -274,7 +314,7 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
               >
                 {{ formatDisplayValue(state.repsValue, 'reps') }}
               </button>
-              <!-- Desktop: Inline NumberField -->
+              <!-- Reps mode: Desktop NumberField -->
               <NumberField
                 v-else
                 :model-value="state.repsValue"
@@ -290,8 +330,8 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
               </NumberField>
             </TableCell>
 
-            <!-- RIR -->
-            <TableCell class="p-1 h-14">
+            <!-- RIR (hidden for duration-based exercises) -->
+            <TableCell v-if="!isDurationBased" class="p-1 h-14">
               <!-- Touch: Trigger button -->
               <button
                 v-if="isTouchDevice"
@@ -318,8 +358,8 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
               </NumberField>
             </TableCell>
 
-            <!-- 10RM (hidden on small screens) -->
-            <TableCell class="p-1 h-14 text-center text-xs text-muted-foreground hidden sm:table-cell">
+            <!-- 10RM (hidden on small screens and for duration-based exercises) -->
+            <TableCell v-if="!isDurationBased" class="p-1 h-14 text-center text-xs text-muted-foreground hidden sm:table-cell">
               {{ state.estimated10RM }}
             </TableCell>
 

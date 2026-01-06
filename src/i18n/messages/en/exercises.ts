@@ -86,12 +86,14 @@ export default {
     compound: 'Compound Movement',
     isolation: 'Isolation Movement',
     stability: 'Stability/Core',
+    isometric: 'Isometric',
     cardio: 'Cardio',
   },
   typeDescriptions: {
     compound: 'Complex, multi-joint lifts like Squats/Bench',
     isolation: 'Single-joint lifts like Curls/Extensions',
-    stability: 'Planks, static holds',
+    stability: 'Dynamic stability exercises',
+    isometric: 'Static holds like Planks, Wall Sits',
     cardio: 'Running, Jumping Jacks',
   },
   metrics: {

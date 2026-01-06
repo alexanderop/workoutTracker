@@ -85,6 +85,9 @@ export const TYPE_LABELS: Readonly<Record<ExerciseType, string>> = {
   get stability() {
     return getTypeLabel('stability')
   },
+  get isometric() {
+    return getTypeLabel('isometric')
+  },
   get cardio() {
     return getTypeLabel('cardio')
   },

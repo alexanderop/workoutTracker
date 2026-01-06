@@ -86,12 +86,14 @@ export default {
     compound: 'Komplexübung',
     isolation: 'Isolationsübung',
     stability: 'Stabilität/Rumpf',
+    isometric: 'Isometrisch',
     cardio: 'Kardio',
   },
   typeDescriptions: {
     compound: 'Komplexe, mehrgelenkige Übungen wie Kniebeugen/Bankdrücken',
     isolation: 'Eingelenkige Übungen wie Curls/Extensions',
-    stability: 'Planks, statische Halteübungen',
+    stability: 'Dynamische Stabilitätsübungen',
+    isometric: 'Statische Halteübungen wie Planks, Wandsitzen',
     cardio: 'Laufen, Jumping Jacks',
   },
   metrics: {

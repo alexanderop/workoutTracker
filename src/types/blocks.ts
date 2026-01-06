@@ -18,6 +18,7 @@ type WorkoutSet = {
   id: number
   kg: string
   reps: string
+  duration: string
   rir: string
   status: SetStatus
 }

@@ -39,7 +39,8 @@ export const TYPE_OPTIONS: ReadonlyArray<SelectorOption<ExerciseType>> = [
     label: 'Isolation Movement',
     description: 'Single-joint lifts like Curls/Extensions',
   },
-  { value: 'stability', label: 'Stability/Core', description: 'Planks, static holds' },
+  { value: 'stability', label: 'Stability/Core', description: 'Dynamic stability exercises' },
+  { value: 'isometric', label: 'Isometric', description: 'Static holds like Planks, Wall Sits' },
   { value: 'cardio', label: 'Cardio', description: 'Running, Jumping Jacks' },
 ]
 

@@ -17,6 +17,7 @@ function convertSetToDatabase(set: Readonly<Set>): DbSet {
     id: generateId(),
     kg: set.kg,
     reps: set.reps,
+    duration: set.duration,
     rir: set.rir,
     status: 'completed',
     completedAt: Date.now(),

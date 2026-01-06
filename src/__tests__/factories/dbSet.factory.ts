@@ -4,6 +4,7 @@ import { generateId } from '@/db'
 const DEFAULTS: Readonly<Omit<DbSet, 'id'>> = {
   kg: '100',
   reps: '8',
+  duration: '',
   rir: '2',
   status: 'completed',
   completedAt: Date.now(),

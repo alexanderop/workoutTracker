@@ -49,6 +49,7 @@ function setToDatabase(set: Readonly<Set>): DatabaseSet {
     id: String(set.id),
     kg: set.kg,
     reps: set.reps,
+    duration: set.duration,
     rir: set.rir,
     status: set.status,
     completedAt: set.status === 'completed' ? Date.now() : null,
@@ -63,6 +64,7 @@ function databaseToSet(databaseSet: Readonly<DatabaseSet>, index: number): Set {
     id: index + 1,
     kg: databaseSet.kg,
     reps: databaseSet.reps,
+    duration: databaseSet.duration,
     rir: databaseSet.rir,
     status: databaseSet.status,
   }

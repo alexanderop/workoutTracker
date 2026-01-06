@@ -31,6 +31,7 @@ function createStrengthBlockFromTemplate(
     id: index + 1,
     kg: '',
     reps: String(templateBlock.targetReps ?? ''),
+    duration: '',
     rir: '',
     status: 'completed',
   }))
@@ -55,6 +56,7 @@ function createStrengthBlockFromHistory(
     id: setIndex + 1,
     kg: set.kg,
     reps: set.reps,
+    duration: '',
     rir: set.rir,
     status: 'completed',
   }))
@@ -571,6 +573,7 @@ export const usePastWorkout = createGlobalState(() => {
         id: block.sets.length + 1,
         kg: lastSet?.kg ?? '',
         reps: lastSet?.reps ?? '',
+        duration: lastSet?.duration ?? '',
         rir: lastSet?.rir ?? '',
         status: 'completed',
       }

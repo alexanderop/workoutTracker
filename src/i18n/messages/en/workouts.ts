@@ -150,6 +150,7 @@ export default {
       set: 'Set',
       weight: 'Weight',
       reps: 'Reps',
+      duration: 'Secs',
       rir: 'RIR',
       estRm: 'Est. 1RM',
       tenRm: '10RM',

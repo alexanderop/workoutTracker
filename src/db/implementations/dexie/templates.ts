@@ -116,6 +116,7 @@ function templateBlockToWorkoutBlock(
         id: generateId(),
         kg: '',
         reps: '',
+        duration: '',
         rir: '',
         status: setIndex === 0 ? 'active' : 'planned',
         completedAt: null,

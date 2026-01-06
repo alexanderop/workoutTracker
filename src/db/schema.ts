@@ -30,6 +30,7 @@ export type DbSet = {
   id: string
   kg: string
   reps: string
+  duration: string
   rir: string
   status: SetStatus
   completedAt: number | null
