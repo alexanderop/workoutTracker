@@ -54,7 +54,7 @@
         "Use early returns or extract conditional logic",
         "Run pnpm lint to verify complexity warning is fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "composables",

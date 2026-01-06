@@ -96,3 +96,37 @@ Fix 24 ESLint warnings:
   - Feature 5 (useExerciseProgress - single function, quick win)
   - Feature 6 (usePastWorkout - single arrow function)
   - Feature 4 (useBenchmarkForm - 2 high-complexity functions)
+
+---
+
+## Session: 2026-01-06 22:56
+
+### Feature 5: composables - useExerciseProgress complexity ✅
+
+**Changes made:**
+1. `src/features/exercises/composables/useExerciseProgress.ts`:
+   - Added `LoadResult<T>` type alias for tryCatch results
+   - Extracted `extractLoadResults()` helper function that:
+     - Takes the 3 parallel load results (history, stats, personal records)
+     - Handles all error checking and data validation
+     - Returns discriminated union: `{ error: Error }` or `{ data: {...} }`
+   - Refactored `loadProgress()` to use the helper:
+     - Calls `extractLoadResults()` with the 3 results
+     - Uses `'error' in result` discriminant check for clean branching
+     - Complexity reduced from 11 → ~5
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - complexity warning for useExerciseProgress is eliminated (17 warnings remain)
+
+**Note for next session:**
+- 17 complexity warnings remain (7 features left)
+- Quick wins remaining:
+  - Feature 6 (usePastWorkout - single arrow function, complexity 11)
+  - Feature 7 (StandaloneTimerRunner - single function, complexity 12)
+  - Feature 8 (useWorkout - 2 functions, complexity 12 and 11)
+- Larger refactors:
+  - Feature 4 (useBenchmarkForm - 2 functions, complexity 18 and 16)
+  - Feature 9 (markdownImport - 7 functions, highest 22)
+  - Feature 10 (fractionalIndexing - 4 functions)
