@@ -271,3 +271,54 @@ Fix 24 ESLint warnings:
   - Feature 9 (markdownImport - 7 functions, highest complexity 22)
   - Feature 10 (fractionalIndexing - 4 functions, highest complexity 17)
   - Feature 11 (Final verification)
+
+---
+
+## Session: 2026-01-06 23:19
+
+### Feature 9: utilities - markdownImport complexity ✅
+
+**Changes made:**
+1. `src/features/workout/utils/markdownImport.ts`:
+   - Added duration parsing helpers at top of file:
+     - `parseMinutesFormat()` - extracts "45 min" format
+     - `parseMmSsFormat()` - converts [mm, ss] parts to seconds
+     - `parseHhMmSsFormat()` - converts [hh, mm, ss] parts to seconds
+     - `parseTimeFormat()` - handles "mm:ss" and "hh:mm:ss" formats
+   - Added generic field parser infrastructure:
+     - `FieldParser<T>` type for parsing single lines into state
+     - `createFieldParserLoop()` - creates a loop that applies parsers to lines
+   - Refactored `parseFrontmatter()` (complexity 16 → ~3):
+     - Extracted `findFrontmatterEndIndex()` helper
+     - Extracted `parseFrontmatterLines()` helper
+     - Extracted `validateFrontmatter()` helper
+   - Refactored `parseMetadata()` (complexity 12 → ~2):
+     - Created `MetadataState` interface
+     - Extracted 4 field parsers: `parseH1Name`, `parseMetadataDate`, `parseMetadataDuration`, `parseMetadataNotes`
+     - Uses `createFieldParserLoop()` pattern
+   - Refactored `parseBlock()` (complexity 11 → ~4):
+     - Created `blockParsers` lookup table instead of switch statement
+     - Uses `BlockParser` type for type safety
+   - Refactored `parseStrengthBlock()` (complexity 11 → ~2):
+     - Created `StrengthBlockState` interface
+     - Extracted 4 field parsers for equipment, target, table header, and table rows
+   - Refactored `parseEmomBlock()` (complexity 11 → ~2):
+     - Created `EmomBlockState` interface
+     - Extracted 4 field parsers for duration, rotation, exercise, and result
+   - Refactored `parseCardioBlock()` (complexity 22 → ~2):
+     - Created `CardioBlockState` interface
+     - Extracted 6 field parsers: activity, duration, distance, pace, calories, notes
+     - Extracted `buildCardioResult()` helper for result assembly
+   - Refactored `parseDurationString()` (complexity 13 → ~1):
+     - Now just chains `parseMinutesFormat()` and `parseTimeFormat()` with nullish coalescing
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - 7 markdownImport complexity warnings eliminated (4 warnings remain)
+
+**Note for next session:**
+- 4 complexity warnings remain (2 features left)
+- Remaining features:
+  - Feature 10 (fractionalIndexing - 4 functions, complexity 15/11/11/17)
+  - Feature 11 (Final verification)

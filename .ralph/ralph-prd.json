@@ -102,7 +102,7 @@
         "Use lookup tables for block type handling",
         "Run pnpm lint to verify all 7 complexity warnings are fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "utilities",
