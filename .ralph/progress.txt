@@ -232,3 +232,42 @@ Fix 24 ESLint warnings:
   - Feature 9 (markdownImport - 7 functions, highest 22)
   - Feature 10 (fractionalIndexing - 4 functions)
   - Feature 11 (Final verification)
+
+---
+
+## Session: 2026-01-06 23:13
+
+### Feature 4: composables - useBenchmarkForm complexity ✅
+
+**Changes made:**
+1. `src/features/benchmarks/composables/useBenchmarkForm.ts`:
+   - Extracted `isValidIndex()` helper function for bounds checking
+   - Extracted `ReorderKeyParams` type for reorder key calculation parameters
+   - Extracted `calculateReorderKey()` helper that:
+     - Takes sorted array, fromIndex, and toIndex
+     - Handles both moving up (before target) and moving down (after target)
+     - Calculates correct orderKey using generateKeyBetween
+   - Extracted `findCurrentRoundInForm()` helper that:
+     - Gets the current round from computed and finds it in form state
+     - Used by addExercise, removeExercise, updateExerciseReps, and reorderExercises
+   - Refactored `reorderExercises()`:
+     - Uses `findCurrentRoundInForm()` to get round
+     - Uses `isValidIndex()` for bounds checking (combined into single condition)
+     - Uses `calculateReorderKey()` for orderKey calculation
+     - Complexity reduced from 18 → ~6
+   - Refactored `reorderRounds()`:
+     - Uses `isValidIndex()` for bounds checking (combined into single condition)
+     - Uses `calculateReorderKey()` for orderKey calculation
+     - Complexity reduced from 16 → ~5
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - 2 useBenchmarkForm complexity warnings eliminated (11 warnings remain)
+
+**Note for next session:**
+- 11 complexity warnings remain (3 features left)
+- Remaining features:
+  - Feature 9 (markdownImport - 7 functions, highest complexity 22)
+  - Feature 10 (fractionalIndexing - 4 functions, highest complexity 17)
+  - Feature 11 (Final verification)

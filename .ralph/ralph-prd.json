@@ -44,7 +44,7 @@
         "Consider lookup tables or strategy patterns to reduce branching",
         "Run pnpm lint to verify complexity warnings are fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "composables",
