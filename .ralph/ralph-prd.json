@@ -126,7 +126,7 @@
         "Run pnpm lint - must pass with 0 warnings",
         "Verify no regressions introduced"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
