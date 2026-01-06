@@ -161,3 +161,34 @@ Fix 24 ESLint warnings:
   - Feature 4 (useBenchmarkForm - 2 functions, complexity 18 and 16)
   - Feature 9 (markdownImport - 7 functions, highest 22)
   - Feature 10 (fractionalIndexing - 4 functions)
+
+---
+
+## Session: 2026-01-06 23:02
+
+### Feature 7: ui - StandaloneTimerRunner complexity ✅
+
+**Changes made:**
+1. `src/features/timers/components/StandaloneTimerRunner.vue`:
+   - Extracted `logWorkoutByKind()` helper function that:
+     - Takes the timed block, result, start time, and end time
+     - Handles all 4 block types (amrap, emom, tabata, fortime) with type guards
+     - Uses early returns to dispatch to the correct log function
+   - Refactored `handleLogWorkout()`:
+     - Now only validates required values exist
+     - Delegates all dispatching logic to `logWorkoutByKind()`
+     - Complexity reduced from 12 → ~3
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - complexity warning for StandaloneTimerRunner is eliminated (15 warnings remain)
+
+**Note for next session:**
+- 15 complexity warnings remain (5 features left)
+- Quick wins remaining:
+  - Feature 8 (useWorkout - 2 functions, complexity 12 and 11)
+- Larger refactors:
+  - Feature 4 (useBenchmarkForm - 2 functions, complexity 18 and 16)
+  - Feature 9 (markdownImport - 7 functions, highest 22)
+  - Feature 10 (fractionalIndexing - 4 functions)

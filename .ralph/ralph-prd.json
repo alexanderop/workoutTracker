@@ -74,7 +74,7 @@
         "Extract workout creation logic into composable or helper",
         "Run pnpm lint to verify complexity warning is fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "composables",
