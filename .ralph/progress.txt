@@ -1,24 +1,48 @@
 === Ralph Wiggum Progress Log ===
 Started: 2026-01-06
 
-## 2026-01-06 Session 1
+## PRD: Lint Warnings Cleanup
 
-### Features Completed
-1. **Feature 1: DB Schema Types** - Already implemented before session
-   - DbStrengthBlockTarget discriminated union exists in src/db/schema.ts
-   - DbStrengthBlock and DbTemplateStrengthBlock use target property
+### Overview
+Fix 24 ESLint warnings:
+- 2x no-restricted-syntax (querySelector usage in tests)
+- 22x complexity (functions exceeding max 10)
 
-2. **Feature 4: Backward-Compatible Converters** - Completed this session
-   - Updated strengthBlockToDatabase() to convert domain flat structure to DB discriminated union
-   - Updated databaseToStrengthBlock() to convert DB discriminated union back to domain flat structure
-   - Converters bridge between domain StrengthBlock (flat: targetReps/targetDuration/targetWeight)
-     and DbStrengthBlock (discriminated union: target.kind = 'reps' | 'isometric')
+### Features (11 total)
+1. testing - Replace querySelector in test files
+2. composables - useVersionCheck complexity
+3. database - exerciseProgress complexity (3 functions)
+4. composables - useBenchmarkForm complexity (2 functions)
+5. composables - useExerciseProgress complexity
+6. composables - usePastWorkout complexity
+7. ui - StandaloneTimerRunner complexity
+8. composables - useWorkout complexity (2 functions)
+9. utilities - markdownImport complexity (7 functions)
+10. utilities - fractionalIndexing complexity (4 functions)
+11. verification - Final lint check
 
-### Notes for Next Session
-- Type-check currently fails because other features haven't been migrated yet
-- Domain types in src/types/blocks.ts still use flat structure (feature 2 needed)
-- popularTemplates.ts needs updating (feature 17)
-- Template handling in dexie/templates.ts needs updating
-- Test factories need updating
-- Priority: Feature 2 (domain types) or Feature 17 (popular templates) - both would reduce errors significantly
+---
 
+## Session: 2026-01-06 22:37
+
+### Feature 1: testing - Replace querySelector in test files ✅
+
+**Changes made:**
+1. `src/__tests__/helpers/pages/BenchmarkFormPO.ts`:
+   - Converted `getExerciseItems()` from sync to async
+   - Replaced `document.querySelectorAll('button[aria-label="Remove exercise"]')` with Vitest locator chain:
+     - First get exercise items by test ID: `page.getByTestId('benchmark-exercise-item').all()`
+     - Then scope `getByRole('button', { name: /remove exercise/i })` to each item
+   - Updated `removeExercise()` to await the now-async `getExerciseItems()`
+
+2. `src/__tests__/integration/home-delete-workout.spec.ts`:
+   - Replaced `swipeable.querySelector('[data-testid="swipeable-content"]')` with `page.getByTestId('swipeable-content').all()` and iteration
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm lint` - no-restricted-syntax warnings eliminated (22 complexity warnings remain for next features)
+- `pnpm test` - 86 test files, 783 passed tests
+
+**Note for next session:**
+- 22 complexity warnings remain (10 features left)
+- Start with feature 2 (useVersionCheck complexity) as it's the simplest single-function fix

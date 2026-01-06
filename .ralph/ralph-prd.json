@@ -1,224 +1,130 @@
 {
-  "name": "Strength Block Discriminated Union Refactor",
-  "description": "Replace separate targetReps/targetDuration/targetWeight fields with a discriminated union type to make invalid states unrepresentable",
+  "name": "Lint Warnings Cleanup",
+  "description": "Fix all 24 ESLint warnings: 2 test query pattern issues and 22 function complexity violations (max 10)",
   "features": [
     {
-      "category": "types",
-      "description": "Add DbStrengthBlockTarget union type to database schema",
+      "category": "testing",
+      "description": "Replace querySelector with Vitest locators in test files",
       "steps": [
-        "Add DbStrengthBlockTarget discriminated union type to src/db/schema.ts",
-        "Define 'reps' variant with targetReps field",
-        "Define 'isometric' variant with targetDuration and nullable targetWeight",
-        "Update DbStrengthBlock to use target: DbStrengthBlockTarget",
-        "Update DbTemplateStrengthBlock to use target: DbStrengthBlockTarget",
-        "Run pnpm type-check to verify"
+        "In src/__tests__/helpers/pages/BenchmarkFormPO.ts:141 - replace document.querySelectorAll with page.getByRole or page.getByLabelText pattern",
+        "In src/__tests__/integration/home-delete-workout.spec.ts:229 - replace querySelector('[data-testid=\"swipeable-content\"]') with getByTestId",
+        "Run pnpm lint to verify no-restricted-syntax warnings are fixed"
       ],
       "passes": true
     },
     {
-      "category": "types",
-      "description": "Add StrengthBlockTarget domain type",
+      "category": "composables",
+      "description": "Reduce complexity in useVersionCheck isVersionInfo function",
       "steps": [
-        "Add StrengthBlockTarget discriminated union to src/types/blocks.ts",
-        "Define 'reps' and 'isometric' variants matching DB types",
-        "Update StrengthBlock to use target: StrengthBlockTarget",
-        "Run pnpm type-check to verify"
-      ],
-      "passes": false
-    },
-    {
-      "category": "validation",
-      "description": "Add Zod schema for strength target validation",
-      "steps": [
-        "Add strengthBlockTargetSchema to src/features/settings/utils/validation/blockConfigSchemas.ts",
-        "Use z.discriminatedUnion('kind', [...]) pattern",
-        "Validate reps variant with targetReps 0-1000",
-        "Validate isometric variant with targetDuration 1-3600",
-        "Update blockSchemas.ts to use new schema",
-        "Update templateSchema.ts to use new schema"
+        "In src/composables/useVersionCheck.ts:21 - refactor isVersionInfo (complexity 12 -> <=10)",
+        "Extract validation logic into helper functions or use early returns",
+        "Run pnpm lint to verify complexity warning is fixed"
       ],
       "passes": false
     },
     {
       "category": "database",
-      "description": "Add backward-compatible converters for strength target",
+      "description": "Reduce complexity in exerciseProgress repository methods",
       "steps": [
-        "Add normalizeStrengthTarget() function to src/db/converters.ts",
-        "Convert old format (targetReps/targetDuration on root) to discriminated union",
-        "Pass through new format blocks unchanged",
-        "Update strengthBlockToDatabase converter",
-        "Update databaseToStrengthBlock converter",
-        "Run pnpm test to verify backward compatibility"
-      ],
-      "passes": true
-    },
-    {
-      "category": "composables",
-      "description": "Update useWorkout composable with new target structure",
-      "steps": [
-        "Update addExercise() to create blocks with target: { kind: 'reps', targetReps: N }",
-        "Update updateStrengthBlock() to handle target property",
-        "Run pnpm type-check to verify"
+        "In src/db/implementations/dexie/exerciseProgress.ts:78 - refactor getExerciseHistory (complexity 11 -> <=10)",
+        "In src/db/implementations/dexie/exerciseProgress.ts:136 - refactor getExerciseStats (complexity 11 -> <=10)",
+        "In src/db/implementations/dexie/exerciseProgress.ts:199 - refactor getPersonalRecords (complexity 12 -> <=10)",
+        "Extract common patterns into helper functions",
+        "Run pnpm lint to verify complexity warnings are fixed"
       ],
       "passes": false
     },
     {
       "category": "composables",
-      "description": "Update usePastWorkout composable with new target structure",
+      "description": "Reduce complexity in useBenchmarkForm reorder functions",
       "steps": [
-        "Update block creation functions to use new target structure",
-        "Run pnpm type-check to verify"
+        "In src/features/benchmarks/composables/useBenchmarkForm.ts:218 - refactor reorderExercises (complexity 18 -> <=10)",
+        "In src/features/benchmarks/composables/useBenchmarkForm.ts:318 - refactor reorderRounds (complexity 16 -> <=10)",
+        "Extract reorder logic into smaller helper functions",
+        "Consider lookup tables or strategy patterns to reduce branching",
+        "Run pnpm lint to verify complexity warnings are fixed"
       ],
       "passes": false
     },
     {
-      "category": "templates",
-      "description": "Update template block creation with new target structure",
+      "category": "composables",
+      "description": "Reduce complexity in useExerciseProgress loadProgress function",
       "steps": [
-        "Update createTemplateStrengthBlock() in src/features/templates/lib/templateBlock.ts",
-        "Return blocks with target property",
-        "Run pnpm type-check to verify"
+        "In src/features/exercises/composables/useExerciseProgress.ts:89 - refactor loadProgress (complexity 11 -> <=10)",
+        "Use early returns or extract conditional logic",
+        "Run pnpm lint to verify complexity warning is fixed"
       ],
       "passes": false
     },
     {
-      "category": "import-export",
-      "description": "Update markdown export for discriminated union",
+      "category": "composables",
+      "description": "Reduce complexity in usePastWorkout arrow function",
       "steps": [
-        "Update src/features/workout/utils/markdownExport.ts",
-        "Export target based on kind (reps vs isometric)",
-        "Maintain backward-compatible output format"
-      ],
-      "passes": false
-    },
-    {
-      "category": "import-export",
-      "description": "Update markdown import for discriminated union",
-      "steps": [
-        "Update src/features/workout/utils/markdownImport.ts",
-        "Parse into proper discriminated union target",
-        "Handle both reps-based and duration-based exercises"
+        "In src/features/log-past-workout/composables/usePastWorkout.ts:570 - refactor arrow function (complexity 11 -> <=10)",
+        "Extract logic into named helper function with early returns",
+        "Run pnpm lint to verify complexity warning is fixed"
       ],
       "passes": false
     },
     {
       "category": "ui",
-      "description": "Update WorkoutEditExerciseDialog for new target structure",
+      "description": "Reduce complexity in StandaloneTimerRunner handleLogWorkout",
       "steps": [
-        "Update ExerciseEditData type to use new target structure",
-        "Update form state to handle reps vs isometric switching",
-        "Update save logic to produce correct discriminated union"
+        "In src/features/timers/components/StandaloneTimerRunner.vue:129 - refactor handleLogWorkout (complexity 12 -> <=10)",
+        "Extract workout creation logic into composable or helper",
+        "Run pnpm lint to verify complexity warning is fixed"
       ],
       "passes": false
     },
     {
-      "category": "ui",
-      "description": "Update WorkoutDetailExerciseCard display logic",
+      "category": "composables",
+      "description": "Reduce complexity in useWorkout composable functions",
       "steps": [
-        "Update target display logic for reps variant",
-        "Update target display logic for isometric variant",
-        "Run pnpm type-check to verify"
+        "In src/features/workout/composables/useWorkout.ts:254 - refactor completeSet (complexity 12 -> <=10)",
+        "In src/features/workout/composables/useWorkout.ts:303 - refactor addExercise (complexity 11 -> <=10)",
+        "Extract validation and state update logic into helpers",
+        "Run pnpm lint to verify complexity warnings are fixed"
       ],
       "passes": false
     },
     {
-      "category": "ui",
-      "description": "Update WorkoutActiveStrengthView target access",
+      "category": "utilities",
+      "description": "Reduce complexity in markdownImport parsing functions",
       "steps": [
-        "Update target access to use discriminated union",
-        "Display correct info based on target kind"
+        "In src/features/workout/utils/markdownImport.ts:60 - refactor parseFrontmatter (complexity 16 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:112 - refactor parseMetadata (complexity 12 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:199 - refactor parseBlock (complexity 11 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:241 - refactor parseStrengthBlock (complexity 11 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:364 - refactor parseEmomBlock (complexity 11 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:527 - refactor parseCardioBlock (complexity 22 -> <=10)",
+        "In src/features/workout/utils/markdownImport.ts:619 - refactor parseDurationString (complexity 13 -> <=10)",
+        "Extract field parsing into separate functions",
+        "Use lookup tables for block type handling",
+        "Run pnpm lint to verify all 7 complexity warnings are fixed"
       ],
       "passes": false
     },
     {
-      "category": "ui",
-      "description": "Update TemplateBlockItem template display",
+      "category": "utilities",
+      "description": "Reduce complexity in fractionalIndexing functions",
       "steps": [
-        "Update template display to handle new target structure"
-      ],
-      "passes": false
-    },
-    {
-      "category": "ui",
-      "description": "Update LogPastWorkoutBuilderStep block creation",
-      "steps": [
-        "Update block creation to use new target structure"
-      ],
-      "passes": false
-    },
-    {
-      "category": "ui",
-      "description": "Update WorkoutHeader display",
-      "steps": [
-        "Update header display to handle new target structure"
-      ],
-      "passes": false
-    },
-    {
-      "category": "ui",
-      "description": "Update ActiveWorkout view computation",
-      "steps": [
-        "Update selectedExerciseData to correctly use target property"
-      ],
-      "passes": false
-    },
-    {
-      "category": "data",
-      "description": "Update popular templates data with new target structure",
-      "steps": [
-        "Update all 30+ templates in src/data/popularTemplates.ts",
-        "Use target: { kind: 'reps', targetReps: N } format",
-        "Remove old targetReps/targetDuration fields"
-      ],
-      "passes": false
-    },
-    {
-      "category": "testing",
-      "description": "Update block.factory.ts test factory",
-      "steps": [
-        "Update default strength block to use new target structure",
-        "Add createIsometricStrengthBlock() helper function"
-      ],
-      "passes": false
-    },
-    {
-      "category": "testing",
-      "description": "Update dbBlock.factory.ts test factory",
-      "steps": [
-        "Update DB block factory to use new target structure"
-      ],
-      "passes": false
-    },
-    {
-      "category": "testing",
-      "description": "Update remaining test factories",
-      "steps": [
-        "Update dbExercise.factory.ts if needed",
-        "Update template.factory.ts if needed",
-        "Update exercise.factory.ts if needed",
-        "Update timedBlock.factory.ts if needed"
-      ],
-      "passes": false
-    },
-    {
-      "category": "testing",
-      "description": "Update integration tests for new target structure",
-      "steps": [
-        "Find tests referencing targetReps/targetDuration directly",
-        "Update to use new target.kind pattern",
-        "Ensure all tests pass"
+        "In src/lib/fractionalIndexing.ts:29 - refactor midpoint (complexity 15 -> <=10)",
+        "In src/lib/fractionalIndexing.ts:118 - refactor incrementInteger (complexity 11 -> <=10)",
+        "In src/lib/fractionalIndexing.ts:161 - refactor decrementInteger (complexity 11 -> <=10)",
+        "In src/lib/fractionalIndexing.ts:207 - refactor generateKeyBetween (complexity 17 -> <=10)",
+        "Extract character manipulation into helper functions",
+        "Run pnpm lint to verify all 4 complexity warnings are fixed"
       ],
       "passes": false
     },
     {
       "category": "verification",
-      "description": "Final verification and cleanup",
+      "description": "Final verification - all lint warnings fixed",
       "steps": [
         "Run pnpm type-check - must pass",
-        "Run pnpm lint - must pass",
         "Run pnpm test - must pass",
-        "Search for remaining old field references",
-        "Remove any deprecated code"
+        "Run pnpm lint - must pass with 0 warnings",
+        "Verify no regressions introduced"
       ],
       "passes": false
     }

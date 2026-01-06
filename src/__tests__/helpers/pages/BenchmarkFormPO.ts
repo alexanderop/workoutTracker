@@ -87,7 +87,7 @@ export class BenchmarkFormPO {
    * @param index - The zero-based index of the exercise to remove
    */
   async removeExercise(index: number): Promise<void> {
-    const exerciseDeleteButtons = this.getExerciseItems()
+    const exerciseDeleteButtons = await this.getExerciseItems()
     if (index >= exerciseDeleteButtons.length) {
       throw new Error(`Exercise index ${index} out of bounds (${exerciseDeleteButtons.length} exercises)`)
     }
@@ -136,13 +136,17 @@ export class BenchmarkFormPO {
    * Returns all exercise delete buttons currently in the list.
    * @returns Array of delete button elements
    */
-  getExerciseItems(): ReadonlyArray<HTMLElement> {
-    // Find delete buttons by their accessible name
-    const deleteButtons = document.querySelectorAll('button[aria-label="Remove exercise"]')
+  async getExerciseItems(): Promise<ReadonlyArray<HTMLElement>> {
+    // Find exercise items by test ID, then get the delete button within each
+    // This preserves DOM order and scopes to benchmark exercises only
+    const exerciseItems = await page.getByTestId('benchmark-exercise-item').all()
     const items: Array<HTMLElement> = []
-    for (const button of deleteButtons) {
-      if (button instanceof HTMLElement) {
-        items.push(button)
+    for (const item of exerciseItems) {
+      // Chain getByRole on the parent locator to scope the query
+      const deleteButtonLocator = item.getByRole('button', { name: /remove exercise/i })
+      const element = await deleteButtonLocator.element()
+      if (element instanceof HTMLElement) {
+        items.push(element)
       }
     }
     return items

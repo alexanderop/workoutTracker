@@ -221,12 +221,16 @@ describe('Home Delete Workout', () => {
       // Delete button should be visible
       await expect.element(page.getByRole('button', { name: /delete/i })).toBeVisible()
 
-      // Get the swipeable container again and click on it to close
+      // Click on the swipeable content to close it
       // We click the container itself rather than the text to avoid navigation
-      const containerElement = await page.getByText('Tap Test').element()
-      const swipeable = containerElement.closest('[data-swipeable]')
-      if (swipeable) {
-        await userEvent.click(swipeable.querySelector('[data-testid="swipeable-content"]')!)
+      // Find swipeable-content elements and click the one containing our workout text
+      const swipeableContents = await page.getByTestId('swipeable-content').all()
+      for (const content of swipeableContents) {
+        const element = await content.element()
+        if (element.textContent?.includes('Tap Test')) {
+          await userEvent.click(element)
+          break
+        }
       }
 
       // Delete button should be removed from DOM after card closes
