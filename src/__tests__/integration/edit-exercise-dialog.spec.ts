@@ -167,15 +167,15 @@ describe('Edit Exercise Dialog', () => {
 
       // Expect: Duration label is visible (not "Target Reps")
       const dialog = page.getByRole('dialog')
-      const durationLabel = dialog.getByText(/target duration/i)
+      const durationLabel = dialog.getByLabelText(/target duration/i)
       await expect.element(durationLabel).toBeVisible()
 
-      // Expect: Target Reps label is NOT visible
-      const repsLabel = dialog.getByText(/target reps/i)
-      await expect.element(repsLabel).not.toBeInTheDocument()
+      // Expect: Target Reps input is NOT present (the label for="target-reps" won't exist)
+      const repsInput = dialog.getByLabelText(/^target reps$/i)
+      await expect.element(repsInput).not.toBeInTheDocument()
 
       // Expect: Set count is still visible
-      const setCountLabel = dialog.getByText(/number of sets/i)
+      const setCountLabel = dialog.getByLabelText(/number of sets/i)
       await expect.element(setCountLabel).toBeVisible()
 
       cleanup()
@@ -194,8 +194,8 @@ describe('Edit Exercise Dialog', () => {
 
       // Expect: Weight field is visible for weighted holds
       const dialog = page.getByRole('dialog')
-      const weightLabel = dialog.getByText(/target weight/i)
-      await expect.element(weightLabel).toBeVisible()
+      const weightInput = dialog.getByLabelText(/target weight/i)
+      await expect.element(weightInput).toBeVisible()
 
       cleanup()
     })

@@ -222,3 +222,48 @@ const roundHeader = page.getByText(/round \d+\/\d+/i)
 // Tabs: "R1", "R2", "R3" (compact to avoid matching header)
 const tab = page.getByRole('tab', { name: new RegExp(`^R${index + 1}$`) })
 ```
+
+### Exercise Selection & Form Field Queries
+
+#### Use `selectExercise()` for Exact Exercise Names
+
+`getDialogButton()` uses `includes()` matching, which can select wrong exercises when names overlap:
+
+```ts
+// ❌ May select "Barbell Romanian Deadlift" instead (alphabetically first)
+await userEvent.click(common.getDialogButton('Deadlift'))
+
+// ✅ Types exact name into search and uses exact matching
+await common.selectExercise('Deadlift')
+```
+
+#### Use `getByLabelText` to Test Form Field Presence
+
+When checking if a form field exists, use `getByLabelText()` not `getByText()`. Dialog descriptions may contain the same words:
+
+```ts
+// ❌ Matches dialog description "Adjust the target reps and number of sets"
+const repsLabel = dialog.getByText(/target reps/i)
+await expect.element(repsLabel).not.toBeInTheDocument()  // Fails!
+
+// ✅ Only matches the actual input label
+const repsInput = dialog.getByLabelText(/^target reps$/i)
+await expect.element(repsInput).not.toBeInTheDocument()  // Correct
+```
+
+#### Keep Test Data Factories in Sync with Schema
+
+When adding new fields to domain types (e.g., `targetDuration`, `targetWeight` for isometric exercises), update test helper functions that create mock data:
+
+```ts
+// validation.spec.ts helper must include all required fields
+function createValidStrengthBlock(overrides = {}) {
+  return {
+    kind: 'strength',
+    targetReps: 8,
+    targetDuration: null,  // Added for isometric support
+    targetWeight: null,    // Added for isometric support
+    // ...other fields
+  }
+}
+```
