@@ -44,7 +44,7 @@ The file header contains a summary showing counts for each muscle/equipment comb
 |-------|-------------|
 | `equipment` | `'barbell'`, `'dumbbell'`, `'machine'`, `'cable'`, `'bodyweight'`, `'kettlebell'`, `'band'`, `'ez-bar'`, `'hex-bar'`, `'club'`, `'battle-rope'` |
 | `muscle` | `'chest'`, `'back'`, `'legs'`, `'shoulders'`, `'arms'`, `'core'` |
-| `type` | `'compound'`, `'isolation'`, `'stability'`, `'cardio'` |
+| `type` | `'compound'`, `'isolation'`, `'stability'`, `'cardio'`, `'isometric'` |
 | `metrics` | `'weight-reps'`, `'reps-only'`, `'duration'`, `'distance-duration'`, `'weight-distance'` |
 
 ### Metrics Guidelines
@@ -62,8 +62,9 @@ The file header contains a summary showing counts for each muscle/equipment comb
 |------|-------------|----------|
 | `compound` | Multi-joint movements | Squats, Deadlifts, Bench Press |
 | `isolation` | Single-joint movements | Bicep Curls, Leg Extensions |
-| `stability` | Balance/core focused | Planks, Bird Dogs |
+| `stability` | Dynamic balance/core exercises | Bird Dogs, Single-Leg Deadlift |
 | `cardio` | High heart rate | Burpees, Jump Rope |
+| `isometric` | Static holds under tension | Wall Sit, Dead Hang, L-Sit Hold |
 
 ## How to Add Exercises
 

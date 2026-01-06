@@ -50,7 +50,7 @@ describe('Isometric Exercise Workflow', () => {
 
     it('shows weighted plank with both weight and duration inputs', async () => {
       // Arrange: Start a new workout
-      const { builder, common, cleanup } = await createTestApp()
+      const { builder, common, workout, cleanup } = await createTestApp()
 
       // Act: Add weighted plank (has weight + duration)
       await builder.navigateTo()
@@ -77,12 +77,7 @@ describe('Isometric Exercise Workflow', () => {
       await userEvent.click(completeButton)
 
       // Assert: First set shows completed state
-      const tableRows = await page.getByRole('table').getByRole('row').all()
-      const firstDataRow = tableRows[1] // Skip header row
-      const firstCell = await firstDataRow?.getByRole('cell').first().element()
-      // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class
-      const completedIndicator = firstCell?.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
-      expect(completedIndicator).not.toBeNull()
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })

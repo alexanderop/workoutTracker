@@ -64,7 +64,7 @@ function databaseToSet(databaseSet: Readonly<DatabaseSet>, index: number): Set {
     id: index + 1,
     kg: databaseSet.kg,
     reps: databaseSet.reps,
-    duration: databaseSet.duration,
+    duration: databaseSet.duration ?? '', // backward compatibility for pre-isometric data
     rir: databaseSet.rir,
     status: databaseSet.status,
   }
