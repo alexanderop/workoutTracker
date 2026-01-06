@@ -200,18 +200,15 @@ type BlockConverterRegistry = {
 // ============================================
 
 function strengthBlockToDatabase(block: Readonly<StrengthBlock>, orderIndex: number): DatabaseStrengthBlock {
-  // Convert from domain flat structure to DB discriminated union
-  const target = block.targetDuration === null
-    ? { kind: 'reps', targetReps: block.targetReps } satisfies { kind: 'reps'; targetReps: number }
-    : { kind: 'isometric', targetDuration: block.targetDuration, targetWeight: block.targetWeight } satisfies { kind: 'isometric'; targetDuration: number; targetWeight: number | null }
-
   return {
     kind: 'strength',
     id: String(block.id),
     exerciseDefinitionId: block.exerciseDefinitionId,
     name: block.name,
     equipment: block.equipment,
-    target,
+    targetReps: block.targetReps,
+    targetDuration: block.targetDuration,
+    targetWeight: block.targetWeight,
     sets: block.sets.map(setToDatabase),
     orderIndex,
     image: block.image,
@@ -219,21 +216,15 @@ function strengthBlockToDatabase(block: Readonly<StrengthBlock>, orderIndex: num
 }
 
 function databaseToStrengthBlock(databaseBlock: Readonly<DatabaseStrengthBlock>, index: number): StrengthBlock {
-  // Convert from DB discriminated union to domain flat structure
-  const { target } = databaseBlock
-  const targetReps = target.kind === 'reps' ? target.targetReps : 0
-  const targetDuration = target.kind === 'isometric' ? target.targetDuration : null
-  const targetWeight = target.kind === 'isometric' ? target.targetWeight : null
-
   return {
     kind: 'strength',
     id: index + 1,
     exerciseDefinitionId: databaseBlock.exerciseDefinitionId,
     name: databaseBlock.name,
     equipment: databaseBlock.equipment,
-    targetReps,
-    targetDuration,
-    targetWeight,
+    targetReps: databaseBlock.targetReps,
+    targetDuration: databaseBlock.targetDuration,
+    targetWeight: databaseBlock.targetWeight,
     sets: databaseBlock.sets.map(databaseToSet),
     image: databaseBlock.image,
   }

@@ -180,18 +180,6 @@ export type DbCardioResult = {
 }
 
 // ============================================
-// Strength Block Target (Discriminated Union)
-// ============================================
-
-/**
- * Discriminated union for strength block targets.
- * Makes invalid states unrepresentable - a block is either reps-based OR isometric.
- */
-export type DbStrengthBlockTarget =
-  | { kind: 'reps'; targetReps: number }
-  | { kind: 'isometric'; targetDuration: number; targetWeight: number | null }
-
-// ============================================
 // Block Types (Discriminated Union)
 // ============================================
 
@@ -201,7 +189,9 @@ export type DbStrengthBlock = {
   exerciseDefinitionId: string | null
   name: string
   equipment: Equipment
-  target: DbStrengthBlockTarget
+  targetReps: number
+  targetDuration: number | null
+  targetWeight: number | null
   sets: ReadonlyArray<DbSet>
   orderIndex: number
   image: Blob | null
@@ -335,7 +325,9 @@ export type DbTemplateStrengthBlock = {
   exerciseDefinitionId: string | null
   name: string
   equipment: Equipment
-  target: DbStrengthBlockTarget
+  targetReps: number
+  targetDuration: number | null
+  targetWeight: number | null
   defaultSetCount: number
   image: Blob | null
 }
@@ -427,6 +419,7 @@ export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlo
 export type SetPerformance = {
   kg: number
   reps: number
+  duration: number
   rir: number | null
   estimated1RM: number
 }

@@ -19,7 +19,7 @@ import type {
   WorkoutBlock,
 } from '@/types/blocks'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
-import type { Set, Workout } from '@/types/workout'
+import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
 export type { Set, Workout } from '@/types/workout'
@@ -188,6 +188,23 @@ export function useWorkout() {
     }
   }
 
+  /**
+   * Apply prefill values from source set to target set.
+   * Uses "keep if exists, else use prefill" logic.
+   * TypeScript's `satisfies` ensures all prefillable fields are handled.
+   */
+  function applyPrefillToSet(
+    target: Readonly<Set>,
+    source: Readonly<Set>,
+  ): PrefillableSetFields {
+    return {
+      kg: target.kg || source.kg,
+      reps: target.reps || source.reps,
+      duration: target.duration || source.duration,
+      rir: target.rir || source.rir,
+    } satisfies PrefillableSetFields
+  }
+
   // Helper: Activate the next set in current block, pre-filling from completed set
   function activateNextSetInBlock(
     blockIndex: number,
@@ -199,9 +216,7 @@ export function useWorkout() {
 
     updateSetInBlock(blockIndex, nextSet.id, (s) => ({
       ...s,
-      kg: s.kg || completedSet.kg,
-      reps: s.reps || completedSet.reps,
-      rir: s.rir || completedSet.rir,
+      ...applyPrefillToSet(s, completedSet),
       status: 'active',
     }))
 
@@ -299,12 +314,12 @@ export function useWorkout() {
     const lastSet = lastSession?.sets.at(-1) // Last set from last workout
 
     // Pre-fill first set if we have history
-    const firstSet = lastSet
+    const firstSet: Set = lastSet
       ? {
           id: 1,
           kg: String(lastSet.kg),
           reps: String(lastSet.reps),
-          duration: '',
+          duration: lastSet.duration > 0 ? String(lastSet.duration) : '',
           rir: lastSet.rir === null ? '' : String(lastSet.rir),
           status: 'active' as const,
         }

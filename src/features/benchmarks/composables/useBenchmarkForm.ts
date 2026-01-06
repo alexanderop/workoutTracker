@@ -67,6 +67,22 @@ function sortedExercises(exercises: Array<ExerciseFormState>): Array<ExerciseFor
   return [...exercises].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
 }
 
+/**
+ * Convert form rounds to database format.
+ */
+function toDbRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
+  return rounds.map((round) => ({
+    orderKey: round.orderKey,
+    exercises: round.exercises.map((ex) => ({
+      orderKey: ex.orderKey,
+      exerciseDefinitionId: ex.exerciseDefinitionId,
+      name: ex.name,
+      prescribedReps: ex.prescribedReps,
+      image: ex.image,
+    })),
+  }))
+}
+
 export function useBenchmarkForm() {
   const form = ref<BenchmarkFormState>(createInitialState())
   const currentRoundIndex = ref(0)
@@ -332,22 +348,6 @@ export function useBenchmarkForm() {
         exercises: round.exercises.map((ex) => ({ ...ex })),
       })),
     }
-  }
-
-  /**
-   * Convert form rounds to database format.
-   */
-  function toDbRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
-    return rounds.map((round) => ({
-      orderKey: round.orderKey,
-      exercises: round.exercises.map((ex) => ({
-        orderKey: ex.orderKey,
-        exerciseDefinitionId: ex.exerciseDefinitionId,
-        name: ex.name,
-        prescribedReps: ex.prescribedReps,
-        image: ex.image,
-      })),
-    }))
   }
 
   /**

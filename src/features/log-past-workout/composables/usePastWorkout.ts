@@ -154,6 +154,20 @@ function createForTimeBlockFromTemplate(
   }
 }
 
+/**
+ * Creates a new set based on the previous set's values (or defaults).
+ */
+function createNewSetFromPrevious(setId: number, previousSet: Set | undefined): Set {
+  return {
+    id: setId,
+    kg: previousSet?.kg ?? '',
+    reps: previousSet?.reps ?? '',
+    duration: previousSet?.duration ?? '',
+    rir: previousSet?.rir ?? '',
+    status: 'completed',
+  }
+}
+
 function createCardioBlock(
   config: {
     activity: CardioBlock['config']['activity']
@@ -572,15 +586,7 @@ export const usePastWorkout = createGlobalState(() => {
         return block
       }
 
-      const lastSet = block.sets.at(-1)
-      const newSet: Set = {
-        id: block.sets.length + 1,
-        kg: lastSet?.kg ?? '',
-        reps: lastSet?.reps ?? '',
-        duration: lastSet?.duration ?? '',
-        rir: lastSet?.rir ?? '',
-        status: 'completed',
-      }
+      const newSet = createNewSetFromPrevious(block.sets.length + 1, block.sets.at(-1))
 
       return {
         ...block,
