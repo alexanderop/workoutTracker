@@ -1,0 +1,226 @@
+{
+  "name": "Strength Block Discriminated Union Refactor",
+  "description": "Replace separate targetReps/targetDuration/targetWeight fields with a discriminated union type to make invalid states unrepresentable",
+  "features": [
+    {
+      "category": "types",
+      "description": "Add DbStrengthBlockTarget union type to database schema",
+      "steps": [
+        "Add DbStrengthBlockTarget discriminated union type to src/db/schema.ts",
+        "Define 'reps' variant with targetReps field",
+        "Define 'isometric' variant with targetDuration and nullable targetWeight",
+        "Update DbStrengthBlock to use target: DbStrengthBlockTarget",
+        "Update DbTemplateStrengthBlock to use target: DbStrengthBlockTarget",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "types",
+      "description": "Add StrengthBlockTarget domain type",
+      "steps": [
+        "Add StrengthBlockTarget discriminated union to src/types/blocks.ts",
+        "Define 'reps' and 'isometric' variants matching DB types",
+        "Update StrengthBlock to use target: StrengthBlockTarget",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "validation",
+      "description": "Add Zod schema for strength target validation",
+      "steps": [
+        "Add strengthBlockTargetSchema to src/features/settings/utils/validation/blockConfigSchemas.ts",
+        "Use z.discriminatedUnion('kind', [...]) pattern",
+        "Validate reps variant with targetReps 0-1000",
+        "Validate isometric variant with targetDuration 1-3600",
+        "Update blockSchemas.ts to use new schema",
+        "Update templateSchema.ts to use new schema"
+      ],
+      "passes": false
+    },
+    {
+      "category": "database",
+      "description": "Add backward-compatible converters for strength target",
+      "steps": [
+        "Add normalizeStrengthTarget() function to src/db/converters.ts",
+        "Convert old format (targetReps/targetDuration on root) to discriminated union",
+        "Pass through new format blocks unchanged",
+        "Update strengthBlockToDatabase converter",
+        "Update databaseToStrengthBlock converter",
+        "Run pnpm test to verify backward compatibility"
+      ],
+      "passes": false
+    },
+    {
+      "category": "composables",
+      "description": "Update useWorkout composable with new target structure",
+      "steps": [
+        "Update addExercise() to create blocks with target: { kind: 'reps', targetReps: N }",
+        "Update updateStrengthBlock() to handle target property",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "composables",
+      "description": "Update usePastWorkout composable with new target structure",
+      "steps": [
+        "Update block creation functions to use new target structure",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "templates",
+      "description": "Update template block creation with new target structure",
+      "steps": [
+        "Update createTemplateStrengthBlock() in src/features/templates/lib/templateBlock.ts",
+        "Return blocks with target property",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "import-export",
+      "description": "Update markdown export for discriminated union",
+      "steps": [
+        "Update src/features/workout/utils/markdownExport.ts",
+        "Export target based on kind (reps vs isometric)",
+        "Maintain backward-compatible output format"
+      ],
+      "passes": false
+    },
+    {
+      "category": "import-export",
+      "description": "Update markdown import for discriminated union",
+      "steps": [
+        "Update src/features/workout/utils/markdownImport.ts",
+        "Parse into proper discriminated union target",
+        "Handle both reps-based and duration-based exercises"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update WorkoutEditExerciseDialog for new target structure",
+      "steps": [
+        "Update ExerciseEditData type to use new target structure",
+        "Update form state to handle reps vs isometric switching",
+        "Update save logic to produce correct discriminated union"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update WorkoutDetailExerciseCard display logic",
+      "steps": [
+        "Update target display logic for reps variant",
+        "Update target display logic for isometric variant",
+        "Run pnpm type-check to verify"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update WorkoutActiveStrengthView target access",
+      "steps": [
+        "Update target access to use discriminated union",
+        "Display correct info based on target kind"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update TemplateBlockItem template display",
+      "steps": [
+        "Update template display to handle new target structure"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update LogPastWorkoutBuilderStep block creation",
+      "steps": [
+        "Update block creation to use new target structure"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update WorkoutHeader display",
+      "steps": [
+        "Update header display to handle new target structure"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Update ActiveWorkout view computation",
+      "steps": [
+        "Update selectedExerciseData to correctly use target property"
+      ],
+      "passes": false
+    },
+    {
+      "category": "data",
+      "description": "Update popular templates data with new target structure",
+      "steps": [
+        "Update all 30+ templates in src/data/popularTemplates.ts",
+        "Use target: { kind: 'reps', targetReps: N } format",
+        "Remove old targetReps/targetDuration fields"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Update block.factory.ts test factory",
+      "steps": [
+        "Update default strength block to use new target structure",
+        "Add createIsometricStrengthBlock() helper function"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Update dbBlock.factory.ts test factory",
+      "steps": [
+        "Update DB block factory to use new target structure"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Update remaining test factories",
+      "steps": [
+        "Update dbExercise.factory.ts if needed",
+        "Update template.factory.ts if needed",
+        "Update exercise.factory.ts if needed",
+        "Update timedBlock.factory.ts if needed"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Update integration tests for new target structure",
+      "steps": [
+        "Find tests referencing targetReps/targetDuration directly",
+        "Update to use new target.kind pattern",
+        "Ensure all tests pass"
+      ],
+      "passes": false
+    },
+    {
+      "category": "verification",
+      "description": "Final verification and cleanup",
+      "steps": [
+        "Run pnpm type-check - must pass",
+        "Run pnpm lint - must pass",
+        "Run pnpm test - must pass",
+        "Search for remaining old field references",
+        "Remove any deprecated code"
+      ],
+      "passes": false
+    }
+  ]
+}
