@@ -68,3 +68,31 @@ Fix 24 ESLint warnings:
 **Note for next session:**
 - 21 complexity warnings remain (9 features left)
 - Next candidate: Feature 3 (exerciseProgress repository - 3 functions) or Feature 5 (useExerciseProgress - single function, simpler)
+
+---
+
+## Session: 2026-01-06 22:49
+
+### Feature 3: database - exerciseProgress complexity ✅
+
+**Changes made:**
+1. `src/db/implementations/dexie/exerciseProgress.ts`:
+   - Extracted `isWithinDateRange()` helper to check date bounds
+   - Extracted `extractExerciseSessions()` helper that combines date filtering, block extraction, and session creation - major complexity reduction
+   - Extracted `findExerciseNameFromWorkouts()` helper for legacy name lookups
+   - Extracted `updateSetRecords()` helper to update weight/1RM/reps records for a set
+   - Refactored `getExerciseHistory()`: now just calls `extractExerciseSessions()` and applies pagination (complexity 11 → ~4)
+   - Refactored `getExerciseStats()`: uses `findExerciseNameFromWorkouts()` helper, simplified control flow with ternary for avgFrequencyDays (complexity 11 → ~6)
+   - Refactored `getPersonalRecords()`: delegates set record updates to `updateSetRecords()`, uses properly typed object instead of type assertions (complexity 12 → ~6)
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - 3 exerciseProgress complexity warnings eliminated (18 warnings remain)
+
+**Note for next session:**
+- 18 complexity warnings remain (8 features left)
+- Next candidates by complexity reduction potential:
+  - Feature 5 (useExerciseProgress - single function, quick win)
+  - Feature 6 (usePastWorkout - single arrow function)
+  - Feature 4 (useBenchmarkForm - 2 high-complexity functions)

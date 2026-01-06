@@ -32,7 +32,7 @@
         "Extract common patterns into helper functions",
         "Run pnpm lint to verify complexity warnings are fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "composables",
