@@ -85,7 +85,7 @@
         "Extract validation and state update logic into helpers",
         "Run pnpm lint to verify complexity warnings are fixed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "category": "utilities",

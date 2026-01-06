@@ -192,3 +192,43 @@ Fix 24 ESLint warnings:
   - Feature 4 (useBenchmarkForm - 2 functions, complexity 18 and 16)
   - Feature 9 (markdownImport - 7 functions, highest 22)
   - Feature 10 (fractionalIndexing - 4 functions)
+
+---
+
+## Session: 2026-01-06 23:08
+
+### Feature 8: composables - useWorkout complexity ✅
+
+**Changes made:**
+1. `src/features/workout/composables/useWorkout.ts`:
+   - Extracted `shouldUseDurationValidation()` helper function that:
+     - Checks if a block's exercise uses duration-based metrics
+     - Uses early returns for guard conditions
+     - Replaces inline IIFE pattern in `completeSet`
+   - Extracted `createFirstSetFromHistory()` helper function that:
+     - Takes the last set from workout history (or undefined)
+     - Returns a pre-filled `Set` object or a blank active set
+     - Consolidates conditional set creation logic
+   - Extracted `navigateAfterSetComplete()` helper function that:
+     - Contains all the navigation chain logic (next set → next block → first incomplete block)
+     - Returns `CompleteSetResult` for all navigation scenarios
+   - Refactored `completeSet()`:
+     - Uses `shouldUseDurationValidation()` instead of inline IIFE
+     - Delegates all navigation logic to `navigateAfterSetComplete()`
+     - Complexity reduced from 12 → ~7
+   - Refactored `addExercise()`:
+     - Uses `createFirstSetFromHistory()` for first set creation
+     - Complexity reduced from 11 → ~5
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - 2 useWorkout complexity warnings eliminated (13 warnings remain)
+
+**Note for next session:**
+- 13 complexity warnings remain (4 features left)
+- Remaining features:
+  - Feature 4 (useBenchmarkForm - 2 functions, complexity 18 and 16)
+  - Feature 9 (markdownImport - 7 functions, highest 22)
+  - Feature 10 (fractionalIndexing - 4 functions)
+  - Feature 11 (Final verification)
