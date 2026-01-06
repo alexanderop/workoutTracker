@@ -322,3 +322,44 @@ Fix 24 ESLint warnings:
 - Remaining features:
   - Feature 10 (fractionalIndexing - 4 functions, complexity 15/11/11/17)
   - Feature 11 (Final verification)
+
+---
+
+## Session: 2026-01-06 23:21
+
+### Feature 10: utilities - fractionalIndexing complexity ✅
+
+**Changes made:**
+1. `src/lib/fractionalIndexing.ts`:
+   - Extracted `getDigitIndex()` helper for safe digit lookup with default
+   - Extracted `validateNoTrailingZero()` helper for trailing zero validation
+   - Extracted `findCommonPrefixLength()` helper for common prefix calculation
+   - Extracted `getMidpointDigit()` helper for midpoint digit calculation
+   - Refactored `midpoint()` (complexity 15 → ~6):
+     - Uses extracted helpers for validation and prefix handling
+     - Simplified control flow with early returns
+   - Extracted `propagateIncrement()` helper for digit array increment with carry
+   - Extracted `propagateDecrement()` helper for digit array decrement with borrow
+   - Extracted `adjustDigitsForHead()` helper for digit array adjustment on head transition
+   - Refactored `incrementInteger()` (complexity 11 → ~5):
+     - Delegates digit propagation to `propagateIncrement()`
+     - Uses early returns for boundary cases
+   - Refactored `decrementInteger()` (complexity 11 → ~5):
+     - Delegates digit propagation to `propagateDecrement()`
+     - Uses early returns for boundary cases
+   - Extracted `validateKeys()` helper for order key validation
+   - Extracted `generateKeyBeforeB()` helper for a==null case
+   - Extracted `generateKeyAfterA()` helper for b==null case
+   - Extracted `generateKeyBetweenBoth()` helper for both non-null case
+   - Refactored `generateKeyBetween()` (complexity 17 → ~3):
+     - Now just validates and delegates to the appropriate helper
+
+**Verification:**
+- `pnpm type-check` - PASS
+- `pnpm test` - 86 test files, 783 passed tests
+- `pnpm lint` - 0 warnings! All complexity warnings eliminated
+
+**Note for next session:**
+- 0 complexity warnings remain (1 feature left)
+- Remaining features:
+  - Feature 11 (Final verification) - run all checks to confirm PRD complete
