@@ -50,7 +50,8 @@ function extractLoadResults(
   const [statsError, stats] = statsResult
   const [prsError, prs] = prsResult
 
-  if (historyError || statsError || prsError || !sessions || !stats || !prs) {
+  const hasLoadError = historyError || statsError || prsError || !sessions || !stats || !prs
+  if (hasLoadError) {
     const error = historyError ?? statsError ?? prsError ?? new Error('Missing data')
     return { error }
   }

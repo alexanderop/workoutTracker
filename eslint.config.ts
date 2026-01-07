@@ -414,6 +414,19 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Require complex conditions to be extracted into named variables
+  {
+    name: 'app/extract-condition-variable',
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/**/__tests__/**'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/extract-condition-variable': 'error',
+    },
+  },
+
   ...pluginOxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
   skipFormatting,
   {

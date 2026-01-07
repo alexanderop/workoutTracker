@@ -64,7 +64,8 @@ const timerLabel = computed(() => t(`timers.types.${block.kind}`))
 
 // Track when timer starts running
 watch(isRunning, (running, wasRunning) => {
-  if (running && !wasRunning && startedAt.value === null) {
+  const isTimerStarting = running && !wasRunning && startedAt.value === null
+  if (isTimerStarting) {
     startedAt.value = Date.now()
   }
 })

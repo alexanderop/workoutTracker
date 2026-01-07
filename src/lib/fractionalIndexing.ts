@@ -27,7 +27,8 @@ function getDigitIndex(char: string | undefined, digits: string, defaultIndex: n
 
 /** Validate that neither string has a trailing zero. */
 function validateNoTrailingZero(a: string, b: string | null | undefined, zero: string): void {
-  if (a.slice(-1) === zero || (b && b.slice(-1) === zero)) {
+  const hasTrailingZero = a.slice(-1) === zero || (b && b.slice(-1) === zero)
+  if (hasTrailingZero) {
     throw new Error('trailing zero')
   }
 }
@@ -212,7 +213,8 @@ function validateKeys(
 ): void {
   if (a != null) validateOrderKey(a, digits)
   if (b != null) validateOrderKey(b, digits)
-  if (a != null && b != null && a >= b) throw new Error(`${a} >= ${b}`)
+  const isInvalidKeyOrder = a != null && b != null && a >= b
+  if (isInvalidKeyOrder) throw new Error(`${a} >= ${b}`)
 }
 
 /** Generate key when a is null (before b or at start). */

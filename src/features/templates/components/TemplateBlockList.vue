@@ -35,7 +35,8 @@ useSortable(sortableContainer, blocksList, {
   handle: '.drag-handle',
   onEnd: (event) => {
     const { oldIndex, newIndex } = event
-    if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
+    const isValidReorder = oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex
+    if (isValidReorder) {
       emit('reorder', oldIndex, newIndex)
     }
   },
