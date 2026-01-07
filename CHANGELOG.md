@@ -1,3 +1,12 @@
+# [1.17.0](https://github.com/alexanderop/workoutTracker/compare/v1.16.0...v1.17.0) (2026-01-07)
+
+
+### Features
+
+* **ralph:** add Ralph Wiggum automation infrastructure ([#107](https://github.com/alexanderop/workoutTracker/issues/107)) ([a5a87b7](https://github.com/alexanderop/workoutTracker/commit/a5a87b7aa00259eefdd5edd2fea60894a813a830))
+
+
+
 # [1.16.0](https://github.com/alexanderop/workoutTracker/compare/v1.15.0...v1.16.0) (2026-01-06)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **barbell-hint:** show weight numbers on small plates ([2cfea51](https://github.com/alexanderop/workoutTracker/commit/2cfea5136f993d4275d5fd827b4bfe24c522e87b))
-
-
-
-# [1.13.0](https://github.com/alexanderop/workoutTracker/compare/v1.12.0...v1.13.0) (2026-01-03)
-
-
-### Features
-
-* **onboarding:** add first-time user onboarding flow ([#101](https://github.com/alexanderop/workoutTracker/issues/101)) ([badf420](https://github.com/alexanderop/workoutTracker/commit/badf420dd60d7a16a59eb7211cc14dfaeaeeb728))
 
 
 
