@@ -223,8 +223,8 @@ function databaseToStrengthBlock(databaseBlock: Readonly<DatabaseStrengthBlock>,
     name: databaseBlock.name,
     equipment: databaseBlock.equipment,
     targetReps: databaseBlock.targetReps,
-    targetDuration: databaseBlock.targetDuration ?? null, // backward compatibility
-    targetWeight: databaseBlock.targetWeight ?? null, // backward compatibility
+    targetDuration: databaseBlock.targetDuration,
+    targetWeight: databaseBlock.targetWeight,
     sets: databaseBlock.sets.map(databaseToSet),
     image: databaseBlock.image,
   }

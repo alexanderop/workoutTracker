@@ -57,15 +57,106 @@ function extractSetPerformances(block: DbStrengthBlock): ReadonlyArray<SetPerfor
     .map((set) => {
       const kg = parseNumber(set.kg)
       const reps = parseNumber(set.reps)
+      const duration = parseNumber(set.duration)
       const rirValue = parseNumber(set.rir)
       return {
         kg,
         reps,
+        duration,
         rir: rirValue > 0 ? rirValue : null,
         estimated1RM: calculateEstimated1RM(kg, reps),
       }
     })
-    .filter((set) => set.kg > 0 && set.reps > 0)
+    // Keep weight-based sets OR duration-based sets (for isometric exercises)
+    .filter((set) => (set.kg > 0 && set.reps > 0) || set.duration > 0)
+}
+
+/**
+ * Check if a workout is within the specified date range.
+ */
+function isWithinDateRange(
+  workout: DbCompletedWorkout,
+  dateRange: { from: Date; to: Date } | undefined,
+): boolean {
+  if (!dateRange) return true
+  const workoutDate = new Date(workout.completedAt)
+  return workoutDate >= dateRange.from && workoutDate <= dateRange.to
+}
+
+/**
+ * Extract exercise sessions from workouts for a specific exercise.
+ */
+function extractExerciseSessions(
+  workouts: ReadonlyArray<DbCompletedWorkout>,
+  exerciseDefinitionId: string,
+  dateRange?: { from: Date; to: Date },
+): Array<ExerciseSession> {
+  const sessions: Array<ExerciseSession> = []
+
+  for (const workout of workouts) {
+    if (!isWithinDateRange(workout, dateRange)) continue
+
+    const strengthBlocks = getStrengthBlocksForExercise(workout, exerciseDefinitionId)
+    if (strengthBlocks.length === 0) continue
+
+    const allSets: Array<SetPerformance> = strengthBlocks.flatMap(extractSetPerformances)
+    if (allSets.length === 0) continue
+
+    sessions.push({
+      workoutId: workout.id,
+      workoutName: workout.name,
+      date: new Date(workout.completedAt),
+      sets: allSets,
+      totalVolume: allSets.reduce((sum, set) => sum + set.kg * set.reps, 0),
+      maxWeight: Math.max(...allSets.map((s) => s.kg)),
+      totalReps: allSets.reduce((sum, set) => sum + set.reps, 0),
+    })
+  }
+
+  return sessions
+}
+
+/**
+ * Find exercise name from workouts (legacy support when not in exercises table).
+ */
+function findExerciseNameFromWorkouts(
+  workouts: ReadonlyArray<DbCompletedWorkout>,
+  exerciseDefinitionId: string,
+): string {
+  for (const workout of workouts) {
+    for (const block of workout.blocks) {
+      if (block.kind === 'strength' && block.exerciseDefinitionId === exerciseDefinitionId) {
+        return block.name
+      }
+    }
+  }
+  return ''
+}
+
+/**
+ * Update personal records tracking maps based on a single set.
+ */
+function updateSetRecords(
+  set: SetPerformance,
+  sessionDate: Date,
+  records: {
+    maxWeight: { kg: number; date: Date; reps: number } | null
+    maxE1RM: { kg: number; date: Date; fromReps: number } | null
+    repsAtWeight: Map<number, { reps: number; date: Date }>
+  },
+): void {
+  if (!records.maxWeight || set.kg > records.maxWeight.kg) {
+    records.maxWeight = { kg: set.kg, date: sessionDate, reps: set.reps }
+  }
+
+  if (!records.maxE1RM || set.estimated1RM > records.maxE1RM.kg) {
+    records.maxE1RM = { kg: set.estimated1RM, date: sessionDate, fromReps: set.reps }
+  }
+
+  const currentRecord = records.repsAtWeight.get(set.kg)
+  if (!currentRecord || set.reps > currentRecord.reps) {
+    records.repsAtWeight.set(set.kg, { reps: set.reps, date: sessionDate })
+  }
 }
 
 export function createDexieExerciseProgressRepository(
@@ -78,81 +169,22 @@ export function createDexieExerciseProgressRepository(
     ): Promise<ReadonlyArray<ExerciseSession>> {
       const { limit, offset = 0, dateRange } = options ?? {}
 
-      // Get all completed workouts
-      const query = database.workouts.orderBy('completedAt').reverse()
-
-      // Apply date range filter if provided
-      const workouts = await query.toArray()
-
-      // Filter workouts containing this exercise and within date range
-      const sessions: Array<ExerciseSession> = []
-
-      for (const workout of workouts) {
-        // Check date range
-        if (dateRange) {
-          const workoutDate = new Date(workout.completedAt)
-          if (workoutDate < dateRange.from || workoutDate > dateRange.to) {
-            continue
-          }
-        }
-
-        // Get strength blocks for this exercise
-        const strengthBlocks = getStrengthBlocksForExercise(workout, exerciseDefinitionId)
-        if (strengthBlocks.length === 0) continue
-
-        // Extract all set performances from all matching blocks
-        const allSets: Array<SetPerformance> = []
-        for (const block of strengthBlocks) {
-          allSets.push(...extractSetPerformances(block))
-        }
-
-        if (allSets.length === 0) continue
-
-        // Calculate aggregates
-        const totalVolume = allSets.reduce((sum, set) => sum + set.kg * set.reps, 0)
-        const maxWeight = Math.max(...allSets.map((s) => s.kg))
-        const totalReps = allSets.reduce((sum, set) => sum + set.reps, 0)
-
-        sessions.push({
-          workoutId: workout.id,
-          workoutName: workout.name,
-          date: new Date(workout.completedAt),
-          sets: allSets,
-          totalVolume,
-          maxWeight,
-          totalReps,
-        })
-      }
+      const workouts = await database.workouts.orderBy('completedAt').reverse().toArray()
+      const sessions = extractExerciseSessions(workouts, exerciseDefinitionId, dateRange)
 
       // Apply pagination
-      const start = offset
       const end = limit ? offset + limit : undefined
-      return sessions.slice(start, end)
+      return sessions.slice(offset, end)
     },
 
     async getExerciseStats(exerciseDefinitionId: string): Promise<ExerciseStats> {
       const sessions = await this.getExerciseHistory(exerciseDefinitionId)
 
-      // Look up exercise name from the exercises table first
+      // Look up exercise name from the exercises table, or fall back to workouts
       const exercise = await database.customExercises.get(exerciseDefinitionId)
-      let exerciseName = exercise?.name ?? ''
-
-      // If not found in exercises table, try to find from workouts (legacy support)
-      if (!exerciseName) {
-        const workouts = await database.workouts.toArray()
-        for (const workout of workouts) {
-          for (const block of workout.blocks) {
-            if (
-              block.kind === 'strength' &&
-              block.exerciseDefinitionId === exerciseDefinitionId
-            ) {
-              exerciseName = block.name
-              break
-            }
-          }
-          if (exerciseName) break
-        }
-      }
+      const workouts = await database.workouts.toArray()
+      const exerciseName =
+        exercise?.name || findExerciseNameFromWorkouts(workouts, exerciseDefinitionId)
 
       if (sessions.length === 0) {
         return {
@@ -166,21 +198,18 @@ export function createDexieExerciseProgressRepository(
         }
       }
 
-      // Sessions are sorted newest first (array is guaranteed non-empty from early return above)
+      // Sessions are sorted newest first
       const lastPerformed = sessions[0]!.date
       const firstPerformed = sessions.at(-1)!.date
-
-      // Calculate average volume
       const totalVolume = sessions.reduce((sum, s) => sum + s.totalVolume, 0)
-      const avgVolumePerSession = totalVolume / sessions.length
 
       // Calculate average frequency (days between sessions)
-      let avgFrequencyDays: number | null = null
-      if (sessions.length > 1) {
-        const daysBetween =
-          (lastPerformed.getTime() - firstPerformed.getTime()) / (1000 * 60 * 60 * 24)
-        avgFrequencyDays = daysBetween / (sessions.length - 1)
-      }
+      const avgFrequencyDays =
+        sessions.length > 1
+          ? (lastPerformed.getTime() - firstPerformed.getTime()) /
+            (1000 * 60 * 60 * 24) /
+            (sessions.length - 1)
+          : null
 
       return {
         exerciseDefinitionId,
@@ -188,7 +217,7 @@ export function createDexieExerciseProgressRepository(
         totalSessions: sessions.length,
         lastPerformed,
         firstPerformed,
-        avgVolumePerSession,
+        avgVolumePerSession: totalVolume / sessions.length,
         avgFrequencyDays,
       }
     },
@@ -196,22 +225,25 @@ export function createDexieExerciseProgressRepository(
     async getPersonalRecords(exerciseDefinitionId: string): Promise<PersonalRecords> {
       const sessions = await this.getExerciseHistory(exerciseDefinitionId)
 
-      const result: PersonalRecords = {
-        maxWeight: null,
-        estimated1RM: null,
-        maxVolume: null,
-        maxRepsAtWeight: new Map(),
-      }
-
       if (sessions.length === 0) {
-        return result
+        return {
+          maxWeight: null,
+          estimated1RM: null,
+          maxVolume: null,
+          maxRepsAtWeight: new Map(),
+        }
       }
 
-      // Track max weight, estimated 1RM, and volume
-      let maxWeightRecord: { kg: number; date: Date; reps: number } | null = null
-      let maxE1RMRecord: { kg: number; date: Date; fromReps: number } | null = null
+      const records: {
+        maxWeight: { kg: number; date: Date; reps: number } | null
+        maxE1RM: { kg: number; date: Date; fromReps: number } | null
+        repsAtWeight: Map<number, { reps: number; date: Date }>
+      } = {
+        maxWeight: null,
+        maxE1RM: null,
+        repsAtWeight: new Map(),
+      }
       let maxVolumeRecord: { volume: number; date: Date } | null = null
-      const repsAtWeight = new Map<number, { reps: number; date: Date }>()
 
       for (const session of sessions) {
         // Check volume PR
@@ -219,34 +251,17 @@ export function createDexieExerciseProgressRepository(
           maxVolumeRecord = { volume: session.totalVolume, date: session.date }
         }
 
+        // Process all sets for weight/1RM/reps records
         for (const set of session.sets) {
-          // Check max weight
-          if (!maxWeightRecord || set.kg > maxWeightRecord.kg) {
-            maxWeightRecord = { kg: set.kg, date: session.date, reps: set.reps }
-          }
-
-          // Check estimated 1RM
-          if (!maxE1RMRecord || set.estimated1RM > maxE1RMRecord.kg) {
-            maxE1RMRecord = {
-              kg: set.estimated1RM,
-              date: session.date,
-              fromReps: set.reps,
-            }
-          }
-
-          // Track max reps at each weight
-          const currentRecord = repsAtWeight.get(set.kg)
-          if (!currentRecord || set.reps > currentRecord.reps) {
-            repsAtWeight.set(set.kg, { reps: set.reps, date: session.date })
-          }
+          updateSetRecords(set, session.date, records)
         }
       }
 
       return {
-        maxWeight: maxWeightRecord,
-        estimated1RM: maxE1RMRecord,
+        maxWeight: records.maxWeight,
+        estimated1RM: records.maxE1RM,
         maxVolume: maxVolumeRecord,
-        maxRepsAtWeight: repsAtWeight,
+        maxRepsAtWeight: records.repsAtWeight,
       }
     },
 

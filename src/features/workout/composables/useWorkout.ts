@@ -19,7 +19,7 @@ import type {
   WorkoutBlock,
 } from '@/types/blocks'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
-import type { Set, Workout } from '@/types/workout'
+import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
 export type { Set, Workout } from '@/types/workout'
@@ -126,6 +126,36 @@ function isBlockComplete(block: WorkoutBlock): boolean {
 }
 
 /**
+ * Check if a set should use duration-based validation.
+ * Returns true for exercises with 'duration' metrics.
+ */
+function shouldUseDurationValidation(block: WorkoutBlock): boolean {
+  if (!isStrengthBlock(block)) return false
+  if (!block.exerciseDefinitionId) return false
+  const exercisesStore = useExercisesStore()
+  const exercise = exercisesStore.getExerciseById(block.exerciseDefinitionId)
+  return exercise?.metrics === 'duration'
+}
+
+/**
+ * Create a pre-filled first set from last workout data.
+ * Returns the pre-filled set or a blank active set if no history.
+ */
+function createFirstSetFromHistory(lastSet: { kg: number; reps: number; duration: number; rir: number | null } | undefined): Set {
+  if (!lastSet) {
+    return { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'active' as const }
+  }
+  return {
+    id: 1,
+    kg: String(lastSet.kg),
+    reps: String(lastSet.reps),
+    duration: lastSet.duration > 0 ? String(lastSet.duration) : '',
+    rir: lastSet.rir === null ? '' : String(lastSet.rir),
+    status: 'active' as const,
+  }
+}
+
+/**
  * Find the first incomplete block in the workout.
  * Returns the block index, or -1 if all blocks are complete.
  */
@@ -188,6 +218,23 @@ export function useWorkout() {
     }
   }
 
+  /**
+   * Apply prefill values from source set to target set.
+   * Uses "keep if exists, else use prefill" logic.
+   * TypeScript's `satisfies` ensures all prefillable fields are handled.
+   */
+  function applyPrefillToSet(
+    target: Readonly<Set>,
+    source: Readonly<Set>,
+  ): PrefillableSetFields {
+    return {
+      kg: target.kg || source.kg,
+      reps: target.reps || source.reps,
+      duration: target.duration || source.duration,
+      rir: target.rir || source.rir,
+    } satisfies PrefillableSetFields
+  }
+
   // Helper: Activate the next set in current block, pre-filling from completed set
   function activateNextSetInBlock(
     blockIndex: number,
@@ -199,9 +246,7 @@ export function useWorkout() {
 
     updateSetInBlock(blockIndex, nextSet.id, (s) => ({
       ...s,
-      kg: s.kg || completedSet.kg,
-      reps: s.reps || completedSet.reps,
-      rir: s.rir || completedSet.rir,
+      ...applyPrefillToSet(s, completedSet),
       status: 'active',
     }))
 
@@ -236,6 +281,30 @@ export function useWorkout() {
     return { kind: 'completed', nextAction: 'next-block', blockIndex: nextBlockIndex }
   }
 
+  // Helper: Navigate to next workout item after completing a set
+  function navigateAfterSetComplete(
+    blockIndex: number,
+    block: StrengthBlock,
+    completedSet: Set,
+  ): CompleteSetResult {
+    // Try: next set in current block
+    const nextSetResult = activateNextSetInBlock(blockIndex, block, completedSet)
+    if (nextSetResult) return nextSetResult
+
+    // Try: next block
+    const nextBlockResult = advanceToNextBlock(blockIndex + 1)
+    if (nextBlockResult) return nextBlockResult
+
+    // Try: first incomplete block (user may have skipped earlier blocks)
+    const firstIncompleteIndex = findFirstIncompleteBlockIndex(workout.value.blocks)
+    if (firstIncompleteIndex !== -1) {
+      const incompleteBlockResult = advanceToNextBlock(firstIncompleteIndex)
+      if (incompleteBlockResult) return incompleteBlockResult
+    }
+
+    return { kind: 'completed', nextAction: 'workout-complete' }
+  }
+
   function completeSet(set: Set): CompleteSetResult {
     const blockIndex = workout.value.selectedBlockIndex
     const currentBlock = workout.value.blocks[blockIndex]
@@ -247,42 +316,20 @@ export function useWorkout() {
     }
 
     // Guard: Reject invalid sets (use appropriate check based on exercise metrics)
-    const isDurationBased = currentBlock && isStrengthBlock(currentBlock) && (() => {
-      const exercisesStore = useExercisesStore()
-      if (!currentBlock.exerciseDefinitionId) return false
-      const exercise = exercisesStore.getExerciseById(currentBlock.exerciseDefinitionId)
-      return exercise?.metrics === 'duration'
-    })()
+    const isDurationBased = currentBlock ? shouldUseDurationValidation(currentBlock) : false
     const isReady = isDurationBased ? isSetReadyForDuration(set) : isSetReady(set)
     if (!isReady) return { kind: 'uncompleted' }
 
     // Mark as completed
     updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'completed' }))
 
-    // Get current block (re-fetch after update)
+    // Get current block (re-fetch after update) and navigate
     const updatedBlock = workout.value.blocks[blockIndex]
     if (!updatedBlock || !isStrengthBlock(updatedBlock)) {
       return { kind: 'completed', nextAction: 'workout-complete' }
     }
 
-    // Try: Activate next set in current block
-    const nextSetResult = activateNextSetInBlock(blockIndex, updatedBlock, set)
-    if (nextSetResult) return nextSetResult
-
-    // Try: Advance to next block
-    const nextBlockResult = advanceToNextBlock(blockIndex + 1)
-    if (nextBlockResult) return nextBlockResult
-
-    // Check if there are any incomplete blocks earlier in the workout
-    // (user may have skipped blocks manually)
-    const firstIncompleteIndex = findFirstIncompleteBlockIndex(workout.value.blocks)
-    if (firstIncompleteIndex !== -1) {
-      const incompleteBlockResult = advanceToNextBlock(firstIncompleteIndex)
-      if (incompleteBlockResult) return incompleteBlockResult
-    }
-
-    // Fallback: All blocks complete, workout is done
-    return { kind: 'completed', nextAction: 'workout-complete' }
+    return navigateAfterSetComplete(blockIndex, updatedBlock, set)
   }
 
   async function addExercise(exerciseId: string, name: string) {
@@ -295,20 +342,8 @@ export function useWorkout() {
     const [_error, history] = await tryCatch(
       getExerciseProgressRepository().getExerciseHistory(exerciseId, { limit: 1 }),
     )
-    const lastSession = history?.[0]
-    const lastSet = lastSession?.sets.at(-1) // Last set from last workout
-
-    // Pre-fill first set if we have history
-    const firstSet = lastSet
-      ? {
-          id: 1,
-          kg: String(lastSet.kg),
-          reps: String(lastSet.reps),
-          duration: '',
-          rir: lastSet.rir === null ? '' : String(lastSet.rir),
-          status: 'active' as const,
-        }
-      : { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'active' as const }
+    const lastSet = history?.[0]?.sets.at(-1)
+    const firstSet = createFirstSetFromHistory(lastSet)
 
     appendBlock({
       kind: 'strength',
@@ -441,7 +476,8 @@ export function useWorkout() {
 
   function removeSet(blockIndex: number, setId: number) {
     const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block) || block.sets.length <= 1) return
+    const cannotRemoveSet = !block || !isStrengthBlock(block) || block.sets.length <= 1
+    if (cannotRemoveSet) return
 
     updateBlockAtIndex(blockIndex, (b) => {
       if (!isStrengthBlock(b)) return b

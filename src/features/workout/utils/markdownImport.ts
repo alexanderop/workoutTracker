@@ -25,6 +25,89 @@ import {
 } from './markdownSpec'
 
 // ============================================
+// Duration Parsing Helpers
+// ============================================
+
+function parseMinutesFormat(str: string): number | null {
+  const match = str.match(/^(\d+)\s*min/)
+  return match?.[1] ? Number.parseInt(match[1], 10) * 60 : null
+}
+
+function parseMmSsFormat(parts: Array<number>): number {
+  return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
+}
+
+function parseHhMmSsFormat(parts: Array<number>): number {
+  return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0)
+}
+
+function parseTimeFormat(str: string): number | null {
+  const match = str.match(/^(\d+):(\d+)(?::(\d+))?$/)
+  if (!match?.[1] || !match[2]) return null
+
+  const parts = [match[1], match[2], match[3]].filter(Boolean).map(Number)
+  return parts.length === 3 ? parseHhMmSsFormat(parts) : parseMmSsFormat(parts)
+}
+
+// ============================================
+// Field Parser Types and Helpers
+// ============================================
+
+type FieldParser<T> = (line: string, state: T) => boolean
+
+function createFieldParserLoop<T>(parsers: ReadonlyArray<FieldParser<T>>) {
+  return (lines: ReadonlyArray<string>, state: T, stopCondition?: (line: string) => boolean): void => {
+    for (const line of lines) {
+      if (stopCondition?.(line)) break
+      for (const parser of parsers) {
+        if (parser(line, state)) break
+      }
+    }
+  }
+}
+
+// ============================================
+// Frontmatter Helpers
+// ============================================
+
+function findFrontmatterEndIndex(lines: ReadonlyArray<string>): number {
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i]?.trim() === '---') return i
+  }
+  return -1
+}
+
+function parseFrontmatterLines(lines: ReadonlyArray<string>): Record<string, string> {
+  const frontmatter: Record<string, string> = {}
+  for (const line of lines) {
+    const match = line.match(/^(\w+):\s*(.+)$/)
+    if (match?.[1] && match[2]) {
+      frontmatter[match[1]] = match[2]
+    }
+  }
+  return frontmatter
+}
+
+function validateFrontmatter(frontmatter: Record<string, string>): ParseResult<MarkdownFrontmatter> {
+  if (frontmatter['format'] !== MARKDOWN_SPEC_FORMAT) {
+    return singleError(
+      `Invalid format: expected "${MARKDOWN_SPEC_FORMAT}", got "${frontmatter['format']}"`,
+    )
+  }
+
+  const version = Number.parseInt(frontmatter['version'] ?? '0', 10)
+  if (Number.isNaN(version) || version < 1) {
+    return singleError('Invalid or missing version in frontmatter')
+  }
+
+  return parseSuccess({
+    format: MARKDOWN_SPEC_FORMAT,
+    version,
+    exported: frontmatter['exported'] ?? new Date().toISOString(),
+  })
+}
+
+// ============================================
 // Main Parser
 // ============================================
 
@@ -58,100 +141,89 @@ export function parseWorkoutMarkdown(markdown: string): ParseResult<ParsedWorkou
 // ============================================
 
 export function parseFrontmatter(lines: ReadonlyArray<string>): ParseResult<MarkdownFrontmatter> {
-  const firstLine = lines[0]?.trim()
-  if (firstLine !== '---') {
+  if (lines[0]?.trim() !== '---') {
     return singleError('Missing YAML frontmatter delimiter', 1)
   }
 
-  // Find closing delimiter
-  let endIndex = -1
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i]?.trim() === '---') {
-      endIndex = i
-      break
-    }
-  }
-
+  const endIndex = findFrontmatterEndIndex(lines)
   if (endIndex === -1) {
     return singleError('Missing closing YAML frontmatter delimiter')
   }
 
-  const frontmatterLines = lines.slice(1, endIndex)
-  const frontmatter: Record<string, string> = {}
-
-  for (const line of frontmatterLines) {
-    const match = line.match(/^(\w+):\s*(.+)$/)
-    if (match?.[1] && match[2]) {
-      frontmatter[match[1]] = match[2]
-    }
-  }
-
-  // Validate format
-  if (frontmatter['format'] !== MARKDOWN_SPEC_FORMAT) {
-    return singleError(
-      `Invalid format: expected "${MARKDOWN_SPEC_FORMAT}", got "${frontmatter['format']}"`,
-    )
-  }
-
-  const version = Number.parseInt(frontmatter['version'] ?? '0', 10)
-  if (Number.isNaN(version) || version < 1) {
-    return singleError('Invalid or missing version in frontmatter')
-  }
-
-  return parseSuccess({
-    format: MARKDOWN_SPEC_FORMAT,
-    version,
-    exported: frontmatter['exported'] ?? new Date().toISOString(),
-  })
+  const frontmatter = parseFrontmatterLines(lines.slice(1, endIndex))
+  return validateFrontmatter(frontmatter)
 }
 
 // ============================================
 // Metadata Parser
 // ============================================
 
+interface MetadataState {
+  name: string
+  date: Date | null
+  durationSeconds: number | null
+  notes: string | null
+}
+
+const parseH1Name: FieldParser<MetadataState> = (line, state) => {
+  const match = line.match(/^#\s+(.+)$/)
+  if (match?.[1]) {
+    state.name = match[1].trim()
+    return true
+  }
+  return false
+}
+
+const parseMetadataDate: FieldParser<MetadataState> = (line, state) => {
+  const match = line.match(/\*\*Date:\*\*\s*(.+)/)
+  if (match?.[1]) {
+    const parsed = new Date(match[1].trim())
+    if (!Number.isNaN(parsed.getTime())) {
+      state.date = parsed
+    }
+    return true
+  }
+  return false
+}
+
+const parseMetadataDuration: FieldParser<MetadataState> = (line, state) => {
+  const match = line.match(/\*\*Duration:\*\*\s*(.+)/)
+  if (match?.[1]) {
+    state.durationSeconds = parseDurationString(match[1].trim())
+    return true
+  }
+  return false
+}
+
+const parseMetadataNotes: FieldParser<MetadataState> = (line, state) => {
+  const match = line.match(/\*\*Notes:\*\*\s*(.+)/)
+  if (match?.[1]) {
+    state.notes = match[1].trim()
+    return true
+  }
+  return false
+}
+
+const metadataParsers: ReadonlyArray<FieldParser<MetadataState>> = [
+  parseH1Name,
+  parseMetadataDate,
+  parseMetadataDuration,
+  parseMetadataNotes,
+]
+
+const parseMetadataFields = createFieldParserLoop(metadataParsers)
+
 export function parseMetadata(lines: ReadonlyArray<string>): ParseResult<ParsedWorkoutMetadata> {
-  let name = 'Imported Workout'
-  let date: Date | null = null
-  let durationSeconds: number | null = null
-  let notes: string | null = null
-
-  for (const line of lines) {
-    // Parse H1 as workout name
-    const h1Match = line.match(/^#\s+(.+)$/)
-    if (h1Match?.[1]) {
-      name = h1Match[1].trim()
-      continue
-    }
-
-    // Parse date
-    const dateMatch = line.match(/\*\*Date:\*\*\s*(.+)/)
-    if (dateMatch?.[1]) {
-      const parsed = new Date(dateMatch[1].trim())
-      if (!Number.isNaN(parsed.getTime())) {
-        date = parsed
-      }
-      continue
-    }
-
-    // Parse duration
-    const durationMatch = line.match(/\*\*Duration:\*\*\s*(.+)/)
-    if (durationMatch?.[1]) {
-      durationSeconds = parseDurationString(durationMatch[1].trim())
-      continue
-    }
-
-    // Parse notes
-    const notesMatch = line.match(/\*\*Notes:\*\*\s*(.+)/)
-    if (notesMatch?.[1]) {
-      notes = notesMatch[1].trim()
-      continue
-    }
-
-    // Stop at first H2 (start of blocks)
-    if (line.startsWith('## ')) break
+  const state: MetadataState = {
+    name: 'Imported Workout',
+    date: null,
+    durationSeconds: null,
+    notes: null,
   }
 
-  return parseSuccess({ name, date, durationSeconds, notes })
+  parseMetadataFields(lines, state, (line) => line.startsWith('## '))
+
+  return parseSuccess(state)
 }
 
 // ============================================
@@ -196,11 +268,21 @@ function splitIntoBlockSections(lines: ReadonlyArray<string>): Array<Array<strin
   return sections
 }
 
+type BlockParser = (name: string, lines: ReadonlyArray<string>) => ParseResult<ParsedBlock>
+
+const blockParsers: Record<string, BlockParser> = {
+  strength: parseStrengthBlock,
+  amrap: parseAmrapBlock,
+  emom: parseEmomBlock,
+  tabata: parseTabataBlock,
+  fortime: parseForTimeBlock,
+  cardio: parseCardioBlock,
+}
+
 function parseBlock(lines: ReadonlyArray<string>): ParseResult<ParsedBlock> {
   const header = lines[0]
   if (!header) return singleError('Empty block section')
 
-  // Extract block type from header: ## Name (Type)
   const headerMatch = header.match(/^##\s+(.+)\s+\((\w+)\)$/)
   if (!headerMatch?.[1] || !headerMatch[2]) {
     return singleError(`Invalid block header format: ${header}`)
@@ -208,85 +290,90 @@ function parseBlock(lines: ReadonlyArray<string>): ParseResult<ParsedBlock> {
 
   const name = headerMatch[1].trim()
   const type = headerMatch[2].toLowerCase()
+  const parser = blockParsers[type]
 
-  switch (type) {
-    case 'strength': {
-      return parseStrengthBlock(name, lines.slice(1))
-    }
-    case 'amrap': {
-      return parseAmrapBlock(name, lines.slice(1))
-    }
-    case 'emom': {
-      return parseEmomBlock(name, lines.slice(1))
-    }
-    case 'tabata': {
-      return parseTabataBlock(name, lines.slice(1))
-    }
-    case 'fortime': {
-      return parseForTimeBlock(name, lines.slice(1))
-    }
-    case 'cardio': {
-      return parseCardioBlock(name, lines.slice(1))
-    }
-    default: {
-      return singleError(`Unknown block type: ${type}`)
-    }
+  if (!parser) {
+    return singleError(`Unknown block type: ${type}`)
   }
+
+  return parser(name, lines.slice(1))
 }
 
 // ============================================
 // Strength Block Parser
 // ============================================
 
+interface StrengthBlockState {
+  equipment: string
+  targetReps: number | null
+  sets: Array<ParsedSet>
+  inTable: boolean
+}
+
+const parseStrengthEquipment: FieldParser<StrengthBlockState> = (line, state) => {
+  const match = line.match(/^equipment:\s*(.+)$/i)
+  if (match?.[1]) {
+    state.equipment = match[1].trim().toLowerCase()
+    return true
+  }
+  return false
+}
+
+const parseStrengthTarget: FieldParser<StrengthBlockState> = (line, state) => {
+  const match = line.match(/^target:\s*(\d+)\s*reps?$/i)
+  if (match?.[1]) {
+    state.targetReps = Number.parseInt(match[1], 10)
+    return true
+  }
+  return false
+}
+
+const parseStrengthTableHeader: FieldParser<StrengthBlockState> = (line, state) => {
+  if (line.includes('| Set |')) {
+    state.inTable = true
+    return true
+  }
+  return false
+}
+
+const parseStrengthTableRow: FieldParser<StrengthBlockState> = (line, state) => {
+  if (/^\|[\s|-]+\|$/.test(line)) return true
+  if (state.inTable && line.startsWith('|')) {
+    const set = parseSetRow(line)
+    if (set) state.sets.push(set)
+    return true
+  }
+  return false
+}
+
+const strengthParsers: ReadonlyArray<FieldParser<StrengthBlockState>> = [
+  parseStrengthEquipment,
+  parseStrengthTarget,
+  parseStrengthTableHeader,
+  parseStrengthTableRow,
+]
+
+const parseStrengthFields = createFieldParserLoop(strengthParsers)
+
 export function parseStrengthBlock(
   name: string,
   lines: ReadonlyArray<string>,
 ): ParseResult<ParsedStrengthBlock> {
-  let equipment = 'bodyweight'
-  let targetReps: number | null = null
-  const sets: Array<ParsedSet> = []
-
-  let inTable = false
-
-  for (const line of lines) {
-    // Equipment
-    const equipmentMatch = line.match(/^equipment:\s*(.+)$/i)
-    if (equipmentMatch?.[1]) {
-      equipment = equipmentMatch[1].trim().toLowerCase()
-      continue
-    }
-
-    // Target reps
-    const targetMatch = line.match(/^target:\s*(\d+)\s*reps?$/i)
-    if (targetMatch?.[1]) {
-      targetReps = Number.parseInt(targetMatch[1], 10)
-      continue
-    }
-
-    // Table header detection
-    if (line.includes('| Set |')) {
-      inTable = true
-      continue
-    }
-
-    // Skip table separator
-    if (/^\|[\s|-]+\|$/.test(line)) {
-      continue
-    }
-
-    // Parse table rows
-    if (inTable && line.startsWith('|')) {
-      const set = parseSetRow(line)
-      if (set) sets.push(set)
-    }
+  const state: StrengthBlockState = {
+    equipment: 'bodyweight',
+    targetReps: null,
+    sets: [],
+    inTable: false,
   }
+
+  parseStrengthFields(lines, state)
 
   return parseSuccess({
     kind: 'strength',
     name,
-    equipment,
-    targetReps,
-    sets,
+    equipment: state.equipment,
+    targetReps: state.targetReps,
+    sets: state.sets,
   })
 }
 
@@ -361,57 +448,84 @@ export function parseAmrapBlock(
 // EMOM Block Parser
 // ============================================
 
+interface EmomBlockState {
+  minutes: number
+  rotation: 'each-minute' | 'full-round'
+  exercises: Array<ParsedBlockExercise>
+  result: ParsedEmomBlock['result']
+}
+
+const parseEmomDuration: FieldParser<EmomBlockState> = (line, state) => {
+  const match = line.match(/^duration:\s*(\d+)\s*min/i)
+  if (match?.[1]) {
+    state.minutes = Number.parseInt(match[1], 10)
+    return true
+  }
+  return false
+}
+
+const parseEmomRotation: FieldParser<EmomBlockState> = (line, state) => {
+  const match = line.match(/^rotation:\s*(each-minute|full-round)/i)
+  if (match?.[1]) {
+    const normalized = match[1].toLowerCase()
+    if (normalized === 'each-minute' || normalized === 'full-round') {
+      state.rotation = normalized
+    }
+    return true
+  }
+  return false
+}
+
+const parseEmomExercise: FieldParser<EmomBlockState> = (line, state) => {
+  const exercise = parseExerciseLine(line)
+  if (exercise) {
+    state.exercises.push(exercise)
+    return true
+  }
+  return false
+}
+
+const parseEmomResult: FieldParser<EmomBlockState> = (line, state) => {
+  const match = line.match(/\*\*result:\*\*\s*(\d+)\/(\d+)\s*minutes/i)
+  if (match?.[1]) {
+    state.result = {
+      completedMinutes: Number.parseInt(match[1], 10),
+      missedMinutes: [],
+    }
+    return true
+  }
+  return false
+}
+
+const emomParsers: ReadonlyArray<FieldParser<EmomBlockState>> = [
+  parseEmomDuration,
+  parseEmomRotation,
+  parseEmomExercise,
+  parseEmomResult,
+]
+
+const parseEmomFields = createFieldParserLoop(emomParsers)
+
 export function parseEmomBlock(
   name: string,
   lines: ReadonlyArray<string>,
 ): ParseResult<ParsedEmomBlock> {
-  let minutes = 10
-  let rotation: 'each-minute' | 'full-round' = 'each-minute'
-  const exercises: Array<ParsedBlockExercise> = []
-  let result: ParsedEmomBlock['result'] = null
-
-  for (const line of lines) {
-    // Duration
-    const durationMatch = line.match(/^duration:\s*(\d+)\s*min/i)
-    if (durationMatch?.[1]) {
-      minutes = Number.parseInt(durationMatch[1], 10)
-      continue
-    }
-
-    // Rotation
-    const rotationMatch = line.match(/^rotation:\s*(each-minute|full-round)/i)
-    if (rotationMatch?.[1]) {
-      const normalized = rotationMatch[1].toLowerCase()
-      if (normalized === 'each-minute' || normalized === 'full-round') {
-        rotation = normalized
-      }
-      continue
-    }
-
-    // Exercise
-    const exercise = parseExerciseLine(line)
-    if (exercise) {
-      exercises.push(exercise)
-      continue
-    }
-
-    // Result
-    const resultMatch = line.match(/\*\*result:\*\*\s*(\d+)\/(\d+)\s*minutes/i)
-    if (resultMatch?.[1]) {
-      result = {
-        completedMinutes: Number.parseInt(resultMatch[1], 10),
-        missedMinutes: [], // Can't recover missed minutes from this format
-      }
-    }
+  const state: EmomBlockState = {
+    minutes: 10,
+    rotation: 'each-minute',
+    exercises: [],
+    result: null,
   }
+
+  parseEmomFields(lines, state)
 
   return parseSuccess({
     kind: 'emom',
     name,
-    minutes,
-    rotation,
-    exercises,
-    result,
+    minutes: state.minutes,
+    rotation: state.rotation,
+    exercises: state.exercises,
+    result: state.result,
   })
 }
 
@@ -524,79 +638,111 @@ export function parseForTimeBlock(
 // Cardio Block Parser
 // ============================================
 
+interface CardioBlockState {
+  activity: string
+  resultData: Partial<NonNullable<ParsedCardioBlock['result']>>
+  hasResult: boolean
+}
+
+const parseCardioActivity: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/^activity:\s*(\w+)/i)
+  if (match?.[1]) {
+    state.activity = match[1].toLowerCase()
+    return true
+  }
+  return false
+}
+
+const parseCardioDuration: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/-\s*duration:\s*(.+)/i)
+  if (match?.[1]) {
+    state.resultData.actualDurationSeconds = parseDurationString(match[1].trim()) ?? 0
+    state.hasResult = true
+    return true
+  }
+  return false
+}
+
+const parseCardioDistance: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/-\s*distance:\s*([\d.]+)\s*km/i)
+  if (match?.[1]) {
+    state.resultData.distanceMeters = Number.parseFloat(match[1]) * 1000
+    state.hasResult = true
+    return true
+  }
+  return false
+}
+
+const parseCardioPace: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/-\s*pace:\s*(\d+):(\d+)\s*\/km/i)
+  if (match?.[1] && match[2]) {
+    state.resultData.avgPaceSecondsPerKm = Number.parseInt(match[1], 10) * 60 + Number.parseInt(match[2], 10)
+    state.hasResult = true
+    return true
+  }
+  return false
+}
+
+const parseCardioCalories: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/-\s*calories:\s*(\d+)/i)
+  if (match?.[1]) {
+    state.resultData.calories = Number.parseInt(match[1], 10)
+    state.hasResult = true
+    return true
+  }
+  return false
+}
+
+const parseCardioNotes: FieldParser<CardioBlockState> = (line, state) => {
+  const match = line.match(/^notes:\s*(.+)/i)
+  if (match?.[1]) {
+    state.resultData.notes = match[1].trim()
+    state.hasResult = true
+    return true
+  }
+  return false
+}
+
+const cardioParsers: ReadonlyArray<FieldParser<CardioBlockState>> = [
+  parseCardioActivity,
+  parseCardioDuration,
+  parseCardioDistance,
+  parseCardioPace,
+  parseCardioCalories,
+  parseCardioNotes,
+]
+
+const parseCardioFields = createFieldParserLoop(cardioParsers)
+
+function buildCardioResult(state: CardioBlockState): ParsedCardioBlock['result'] {
+  if (!state.hasResult) return null
+
+  return {
+    actualDurationSeconds: state.resultData.actualDurationSeconds ?? 0,
+    distanceMeters: state.resultData.distanceMeters ?? null,
+    avgPaceSecondsPerKm: state.resultData.avgPaceSecondsPerKm ?? null,
+    calories: state.resultData.calories ?? null,
+    notes: state.resultData.notes ?? null,
+  }
+}
+
 export function parseCardioBlock(
   name: string,
   lines: ReadonlyArray<string>,
 ): ParseResult<ParsedCardioBlock> {
-  let activity = 'running'
-  let result: ParsedCardioBlock['result'] = null
-
-  const resultData: Partial<NonNullable<ParsedCardioBlock['result']>> = {}
-  let hasResult = false
-
-  for (const line of lines) {
-    // Activity
-    const activityMatch = line.match(/^activity:\s*(\w+)/i)
-    if (activityMatch?.[1]) {
-      activity = activityMatch[1].toLowerCase()
-      continue
-    }
-
-    // Duration
-    const durationMatch = line.match(/-\s*duration:\s*(.+)/i)
-    if (durationMatch?.[1]) {
-      resultData.actualDurationSeconds = parseDurationString(durationMatch[1].trim()) ?? 0
-      hasResult = true
-      continue
-    }
-
-    // Distance
-    const distanceMatch = line.match(/-\s*distance:\s*([\d.]+)\s*km/i)
-    if (distanceMatch?.[1]) {
-      resultData.distanceMeters = Number.parseFloat(distanceMatch[1]) * 1000
-      hasResult = true
-      continue
-    }
-
-    // Pace
-    const paceMatch = line.match(/-\s*pace:\s*(\d+):(\d+)\s*\/km/i)
-    if (paceMatch?.[1] && paceMatch[2]) {
-      resultData.avgPaceSecondsPerKm = Number.parseInt(paceMatch[1], 10) * 60 + Number.parseInt(paceMatch[2], 10)
-      hasResult = true
-      continue
-    }
-
-    // Calories
-    const caloriesMatch = line.match(/-\s*calories:\s*(\d+)/i)
-    if (caloriesMatch?.[1]) {
-      resultData.calories = Number.parseInt(caloriesMatch[1], 10)
-      hasResult = true
-      continue
-    }
-
-    // Notes
-    const notesMatch = line.match(/^notes:\s*(.+)/i)
-    if (notesMatch?.[1]) {
-      resultData.notes = notesMatch[1].trim()
-      hasResult = true
-    }
+  const state: CardioBlockState = {
+    activity: 'running',
+    resultData: {},
+    hasResult: false,
   }
 
-  if (hasResult) {
-    result = {
-      actualDurationSeconds: resultData.actualDurationSeconds ?? 0,
-      distanceMeters: resultData.distanceMeters ?? null,
-      avgPaceSecondsPerKm: resultData.avgPaceSecondsPerKm ?? null,
-      calories: resultData.calories ?? null,
-      notes: resultData.notes ?? null,
-    }
-  }
+  parseCardioFields(lines, state)
 
   return parseSuccess({
     kind: 'cardio',
     name,
-    activity,
-    result,
+    activity: state.activity,
+    result: buildCardioResult(state),
   })
 }
 
@@ -618,25 +764,7 @@ function parseExerciseLine(line: string): ParsedBlockExercise | null {
 
 function parseDurationString(str: string): number | null {
   // "45 min" or "45:30" or "1:30:00"
-  const minMatch = str.match(/^(\d+)\s*min/)
-  if (minMatch?.[1]) {
-    return Number.parseInt(minMatch[1], 10) * 60
-  }
-
-  const timeMatch = str.match(/^(\d+):(\d+)(?::(\d+))?$/)
-  if (timeMatch?.[1] && timeMatch[2]) {
-    const parts = [timeMatch[1], timeMatch[2], timeMatch[3]].filter(Boolean).map(Number)
-    if (parts.length === 2) {
-      // mm:ss
-      return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
-    }
-    if (parts.length === 3) {
-      // hh:mm:ss
-      return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0)
-    }
-  }
-
-  return null
+  return parseMinutesFormat(str) ?? parseTimeFormat(str)
 }
 
 function parseDurationToMs(str: string): number {

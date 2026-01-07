@@ -67,6 +67,53 @@ function sortedExercises(exercises: Array<ExerciseFormState>): Array<ExerciseFor
   return [...exercises].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
 }
 
+/**
+ * Check if an index is valid for a given array length.
+ */
+function isValidIndex(index: number, length: number): boolean {
+  return index >= 0 && index < length
+}
+
+/**
+ * Parameters for calculating a new orderKey when reordering items.
+ */
+type ReorderKeyParams = {
+  sorted: Array<{ orderKey: string }>
+  fromIndex: number
+  toIndex: number
+}
+
+/**
+ * Calculate a new orderKey for an item being moved to a new position.
+ * Handles both moving up (before target) and moving down (after target).
+ */
+function calculateReorderKey({ sorted, fromIndex, toIndex }: ReorderKeyParams): string {
+  const isMovingDown = fromIndex < toIndex
+  const targetKey = sorted[toIndex]?.orderKey ?? null
+  const afterKey = toIndex < sorted.length - 1 ? sorted[toIndex + 1]?.orderKey ?? null : null
+  const beforeKey = toIndex > 0 ? sorted[toIndex - 1]?.orderKey ?? null : null
+
+  return isMovingDown
+    ? generateKeyBetween(targetKey, afterKey)
+    : generateKeyBetween(beforeKey, targetKey)
+}
+
+/**
+ * Convert form rounds to database format.
+ */
+function toDbRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
+  return rounds.map((round) => ({
+    orderKey: round.orderKey,
+    exercises: round.exercises.map((ex) => ({
+      orderKey: ex.orderKey,
+      exerciseDefinitionId: ex.exerciseDefinitionId,
+      name: ex.name,
+      prescribedReps: ex.prescribedReps,
+      image: ex.image,
+    })),
+  }))
+}
+
 export function useBenchmarkForm() {
   const form = ref<BenchmarkFormState>(createInitialState())
   const currentRoundIndex = ref(0)
@@ -87,6 +134,15 @@ export function useBenchmarkForm() {
     const round = currentRound.value
     return round ? sortedExercises(round.exercises) : []
   })
+
+  /**
+   * Find the current round in the form state by orderKey.
+   */
+  function findCurrentRoundInForm(): RoundFormState | undefined {
+    const round = currentRound.value
+    if (!round) return undefined
+    return form.value.rounds.find((r) => r.orderKey === round.orderKey)
+  }
 
   // Validation
   const isNameValid = computed(() => form.value.name.trim().length > 0)
@@ -131,11 +187,7 @@ export function useBenchmarkForm() {
    * Add an exercise to the current round.
    */
   function addExercise(exercise: Exercise, reps: number) {
-    const round = currentRound.value
-    if (!round) return
-
-    // Find the round in form state by orderKey
-    const roundInForm = form.value.rounds.find((r) => r.orderKey === round.orderKey)
+    const roundInForm = findCurrentRoundInForm()
     if (!roundInForm) return
 
     // Generate new orderKey for the exercise (at the end)
@@ -156,10 +208,7 @@ export function useBenchmarkForm() {
    * Remove an exercise from the current round by index.
    */
   function removeExercise(index: number) {
-    const round = currentRound.value
-    if (!round) return
-
-    const roundInForm = form.value.rounds.find((r) => r.orderKey === round.orderKey)
+    const roundInForm = findCurrentRoundInForm()
     if (!roundInForm) return
 
     const sorted = sortedExercises(roundInForm.exercises)
@@ -178,10 +227,7 @@ export function useBenchmarkForm() {
    * Update reps for an exercise in the current round.
    */
   function updateExerciseReps(index: number, reps: number) {
-    const round = currentRound.value
-    if (!round) return
-
-    const roundInForm = form.value.rounds.find((r) => r.orderKey === round.orderKey)
+    const roundInForm = findCurrentRoundInForm()
     if (!roundInForm) return
 
     const sorted = sortedExercises(roundInForm.exercises)
@@ -200,36 +246,21 @@ export function useBenchmarkForm() {
    * Reorder exercises within the current round.
    */
   function reorderExercises(fromIndex: number, toIndex: number) {
-    const round = currentRound.value
-    if (!round) return
-
-    const roundInForm = form.value.rounds.find((r) => r.orderKey === round.orderKey)
+    const roundInForm = findCurrentRoundInForm()
     if (!roundInForm) return
 
     const sorted = sortedExercises(roundInForm.exercises)
-    if (fromIndex < 0 || fromIndex >= sorted.length) return
-    if (toIndex < 0 || toIndex >= sorted.length) return
+    if (!isValidIndex(fromIndex, sorted.length) || !isValidIndex(toIndex, sorted.length)) return
 
     const movedExercise = sorted[fromIndex]
     if (!movedExercise) return
 
-    // Find the exercise in the original array and update its orderKey
     const originalExercise = roundInForm.exercises.find(
       (e) => e.orderKey === movedExercise.orderKey,
     )
     if (!originalExercise) return
 
-    // Calculate new orderKey based on target position
-    // When moving down, we insert after the target
-    // When moving up, we insert before the target
-    const isMovingDown = fromIndex < toIndex
-    const targetKey = sorted[toIndex]?.orderKey ?? null
-    const afterKey = toIndex < sorted.length - 1 ? sorted[toIndex + 1]?.orderKey ?? null : null
-    const beforeKey = toIndex > 0 ? sorted[toIndex - 1]?.orderKey ?? null : null
-
-    originalExercise.orderKey = isMovingDown
-      ? generateKeyBetween(targetKey, afterKey)
-      : generateKeyBetween(beforeKey, targetKey)
+    originalExercise.orderKey = calculateReorderKey({ sorted, fromIndex, toIndex })
   }
 
   /**
@@ -301,8 +332,7 @@ export function useBenchmarkForm() {
    */
   function reorderRounds(fromIndex: number, toIndex: number) {
     const sorted = displayRounds.value
-    if (fromIndex < 0 || fromIndex >= sorted.length) return
-    if (toIndex < 0 || toIndex >= sorted.length) return
+    if (!isValidIndex(fromIndex, sorted.length) || !isValidIndex(toIndex, sorted.length)) return
 
     const movedRound = sorted[fromIndex]
     if (!movedRound) return
@@ -310,15 +340,7 @@ export function useBenchmarkForm() {
     const originalRound = form.value.rounds.find((r) => r.orderKey === movedRound.orderKey)
     if (!originalRound) return
 
-    // Calculate new orderKey based on target position
-    const isMovingDown = fromIndex < toIndex
-    const targetKey = sorted[toIndex]?.orderKey ?? null
-    const afterKey = toIndex < sorted.length - 1 ? sorted[toIndex + 1]?.orderKey ?? null : null
-    const beforeKey = toIndex > 0 ? sorted[toIndex - 1]?.orderKey ?? null : null
-
-    originalRound.orderKey = isMovingDown
-      ? generateKeyBetween(targetKey, afterKey)
-      : generateKeyBetween(beforeKey, targetKey)
+    originalRound.orderKey = calculateReorderKey({ sorted, fromIndex, toIndex })
   }
 
   /**
@@ -332,22 +354,6 @@ export function useBenchmarkForm() {
         exercises: round.exercises.map((ex) => ({ ...ex })),
       })),
     }
-  }
-
-  /**
-   * Convert form rounds to database format.
-   */
-  function toDbRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
-    return rounds.map((round) => ({
-      orderKey: round.orderKey,
-      exercises: round.exercises.map((ex) => ({
-        orderKey: ex.orderKey,
-        exerciseDefinitionId: ex.exerciseDefinitionId,
-        name: ex.name,
-        prescribedReps: ex.prescribedReps,
-        image: ex.image,
-      })),
-    }))
   }
 
   /**

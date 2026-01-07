@@ -64,7 +64,8 @@ const timerLabel = computed(() => t(`timers.types.${block.kind}`))
 
 // Track when timer starts running
 watch(isRunning, (running, wasRunning) => {
-  if (running && !wasRunning && startedAt.value === null) {
+  const isTimerStarting = running && !wasRunning && startedAt.value === null
+  if (isTimerStarting) {
     startedAt.value = Date.now()
   }
 })
@@ -126,34 +127,36 @@ function isForTimeResult(result: TimedBlockResult): result is ForTimeResult {
   return 'completionTime' in result && 'completed' in result
 }
 
+/** Logs workout for a specific block kind - extracted to reduce handleLogWorkout complexity */
+async function logWorkoutByKind(
+  timedBlock: TimedBlock,
+  result: TimedBlockResult,
+  start: number,
+  end: number
+): Promise<void> {
+  if (timedBlock.kind === 'amrap' && isAmrapResult(result)) {
+    await logAmrap(timedBlock, result, start, end)
+    return
+  }
+  if (timedBlock.kind === 'emom' && isEmomResult(result)) {
+    await logEmom(timedBlock, result, start, end)
+    return
+  }
+  if (timedBlock.kind === 'tabata' && isTabataResult(result)) {
+    await logTabata(timedBlock, result, start, end)
+    return
+  }
+  if (timedBlock.kind === 'fortime' && isForTimeResult(result)) {
+    await logForTime(timedBlock, result, start, end)
+  }
+}
+
 async function handleLogWorkout() {
   if (!timerResult.value || !startedAt.value || !completedAt.value) {
     return
   }
 
-  const result = timerResult.value
-  const start = startedAt.value
-  const end = completedAt.value
-
-  // Call type-specific log function based on block kind and result type
-  if (block.kind === 'amrap' && isAmrapResult(result)) {
-    await logAmrap(block, result, start, end)
-    return
-  }
-
-  if (block.kind === 'emom' && isEmomResult(result)) {
-    await logEmom(block, result, start, end)
-    return
-  }
-
-  if (block.kind === 'tabata' && isTabataResult(result)) {
-    await logTabata(block, result, start, end)
-    return
-  }
-
-  if (block.kind === 'fortime' && isForTimeResult(result)) {
-    await logForTime(block, result, start, end)
-  }
+  await logWorkoutByKind(block, timerResult.value, startedAt.value, completedAt.value)
 }
 </script>
 

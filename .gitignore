@@ -59,3 +59,6 @@ src/__tests__/features/**/__screenshots__/
 # Exclude temporary visual regression outputs (keep only platform-specific baselines)
 src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
 
+# Ralph Wiggum automation (temporary output)
+.ralph/last-output.txt
+.ralph/logs/

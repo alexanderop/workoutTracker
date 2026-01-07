@@ -20,6 +20,37 @@ function firstChar(str: string): string {
   return charAt(str, 0)
 }
 
+/** Get the digit index for a character in the digit string. */
+function getDigitIndex(char: string | undefined, digits: string, defaultIndex: number): number {
+  return char ? digits.indexOf(char) : defaultIndex
+}
+
+/** Validate that neither string has a trailing zero. */
+function validateNoTrailingZero(a: string, b: string | null | undefined, zero: string): void {
+  const hasTrailingZero = a.slice(-1) === zero || (b && b.slice(-1) === zero)
+  if (hasTrailingZero) {
+    throw new Error('trailing zero')
+  }
+}
+
+/** Find the length of the common prefix between a and b, treating missing chars in a as zero. */
+function findCommonPrefixLength(a: string, b: string, zero: string): number {
+  let n = 0
+  while ((a[n] ?? zero) === b[n]) {
+    n++
+  }
+  return n
+}
+
+/** Calculate the midpoint digit between two digit indices. */
+function getMidpointDigit(digitA: number, digitB: number, digits: string): string | null {
+  if (digitB - digitA > 1) {
+    const midDigit = Math.round(0.5 * (digitA + digitB))
+    return charAt(digits, midDigit)
+  }
+  return null
+}
+
 /**
  * Finds the midpoint between two fractional parts.
  * `a` may be empty string, `b` is null or non-empty string.
@@ -32,44 +63,28 @@ function midpoint(a: string, b: string | null | undefined, digits: string): stri
   if (b != null && a >= b) {
     throw new Error(`${a} >= ${b}`)
   }
+  validateNoTrailingZero(a, b, zero)
 
-  if (a.slice(-1) === zero || (b && b.slice(-1) === zero)) {
-    throw new Error('trailing zero')
-  }
-
+  // Handle common prefix case
   if (b) {
-    // Remove longest common prefix. Pad `a` with 0s as we go.
-    // Note: we don't need to pad `b`, because it can't end before `a`
-    // while traversing the common prefix.
-    let n = 0
-    while ((a[n] ?? zero) === b[n]) {
-      n++
-    }
+    const n = findCommonPrefixLength(a, b, zero)
     if (n > 0) {
       return b.slice(0, n) + midpoint(a.slice(n), b.slice(n), digits)
     }
   }
 
   // First digits (or lack of digit) are different
-  const digitA = a ? digits.indexOf(firstChar(a)) : 0
+  const digitA = getDigitIndex(a[0], digits, 0)
   const digitB = b == null ? digits.length : digits.indexOf(firstChar(b))
 
-  if (digitB - digitA > 1) {
-    const midDigit = Math.round(0.5 * (digitA + digitB))
-    return charAt(digits, midDigit)
-  }
+  // Try to find a midpoint digit
+  const midDigit = getMidpointDigit(digitA, digitB, digits)
+  if (midDigit) return midDigit
 
-  // First digits are consecutive
-  if (b && b.length > 1) {
-    return b.slice(0, 1)
-  }
+  // First digits are consecutive - use first char of b if it's long enough
+  if (b && b.length > 1) return b.slice(0, 1)
 
-  // `b` is null or has length 1 (a single digit).
-  // The first digit of `a` is the previous digit to `b`,
-  // or 9 if `b` is null.
-  // Given, for example, midpoint('49', '5'), return
-  // '4' + midpoint('9', null), which will become
-  // '4' + '9' + midpoint('', null), which is '495'
+  // Recurse: keep first digit of a, find midpoint for rest
   return charAt(digits, digitA) + midpoint(a.slice(1), null, digits)
 }
 
@@ -112,47 +127,64 @@ function validateOrderKey(key: string, digits: string): void {
   }
 }
 
+/** Propagate increment through digits array, returns true if carry remains. */
+function propagateIncrement(digs: Array<string>, digits: string): boolean {
+  for (let i = digs.length - 1; i >= 0; i--) {
+    const d = digits.indexOf(digs[i]!) + 1
+    if (d === digits.length) {
+      digs[i] = firstChar(digits)
+      continue
+    }
+    digs[i] = charAt(digits, d)
+    return false
+  }
+  return true
+}
+
+/** Propagate decrement through digits array, returns true if borrow remains. */
+function propagateDecrement(digs: Array<string>, digits: string): boolean {
+  for (let i = digs.length - 1; i >= 0; i--) {
+    const d = digits.indexOf(digs[i]!) - 1
+    if (d === -1) {
+      digs[i] = digits.slice(-1)
+      continue
+    }
+    digs[i] = charAt(digits, d)
+    return false
+  }
+  return true
+}
+
+/** Adjust digits array based on head transition direction. */
+function adjustDigitsForHead(
+  digs: Array<string>,
+  newHead: string,
+  boundary: string,
+  digitToAdd: string,
+  isIncrement: boolean,
+): void {
+  const shouldPush = isIncrement ? newHead > boundary : newHead < boundary
+  const shouldPop = isIncrement ? newHead <= boundary : newHead >= boundary
+  if (shouldPush) digs.push(digitToAdd)
+  if (shouldPop) digs.pop()
+}
+
 /**
  * Increment an integer key. May return null if at maximum.
  */
 function incrementInteger(x: string, digits: string): string | null {
   validateInteger(x)
-  const chars = [...x]
   const head = firstChar(x)
-  const digs = chars.slice(1)
-  let carry = true
+  const digs = [...x].slice(1)
 
-  for (let i = digs.length - 1; carry && i >= 0; i--) {
-    const d = digits.indexOf(digs[i]!) + 1
-    if (d === digits.length) {
-      digs[i] = firstChar(digits)
-    }
-    if (d !== digits.length) {
-      digs[i] = charAt(digits, d)
-      carry = false
-    }
-  }
+  const carry = propagateIncrement(digs, digits)
+  if (!carry) return head + digs.join('')
+  if (head === 'Z') return 'a' + firstChar(digits)
+  if (head === 'z') return null
 
-  if (!carry) {
-    return head + digs.join('')
-  }
-
-  if (head === 'Z') {
-    return 'a' + firstChar(digits)
-  }
-
-  if (head === 'z') {
-    return null
-  }
-
-  const h = String.fromCodePoint((head.codePointAt(0) ?? 0) + 1)
-  if (h > 'a') {
-    digs.push(firstChar(digits))
-  }
-  if (h <= 'a') {
-    digs.pop()
-  }
-  return h + digs.join('')
+  const newHead = String.fromCodePoint((head.codePointAt(0) ?? 0) + 1)
+  adjustDigitsForHead(digs, newHead, 'a', firstChar(digits), true)
+  return newHead + digs.join('')
 }
 
 /**
@@ -160,42 +192,67 @@ function incrementInteger(x: string, digits: string): string | null {
  */
 function decrementInteger(x: string, digits: string): string | null {
   validateInteger(x)
-  const chars = [...x]
   const head = firstChar(x)
-  const digs = chars.slice(1)
-  let borrow = true
+  const digs = [...x].slice(1)
 
-  for (let i = digs.length - 1; borrow && i >= 0; i--) {
-    const d = digits.indexOf(digs[i]!) - 1
-    if (d === -1) {
-      digs[i] = digits.slice(-1)
-    }
-    if (d !== -1) {
-      digs[i] = charAt(digits, d)
-      borrow = false
-    }
-  }
+  const borrow = propagateDecrement(digs, digits)
+  if (!borrow) return head + digs.join('')
+  if (head === 'a') return 'Z' + digits.slice(-1)
+  if (head === 'A') return null
 
-  if (!borrow) {
-    return head + digs.join('')
-  }
+  const newHead = String.fromCodePoint((head.codePointAt(0) ?? 0) - 1)
+  adjustDigitsForHead(digs, newHead, 'Z', digits.slice(-1), false)
+  return newHead + digs.join('')
+}
 
-  if (head === 'a') {
-    return 'Z' + digits.slice(-1)
-  }
+/** Validate order keys and their relationship. */
+function validateKeys(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  digits: string,
+): void {
+  if (a != null) validateOrderKey(a, digits)
+  if (b != null) validateOrderKey(b, digits)
+  const isInvalidKeyOrder = a != null && b != null && a >= b
+  if (isInvalidKeyOrder) throw new Error(`${a} >= ${b}`)
+}
 
-  if (head === 'A') {
-    return null
-  }
+/** Generate key when a is null (before b or at start). */
+function generateKeyBeforeB(b: string | null | undefined, digits: string): string {
+  if (b == null) return 'a' + firstChar(digits)
 
-  const h = String.fromCodePoint((head.codePointAt(0) ?? 0) - 1)
-  if (h < 'Z') {
-    digs.push(digits.slice(-1))
-  }
-  if (h >= 'Z') {
-    digs.pop()
-  }
-  return h + digs.join('')
+  const ib = getIntegerPart(b)
+  const fb = b.slice(ib.length)
+
+  if (ib === 'A' + firstChar(digits).repeat(26)) return ib + midpoint('', fb, digits)
+  if (ib < b) return ib
+
+  const res = decrementInteger(ib, digits)
+  if (res == null) throw new Error('cannot decrement any more')
+  return res
+}
+
+/** Generate key when b is null (after a). */
+function generateKeyAfterA(a: string, digits: string): string {
+  const ia = getIntegerPart(a)
+  const fa = a.slice(ia.length)
+  const i = incrementInteger(ia, digits)
+  return i == null ? ia + midpoint(fa, null, digits) : i
+}
+
+/** Generate key between two non-null keys. */
+function generateKeyBetweenBoth(a: string, b: string, digits: string): string {
+  const ia = getIntegerPart(a)
+  const fa = a.slice(ia.length)
+  const ib = getIntegerPart(b)
+  const fb = b.slice(ib.length)
+
+  if (ia === ib) return ia + midpoint(fa, fb, digits)
+
+  const i = incrementInteger(ia, digits)
+  if (i == null) throw new Error('cannot increment any more')
+  if (i < b) return i
+  return ia + midpoint(fa, null, digits)
 }
 
 /**
@@ -209,61 +266,11 @@ export function generateKeyBetween(
   b: string | null | undefined,
   digits: string = BASE_62_DIGITS,
 ): string {
-  if (a != null) {
-    validateOrderKey(a, digits)
-  }
-  if (b != null) {
-    validateOrderKey(b, digits)
-  }
-  if (a != null && b != null && a >= b) {
-    throw new Error(`${a} >= ${b}`)
-  }
+  validateKeys(a, b, digits)
 
-  if (a == null) {
-    if (b == null) {
-      return 'a' + firstChar(digits)
-    }
-
-    const ib = getIntegerPart(b)
-    const fb = b.slice(ib.length)
-
-    if (ib === 'A' + firstChar(digits).repeat(26)) {
-      return ib + midpoint('', fb, digits)
-    }
-    if (ib < b) {
-      return ib
-    }
-    const res = decrementInteger(ib, digits)
-    if (res == null) {
-      throw new Error('cannot decrement any more')
-    }
-    return res
-  }
-
-  if (b == null) {
-    const ia = getIntegerPart(a)
-    const fa = a.slice(ia.length)
-    const i = incrementInteger(ia, digits)
-    return i == null ? ia + midpoint(fa, null, digits) : i
-  }
-
-  const ia = getIntegerPart(a)
-  const fa = a.slice(ia.length)
-  const ib = getIntegerPart(b)
-  const fb = b.slice(ib.length)
-
-  if (ia === ib) {
-    return ia + midpoint(fa, fb, digits)
-  }
-
-  const i = incrementInteger(ia, digits)
-  if (i == null) {
-    throw new Error('cannot increment any more')
-  }
-  if (i < b) {
-    return i
-  }
-  return ia + midpoint(fa, null, digits)
+  if (a == null) return generateKeyBeforeB(b, digits)
+  if (b == null) return generateKeyAfterA(a, digits)
+  return generateKeyBetweenBoth(a, b, digits)
 }
 
 /**

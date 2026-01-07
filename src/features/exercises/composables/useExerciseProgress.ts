@@ -35,6 +35,30 @@ export type ChartDataPoint = {
 // Pure Functions (Functional Core)
 // ============================================
 
+type LoadResult<T> = readonly [Error | null, T | null]
+
+/**
+ * Extracts validated data from parallel load results.
+ * Returns either the combined data or the first error encountered.
+ */
+function extractLoadResults(
+  historyResult: LoadResult<ReadonlyArray<ExerciseSession>>,
+  statsResult: LoadResult<ExerciseStats>,
+  prsResult: LoadResult<PersonalRecords>,
+): { error: Error } | { data: { sessions: ReadonlyArray<ExerciseSession>; stats: ExerciseStats; prs: PersonalRecords } } {
+  const [historyError, sessions] = historyResult
+  const [statsError, stats] = statsResult
+  const [prsError, prs] = prsResult
+
+  const hasLoadError = historyError || statsError || prsError || !sessions || !stats || !prs
+  if (hasLoadError) {
+    const error = historyError ?? statsError ?? prsError ?? new Error('Missing data')
+    return { error }
+  }
+
+  return { data: { sessions, stats, prs } }
+}
+
 /**
  * Transforms exercise sessions to chart-friendly format.
  * Reverses to oldest-first for x-axis progression.
@@ -97,24 +121,19 @@ export function useExerciseProgress(exerciseId: string) {
       tryCatch(repo.getPersonalRecords(exerciseId)),
     ])
 
-    const [historyError, sessions] = historyResult
-    const [statsError, stats] = statsResult
-    const [prsError, prs] = prsResult
+    const result = extractLoadResults(historyResult, statsResult, prsResult)
 
-    // Check for errors or missing data
-    if (historyError || statsError || prsError || !sessions || !stats || !prs) {
-      const error = historyError ?? statsError ?? prsError ?? new Error('Missing data')
-      state.value = { status: 'error', error }
+    if ('error' in result) {
+      state.value = { status: 'error', error: result.error }
       return
     }
 
-    // Determine exercise name - from stats or fallback
-    const exerciseNameValue = stats.exerciseName || 'Unknown Exercise'
+    const { sessions, stats, prs } = result.data
 
     state.value = {
       status: 'success',
       data: {
-        exerciseName: exerciseNameValue,
+        exerciseName: stats.exerciseName || 'Unknown Exercise',
         sessions,
         stats,
         personalRecords: prs,

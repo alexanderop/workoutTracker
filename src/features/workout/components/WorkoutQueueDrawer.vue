@@ -64,7 +64,8 @@ watch(
         swapThreshold: 0.65,
         onEnd: (event) => {
           const { oldIndex, newIndex } = event
-          if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
+          const isValidReorder = oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex
+          if (isValidReorder) {
             reorderBlocks(oldIndex, newIndex)
           }
         },

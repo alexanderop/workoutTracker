@@ -419,6 +419,7 @@ export function isDbStrengthBlock(block: DbWorkoutBlock): block is DbStrengthBlo
 export type SetPerformance = {
   kg: number
   reps: number
+  duration: number
   rir: number | null
   estimated1RM: number
 }

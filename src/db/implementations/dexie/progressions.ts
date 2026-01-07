@@ -101,7 +101,8 @@ export function createDexieProgressionsRepository(
       }
 
       // Only advance if completed successfully and nextLevel is provided
-      if (completed && !progression.isComplete && nextLevel) {
+      const shouldAdvanceLevel = completed && !progression.isComplete && nextLevel
+      if (shouldAdvanceLevel) {
         updates.currentReps = nextLevel.reps
         updates.currentMinutes = nextLevel.minutes
         updates.currentWeightIndex = nextLevel.weightIndex
