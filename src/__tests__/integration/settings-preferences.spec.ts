@@ -52,6 +52,20 @@ describe('Settings Preferences', () => {
       cleanup()
     })
 
+    it('adds dark class to html element when dark mode enabled', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const themeToggle = page.getByTestId('theme-toggle')
+      const initialIsDark = document.documentElement.classList.contains('dark')
+
+      await userEvent.click(themeToggle)
+
+      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(!initialIsDark)
+
+      cleanup()
+    })
+
     it('dark mode preference survives page navigation', async () => {
       const { common, router, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -103,6 +117,22 @@ describe('Settings Preferences', () => {
       await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent(
         'Einstellungen',
       )
+
+      cleanup()
+    })
+
+    it('sets html lang attribute when language changes', async () => {
+      const { common, getByRole, findByText, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      await expect.element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 }).toBeVisible()
+
+      const languageSelect = getByRole('combobox', { name: /language/i })
+      await userEvent.click(languageSelect)
+      const germanOption = await findByText('Deutsch')
+      await userEvent.click(germanOption)
+
+      await expect.poll(() => document.documentElement.lang).toBe('de')
 
       cleanup()
     })
@@ -268,6 +298,29 @@ describe('Settings Preferences', () => {
         const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
         return soundSetting?.value
       }).toBe(true)
+
+      cleanup()
+    })
+
+    it('volume slider persists value when changed', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const volumeSlider = page.getByTestId('timer-sound-volume-slider')
+      await expect.element(volumeSlider).toBeVisible()
+
+      // Simulate slider change to 70% (slider uses @change event, not @input)
+      const sliderEl = await volumeSlider.element()
+      if (sliderEl instanceof HTMLInputElement) {
+        sliderEl.value = '0.7'
+        sliderEl.dispatchEvent(new Event('change', { bubbles: true }))
+      }
+
+      await expect.poll(async () => {
+        const settings = await db.settings.toArray()
+        const volumeSetting = settings.find((s) => s.key === 'timerSoundVolume')
+        return volumeSetting?.value
+      }).toBe(0.7)
 
       cleanup()
     })
