@@ -94,6 +94,64 @@ describe('Workout Set Completion', () => {
 
       cleanup()
     })
+
+    it('completes set with 0 weight for bodyweight exercises', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '0', reps: '10', rir: '2' })
+
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+
+      cleanup()
+    })
+
+    it('completes set with RIR of 0 (training to failure)', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '0' })
+
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+
+      cleanup()
+    })
+
+    it('does not auto-advance until ALL sets in block are complete', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      // Complete only 1 of 3 sets
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
+
+      // Should still be on block 1 (not auto-advanced to block 2)
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      cleanup()
+    })
+  })
+
+  describe('Set Validation', () => {
+    it('does not complete set with missing reps', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      // Fill weight and rir, but NOT reps
+      const row = await workout.getSetRow(0)
+      await userEvent.fill(row.kg, '100')
+      await userEvent.fill(row.rir, '2')
+
+      // Try to complete set with empty reps
+      await userEvent.click(row.complete)
+
+      // Set should NOT be completed (validation should reject it)
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(false)
+
+      cleanup()
+    })
   })
 
   describe('Rest Timer Integration', () => {
