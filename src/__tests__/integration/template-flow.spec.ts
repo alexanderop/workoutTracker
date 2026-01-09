@@ -625,4 +625,116 @@ describe('Template Flow', () => {
       cleanup()
     })
   })
+
+  describe('Test 8: Template name normalization', () => {
+    it('trims whitespace from template name when saving', async () => {
+      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.CreateTemplate })
+
+      // Fill name with leading/trailing spaces
+      await userEvent.fill(getByRole('textbox', { name: /template name/i }), '  My Template  ')
+
+      // Add an exercise
+      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
+
+      // Save template
+      await userEvent.click(getByRole('button', { name: /save template/i }))
+
+      // Verify DB has trimmed name
+      await expect.poll(async () => {
+        const templates = await db.templates.toArray()
+        return templates.find((t) => t.name === 'My Template')
+      }).toBeDefined()
+
+      cleanup()
+    })
+  })
+
+  describe('Test 9: Default values for new blocks', () => {
+    it('creates strength block with correct defaults', async () => {
+      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.CreateTemplate })
+      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Defaults Test')
+
+      // Add a bodyweight exercise (e.g., Push-ups)
+      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Push-ups'))
+      await common.waitForDialogClose()
+
+      // Save template
+      await userEvent.click(getByRole('button', { name: /save template/i }))
+
+      // Verify DB block has correct defaults
+      await expect.poll(async () => {
+        const templates = await db.templates.toArray()
+        return templates.find((t) => t.name === 'Defaults Test')
+      }).toBeDefined()
+
+      const templates = await db.templates.toArray()
+      const template = templates.find((t) => t.name === 'Defaults Test')
+      const block = template?.blocks[0]
+
+      expect(block?.kind).toBe('strength')
+      if (block?.kind === 'strength') {
+        expect(block.defaultSetCount).toBe(3)
+        expect(block.targetReps).toBe(0)
+        expect(block.equipment).toBe('bodyweight')
+      }
+
+      cleanup()
+    })
+  })
+
+  describe('Test 10: AMRAP block data persistence', () => {
+    it('saves AMRAP exercises and duration config correctly', async () => {
+      const { getByRole, getByText, common, navigateTo, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.CreateTemplate })
+      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'AMRAP Data Test')
+
+      // Add AMRAP block
+      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await common.waitForDialog()
+      await userEvent.click(getByRole('tab', { name: /timed/i }))
+      await userEvent.click(getByText('AMRAP'))
+      await common.waitForDialog()
+
+      // Add exercise to AMRAP
+      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      await userEvent.click(common.getDialogButton('Burpees'))
+
+      // Confirm AMRAP block
+      await userEvent.click(common.getDialogButton('Add Block'))
+      await common.waitForDialogClose()
+
+      // Save template
+      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await common.waitForRoute(/^\/templates\//)
+
+      // Verify DB has correct AMRAP data
+      await expect.poll(async () => {
+        const templates = await db.templates.toArray()
+        return templates.find((t) => t.name === 'AMRAP Data Test')
+      }).toBeDefined()
+
+      const templates = await db.templates.toArray()
+      const template = templates.find((t) => t.name === 'AMRAP Data Test')
+      const block = template?.blocks[0]
+
+      expect(block?.kind).toBe('amrap')
+      if (block?.kind === 'amrap') {
+        expect(block.exercises.length).toBeGreaterThan(0)
+        expect(block.exercises[0]?.name).toBe('Burpees')
+        expect(block.config.durationSeconds).toBeGreaterThan(0)
+      }
+
+      cleanup()
+    })
+  })
 })
