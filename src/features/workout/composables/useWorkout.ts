@@ -164,6 +164,42 @@ function findFirstIncompleteBlockIndex(blocks: ReadonlyArray<WorkoutBlock>): num
 }
 
 /**
+ * Calculate the new selected index after removing a block.
+ * Returns -1 if no blocks remain, otherwise ensures a valid index.
+ */
+function calculateSelectedIndexAfterRemoval(
+  newLength: number,
+  currentSelected: number,
+  removedIndex: number,
+): number {
+  if (newLength === 0) return -1
+  if (currentSelected >= newLength) return Math.max(0, newLength - 1)
+  if (currentSelected > removedIndex) return currentSelected - 1
+  return currentSelected
+}
+
+/**
+ * Calculate the new selected index after reordering blocks.
+ * Tracks the selected block as it moves within the list.
+ */
+function calculateSelectedIndexAfterReorder(
+  currentSelected: number,
+  fromIndex: number,
+  toIndex: number,
+): number {
+  // The selected block was moved
+  if (currentSelected === fromIndex) return toIndex
+
+  // Selected block shifts down (item moved from before to after)
+  if (fromIndex < currentSelected && toIndex >= currentSelected) return currentSelected - 1
+
+  // Selected block shifts up (item moved from after to before)
+  if (fromIndex > currentSelected && toIndex <= currentSelected) return currentSelected + 1
+
+  return currentSelected
+}
+
+/**
  * Create a typed update function for block results.
  */
 function getTypedResultUpdate(
@@ -418,15 +454,11 @@ export function useWorkout() {
     const filtered = workout.value.blocks.filter((_, index) => index !== blockIndex)
     const currentSelected = workout.value.selectedBlockIndex
 
-    // Calculate new selected index using ternary chain
-    const newSelectedIndex =
-      filtered.length === 0
-        ? -1
-        : currentSelected >= filtered.length
-          ? Math.max(0, filtered.length - 1)
-          : currentSelected > blockIndex
-            ? currentSelected - 1
-            : currentSelected
+    const newSelectedIndex = calculateSelectedIndexAfterRemoval(
+      filtered.length,
+      currentSelected,
+      blockIndex,
+    )
 
     updateWorkout({ blocks: filtered, selectedBlockIndex: newSelectedIndex })
   }
@@ -541,16 +573,11 @@ export function useWorkout() {
     blocks.splice(toIndex, 0, movedBlock)
 
     const currentSelected = workout.value.selectedBlockIndex
-
-    // Calculate new selected index using ternary chain
-    const newSelectedIndex =
-      currentSelected === fromIndex
-        ? toIndex
-        : fromIndex < currentSelected && toIndex >= currentSelected
-          ? currentSelected - 1
-          : fromIndex > currentSelected && toIndex <= currentSelected
-            ? currentSelected + 1
-            : currentSelected
+    const newSelectedIndex = calculateSelectedIndexAfterReorder(
+      currentSelected,
+      fromIndex,
+      toIndex,
+    )
 
     updateWorkout({ blocks, selectedBlockIndex: newSelectedIndex })
   }
