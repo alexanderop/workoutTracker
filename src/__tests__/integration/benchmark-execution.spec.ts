@@ -88,6 +88,34 @@ describe('Benchmark Execution', () => {
 
       app.cleanup()
     })
+
+    it('exercises appear in defined order', async () => {
+      const benchmark = await createForTimeBenchmark({
+        exercises: [
+          { name: 'Alpha Exercise', reps: 10 },
+          { name: 'Beta Exercise', reps: 10 },
+          { name: 'Gamma Exercise', reps: 10 },
+        ]
+      })
+
+      const app = await createTestApp()
+      await startBenchmarkWorkout(app, benchmark.id)
+
+      // First exercise should be Alpha
+      await expect.element(page.getByRole('heading', { name: 'Alpha Exercise' })).toBeVisible()
+
+      await completeExercise()
+
+      // Second should be Beta (not Gamma, not Alpha again)
+      await expect.element(page.getByRole('heading', { name: 'Beta Exercise' })).toBeVisible()
+
+      await completeExercise()
+
+      // Third should be Gamma
+      await expect.element(page.getByRole('heading', { name: 'Gamma Exercise' })).toBeVisible()
+
+      app.cleanup()
+    })
   })
 
   describe('Timer', () => {
@@ -97,13 +125,13 @@ describe('Benchmark Execution', () => {
 
       await startBenchmarkWorkout(app, benchmark.id)
 
-      let beforeTransition: string | undefined
+      const captured: { beforeTransition: string | undefined } = { beforeTransition: undefined }
       await expect.poll(
         async () => {
           const timerElements = await page.getByText(/\d+:\d{2}/).all()
           const timerText = timerElements[0] ? (await timerElements[0].element()).textContent : null
           if (timerText && !timerText.includes('0:00')) {
-            beforeTransition = timerText
+            captured.beforeTransition = timerText
             return true
           }
           return false
@@ -117,7 +145,7 @@ describe('Benchmark Execution', () => {
         async () => {
           const timerElements = await page.getByText(/\d+:\d{2}/).all()
           const afterTransition = timerElements[0] ? (await timerElements[0].element()).textContent : null
-          return afterTransition && !afterTransition.includes('0:00') && afterTransition !== beforeTransition
+          return afterTransition && !afterTransition.includes('0:00') && afterTransition !== captured.beforeTransition
         },
         { timeout: 3000 }
       ).toBe(true)
