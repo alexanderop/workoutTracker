@@ -71,23 +71,23 @@ describe('Timer Edge Cases', () => {
       await startAmrapTimer(testApp)
 
       // Start
-      let playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const startButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(startButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Pause
-      playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const pauseButton1 = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(pauseButton1)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       // Resume
-      playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const resumeButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(resumeButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Pause again
-      playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const pauseButton2 = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(pauseButton2)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       testApp.cleanup()
@@ -101,12 +101,12 @@ describe('Timer Edge Cases', () => {
       expect(testApp.workout.isTimerRunning()).toBe(false)
 
       // Start and then pause
-      let playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const startButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(startButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 
-      playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      const pauseButton = await testApp.workout.getTimerPlayPauseButton()
+      await userEvent.click(pauseButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       // Verify still paused after short delay

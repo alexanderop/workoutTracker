@@ -166,22 +166,22 @@ describe('Progression Management', () => {
       })
 
       // Simulate completing 5 sessions: 10→12→14→16→18→20 reps
-      for (let index = 0; index < 5; index++) {
+      for (const _ of Array.from({ length: 5 })) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
       // Verify in database - should be at 20 reps, 10 min
-      let updated = await repo.getById(progression.id)
-      expect(updated?.currentReps).toBe(20)
-      expect(updated?.currentMinutes).toBe(10)
+      const afterRepsPhase = await repo.getById(progression.id)
+      expect(afterRepsPhase?.currentReps).toBe(20)
+      expect(afterRepsPhase?.currentMinutes).toBe(10)
 
       // Complete another session - should advance to 12 min
       await recordSessionWithAdvancement(repo, progression.id, true)
 
       // Verify advancement
-      updated = await repo.getById(progression.id)
-      expect(updated?.currentReps).toBe(20)
-      expect(updated?.currentMinutes).toBe(12)
+      const afterTimeAdvance = await repo.getById(progression.id)
+      expect(afterTimeAdvance?.currentReps).toBe(20)
+      expect(afterTimeAdvance?.currentMinutes).toBe(12)
     })
 
     it('advances to next kettlebell after completing all phases', async () => {
@@ -197,7 +197,7 @@ describe('Progression Management', () => {
       // Reps: 10→12→14→16→18→20 (5 sessions to reach max reps)
       // Time: 10→12→14→16→18→20 (5 more sessions to reach max time)
       // +1 session to trigger advance to next KB
-      for (let index = 0; index < 11; index++) {
+      for (const _ of Array.from({ length: 11 })) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
@@ -220,7 +220,7 @@ describe('Progression Management', () => {
 
       // Complete all 11 sessions for the single KB:
       // 6 rep phases (10→12→14→16→18→20) + 5 time phases (10→12→14→16→18→20)
-      for (let index = 0; index < 11; index++) {
+      for (const _ of Array.from({ length: 11 })) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 
@@ -240,7 +240,7 @@ describe('Progression Management', () => {
       })
 
       // 11 sessions needed for single KB completion
-      for (let index = 0; index < 11; index++) {
+      for (const _ of Array.from({ length: 11 })) {
         await recordSessionWithAdvancement(repo, progression.id, true)
       }
 

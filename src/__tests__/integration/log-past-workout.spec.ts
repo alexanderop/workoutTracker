@@ -331,15 +331,15 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Initial set count
-      let setCount = await logPastWorkout.getSetCount(0)
-      expect(setCount).toBe(2)
+      const initialSetCount = await logPastWorkout.getSetCount(0)
+      expect(initialSetCount).toBe(2)
 
       // Add a new set
       await logPastWorkout.addSet(0)
 
       // Verify set count increased
-      setCount = await logPastWorkout.getSetCount(0)
-      expect(setCount).toBe(3)
+      const updatedSetCount = await logPastWorkout.getSetCount(0)
+      expect(updatedSetCount).toBe(3)
 
       cleanup()
     })
@@ -360,15 +360,15 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Initial set count
-      let setCount = await logPastWorkout.getSetCount(0)
-      expect(setCount).toBe(4)
+      const initialSetCount = await logPastWorkout.getSetCount(0)
+      expect(initialSetCount).toBe(4)
 
       // Remove the last set
       await logPastWorkout.removeSet(0, 3)
 
       // Verify set count decreased
-      setCount = await logPastWorkout.getSetCount(0)
-      expect(setCount).toBe(3)
+      const updatedSetCount = await logPastWorkout.getSetCount(0)
+      expect(updatedSetCount).toBe(3)
 
       cleanup()
     })
@@ -715,15 +715,15 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Initially no blocks
-      let blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(0)
+      const initialBlockCount = await logPastWorkout.getBlockCount()
+      expect(initialBlockCount).toBe(0)
 
       // Add a block using search (exercise names starting with A-B are visible without scrolling)
       await logPastWorkout.addExerciseBlock('Barbell Row')
 
       // Now we have 1 block
-      blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(1)
+      const updatedBlockCount = await logPastWorkout.getBlockCount()
+      expect(updatedBlockCount).toBe(1)
 
       // Verify exercise name is shown
       await expect.element(page.getByText('Barbell Row')).toBeVisible()
@@ -751,15 +751,15 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Initially 2 blocks
-      let blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(2)
+      const initialBlockCount = await logPastWorkout.getBlockCount()
+      expect(initialBlockCount).toBe(2)
 
       // Remove the first block
       await logPastWorkout.removeBlock(0)
 
       // Now we have 1 block
-      blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(1)
+      const updatedBlockCount = await logPastWorkout.getBlockCount()
+      expect(updatedBlockCount).toBe(1)
 
       // Only Dumbbell Fly should remain
       await expect.element(page.getByText('Dumbbell Fly')).toBeVisible()
@@ -777,13 +777,13 @@ describe('Log Past Workout', () => {
 
       // Add first block - Back exercise
       await logPastWorkout.addExerciseBlock('Barbell Row')
-      let blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(1)
+      const firstBlockCount = await logPastWorkout.getBlockCount()
+      expect(firstBlockCount).toBe(1)
 
       // Add second block - Chest exercise (different muscle group)
       await logPastWorkout.addExerciseBlock('Bench Press')
-      blockCount = await logPastWorkout.getBlockCount()
-      expect(blockCount).toBe(2)
+      const secondBlockCount = await logPastWorkout.getBlockCount()
+      expect(secondBlockCount).toBe(2)
 
       // Verify both exercises are shown
       await expect.element(page.getByText('Barbell Row')).toBeVisible()

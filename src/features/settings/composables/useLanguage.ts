@@ -36,11 +36,6 @@ export const useLanguage = createGlobalState(() => {
   // 4. Computed
   const currentLanguage = computed(() => settings.language ?? 'en')
 
-  // 5. Methods
-  async function setLanguage(locale: SupportedLocale) {
-    settings.setLanguage(locale)
-  }
-
   // 7. Watchers
   watch(
     () => settings.language,
@@ -57,6 +52,5 @@ export const useLanguage = createGlobalState(() => {
     activeLocale,
     isLoading,
     error,
-    setLanguage,
   }
 })

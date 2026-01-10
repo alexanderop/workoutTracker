@@ -262,15 +262,15 @@ describe('fractionalIndexing', () => {
     })
 
     it('supports many insertions in the same gap', () => {
-      let left = 'a0'
+      const state = { left: 'a0' }
       const right = 'a1'
 
       // Keep inserting between left and right
-      for (let i = 0; i < 20; i++) {
-        const newKey = generateKeyBetween(left, right)
-        expect(newKey > left).toBe(true)
+      for (const _ of Array.from({ length: 20 })) {
+        const newKey = generateKeyBetween(state.left, right)
+        expect(newKey > state.left).toBe(true)
         expect(newKey < right).toBe(true)
-        left = newKey
+        state.left = newKey
       }
     })
   })

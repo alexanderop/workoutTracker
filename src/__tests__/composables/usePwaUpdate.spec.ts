@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { App } from 'vue'
 import { createApp } from 'vue'
-import { RouteNames, routes } from '@/router'
+import { RouteNames, routes, type RouteName } from '@/router'
 
 const mockUpdateServiceWorker = vi.fn()
 const mockNeedRefresh = ref(false)
@@ -38,75 +38,76 @@ function withRouterSetup<TResult>(
   return [result, app]
 }
 
-describe('usePwaUpdate', () => {
-  let router: ReturnType<typeof createTestRouter>
-  let app: App
+interface SetupOptions {
+  startRoute?: RouteName
+}
 
-  async function setupPwaUpdate() {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+async function setupPwaUpdate(options: SetupOptions = {}) {
+  vi.clearAllMocks()
+  mockNeedRefresh.value = false
+
+  const router = createTestRouter()
+  await router.push({ name: options.startRoute ?? RouteNames.Home })
+  await router.isReady()
+
+  const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
+  const [, app] = withRouterSetup(() => usePwaUpdate(), router)
+
+  return {
+    router,
+    app,
+    cleanup: () => app.unmount(),
   }
+}
 
-  beforeEach(async () => {
-    vi.clearAllMocks()
-    mockNeedRefresh.value = false
-    router = createTestRouter()
-    await router.push({ name: RouteNames.Home })
-    await router.isReady()
-  })
-
-  afterEach(() => {
-    app?.unmount()
-  })
-
+describe('usePwaUpdate', () => {
   it('does NOT call updateServiceWorker when needRefresh is false', async () => {
-    await setupPwaUpdate()
+    const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = false
     await router.push({ name: RouteNames.Settings })
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
+    cleanup()
   })
 
   it('calls updateServiceWorker on route change when needRefresh is true', async () => {
-    await setupPwaUpdate()
+    const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.Settings })
 
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
+    cleanup()
   })
 
   it('does NOT call updateServiceWorker when navigating TO ActiveWorkout', async () => {
-    await setupPwaUpdate()
+    const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.ActiveWorkout })
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
+    cleanup()
   })
 
   it('does NOT call updateServiceWorker when navigating TO ActiveBenchmark', async () => {
-    await setupPwaUpdate()
+    const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.ActiveBenchmark })
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
+    cleanup()
   })
 
   it('calls updateServiceWorker when navigating AWAY from ActiveWorkout', async () => {
-    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
-
-    await router.push({ name: RouteNames.ActiveWorkout })
-
-    const [, testApp] = withRouterSetup(() => usePwaUpdate(), router)
-    app = testApp
+    const { router, cleanup } = await setupPwaUpdate({ startRoute: RouteNames.ActiveWorkout })
 
     mockNeedRefresh.value = true
     await router.push({ name: RouteNames.Home })
 
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
+    cleanup()
   })
 })

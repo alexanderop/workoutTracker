@@ -209,6 +209,9 @@ export default defineConfigWithVueTs(
       'vitest/no-duplicate-hooks': 'error',
       'vitest/require-top-level-describe': 'error',
 
+      // Limit nesting depth (Kent C. Dodds' principle)
+      'vitest/max-nested-describe': ['error', { max: 2 }],
+
       // Cleaner assertions (auto-fixable)
       'vitest/prefer-to-be': 'error',
       'vitest/prefer-to-have-length': 'error',
@@ -217,6 +220,18 @@ export default defineConfigWithVueTs(
 
       // Prevent flaky tests
       'vitest/no-conditional-in-test': 'warn',
+    },
+  },
+
+  // Enforce Kent C. Dodds' testing principle: avoid mutable let in describe blocks
+  {
+    name: 'test/no-mutable-variables',
+    files: ['src/**/__tests__/**/*.{ts,spec.ts}'],
+    plugins: {
+      local: localRules,
+    },
+    rules: {
+      'local/no-let-in-describe': 'error',
     },
   },
 

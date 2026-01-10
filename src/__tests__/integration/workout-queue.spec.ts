@@ -118,7 +118,7 @@ describe('Workout Queue', () => {
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Complete remaining 2 sets (values are pre-filled after first)
-      for (let index = 0; index < 2; index++) {
+      for (const _ of [1, 2]) {
         await page.getByRole('button', { name: /complete set/i }).click()
       }
 
