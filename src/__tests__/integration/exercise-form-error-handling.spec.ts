@@ -120,9 +120,9 @@ describe('Exercise Form Error Handling', () => {
 
       // Mock addExercise with delayed resolution
       const store = useExercisesStore()
-      let resolveAdd!: (value: null) => void
+      const deferred: { resolve: ((value: null) => void) | null } = { resolve: null }
       vi.spyOn(store, 'addExercise').mockImplementation(
-        () => new Promise((resolve) => { resolveAdd = resolve }),
+        () => new Promise((resolve) => { deferred.resolve = resolve }),
       )
 
       // Click save
@@ -134,7 +134,7 @@ describe('Exercise Form Error Handling', () => {
       await expect.element(savingButton).toBeDisabled()
 
       // Resolve the promise to complete the test
-      resolveAdd(null)
+      deferred.resolve?.(null)
 
       cleanup()
     })

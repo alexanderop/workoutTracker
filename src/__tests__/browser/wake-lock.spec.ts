@@ -10,12 +10,12 @@ import { withSetup } from '../helpers/withSetup'
  * Note: Each withSetup() call creates a fresh Pinia instance with default settings.
  */
 describe('useScreenWakeLock - browser mode', () => {
-  let cleanup: (() => void) | null = null
+  const ctx: { cleanup: (() => void) | null } = { cleanup: null }
 
   afterEach(async () => {
     // Call cleanup to unmount app
-    cleanup?.()
-    cleanup = null
+    ctx.cleanup?.()
+    ctx.cleanup = null
     await nextTick()
 
     // Clean up any remaining video elements
@@ -29,7 +29,7 @@ describe('useScreenWakeLock - browser mode', () => {
   describe('native Wake Lock API', () => {
     it('reports wake lock support correctly', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       // In Chromium, Wake Lock API should be supported
       expect(result.isSupported.value).toBe(true)
@@ -37,7 +37,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('attempts to request wake lock', async () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       if (!result.isSupported.value) {
         return
@@ -52,7 +52,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('releases wake lock successfully', async () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       if (!result.isSupported.value) {
         return
@@ -70,7 +70,7 @@ describe('useScreenWakeLock - browser mode', () => {
   describe('video fallback', () => {
     it('creates silent video element', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       result.startVideoFallback()
 
@@ -84,7 +84,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('positions video element off-screen', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       result.startVideoFallback()
 
@@ -100,7 +100,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('removes video element on stop', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       result.startVideoFallback()
       // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
@@ -114,7 +114,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('does not create duplicate videos on multiple starts', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       result.startVideoFallback()
       result.startVideoFallback()
@@ -127,7 +127,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('video has playsinline attribute for mobile compatibility', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       result.startVideoFallback()
 
@@ -140,7 +140,7 @@ describe('useScreenWakeLock - browser mode', () => {
   describe('combined controls', () => {
     it('acquireAll activates wake lock', async () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       await result.acquireAll({ redundant: false })
 
@@ -150,7 +150,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('acquireAll uses redundant mode when requested', async () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       await result.acquireAll({ redundant: true })
 
@@ -160,7 +160,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('releaseAll clears all wake locks', async () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       await result.acquireAll({ redundant: true })
       expect(result.isActive.value).toBe(true)
@@ -174,7 +174,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
     it('isActive reflects video being active', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       expect(result.isActive.value).toBe(false)
 
@@ -189,7 +189,7 @@ describe('useScreenWakeLock - browser mode', () => {
   describe('PWA detection', () => {
     it('matchMedia works for standalone detection', () => {
       const [, app] = withSetup(() => useScreenWakeLock())
-      cleanup = () => app.unmount()
+      ctx.cleanup = () => app.unmount()
 
       const standaloneMedia = globalThis.matchMedia('(display-mode: standalone)')
       expect(standaloneMedia).toBeTruthy()
