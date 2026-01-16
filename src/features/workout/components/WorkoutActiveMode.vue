@@ -40,6 +40,8 @@ const {
   setBlockResult,
   updateSetValue,
   addSet,
+  removeSet,
+  duplicateSet,
   removeBlock,
 } = useWorkout()
 const {
@@ -190,6 +192,14 @@ function handleToggleComplete(set: Set) {
 function handleAddSet() {
   addSet(currentBlockIndex.value)
 }
+
+function handleDeleteSet(setId: number) {
+  removeSet(currentBlockIndex.value, setId)
+}
+
+function handleDuplicateSet(setId: number) {
+  duplicateSet(currentBlockIndex.value, setId)
+}
 </script>
 
 <template>
@@ -220,6 +230,8 @@ function handleAddSet() {
         @update-set="handleUpdateSet"
         @toggle-complete="handleToggleComplete"
         @add-set="handleAddSet"
+        @delete-set="handleDeleteSet"
+        @duplicate-set="handleDuplicateSet"
       />
 
       <!-- Timed block views - dynamically rendered based on block kind -->
