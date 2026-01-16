@@ -3,7 +3,7 @@
 ## Roadmap Overview
 
 ```
-Q1 2025        Q2 2025        Q3 2025        Q4 2025
+Q1 [YEAR]      Q2 [YEAR]      Q3 [YEAR]      Q4 [YEAR]
 ─────────────────────────────────────────────────────
 [Foundation]   [Analytics]    [Social]       [Platform]
 ```
@@ -28,28 +28,28 @@ Q1 2025        Q2 2025        Q3 2025        Q4 2025
 
 ## Roadmap by Quarter
 
-### Q1 2025 - Foundation
+### Q1 [YEAR] - Foundation
 **Theme**: Core workout tracking excellence
 
 | Initiative | Status | Notes |
 |------------|--------|-------|
 | | | |
 
-### Q2 2025 - Analytics
+### Q2 [YEAR] - Analytics
 **Theme**: Data-driven training insights
 
 | Initiative | Status | Notes |
 |------------|--------|-------|
 | | | |
 
-### Q3 2025 - TBD
+### Q3 [YEAR] - TBD
 **Theme**: [To be determined based on learnings]
 
 | Initiative | Status | Notes |
 |------------|--------|-------|
 | | | |
 
-### Q4 2025 - TBD
+### Q4 [YEAR] - TBD
 **Theme**: [To be determined]
 
 | Initiative | Status | Notes |

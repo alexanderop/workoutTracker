@@ -252,7 +252,7 @@ The agent produces a markdown report. Review each surviving mutant and decide:
 
 - [Mutation Testing on Wikipedia](https://en.wikipedia.org/wiki/Mutation_testing)
 - [Stryker Mutator](https://stryker-mutator.io/) - When your stack supports it
-- [Claude Code Skills](https://docs.anthropic.com/claude-code/skills) - Building custom agent workflows
+- [Claude Code Skills](https://code.claude.com/docs/en/skills) - Building custom agent workflows
 
 ---
 

@@ -525,9 +525,12 @@ export function useWorkout() {
     const originalSet = block.sets[setIndex]
     if (setIndex === -1 || !originalSet) return
 
-    // Adjust activeSetIndex if needed - inserting at setIndex + 1 shifts later sets
+    // Adjust activeSetIndex if needed - only when duplicating in the currently selected block
     const activeSetIndex = workout.value.activeSetIndex
-    if (activeSetIndex !== null && activeSetIndex > setIndex) {
+    const isSelectedBlock = blockIndex === workout.value.selectedBlockIndex
+    const shouldShiftActiveIndex =
+      isSelectedBlock && activeSetIndex !== null && activeSetIndex > setIndex
+    if (shouldShiftActiveIndex) {
       updateWorkout({ activeSetIndex: activeSetIndex + 1 })
     }
 

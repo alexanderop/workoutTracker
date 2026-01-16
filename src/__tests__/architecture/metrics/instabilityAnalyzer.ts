@@ -8,8 +8,8 @@
  * - Fan-in (Ca - Afferent Coupling): Number of modules that import from this module
  *
  * Formula: I = Ce / (Ca + Ce)
- * - I = 0: Maximally stable (nothing depends on this, everything depends on it)
- * - I = 1: Maximally unstable (everything depends on this, nothing it depends on)
+ * - I = 0: Maximally stable (depends on nothing, can be depended upon by others)
+ * - I = 1: Maximally unstable (depends on others, nothing depends on it)
  *
  * Note: External dependencies (vue, date-fns, etc.) are ignored - only internal module
  * dependencies are counted.

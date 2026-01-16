@@ -6,7 +6,6 @@
 | Sprint # | |
 | Start Date | |
 | End Date | |
-| Sprint Goal | |
 | Team Capacity | |
 
 ---

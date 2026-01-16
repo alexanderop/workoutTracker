@@ -401,7 +401,8 @@ jobs:
                   description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
                 } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
                   state = 'pending';
-                  description = `QA found ${data.metrics.major_bugs} issue(s) to review`;
+                  const issueCount = (data.metrics.minor_bugs || 0) + (data.metrics.major_bugs || 0);
+                  description = `QA found ${issueCount} issue(s) to review`;
                 } else {
                   state = 'success';
                   description = `QA passed (${data.metrics.passed}/${data.metrics.total_tests} tests)`;

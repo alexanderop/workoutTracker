@@ -7,14 +7,14 @@ import { Copy, Trash2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
-const { open, position, deleteDisabled = false } = defineProps<{
-  open: boolean
+const open = defineModel<boolean>('open', { required: true })
+
+const { position, deleteDisabled = false } = defineProps<{
   position: { x: number; y: number }
   deleteDisabled?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:open': [value: boolean]
   delete: []
   duplicate: []
 }>()
@@ -54,7 +54,7 @@ function adjustPosition() {
 }
 
 function close() {
-  emit('update:open', false)
+  open.value = false
 }
 
 function handleDelete() {
@@ -76,9 +76,9 @@ onKeyStroke('Escape', close)
 
 // Adjust position when menu opens or position changes
 watch(
-  () => [open, position] as const,
+  () => [open.value, position] as const,
   () => {
-    if (open) {
+    if (open.value) {
       // Use nextTick-like behavior with requestAnimationFrame
       requestAnimationFrame(adjustPosition)
     }
