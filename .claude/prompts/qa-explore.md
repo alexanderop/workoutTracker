@@ -77,9 +77,29 @@ Use `browser_resize` to test mobile:
 
 ---
 
-## FINAL STEP: Write qa-report.md
+## IMPORTANT: Structured Output
 
-You MUST write this report before finishing:
+Your final response MUST be valid JSON matching the provided schema. This is how the workflow determines pass/fail status and generates reports.
+
+**Required fields:**
+- `verdict`: One of `HEALTHY`, `MINOR_ISSUES`, or `CRITICAL_BUGS`
+- `summary`: One sentence describing app health
+- `coverage`: Test counts for navigation, forms, core_features, mobile (each with total/passed/failed)
+- `bugs`: Array of bugs (each with id, severity, title, description, optional steps_to_reproduce and screenshot)
+- `console_errors`: Array of JavaScript error strings
+- `metrics`: Aggregated counts (total_tests, passed, failed, critical_bugs, major_bugs, minor_bugs)
+
+**Severity levels for bugs:**
+- `critical`: App crashes, data loss, security issues, blank screens
+- `major`: Feature broken, workflow blocked, significant UX issue
+- `minor`: Cosmetic issues, minor inconveniences
+- `suggestion`: Improvement ideas, not bugs
+
+---
+
+## ALSO: Write qa-report.md (Backup)
+
+As a backup, you should ALSO write `qa-report.md` with your findings:
 
 ```markdown
 # QA Exploration Report

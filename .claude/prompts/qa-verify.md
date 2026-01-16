@@ -91,9 +91,34 @@ Every bug needs a screenshot:
 
 ---
 
-## FINAL STEP: Write qa-report.md
+## IMPORTANT: Structured Output
 
-You MUST write this report:
+Your final response MUST be valid JSON matching the provided schema. This is how the workflow determines pass/fail status and generates reports.
+
+**Required fields:**
+- `verdict`: One of `HEALTHY` (PR approved), `MINOR_ISSUES` (needs clarification), or `CRITICAL_BUGS` (needs fixes)
+- `summary`: One sentence describing verification result
+- `coverage`: Test counts for navigation, forms, core_features, mobile (each with total/passed/failed)
+- `bugs`: Array of bugs (each with id, severity, title, description, optional steps_to_reproduce and screenshot)
+- `console_errors`: Array of JavaScript error strings
+- `metrics`: Aggregated counts (total_tests, passed, failed, critical_bugs, major_bugs, minor_bugs)
+
+**Verdict mapping:**
+- `HEALTHY` = PR approved, ready to merge
+- `MINOR_ISSUES` = Needs clarification or has non-blocking issues
+- `CRITICAL_BUGS` = Needs fixes before merge
+
+**Severity levels for bugs:**
+- `critical`: App crashes, data loss, security issues, blocks merge
+- `major`: Feature broken, workflow blocked, significant UX issue
+- `minor`: Cosmetic issues, minor inconveniences
+- `suggestion`: Improvement ideas, not bugs
+
+---
+
+## ALSO: Write qa-report.md (Backup)
+
+As a backup, you should ALSO write `qa-report.md` with your findings:
 
 ```markdown
 # QA Verification Report

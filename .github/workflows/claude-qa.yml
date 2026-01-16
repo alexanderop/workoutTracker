@@ -291,6 +291,14 @@ jobs:
             echo 'PROMPT_EOF'
           } >> $GITHUB_OUTPUT
 
+      - name: Load QA schema
+        id: load-schema
+        shell: bash
+        run: |
+          # Load JSON schema for structured output validation
+          SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
+          echo "schema=$SCHEMA" >> $GITHUB_OUTPUT
+
       - name: Run Claude QA - Explore Mode
         if: env.QA_MODE == 'explore'
         id: claude-explore
@@ -304,6 +312,7 @@ jobs:
             --max-turns 60
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
             --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,mcp__playwright__browser_evaluate,Write"
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Run Claude QA - Verify Mode
         if: env.QA_MODE == 'verify'
@@ -318,6 +327,7 @@ jobs:
             --max-turns 200
             --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--headless","--isolated","--caps=vision,testing"]}}}'
             --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_hover,mcp__playwright__browser_resize,mcp__playwright__browser_drag,mcp__playwright__browser_select_option,mcp__playwright__browser_press_key,mcp__playwright__browser_tabs,mcp__playwright__browser_file_upload,mcp__playwright__browser_fill_form,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_close,mcp__playwright__browser_verify_element_visible,mcp__playwright__browser_verify_text_visible,mcp__playwright__browser_verify_value,mcp__playwright__browser_evaluate,Write"
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Check report exists
         id: check-report
@@ -370,28 +380,60 @@ jobs:
         id: qa-status
         if: always()
         uses: actions/github-script@v7
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-explore.outputs.structured_output || steps.claude-verify.outputs.structured_output }}
         with:
           script: |
             const fs = require('fs');
             let state = 'success';
             let description = 'QA passed';
+            let metrics = null;
 
-            try {
-              const report = fs.readFileSync('qa-report.md', 'utf8');
-              // Use regex for robust matching (handles emoji/no-emoji, case variations)
-              if (/NEEDS FIXES|CRITICAL/i.test(report) && !/APPROVED/i.test(report)) {
-                state = 'failure';
-                description = 'QA found critical issues';
-              } else if (/NEEDS CLARIFICATION/i.test(report) || report.includes('⚠️')) {
-                state = 'pending';
-                description = 'QA found minor issues';
-              } else if (/APPROVED|HEALTHY/i.test(report)) {
-                state = 'success';
-                description = 'QA passed';
+            // Try structured output first (preferred)
+            const structuredOutput = process.env.STRUCTURED_OUTPUT;
+            if (structuredOutput && structuredOutput.trim()) {
+              try {
+                const data = JSON.parse(structuredOutput);
+                metrics = data.metrics;
+
+                if (data.verdict === 'CRITICAL_BUGS' || data.metrics.critical_bugs > 0) {
+                  state = 'failure';
+                  description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
+                } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
+                  state = 'pending';
+                  description = `QA found ${data.metrics.major_bugs} issue(s) to review`;
+                } else {
+                  state = 'success';
+                  description = `QA passed (${data.metrics.passed}/${data.metrics.total_tests} tests)`;
+                }
+
+                // Store metrics for job summary
+                core.setOutput('metrics', JSON.stringify(data.metrics));
+                core.setOutput('verdict', data.verdict);
+              } catch (parseErr) {
+                core.warning(`Failed to parse structured output: ${parseErr.message}`);
               }
-            } catch (e) {
-              state = 'error';
-              description = 'QA report not generated';
+            }
+
+            // Fallback to markdown parsing if structured output unavailable
+            if (!metrics) {
+              try {
+                const report = fs.readFileSync('qa-report.md', 'utf8');
+                // Use regex for robust matching (handles emoji/no-emoji, case variations)
+                if (/NEEDS FIXES|CRITICAL/i.test(report) && !/APPROVED/i.test(report)) {
+                  state = 'failure';
+                  description = 'QA found critical issues';
+                } else if (/NEEDS CLARIFICATION/i.test(report) || report.includes('⚠️')) {
+                  state = 'pending';
+                  description = 'QA found minor issues';
+                } else if (/APPROVED|HEALTHY/i.test(report)) {
+                  state = 'success';
+                  description = 'QA passed';
+                }
+              } catch (e) {
+                state = 'error';
+                description = 'QA report not generated';
+              }
             }
 
             // Use PR head sha for issue_comment, otherwise use context.sha
@@ -420,6 +462,7 @@ jobs:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
           PR_NUMBER_CONTEXT: ${{ steps.pr-context.outputs.pr_number }}
           QA_MODE: ${{ env.QA_MODE }}
+          STRUCTURED_OUTPUT: ${{ steps.claude-explore.outputs.structured_output || steps.claude-verify.outputs.structured_output }}
         with:
           script: |
             const fs = require('fs');
@@ -430,18 +473,91 @@ jobs:
 
             if (!prNumber) return;
 
-            let qaReport = '';
-            try {
-              qaReport = fs.readFileSync('qa-report.md', 'utf8');
-            } catch (e) {
-              qaReport = '⚠️ QA report not generated. Check [workflow logs](' +
-                `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-            }
-
             const mode = process.env.QA_MODE === 'verify' ? 'Verification' : 'Exploration';
-
             const focus = process.env.QA_FOCUS || 'general';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let qaReport = '';
+
+            // Try to generate report from structured output first
+            const structuredOutput = process.env.STRUCTURED_OUTPUT;
+            if (structuredOutput && structuredOutput.trim()) {
+              try {
+                const data = JSON.parse(structuredOutput);
+                const verdictEmoji = data.verdict === 'HEALTHY' ? '✅' : data.verdict === 'MINOR_ISSUES' ? '⚠️' : '❌';
+
+                // Generate coverage table
+                const coverageRows = ['navigation', 'forms', 'core_features', 'mobile']
+                  .map(area => {
+                    const c = data.coverage[area];
+                    const label = area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    return `| ${label} | ${c.passed} | ${c.failed} | ${c.total} |`;
+                  })
+                  .join('\n');
+
+                // Generate bugs table
+                let bugsSection = '';
+                if (data.bugs.length > 0) {
+                  const bugRows = data.bugs.map(b => {
+                    const severityEmoji = b.severity === 'critical' ? '🔴' : b.severity === 'major' ? '🟠' : b.severity === 'minor' ? '🟡' : '💡';
+                    const screenshot = b.screenshot ? `[View](${b.screenshot})` : '-';
+                    return `| ${b.id} | ${severityEmoji} ${b.severity} | ${b.title} | ${screenshot} |`;
+                  }).join('\n');
+                  bugsSection = [
+                    `### Bugs Found (${data.bugs.length})`,
+                    '',
+                    '| # | Severity | Description | Screenshot |',
+                    '|---|----------|-------------|------------|',
+                    bugRows
+                  ].join('\n');
+                } else {
+                  bugsSection = '### Bugs Found\n\n✅ No bugs found';
+                }
+
+                // Generate console errors section
+                let errorsSection = '';
+                if (data.console_errors.length > 0) {
+                  errorsSection = [
+                    `### Console Errors (${data.console_errors.length})`,
+                    '',
+                    '```',
+                    data.console_errors.join('\n'),
+                    '```'
+                  ].join('\n');
+                }
+
+                qaReport = [
+                  `**Verdict**: ${verdictEmoji} **${data.verdict}**`,
+                  '',
+                  `**Summary**: ${data.summary}`,
+                  '',
+                  '### Test Coverage',
+                  '',
+                  '| Area | Passed | Failed | Total |',
+                  '|------|--------|--------|-------|',
+                  coverageRows,
+                  '',
+                  `**Overall**: ${data.metrics.passed}/${data.metrics.total_tests} tests passed`,
+                  '',
+                  bugsSection,
+                  errorsSection
+                ].join('\n');
+
+              } catch (parseErr) {
+                core.warning(`Failed to parse structured output for PR comment: ${parseErr.message}`);
+              }
+            }
+
+            // Fallback to markdown report if structured output not available
+            if (!qaReport) {
+              try {
+                qaReport = fs.readFileSync('qa-report.md', 'utf8');
+              } catch (e) {
+                qaReport = '⚠️ QA report not generated. Check [workflow logs](' +
+                  `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+              }
+            }
+
             const body = [
               `## 🔍 Claude QA ${mode} Report`,
               '',
@@ -503,18 +619,47 @@ jobs:
 
       - name: Job summary
         if: always()
-        shell: bash
-        run: |
-          echo "## Claude QA Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Mode**: ${{ env.QA_MODE }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Focus**: ${{ env.QA_FOCUS }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Report generated**: ${{ steps.check-report.outputs.exists }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **QA Result**: ${{ steps.qa-status.outputs.qa_state }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Estimated Cost" >> $GITHUB_STEP_SUMMARY
-          echo "- Claude API: ~\$0.20-0.40" >> $GITHUB_STEP_SUMMARY
-          echo "- GitHub Actions: ~\$0.05" >> $GITHUB_STEP_SUMMARY
+        uses: actions/github-script@v7
+        env:
+          QA_MODE: ${{ env.QA_MODE }}
+          QA_FOCUS: ${{ env.QA_FOCUS }}
+          REPORT_EXISTS: ${{ steps.check-report.outputs.exists }}
+          QA_STATE: ${{ steps.qa-status.outputs.qa_state }}
+          QA_VERDICT: ${{ steps.qa-status.outputs.verdict }}
+          QA_METRICS: ${{ steps.qa-status.outputs.metrics }}
+        with:
+          script: |
+            let summary = `## Claude QA Summary\n\n`;
+            summary += `- **Mode**: ${process.env.QA_MODE}\n`;
+            summary += `- **Focus**: ${process.env.QA_FOCUS}\n`;
+            summary += `- **Report generated**: ${process.env.REPORT_EXISTS}\n`;
+            summary += `- **QA Result**: ${process.env.QA_STATE}\n`;
+
+            // Add structured output metrics if available
+            if (process.env.QA_VERDICT && process.env.QA_METRICS) {
+              try {
+                const metrics = JSON.parse(process.env.QA_METRICS);
+                const verdictEmoji = process.env.QA_VERDICT === 'HEALTHY' ? '✅' : process.env.QA_VERDICT === 'MINOR_ISSUES' ? '⚠️' : '❌';
+                summary += `- **Verdict**: ${verdictEmoji} ${process.env.QA_VERDICT}\n`;
+                summary += `\n### Test Metrics\n\n`;
+                summary += `| Metric | Count |\n`;
+                summary += `|--------|-------|\n`;
+                summary += `| Total Tests | ${metrics.total_tests} |\n`;
+                summary += `| Passed | ${metrics.passed} |\n`;
+                summary += `| Failed | ${metrics.failed} |\n`;
+                summary += `| Critical Bugs | ${metrics.critical_bugs} |\n`;
+                summary += `| Major Bugs | ${metrics.major_bugs} |\n`;
+                summary += `| Minor Bugs | ${metrics.minor_bugs} |\n`;
+              } catch (e) {
+                // Ignore parse errors, just skip metrics table
+              }
+            }
+
+            summary += `\n### Estimated Cost\n`;
+            summary += `- Claude API: ~$0.20-0.40\n`;
+            summary += `- GitHub Actions: ~$0.05\n`;
+
+            await core.summary.addRaw(summary).write();
 
       - name: Fail job if QA found issues
         if: steps.qa-status.outputs.qa_state == 'failure'
