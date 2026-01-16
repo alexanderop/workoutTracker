@@ -22,6 +22,7 @@ export default {
     getStarted: 'Loslegen',
     addExercise: '+ Übung hinzufügen',
     refresh: 'Aktualisieren',
+    duplicate: 'Duplizieren',
   },
   aria: {
     dismiss: 'Schließen',
@@ -63,6 +64,7 @@ export default {
     searchExercises: 'Übungen suchen',
     clearSearch: 'Suche löschen',
     activeWorkoutFab: 'Zum aktiven Workout zurückkehren',
+    setActionsMenu: 'Satz-Aktionen',
   },
   states: {
     loading: 'Lädt...',

@@ -517,6 +517,42 @@ export function useWorkout() {
     })
   }
 
+  function duplicateSet(blockIndex: number, setId: number) {
+    const block = workout.value.blocks[blockIndex]
+    if (!block || !isStrengthBlock(block)) return
+
+    const setIndex = block.sets.findIndex((s) => s.id === setId)
+    const originalSet = block.sets[setIndex]
+    if (setIndex === -1 || !originalSet) return
+
+    // Adjust activeSetIndex if needed - only when duplicating in the currently selected block
+    const activeSetIndex = workout.value.activeSetIndex
+    const isSelectedBlock = blockIndex === workout.value.selectedBlockIndex
+    const shouldShiftActiveIndex =
+      isSelectedBlock && activeSetIndex !== null && activeSetIndex > setIndex
+    if (shouldShiftActiveIndex) {
+      updateWorkout({ activeSetIndex: activeSetIndex + 1 })
+    }
+
+    updateBlockAtIndex(blockIndex, (b) => {
+      if (!isStrengthBlock(b)) return b
+      const setIds = b.sets.map((s) => s.id)
+      const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
+      const newSet: Set = {
+        id: newId,
+        kg: originalSet.kg,
+        reps: originalSet.reps,
+        duration: originalSet.duration,
+        rir: originalSet.rir,
+        status: 'planned' as const,
+      }
+      // Insert after the original set
+      const newSets = [...b.sets]
+      newSets.splice(setIndex + 1, 0, newSet)
+      return { ...b, sets: newSets }
+    })
+  }
+
   function activateSet(blockIndex: number, setIndex: number) {
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return
@@ -625,6 +661,7 @@ export function useWorkout() {
     updateExercise,
     addSet,
     removeSet,
+    duplicateSet,
     setSetCount,
     updateSetValue,
     reorderExercises,

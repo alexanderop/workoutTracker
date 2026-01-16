@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import type { StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import { Check, Plus } from 'lucide-vue-next'
+import SetContextMenu from './SetContextMenu.vue'
 
 // Strength-specific input types (subset of InputType)
 type StrengthInputType = Extract<InputType, 'weight' | 'reps' | 'rir' | 'duration'>
@@ -33,6 +34,8 @@ const emit = defineEmits<{
   'update-set': [setId: number, field: 'kg' | 'reps' | 'rir' | 'duration', value: number | undefined]
   'toggle-complete': [set: Set]
   'add-set': []
+  'delete-set': [setId: number]
+  'duplicate-set': [setId: number]
 }>()
 
 const { block, activeSetIndex } = defineProps<Properties>()
@@ -82,22 +85,28 @@ function getRirInputClass(isActive: boolean) {
   return cn(base, isActive ? 'bg-secondary' : 'bg-transparent')
 }
 
-function getCompleteButtonClass(isCompleted: boolean, ready: boolean) {
-  return cn(
-    'h-11 w-11 rounded-lg transition-all duration-200',
-    isCompleted
-      ? 'bg-success hover:bg-success/90 text-success-foreground'
-      : ready
-        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
-        : 'bg-secondary hover:bg-secondary/80 text-muted-foreground',
-  )
+function getCompleteButtonClass(isCompleted: boolean, ready: boolean): string {
+  const base = 'h-11 w-11 rounded-lg transition-all duration-200'
+
+  if (isCompleted) {
+    return cn(base, 'bg-success hover:bg-success/90 text-success-foreground')
+  }
+  if (ready) {
+    return cn(base, 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105')
+  }
+  return cn(base, 'bg-secondary hover:bg-secondary/80 text-muted-foreground')
 }
 
-function getCheckIconClass(isCompleted: boolean, ready: boolean) {
-  return cn(
-    'w-4 h-4 transition-all',
-    isCompleted ? 'animate-in zoom-in-50 duration-200' : ready ? 'opacity-100' : 'opacity-30',
-  )
+function getCheckIconClass(isCompleted: boolean, ready: boolean): string {
+  const base = 'w-4 h-4 transition-all'
+
+  if (isCompleted) {
+    return cn(base, 'animate-in zoom-in-50 duration-200')
+  }
+  if (ready) {
+    return cn(base, 'opacity-100')
+  }
+  return cn(base, 'opacity-30')
 }
 
 function getEstimated10RM(kg: string | number | undefined, reps: string | number | undefined) {
@@ -188,6 +197,84 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
   }
   return String(value)
 }
+
+// Context menu state
+const contextMenuOpen = ref(false)
+const contextMenuPosition = ref({ x: 0, y: 0 })
+const contextMenuSetId = ref<number | null>(null)
+
+// Long press configuration
+const LONG_PRESS_DELAY = 500
+const LONG_PRESS_DISTANCE_THRESHOLD = 10
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let pointerStartPosition: { x: number; y: number } | null = null
+
+function openContextMenu(setId: number, event: PointerEvent) {
+  contextMenuSetId.value = setId
+  contextMenuPosition.value = { x: event.clientX, y: event.clientY }
+  contextMenuOpen.value = true
+}
+
+function handlePointerDown(setId: number, event: PointerEvent) {
+  // Don't trigger on inputs - use instanceof for type-safe check
+  const target = event.target
+  if (target instanceof HTMLElement && target.closest('input, button')) return
+
+  pointerStartPosition = { x: event.clientX, y: event.clientY }
+
+  longPressTimer = setTimeout(() => {
+    openContextMenu(setId, event)
+    longPressTimer = null
+  }, LONG_PRESS_DELAY)
+}
+
+function handlePointerMove(event: PointerEvent) {
+  if (!longPressTimer || !pointerStartPosition) return
+
+  const distance = Math.hypot(
+    (event.clientX - pointerStartPosition.x),
+    (event.clientY - pointerStartPosition.y),
+  )
+
+  if (distance > LONG_PRESS_DISTANCE_THRESHOLD) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+    pointerStartPosition = null
+  }
+}
+
+function handlePointerUp() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+  pointerStartPosition = null
+}
+
+function handlePointerCancel() {
+  handlePointerUp()
+}
+
+function handleDeleteSet() {
+  if (contextMenuSetId.value !== null) {
+    emit('delete-set', contextMenuSetId.value)
+  }
+}
+
+function handleDuplicateSet() {
+  if (contextMenuSetId.value !== null) {
+    emit('duplicate-set', contextMenuSetId.value)
+  }
+}
+
+const isDeleteDisabled = computed(() => block.sets.length <= 1)
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+  }
+})
 </script>
 
 <template>
@@ -229,6 +316,10 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
             :key="state.set.id"
             :class="state.rowClass"
             :aria-current="state.isActive ? 'true' : undefined"
+            @pointerdown="handlePointerDown(state.set.id, $event)"
+            @pointermove="handlePointerMove"
+            @pointerup="handlePointerUp"
+            @pointercancel="handlePointerCancel"
           >
             <!-- Set Number -->
             <TableCell class="p-1 h-14">
@@ -397,6 +488,15 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
       :unit="modalType === 'weight' ? unitLabel : ''"
       :equipment="block.equipment"
       @update:model-value="handleModalConfirm"
+    />
+
+    <!-- Set Context Menu (long-press) -->
+    <SetContextMenu
+      v-model:open="contextMenuOpen"
+      :position="contextMenuPosition"
+      :delete-disabled="isDeleteDisabled"
+      @delete="handleDeleteSet"
+      @duplicate="handleDuplicateSet"
     />
   </div>
 </template>

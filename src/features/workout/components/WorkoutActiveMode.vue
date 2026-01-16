@@ -40,6 +40,8 @@ const {
   setBlockResult,
   updateSetValue,
   addSet,
+  removeSet,
+  duplicateSet,
   removeBlock,
 } = useWorkout()
 const {
@@ -163,11 +165,8 @@ function handlePrevBlock() {
   goToPreviousBlock()
 }
 
+// Note: handleSkipBlock intentionally uses the same implementation as next block navigation
 function handleNextBlock() {
-  advanceToNextBlock()
-}
-
-function handleSkipBlock() {
   advanceToNextBlock()
 }
 
@@ -190,6 +189,14 @@ function handleToggleComplete(set: Set) {
 function handleAddSet() {
   addSet(currentBlockIndex.value)
 }
+
+function handleDeleteSet(setId: number) {
+  removeSet(currentBlockIndex.value, setId)
+}
+
+function handleDuplicateSet(setId: number) {
+  duplicateSet(currentBlockIndex.value, setId)
+}
 </script>
 
 <template>
@@ -203,7 +210,7 @@ function handleAddSet() {
     <template #header-actions>
       <WorkoutActiveModeHeaderActions
         :can-skip-block="canSkipBlock"
-        @skip-block="handleSkipBlock"
+        @skip-block="handleNextBlock"
         @remove-block="handleRemoveBlock"
         @open-queue="emit('open-queue')"
         @end-workout="emit('end-workout')"
@@ -220,6 +227,8 @@ function handleAddSet() {
         @update-set="handleUpdateSet"
         @toggle-complete="handleToggleComplete"
         @add-set="handleAddSet"
+        @delete-set="handleDeleteSet"
+        @duplicate-set="handleDuplicateSet"
       />
 
       <!-- Timed block views - dynamically rendered based on block kind -->

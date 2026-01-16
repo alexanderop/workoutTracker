@@ -5,6 +5,7 @@ import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginOxlint from 'eslint-plugin-oxlint'
+import { configs as pnpmConfigs } from 'eslint-plugin-pnpm'
 import pluginUnicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
@@ -150,6 +151,9 @@ export default defineConfigWithVueTs(
     rules: {
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
+
+      // Disallow nested ternary expressions - prefer early returns or separate variables
+      'no-nested-ternary': 'error',
 
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [
@@ -443,6 +447,10 @@ export default defineConfigWithVueTs(
   },
 
   ...pluginOxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
+
+  // Enforce pnpm catalogs for all dependencies
+  ...pnpmConfigs.recommended,
+
   skipFormatting,
   {
     ignores: ['.claude/**'],
