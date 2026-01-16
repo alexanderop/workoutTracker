@@ -165,13 +165,6 @@ export const MODULE_DEFINITIONS: ReadonlyArray<ModuleDefinition> = [
 ]
 
 /**
- * Get module definition by name
- */
-export function getModuleByName(name: string): ModuleDefinition | undefined {
-  return MODULE_DEFINITIONS.find((m) => m.name === name)
-}
-
-/**
  * Get all modules in a category
  */
 export function getModulesByCategory(

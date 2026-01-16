@@ -226,16 +226,6 @@ function countVueFiles(dirPath: string): number {
 }
 
 /**
- * Create a ts-morph Project instance for analysis
- */
-export function createProject(projectRoot: string): Project {
-  return new Project({
-    tsConfigFilePath: `${projectRoot}/tsconfig.app.json`,
-    skipAddingFilesFromTsConfig: true,
-  })
-}
-
-/**
  * Add source files from a module path to the project
  */
 export function addModuleToProject(

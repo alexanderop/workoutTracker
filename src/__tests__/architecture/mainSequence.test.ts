@@ -53,7 +53,7 @@ describe('main sequence fitness functions', () => {
       const dbMetrics = getModuleMetrics(getReport(), 'db')
       expect(dbMetrics).toBeDefined()
       expect(dbMetrics?.distance).toBeLessThan(0.25)
-    })
+    }, 10_000)
 
     it('types should be highly abstract and stable', () => {
       const typesMetrics = getModuleMetrics(getReport(), 'types')

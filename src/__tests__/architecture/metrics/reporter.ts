@@ -5,7 +5,7 @@
  */
 
 import { ZONE_THRESHOLDS } from './moduleDefinitions'
-import type { MetricsReport, ModuleMetrics } from './types'
+import type { MetricsReport } from './types'
 
 /**
  * Format a number to a fixed number of decimal places
@@ -51,47 +51,6 @@ export function formatMetricsTable(report: MetricsReport): string {
   })
 
   return [...header, ...rows].join('\n')
-}
-
-/**
- * Format a single module's detailed metrics
- */
-export function formatModuleDetails(metrics: ModuleMetrics): string {
-  const { module: mod, abstractness, instability, distance, passes } = metrics
-
-  const lines = [
-    `Module: ${mod.name}`,
-    `Path: ${mod.path}`,
-    `Category: ${mod.category}`,
-    '',
-    'Abstractness (A):',
-    `  Abstract elements: ${abstractness.abstractElements}`,
-    `  Concrete elements: ${abstractness.concreteElements}`,
-    `  A = ${fmt(abstractness.abstractness, 3)}`,
-    '',
-    'Instability (I):',
-    `  Fan-in (dependents): ${instability.fanIn}`,
-    `  Fan-out (dependencies): ${instability.fanOut}`,
-    `  I = ${fmt(instability.instability, 3)}`,
-  ]
-
-  if (instability.dependsOn.length > 0) {
-    lines.push(`  Depends on: ${instability.dependsOn.join(', ')}`)
-  }
-
-  if (instability.dependedOnBy.length > 0) {
-    lines.push(`  Depended on by: ${instability.dependedOnBy.join(', ')}`)
-  }
-
-  lines.push(
-    '',
-    'Distance from Main Sequence:',
-    `  D = |A + I - 1| = |${fmt(abstractness.abstractness, 3)} + ${fmt(instability.instability, 3)} - 1| = ${fmt(distance, 3)}`,
-    `  Threshold: ${mod.maxDistance}`,
-    `  Status: ${passes ? 'PASS' : 'FAIL'}`,
-  )
-
-  return lines.join('\n')
 }
 
 /**
