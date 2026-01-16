@@ -1,3 +1,12 @@
+# [1.18.0](https://github.com/alexanderop/workoutTracker/compare/v1.17.0...v1.18.0) (2026-01-16)
+
+
+### Features
+
+* **architecture:** add fitness functions and code quality improvements ([#111](https://github.com/alexanderop/workoutTracker/issues/111)) ([43e5111](https://github.com/alexanderop/workoutTracker/commit/43e51110d965e3849cab1037333dfd893d4065eb))
+
+
+
 # [1.17.0](https://github.com/alexanderop/workoutTracker/compare/v1.16.0...v1.17.0) (2026-01-07)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **lib:** add fractional indexing for sortable keys ([8e70585](https://github.com/alexanderop/workoutTracker/commit/8e7058563d66dc84e37ffb378314953c353835cb))
-
-
-
-## [1.13.1](https://github.com/alexanderop/workoutTracker/compare/v1.13.0...v1.13.1) (2026-01-03)
-
-
-### Bug Fixes
-
-* **barbell-hint:** show weight numbers on small plates ([2cfea51](https://github.com/alexanderop/workoutTracker/commit/2cfea5136f993d4275d5fd827b4bfe24c522e87b))
 
 
 
