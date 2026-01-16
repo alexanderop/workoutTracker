@@ -152,6 +152,9 @@ export default defineConfigWithVueTs(
       // Limit cyclomatic complexity per function
       'complexity': ['warn', { max: 10 }],
 
+      // Disallow nested ternary expressions - prefer early returns or separate variables
+      'no-nested-ternary': 'error',
+
       // No type assertions with `as` (except `as const`)
       '@typescript-eslint/consistent-type-assertions': [
         'error',

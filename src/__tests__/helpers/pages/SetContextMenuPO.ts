@@ -2,6 +2,23 @@ import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 
 const LONG_PRESS_DELAY = 500
+const EVENT_PROCESSING_DELAY = 50
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function createPointerEvent(type: string, clientX: number, clientY: number): PointerEvent {
+  return new PointerEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX,
+    clientY,
+    pointerId: 1,
+    pointerType: 'touch',
+    isPrimary: true,
+  })
+}
 
 /**
  * Simulates a long press (pointerdown followed by delay then pointerup).
@@ -13,37 +30,10 @@ async function simulateLongPress(element: Element, duration = LONG_PRESS_DELAY):
   const clientX = rect.left + rect.width / 2
   const clientY = rect.top + rect.height / 2
 
-  // Pointer down
-  element.dispatchEvent(
-    new PointerEvent('pointerdown', {
-      bubbles: true,
-      cancelable: true,
-      clientX,
-      clientY,
-      pointerId: 1,
-      pointerType: 'touch',
-      isPrimary: true,
-    }),
-  )
-
-  // Wait for the long press duration plus a small buffer
-  await new Promise(resolve => setTimeout(resolve, duration + 50))
-
-  // Pointer up
-  element.dispatchEvent(
-    new PointerEvent('pointerup', {
-      bubbles: true,
-      cancelable: true,
-      clientX,
-      clientY,
-      pointerId: 1,
-      pointerType: 'touch',
-      isPrimary: true,
-    }),
-  )
-
-  // Small delay for event processing
-  await new Promise(resolve => setTimeout(resolve, 50))
+  element.dispatchEvent(createPointerEvent('pointerdown', clientX, clientY))
+  await delay(duration + EVENT_PROCESSING_DELAY)
+  element.dispatchEvent(createPointerEvent('pointerup', clientX, clientY))
+  await delay(EVENT_PROCESSING_DELAY)
 }
 
 /**

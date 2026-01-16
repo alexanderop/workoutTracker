@@ -38,7 +38,8 @@ function filterByTimeRange(
     return entries
   }
 
-  const days = range === '7D' ? 7 : range === '30D' ? 30 : 90
+  const rangeToDays: Record<Exclude<TimeRange, 'All'>, number> = { '7D': 7, '30D': 30, '90D': 90 }
+  const days = rangeToDays[range]
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
 
   return entries.filter((entry) => entry.date >= cutoff)

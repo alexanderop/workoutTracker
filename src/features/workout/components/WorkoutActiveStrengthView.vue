@@ -85,22 +85,28 @@ function getRirInputClass(isActive: boolean) {
   return cn(base, isActive ? 'bg-secondary' : 'bg-transparent')
 }
 
-function getCompleteButtonClass(isCompleted: boolean, ready: boolean) {
-  return cn(
-    'h-11 w-11 rounded-lg transition-all duration-200',
-    isCompleted
-      ? 'bg-success hover:bg-success/90 text-success-foreground'
-      : ready
-        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
-        : 'bg-secondary hover:bg-secondary/80 text-muted-foreground',
-  )
+function getCompleteButtonClass(isCompleted: boolean, ready: boolean): string {
+  const base = 'h-11 w-11 rounded-lg transition-all duration-200'
+
+  if (isCompleted) {
+    return cn(base, 'bg-success hover:bg-success/90 text-success-foreground')
+  }
+  if (ready) {
+    return cn(base, 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105')
+  }
+  return cn(base, 'bg-secondary hover:bg-secondary/80 text-muted-foreground')
 }
 
-function getCheckIconClass(isCompleted: boolean, ready: boolean) {
-  return cn(
-    'w-4 h-4 transition-all',
-    isCompleted ? 'animate-in zoom-in-50 duration-200' : ready ? 'opacity-100' : 'opacity-30',
-  )
+function getCheckIconClass(isCompleted: boolean, ready: boolean): string {
+  const base = 'w-4 h-4 transition-all'
+
+  if (isCompleted) {
+    return cn(base, 'animate-in zoom-in-50 duration-200')
+  }
+  if (ready) {
+    return cn(base, 'opacity-100')
+  }
+  return cn(base, 'opacity-30')
 }
 
 function getEstimated10RM(kg: string | number | undefined, reps: string | number | undefined) {

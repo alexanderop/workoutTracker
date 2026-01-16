@@ -48,12 +48,11 @@ export function useImageUpload(form: Ref<ImageFormState>) {
       return
     }
 
-    form.value.imageError =
-      result.error === 'file-too-large'
-        ? t('exercises.create.errors.imageTooLarge')
-        : result.error === 'invalid-image'
-          ? t('exercises.create.errors.invalidImage')
-          : t('exercises.create.errors.conversionFailed')
+    const errorMessages: Record<string, string> = {
+      'file-too-large': t('exercises.create.errors.imageTooLarge'),
+      'invalid-image': t('exercises.create.errors.invalidImage'),
+    }
+    form.value.imageError = errorMessages[result.error] ?? t('exercises.create.errors.conversionFailed')
   }
 
   return { displayText, trigger, handleSelect }

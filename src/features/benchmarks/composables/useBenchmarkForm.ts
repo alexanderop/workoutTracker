@@ -39,6 +39,20 @@ type BenchmarkFormState = {
 }
 
 /**
+ * Calculate index adjustment when deleting a round.
+ */
+function calculateDeletionAdjustment(
+  isDeletingCurrent: boolean,
+  isDeletingBefore: boolean,
+  roundIndex: number,
+  currentIndex: number,
+): number {
+  if (isDeletingCurrent) return Math.max(0, roundIndex - 1) - currentIndex
+  if (isDeletingBefore) return -1
+  return 0
+}
+
+/**
  * Creates initial form state with one empty round.
  */
 function createInitialState(): BenchmarkFormState {
@@ -317,11 +331,7 @@ export function useBenchmarkForm() {
     // - If deleting after current: no change needed
     const isDeletingCurrent = roundIndex === currentRoundIndex.value
     const isDeletingBefore = roundIndex < currentRoundIndex.value
-    const adjustment = isDeletingCurrent
-      ? Math.max(0, roundIndex - 1) - currentRoundIndex.value
-      : isDeletingBefore
-        ? -1
-        : 0
+    const adjustment = calculateDeletionAdjustment(isDeletingCurrent, isDeletingBefore, roundIndex, currentRoundIndex.value)
     currentRoundIndex.value = currentRoundIndex.value + adjustment
 
     return true

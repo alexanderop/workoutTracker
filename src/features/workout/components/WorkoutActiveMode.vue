@@ -165,11 +165,8 @@ function handlePrevBlock() {
   goToPreviousBlock()
 }
 
+// Note: handleSkipBlock intentionally uses the same implementation as next block navigation
 function handleNextBlock() {
-  advanceToNextBlock()
-}
-
-function handleSkipBlock() {
   advanceToNextBlock()
 }
 
@@ -213,7 +210,7 @@ function handleDuplicateSet(setId: number) {
     <template #header-actions>
       <WorkoutActiveModeHeaderActions
         :can-skip-block="canSkipBlock"
-        @skip-block="handleSkipBlock"
+        @skip-block="handleNextBlock"
         @remove-block="handleRemoveBlock"
         @open-queue="emit('open-queue')"
         @end-workout="emit('end-workout')"

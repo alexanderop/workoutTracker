@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
@@ -95,9 +95,8 @@ onUnmounted(() => {
   window.removeEventListener('resize', adjustPosition)
 })
 
-const menuItemClass = computed(() =>
-  'flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none',
-)
+// Static class string - no reactive dependencies
+const MENU_ITEM_CLASS = 'flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none'
 </script>
 
 <template>
@@ -116,7 +115,7 @@ const menuItemClass = computed(() =>
       <button
         role="menuitem"
         :class="cn(
-          menuItemClass,
+          MENU_ITEM_CLASS,
           'w-full text-left focus:bg-accent focus:text-accent-foreground',
           deleteDisabled && 'pointer-events-none opacity-50',
         )"
@@ -130,7 +129,7 @@ const menuItemClass = computed(() =>
       <button
         role="menuitem"
         :class="cn(
-          menuItemClass,
+          MENU_ITEM_CLASS,
           'w-full text-left focus:bg-accent focus:text-accent-foreground',
         )"
         @click="handleDuplicate"

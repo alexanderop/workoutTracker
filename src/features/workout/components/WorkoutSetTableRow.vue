@@ -47,26 +47,24 @@ const rowClass = computed(() =>
   ),
 )
 
+function getCompleteButtonStateClass(completed: boolean, isReady: boolean): string {
+  if (completed) return 'bg-success hover:bg-success/90 text-success-foreground'
+  if (isReady) return 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
+  return 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105'
+}
+
+function getCheckIconStateClass(completed: boolean, isReady: boolean): string {
+  if (completed) return 'animate-in zoom-in-50 duration-200'
+  if (isReady) return 'opacity-100'
+  return 'opacity-30'
+}
+
 const completeButtonClass = computed(() =>
-  cn(
-    'h-9 w-9 rounded-lg transition-all duration-200',
-    isCompleted.value
-      ? 'bg-success hover:bg-success/90 text-success-foreground'
-      : ready.value
-        ? 'bg-success hover:bg-success/90 text-success-foreground hover:scale-105'
-        : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:scale-105',
-  ),
+  cn('h-9 w-9 rounded-lg transition-all duration-200', getCompleteButtonStateClass(isCompleted.value, ready.value)),
 )
 
 const checkIconClass = computed(() =>
-  cn(
-    'w-4 h-4 transition-all',
-    isCompleted.value
-      ? 'animate-in zoom-in-50 duration-200'
-      : ready.value
-        ? 'opacity-100'
-        : 'opacity-30',
-  ),
+  cn('w-4 h-4 transition-all', getCheckIconStateClass(isCompleted.value, ready.value)),
 )
 
 function getRepsValue() {

@@ -22,6 +22,34 @@ import { getTemplatesRepository } from '@/db'
 import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
+/**
+ * Calculate the new selected index after deleting an item from a list.
+ */
+function calculateIndexAfterDeletion(
+  currentSelected: number,
+  deletedIndex: number,
+  newLength: number,
+): number {
+  if (newLength === 0) return -1
+  if (currentSelected >= newLength) return newLength - 1
+  if (currentSelected > deletedIndex) return currentSelected - 1
+  return currentSelected
+}
+
+/**
+ * Calculate the new selected index after reordering items in a list.
+ */
+function calculateIndexAfterReorder(
+  currentSelected: number,
+  fromIndex: number,
+  toIndex: number,
+): number {
+  if (currentSelected === fromIndex) return toIndex
+  if (fromIndex < currentSelected && toIndex >= currentSelected) return currentSelected - 1
+  if (fromIndex > currentSelected && toIndex <= currentSelected) return currentSelected + 1
+  return currentSelected
+}
+
 function createStrengthBlockFromTemplate(
   templateBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; targetDuration?: number | null; targetWeight?: number | null; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
   newId: number,
@@ -501,16 +529,7 @@ export const usePastWorkout = createGlobalState(() => {
     const currentSelected = selectedBlockIndex.value
 
     blocks.value = filtered
-
-    // Calculate new selected index using ternary chain
-    selectedBlockIndex.value =
-      filtered.length === 0
-        ? -1
-        : currentSelected >= filtered.length
-          ? filtered.length - 1
-          : currentSelected > index
-            ? currentSelected - 1
-            : currentSelected
+    selectedBlockIndex.value = calculateIndexAfterDeletion(currentSelected, index, filtered.length)
   }
 
   /**
@@ -525,17 +544,7 @@ export const usePastWorkout = createGlobalState(() => {
     newBlocks.splice(toIndex, 0, movedBlock)
     blocks.value = newBlocks
 
-    const currentSelected = selectedBlockIndex.value
-
-    // Calculate new selected index using ternary chain
-    selectedBlockIndex.value =
-      currentSelected === fromIndex
-        ? toIndex
-        : fromIndex < currentSelected && toIndex >= currentSelected
-          ? currentSelected - 1
-          : fromIndex > currentSelected && toIndex <= currentSelected
-            ? currentSelected + 1
-            : currentSelected
+    selectedBlockIndex.value = calculateIndexAfterReorder(selectedBlockIndex.value, fromIndex, toIndex)
   }
 
   /**
