@@ -36,3 +36,32 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-002: Create Locator types and query interface (the abstraction layer foundation)
 
 ---
+
+## US-002: Create Locator types and query interface
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Created `src/__tests__/helpers/locator/types.ts` with:
+   - `ARIARole` type - comprehensive ARIA role union covering all WAI-ARIA 1.2 roles
+   - `LocatorOptions` interface - for filtering (exact, hasText, hasNotText, has, hasNot)
+   - `LocatorByRoleOptions` interface - extends LocatorOptions with role-specific filters (checked, disabled, expanded, level, name, pressed, selected, includeHidden)
+   - `UserEventClickOptions`, `UserEventFillOptions`, `UserEventClearOptions`, `UserEventHoverOptions`, `UserEventSelectOptions` - interaction option types
+   - `LocatorSelectors` interface - query methods (getByRole, getByText, getByLabelText, getByPlaceholder, getByTestId, getByAltText, getByTitle)
+   - `Locator` interface - extends LocatorSelectors with:
+     - Interaction methods: click, dblClick, fill, clear, hover, selectOptions
+     - Element access: element, elements, query
+     - Collection methods: all, nth, first, last
+     - Chaining methods: and, or, filter
+   - `Page` interface - root-level query object with locator() and elementLocator()
+
+### Key decisions:
+- Defined own `ARIARole` type instead of importing from `@vitest/browser/aria-role` since it's not exported in package.json
+- Interface mirrors Vitest browser Locator API exactly for seamless browser mode compatibility
+- Kept types minimal - only what's actually used in the codebase
+- Methods return synchronous values where possible (element, elements, query) to match browser API
+
+### Next steps:
+- US-003: Implement browser Locator wrapper (BrowserLocator class that delegates to page object)
+
+---
