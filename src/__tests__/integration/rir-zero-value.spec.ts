@@ -1,5 +1,5 @@
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'

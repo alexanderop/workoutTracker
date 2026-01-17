@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { getDataManagementRepository, getOnboardingRepository, getWorkoutsRepository } from '@/db'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { RouteNames } from '@/router'
@@ -22,7 +23,7 @@ describe('Onboarding Flow', () => {
       const { router, cleanup } = await createTestApp()
 
       // Assert: Should have been redirected to onboarding
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
 
       cleanup()
     })
@@ -141,7 +142,7 @@ describe('Onboarding Flow', () => {
 
       // Check that the onboarding view renders with carousel content
       const skipButton = page.getByRole('button', { name: /skip to app/i })
-      await expect.element(skipButton).toBeInTheDocument()
+      await expectElement(skipButton).toBeInTheDocument()
 
       cleanup()
     })
@@ -158,11 +159,11 @@ describe('Onboarding Flow', () => {
 
       // Find and click the "Skip to App" button on Welcome slide
       const skipButton = page.getByRole('button', { name: /skip to app/i })
-      await expect.element(skipButton).toBeVisible()
-      await userEvent.click(skipButton)
+      await expectElement(skipButton).toBeVisible()
+      await skipButton.click()
 
       // Should navigate to home
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
 
       // Onboarding should be marked complete
       const state = await getOnboardingRepository().get()
@@ -205,7 +206,7 @@ describe('Onboarding Flow', () => {
       // Navigate to templates via router
       await router.push({ name: RouteNames.CreateTemplate })
 
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.CreateTemplate)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.CreateTemplate)
 
       cleanup()
     })
@@ -220,17 +221,17 @@ describe('Onboarding Flow', () => {
 
       // Get progress indicator
       const progress = page.getByRole('progressbar')
-      await expect.element(progress).toBeVisible()
+      await expectElement(progress).toBeVisible()
 
       // Initial progress should be 0% (slide 1 of 6)
-      await expect.element(progress).toHaveAttribute('aria-valuenow', '0')
+      await expectElement(progress).toHaveAttribute('aria-valuenow', '0')
 
       // Click Next button to go to slide 2
       const nextButton = page.getByRole('button', { name: /next|weiter/i })
-      await userEvent.click(nextButton)
+      await nextButton.click()
 
       // Progress should update to 20% (slide 2 of 6)
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const el = progress.element()
         return el?.getAttribute('aria-valuenow')
       }).toBe('20')
@@ -318,7 +319,7 @@ describe('Onboarding Flow', () => {
 
       // 6. Assert: User should NOT be redirected to onboarding
       await router.push({ name: RouteNames.Home })
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
 
       cleanup()
     })

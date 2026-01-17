@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement } from '../helpers/assertions'
+import { page, userEvent } from '../helpers/locator'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
@@ -49,8 +50,8 @@ describe('Localization', () => {
 
       // Wait for settings page to render in German
       const heading = page.getByRole('heading', { name: /einstellungen/i })
-      await expect.element(heading, { timeout: 3000 }).toBeVisible()
-      await expect.element(heading).toHaveTextContent('Einstellungen')
+      await expectElement(heading, { timeout: 3000 }).toBeVisible()
+      await expectElement(heading).toHaveTextContent('Einstellungen')
 
       // Verify German labels display
       expect(queryByText(/gewicht/i)).toBeTruthy() // "Gewicht" = Weight in German
@@ -64,7 +65,7 @@ describe('Localization', () => {
       await userEvent.click(englishOption)
 
       // Wait for UI to update to English
-      await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
+      await expectElement(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
 
       // Verify English labels display correctly
       const settingsHeading = await getByRole('heading', { level: 1 }).element()

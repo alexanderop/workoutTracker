@@ -1,6 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -18,16 +19,15 @@ describe('Decimal Weight Input', () => {
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
-    // Get the first set row
+    // Use Locator API directly for environment-agnostic interactions
+    const kgInput = page.getByRole('spinbutton', { name: /weight for set 1/i })
+    await kgInput.clear()
+    await kgInput.fill('12.5')
+
+    // Get the set row for assertions
     const setRow = await workout.getSetRow(0)
-
-    // Try entering a decimal value
-    await userEvent.clear(setRow.kg)
-    await userEvent.fill(setRow.kg, '12.5')
-
-    // Assert the value is 12.5, not 12 (which would mean decimals were rejected)
     expect(setRow.kg).toHaveValue('12.5')
 
     app.cleanup()
@@ -39,13 +39,14 @@ describe('Decimal Weight Input', () => {
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
+
+    // Use Locator API directly for environment-agnostic interactions
+    const kgInput = page.getByRole('spinbutton', { name: /weight for set 1/i })
+    await kgInput.clear()
+    await kgInput.fill('12.25')
 
     const setRow = await workout.getSetRow(0)
-
-    await userEvent.clear(setRow.kg)
-    await userEvent.fill(setRow.kg, '12.25')
-
     expect(setRow.kg).toHaveValue('12.25')
 
     app.cleanup()
@@ -57,20 +58,24 @@ describe('Decimal Weight Input', () => {
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
-    // Fill set with decimal weight and complete
-    const setRow = await workout.getSetRow(0)
-    await userEvent.clear(setRow.kg)
-    await userEvent.fill(setRow.kg, '12.5')
-    await userEvent.clear(setRow.reps)
-    await userEvent.fill(setRow.reps, '8')
-    await userEvent.clear(setRow.rir)
-    await userEvent.fill(setRow.rir, '2')
-    await userEvent.click(setRow.complete)
+    // Fill set with decimal weight and complete using Locator API
+    const kgInput = page.getByRole('spinbutton', { name: /weight for set 1/i })
+    const repsInput = page.getByRole('spinbutton', { name: /^reps for set 1/i })
+    const rirInput = page.getByRole('spinbutton', { name: /reps in reserve for set 1/i })
+    const completeBtn = page.getByRole('button', { name: /mark set 1 complete/i })
+
+    await kgInput.clear()
+    await kgInput.fill('12.5')
+    await repsInput.clear()
+    await repsInput.fill('8')
+    await rirInput.clear()
+    await rirInput.fill('2')
+    await completeBtn.click()
 
     // Verify set completed
-    await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+    await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
     // Verify the weight value is preserved with decimal
     const completedRow = await workout.getSetRow(0)

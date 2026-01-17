@@ -58,17 +58,6 @@ function isSVGElement(value: unknown): value is SVGElement {
   return value instanceof SVGElement
 }
 
-/**
- * Type guard to check if value is a Locator (has element method)
- */
-function isLocator(value: unknown): value is Locator {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    'element' in value &&
-    typeof value.element === 'function'
-  )
-}
 
 /**
  * Wraps native negated assertion to match our interface
@@ -236,15 +225,10 @@ export function expectElement(
     return new BrowserElementAssertion(native)
   }
 
-  // For other Locator implementations, get the element
-  if (isLocator(element)) {
-    const el = element.element()
-    const native = expect.element(el, options)
-    return new BrowserElementAssertion(native)
-  }
-
-  // Fallback - should not reach here with proper types
-  const native = expect.element(null, options)
+  // For other Locator implementations (including native Vitest locators),
+  // pass directly to expect.element() which handles the retry behavior
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const native = expect.element(element as any, options)
   return new BrowserElementAssertion(native)
 }
 

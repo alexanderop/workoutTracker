@@ -1,5 +1,6 @@
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { i18n } from '@/i18n'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -67,7 +68,7 @@ describe('Locale-Aware Decimal Input', () => {
 
       // Verify the weight was set (displayed as "70,5" in German locale)
       // The trigger button should now show the value
-      await expect.element(weightTrigger).toHaveTextContent('70,5')
+      await expectElement(weightTrigger).toHaveTextContent('70,5')
 
       cleanup()
     })
@@ -97,7 +98,7 @@ describe('Locale-Aware Decimal Input', () => {
 
       // Check that the value display shows comma format
       const valueDisplay = page.getByLabelText('Current value')
-      await expect.element(valueDisplay).toHaveTextContent(/70,5/)
+      await expectElement(valueDisplay).toHaveTextContent(/70,5/)
 
       await modalPO.clickCancel()
       cleanup()
@@ -152,7 +153,7 @@ describe('Locale-Aware Decimal Input', () => {
       await modalPO.waitForClose()
 
       // Verify the weight was set (displayed as "70.5" in English locale)
-      await expect.element(weightTrigger).toHaveTextContent('70.5')
+      await expectElement(weightTrigger).toHaveTextContent('70.5')
 
       cleanup()
     })

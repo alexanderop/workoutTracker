@@ -392,3 +392,67 @@ This requires conditional type exports, which TypeScript doesn't directly suppor
 - US-010: Migrate first batch of integration tests (10 simplest)
 
 ---
+
+## US-010: Migrate first batch of integration tests (10 simplest)
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Selected 10 simplest integration tests for migration:
+   - `localization.spec.ts` - locale switching tests
+   - `rir-zero-value.spec.ts` - RIR value handling tests
+   - `isometric-exercise.spec.ts` - isometric exercise workflow tests
+   - `segmented-control.spec.ts` - segmented control component tests
+   - `unit-display.spec.ts` - weight unit display tests
+   - `decimal-weight-input.spec.ts` - decimal weight input tests
+   - `onboarding-flow.spec.ts` - onboarding flow tests
+   - `locale-decimal-input.spec.ts` - locale-aware decimal input tests
+   - `settings-preferences.spec.ts` - settings preferences tests
+
+2. Migration pattern applied to each test:
+   - Changed `import { page, userEvent } from 'vitest/browser'` to `import { page, userEvent } from '../helpers/locator'`
+   - Changed `expect.element(locator)` to `expectElement(locator)` from `../helpers/assertions`
+   - Changed `expect.poll(() => ...)` to `expectPoll(() => ...)` from `../helpers/assertions`
+   - Changed `userEvent.fill(locator, text)` to `locator.fill(text)` for Locators
+   - Changed `userEvent.click(locator)` to `locator.click()` for Locators
+   - Kept `userEvent.click(element)` for HTMLElements returned by Page Objects
+
+3. Fixed critical bug in `src/__tests__/helpers/assertions/browser.ts`:
+   - **Problem**: `expectElement(locator).not.toBeInTheDocument()` threw error
+   - **Root cause**: `expectElement()` was calling `locator.element()` which throws when element doesn't exist
+   - **Solution**: Pass locator directly to `expect.element()` without extracting element first
+   - **Code removed**: `isLocator()` helper function (unreachable code)
+
+### Key discoveries:
+1. **Locator interaction methods**: For abstracted Locators, use `locator.fill(text)` and `locator.click()` instead of `userEvent.fill(locator, text)` and `userEvent.click(locator)`
+
+2. **Page Objects return HTMLElements**: When Page Objects return HTMLElements (like `common.getDialogButton(...)`), continue using `userEvent.click(element)` since HTMLElements don't have `.click()` method
+
+3. **Type errors expected**: Non-migrated tests have TypeScript errors due to mixing native Vitest imports with abstraction layer types. This is expected behavior documented in US-008/US-009 notes.
+
+4. **Bug in assertion layer**: The original browser assertion implementation tried to extract elements from locators before passing to `expect.element()`, but `expect.element()` handles locators directly and needs them for retry behavior.
+
+### Test results:
+- All 829 browser tests pass
+- No test regressions
+- Type-check has errors in non-migrated integration tests (expected)
+
+### Migration command reference:
+```bash
+# Replace imports
+s/import { page, userEvent } from 'vitest\/browser'/import { page, userEvent } from '..\/helpers\/locator'/
+
+# Replace expect.element
+s/expect\.element\(/expectElement(/g
+
+# Replace expect.poll
+s/expect\.poll\(/expectPoll(/g
+
+# Add assertion import
+import { expectElement, expectPoll } from '../helpers/assertions'
+```
+
+### Next steps:
+- US-011: Migrate workout feature tests
+
+---
