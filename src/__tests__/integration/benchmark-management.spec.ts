@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { RouteNames } from '@/router'
@@ -38,15 +40,15 @@ describe('Benchmark Management', () => {
 
       // Execute workout
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.element(page.getByText('Thrusters')).toBeVisible()
+      await expectElement(page.getByText('Thrusters')).toBeVisible()
       await completeExercise()
-      await expect.element(page.getByText('Pull-ups')).toBeVisible()
+      await expectElement(page.getByText('Pull-ups')).toBeVisible()
       await completeExercise()
 
       // Save and verify
       await waitForCompletionScreen()
       await page.getByRole('button', { name: /view details/i }).click()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
+      await expectPoll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
       const workouts = await getWorkoutsRepository().getHistory()
       expect(workouts).toHaveLength(1)
@@ -58,13 +60,13 @@ describe('Benchmark Management', () => {
       await app.benchmarkDetail.clickEdit()
       await app.benchmarkDetail.editBenchmarkName('Modified Test Fran')
       await app.benchmarkDetail.clickSave()
-      await expect.element(page.getByText('Modified Test Fran')).toBeVisible()
+      await expectElement(page.getByText('Modified Test Fran')).toBeVisible()
 
       // Delete benchmark
       await app.benchmarkDetail.clickDelete()
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
       await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
-      await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
+      await expectPoll(() => app.router.currentRoute.value.path).toBe('/workouts')
 
       const deleted = await getBenchmarksRepository().getById(benchmark.id)
       expect(deleted).toBeFalsy()
@@ -129,7 +131,7 @@ describe('Benchmark Management', () => {
       await app.benchmarkDetail.editBenchmarkName('Updated Name')
       await app.benchmarkDetail.clickSave()
 
-      await expect.element(page.getByText('Updated Name')).toBeVisible()
+      await expectElement(page.getByText('Updated Name')).toBeVisible()
       const updated = await getBenchmarksRepository().getById(benchmark.id)
       expect(updated?.name).toBe('Updated Name')
 
@@ -147,15 +149,15 @@ describe('Benchmark Management', () => {
 
       // Test cancel
       await app.benchmarkDetail.clickDelete()
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
       await userEvent.click(page.getByRole('button', { name: /cancel/i }))
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeTruthy()
 
       // Test confirm
       await app.benchmarkDetail.clickDelete()
       await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
-      await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
+      await expectPoll(() => app.router.currentRoute.value.path).toBe('/workouts')
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeFalsy()
 
       app.cleanup()

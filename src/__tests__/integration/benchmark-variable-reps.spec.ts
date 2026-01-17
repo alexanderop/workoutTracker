@@ -7,8 +7,10 @@
  * Tests are written TDD-first and will fail until the feature is implemented.
  * See specs/variable-reps-benchmark.md for full requirements.
  */
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { RouteNames } from '@/router'
@@ -122,7 +124,7 @@ describe('Variable Reps Benchmark', () => {
 
       // Save and verify
       await app.benchmarkForm.clickSave()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
+      await expectPoll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify saved benchmark structure (find by name since popular benchmarks are seeded)
       const benchmarks = await getBenchmarksRepository().getAll()
@@ -156,8 +158,8 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.navigateToRound(1)
 
       // Round 2 should show Burpees with 40 reps (same as Round 1)
-      await expect.element(page.getByText('Burpees')).toBeVisible()
-      await expect.element(page.getByText('40')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('40')).toBeVisible()
 
       app.cleanup()
     })
@@ -179,7 +181,7 @@ describe('Variable Reps Benchmark', () => {
 
       // Save benchmark
       await app.benchmarkForm.clickSave()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
+      await expectPoll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify Round 1 still has 40 reps, Round 2 has 30 reps
       const benchmarks = await getBenchmarksRepository().getAll()
@@ -472,19 +474,19 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkDetail.waitForLoad('Pyramid')
 
       // Round 1 is shown by default (tab 1 is active)
-      await expect.element(page.getByText(/round 1\/2/i)).toBeVisible()
-      await expect.element(page.getByText(/burpees/i)).toBeVisible()
-      await expect.element(page.getByText(/40/)).toBeVisible()
-      await expect.element(page.getByText(/squats/i)).toBeVisible()
-      await expect.element(page.getByText(/35/)).toBeVisible()
+      await expectElement(page.getByText(/round 1\/2/i)).toBeVisible()
+      await expectElement(page.getByText(/burpees/i)).toBeVisible()
+      await expectElement(page.getByText(/40/)).toBeVisible()
+      await expectElement(page.getByText(/squats/i)).toBeVisible()
+      await expectElement(page.getByText(/35/)).toBeVisible()
 
       // Navigate to Round 2 via tab
       await app.benchmarkDetail.navigateToRound(2)
-      await expect.element(page.getByText(/round 2\/2/i)).toBeVisible()
-      await expect.element(page.getByText(/lunges/i)).toBeVisible()
-      await expect.element(page.getByText(/25/)).toBeVisible()
-      await expect.element(page.getByText(/pull-ups/i)).toBeVisible()
-      await expect.element(page.getByText(/20/)).toBeVisible()
+      await expectElement(page.getByText(/round 2\/2/i)).toBeVisible()
+      await expectElement(page.getByText(/lunges/i)).toBeVisible()
+      await expectElement(page.getByText(/25/)).toBeVisible()
+      await expectElement(page.getByText(/pull-ups/i)).toBeVisible()
+      await expectElement(page.getByText(/20/)).toBeVisible()
 
       app.cleanup()
     })
@@ -511,23 +513,23 @@ describe('Variable Reps Benchmark', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Block 1 should show Burpees with 40 prescribed reps
-      await expect.element(page.getByText(/burpees/i)).toBeVisible()
-      await expect.element(page.getByText('40')).toBeVisible()
+      await expectElement(page.getByText(/burpees/i)).toBeVisible()
+      await expectElement(page.getByText('40')).toBeVisible()
 
       // Advance to Block 2
       await completeExercise()
-      await expect.element(page.getByText(/squats/i)).toBeVisible()
-      await expect.element(page.getByText('30')).toBeVisible()
+      await expectElement(page.getByText(/squats/i)).toBeVisible()
+      await expectElement(page.getByText('30')).toBeVisible()
 
       // Advance to Block 3
       await completeExercise()
-      await expect.element(page.getByText(/lunges/i)).toBeVisible()
-      await expect.element(page.getByText('20')).toBeVisible()
+      await expectElement(page.getByText(/lunges/i)).toBeVisible()
+      await expectElement(page.getByText('20')).toBeVisible()
 
       // Advance to Block 4
       await completeExercise()
-      await expect.element(page.getByText(/push-ups/i)).toBeVisible()
-      await expect.element(page.getByText('10')).toBeVisible()
+      await expectElement(page.getByText(/push-ups/i)).toBeVisible()
+      await expectElement(page.getByText('10')).toBeVisible()
 
       app.cleanup()
     })
@@ -556,8 +558,8 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Warning dialog should appear
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectElement(
         page.getByText(/changing.*structure.*break comparison.*previous results/i),
       ).toBeVisible()
 
@@ -589,8 +591,8 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkDetail.clickSave()
 
       // No warning dialog should appear
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-      await expect.element(page.getByText('Updated Name')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Updated Name')).toBeVisible()
 
       app.cleanup()
     })
@@ -613,8 +615,8 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // No warning dialog should appear
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectPoll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify saved
       const updated = await getBenchmarksRepository().getById(benchmark.id)
@@ -647,7 +649,7 @@ describe('Variable Reps Benchmark', () => {
       await page.getByRole('button', { name: /export data/i }).click()
 
       // Wait for export dialog/download
-      await expect.element(page.getByText(/export complete|data exported/i)).toBeVisible()
+      await expectElement(page.getByText(/export complete|data exported/i)).toBeVisible()
 
       // Delete the original benchmark
       await getBenchmarksRepository().delete(benchmark.id)
@@ -658,7 +660,7 @@ describe('Variable Reps Benchmark', () => {
 
       // The import should restore the benchmark
       // (actual flow depends on implementation - file input or paste)
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // After import, verify the benchmark exists with correct structure
       const imported = await getBenchmarksRepository().getAll()
@@ -681,14 +683,14 @@ describe('Variable Reps Benchmark', () => {
 
       // Trigger import flow
       await page.getByRole('button', { name: /import data/i }).click()
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // The legacy format JSON would be provided via file input or paste
       // When legacy format is detected, error should be shown
       // (exact flow depends on implementation)
 
       // After attempting to import legacy format:
-      await expect.element(
+      await expectElement(
         page.getByText(/benchmark format is no longer supported/i),
       ).toBeVisible()
 

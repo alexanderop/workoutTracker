@@ -8,8 +8,9 @@
  *
  * See specs/benchmark-ux-simplification.md for full requirements.
  */
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { RouteNames } from '@/router'
@@ -36,11 +37,11 @@ describe('Benchmark UX Simplification', () => {
       const forTimeCard = page.getByRole('button', { name: /for time/i })
       const roundsCard = page.getByRole('button', { name: /rounds/i })
 
-      await expect.element(forTimeCard).not.toBeInTheDocument()
-      await expect.element(roundsCard).not.toBeInTheDocument()
+      await expectElement(forTimeCard).not.toBeInTheDocument()
+      await expectElement(roundsCard).not.toBeInTheDocument()
 
       // Name input should be visible
-      await expect.element(page.getByLabelText(/workout name/i)).toBeVisible()
+      await expectElement(page.getByLabelText(/workout name/i)).toBeVisible()
 
       app.cleanup()
     })
@@ -69,8 +70,8 @@ describe('Benchmark UX Simplification', () => {
 
       // Tab "1" should be visible even before adding exercises
       const tab = page.getByRole('tab', { name: '1', exact: true })
-      await expect.element(tab).toBeVisible()
-      await expect.element(tab).toHaveAttribute('aria-selected', 'true')
+      await expectElement(tab).toBeVisible()
+      await expectElement(tab).toHaveAttribute('aria-selected', 'true')
 
       app.cleanup()
     })
@@ -124,17 +125,17 @@ describe('Benchmark UX Simplification', () => {
       await app.benchmarkDetail.waitForLoad('Multi-Exercise Pyramid')
 
       // Initially on Round 1, should see Burpees
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
 
       // Click tab 3
       await app.benchmarkDetail.navigateToRound(3)
 
       // Should now see Round 3 heading and Squats
       await app.benchmarkDetail.assertRoundHeading(3, 4)
-      await expect.element(page.getByText('Squats')).toBeVisible()
+      await expectElement(page.getByText('Squats')).toBeVisible()
 
       // Burpees from Round 1 should not be in the document (only active round is shown)
-      await expect.element(page.getByText('Burpees')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Burpees')).not.toBeInTheDocument()
 
       app.cleanup()
     })
@@ -151,8 +152,8 @@ describe('Benchmark UX Simplification', () => {
 
       // Tab "1" should be visible
       const tab = page.getByRole('tab', { name: '1', exact: true })
-      await expect.element(tab).toBeVisible()
-      await expect.element(tab).toHaveAttribute('aria-selected', 'true')
+      await expectElement(tab).toBeVisible()
+      await expectElement(tab).toHaveAttribute('aria-selected', 'true')
 
       // Round heading should show "Round 1/1"
       await app.benchmarkDetail.assertRoundHeading(1, 1)
@@ -168,14 +169,14 @@ describe('Benchmark UX Simplification', () => {
 
       // Tab should be visible in create mode
       const tab = page.getByRole('tab', { name: '1', exact: true })
-      await expect.element(tab).toBeVisible()
+      await expectElement(tab).toBeVisible()
 
       // Add an exercise
       await app.benchmarkForm.fillName('Edit Test')
       await app.benchmarkForm.addExerciseWithReps('Burpees', 20)
 
       // Tab should still be visible
-      await expect.element(tab).toBeVisible()
+      await expectElement(tab).toBeVisible()
 
       app.cleanup()
     })
@@ -198,7 +199,7 @@ describe('Benchmark UX Simplification', () => {
 
       // Tab "2" should exist and be the new round
       const tab2 = page.getByRole('tab', { name: '2', exact: true })
-      await expect.element(tab2).toBeVisible()
+      await expectElement(tab2).toBeVisible()
 
       // Note: The new round should be auto-selected after copy
       // This is verified by the navigateToRound(1) being unnecessary
@@ -235,7 +236,7 @@ describe('Benchmark UX Simplification', () => {
 
       // Should be on previous round (Round 1, index 0)
       // Verified by the heading "Round 1/2"
-      await expect.element(page.getByText(/round 1\/2/i)).toBeVisible()
+      await expectElement(page.getByText(/round 1\/2/i)).toBeVisible()
 
       app.cleanup()
     })
@@ -249,18 +250,18 @@ describe('Benchmark UX Simplification', () => {
 
       // Initially 1 round, 1 tab
       expect(await app.benchmarkForm.getRoundCount()).toBe(1)
-      await expect.element(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '2', exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '2', exact: true })).not.toBeInTheDocument()
 
       // Copy to add Round 2
       await app.benchmarkForm.copyRound(0)
       expect(await app.benchmarkForm.getRoundCount()).toBe(2)
-      await expect.element(page.getByRole('tab', { name: '2', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '2', exact: true })).toBeVisible()
 
       // Copy again to add Round 3
       await app.benchmarkForm.copyRound(1)
       expect(await app.benchmarkForm.getRoundCount()).toBe(3)
-      await expect.element(page.getByRole('tab', { name: '3', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '3', exact: true })).toBeVisible()
 
       // Delete Round 2 (middle round)
       await app.benchmarkForm.navigateToRound(1)
@@ -268,9 +269,9 @@ describe('Benchmark UX Simplification', () => {
 
       // Should have 2 rounds, tabs "1" and "2" (renumbered)
       expect(await app.benchmarkForm.getRoundCount()).toBe(2)
-      await expect.element(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '2', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '3', exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '2', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '3', exact: true })).not.toBeInTheDocument()
 
       app.cleanup()
     })

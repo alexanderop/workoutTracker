@@ -1,5 +1,6 @@
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
@@ -39,7 +40,7 @@ describe('Benchmark Results', () => {
       await completeAllExercises(2)
 
       const captured: { completionTime: string | null } = { completionTime: null }
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await page.getByText(/\d+:\d{2}/).element()
         if (element.classList.contains('text-6xl')) {
           captured.completionTime = element.textContent
@@ -65,7 +66,7 @@ describe('Benchmark Results', () => {
       await completeAllExercises(2)
 
       await page.getByRole('button', { name: /view details/i }).click()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
+      await expectPoll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
       const workouts = await getWorkoutsRepository().getHistory()
       expect(workouts).toHaveLength(1)
@@ -90,11 +91,11 @@ describe('Benchmark Results', () => {
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
 
-      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
+      await expectElement(page.getByText('PB: 1:00')).toBeVisible()
 
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
-      await expect.poll(async () => (await page.getByText(/personal best/i).all()).length).toBeGreaterThan(0)
+      await expectPoll(async () => (await page.getByText(/personal best/i).all()).length).toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -107,7 +108,7 @@ describe('Benchmark Results', () => {
 
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
-      await expect.element(page.getByText('PB: 0:45')).toBeVisible()
+      await expectElement(page.getByText('PB: 0:45')).toBeVisible()
 
       app.cleanup()
     })
@@ -119,7 +120,7 @@ describe('Benchmark Results', () => {
 
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
-      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
+      await expectElement(page.getByText('PB: 1:00')).toBeVisible()
 
       app.cleanup()
     })
@@ -136,11 +137,11 @@ describe('Benchmark Results', () => {
 
       const app = await createTestApp()
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.element(page.getByText('Thrusters')).toBeVisible()
+      await expectElement(page.getByText('Thrusters')).toBeVisible()
       await completeExercise()
-      await expect.element(page.getByText('Pull-ups')).toBeVisible()
+      await expectElement(page.getByText('Pull-ups')).toBeVisible()
 
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const hasSplit = await page.getByText(/split/i).query() !== null
         const hasComparison = await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query() !== null
         const hasPace = await page.getByText(/ahead|behind|on pace/i).query() !== null
@@ -160,7 +161,7 @@ describe('Benchmark Results', () => {
       await app.benchmarks.navigateToTab()
 
       // Must show fastest (45s), not slowest (90s) or most recent (60s)
-      await expect.element(page.getByText('PB: 0:45')).toBeVisible()
+      await expectElement(page.getByText('PB: 0:45')).toBeVisible()
 
       app.cleanup()
     })
@@ -199,7 +200,7 @@ describe('Benchmark Results', () => {
       await completeExercise()
 
       // Should show "ahead" indicator since we completed much faster than 60s
-      await expect.element(page.getByText(/ahead/i)).toBeVisible()
+      await expectElement(page.getByText(/ahead/i)).toBeVisible()
 
       app.cleanup()
     })
@@ -221,11 +222,11 @@ describe('Benchmark Results', () => {
       await completeExercise()
 
       // Verify we're on the second exercise
-      await expect.element(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
 
       // Split comparison should work at last index (tests >= vs > bounds check)
       // Look for "ahead" or "behind" text which indicates split comparison is working
-      await expect.element(page.getByText(/ahead|behind/i)).toBeVisible()
+      await expectElement(page.getByText(/ahead|behind/i)).toBeVisible()
 
       app.cleanup()
     })
@@ -239,7 +240,7 @@ describe('Benchmark Results', () => {
       await app.benchmarks.navigateToTab()
 
       // PB should show 60s (both attempts have equal best time)
-      await expect.element(page.getByText('PB: 1:00')).toBeVisible()
+      await expectElement(page.getByText('PB: 1:00')).toBeVisible()
 
       app.cleanup()
     })

@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
@@ -22,8 +24,8 @@ describe('Benchmark Execution', () => {
       await app.benchmarkDetail.clickStartWorkout()
 
       expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
-      await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
-      await expect.element(page.getByText('Thrusters')).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
+      await expectElement(page.getByText('Thrusters')).toBeVisible()
 
       app.cleanup()
     })
@@ -33,9 +35,9 @@ describe('Benchmark Execution', () => {
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.element(page.getByText('Thrusters')).toBeVisible()
+      await expectElement(page.getByText('Thrusters')).toBeVisible()
       await completeExercise()
-      await expect.element(page.getByText('Pull-ups')).toBeVisible()
+      await expectElement(page.getByText('Pull-ups')).toBeVisible()
 
       app.cleanup()
     })
@@ -50,9 +52,9 @@ describe('Benchmark Execution', () => {
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.element(page.getByRole('heading', { name: 'Exercise 1' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Exercise 1' })).toBeVisible()
       await completeExercise()
-      await expect.element(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Exercise 2' })).toBeVisible()
 
       const backButtons = await page.getByRole('button', { name: /go back|^back$/i }).all()
       const footerBackButtons = await Promise.all(
@@ -78,10 +80,10 @@ describe('Benchmark Execution', () => {
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.poll(async () => (await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
+      await expectPoll(async () => (await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
 
       await completeExercise()
-      await expect.poll(async () => (await page.getByText(/exercise 2/i).all()).length).toBeGreaterThan(0)
+      await expectPoll(async () => (await page.getByText(/exercise 2/i).all()).length).toBeGreaterThan(0)
 
       await completeExercise()
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -102,17 +104,17 @@ describe('Benchmark Execution', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // First exercise should be Alpha
-      await expect.element(page.getByRole('heading', { name: 'Alpha Exercise' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Alpha Exercise' })).toBeVisible()
 
       await completeExercise()
 
       // Second should be Beta (not Gamma, not Alpha again)
-      await expect.element(page.getByRole('heading', { name: 'Beta Exercise' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Beta Exercise' })).toBeVisible()
 
       await completeExercise()
 
       // Third should be Gamma
-      await expect.element(page.getByRole('heading', { name: 'Gamma Exercise' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Gamma Exercise' })).toBeVisible()
 
       app.cleanup()
     })
@@ -126,7 +128,7 @@ describe('Benchmark Execution', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       const captured: { beforeTransition: string | undefined } = { beforeTransition: undefined }
-      await expect.poll(
+      await expectPoll(
         async () => {
           const timerElements = await page.getByText(/\d+:\d{2}/).all()
           const timerText = timerElements[0] ? (await timerElements[0].element()).textContent : null
@@ -141,7 +143,7 @@ describe('Benchmark Execution', () => {
 
       await completeExercise()
 
-      await expect.poll(
+      await expectPoll(
         async () => {
           const timerElements = await page.getByText(/\d+:\d{2}/).all()
           const afterTransition = timerElements[0] ? (await timerElements[0].element()).textContent : null
@@ -169,16 +171,16 @@ describe('Benchmark Execution', () => {
 
       // Open queue drawer
       await userEvent.click(page.getByRole('button', { name: /workout options/i }))
-      await expect.element(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
+      await expectElement(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
       await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
 
-      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
       expect((await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
       expect((await page.getByText(/active/i).all()).length).toBeGreaterThan(0)
 
       // Close and advance
       await userEvent.keyboard('{Escape}')
-      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
       await new Promise(resolve => setTimeout(resolve, 500))
 
       await completeExercise()
