@@ -324,7 +324,7 @@ export interface Locator extends LocatorSelectors {
   /**
    * Returns all matching elements
    */
-  elements(): (HTMLElement | SVGElement)[]
+  elements(): Array<HTMLElement | SVGElement>
 
   /**
    * Returns the matching element or null if none match
@@ -337,7 +337,7 @@ export interface Locator extends LocatorSelectors {
   /**
    * Returns an array of locators for all matching elements
    */
-  all(): Locator[]
+  all(): Array<Locator>
 
   /**
    * Returns a locator for the nth matching element (0-indexed)
@@ -374,15 +374,9 @@ export interface Locator extends LocatorSelectors {
 
 /**
  * Page object interface for the root-level query methods
+ *
+ * Note: locator(selector) and elementLocator(element) are not included
+ * because they're not used in the codebase and may not be available in all environments.
+ * This is intentionally a type alias (not an empty interface extension).
  */
-export interface Page extends LocatorSelectors {
-  /**
-   * Create a locator from a CSS selector string
-   */
-  locator(selector: string): Locator
-
-  /**
-   * Create a locator for an element
-   */
-  elementLocator(element: Element): Locator
-}
+export type Page = LocatorSelectors

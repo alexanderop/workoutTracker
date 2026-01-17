@@ -65,3 +65,48 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-003: Implement browser Locator wrapper (BrowserLocator class that delegates to page object)
 
 ---
+
+## US-003: Implement browser Locator wrapper
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Created `src/__tests__/helpers/locator/browser.ts` with:
+   - `BrowserLocator` class implementing the `Locator` interface
+   - All query methods (getByRole, getByText, etc.) delegate to native vitest/browser page object
+   - All interaction methods (click, dblClick, fill, clear, hover, selectOptions) delegate to native locator
+   - Element access methods (element, elements, query) with type guards for proper return types
+   - Collection methods (all, nth, first, last) returning wrapped BrowserLocator instances
+   - Chaining methods (and, or, filter) for combining locators
+
+2. Created `BrowserPage` class implementing the `Page` interface
+   - Wraps `page` from `vitest/browser`
+   - All query methods return wrapped BrowserLocator instances
+
+3. Created helper functions for type-safe conversions:
+   - `toNativeByRoleOptions()` - converts abstraction options to native Vitest options
+   - `toNativeOptions()` - converts LocatorOptions with proper has/hasNot handling
+   - `toNativeSelectValues()` - handles array/single value conversions for selectOptions
+   - `extractElement/extractElements/extractQueryResult` - type-safe element extraction
+
+4. Created `src/__tests__/helpers/locator/index.ts` with re-exports:
+   - `page` (BrowserPage instance)
+   - `userEvent` (re-exported from vitest/browser)
+   - `BrowserLocator` class for instanceof checks
+   - All type exports
+
+### Key decisions:
+- Removed `locator(selector)` and `elementLocator(element)` from Page interface since they're not used in the codebase
+- Used type guards instead of type assertions for safer type narrowing
+- Helper functions for options conversion ensure type compatibility between abstraction and native types
+- BrowserLocator exposes `native` property for advanced use cases (like and/or/filter with nested locators)
+
+### Key discoveries:
+- Native Vitest browser Locator has more methods than our abstraction (length, tripleClick, unhover, dropTo)
+- Options types have `has/hasNot` which expect native Locator types, requiring conversion helpers
+- Browser tests still work - no regressions
+
+### Next steps:
+- US-004: Implement Happy-DOM Locator using @testing-library/vue
+
+---
