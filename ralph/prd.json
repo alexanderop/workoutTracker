@@ -1,0 +1,295 @@
+{
+  "project": "WorkoutTracker",
+  "branchName": "ralph/vitest-dual-environment",
+  "description": "Vitest Dual Environment Testing - Enable running integration tests in Happy-DOM (fast local) and Browser Mode (CI) with an abstraction layer",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Configure Vitest projects for dual environments",
+      "description": "As a developer, I want Vitest configured with two projects (happy-dom and browser) so tests can run in either environment.",
+      "acceptanceCriteria": [
+        "Add happy-dom project to vitest.config.ts targeting src/__tests__/integration/**",
+        "Exclude *.browser.spec.ts files from happy-dom project",
+        "Keep existing browser project for browser mode",
+        "Both projects point to the same test files (except browser-only)",
+        "Configure separate setup files: setup.happy-dom.ts and existing browser setup",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Create Locator types and query interface",
+      "description": "As a developer, I want a Locator interface that matches the Vitest browser API for type-safe queries.",
+      "acceptanceCriteria": [
+        "Create src/__tests__/helpers/locator/types.ts with Locator interface",
+        "Interface includes all query methods: getByRole, getByText, getByLabelText, getByPlaceholder, getByTestId, getByAltText, getByTitle",
+        "Interface includes chaining methods: nth, first, last, and, or",
+        "Interface includes filter method with has, hasNot, hasText, hasNotText options",
+        "Interface includes interaction methods: click, dblClick, fill, clear, hover, selectOptions",
+        "Interface includes element access: query, element, elements, all",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Implement browser Locator wrapper",
+      "description": "As a developer, I want the browser implementation of the Locator that wraps vitest-browser-vue page object.",
+      "acceptanceCriteria": [
+        "Create src/__tests__/helpers/locator/browser.ts",
+        "Implement BrowserLocator class wrapping vitest-browser-vue page object",
+        "All query methods delegate to page.getByRole, page.getByText, etc.",
+        "All chaining methods delegate to locator.nth, locator.first, etc.",
+        "All interaction methods delegate to locator.click, locator.fill, etc.",
+        "Create src/__tests__/helpers/locator/index.ts for re-exports",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Implement Happy-DOM Locator using testing-library",
+      "description": "As a developer, I want the Happy-DOM implementation of the Locator using @testing-library/vue.",
+      "acceptanceCriteria": [
+        "Add @testing-library/vue, @testing-library/user-event, happy-dom dependencies",
+        "Create src/__tests__/helpers/locator/happy-dom.ts",
+        "Implement HappyDomLocator class using @testing-library queries",
+        "Query methods use screen.getByRole, screen.getByText, etc.",
+        "Chaining methods (nth, first, last) work with querySelectorAll results",
+        "Interaction methods use @testing-library/user-event",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Create render abstraction layer",
+      "description": "As a developer, I want a unified render function so component mounting works in both environments.",
+      "acceptanceCriteria": [
+        "Create src/__tests__/helpers/render/browser.ts using page.render() from vitest-browser-vue",
+        "Create src/__tests__/helpers/render/happy-dom.ts using render() from @testing-library/vue",
+        "Support passing Vue plugins, global config (same API as current createTestApp)",
+        "Return a unified result object with access to the abstracted Locator API",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Create assertion abstraction for expect.element()",
+      "description": "As a developer, I want expect.element() to work in both environments with proper retry behavior.",
+      "acceptanceCriteria": [
+        "Create src/__tests__/helpers/assertions/types.ts with assertion interfaces",
+        "Create src/__tests__/helpers/assertions/browser.ts using native expect.element()",
+        "Create src/__tests__/helpers/assertions/happy-dom.ts using waitFor() + standard expect",
+        "Support matchers: toBeVisible, toBeDisabled, toHaveText, toHaveValue",
+        "Abstract expect.poll() similarly for non-element async assertions",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Add Happy-DOM setup file with polyfills",
+      "description": "As a developer, I want Happy-DOM-specific setup (polyfills, mocks) so tests run correctly.",
+      "acceptanceCriteria": [
+        "Create src/__tests__/setup.happy-dom.ts",
+        "Mock/polyfill missing APIs: matchMedia, IntersectionObserver, ResizeObserver",
+        "Configure fake-indexeddb for Dexie compatibility",
+        "Register Happy-DOM implementations of the abstraction layer",
+        "Import @testing-library matchers",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Update test helpers to use abstraction layer",
+      "description": "As a developer, I want createTestApp and core helpers to use the new abstraction layer.",
+      "acceptanceCriteria": [
+        "Update src/__tests__/helpers/createTestApp.ts to use abstracted render",
+        "Update helper exports to provide abstracted Locator types",
+        "All existing tests continue to pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Update Page Objects to use abstraction layer",
+      "description": "As a developer, I want Page Objects to use abstracted queries so they work in both environments.",
+      "acceptanceCriteria": [
+        "Update all Page Objects to use abstracted queries instead of page.getByRole()",
+        "Page Objects return abstracted Locator types",
+        "All existing tests continue to pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Migrate first batch of integration tests (10 simplest)",
+      "description": "As a developer, I want 10 integration tests migrated to validate the abstraction layer works.",
+      "acceptanceCriteria": [
+        "Select 10 simplest integration tests to validate the abstraction works",
+        "Update imports to use abstraction layer",
+        "Tests pass in Happy-DOM environment (pnpm test)",
+        "Tests pass in browser environment (no regression)",
+        "Document any issues or edge cases found in ralph/progress.txt",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Migrate workout feature tests",
+      "description": "As a developer, I want all workout feature integration tests migrated to the abstraction layer.",
+      "acceptanceCriteria": [
+        "Update all integration tests in src/__tests__/integration/workout/",
+        "Replace page.getByRole() with abstracted queries",
+        "Replace page.render() with abstracted render",
+        "Replace expect.poll() with abstracted poll",
+        "Tests pass in Happy-DOM",
+        "Tests pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Migrate exercises feature tests",
+      "description": "As a developer, I want all exercises feature integration tests migrated to the abstraction layer.",
+      "acceptanceCriteria": [
+        "Update all integration tests in src/__tests__/integration/exercises/",
+        "Replace page.getByRole() with abstracted queries",
+        "Replace page.render() with abstracted render",
+        "Replace expect.poll() with abstracted poll",
+        "Tests pass in Happy-DOM",
+        "Tests pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-013",
+      "title": "Migrate templates feature tests",
+      "description": "As a developer, I want all templates feature integration tests migrated to the abstraction layer.",
+      "acceptanceCriteria": [
+        "Update all integration tests in src/__tests__/integration/templates/",
+        "Replace page.getByRole() with abstracted queries",
+        "Replace page.render() with abstracted render",
+        "Replace expect.poll() with abstracted poll",
+        "Tests pass in Happy-DOM",
+        "Tests pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-014",
+      "title": "Migrate benchmarks feature tests",
+      "description": "As a developer, I want all benchmarks feature integration tests migrated to the abstraction layer.",
+      "acceptanceCriteria": [
+        "Update all integration tests in src/__tests__/integration/benchmarks/",
+        "Replace page.getByRole() with abstracted queries",
+        "Replace page.render() with abstracted render",
+        "Replace expect.poll() with abstracted poll",
+        "Tests pass in Happy-DOM",
+        "Tests pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Migrate remaining integration tests",
+      "description": "As a developer, I want all remaining integration tests migrated (settings, timers, misc).",
+      "acceptanceCriteria": [
+        "Update remaining integration tests (settings, timers, any other features)",
+        "Replace page.getByRole() with abstracted queries",
+        "Replace page.render() with abstracted render",
+        "Replace expect.poll() with abstracted poll",
+        "All integration tests pass in Happy-DOM",
+        "All integration tests pass in browser mode",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Update package.json scripts",
+      "description": "As a developer, I want convenient npm scripts for different test modes.",
+      "acceptanceCriteria": [
+        "pnpm test - runs Happy-DOM tests (fast local default, used for pre-commit)",
+        "pnpm test:browser - runs browser tests locally",
+        "pnpm test:ci - runs browser tests (used by CI)",
+        "pnpm test:all - runs both environments",
+        "Update CLAUDE.md to document new commands and pre-commit behavior",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-017",
+      "title": "Update CI pipeline for browser tests",
+      "description": "As a developer, I want CI to run browser tests while local defaults to Happy-DOM.",
+      "acceptanceCriteria": [
+        "Update GitHub Actions workflow to explicitly use --project=browser",
+        "Verify sharding still works correctly",
+        "Add optional workflow to run Happy-DOM tests in CI for validation",
+        "Typecheck passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-018",
+      "title": "Document dual environment testing",
+      "description": "As a developer, I want documentation explaining how the dual environment setup works.",
+      "acceptanceCriteria": [
+        "Add section to README or create docs/testing.md",
+        "Explain when to use Happy-DOM vs browser mode",
+        "Document the abstraction layer API",
+        "List known limitations of Happy-DOM",
+        "Provide troubleshooting guide for environment-specific failures"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
