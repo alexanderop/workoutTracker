@@ -1,5 +1,4 @@
-import { page } from '../helpers/locator'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'

@@ -10,10 +10,9 @@
  * - Search and filter functionality
  * - Selection behavior (single vs multi mode)
  */
-import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
-import { page } from '../helpers/locator'
+import { page, userEvent } from '../helpers/locator'
 import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'

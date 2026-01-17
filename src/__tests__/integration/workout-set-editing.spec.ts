@@ -1,8 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
-import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
-import { page } from '../helpers/locator'
+import { page, userEvent } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 

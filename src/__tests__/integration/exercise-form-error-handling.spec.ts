@@ -7,11 +7,10 @@
  * - Button disabled during save operation
  * - User can dismiss error and retry
  */
-import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RouteNames } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
-import { page } from '../helpers/locator'
+import { page, userEvent } from '../helpers/locator'
 import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'

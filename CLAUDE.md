@@ -6,7 +6,10 @@ Vue 3.5+ PWA workout tracker. TypeScript (strict), Vite, Dexie, Vitest, shadcn-v
 
 ```bash
 pnpm dev          # Development server
-pnpm test         # Run tests (NOT test:unit!)
+pnpm test         # Run tests in Happy-DOM (fast, default for local dev)
+pnpm test:browser # Run tests in browser mode (Playwright)
+pnpm test:ci      # Run browser tests (used by CI)
+pnpm test:all     # Run both Happy-DOM and browser tests
 pnpm lint         # Fix lint errors
 pnpm type-check   # TypeScript checking
 pnpm build        # Production build
@@ -18,6 +21,8 @@ pnpm knip         # Find unused exports
 ```bash
 pnpm type-check && pnpm lint && pnpm test
 ```
+
+Uses Happy-DOM for fast feedback. CI runs browser tests for full confidence.
 
 Conventional Commits with scope: `feat(workout): add rest timer`
 

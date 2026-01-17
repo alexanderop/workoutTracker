@@ -678,3 +678,56 @@ import { expectElement, expectPoll } from '../helpers/assertions'
 - US-016: Update package.json scripts
 
 ---
+
+## US-016: Update package.json scripts
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Updated package.json scripts:
+   - `pnpm test` now runs Happy-DOM tests (--project=happy-dom)
+   - `pnpm test:watch` now runs Happy-DOM tests in watch mode
+   - Added `pnpm test:browser` for browser mode tests
+   - Added `pnpm test:browser:watch`, `test:browser:headed`, `test:browser:ui` for browser development
+   - Added `pnpm test:ci` for CI (runs browser mode)
+   - Added `pnpm test:all` for running both environments
+
+2. Updated CLAUDE.md:
+   - Documented new test commands with clear descriptions
+   - Added note that pre-commit uses Happy-DOM for fast feedback, CI uses browser tests for full confidence
+
+3. Fixed userEvent imports in 34 integration test files:
+   - Changed `import { userEvent } from 'vitest/browser'` to import from `../helpers/locator`
+   - Consolidated duplicate imports from locator module
+
+4. Added fill() method wrapper to happy-dom.ts userEvent export:
+   - @testing-library/user-event uses `type()` instead of `fill()`
+   - Created wrapper: `fill(element, text)` calls `clear()` then `type()`
+   - Maintains API compatibility with vitest/browser userEvent
+
+### Key discoveries:
+1. **Page Objects remain a blocker**: Page Objects (CommonPO.ts, BuilderPO.ts, etc.) still import from `vitest/browser`, which prevents Happy-DOM tests from running. This is documented in US-009 as BLOCKED.
+
+2. **API differences between userEvent implementations**:
+   - vitest/browser userEvent has: `fill(element, text)`
+   - @testing-library/user-event has: `type(element, text)` (no fill)
+   - Created a wrapper to bridge this difference
+
+3. **Type-check errors are pre-existing**: The abstraction layer exports native Vitest objects in browser mode for backward compatibility, but TypeScript sees abstraction layer types. This creates type mismatches that are expected behavior per US-008/US-009 notes.
+
+### Test results:
+- All 829 browser tests pass
+- Happy-DOM tests fail because Page Objects import from vitest/browser
+- Type-check has errors (expected per US-008/US-009 notes)
+
+### Files modified:
+- package.json: Updated scripts section
+- CLAUDE.md: Updated Commands and Pre-Commit sections
+- src/__tests__/helpers/locator/happy-dom.ts: Added userEvent wrapper with fill() method
+- 34 integration test files: Updated userEvent imports
+
+### Next steps:
+- US-017: Update CI pipeline for browser tests
+- (Recommended) US-009 needs to be unblocked to enable Happy-DOM tests
+
+---

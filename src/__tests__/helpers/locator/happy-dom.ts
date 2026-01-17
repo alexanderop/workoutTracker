@@ -15,7 +15,7 @@
 /* eslint-disable no-restricted-syntax */
 
 import { screen } from '@testing-library/vue'
-import userEvent from '@testing-library/user-event'
+import testingLibraryUserEvent from '@testing-library/user-event'
 import type {
   Locator,
   Page,
@@ -30,9 +30,7 @@ import type {
 } from './types'
 
 // Create a userEvent instance for all interactions
-const user = userEvent.setup()
-
-// Re-export userEvent for direct usage in tests
+const user = testingLibraryUserEvent.setup()
 
 
 /**
@@ -806,4 +804,18 @@ export const page: Page = new HappyDomPage()
  */
 export { HappyDomLocator }
 
-export {default as userEvent} from '@testing-library/user-event'
+/**
+ * Wrapper around @testing-library/user-event that provides API compatibility
+ * with vitest/browser's userEvent (which has `fill` instead of `type`).
+ */
+export const userEvent = {
+  ...testingLibraryUserEvent,
+  /**
+   * Fill an input element with text. Clears existing content first.
+   * Maps to testing-library's clear() + type() since it doesn't have fill().
+   */
+  async fill(element: Element, text: string): Promise<void> {
+    await user.clear(element)
+    await user.type(element, text)
+  },
+}

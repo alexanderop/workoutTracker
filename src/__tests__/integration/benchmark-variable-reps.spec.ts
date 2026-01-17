@@ -7,9 +7,8 @@
  * Tests are written TDD-first and will fail until the feature is implemented.
  * See specs/variable-reps-benchmark.md for full requirements.
  */
-import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page } from '../helpers/locator'
+import { page, userEvent } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'

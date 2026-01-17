@@ -3,11 +3,10 @@
  *
  * Tests verify that completing a workout creates exercise history.
  */
-import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository, getExerciseProgressRepository } from '@/db'
-import { page } from '../helpers/locator'
+import { page, userEvent } from '../helpers/locator'
 import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
