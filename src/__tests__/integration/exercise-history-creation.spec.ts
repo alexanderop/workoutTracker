@@ -3,10 +3,12 @@
  *
  * Tests verify that completing a workout creates exercise history.
  */
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository, getExerciseProgressRepository } from '@/db'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -21,10 +23,10 @@ describe('Exercise History Creation', () => {
 
     // Step 1: Navigate to exercises and verify no history for Bench Press
     await navigateTo({ name: RouteNames.Exercises })
-    await userEvent.click(page.getByText('Bench Press', { exact: true }))
+    await page.getByText('Bench Press', { exact: true }).click()
 
     // Verify empty state (no history)
-    await expect.element(page.getByText(/no history yet/i)).toBeVisible()
+    await expectElement(page.getByText(/no history yet/i)).toBeVisible()
 
     // Step 2: Navigate to home and start a workout with Bench Press
     await navigateTo({ name: RouteNames.Home })
@@ -37,7 +39,7 @@ describe('Exercise History Creation', () => {
 
     // Step 3: Finish workout early via menu (without completing any sets)
     await workout.openMenu()
-    await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+    await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
     await page.getByRole('menuitem', { name: /end workout/i }).click()
 
     // Handle finish dialog
@@ -45,9 +47,9 @@ describe('Exercise History Creation', () => {
     await userEvent.click(common.getDialogButton('Finish Workout'))
 
     // Wait for completion screen and click View Details
-    await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+    await expectElement(page.getByText(/workout complete/i)).toBeVisible()
     const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-    await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+    await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
     await viewDetailsButton.click()
 
     // Wait for navigation to summary
@@ -56,11 +58,11 @@ describe('Exercise History Creation', () => {
     // Step 4: Navigate back to exercises and verify history exists
     // THIS IS WHERE THE BUG MANIFESTS - sets weren't auto-completed so no history was saved
     await navigateTo({ name: RouteNames.Exercises })
-    await userEvent.click(page.getByText('Bench Press', { exact: true }))
+    await page.getByText('Bench Press', { exact: true }).click()
 
     // Verify history now exists - should show PR cards, NOT empty state
-    await expect.element(page.getByText(/no history yet/i)).not.toBeInTheDocument()
-    await expect.element(page.getByText('80 kg')).toBeVisible()
+    await expectElement(page.getByText(/no history yet/i)).not.toBeInTheDocument()
+    await expectElement(page.getByText('80 kg')).toBeVisible()
 
     cleanup()
   })
@@ -84,7 +86,7 @@ describe('Exercise History Creation', () => {
     // Handle the auto-opened finish dialog
     await common.waitForDialog()
     await userEvent.click(common.getDialogButton('Finish Workout'))
-    await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+    await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
     // Now verify the database state directly
     const savedWorkouts = await getWorkoutsRepository().getHistory()

@@ -10,9 +10,11 @@
  * - Search and filter functionality
  * - Selection behavior (single vs multi mode)
  */
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -26,13 +28,13 @@ describe('ExercisePicker', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Click to add a block (now uses AddBlockDialog which contains exercise picker)
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add block/i })
-      await userEvent.click(addButton)
+      await addButton.click()
 
       // Dialog should open with search input (Exercises tab is active by default)
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(page.getByRole('textbox')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('textbox')).toBeVisible()
 
       cleanup()
     })
@@ -41,18 +43,18 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add block/i })
-      await userEvent.click(addButton)
+      await addButton.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Type to search
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench Press')
+      await searchInput.fill('Bench Press')
 
       // Should show matching exercises (use exact match to avoid matching "Smith Machine Bench Press")
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -61,25 +63,25 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add block/i })
-      await userEvent.click(addButton)
+      await addButton.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Search and select (use full name to avoid ambiguous matches)
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Bench Press')
+      await searchInput.fill('Bench Press')
 
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       // Click on exercise using semantic query within dialog
       // Use "BP Bench Press" prefix (includes the abbreviation shown in the UI)
       const dialog = page.getByRole('dialog')
-      await userEvent.click(dialog.getByRole('button', { name: /^bp bench press/i }))
+      await dialog.getByRole('button', { name: /^bp bench press/i }).click()
 
       // Dialog should close
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -88,11 +90,11 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add block/i })
-      await userEvent.click(addButton)
+      await addButton.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should show create button
       const createButton = await page.getByRole('button', { name: /create.*exercise/i }).query()
@@ -108,18 +110,18 @@ describe('ExercisePicker', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Open the add block dialog (contains exercise picker in Exercises tab)
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
       const addButton = page.getByRole('button', { name: /\+ add block/i })
-      await userEvent.click(addButton)
+      await addButton.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Search for a unique exercise name to test no duplicates
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Deadlift')
+      await searchInput.fill('Deadlift')
 
       // Wait for search results (use exact to avoid matching other exercises)
-      await expect.element(page.getByText('Deadlift', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Deadlift', { exact: true })).toBeVisible()
 
       // Count exercise buttons - search for "Deadlift" should show all variants
       const dialog = page.getByRole('dialog')
@@ -147,15 +149,15 @@ describe('ExercisePicker', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Open add block dialog
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await page.getByRole('button', { name: /\+ add block/i }).click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should show equipment filter options (use exact match to avoid matching exercise names)
-      await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -164,19 +166,19 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await page.getByRole('button', { name: /\+ add block/i }).click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Click bodyweight filter (exact match to avoid exercise names)
-      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+      await page.getByRole('button', { name: 'Bodyweight', exact: true }).click()
 
       // Should show bodyweight exercises (use exact match since there are many Push-up variants)
-      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       // Should NOT show barbell exercises like Bench Press
-      await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -185,22 +187,22 @@ describe('ExercisePicker', () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await page.getByRole('button', { name: /\+ add block/i }).click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Filter by Chest muscle (exact match)
-      await userEvent.click(page.getByRole('button', { name: 'Chest', exact: true }))
+      await page.getByRole('button', { name: 'Chest', exact: true }).click()
 
       // Filter by Barbell equipment (exact match)
-      await userEvent.click(page.getByRole('button', { name: 'Barbell', exact: true }))
+      await page.getByRole('button', { name: 'Barbell', exact: true }).click()
 
       // Should show Bench Press (chest + barbell)
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       // Should NOT show Push-ups (chest + bodyweight, not barbell)
-      await expect.element(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -210,29 +212,29 @@ describe('ExercisePicker', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // First open - select equipment filter
-      await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
+      await expectElement(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
+      await page.getByRole('button', { name: /\+ add block/i }).click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await page.getByRole('button', { name: 'Bodyweight', exact: true }).click()
 
       // Search for Push-ups to find it in the filtered list
       const searchInput = page.getByRole('textbox')
-      await userEvent.fill(searchInput, 'Push-ups')
-      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+      await searchInput.fill('Push-ups')
+      await expectElement(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       // Close dialog by selecting Push-ups exercise (button name includes abbreviation + muscle)
       const dialog = page.getByRole('dialog')
-      await userEvent.click(dialog.getByRole('button', { name: /pu.*push-ups/i }))
+      await dialog.getByRole('button', { name: /pu.*push-ups/i }).click()
 
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Reopen dialog
-      await userEvent.click(page.getByRole('button', { name: /\+ add block/i }))
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await page.getByRole('button', { name: /\+ add block/i }).click()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should show Bench Press again (filter reset to 'All')
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       cleanup()
     })

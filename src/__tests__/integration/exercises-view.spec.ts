@@ -3,9 +3,10 @@
  *
  * Tests verify equipment filter functionality matching the exercise picker dialogs.
  */
-import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, it } from 'vitest'
 import { RouteNames } from '@/router'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -19,13 +20,13 @@ describe('ExercisesView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click on a pre-populated exercise (Bench Press)
-      await userEvent.click(page.getByText('Bench Press', { exact: true }))
+      await page.getByText('Bench Press', { exact: true }).click()
 
       // Should navigate to exercise progress and show the exercise name in header
-      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
 
       // Should NOT show "Unknown Exercise"
-      await expect.element(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -37,12 +38,12 @@ describe('ExercisesView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Should show muscle filter
-      await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
 
       // Should show equipment filter options
-      await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -52,13 +53,13 @@ describe('ExercisesView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click bodyweight filter
-      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+      await page.getByRole('button', { name: 'Bodyweight', exact: true }).click()
 
       // Should show bodyweight exercises
-      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       // Should NOT show barbell exercises
-      await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -68,16 +69,16 @@ describe('ExercisesView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Filter by Chest muscle
-      await userEvent.click(page.getByRole('button', { name: 'Chest', exact: true }))
+      await page.getByRole('button', { name: 'Chest', exact: true }).click()
 
       // Filter by Barbell equipment
-      await userEvent.click(page.getByRole('button', { name: 'Barbell', exact: true }))
+      await page.getByRole('button', { name: 'Barbell', exact: true }).click()
 
       // Should show Bench Press (chest + barbell)
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       // Should NOT show Push-ups (chest + bodyweight, not barbell)
-      await expect.element(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -87,18 +88,18 @@ describe('ExercisesView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click bodyweight filter
-      await userEvent.click(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+      await page.getByRole('button', { name: 'Bodyweight', exact: true }).click()
 
       // Verify filter is active (Bench Press hidden)
-      await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
+      await expectElement(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
 
       // Click "All" to reset equipment filter (second "All" button is for equipment)
       const allButtons = page.getByRole('button', { name: 'All', exact: true })
-      await userEvent.click(allButtons.nth(1))
+      await allButtons.nth(1).click()
 
       // Should show all exercises again
-      await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
-      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       cleanup()
     })

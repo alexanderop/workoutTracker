@@ -6,10 +6,11 @@
  * - Empty state when no history exists
  * - Navigation from exercises list
  */
-import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository } from '@/db'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
@@ -44,10 +45,10 @@ describe('ExerciseProgressView', () => {
       await navigateTo({ name: RouteNames.ExerciseProgress, params: { id: benchPress.id } })
 
       // Should show exercise name in header
-      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
 
       // Should display max weight PR card
-      await expect.element(page.getByText('100 kg')).toBeVisible()
+      await expectElement(page.getByText('100 kg')).toBeVisible()
 
       cleanup()
     })
@@ -70,7 +71,7 @@ describe('ExerciseProgressView', () => {
       await navigateTo({ name: RouteNames.ExerciseProgress, params: { id: benchPress.id } })
 
       // Should show estimated 1RM (Brzycki: 100 * 36 / (37 - 5) = 112.5, rounded to 113)
-      await expect.element(page.getByText('113 kg')).toBeVisible()
+      await expectElement(page.getByText('113 kg')).toBeVisible()
 
       cleanup()
     })
@@ -98,7 +99,7 @@ describe('ExerciseProgressView', () => {
 
       // Volume 2400kg should display as "2.4t" in the PR card
       // Use first() since the value also appears in chart axis labels
-      await expect.element(page.getByText('2.4t').first()).toBeVisible()
+      await expectElement(page.getByText('2.4t').first()).toBeVisible()
 
       cleanup()
     })
@@ -115,10 +116,10 @@ describe('ExerciseProgressView', () => {
       await navigateTo({ name: RouteNames.ExerciseProgress, params: { id: benchPress.id } })
 
       // Should show exercise name in header
-      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
 
       // Should show empty state message
-      await expect.element(page.getByText(/no history yet/i)).toBeVisible()
+      await expectElement(page.getByText(/no history yet/i)).toBeVisible()
 
       cleanup()
     })
@@ -130,13 +131,13 @@ describe('ExerciseProgressView', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click on Bench Press in the list
-      await userEvent.click(page.getByText('Bench Press', { exact: true }))
+      await page.getByText('Bench Press', { exact: true }).click()
 
       // Should navigate to exercise progress view
-      await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
 
       // Should NOT show "Unknown Exercise"
-      await expect.element(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
 
       cleanup()
     })

@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -57,7 +59,7 @@ describe('Edit Exercise Dialog', () => {
     await common.waitForDialog()
 
     const spinbuttons = await page.getByRole('dialog').getByRole('spinbutton').all()
-    await expect.element(spinbuttons[0]!).toHaveValue('11') // targetReps changed from 8 to 11
+    await expectElement(spinbuttons[0]!).toHaveValue('11') // targetReps changed from 8 to 11
 
     cleanup()
   })
@@ -88,10 +90,10 @@ describe('Edit Exercise Dialog', () => {
 
     // Start workout to verify set count
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     // Verify table has 5 sets
-    await expect.poll(async () => {
+    await expectPoll(async () => {
       const rows = await page.getByRole('table').getByRole('row').all()
       return rows.length
     }).toBe(6) // 1 header + 5 data rows
@@ -123,7 +125,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Start workout and verify original set count (3 sets)
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     const rows = await page.getByRole('table').getByRole('row').all()
     expect(rows.length).toBe(4) // 1 header + 3 data rows (unchanged)
@@ -168,15 +170,15 @@ describe('Edit Exercise Dialog', () => {
       // Expect: Duration label is visible (not "Target Reps")
       const dialog = page.getByRole('dialog')
       const durationLabel = dialog.getByLabelText(/target duration/i)
-      await expect.element(durationLabel).toBeVisible()
+      await expectElement(durationLabel).toBeVisible()
 
       // Expect: Target Reps input is NOT present (the label for="target-reps" won't exist)
       const repsInput = dialog.getByLabelText(/^target reps$/i)
-      await expect.element(repsInput).not.toBeInTheDocument()
+      await expectElement(repsInput).not.toBeInTheDocument()
 
       // Expect: Set count is still visible
       const setCountLabel = dialog.getByLabelText(/number of sets/i)
-      await expect.element(setCountLabel).toBeVisible()
+      await expectElement(setCountLabel).toBeVisible()
 
       cleanup()
     })
@@ -195,7 +197,7 @@ describe('Edit Exercise Dialog', () => {
       // Expect: Weight field is visible for weighted holds
       const dialog = page.getByRole('dialog')
       const weightInput = dialog.getByLabelText(/target weight/i)
-      await expect.element(weightInput).toBeVisible()
+      await expectElement(weightInput).toBeVisible()
 
       cleanup()
     })

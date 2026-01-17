@@ -7,10 +7,12 @@
  * - Button disabled during save operation
  * - User can dismiss error and retry
  */
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RouteNames } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -39,7 +41,7 @@ describe('Exercise Form Error Handling', () => {
 
       // Assert: ErrorDialog is visible
       await common.waitForDialog()
-      await expect.element(page.getByText(/failed to save exercise/i)).toBeVisible()
+      await expectElement(page.getByText(/failed to save exercise/i)).toBeVisible()
 
       // Assert: Still on create page (didn't navigate)
       expect(router.currentRoute.value.path).toBe('/create-exercise')
@@ -101,7 +103,7 @@ describe('Exercise Form Error Handling', () => {
 
       // Assert: ErrorDialog shown
       await common.waitForDialog()
-      await expect.element(page.getByText(/failed to save exercise/i)).toBeVisible()
+      await expectElement(page.getByText(/failed to save exercise/i)).toBeVisible()
 
       // Assert: Still on edit page
       expect(router.currentRoute.value.path).toBe(`/exercises/${exercise.id}/edit`)
@@ -130,8 +132,8 @@ describe('Exercise Form Error Handling', () => {
 
       // Assert: Button shows "Saving..." and is disabled
       const savingButton = page.getByRole('button', { name: /saving/i })
-      await expect.element(savingButton).toBeVisible()
-      await expect.element(savingButton).toBeDisabled()
+      await expectElement(savingButton).toBeVisible()
+      await expectElement(savingButton).toBeDisabled()
 
       // Resolve the promise to complete the test
       deferred.resolve?.(null)

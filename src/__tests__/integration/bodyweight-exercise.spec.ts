@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { expectPoll } from '../helpers/assertions'
 
 describe('Bodyweight Exercise (Zero Weight)', () => {
   beforeEach(setupIntegrationTest)
@@ -16,7 +17,7 @@ describe('Bodyweight Exercise (Zero Weight)', () => {
     await workout.fillCardSetAndComplete({ weight: '0', reps: '10', rir: '2' })
 
     // Verify set was completed
-    await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+    await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
     cleanup()
   })
@@ -30,7 +31,7 @@ describe('Bodyweight Exercise (Zero Weight)', () => {
     await workout.fillCardSetAndComplete({ weight: '0', reps: '8', rir: '2' })
 
     // Verify next set is pre-filled with 0
-    await expect.poll(async () => {
+    await expectPoll(async () => {
       const activeSet = await workout.getActiveSet()
       if (!activeSet) return null
       return await activeSet.getValues()

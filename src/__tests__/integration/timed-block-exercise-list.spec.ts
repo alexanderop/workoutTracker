@@ -7,8 +7,10 @@
  * - Removing exercises
  */
 import { flushPromises } from '@vue/test-utils'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { ensureHTMLElement } from '../helpers/domHelpers'
@@ -23,7 +25,7 @@ async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestAp
   await userEvent.click(common.getDialogButton('AMRAP'))
 
   // Wait for config dialog to open
-  await expect.element(page.getByText('Configure')).toBeVisible()
+  await expectElement(page.getByText('Configure')).toBeVisible()
 }
 
 // Helper to add exercise via the overlay picker (not dialog mode)
@@ -37,15 +39,15 @@ async function addExerciseViaOverlay(
   await userEvent.click(common.getDialogButton('Add Exercise'))
 
   // Wait for exercise picker overlay to appear by looking for the search placeholder
-  await expect.element(page.getByPlaceholder(/search exercises/i)).toBeVisible()
+  await expectElement(page.getByPlaceholder(/search exercises/i)).toBeVisible()
 
   // Find the search input using placeholder
   const searchInput = page.getByPlaceholder(/search exercises/i)
 
-  await userEvent.fill(searchInput, exerciseName)
+  await searchInput.fill(exerciseName)
 
   // Wait for filtered results and click the exercise button
-  await expect.element(page.getByText(exerciseName, { exact: true })).toBeVisible()
+  await expectElement(page.getByText(exerciseName, { exact: true })).toBeVisible()
 
   // Find and click the exercise button (it's a button containing the exercise name)
   const buttons = await page.getByRole('button').all()
@@ -61,7 +63,7 @@ async function addExerciseViaOverlay(
   await userEvent.click(exerciseButton)
 
   // Wait for exercise to appear in the list (overlay should close in multi mode but exercise stays)
-  await expect.element(page.getByRole('dialog').getByText(exerciseName)).toBeVisible()
+  await expectElement(page.getByRole('dialog').getByText(exerciseName)).toBeVisible()
 }
 
 // Type guard for HTMLInputElement

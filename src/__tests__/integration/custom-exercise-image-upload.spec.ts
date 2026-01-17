@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createTestImageFile } from '../factories/image'
@@ -17,16 +18,16 @@ describe('Custom Exercise Image Upload', () => {
 
     // Click create custom exercise button
     const createButton = page.getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(createButton)
+    await createButton.click()
     await common.waitForRoute(/^\/create-exercise$/)
 
     // Fill exercise name
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(nameInput, 'Exercise With Image')
+    await nameInput.fill('Exercise With Image')
 
     // Verify save button is enabled after name is entered
     const saveButton = page.getByRole('button', { name: /save/i })
-    await expect.element(saveButton).not.toBeDisabled()
+    await expectElement(saveButton).not.toBeDisabled()
 
     // Create test image
     const imageFile = await createTestImageFile('test-exercise-image.png')
@@ -45,13 +46,13 @@ describe('Custom Exercise Image Upload', () => {
 
     // Verify avatar shows image preview (not just initials)
     const avatarImage = page.getByRole('img', { name: 'Exercise With Image' })
-    await expect.element(avatarImage).toBeVisible()
+    await expectElement(avatarImage).toBeVisible()
 
     // Wait for conversion and verify save button remains enabled
-    await expect.element(saveButton).not.toBeDisabled()
+    await expectElement(saveButton).not.toBeDisabled()
 
     // Save the exercise
-    await userEvent.click(saveButton)
+    await saveButton.click()
     await common.waitForRoute(/^\/exercises$/)
 
     // Verify the exercise was saved with the image converted to WebP

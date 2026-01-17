@@ -1,7 +1,9 @@
-import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { userEvent } from 'vitest/browser'
+import { afterEach, beforeEach, describe, it } from 'vitest'
 import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise } from '@/db/converters'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -27,11 +29,11 @@ describe('Timed Block Exercise Picker', () => {
       await userEvent.click(common.getDialogButton('EMOM'))
 
       // And: wait for configure dialog and open exercise picker
-      await expect.element(page.getByText('Configure')).toBeVisible()
+      await expectElement(page.getByText('Configure')).toBeVisible()
       await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Then: I should see my custom exercise in the picker (it's first alphabetically)
-      await expect.element(page.getByText('AAA Custom Lift')).toBeVisible()
+      await expectElement(page.getByText('AAA Custom Lift')).toBeVisible()
 
       cleanup()
     })

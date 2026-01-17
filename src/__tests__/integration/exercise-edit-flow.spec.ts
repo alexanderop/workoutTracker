@@ -5,10 +5,12 @@
  * - Navigate to edit page, verify pre-populated form, update and save
  * - Form validation prevents saving with invalid data
  */
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { getCustomExercisesRepository } from '@/db'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -28,22 +30,22 @@ describe('Exercise Edit Flow', () => {
 
     // Click edit button
     const editButton = page.getByRole('button', { name: /edit exercise/i })
-    await userEvent.click(editButton)
+    await editButton.click()
 
     // Verify we're on the edit page by checking user-visible elements
-    await expect.element(page.getByRole('heading', { name: /edit exercise/i })).toBeVisible()
+    await expectElement(page.getByRole('heading', { name: /edit exercise/i })).toBeVisible()
 
     // Check form is pre-filled with existing data
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await expect.element(nameInput).toHaveValue('Bench Press')
+    await expectElement(nameInput).toHaveValue('Bench Press')
 
     // Update name
     await userEvent.clear(nameInput)
-    await userEvent.fill(nameInput, 'Incline Bench Press')
+    await nameInput.fill('Incline Bench Press')
 
     // Save
     const saveButton = page.getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    await saveButton.click()
 
     // Should navigate back and show updated name in UI
     await common.waitForRoute(/^\/exercises/)
@@ -65,14 +67,14 @@ describe('Exercise Edit Flow', () => {
 
     // Verify form is pre-filled
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await expect.element(nameInput).toHaveValue('Bench Press')
+    await expectElement(nameInput).toHaveValue('Bench Press')
 
     // Clear the name
     await userEvent.clear(nameInput)
 
     // Save button should be disabled
     const saveButton = page.getByRole('button', { name: /save/i })
-    await expect.element(saveButton).toBeDisabled()
+    await expectElement(saveButton).toBeDisabled()
 
     cleanup()
   })

@@ -1,6 +1,8 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -21,7 +23,7 @@ describe('Custom Exercise Flow', () => {
 
     // Step 3: Fill in exercise name
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(nameInput, 'My Awesome Lift')
+    await nameInput.fill('My Awesome Lift')
 
     // Step 4: Save the exercise
     const saveButton = getByRole('button', { name: /save/i })
@@ -31,7 +33,7 @@ describe('Custom Exercise Flow', () => {
     await common.waitForRoute(/^\/exercises$/)
 
     // Step 6: Assert custom exercise appears in the list
-    await expect.element(page.getByText('My Awesome Lift')).toBeVisible()
+    await expectElement(page.getByText('My Awesome Lift')).toBeVisible()
 
     cleanup()
   })
@@ -47,7 +49,7 @@ describe('Custom Exercise Flow', () => {
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(nameInput, 'Custom Compound Move')
+    await nameInput.fill('Custom Compound Move')
 
     const saveButton = getByRole('button', { name: /save/i })
     await userEvent.click(saveButton)
@@ -62,7 +64,7 @@ describe('Custom Exercise Flow', () => {
     await common.waitForDialog()
 
     // Assert: Custom exercise appears in the dialog
-    await expect.element(page.getByText('Custom Compound Move')).toBeVisible()
+    await expectElement(page.getByText('Custom Compound Move')).toBeVisible()
 
     cleanup()
   })
@@ -78,7 +80,7 @@ describe('Custom Exercise Flow', () => {
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(nameInput, 'Zyzz Special Curl')
+    await nameInput.fill('Zyzz Special Curl')
 
     const saveButton = getByRole('button', { name: /save/i })
     await userEvent.click(saveButton)
@@ -86,10 +88,10 @@ describe('Custom Exercise Flow', () => {
 
     // Search for the custom exercise
     const searchInput = page.getByPlaceholder(/search/i)
-    await userEvent.fill(searchInput, 'Zyzz')
+    await searchInput.fill('Zyzz')
 
     // Assert: Custom exercise found via search
-    await expect.element(page.getByText('Zyzz Special Curl')).toBeVisible()
+    await expectElement(page.getByText('Zyzz Special Curl')).toBeVisible()
 
     cleanup()
   })
@@ -106,7 +108,7 @@ describe('Custom Exercise Flow', () => {
 
       // Assert save button is disabled when name is empty
       const saveButton = getByRole('button', { name: /save/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -122,11 +124,11 @@ describe('Custom Exercise Flow', () => {
 
       // Type whitespace-only name
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(nameInput, '   ')
+      await nameInput.fill('   ')
 
       // Assert save button remains disabled
       const saveButton = getByRole('button', { name: /save/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -142,14 +144,14 @@ describe('Custom Exercise Flow', () => {
 
       // Initially disabled
       const saveButton = getByRole('button', { name: /save/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       // Type valid name
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(nameInput, 'Valid Exercise')
+      await nameInput.fill('Valid Exercise')
 
       // Assert save button is now enabled
-      await expect.element(saveButton).not.toBeDisabled()
+      await expectElement(saveButton).not.toBeDisabled()
 
       cleanup()
     })
@@ -169,7 +171,7 @@ describe('Custom Exercise Flow', () => {
       await common.waitForRoute(/^\/create-exercise$/)
 
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(nameInput, 'My Custom Lift')
+      await nameInput.fill('My Custom Lift')
       const saveButton = getByRole('button', { name: /save/i })
       await userEvent.click(saveButton)
       await common.waitForRoute(/^\/exercises$/)
@@ -196,7 +198,7 @@ describe('Custom Exercise Flow', () => {
       // PHASE 4: Start workout and complete a set
       // ========================================
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Fill and complete a set
       await workout.fillCardSetAndComplete({ weight: '60', reps: '12', rir: '3' })
@@ -204,11 +206,11 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 5: Finish workout
       // ========================================
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
+      await expectPoll(() => workout.getMenuTrigger()).toBeTruthy()
       const menuTrigger = await workout.getMenuTrigger()
       await userEvent.click(menuTrigger)
 
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+      await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       const endWorkoutItem = getByRole('menuitem', { name: /end workout/i })
       await userEvent.click(endWorkoutItem)
 
@@ -222,12 +224,12 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       // PHASE 6: Wait for completion screen
       // ========================================
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
+      await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expectElement(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()

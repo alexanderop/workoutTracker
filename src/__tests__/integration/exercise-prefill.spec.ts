@@ -1,5 +1,6 @@
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
@@ -39,14 +40,14 @@ describe('Exercise Pre-fill from Previous Workout', () => {
     await common.waitForDialogClose()
 
     // Wait for the async addExercise to complete (block appears in playlist)
-    await expect.element(page.getByText('Bench Press')).toBeVisible()
+    await expectElement(page.getByText('Bench Press')).toBeVisible()
 
     // Start workout
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     // Assert: First set should be pre-filled with LAST set values (90kg, 6 reps, 1 RIR)
-    await expect.poll(async () => {
+    await expectPoll(async () => {
       const activeSet = await workout.getActiveSet()
       if (!activeSet) return null
       return await activeSet.getValues()

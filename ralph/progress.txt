@@ -507,3 +507,50 @@ import { expectElement, expectPoll } from '../helpers/assertions'
 - US-012: Migrate exercises feature tests
 
 ---
+
+## US-012: Migrate exercises feature tests
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Migrated 13 exercise-related integration test files to the abstraction layer:
+   - `bodyweight-exercise.spec.ts`
+   - `custom-exercise-flow.spec.ts`
+   - `custom-exercise-image-upload.spec.ts`
+   - `edit-exercise-dialog.spec.ts`
+   - `exercise-edit-flow.spec.ts`
+   - `exercise-form-error-handling.spec.ts`
+   - `exercise-history-creation.spec.ts`
+   - `exercise-picker.spec.ts`
+   - `exercise-prefill.spec.ts`
+   - `exercise-progress-view.spec.ts`
+   - `exercises-view.spec.ts`
+   - `timed-block-exercise-list.spec.ts`
+   - `timed-block-exercise-picker.spec.ts`
+
+2. Migration pattern applied to each test:
+   - Changed `import { page, userEvent } from 'vitest/browser'` to `import { page } from '../helpers/locator'`
+   - Added `import { expectElement, expectPoll } from '../helpers/assertions'`
+   - Changed `expect.element(locator)` to `expectElement(locator)`
+   - Changed `expect.poll(() => ...)` to `expectPoll(() => ...)`
+   - Kept native `userEvent` import from `vitest/browser` when interacting with HTMLElements from Page Objects
+
+3. Files that didn't need migration:
+   - `exercise-store-partial-update.spec.ts` - Doesn't use vitest/browser (unit test style)
+
+### Key discoveries:
+1. **Consistent pattern**: The migration pattern established in US-010 and US-011 applies cleanly to exercise tests.
+
+2. **Mixed locator and element usage**: Some tests (like `timed-block-exercise-list.spec.ts`) use both Locators from `page.getByRole()` and HTMLElements directly from `querySelector`. For HTMLElements, native `userEvent.click(element)` is required.
+
+3. **Type errors expected**: Type errors like `Type 'Locator' is missing properties from type 'Locator': length, tripleClick, unhover, dropTo` are documented behavior per US-008/US-009 notes - runtime works correctly but TypeScript sees abstraction layer types while code uses native Vitest objects in browser mode.
+
+### Test results:
+- All 829 tests pass in browser mode
+- No test regressions
+- Type-check has errors due to abstraction layer type mismatch (expected per US-008/US-009)
+
+### Next steps:
+- US-013: Migrate templates feature tests
+
+---
