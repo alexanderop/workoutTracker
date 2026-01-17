@@ -255,6 +255,8 @@ jobs:
           path: dist/
           retention-days: 7
 
+  # Browser tests (Playwright) - primary CI validation
+  # Uses 'default' project which runs all tests in real browser via Playwright
   test:
     needs: setup
     runs-on: ubuntu-latest
@@ -268,9 +270,32 @@ jobs:
       - uses: ./.github/actions/setup-test-env
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Run tests (shard ${{ matrix.shard }}/4)
+      - name: Run browser tests (shard ${{ matrix.shard }}/4)
         run: pnpm vitest --project=default --shard=${{ matrix.shard }}/4
 
+  # Happy-DOM tests (fast, no browser) - validates abstraction layer compatibility
+  # Runs integration tests in Happy-DOM to catch environment-specific issues
+  # Note: Currently optional (continue-on-error) until Page Objects are migrated
+  test-happy-dom:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4.1.0
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Restore node_modules
+        uses: actions/cache/restore@v5.0.1
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Run Happy-DOM tests
+        run: pnpm vitest --project=happy-dom
+
+  # Architecture tests (ArchUnitTS) - validates dependency rules
   test-arch:
     needs: setup
     runs-on: ubuntu-latest
@@ -283,6 +308,7 @@ jobs:
       - name: Run architecture tests
         run: pnpm test:arch
 
+  # Accessibility tests (axe-core) - validates WCAG compliance
   test-a11y:
     needs: setup
     runs-on: ubuntu-latest
@@ -295,6 +321,7 @@ jobs:
       - name: Run accessibility tests
         run: pnpm test:a11y
 
+  # Visual regression tests (Playwright screenshots) - catches UI drift
   test-visual:
     needs: setup
     runs-on: macos-latest

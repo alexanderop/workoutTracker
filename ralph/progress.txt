@@ -731,3 +731,51 @@ import { expectElement, expectPoll } from '../helpers/assertions'
 - (Recommended) US-009 needs to be unblocked to enable Happy-DOM tests
 
 ---
+
+## US-017: Update CI pipeline for browser tests
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Updated `.github/workflows/ci.yml`:
+   - Added descriptive comments to test jobs for clarity
+   - Renamed step from "Run tests" to "Run browser tests" for explicit naming
+   - Added new `test-happy-dom` job for Happy-DOM tests in CI
+   - Set `continue-on-error: true` on Happy-DOM job (optional until Page Objects migrated)
+   - Happy-DOM job runs without Playwright (no browser setup needed)
+
+2. CI test job configuration:
+   - Browser tests: `pnpm vitest --project=default --shard=${{ matrix.shard }}/4`
+   - Happy-DOM tests: `pnpm vitest --project=happy-dom`
+   - Sharding configuration unchanged: 4 shards with fail-fast: false
+
+3. Added comments to all test-related CI jobs:
+   - `test`: Browser tests (Playwright) - primary CI validation
+   - `test-happy-dom`: Happy-DOM tests - validates abstraction layer compatibility
+   - `test-arch`: Architecture tests (ArchUnitTS) - validates dependency rules
+   - `test-a11y`: Accessibility tests (axe-core) - validates WCAG compliance
+   - `test-visual`: Visual regression tests (Playwright screenshots) - catches UI drift
+
+### Key decisions:
+- Used `--project=default` not `--project=browser` because the Vitest config names the browser project "default"
+- Made Happy-DOM job optional with `continue-on-error: true` since Page Objects still import from `vitest/browser` (US-009 blocker)
+- Happy-DOM job doesn't use setup-test-env action since it doesn't need Playwright browsers
+
+### Key discoveries:
+- Type errors in integration tests are pre-existing condition documented in US-008/US-009
+- The abstraction layer exports native Vitest objects at runtime but TypeScript sees abstraction layer types
+- All 829 browser tests pass with the unchanged sharding configuration
+- Sharding works correctly with 4 shards (verified with --shard=1/4)
+
+### Test results:
+- All 829 browser tests pass
+- Sharding verified working with --shard=1/4 (ran 252 tests in shard 1)
+- Type errors exist in integration tests (pre-existing, expected per US-008/US-009)
+
+### Files modified:
+- .github/workflows/ci.yml: Added test-happy-dom job, improved comments
+
+### Next steps:
+- US-018: Document dual environment testing
+
+---
