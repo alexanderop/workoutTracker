@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement } from '../helpers/assertions'
+import { page, userEvent } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -35,7 +36,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Start workout
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       cleanup()
     })
@@ -60,7 +61,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Start workout and verify we're on block 1 of 2
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -82,7 +83,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Search for exercise
       const searchInput = page.getByPlaceholder(/search/i)
-      await userEvent.fill(searchInput, 'Squat')
+      await searchInput.fill('Squat')
 
       // Cancel (close dialog)
       await userEvent.keyboard('{Escape}')
@@ -110,7 +111,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Start new workout - should see empty builder
       await page.getByRole('button', { name: /start new workout/i }).click()
-      await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /add first block/i })).toBeVisible()
 
       cleanup()
     })
@@ -123,19 +124,19 @@ describe('Workout Builder Edge Cases', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Squat', 'Deadlift'])
 
       // Start on block 1
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Use footer navigation to go to next block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 3/i)).toBeVisible()
 
       // Go to next block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 3 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 3 of 3/i)).toBeVisible()
 
       // Go back
       await userEvent.click(await workout.getFooterButton('prev'))
-      await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 3/i)).toBeVisible()
 
       cleanup()
     })
@@ -163,7 +164,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Start workout with both blocks
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -175,13 +176,13 @@ describe('Workout Builder Edge Cases', () => {
 
       // Start with single block
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Remove the only block
       await workout.removeCurrentBlock()
 
       // Should show empty state again
-      await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /add first block/i })).toBeVisible()
 
       cleanup()
     })
@@ -193,13 +194,13 @@ describe('Workout Builder Edge Cases', () => {
 
       // Navigate to middle block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 3/i)).toBeVisible()
 
       // Remove current block
       await workout.removeCurrentBlock()
 
       // Should now have 2 blocks
-      await expect.element(page.getByText(/of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -212,8 +213,8 @@ describe('Workout Builder Edge Cases', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       // Verify block header shows exercise name and set info
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       cleanup()
     })
@@ -241,7 +242,7 @@ describe('Workout Builder Edge Cases', () => {
       await common.waitForDialogClose()
 
       // No blocks should be added
-      await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /add first block/i })).toBeVisible()
 
       cleanup()
     })
@@ -270,7 +271,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Switch to timed blocks tab
       await builder.switchToTimedBlocksTab()
-      await expect.element(page.getByText('AMRAP')).toBeVisible()
+      await expectElement(page.getByText('AMRAP')).toBeVisible()
 
       // Close and reopen
       await userEvent.keyboard('{Escape}')
@@ -278,11 +279,11 @@ describe('Workout Builder Edge Cases', () => {
 
       // Re-open - should remember timed blocks tab (or default to exercises)
       await builder.openAddBlockDialog()
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Can still switch between tabs
       await page.getByRole('tab', { name: /exercises/i }).click()
-      await expect.element(page.getByPlaceholder(/search/i)).toBeVisible()
+      await expectElement(page.getByPlaceholder(/search/i)).toBeVisible()
 
       cleanup()
     })

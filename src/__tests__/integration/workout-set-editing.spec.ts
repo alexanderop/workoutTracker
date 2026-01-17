@@ -1,6 +1,8 @@
 import { flushPromises } from '@vue/test-utils'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -18,11 +20,11 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Bench Press')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     // Complete first set
     await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-    await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+    await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
     // Try editing the completed set (set 0)
     const completedRow = await workout.getSetRow(0)
@@ -41,7 +43,7 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Squat')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     // Set 0 is active, try editing set 2 (pending/future)
     const pendingRow = await workout.getSetRow(2)
@@ -59,7 +61,7 @@ describe('Workout Set Editing - Any Set', () => {
 
     await builder.addStrengthBlock('Deadlift')
     await builder.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
 
     // Fill pending set 2 and mark complete (skip sets 0 and 1)
     const pendingRow = await workout.getSetRow(2)
@@ -71,7 +73,7 @@ describe('Workout Set Editing - Any Set', () => {
     await userEvent.fill(pendingRow.rir, '2')
     await userEvent.click(pendingRow.complete)
 
-    await expect.poll(() => workout.isSetCompleted(2)).toBe(true)
+    await expectPoll(() => workout.isSetCompleted(2)).toBe(true)
 
     app.cleanup()
   })

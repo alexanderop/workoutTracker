@@ -175,8 +175,8 @@
         "Typecheck passes"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed: Migrated 9 workout integration test files to abstraction layer - workout-builder-edge-cases.spec.ts, workout-calendar.spec.ts, workout-detail-copy-markdown.spec.ts, workout-duration-edit.spec.ts, workout-management.spec.ts, workout-queue.spec.ts, workout-set-completion.spec.ts, workout-set-editing.spec.ts, workout-skip-block-completion.spec.ts. Added toHaveClass() and toBeCloseTo() matchers to the assertion abstraction layer. Tests use page from abstraction layer and userEvent from native vitest/browser when interacting with Page Objects (which return HTMLElements). All 152 workout tests pass in browser mode."
     },
     {
       "id": "US-012",

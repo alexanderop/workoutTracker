@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -30,10 +31,10 @@ describe('Workout Detail Copy Markdown', () => {
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
     // Wait for workout to load
-    await expect.element(page.getByText('Test Workout')).toBeVisible()
+    await expectElement(page.getByText('Test Workout')).toBeVisible()
 
     // Copy button should be visible in header
-    await expect.element(
+    await expectElement(
       page.getByRole('button', { name: /copy|share|export/i }),
     ).toBeVisible()
 
@@ -62,13 +63,13 @@ describe('Workout Detail Copy Markdown', () => {
 
     // Navigate to workout detail
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
-    await expect.element(page.getByText('Morning Strength')).toBeVisible()
+    await expectElement(page.getByText('Morning Strength')).toBeVisible()
 
     // Click copy button
-    await userEvent.click(page.getByRole('button', { name: /copy|share|export/i }))
+    await page.getByRole('button', { name: /copy|share|export/i }).click()
 
     // Verify clipboard was called with markdown content
-    await expect.poll(() => writeTextSpy.mock.calls.length).toBe(1)
+    await expectPoll(() => writeTextSpy.mock.calls.length).toBe(1)
 
     // Check markdown contains expected content
     const copiedText = writeTextSpy.mock.calls[0]?.[0] ?? ''
@@ -97,13 +98,13 @@ describe('Workout Detail Copy Markdown', () => {
 
     // Navigate to detail
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
-    await expect.element(page.getByText('Leg Day')).toBeVisible()
+    await expectElement(page.getByText('Leg Day')).toBeVisible()
 
     // Click copy button
-    await userEvent.click(page.getByRole('button', { name: /copy|share|export/i }))
+    await page.getByRole('button', { name: /copy|share|export/i }).click()
 
     // Should show success feedback (check icon or "Copied" text)
-    await expect.element(page.getByText(/copied/i)).toBeVisible()
+    await expectElement(page.getByText(/copied/i)).toBeVisible()
 
     writeTextSpy.mockRestore()
     cleanup()
@@ -128,11 +129,11 @@ describe('Workout Detail Copy Markdown', () => {
 
     // Navigate and copy
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
-    await expect.element(page.getByText('Full Workout')).toBeVisible()
-    await userEvent.click(page.getByRole('button', { name: /copy|share|export/i }))
+    await expectElement(page.getByText('Full Workout')).toBeVisible()
+    await page.getByRole('button', { name: /copy|share|export/i }).click()
 
     // Verify markdown contains both block types
-    await expect.poll(() => writeTextSpy.mock.calls.length).toBe(1)
+    await expectPoll(() => writeTextSpy.mock.calls.length).toBe(1)
     const copiedText = writeTextSpy.mock.calls[0]?.[0] ?? ''
     expect(copiedText).toContain('## Deadlift (Strength)')
     expect(copiedText).toContain('(AMRAP)')

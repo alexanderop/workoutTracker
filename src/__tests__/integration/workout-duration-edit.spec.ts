@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page, userEvent } from '../helpers/locator'
 import { db } from '@/db'
 import { getWorkoutRef } from '@/stores/workoutState'
 import { createTestApp } from '../helpers/createTestApp'
@@ -27,10 +28,10 @@ describe('Workout Duration Editing', () => {
 
       // Verify duration field shows elapsed time
       const durationInput = page.getByRole('spinbutton', { name: /duration/i })
-      await expect.element(durationInput).toBeVisible()
+      await expectElement(durationInput).toBeVisible()
 
       // Get the input value using poll to handle async element retrieval
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await durationInput.element()
         if (element instanceof HTMLInputElement) {
           return Number(element.value)
@@ -61,26 +62,26 @@ describe('Workout Duration Editing', () => {
 
       // Edit duration to 45 minutes
       const durationInput = page.getByRole('spinbutton', { name: /duration/i })
-      await userEvent.clear(durationInput)
-      await userEvent.fill(durationInput, '45')
+      await durationInput.clear()
+      await durationInput.fill('45')
 
       // Fill name and finish
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Edited Duration Workout')
+      await nameInput.clear()
+      await nameInput.fill('Edited Duration Workout')
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has correct duration (45 min = 2700 seconds)
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const workouts = await db.workouts.toArray()
         return workouts[0]?.durationSeconds
       }).toBe(2700)
 
       // Verify completedAt was back-calculated from duration
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const workouts = await db.workouts.toArray()
         const saved = workouts[0]
         if (!saved) return null
@@ -107,11 +108,11 @@ describe('Workout Duration Editing', () => {
       await common.waitForDialog()
 
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Default Duration')
+      await nameInput.clear()
+      await nameInput.fill('Default Duration')
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has duration close to 30 minutes
       const workouts = await db.workouts.toArray()
@@ -140,7 +141,7 @@ describe('Workout Duration Editing', () => {
       await common.waitForDialog()
 
       // Verify warning is visible
-      await expect.element(page.getByText(/seems longer than usual/i)).toBeVisible()
+      await expectElement(page.getByText(/seems longer than usual/i)).toBeVisible()
 
       cleanup()
     })
@@ -161,7 +162,7 @@ describe('Workout Duration Editing', () => {
       await common.waitForDialog()
 
       // Verify warning is NOT visible
-      await expect.element(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
+      await expectElement(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -182,15 +183,15 @@ describe('Workout Duration Editing', () => {
       await common.waitForDialog()
 
       // Warning should be visible initially
-      await expect.element(page.getByText(/seems longer than usual/i)).toBeVisible()
+      await expectElement(page.getByText(/seems longer than usual/i)).toBeVisible()
 
       // Edit duration to 60 minutes (below threshold)
       const durationInput = page.getByRole('spinbutton', { name: /duration/i })
-      await userEvent.clear(durationInput)
-      await userEvent.fill(durationInput, '60')
+      await durationInput.clear()
+      await durationInput.fill('60')
 
       // Warning should disappear
-      await expect.element(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
+      await expectElement(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
 
       cleanup()
     })

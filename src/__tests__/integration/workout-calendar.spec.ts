@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page } from '../helpers/locator'
 import { addDays, subDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -22,7 +23,7 @@ describe('Workout Calendar', () => {
 
       // Week strip should be visible on home page (shows month/year)
       const weekStrip = getWeekStripButton()
-      await expect.element(weekStrip).toBeVisible()
+      await expectElement(weekStrip).toBeVisible()
 
       // Should show today's date highlighted
       const today = new Date()
@@ -30,7 +31,7 @@ describe('Workout Calendar', () => {
 
       // Find the today indicator (primary background)
       // Use .first() because todayDate (e.g. "20") also matches in "December 2025"
-      await expect.element(page.getByText(todayDate, { exact: true }).first()).toBeVisible()
+      await expectElement(page.getByText(todayDate, { exact: true }).first()).toBeVisible()
 
       cleanup()
     })
@@ -49,10 +50,10 @@ describe('Workout Calendar', () => {
       const { cleanup } = await createTestApp()
 
       // Wait for the week strip to load
-      await expect.element(getWeekStripButton()).toBeVisible()
+      await expectElement(getWeekStripButton()).toBeVisible()
 
       // The green dot has aria-label "Workout completed"
-      await expect.element(page.getByLabelText(/workout completed/i).first()).toBeVisible()
+      await expectElement(page.getByLabelText(/workout completed/i).first()).toBeVisible()
 
       cleanup()
     })
@@ -84,11 +85,11 @@ describe('Workout Calendar', () => {
       const { cleanup } = await createTestApp()
 
       // Wait for week strip to load
-      await expect.element(getWeekStripButton()).toBeVisible()
+      await expectElement(getWeekStripButton()).toBeVisible()
 
       // Wait for workout data to load and render (async loadWorkouts in onMounted)
       // Use longer timeout to handle race condition with IndexedDB
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const dots = await page.getByLabelText(/workout completed/i).all()
         return dots.length
       }, { timeout: 5000 }).toBeGreaterThanOrEqual(2)
@@ -125,7 +126,7 @@ describe('Workout Calendar', () => {
 
       // Wait for week strip to load and show the total duration
       // Use longer timeout to handle async data loading
-      await expect.element(page.getByText('2h 15m'), { timeout: 5000 }).toBeVisible()
+      await expectElement(page.getByText('2h 15m'), { timeout: 5000 }).toBeVisible()
 
       cleanup()
     })
@@ -134,7 +135,7 @@ describe('Workout Calendar', () => {
       const { cleanup } = await createTestApp()
 
       // Week strip should show 0m when no workouts
-      await expect.element(page.getByText('0m')).toBeVisible()
+      await expectElement(page.getByText('0m')).toBeVisible()
 
       cleanup()
     })
@@ -146,14 +147,14 @@ describe('Workout Calendar', () => {
 
       // Click the week strip
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
+      await weekStrip.click()
 
       // Calendar sheet should open (SheetContent appears)
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should show month heading in the sheet title
       const currentMonth = format(new Date(), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -163,30 +164,30 @@ describe('Workout Calendar', () => {
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
+      await weekStrip.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Get current month display
       const currentMonth = format(new Date(), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
 
       // Click previous month button
       const previousButton = page.getByRole('button', { name: /previous month/i })
-      await userEvent.click(previousButton)
+      await previousButton.click()
 
       // Should show previous month in sheet title
       const previousMonth = format(subMonths(new Date(), 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: previousMonth, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: previousMonth, exact: true })).toBeVisible()
 
       // Click next month button twice to go forward
       const nextButton = page.getByRole('button', { name: /next month/i })
-      await userEvent.click(nextButton)
-      await userEvent.click(nextButton)
+      await nextButton.click()
+      await nextButton.click()
 
       // Should show next month
       const nextMonth = format(addMonths(new Date(), 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: nextMonth, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: nextMonth, exact: true })).toBeVisible()
 
       cleanup()
     })
@@ -209,27 +210,27 @@ describe('Workout Calendar', () => {
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await weekStrip.click()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Current month should NOT show the workout (it's in previous month)
       // The calendar grid uses CalendarHeading for its internal heading display
       const currentMonthHeading = format(today, 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonthHeading, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: currentMonthHeading, exact: true })).toBeVisible()
 
       // Navigate to previous month
       const previousButton = page.getByRole('button', { name: /previous month/i })
-      await userEvent.click(previousButton)
+      await previousButton.click()
 
       // Sheet title should update to previous month
       const previousMonthHeading = format(subMonths(today, 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: previousMonthHeading, exact: true })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: previousMonthHeading, exact: true })).toBeVisible()
 
       // CRITICAL: The CalendarRoot's internal heading should ALSO show previous month
       // If bug exists, CalendarHeading stays on current month while sheet title changes
       // CalendarHeading renders inside CalendarHeader and shows the month the grid displays
       const calendarHeadingLocator = page.getByText(previousMonthHeading)
-      await expect.element(calendarHeadingLocator.first()).toBeVisible()
+      await expectElement(calendarHeadingLocator.first()).toBeVisible()
 
       // Click on the day that has the workout (verify grid actually changed)
       // Use data-slot attribute to find calendar cell triggers, then filter by day number
@@ -239,7 +240,7 @@ describe('Workout Calendar', () => {
 
       // If the grid updated correctly, clicking this day should show the workout
       // Use .first() since the name appears in both the card and the calendar tooltip
-      await expect.element(page.getByText('Previous Month Workout').first()).toBeVisible()
+      await expectElement(page.getByText('Previous Month Workout').first()).toBeVisible()
 
       cleanup()
     })
@@ -249,12 +250,12 @@ describe('Workout Calendar', () => {
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
+      await weekStrip.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should show the select day prompt initially
-      await expect.element(page.getByText(/select a day/i)).toBeVisible()
+      await expectElement(page.getByText(/select a day/i)).toBeVisible()
 
       cleanup()
     })
@@ -264,16 +265,16 @@ describe('Workout Calendar', () => {
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
+      await weekStrip.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // Should have navigation buttons
-      await expect.element(page.getByRole('button', { name: /previous month/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /next month/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /previous month/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /next month/i })).toBeVisible()
 
       // Should have weekday headers (at least one - use first to avoid strict mode)
-      await expect.element(page.getByText('Mon').first()).toBeVisible()
+      await expectElement(page.getByText('Mon').first()).toBeVisible()
 
       cleanup()
     })
@@ -294,13 +295,13 @@ describe('Workout Calendar', () => {
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
-      await userEvent.click(weekStrip)
+      await weekStrip.click()
 
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
 
       // The calendar should have green dots for workout days
       // We verify by counting workout indicators
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const dots = await page.getByLabelText(/workout completed/i).all()
         // Should have dots in both the week strip AND calendar
         return dots.length

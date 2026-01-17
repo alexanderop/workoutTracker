@@ -67,6 +67,11 @@ export interface NegatedElementAssertion {
    * Assert element does NOT have attribute
    */
   toHaveAttribute(attr: string, value?: string | RegExp): Promise<void>
+
+  /**
+   * Assert element does NOT have CSS class
+   */
+  toHaveClass(...classNames: string[]): Promise<void>
 }
 
 /**
@@ -108,6 +113,11 @@ export interface ElementAssertion {
    * Assert element has attribute (optionally with specific value)
    */
   toHaveAttribute(attr: string, value?: string | RegExp): Promise<void>
+
+  /**
+   * Assert element has CSS class (or list of classes)
+   */
+  toHaveClass(...classNames: string[]): Promise<void>
 }
 
 /**
@@ -159,6 +169,11 @@ export interface PollAssertion<T> {
    * Assert value contains expected substring/item
    */
   toContain(expected: string | unknown): Promise<void>
+
+  /**
+   * Assert number is close to expected (for floating point comparisons)
+   */
+  toBeCloseTo(expected: number, numDigits?: number): Promise<void>
 }
 
 /**

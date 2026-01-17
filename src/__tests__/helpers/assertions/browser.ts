@@ -92,6 +92,10 @@ class BrowserNegatedElementAssertion implements NegatedElementAssertion {
   async toHaveAttribute(attr: string, value?: string | RegExp): Promise<void> {
     await this.nativeNot.toHaveAttribute(attr, value)
   }
+
+  async toHaveClass(...classNames: string[]): Promise<void> {
+    await this.nativeNot.toHaveClass(...classNames)
+  }
 }
 
 /**
@@ -130,6 +134,10 @@ class BrowserElementAssertion implements ElementAssertion {
 
   async toHaveAttribute(attr: string, value?: string | RegExp): Promise<void> {
     await this.native.toHaveAttribute(attr, value)
+  }
+
+  async toHaveClass(...classNames: string[]): Promise<void> {
+    await this.native.toHaveClass(...classNames)
   }
 }
 
@@ -190,6 +198,11 @@ class BrowserPollAssertion<T> implements PollAssertion<T> {
   async toContain(expected: string | unknown): Promise<void> {
     const assertion = this.isNegated ? this.native.not : this.native
     await assertion.toContain(expected)
+  }
+
+  async toBeCloseTo(expected: number, numDigits?: number): Promise<void> {
+    const assertion = this.isNegated ? this.native.not : this.native
+    await assertion.toBeCloseTo(expected, numDigits)
   }
 }
 

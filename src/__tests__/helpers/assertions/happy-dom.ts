@@ -176,6 +176,17 @@ class HappyDomNegatedElementAssertion implements NegatedElementAssertion {
       waitForOptions,
     )
   }
+
+  async toHaveClass(...classNames: string[]): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    await waitFor(
+      () => {
+        const el = getElement(this.elementOrLocator)
+        expect(el).not.toHaveClass(...classNames)
+      },
+      waitForOptions,
+    )
+  }
 }
 
 /**
@@ -259,6 +270,17 @@ class HappyDomElementAssertion implements ElementAssertion {
       () => {
         const el = getElement(this.elementOrLocator)
         expect(el).toHaveAttribute(attr, value)
+      },
+      waitForOptions,
+    )
+  }
+
+  async toHaveClass(...classNames: string[]): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    await waitFor(
+      () => {
+        const el = getElement(this.elementOrLocator)
+        expect(el).toHaveClass(...classNames)
       },
       waitForOptions,
     )
@@ -383,6 +405,19 @@ class HappyDomPollAssertion<T> implements PollAssertion<T> {
         const value = await this.getter()
         const assertion = negated ? expect(value).not : expect(value)
         assertion.toContain(expected)
+      },
+      waitForOptions,
+    )
+  }
+
+  async toBeCloseTo(expected: number, numDigits?: number): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    const negated = this.isNegated
+    await waitFor(
+      async () => {
+        const value = await this.getter()
+        const assertion = negated ? expect(value).not : expect(value)
+        assertion.toBeCloseTo(expected, numDigits)
       },
       waitForOptions,
     )

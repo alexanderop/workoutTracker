@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
+import { page, userEvent } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -18,14 +19,14 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Action: Click queue button in header
       await page.getByRole('button', { name: /open workout queue/i }).click()
 
       // Assert: Dialog opens with "Workout Queue" title
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /workout queue/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /workout queue/i })).toBeInTheDocument()
 
       cleanup()
     })
@@ -43,11 +44,11 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Navigate to block 2
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 3/i)).toBeVisible()
 
       // Action: Open queue
       await page.getByRole('button', { name: /open workout queue/i }).click()
@@ -80,7 +81,7 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Action: Open queue, tap block 3 (Squat)
       await page.getByRole('button', { name: /open workout queue/i }).click()
@@ -93,8 +94,8 @@ describe('Workout Queue', () => {
       await userEvent.click(squatItem)
 
       // Assert: Dialog closes, block 3 is now active view
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-      await expect.element(page.getByText(/block 3 of 3/i)).toBeVisible()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByText(/block 3 of 3/i)).toBeVisible()
 
       cleanup()
     })
@@ -109,10 +110,10 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Wait for the strength view table to render
-      await expect.element(page.getByRole('table')).toBeVisible()
+      await expectElement(page.getByRole('table')).toBeVisible()
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
@@ -123,7 +124,7 @@ describe('Workout Queue', () => {
       }
 
       // Should be on block 2 now
-      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       // Action: Open queue
       await page.getByRole('button', { name: /open workout queue/i }).click()
@@ -152,7 +153,7 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Action: Open queue, click "Add Exercise"
       await page.getByRole('button', { name: /open workout queue/i }).click()
@@ -161,8 +162,8 @@ describe('Workout Queue', () => {
       await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Wait for queue to close and add block dialog to open
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.poll(() => {
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectPoll(() => {
         // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
         const dialog = document.querySelector('[role="dialog"]')
         // The add block dialog should be open and have exercises tabs
@@ -174,7 +175,7 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       // Verify 2 blocks now (check the header text)
-      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -191,8 +192,8 @@ describe('Workout Queue', () => {
       await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(page.getByText(/Configure/)).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByText(/Configure/)).toBeVisible()
 
       await userEvent.click(common.getDialogButton('8'))
       await userEvent.click(common.getDialogButton('Add Exercise'))
@@ -202,7 +203,7 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Action: Open queue
       await page.getByRole('button', { name: /open workout queue/i }).click()
@@ -234,7 +235,7 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Action: Open queue, remove block 2 (Deadlift)
       await queue.open()
@@ -247,7 +248,7 @@ describe('Workout Queue', () => {
 
       // Close queue and verify header shows updated count
       await queue.close()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       cleanup()
     })
@@ -262,14 +263,14 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Action: Remove current block via header menu
       await workout.removeCurrentBlock()
 
       // Assert: Block removed, now viewing Deadlift (which was block 2, now block 1)
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
-      await expect.element(page.getByText(/deadlift/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/deadlift/i)).toBeVisible()
 
       cleanup()
     })
@@ -281,14 +282,14 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Action: Remove the only block via header menu
       await workout.removeCurrentBlock()
 
       // Assert: Returns to builder mode (empty workout state)
-      await expect.poll(() => router.currentRoute.value.path).toBe('/workout/active')
-      await expect.element(page.getByText(/add first block/i)).toBeVisible()
+      await expectPoll(() => router.currentRoute.value.path).toBe('/workout/active')
+      await expectElement(page.getByText(/add first block/i)).toBeVisible()
 
       cleanup()
     })
@@ -308,7 +309,7 @@ describe('Workout Queue', () => {
       await common.waitForDialogClose()
 
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Open queue and verify initial order
       await queue.open()
@@ -320,7 +321,7 @@ describe('Workout Queue', () => {
       await queue.reorderBlocks(2, 0)
 
       // Assert: Order changed to Bodyweight Squat, Bench Press, Deadlift
-      await expect.poll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+      await expectPoll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
 
       cleanup()
     })
