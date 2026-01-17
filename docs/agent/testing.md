@@ -267,3 +267,209 @@ function createValidStrengthBlock(overrides = {}) {
   }
 }
 ```
+
+---
+
+## Dual Environment Testing
+
+This project supports running integration tests in two environments:
+
+| Environment | Command | Use Case |
+|-------------|---------|----------|
+| **Happy-DOM** | `pnpm test` | Fast local development, pre-commit hooks |
+| **Browser Mode** | `pnpm test:browser` | Full browser fidelity, CI pipeline |
+
+### When to Use Each Environment
+
+**Happy-DOM (fast, simulated)**
+- Local development for quick feedback
+- Pre-commit hooks
+- Debugging test logic
+- When you don't need real browser APIs
+
+**Browser Mode (Playwright)**
+- CI pipeline for full confidence
+- Testing browser-specific behavior
+- Visual regression testing
+- Accessibility testing with real browser APIs
+
+### Test Commands
+
+```bash
+pnpm test              # Happy-DOM (default for local dev)
+pnpm test:watch        # Happy-DOM in watch mode
+pnpm test:browser      # Browser mode (Playwright)
+pnpm test:browser:ui   # Browser mode with Vitest UI
+pnpm test:ci           # Browser mode for CI (used by GitHub Actions)
+pnpm test:all          # Both environments
+```
+
+### Abstraction Layer
+
+Tests use an abstraction layer that provides a unified API across both environments. Import from these modules instead of directly from `vitest/browser`:
+
+```ts
+// ✅ Correct - uses abstraction layer
+import { page, userEvent } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
+
+// ❌ Avoid - browser-specific imports
+import { page, userEvent } from 'vitest/browser'
+```
+
+#### Locator API
+
+The abstraction layer provides the same query methods as Vitest browser mode:
+
+```ts
+// Query methods (return Locator objects)
+page.getByRole('button', { name: 'Submit' })
+page.getByText('Hello World')
+page.getByLabelText('Email')
+page.getByPlaceholder('Enter email')
+page.getByTestId('submit-btn')
+
+// Locator interactions
+await locator.click()
+await locator.fill('text')
+await locator.clear()
+await locator.hover()
+
+// Collection methods
+const buttons = page.getByRole('button').all()
+const first = page.getByRole('listitem').first()
+const third = page.getByRole('listitem').nth(2)
+```
+
+#### Assertion API
+
+Use `expectElement()` instead of `expect.element()` and `expectPoll()` instead of `expect.poll()`:
+
+```ts
+// Element assertions (with automatic retry)
+await expectElement(page.getByRole('button')).toBeVisible()
+await expectElement(dialog).toHaveTextContent('Success')
+await expectElement(input).toHaveValue('test@example.com')
+await expectElement(button).not.toBeDisabled()
+
+// Poll assertions (for async values)
+await expectPoll(() => items.length).toBe(5)
+await expectPoll(() => store.isLoading).toBeFalsy()
+```
+
+**Supported element matchers:**
+- `toBeInTheDocument()` / `not.toBeInTheDocument()`
+- `toBeVisible()` / `not.toBeVisible()`
+- `toBeDisabled()` / `not.toBeDisabled()`
+- `toHaveTextContent(text)` / `not.toHaveTextContent(text)`
+- `toHaveValue(value)` / `not.toHaveValue(value)`
+- `toHaveAttribute(attr, value?)` / `not.toHaveAttribute(attr, value?)`
+- `toHaveClass(...classNames)` / `not.toHaveClass(...classNames)`
+
+**Supported poll matchers:**
+- `toBe(expected)`, `toEqual(expected)`
+- `toBeTruthy()`, `toBeFalsy()`, `toBeDefined()`
+- `toBeGreaterThan(n)`, `toBeGreaterThanOrEqual(n)`, `toBeLessThan(n)`
+- `toContain(item)`, `toBeCloseTo(n, digits?)`
+
+#### Working with Page Objects
+
+Page Objects still import from `vitest/browser` and return `HTMLElement` objects. When interacting with elements from Page Objects, use native `userEvent`:
+
+```ts
+import { page, userEvent } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
+
+// Page Objects return HTMLElements
+const input = common.getSetRowInput(0, 'kg')  // HTMLElement
+
+// Use native userEvent for HTMLElements
+await userEvent.fill(input, '100')
+await userEvent.click(submitButton)
+
+// Use abstracted methods for Locators from page.getByRole()
+const dialog = page.getByRole('dialog')
+await dialog.getByRole('button', { name: 'Confirm' }).click()
+```
+
+### Known Limitations of Happy-DOM
+
+Happy-DOM is a lightweight DOM implementation that lacks some browser APIs:
+
+| API | Status | Workaround |
+|-----|--------|------------|
+| `matchMedia` | Mocked | Returns `{ matches: false }` |
+| `IntersectionObserver` | Mocked | No-op observer |
+| `ResizeObserver` | Mocked | No-op observer |
+| `canvas` | Not supported | Use browser mode for canvas tests |
+| Real layout/scroll | Not available | Use browser mode for scroll tests |
+| CSS animations | Not supported | Use browser mode for animation tests |
+
+The setup file (`setup.happy-dom.ts`) provides polyfills for commonly needed APIs.
+
+### Troubleshooting
+
+#### Test passes in browser but fails in Happy-DOM
+
+1. **Check for browser-specific APIs**: The test may rely on APIs not available in Happy-DOM (canvas, real layout, etc.)
+2. **Check for timing issues**: Happy-DOM executes synchronously; use `await` and proper assertions
+3. **Check scroll/intersection**: Virtual scroll and lazy loading need real browser
+
+#### Test fails with "Cannot read properties of null"
+
+This usually means the element wasn't found. In Happy-DOM:
+- Ensure component is fully rendered before querying
+- Check that async data has loaded
+- Verify the query selector is correct
+
+#### Type errors with Locator types
+
+The abstraction layer exports native Vitest objects at runtime but uses abstraction layer types for TypeScript. This is expected behavior. If you see type errors like `Type 'Locator' is missing properties`, the code will still work at runtime.
+
+#### Page Object tests fail in Happy-DOM
+
+Page Objects currently import from `vitest/browser`, which only works in browser mode. This is a known limitation (US-009 in the PRD). Integration tests work around this by using native `userEvent` for HTMLElements from Page Objects.
+
+### Architecture
+
+```
+src/__tests__/helpers/
+├── locator/
+│   ├── types.ts       # Unified Locator/Page interfaces
+│   ├── browser.ts     # Browser mode implementation (wraps vitest/browser)
+│   ├── happy-dom.ts   # Happy-DOM implementation (uses @testing-library)
+│   └── index.ts       # Environment-aware exports
+├── render/
+│   ├── types.ts       # Unified RenderResult interface
+│   ├── browser.ts     # Browser mode render (vitest-browser-vue)
+│   ├── happy-dom.ts   # Happy-DOM render (@testing-library/vue)
+│   └── index.ts       # Environment-aware exports
+├── assertions/
+│   ├── types.ts       # Unified assertion interfaces
+│   ├── browser.ts     # Browser mode (native expect.element/poll)
+│   ├── happy-dom.ts   # Happy-DOM (waitFor + jest-dom matchers)
+│   └── index.ts       # Environment-aware exports
+└── pages/             # Page Objects (currently browser-only)
+```
+
+The abstraction layer detects the environment at runtime using `window.__vitest_browser__` and dynamically loads the appropriate implementation.
+
+### CI Configuration
+
+The CI pipeline runs browser tests for full confidence:
+
+```yaml
+test:
+  strategy:
+    matrix:
+      shard: [1, 2, 3, 4]
+  steps:
+    - run: pnpm vitest --project=default --shard=${{ matrix.shard }}/4
+
+test-happy-dom:
+  continue-on-error: true  # Optional until Page Objects migrated
+  steps:
+    - run: pnpm vitest --project=happy-dom
+```
+
+Browser tests are sharded across 4 runners for parallel execution. Happy-DOM tests run as an optional validation job.
