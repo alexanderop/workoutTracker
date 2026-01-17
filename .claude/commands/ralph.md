@@ -26,7 +26,7 @@ Expected format: `<spec_file> <prd_file>`
 </prd_content>
 
 <recent_progress>
-!`tail -30 .ralph/progress.txt 2>/dev/null || echo "No progress yet"`
+!`tail -30 ralph/progress.txt 2>/dev/null || echo "No progress yet"`
 </recent_progress>
 
 ## Instructions
@@ -42,7 +42,7 @@ Expected format: `<spec_file> <prd_file>`
    - Run lint: `pnpm lint`
    - If all pass, commit with conventional commit message
    - Update story status in PRD to "completed"
-   - Log progress to `.ralph/progress.txt`
+   - Log progress to `ralph/progress.txt`
 5. Continue until all stories are completed or blocked
 
 ## Workflow per Story

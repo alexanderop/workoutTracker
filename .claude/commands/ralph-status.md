@@ -9,11 +9,11 @@ model: Haiku
 Show current Ralph Wiggum automation status.
 
 <prd>
-!`cat .ralph/ralph-prd.json 2>/dev/null || echo "No PRD found"`
+!`cat ralph/prd.json 2>/dev/null || echo "No PRD found"`
 </prd>
 
 <progress>
-!`cat .ralph/progress.txt 2>/dev/null || echo "No progress yet"`
+!`cat ralph/progress.txt 2>/dev/null || echo "No progress yet"`
 </progress>
 
 ## Instructions

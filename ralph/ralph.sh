@@ -17,7 +17,7 @@ for ((i=1; i<=$1; i++)); do
     echo "========== Iteration $i of $1 =========="
 
     set +e
-    output=$(claude --dangerously-skip-permissions -p "@.ralph/ralph-prd.json @.ralph/progress.txt \
+    output=$(claude --dangerously-skip-permissions -p "@ralph/prd.json @ralph/progress.txt \
 1. Find the highest-priority feature to work on and work only on that feature. \
 This should be the one YOU decide has the highest priority - not necessarily the first item. \
 2. Check that the types check via pnpm type-check and that the tests pass via pnpm test. \
