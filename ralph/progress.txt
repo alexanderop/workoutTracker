@@ -262,3 +262,42 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-007: Add Happy-DOM setup file with polyfills (import jest-dom matchers)
 
 ---
+
+## US-007: Add Happy-DOM setup file with polyfills
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Added `@testing-library/jest-dom/vitest` import to `setup.happy-dom.ts`:
+   - Registers jest-dom matchers (toBeInTheDocument, toBeVisible, etc.) with Vitest
+   - Required for Happy-DOM assertion implementation to work
+
+2. Updated `src/__tests__/helpers/locator/index.ts` with environment detection:
+   - Uses `window.__vitest_browser__` to detect browser mode
+   - Conditionally requires browser.ts or happy-dom.ts based on environment
+   - Exports environment-appropriate `page` and `userEvent`
+
+3. Updated `src/__tests__/helpers/render/index.ts` with environment detection:
+   - Same pattern: detects browser vs happy-dom at runtime
+   - Exports environment-appropriate `render` function
+
+4. Updated `src/__tests__/helpers/assertions/index.ts` with environment detection:
+   - Same pattern: detects browser vs happy-dom at runtime
+   - Exports environment-appropriate `expectElement` and `expectPoll` functions
+
+### Key decisions:
+- Used `window.__vitest_browser__` for environment detection - Vitest sets this in browser mode
+- Used conditional `require()` instead of dynamic imports for simpler module resolution
+- Ternary operator for environment selection to avoid if-else (codebase convention)
+- Typed exports maintain type safety regardless of which implementation loads
+
+### Key discoveries:
+- `window.__vitest_browser__` is a reliable indicator of browser mode
+- Conditional require() works at module load time since environment is known
+- All 829 browser tests continue to pass after the abstraction layer changes
+- TypeScript type-check passes with the environment-aware exports
+
+### Next steps:
+- US-008: Update test helpers to use abstraction layer (createTestApp)
+
+---

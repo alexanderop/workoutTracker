@@ -4,6 +4,10 @@
  * This module provides a unified API for rendering Vue components
  * that works in both browser mode (Playwright) and Happy-DOM environments.
  *
+ * Environment detection:
+ * - Browser mode: Uses vitest-browser-vue's render function
+ * - Happy-DOM: Uses @testing-library/vue's render function
+ *
  * Usage:
  * - Import `render` for rendering components
  * - Import `RenderResult` for type annotations
@@ -24,8 +28,25 @@
  * ```
  */
 
-// Re-export from browser implementation (will be swapped for happy-dom in that environment)
-export { render } from './browser'
+import type { RenderFunction } from './types'
+
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// Import the correct implementation based on environment
+// Using conditional require to avoid loading browser-specific imports in happy-dom
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const impl = isBrowserMode ? require('./browser') : require('./happy-dom')
+
+/**
+ * Render a Vue component.
+ * Automatically uses the correct implementation based on environment.
+ */
+export const render: RenderFunction = impl.render
 
 // Re-export types
 export type {

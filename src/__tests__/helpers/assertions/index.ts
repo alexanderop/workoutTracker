@@ -4,13 +4,9 @@
  * This module provides unified assertion APIs that work in both browser mode (Playwright)
  * and Happy-DOM environments.
  *
- * In browser mode:
- * - expectElement wraps Vitest's native expect.element() with built-in retry
- * - expectPoll wraps Vitest's native expect.poll() for async value assertions
- *
- * In Happy-DOM:
- * - expectElement uses waitFor() + jest-dom matchers for retry behavior
- * - expectPoll uses waitFor() for async value assertions
+ * Environment detection:
+ * - Browser mode: Uses Vitest's native expect.element() and expect.poll()
+ * - Happy-DOM: Uses waitFor() from @testing-library + jest-dom matchers
  *
  * Usage:
  * ```ts
@@ -26,9 +22,31 @@
  * ```
  */
 
-// Re-export browser implementations (default for now)
-// TODO: In future user stories, this will be replaced with environment-aware exports
-export { expectElement, expectPoll } from './browser'
+import type { ExpectElementFn, ExpectPollFn } from './types'
+
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// Import the correct implementation based on environment
+// Using conditional require to avoid loading browser-specific imports in happy-dom
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const impl = isBrowserMode ? require('./browser') : require('./happy-dom')
+
+/**
+ * Assert on an element with automatic retry.
+ * Automatically uses the correct implementation based on environment.
+ */
+export const expectElement: ExpectElementFn = impl.expectElement
+
+/**
+ * Poll a value until assertion passes.
+ * Automatically uses the correct implementation based on environment.
+ */
+export const expectPoll: ExpectPollFn = impl.expectPoll
 
 // Re-export types for consumers
 export type {

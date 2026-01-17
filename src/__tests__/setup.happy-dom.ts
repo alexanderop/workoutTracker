@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import 'fake-indexeddb/auto'
 import '@/style.css'
+import '@testing-library/jest-dom/vitest'
 
 // Seed faker for reproducible randomization across test runs
 faker.seed(12_345)
