@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { page } from '../../helpers/locator'
+import { userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
+import { expectElement, expectPoll } from '../../helpers/assertions'
 import type { createTestApp } from '../../helpers/createTestApp'
 import { db, getBenchmarksRepository } from '@/db'
 import type { DbBenchmark, DbBenchmarkRound, DbCompletedWorkout } from '@/db/schema'

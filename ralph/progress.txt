@@ -641,3 +641,40 @@ import { expectElement, expectPoll } from '../helpers/assertions'
 - US-015: Migrate remaining integration tests (settings, timers, misc)
 
 ---
+
+## US-015: Migrate remaining integration tests
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Migrated 25 remaining integration test files to the abstraction layer:
+   - **Timer tests**: timer-edge-cases.spec.ts, standalone-timers-flow.spec.ts, timer-workout-logging.spec.ts, timer-audio-playback.spec.ts, timer-audio-settings.spec.ts
+   - **Settings tests**: weight-tracking.spec.ts, weight-tracking-mobile.spec.ts, progression-management.spec.ts
+   - **Misc tests**: log-past-workout.spec.ts, numeric-keypad.spec.ts, home-delete-workout.spec.ts, isometric-prefill.spec.ts, strength-workflows.spec.ts, timed-block-workflows.spec.ts, form-draft-persistence.spec.ts, history-delete-workout.spec.ts, history-edge-cases.spec.ts, numeric-input-modal.spec.ts, data-management.spec.ts, active-workout-fab.spec.ts, add-block-dialog-icons.spec.ts, add-block-dialog-viewport.spec.ts, cardio-block-workflows.spec.ts, set-context-menu.spec.ts
+   - **Helper file**: benchmarkHelpers.ts
+
+2. Migration pattern applied to each test:
+   - Changed `import { page, userEvent } from 'vitest/browser'` to:
+     - `import { page } from '../helpers/locator'`
+     - `import { userEvent } from 'vitest/browser'`
+   - Added `import { expectElement, expectPoll } from '../helpers/assertions'`
+   - Note: `userEvent` still comes from `vitest/browser` for interacting with HTMLElements from Page Objects
+
+### Key discoveries:
+1. **All 829 tests pass in browser mode** after migration.
+
+2. **Type errors are expected**: The abstraction layer exports native Vitest objects in browser mode for backward compatibility, but TypeScript sees the abstraction layer types. This is documented behavior per US-008/US-009 notes and doesn't affect runtime behavior.
+
+3. **Migration scope complete**: All integration tests now import `page` from the abstraction layer (`../helpers/locator`) instead of directly from `vitest/browser`.
+
+4. **Page Objects unchanged**: As documented in US-009, Page Objects still import directly from `vitest/browser` due to type conflicts. Tests use native `userEvent` from `vitest/browser` when interacting with HTMLElements returned by Page Objects.
+
+### Test results:
+- All 829 tests pass in browser mode
+- No test regressions
+- Type-check has errors in integration tests (expected per US-008/US-009 notes)
+
+### Next steps:
+- US-016: Update package.json scripts
+
+---

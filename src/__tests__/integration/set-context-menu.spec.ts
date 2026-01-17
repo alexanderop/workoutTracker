@@ -1,6 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
-import { page } from 'vitest/browser'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { SetContextMenuPO } from '../helpers/pages/SetContextMenuPO'

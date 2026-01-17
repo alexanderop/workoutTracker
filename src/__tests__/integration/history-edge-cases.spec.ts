@@ -1,5 +1,6 @@
-import { page } from 'vitest/browser'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
