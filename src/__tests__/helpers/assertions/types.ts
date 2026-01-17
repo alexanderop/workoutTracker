@@ -174,6 +174,11 @@ export interface PollAssertion<T> {
    * Assert number is close to expected (for floating point comparisons)
    */
   toBeCloseTo(expected: number, numDigits?: number): Promise<void>
+
+  /**
+   * Assert value is defined (not undefined)
+   */
+  toBeDefined(): Promise<void>
 }
 
 /**

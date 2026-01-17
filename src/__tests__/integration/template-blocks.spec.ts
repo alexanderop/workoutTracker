@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -23,7 +25,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill in template name
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Full Body Circuit')
@@ -43,19 +45,19 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
 
       // Select an exercise (overlay picker within the dialog)
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
       await userEvent.click(common.getDialogButton('Burpees'))
 
       // Wait for exercise to appear in the block config (overlay closes, dialog stays open)
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
 
       // Confirm AMRAP block
       await userEvent.click(common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify AMRAP block appears in the template (check for the block title)
-      await expect.element(page.getByRole('heading', { name: /blocks/i })).toBeVisible()
-      await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /blocks/i })).toBeVisible()
+      await expectElement(page.getByText(/amrap/i).first()).toBeVisible()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
@@ -64,7 +66,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify template saved to DB with AMRAP block
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const templates = await db.templates.toArray()
         return templates.find((t) => t.name === 'Full Body Circuit')
       }).toBeDefined()
@@ -83,7 +85,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill in template name
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Cardio Day')
@@ -107,7 +109,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForDialogClose()
 
       // Verify cardio block appears in the template
-      await expect.element(page.getByText(/cardio/i)).toBeVisible()
+      await expectElement(page.getByText(/cardio/i)).toBeVisible()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
@@ -129,7 +131,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill in template name
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Mixed Workout')
@@ -149,17 +151,17 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Add exercise to EMOM
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
       await userEvent.click(common.getDialogButton('Burpees'))
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
 
       // Confirm EMOM block
       await userEvent.click(common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify both blocks appear
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText(/emom/i).first()).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText(/emom/i).first()).toBeVisible()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
@@ -190,7 +192,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-add-amrap' } })
-      await expect.element(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
 
       // Add AMRAP block
       await userEvent.click(getByRole('button', { name: /add/i }))
@@ -201,22 +203,22 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Add exercise to AMRAP
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
       await userEvent.click(common.getDialogButton('Burpees'))
-      await expect.element(page.getByText('Burpees')).toBeVisible()
+      await expectElement(page.getByText('Burpees')).toBeVisible()
 
       // Confirm AMRAP block
       await userEvent.click(common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify AMRAP block appears
-      await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
+      await expectElement(page.getByText(/amrap/i).first()).toBeVisible()
 
       // Save changes
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has both blocks
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-add-amrap')
         return updated?.blocks.length
       }).toBe(2)
@@ -248,9 +250,9 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-view-amrap' } })
 
       // Verify AMRAP block is displayed
-      await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
+      await expectElement(page.getByText(/amrap/i).first()).toBeVisible()
       // Should show duration info
-      await expect.element(page.getByText(/10 min/i)).toBeVisible()
+      await expectElement(page.getByText(/10 min/i)).toBeVisible()
 
       cleanup()
     })
@@ -277,7 +279,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-mixed' } })
-      await expect.element(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
 
       // Verify all block types have drag handles for reordering
       // eslint-disable-next-line no-restricted-syntax -- Finding all block cards with drag handles
@@ -310,7 +312,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-amrap' } })
-      await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
       await userEvent.click(getByRole('button', { name: /start workout/i }))
@@ -324,7 +326,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       expect(playlistButtons.length).toBe(1)
 
       // The block should be an AMRAP (we can verify by checking the block type indicator)
-      await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
+      await expectElement(page.getByText(/amrap/i).first()).toBeVisible()
 
       cleanup()
     })
@@ -348,7 +350,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-mixed' } })
-      await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
       await userEvent.click(getByRole('button', { name: /start workout/i }))
@@ -381,7 +383,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-amrap' } })
-      await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
+      await expectElement(page.getByText(/amrap/i).first()).toBeVisible()
 
       // Find AMRAP card and remove button
       const amrapText = await page.getByText(/amrap/i).first().element()
@@ -396,13 +398,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(removeButton)
 
       // Verify AMRAP is removed from UI
-      await expect.element(page.getByText(/amrap/i).first()).not.toBeInTheDocument()
+      await expectElement(page.getByText(/amrap/i).first()).not.toBeInTheDocument()
 
       // Save changes
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has only strength block
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-remove-amrap')
         return updated?.blocks.length
       }).toBe(1)

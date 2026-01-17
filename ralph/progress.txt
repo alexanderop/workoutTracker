@@ -554,3 +554,46 @@ import { expectElement, expectPoll } from '../helpers/assertions'
 - US-013: Migrate templates feature tests
 
 ---
+
+## US-013: Migrate templates feature tests
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Migrated 4 template integration test files to the abstraction layer:
+   - `template-blocks.spec.ts`
+   - `template-drag-reorder.spec.ts`
+   - `template-error-handling.spec.ts`
+   - `template-flow.spec.ts`
+
+2. Migration pattern applied to each test:
+   - Changed `import { page, userEvent } from 'vitest/browser'` to `import { page } from '../helpers/locator'`
+   - Added `import { expectElement, expectPoll } from '../helpers/assertions'`
+   - Changed `expect.element(locator)` to `expectElement(locator)`
+   - Changed `expect.poll(() => ...)` to `expectPoll(() => ...)`
+   - Kept native `userEvent` import from `vitest/browser` when interacting with HTMLElements
+
+3. Added new matcher to the assertion abstraction layer:
+   - `toBeDefined()` to PollAssertion type and both browser/happy-dom implementations
+   - Required because template tests use `expectPoll(...).toBeDefined()` pattern
+
+### Key discoveries:
+1. **Template tests are in integration root**: Unlike the PRD acceptance criteria which expected tests in `src/__tests__/integration/templates/`, the actual template tests are directly in `src/__tests__/integration/` with `template-` prefix.
+
+2. **Same migration pattern**: The migration pattern established in US-010 through US-012 applies cleanly to template tests.
+
+3. **Mixed imports pattern**: Tests that use both Locators (from `page.getByRole()`) and HTMLElements (from querySelector or Page Objects) need:
+   - `import { page } from '../helpers/locator'` for Locators
+   - `import { userEvent } from 'vitest/browser'` for HTMLElements
+   - For Locators: use `expectElement()` and `expectPoll()`
+   - For HTMLElements: use native `userEvent.click(element)`, `userEvent.fill(element, text)`
+
+### Test results:
+- All 829 tests pass in browser mode
+- No test regressions
+- Type-check has errors due to abstraction layer type mismatch (expected per US-008/US-009)
+
+### Next steps:
+- US-014: Migrate benchmarks feature tests
+
+---

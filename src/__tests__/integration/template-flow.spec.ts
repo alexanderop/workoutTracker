@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -43,16 +45,16 @@ describe('Template Flow', () => {
 
       // Start workout
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Complete one set in Bench Press
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Finish the workout via menu
-      await expect.poll(() => workout.getMenuTrigger()).toBeTruthy()
+      await expectPoll(() => workout.getMenuTrigger()).toBeTruthy()
       await userEvent.click(await workout.getMenuTrigger())
 
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+      await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       await common.waitForDialog()
@@ -63,7 +65,7 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Push Day')
 
       // Verify the input value was set correctly before proceeding
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await nameInput.element()
         if (!(element instanceof HTMLInputElement)) {
           return null
@@ -74,12 +76,12 @@ describe('Template Flow', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be clickable (animation needs to complete)
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
+      await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expectElement(viewDetailsButton).not.toHaveClass('opacity-0')
       // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
       await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()
@@ -88,8 +90,8 @@ describe('Template Flow', () => {
 
       // Wait for summary page to load and animation to complete
       const saveTemplateButton = page.getByRole('button', { name: /save as template/i })
-      await expect.element(saveTemplateButton, { timeout: 3000 }).toBeVisible()
-      await expect.poll(() => {
+      await expectElement(saveTemplateButton, { timeout: 3000 }).toBeVisible()
+      await expectPoll(() => {
         // eslint-disable-next-line no-restricted-syntax -- Checking animation state by CSS class
         const button = document.querySelector('button[name*="template"], button:has([name*="template"])')
         return !button?.parentElement?.classList.contains('opacity-0')
@@ -106,7 +108,7 @@ describe('Template Flow', () => {
       await userEvent.click(common.getDialogButton('Save Template'))
 
       // Wait for dialog to close
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Verify template saved to DB
       const templates = await db.templates.toArray()
@@ -116,7 +118,7 @@ describe('Template Flow', () => {
 
       // Navigate to workouts page and verify template appears
       await common.navigateToWorkoutsAndClickTab('templates')
-      await expect.element(page.getByText('Push Day')).toBeVisible()
+      await expectElement(page.getByText('Push Day')).toBeVisible()
 
       cleanup()
     })
@@ -142,7 +144,7 @@ describe('Template Flow', () => {
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Wait for template to appear and click it
-      await expect.element(page.getByText('Leg Day')).toBeVisible()
+      await expectElement(page.getByText('Leg Day')).toBeVisible()
 
       // Click on the template card
       const legDayElement = await getByText('Leg Day').element()
@@ -157,7 +159,7 @@ describe('Template Flow', () => {
       expect(router.currentRoute.value.path).toBe('/templates/tpl-leg-day')
 
       // Wait for template detail to load
-      await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Click "Start Workout" button
       await userEvent.click(getByRole('button', { name: /start workout/i }))
@@ -195,7 +197,7 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-edit-test' } })
 
       // Wait for template page to finish loading
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Change the template name
       const nameInput = getByRole('textbox', { name: /template name/i })
@@ -212,7 +214,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify changes persisted in DB
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-edit-test')
         return updated?.name
       }).toBe('Updated Name')
@@ -238,7 +240,7 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-test' } })
 
       // Wait for template page to finish loading
-      await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete button
       await userEvent.click(getByRole('button', { name: /delete template/i }))
@@ -268,7 +270,7 @@ describe('Template Flow', () => {
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Click "Create Template" button
-      await expect.element(page.getByRole('button', { name: /create template/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /create template/i })).toBeVisible()
       await userEvent.click(getByRole('button', { name: /create template/i }))
 
       // Verify navigation to create template page
@@ -295,7 +297,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify template saved to DB
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const templates = await db.templates.toArray()
         return templates.find((t) => t.name === 'Upper Body')
       }).toBeDefined()
@@ -339,9 +341,9 @@ describe('Template Flow', () => {
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Wait for templates to appear
-      await expect.element(page.getByText('Used Today')).toBeVisible()
-      await expect.element(page.getByText('Used Yesterday')).toBeVisible()
-      await expect.element(page.getByText('Never Used Template')).toBeVisible()
+      await expectElement(page.getByText('Used Today')).toBeVisible()
+      await expectElement(page.getByText('Used Yesterday')).toBeVisible()
+      await expectElement(page.getByText('Never Used Template')).toBeVisible()
 
       // Get all template cards to verify order
       const todayElement = await getByText('Used Today').element()
@@ -378,10 +380,10 @@ describe('Template Flow', () => {
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Verify empty state is shown
-      await expect.element(page.getByText(/no templates yet/i)).toBeVisible()
+      await expectElement(page.getByText(/no templates yet/i)).toBeVisible()
 
       // Verify Create Template button is still accessible
-      await expect.element(page.getByRole('button', { name: /create template/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /create template/i })).toBeVisible()
 
       cleanup()
     })
@@ -405,9 +407,9 @@ describe('Template Flow', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-test' } })
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText('Squat')).toBeVisible()
-      await expect.element(page.getByText('Deadlift')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Deadlift')).toBeVisible()
 
       // Find and click remove button for Squat (middle exercise)
       const squatText = await page.getByText('Squat').element()
@@ -420,13 +422,13 @@ describe('Template Flow', () => {
       await userEvent.click(removeButton)
 
       // Verify Squat is removed from UI
-      await expect.element(page.getByText('Squat')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Squat')).not.toBeInTheDocument()
 
       // Save changes
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has 2 blocks
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-remove-test')
         return updated?.blocks.length
       }).toBe(2)
@@ -461,7 +463,7 @@ describe('Template Flow', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-test' } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
+      await expectElement(page.getByText('Exercise A')).toBeVisible()
 
       // Verify all exercises have drag handles
       const exerciseACard = await getExerciseCard('Exercise A')
@@ -479,7 +481,7 @@ describe('Template Flow', () => {
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Add an exercise (making that part valid)
       await userEvent.click(getByRole('button', { name: /add block/i }))
@@ -489,7 +491,7 @@ describe('Template Flow', () => {
 
       // Leave name empty - verify save button is disabled
       const saveButton = getByRole('button', { name: /save template/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -499,14 +501,14 @@ describe('Template Flow', () => {
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill name (making that part valid)
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Valid Name')
 
       // Don't add any exercises - verify save button is disabled
       const saveButton = getByRole('button', { name: /save template/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -526,7 +528,7 @@ describe('Template Flow', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-setcount-test' } })
-      await expect.element(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
 
       // Find the set count input and increase it
       const squatText = await page.getByText('Squat').element()
@@ -550,7 +552,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Wait for save to complete
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-setcount-test')
         const firstBlock = updated?.blocks[0]
         return firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined
@@ -560,7 +562,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /start workout/i }))
 
       // Wait for workout to start
-      await expect.poll(() => router.currentRoute.value.path).toBe('/workout/active')
+      await expectPoll(() => router.currentRoute.value.path).toBe('/workout/active')
 
       // Verify workout has the block
       const playlistButtons = await builder.getPlaylistBlockButtons()
@@ -589,7 +591,7 @@ describe('Template Flow', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-discard-test' } })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
@@ -597,7 +599,7 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Modified Name')
 
       // Verify input changed
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await nameInput.element()
         if (!(element instanceof HTMLInputElement)) return null
         return element.value
@@ -608,11 +610,11 @@ describe('Template Flow', () => {
 
       // Navigate back to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-discard-test' } })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Verify the name is back to original (unsaved changes were discarded)
       const reloadedInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await reloadedInput.element()
         if (!(element instanceof HTMLInputElement)) return null
         return element.value
@@ -645,7 +647,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify DB has trimmed name
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const templates = await db.templates.toArray()
         return templates.find((t) => t.name === 'My Template')
       }).toBeDefined()
@@ -671,7 +673,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify DB block has correct defaults
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const templates = await db.templates.toArray()
         return templates.find((t) => t.name === 'Defaults Test')
       }).toBeDefined()
@@ -718,7 +720,7 @@ describe('Template Flow', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify DB has correct AMRAP data
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const templates = await db.templates.toArray()
         return templates.find((t) => t.name === 'AMRAP Data Test')
       }).toBeDefined()

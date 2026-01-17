@@ -1,5 +1,6 @@
-import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -88,8 +89,8 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-drag-handle-test' } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
-      await expect.element(page.getByText('Exercise B')).toBeVisible()
+      await expectElement(page.getByText('Exercise A')).toBeVisible()
+      await expectElement(page.getByText('Exercise B')).toBeVisible()
 
       // Assert: Each block should have a visible drag handle
       const cards = getBlockCards()
@@ -121,11 +122,11 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-no-arrows-test' } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
+      await expectElement(page.getByText('Exercise A')).toBeVisible()
 
       // Assert: Move up/down buttons should NOT exist
-      await expect.element(page.getByRole('button', { name: /move up/i })).not.toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /move down/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /move up/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /move down/i })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -151,10 +152,10 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-sortable-test' } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
+      await expectElement(page.getByText('Exercise A')).toBeVisible()
 
       // Verify the list container has the role="list" (used as sortable container)
-      await expect.element(page.getByRole('list')).toBeVisible()
+      await expectElement(page.getByRole('list')).toBeVisible()
 
       // Verify each block has a drag handle that SortableJS can target
       const cards = getBlockCards()
@@ -186,7 +187,7 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Navigate to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-order-test' } })
-      await expect.element(page.getByText('First Exercise')).toBeVisible()
+      await expectElement(page.getByText('First Exercise')).toBeVisible()
 
       // Verify blocks are displayed in correct order
       expect(getBlockNames()).toEqual(['First Exercise', 'Second Exercise', 'Third Exercise'])

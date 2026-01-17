@@ -204,6 +204,11 @@ class BrowserPollAssertion<T> implements PollAssertion<T> {
     const assertion = this.isNegated ? this.native.not : this.native
     await assertion.toBeCloseTo(expected, numDigits)
   }
+
+  async toBeDefined(): Promise<void> {
+    const assertion = this.isNegated ? this.native.not : this.native
+    await assertion.toBeDefined()
+  }
 }
 
 /**

@@ -1,5 +1,7 @@
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { page } from '../helpers/locator'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -22,7 +24,7 @@ describe('Template Error Handling', () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Add an exercise (making that part valid)
       await userEvent.click(getByRole('button', { name: /add block/i }))
@@ -36,7 +38,7 @@ describe('Template Error Handling', () => {
 
       // Save button should be disabled
       const saveButton = getByRole('button', { name: /save template/i })
-      await expect.element(saveButton).toBeDisabled()
+      await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
@@ -54,7 +56,7 @@ describe('Template Error Handling', () => {
 
       // Navigate to edit
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-validation-test' } })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
@@ -63,11 +65,11 @@ describe('Template Error Handling', () => {
 
       // Save changes - button should be visible and clickable
       const saveButton = getByRole('button', { name: /save changes/i })
-      await expect.element(saveButton).toBeVisible()
+      await expectElement(saveButton).toBeVisible()
       await userEvent.click(saveButton)
 
       // Verify changes persisted to database
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updated = await db.templates.get('tpl-validation-test')
         return updated?.name
       }).toBe('New Template Name')
@@ -87,11 +89,11 @@ describe('Template Error Handling', () => {
       await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-all' } })
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
 
       // Verify Start Workout is initially enabled
       const startButton = getByRole('button', { name: /start workout/i })
-      await expect.element(startButton).not.toBeDisabled()
+      await expectElement(startButton).not.toBeDisabled()
 
       // Remove the only exercise
       const benchText = await page.getByText('Bench Press').element()
@@ -104,7 +106,7 @@ describe('Template Error Handling', () => {
       await userEvent.click(removeButton)
 
       // Start Workout button should be disabled (can't start workout with no exercises)
-      await expect.element(startButton).toBeDisabled()
+      await expectElement(startButton).toBeDisabled()
 
       cleanup()
     })
@@ -148,10 +150,10 @@ describe('Template Error Handling', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'non-existent-template' } })
 
       // Should redirect to workouts page
-      await expect.poll(() => router.currentRoute.value.path).toBe('/workouts')
+      await expectPoll(() => router.currentRoute.value.path).toBe('/workouts')
 
       // Page should render successfully
-      await expect.element(page.getByRole('main')).toBeVisible()
+      await expectElement(page.getByRole('main')).toBeVisible()
 
       cleanup()
     })
@@ -169,7 +171,7 @@ describe('Template Error Handling', () => {
       await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-cancel' } })
-      await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete
       await userEvent.click(getByRole('button', { name: /delete template/i }))
@@ -177,7 +179,7 @@ describe('Template Error Handling', () => {
 
       // Cancel the deletion
       await userEvent.click(common.getDialogButton('Cancel'))
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Template should still exist
       const preserved = await db.templates.get('tpl-delete-cancel')
@@ -205,7 +207,7 @@ describe('Template Error Handling', () => {
 
       // Press Escape
       await userEvent.keyboard('{Escape}')
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Template preserved
       const preserved = await db.templates.get('tpl-escape-test')

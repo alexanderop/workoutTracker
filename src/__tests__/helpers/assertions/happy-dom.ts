@@ -422,6 +422,19 @@ class HappyDomPollAssertion<T> implements PollAssertion<T> {
       waitForOptions,
     )
   }
+
+  async toBeDefined(): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    const negated = this.isNegated
+    await waitFor(
+      async () => {
+        const value = await this.getter()
+        const assertion = negated ? expect(value).not : expect(value)
+        assertion.toBeDefined()
+      },
+      waitForOptions,
+    )
+  }
 }
 
 /**
