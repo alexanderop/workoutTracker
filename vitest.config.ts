@@ -72,7 +72,7 @@ export default defineConfig({
 
     // Project-based configuration for running different test suites
     projects: [
-      // Project 1: Default (main tests)
+      // Project 1: Default (browser mode - main tests)
       {
         plugins,
         resolve,
@@ -84,7 +84,23 @@ export default defineConfig({
         },
       },
 
-      // Project 2: Accessibility tests
+      // Project 2: Happy-DOM (fast local testing for integration tests)
+      {
+        plugins,
+        resolve,
+        optimizeDeps,
+        test: {
+          root: fileURLToPath(new URL('./', import.meta.url)),
+          name: 'happy-dom',
+          environment: 'happy-dom',
+          include: ['src/__tests__/integration/**/*.spec.ts'],
+          exclude: [...configDefaults.exclude, '**/*.browser.spec.ts'],
+          globals: true,
+          setupFiles: ['./src/__tests__/setup.happy-dom.ts'],
+        },
+      },
+
+      // Project 3: Accessibility tests
       {
         plugins,
         resolve,
@@ -96,7 +112,7 @@ export default defineConfig({
         },
       },
 
-      // Project 3: Visual regression tests
+      // Project 4: Visual regression tests
       {
         plugins,
         resolve,
@@ -122,7 +138,7 @@ export default defineConfig({
         },
       },
 
-      // Project 4: Architecture tests (ArchUnitTS)
+      // Project 5: Architecture tests (ArchUnitTS)
       // Runs in Node.js (not browser) for filesystem analysis
       {
         resolve,

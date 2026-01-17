@@ -68,6 +68,7 @@ catalogs:
     "@vitest/ui": ^4.0.16
     "@vue/test-utils": ^2.4.6
     jsdom: ^27.4.0
+    happy-dom: ^18.0.1
     fake-indexeddb: ^6.2.5
     playwright: ^1.57.0
     axe-core: ^4.11.0

@@ -7,3 +7,32 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 (Add discovered patterns here for future iterations)
 
 ---
+
+## US-001: Configure Vitest projects for dual environments
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Added `happy-dom` to pnpm-workspace.yaml catalog (testing section)
+2. Added `happy-dom` to package.json devDependencies
+3. Created `src/__tests__/setup.happy-dom.ts` with polyfills for:
+   - `matchMedia` - for responsive design components
+   - `IntersectionObserver` - for virtual scroll and lazy loading
+   - `ResizeObserver` - for responsive components
+   - `fake-indexeddb` - for Dexie compatibility (same as browser setup)
+4. Updated `vitest.config.ts` to add happy-dom project:
+   - Name: `happy-dom`
+   - Environment: `happy-dom`
+   - Includes: `src/__tests__/integration/**/*.spec.ts`
+   - Excludes: `**/*.browser.spec.ts` (browser-only tests)
+   - Setup file: `./src/__tests__/setup.happy-dom.ts`
+
+### Key discoveries:
+- Current tests import from `vitest/browser` which only works in browser mode
+- Tests that don't use `vitest/browser` (like `exercise-store-partial-update.spec.ts`) already pass in happy-dom
+- The abstraction layer (US-002 through US-009) will be needed to make integration tests environment-agnostic
+
+### Next steps:
+- US-002: Create Locator types and query interface (the abstraction layer foundation)
+
+---
