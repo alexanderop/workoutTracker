@@ -53,11 +53,12 @@ describe('Benchmark UX Simplification', () => {
       await app.benchmarkForm.addExerciseWithReps('Burpees', 20)
       await app.benchmarkForm.clickSave()
 
-      // Verify benchmark was saved with type 'fortime'
+      // Verify benchmark was saved with type 'fortime' (find by name since popular benchmarks are seeded)
       const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks).toHaveLength(1)
-      expect(benchmarks[0]?.type).toBe('fortime')
-      expect(benchmarks[0]?.name).toBe('Simple Benchmark')
+      const benchmark = benchmarks.find((b) => b.name === 'Simple Benchmark')
+      expect(benchmark).toBeDefined()
+      expect(benchmark?.type).toBe('fortime')
+      expect(benchmark?.name).toBe('Simple Benchmark')
 
       app.cleanup()
     })

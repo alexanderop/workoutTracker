@@ -124,11 +124,10 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
       await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
-      // Verify saved benchmark structure
+      // Verify saved benchmark structure (find by name since popular benchmarks are seeded)
       const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks).toHaveLength(1)
-
-      const benchmark = benchmarks[0]
+      const benchmark = benchmarks.find((b) => b.name === 'Pyramid 40-30-20-10')
+      expect(benchmark).toBeDefined()
       assertBenchmarkWithRounds(benchmark)
       // With new schema, rounds will be an array
       expect(benchmark.rounds).toHaveLength(4)

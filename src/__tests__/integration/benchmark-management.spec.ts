@@ -21,9 +21,9 @@ describe('Benchmark Management', () => {
     it('completes full benchmark lifecycle from creation to deletion', async () => {
       const app = await createTestApp()
 
-      // Create benchmark via API (form tested separately)
+      // Create benchmark via API (form tested separately) - use unique name to avoid collision with seeded benchmarks
       const benchmark = await createForTimeBenchmark({
-        name: 'Fran',
+        name: 'Test Fran Lifecycle',
         exercises: [
           { name: 'Thrusters', reps: 21 },
           { name: 'Pull-ups', reps: 21 },
@@ -32,7 +32,7 @@ describe('Benchmark Management', () => {
 
       // Navigate to detail and verify
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
-      await app.benchmarkDetail.waitForLoad('Fran')
+      await app.benchmarkDetail.waitForLoad('Test Fran Lifecycle')
       app.benchmarkDetail.assertExerciseExists('Thrusters', 21)
       app.benchmarkDetail.assertExerciseExists('Pull-ups', 21)
 
@@ -54,11 +54,11 @@ describe('Benchmark Management', () => {
 
       // Edit benchmark
       await app.benchmarks.navigateToTab()
-      await app.benchmarks.clickBenchmarkCard('Fran')
+      await app.benchmarks.clickBenchmarkCard('Test Fran Lifecycle')
       await app.benchmarkDetail.clickEdit()
-      await app.benchmarkDetail.editBenchmarkName('Modified Fran')
+      await app.benchmarkDetail.editBenchmarkName('Modified Test Fran')
       await app.benchmarkDetail.clickSave()
-      await expect.element(page.getByText('Modified Fran')).toBeVisible()
+      await expect.element(page.getByText('Modified Test Fran')).toBeVisible()
 
       // Delete benchmark
       await app.benchmarkDetail.clickDelete()
@@ -75,20 +75,22 @@ describe('Benchmark Management', () => {
 
   describe('Creation', () => {
     it('creates benchmark with single exercise', async () => {
+      // Use unique name to avoid collision with seeded benchmarks
       await createForTimeBenchmark({
-        name: 'Helen',
+        name: 'Test Single Exercise',
         exercises: [{ name: 'Run', reps: 400 }],
       })
 
       const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks).toHaveLength(1)
-      expect(benchmarks[0]?.name).toBe('Helen')
-      expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(1)
+      const benchmark = benchmarks.find((b) => b.name === 'Test Single Exercise')
+      expect(benchmark).toBeDefined()
+      expect(benchmark?.rounds[0]?.exercises).toHaveLength(1)
     })
 
     it('creates benchmark with multiple exercises and rounds', async () => {
+      // Use unique name to avoid collision with seeded benchmarks
       await createRoundsBenchmark({
-        name: 'Cindy',
+        name: 'Test Multi Round',
         rounds: 5,
         exercises: [
           { name: 'Pull-ups', reps: 5 },
@@ -98,8 +100,10 @@ describe('Benchmark Management', () => {
       })
 
       const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks[0]?.rounds).toHaveLength(5)
-      expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(3)
+      const benchmark = benchmarks.find((b) => b.name === 'Test Multi Round')
+      expect(benchmark).toBeDefined()
+      expect(benchmark?.rounds).toHaveLength(5)
+      expect(benchmark?.rounds[0]?.exercises).toHaveLength(3)
     })
 
     it('validates form: cannot save without exercises', async () => {

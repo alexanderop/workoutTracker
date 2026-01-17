@@ -46,14 +46,14 @@ function validateUniqueExercises<const T extends ReadonlyArray<PopularExercise>>
  * Organized by: MUSCLE GROUP → EQUIPMENT TYPE (alphabetically sorted)
  *
  * SUMMARY:
- * - CHEST (16): barbell: 1, dumbbell: 1, cable: 2, machine: 5, bodyweight: 7
- * - BACK (21): barbell: 2, kettlebell: 5, cable: 2, machine: 6, bodyweight: 5, club: 1
- * - SHOULDERS (27): barbell: 1, dumbbell: 1, kettlebell: 7, cable: 2, machine: 4, bodyweight: 4, club: 7, battle-rope: 1
+ * - CHEST (17): barbell: 1, dumbbell: 1, cable: 2, machine: 5, bodyweight: 8
+ * - BACK (22): barbell: 2, kettlebell: 5, cable: 2, machine: 7, bodyweight: 5, club: 1
+ * - SHOULDERS (30): barbell: 4, dumbbell: 1, kettlebell: 7, cable: 2, machine: 4, bodyweight: 4, club: 7, battle-rope: 1
  * - ARMS (9): dumbbell: 1, cable: 3, machine: 4, bodyweight: 1
- * - LEGS (72): barbell: 8, dumbbell: 9, kettlebell: 3, cable: 3, machine: 26, bodyweight: 23
+ * - LEGS (76): barbell: 10, dumbbell: 10, kettlebell: 3, cable: 3, machine: 26, bodyweight: 24
  * - CORE (28): kettlebell: 3, dumbbell: 1, cable: 2, bodyweight: 21, club: 1
  * ───────────────────────────────────────────────────────────────────────────────
- * TOTAL: 173 exercises (including 10 isometric holds)
+ * TOTAL: 182 exercises (including 10 isometric holds)
  */
 export const popularExercises = validateUniqueExercises([
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -77,13 +77,14 @@ export const popularExercises = validateUniqueExercises([
   { name: 'Smith Machine Bench Press', equipment: 'machine', muscle: 'chest', type: 'compound', metrics: 'weight-reps' },
   { name: 'Smith Machine Incline Press', equipment: 'machine', muscle: 'chest', type: 'compound', metrics: 'weight-reps' },
 
-  // --- Chest: Bodyweight (7) ---
+  // --- Chest: Bodyweight (8) ---
   { name: 'Beast Push-up', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Clap Push-ups', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Decline Push-ups', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Diamond Push-ups', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Dips', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Push-ups', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
+  { name: 'Ring Dip', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   { name: 'Wide Push-ups', equipment: 'bodyweight', muscle: 'chest', type: 'compound', metrics: 'reps-only' },
   // ═══════════════════════════════════════════════════════════════════════════════
   // BACK
@@ -104,11 +105,12 @@ export const popularExercises = validateUniqueExercises([
   { name: 'Lat Pulldown', equipment: 'cable', muscle: 'back', type: 'isolation', metrics: 'weight-reps' },
   { name: 'Straight Arm Pulldown', equipment: 'cable', muscle: 'back', type: 'isolation', metrics: 'weight-reps' },
 
-  // --- Back: Machine (6) ---
+  // --- Back: Machine (7) ---
   { name: 'Assisted Pull-up Machine', equipment: 'machine', muscle: 'back', type: 'compound', metrics: 'weight-reps' },
   { name: 'Back Extension Machine', equipment: 'machine', muscle: 'back', type: 'isolation', metrics: 'weight-reps' },
   { name: 'Chest Supported Row', equipment: 'machine', muscle: 'back', type: 'compound', metrics: 'weight-reps' },
   { name: 'Reverse Hyper Machine', equipment: 'machine', muscle: 'back', type: 'isolation', metrics: 'weight-reps' },
+  { name: 'Rowing Machine', equipment: 'machine', muscle: 'back', type: 'cardio', metrics: 'distance-duration' },
   { name: 'Seated Row Machine', equipment: 'machine', muscle: 'back', type: 'compound', metrics: 'weight-reps' },
   { name: 'T-Bar Row Machine', equipment: 'machine', muscle: 'back', type: 'compound', metrics: 'weight-reps' },
 
@@ -125,7 +127,10 @@ export const popularExercises = validateUniqueExercises([
   // SHOULDERS
   // ═══════════════════════════════════════════════════════════════════════════════
 
-  // --- Shoulders: Barbell (1) ---
+  // --- Shoulders: Barbell (4) ---
+  { name: 'Barbell Clean', equipment: 'barbell', muscle: 'shoulders', type: 'compound', metrics: 'weight-reps' },
+  { name: 'Barbell Snatch', equipment: 'barbell', muscle: 'shoulders', type: 'compound', metrics: 'weight-reps' },
+  { name: 'Clean & Jerk', equipment: 'barbell', muscle: 'shoulders', type: 'compound', metrics: 'weight-reps' },
   { name: 'Overhead Press', equipment: 'barbell', muscle: 'shoulders', type: 'compound', metrics: 'weight-reps' },
 
   // --- Shoulders: Dumbbell (1) ---
@@ -191,17 +196,19 @@ export const popularExercises = validateUniqueExercises([
   // LEGS
   // ═══════════════════════════════════════════════════════════════════════════════
 
-  // --- Legs: Barbell (8) ---
+  // --- Legs: Barbell (10) ---
   { name: 'Barbell Calf Raises', equipment: 'barbell', muscle: 'legs', type: 'isolation', metrics: 'weight-reps' },
   { name: 'Barbell Good Mornings', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Barbell Hip Thrust', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Barbell Lunges', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Barbell Romanian Deadlift', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
+  { name: 'Barbell Thruster', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Front Squat', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
+  { name: 'Overhead Squat', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Squat', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Sumo Deadlift', equipment: 'barbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
 
-  // --- Legs: Dumbbell (9) ---
+  // --- Legs: Dumbbell (10) ---
   { name: 'Dumbbell Bulgarian Split Squat', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Dumbbell Calf Raises', equipment: 'dumbbell', muscle: 'legs', type: 'isolation', metrics: 'weight-reps' },
   { name: 'Dumbbell Goblet Squat', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
@@ -211,6 +218,7 @@ export const popularExercises = validateUniqueExercises([
   { name: 'Dumbbell Single Leg Deadlift', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Dumbbell Step-ups', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Dumbbell Sumo Squat', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
+  { name: 'Wall Ball', equipment: 'dumbbell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
 
   // --- Legs: Kettlebell (3) ---
   { name: 'Kettlebell Goblet Squat', equipment: 'kettlebell', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
@@ -250,13 +258,14 @@ export const popularExercises = validateUniqueExercises([
   { name: 'V-Squat Machine', equipment: 'machine', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
   { name: 'Vertical Leg Press', equipment: 'machine', muscle: 'legs', type: 'compound', metrics: 'weight-reps' },
 
-  // --- Legs: Bodyweight (22) ---
+  // --- Legs: Bodyweight (24) ---
   { name: 'Bodyweight Squat', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'Bulgarian Split Squat', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'Burpees', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
   { name: 'Butt Kicks', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
   { name: 'Calf Raises', equipment: 'bodyweight', muscle: 'legs', type: 'isolation', metrics: 'reps-only' },
   { name: 'Donkey Kicks', equipment: 'bodyweight', muscle: 'legs', type: 'isolation', metrics: 'reps-only' },
+  { name: 'Double-under', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
   { name: 'Glute Bridge Hold', equipment: 'bodyweight', muscle: 'legs', type: 'isometric', metrics: 'duration' },
   { name: 'Glute Bridges', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'High Knees', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
@@ -267,6 +276,7 @@ export const popularExercises = validateUniqueExercises([
   { name: 'Lunges', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'Pistol Squats', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'Reverse Lunges', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
+  { name: 'Run', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'distance-duration' },
   { name: 'Single Leg Glute Bridge', equipment: 'bodyweight', muscle: 'legs', type: 'compound', metrics: 'reps-only' },
   { name: 'Sprawls', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
   { name: 'Squat Thrusts', equipment: 'bodyweight', muscle: 'legs', type: 'cardio', metrics: 'reps-only' },
