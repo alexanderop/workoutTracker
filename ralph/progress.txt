@@ -204,3 +204,61 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-006: Create assertion abstraction for expect.element()
 
 ---
+
+## US-006: Create assertion abstraction for expect.element()
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Added `@testing-library/jest-dom: ^6.6.3` to pnpm-workspace.yaml catalog and package.json
+
+2. Created `src/__tests__/helpers/assertions/types.ts` with:
+   - `ExpectPollOptions` interface - timeout, interval, message options
+   - `NegatedElementAssertion` interface - for .not chaining
+   - `ElementAssertion` interface - main element assertion interface with:
+     - `toBeInTheDocument()`, `toBeVisible()`, `toBeDisabled()`
+     - `toHaveTextContent()`, `toHaveValue()`, `toHaveAttribute()`
+   - `PollAssertion<T>` interface - for async value assertions with:
+     - `toBe()`, `toEqual()`, `toBeTruthy()`, `toBeFalsy()`
+     - `toBeGreaterThan()`, `toBeGreaterThanOrEqual()`, `toBeLessThan()`, `toContain()`
+   - `ExpectElementFn` and `ExpectPollFn` type definitions
+
+3. Created `src/__tests__/helpers/assertions/browser.ts` with:
+   - `BrowserNegatedElementAssertion` class wrapping native expect.element().not
+   - `BrowserElementAssertion` class wrapping native expect.element()
+   - `BrowserPollAssertion<T>` class wrapping native expect.poll()
+   - Type guards: `isBrowserLocator`, `isHTMLElement`, `isSVGElement`, `isLocator`
+   - `expectElement()` function - delegates to Vitest's expect.element() with retry
+   - `expectPoll()` function - delegates to Vitest's expect.poll() with polling
+
+4. Created `src/__tests__/helpers/assertions/happy-dom.ts` with:
+   - `HappyDomNegatedElementAssertion` class using waitFor + jest-dom matchers
+   - `HappyDomElementAssertion` class using waitFor + jest-dom matchers
+   - `HappyDomPollAssertion<T>` class using waitFor for polling behavior
+   - Type guards matching browser implementation
+   - `getElement()` helper to extract elements from Locators
+   - `toWaitForOptions()` helper to convert poll options to waitFor options
+   - `expectElement()` function - uses waitFor() from @testing-library
+   - `expectPoll()` function - uses waitFor() for retry behavior
+
+5. Created `src/__tests__/helpers/assertions/index.ts` with:
+   - Re-exports `expectElement` and `expectPoll` from browser implementation
+   - Type exports for all assertion interfaces
+
+### Key decisions:
+- Used waitFor() from @testing-library for Happy-DOM retry behavior (matches Vitest's expect.element() semantics)
+- Abstracted both element and poll assertions (expect.element() and expect.poll())
+- Included comprehensive matcher set based on actual codebase usage analysis
+- Used ternary operators instead of if-else per codebase style
+- Poll assertion class uses async wrapper to handle `T | Promise<T>` getter types
+
+### Key discoveries:
+- @testing-library/jest-dom is not bundled with @testing-library/vue (only a devDep)
+- Vitest's expect.element() is shorthand for expect.poll(() => locator.element())
+- Default timeout is 1000ms with 50ms interval in Vitest
+- waitFor from @testing-library uses similar polling semantics
+
+### Next steps:
+- US-007: Add Happy-DOM setup file with polyfills (import jest-dom matchers)
+
+---

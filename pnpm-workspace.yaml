@@ -69,6 +69,7 @@ catalogs:
     "@vue/test-utils": ^2.4.6
     "@testing-library/vue": ^8.1.0
     "@testing-library/user-event": ^14.6.1
+    "@testing-library/jest-dom": ^6.6.3
     jsdom: ^27.4.0
     happy-dom: ^18.0.1
     fake-indexeddb: ^6.2.5
