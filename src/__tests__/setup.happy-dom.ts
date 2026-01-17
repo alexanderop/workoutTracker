@@ -29,17 +29,14 @@ Object.defineProperty(globalThis, 'matchMedia', {
 class MockIntersectionObserver {
   readonly root: Element | null = null
   readonly rootMargin: string = ''
-  readonly thresholds: readonly number[] = []
+  readonly thresholds: ReadonlyArray<number> = []
 
-  constructor(
-    _callback: IntersectionObserverCallback,
-    _options?: IntersectionObserverInit,
-  ) {}
+  
 
   observe(_target: Element): void {}
   unobserve(_target: Element): void {}
   disconnect(): void {}
-  takeRecords(): IntersectionObserverEntry[] {
+  takeRecords(): Array<IntersectionObserverEntry> {
     return []
   }
 }
@@ -51,7 +48,7 @@ Object.defineProperty(globalThis, 'IntersectionObserver', {
 
 // Mock ResizeObserver for responsive components
 class MockResizeObserver {
-  constructor(_callback: ResizeObserverCallback) {}
+  
 
   observe(_target: Element): void {}
   unobserve(_target: Element): void {}

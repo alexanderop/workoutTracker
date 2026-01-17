@@ -110,3 +110,52 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-004: Implement Happy-DOM Locator using @testing-library/vue
 
 ---
+
+## US-004: Implement Happy-DOM Locator using testing-library
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Added dependencies to pnpm-workspace.yaml catalog (testing section):
+   - `@testing-library/vue: ^8.1.0`
+   - `@testing-library/user-event: ^14.6.1`
+
+2. Added dependencies to package.json devDependencies
+
+3. Created `src/__tests__/helpers/locator/happy-dom.ts` with:
+   - `HappyDomLocator` class implementing the `Locator` interface
+   - Query methods using `screen.queryAllByRole`, `screen.queryAllByText`, etc. from @testing-library/vue
+   - Interaction methods using `userEvent.setup()` instance from @testing-library/user-event
+   - Element access methods (element, elements, query) with proper error handling
+   - Collection methods (all, nth, first, last) using index-based filtering
+   - Chaining methods (and, or, filter) using Set/Map-based element comparison
+
+4. Created `HappyDomPage` class implementing the `Page` interface
+   - Uses `screen` from @testing-library/vue for root-level queries
+   - Returns wrapped HappyDomLocator instances
+
+5. Helper functions for filtering and type safety:
+   - `textMatches()` - handles string/regex matching with optional exact mode
+   - `filterByText()` - filters elements by hasText/hasNotText options
+   - `filterByLocator()` - filters elements by has/hasNot locator options
+   - `applyFilters()` - combines all filters
+   - `toHTMLElements()` - safely converts Element[] to HTMLElement[]
+   - `getHTMLElementFromLocator()` - extracts HTMLElement with type guard
+
+### Key decisions:
+- Used `queryAllBy*` methods instead of `getBy*` to avoid throwing on zero/multiple matches
+- Created lazy query functions that re-execute on each access for fresh results
+- Implemented `queryWithin(container)` method for has/hasNot support
+- Testing-library's `getByRole` doesn't support `exact` option - omitted from conversion
+- Used type guards instead of type assertions for safer type handling
+- Separated array handling in `convertSelectValues` by element type for type safety
+
+### Key discoveries:
+- @testing-library/vue uses different option names (e.g., `hidden` vs `includeHidden`)
+- userEvent requires `.setup()` to create an instance before interactions
+- Chained queries need custom implementation since testing-library doesn't support locator chaining
+
+### Next steps:
+- US-005: Create render abstraction layer
+
+---

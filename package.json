@@ -83,6 +83,8 @@
     "@vue/eslint-config-prettier": "catalog:lint",
     "@vue/eslint-config-typescript": "catalog:lint",
     "@vue/test-utils": "catalog:testing",
+    "@testing-library/vue": "catalog:testing",
+    "@testing-library/user-event": "catalog:testing",
     "@vue/tsconfig": "catalog:build",
     "archunit": "catalog:testing",
     "axe-core": "catalog:testing",
