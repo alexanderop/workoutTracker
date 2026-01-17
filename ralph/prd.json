@@ -143,7 +143,7 @@
       ],
       "priority": 9,
       "passes": false,
-      "notes": ""
+      "notes": "BLOCKED: Page Objects cannot import from abstraction layer due to type conflicts. The abstraction layer exports native Vitest objects in browser mode (for backward compatibility per US-008), but the TypeScript types are the abstraction layer types. This causes type mismatches when Page Objects try to use expect.element() with abstracted Locator types. Recommended approach: Skip US-009, proceed directly to US-010. Integration tests should import from the abstraction layer, and Page Objects should continue importing from vitest/browser until a type-safe unified export is implemented."
     },
     {
       "id": "US-010",

@@ -345,3 +345,50 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-009: Update Page Objects to use abstraction layer
 
 ---
+
+## US-009: Update Page Objects to use abstraction layer
+**Status**: BLOCKED
+**Date**: 2026-01-17
+
+### Investigation:
+1. Attempted to update all 14 Page Object files in `src/__tests__/helpers/pages/`:
+   - CommonPO.ts, ActiveWorkoutPO.ts, SetRowPO.ts, BenchmarksPO.ts, BuilderPO.ts
+   - BenchmarkDetailPO.ts, BenchmarkFormPO.ts, ExercisesPO.ts, LogPastWorkoutPO.ts
+   - NumericInputModalPO.ts, ProgressionsPO.ts, QueuePO.ts, SetContextMenuPO.ts, WeightPO.ts
+
+2. Changes attempted:
+   - Changed imports from `vitest/browser` to `../locator`
+   - Changed `expect.element()` to `expectElement()` from `../assertions`
+   - Changed `userEvent.fill(locator, text)` to `locator.fill(text)` (abstraction API)
+   - Changed `userEvent.click(locator)` to `locator.click()` (abstraction API)
+
+### Blocking issue discovered:
+The abstraction layer exports native Vitest objects in browser mode for backward compatibility (per US-008). However, TypeScript sees the abstraction layer's types (Locator, Page, etc.), not the native Vitest types. This creates a fundamental type mismatch:
+
+1. **Runtime**: In browser mode, `page` is the native Vitest page object
+2. **TypeScript**: Types are the abstraction layer's custom `Page`/`Locator` interfaces
+3. **Problem**: Native Vitest Locator has methods not in our interface (tripleClick, unhover, dropTo, length)
+4. **Error examples**:
+   - `Type 'Locator' is missing the following properties from type 'Locator': length, tripleClick, unhover, dropTo...`
+   - `userEvent.fill` doesn't exist on testing-library's userEvent
+   - `userEvent.click(locator)` expects Element but receives abstraction Locator
+
+### Test results after changes:
+- Tests failed with: "Cannot read properties of null (reading 'insertBefore')"
+- After reverting: All 829 tests pass
+
+### Resolution:
+Reverted all Page Object changes. Updated PRD notes to mark US-009 as BLOCKED.
+
+### Recommended approach:
+Skip US-009 and proceed directly to US-010. Integration tests should import from the abstraction layer directly. Page Objects should continue importing from `vitest/browser` until a type-safe unified export system is implemented.
+
+**Alternative for future**: Create a separate type-safe export path that:
+1. In browser mode: Re-exports native Vitest types (not abstraction types)
+2. In Happy-DOM mode: Exports abstraction types
+This requires conditional type exports, which TypeScript doesn't directly support.
+
+### Next steps:
+- US-010: Migrate first batch of integration tests (10 simplest)
+
+---
