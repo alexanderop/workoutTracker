@@ -381,13 +381,21 @@ class BrowserPage implements Page {
 
 /**
  * The page object for browser mode.
- * Drop-in replacement for `page` from `vitest/browser`.
+ * We export the native page directly (not wrapped) for backward compatibility
+ * with Vitest's expect.element() which expects native Locator instances.
+ *
+ * The BrowserPage class is kept for future use when tests migrate to the
+ * abstraction layer (US-010+).
  */
-export const page: Page = new BrowserPage()
+
 
 /**
  * Export the BrowserLocator class for instanceof checks
  */
 export { BrowserLocator }
 
-export {userEvent} from 'vitest/browser'
+// Kept for future use but not exported as default page
+const _wrappedPage: Page = new BrowserPage()
+void _wrappedPage
+
+export { userEvent, page } from 'vitest/browser'

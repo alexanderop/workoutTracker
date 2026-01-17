@@ -131,20 +131,25 @@ class BrowserRenderResult implements RenderResult {
 
 /**
  * Render a Vue component in browser mode.
- * Wraps vitest-browser-vue's render function with the abstraction layer.
+ * Returns the native vitest-browser-vue render result directly for backward
+ * compatibility with Vitest's expect.element() which expects native Locator instances.
+ *
+ * The BrowserRenderResult class is kept for future use when tests migrate to
+ * the abstraction layer (US-010+).
  *
  * @param component - The Vue component to render
  * @param options - Render options (props, global plugins, etc.)
- * @returns A RenderResult with unified query methods and cleanup
+ * @returns The native render result
  */
 export function render(
   component: Component,
   options?: RenderOptions,
-): RenderResult {
-  const nativeResult = nativeRender(component, {
+): NativeRenderResult {
+  return nativeRender(component, {
     props: options?.props,
     global: options?.global,
   })
-
-  return new BrowserRenderResult(nativeResult)
 }
+
+// Keep BrowserRenderResult for future use but not used by default
+void BrowserRenderResult

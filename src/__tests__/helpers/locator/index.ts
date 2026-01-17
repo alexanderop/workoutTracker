@@ -31,10 +31,11 @@ import type { Page } from './types'
 const isBrowserMode =
   globalThis.window !== undefined && '__vitest_browser__' in globalThis
 
-// Import the correct implementation based on environment
-// Using conditional require to avoid loading browser-specific imports in happy-dom
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const impl = isBrowserMode ? require('./browser') : require('./happy-dom')
+// Use top-level await with dynamic import to load the correct implementation
+// This works in ESM environments (both Node and browser)
+const impl = isBrowserMode
+  ? await import('./browser')
+  : await import('./happy-dom')
 
 /**
  * Page object for querying elements.

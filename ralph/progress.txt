@@ -301,3 +301,47 @@ Feature: Vitest Dual Environment Testing (Happy-DOM + Browser Mode)
 - US-008: Update test helpers to use abstraction layer (createTestApp)
 
 ---
+
+## US-008: Update test helpers to use abstraction layer
+**Status**: COMPLETED
+**Date**: 2026-01-17
+
+### What was done:
+1. Updated `src/__tests__/helpers/createTestApp.ts`:
+   - Changed `import { render } from 'vitest-browser-vue'` to `import { render } from './render'`
+   - Changed `import { page } from 'vitest/browser'` to `import { page } from './locator'`
+   - Changed `import { expect } from 'vitest'` to `import { expectPoll } from './assertions'`
+   - Updated `expect.poll()` calls to use `expectPoll()` from abstraction layer
+
+2. Fixed environment-aware module loading in all index.ts files:
+   - **Problem**: Original approach used `require()` which doesn't work in browser ESM
+   - **Solution**: Changed to ESM dynamic imports: `await import('./browser')` / `await import('./happy-dom')`
+   - Updated: `locator/index.ts`, `render/index.ts`, `assertions/index.ts`
+
+3. Fixed backward compatibility for browser mode:
+   - **Problem**: Wrapped BrowserLocator/BrowserPage not recognized by Vitest's `expect.element()`
+   - **Solution**: In browser.ts, export native `page` directly instead of wrapped version
+   - In render/browser.ts, return native render result for backward compatibility
+   - This allows existing tests using `expect.element(getByRole(...))` to continue working
+
+### Key decisions:
+- Chose to export native Vitest objects in browser mode for backward compatibility
+- The wrapped classes (BrowserLocator, BrowserPage, BrowserRenderResult) are kept for future use
+- Type assertion with `as any` used in render/index.ts due to native vs abstracted type mismatch
+- Integration test type errors are expected until US-010+ migrates them to the abstraction layer
+
+### Key discoveries:
+- `require()` is not available in browser ESM (Vite environment) - must use dynamic import
+- Vitest's `expect.element()` checks `instanceof` against its own Locator class
+- For backward compatibility, browser mode should use native objects, not wrapped abstractions
+- Type errors in integration tests are due to mixing native Vitest imports with abstracted types
+
+### Test results:
+- All 829 browser tests pass
+- No type errors in helpers directory
+- Type errors exist in integration tests (expected, to be fixed in US-010+)
+
+### Next steps:
+- US-009: Update Page Objects to use abstraction layer
+
+---

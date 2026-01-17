@@ -1,9 +1,9 @@
 import type { RouteLocationRaw, Router } from 'vue-router'
-import { render } from 'vitest-browser-vue'
-import { page } from 'vitest/browser'
-import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { render } from './render'
+import { page } from './locator'
+import { expectPoll } from './assertions'
 import App from '@/App.vue'
 import { setupOnboardingGuard } from '@/features/onboarding/setupOnboardingGuard'
 import { routes } from '@/router'
@@ -88,9 +88,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   // Wait for app initialization to complete (exercises seeding and loading)
   const exercisesStore = useExercisesStore()
-  await expect
-    .poll(() => exercisesStore.customExercises.length, { timeout: 5000 })
-    .toBeGreaterThan(0)
+  await expectPoll(() => exercisesStore.customExercises.length, { timeout: 5000 }).toBeGreaterThan(0)
 
   // Create context for page objects
   const context = { router }

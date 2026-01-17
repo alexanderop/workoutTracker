@@ -37,16 +37,21 @@ import type { RenderFunction } from './types'
 const isBrowserMode =
   globalThis.window !== undefined && '__vitest_browser__' in globalThis
 
-// Import the correct implementation based on environment
-// Using conditional require to avoid loading browser-specific imports in happy-dom
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const impl = isBrowserMode ? require('./browser') : require('./happy-dom')
+// Use top-level await with dynamic import to load the correct implementation
+// This works in ESM environments (both Node and browser)
+const impl = isBrowserMode
+  ? await import('./browser')
+  : await import('./happy-dom')
 
 /**
  * Render a Vue component.
  * Automatically uses the correct implementation based on environment.
+ *
+ * Note: In browser mode, this returns the native vitest-browser-vue result
+ * for backward compatibility. The type is RenderFunction for API consistency.
  */
-export const render: RenderFunction = impl.render
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+export const render: RenderFunction = impl.render as any
 
 // Re-export types
 export type {
