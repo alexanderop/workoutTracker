@@ -1570,3 +1570,27 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 11 tests in timer-edge-cases.spec.ts pass
 - Browser mode: Tests run in browser via default project (integration tests are included in both projects)
 
+### Fix 44: timed-block-workflows.spec.ts userEvent.fill with Locators (2026-01-18)
+**Test fixed:** `filters exercises when searching in add block dialog` in `timed-block-workflows.spec.ts`
+
+**Issue:** The test was calling `userEvent.fill(page.getByRole('textbox'), 'barbell row')` where `page.getByRole('textbox')` returns a Locator object instead of an Element. In Happy-DOM mode, `userEvent.fill()` in the locator helper module calls `user.clear(element)` and `user.type(element, text)` from `@testing-library/user-event`, which expects DOM Elements, not Locator objects, causing:
+```
+TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed `userEvent.fill(locator, text)` to use the Locator's built-in `.fill()` method:
+
+```ts
+// Before:
+await userEvent.fill(page.getByRole('textbox'), 'barbell row')
+
+// After:
+await page.getByRole('textbox').fill('barbell row')
+```
+
+**Verification:**
+- Happy-DOM: Test `filters exercises when searching in add block dialog` passes
+- Browser mode: Test passes (included in 14 passed tests)
+

@@ -74,7 +74,7 @@ describe('Timed Block Workflows', () => {
       await expectElement(page.getByText('Barbell Row')).toBeInTheDocument()
 
       // Type in search input to filter
-      await userEvent.fill(page.getByRole('textbox'), 'barbell row')
+      await page.getByRole('textbox').fill('barbell row')
 
       // Only matching exercise should remain
       await expectElement(page.getByText('Barbell Row')).toBeVisible()
