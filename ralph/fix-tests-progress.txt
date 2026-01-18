@@ -927,3 +927,66 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 6 tests pass
 - Browser mode: All 6 tests pass
 
+### Fix 28: isometric-prefill.spec.ts browser-only APIs and userEvent with Locators (2026-01-18)
+**Tests fixed:** 3 tests in `isometric-prefill.spec.ts` (first test was failing, other 2 were blocked)
+
+**Issue:** The test file had two problems:
+1. Used `expect.element()` and `expect.poll()` which are browser-only APIs (Vitest browser mode), causing:
+```
+TypeError: __vite_ssr_import_2__.expect.element is not a function
+```
+
+2. Used `userEvent.click(locator)` and `userEvent.fill(locator, text)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+**Fix:**
+1. Changed `expect.element()` to use the project's `expectElement` abstraction:
+```ts
+// Before:
+await expect.element(page.getByRole('table')).toBeVisible()
+
+// After:
+await expectElement(page.getByRole('table')).toBeVisible()
+```
+
+2. Changed `expect.poll()` to use the project's `expectPoll` abstraction:
+```ts
+// Before:
+await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+
+// After:
+await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
+```
+
+3. Changed `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+```ts
+// Before:
+await userEvent.click(common.getDialogButton('Wall Sit'))
+await userEvent.click(completeButton1)
+
+// After:
+await common.getDialogButton('Wall Sit').click()
+await completeButton1.click()
+```
+
+4. Changed `userEvent.fill(locator, text)` to use the Locator's built-in `.fill()` method:
+```ts
+// Before:
+await userEvent.fill(weightInput1, '5')
+await userEvent.fill(durationInput1, '20')
+
+// After:
+await weightInput1.fill('5')
+await durationInput1.fill('20')
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: First 2 tests pass, third test fails with unrelated issue (ECONNREFUSED network error)
+- Browser mode: All 3 tests pass
+
+**Note:** The third test (`completes full workflow: workout -> save -> new workout with prefill`) has a different failure in Happy-DOM mode unrelated to browser-only APIs - it appears to be an application logic or test setup issue that should be addressed in a separate iteration.
+
