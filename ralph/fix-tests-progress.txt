@@ -1251,3 +1251,31 @@ await startButton.click()
 - Happy-DOM: Test `modifies default set count and reflects in started workout` passes
 - Browser mode: All 16 tests in template-flow.spec.ts pass
 
+### Fix 36: template-flow.spec.ts "discards unsaved changes" userEvent with Locators (2026-01-18)
+**Test fixed:** `discards unsaved changes when navigating away` in `template-flow.spec.ts`
+
+**Issue:** The test was calling `userEvent.clear(nameInput)` and `userEvent.fill(nameInput, 'Modified Name')` where `nameInput` is a Locator object instead of an Element. However, `userEvent` was not imported in this file, causing:
+```
+ReferenceError: userEvent is not defined
+```
+
+Even if it were imported, in Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects.
+
+**Fix:** Changed `userEvent.clear(locator)` and `userEvent.fill(locator, text)` to use the Locator's built-in methods:
+
+```ts
+// Before:
+await userEvent.clear(nameInput)
+await userEvent.fill(nameInput, 'Modified Name')
+
+// After:
+await nameInput.clear()
+await nameInput.fill('Modified Name')
+```
+
+**Verification:**
+- Happy-DOM: Test `discards unsaved changes when navigating away` passes
+- Browser mode: All 16 tests in template-flow.spec.ts pass
+
+**Note:** The file still has other tests that use `userEvent.fill(locator)` patterns (e.g., `trims whitespace from template name when saving` at line 639) which will need to be fixed in subsequent iterations.
+

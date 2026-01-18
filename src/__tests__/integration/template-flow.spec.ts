@@ -596,8 +596,8 @@ describe('Template Flow', () => {
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Modified Name')
+      await nameInput.clear()
+      await nameInput.fill('Modified Name')
 
       // Verify input changed
       await expectPoll(async () => {
