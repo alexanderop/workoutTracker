@@ -719,3 +719,42 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 9 tests in exercise-picker.spec.ts pass
 - Browser mode: All 9 tests pass
 
+### Fix 23: exercise-progress-view.spec.ts browser-only charting APIs (2026-01-18)
+**Tests fixed:** 5 tests in `exercise-progress-view.spec.ts`
+
+**Issue:** The test file renders `ExerciseProgressView` which uses `ExerciseProgressChart` component with `@unovis/vue` charting library. This library requires browser-specific APIs that don't work in Happy-DOM:
+
+1. `MutationObserver` - used by `@unovis/ts` tooltip component with private class members
+2. SVG transforms - `svgNode.transform.baseVal.consolidate()` is not a function in Happy-DOM
+3. `getComputedStyle` - fails on undefined elements during component unmount
+
+The error occurred during the `unmounted` lifecycle hook of the tooltip component:
+```
+TypeError: Cannot read private member #listeners from an object whose class did not declare it
+at Proxy.disconnect (MutationObserver.js:100:18)
+at Proxy.destroy (@unovis/ts/components/tooltip/index.js:356:32)
+```
+
+Additional uncaught exceptions during cleanup:
+```
+TypeError: svgNode.transform.baseVal.consolidate is not a function
+TypeError: Cannot read properties of undefined (reading 'Symbol(computedStyle)')
+```
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+// - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+// - getComputedStyle calls fail on undefined elements during component unmount
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('ExerciseProgressView', () => {
+```
+
+**Verification:**
+- Happy-DOM: 5 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: All 5 tests pass
+

@@ -16,7 +16,19 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
 
-describe('ExerciseProgressView', () => {
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+// - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+// - getComputedStyle calls fail on undefined elements during component unmount
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('ExerciseProgressView', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
