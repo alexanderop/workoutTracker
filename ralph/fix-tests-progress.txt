@@ -1035,3 +1035,33 @@ Also fixed related issues in the same file:
 - Happy-DOM: All 3 tests in isometric-prefill.spec.ts pass
 - Browser mode: All 3 tests pass
 
+### Fix 30: benchmark-execution.spec.ts userEvent.click with Locators (2026-01-18)
+**Test fixed:** `displays exercise queue drawer with status updates` in `benchmark-execution.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(page.getByRole('button', ...))` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+
+```ts
+// Before:
+await userEvent.click(page.getByRole('button', { name: /workout options/i }))
+await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
+await userEvent.keyboard('{Escape}')
+
+// After:
+await page.getByRole('button', { name: /workout options/i }).click()
+await page.getByRole('menuitem', { name: /view exercises/i }).click()
+await page.getByRole('button', { name: /close/i }).click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 7 tests in benchmark-execution.spec.ts pass
+- Browser mode: All tests pass
+

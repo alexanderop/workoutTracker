@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -169,24 +169,24 @@ describe('Benchmark Execution', () => {
       await startBenchmarkWorkout(app, benchmark.id)
 
       // Open queue drawer
-      await userEvent.click(page.getByRole('button', { name: /workout options/i }))
+      await page.getByRole('button', { name: /workout options/i }).click()
       await expectElement(page.getByRole('menuitem', { name: /view exercises/i })).toBeVisible()
-      await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
+      await page.getByRole('menuitem', { name: /view exercises/i }).click()
 
       await expectElement(page.getByRole('heading', { name: /exercise queue/i })).toBeVisible()
       expect((await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
       expect((await page.getByText(/active/i).all()).length).toBeGreaterThan(0)
 
       // Close and advance
-      await userEvent.keyboard('{Escape}')
+      await page.getByRole('button', { name: /close/i }).click()
       await expectElement(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
       await new Promise(resolve => setTimeout(resolve, 500))
 
       await completeExercise()
 
       // Reopen and verify status
-      await userEvent.click(page.getByRole('button', { name: /workout options/i }))
-      await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
+      await page.getByRole('button', { name: /workout options/i }).click()
+      await page.getByRole('menuitem', { name: /view exercises/i }).click()
       expect((await page.getByText(/completed|active/i).all()).length).toBeGreaterThan(0)
 
       app.cleanup()
