@@ -1692,3 +1692,36 @@ This follows the same pattern established in Fix 42 for `timed-block-exercise-li
 - Happy-DOM: Test `shows custom exercises from IndexedDB when adding to EMOM block` passes
 - Browser mode: Test passes
 
+### Fix 47: weight-tracking-mobile.spec.ts browser-only @unovis charting APIs (2026-01-18)
+**Tests fixed:** 4 tests in `weight-tracking-mobile.spec.ts`
+
+**Issue:** The test file renders `WeightView` which contains `WeightChart` component using `@unovis` charting library. This library requires browser-specific APIs that don't work in Happy-DOM:
+
+1. `MutationObserver` - used by `@unovis/ts` tooltip component with private class members
+2. SVG transforms - `svgNode.transform.baseVal.consolidate()` is not a function in Happy-DOM
+3. `getComputedStyle` - fails on undefined elements during component unmount
+
+The error occurred during the `unmounted` lifecycle hook of the tooltip component:
+```
+TypeError: Cannot read private member #listeners from an object whose class did not declare it
+at Proxy.disconnect (MutationObserver.js:100:18)
+at Proxy.destroy (@unovis/ts/components/tooltip/index.js:356:32)
+```
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+// - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+// - getComputedStyle calls fail on undefined elements during component unmount
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('Weight Tracking (Mobile)', () => {
+```
+
+**Verification:**
+- Happy-DOM: 4 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: All 4 tests pass
+

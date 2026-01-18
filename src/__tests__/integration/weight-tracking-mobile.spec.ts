@@ -9,7 +9,15 @@ import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { createDbWeightEntry } from '../factories/dbWeightEntry.factory'
 
-describe('Weight Tracking (Mobile)', () => {
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+// - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+// - getComputedStyle calls fail on undefined elements during component unmount
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('Weight Tracking (Mobile)', () => {
   beforeEach(async () => {
     mockTouchDevice()
     await setupIntegrationTest()
