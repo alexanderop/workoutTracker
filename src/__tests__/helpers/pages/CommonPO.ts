@@ -1,6 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
-import { expect } from 'vitest'
+import { page, userEvent } from '../locator'
+import { expectElement, expectPoll } from '../assertions'
 import type { TestContext } from '../types'
 
 /**
@@ -14,7 +14,7 @@ export class CommonPO {
    * Waits for a dialog element to appear in the DOM.
    */
   async waitForDialog(): Promise<void> {
-    await expect.element(page.getByRole('dialog')).toBeVisible()
+    await expectElement(page.getByRole('dialog')).toBeVisible()
   }
 
   /**
@@ -23,9 +23,9 @@ export class CommonPO {
    * This method waits for both the dialog element AND overlay to be removed.
    */
   async waitForDialogClose(): Promise<void> {
-    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+    await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
     // eslint-disable-next-line no-restricted-syntax -- Checking overlay data attribute, no accessible equivalent
-    await expect.poll(() => document.querySelector('[data-slot="dialog-overlay"]')).toBeNull()
+    await expectPoll(() => document.querySelector('[data-slot="dialog-overlay"]')).toBeNull()
     // Flush any pending Vue updates after dialog unmount
     await flushPromises()
   }
@@ -66,8 +66,8 @@ export class CommonPO {
    */
   async selectExercise(exerciseName: string): Promise<void> {
     const searchInput = page.getByRole('textbox')
-    await userEvent.fill(searchInput, exerciseName)
-    await expect.poll(() => this.getExactDialogButton(exerciseName)).toBeTruthy()
+    await searchInput.fill(exerciseName)
+    await expectPoll(() => this.getExactDialogButton(exerciseName)).toBeTruthy()
     await userEvent.click(this.getExactDialogButton(exerciseName))
   }
 
@@ -126,7 +126,7 @@ export class CommonPO {
    * @param pathPattern - Regular expression to match against the current route path
    */
   async waitForRoute(pathPattern: RegExp): Promise<void> {
-    await expect.poll(() => this.context.router.currentRoute.value.path).toMatch(pathPattern)
+    await expectPoll(() => this.context.router.currentRoute.value.path).toMatch(pathPattern)
   }
 
   /**
@@ -163,8 +163,8 @@ export class CommonPO {
   async navigateToWorkoutsAndClickTab(tabName: string): Promise<void> {
     await this.navigateToWorkouts()
     const tabLocator = page.getByRole('tab', { name: new RegExp(tabName, 'i') })
-    await expect.element(tabLocator).toBeVisible()
-    await userEvent.click(tabLocator)
+    await expectElement(tabLocator).toBeVisible()
+    await tabLocator.click()
   }
 
   /**
@@ -207,6 +207,6 @@ export class CommonPO {
     this.setInputValueDirectly(inputs.reps, values.reps)
     this.setInputValueDirectly(inputs.rir, values.rir)
     await flushPromises()
-    await expect.poll(() => !completeButton.hasAttribute('disabled')).toBe(true)
+    await expectPoll(() => !completeButton.hasAttribute('disabled')).toBe(true)
   }
 }

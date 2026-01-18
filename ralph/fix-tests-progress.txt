@@ -175,3 +175,46 @@ Also removed unused import `expectElement, expectPoll` from assertions.
 - Happy-DOM: 11 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: All 11 tests pass
 
+### Fix 8: CommonPO and BenchmarkFormPO userEvent.click/fill with Locators (2026-01-18)
+**Tests fixed:** `creates ForTime benchmark with variable reps across 4 rounds` in `benchmark-variable-reps.spec.ts`
+
+**Issue:** Page Objects were calling `userEvent.fill(locator, text)` and `userEvent.click(locator)` where `locator` is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed to use the Locator's built-in interaction methods instead of `userEvent`:
+
+In `CommonPO.ts`:
+```ts
+// Before:
+await userEvent.fill(searchInput, exerciseName)
+await userEvent.click(tabLocator)
+
+// After:
+await searchInput.fill(exerciseName)
+await tabLocator.click()
+```
+
+In `BenchmarkFormPO.ts`:
+```ts
+// Before:
+await userEvent.click(digitButton)
+await userEvent.click(page.getByTestId('confirm-button'))
+await userEvent.click(menuButton)
+
+// After:
+await digitButton.click()
+await page.getByTestId('confirm-button').click()
+await menuButton.click()
+```
+
+**Verification:**
+- Happy-DOM: `creates ForTime benchmark with variable reps across 4 rounds` test passes
+- Browser mode: Same test passes
+
+**Note:** This pattern of `userEvent.click(locator)` exists in other Page Objects and test files. Subsequent iterations should fix those as tests fail.
+

@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
+import { page, userEvent } from '../locator'
+import { expectElement, expectPoll } from '../assertions'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 
@@ -46,10 +47,10 @@ export class BenchmarkFormPO {
     await this.common.selectExercise(exerciseName)
 
     // Wait for exercise picker to close
-    await expect.element(page.getByRole('heading', { name: /add exercise/i })).not.toBeInTheDocument()
+    await expectElement(page.getByRole('heading', { name: /add exercise/i })).not.toBeInTheDocument()
 
     // Ensure body is clickable (no pointer-events: none from overlay)
-    await expect.poll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
+    await expectPoll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
 
     // If reps is not the default (10), edit it
     if (reps !== 10) {
@@ -62,23 +63,23 @@ export class BenchmarkFormPO {
       await userEvent.click(await lastExercise.element())
 
       // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
-      await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
 
       // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
       const repsStr = String(reps)
       for (const digit of repsStr) {
         const digitButton = page.getByRole('button', { name: digit, exact: true })
-        await userEvent.click(digitButton)
+        await digitButton.click()
       }
 
       // Confirm the value
-      await userEvent.click(page.getByTestId('confirm-button'))
+      await page.getByTestId('confirm-button').click()
 
       // Wait for modal to close
-      await expect.element(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
 
       // Ensure body is clickable
-      await expect.poll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
+      await expectPoll(() => globalThis.getComputedStyle(document.body).pointerEvents).not.toBe('none')
     }
   }
 
@@ -186,9 +187,9 @@ export class BenchmarkFormPO {
 
     // Find the menu button (there's only one visible at a time - for the current round)
     const menuButton = page.getByRole('button', { name: /options/i })
-    await userEvent.click(menuButton)
+    await menuButton.click()
     // Wait for dropdown menu to appear
-    await expect.element(page.getByRole('menu')).toBeVisible()
+    await expectElement(page.getByRole('menu')).toBeVisible()
   }
 
   /**
@@ -203,9 +204,9 @@ export class BenchmarkFormPO {
     const copyMenuItem = page.getByRole('menuitem', { name: /copy round/i })
     // Use the locator's click method (Playwright-style) instead of userEvent
     await copyMenuItem.click()
-    await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+    await expectElement(page.getByRole('menu')).not.toBeInTheDocument()
     // Wait for the round count to increase
-    await expect.poll(() => this.getRoundCount()).toBe(initialCount + 1)
+    await expectPoll(() => this.getRoundCount()).toBe(initialCount + 1)
   }
 
   /**
@@ -217,8 +218,8 @@ export class BenchmarkFormPO {
     await this.openRoundMenu(roundIndex)
     const deleteButton = await page.getByRole('menuitem', { name: /delete round/i }).element()
     await userEvent.click(deleteButton)
-    await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
-    await expect.poll(() => this.getRoundCount()).toBe(initialCount - 1)
+    await expectElement(page.getByRole('menu')).not.toBeInTheDocument()
+    await expectPoll(() => this.getRoundCount()).toBe(initialCount - 1)
   }
 
   /**
@@ -264,20 +265,20 @@ export class BenchmarkFormPO {
     await userEvent.click(await exerciseItem.element())
 
     // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
-    await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
+    await expectElement(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
 
     // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
     const repsStr = String(newReps)
     for (const digit of repsStr) {
       const digitButton = page.getByRole('button', { name: digit, exact: true })
-      await userEvent.click(digitButton)
+      await digitButton.click()
     }
 
     // Confirm the value
-    await userEvent.click(page.getByTestId('confirm-button'))
+    await page.getByTestId('confirm-button').click()
 
     // Wait for modal to close
-    await expect.element(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
+    await expectElement(page.getByRole('heading', { name: /^reps$/i })).not.toBeInTheDocument()
   }
 
   /**
@@ -287,7 +288,7 @@ export class BenchmarkFormPO {
   async assertDeleteRoundDisabled(roundIndex: number = 0): Promise<void> {
     await this.openRoundMenu(roundIndex)
     const deleteButton = page.getByRole('menuitem', { name: /delete round/i })
-    await expect.element(deleteButton).toHaveAttribute('aria-disabled', 'true')
+    await expectElement(deleteButton).toHaveAttribute('aria-disabled', 'true')
     // Close menu
     await userEvent.keyboard('{Escape}')
   }
@@ -297,6 +298,6 @@ export class BenchmarkFormPO {
    * @param message - The expected error message (partial match)
    */
   async assertValidationError(message: string | RegExp): Promise<void> {
-    await expect.element(page.getByText(message)).toBeVisible()
+    await expectElement(page.getByText(message)).toBeVisible()
   }
 }
