@@ -1,10 +1,12 @@
 import { page, userEvent } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-describe('Cardio Block Workflows', () => {
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
