@@ -1279,3 +1279,35 @@ await nameInput.fill('Modified Name')
 
 **Note:** The file still has other tests that use `userEvent.fill(locator)` patterns (e.g., `trims whitespace from template name when saving` at line 639) which will need to be fixed in subsequent iterations.
 
+### Fix 37: template-flow.spec.ts "trims whitespace from template name when saving" userEvent with Locators (2026-01-18)
+**Test fixed:** `trims whitespace from template name when saving` in `template-flow.spec.ts`
+
+**Issue:** The test was calling `userEvent.fill(locator, text)` and `userEvent.click(locator)` where the argument is a Locator object instead of an Element. However, `userEvent` was not imported in this file, causing:
+```
+ReferenceError: userEvent is not defined
+```
+
+Even if it were imported, in Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects.
+
+**Fix:** Changed `userEvent.fill(locator, text)` and `userEvent.click(locator)` to use the Locator's built-in methods:
+
+```ts
+// Before:
+await userEvent.fill(getByRole('textbox', { name: /template name/i }), '  My Template  ')
+await userEvent.click(getByRole('button', { name: /add block/i }))
+await userEvent.click(common.getDialogButton('Bench Press'))
+await userEvent.click(getByRole('button', { name: /save template/i }))
+
+// After:
+await getByRole('textbox', { name: /template name/i }).fill('  My Template  ')
+await getByRole('button', { name: /add block/i }).click()
+await common.getDialogButton('Bench Press').click()
+await getByRole('button', { name: /save template/i }).click()
+```
+
+**Verification:**
+- Happy-DOM: Test `trims whitespace from template name when saving` passes
+- Browser mode: All 16 tests in template-flow.spec.ts pass
+
+**Note:** The file still has other tests that use `userEvent.fill(locator)` patterns (e.g., `creates strength block with correct defaults` and `saves AMRAP exercises and duration config correctly`) which will need to be fixed in subsequent iterations.
+

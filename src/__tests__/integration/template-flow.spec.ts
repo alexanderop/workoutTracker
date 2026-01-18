@@ -636,16 +636,16 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Fill name with leading/trailing spaces
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), '  My Template  ')
+      await getByRole('textbox', { name: /template name/i }).fill('  My Template  ')
 
       // Add an exercise
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Save template
-      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await getByRole('button', { name: /save template/i }).click()
 
       // Verify DB has trimmed name
       await expectPoll(async () => {
