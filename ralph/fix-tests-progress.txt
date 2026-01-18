@@ -127,3 +127,27 @@ Also removed unused `expectPoll` import.
 - Happy-DOM: Tests now pass/skip correctly
 - Browser mode: `displays completion screen with final time` test passes
 
+### Fix 6: active-workout-fab.spec.ts browser-only APIs (2026-01-18)
+**Tests fixed:** 6 tests in `active-workout-fab.spec.ts`
+
+**Issue:** The test file used `expect.element()` which is a browser-only API:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+These APIs are only available in Vitest browser mode, causing the tests to fail in Happy-DOM.
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+describe.skipIf(!isBrowserMode)('Active Workout FAB', () => {
+```
+
+Also removed unused import `expectElement, expectPoll` from assertions.
+
+**Verification:**
+- Happy-DOM: 6 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: 6 tests pass
+
