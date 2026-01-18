@@ -1,0 +1,33 @@
+# Test Fixing Progress Log
+Started: 2026-01-18
+
+---
+
+## Instructions for Claude
+When fixing tests:
+1. Focus on ONE failing test case per iteration
+2. Ensure fix works in both Happy-DOM (`pnpm test`) and browser mode (`pnpm test:browser`)
+3. Document what was fixed and how below
+
+---
+
+## Fixes
+
+(Append entries here as tests are fixed)
+
+### Fix 1: benchmarkHelpers.ts import error (2026-01-18)
+**Tests fixed:** 5 test suites (benchmark-execution, benchmark-management, benchmark-results, benchmark-ui, benchmark-ux-simplification)
+
+**Issue:** `benchmarkHelpers.ts` imported `userEvent` directly from `vitest/browser`:
+```ts
+import { userEvent } from 'vitest/browser'
+```
+This import fails in Happy-DOM mode because `vitest/browser` can only be imported in Browser Mode.
+
+**Fix:** Changed to use the project's abstraction layer which auto-detects the environment:
+```ts
+import { page, userEvent } from '../../helpers/locator'
+```
+
+**Verification:** All benchmark test suites now load correctly in both Happy-DOM and browser mode.
+
