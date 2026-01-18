@@ -26,14 +26,14 @@ describe('Template Error Handling', () => {
       await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Add an exercise (making that part valid)
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Fill name with only whitespace
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.fill(nameInput, '   ')
+      await nameInput.fill('   ')
 
       // Save button should be disabled
       const saveButton = getByRole('button', { name: /save template/i })
@@ -59,13 +59,13 @@ describe('Template Error Handling', () => {
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'New Template Name')
+      await nameInput.clear()
+      await nameInput.fill('New Template Name')
 
       // Save changes - button should be visible and clickable
       const saveButton = getByRole('button', { name: /save changes/i })
       await expectElement(saveButton).toBeVisible()
-      await userEvent.click(saveButton)
+      await saveButton.click()
 
       // Verify changes persisted to database
       await expectPoll(async () => {
@@ -127,8 +127,8 @@ describe('Template Error Handling', () => {
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Modified Name')
+      await nameInput.clear()
+      await nameInput.fill('Modified Name')
 
       // Navigate away without saving
       await navigateTo({ name: RouteNames.Home })

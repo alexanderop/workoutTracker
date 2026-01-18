@@ -1146,3 +1146,31 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 7 tests in locale-decimal-input.spec.ts pass
 - Browser mode: All 7 tests pass
 
+### Fix 33: template-error-handling.spec.ts userEvent.clear/fill with Locators (2026-01-18)
+**Test fixed:** `does not persist changes when navigating away without saving` in `template-error-handling.spec.ts`
+
+**Issue:** The test was calling `userEvent.clear(nameInput)` and `userEvent.fill(nameInput, 'Modified Name')` where `nameInput` is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed `userEvent.clear(locator)` and `userEvent.fill(locator, text)` to use the Locator's built-in methods:
+
+```ts
+// Before:
+await userEvent.clear(nameInput)
+await userEvent.fill(nameInput, 'Modified Name')
+
+// After:
+await nameInput.clear()
+await nameInput.fill('Modified Name')
+```
+
+**Verification:**
+- Happy-DOM: Test `does not persist changes when navigating away without saving` passes
+- Browser mode: All 10 tests in template-error-handling.spec.ts pass
+
+**Note:** The file still has other tests that use `userEvent.click(locator)` patterns (e.g., `cancelling delete preserves template` at line 176) which will need to be fixed in subsequent iterations.
+
