@@ -1,4 +1,5 @@
-import { page, userEvent } from '../helpers/locator'
+import { flushPromises } from '@vue/test-utils'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectElement } from '../helpers/assertions'
 import { db } from '@/db'
@@ -80,6 +81,7 @@ describe('Data Management', () => {
           customExercises: [],
           templates: [],
           workouts: [importedWorkout],
+          benchmarks: [],
         },
       }
       const file = new File([JSON.stringify(importData)], 'backup.json', {
@@ -95,7 +97,14 @@ describe('Data Management', () => {
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new TypeError('File input not found')
       }
-      await userEvent.upload(fileInput, file)
+      // Use DataTransfer for reliable file handling (userEvent.upload doesn't always trigger Vue's @change handler)
+      const dataTransfer = new DataTransfer()
+      dataTransfer.items.add(file)
+      fileInput.files = dataTransfer.files
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }))
+
+      // Wait for Vue to process the async file handling
+      await flushPromises()
 
       // Assert: Confirmation dialog appears with correct count
       await common.waitForDialog()
@@ -103,7 +112,7 @@ describe('Data Management', () => {
       await expectElement(page.getByText(/1 workout/i)).toBeVisible()
 
       // Act: Confirm import
-      await userEvent.click(common.getDialogButton('Import Data'))
+      common.getDialogButton('Import Data').click()
 
       // Assert: Data was actually persisted to DB
       await expect.poll(async () => await db.workouts.count()).toBe(1)
@@ -125,7 +134,14 @@ describe('Data Management', () => {
       if (!(fileInput instanceof HTMLInputElement)) {
         throw new TypeError('File input not found')
       }
-      await userEvent.upload(fileInput, file)
+      // Use DataTransfer for reliable file handling (userEvent.upload doesn't always trigger Vue's @change handler)
+      const dataTransfer = new DataTransfer()
+      dataTransfer.items.add(file)
+      fileInput.files = dataTransfer.files
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }))
+
+      // Wait for Vue to process the async file handling
+      await flushPromises()
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
@@ -133,7 +149,7 @@ describe('Data Management', () => {
       await expectElement(page.getByText(/not valid json/i)).toBeVisible()
 
       // Dismiss dialog
-      await userEvent.click(common.getDialogButton('OK'))
+      common.getDialogButton('OK').click()
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
@@ -155,7 +171,7 @@ describe('Data Management', () => {
       await expectElement(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Confirm deletion
-      await userEvent.click(common.getDialogButton('Delete All Data'))
+      common.getDialogButton('Delete All Data').click()
 
       // Assert: Data was actually deleted from DB
       await expect.poll(async () => await db.workouts.count()).toBe(0)
@@ -184,7 +200,8 @@ describe('Data Management', () => {
       const { router, findByText, cleanup } = await createTestApp()
       await router.push({ name: RouteNames.History })
 
-      // Find the workout card and click it
+      // Wait for the workout to appear (async data load) then click it
+      await expectElement(page.getByText('Push Day')).toBeVisible()
       await findByText('Push Day').click()
 
       // Assert: Verify navigation to detail view

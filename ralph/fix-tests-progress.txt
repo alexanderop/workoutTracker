@@ -410,3 +410,28 @@ await expectElement(page.getByRole('heading', { name: /import data/i })).toBeVis
 
 **Note:** The test file still has other tests that need fixes in subsequent iterations (e.g., "imports data from a valid backup file").
 
+### Fix 14: data-management.spec.ts History test missing wait for async data (2026-01-18)
+**Test fixed:** `navigates to detail view when clicking a completed workout and displays exercise and set information` in `data-management.spec.ts`
+
+**Issue:** The test navigated to the History page and immediately tried to click "Push Day" without waiting for the async data to load:
+```ts
+await router.push({ name: RouteNames.History })
+await findByText('Push Day').click()  // Fails - element not found
+```
+
+The History view (`TheHistoryView.vue`) loads workouts asynchronously in `onMounted()`, showing a loading state first. The `findByText().click()` call doesn't have built-in waiting/polling behavior in Happy-DOM mode - it immediately tries to find and click the element, which doesn't exist yet because the data is still loading.
+
+**Fix:** Added `expectElement` wait before clicking to wait for the async data to load:
+```ts
+await router.push({ name: RouteNames.History })
+// Wait for the workout to appear (async data load) then click it
+await expectElement(page.getByText('Push Day')).toBeVisible()
+await findByText('Push Day').click()
+```
+
+The `expectElement` function uses `waitFor()` from @testing-library which polls until the element appears or times out.
+
+**Verification:**
+- Happy-DOM: All 5 tests in data-management.spec.ts pass
+- Browser mode: The 4 Import/Export tests are skipped (require mocking window.location), the History test passes
+
