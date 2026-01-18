@@ -1648,3 +1648,47 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 8 tests in timer-workout-logging.spec.ts pass
 - Browser mode: Tests pass (timer-workout-logging is included in integration tests)
 
+### Fix 46: timed-block-exercise-picker.spec.ts missing wait for async tab content (2026-01-18)
+**Test fixed:** `shows custom exercises from IndexedDB when adding to EMOM block` in `timed-block-exercise-picker.spec.ts`
+
+**Issue:** After switching to the "Timed Blocks" tab, the test immediately tried to click the EMOM button without waiting for the tab content to render:
+```ts
+await builder.switchToTimedBlocksTab()
+await userEvent.click(common.getDialogButton('EMOM'))
+```
+
+Additionally, the test waited for `page.getByText('Configure')` but the actual dialog title is "Configure EMOM":
+```ts
+await expectElement(page.getByText('Configure')).toBeVisible()
+```
+
+In Happy-DOM mode, Vue's async tab content rendering wasn't complete before the click happened, causing the EMOM button click to fail silently and the "Configure" text never appeared, resulting in:
+```
+Error: expect(received).toBeVisible()
+received value must be an HTMLElement or an SVGElement.
+Received has type: Null
+Received has value: null
+```
+
+**Fix:** Added explicit wait for the EMOM button to be visible after tab switch, and fixed the configure dialog text pattern to match the actual title:
+
+```ts
+// Before:
+await builder.switchToTimedBlocksTab()
+await userEvent.click(common.getDialogButton('EMOM'))
+await expectElement(page.getByText('Configure')).toBeVisible()
+
+// After:
+await builder.switchToTimedBlocksTab()
+// Wait for EMOM button to be visible after tab switch
+await expectElement(page.getByText('EMOM', { exact: true })).toBeVisible()
+await userEvent.click(common.getDialogButton('EMOM'))
+await expectElement(page.getByText(/configure emom/i)).toBeVisible()
+```
+
+This follows the same pattern established in Fix 42 for `timed-block-exercise-list.spec.ts`.
+
+**Verification:**
+- Happy-DOM: Test `shows custom exercises from IndexedDB when adding to EMOM block` passes
+- Browser mode: Test passes
+

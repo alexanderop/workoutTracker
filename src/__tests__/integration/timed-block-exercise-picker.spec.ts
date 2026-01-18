@@ -25,10 +25,13 @@ describe('Timed Block Exercise Picker', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
+
+      // Wait for EMOM button to be visible after tab switch
+      await expectElement(page.getByText('EMOM', { exact: true })).toBeVisible()
       await userEvent.click(common.getDialogButton('EMOM'))
 
       // And: wait for configure dialog and open exercise picker
-      await expectElement(page.getByText('Configure')).toBeVisible()
+      await expectElement(page.getByText(/configure emom/i)).toBeVisible()
       await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Then: I should see my custom exercise in the picker (it's first alphabetically)
