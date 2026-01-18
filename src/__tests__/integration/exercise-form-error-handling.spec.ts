@@ -10,7 +10,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RouteNames } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -36,7 +36,7 @@ describe('Exercise Form Error Handling', () => {
 
       // Click save
       const saveButton = page.getByRole('button', { name: /save/i })
-      await userEvent.click(saveButton)
+      await saveButton.click()
 
       // Assert: ErrorDialog is visible
       await common.waitForDialog()
@@ -60,16 +60,16 @@ describe('Exercise Form Error Handling', () => {
       const spy = vi.spyOn(store, 'addExercise')
       spy.mockResolvedValueOnce(null)
 
-      await userEvent.click(page.getByRole('button', { name: /save/i }))
+      await page.getByRole('button', { name: /save/i }).click()
       await common.waitForDialog()
 
       // Dismiss error dialog
       const okButton = page.getByRole('button', { name: /ok/i })
-      await userEvent.click(okButton)
+      await okButton.click()
       await common.waitForDialogClose()
 
       // Second attempt succeeds (spy no longer mocked)
-      await userEvent.click(page.getByRole('button', { name: /save/i }))
+      await page.getByRole('button', { name: /save/i }).click()
 
       // Should navigate back to exercises list
       await common.waitForRoute(/^\/exercises$/)
@@ -95,10 +95,10 @@ describe('Exercise Form Error Handling', () => {
 
       // Update name and save
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Updated Name')
+      await nameInput.clear()
+      await nameInput.fill('Updated Name')
 
-      await userEvent.click(page.getByRole('button', { name: /save/i }))
+      await page.getByRole('button', { name: /save/i }).click()
 
       // Assert: ErrorDialog shown
       await common.waitForDialog()
@@ -127,7 +127,7 @@ describe('Exercise Form Error Handling', () => {
       )
 
       // Click save
-      await userEvent.click(page.getByRole('button', { name: /save/i }))
+      await page.getByRole('button', { name: /save/i }).click()
 
       // Assert: Button shows "Saving..." and is disabled
       const savingButton = page.getByRole('button', { name: /saving/i })

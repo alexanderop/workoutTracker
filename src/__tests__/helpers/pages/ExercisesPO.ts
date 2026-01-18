@@ -1,5 +1,5 @@
-import { page, userEvent } from 'vitest/browser'
-import { expect } from 'vitest'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 import type { CommonPO } from './CommonPO'
 
 type CreateExerciseOptions = {
@@ -26,7 +26,7 @@ export class ExercisesPO {
    */
   async clickCreateCustomExercise(): Promise<void> {
     const createButton = page.getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(createButton)
+    await createButton.click()
     await this.common.waitForRoute(/^\/create-exercise$/)
   }
 
@@ -36,7 +36,7 @@ export class ExercisesPO {
    */
   async fillName(name: string): Promise<void> {
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-    await userEvent.fill(nameInput, name)
+    await nameInput.fill(name)
   }
 
   /**
@@ -59,7 +59,7 @@ export class ExercisesPO {
 
     // Wait for the async image conversion to complete
     const saveButton = page.getByRole('button', { name: /save/i })
-    await expect.element(saveButton).not.toBeDisabled()
+    await expectElement(saveButton).not.toBeDisabled()
   }
 
   /**
@@ -67,7 +67,7 @@ export class ExercisesPO {
    */
   async save(): Promise<void> {
     const saveButton = page.getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    await saveButton.click()
     await this.common.waitForRoute(/^\/exercises$/)
   }
 

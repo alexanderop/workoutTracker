@@ -632,3 +632,49 @@ await app.benchmarkForm.copyRound(0)
 - Happy-DOM: Test `copied round preserves exerciseDefinitionId` passes
 - Browser mode: All 18 tests in benchmark-variable-reps.spec.ts pass (5 skipped)
 
+### Fix 21: ExercisesPO.ts and exercise-form-error-handling.spec.ts userEvent with Locators (2026-01-18)
+**Tests fixed:** 4 tests in `exercise-form-error-handling.spec.ts`
+
+**Issue:** Both `ExercisesPO.ts` (Page Object) and `exercise-form-error-handling.spec.ts` (test file) were calling `userEvent.click(locator)`, `userEvent.fill(locator, text)`, and `userEvent.clear(locator)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed to use the Locator's built-in interaction methods instead of `userEvent`:
+
+In `ExercisesPO.ts`:
+```ts
+// Before:
+await userEvent.click(createButton)
+await userEvent.fill(nameInput, name)
+await userEvent.click(saveButton)
+
+// After:
+await createButton.click()
+await nameInput.fill(name)
+await saveButton.click()
+```
+
+In `exercise-form-error-handling.spec.ts`:
+```ts
+// Before:
+await userEvent.click(saveButton)
+await userEvent.click(okButton)
+await userEvent.clear(nameInput)
+await userEvent.fill(nameInput, 'Updated Name')
+
+// After:
+await saveButton.click()
+await okButton.click()
+await nameInput.clear()
+await nameInput.fill('Updated Name')
+```
+
+Also removed unused `userEvent` import from both files.
+
+**Verification:**
+- Happy-DOM: All 4 tests in exercise-form-error-handling.spec.ts pass
+- Browser mode: All 4 tests pass
+
