@@ -1,5 +1,5 @@
-import { page } from 'vitest/browser'
-import { expect } from 'vitest'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 
@@ -20,7 +20,7 @@ export class BenchmarksPO {
 
     // Wait for tabs to load
     const benchmarksTab = page.getByRole('tab', { name: /benchmarks/i })
-    await expect.element(benchmarksTab).toBeVisible()
+    await expectElement(benchmarksTab).toBeVisible()
 
     // Click on Benchmarks tab
     await benchmarksTab.click()
@@ -28,10 +28,13 @@ export class BenchmarksPO {
 
   /**
    * Clicks a specific benchmark card by name to navigate to detail view.
+   * Waits for the benchmark to be visible before clicking (handles async data load).
    * @param benchmarkName - The name of the benchmark to click
    */
   async clickBenchmarkCard(benchmarkName: string): Promise<void> {
-    await page.getByText(benchmarkName).click()
+    const benchmarkCard = page.getByText(benchmarkName)
+    await expectElement(benchmarkCard).toBeVisible()
+    await benchmarkCard.click()
   }
 
   /**
@@ -65,8 +68,8 @@ export class BenchmarksPO {
    * Verifies both the empty message and Create Benchmark button exist.
    */
   async assertEmptyState(): Promise<void> {
-    await expect.element(page.getByText(/no benchmarks yet/i)).toBeInTheDocument()
-    await expect.element(page.getByRole('button', { name: /create benchmark/i })).toBeInTheDocument()
+    await expectElement(page.getByText(/no benchmarks yet/i)).toBeInTheDocument()
+    await expectElement(page.getByRole('button', { name: /create benchmark/i })).toBeInTheDocument()
   }
 
   /**
@@ -74,6 +77,6 @@ export class BenchmarksPO {
    * @param name - The benchmark name to search for
    */
   async assertBenchmarkExists(name: string): Promise<void> {
-    await expect.element(page.getByText(name)).toBeInTheDocument()
+    await expectElement(page.getByText(name)).toBeInTheDocument()
   }
 }

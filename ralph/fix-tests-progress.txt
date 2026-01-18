@@ -465,3 +465,33 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 7 tests in edit-exercise-dialog.spec.ts pass (first 4 tests pass, remaining 3 tests pass in describe group)
 - Browser mode: All 7 tests pass
 
+### Fix 16: BenchmarksPO.clickBenchmarkCard missing wait for async data (2026-01-18)
+**Test fixed:** `completes full benchmark lifecycle from creation to deletion` in `benchmark-management.spec.ts`
+
+**Issue:** `BenchmarksPO.clickBenchmarkCard()` directly called `page.getByText(benchmarkName).click()` without waiting for the benchmark list to load:
+```ts
+async clickBenchmarkCard(benchmarkName: string): Promise<void> {
+  await page.getByText(benchmarkName).click()
+}
+```
+
+After completing a benchmark workout and navigating back to the benchmarks tab, the async benchmark list wasn't loaded yet. The click happened before the data appeared, causing:
+```
+Error: No element found for selector: text=Test Fran Lifecycle
+```
+
+**Fix:** Added `expectElement()` wait before clicking to wait for the async benchmark list to load:
+```ts
+async clickBenchmarkCard(benchmarkName: string): Promise<void> {
+  const benchmarkCard = page.getByText(benchmarkName)
+  await expectElement(benchmarkCard).toBeVisible()
+  await benchmarkCard.click()
+}
+```
+
+The `expectElement` function uses `waitFor()` from @testing-library which polls until the element appears or times out.
+
+**Verification:**
+- Happy-DOM: All 6 tests in benchmark-management.spec.ts pass
+- Browser mode: All 6 tests pass
+
