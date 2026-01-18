@@ -1,6 +1,6 @@
 import { page, userEvent } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { expectElement, expectPoll } from '../helpers/assertions'
+import { expectElement } from '../helpers/assertions'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
@@ -55,7 +55,7 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Click export button
-      await userEvent.click(getByRole('button', { name: /^export data$/i }))
+      await getByRole('button', { name: /^export data$/i }).click()
 
       // Assert: Blob was created and cleaned up
       await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
@@ -99,8 +99,8 @@ describe('Data Management', () => {
 
       // Assert: Confirmation dialog appears with correct count
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /import data/i })).toBeVisible()
-      await expect.element(page.getByText(/1 workout/i)).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /import data/i })).toBeVisible()
+      await expectElement(page.getByText(/1 workout/i)).toBeVisible()
 
       // Act: Confirm import
       await userEvent.click(common.getDialogButton('Import Data'))
@@ -129,12 +129,12 @@ describe('Data Management', () => {
 
       // Assert: Error dialog appears with correct message
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
-      await expect.element(page.getByText(/not valid json/i)).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
+      await expectElement(page.getByText(/not valid json/i)).toBeVisible()
 
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
-      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -148,12 +148,11 @@ describe('Data Management', () => {
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
-      const deleteButton = getByRole('button', { name: /^delete all data$/i })
-      await userEvent.click(deleteButton)
+      await getByRole('button', { name: /^delete all data$/i }).click()
 
       // Assert: Confirmation dialog appears
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Confirm deletion
       await userEvent.click(common.getDialogButton('Delete All Data'))
@@ -186,23 +185,21 @@ describe('Data Management', () => {
       await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
-      const workoutCard = await findByText('Push Day')
-      await userEvent.click(workoutCard)
+      await findByText('Push Day').click()
 
       // Assert: Verify navigation to detail view
       await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
-      await expect.element(page.getByText('Push Day')).toBeVisible()
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Push Day')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
 
       // Expand the exercise card to see set details
-      const exerciseCard = await findByText('Bench Press')
-      await userEvent.click(exerciseCard)
+      await findByText('Bench Press').click()
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
-      await expect.element(page.getByText('100kg')).toBeVisible()
-      await expect.element(page.getByText('10', { exact: true })).toBeVisible() // reps value
+      await expectElement(page.getByText('100kg')).toBeVisible()
+      await expectElement(page.getByText('10', { exact: true })).toBeVisible() // reps value
 
       cleanup()
     })

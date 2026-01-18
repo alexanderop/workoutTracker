@@ -365,3 +365,48 @@ describe.skipIf(!isBrowserMode)('Custom Exercise Image Upload', () => {
 - Happy-DOM: 1 test skipped (browser-only test suite correctly skipped)
 - Browser mode: 1 test passes
 
+### Fix 13: data-management.spec.ts userEvent.click with Locators and expect.element (2026-01-18)
+**Test fixed:** `exports data when clicking Export Data button` in `data-management.spec.ts`
+
+**Issue:** The test file had two problems:
+1. Used `userEvent.click(getByRole(...))` where `getByRole` returns a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+2. Used `expect.element()` which is a browser-only API (Vitest browser mode), causing:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+**Fix:**
+1. Changed `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+```ts
+// Before:
+await userEvent.click(getByRole('button', { name: /^export data$/i }))
+await userEvent.click(deleteButton)
+await userEvent.click(workoutCard)
+await userEvent.click(exerciseCard)
+
+// After:
+await getByRole('button', { name: /^export data$/i }).click()
+await getByRole('button', { name: /^delete all data$/i }).click()
+await findByText('Push Day').click()
+await findByText('Bench Press').click()
+```
+
+2. Changed `expect.element()` to use the project's `expectElement` abstraction:
+```ts
+// Before:
+await expect.element(page.getByRole('heading', { name: /import data/i })).toBeVisible()
+
+// After:
+await expectElement(page.getByRole('heading', { name: /import data/i })).toBeVisible()
+```
+
+**Verification:**
+- Happy-DOM: `exports data when clicking Export Data button` test passes
+- Browser mode: Tests in this suite are skipped (they require mocking window.location which is read-only in real browsers)
+
+**Note:** The test file still has other tests that need fixes in subsequent iterations (e.g., "imports data from a valid backup file").
+
