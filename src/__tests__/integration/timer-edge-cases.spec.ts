@@ -1,4 +1,4 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
@@ -7,16 +7,16 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 // Helper to navigate to timers page from home
 async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
-  await userEvent.click(quickTimerCard)
+  await quickTimerCard.click()
   await expectElement(page.getByText(/AMRAP/)).toBeVisible()
 }
 
 // Helper to start an AMRAP timer
 async function startAmrapTimer(testApp: Awaited<ReturnType<typeof createTestApp>>) {
   await goToTimersPage(testApp)
-  await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+  await page.getByRole('button', { name: /amrap/i }).click()
   await expectElement(page.getByText('5 min', { exact: true })).toBeVisible()
-  await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
+  await page.getByRole('button', { name: /quick burst/i }).click()
   await expectPoll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
 }
 
@@ -35,7 +35,7 @@ describe('Timer Edge Cases', () => {
 
       // Click exit button
       const exitButton = page.getByRole('button', { name: /exit timer/i })
-      await userEvent.click(exitButton)
+      await exitButton.click()
 
       // Timer controls should no longer be visible
       await expectElement(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
@@ -52,12 +52,12 @@ describe('Timer Edge Cases', () => {
 
       // Start the timer
       const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      await playPauseButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Exit while running
       const exitButton = page.getByRole('button', { name: /exit timer/i })
-      await userEvent.click(exitButton)
+      await exitButton.click()
 
       // Timer controls should no longer be visible
       await expectElement(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
@@ -73,22 +73,22 @@ describe('Timer Edge Cases', () => {
 
       // Start
       const startButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(startButton)
+      await startButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Pause
       const pauseButton1 = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(pauseButton1)
+      await pauseButton1.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       // Resume
       const resumeButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(resumeButton)
+      await resumeButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Pause again
       const pauseButton2 = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(pauseButton2)
+      await pauseButton2.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       testApp.cleanup()
@@ -103,11 +103,11 @@ describe('Timer Edge Cases', () => {
 
       // Start and then pause
       const startButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(startButton)
+      await startButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       const pauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(pauseButton)
+      await pauseButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(false)
 
       // Verify still paused after short delay
@@ -124,12 +124,12 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Select AMRAP to go to presets
-      await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+      await page.getByRole('button', { name: /amrap/i }).click()
       await expectElement(page.getByText('5 min', { exact: true })).toBeVisible()
 
       // Click back button
       const backButton = page.getByRole('button', { name: /back/i })
-      await userEvent.click(backButton)
+      await backButton.click()
 
       // Should return to timer type selection
       await expectElement(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
@@ -143,15 +143,15 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Go to AMRAP presets
-      await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+      await page.getByRole('button', { name: /amrap/i }).click()
       await expectElement(page.getByText('5 min', { exact: true })).toBeVisible()
 
       // Go back
       const backButton = page.getByRole('button', { name: /back/i })
-      await userEvent.click(backButton)
+      await backButton.click()
 
       // Now select Tabata instead
-      await userEvent.click(page.getByRole('button', { name: /tabata/i }))
+      await page.getByRole('button', { name: /tabata/i }).click()
 
       // Verify Tabata presets shown
       await expectElement(page.getByText(/Classic/)).toBeVisible()
@@ -168,7 +168,7 @@ describe('Timer Edge Cases', () => {
 
       // Start the timer and wait a moment
       const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(playPauseButton)
+      await playPauseButton.click()
       await expectPoll(() => testApp.workout.isTimerRunning()).toBe(true)
 
       // Wait a short time so timer advances
@@ -177,7 +177,7 @@ describe('Timer Edge Cases', () => {
       // Click reset button
       const resetButton = await testApp.workout.getTimerControlButton('reset')
       if (resetButton) {
-        await userEvent.click(resetButton)
+        await resetButton.click()
 
         // Timer should be paused after reset
         await expectPoll(() => testApp.workout.isTimerRunning()).toBe(false)
@@ -193,8 +193,8 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Select Tabata Classic
-      await userEvent.click(page.getByRole('button', { name: /tabata/i }))
-      await userEvent.click(page.getByRole('button', { name: /classic/i }))
+      await page.getByRole('button', { name: /tabata/i }).click()
+      await page.getByRole('button', { name: /classic/i }).click()
 
       // Wait for timer UI
       await expectPoll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
@@ -213,8 +213,8 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Select EMOM 10 min
-      await userEvent.click(page.getByRole('button', { name: /emom/i }))
-      await userEvent.click(page.getByRole('button', { name: /quick session/i }))
+      await page.getByRole('button', { name: /emom/i }).click()
+      await page.getByRole('button', { name: /quick session/i }).click()
 
       // Wait for timer UI
       await expectPoll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
@@ -232,7 +232,7 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Select For Time
-      await userEvent.click(page.getByRole('button', { name: /for time/i }))
+      await page.getByRole('button', { name: /for time/i }).click()
 
       // Verify No Cap option is available
       await expectElement(page.getByText(/no cap/i)).toBeVisible()
@@ -245,12 +245,12 @@ describe('Timer Edge Cases', () => {
       await goToTimersPage(testApp)
 
       // Select For Time with a time cap
-      await userEvent.click(page.getByRole('button', { name: /for time/i }))
+      await page.getByRole('button', { name: /for time/i }).click()
       await expectElement(page.getByText('10 min cap')).toBeVisible()
 
       // Select a preset (look for 10 min cap option - "Quick challenge")
       const tenMinButton = page.getByRole('button', { name: /quick challenge/i })
-      await userEvent.click(tenMinButton)
+      await tenMinButton.click()
 
       // Wait for timer UI
       await expectPoll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()

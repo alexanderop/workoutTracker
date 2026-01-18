@@ -1480,3 +1480,93 @@ describe.skipIf(!isBrowserModeTest)('Timer Audio Playback', () => {
 - Happy-DOM: 5 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: Tests run in separate browser-specific file (`src/__tests__/browser/timer-audio.spec.ts`)
 
+### Fix 42: timed-block-exercise-list.spec.ts userEvent.click with HTMLElements and timing issues (2026-01-18)
+**Tests fixed:** 7 tests in `timed-block-exercise-list.spec.ts`
+
+**Issue:** The test file had multiple problems:
+1. Used `common.getDialogButton('...').click()` where `getDialogButton()` returns an HTMLElement. Native HTMLElement `.click()` doesn't properly trigger Vue's event handlers in Happy-DOM mode.
+
+2. After switching to the "Timed Blocks" tab, the test immediately tried to click the AMRAP button without waiting for the tab content to be visible.
+
+3. The test expected `page.getByText('Configure')` but the actual dialog title is "Configure AMRAP".
+
+4. For editing input values, the test used the `userEvent` from the locator module (designed for Locators) with raw HTMLInputElements.
+
+**Fix:**
+1. Re-imported `userEvent` from `../helpers/locator` and used `userEvent.click(common.getDialogButton('AMRAP'))` instead of `common.getDialogButton('AMRAP').click()`:
+```ts
+// Before:
+await common.getDialogButton('AMRAP').click()
+
+// After:
+await userEvent.click(common.getDialogButton('AMRAP'))
+```
+
+2. Added explicit wait for the AMRAP button to be visible after tab switch:
+```ts
+await builder.switchToTimedBlocksTab()
+
+// Wait for AMRAP button to be visible after tab switch
+await expectElement(page.getByText('AMRAP', { exact: true })).toBeVisible()
+
+await userEvent.click(common.getDialogButton('AMRAP'))
+```
+
+3. Fixed the wait assertion to match the actual dialog title:
+```ts
+// Before:
+await expectElement(page.getByText('Configure')).toBeVisible()
+
+// After:
+await expectElement(page.getByText(/Configure AMRAP/i)).toBeVisible()
+```
+
+4. Used `userEventLib` from `@testing-library/user-event` directly for HTMLInputElement operations:
+```ts
+import userEventLib from '@testing-library/user-event'
+
+const user = userEventLib.setup()
+await user.clear(repInput)
+await user.type(repInput, '15')
+```
+
+**Verification:**
+- Happy-DOM: All 7 tests pass
+- Browser mode: All 7 tests pass
+
+### Fix 43: timer-edge-cases.spec.ts userEvent.click with Locators (2026-01-18)
+**Tests fixed:** 11 tests in `timer-edge-cases.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(locator)` where `locator` is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+The error occurred in helper functions `goToTimersPage()` and `startAmrapTimer()`, as well as throughout the test cases when clicking buttons for timer navigation and control.
+
+**Fix:** Changed all `userEvent.click(locator)` calls to use the Locator's built-in `.click()` method:
+
+```ts
+// Before:
+import { page, userEvent } from '../helpers/locator'
+await userEvent.click(quickTimerCard)
+await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+await userEvent.click(exitButton)
+await userEvent.click(playPauseButton)
+await userEvent.click(backButton)
+
+// After:
+import { page } from '../helpers/locator'
+await quickTimerCard.click()
+await page.getByRole('button', { name: /amrap/i }).click()
+await exitButton.click()
+await playPauseButton.click()
+await backButton.click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 11 tests in timer-edge-cases.spec.ts pass
+- Browser mode: Tests run in browser via default project (integration tests are included in both projects)
+

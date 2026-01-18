@@ -8,6 +8,7 @@
  */
 import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import userEventLib from '@testing-library/user-event'
 import { page, userEvent } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
@@ -21,10 +22,14 @@ async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestAp
   await builder.navigateTo()
   await builder.openAddBlockDialog()
   await builder.switchToTimedBlocksTab()
+
+  // Wait for AMRAP button to be visible after tab switch
+  await expectElement(page.getByText('AMRAP', { exact: true })).toBeVisible()
+
   await userEvent.click(common.getDialogButton('AMRAP'))
 
-  // Wait for config dialog to open
-  await expectElement(page.getByText('Configure')).toBeVisible()
+  // Wait for config dialog to open - title is "Configure AMRAP"
+  await expectElement(page.getByText(/configure amrap/i)).toBeVisible()
 }
 
 // Helper to add exercise via the overlay picker (not dialog mode)
@@ -49,17 +54,17 @@ async function addExerciseViaOverlay(
   await expectElement(page.getByText(exerciseName, { exact: true })).toBeVisible()
 
   // Find and click the exercise button (it's a button containing the exercise name)
-  const buttons = await page.getByRole('button').all()
+  const buttons = page.getByRole('button').all()
   const exerciseButton = await Promise.all(
     buttons.map(async button => {
-      const element = await button.element()
+      const element = button.element()
       const text = element.textContent
       return text?.includes(exerciseName) ? button : null
     })
   ).then(results => results.find(Boolean))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
 
-  await userEvent.click(exerciseButton)
+  await exerciseButton.click()
 
   // Wait for exercise to appear in the list (overlay should close in multi mode but exercise stays)
   await expectElement(page.getByRole('dialog').getByText(exerciseName)).toBeVisible()
@@ -171,8 +176,9 @@ describe('Timed Block Exercise List', () => {
         throw new Error('Rep input not found')
       }
 
-      await userEvent.clear(repInput)
-      await userEvent.fill(repInput, '15')
+      const user = userEventLib.setup()
+      await user.clear(repInput)
+      await user.type(repInput, '15')
 
       // Verify value was set
       expect(repInput.value).toBe('15')
@@ -197,8 +203,9 @@ describe('Timed Block Exercise List', () => {
         throw new Error('Load input not found')
       }
 
-      await userEvent.clear(loadInput)
-      await userEvent.fill(loadInput, '24kg')
+      const user = userEventLib.setup()
+      await user.clear(loadInput)
+      await user.type(loadInput, '24kg')
 
       // Verify value was set
       expect(loadInput.value).toBe('24kg')
