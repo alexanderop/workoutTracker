@@ -495,3 +495,39 @@ The `expectElement` function uses `waitFor()` from @testing-library which polls 
 - Happy-DOM: All 6 tests in benchmark-management.spec.ts pass
 - Browser mode: All 6 tests pass
 
+### Fix 17: Happy-DOM getByRole('textbox') matching elements with explicit role="spinbutton" (2026-01-18)
+**Test fixed:** `dialog is keyboard-free (no text inputs)` in `edit-exercise-dialog.spec.ts`
+
+**Issue:** The scoped `getByRole('textbox')` query in Happy-DOM was incorrectly matching `<input type="text" role="spinbutton">` elements. The `NumberFieldInput` component from `reka-ui` renders an `<input type="text">` with explicit `role="spinbutton"`. The Happy-DOM locator's implicit role mapping was matching `input[type="text"]` for the `textbox` role, ignoring the explicit `role="spinbutton"` attribute:
+
+```ts
+textbox: 'input:not([type]), input[type="text"], ...',
+```
+
+This caused the test to find 2 textboxes (the target reps and set count spinbuttons) instead of 0, failing the assertion:
+```
+AssertionError: expected 2 to be +0
+```
+
+**Fix:** Added a `filterByExplicitRole()` function in `src/__tests__/helpers/locator/happy-dom.ts` that excludes elements with explicit role attributes that differ from the target role:
+
+```ts
+function filterByExplicitRole(elements: Array<HTMLElement>, targetRole: string): Array<HTMLElement> {
+  return elements.filter((el) => {
+    const explicitRole = el.getAttribute('role')
+    // If no explicit role, the implicit role applies - keep the element
+    if (!explicitRole) return true
+    // If explicit role matches target, keep it
+    if (explicitRole === targetRole) return true
+    // Explicit role differs from target - exclude this element
+    return false
+  })
+}
+```
+
+This is applied in `createScopedRoleQuery()` before the accessible name filter.
+
+**Verification:**
+- Happy-DOM: All 7 tests in edit-exercise-dialog.spec.ts pass
+- Browser mode: All 7 tests pass
+

@@ -411,6 +411,23 @@ function filterByAccessibleName(elements: Array<HTMLElement>, namePattern: strin
 }
 
 /**
+ * Filter out elements that have an explicit role attribute different from the target role.
+ * This ensures that implicit role matching (e.g., input[type="text"] matching "textbox")
+ * doesn't match elements with an explicit role override (e.g., role="spinbutton").
+ */
+function filterByExplicitRole(elements: Array<HTMLElement>, targetRole: string): Array<HTMLElement> {
+  return elements.filter((el) => {
+    const explicitRole = el.getAttribute('role')
+    // If no explicit role, the implicit role applies - keep the element
+    if (!explicitRole) return true
+    // If explicit role matches target, keep it
+    if (explicitRole === targetRole) return true
+    // Explicit role differs from target - exclude this element
+    return false
+  })
+}
+
+/**
  * Create a scoped query function for getByRole within parent elements
  */
 function createScopedRoleQuery(
@@ -428,8 +445,10 @@ function createScopedRoleQuery(
         results.push(el)
       }
     }
+    // Filter out elements with explicit roles that differ from the target role
+    const filteredByExplicitRole = filterByExplicitRole(results, role)
     // Filter by accessible name if provided
-    const filteredByName = filterByAccessibleName(results, options?.name)
+    const filteredByName = filterByAccessibleName(filteredByExplicitRole, options?.name)
     return applyFilters(filteredByName, options)
   }
 }
