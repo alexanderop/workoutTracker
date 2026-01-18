@@ -309,3 +309,31 @@ await expectPoll(() => ...).toBe(true)
 - Happy-DOM: All 3 tests in strength-workflows.spec.ts pass, both tests in bodyweight-exercise.spec.ts pass
 - Browser mode: All tests pass
 
+### Fix 11: benchmark-ui.spec.ts async polling pattern (2026-01-18)
+**Test fixed:** `handles invalid benchmark ID` in `benchmark-ui.spec.ts`
+
+**Issue:** The test used an incorrect async polling pattern that didn't properly await the assertion:
+```ts
+await expectPoll(() => { app.benchmarkDetail.assertNotFoundState(); return true }).toBe(true)
+```
+
+The problem is that `assertNotFoundState()` is an async function but it wasn't being awaited. The callback just returned `true` immediately, so the poll always passed on the first try without actually waiting for the not-found state to render. This caused `clickGoBack()` to fail with:
+```
+Error: No element found for selector: role=button[name=Go Back]
+```
+
+**Fix:** Changed to directly await the async assertion function, since `expectElement` inside `assertNotFoundState()` already handles polling internally:
+```ts
+// Before:
+await expectPoll(() => { app.benchmarkDetail.assertNotFoundState(); return true }).toBe(true)
+await app.benchmarkDetail.clickGoBack()
+
+// After:
+await app.benchmarkDetail.assertNotFoundState()
+await app.benchmarkDetail.clickGoBack()
+```
+
+**Verification:**
+- Happy-DOM: All 13 tests in benchmark-ui.spec.ts pass
+- Browser mode: All 13 tests pass
+

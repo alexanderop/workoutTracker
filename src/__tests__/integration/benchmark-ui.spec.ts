@@ -59,7 +59,7 @@ describe('Benchmark UI', () => {
       const app = await createTestApp()
       await app.benchmarkDetail.navigateToDetail('invalid-id')
 
-      await expectPoll(() => { app.benchmarkDetail.assertNotFoundState(); return true }).toBe(true)
+      await app.benchmarkDetail.assertNotFoundState()
       await app.benchmarkDetail.clickGoBack()
       expect(app.router.currentRoute.value.path).toBe('/workouts')
 
