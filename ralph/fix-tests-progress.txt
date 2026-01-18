@@ -1174,3 +1174,37 @@ await nameInput.fill('Modified Name')
 
 **Note:** The file still has other tests that use `userEvent.click(locator)` patterns (e.g., `cancelling delete preserves template` at line 176) which will need to be fixed in subsequent iterations.
 
+### Fix 34: template-error-handling.spec.ts userEvent.click with Locators (2026-01-18)
+**Tests fixed:** `cancelling delete preserves template` and `pressing escape closes delete dialog without deleting` in `template-error-handling.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(getByRole(...))` where `getByRole` returns a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+
+```ts
+// Before:
+await userEvent.click(getByRole('button', { name: /delete template/i }))
+await userEvent.click(common.getDialogButton('Cancel'))
+await userEvent.keyboard('{Escape}')
+
+// After:
+await getByRole('button', { name: /delete template/i }).click()
+await common.getDialogButton('Cancel').click()
+// For keyboard event, use native DOM event:
+const dialog = await page.getByRole('dialog').element()
+dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+```
+
+Also fixed the `disables start workout after removing all exercises` test which used `userEvent.click(removeButton)` with a native HTMLElement - changed to use native `removeButton.click()`.
+
+Removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 10 tests in template-error-handling.spec.ts pass
+- Browser mode: All 10 tests pass
+

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
@@ -102,7 +102,7 @@ describe('Template Error Handling', () => {
       // eslint-disable-next-line no-restricted-syntax -- Finding remove button within card scope
       const removeButton = benchCard.querySelector('[aria-label*="remove" i]')
       if (!(removeButton instanceof HTMLElement)) throw new Error('Remove button not found')
-      await userEvent.click(removeButton)
+      removeButton.click()
 
       // Start Workout button should be disabled (can't start workout with no exercises)
       await expectElement(startButton).toBeDisabled()
@@ -173,11 +173,11 @@ describe('Template Error Handling', () => {
       await expectElement(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete
-      await userEvent.click(getByRole('button', { name: /delete template/i }))
+      await getByRole('button', { name: /delete template/i }).click()
       await common.waitForDialog()
 
       // Cancel the deletion
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await common.getDialogButton('Cancel').click()
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Template should still exist
@@ -201,11 +201,12 @@ describe('Template Error Handling', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-escape-test' } })
 
       // Open delete dialog
-      await userEvent.click(getByRole('button', { name: /delete template/i }))
+      await getByRole('button', { name: /delete template/i }).click()
       await common.waitForDialog()
 
-      // Press Escape
-      await userEvent.keyboard('{Escape}')
+      // Press Escape - use native keyboard event since locator.keyboard doesn't exist
+      const dialog = await page.getByRole('dialog').element()
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Template preserved
