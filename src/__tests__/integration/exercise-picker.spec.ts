@@ -12,7 +12,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -75,9 +75,10 @@ describe('ExercisePicker', () => {
       await expectElement(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
       // Click on exercise using semantic query within dialog
-      // Use "BP Bench Press" prefix (includes the abbreviation shown in the UI)
+      // The button contains "BP" (avatar initials) + "Bench Press" (name) + "Chest" (muscle)
+      // Use a flexible pattern that works in both browser (Playwright) and Happy-DOM modes
       const dialog = page.getByRole('dialog')
-      await dialog.getByRole('button', { name: /^bp bench press/i }).click()
+      await dialog.getByRole('button', { name: /bp.*bench press/i }).click()
 
       // Dialog should close
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
