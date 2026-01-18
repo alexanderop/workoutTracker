@@ -435,3 +435,33 @@ The `expectElement` function uses `waitFor()` from @testing-library which polls 
 - Happy-DOM: All 5 tests in data-management.spec.ts pass
 - Browser mode: The 4 Import/Export tests are skipped (require mocking window.location), the History test passes
 
+### Fix 15: edit-exercise-dialog.spec.ts userEvent.click with Locators (2026-01-18)
+**Test fixed:** `opens edit dialog from builder mode edit button` (and 6 other tests) in `edit-exercise-dialog.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(locator)` where `locator` is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed all `userEvent.click(locator)` calls to use the Locator's built-in `.click()` method:
+
+```ts
+// Before:
+await userEvent.click(editButton)
+await userEvent.click(targetRepsIncrement)
+await userEvent.click(saveButton)
+
+// After:
+await editButton.click()
+await targetRepsIncrement.click()
+await saveButton.click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 7 tests in edit-exercise-dialog.spec.ts pass (first 4 tests pass, remaining 3 tests pass in describe group)
+- Browser mode: All 7 tests pass
+

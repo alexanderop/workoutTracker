@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -16,7 +16,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Click the edit button on the block (pencil icon)
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await editButton.click()
 
     // Verify dialog opens
     await common.waitForDialog()
@@ -33,7 +33,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await editButton.click()
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
@@ -42,19 +42,19 @@ describe('Edit Exercise Dialog', () => {
     const targetRepsIncrement = incrementButtons[0]!
 
     // Click increment 3 times (default is 8, should become 11)
-    await userEvent.click(targetRepsIncrement)
-    await userEvent.click(targetRepsIncrement)
-    await userEvent.click(targetRepsIncrement)
+    await targetRepsIncrement.click()
+    await targetRepsIncrement.click()
+    await targetRepsIncrement.click()
 
     // Save changes
     const saveButton = page.getByRole('button', { name: /save changes/i })
-    await userEvent.click(saveButton)
+    await saveButton.click()
 
     // Verify dialog closes
     expect(common.isDialogOpen()).toBe(false)
 
     // Re-open dialog and verify target reps persisted
-    await userEvent.click(editButton)
+    await editButton.click()
     await common.waitForDialog()
 
     const spinbuttons = await page.getByRole('dialog').getByRole('spinbutton').all()
@@ -70,7 +70,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit barbell row/i })
-    await userEvent.click(editButton)
+    await editButton.click()
     await common.waitForDialog()
 
     // Get all increment buttons (first is target reps, second is set count)
@@ -79,12 +79,12 @@ describe('Edit Exercise Dialog', () => {
     const setCountIncrement = incrementButtons[1]!
 
     // Add 2 more sets (3 -> 5)
-    await userEvent.click(setCountIncrement)
-    await userEvent.click(setCountIncrement)
+    await setCountIncrement.click()
+    await setCountIncrement.click()
 
     // Save changes
     const saveButton = page.getByRole('button', { name: /save changes/i })
-    await userEvent.click(saveButton)
+    await saveButton.click()
     expect(common.isDialogOpen()).toBe(false)
 
     // Start workout to verify set count
@@ -107,19 +107,19 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await editButton.click()
     await common.waitForDialog()
 
     // Get all increment buttons and increment set count
     const dialog = page.getByRole('dialog')
     const incrementButtons = await dialog.getByRole('button', { name: /increase/i }).all()
     const setCountIncrement = incrementButtons[1]!
-    await userEvent.click(setCountIncrement)
-    await userEvent.click(setCountIncrement)
+    await setCountIncrement.click()
+    await setCountIncrement.click()
 
     // Cancel instead of save
     const cancelButton = page.getByRole('button', { name: /cancel/i })
-    await userEvent.click(cancelButton)
+    await cancelButton.click()
     expect(common.isDialogOpen()).toBe(false)
 
     // Start workout and verify original set count (3 sets)
@@ -139,7 +139,7 @@ describe('Edit Exercise Dialog', () => {
 
     // Open edit dialog
     const editButton = getByRole('button', { name: /edit bench press/i })
-    await userEvent.click(editButton)
+    await editButton.click()
     await common.waitForDialog()
 
     // Verify no text inputs exist (only spinbuttons for numbers)
@@ -163,7 +163,7 @@ describe('Edit Exercise Dialog', () => {
 
       // Open edit dialog
       const editButton = getByRole('button', { name: /edit plank/i })
-      await userEvent.click(editButton)
+      await editButton.click()
       await common.waitForDialog()
 
       // Expect: Duration label is visible (not "Target Reps")
@@ -190,7 +190,7 @@ describe('Edit Exercise Dialog', () => {
 
       // Open edit dialog
       const editButton = getByRole('button', { name: /edit weighted plank/i })
-      await userEvent.click(editButton)
+      await editButton.click()
       await common.waitForDialog()
 
       // Expect: Weight field is visible for weighted holds
