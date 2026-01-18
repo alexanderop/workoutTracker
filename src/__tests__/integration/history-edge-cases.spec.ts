@@ -23,7 +23,7 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.History })
 
       // Verify empty state is displayed
-      await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
+      await expectElement(page.getByText(/no workouts yet/i)).toBeVisible()
 
       cleanup()
     })
@@ -33,7 +33,7 @@ describe('History Edge Cases', () => {
 
       // Start with empty state
       await navigateTo({ name: RouteNames.History })
-      await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
+      await expectElement(page.getByText(/no workouts yet/i)).toBeVisible()
 
       // Add a workout to database
       const workout = databaseWorkoutBuilder()
@@ -47,8 +47,8 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.History })
 
       // Empty state should be gone, workout should be visible
-      await expect.element(page.getByText(/no workouts yet/i)).not.toBeInTheDocument()
-      await expect.element(page.getByText('New Workout')).toBeVisible()
+      await expectElement(page.getByText(/no workouts yet/i)).not.toBeInTheDocument()
+      await expectElement(page.getByText('New Workout')).toBeVisible()
 
       cleanup()
     })
@@ -84,9 +84,9 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.History })
 
       // Verify all workouts are visible
-      await expect.element(page.getByText('Recent Workout')).toBeVisible()
-      await expect.element(page.getByText('Last Month Workout')).toBeVisible()
-      await expect.element(page.getByText('Two Months Ago')).toBeVisible()
+      await expectElement(page.getByText('Recent Workout')).toBeVisible()
+      await expectElement(page.getByText('Last Month Workout')).toBeVisible()
+      await expectElement(page.getByText('Two Months Ago')).toBeVisible()
 
       // Verify there are multiple month headers (sections)
       // eslint-disable-next-line no-restricted-syntax -- Counting section headers
@@ -119,8 +119,8 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.History })
 
       // Wait for workouts to load
-      await expect.element(page.getByText('Today Workout')).toBeVisible()
-      await expect.element(page.getByText('Yesterday Workout')).toBeVisible()
+      await expectElement(page.getByText('Today Workout')).toBeVisible()
+      await expectElement(page.getByText('Yesterday Workout')).toBeVisible()
 
       // Get workout cards
       const todayCard = await page.getByText('Today Workout').element()
@@ -144,10 +144,10 @@ describe('History Edge Cases', () => {
 
       // Should show loading state first, then either error or redirect
       // The app should not crash
-      await expect.poll(() => router.currentRoute.value.path).toContain('non-existent-id')
+      await expectPoll(() => router.currentRoute.value.path).toContain('non-existent-id')
 
       // Verify no crash - page should render something
-      await expect.element(page.getByRole('main')).toBeVisible()
+      await expectElement(page.getByRole('main')).toBeVisible()
 
       cleanup()
     })
@@ -164,18 +164,18 @@ describe('History Edge Cases', () => {
 
       // Navigate to history
       await navigateTo({ name: RouteNames.History })
-      await expect.element(page.getByText('Test Workout')).toBeVisible()
+      await expectElement(page.getByText('Test Workout')).toBeVisible()
 
       // Click on the workout
       await page.getByText('Test Workout').click()
-      await expect.poll(() => router.currentRoute.value.path).toContain(workout.id)
+      await expectPoll(() => router.currentRoute.value.path).toContain(workout.id)
 
       // Click back button
       const backButton = page.getByRole('button', { name: /back/i })
       await backButton.click()
 
       // Should navigate back to home (or history)
-      await expect.poll(() => router.currentRoute.value.path).toBe('/')
+      await expectPoll(() => router.currentRoute.value.path).toBe('/')
 
       cleanup()
     })
@@ -201,10 +201,10 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
       // Verify workout name displayed
-      await expect.element(page.getByText('Strength Session')).toBeVisible()
+      await expectElement(page.getByText('Strength Session')).toBeVisible()
 
       // Verify exercise name displayed
-      await expect.element(page.getByText('Barbell Squat')).toBeVisible()
+      await expectElement(page.getByText('Barbell Squat')).toBeVisible()
 
       cleanup()
     })
@@ -228,11 +228,11 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
       // Verify workout name displayed
-      await expect.element(page.getByText('Full Body Session')).toBeVisible()
+      await expectElement(page.getByText('Full Body Session')).toBeVisible()
 
       // Verify both exercises displayed
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
 
       cleanup()
     })
@@ -251,7 +251,7 @@ describe('History Edge Cases', () => {
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
       // Verify redo button is visible
-      await expect.element(page.getByRole('button', { name: /redo/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /redo/i })).toBeVisible()
 
       cleanup()
     })

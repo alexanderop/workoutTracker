@@ -849,3 +849,31 @@ Also removed unused `userEvent` and `expectPoll` imports from the file.
 - Happy-DOM: All 7 tests in history-delete-workout.spec.ts pass
 - Browser mode: All 7 tests pass
 
+### Fix 26: history-edge-cases.spec.ts browser-only APIs (2026-01-18)
+**Tests fixed:** 9 tests in `history-edge-cases.spec.ts`
+
+**Issue:** The test file used `expect.element()` and `expect.poll()` which are browser-only APIs (Vitest browser mode), causing:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+These APIs are only available in Vitest browser mode, causing the tests to fail in Happy-DOM.
+
+**Fix:** Changed `expect.element()` to use the project's `expectElement` abstraction and `expect.poll()` to use `expectPoll`:
+
+```ts
+// Before:
+await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
+await expect.poll(() => router.currentRoute.value.path).toContain('non-existent-id')
+
+// After:
+await expectElement(page.getByText(/no workouts yet/i)).toBeVisible()
+await expectPoll(() => router.currentRoute.value.path).toContain('non-existent-id')
+```
+
+The file already imported `expectElement` and `expectPoll` from the assertions abstraction layer but wasn't using them.
+
+**Verification:**
+- Happy-DOM: All 9 tests pass
+- Browser mode: All 9 tests pass
+
