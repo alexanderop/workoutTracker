@@ -1,6 +1,6 @@
 import { page, userEvent } from '../../helpers/locator'
 import { expect } from 'vitest'
-import { expectElement, expectPoll } from '../../helpers/assertions'
+import { expectElement } from '../../helpers/assertions'
 import type { createTestApp } from '../../helpers/createTestApp'
 import { db, getBenchmarksRepository } from '@/db'
 import type { DbBenchmark, DbBenchmarkRound, DbCompletedWorkout } from '@/db/schema'
@@ -122,7 +122,7 @@ export async function startBenchmarkWorkout(
 ): Promise<void> {
   await app.benchmarkDetail.navigateToDetail(benchmarkId)
   await app.benchmarkDetail.clickStartWorkout()
-  await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
+  await expectElement(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
 }
 
 /**
@@ -227,7 +227,7 @@ export async function createCompletedAttempt(
  * Waits for the completion screen to appear.
  */
 export async function waitForCompletionScreen(): Promise<void> {
-  await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+  await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 }
 
 // Re-export commonly used items

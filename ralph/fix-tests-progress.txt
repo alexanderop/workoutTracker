@@ -103,3 +103,27 @@ Also removed unused import `expectPoll` from assertions.
 - Happy-DOM: 2 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: 2 tests pass
 
+### Fix 5: benchmarkHelpers.ts expect.element() browser-only API (2026-01-18)
+**Tests fixed:** Multiple benchmark test suites using `startBenchmarkWorkout` and `waitForCompletionScreen`
+
+**Issue:** `benchmarkHelpers.ts` used `expect.element()` directly instead of the project's `expectElement` abstraction:
+```ts
+await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
+await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+```
+`expect.element()` is a browser-only API (Vitest browser mode), causing tests to fail in Happy-DOM with:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+**Fix:** Changed to use the `expectElement` function from the assertions abstraction layer:
+```ts
+await expectElement(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
+await expectElement(page.getByText(/workout complete/i)).toBeVisible()
+```
+Also removed unused `expectPoll` import.
+
+**Verification:**
+- Happy-DOM: Tests now pass/skip correctly
+- Browser mode: `displays completion screen with final time` test passes
+
