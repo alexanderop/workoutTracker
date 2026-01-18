@@ -662,16 +662,16 @@ describe('Template Flow', () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Defaults Test')
+      await getByRole('textbox', { name: /template name/i }).fill('Defaults Test')
 
       // Add a bodyweight exercise (e.g., Push-ups)
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Push-ups'))
+      await common.getDialogButton('Push-ups').click()
       await common.waitForDialogClose()
 
       // Save template
-      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await getByRole('button', { name: /save template/i }).click()
 
       // Verify DB block has correct defaults
       await expectPoll(async () => {
