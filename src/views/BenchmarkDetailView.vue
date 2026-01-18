@@ -154,7 +154,7 @@ async function handleDeleteBenchmark(): Promise<void> {
       @remove-exercise="removeExercise"
       @reorder-exercises="reorderExercises"
       @click-exercise="handleExerciseClick"
-      @copy-round="copyRound(currentRoundIndex)"
+      @copy-round="() => { copyRound(currentRoundIndex); navigateToRound(roundCount - 1) }"
       @delete-round="deleteRound(currentRoundIndex)"
       @navigate-to-round="navigateToRound"
     />

@@ -149,16 +149,21 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.fillName('Test Copy Round')
       await app.benchmarkForm.addExerciseWithReps('Burpees', 40)
 
-      // Copy Round 1
+      // Verify Round 1 has the exercise before copying
+      await expectElement(page.getByTestId('benchmark-exercise-item')).toBeVisible()
+
+      // Copy Round 1 (auto-selects the new round after copy)
       await app.benchmarkForm.copyRound(0)
 
       // Verify Round 2 appears with same exercise and reps
       expect(await app.benchmarkForm.getRoundCount()).toBe(2)
-      await app.benchmarkForm.navigateToRound(1)
 
       // Round 2 should show Burpees with 40 reps (same as Round 1)
-      await expectElement(page.getByText('Burpees')).toBeVisible()
-      await expectElement(page.getByText('40')).toBeVisible()
+      // Wait for the exercise item to be visible in the new round and verify content
+      const exerciseItem = page.getByTestId('benchmark-exercise-item')
+      await expectElement(exerciseItem).toBeVisible()
+      await expectElement(exerciseItem).toHaveTextContent(/burpees/i)
+      await expectElement(exerciseItem).toHaveTextContent(/40/)
 
       app.cleanup()
     })
@@ -212,6 +217,9 @@ describe('Variable Reps Benchmark', () => {
       const app = await createTestApp()
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.clickEdit()
+
+      // Wait for the exercise list to load before copying
+      await expectElement(page.getByTestId('benchmark-exercise-item')).toBeVisible()
 
       // Copy Round 1
       await app.benchmarkForm.copyRound(0)

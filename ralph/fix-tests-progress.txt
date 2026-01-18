@@ -559,3 +559,76 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: All 2 tests in exercise-edit-flow.spec.ts pass
 - Browser mode: All 2 tests pass
 
+### Fix 19: benchmark-variable-reps.spec.ts "copied round has identical exercises and reps" test (2026-01-18)
+**Test fixed:** `copied round has identical exercises and reps` in `benchmark-variable-reps.spec.ts`
+
+**Issue:** The test used `expectElement(page.getByText('Burpees')).toBeVisible()` after copying a round, which inconsistently failed in Happy-DOM mode. The `page.getByText()` locator relies on `screen.queryAllByText()` from testing-library, which sometimes returned empty results even though the element was present in the DOM (verified via synchronous `query()` calls).
+
+The root cause appears to be a timing issue between Vue's reactivity updates and testing-library's `waitFor` polling mechanism. When the round is copied and the new round is selected:
+1. `currentExercises` computed recalculates
+2. Vue schedules a render
+3. The `BenchmarkExerciseList` component receives new props
+4. The component's watch updates `exercisesList` (fires on next tick due to default `flush: 'pre'`)
+5. During this brief window, `queryAllByText` might query before the DOM is fully updated
+
+**Fix:** Changed the test assertions to use `getByTestId` (which is more reliable in Happy-DOM) instead of `getByText`, and then verify content using `toHaveTextContent`:
+
+```ts
+// Before (unreliable in Happy-DOM):
+await expectElement(page.getByText('Burpees')).toBeVisible()
+await expectElement(page.getByText('40')).toBeVisible()
+
+// After (reliable):
+const exerciseItem = page.getByTestId('benchmark-exercise-item')
+await expectElement(exerciseItem).toBeVisible()
+await expectElement(exerciseItem).toHaveTextContent(/Burpees/i)
+await expectElement(exerciseItem).toHaveTextContent(/40/)
+```
+
+**Verification:**
+- Happy-DOM: Test `copied round has identical exercises and reps` passes
+- Browser mode: All benchmark-variable-reps tests pass
+
+### Fix 20: BenchmarkDetailView missing auto-select after copyRound (2026-01-18)
+**Test fixed:** `copied round preserves exerciseDefinitionId` in `benchmark-variable-reps.spec.ts`
+
+**Issue:** When editing an existing benchmark via `BenchmarkDetailView`, clicking "Copy Round" would copy the round but not auto-select the new round. This differed from `CreateBenchmarkView` behavior.
+
+The test sequence was:
+1. Create benchmark with exercises via database helper
+2. Navigate to detail page
+3. Click Edit
+4. Copy Round 0
+5. Save
+
+After copying, the `BenchmarkFormPO.copyRound()` method expected the new round to be auto-selected (showing "Round 2/2" header), but the page still showed "Round 1/2".
+
+The root cause was that `BenchmarkDetailView.vue` called `copyRound(currentRoundIndex)` directly without navigating to the new round, while `CreateBenchmarkView.vue` had:
+```typescript
+function handleCopyRound() {
+  copyRound(currentRoundIndex.value)
+  navigateToRound(roundCount.value - 1)  // Auto-select new round
+}
+```
+
+**Fix:** Updated `BenchmarkDetailView.vue` to match the behavior of `CreateBenchmarkView.vue`:
+```vue
+<!-- Before: -->
+@copy-round="copyRound(currentRoundIndex)"
+
+<!-- After: -->
+@copy-round="() => { copyRound(currentRoundIndex); navigateToRound(roundCount - 1) }"
+```
+
+Also added a wait in the test to ensure the exercise list loads before copying:
+```typescript
+await app.benchmarkDetail.clickEdit()
+// Wait for the exercise list to load before copying
+await expectElement(page.getByTestId('benchmark-exercise-item')).toBeVisible()
+await app.benchmarkForm.copyRound(0)
+```
+
+**Verification:**
+- Happy-DOM: Test `copied round preserves exerciseDefinitionId` passes
+- Browser mode: All 18 tests in benchmark-variable-reps.spec.ts pass (5 skipped)
+
