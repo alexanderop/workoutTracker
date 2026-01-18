@@ -1343,3 +1343,41 @@ await getByRole('button', { name: /save template/i }).click()
 
 **Note:** The file still has another test that uses `userEvent` patterns (`saves AMRAP exercises and duration config correctly`) which will need to be fixed in subsequent iterations.
 
+### Fix 39: template-flow.spec.ts "saves AMRAP exercises and duration config correctly" userEvent with Locators (2026-01-18)
+**Test fixed:** `saves AMRAP exercises and duration config correctly` in `template-flow.spec.ts`
+
+**Issue:** The test was calling `userEvent.fill(locator, text)` and `userEvent.click(locator)` where the argument is a Locator object instead of an Element. However, `userEvent` was not imported in this file, causing:
+```
+ReferenceError: userEvent is not defined
+```
+
+Even if it were imported, in Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects.
+
+**Fix:** Changed `userEvent.fill(locator, text)` and `userEvent.click(locator)` to use the Locator's built-in methods:
+
+```ts
+// Before:
+await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'AMRAP Data Test')
+await userEvent.click(getByRole('button', { name: /add block/i }))
+await userEvent.click(getByRole('tab', { name: /timed/i }))
+await userEvent.click(getByText('AMRAP'))
+await userEvent.click(getByRole('button', { name: /add exercise/i }))
+await userEvent.click(common.getDialogButton('Burpees'))
+await userEvent.click(common.getDialogButton('Add Block'))
+await userEvent.click(getByRole('button', { name: /save template/i }))
+
+// After:
+await getByRole('textbox', { name: /template name/i }).fill('AMRAP Data Test')
+await getByRole('button', { name: /add block/i }).click()
+await getByRole('tab', { name: /timed/i }).click()
+await getByText('AMRAP').click()
+await getByRole('button', { name: /add exercise/i }).click()
+await common.getDialogButton('Burpees').click()
+await common.getDialogButton('Add Block').click()
+await getByRole('button', { name: /save template/i }).click()
+```
+
+**Verification:**
+- Happy-DOM: Test `saves AMRAP exercises and duration config correctly` passes
+- Browser mode: All 16 tests in template-flow.spec.ts pass
+

@@ -699,25 +699,25 @@ describe('Template Flow', () => {
       const { getByRole, getByText, common, navigateTo, cleanup } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'AMRAP Data Test')
+      await getByRole('textbox', { name: /template name/i }).fill('AMRAP Data Test')
 
       // Add AMRAP block
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(getByRole('tab', { name: /timed/i }))
-      await userEvent.click(getByText('AMRAP'))
+      await getByRole('tab', { name: /timed/i }).click()
+      await getByText('AMRAP').click()
       await common.waitForDialog()
 
       // Add exercise to AMRAP
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
-      await userEvent.click(common.getDialogButton('Burpees'))
+      await getByRole('button', { name: /add exercise/i }).click()
+      await common.getDialogButton('Burpees').click()
 
       // Confirm AMRAP block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await common.getDialogButton('Add Block').click()
       await common.waitForDialogClose()
 
       // Save template
-      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await getByRole('button', { name: /save template/i }).click()
       await common.waitForRoute(/^\/templates\//)
 
       // Verify DB has correct AMRAP data
