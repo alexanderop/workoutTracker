@@ -10,6 +10,11 @@ export function useTimerAudio() {
    * Uses a timeout to prevent hanging if resume() doesn't resolve.
    */
   async function ensureAudioReady(): Promise<void> {
+    // AudioContext is not available in Happy-DOM or other non-browser environments
+    if (typeof AudioContext === 'undefined') {
+      return
+    }
+
     if (!audioContext) {
       audioContext = new AudioContext()
     }

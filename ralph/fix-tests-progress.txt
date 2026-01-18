@@ -1791,3 +1791,44 @@ Using `/deadlift/i` regex ensures the match works regardless of how the text is 
 - Happy-DOM: All 12 tests in workout-set-completion.spec.ts pass
 - Browser mode: All 12 tests pass
 
+### Fix 50: useTimerAudio.ts AudioContext not defined in Happy-DOM (2026-01-18)
+**Tests fixed:** Unhandled errors in `standalone-timers-flow.spec.ts` and `progression-management.spec.ts`
+
+**Issue:** The `useTimerAudio` composable directly called `new AudioContext()` without checking if `AudioContext` is available:
+```ts
+async function ensureAudioReady(): Promise<void> {
+  if (!audioContext) {
+    audioContext = new AudioContext()  // Throws ReferenceError in Happy-DOM
+  }
+}
+```
+
+In Happy-DOM, `AudioContext` is not defined (it's a browser-only Web Audio API), causing unhandled rejection errors:
+```
+ReferenceError: AudioContext is not defined
+at ensureAudioReady src/composables/timers/useTimerAudio.ts:14:7
+```
+
+These errors appeared as "unhandled rejection" warnings at the end of the test run, even though all tests passed. The errors originated from timer components (`WorkoutTabataView.vue`, `ActiveProgressionView.vue`) that use `useTimerAudio()` to play beeps during workout transitions.
+
+**Fix:** Added a guard to check if `AudioContext` is available before attempting to use it:
+```ts
+async function ensureAudioReady(): Promise<void> {
+  // AudioContext is not available in Happy-DOM or other non-browser environments
+  if (typeof AudioContext === 'undefined') {
+    return
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContext()
+  }
+  // ... rest of function
+}
+```
+
+This allows the composable to gracefully skip audio playback in environments where Web Audio API isn't available, instead of throwing an error.
+
+**Verification:**
+- Happy-DOM: All 57 test files pass, 0 errors (previously had 2 unhandled errors)
+- Browser mode: Audio tests continue to work correctly (tested via `timer-audio.spec.ts`)
+
