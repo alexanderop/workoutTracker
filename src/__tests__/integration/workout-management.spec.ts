@@ -90,23 +90,32 @@ describe('Workout Management', () => {
 
   describe('Navigation', () => {
     it('navigates back and forth between blocks in active mode', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+      const { builder, cleanup } = await createTestApp()
 
       // Setup workout with two strength blocks and start
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
       await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
 
-      // Navigate to next block
-      await userEvent.click(await workout.getFooterButton('next'))
+      // Navigate to next block - use explicit wait for button visibility first
+      const nextButton = page.getByRole('button', { name: /next block/i })
+      await expectElement(nextButton).toBeVisible()
+      await nextButton.click()
 
+      // Wait for navigation to complete and new block content to render
       await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
-      await expectElement(page.getByText('Deadlift')).toBeInTheDocument()
+      await expectElement(page.getByRole('table')).toBeVisible()
+
+      // Verify the exercise name is visible (case insensitive to handle uppercase)
+      await expectElement(page.getByText(/deadlift/i)).toBeVisible()
 
       // Navigate back to first block
-      await userEvent.click(await workout.getFooterButton('prev'))
+      const prevButton = page.getByRole('button', { name: /previous block/i })
+      await expectElement(prevButton).toBeVisible()
+      await prevButton.click()
 
       await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
-      await expectElement(page.getByText('Bench Press')).toBeInTheDocument()
+      await expectElement(page.getByRole('table')).toBeVisible()
+      await expectElement(page.getByText(/bench press/i)).toBeVisible()
 
       cleanup()
     })

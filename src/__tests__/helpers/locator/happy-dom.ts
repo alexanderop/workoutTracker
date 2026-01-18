@@ -975,9 +975,72 @@ export { HappyDomLocator }
 /**
  * Wrapper around @testing-library/user-event that provides API compatibility
  * with vitest/browser's userEvent (which has `fill` instead of `type`).
+ *
+ * IMPORTANT: We use the `user` instance (from `.setup()`) for all interactions
+ * rather than spreading the raw module, because the setup() instance properly
+ * handles event simulation in Happy-DOM mode.
  */
 export const userEvent = {
-  ...testingLibraryUserEvent,
+  /**
+   * Click an element.
+   */
+  async click(element: Element): Promise<void> {
+    await user.click(element)
+  },
+  /**
+   * Double-click an element.
+   */
+  async dblClick(element: Element): Promise<void> {
+    await user.dblClick(element)
+  },
+  /**
+   * Type text into an element.
+   */
+  async type(element: Element, text: string): Promise<void> {
+    await user.type(element, text)
+  },
+  /**
+   * Clear an element's value.
+   */
+  async clear(element: Element): Promise<void> {
+    await user.clear(element)
+  },
+  /**
+   * Hover over an element.
+   */
+  async hover(element: Element): Promise<void> {
+    await user.hover(element)
+  },
+  /**
+   * Unhover from an element.
+   */
+  async unhover(element: Element): Promise<void> {
+    await user.unhover(element)
+  },
+  /**
+   * Tab to the next focusable element.
+   */
+  async tab(options?: { shift?: boolean }): Promise<void> {
+    await user.tab(options)
+  },
+  /**
+   * Simulate keyboard events.
+   */
+  async keyboard(text: string): Promise<void> {
+    await user.keyboard(text)
+  },
+  /**
+   * Select options in a select element.
+   */
+  async selectOptions(element: Element, values: string | string[] | HTMLElement | HTMLElement[]): Promise<void> {
+    await user.selectOptions(element, values)
+  },
+  /**
+   * Deselect options in a select element.
+   */
+  async deselectOptions(element: Element, values: string | string[] | HTMLElement | HTMLElement[]): Promise<void> {
+    await user.deselectOptions(element, values)
+  },
   /**
    * Fill an input element with text. Clears existing content first.
    * Maps to testing-library's clear() + type() since it doesn't have fill().

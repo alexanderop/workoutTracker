@@ -1725,3 +1725,40 @@ describe.skipIf(!isBrowserMode)('Weight Tracking (Mobile)', () => {
 - Happy-DOM: 4 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: All 4 tests pass
 
+### Fix 48: weight-tracking.spec.ts browser-only @unovis charting APIs (2026-01-18)
+**Tests fixed:** 8 tests in `weight-tracking.spec.ts` (10 total, 2 are repository-only tests that run in Happy-DOM)
+
+**Issue:** The test file renders `WeightView` which contains `WeightChart` component using `@unovis` charting library. This library requires browser-specific APIs that don't work in Happy-DOM:
+
+1. `MutationObserver` - used by `@unovis/ts` tooltip component with private class members
+2. SVG transforms - `svgNode.transform.baseVal.consolidate()` is not a function in Happy-DOM
+3. `getComputedStyle` - fails on undefined elements during component unmount
+
+The error occurred during the `unmounted` lifecycle hook of the tooltip component:
+```
+TypeError: Cannot read private member #listeners from an object whose class did not declare it
+at Proxy.disconnect (MutationObserver.js:100:18)
+at Proxy.destroy (@unovis/ts/components/tooltip/index.js:356:32)
+```
+
+**Fix:** Added browser mode detection and skip the test suites that use `WeightView` (which contains the chart) in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+// - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+// - getComputedStyle calls fail on undefined elements during component unmount
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('adding weight entries', () => { ... })
+describe.skipIf(!isBrowserMode)('chart visualization', () => { ... })
+describe.skipIf(!isBrowserMode)('deleting entries', () => { ... })
+```
+
+The "stats and data operations" test suite was NOT skipped because it only tests the repository directly without rendering the chart component.
+
+**Verification:**
+- Happy-DOM: 8 tests skipped (browser-only test suites), 2 tests pass (repository-only tests)
+- Browser mode: All 10 tests pass
+

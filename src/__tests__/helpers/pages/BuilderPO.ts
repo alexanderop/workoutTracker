@@ -31,12 +31,16 @@ export class BuilderPO {
    * Handles both empty state ("Add first block") and populated state ("Add block").
    */
   async openAddBlockDialog(): Promise<void> {
-    const addFirstBlock = page.getByRole('button', { name: /add first block/i }).query()
-    if (addFirstBlock) {
-      await userEvent.click(addFirstBlock)
+    // Use Locator.click() for consistent behavior in both Happy-DOM and browser mode
+    const addFirstBlockLocator = page.getByRole('button', { name: /add first block/i })
+
+    // Check which button exists and click it using Locator.click()
+    if (addFirstBlockLocator.query()) {
+      await addFirstBlockLocator.click()
       await this.common.waitForDialog()
       return
     }
+
     await page.getByRole('button', { name: /add block/i }).click()
     await this.common.waitForDialog()
   }
@@ -143,10 +147,13 @@ export class BuilderPO {
   ): Promise<void> {
     await this.openAddBlockDialog()
     await this.switchToTimedBlocksTab()
+    // Wait for block type buttons to be visible after tab switch
+    await expectElement(page.getByText(blockType, { exact: true })).toBeVisible()
     await userEvent.click(this.common.getDialogButton(blockType))
 
     // Wait for configure dialog
-    await expectElement(page.getByText('Configure')).toBeVisible()
+    await expectElement(page.getByRole('dialog')).toBeVisible()
+    await expectElement(page.getByText(/Configure/)).toBeVisible()
 
     // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
     const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'

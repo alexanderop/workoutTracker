@@ -1,6 +1,9 @@
 import { page, userEvent } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
+
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -164,10 +167,14 @@ describe('Timed Block Workflows', () => {
       await expectElement(page.getByText(/workout complete/i)).toBeVisible()
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expectPoll(async () => {
-        const element = await viewDetailsButton.element()
-        return getComputedStyle(element).opacity
-      }, { timeout: 2000 }).toBe('1')
+      // In browser mode, wait for the animation to complete (opacity = 1)
+      // In Happy-DOM, animations don't run, so the button is immediately clickable
+      if (isBrowserMode) {
+        await expectPoll(async () => {
+          const element = await viewDetailsButton.element()
+          return getComputedStyle(element).opacity
+        }, { timeout: 2000 }).toBe('1')
+      }
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
@@ -183,7 +190,7 @@ describe('Timed Block Workflows', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       // Search for exact exercise to avoid ambiguous matches with Smith Machine Bench Press
-      await userEvent.fill(page.getByRole('textbox'), 'Bench Press')
+      await page.getByRole('textbox').fill('Bench Press')
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.addTimedBlock('AMRAP')

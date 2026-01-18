@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -22,7 +22,7 @@ describe('Workout Block Skip Completion', () => {
       await expectElement(page.getByText(/block 2 of 3/i), { timeout: 3000 }).toBeVisible()
 
       // Step 2: SKIP block 1 (Deadlift) - navigate directly to block 2
-      await userEvent.click(await workout.getFooterButton('next'))
+      await page.getByRole('button', { name: /next block/i }).click()
       await expectElement(page.getByText(/block 3 of 3/i)).toBeVisible()
       await expectElement(page.getByText('Barbell Row')).toBeInTheDocument()
 
@@ -33,7 +33,10 @@ describe('Workout Block Skip Completion', () => {
       // ASSERTION: After completing the last block with skipped middle block,
       // should auto-navigate to the first incomplete block (block 1 / Deadlift)
       await expectElement(page.getByText(/block 2 of 3/i), { timeout: 3000 }).toBeVisible()
-      await expectElement(page.getByText('Deadlift')).toBeInTheDocument()
+      // Wait for the strength view table to be visible (indicates component rendered)
+      await expectElement(page.getByRole('table'), { timeout: 3000 }).toBeVisible()
+      // Wait for exercise name to appear (case-insensitive since it may be uppercase)
+      await expectElement(page.getByText(/deadlift/i), { timeout: 3000 }).toBeInTheDocument()
 
       // Finish dialog should NOT appear because block 1 (Deadlift) is untouched
       expect(common.isDialogOpen()).toBe(false)

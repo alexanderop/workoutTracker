@@ -7,11 +7,19 @@ import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbWeightEntriesForDays as createDatabaseWeightEntriesForDays } from '../factories/dbWeightEntry.factory'
 
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
 describe('Weight Tracking', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
-  describe('adding weight entries', () => {
+  // This test suite requires browser-only APIs:
+  // - @unovis charting library uses SVG transform APIs (svgNode.transform.baseVal.consolidate)
+  // - @unovis tooltip uses MutationObserver with private members not available in Happy-DOM
+  // - getComputedStyle calls fail on undefined elements during component unmount
+  // Skip in Happy-DOM mode
+  describe.skipIf(!isBrowserMode)('adding weight entries', () => {
     it('saves entry and displays in history list', async () => {
       const { navigateTo, weight, cleanup } = await createTestApp()
 
@@ -176,7 +184,8 @@ describe('Weight Tracking', () => {
     })
   })
 
-  describe('chart visualization', () => {
+  // Skip in Happy-DOM mode - uses @unovis charting which requires browser APIs
+  describe.skipIf(!isBrowserMode)('chart visualization', () => {
     it('shows time range tabs when entries exist', async () => {
       const { navigateTo, weight, cleanup } = await createTestApp()
 
@@ -194,7 +203,8 @@ describe('Weight Tracking', () => {
     })
   })
 
-  describe('deleting entries', () => {
+  // Skip in Happy-DOM mode - uses @unovis charting which requires browser APIs
+  describe.skipIf(!isBrowserMode)('deleting entries', () => {
     it('removes entry after confirmation', async () => {
       const { navigateTo, weight, cleanup } = await createTestApp()
 
