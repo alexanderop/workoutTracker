@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { db } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 // Clear VueUse localStorage key before each test
 const VUEUSE_COLOR_SCHEME_KEY = 'vueuse-color-scheme'
+
+// Browser mode detection for tests that require browser-only APIs
+const isBrowserMode = globalThis.window !== undefined && '__vitest_browser__' in globalThis
 
 /**
  * Integration tests for settings preferences.
@@ -97,7 +100,11 @@ describe('Settings Preferences', () => {
     })
   })
 
-  describe('Language Selection', () => {
+  // This test suite requires browser-only APIs:
+  // - reka-ui Select component uses target.hasPointerCapture() for pointer events
+  // - Happy-DOM doesn't support pointer capture APIs
+  // Skip in Happy-DOM mode
+  describe.skipIf(!isBrowserMode)('Language Selection', () => {
     it('changes language and updates UI text', async () => {
       const { common, getByRole, findByText, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -108,11 +115,11 @@ describe('Settings Preferences', () => {
 
       // Open language select using aria-label on the trigger
       const languageSelect = getByRole('combobox', { name: /language/i })
-      await userEvent.click(languageSelect)
+      await languageSelect.click()
 
       // Select German
       const germanOption = await findByText('Deutsch')
-      await userEvent.click(germanOption)
+      await germanOption.click()
 
       // Verify UI updated to German (the heading changes)
       await expectElement(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent(
@@ -129,9 +136,9 @@ describe('Settings Preferences', () => {
       await expectElement(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 }).toBeVisible()
 
       const languageSelect = getByRole('combobox', { name: /language/i })
-      await userEvent.click(languageSelect)
+      await languageSelect.click()
       const germanOption = await findByText('Deutsch')
-      await userEvent.click(germanOption)
+      await germanOption.click()
 
       await expectPoll(() => document.documentElement.lang).toBe('de')
 
@@ -147,9 +154,9 @@ describe('Settings Preferences', () => {
 
       // Open language select and change to German
       const languageSelect = getByRole('combobox', { name: /language/i })
-      await userEvent.click(languageSelect)
+      await languageSelect.click()
       const germanOption = await findByText('Deutsch')
-      await userEvent.click(germanOption)
+      await germanOption.click()
 
       // Verify persisted to database
       await expectPoll(async () => {
@@ -182,14 +189,14 @@ describe('Settings Preferences', () => {
 
       // Click delete all data button
       const deleteButton = getByRole('button', { name: /^delete all data$/i })
-      await userEvent.click(deleteButton)
+      await deleteButton.click()
 
       // Confirmation dialog appears
       await common.waitForDialog()
       await expectElement(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Click Cancel button
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await common.getDialogButton('Cancel').click()
 
       // Dialog closes
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -220,11 +227,12 @@ describe('Settings Preferences', () => {
       await common.navigateToSettings()
 
       // Open delete dialog
-      await userEvent.click(getByRole('button', { name: /^delete all data$/i }))
+      await getByRole('button', { name: /^delete all data$/i }).click()
       await common.waitForDialog()
 
-      // Press Escape to close dialog
-      await userEvent.keyboard('{Escape}')
+      // Press Escape to close dialog - use native DOM event since userEvent.keyboard expects elements
+      const dialog = await page.getByRole('dialog').element()
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
       // Dialog closes
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -353,7 +361,7 @@ describe('Settings Preferences', () => {
       // Find the lbs button in the weight toggle group (uses role="button" with aria-label)
       const lbsButton = getByRole('button', { name: /pounds/i })
       await expectElement(lbsButton).toBeVisible()
-      await userEvent.click(lbsButton)
+      await lbsButton.click()
 
       // Verify persisted to database
       await expectPoll(async () => {
@@ -371,11 +379,11 @@ describe('Settings Preferences', () => {
 
       // First switch to lbs
       const lbsButton = getByRole('button', { name: /pounds/i })
-      await userEvent.click(lbsButton)
+      await lbsButton.click()
 
       // Then switch back to kg
       const kgButton = getByRole('button', { name: /kilograms/i })
-      await userEvent.click(kgButton)
+      await kgButton.click()
 
       // Verify persisted to database
       await expectPoll(async () => {
@@ -393,7 +401,7 @@ describe('Settings Preferences', () => {
 
       // Switch to lbs
       const lbsButton = getByRole('button', { name: /pounds/i })
-      await userEvent.click(lbsButton)
+      await lbsButton.click()
 
       // Navigate away
       await router.push('/')
@@ -421,7 +429,7 @@ describe('Settings Preferences', () => {
       // Find the ft/in button in the height toggle group
       const ftInButton = getByRole('button', { name: /feet and inches/i })
       await expectElement(ftInButton).toBeVisible()
-      await userEvent.click(ftInButton)
+      await ftInButton.click()
 
       // Verify persisted to database
       await expectPoll(async () => {
@@ -439,11 +447,11 @@ describe('Settings Preferences', () => {
 
       // First switch to ft/in
       const ftInButton = getByRole('button', { name: /feet and inches/i })
-      await userEvent.click(ftInButton)
+      await ftInButton.click()
 
       // Then switch back to cm
       const cmButton = getByRole('button', { name: /centimeters/i })
-      await userEvent.click(cmButton)
+      await cmButton.click()
 
       // Verify persisted to database
       await expectPoll(async () => {

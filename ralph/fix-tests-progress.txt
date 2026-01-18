@@ -1381,3 +1381,59 @@ await getByRole('button', { name: /save template/i }).click()
 - Happy-DOM: Test `saves AMRAP exercises and duration config correctly` passes
 - Browser mode: All 16 tests in template-flow.spec.ts pass
 
+### Fix 40: settings-preferences.spec.ts userEvent with Locators and browser-only pointer APIs (2026-01-18)
+**Tests fixed:** 21 tests in `settings-preferences.spec.ts` (18 pass in Happy-DOM, 3 Language Selection tests skipped)
+
+**Issue:** The test file had two problems:
+1. Used `userEvent.click(locator)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+2. The Language Selection tests use reka-ui Select component which requires `target.hasPointerCapture()` - a browser-only API that Happy-DOM doesn't support, causing:
+```
+TypeError: target.hasPointerCapture is not a function
+```
+
+**Fix:**
+1. Changed all `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+```ts
+// Before:
+await userEvent.click(deleteButton)
+await userEvent.click(common.getDialogButton('Cancel'))
+await userEvent.click(lbsButton)
+
+// After:
+await deleteButton.click()
+await common.getDialogButton('Cancel').click()
+await lbsButton.click()
+```
+
+2. Changed `userEvent.keyboard('{Escape}')` to use native DOM event:
+```ts
+// Before:
+await userEvent.keyboard('{Escape}')
+
+// After:
+const dialog = await page.getByRole('dialog').element()
+dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+```
+
+3. Added browser mode detection and skip the Language Selection test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - reka-ui Select component uses target.hasPointerCapture() for pointer events
+// - Happy-DOM doesn't support pointer capture APIs
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('Language Selection', () => {
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: 18 tests pass, 3 tests skipped (Language Selection - browser-only)
+- Browser mode: All 21 tests pass
+
