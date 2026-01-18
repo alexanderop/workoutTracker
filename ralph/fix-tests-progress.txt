@@ -1110,3 +1110,39 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: 1 test passes (Message Preloading), 1 test skipped (Language Switching - browser-only)
 - Browser mode: Both tests pass (2 passed)
 
+### Fix 32: NumericInputModalPO.ts userEvent.click with Locators (2026-01-18)
+**Tests fixed:** 7 tests in `locale-decimal-input.spec.ts`
+
+**Issue:** `NumericInputModalPO.ts` (Page Object) was calling `userEvent.click(locator)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed all `userEvent.click(locator)` calls to use the Locator's built-in `.click()` method:
+
+```ts
+// Before:
+await userEvent.click(presetButton)
+await userEvent.click(button)
+await userEvent.click(backspaceButton)
+await userEvent.click(digitButton)
+await userEvent.click(confirmButton)
+await userEvent.click(cancelButton)
+
+// After:
+await presetButton.click()
+await button.click()
+await backspaceButton.click()
+await digitButton.click()
+await confirmButton.click()
+await cancelButton.click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 7 tests in locale-decimal-input.spec.ts pass
+- Browser mode: All 7 tests pass
+

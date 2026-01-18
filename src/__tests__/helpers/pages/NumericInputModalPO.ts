@@ -1,6 +1,6 @@
-import { expect } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 
 /**
  * Page Object for the NumericInputModal component.
@@ -18,14 +18,14 @@ export class NumericInputModalPO {
    * Waits for the modal to be visible.
    */
   async waitForOpen(): Promise<void> {
-    await expect.element(this.getDialog()).toBeVisible()
+    await expectElement(this.getDialog()).toBeVisible()
   }
 
   /**
    * Waits for the modal to be hidden.
    */
   async waitForClose(): Promise<void> {
-    await expect.element(this.getDialog()).not.toBeInTheDocument()
+    await expectElement(this.getDialog()).not.toBeInTheDocument()
     await flushPromises()
   }
 
@@ -46,7 +46,7 @@ export class NumericInputModalPO {
    */
   async selectPreset(value: number): Promise<void> {
     const presetButton = page.getByRole('option', { name: new RegExp(`^${value}`) })
-    await userEvent.click(presetButton)
+    await presetButton.click()
   }
 
   /**
@@ -61,7 +61,7 @@ export class NumericInputModalPO {
    */
   async clickDecimal(): Promise<void> {
     const button = this.getDecimalButton()
-    await userEvent.click(button)
+    await button.click()
   }
 
   /**
@@ -90,7 +90,7 @@ export class NumericInputModalPO {
     // Clear current value by clicking backspace multiple times
     const backspaceButton = page.getByRole('button', { name: /backspace/i })
     for (let index = 0; index < 5; index++) {
-      await userEvent.click(backspaceButton)
+      await backspaceButton.click()
     }
 
     // Type each digit, handling decimals
@@ -102,7 +102,7 @@ export class NumericInputModalPO {
         continue
       }
       const digitButton = page.getByRole('button', { name: new RegExp(`^${digit}$`) })
-      await userEvent.click(digitButton)
+      await digitButton.click()
     }
   }
 
@@ -111,7 +111,7 @@ export class NumericInputModalPO {
    */
   async clickConfirm(): Promise<void> {
     const confirmButton = page.getByRole('button', { name: /confirm value/i })
-    await userEvent.click(confirmButton)
+    await confirmButton.click()
   }
 
   /**
@@ -119,7 +119,7 @@ export class NumericInputModalPO {
    */
   async clickCancel(): Promise<void> {
     const cancelButton = page.getByRole('button', { name: /cancel/i })
-    await userEvent.click(cancelButton)
+    await cancelButton.click()
   }
 
   /**
