@@ -177,8 +177,9 @@ describe('Benchmark Execution', () => {
       expect((await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
       expect((await page.getByText(/active/i).all()).length).toBeGreaterThan(0)
 
-      // Close and advance
-      await page.getByRole('button', { name: /close/i }).click()
+      // Close drawer with Escape key (close button is hidden on mobile viewport)
+      const dialog = await page.getByRole('dialog').element()
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
       await expectElement(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
       await new Promise(resolve => setTimeout(resolve, 500))
 
