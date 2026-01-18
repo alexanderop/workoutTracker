@@ -43,7 +43,7 @@ describe('Timer Audio Settings', () => {
 
       await toggleLocator.click()
 
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await toggleLocator.element()
         return element.getAttribute('aria-checked')
       }).toBe('false')
@@ -62,7 +62,7 @@ describe('Timer Audio Settings', () => {
       const toggleLocator = page.getByRole('switch', { name: /timer sounds/i })
       await toggleLocator.click()
 
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await toggleLocator.element()
         return element.getAttribute('aria-checked')
       }).toBe('false')

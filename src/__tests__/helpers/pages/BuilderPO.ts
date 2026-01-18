@@ -1,5 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
+import { page, userEvent } from '../locator'
+import { expectElement } from '../assertions'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 
@@ -68,9 +69,7 @@ export class BuilderPO {
     const playlistButtons = await this.getPlaylistBlockButtons()
     expect(playlistButtons.length).toBe(expectedBlockCount)
     await this.startWorkout()
-    await expect
-      .element(page.getByText(new RegExp(`block 1 of ${expectedBlockCount}`, 'i')))
-      .toBeVisible()
+    await expectElement(page.getByText(new RegExp(`block 1 of ${expectedBlockCount}`, 'i'))).toBeVisible()
   }
 
   /**
@@ -86,7 +85,7 @@ export class BuilderPO {
       await this.common.waitForDialogClose()
     }
     await this.startWorkout()
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
   }
 
   /**
@@ -147,7 +146,7 @@ export class BuilderPO {
     await userEvent.click(this.common.getDialogButton(blockType))
 
     // Wait for configure dialog
-    await expect.element(page.getByText('Configure')).toBeVisible()
+    await expectElement(page.getByText('Configure')).toBeVisible()
 
     // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
     const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
@@ -171,10 +170,10 @@ export class BuilderPO {
     await userEvent.click(this.common.getDialogButton('Cardio'))
 
     // Wait for configure dialog
-    await expect.element(page.getByText('Configure')).toBeVisible()
+    await expectElement(page.getByText('Configure')).toBeVisible()
 
     // Select activity by clicking the button with matching text
-    await userEvent.click(page.getByRole('button', { name: new RegExp(activity, 'i') }))
+    await page.getByRole('button', { name: new RegExp(activity, 'i') }).click()
 
     // Duration defaults to 30 minutes, just confirm
     await userEvent.click(this.common.getDialogButton('Add Block'))

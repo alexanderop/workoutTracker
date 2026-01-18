@@ -45,8 +45,8 @@ describe('Set Context Menu', () => {
       await contextMenu.waitForOpen()
 
       // Verify menu options are present
-      await expect.element(contextMenu.getDeleteOption()).toBeVisible()
-      await expect.element(contextMenu.getDuplicateOption()).toBeVisible()
+      await expectElement(contextMenu.getDeleteOption()).toBeVisible()
+      await expectElement(contextMenu.getDuplicateOption()).toBeVisible()
 
       app.cleanup()
     })
@@ -77,7 +77,7 @@ describe('Set Context Menu', () => {
       await contextMenu.waitForClose()
 
       // Verify set count decreased
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const rows = await page.getByRole('table').getByRole('row').all()
         return rows.length - 1
       }).toBe(initialSetCount - 1)
@@ -106,7 +106,7 @@ describe('Set Context Menu', () => {
       }
 
       // Verify only 1 set remains
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const rows = await page.getByRole('table').getByRole('row').all()
         return rows.length - 1
       }).toBe(1)
@@ -119,7 +119,7 @@ describe('Set Context Menu', () => {
 
       // Delete option should be disabled
       const deleteOption = contextMenu.getDeleteOption()
-      await expect.element(deleteOption).toHaveAttribute('aria-disabled', 'true')
+      await expectElement(deleteOption).toHaveAttribute('aria-disabled', 'true')
 
       app.cleanup()
     })
@@ -171,7 +171,7 @@ describe('Set Context Menu', () => {
 
       // Complete the first set first
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+      await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
       // Long press on completed set to duplicate it
       const setRow = await workout.getSetRow(0)

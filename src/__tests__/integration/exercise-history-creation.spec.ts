@@ -4,6 +4,13 @@
  * Tests verify that completing a workout creates exercise history.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository, getExerciseProgressRepository } from '@/db'
 import { page, userEvent } from '../helpers/locator'
@@ -11,7 +18,10 @@ import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-describe('Exercise History Creation', () => {
+// This test suite requires browser-only APIs:
+// - Navigates to ExerciseProgressView which uses @unovis charting (SVG transform APIs)
+// - svgNode.transform.baseVal.consolidate is not available in Happy-DOM
+describe.skipIf(!isBrowserMode)('Exercise History Creation', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 

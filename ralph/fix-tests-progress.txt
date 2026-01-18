@@ -1208,3 +1208,46 @@ Removed unused `userEvent` import from the file.
 - Happy-DOM: All 10 tests in template-error-handling.spec.ts pass
 - Browser mode: All 10 tests pass
 
+### Fix 35: template-flow.spec.ts native DOM click on increment button (2026-01-18)
+**Test fixed:** `modifies default set count and reflects in started workout` in `template-flow.spec.ts`
+
+**Issue:** The test used native DOM `querySelector` and `click()` to interact with the increment button:
+```ts
+const incrementButton = squatCard.querySelector('[aria-label*="increase" i]')
+incrementButton.click()
+```
+
+Native DOM `click()` doesn't properly trigger Vue's event handling in Happy-DOM. The button's `@click="incrementSetCount"` handler wasn't being called, so the set count remained at 3 instead of incrementing.
+
+**Fix:**
+1. Changed to use the locator pattern with `page.getByRole()` which uses `@testing-library/user-event` internally:
+```ts
+const incrementButton = page.getByRole('button', { name: /increase set count/i })
+await incrementButton.click()
+await flushPromises()
+await incrementButton.click()
+await flushPromises()
+```
+
+2. Added `flushPromises()` from `@vue/test-utils` after each click to ensure Vue's reactivity updates propagate through the component hierarchy (the set count flows: `TemplateBlockItem` → emit → `TemplateBlockList` → emit → `TemplateDetailView` → state update).
+
+3. Changed from `expectElement(setCountInput).toHaveValue('5')` to direct element assertion since the locator's element reference may be stale after DOM updates:
+```ts
+const inputElement = await setCountInput.element()
+if (!(inputElement instanceof HTMLInputElement)) {
+  throw new Error('Set count input not found')
+}
+expect(inputElement.value).toBe('5')
+```
+
+4. Added wait for "Start Workout" button visibility before clicking to avoid timing issues:
+```ts
+const startButton = page.getByRole('button', { name: /start workout/i })
+await expectElement(startButton).toBeVisible()
+await startButton.click()
+```
+
+**Verification:**
+- Happy-DOM: Test `modifies default set count and reflects in started workout` passes
+- Browser mode: All 16 tests in template-flow.spec.ts pass
+

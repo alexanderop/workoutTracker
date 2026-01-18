@@ -1,5 +1,5 @@
-import { page, userEvent } from 'vitest/browser'
-import { expect } from 'vitest'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 import type { CommonPO } from './CommonPO'
 
 /**
@@ -15,7 +15,7 @@ export class ProgressionsPO {
   async navigateToTab(): Promise<void> {
     await this.common.navigateToWorkouts()
     const progressionsTab = page.getByRole('tab', { name: /progressions/i })
-    await expect.element(progressionsTab).toBeVisible()
+    await expectElement(progressionsTab).toBeVisible()
     await progressionsTab.click()
   }
 
@@ -31,7 +31,7 @@ export class ProgressionsPO {
    */
   async fillName(name: string): Promise<void> {
     const input = page.getByRole('textbox')
-    await userEvent.fill(input, name)
+    await input.fill(name)
   }
 
   /**
@@ -123,14 +123,14 @@ export class ProgressionsPO {
    * Asserts the empty state is displayed.
    */
   async assertEmptyState(): Promise<void> {
-    await expect.element(page.getByText(/no progressions yet/i)).toBeInTheDocument()
+    await expectElement(page.getByText(/no progressions yet/i)).toBeInTheDocument()
   }
 
   /**
    * Asserts a progression exists in the list.
    */
   async assertProgressionExists(name: string): Promise<void> {
-    await expect.element(page.getByText(name).first()).toBeVisible()
+    await expectElement(page.getByText(name).first()).toBeVisible()
   }
 
   /**
@@ -139,14 +139,14 @@ export class ProgressionsPO {
    */
   async assertCurrentLevel(weight: number, reps: number, minutes: number): Promise<void> {
     const levelText = `${weight}kg • ${reps} reps • ${minutes} min`
-    await expect.element(page.getByText(levelText), { timeout: 5000 }).toBeVisible()
+    await expectElement(page.getByText(levelText), { timeout: 5000 }).toBeVisible()
   }
 
   /**
    * Asserts sessions completed count.
    */
   async assertSessionsCompleted(count: number): Promise<void> {
-    await expect.element(page.getByText(new RegExp(`${count} sessions? completed`, 'i'))).toBeVisible()
+    await expectElement(page.getByText(new RegExp(`${count} sessions? completed`, 'i'))).toBeVisible()
   }
 
   /**
@@ -154,6 +154,6 @@ export class ProgressionsPO {
    */
   async assertCompleteBadge(): Promise<void> {
     // Use exact match for "Complete" to avoid matching session history "Completed" badges
-    await expect.element(page.getByText('Complete', { exact: true })).toBeVisible()
+    await expectElement(page.getByText('Complete', { exact: true })).toBeVisible()
   }
 }

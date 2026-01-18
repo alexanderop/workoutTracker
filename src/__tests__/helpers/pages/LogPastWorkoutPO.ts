@@ -1,6 +1,6 @@
-import { page, userEvent } from 'vitest/browser'
-import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import { page, userEvent } from '../locator'
+import { expectElement } from '../assertions'
 import type { SetValues } from '../types'
 import type { CommonPO } from './CommonPO'
 
@@ -93,17 +93,17 @@ export class LogPastWorkoutPO {
 
     if (values.kg !== undefined) {
       const kgInput = row.getByRole('spinbutton', { name: /weight|kg/i })
-      await userEvent.fill(kgInput, String(values.kg))
+      await kgInput.fill(String(values.kg))
     }
 
     if (values.reps !== undefined) {
       const repsInput = row.getByRole('spinbutton', { name: /reps/i })
-      await userEvent.fill(repsInput, String(values.reps))
+      await repsInput.fill(String(values.reps))
     }
 
     if (values.rir !== undefined) {
       const rirInput = row.getByRole('spinbutton', { name: /rir/i })
-      await userEvent.fill(rirInput, String(values.rir))
+      await rirInput.fill(String(values.rir))
     }
 
     await flushPromises()
@@ -152,8 +152,8 @@ export class LogPastWorkoutPO {
     const roundsInput = page.getByRole('spinbutton', { name: /rounds/i })
     const repsInput = page.getByRole('spinbutton', { name: /extra reps|additional reps/i })
 
-    await userEvent.fill(roundsInput, String(rounds))
-    await userEvent.fill(repsInput, String(extraReps))
+    await roundsInput.fill(String(rounds))
+    await repsInput.fill(String(extraReps))
     await flushPromises()
   }
 
@@ -166,8 +166,8 @@ export class LogPastWorkoutPO {
     const minutesInput = page.getByRole('spinbutton', { name: /minutes/i })
     const secondsInput = page.getByRole('spinbutton', { name: /seconds/i })
 
-    await userEvent.fill(minutesInput, String(minutes))
-    await userEvent.fill(secondsInput, String(seconds))
+    await minutesInput.fill(String(minutes))
+    await secondsInput.fill(String(seconds))
     await flushPromises()
   }
 
@@ -186,17 +186,17 @@ export class LogPastWorkoutPO {
   async fillCardioResult(values: CardioResultValues): Promise<void> {
     if (values.durationMinutes !== undefined) {
       const durationInput = page.getByRole('spinbutton', { name: /duration/i })
-      await userEvent.fill(durationInput, String(values.durationMinutes))
+      await durationInput.fill(String(values.durationMinutes))
     }
 
     if (values.distanceKm !== undefined) {
       const distanceInput = page.getByRole('spinbutton', { name: /distance/i })
-      await userEvent.fill(distanceInput, String(values.distanceKm))
+      await distanceInput.fill(String(values.distanceKm))
     }
 
     if (values.calories !== undefined) {
       const caloriesInput = page.getByRole('spinbutton', { name: /calories/i })
-      await userEvent.fill(caloriesInput, String(values.calories))
+      await caloriesInput.fill(String(values.calories))
     }
 
     await flushPromises()
@@ -209,7 +209,7 @@ export class LogPastWorkoutPO {
   async addStrengthBlock(exerciseName: string): Promise<void> {
     await page.getByRole('button', { name: /add.*block/i }).click()
     await this.common.waitForDialog()
-    await userEvent.click(this.common.getDialogButton(exerciseName))
+    await this.common.getDialogButton(exerciseName).click()
     await this.common.waitForDialogClose()
   }
 
@@ -219,8 +219,8 @@ export class LogPastWorkoutPO {
    */
   async setWorkoutName(name: string): Promise<void> {
     const nameInput = page.getByRole('textbox', { name: /workout name/i })
-    await userEvent.clear(nameInput)
-    await userEvent.fill(nameInput, name)
+    await nameInput.clear()
+    await nameInput.fill(name)
   }
 
   /**
@@ -253,9 +253,9 @@ export class LogPastWorkoutPO {
    * Verifies that the source selection screen is visible.
    */
   async assertSourceSelectionVisible(): Promise<void> {
-    await expect.element(page.getByRole('button', { name: /from template/i })).toBeVisible()
-    await expect.element(page.getByRole('button', { name: /from history/i })).toBeVisible()
-    await expect.element(page.getByRole('button', { name: /blank workout/i })).toBeVisible()
+    await expectElement(page.getByRole('button', { name: /from template/i })).toBeVisible()
+    await expectElement(page.getByRole('button', { name: /from history/i })).toBeVisible()
+    await expectElement(page.getByRole('button', { name: /blank workout/i })).toBeVisible()
   }
 
   /**
@@ -267,7 +267,7 @@ export class LogPastWorkoutPO {
       month: 'short',
       day: 'numeric',
     })
-    await expect.element(page.getByText(new RegExp(formattedDate, 'i'))).toBeVisible()
+    await expectElement(page.getByText(new RegExp(formattedDate, 'i'))).toBeVisible()
   }
 
   /**

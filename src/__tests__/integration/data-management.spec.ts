@@ -1,7 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { expectElement } from '../helpers/assertions'
+import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
@@ -59,7 +59,7 @@ describe('Data Management', () => {
       await getByRole('button', { name: /^export data$/i }).click()
 
       // Assert: Blob was created and cleaned up
-      await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
+      await expectPoll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
       expect(URL.revokeObjectURL).toHaveBeenCalled()
 
       cleanup()
@@ -115,7 +115,7 @@ describe('Data Management', () => {
       common.getDialogButton('Import Data').click()
 
       // Assert: Data was actually persisted to DB
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectPoll(async () => await db.workouts.count()).toBe(1)
       const workouts = await db.workouts.toArray()
       expect(workouts[0]?.name).toBe('Imported Workout')
 
@@ -174,7 +174,7 @@ describe('Data Management', () => {
       common.getDialogButton('Delete All Data').click()
 
       // Assert: Data was actually deleted from DB
-      await expect.poll(async () => await db.workouts.count()).toBe(0)
+      await expectPoll(async () => await db.workouts.count()).toBe(0)
 
       cleanup()
     })
@@ -205,7 +205,7 @@ describe('Data Management', () => {
       await findByText('Push Day').click()
 
       // Assert: Verify navigation to detail view
-      await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
+      await expectPoll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
       await expectElement(page.getByText('Push Day')).toBeVisible()

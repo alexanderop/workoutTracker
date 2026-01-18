@@ -176,8 +176,11 @@ describe('Benchmark Results', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.waitForLoad('Fran')
 
-      // Find PB badges with trophy emoji - should only be one (in attempt history)
-      const pbBadges = await page.getByText(/🏆.*personal best/i).all()
+      // Wait for attempt history section to load - look for "Personal Best" text
+      await expectElement(page.getByText(/personal best/i).first()).toBeVisible()
+
+      // Find PB badges - should only be one (in attempt history)
+      const pbBadges = page.getByText(/personal best/i).all()
       expect(pbBadges).toHaveLength(1)
 
       app.cleanup()

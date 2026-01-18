@@ -231,7 +231,7 @@ describe('Timed Block Exercise List', () => {
       await removeButtonLocators[0]!.click()
 
       // First exercise should be removed, second should remain
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const updatedDialog = await getByRole('dialog').element()
         return updatedDialog.textContent?.includes('Push-ups') ?? false
       }).toBe(false)
@@ -253,7 +253,7 @@ describe('Timed Block Exercise List', () => {
       await userEvent.click(common.getDialogButton('Add Exercise'))
 
       // Exercise picker overlay should open (has a search input and exercise list)
-      await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+      await expectElement(page.getByText('Push-ups', { exact: true })).toBeVisible()
 
       app.cleanup()
     })

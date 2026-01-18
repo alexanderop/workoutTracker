@@ -13,7 +13,7 @@ const isBrowserMode =
 
 // This test suite requires browser-only APIs:
 // - page.viewport() for setting viewport size
-// - expect.element() for visibility assertions
+// - expectElement() for visibility assertions
 // Skip in Happy-DOM mode
 describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', () => {
   beforeEach(async () => {
@@ -31,7 +31,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', ()
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
-    await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+    await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Click add block button to open dialog
     await userEvent.click(getByRole('button', { name: /add/i }))
@@ -42,11 +42,11 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', ()
 
     // BUG VERIFICATION: Assert all block options are visible (not just in DOM)
     // toBeVisible() checks actual visibility in viewport - catches clipping
-    await expect.element(page.getByText('AMRAP')).toBeVisible()
-    await expect.element(page.getByText('EMOM')).toBeVisible()
-    await expect.element(page.getByText('Tabata')).toBeVisible()
-    await expect.element(page.getByText('For Time')).toBeVisible()
-    await expect.element(page.getByText('Cardio')).toBeVisible()
+    await expectElement(page.getByText('AMRAP')).toBeVisible()
+    await expectElement(page.getByText('EMOM')).toBeVisible()
+    await expectElement(page.getByText('Tabata')).toBeVisible()
+    await expectElement(page.getByText('For Time')).toBeVisible()
+    await expectElement(page.getByText('Cardio')).toBeVisible()
 
     // Verify "For Time" is clickable (would timeout if outside viewport)
     await userEvent.click(page.getByText('For Time'))
@@ -75,7 +75,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', ()
     await page.viewport(1024, 600)
 
     await navigateTo({ name: RouteNames.CreateTemplate })
-    await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+    await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     await userEvent.click(getByRole('button', { name: /add/i }))
     await common.waitForDialog()
@@ -87,8 +87,8 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', ()
     const cardioButton = page.getByText('Cardio')
 
     // These should be visible - if they're not, the dialog needs scrolling
-    await expect.element(forTimeButton).toBeVisible()
-    await expect.element(cardioButton).toBeVisible()
+    await expectElement(forTimeButton).toBeVisible()
+    await expectElement(cardioButton).toBeVisible()
 
     cleanup()
   })

@@ -752,7 +752,10 @@ class HappyDomLocator implements Locator {
   async fill(text: string, _options?: UserEventFillOptions): Promise<void> {
     const el = this.element()
     await user.clear(el)
-    await user.type(el, text)
+    // user.type() doesn't accept empty strings
+    if (text) {
+      await user.type(el, text)
+    }
   }
 
   async clear(_options?: UserEventClearOptions): Promise<void> {

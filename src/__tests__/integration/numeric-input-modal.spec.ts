@@ -66,7 +66,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await page.getByRole('button', { name: /mark set 1 complete/i }).click()
 
       // Verify set is completed
-      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+      await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })
@@ -111,9 +111,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await modalPO.waitForOpen()
 
       // Check for unit label in the selected preset (inside the dialog)
-      await expect
-        .element(page.getByTestId('preset-selected').getByText('kg'))
-        .toBeVisible()
+      await expectElement(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()
@@ -135,7 +133,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
 
       // Barbell plate hint should show correct plate configuration
       const barbellHint = page.getByRole('img', { name: /barbell with 20kg/i })
-      await expect.element(barbellHint).toBeVisible()
+      await expectElement(barbellHint).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()
@@ -154,7 +152,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
 
       // Barbell plate hint should NOT be visible
       const barbellHint = page.getByRole('img', { name: /barbell/i })
-      await expect.element(barbellHint).not.toBeInTheDocument()
+      await expectElement(barbellHint).not.toBeInTheDocument()
 
       await modalPO.clickCancel()
       cleanup()
@@ -190,7 +188,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await set.fillAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify set is completed
-      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+      await expectPoll(() => workout.isSetCompleted(0)).toBe(true)
 
       cleanup()
     })

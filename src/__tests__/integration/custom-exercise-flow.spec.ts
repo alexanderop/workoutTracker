@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -10,14 +10,14 @@ describe('Custom Exercise Flow', () => {
   afterEach(cleanupIntegrationTest)
 
   it('creates a custom exercise and displays it in the exercises view', async () => {
-    const { common, getByRole, cleanup } = await createTestApp()
+    const { common, cleanup } = await createTestApp()
 
     // Step 1: Navigate to exercises view
     await common.navigateToExercises()
 
     // Step 2: Click create custom exercise button
-    const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(createButton)
+    const createButton = page.getByRole('button', { name: /create.*custom/i })
+    await createButton.click()
     await common.waitForRoute(/^\/create-exercise$/)
 
     // Step 3: Fill in exercise name
@@ -25,8 +25,8 @@ describe('Custom Exercise Flow', () => {
     await nameInput.fill('My Awesome Lift')
 
     // Step 4: Save the exercise
-    const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    const saveButton = page.getByRole('button', { name: /save/i })
+    await saveButton.click()
 
     // Step 5: Should navigate back to exercises view
     await common.waitForRoute(/^\/exercises$/)
@@ -38,28 +38,28 @@ describe('Custom Exercise Flow', () => {
   })
 
   it('creates a custom exercise and shows it in the add exercise dialog', async () => {
-    const { common, router, getByRole, cleanup } = await createTestApp()
+    const { common, router, cleanup } = await createTestApp()
 
     // Create custom exercise via UI
     await common.navigateToExercises()
 
-    const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(createButton)
+    const createButton = page.getByRole('button', { name: /create.*custom/i })
+    await createButton.click()
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await nameInput.fill('Custom Compound Move')
 
-    const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    const saveButton = page.getByRole('button', { name: /save/i })
+    await saveButton.click()
     await common.waitForRoute(/^\/exercises$/)
 
     // Now start a workout and check the add exercise dialog
     await router.push({ name: RouteNames.Home })
-    const startButton = getByRole('button', { name: /start new workout/i })
-    await userEvent.click(startButton)
-    const addBlockButton = getByRole('button', { name: /add.*block/i })
-    await userEvent.click(addBlockButton)
+    const startButton = page.getByRole('button', { name: /start new workout/i })
+    await startButton.click()
+    const addBlockButton = page.getByRole('button', { name: /add.*block/i })
+    await addBlockButton.click()
     await common.waitForDialog()
 
     // Assert: Custom exercise appears in the dialog
@@ -69,20 +69,20 @@ describe('Custom Exercise Flow', () => {
   })
 
   it('finds created custom exercise via search', async () => {
-    const { common, getByRole, cleanup } = await createTestApp()
+    const { common, cleanup } = await createTestApp()
 
     // Create custom exercise with unique name
     await common.navigateToExercises()
 
-    const createButton = getByRole('button', { name: /create.*custom/i })
-    await userEvent.click(createButton)
+    const createButton = page.getByRole('button', { name: /create.*custom/i })
+    await createButton.click()
     await common.waitForRoute(/^\/create-exercise$/)
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await nameInput.fill('Zyzz Special Curl')
 
-    const saveButton = getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    const saveButton = page.getByRole('button', { name: /save/i })
+    await saveButton.click()
     await common.waitForRoute(/^\/exercises$/)
 
     // Search for the custom exercise
@@ -97,28 +97,28 @@ describe('Custom Exercise Flow', () => {
 
   describe('Form Validation', () => {
     it('disables save button when exercise name is empty', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
-      const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(createButton)
+      const createButton = page.getByRole('button', { name: /create.*custom/i })
+      await createButton.click()
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Assert save button is disabled when name is empty
-      const saveButton = getByRole('button', { name: /save/i })
+      const saveButton = page.getByRole('button', { name: /save/i })
       await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
 
     it('disables save button when name contains only whitespace', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
-      const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(createButton)
+      const createButton = page.getByRole('button', { name: /create.*custom/i })
+      await createButton.click()
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Type whitespace-only name
@@ -126,23 +126,23 @@ describe('Custom Exercise Flow', () => {
       await nameInput.fill('   ')
 
       // Assert save button remains disabled
-      const saveButton = getByRole('button', { name: /save/i })
+      const saveButton = page.getByRole('button', { name: /save/i })
       await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
 
     it('enables save button when valid name is entered', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+      const { common, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
-      const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(createButton)
+      const createButton = page.getByRole('button', { name: /create.*custom/i })
+      await createButton.click()
       await common.waitForRoute(/^\/create-exercise$/)
 
       // Initially disabled
-      const saveButton = getByRole('button', { name: /save/i })
+      const saveButton = page.getByRole('button', { name: /save/i })
       await expectElement(saveButton).toBeDisabled()
 
       // Type valid name
@@ -158,39 +158,39 @@ describe('Custom Exercise Flow', () => {
 
   describe('Full User Journey', () => {
     it('creates custom exercise and uses it to complete a workout', async () => {
-      const { builder, common, workout, router, getByRole, cleanup } =
+      const { builder, common, workout, router, cleanup } =
         await createTestApp()
 
       // ========================================
       // PHASE 1: Create custom exercise
       // ========================================
       await common.navigateToExercises()
-      const createButton = getByRole('button', { name: /create.*custom/i })
-      await userEvent.click(createButton)
+      const createButton = page.getByRole('button', { name: /create.*custom/i })
+      await createButton.click()
       await common.waitForRoute(/^\/create-exercise$/)
 
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
       await nameInput.fill('My Custom Lift')
-      const saveButton = getByRole('button', { name: /save/i })
-      await userEvent.click(saveButton)
+      const saveButton = page.getByRole('button', { name: /save/i })
+      await saveButton.click()
       await common.waitForRoute(/^\/exercises$/)
 
       // ========================================
       // PHASE 2: Start new workout
       // ========================================
       await router.push({ name: RouteNames.Home })
-      const startButton = getByRole('button', { name: /start new workout/i })
-      await userEvent.click(startButton)
+      const startButton = page.getByRole('button', { name: /start new workout/i })
+      await startButton.click()
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // ========================================
       // PHASE 3: Add custom exercise as block
       // ========================================
-      const addBlockButton = getByRole('button', { name: /add first block/i })
-      await userEvent.click(addBlockButton)
+      const addBlockButton = page.getByRole('button', { name: /add first block/i })
+      await addBlockButton.click()
       await common.waitForDialog()
       const dialogButton = common.getDialogButton('My Custom Lift')
-      await userEvent.click(dialogButton)
+      await dialogButton.click()
       await common.waitForDialogClose()
 
       // ========================================
@@ -207,18 +207,18 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       await expectPoll(() => workout.getMenuTrigger()).toBeTruthy()
       const menuTrigger = await workout.getMenuTrigger()
-      await userEvent.click(menuTrigger)
+      await menuTrigger.click()
 
       await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      const endWorkoutItem = getByRole('menuitem', { name: /end workout/i })
-      await userEvent.click(endWorkoutItem)
+      const endWorkoutItem = page.getByRole('menuitem', { name: /end workout/i })
+      await endWorkoutItem.click()
 
       await common.waitForDialog()
-      const workoutNameInput = getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(workoutNameInput)
-      await userEvent.fill(workoutNameInput, 'Custom Exercise Session')
+      const workoutNameInput = page.getByRole('textbox', { name: /workout name/i })
+      await workoutNameInput.clear()
+      await workoutNameInput.fill('Custom Exercise Session')
       const finishButton = common.getDialogButton('Finish Workout')
-      await userEvent.click(finishButton)
+      await finishButton.click()
 
       // ========================================
       // PHASE 6: Wait for completion screen

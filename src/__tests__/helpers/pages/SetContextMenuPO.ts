@@ -1,5 +1,5 @@
-import { page } from 'vitest/browser'
-import { expect } from 'vitest'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 
 const LONG_PRESS_DELAY = 500
 const EVENT_PROCESSING_DELAY = 50
@@ -53,14 +53,14 @@ export class SetContextMenuPO {
    * Waits for context menu to be visible.
    */
   async waitForOpen(): Promise<void> {
-    await expect.element(page.getByRole('menu', { name: /set actions/i })).toBeVisible()
+    await expectElement(page.getByRole('menu', { name: /set actions/i })).toBeVisible()
   }
 
   /**
    * Waits for context menu to close.
    */
   async waitForClose(): Promise<void> {
-    await expect.element(page.getByRole('menu', { name: /set actions/i })).not.toBeInTheDocument()
+    await expectElement(page.getByRole('menu', { name: /set actions/i })).not.toBeInTheDocument()
   }
 
   /**

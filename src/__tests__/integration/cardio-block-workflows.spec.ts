@@ -19,9 +19,9 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await builder.switchToTimedBlocksTab()
 
       // Verify Cardio appears alongside other timed block types
-      await expect.element(page.getByText('AMRAP')).toBeInTheDocument()
-      await expect.element(page.getByText('EMOM')).toBeInTheDocument()
-      await expect.element(page.getByText('Cardio')).toBeInTheDocument()
+      await expectElement(page.getByText('AMRAP')).toBeInTheDocument()
+      await expectElement(page.getByText('EMOM')).toBeInTheDocument()
+      await expectElement(page.getByText('Cardio')).toBeInTheDocument()
 
       cleanup()
     })
@@ -37,16 +37,16 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Cardio'))
 
       // Verify configure dialog opens with activity picker
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(page.getByText('Configure')).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByText('Configure')).toBeVisible()
 
       // Verify activity options are visible (emoji buttons)
-      await expect.element(page.getByRole('button', { name: /running/i })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /cycling/i })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /rowing/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /running/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /cycling/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /rowing/i })).toBeInTheDocument()
 
       // Verify duration input exists
-      await expect.element(page.getByLabelText(/target duration/i)).toBeInTheDocument()
+      await expectElement(page.getByLabelText(/target duration/i)).toBeInTheDocument()
 
       cleanup()
     })
@@ -60,7 +60,7 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Cardio'))
 
       // Wait for dialog
-      await expect.element(page.getByText('Configure')).toBeVisible()
+      await expectElement(page.getByText('Configure')).toBeVisible()
 
       // Select cycling (running is default)
       await userEvent.click(page.getByRole('button', { name: /cycling/i }))
@@ -85,10 +85,10 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Cardio'))
 
       // Wait for dialog
-      await expect.element(page.getByText('Configure')).toBeVisible()
+      await expectElement(page.getByText('Configure')).toBeVisible()
 
       // Running is selected by default and supports distance
-      await expect.element(page.getByLabelText(/target distance/i)).toBeInTheDocument()
+      await expectElement(page.getByLabelText(/target distance/i)).toBeInTheDocument()
 
       cleanup()
     })
@@ -118,7 +118,7 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify cardio block shows Done button (primary action)
-      await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
 
       cleanup()
     })
@@ -138,14 +138,14 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(2)
 
       // Verify we're on the cardio block (shows Done button)
-      await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
 
       // Click Done on cardio block - should advance to next block
       await userEvent.click(page.getByRole('button', { name: /done/i }))
 
       // Should advance to block 2 of 2 (strength block)
-      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
-      await expect.element(page.getByRole('table')).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
+      await expectElement(page.getByRole('table')).toBeVisible()
 
       cleanup()
     })
@@ -216,25 +216,25 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
 
       // Start workout
       await builder.startWorkout()
-      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 3/i)).toBeVisible()
 
       // Execute strength block - complete one set
-      await expect.element(page.getByRole('table')).toBeVisible()
+      await expectElement(page.getByRole('table')).toBeVisible()
       await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
 
       // Navigate to EMOM block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
-      await expect.element(page.getByText('Push-ups')).toBeVisible()
+      await expectElement(page.getByText(/block 2 of 3/i)).toBeVisible()
+      await expectElement(page.getByText('Push-ups')).toBeVisible()
 
       // Navigate to cardio block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 3 of 3/i)).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/block 3 of 3/i)).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
 
       // End workout via menu
       await userEvent.click(await workout.getMenuTrigger())
-      await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+      await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
       await page.getByRole('menuitem', { name: /end workout/i }).click()
 
       // Confirm dialog
@@ -242,12 +242,12 @@ describe.skipIf(!isBrowserMode)('Cardio Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Verify completion/success screen
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
       // Wait for View Details button to be visible and clickable
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
+      await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expectPoll(async () => {
         const element = await viewDetailsButton.element()
         return getComputedStyle(element).opacity
       }, { timeout: 2000 }).toBe('1')

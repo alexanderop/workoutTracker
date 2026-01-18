@@ -1,5 +1,5 @@
-import { page, userEvent } from 'vitest/browser'
-import { expect } from 'vitest'
+import { page } from '../locator'
+import { expectElement } from '../assertions'
 import type { CommonPO } from './CommonPO'
 
 /**
@@ -23,8 +23,8 @@ export class WeightPO {
    */
   async enterWeight(value: string): Promise<void> {
     const input = page.getByRole('spinbutton', { name: /weight/i })
-    await userEvent.clear(input)
-    await userEvent.fill(input, value)
+    await input.clear()
+    await input.fill(value)
   }
 
   /**
@@ -32,7 +32,7 @@ export class WeightPO {
    */
   async clickSave(): Promise<void> {
     const saveButton = page.getByRole('button', { name: /save/i })
-    await userEvent.click(saveButton)
+    await saveButton.click()
   }
 
   /**
@@ -51,7 +51,7 @@ export class WeightPO {
    */
   async selectTimeRange(range: '7D' | '30D' | '90D' | 'All'): Promise<void> {
     const tab = page.getByRole('tab', { name: range })
-    await userEvent.click(tab)
+    await tab.click()
   }
 
   /**
@@ -67,7 +67,7 @@ export class WeightPO {
    * @param weight - The expected weight value
    */
   async expectCurrentWeight(weight: string): Promise<void> {
-    await expect.element(page.getByText(weight)).toBeVisible()
+    await expectElement(page.getByText(weight)).toBeVisible()
   }
 
   /**
@@ -77,7 +77,7 @@ export class WeightPO {
    */
   async clickDeleteButton(index: number = 0): Promise<void> {
     const deleteButtons = page.getByRole('button', { name: /delete/i })
-    await userEvent.click(deleteButtons.nth(index))
+    await deleteButtons.nth(index).click()
     await this.common.waitForDialog()
   }
 
@@ -85,7 +85,7 @@ export class WeightPO {
    * Confirms the delete action in the confirmation dialog.
    */
   async confirmDelete(): Promise<void> {
-    await userEvent.click(this.common.getDialogButton('Delete'))
+    await this.common.getDialogButton('Delete').click()
     await this.common.waitForDialogClose()
   }
 
@@ -94,7 +94,7 @@ export class WeightPO {
    */
   async cancelDelete(): Promise<void> {
     const cancelButton = page.getByRole('button', { name: /cancel/i })
-    await userEvent.click(cancelButton)
+    await cancelButton.click()
     await this.common.waitForDialogClose()
   }
 

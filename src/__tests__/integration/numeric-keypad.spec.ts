@@ -1,6 +1,5 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { expectElement } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
@@ -41,7 +40,7 @@ describe('NumericKeypad (Touch Device)', () => {
       expect(initialValue).toBe(70)
 
       // Type "8" - should REPLACE 70 with 8, not append to make 708
-      await userEvent.click(page.getByRole('button', { name: /^8$/ }))
+      await page.getByRole('button', { name: /^8$/ }).click()
 
       const newValue = await modalPO.getCurrentValue()
       expect(newValue).toBe(8) // Not 708!
@@ -66,8 +65,8 @@ describe('NumericKeypad (Touch Device)', () => {
       await modalPO.waitForOpen()
 
       // Type "8" (replaces), then "5" (appends)
-      await userEvent.click(page.getByRole('button', { name: /^8$/ }))
-      await userEvent.click(page.getByRole('button', { name: /^5$/ }))
+      await page.getByRole('button', { name: /^8$/ }).click()
+      await page.getByRole('button', { name: /^5$/ }).click()
 
       const value = await modalPO.getCurrentValue()
       expect(value).toBe(85) // First replaced, second appended
@@ -92,7 +91,7 @@ describe('NumericKeypad (Touch Device)', () => {
       await modalPO.waitForOpen()
 
       // Backspace should delete last digit of 75, leaving 7
-      await userEvent.click(page.getByRole('button', { name: /backspace/i }))
+      await page.getByRole('button', { name: /backspace/i }).click()
 
       const value = await modalPO.getCurrentValue()
       expect(value).toBe(7) // Edited from 75, not fresh start
@@ -118,7 +117,7 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Click decimal first - should start fresh with "0."
       await modalPO.clickDecimal()
-      await userEvent.click(page.getByRole('button', { name: /^5$/ }))
+      await page.getByRole('button', { name: /^5$/ }).click()
 
       const value = await modalPO.getCurrentValue()
       expect(value).toBe(0.5) // Started fresh with decimal
@@ -141,12 +140,12 @@ describe('NumericKeypad (Touch Device)', () => {
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
       for (const _ of Array.from({ length: 5 })) {
-        await userEvent.click(backspaceButton)
+        await backspaceButton.click()
       }
 
       // Tap digit "5"
       const digit5 = page.getByRole('button', { name: /^5$/ })
-      await userEvent.click(digit5)
+      await digit5.click()
 
       // Verify value display shows 5
       const currentValue = await modalPO.getCurrentValue()
@@ -168,13 +167,13 @@ describe('NumericKeypad (Touch Device)', () => {
       // Clear any existing value
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
       for (const _ of Array.from({ length: 5 })) {
-        await userEvent.click(backspaceButton)
+        await backspaceButton.click()
       }
 
       // Tap "1" then "0" then "0" to make 100
-      await userEvent.click(page.getByRole('button', { name: /^1$/ }))
-      await userEvent.click(page.getByRole('button', { name: /^0$/ }))
-      await userEvent.click(page.getByRole('button', { name: /^0$/ }))
+      await page.getByRole('button', { name: /^1$/ }).click()
+      await page.getByRole('button', { name: /^0$/ }).click()
+      await page.getByRole('button', { name: /^0$/ }).click()
 
       // Verify value display shows 100
       const currentValue = await modalPO.getCurrentValue()
@@ -196,18 +195,18 @@ describe('NumericKeypad (Touch Device)', () => {
       // Clear and enter 123
       const backspaceButton = page.getByRole('button', { name: /backspace/i })
       for (const _ of Array.from({ length: 5 })) {
-        await userEvent.click(backspaceButton)
+        await backspaceButton.click()
       }
 
-      await userEvent.click(page.getByRole('button', { name: /^1$/ }))
-      await userEvent.click(page.getByRole('button', { name: /^2$/ }))
-      await userEvent.click(page.getByRole('button', { name: /^3$/ }))
+      await page.getByRole('button', { name: /^1$/ }).click()
+      await page.getByRole('button', { name: /^2$/ }).click()
+      await page.getByRole('button', { name: /^3$/ }).click()
 
       // Verify it's 123
       expect(await modalPO.getCurrentValue()).toBe(123)
 
       // Backspace once
-      await userEvent.click(backspaceButton)
+      await backspaceButton.click()
 
       // Verify it's now 12
       expect(await modalPO.getCurrentValue()).toBe(12)
@@ -233,7 +232,7 @@ describe('NumericKeypad (Touch Device)', () => {
       await modalPO.waitForClose()
 
       // Verify value was saved
-      const set = await workout.getSet(0)
+      const set = workout.getSet(0)
       const values = await set.getValues()
       expect(values.weight).toBe('85')
 

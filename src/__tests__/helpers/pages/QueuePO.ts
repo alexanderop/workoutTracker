@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser'
+import { page, userEvent } from '../locator'
 import type { CommonPO } from './CommonPO'
 
 /**

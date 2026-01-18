@@ -1,5 +1,5 @@
-import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
+import { page, userEvent } from '../locator'
 import type { SetValues } from '../types'
 import { ensureHTMLElement } from '../domHelpers'
 import { NumericInputModalPO } from './NumericInputModalPO'
@@ -177,7 +177,7 @@ export class SetRowPO {
   private async fillViaModal(values: SetValues): Promise<void> {
     // Fill weight
     if (values.kg !== undefined) {
-      await userEvent.click(this.getWeightTrigger())
+      await this.getWeightTrigger().click()
       await this.modalPO.waitForOpen()
       await this.modalPO.enterValueAndConfirm(values.kg)
       await this.modalPO.waitForClose()
@@ -185,7 +185,7 @@ export class SetRowPO {
 
     // Fill reps
     if (values.reps !== undefined) {
-      await userEvent.click(this.getRepsTrigger())
+      await this.getRepsTrigger().click()
       await this.modalPO.waitForOpen()
       await this.modalPO.enterValueAndConfirm(values.reps)
       await this.modalPO.waitForClose()
@@ -193,7 +193,7 @@ export class SetRowPO {
 
     // Fill RIR
     if (values.rir !== undefined) {
-      await userEvent.click(this.getRirTrigger())
+      await this.getRirTrigger().click()
       await this.modalPO.waitForOpen()
       await this.modalPO.enterValueAndConfirm(values.rir)
       await this.modalPO.waitForClose()

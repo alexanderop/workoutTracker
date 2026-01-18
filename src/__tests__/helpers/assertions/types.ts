@@ -71,7 +71,7 @@ export interface NegatedElementAssertion {
   /**
    * Assert element does NOT have CSS class
    */
-  toHaveClass(...classNames: string[]): Promise<void>
+  toHaveClass(...classNames: Array<string>): Promise<void>
 }
 
 /**
@@ -117,7 +117,7 @@ export interface ElementAssertion {
   /**
    * Assert element has CSS class (or list of classes)
    */
-  toHaveClass(...classNames: string[]): Promise<void>
+  toHaveClass(...classNames: Array<string>): Promise<void>
 }
 
 /**
@@ -179,6 +179,16 @@ export interface PollAssertion<T> {
    * Assert value is defined (not undefined)
    */
   toBeDefined(): Promise<void>
+
+  /**
+   * Assert value is null
+   */
+  toBeNull(): Promise<void>
+
+  /**
+   * Assert string matches a pattern (for string values)
+   */
+  toMatch(expected: string | RegExp): Promise<void>
 }
 
 /**

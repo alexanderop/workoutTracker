@@ -34,7 +34,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Button should show 65 (last weight) - match the exact format "65 kg"
       const weightButton = page.getByRole('button', { name: '65 kg' })
-      await expect.element(weightButton).toBeVisible()
+      await expectElement(weightButton).toBeVisible()
 
       // Open the modal
       await weightButton.click()
@@ -42,7 +42,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // The selected preset should show 65, not 80
       const selectedPreset = page.getByTestId('preset-selected')
-      await expect.element(selectedPreset).toBeVisible()
+      await expectElement(selectedPreset).toBeVisible()
 
       // Get the text content of the selected preset
       const selectedElement = await selectedPreset.element()
@@ -51,8 +51,8 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Also verify that presets around 65 exist (e.g., 62.5 and 67.5)
       // These should be visible if presets are centered around 65
-      await expect.element(page.getByRole('option', { name: /^62\.5/ })).toBeVisible()
-      await expect.element(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^62\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()
@@ -66,7 +66,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Default value should be 80 (or converted if lbs)
       const defaultButton = page.getByRole('button', { name: '80 kg' })
-      await expect.element(defaultButton).toBeVisible()
+      await expectElement(defaultButton).toBeVisible()
 
       // Open modal and save 65kg
       await defaultButton.click()
@@ -79,14 +79,14 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const entries = await getWeightRepository().getAll()
         return entries.length
       }).toBe(1)
 
       // Now the button should show 65
       const updatedButton = page.getByRole('button', { name: '65 kg' })
-      await expect.element(updatedButton).toBeVisible()
+      await expectElement(updatedButton).toBeVisible()
 
       // Open the modal again - presets should now be centered around 65
       await updatedButton.click()
@@ -94,15 +94,15 @@ describe('Weight Tracking (Mobile)', () => {
 
       // The selected preset should show 65, not 80
       const selectedPreset = page.getByTestId('preset-selected')
-      await expect.element(selectedPreset).toBeVisible()
+      await expectElement(selectedPreset).toBeVisible()
 
       const selectedElement = await selectedPreset.element()
       const selectedText = selectedElement.textContent?.trim()
       expect(selectedText).toContain('65')
 
       // Presets around 65 should exist
-      await expect.element(page.getByRole('option', { name: /^62\.5/ })).toBeVisible()
-      await expect.element(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^62\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()
@@ -121,7 +121,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Wait for page to load with default value
       const defaultButton = page.getByRole('button', { name: '80 kg' })
-      await expect.element(defaultButton).toBeVisible()
+      await expectElement(defaultButton).toBeVisible()
 
       // Simulate async data load by adding entry directly to DB
       // This mimics what happens when entries load after component mounts
@@ -135,7 +135,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Button should now show 100
       const updatedButton = page.getByRole('button', { name: '100 kg' })
-      await expect.element(updatedButton).toBeVisible()
+      await expectElement(updatedButton).toBeVisible()
 
       // Open modal - presets should be centered around 100, not 80
       await updatedButton.click()
@@ -143,7 +143,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Verify the selected preset shows 100
       const selectedPreset = page.getByTestId('preset-selected')
-      await expect.element(selectedPreset).toBeVisible()
+      await expectElement(selectedPreset).toBeVisible()
 
       const selectedElement = await selectedPreset.element()
       const selectedText = selectedElement.textContent?.trim()
@@ -161,7 +161,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Default value should be 80
       const defaultButton = page.getByRole('button', { name: '80 kg' })
-      await expect.element(defaultButton).toBeVisible()
+      await expectElement(defaultButton).toBeVisible()
 
       // Open modal and enter 100kg
       await defaultButton.click()
@@ -174,7 +174,7 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const entries = await getWeightRepository().getAll()
         return entries.length
       }).toBe(1)
@@ -187,7 +187,7 @@ describe('Weight Tracking (Mobile)', () => {
 
       // Button should show 100 (last saved weight)
       const weightButton = page.getByRole('button', { name: '100 kg' })
-      await expect.element(weightButton).toBeVisible()
+      await expectElement(weightButton).toBeVisible()
 
       // Open the modal - presets should be centered around 100, not 80
       await weightButton.click()
@@ -195,15 +195,15 @@ describe('Weight Tracking (Mobile)', () => {
 
       // The selected preset should show 100, not 80
       const selectedPreset = page.getByTestId('preset-selected')
-      await expect.element(selectedPreset).toBeVisible()
+      await expectElement(selectedPreset).toBeVisible()
 
       const selectedElement = await selectedPreset.element()
       const selectedText = selectedElement.textContent?.trim()
       expect(selectedText).toContain('100')
 
       // Presets around 100 should exist (e.g., 97.5 and 102.5)
-      await expect.element(page.getByRole('option', { name: /^97\.5/ })).toBeVisible()
-      await expect.element(page.getByRole('option', { name: /^102\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^97\.5/ })).toBeVisible()
+      await expectElement(page.getByRole('option', { name: /^102\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()

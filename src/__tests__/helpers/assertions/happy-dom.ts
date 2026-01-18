@@ -177,7 +177,7 @@ class HappyDomNegatedElementAssertion implements NegatedElementAssertion {
     )
   }
 
-  async toHaveClass(...classNames: string[]): Promise<void> {
+  async toHaveClass(...classNames: Array<string>): Promise<void> {
     const waitForOptions = toWaitForOptions(this.options)
     await waitFor(
       () => {
@@ -275,7 +275,7 @@ class HappyDomElementAssertion implements ElementAssertion {
     )
   }
 
-  async toHaveClass(...classNames: string[]): Promise<void> {
+  async toHaveClass(...classNames: Array<string>): Promise<void> {
     const waitForOptions = toWaitForOptions(this.options)
     await waitFor(
       () => {
@@ -431,6 +431,32 @@ class HappyDomPollAssertion<T> implements PollAssertion<T> {
         const value = await this.getter()
         const assertion = negated ? expect(value).not : expect(value)
         assertion.toBeDefined()
+      },
+      waitForOptions,
+    )
+  }
+
+  async toBeNull(): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    const negated = this.isNegated
+    await waitFor(
+      async () => {
+        const value = await this.getter()
+        const assertion = negated ? expect(value).not : expect(value)
+        assertion.toBeNull()
+      },
+      waitForOptions,
+    )
+  }
+
+  async toMatch(expected: string | RegExp): Promise<void> {
+    const waitForOptions = toWaitForOptions(this.options)
+    const negated = this.isNegated
+    await waitFor(
+      async () => {
+        const value = await this.getter()
+        const assertion = negated ? expect(value).not : expect(value)
+        assertion.toMatch(expected)
       },
       waitForOptions,
     )

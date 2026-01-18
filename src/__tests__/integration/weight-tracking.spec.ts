@@ -27,7 +27,7 @@ describe('Weight Tracking', () => {
       expect(entries[0]?.weight).toBe(75.5)
 
       // Verify weight is displayed on page (stats and history)
-      await expect.element(page.getByText('75.5 kg').first()).toBeVisible()
+      await expectElement(page.getByText('75.5 kg').first()).toBeVisible()
 
       cleanup()
     })
@@ -44,7 +44,7 @@ describe('Weight Tracking', () => {
       // After saving, form should show 100 (the value just entered)
       // NOT 80 (the hardcoded default)
       const input = page.getByRole('spinbutton', { name: /weight/i })
-      await expect.element(input).toHaveValue('100')
+      await expectElement(input).toHaveValue('100')
 
       cleanup()
     })
@@ -65,7 +65,7 @@ describe('Weight Tracking', () => {
 
       // Form should show 100 (from database), NOT 80 (default)
       const input = page.getByRole('spinbutton', { name: /weight/i })
-      await expect.element(input).toHaveValue('100')
+      await expectElement(input).toHaveValue('100')
 
       cleanup()
     })
@@ -79,7 +79,7 @@ describe('Weight Tracking', () => {
       await weight.addEntry('75')
 
       // Verify entry was saved
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const entries = await getWeightRepository().getAll()
         return entries.length
       }).toBe(1)
@@ -89,7 +89,7 @@ describe('Weight Tracking', () => {
 
       // Verify database has only one entry with newest value
       const repo = getWeightRepository()
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const entries = await repo.getAll()
         return entries.length
       }).toBe(1)
@@ -115,7 +115,7 @@ describe('Weight Tracking', () => {
 
       // Verify stored internally as kg (220 lbs = 99.79 kg)
       const repo = getWeightRepository()
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const entries = await repo.getAll()
         return entries.length
       }).toBe(1)
@@ -185,10 +185,10 @@ describe('Weight Tracking', () => {
       await weight.addEntry('75')
 
       // Verify time range tabs are visible
-      await expect.element(page.getByRole('tab', { name: '7D' })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '30D' })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '90D' })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: 'All' })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '7D' })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '30D' })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: '90D' })).toBeVisible()
+      await expectElement(page.getByRole('tab', { name: 'All' })).toBeVisible()
 
       cleanup()
     })
@@ -205,17 +205,17 @@ describe('Weight Tracking', () => {
 
       // Verify entry was saved
       const repo = getWeightRepository()
-      await expect.poll(async () => (await repo.getAll()).length).toBe(1)
+      await expectPoll(async () => (await repo.getAll()).length).toBe(1)
 
       // Click delete and confirm
       await weight.clickDeleteButton(0)
       await weight.confirmDelete()
 
       // Verify database is empty
-      await expect.poll(async () => (await repo.getAll()).length).toBe(0)
+      await expectPoll(async () => (await repo.getAll()).length).toBe(0)
 
       // Verify empty state is shown
-      await expect.element(weight.getEmptyState()).toBeVisible()
+      await expectElement(weight.getEmptyState()).toBeVisible()
 
       cleanup()
     })
@@ -230,14 +230,14 @@ describe('Weight Tracking', () => {
 
       // Verify entry was saved
       const repo = getWeightRepository()
-      await expect.poll(async () => (await repo.getAll()).length).toBe(1)
+      await expectPoll(async () => (await repo.getAll()).length).toBe(1)
 
       // Click delete but cancel
       await weight.clickDeleteButton(0)
       await weight.cancelDelete()
 
       // Verify database still has entry
-      await expect.poll(async () => (await repo.getAll()).length).toBe(1)
+      await expectPoll(async () => (await repo.getAll()).length).toBe(1)
 
       cleanup()
     })

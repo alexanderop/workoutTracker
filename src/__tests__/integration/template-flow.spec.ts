@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from '../helpers/locator'
+import { flushPromises } from '@vue/test-utils'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
 import { RouteNames } from '@/router'
@@ -23,23 +24,23 @@ describe('Template Flow', () => {
 
   describe('Test 1a: Create template from finished workout', () => {
     it('saves a completed workout as a template', async () => {
-      const { builder, workout, getByRole, queryByRole, common, router, cleanup } =
+      const { builder, workout, queryByRole, common, router, cleanup } =
         await createTestApp()
 
       // Start new workout from home page
-      await userEvent.click(getByRole('button', { name: /start new workout/i }))
+      await page.getByRole('button', { name: /start new workout/i }).click()
       expect(router.currentRoute.value.path).toBe('/workout/active')
 
       // Add a strength block (Bench Press)
-      await userEvent.click(getByRole('button', { name: /add first block/i }))
+      await page.getByRole('button', { name: /add first block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Add another strength block (Squat)
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.getDialogButton('Squat').click()
       await common.waitForDialogClose()
 
       // Start workout
@@ -51,17 +52,18 @@ describe('Template Flow', () => {
 
       // Finish the workout via menu
       await expectPoll(() => workout.getMenuTrigger()).toBeTruthy()
-      await userEvent.click(await workout.getMenuTrigger())
+      const menuTrigger = await workout.getMenuTrigger()
+      await menuTrigger.click()
 
       await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
-      await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
+      await page.getByRole('menuitem', { name: /end workout/i }).click()
 
       await common.waitForDialog()
       expect(queryByRole('heading', { name: /finish workout/i })).toBeTruthy()
 
-      const nameInput = getByRole('textbox', { name: /workout name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Push Day')
+      const nameInput = page.getByRole('textbox', { name: /workout name/i })
+      await nameInput.clear()
+      await nameInput.fill('Push Day')
 
       // Verify the input value was set correctly before proceeding
       await expectPoll(async () => {
@@ -72,7 +74,7 @@ describe('Template Flow', () => {
         return element.value
       }).toBe('Push Day')
 
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await common.getDialogButton('Finish Workout').click()
 
       // Wait for completion screen
       await expectElement(page.getByText(/workout complete/i)).toBeVisible()
@@ -104,7 +106,7 @@ describe('Template Flow', () => {
       expect(queryByRole('heading', { name: /save as template/i })).toBeTruthy()
 
       // Confirm save
-      await userEvent.click(common.getDialogButton('Save Template'))
+      await common.getDialogButton('Save Template').click()
 
       // Wait for dialog to close
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -125,7 +127,7 @@ describe('Template Flow', () => {
 
   describe('Test 1b: Start workout from template', () => {
     it('starts a new workout from an existing template', async () => {
-      const { builder, getByRole, getByText, common, router, cleanup } =
+      const { builder, common, router, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -146,12 +148,12 @@ describe('Template Flow', () => {
       await expectElement(page.getByText('Leg Day')).toBeVisible()
 
       // Click on the template card
-      const legDayElement = await getByText('Leg Day').element()
+      const legDayElement = await page.getByText('Leg Day').element()
       const templateCard = legDayElement.closest('[role="button"]')
       if (!(templateCard instanceof HTMLElement)) {
         throw new TypeError('Template card not found')
       }
-      await userEvent.click(templateCard)
+      templateCard.click()
 
       // Verify route is template detail
       await common.waitForRoute(/^\/templates\/tpl-leg-day/)
@@ -161,7 +163,7 @@ describe('Template Flow', () => {
       await expectElement(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Click "Start Workout" button
-      await userEvent.click(getByRole('button', { name: /start workout/i }))
+      await page.getByRole('button', { name: /start workout/i }).click()
 
       // Verify route is workout active
       await common.waitForRoute(/^\/workout\/active/)
@@ -181,7 +183,7 @@ describe('Template Flow', () => {
 
   describe('Test 1c: Edit and delete template', () => {
     it('edits a template name and adds an exercise', async () => {
-      const { getByRole, common, navigateTo, cleanup } =
+      const { common, navigateTo, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -199,18 +201,18 @@ describe('Template Flow', () => {
       await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Change the template name
-      const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.clear(nameInput)
-      await userEvent.fill(nameInput, 'Updated Name')
+      const nameInput = page.getByRole('textbox', { name: /template name/i })
+      await nameInput.clear()
+      await nameInput.fill('Updated Name')
 
       // Add an exercise (via Add Block dialog)
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.getDialogButton('Squat').click()
       await common.waitForDialogClose()
 
       // Save changes
-      await userEvent.click(getByRole('button', { name: /save changes/i }))
+      await page.getByRole('button', { name: /save changes/i }).click()
 
       // Verify changes persisted in DB
       await expectPoll(async () => {
@@ -224,7 +226,7 @@ describe('Template Flow', () => {
     })
 
     it('deletes a template', async () => {
-      const {  getByRole, queryByRole, common, router, navigateTo, cleanup } =
+      const { queryByRole, common, router, navigateTo, cleanup } =
         await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
@@ -242,12 +244,12 @@ describe('Template Flow', () => {
       await expectElement(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete button
-      await userEvent.click(getByRole('button', { name: /delete template/i }))
+      await page.getByRole('button', { name: /delete template/i }).click()
       await common.waitForDialog()
 
       // Confirm deletion
       expect(queryByRole('heading', { name: /delete template/i })).toBeTruthy()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await common.getDialogButton('Delete').click()
 
       // Verify redirect to /workouts
       await common.waitForRoute(/^\/workouts/)
@@ -263,37 +265,37 @@ describe('Template Flow', () => {
 
   describe('Test 2: Create template from scratch', () => {
     it('creates a new template with name and exercises', async () => {
-      const { getByRole, common, router, cleanup } = await createTestApp()
+      const { common, router, cleanup } = await createTestApp()
 
       // Navigate to Workouts page and click Templates tab
       await common.navigateToWorkoutsAndClickTab('templates')
 
       // Click "Create Template" button
       await expectElement(page.getByRole('button', { name: /create template/i })).toBeVisible()
-      await userEvent.click(getByRole('button', { name: /create template/i }))
+      await page.getByRole('button', { name: /create template/i }).click()
 
       // Verify navigation to create template page
       await common.waitForRoute(/^\/templates\/create/)
       expect(router.currentRoute.value.path).toBe('/templates/create')
 
       // Fill in template name
-      const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.fill(nameInput, 'Upper Body')
+      const nameInput = page.getByRole('textbox', { name: /template name/i })
+      await nameInput.fill('Upper Body')
 
       // Add first exercise via picker dialog
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Add second exercise
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Overhead Press'))
+      await common.getDialogButton('Overhead Press').click()
       await common.waitForDialogClose()
 
       // Save template
-      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await page.getByRole('button', { name: /save template/i }).click()
 
       // Verify template saved to DB
       await expectPoll(async () => {
@@ -390,7 +392,7 @@ describe('Template Flow', () => {
 
   describe('Test 4: Edit template exercises', () => {
     it('removes an exercise from template', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 3 exercises
       const template = createDatabaseTemplate({
@@ -418,13 +420,13 @@ describe('Template Flow', () => {
       // eslint-disable-next-line no-restricted-syntax -- Finding remove button within card scope
       const removeButton = squatCard.querySelector('[aria-label*="remove" i], [aria-label*="Remove" i]')
       if (!(removeButton instanceof HTMLElement)) throw new Error('Remove button not found')
-      await userEvent.click(removeButton)
+      removeButton.click()
 
       // Verify Squat is removed from UI
       await expectElement(page.getByText('Squat')).not.toBeInTheDocument()
 
       // Save changes
-      await userEvent.click(getByRole('button', { name: /save changes/i }))
+      await page.getByRole('button', { name: /save changes/i }).click()
 
       // Verify DB has 2 blocks
       await expectPoll(async () => {
@@ -476,37 +478,37 @@ describe('Template Flow', () => {
 
   describe('Test 5: Form validation', () => {
     it('prevents saving template without name', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+      const { common, navigateTo, cleanup } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
       await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Add an exercise (making that part valid)
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await page.getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Leave name empty - verify save button is disabled
-      const saveButton = getByRole('button', { name: /save template/i })
+      const saveButton = page.getByRole('button', { name: /save template/i })
       await expectElement(saveButton).toBeDisabled()
 
       cleanup()
     })
 
     it('prevents saving template without exercises', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+      const { navigateTo, cleanup } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
       await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill name (making that part valid)
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Valid Name')
+      await page.getByRole('textbox', { name: /template name/i }).fill('Valid Name')
 
       // Don't add any exercises - verify save button is disabled
-      const saveButton = getByRole('button', { name: /save template/i })
+      const saveButton = page.getByRole('button', { name: /save template/i })
       await expectElement(saveButton).toBeDisabled()
 
       cleanup()
@@ -515,7 +517,7 @@ describe('Template Flow', () => {
 
   describe('Test 6: Set count modification', () => {
     it('modifies default set count and reflects in started workout', async () => {
-      const { builder, getByRole, navigateTo, router, cleanup } = await createTestApp()
+      const { builder, navigateTo, router, cleanup } = await createTestApp()
 
       // Seed template with default 3 sets
       const template = createDatabaseTemplate({
@@ -529,26 +531,24 @@ describe('Template Flow', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-setcount-test' } })
       await expectElement(page.getByText('Squat')).toBeVisible()
 
-      // Find the set count input and increase it
-      const squatText = await page.getByText('Squat').element()
-      const squatCard = squatText.closest('.rounded-xl')
-      if (!(squatCard instanceof HTMLElement)) throw new Error('Squat card not found')
-
       // Click the increment button twice (3 → 5)
-      // eslint-disable-next-line no-restricted-syntax -- Finding increment button within card scope
-      const incrementButton = squatCard.querySelector('[aria-label*="increase" i]')
-      if (!(incrementButton instanceof HTMLElement)) throw new Error('Increment button not found')
-      await userEvent.click(incrementButton)
-      await userEvent.click(incrementButton)
+      // Using locator pattern instead of native DOM for proper Vue event triggering
+      const incrementButton = page.getByRole('button', { name: /increase set count/i })
+      await incrementButton.click()
+      await flushPromises()
+      await incrementButton.click()
+      await flushPromises()
 
-      // Verify UI shows 5 sets
-      // eslint-disable-next-line no-restricted-syntax -- Finding input within card scope
-      const setCountInput = squatCard.querySelector('input[type="number"]')
-      if (!(setCountInput instanceof HTMLInputElement)) throw new Error('Set count input not found')
-      expect(setCountInput.value).toBe('5')
+      // Verify UI shows 5 sets - use direct element query since Vue may have recreated the DOM
+      const setCountInput = page.getByRole('spinbutton', { name: /set count/i })
+      const inputElement = await setCountInput.element()
+      if (!(inputElement instanceof HTMLInputElement)) {
+        throw new TypeError('Set count input not found')
+      }
+      expect(inputElement.value).toBe('5')
 
       // Save changes (isEdited now detects set count changes)
-      await userEvent.click(getByRole('button', { name: /save changes/i }))
+      await page.getByRole('button', { name: /save changes/i }).click()
 
       // Wait for save to complete
       await expectPoll(async () => {
@@ -558,7 +558,9 @@ describe('Template Flow', () => {
       }).toBe(5)
 
       // Start workout from template
-      await userEvent.click(getByRole('button', { name: /start workout/i }))
+      const startButton = page.getByRole('button', { name: /start workout/i })
+      await expectElement(startButton).toBeVisible()
+      await startButton.click()
 
       // Wait for workout to start
       await expectPoll(() => router.currentRoute.value.path).toBe('/workout/active')

@@ -1,12 +1,13 @@
 import { expect } from 'vitest'
 import { db } from '@/db'
+import { expectPoll } from './assertions'
 
 /**
  * Waits for and asserts that a template with the given name was saved to the database.
  * @param name - The name of the template to find
  */
 export async function expectTemplateSaved(name: string): Promise<void> {
-  await expect.poll(async () => {
+  await expectPoll(async () => {
     const templates = await db.templates.toArray()
     return templates.length
   }).toBeGreaterThan(0)
@@ -20,7 +21,7 @@ export async function expectTemplateSaved(name: string): Promise<void> {
  * @param expectedCount - The expected number of templates
  */
 export async function expectTemplateCount(expectedCount: number): Promise<void> {
-  await expect.poll(async () => {
+  await expectPoll(async () => {
     const templates = await db.templates.toArray()
     return templates.length
   }).toBe(expectedCount)
@@ -31,7 +32,7 @@ export async function expectTemplateCount(expectedCount: number): Promise<void> 
  * @param expectedCount - The expected number of workouts (default: 1)
  */
 export async function expectWorkoutSaved(expectedCount = 1): Promise<void> {
-  await expect.poll(async () => {
+  await expectPoll(async () => {
     const workouts = await db.workouts.toArray()
     return workouts.length
   }).toBe(expectedCount)

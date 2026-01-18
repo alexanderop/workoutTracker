@@ -14,7 +14,7 @@ type TestApp = Awaited<ReturnType<typeof createTestApp>>
 async function goToTimersPage(testApp: TestApp) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
   await userEvent.click(quickTimerCard)
-  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
+  await expectElement(page.getByText(/AMRAP/)).toBeVisible()
 }
 
 /**
@@ -22,11 +22,11 @@ async function goToTimersPage(testApp: TestApp) {
  */
 async function startAmrapTimer() {
   await userEvent.click(page.getByRole('button', { name: /amrap/i }))
-  await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
+  await expectElement(page.getByText('5 min', { exact: true })).toBeVisible()
   await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
 
   // Wait for timer UI
-  await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
+  await expectElement(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
 }
 
 /**
@@ -41,7 +41,7 @@ async function completeTimer() {
   await userEvent.click(completeTestButton)
 
   // Wait for completion UI to appear
-  await expect.element(page.getByText(/complete/i)).toBeVisible()
+  await expectElement(page.getByText(/complete/i)).toBeVisible()
 }
 
 /**
@@ -63,11 +63,11 @@ describe('Timer Workout Logging', () => {
       await completeTimer()
 
       // Verify "Log Workout" button is visible on completion screen
-      await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /log workout/i })).toBeVisible()
 
       // Also verify existing buttons are still there
-      await expect.element(page.getByRole('button', { name: /again/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /done/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /again/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /done/i })).toBeVisible()
 
       app.cleanup()
     })
@@ -83,8 +83,8 @@ describe('Timer Workout Logging', () => {
       await userEvent.click(logButton)
 
       // Button should change to "Logged ✓" and be disabled
-      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /logged/i })).toBeDisabled()
+      await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /logged/i })).toBeDisabled()
 
       app.cleanup()
     })
@@ -103,7 +103,7 @@ describe('Timer Workout Logging', () => {
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
       // Verify workout was saved to database
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectPoll(async () => await db.workouts.count()).toBe(1)
 
       // Verify workout data
       const workouts = await db.workouts.toArray()
@@ -127,14 +127,14 @@ describe('Timer Workout Logging', () => {
 
       // Log the workout
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
-      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
 
       // Click "Again" to restart
       await userEvent.click(page.getByRole('button', { name: /again/i }))
 
       // Should be back in timer running state (not completion)
-      await expect.element(page.getByRole('button', { name: /start timer/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /logged/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start timer/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /logged/i })).not.toBeInTheDocument()
 
       app.cleanup()
     })
@@ -147,20 +147,20 @@ describe('Timer Workout Logging', () => {
 
       // Log the workout
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
-      await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
 
       // Click "Done" to exit
       await userEvent.click(page.getByRole('button', { name: /^done$/i }))
 
       // Should be back at timer selection
-      await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
+      await expectElement(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
 
       // Start a new timer
       await startAmrapTimer()
       await completeTimer()
 
       // Log Workout button should be available again (not "Logged ✓")
-      await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /log workout/i })).toBeVisible()
 
       app.cleanup()
     })
@@ -176,7 +176,7 @@ describe('Timer Workout Logging', () => {
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
       // Wait for save
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectPoll(async () => await db.workouts.count()).toBe(1)
 
       const workouts = await db.workouts.toArray()
       const workout = workouts[0]
@@ -205,7 +205,7 @@ describe('Timer Workout Logging', () => {
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectPoll(async () => await db.workouts.count()).toBe(1)
 
       const workouts = await db.workouts.toArray()
       const workout = workouts[0]
@@ -228,7 +228,7 @@ describe('Timer Workout Logging', () => {
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectPoll(async () => await db.workouts.count()).toBe(1)
 
       const workouts = await db.workouts.toArray()
       const workout = workouts[0]

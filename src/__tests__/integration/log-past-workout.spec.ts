@@ -1,4 +1,4 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
@@ -14,14 +14,15 @@ describe('Log Past Workout', () => {
 
   describe('Entry Flow', () => {
     it('navigates from home to log past workout view', async () => {
-      const { getByRole, router, cleanup } = await createTestApp()
+      const { router, cleanup } = await createTestApp()
 
       // Find and click the "Log Past Workout" button on home screen
-      await expect.element(page.getByRole('button', { name: /log past workout/i })).toBeVisible()
-      await userEvent.click(getByRole('button', { name: /log past workout/i }))
+      await expectElement(page.getByRole('button', { name: /log past workout/i })).toBeVisible()
+      const logPastWorkoutButton = page.getByRole('button', { name: /log past workout/i })
+      await logPastWorkoutButton.click()
 
       // Verify navigation to log past workout route
-      await expect.poll(() => router.currentRoute.value.path).toBe('/log-past-workout')
+      await expectPoll(() => router.currentRoute.value.path).toBe('/log-past-workout')
 
       cleanup()
     })
@@ -63,8 +64,8 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Verify exercises are loaded
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
-      await expect.element(page.getByText('Overhead Press')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Overhead Press')).toBeVisible()
 
       // Verify block count
       const blockCount = await logPastWorkout.getBlockCount()
@@ -101,7 +102,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Verify exercise is loaded with previous values
-      await expect.element(page.getByText('Squat')).toBeVisible()
+      await expectElement(page.getByText('Squat')).toBeVisible()
 
       cleanup()
     })
@@ -118,7 +119,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Verify empty state - should show add exercise/block button
-      await expect.element(page.getByRole('button', { name: /add.*exercise|add.*block/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /add.*exercise|add.*block/i })).toBeVisible()
 
       // Verify no blocks exist
       const blockCount = await logPastWorkout.getBlockCount()
@@ -137,10 +138,10 @@ describe('Log Past Workout', () => {
 
       // Check that duration buttons show actual numbers like "15 min", "30 min"
       // This test catches the bug where interpolation fails and shows "min min"
-      await expect.element(page.getByText('15 min')).toBeVisible()
-      await expect.element(page.getByText('30 min')).toBeVisible()
-      await expect.element(page.getByText('45 min')).toBeVisible()
-      await expect.element(page.getByText('60 min')).toBeVisible()
+      await expectElement(page.getByText('15 min')).toBeVisible()
+      await expectElement(page.getByText('30 min')).toBeVisible()
+      await expectElement(page.getByText('45 min')).toBeVisible()
+      await expectElement(page.getByText('60 min')).toBeVisible()
 
       cleanup()
     })
@@ -155,9 +156,9 @@ describe('Log Past Workout', () => {
       await logPastWorkout.assertDateDefaultsToToday()
 
       // Verify duration options are visible
-      await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /45\s*min/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /60\s*min/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /45\s*min/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /60\s*min/i })).toBeVisible()
 
       cleanup()
     })
@@ -178,7 +179,7 @@ describe('Log Past Workout', () => {
         month: 'short',
         day: 'numeric',
       })
-      await expect.element(page.getByText(new RegExp(formattedYesterday, 'i'))).toBeVisible()
+      await expectElement(page.getByText(new RegExp(formattedYesterday, 'i'))).toBeVisible()
 
       cleanup()
     })
@@ -194,7 +195,7 @@ describe('Log Past Workout', () => {
 
       // Verify the duration is selected (button should be highlighted/selected)
       const durationButton = page.getByRole('button', { name: /90\s*min/i })
-      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+      await expectElement(durationButton).toHaveAttribute('aria-pressed', 'true')
 
       cleanup()
     })
@@ -207,13 +208,13 @@ describe('Log Past Workout', () => {
 
       // Default duration is 45 min - click it again (this could deselect in buggy implementations)
       const durationButton = page.getByRole('button', { name: /45\s*min/i })
-      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+      await expectElement(durationButton).toHaveAttribute('aria-pressed', 'true')
 
       // Click the already-selected button
       await durationButton.click()
 
       // Should still be selected (not deselected)
-      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+      await expectElement(durationButton).toHaveAttribute('aria-pressed', 'true')
 
       // Add a block and save to verify duration is valid
       await logPastWorkout.proceedToNextStep()
@@ -279,7 +280,7 @@ describe('Log Past Workout', () => {
       // Verify target reps are pre-filled (or shown as placeholder)
       const block = page.getByTestId('strength-block-0')
       const repsInput = block.getByRole('spinbutton', { name: /reps/i }).first()
-      await expect.element(repsInput).toHaveValue(8)
+      await expectElement(repsInput).toHaveValue(8)
 
       cleanup()
     })
@@ -310,8 +311,8 @@ describe('Log Past Workout', () => {
       const firstRow = block.getByTestId('set-row-0')
       const secondRow = block.getByTestId('set-row-1')
 
-      await expect.element(firstRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(140)
-      await expect.element(secondRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(150)
+      await expectElement(firstRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(140)
+      await expectElement(secondRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(150)
 
       cleanup()
     })
@@ -386,14 +387,14 @@ describe('Log Past Workout', () => {
       // For now, verify the result inputs exist when AMRAP block is present
       // This test will be more specific once we implement the feature
 
-      await expect.element(page.getByRole('spinbutton', { name: /rounds/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /extra reps|additional reps/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /rounds/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /extra reps|additional reps/i })).toBeVisible()
 
       // Fill in AMRAP result
       await logPastWorkout.fillAmrapResult(5, 7)
 
       // Verify values
-      await expect.element(page.getByRole('spinbutton', { name: /rounds/i })).toHaveValue('5')
+      await expectElement(page.getByRole('spinbutton', { name: /rounds/i })).toHaveValue('5')
 
       cleanup()
     })
@@ -405,15 +406,15 @@ describe('Log Past Workout', () => {
       await logPastWorkout.selectSource('blank')
 
       // Verify ForTime result inputs exist
-      await expect.element(page.getByRole('spinbutton', { name: /minutes/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /seconds/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /minutes/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /seconds/i })).toBeVisible()
 
       // Fill in ForTime result
       await logPastWorkout.fillForTimeResult(12, 34)
 
       // Verify values
-      await expect.element(page.getByRole('spinbutton', { name: /minutes/i })).toHaveValue('12')
-      await expect.element(page.getByRole('spinbutton', { name: /seconds/i })).toHaveValue('34')
+      await expectElement(page.getByRole('spinbutton', { name: /minutes/i })).toHaveValue('12')
+      await expectElement(page.getByRole('spinbutton', { name: /seconds/i })).toHaveValue('34')
 
       cleanup()
     })
@@ -426,13 +427,13 @@ describe('Log Past Workout', () => {
 
       // Verify DNF checkbox exists
       const dnfCheckbox = page.getByRole('checkbox', { name: /did not finish|dnf/i })
-      await expect.element(dnfCheckbox).toBeVisible()
+      await expectElement(dnfCheckbox).toBeVisible()
 
       // Mark as DNF
       await logPastWorkout.markAsDnf()
 
       // Verify checkbox is checked
-      await expect.element(dnfCheckbox).toBeChecked()
+      await expectElement(dnfCheckbox).toBeChecked()
 
       cleanup()
     })
@@ -446,9 +447,9 @@ describe('Log Past Workout', () => {
       await logPastWorkout.selectSource('blank')
 
       // Verify cardio result inputs exist
-      await expect.element(page.getByRole('spinbutton', { name: /duration/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /distance/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /calories/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /duration/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /distance/i })).toBeVisible()
+      await expectElement(page.getByRole('spinbutton', { name: /calories/i })).toBeVisible()
 
       // Fill in cardio result
       await logPastWorkout.fillCardioResult({
@@ -458,9 +459,9 @@ describe('Log Past Workout', () => {
       })
 
       // Verify values
-      await expect.element(page.getByRole('spinbutton', { name: /duration/i })).toHaveValue('30')
-      await expect.element(page.getByRole('spinbutton', { name: /distance/i })).toHaveValue('5.5')
-      await expect.element(page.getByRole('spinbutton', { name: /calories/i })).toHaveValue('350')
+      await expectElement(page.getByRole('spinbutton', { name: /duration/i })).toHaveValue('30')
+      await expectElement(page.getByRole('spinbutton', { name: /distance/i })).toHaveValue('5.5')
+      await expectElement(page.getByRole('spinbutton', { name: /calories/i })).toHaveValue('350')
 
       cleanup()
     })
@@ -499,7 +500,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.saveWorkout()
 
       // Verify workout saved to DB with backdated timestamp
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const workouts = await db.workouts.toArray()
         return workouts.length
       }).toBe(1)
@@ -550,8 +551,8 @@ describe('Log Past Workout', () => {
       await common.waitForRoute(/^\/history/)
 
       // Verify both workouts appear
-      await expect.element(page.getByText('Today Workout')).toBeVisible()
-      await expect.element(page.getByText('Yesterday Workout')).toBeVisible()
+      await expectElement(page.getByText('Today Workout')).toBeVisible()
+      await expectElement(page.getByText('Yesterday Workout')).toBeVisible()
 
       // Verify order: Today should appear before Yesterday
       const todayElement = await page.getByText('Today Workout').element()
@@ -654,13 +655,13 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // We're on the builder step
-      await expect.element(page.getByRole('button', { name: /save workout/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /save workout/i })).toBeVisible()
 
       // Go back
       await logPastWorkout.goBack()
 
       // We should be on the date-duration step (duration buttons visible)
-      await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
 
       cleanup()
     })
@@ -672,7 +673,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.selectSource('blank')
 
       // We're on the date-duration step
-      await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
 
       // Go back
       await logPastWorkout.goBack()
@@ -692,7 +693,7 @@ describe('Log Past Workout', () => {
       // Select 90 minutes
       await logPastWorkout.setDuration(90)
       const durationButton = page.getByRole('button', { name: /90\s*min/i })
-      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+      await expectElement(durationButton).toHaveAttribute('aria-pressed', 'true')
 
       // Go to builder
       await logPastWorkout.proceedToNextStep()
@@ -701,7 +702,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.goBack()
 
       // 90 min should still be selected
-      await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
+      await expectElement(durationButton).toHaveAttribute('aria-pressed', 'true')
 
       cleanup()
     })
@@ -727,7 +728,7 @@ describe('Log Past Workout', () => {
       expect(updatedBlockCount).toBe(1)
 
       // Verify exercise name is shown
-      await expect.element(page.getByText('Barbell Row')).toBeVisible()
+      await expectElement(page.getByText('Barbell Row')).toBeVisible()
 
       cleanup()
     })
@@ -763,8 +764,8 @@ describe('Log Past Workout', () => {
       expect(updatedBlockCount).toBe(1)
 
       // Only Dumbbell Fly should remain
-      await expect.element(page.getByText('Dumbbell Fly')).toBeVisible()
-      await expect.element(page.getByText('Bench Press')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Dumbbell Fly')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -787,8 +788,8 @@ describe('Log Past Workout', () => {
       expect(secondBlockCount).toBe(2)
 
       // Verify both exercises are shown
-      await expect.element(page.getByText('Barbell Row')).toBeVisible()
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Barbell Row')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
 
       cleanup()
     })

@@ -17,7 +17,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', 
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
-    await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+    await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Open add block dialog
     await userEvent.click(getByRole('button', { name: /add/i }))
@@ -54,7 +54,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', 
     for (const block of expectedBlocks) {
       // Find the block card by its title text
       const blockTitle = page.getByText(block.name, { exact: true })
-      await expect.element(blockTitle).toBeVisible()
+      await expectElement(blockTitle).toBeVisible()
 
       // Get the card container (parent button element)
       const titleElement = await blockTitle.element()
@@ -76,7 +76,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', 
 
     // Also verify Cardio block (which was already styled correctly)
     const cardioTitle = page.getByText('Cardio', { exact: true })
-    await expect.element(cardioTitle).toBeVisible()
+    await expectElement(cardioTitle).toBeVisible()
 
     const cardioElement = await cardioTitle.element()
     const cardioCard = cardioElement.closest('button')
@@ -100,7 +100,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', 
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
-    await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+    await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Open add block dialog
     await userEvent.click(getByRole('button', { name: /add/i }))
@@ -113,7 +113,7 @@ describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', 
     await userEvent.click(page.getByText('AMRAP', { exact: true }))
 
     // Verify AMRAP configuration dialog opens (has "Add Block" button)
-    await expect.element(page.getByRole('button', { name: /add block/i })).toBeVisible()
+    await expectElement(page.getByRole('button', { name: /add block/i })).toBeVisible()
 
     cleanup()
   })

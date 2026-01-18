@@ -18,23 +18,23 @@ describe('Timed Block Workflows', () => {
       await builder.openAddBlockDialog()
 
       // Verify exercises tab is default (check aria-selected attribute)
-      await expect.element(page.getByRole('tab', { name: /exercises/i })).toHaveAttribute('aria-selected', 'true')
+      await expectElement(page.getByRole('tab', { name: /exercises/i })).toHaveAttribute('aria-selected', 'true')
 
       // Switch to timed blocks tab
       await builder.switchToTimedBlocksTab()
 
       // Verify all block types are available
-      await expect.element(page.getByText('AMRAP')).toBeInTheDocument()
-      await expect.element(page.getByText('EMOM')).toBeInTheDocument()
-      await expect.element(page.getByText('Tabata')).toBeInTheDocument()
-      await expect.element(page.getByText('For Time')).toBeInTheDocument()
+      await expectElement(page.getByText('AMRAP')).toBeInTheDocument()
+      await expectElement(page.getByText('EMOM')).toBeInTheDocument()
+      await expectElement(page.getByText('Tabata')).toBeInTheDocument()
+      await expectElement(page.getByText('For Time')).toBeInTheDocument()
 
       // Select AMRAP - this opens a configuration dialog
       await userEvent.click(common.getDialogButton('AMRAP'))
 
       // Wait for configuration dialog
-      await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(page.getByText(/Configure/)).toBeVisible()
+      await expectElement(page.getByRole('dialog')).toBeVisible()
+      await expectElement(page.getByText(/Configure/)).toBeVisible()
 
       // Add an exercise to the AMRAP
       await userEvent.click(common.getDialogButton('Add Exercise'))
@@ -54,10 +54,10 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkout()
 
       // Wait for active mode
-      await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
+      await expectElement(page.getByText(/block 1 of 1/i)).toBeVisible()
 
       // Timer should display (verify Start button appears)
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
 
       cleanup()
     })
@@ -70,15 +70,15 @@ describe('Timed Block Workflows', () => {
       await builder.openAddBlockDialog()
 
       // Multiple exercises should be visible initially (at top of alphabetical list)
-      await expect.element(page.getByText('Assisted Pull-up Machine')).toBeInTheDocument()
-      await expect.element(page.getByText('Barbell Row')).toBeInTheDocument()
+      await expectElement(page.getByText('Assisted Pull-up Machine')).toBeInTheDocument()
+      await expectElement(page.getByText('Barbell Row')).toBeInTheDocument()
 
       // Type in search input to filter
       await userEvent.fill(page.getByRole('textbox'), 'barbell row')
 
       // Only matching exercise should remain
-      await expect.element(page.getByText('Barbell Row')).toBeVisible()
-      await expect.element(page.getByText('Assisted Pull-up Machine')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Barbell Row')).toBeVisible()
+      await expectElement(page.getByText('Assisted Pull-up Machine')).not.toBeInTheDocument()
 
       // Select the filtered exercise and verify it adds to workout
       await userEvent.click(common.getDialogButton('Barbell Row'))
@@ -103,10 +103,10 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify AMRAP view is shown with Start button
-      await expect.element(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
-      await expect.element(page.getByText(/rounds/i)).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /\+1/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/rounds/i)).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /\+1/i })).toBeInTheDocument()
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -122,9 +122,9 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify EMOM view shows minute counter and exercise
-      await expect.element(page.getByText(/min/i)).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
-      await expect.element(page.getByText('Push-ups')).toBeVisible()
+      await expectElement(page.getByText(/min/i)).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeVisible()
+      await expectElement(page.getByText('Push-ups')).toBeVisible()
 
       cleanup()
     })
@@ -137,8 +137,8 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify Tabata view shows phase badge and start button
-      await expect.element(page.getByText('WORK', { exact: true })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByText('WORK', { exact: true })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
 
       cleanup()
     })
@@ -151,9 +151,9 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify For Time view is shown with Done button (not Start/Pause)
-      await expect.element(page.getByRole('heading', { name: /for time/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /for time/i })).toBeInTheDocument()
       const doneButton = page.getByRole('button', { name: /done/i })
-      await expect.element(doneButton).toBeInTheDocument()
+      await expectElement(doneButton).toBeInTheDocument()
 
       // Click Done - this directly opens the finish workout dialog (unlike other blocks)
       await doneButton.click()
@@ -161,10 +161,10 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen and navigate to summary
-      await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+      await expectElement(page.getByText(/workout complete/i)).toBeVisible()
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
+      await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+      await expectPoll(async () => {
         const element = await viewDetailsButton.element()
         return getComputedStyle(element).opacity
       }, { timeout: 2000 }).toBe('1')
@@ -190,17 +190,17 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(2)
 
       // Verify strength view shows Complete Set button
-      await expect.element(page.getByRole('button', { name: /complete set/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /complete set/i })).toBeInTheDocument()
 
       // Navigate to AMRAP block
       await userEvent.click(await workout.getFooterButton('next'))
-      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
 
       // Navigate back to strength block
       await userEvent.click(await workout.getFooterButton('prev'))
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /complete set/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/block 1 of 2/i)).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /complete set/i })).toBeInTheDocument()
 
       cleanup()
     })
@@ -213,15 +213,15 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify AMRAP UI elements
-      await expect.element(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
-      await expect.element(page.getByText(/rounds/i)).toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/rounds/i)).toBeInTheDocument()
 
       // Start the timer
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
         return plusButton instanceof HTMLButtonElement && !plusButton.disabled
       }).toBe(true)
@@ -244,15 +244,15 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify Start button exists (not Pause)
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /pause/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /pause/i })).not.toBeInTheDocument()
 
       // Click Start
       await page.getByRole('button', { name: /start/i }).click()
 
       // Verify button changed to Pause
-      await expect.element(page.getByRole('button', { name: /pause/i })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: /start/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /pause/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /start/i })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -267,14 +267,14 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify AMRAP UI shows
-      await expect.element(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
-      await expect.element(page.getByText(/rounds/i)).toBeInTheDocument()
+      await expectElement(page.getByRole('heading', { name: /amrap/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/rounds/i)).toBeInTheDocument()
 
       // Start the timer
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
         return plusButton instanceof HTMLButtonElement && !plusButton.disabled
       }).toBe(true)
@@ -284,11 +284,11 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /\+1/i }).click()
       await page.getByRole('button', { name: /\+1/i }).click()
 
-      await expect.element(page.getByText('3')).toBeVisible()
+      await expectElement(page.getByText('3')).toBeVisible()
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-      await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
 
       cleanup()
     })
@@ -301,13 +301,13 @@ describe('Timed Block Workflows', () => {
       await builder.startWorkoutAndVerifyBlocks(1)
 
       // Verify EMOM view shows minute counter and exercise
-      await expect.element(page.getByText(/min/i)).toBeInTheDocument()
-      await expect.element(page.getByText('Push-ups')).toBeInTheDocument()
-      await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
+      await expectElement(page.getByText(/min/i)).toBeInTheDocument()
+      await expectElement(page.getByText('Push-ups')).toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-      await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
 
       cleanup()
     })

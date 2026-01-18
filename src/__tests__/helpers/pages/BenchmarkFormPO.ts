@@ -60,7 +60,7 @@ export class BenchmarkFormPO {
       if (!lastExercise) {
         throw new Error('No exercise items found after adding')
       }
-      await userEvent.click(await lastExercise.element())
+      await lastExercise.click()
 
       // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
       await expectElement(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
@@ -88,15 +88,17 @@ export class BenchmarkFormPO {
    * @param index - The zero-based index of the exercise to remove
    */
   async removeExercise(index: number): Promise<void> {
-    const exerciseDeleteButtons = await this.getExerciseItems()
-    if (index >= exerciseDeleteButtons.length) {
-      throw new Error(`Exercise index ${index} out of bounds (${exerciseDeleteButtons.length} exercises)`)
+    const exerciseItems = await page.getByTestId('benchmark-exercise-item').all()
+    if (index >= exerciseItems.length) {
+      throw new Error(`Exercise index ${index} out of bounds (${exerciseItems.length} exercises)`)
     }
-    const deleteButton = exerciseDeleteButtons[index]
-    if (!deleteButton) {
-      throw new Error(`Delete button not found for exercise at index ${index}`)
+    const exerciseItem = exerciseItems[index]
+    if (!exerciseItem) {
+      throw new Error(`Exercise item not found at index ${index}`)
     }
-    await userEvent.click(deleteButton)
+    // Get the delete button within this exercise item using scoped query
+    const deleteButton = exerciseItem.getByRole('button', { name: /remove exercise/i })
+    await deleteButton.click()
   }
 
   /**
@@ -131,26 +133,6 @@ export class BenchmarkFormPO {
     if (!element) return null
     if (!(element instanceof HTMLElement)) return null
     return element
-  }
-
-  /**
-   * Returns all exercise delete buttons currently in the list.
-   * @returns Array of delete button elements
-   */
-  async getExerciseItems(): Promise<ReadonlyArray<HTMLElement>> {
-    // Find exercise items by test ID, then get the delete button within each
-    // This preserves DOM order and scopes to benchmark exercises only
-    const exerciseItems = await page.getByTestId('benchmark-exercise-item').all()
-    const items: Array<HTMLElement> = []
-    for (const item of exerciseItems) {
-      // Chain getByRole on the parent locator to scope the query
-      const deleteButtonLocator = item.getByRole('button', { name: /remove exercise/i })
-      const element = await deleteButtonLocator.element()
-      if (element instanceof HTMLElement) {
-        items.push(element)
-      }
-    }
-    return items
   }
 
   /**
@@ -194,11 +176,15 @@ export class BenchmarkFormPO {
 
   /**
    * Copies a round by clicking "Copy Round" in the round menu.
-   * The copied round appears at the end of the round list.
+   * The copied round appears at the end of the round list and is auto-selected.
    * @param roundIndex - Zero-based index of the round to copy
    */
   async copyRound(roundIndex: number): Promise<void> {
     const initialCount = await this.getRoundCount()
+    // Check if source round has exercises (before navigating away from it)
+    const sourceExercises = await page.getByTestId('benchmark-exercise-item').all()
+    const sourceHasExercises = sourceExercises.length > 0
+
     await this.openRoundMenu(roundIndex)
     // Get the Copy Round menu item and use native click
     const copyMenuItem = page.getByRole('menuitem', { name: /copy round/i })
@@ -207,6 +193,16 @@ export class BenchmarkFormPO {
     await expectElement(page.getByRole('menu')).not.toBeInTheDocument()
     // Wait for the round count to increase
     await expectPoll(() => this.getRoundCount()).toBe(initialCount + 1)
+    // Wait for the new round to be auto-selected (round header shows the new round)
+    const newRoundIndex = initialCount // 0-indexed, so if we had 1 round, the new round is index 1
+    const expectedHeader = new RegExp(`round ${newRoundIndex + 1}/${initialCount + 1}`, 'i')
+    await expectElement(page.getByRole('heading', { name: expectedHeader })).toBeVisible()
+
+    // If the source round had exercises, wait for the copied exercises to render
+    // Use a longer timeout since Vue needs time to process the watch callback
+    if (sourceHasExercises) {
+      await expectElement(page.getByTestId('benchmark-exercise-item').first(), { timeout: 2000 }).toBeVisible()
+    }
   }
 
   /**
@@ -216,8 +212,7 @@ export class BenchmarkFormPO {
   async deleteRound(roundIndex: number): Promise<void> {
     const initialCount = await this.getRoundCount()
     await this.openRoundMenu(roundIndex)
-    const deleteButton = await page.getByRole('menuitem', { name: /delete round/i }).element()
-    await userEvent.click(deleteButton)
+    await page.getByRole('menuitem', { name: /delete round/i }).click()
     await expectElement(page.getByRole('menu')).not.toBeInTheDocument()
     await expectPoll(() => this.getRoundCount()).toBe(initialCount - 1)
   }
@@ -246,7 +241,7 @@ export class BenchmarkFormPO {
     // Round tabs are numbered "1", "2", etc.
     const tabName = String(roundIndex + 1)
     const tab = page.getByRole('tab', { name: tabName, exact: true })
-    await userEvent.click(await tab.element())
+    await tab.click()
   }
 
   /**
@@ -262,7 +257,7 @@ export class BenchmarkFormPO {
     if (!exerciseItem) {
       throw new Error(`Exercise at index ${exerciseIndex} not found`)
     }
-    await userEvent.click(await exerciseItem.element())
+    await exerciseItem.click()
 
     // Wait for reps modal to appear (heading is "REPS" from NumericInputModal)
     await expectElement(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
