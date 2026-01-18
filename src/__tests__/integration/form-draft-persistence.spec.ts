@@ -1,4 +1,4 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
@@ -16,16 +16,16 @@ describe('Form Draft Persistence', () => {
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Fill in template name
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.fill(nameInput, 'My Draft Template')
+      await nameInput.fill('My Draft Template')
 
       // Add an exercise
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Wait for debounced auto-save
@@ -40,21 +40,21 @@ describe('Form Draft Persistence', () => {
 
       // Navigate away
       await navigateTo({ name: RouteNames.Workouts })
-      await expect.element(page.getByRole('heading', { name: /workouts/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /workouts/i })).toBeVisible()
 
       // Navigate back to create template
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await restoredNameInput.element()
         return element instanceof HTMLInputElement ? element.value : null
       }).toBe('My Draft Template')
 
       // Verify block was also restored
-      await expect.element(page.getByText('Bench Press')).toBeVisible()
+      await expectElement(page.getByText('Bench Press')).toBeVisible()
 
       cleanup()
     })
@@ -66,10 +66,10 @@ describe('Form Draft Persistence', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Fill in template name and add exercise
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Saved Template')
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('textbox', { name: /template name/i }).fill('Saved Template')
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await common.getDialogButton('Squat').click()
       await common.waitForDialogClose()
 
       // Wait for draft to be saved
@@ -82,10 +82,10 @@ describe('Form Draft Persistence', () => {
       )
 
       // Save the template
-      await userEvent.click(getByRole('button', { name: /save template/i }))
+      await getByRole('button', { name: /save template/i }).click()
 
       // Wait for navigation to template detail
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.TemplateDetail)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.TemplateDetail)
 
       // Verify draft was cleared
       const draft = await db.drafts.get('template-create')
@@ -101,13 +101,13 @@ describe('Form Draft Persistence', () => {
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Initially no discard button
-      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       // Fill in data
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Draft to Discard')
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('textbox', { name: /template name/i }).fill('Draft to Discard')
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await common.getDialogButton('Deadlift').click()
       await common.waitForDialogClose()
 
       // Wait for draft and discard button to appear
@@ -120,27 +120,27 @@ describe('Form Draft Persistence', () => {
       )
 
       // Wait for discard button to be visible
-      await expect.element(page.getByRole('button', { name: /discard/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /discard/i })).toBeVisible()
 
       // Click discard
-      await userEvent.click(getByRole('button', { name: /discard/i }))
+      await getByRole('button', { name: /discard/i }).click()
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await nameInput.element()
         return element instanceof HTMLInputElement ? element.value : null
       }).toBe('')
 
       // Verify block is removed
-      await expect.element(page.getByText('Deadlift')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Deadlift')).not.toBeInTheDocument()
 
       // Verify draft is cleared
       const draft = await db.drafts.get('template-create')
       expect(draft).toBeUndefined()
 
       // Discard button should be hidden
-      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -150,10 +150,10 @@ describe('Form Draft Persistence', () => {
 
       // Navigate and fill form to create draft
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Test Draft')
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('textbox', { name: /template name/i }).fill('Test Draft')
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Wait for draft to be saved
@@ -166,16 +166,16 @@ describe('Form Draft Persistence', () => {
       )
 
       // Click discard
-      await userEvent.click(getByRole('button', { name: /discard/i }))
+      await getByRole('button', { name: /discard/i }).click()
 
       // Verify discard button is hidden immediately
-      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       // Wait longer than debounce period (test uses 50ms, wait 200ms to be safe)
       await new Promise((resolve) => setTimeout(resolve, 200))
 
       // BUG: Discard button should STILL be hidden, but without the fix it reappears
-      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       // Verify no draft exists in database
       const draft = await db.drafts.get('template-create')
@@ -191,10 +191,10 @@ describe('Form Draft Persistence', () => {
 
       // Navigate to Create Benchmark
       await navigateTo({ name: RouteNames.CreateBenchmark })
-      await expect.element(page.getByRole('textbox', { name: /name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /name/i })).toBeVisible()
 
       // Fill in benchmark name
-      await userEvent.fill(getByRole('textbox', { name: /name/i }), 'My Draft Benchmark')
+      await getByRole('textbox', { name: /name/i }).fill('My Draft Benchmark')
 
       // Wait for debounced auto-save
       await vi.waitFor(
@@ -211,11 +211,11 @@ describe('Form Draft Persistence', () => {
 
       // Navigate back
       await navigateTo({ name: RouteNames.CreateBenchmark })
-      await expect.element(page.getByRole('textbox', { name: /name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /name/i })).toBeVisible()
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await restoredNameInput.element()
         return element instanceof HTMLInputElement ? element.value : null
       }).toBe('My Draft Benchmark')
@@ -230,7 +230,7 @@ describe('Form Draft Persistence', () => {
       await navigateTo({ name: RouteNames.CreateBenchmark })
 
       // Fill in benchmark name
-      await userEvent.fill(getByRole('textbox', { name: /name/i }), 'Completed Benchmark')
+      await getByRole('textbox', { name: /name/i }).fill('Completed Benchmark')
 
       // Wait for draft to be saved
       await vi.waitFor(
@@ -242,17 +242,17 @@ describe('Form Draft Persistence', () => {
       )
 
       // Add an exercise via dialog - click add, select exercise (added with default 10 reps)
-      await userEvent.click(getByRole('button', { name: /add exercise/i }))
+      await getByRole('button', { name: /add exercise/i }).click()
       await common.waitForDialog()
       await common.selectExercise('Barbell Row')
       // Exercise is added immediately with default 10 reps (no second reps dialog)
       await common.waitForDialogClose()
 
       // Save the benchmark
-      await userEvent.click(getByRole('button', { name: /save/i }))
+      await getByRole('button', { name: /save/i }).click()
 
       // Wait for navigation to benchmark detail (after save, user sees new benchmark)
-      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.BenchmarkDetail)
+      await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.BenchmarkDetail)
 
       // Verify draft was cleared
       const draft = await db.drafts.get('benchmark-create')
@@ -268,10 +268,10 @@ describe('Form Draft Persistence', () => {
       await navigateTo({ name: RouteNames.CreateBenchmark })
 
       // Initially no discard button (need to wait for content to load first)
-      await expect.element(page.getByRole('textbox', { name: /name/i })).toBeVisible()
+      await expectElement(page.getByRole('textbox', { name: /name/i })).toBeVisible()
 
       // Fill in data
-      await userEvent.fill(getByRole('textbox', { name: /name/i }), 'Draft to Discard')
+      await getByRole('textbox', { name: /name/i }).fill('Draft to Discard')
 
       // Wait for draft to be saved
       await vi.waitFor(
@@ -283,14 +283,14 @@ describe('Form Draft Persistence', () => {
       )
 
       // Wait for discard button
-      await expect.element(page.getByRole('button', { name: /discard/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /discard/i })).toBeVisible()
 
       // Click discard
-      await userEvent.click(getByRole('button', { name: /discard/i }))
+      await getByRole('button', { name: /discard/i }).click()
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
+      await expectPoll(async () => {
         const element = await nameInput.element()
         return element instanceof HTMLInputElement ? element.value : null
       }).toBe('')
@@ -300,7 +300,7 @@ describe('Form Draft Persistence', () => {
       expect(draft).toBeUndefined()
 
       // Discard button should be hidden
-      await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
+      await expectElement(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       cleanup()
     })
@@ -312,10 +312,10 @@ describe('Form Draft Persistence', () => {
 
       // Create template draft
       await navigateTo({ name: RouteNames.CreateTemplate })
-      await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Template Draft')
-      await userEvent.click(getByRole('button', { name: /add block/i }))
+      await getByRole('textbox', { name: /template name/i }).fill('Template Draft')
+      await getByRole('button', { name: /add block/i }).click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.getDialogButton('Bench Press').click()
       await common.waitForDialogClose()
 
       // Wait for template draft to be saved with correct name
@@ -329,8 +329,8 @@ describe('Form Draft Persistence', () => {
 
       // Create benchmark draft
       await navigateTo({ name: RouteNames.CreateBenchmark })
-      await expect.element(page.getByRole('textbox', { name: /name/i })).toBeVisible()
-      await userEvent.fill(getByRole('textbox', { name: /name/i }), 'Benchmark Draft')
+      await expectElement(page.getByRole('textbox', { name: /name/i })).toBeVisible()
+      await getByRole('textbox', { name: /name/i }).fill('Benchmark Draft')
 
       // Wait for benchmark draft to be saved with correct name
       await vi.waitFor(
@@ -349,8 +349,8 @@ describe('Form Draft Persistence', () => {
       expect(benchmarkDraft?.data).toMatchObject({ name: 'Benchmark Draft' })
 
       // Wait for discard button and click it
-      await expect.element(page.getByRole('button', { name: /discard/i })).toBeVisible()
-      await userEvent.click(getByRole('button', { name: /discard/i }))
+      await expectElement(page.getByRole('button', { name: /discard/i })).toBeVisible()
+      await getByRole('button', { name: /discard/i }).click()
 
       // Verify only benchmark draft was cleared
       await vi.waitFor(async () => {

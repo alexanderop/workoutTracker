@@ -758,3 +758,53 @@ describe.skipIf(!isBrowserMode)('ExerciseProgressView', () => {
 - Happy-DOM: 5 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: All 5 tests pass
 
+### Fix 24: form-draft-persistence.spec.ts browser-only APIs and userEvent with Locators (2026-01-18)
+**Tests fixed:** 8 tests in `form-draft-persistence.spec.ts`
+
+**Issue:** The test file had two problems:
+1. Used `expect.element()` and `expect.poll()` which are browser-only APIs (Vitest browser mode), causing:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+2. Used `userEvent.fill(locator, text)` and `userEvent.click(locator)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+**Fix:**
+1. Changed `expect.element()` to use the project's `expectElement` abstraction:
+```ts
+// Before:
+await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+
+// After:
+await expectElement(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+```
+
+2. Changed `expect.poll()` to use the project's `expectPoll` abstraction:
+```ts
+// Before:
+await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.TemplateDetail)
+
+// After:
+await expectPoll(() => router.currentRoute.value.name).toBe(RouteNames.TemplateDetail)
+```
+
+3. Changed `userEvent.fill(locator, text)` and `userEvent.click(locator)` to use Locator's built-in methods:
+```ts
+// Before:
+await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'My Draft Template')
+await userEvent.click(getByRole('button', { name: /add block/i }))
+
+// After:
+await getByRole('textbox', { name: /template name/i }).fill('My Draft Template')
+await getByRole('button', { name: /add block/i }).click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 8 tests in form-draft-persistence.spec.ts pass
+- Browser mode: All 8 tests pass
+
