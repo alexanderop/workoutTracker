@@ -79,3 +79,27 @@ Also removed unused import `expectElement, expectPoll` from assertions.
 - Happy-DOM: 2 tests skipped (browser-only test suite correctly skipped)
 - Browser mode: 2 tests pass
 
+### Fix 4: add-block-dialog-icons.spec.ts browser-only APIs (2026-01-18)
+**Tests fixed:** 2 tests in `add-block-dialog-icons.spec.ts`
+
+**Issue:** The test file used `expect.element()` which is a browser-only API:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+These APIs are only available in Vitest browser mode, causing the tests to fail in Happy-DOM.
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+describe.skipIf(!isBrowserMode)('AddBlockDialog - Time Block Icons and Colors', () => {
+```
+
+Also removed unused import `expectPoll` from assertions.
+
+**Verification:**
+- Happy-DOM: 2 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: 2 tests pass
+
