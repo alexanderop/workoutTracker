@@ -158,12 +158,11 @@ export function restoreAudioSpies(): void {
 // =============================================================================
 
 /**
- * Detect if running in real browser (not jsdom).
+ * Detect if running in real browser (not jsdom/Happy-DOM).
+ * Uses the standard pattern: checks for __vitest_browser__ global.
  */
 export function isBrowserMode(): boolean {
-  return (
-    globalThis.window !== undefined && !globalThis.navigator.userAgent.includes('jsdom')
-  )
+  return globalThis.window !== undefined && '__vitest_browser__' in globalThis
 }
 
 /**

@@ -1437,3 +1437,46 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: 18 tests pass, 3 tests skipped (Language Selection - browser-only)
 - Browser mode: All 21 tests pass
 
+### Fix 41: timer-audio-playback.spec.ts and audioMock.ts browser mode detection (2026-01-18)
+**Tests fixed:** 5 tests in `timer-audio-playback.spec.ts`
+
+**Issue:** The test file uses Web Audio API (AudioContext, OscillatorNode, GainNode) which is not available in Happy-DOM. The error was:
+```
+ReferenceError: AudioContext is not defined
+```
+
+The `isBrowserMode()` function in `audioMock.ts` used a flawed detection approach that only checked for `jsdom`:
+```ts
+export function isBrowserMode(): boolean {
+  return (
+    globalThis.window !== undefined && !globalThis.navigator.userAgent.includes('jsdom')
+  )
+}
+```
+
+This returned `true` in Happy-DOM (since Happy-DOM's userAgent doesn't contain "jsdom"), causing `setupAudioSpies()` to be called which tried to access `AudioContext.prototype` that doesn't exist in Happy-DOM.
+
+**Fix:**
+1. Updated `isBrowserMode()` in `audioMock.ts` to use the standard project pattern that checks for `__vitest_browser__`:
+```ts
+export function isBrowserMode(): boolean {
+  return globalThis.window !== undefined && '__vitest_browser__' in globalThis
+}
+```
+
+2. Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserModeTest =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - Web Audio API (AudioContext, OscillatorNode, GainNode)
+// - Happy-DOM doesn't support Web Audio API
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserModeTest)('Timer Audio Playback', () => {
+```
+
+**Verification:**
+- Happy-DOM: 5 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: Tests run in separate browser-specific file (`src/__tests__/browser/timer-audio.spec.ts`)
+

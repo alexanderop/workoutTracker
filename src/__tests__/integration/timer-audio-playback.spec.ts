@@ -11,6 +11,9 @@ import {
   setupAudioSpies,
 } from '../helpers/audioMock'
 
+const isBrowserModeTest =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
 // Helper to navigate to Quick Timer page
 async function goToTimersPage() {
   await page.getByText(/quick timer/i).click()
@@ -87,7 +90,11 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
   await userEvent.click(playButton)
 }
 
-describe('Timer Audio Playback', () => {
+// This test suite requires browser-only APIs:
+// - Web Audio API (AudioContext, OscillatorNode, GainNode)
+// - Happy-DOM doesn't support Web Audio API
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserModeTest)('Timer Audio Playback', () => {
   beforeEach(async () => {
     await setupIntegrationTest()
     if (isBrowserMode()) {
