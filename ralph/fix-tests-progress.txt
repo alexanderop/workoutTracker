@@ -337,3 +337,31 @@ await app.benchmarkDetail.clickGoBack()
 - Happy-DOM: All 13 tests in benchmark-ui.spec.ts pass
 - Browser mode: All 13 tests pass
 
+### Fix 12: custom-exercise-image-upload.spec.ts browser-only Canvas APIs (2026-01-18)
+**Test fixed:** `uploads an image when creating a custom exercise` in `custom-exercise-image-upload.spec.ts`
+
+**Issue:** The test file uses `createTestImageFile()` from `factories/image.ts`, which requires browser-only Canvas APIs:
+- `canvas.getContext('2d')` for drawing
+- `canvas.toBlob()` for PNG generation
+
+Happy-DOM doesn't support the Canvas 2D API, causing:
+```
+Error: Failed to get canvas 2D context
+```
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - canvas.getContext('2d') for creating test images
+// - canvas.toBlob() for PNG generation
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('Custom Exercise Image Upload', () => {
+```
+
+**Verification:**
+- Happy-DOM: 1 test skipped (browser-only test suite correctly skipped)
+- Browser mode: 1 test passes
+

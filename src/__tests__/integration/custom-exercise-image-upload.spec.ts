@@ -6,7 +6,18 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 import { createTestImageFile } from '../factories/image'
 import { getCustomExercisesRepository } from '@/db'
 
-describe('Custom Exercise Image Upload', () => {
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - canvas.getContext('2d') for creating test images
+// - canvas.toBlob() for PNG generation
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('Custom Exercise Image Upload', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
