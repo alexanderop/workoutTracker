@@ -31,3 +31,25 @@ import { page, userEvent } from '../../helpers/locator'
 
 **Verification:** All benchmark test suites now load correctly in both Happy-DOM and browser mode.
 
+### Fix 2: exercise-store-partial-update.spec.ts isBrowserMode detection (2026-01-18)
+**Test fixed:** `preserves image when updating only name` in `exercise-store-partial-update.spec.ts`
+
+**Issue:** The test used a flawed browser detection approach that checked `navigator.userAgent`:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined &&
+  !globalThis.navigator.userAgent.includes('jsdom') &&
+  !globalThis.navigator.userAgent.includes('Happy DOM')
+```
+This detection was not working correctly, causing the Blob-related test to run in Happy-DOM mode instead of being skipped (fake-indexeddb doesn't properly handle Blob objects).
+
+**Fix:** Changed to use the standard project pattern that checks for `__vitest_browser__`:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+```
+
+**Verification:**
+- Happy-DOM: Test properly skipped (5 tests | 1 skipped), other 4 tests pass
+- Browser mode: All 5 tests pass (Blob test runs correctly)
+

@@ -11,6 +11,16 @@ import { getCustomExercisesRepository, generateId } from '@/db'
 import type { DbCustomExercise } from '@/db/schema'
 import { resetDatabase } from '../helpers/resetDatabase'
 
+/**
+ * Detect if running in real browser (not Happy-DOM/jsdom).
+ * fake-indexeddb doesn't properly handle Blob objects, so Blob-specific tests
+ * need to be skipped in non-browser environments.
+ *
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
 describe('Exercise Store Partial Updates', () => {
   beforeEach(async () => {
     await resetDatabase()
@@ -78,7 +88,8 @@ describe('Exercise Store Partial Updates', () => {
     expect(updated?.muscle).toBe('legs')
   })
 
-  it('preserves image when updating only name', async () => {
+  // Skip in Happy-DOM: fake-indexeddb doesn't properly store/retrieve Blob objects
+  it.skipIf(!isBrowserMode)('preserves image when updating only name', async () => {
     // Arrange: Create exercise with image blob directly in DB
     const exerciseId = generateId()
     const testImageBlob = new Blob(['test-image-data'], { type: 'image/png' })
