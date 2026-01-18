@@ -877,3 +877,53 @@ The file already imported `expectElement` and `expectPoll` from the assertions a
 - Happy-DOM: All 9 tests pass
 - Browser mode: All 9 tests pass
 
+### Fix 27: home-delete-workout.spec.ts browser-only APIs and userEvent with Locators (2026-01-18)
+**Tests fixed:** 6 tests in `home-delete-workout.spec.ts`
+
+**Issue:** The test file had two problems:
+1. Used `expect.element()` and `expect.poll()` which are browser-only APIs (Vitest browser mode), causing:
+```
+TypeError: __vite_ssr_import_1__.expect.element is not a function
+```
+
+2. Used `userEvent.click(locator)` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+**Fix:**
+1. Changed `expect.element()` to use the project's `expectElement` abstraction:
+```ts
+// Before:
+await expect.element(page.getByText('Morning Workout')).toBeVisible()
+
+// After:
+await expectElement(page.getByText('Morning Workout')).toBeVisible()
+```
+
+2. Changed `expect.poll()` to use the project's `expectPoll` abstraction:
+```ts
+// Before:
+await expect.poll(() => page.getByRole('button', { name: /delete/i }).query()).toBeNull()
+
+// After:
+await expectPoll(() => page.getByRole('button', { name: /delete/i }).query()).toBeNull()
+```
+
+3. Changed `userEvent.click(locator)` to use the Locator's built-in `.click()` method:
+```ts
+// Before:
+await userEvent.click(page.getByRole('button', { name: /delete/i }))
+await userEvent.click(common.getDialogButton('Delete'))
+
+// After:
+await page.getByRole('button', { name: /delete/i }).click()
+await common.getDialogButton('Delete').click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 6 tests pass
+- Browser mode: All 6 tests pass
+

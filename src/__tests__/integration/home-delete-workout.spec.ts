@@ -1,4 +1,4 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { db } from '@/db'
@@ -32,7 +32,7 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for recent workouts to load
-      await expect.element(page.getByText('Morning Workout')).toBeVisible()
+      await expectElement(page.getByText('Morning Workout')).toBeVisible()
 
       // Get the workout card element and swipe
       const workoutCard = await page.getByText('Morning Workout').element()
@@ -40,7 +40,7 @@ describe('Home Delete Workout', () => {
       await simulateSwipeLeft(swipeableContainer)
 
       // Delete button should be visible
-      await expect.element(page.getByRole('button', { name: /delete/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /delete/i })).toBeVisible()
 
       cleanup()
     })
@@ -60,7 +60,7 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for recent workouts to load
-      await expect.element(page.getByText('Evening Session')).toBeVisible()
+      await expectElement(page.getByText('Evening Session')).toBeVisible()
 
       // Get the workout card and swipe
       const workoutCard = await page.getByText('Evening Session').element()
@@ -68,13 +68,13 @@ describe('Home Delete Workout', () => {
       await simulateSwipeLeft(swipeableContainer)
 
       // Click delete button
-      await userEvent.click(page.getByRole('button', { name: /delete/i }))
+      await page.getByRole('button', { name: /delete/i }).click()
 
       // Confirmation dialog should appear
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /delete workout/i })).toBeVisible()
+      await expectElement(page.getByRole('heading', { name: /delete workout/i })).toBeVisible()
       // Check dialog description contains the workout name
-      await expect.element(page.getByText(/are you sure you want to delete/i)).toBeVisible()
+      await expectElement(page.getByText(/are you sure you want to delete/i)).toBeVisible()
 
       cleanup()
     })
@@ -94,20 +94,20 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for workout to appear
-      await expect.element(page.getByText('Leg Day')).toBeVisible()
+      await expectElement(page.getByText('Leg Day')).toBeVisible()
 
       // Swipe and delete
       const workoutCard = await page.getByText('Leg Day').element()
       const swipeableContainer = getSwipeableContainer(workoutCard)
       await simulateSwipeLeft(swipeableContainer)
-      await userEvent.click(page.getByRole('button', { name: /delete/i }))
+      await page.getByRole('button', { name: /delete/i }).click()
 
       // Confirm deletion
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await common.getDialogButton('Delete').click()
 
       // Workout should be removed from the list
-      await expect.element(page.getByText('Leg Day')).not.toBeInTheDocument()
+      await expectElement(page.getByText('Leg Day')).not.toBeInTheDocument()
 
       // Verify it's deleted from database
       const count = await db.workouts.count()
@@ -131,20 +131,20 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for workout to appear
-      await expect.element(page.getByText('Push Day')).toBeVisible()
+      await expectElement(page.getByText('Push Day')).toBeVisible()
 
       // Swipe and click delete
       const workoutCard = await page.getByText('Push Day').element()
       const swipeableContainer = getSwipeableContainer(workoutCard)
       await simulateSwipeLeft(swipeableContainer)
-      await userEvent.click(page.getByRole('button', { name: /delete/i }))
+      await page.getByRole('button', { name: /delete/i }).click()
 
       // Click cancel in dialog
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await common.getDialogButton('Cancel').click()
 
       // Workout should still be visible
-      await expect.element(page.getByText('Push Day')).toBeVisible()
+      await expectElement(page.getByText('Push Day')).toBeVisible()
 
       // Verify it's still in database
       const count = await db.workouts.count()
@@ -172,8 +172,8 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for both workouts to appear
-      await expect.element(page.getByText('Workout One')).toBeVisible()
-      await expect.element(page.getByText('Workout Two')).toBeVisible()
+      await expectElement(page.getByText('Workout One')).toBeVisible()
+      await expectElement(page.getByText('Workout Two')).toBeVisible()
 
       // Swipe first card
       const card1 = await page.getByText('Workout One').element()
@@ -212,7 +212,7 @@ describe('Home Delete Workout', () => {
       await navigateTo({ name: RouteNames.Home })
 
       // Wait for workout to appear
-      await expect.element(page.getByText('Tap Test')).toBeVisible()
+      await expectElement(page.getByText('Tap Test')).toBeVisible()
 
       // Swipe to reveal delete
       const workoutCard = await page.getByText('Tap Test').element()
@@ -220,7 +220,7 @@ describe('Home Delete Workout', () => {
       await simulateSwipeLeft(swipeableContainer)
 
       // Delete button should be visible
-      await expect.element(page.getByRole('button', { name: /delete/i })).toBeVisible()
+      await expectElement(page.getByRole('button', { name: /delete/i })).toBeVisible()
 
       // Click on the swipeable content to close it
       // We click the container itself rather than the text to avoid navigation
@@ -229,13 +229,13 @@ describe('Home Delete Workout', () => {
       for (const content of swipeableContents) {
         const element = await content.element()
         if (element.textContent?.includes('Tap Test')) {
-          await userEvent.click(element)
+          await content.click()
           break
         }
       }
 
       // Delete button should be removed from DOM after card closes
-      await expect.poll(() => page.getByRole('button', { name: /delete/i }).query()).toBeNull()
+      await expectPoll(() => page.getByRole('button', { name: /delete/i }).query()).toBeNull()
 
       cleanup()
     })
