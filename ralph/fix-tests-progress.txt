@@ -531,3 +531,31 @@ This is applied in `createScopedRoleQuery()` before the accessible name filter.
 - Happy-DOM: All 7 tests in edit-exercise-dialog.spec.ts pass
 - Browser mode: All 7 tests pass
 
+### Fix 18: exercise-edit-flow.spec.ts userEvent.clear with Locators (2026-01-18)
+**Tests fixed:** 2 tests in `exercise-edit-flow.spec.ts`
+
+**Issue:** The test file was calling `userEvent.clear(nameInput)` where `nameInput` is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed `userEvent.clear(locator)` to use the Locator's built-in `.clear()` method:
+
+```ts
+// Before:
+await userEvent.clear(nameInput)
+await nameInput.fill('Incline Bench Press')
+
+// After:
+await nameInput.clear()
+await nameInput.fill('Incline Bench Press')
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 2 tests in exercise-edit-flow.spec.ts pass
+- Browser mode: All 2 tests pass
+
