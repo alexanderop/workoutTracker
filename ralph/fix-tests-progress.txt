@@ -218,3 +218,31 @@ await menuButton.click()
 
 **Note:** This pattern of `userEvent.click(locator)` exists in other Page Objects and test files. Subsequent iterations should fix those as tests fail.
 
+### Fix 9: benchmark-management.spec.ts userEvent.click with Locators (2026-01-18)
+**Tests fixed:** `completes full benchmark lifecycle from creation to deletion` and `deletes benchmark with confirmation dialog` in `benchmark-management.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(page.getByRole('button', ...))` where the argument is a Locator object instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed to use the Locator's built-in `.click()` method instead of `userEvent.click(locator)`:
+
+```ts
+// Before:
+await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
+await userEvent.click(page.getByRole('button', { name: /cancel/i }))
+
+// After:
+await page.getByRole('button', { name: /^delete$/i }).click()
+await page.getByRole('button', { name: /cancel/i }).click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: Both delete-related tests now pass
+- Browser mode: All 6 tests in benchmark-management.spec.ts pass
+

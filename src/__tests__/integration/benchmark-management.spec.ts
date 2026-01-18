@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -64,7 +64,7 @@ describe('Benchmark Management', () => {
       // Delete benchmark
       await app.benchmarkDetail.clickDelete()
       await expectElement(page.getByRole('dialog')).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
+      await page.getByRole('button', { name: /^delete$/i }).click()
       await expectPoll(() => app.router.currentRoute.value.path).toBe('/workouts')
 
       const deleted = await getBenchmarksRepository().getById(benchmark.id)
@@ -149,13 +149,13 @@ describe('Benchmark Management', () => {
       // Test cancel
       await app.benchmarkDetail.clickDelete()
       await expectElement(page.getByRole('dialog')).toBeVisible()
-      await userEvent.click(page.getByRole('button', { name: /cancel/i }))
+      await page.getByRole('button', { name: /cancel/i }).click()
       await expectElement(page.getByRole('dialog')).not.toBeInTheDocument()
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeTruthy()
 
       // Test confirm
       await app.benchmarkDetail.clickDelete()
-      await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
+      await page.getByRole('button', { name: /^delete$/i }).click()
       await expectPoll(() => app.router.currentRoute.value.path).toBe('/workouts')
       expect(await getBenchmarksRepository().getById(benchmark.id)).toBeFalsy()
 
