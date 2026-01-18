@@ -246,3 +246,66 @@ Also removed unused `userEvent` import from the file.
 - Happy-DOM: Both delete-related tests now pass
 - Browser mode: All 6 tests in benchmark-management.spec.ts pass
 
+### Fix 10: Happy-DOM locator scoped role queries missing implicit ARIA roles and accessible name filtering (2026-01-18)
+**Tests fixed:** Multiple tests including `strength-workflows.spec.ts` (3 tests) and `bodyweight-exercise.spec.ts` (2 tests)
+
+**Issue 1 - Missing implicit ARIA roles:** The scoped `getByRole()` in Happy-DOM locator used a simple CSS selector that only matched explicit role attributes:
+```ts
+const els = parentEl.querySelectorAll<HTMLElement>(`[role="${role}"], ${role}`)
+```
+This failed to match HTML elements with implicit ARIA roles (e.g., `<td>` has implicit role `cell`, `<tr>` has implicit role `row`). This caused "No active set row found" errors when tests tried to find cells within table rows.
+
+**Issue 2 - Missing accessible name filtering:** The scoped role query didn't filter by the `name` option, causing "Multiple elements found" errors when trying to find specific inputs by aria-label.
+
+**Fix 1 - Added implicit ARIA role mapping:**
+```ts
+const IMPLICIT_ROLE_SELECTORS: Record<string, string> = {
+  table: 'table',
+  row: 'tr',
+  cell: 'td',
+  columnheader: 'th',
+  button: 'button, input[type="button"], ...',
+  textbox: 'input:not([type]), input[type="text"], ...',
+  spinbutton: 'input[type="number"]',
+  // ... more mappings
+}
+
+function buildRoleSelector(role: string): string {
+  const explicitSelector = `[role="${role}"]`
+  const implicitSelector = IMPLICIT_ROLE_SELECTORS[role]
+  if (implicitSelector) {
+    return `${explicitSelector}, ${implicitSelector}`
+  }
+  return explicitSelector
+}
+```
+
+**Fix 2 - Added accessible name filtering:**
+```ts
+function getAccessibleName(element: HTMLElement): string {
+  // Checks aria-label, aria-labelledby, associated label, and text content
+}
+
+function filterByAccessibleName(elements, namePattern) {
+  // Filters elements by their accessible name matching the pattern
+}
+```
+
+**Fix 3 - Updated strength-workflows.spec.ts to use correct APIs:**
+Changed from browser-only APIs to abstraction layer:
+```ts
+// Before:
+await userEvent.click(getByRole('button', ...))
+await expect.element(page.getByRole('table')).toBeVisible()
+await expect.poll(() => ...).toBe(true)
+
+// After:
+await page.getByRole('button', ...).click()
+await expectElement(page.getByRole('table')).toBeVisible()
+await expectPoll(() => ...).toBe(true)
+```
+
+**Verification:**
+- Happy-DOM: All 3 tests in strength-workflows.spec.ts pass, both tests in bodyweight-exercise.spec.ts pass
+- Browser mode: All tests pass
+

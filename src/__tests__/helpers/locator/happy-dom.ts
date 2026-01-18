@@ -268,6 +268,149 @@ function extractStrings(values: Array<HTMLElement | Locator | string>): Array<st
 }
 
 /**
+ * Mapping of ARIA roles to their implicit HTML element selectors.
+ * HTML elements have implicit ARIA roles that don't require explicit role attributes.
+ * @see https://www.w3.org/TR/html-aria/#docconformance
+ */
+const IMPLICIT_ROLE_SELECTORS: Record<string, string> = {
+  // Table roles
+  table: 'table',
+  row: 'tr',
+  cell: 'td',
+  columnheader: 'th',
+  rowheader: 'th[scope="row"]',
+  rowgroup: 'tbody, thead, tfoot',
+  // Form roles
+  button: 'button, input[type="button"], input[type="submit"], input[type="reset"], input[type="image"]',
+  checkbox: 'input[type="checkbox"]',
+  radio: 'input[type="radio"]',
+  textbox: 'input:not([type]), input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="search"], input[type="password"], textarea',
+  spinbutton: 'input[type="number"]',
+  combobox: 'select:not([multiple]):not([size]), select[size="1"]',
+  listbox: 'select[multiple], select[size]:not([size="1"])',
+  slider: 'input[type="range"]',
+  option: 'option',
+  // Landmark roles
+  main: 'main',
+  navigation: 'nav',
+  banner: 'header:not(article header, section header)',
+  contentinfo: 'footer:not(article footer, section footer)',
+  complementary: 'aside',
+  form: 'form[aria-label], form[aria-labelledby], form[name]',
+  region: 'section[aria-label], section[aria-labelledby]',
+  search: 'search',
+  // Document structure roles
+  article: 'article',
+  heading: 'h1, h2, h3, h4, h5, h6',
+  list: 'ul, ol',
+  listitem: 'li',
+  link: 'a[href]',
+  img: 'img[alt]:not([alt=""])',
+  figure: 'figure',
+  separator: 'hr',
+  // Widget roles
+  dialog: '[role="dialog"], dialog',
+  tab: '[role="tab"]',
+  tablist: '[role="tablist"]',
+  tabpanel: '[role="tabpanel"]',
+  menu: '[role="menu"]',
+  menuitem: '[role="menuitem"]',
+  menuitemcheckbox: '[role="menuitemcheckbox"]',
+  menuitemradio: '[role="menuitemradio"]',
+  progressbar: 'progress',
+  status: 'output',
+  alert: '[role="alert"]',
+  alertdialog: '[role="alertdialog"]',
+  tooltip: '[role="tooltip"]',
+  tree: '[role="tree"]',
+  treeitem: '[role="treeitem"]',
+  grid: '[role="grid"]',
+  gridcell: '[role="gridcell"]',
+}
+
+/**
+ * Build a CSS selector for a given ARIA role that includes both explicit and implicit matches.
+ */
+function buildRoleSelector(role: string): string {
+  const explicitSelector = `[role="${role}"]`
+  const implicitSelector = IMPLICIT_ROLE_SELECTORS[role]
+
+  if (implicitSelector) {
+    return `${explicitSelector}, ${implicitSelector}`
+  }
+  return explicitSelector
+}
+
+/**
+ * Get the accessible name from aria-labelledby attribute.
+ */
+function getNameFromLabelledBy(element: HTMLElement): string | null {
+  const labelledBy = element.getAttribute('aria-labelledby')
+  if (!labelledBy) return null
+
+  const labelIds = labelledBy.split(/\s+/)
+  const labelTexts: Array<string> = []
+  for (const id of labelIds) {
+    const labelElement = document.querySelector(`#${id}`)
+    if (labelElement) {
+      labelTexts.push(labelElement.textContent?.trim() ?? '')
+    }
+  }
+  const combinedLabel = labelTexts.join(' ').trim()
+  return combinedLabel || null
+}
+
+/**
+ * Get the accessible name from associated label element.
+ */
+function getNameFromAssociatedLabel(element: HTMLElement): string | null {
+  if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) {
+    return null
+  }
+  const { id } = element
+  if (!id) return null
+
+  const label = document.querySelector<HTMLLabelElement>(`label[for="${id}"]`)
+  return label?.textContent?.trim() ?? null
+}
+
+/**
+ * Get the accessible name of an element.
+ * Checks aria-label, aria-labelledby, and falls back to text content.
+ * @see https://www.w3.org/TR/accname-1.1/
+ */
+function getAccessibleName(element: HTMLElement): string {
+  // 1. Check aria-label attribute
+  const ariaLabel = element.getAttribute('aria-label')
+  if (ariaLabel) return ariaLabel.trim()
+
+  // 2. Check aria-labelledby attribute
+  const labelledByName = getNameFromLabelledBy(element)
+  if (labelledByName) return labelledByName
+
+  // 3. For form elements, check associated label
+  const associatedLabel = getNameFromAssociatedLabel(element)
+  if (associatedLabel) return associatedLabel
+
+  // 4. Fall back to text content for buttons, links, etc.
+  return element.textContent?.trim() ?? ''
+}
+
+/**
+ * Filter elements by accessible name.
+ */
+function filterByAccessibleName(elements: Array<HTMLElement>, namePattern: string | RegExp | undefined): Array<HTMLElement> {
+  if (namePattern === undefined) {
+    return elements
+  }
+
+  return elements.filter((el) => {
+    const accessibleName = getAccessibleName(el)
+    return textMatches(accessibleName, namePattern)
+  })
+}
+
+/**
  * Create a scoped query function for getByRole within parent elements
  */
 function createScopedRoleQuery(
@@ -278,13 +421,16 @@ function createScopedRoleQuery(
   return () => {
     const parentElements = parentQueryFn()
     const results: Array<HTMLElement> = []
+    const selector = buildRoleSelector(role)
     for (const parentEl of parentElements) {
-      const els = parentEl.querySelectorAll<HTMLElement>(`[role="${role}"], ${role}`)
+      const els = parentEl.querySelectorAll<HTMLElement>(selector)
       for (const el of els) {
         results.push(el)
       }
     }
-    return applyFilters(results, options)
+    // Filter by accessible name if provided
+    const filteredByName = filterByAccessibleName(results, options?.name)
+    return applyFilters(filteredByName, options)
   }
 }
 
