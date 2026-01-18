@@ -1594,3 +1594,57 @@ await page.getByRole('textbox').fill('barbell row')
 - Happy-DOM: Test `filters exercises when searching in add block dialog` passes
 - Browser mode: Test passes (included in 14 passed tests)
 
+### Fix 45: timer-workout-logging.spec.ts userEvent.click with Locators (2026-01-18)
+**Tests fixed:** 8 tests in `timer-workout-logging.spec.ts`
+
+**Issue:** The test file was calling `userEvent.click(locator)` where `locator` is a Locator object (from `page.getByRole()`, `page.getByText()`, `page.getByTestId()`) instead of an Element. In Happy-DOM mode, `userEvent` from `@testing-library/user-event` expects DOM Elements, not Locator objects, causing:
+```
+Error: Could not determine window of node. Node was [object Object]
+```
+
+In browser mode, `userEvent` from `vitest/browser` accepts Locators directly, so this pattern only fails in Happy-DOM mode.
+
+**Fix:** Changed all `userEvent.click(locator)` calls to use the Locator's built-in `.click()` method:
+
+In helper functions:
+```ts
+// Before (goToTimersPage):
+await userEvent.click(quickTimerCard)
+
+// After:
+await quickTimerCard.click()
+
+// Before (startAmrapTimer):
+await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
+
+// After:
+await page.getByRole('button', { name: /amrap/i }).click()
+await page.getByRole('button', { name: /quick burst/i }).click()
+
+// Before (completeTimer):
+await userEvent.click(completeTestButton)
+
+// After:
+await completeTestButton.click()
+```
+
+In test cases:
+```ts
+// Before:
+await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+await userEvent.click(page.getByRole('button', { name: /again/i }))
+await userEvent.click(page.getByRole('button', { name: /^done$/i }))
+
+// After:
+await page.getByRole('button', { name: /log workout/i }).click()
+await page.getByRole('button', { name: /again/i }).click()
+await page.getByRole('button', { name: /^done$/i }).click()
+```
+
+Also removed unused `userEvent` import from the file.
+
+**Verification:**
+- Happy-DOM: All 8 tests in timer-workout-logging.spec.ts pass
+- Browser mode: Tests pass (timer-workout-logging is included in integration tests)
+

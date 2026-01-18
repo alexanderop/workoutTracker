@@ -1,4 +1,4 @@
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement, expectPoll } from '../helpers/assertions'
 import { createTestApp } from '../helpers/createTestApp'
@@ -13,7 +13,7 @@ type TestApp = Awaited<ReturnType<typeof createTestApp>>
  */
 async function goToTimersPage(testApp: TestApp) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
-  await userEvent.click(quickTimerCard)
+  await quickTimerCard.click()
   await expectElement(page.getByText(/AMRAP/)).toBeVisible()
 }
 
@@ -21,9 +21,9 @@ async function goToTimersPage(testApp: TestApp) {
  * Helper to start an AMRAP timer with 5 min preset
  */
 async function startAmrapTimer() {
-  await userEvent.click(page.getByRole('button', { name: /amrap/i }))
+  await page.getByRole('button', { name: /amrap/i }).click()
   await expectElement(page.getByText('5 min', { exact: true })).toBeVisible()
-  await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
+  await page.getByRole('button', { name: /quick burst/i }).click()
 
   // Wait for timer UI
   await expectElement(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
@@ -38,7 +38,7 @@ async function startAmrapTimer() {
  */
 async function completeTimer() {
   const completeTestButton = page.getByTestId('complete-timer-test')
-  await userEvent.click(completeTestButton)
+  await completeTestButton.click()
 
   // Wait for completion UI to appear
   await expectElement(page.getByText(/complete/i)).toBeVisible()
@@ -80,7 +80,7 @@ describe('Timer Workout Logging', () => {
 
       // Click Log Workout
       const logButton = page.getByRole('button', { name: /log workout/i })
-      await userEvent.click(logButton)
+      await logButton.click()
 
       // Button should change to "Logged ✓" and be disabled
       await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
@@ -100,7 +100,7 @@ describe('Timer Workout Logging', () => {
       await completeTimer()
 
       // Click Log Workout
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
 
       // Verify workout was saved to database
       await expectPoll(async () => await db.workouts.count()).toBe(1)
@@ -126,11 +126,11 @@ describe('Timer Workout Logging', () => {
       await completeTimer()
 
       // Log the workout
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
       await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
 
       // Click "Again" to restart
-      await userEvent.click(page.getByRole('button', { name: /again/i }))
+      await page.getByRole('button', { name: /again/i }).click()
 
       // Should be back in timer running state (not completion)
       await expectElement(page.getByRole('button', { name: /start timer/i })).toBeVisible()
@@ -146,11 +146,11 @@ describe('Timer Workout Logging', () => {
       await completeTimer()
 
       // Log the workout
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
       await expectElement(page.getByRole('button', { name: /logged/i })).toBeVisible()
 
       // Click "Done" to exit
-      await userEvent.click(page.getByRole('button', { name: /^done$/i }))
+      await page.getByRole('button', { name: /^done$/i }).click()
 
       // Should be back at timer selection
       await expectElement(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
@@ -173,7 +173,7 @@ describe('Timer Workout Logging', () => {
       await startAmrapTimer()
       await completeTimer()
 
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
 
       // Wait for save
       await expectPoll(async () => await db.workouts.count()).toBe(1)
@@ -203,7 +203,7 @@ describe('Timer Workout Logging', () => {
       await startAmrapTimer()
       await completeTimer()
 
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
 
       await expectPoll(async () => await db.workouts.count()).toBe(1)
 
@@ -226,7 +226,7 @@ describe('Timer Workout Logging', () => {
       await completeTimer()
       const afterComplete = Date.now()
 
-      await userEvent.click(page.getByRole('button', { name: /log workout/i }))
+      await page.getByRole('button', { name: /log workout/i }).click()
 
       await expectPoll(async () => await db.workouts.count()).toBe(1)
 
