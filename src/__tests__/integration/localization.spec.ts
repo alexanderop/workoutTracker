@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { expectElement } from '../helpers/assertions'
-import { page, userEvent } from '../helpers/locator'
+import { page } from '../helpers/locator'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
 
 describe('Localization', () => {
   beforeEach(setupIntegrationTest)
@@ -36,7 +39,11 @@ describe('Localization', () => {
     })
   })
 
-  describe('Language Switching', () => {
+  // This test suite requires browser-only APIs:
+  // - reka-ui Select component uses target.hasPointerCapture() for pointer events
+  // - Happy-DOM doesn't support pointer capture APIs
+  // Skip in Happy-DOM mode
+  describe.skipIf(!isBrowserMode)('Language Switching', () => {
     it('displays English translations when switching from German to English via UI', async () => {
       const { navigateTo, queryByText, getByRole, findByText, cleanup } =
         await createTestApp()
@@ -58,17 +65,17 @@ describe('Localization', () => {
 
       // Open the language select dropdown (aria-label is "Sprache" in German)
       const languageSelect = getByRole('combobox', { name: /sprache/i })
-      await userEvent.click(languageSelect)
+      await languageSelect.click()
 
       // Select English from the dropdown options
-      const englishOption = await findByText('English')
-      await userEvent.click(englishOption)
+      const englishOption = findByText('English')
+      await englishOption.click()
 
       // Wait for UI to update to English
       await expectElement(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
 
       // Verify English labels display correctly
-      const settingsHeading = await getByRole('heading', { level: 1 }).element()
+      const settingsHeading = getByRole('heading', { level: 1 }).element()
       expect(settingsHeading.textContent).toBe('Settings')
 
       const weightLabel = queryByText(/^weight$/i)
