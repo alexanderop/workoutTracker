@@ -65,7 +65,10 @@ describe('Workout Set Completion', () => {
 
       // Verify we auto-advanced to block 2 of 2
       await expectElement(page.getByText(/block 2 of 2/i)).toBeVisible()
-      await expectElement(page.getByText('Deadlift')).toBeInTheDocument()
+      // Wait for table to render (indicates block content is fully loaded)
+      await expectElement(page.getByRole('table')).toBeVisible()
+      // Check for the exercise name (case-insensitive since CSS may affect rendering)
+      await expectElement(page.getByText(/deadlift/i)).toBeVisible()
 
       cleanup()
     })

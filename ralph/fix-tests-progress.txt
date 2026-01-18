@@ -1762,3 +1762,32 @@ The "stats and data operations" test suite was NOT skipped because it only tests
 - Happy-DOM: 8 tests skipped (browser-only test suites), 2 tests pass (repository-only tests)
 - Browser mode: All 10 tests pass
 
+### Fix 49: workout-set-completion.spec.ts exact text match timing issue (2026-01-18)
+**Test fixed:** `auto-advances to next block when all sets are complete` in `workout-set-completion.spec.ts`
+
+**Issue:** The test used `page.getByText('Deadlift')` with an exact string match to verify the exercise name after auto-advancing to block 2. This was failing because:
+1. The `page.getByText('Deadlift')` exact match was not finding the text
+2. The exercise name is displayed in the `WorkoutActiveStrengthView` component header with `uppercase` CSS class
+3. The text content "Deadlift" was present but the exact match query wasn't reliably finding it in Happy-DOM
+
+The DOM showed "Block 2 of 2" correctly (indicating navigation worked) but the exercise name assertion timed out.
+
+**Fix:** Changed the exact text match to a case-insensitive regex pattern and ensured we wait for the table to be visible before checking for the exercise name:
+
+```ts
+// Before:
+await expectElement(page.getByText('Deadlift')).toBeInTheDocument()
+
+// After:
+// Wait for table to render (indicates block content is fully loaded)
+await expectElement(page.getByRole('table')).toBeVisible()
+// Check for the exercise name (case-insensitive since CSS may affect rendering)
+await expectElement(page.getByText(/deadlift/i)).toBeVisible()
+```
+
+Using `/deadlift/i` regex ensures the match works regardless of how the text is transformed by CSS or stored in the DOM.
+
+**Verification:**
+- Happy-DOM: All 12 tests in workout-set-completion.spec.ts pass
+- Browser mode: All 12 tests pass
+
