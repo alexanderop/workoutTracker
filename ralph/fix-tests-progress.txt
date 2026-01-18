@@ -53,3 +53,29 @@ const isBrowserMode =
 - Happy-DOM: Test properly skipped (5 tests | 1 skipped), other 4 tests pass
 - Browser mode: All 5 tests pass (Blob test runs correctly)
 
+### Fix 3: add-block-dialog-viewport.spec.ts browser-only APIs (2026-01-18)
+**Tests fixed:** 2 tests in `add-block-dialog-viewport.spec.ts`
+
+**Issue:** The test file used browser-only APIs that don't exist in Happy-DOM:
+- `page.viewport()` for setting viewport size
+- `expect.element()` for visibility assertions
+
+These APIs are only available in Vitest browser mode, causing the tests to fail with:
+```
+TypeError: __vite_ssr_import_0__.page.viewport is not a function
+```
+
+**Fix:** Added browser mode detection and skip the entire test suite in Happy-DOM mode:
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', () => {
+```
+
+Also removed unused import `expectElement, expectPoll` from assertions.
+
+**Verification:**
+- Happy-DOM: 2 tests skipped (browser-only test suite correctly skipped)
+- Browser mode: 2 tests pass
+

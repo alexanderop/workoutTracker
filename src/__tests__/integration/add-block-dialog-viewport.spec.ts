@@ -1,11 +1,21 @@
 import { page, userEvent } from '../helpers/locator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { expectElement, expectPoll } from '../helpers/assertions'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-describe('AddBlockDialog - Desktop Viewport Clipping', () => {
+/**
+ * Detect if we're running in Vitest browser mode.
+ * In browser mode, window.__vitest_browser__ is set by Vitest.
+ */
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// This test suite requires browser-only APIs:
+// - page.viewport() for setting viewport size
+// - expect.element() for visibility assertions
+// Skip in Happy-DOM mode
+describe.skipIf(!isBrowserMode)('AddBlockDialog - Desktop Viewport Clipping', () => {
   beforeEach(async () => {
     await setupIntegrationTest()
     // Set viewport to desktop size that triggers the clipping bug
