@@ -990,3 +990,48 @@ Also removed unused `userEvent` import from the file.
 
 **Note:** The third test (`completes full workflow: workout -> save -> new workout with prefill`) has a different failure in Happy-DOM mode unrelated to browser-only APIs - it appears to be an application logic or test setup issue that should be addressed in a separate iteration.
 
+### Fix 29: ActiveWorkoutPO getComputedStyle().opacity returns '' in Happy-DOM (2026-01-18)
+**Tests fixed:** `completes full workflow: workout -> save -> new workout with prefill` in `isometric-prefill.spec.ts`
+
+**Issue:** The `endWorkoutAndNavigateToSummary()` method in `ActiveWorkoutPO.ts` polled for `getComputedStyle(element).opacity === '1'` to wait for the "View Details" button animation to complete before clicking:
+
+```ts
+await expectPoll(async () => {
+  const element = viewDetailsButton.element()
+  return getComputedStyle(element).opacity
+}, { timeout: 2000 }).toBe('1')
+```
+
+In Happy-DOM, `getComputedStyle().opacity` returns an empty string `''` for elements with opacity set via CSS animations (e.g., `animate-slide-up-fade` class with `animation-delay`). This is because Happy-DOM doesn't have a real rendering engine that computes animated styles.
+
+The poll would timeout waiting for opacity to be `'1'`, failing with:
+```
+AssertionError: expected '' to be '1' // Object.is equality
+```
+
+**Fix:** Added browser mode detection and skip the opacity check in Happy-DOM mode. In Happy-DOM, animations don't run, so the button is immediately clickable once visible:
+
+```ts
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
+
+// In endWorkoutAndNavigateToSummary():
+if (isBrowserMode) {
+  await expectPoll(async () => {
+    const element = viewDetailsButton.element()
+    return getComputedStyle(element).opacity
+  }, { timeout: 2000 }).toBe('1')
+}
+await viewDetailsButton.click()
+```
+
+Also fixed related issues in the same file:
+- Changed `userEvent.click(await this.getMenuTrigger())` to `menuTrigger.click()` using native HTMLElement click
+- Changed `userEvent.click(this.common.getDialogButton('Finish Workout'))` to native `.click()`
+- Same pattern fix in `removeCurrentBlock()` method
+- Same pattern fix in `fillCardSetAndComplete()` method
+
+**Verification:**
+- Happy-DOM: All 3 tests in isometric-prefill.spec.ts pass
+- Browser mode: All 3 tests pass
+

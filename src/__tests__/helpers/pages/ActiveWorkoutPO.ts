@@ -1,10 +1,13 @@
-import { page, userEvent } from 'vitest/browser'
-import { expect } from 'vitest'
 import { tryCatch } from '@/lib/tryCatch'
+import { page, userEvent } from '../locator'
+import { expectElement, expectPoll } from '../assertions'
 import type { SetInputs, SetValues } from '../types'
 import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 import { SetRowPO } from './SetRowPO'
+
+const isBrowserMode =
+  globalThis.window !== undefined && '__vitest_browser__' in globalThis
 
 /**
  * Page Object for the active workout view.
@@ -113,7 +116,7 @@ export class ActiveWorkoutPO {
    * Use this after starting a workout before interacting with sets.
    */
   async waitForTableVisible(): Promise<void> {
-    await expect.element(page.getByRole('table')).toBeVisible()
+    await expectElement(page.getByRole('table')).toBeVisible()
   }
 
   /**
@@ -318,7 +321,7 @@ export class ActiveWorkoutPO {
         const completeButton = await this.getCompleteButtonFromRow(rowLocator)
 
         await this.common.fillStrengthSetAndWaitForButton(inputs, values, completeButton)
-        await userEvent.click(completeButton)
+        completeButton.click()
         return
       }
     }
@@ -331,27 +334,33 @@ export class ActiveWorkoutPO {
    */
   async endWorkoutAndNavigateToSummary(): Promise<void> {
     // Open menu and click End Workout
-    await expect.poll(() => this.getMenuTrigger()).toBeTruthy()
-    await userEvent.click(await this.getMenuTrigger())
+    await expectPoll(() => this.getMenuTrigger()).toBeTruthy()
+    const menuTrigger = await this.getMenuTrigger()
+    menuTrigger.click()
 
-    await expect.element(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
+    await expectElement(page.getByRole('menuitem', { name: /end workout/i })).toBeVisible()
     await page.getByRole('menuitem', { name: /end workout/i }).click()
 
     // Confirm the dialog
     await this.common.waitForDialog()
-    await userEvent.click(this.common.getDialogButton('Finish Workout'))
+    this.common.getDialogButton('Finish Workout').click()
 
     // Wait for completion screen
-    await expect.element(page.getByText(/workout complete/i)).toBeVisible()
+    await expectElement(page.getByText(/workout complete/i)).toBeVisible()
 
     // Wait for View Details button to be clickable (animation needs to complete)
     const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-    await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-    // Poll for animation to complete (opacity becomes 1)
-    await expect.poll(async () => {
-      const element = await viewDetailsButton.element()
-      return getComputedStyle(element).opacity
-    }, { timeout: 2000 }).toBe('1')
+    await expectElement(viewDetailsButton, { timeout: 2000 }).toBeVisible()
+
+    // In browser mode, poll for animation to complete (opacity becomes 1)
+    // In Happy-DOM, animations don't run, so getComputedStyle().opacity returns ''
+    // for animated elements - skip this check in Happy-DOM
+    if (isBrowserMode) {
+      await expectPoll(async () => {
+        const element = viewDetailsButton.element()
+        return getComputedStyle(element).opacity
+      }, { timeout: 2000 }).toBe('1')
+    }
     await viewDetailsButton.click()
 
     // Wait for navigation to summary
@@ -363,10 +372,11 @@ export class ActiveWorkoutPO {
    * Opens the menu and clicks "Remove Block".
    */
   async removeCurrentBlock(): Promise<void> {
-    await expect.poll(() => this.getMenuTrigger()).toBeTruthy()
-    await userEvent.click(await this.getMenuTrigger())
+    await expectPoll(() => this.getMenuTrigger()).toBeTruthy()
+    const menuTrigger = await this.getMenuTrigger()
+    menuTrigger.click()
 
-    await expect.element(page.getByRole('menuitem', { name: /remove block/i })).toBeVisible()
+    await expectElement(page.getByRole('menuitem', { name: /remove block/i })).toBeVisible()
     await page.getByRole('menuitem', { name: /remove block/i }).click()
   }
 }
