@@ -7,7 +7,7 @@ onlyBuiltDependencies:
 catalogs:
   # Runtime dependencies shipped to production
   frontend:
-    vue: ^3.5.26
+    vue: ^3.5.30
     vue-router: ^4.6.4
     vue-i18n: ^11.2.7
     "@vueuse/core": ^14.0.0
@@ -15,7 +15,7 @@ catalogs:
     dexie: ^4.2.1
     zod: ^4.3.5
     date-fns: ^4.1.0
-    sortablejs: ^1.15.6
+    sortablejs: ^1.15.7
 
   # UI components and styling (bundled into app)
   ui:
@@ -23,8 +23,8 @@ catalogs:
     lucide-vue-next: ^0.562.0
     embla-carousel-vue: ^8.6.0
     "@internationalized/date": ^3.10.1
-    "@unovis/ts": ^1.6.2
-    "@unovis/vue": ^1.6.2
+    "@unovis/ts": ^1.6.4
+    "@unovis/vue": ^1.6.4
     tailwindcss: ^4.1.18
     "@tailwindcss/vite": ^4.1.18
     tailwind-merge: ^3.4.0
@@ -35,7 +35,7 @@ catalogs:
   # Build toolchain and dev utilities
   build:
     vite: ^7.3.0
-    "@vitejs/plugin-vue": ^6.0.3
+    "@vitejs/plugin-vue": ^6.0.5
     vite-plugin-pwa: ^1.2.0
     vite-plugin-vue-devtools: ^8.0.3
     rollup-plugin-visualizer: ^6.0.5
@@ -43,7 +43,7 @@ catalogs:
     "@vite-pwa/assets-generator": ^1.0.2
     # TypeScript toolchain
     typescript: ~5.9.0
-    vue-tsc: ^3.2.1
+    vue-tsc: ^3.2.5
     "@vue/tsconfig": ^0.8.1
     "@tsconfig/node22": ^22.0.2
     # Type definitions
@@ -70,7 +70,7 @@ catalogs:
     jsdom: ^27.4.0
     fake-indexeddb: ^6.2.5
     playwright: ^1.57.0
-    axe-core: ^4.11.0
+    axe-core: ^4.11.1
     "@faker-js/faker": ^10.1.0
     vitest-browser-vue: ^2.0.1
     archunit: ^2.1.63
@@ -81,13 +81,13 @@ catalogs:
     oxlint: ~1.36.0
     eslint-plugin-oxlint: ~1.36.0
     eslint-plugin-vue: ~10.6.2
-    eslint-plugin-import-x: ^4.16.1
+    eslint-plugin-import-x: ^4.16.2
     eslint-plugin-unicorn: ^62.0.0
     "@eslint-community/eslint-plugin-eslint-comments": ^4.5.0
     "@antfu/eslint-config": ^6.7.3
     "@vue/eslint-config-typescript": ^14.6.0
     "@vue/eslint-config-prettier": ^10.2.0
-    "@vitest/eslint-plugin": ^1.6.4
+    "@vitest/eslint-plugin": ^1.6.12
     "@intlify/eslint-plugin-vue-i18n": ^4.1.0
     eslint-import-resolver-typescript: ^4.4.4
     eslint-plugin-pnpm: ^1.4.3
@@ -95,6 +95,6 @@ catalogs:
     "@prettier/plugin-oxc": ^0.1.3
     markdownlint-cli2: ^0.20.0
     knip: ^5.78.0
-    jscpd: ^4.0.5
+    jscpd: ^4.0.8
 overrides:
   qs: ">=6.14.1"
