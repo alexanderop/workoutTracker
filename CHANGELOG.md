@@ -1,3 +1,12 @@
+## [1.19.1](https://github.com/alexanderop/workoutTracker/compare/v1.19.0...v1.19.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **ci:** simplify QA prompt to smoke test for faster runs ([a14cc76](https://github.com/alexanderop/workoutTracker/commit/a14cc76516bce69ac628ccecad3fc83b0ea451d7))
+
+
+
 # [1.19.0](https://github.com/alexanderop/workoutTracker/compare/v1.18.0...v1.19.0) (2026-04-10)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * add Ralph task automation and isometric exercise support ([#106](https://github.com/alexanderop/workoutTracker/issues/106)) ([f9d7859](https://github.com/alexanderop/workoutTracker/commit/f9d78595f22887ea5123cbd8045f4921e114e505))
-
-
-
-# [1.15.0](https://github.com/alexanderop/workoutTracker/compare/v1.14.0...v1.15.0) (2026-01-05)
-
-
-### Features
-
-* **benchmarks:** add variable reps per round with tabbed UI ([#105](https://github.com/alexanderop/workoutTracker/issues/105)) ([c69b728](https://github.com/alexanderop/workoutTracker/commit/c69b728bf9175508079a39bf2d31ccc9d436925d))
 
 
 
