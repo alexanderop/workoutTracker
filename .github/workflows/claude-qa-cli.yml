@@ -60,7 +60,9 @@ jobs:
 
       - name: Install playwright-cli browser
         shell: bash
-        run: npx @playwright/cli@latest install-browser chromium
+        run: |
+          npm install -g @playwright/cli@latest
+          playwright-cli install-browser chromium
 
       - name: Start development server
         shell: bash
