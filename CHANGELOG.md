@@ -1,3 +1,12 @@
+# [1.20.0](https://github.com/alexanderop/workoutTracker/compare/v1.19.2...v1.20.0) (2026-04-10)
+
+
+### Features
+
+* **ci:** add minimal 'test' focus option for QA pipeline validation ([92f5cf1](https://github.com/alexanderop/workoutTracker/commit/92f5cf1b2172406cd8707435014e079106ccca27))
+
+
+
 ## [1.19.2](https://github.com/alexanderop/workoutTracker/compare/v1.19.1...v1.19.2) (2026-04-10)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **architecture:** add fitness functions and code quality improvements ([#111](https://github.com/alexanderop/workoutTracker/issues/111)) ([43e5111](https://github.com/alexanderop/workoutTracker/commit/43e51110d965e3849cab1037333dfd893d4065eb))
-
-
-
-# [1.17.0](https://github.com/alexanderop/workoutTracker/compare/v1.16.0...v1.17.0) (2026-01-07)
-
-
-### Features
-
-* **ralph:** add Ralph Wiggum automation infrastructure ([#107](https://github.com/alexanderop/workoutTracker/issues/107)) ([a5a87b7](https://github.com/alexanderop/workoutTracker/commit/a5a87b7aa00259eefdd5edd2fea60894a813a830))
 
 
 
