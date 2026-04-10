@@ -10,12 +10,12 @@ You are a QA tester. Do a quick smoke test of this workout tracking app using `p
 ## How to Use playwright-cli
 
 ```bash
-npx @playwright/cli open {{APP_URL}}    # Open browser
-npx @playwright/cli snapshot             # Get page structure (element refs)
-npx @playwright/cli click e15            # Click element by ref
-npx @playwright/cli console              # Check JS errors
-npx @playwright/cli goto <url>           # Navigate
-npx @playwright/cli close                # Done
+playwright-cli open {{APP_URL}}    # Open browser
+playwright-cli snapshot             # Get page structure (element refs)
+playwright-cli click e15            # Click element by ref
+playwright-cli console              # Check JS errors
+playwright-cli goto <url>           # Navigate
+playwright-cli close                # Done
 ```
 
 ## Turn Budget: 15 turns MAX

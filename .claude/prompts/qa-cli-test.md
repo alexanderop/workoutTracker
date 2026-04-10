@@ -9,8 +9,8 @@ Minimal test to verify the QA pipeline works. Open the app and check main naviga
 
 ## Steps (5 turns max)
 
-1. Open the app: `npx @playwright/cli open {{APP_URL}}`
-2. Take a snapshot: `npx @playwright/cli snapshot`
+1. Open the app: `playwright-cli open {{APP_URL}}`
+2. Take a snapshot: `playwright-cli snapshot`
 3. Verify the page rendered (snapshot is not empty)
 4. Click one navigation link from the snapshot
 5. Take another snapshot to confirm the new page loaded

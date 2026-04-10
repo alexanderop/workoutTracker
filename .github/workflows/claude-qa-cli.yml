@@ -105,12 +105,14 @@ jobs:
             echo "---"
             echo ""
 
-            # Task prompt (select based on focus input)
+            # Task prompt and tools (select based on focus input)
             FOCUS="${{ github.event.inputs.focus || 'general' }}"
             if [ "$FOCUS" = "test" ]; then
               PROMPT_FILE=".claude/prompts/qa-cli-test.md"
+              echo "allowed_tools=Bash(playwright-cli*),Write(qa-report.md)" >> $GITHUB_OUTPUT
             else
               PROMPT_FILE=".claude/prompts/qa-cli-explore.md"
+              echo "allowed_tools=Bash(playwright-cli*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
             fi
             TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
@@ -138,7 +140,7 @@ jobs:
           claude_args: |
             --max-turns 15
             --model claude-opus-4-20250514
-            --allowedTools "Bash(npx @playwright/cli*),Write(qa-report.md)"
+            --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Check report exists
@@ -340,7 +342,7 @@ jobs:
         shell: bash
         run: |
           kill $DEV_PID 2>/dev/null || true
-          npx @playwright/cli close-all 2>/dev/null || true
+          playwright-cli close-all 2>/dev/null || true
 
       - name: Fail job if QA found issues
         if: steps.qa-status.outputs.qa_state == 'failure'
