@@ -1,3 +1,12 @@
+## [1.21.1](https://github.com/alexanderop/workoutTracker/compare/v1.21.0...v1.21.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **ci:** install playwright-cli globally to avoid npx warning ([cb5f117](https://github.com/alexanderop/workoutTracker/commit/cb5f1175b3fc172ab4a490d166900844942efec9))
+
+
+
 # [1.21.0](https://github.com/alexanderop/workoutTracker/compare/v1.20.0...v1.21.0) (2026-04-10)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** simplify QA prompt to smoke test for faster runs ([a14cc76](https://github.com/alexanderop/workoutTracker/commit/a14cc76516bce69ac628ccecad3fc83b0ea451d7))
-
-
-
-# [1.19.0](https://github.com/alexanderop/workoutTracker/compare/v1.18.0...v1.19.0) (2026-04-10)
-
-
-### Features
-
-* **ci:** add Claude QA workflow with Playwright CLI ([25668fc](https://github.com/alexanderop/workoutTracker/commit/25668fc41b29b41558b974e0999d12880e91bf94))
 
 
 
