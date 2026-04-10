@@ -1,3 +1,12 @@
+## [1.21.2](https://github.com/alexanderop/workoutTracker/compare/v1.21.1...v1.21.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* **ci:** use Opus model for QA workflow ([6b20424](https://github.com/alexanderop/workoutTracker/commit/6b20424b12d8f18d9093523a22a0dbfac22e0fcc))
+
+
+
 ## [1.21.1](https://github.com/alexanderop/workoutTracker/compare/v1.21.0...v1.21.1) (2026-04-10)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** improve QA workflow reliability and token efficiency ([92262e5](https://github.com/alexanderop/workoutTracker/commit/92262e597ccc8ee6769c080d213583539ab66f18))
-
-
-
-## [1.19.1](https://github.com/alexanderop/workoutTracker/compare/v1.19.0...v1.19.1) (2026-04-10)
-
-
-### Bug Fixes
-
-* **ci:** simplify QA prompt to smoke test for faster runs ([a14cc76](https://github.com/alexanderop/workoutTracker/commit/a14cc76516bce69ac628ccecad3fc83b0ea451d7))
 
 
 
