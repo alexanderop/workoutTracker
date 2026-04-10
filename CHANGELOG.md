@@ -1,3 +1,12 @@
+# [1.19.0](https://github.com/alexanderop/workoutTracker/compare/v1.18.0...v1.19.0) (2026-04-10)
+
+
+### Features
+
+* **ci:** add Claude QA workflow with Playwright CLI ([25668fc](https://github.com/alexanderop/workoutTracker/commit/25668fc41b29b41558b974e0999d12880e91bf94))
+
+
+
 # [1.18.0](https://github.com/alexanderop/workoutTracker/compare/v1.17.0...v1.18.0) (2026-01-16)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **benchmarks:** add variable reps per round with tabbed UI ([#105](https://github.com/alexanderop/workoutTracker/issues/105)) ([c69b728](https://github.com/alexanderop/workoutTracker/commit/c69b728bf9175508079a39bf2d31ccc9d436925d))
-
-
-
-# [1.14.0](https://github.com/alexanderop/workoutTracker/compare/v1.13.1...v1.14.0) (2026-01-04)
-
-
-### Features
-
-* **lib:** add fractional indexing for sortable keys ([8e70585](https://github.com/alexanderop/workoutTracker/commit/8e7058563d66dc84e37ffb378314953c353835cb))
 
 
 
