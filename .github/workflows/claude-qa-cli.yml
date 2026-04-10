@@ -137,7 +137,7 @@ jobs:
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           claude_args: |
             --max-turns 15
-            --model claude-sonnet-4-20250514
+            --model claude-opus-4-20250514
             --allowedTools "Bash(npx @playwright/cli*),Write(qa-report.md)"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
