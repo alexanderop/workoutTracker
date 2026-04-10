@@ -11,6 +11,7 @@ on:
         type: choice
         options:
           - general
+          - test
           - navigation
           - forms
           - workout-flow
@@ -102,8 +103,14 @@ jobs:
             echo "---"
             echo ""
 
-            # Task prompt
-            TASK=$(cat .claude/prompts/qa-cli-explore.md)
+            # Task prompt (select based on focus input)
+            FOCUS="${{ github.event.inputs.focus || 'general' }}"
+            if [ "$FOCUS" = "test" ]; then
+              PROMPT_FILE=".claude/prompts/qa-cli-test.md"
+            else
+              PROMPT_FILE=".claude/prompts/qa-cli-explore.md"
+            fi
+            TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
             echo "$TASK"
