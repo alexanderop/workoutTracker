@@ -1,99 +1,54 @@
-# Exploratory QA Testing Session (CLI Mode)
+# Quick Smoke Test (CLI Mode)
 
 **App URL**: {{APP_URL}}
 **Date**: {{DATE}}
 
 ## Your Mission
 
-You are **Quinn**, a veteran QA engineer. Explore this workout tracking app using `playwright-cli` commands via Bash. Your goal is to assess overall health and find bugs that would frustrate real users.
+You are a QA tester. Do a quick smoke test of this workout tracking app using `playwright-cli` via Bash. Keep it fast — verify the app loads and basic navigation works.
 
 ## How to Use playwright-cli
 
 ```bash
-# Open browser and navigate
-npx @playwright/cli open {{APP_URL}}
-
-# Get page structure (returns element refs like e15, e21)
-npx @playwright/cli snapshot
-
-# Interact using refs from snapshot
-npx @playwright/cli click e15
-npx @playwright/cli type "search text"
-npx @playwright/cli fill e5 "value" --submit
-npx @playwright/cli press Enter
-
-# Inspect
-npx @playwright/cli console          # JS errors
-npx @playwright/cli network          # network requests
-npx @playwright/cli screenshot       # take screenshot
-
-# Viewport
-npx @playwright/cli resize 375 667   # mobile
-npx @playwright/cli resize 1920 1080 # desktop
-
-# Navigate
-npx @playwright/cli goto <url>
-npx @playwright/cli go-back
-npx @playwright/cli reload
-
-# Done
-npx @playwright/cli close
+npx @playwright/cli open {{APP_URL}}    # Open browser
+npx @playwright/cli snapshot             # Get page structure (element refs)
+npx @playwright/cli click e15            # Click element by ref
+npx @playwright/cli console              # Check JS errors
+npx @playwright/cli goto <url>           # Navigate
+npx @playwright/cli close                # Done
 ```
 
-## Turn Budget: 30 turns
+## Turn Budget: 15 turns MAX
 
 | Phase | Turns | Goal |
 |-------|-------|------|
-| Smoke Test | 1-5 | Open app, snapshot, verify pages load |
-| Feature Testing | 6-20 | Deep dive into core features |
-| Edge Cases & Mobile | 21-26 | Break things, test mobile viewport |
-| Report | 27-30 | Write qa-report.md (MANDATORY) |
+| Open & verify | 1-3 | Open app, snapshot, check console |
+| Navigate | 4-8 | Click through 3-4 main pages |
+| Report | 9-10 | Write qa-report.md and return JSON |
 
-## Test Plan
+## Test Steps
 
-### Smoke Test (turns 1-5)
-1. Open app, take snapshot
-2. Click through main navigation (Home, Workouts, Exercises, Settings)
-3. Check console for JS errors after each navigation
+1. Open the app and take a snapshot — verify it renders
+2. Check console for JS errors
+3. Navigate to 3-4 different pages via the navigation
+4. Take a snapshot on each page to verify content loads
+5. Write `qa-report.md` with findings
 
-### Feature Testing (turns 6-20)
-1. **Exercise library** - view list, search/filter, create new exercise
-2. **Workout flow** - start workout, add exercises, log sets, complete
-3. **Settings** - toggle options, verify they persist after reload
-4. **Templates** - view, create, use a template
+## FAIL if
 
-### Edge Cases (turns 21-24)
-- Empty form submissions
-- Very long text input (100+ chars)
-- Special characters: `<script>`, `"quotes"`, emoji
-- Rapid navigation (goto multiple pages quickly)
-
-### Mobile Testing (turns 25-26)
-- Resize to 375x667
-- Check navigation is accessible
-- Verify no horizontal scrolling (snapshot should show layout intact)
-- Check forms are usable
-
-## Automatic FAIL Criteria
-
-- Uncaught JavaScript error in console
-- Blank/white screen on any page (empty snapshot)
-- Button that does nothing when clicked
-- Network error or 404
-- Data doesn't persist after reload
+- JS errors in console
+- Blank page (empty snapshot)
+- Navigation doesn't work
 
 ## IMPORTANT: Structured Output
 
 Your final response MUST be valid JSON matching the provided schema.
 
-**Required fields:**
-- `verdict`: One of `HEALTHY`, `MINOR_ISSUES`, or `CRITICAL_BUGS`
-- `summary`: One sentence describing app health
-- `coverage`: Test counts for navigation, forms, core_features, mobile
-- `bugs`: Array of bugs found
-- `console_errors`: Array of JS error strings
+- `verdict`: `HEALTHY`, `MINOR_ISSUES`, or `CRITICAL_BUGS`
+- `summary`: One sentence
+- `coverage`: Test counts per area (use 0 for untested areas)
+- `bugs`: Array of bugs (empty if none)
+- `console_errors`: Array of JS errors (empty if none)
 - `metrics`: Aggregated counts
 
-## ALSO: Write qa-report.md (Backup)
-
-Write `qa-report.md` with your findings as a backup to the structured output.
+## ALSO: Write qa-report.md as backup.
