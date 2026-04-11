@@ -1,0 +1,351 @@
+# Claude QA with agent-browser
+# Alternative to claude-qa-cli.yml (playwright-cli) - uses agent-browser (vercel-labs/agent-browser)
+
+name: Claude QA (Browser)
+
+on:
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: 'Test focus area'
+        type: choice
+        options:
+          - general
+          - test
+          - navigation
+          - forms
+          - workout-flow
+        default: 'general'
+      pr_number:
+        description: 'PR number (for posting results)'
+        required: false
+        type: string
+  pull_request:
+    types: [labeled]
+
+jobs:
+  qa-browser:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.label.name == 'qa-browser')
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    concurrency:
+      group: claude-qa-browser-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      statuses: write
+
+    env:
+      NODE_VERSION: '22'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install agent-browser
+        shell: bash
+        run: |
+          npm install -g agent-browser
+          agent-browser install
+
+      - name: Start development server
+        shell: bash
+        run: |
+          pnpm dev --host 0.0.0.0 --port 5173 &
+          DEV_PID=$!
+          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
+
+          sleep 2
+          if ! kill -0 "$DEV_PID" 2>/dev/null; then
+            echo "Dev server failed to start"
+            exit 1
+          fi
+
+          for i in {1..90}; do
+            if curl -sf http://localhost:5173 | grep -qE '(id="app"|<title>)'; then
+              echo "Dev server ready!"
+              exit 0
+            fi
+            if ! kill -0 "$DEV_PID" 2>/dev/null; then
+              echo "Dev server process died"
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "Dev server failed to start properly"
+          exit 1
+
+      - name: Load QA prompt
+        id: load-prompt
+        shell: bash
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          {
+            echo 'prompt<<PROMPT_EOF'
+
+            # System prompt (QA persona)
+            cat .claude/prompts/qa-system-prompt.md
+            echo ""
+            echo "---"
+            echo ""
+
+            # Task prompt and tools (select based on focus input)
+            FOCUS="${{ github.event.inputs.focus || 'general' }}"
+            if [ "$FOCUS" = "test" ]; then
+              PROMPT_FILE=".claude/prompts/qa-browser-test.md"
+              echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            else
+              PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
+              echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            fi
+            TASK=$(cat "$PROMPT_FILE")
+            TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
+            TASK="${TASK//\{\{DATE\}\}/$TODAY}"
+            echo "$TASK"
+
+            echo 'PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Load QA schema
+        id: load-schema
+        shell: bash
+        run: |
+          SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
+          echo "schema=$SCHEMA" >> $GITHUB_OUTPUT
+
+      - name: Run Claude QA (Browser mode)
+        id: claude-qa
+        continue-on-error: true
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          prompt: ${{ steps.load-prompt.outputs.prompt }}
+          claude_args: |
+            --max-turns 15
+            --model claude-opus-4-20250514
+            --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
+
+      - name: Check report exists
+        id: check-report
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "qa-report.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set commit status
+        id: qa-status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
+        with:
+          script: |
+            const fs = require('fs');
+            let state = 'success';
+            let description = 'QA passed';
+
+            const structuredOutput = process.env.STRUCTURED_OUTPUT;
+            if (structuredOutput && structuredOutput.trim()) {
+              try {
+                const data = JSON.parse(structuredOutput);
+
+                if (data.verdict === 'CRITICAL_BUGS' || data.metrics.critical_bugs > 0) {
+                  state = 'failure';
+                  description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
+                } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
+                  state = 'pending';
+                  const issueCount = (data.metrics.minor_bugs || 0) + (data.metrics.major_bugs || 0);
+                  description = `QA found ${issueCount} issue(s) to review`;
+                } else {
+                  state = 'success';
+                  description = `QA passed (${data.metrics.passed}/${data.metrics.total_tests} tests)`;
+                }
+
+                core.setOutput('metrics', JSON.stringify(data.metrics));
+                core.setOutput('verdict', data.verdict);
+              } catch (parseErr) {
+                core.warning(`Failed to parse structured output: ${parseErr.message}`);
+              }
+            } else {
+              try {
+                const report = fs.readFileSync('qa-report.md', 'utf8');
+                if (/CRITICAL/i.test(report)) {
+                  state = 'failure';
+                  description = 'QA found critical issues';
+                } else if (/MINOR/i.test(report) || report.includes('WARNING')) {
+                  state = 'pending';
+                  description = 'QA found minor issues';
+                }
+              } catch (e) {
+                state = 'error';
+                description = 'QA report not generated';
+              }
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              context: 'Claude QA (Browser)',
+              description: description,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+            core.setOutput('qa_state', state);
+
+      - name: Post results to PR
+        if: |
+          always() &&
+          (github.event.pull_request.number || github.event.inputs.pr_number)
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = context.payload.pull_request?.number ||
+                            process.env.PR_NUMBER_INPUT;
+
+            if (!prNumber) return;
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            let qaReport = '';
+
+            const structuredOutput = process.env.STRUCTURED_OUTPUT;
+            if (structuredOutput && structuredOutput.trim()) {
+              try {
+                const data = JSON.parse(structuredOutput);
+                const verdictEmoji = data.verdict === 'HEALTHY' ? '✅' : data.verdict === 'MINOR_ISSUES' ? '⚠️' : '❌';
+
+                const coverageRows = ['navigation', 'forms', 'core_features', 'mobile']
+                  .map(area => {
+                    const c = data.coverage[area];
+                    const label = area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    return `| ${label} | ${c.passed} | ${c.failed} | ${c.total} |`;
+                  })
+                  .join('\n');
+
+                let bugsSection = '';
+                if (data.bugs.length > 0) {
+                  const bugRows = data.bugs.map(b => {
+                    const severityEmoji = b.severity === 'critical' ? '🔴' : b.severity === 'major' ? '🟠' : '🟡';
+                    return `| ${b.id} | ${severityEmoji} ${b.severity} | ${b.title} |`;
+                  }).join('\n');
+                  bugsSection = `### Bugs Found (${data.bugs.length})\n\n| # | Severity | Description |\n|---|----------|-------------|\n${bugRows}`;
+                } else {
+                  bugsSection = '### Bugs Found\n\n✅ No bugs found';
+                }
+
+                qaReport = [
+                  `**Verdict**: ${verdictEmoji} **${data.verdict}**`,
+                  '',
+                  `**Summary**: ${data.summary}`,
+                  '',
+                  '### Test Coverage',
+                  '',
+                  '| Area | Passed | Failed | Total |',
+                  '|------|--------|--------|-------|',
+                  coverageRows,
+                  '',
+                  `**Overall**: ${data.metrics.passed}/${data.metrics.total_tests} tests passed`,
+                  '',
+                  bugsSection
+                ].join('\n');
+              } catch (parseErr) {
+                core.warning(`Failed to parse structured output: ${parseErr.message}`);
+              }
+            }
+
+            if (!qaReport) {
+              try {
+                qaReport = fs.readFileSync('qa-report.md', 'utf8');
+              } catch (e) {
+                qaReport = `⚠️ QA report not generated. Check [workflow logs](${runUrl})`;
+              }
+            }
+
+            const body = [
+              '## 🔍 Claude QA Report (Browser Mode)',
+              '',
+              `**Method**: agent-browser (ref-based)`,
+              `**Run**: [View Logs](${runUrl})`,
+              '',
+              '---',
+              '',
+              qaReport,
+              '',
+              '---',
+              '_Automated QA by Claude Code + agent-browser_'
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(prNumber),
+              body: body
+            });
+
+      - name: Upload QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-browser-artifacts-${{ github.run_id }}
+          path: |
+            qa-report.md
+          if-no-files-found: ignore
+
+      - name: Remove trigger label
+        if: |
+          github.event_name == 'pull_request' &&
+          github.event.label.name == 'qa-browser'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'qa-browser'
+              });
+            } catch (e) {
+              if (e.status !== 404) core.warning(`Failed to remove label: ${e.message}`);
+            }
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: |
+          kill $DEV_PID 2>/dev/null || true
+          agent-browser close 2>/dev/null || true
+
+      - name: Fail job if QA found issues
+        if: steps.qa-status.outputs.qa_state == 'failure'
+        shell: bash
+        run: |
+          echo "❌ QA found critical issues - failing the pipeline"
+          exit 1
