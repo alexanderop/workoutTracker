@@ -97,31 +97,6 @@ jobs:
           npm install -g agent-browser
           agent-browser install
 
-      - name: Configure Claude permissions
-        shell: bash
-        run: |
-          mkdir -p .claude
-          cat > .claude/settings.local.json << 'SETTINGS_EOF'
-          {
-            "permissions": {
-              "allow": [
-                "Bash(agent-browser *)",
-                "Bash(curl *)",
-                "Write(qa-report.md)",
-                "Read",
-                "Glob",
-                "Grep"
-              ]
-            }
-          }
-          SETTINGS_EOF
-
-      - name: Build allowed tools list
-        id: tools
-        shell: bash
-        run: |
-          echo "allowed=Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep" >> $GITHUB_OUTPUT
-
       - name: Determine QA mode
         id: qa-mode
         shell: bash
@@ -324,11 +299,24 @@ jobs:
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(agent-browser *)",
+                  "Bash(curl *)",
+                  "Write(qa-report.md)",
+                  "Read",
+                  "Glob",
+                  "Grep"
+                ]
+              }
+            }
           claude_args: |
-            --allowedTools "${{ steps.tools.outputs.allowed }}"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
-            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
+            --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Check report exists
         id: check-report
@@ -365,11 +353,24 @@ jobs:
             - Summary of pages tested
             - Any errors found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(agent-browser *)",
+                  "Bash(curl *)",
+                  "Write(qa-report.md)",
+                  "Read",
+                  "Glob",
+                  "Grep"
+                ]
+              }
+            }
           claude_args: |
-            --allowedTools "${{ steps.tools.outputs.allowed }}"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns 15
             --json-schema '${{ steps.load-schema.outputs.schema }}'
-            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
+            --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Verify report after retry
         id: check-report-retry
