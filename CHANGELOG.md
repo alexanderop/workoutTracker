@@ -1,3 +1,12 @@
+## [1.25.3](https://github.com/alexanderop/workoutTracker/compare/v1.25.2...v1.25.3) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** move --allowedTools before --system-prompt in claude_args ([44d1b69](https://github.com/alexanderop/workoutTracker/commit/44d1b690e5017a3630729e9e05065ef31645b745))
+
+
+
 ## [1.25.2](https://github.com/alexanderop/workoutTracker/compare/v1.25.1...v1.25.2) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** make track_progress conditional on event type ([0871a60](https://github.com/alexanderop/workoutTracker/commit/0871a60b577679c2e5b671d17d541a93e5299ffe))
-
-
-
-## [1.24.8](https://github.com/alexanderop/workoutTracker/compare/v1.24.7...v1.24.8) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** add track_progress and json-schema to QA retry step ([5372a4c](https://github.com/alexanderop/workoutTracker/commit/5372a4c4d44d54ad920f627f65c39803104156fa))
 
 
 
