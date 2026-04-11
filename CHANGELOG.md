@@ -1,3 +1,12 @@
+# [1.23.0](https://github.com/alexanderop/workoutTracker/compare/v1.22.2...v1.23.0) (2026-04-11)
+
+
+### Features
+
+* **ci:** add PR-aware verify mode to agent-browser QA workflow ([11bf9a0](https://github.com/alexanderop/workoutTracker/commit/11bf9a049f45400ebe788617da189e962bc3bb4a)), closes [#128](https://github.com/alexanderop/workoutTracker/issues/128)
+
+
+
 ## [1.22.2](https://github.com/alexanderop/workoutTracker/compare/v1.22.1...v1.22.2) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** use playwright-cli globally and dynamic allowedTools per focus ([c7c6356](https://github.com/alexanderop/workoutTracker/commit/c7c63565b8de24af5391cb86218e1aff74601434))
-
-
-
-## [1.21.2](https://github.com/alexanderop/workoutTracker/compare/v1.21.1...v1.21.2) (2026-04-10)
-
-
-### Bug Fixes
-
-* **ci:** use Opus model for QA workflow ([6b20424](https://github.com/alexanderop/workoutTracker/commit/6b20424b12d8f18d9093523a22a0dbfac22e0fcc))
 
 
 
