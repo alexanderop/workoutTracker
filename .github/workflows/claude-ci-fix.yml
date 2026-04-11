@@ -1,3 +1,4 @@
+# Auto-diagnose and fix CI failures using Claude Code
 name: Claude Auto-Fix CI
 
 on:
