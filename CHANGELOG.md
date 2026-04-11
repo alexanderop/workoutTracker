@@ -1,3 +1,12 @@
+# [1.25.0](https://github.com/alexanderop/workoutTracker/compare/v1.24.9...v1.25.0) (2026-04-11)
+
+
+### Features
+
+* **ci:** add [@claude](https://github.com/claude) test trigger for quick QA smoke tests ([ae8e68e](https://github.com/alexanderop/workoutTracker/commit/ae8e68ea16a3ab43e556d65928869f2dced72523))
+
+
+
 ## [1.24.9](https://github.com/alexanderop/workoutTracker/compare/v1.24.8...v1.24.9) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** fix allowedTools format for agent-browser commands ([27c59ca](https://github.com/alexanderop/workoutTracker/commit/27c59cae954a1b6d3c5d23af7a19414680f15538))
-
-
-
-## [1.24.5](https://github.com/alexanderop/workoutTracker/compare/v1.24.4...v1.24.5) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** enable show_full_output for QA workflow visibility ([6b7cb88](https://github.com/alexanderop/workoutTracker/commit/6b7cb88d6156e80ef8bf1d525b95a44cf45d0af0))
 
 
 
