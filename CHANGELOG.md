@@ -1,3 +1,12 @@
+## [1.23.3](https://github.com/alexanderop/workoutTracker/compare/v1.23.2...v1.23.3) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** increase verify mode to 50 turns and reserve budget for report ([dab0be4](https://github.com/alexanderop/workoutTracker/commit/dab0be4ee0603d6cbc0734cf4256747f553adab1))
+
+
+
 ## [1.23.2](https://github.com/alexanderop/workoutTracker/compare/v1.23.1...v1.23.2) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** clarify agent-browser is a CLI tool run via Bash ([3a32eb5](https://github.com/alexanderop/workoutTracker/commit/3a32eb5e24cfe46f7a985db8e7b48f6e5678355d))
-
-
-
-## [1.22.1](https://github.com/alexanderop/workoutTracker/compare/v1.22.0...v1.22.1) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** move allowedTools output outside heredoc block ([c8ed7ef](https://github.com/alexanderop/workoutTracker/commit/c8ed7efd15d9e1deb8cc3e4bd04457a8c02579a5))
 
 
 
