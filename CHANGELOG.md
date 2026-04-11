@@ -1,3 +1,12 @@
+## [1.24.3](https://github.com/alexanderop/workoutTracker/compare/v1.24.2...v1.24.3) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** restrict workflow triggers to repo collaborators and block fork PRs ([d4a6abe](https://github.com/alexanderop/workoutTracker/commit/d4a6abef7036e21cabba03e30168ec2a3dbd24f4))
+
+
+
 ## [1.24.2](https://github.com/alexanderop/workoutTracker/compare/v1.24.1...v1.24.2) (2026-04-11)
 
 
@@ -34,15 +43,6 @@
 ### Bug Fixes
 
 * **ci:** increase QA verify max_turns to 100 ([cdada52](https://github.com/alexanderop/workoutTracker/commit/cdada52a6193da1353128b9115a90ad214888bb1))
-
-
-
-## [1.23.3](https://github.com/alexanderop/workoutTracker/compare/v1.23.2...v1.23.3) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** increase verify mode to 50 turns and reserve budget for report ([dab0be4](https://github.com/alexanderop/workoutTracker/commit/dab0be4ee0603d6cbc0734cf4256747f553adab1))
 
 
 
