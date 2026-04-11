@@ -1,3 +1,12 @@
+## [1.24.9](https://github.com/alexanderop/workoutTracker/compare/v1.24.8...v1.24.9) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** make track_progress conditional on event type ([0871a60](https://github.com/alexanderop/workoutTracker/commit/0871a60b577679c2e5b671d17d541a93e5299ffe))
+
+
+
 ## [1.24.8](https://github.com/alexanderop/workoutTracker/compare/v1.24.7...v1.24.8) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** enable show_full_output for QA workflow visibility ([6b7cb88](https://github.com/alexanderop/workoutTracker/commit/6b7cb88d6156e80ef8bf1d525b95a44cf45d0af0))
-
-
-
-## [1.24.4](https://github.com/alexanderop/workoutTracker/compare/v1.24.3...v1.24.4) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** improve QA pipeline and audit config ([2389632](https://github.com/alexanderop/workoutTracker/commit/2389632ad1e8cb458593378d459f30ec180b4f68))
 
 
 
