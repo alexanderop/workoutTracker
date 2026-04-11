@@ -1,5 +1,6 @@
 # Claude QA with agent-browser
 # Uses agent-browser (vercel-labs/agent-browser) for browser-based QA testing
+# Triggered by qa-verify label on PRs or @claude verify in comments
 
 name: Claude QA (Browser)
 
