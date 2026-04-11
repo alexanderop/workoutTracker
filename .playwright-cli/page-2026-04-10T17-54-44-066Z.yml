@@ -1,0 +1,122 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - main [ref=e5]:
+      - generic [ref=e1798]:
+        - generic [ref=e1799]:
+          - heading "Settings" [level=1] [ref=e1800]
+          - paragraph [ref=e1801]: Customize your app preferences
+        - generic [ref=e1802]:
+          - generic [ref=e1803]:
+            - heading "Units" [level=2] [ref=e1804]
+            - generic [ref=e1805]:
+              - generic [ref=e1806]:
+                - generic [ref=e1807]:
+                  - img [ref=e1808]
+                  - text: Weight
+                - group [ref=e1812]:
+                  - button "Kilograms" [pressed] [ref=e1813]: kg
+                  - button "Pounds" [ref=e1814]: lbs
+              - generic [ref=e1815]:
+                - generic [ref=e1816]:
+                  - img [ref=e1817]
+                  - text: Height
+                - group [ref=e1823]:
+                  - button "Centimeters" [pressed] [ref=e1824]: cm
+                  - button "Feet and Inches" [ref=e1825]: ft/in
+          - generic [ref=e1826]:
+            - heading "Appearance" [level=2] [ref=e1827]
+            - generic [ref=e1828]:
+              - generic [ref=e1829]:
+                - generic [ref=e1830] [cursor=pointer]:
+                  - img [ref=e1831]
+                  - text: Dark Mode
+                - switch "Dark Mode" [ref=e1833]
+              - generic [ref=e1834]:
+                - generic [ref=e1835]:
+                  - img [ref=e1836]
+                  - text: Language
+                - combobox "Language" [ref=e1839]:
+                  - generic: English
+                  - img
+          - generic [ref=e1840]:
+            - heading "Screen" [level=2] [ref=e1841]
+            - generic [ref=e1842]:
+              - generic [ref=e1843]:
+                - generic [ref=e1844]:
+                  - img [ref=e1845]
+                  - generic [ref=e1847]:
+                    - generic [ref=e1848] [cursor=pointer]: Keep Screen On
+                    - paragraph [ref=e1849]: Prevent dimming during workouts
+                - switch "Keep Screen On" [checked] [ref=e1850]
+              - generic [ref=e1851]:
+                - generic [ref=e1852]:
+                  - img [ref=e1853]
+                  - generic [ref=e1857]:
+                    - generic [ref=e1858] [cursor=pointer]: Timer Sounds
+                    - paragraph [ref=e1859]: Play audio cues during timed workouts
+                - switch "Timer Sounds" [checked] [ref=e1860]
+              - generic [ref=e1861]:
+                - generic [ref=e1862]: Volume
+                - generic [ref=e1863]:
+                  - slider "Volume" [ref=e1864] [cursor=pointer]: "0.8"
+                  - generic [ref=e1865]: 80%
+                - paragraph [ref=e1866]: Adjust between 50% and 100%
+              - button "Advanced diagnostics" [ref=e1868]:
+                - img [ref=e1869]
+                - text: Advanced diagnostics
+          - generic [ref=e1871]:
+            - heading "Data" [level=2] [ref=e1872]
+            - generic [ref=e1873]:
+              - button "Export Data" [ref=e1874]:
+                - generic [ref=e1875]:
+                  - img
+                  - generic [ref=e1876]:
+                    - paragraph [ref=e1877]: Export Data
+                    - paragraph [ref=e1878]: Download backup file
+              - button "Import Data" [ref=e1879]:
+                - generic [ref=e1880]:
+                  - img
+                  - generic [ref=e1881]:
+                    - paragraph [ref=e1882]: Import Data
+                    - paragraph [ref=e1883]: Restore from backup
+          - generic [ref=e1884]:
+            - heading "Danger Zone" [level=2] [ref=e1885]
+            - generic [ref=e1887]:
+              - generic [ref=e1888]:
+                - img [ref=e1889]
+                - generic [ref=e1892]:
+                  - paragraph [ref=e1893]: Delete All Data
+                  - paragraph [ref=e1894]: Permanently remove all workouts, exercises, and settings
+              - button "Delete All Data" [ref=e1895]: Delete All
+          - generic [ref=e1896]:
+            - heading "About" [level=2] [ref=e1897]
+            - generic [ref=e1899]:
+              - img [ref=e1900]
+              - generic [ref=e1902]:
+                - paragraph [ref=e1903]: Version
+                - paragraph [ref=e1904]: 1.18.0 (v1.18.0)
+                - generic [ref=e1905]:
+                  - paragraph [ref=e1906]: "Commit: c0e3a79"
+                  - paragraph [ref=e1907]: "Built: Apr 10, 2026, 7:51 PM"
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - button "Home" [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]: Home
+        - button "Workouts" [ref=e13]:
+          - img [ref=e14]
+          - generic [ref=e20]: Workouts
+        - button "Exercises" [ref=e21]:
+          - img [ref=e22]
+          - generic [ref=e24]: Exercises
+        - button "Weight" [ref=e25]:
+          - img [ref=e26]
+          - generic [ref=e30]: Weight
+        - button "Settings" [active] [ref=e31]:
+          - img [ref=e32]
+          - generic [ref=e35]: Settings
+  - generic [ref=e36]:
+    - generic "Toggle devtools panel" [ref=e37] [cursor=pointer]:
+      - img [ref=e38]
+    - generic "Toggle Component Inspector" [ref=e43] [cursor=pointer]:
+      - img [ref=e44]

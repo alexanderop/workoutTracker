@@ -1,0 +1,65 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - main [ref=e5]:
+      - generic [ref=e273]:
+        - generic [ref=e275]:
+          - heading "Workouts" [level=1] [ref=e276]
+          - paragraph [ref=e277]: Plan and track your workouts
+        - generic [ref=e278]:
+          - tablist [ref=e279]:
+            - tab "Templates" [selected] [ref=e280]
+            - tab "Benchmarks" [ref=e281]
+            - tab "Progressions" [ref=e282]
+          - tabpanel "Templates" [ref=e283]:
+            - button "+ Create Template" [ref=e285]
+            - generic [ref=e286]:
+              - button "goku extreme 8 blocks Never used ›" [ref=e287] [cursor=pointer]:
+                - generic [ref=e288]:
+                  - generic [ref=e289]:
+                    - generic [ref=e290]: goku extreme
+                    - generic [ref=e291]: 8 blocks
+                    - generic [ref=e292]: Never used
+                  - generic [ref=e293]: ›
+              - button "goku 6 blocks Never used ›" [ref=e294] [cursor=pointer]:
+                - generic [ref=e295]:
+                  - generic [ref=e296]:
+                    - generic [ref=e297]: goku
+                    - generic [ref=e298]: 6 blocks
+                    - generic [ref=e299]: Never used
+                  - generic [ref=e300]: ›
+              - button "legs 6 blocks Never used ›" [ref=e301] [cursor=pointer]:
+                - generic [ref=e302]:
+                  - generic [ref=e303]:
+                    - generic [ref=e304]: legs
+                    - generic [ref=e305]: 6 blocks
+                    - generic [ref=e306]: Never used
+                  - generic [ref=e307]: ›
+              - button "push-pull 6 blocks Never used ›" [ref=e308] [cursor=pointer]:
+                - generic [ref=e309]:
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: push-pull
+                    - generic [ref=e312]: 6 blocks
+                    - generic [ref=e313]: Never used
+                  - generic [ref=e314]: ›
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - button "Home" [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]: Home
+        - button "Workouts" [active] [ref=e13]:
+          - img [ref=e14]
+          - generic [ref=e20]: Workouts
+        - button "Exercises" [ref=e21]:
+          - img [ref=e22]
+          - generic [ref=e24]: Exercises
+        - button "Weight" [ref=e25]:
+          - img [ref=e26]
+          - generic [ref=e30]: Weight
+        - button "Settings" [ref=e31]:
+          - img [ref=e32]
+          - generic [ref=e35]: Settings
+  - generic [ref=e36]:
+    - generic "Toggle devtools panel" [ref=e37] [cursor=pointer]:
+      - img [ref=e38]
+    - generic "Toggle Component Inspector" [ref=e43] [cursor=pointer]:
+      - img [ref=e44]
