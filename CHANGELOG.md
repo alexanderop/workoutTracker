@@ -1,3 +1,12 @@
+## [1.24.8](https://github.com/alexanderop/workoutTracker/compare/v1.24.7...v1.24.8) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** add track_progress and json-schema to QA retry step ([5372a4c](https://github.com/alexanderop/workoutTracker/commit/5372a4c4d44d54ad920f627f65c39803104156fa))
+
+
+
 ## [1.24.7](https://github.com/alexanderop/workoutTracker/compare/v1.24.6...v1.24.7) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** improve QA pipeline and audit config ([2389632](https://github.com/alexanderop/workoutTracker/commit/2389632ad1e8cb458593378d459f30ec180b4f68))
-
-
-
-## [1.24.3](https://github.com/alexanderop/workoutTracker/compare/v1.24.2...v1.24.3) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** restrict workflow triggers to repo collaborators and block fork PRs ([d4a6abe](https://github.com/alexanderop/workoutTracker/commit/d4a6abef7036e21cabba03e30168ec2a3dbd24f4))
 
 
 
