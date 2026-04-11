@@ -1,3 +1,4 @@
+# Automated PR code review powered by Claude Code
 name: Claude PR Review
 
 on:
