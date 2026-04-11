@@ -1,3 +1,12 @@
+## [1.22.1](https://github.com/alexanderop/workoutTracker/compare/v1.22.0...v1.22.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** move allowedTools output outside heredoc block ([c8ed7ef](https://github.com/alexanderop/workoutTracker/commit/c8ed7efd15d9e1deb8cc3e4bd04457a8c02579a5))
+
+
+
 # [1.22.0](https://github.com/alexanderop/workoutTracker/compare/v1.21.3...v1.22.0) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** install playwright-cli globally to avoid npx warning ([cb5f117](https://github.com/alexanderop/workoutTracker/commit/cb5f1175b3fc172ab4a490d166900844942efec9))
-
-
-
-# [1.21.0](https://github.com/alexanderop/workoutTracker/compare/v1.20.0...v1.21.0) (2026-04-10)
-
-
-### Features
-
-* **ci:** enable full output logging for QA workflow visibility ([dd4d063](https://github.com/alexanderop/workoutTracker/commit/dd4d063f8ffdab5dec914116ecd2c4c12eebd716))
 
 
 
