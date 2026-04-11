@@ -8,54 +8,22 @@
     },
     "summary": {
       "type": "string",
-      "description": "One-sentence health assessment"
+      "description": "2-3 sentence health assessment covering what was tested and key findings"
     },
-    "coverage": {
-      "type": "object",
-      "properties": {
-        "navigation": {
-          "type": "object",
-          "properties": {
-            "total": { "type": "integer" },
-            "passed": { "type": "integer" },
-            "failed": { "type": "integer" }
-          },
-          "required": ["total", "passed", "failed"],
-          "additionalProperties": false
+    "tests": {
+      "type": "array",
+      "description": "Every test performed, in order",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Short test name, e.g. 'Navigate to Weight page'" },
+          "area": { "type": "string", "enum": ["navigation", "forms", "core_features", "mobile", "accessibility", "edge_cases"] },
+          "result": { "type": "string", "enum": ["pass", "fail", "skip"] },
+          "details": { "type": "string", "description": "What you observed — be specific about what you saw on screen" }
         },
-        "forms": {
-          "type": "object",
-          "properties": {
-            "total": { "type": "integer" },
-            "passed": { "type": "integer" },
-            "failed": { "type": "integer" }
-          },
-          "required": ["total", "passed", "failed"],
-          "additionalProperties": false
-        },
-        "core_features": {
-          "type": "object",
-          "properties": {
-            "total": { "type": "integer" },
-            "passed": { "type": "integer" },
-            "failed": { "type": "integer" }
-          },
-          "required": ["total", "passed", "failed"],
-          "additionalProperties": false
-        },
-        "mobile": {
-          "type": "object",
-          "properties": {
-            "total": { "type": "integer" },
-            "passed": { "type": "integer" },
-            "failed": { "type": "integer" }
-          },
-          "required": ["total", "passed", "failed"],
-          "additionalProperties": false
-        }
-      },
-      "required": ["navigation", "forms", "core_features", "mobile"],
-      "additionalProperties": false
+        "required": ["name", "area", "result", "details"],
+        "additionalProperties": false
+      }
     },
     "bugs": {
       "type": "array",
@@ -68,14 +36,16 @@
             "enum": ["critical", "major", "minor", "suggestion"]
           },
           "title": { "type": "string" },
-          "description": { "type": "string" },
+          "description": { "type": "string", "description": "What happened vs what should have happened" },
           "steps_to_reproduce": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": { "type": "string" },
+            "description": "Numbered steps a developer can follow to reproduce"
           },
-          "screenshot": { "type": "string" }
+          "expected": { "type": "string", "description": "What should have happened" },
+          "actual": { "type": "string", "description": "What actually happened" }
         },
-        "required": ["id", "severity", "title", "description"],
+        "required": ["id", "severity", "title", "description", "steps_to_reproduce", "expected", "actual"],
         "additionalProperties": false
       }
     },
@@ -97,6 +67,6 @@
       "additionalProperties": false
     }
   },
-  "required": ["verdict", "summary", "coverage", "bugs", "console_errors", "metrics"],
+  "required": ["verdict", "summary", "tests", "bugs", "console_errors", "metrics"],
   "additionalProperties": false
 }

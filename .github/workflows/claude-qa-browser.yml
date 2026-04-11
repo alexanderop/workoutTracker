@@ -319,23 +319,57 @@ jobs:
                 const data = JSON.parse(structuredOutput);
                 const verdictEmoji = data.verdict === 'HEALTHY' ? '✅' : data.verdict === 'MINOR_ISSUES' ? '⚠️' : '❌';
 
-                const coverageRows = ['navigation', 'forms', 'core_features', 'mobile']
-                  .map(area => {
-                    const c = data.coverage[area];
-                    const label = area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    return `| ${label} | ${c.passed} | ${c.failed} | ${c.total} |`;
-                  })
-                  .join('\n');
+                // Build test details section grouped by area
+                let testsSection = '';
+                if (data.tests && data.tests.length > 0) {
+                  const areas = {};
+                  for (const t of data.tests) {
+                    const area = t.area || 'other';
+                    if (!areas[area]) areas[area] = [];
+                    areas[area].push(t);
+                  }
 
+                  const areaRows = Object.entries(areas).map(([area, tests]) => {
+                    const label = area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const rows = tests.map(t => {
+                      const icon = t.result === 'pass' ? '✅' : t.result === 'fail' ? '❌' : '⏭️';
+                      return `| ${icon} | ${t.name} | ${t.details} |`;
+                    }).join('\n');
+                    return `**${label}**\n\n| | Test | Details |\n|---|------|----------|\n${rows}`;
+                  }).join('\n\n');
+
+                  testsSection = `### Tests Performed\n\n${areaRows}`;
+                }
+
+                // Build coverage summary
+                const coverageSummary = `**Overall**: ${data.metrics.passed}/${data.metrics.total_tests} tests passed` +
+                  (data.metrics.failed > 0 ? ` (${data.metrics.failed} failed)` : '');
+
+                // Build bugs section with full details
                 let bugsSection = '';
                 if (data.bugs.length > 0) {
-                  const bugRows = data.bugs.map(b => {
+                  const bugDetails = data.bugs.map(b => {
                     const severityEmoji = b.severity === 'critical' ? '🔴' : b.severity === 'major' ? '🟠' : '🟡';
-                    return `| ${b.id} | ${severityEmoji} ${b.severity} | ${b.title} |`;
-                  }).join('\n');
-                  bugsSection = `### Bugs Found (${data.bugs.length})\n\n| # | Severity | Description |\n|---|----------|-------------|\n${bugRows}`;
+                    const steps = (b.steps_to_reproduce || []).map((s, i) => `${i + 1}. ${s}`).join('\n');
+                    return [
+                      `#### ${severityEmoji} Bug #${b.id}: ${b.title}`,
+                      '',
+                      b.description,
+                      '',
+                      steps ? `**Steps to reproduce:**\n${steps}` : '',
+                      b.expected ? `**Expected:** ${b.expected}` : '',
+                      b.actual ? `**Actual:** ${b.actual}` : '',
+                    ].filter(Boolean).join('\n');
+                  }).join('\n\n');
+                  bugsSection = `### Bugs Found (${data.bugs.length})\n\n${bugDetails}`;
                 } else {
                   bugsSection = '### Bugs Found\n\n✅ No bugs found';
+                }
+
+                // Console errors
+                let consoleSection = '';
+                if (data.console_errors && data.console_errors.length > 0) {
+                  consoleSection = `### Console Errors\n\n${data.console_errors.map(e => `- \`${e}\``).join('\n')}`;
                 }
 
                 qaReport = [
@@ -343,16 +377,13 @@ jobs:
                   '',
                   `**Summary**: ${data.summary}`,
                   '',
-                  '### Test Coverage',
+                  coverageSummary,
                   '',
-                  '| Area | Passed | Failed | Total |',
-                  '|------|--------|--------|-------|',
-                  coverageRows,
+                  testsSection,
                   '',
-                  `**Overall**: ${data.metrics.passed}/${data.metrics.total_tests} tests passed`,
-                  '',
-                  bugsSection
-                ].join('\n');
+                  bugsSection,
+                  consoleSection ? '\n' + consoleSection : '',
+                ].filter(Boolean).join('\n');
               } catch (parseErr) {
                 core.warning(`Failed to parse structured output: ${parseErr.message}`);
               }

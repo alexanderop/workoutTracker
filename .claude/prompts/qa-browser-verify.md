@@ -93,10 +93,18 @@ For every input or interactive element the PR touches:
 Your final response MUST be valid JSON matching the provided schema.
 
 - `verdict`: `HEALTHY`, `MINOR_ISSUES`, or `CRITICAL_BUGS`
-- `summary`: One sentence
-- `coverage`: Test counts per area
-- `bugs`: Array of bugs found
-- `console_errors`: Array of JS errors
-- `metrics`: Aggregated counts
+- `summary`: 2-3 sentences covering what was tested and key findings
+- `tests`: Array of every test you performed, each with:
+  - `name`: Short test name (e.g. "Save valid weight entry")
+  - `area`: One of `navigation`, `forms`, `core_features`, `mobile`, `accessibility`, `edge_cases`
+  - `result`: `pass`, `fail`, or `skip`
+  - `details`: What you observed on screen — be specific
+- `bugs`: Array of bugs found, each with:
+  - `title`, `severity`, `description`
+  - `steps_to_reproduce`: Numbered steps a developer can follow
+  - `expected`: What should have happened
+  - `actual`: What actually happened
+- `console_errors`: Array of JS errors from `agent-browser console`
+- `metrics`: Aggregated counts (total_tests, passed, failed, critical/major/minor bugs)
 
 ## ALSO: Write qa-report.md as backup.
