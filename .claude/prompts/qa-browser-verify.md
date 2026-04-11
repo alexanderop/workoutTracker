@@ -50,14 +50,17 @@ This PR claims to implement or fix something. Your job is to:
 3. **Break** them with edge cases and invalid inputs
 4. **Check** for regressions in related features
 
-## Turn Budget: 30 turns
+## Turn Budget: 50 turns
 
 | Phase | Turns | Goal |
 |-------|-------|------|
 | Parse Requirements | 1-2 | Extract testable items from PR description |
-| Happy Path | 3-15 | Verify each requirement works as described |
-| Break It | 16-24 | Edge cases, invalid inputs, boundary values |
-| Report | 25-30 | Write qa-report.md and return JSON |
+| Happy Path | 3-20 | Verify each requirement works as described |
+| Break It | 21-38 | Edge cases, invalid inputs, boundary values |
+| Report | 39-50 | Write qa-report.md and return JSON |
+
+**IMPORTANT**: Reserve at least 10 turns at the end for writing the report and
+returning your structured JSON response. Do NOT spend all turns on testing.
 
 ## Step 1: Parse Requirements
 

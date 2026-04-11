@@ -167,7 +167,7 @@ jobs:
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
             echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
-            echo "max_turns=30" >> $GITHUB_OUTPUT
+            echo "max_turns=50" >> $GITHUB_OUTPUT
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
             echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
