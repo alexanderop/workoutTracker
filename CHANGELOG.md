@@ -1,3 +1,12 @@
+## [1.23.1](https://github.com/alexanderop/workoutTracker/compare/v1.23.0...v1.23.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** tell Claude not to use screenshot in agent-browser prompts ([02f7a3a](https://github.com/alexanderop/workoutTracker/commit/02f7a3a17cac339e945027237c7ae1cef33eb297))
+
+
+
 # [1.23.0](https://github.com/alexanderop/workoutTracker/compare/v1.22.2...v1.23.0) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **ci:** add agent-browser QA workflow ([d5f8818](https://github.com/alexanderop/workoutTracker/commit/d5f88180768b4de10c865998f7430323707cd719))
-
-
-
-## [1.21.3](https://github.com/alexanderop/workoutTracker/compare/v1.21.2...v1.21.3) (2026-04-10)
-
-
-### Bug Fixes
-
-* **ci:** use playwright-cli globally and dynamic allowedTools per focus ([c7c6356](https://github.com/alexanderop/workoutTracker/commit/c7c63565b8de24af5391cb86218e1aff74601434))
 
 
 
