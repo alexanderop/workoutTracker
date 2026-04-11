@@ -108,6 +108,7 @@ const buttonClass =
           :key="digit"
           type="button"
           :class="buttonClass"
+          :aria-label="String(digit)"
           @click="handleDigitClick(digit)"
         >
           {{ digit }}
@@ -129,6 +130,7 @@ const buttonClass =
       <button
         type="button"
         :class="buttonClass"
+        aria-label="0"
         @click="handleDigitClick('0')"
       >
         0

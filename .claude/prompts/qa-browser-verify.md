@@ -42,6 +42,27 @@ agent-browser close                   # Done
 Use `agent-browser snapshot` or `agent-browser snapshot -i` instead. These return
 text-based accessibility trees which you CAN read and reason about.
 
+### Known Gotcha: `agent-browser fill` and Vue Reactivity
+
+`agent-browser fill` sets the input value directly, which does NOT always trigger
+Vue's reactivity system (v-model / defineModel). This can make buttons appear
+stuck or disabled even though the value looks correct in the accessibility tree.
+
+**After every `fill` command**, verify the value actually reached Vue:
+
+```bash
+agent-browser fill @e3 "100"
+agent-browser eval "document.querySelector('input').value"
+```
+
+If the UI seems stuck (button disabled, value not updating):
+1. **Reload the page** with `agent-browser open {{APP_URL}}/current-page` and retry ONCE
+2. If it still fails after reload, record it as a minor tool-sync issue and MOVE ON
+3. **Do NOT** spend multiple turns diagnosing browser tool bugs — that is not a product bug
+
+Similarly, if the accessibility tree shows stale values (e.g. a spinbutton showing
+an old number after you filled a new one), reload and re-check once before reporting.
+
 ## Your Mission
 
 This PR claims to implement or fix something. Your job is to:
@@ -55,12 +76,21 @@ This PR claims to implement or fix something. Your job is to:
 | Phase | Turns | Goal |
 |-------|-------|------|
 | Parse Requirements | 1-2 | Extract testable items from PR description |
-| Happy Path | 3-20 | Verify each requirement works as described |
-| Break It | 21-38 | Edge cases, invalid inputs, boundary values |
-| Report | 39-50 | Write qa-report.md and return JSON |
+| Happy Path | 3-18 | Verify each requirement works as described |
+| Break It | 19-34 | Edge cases, invalid inputs, boundary values |
+| Report | 35-50 | Write qa-report.md and return JSON |
 
-**IMPORTANT**: Reserve at least 10 turns at the end for writing the report and
-returning your structured JSON response. Do NOT spend all turns on testing.
+### HARD STOP RULE
+
+**After turn 35, STOP testing immediately and write your report. No exceptions.**
+
+A test run that produces no report is WORTHLESS — worse than a run that tests less
+but delivers results. If you reach turn 30 and haven't started the report, wrap up
+your current test and move to the Report phase NOW.
+
+The workflow parses your structured JSON output to set commit status and post PR
+comments. If you run out of turns without returning JSON, the entire pipeline
+reports "QA report not generated" and the run is wasted.
 
 ## Step 1: Parse Requirements
 
@@ -78,7 +108,9 @@ For EACH requirement:
 
 ## Step 3: Break It
 
-For every input or interactive element the PR touches:
+Pick the **3 most important** edge cases for the PR's changes. Do NOT exhaustively
+test every boundary — focus on what is most likely to break. If you've tested 3 edge
+cases and they pass, move on to the Report phase.
 
 | Attack | How |
 |--------|-----|
@@ -87,6 +119,8 @@ For every input or interactive element the PR touches:
 | Long strings | 100+ characters |
 | Special chars | Quotes, emoji, angle brackets |
 | Rapid actions | Click submit multiple times fast |
+
+**Choose at most 3 rows from the table above.** Do NOT try all of them.
 
 ## IMPORTANT: Structured Output
 

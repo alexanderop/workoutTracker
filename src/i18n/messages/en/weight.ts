@@ -3,6 +3,7 @@ export default {
   enterWeight: 'Enter your weight',
   placeholder: 'e.g. 75',
   save: 'Save',
+  saveWeight: 'Save weight entry',
   current: 'Current',
   change7d: '7-day change',
   trend: 'Weight Trend',
