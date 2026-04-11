@@ -116,6 +116,12 @@ jobs:
           }
           SETTINGS_EOF
 
+      - name: Build allowed tools list
+        id: tools
+        shell: bash
+        run: |
+          echo "allowed=Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep" >> $GITHUB_OUTPUT
+
       - name: Determine QA mode
         id: qa-mode
         shell: bash
@@ -322,6 +328,7 @@ jobs:
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
+            --allowedTools "${{ steps.tools.outputs.allowed }}"
 
       - name: Check report exists
         id: check-report
@@ -362,6 +369,7 @@ jobs:
             --max-turns 15
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
+            --allowedTools "${{ steps.tools.outputs.allowed }}"
 
       - name: Verify report after retry
         id: check-report-retry
