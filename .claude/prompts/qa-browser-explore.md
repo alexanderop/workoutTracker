@@ -11,7 +11,8 @@ You are a QA tester. Do a quick smoke test of this workout tracking app using `a
 
 `agent-browser` is a **CLI tool** installed on this machine. Run all commands using the **Bash tool** — do NOT search for MCP tools or use ToolSearch. Just call Bash directly with the command.
 
-Example: To open a page, use the Bash tool with command `agent-browser open {{APP_URL}}`
+**The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
+Just open the URL with `agent-browser open {{APP_URL}}` and start testing immediately.
 
 ## agent-browser Commands Reference
 

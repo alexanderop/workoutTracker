@@ -11,6 +11,9 @@ Minimal test to verify the QA pipeline works. Open the app and check main naviga
 
 `agent-browser` is a **CLI tool** installed on this machine. Run it using the **Bash tool** — do NOT search for MCP tools or ToolSearch. Just call Bash with the command directly.
 
+**The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
+Just open the URL with `agent-browser open {{APP_URL}}` and start testing immediately.
+
 ## Steps (5 turns max)
 
 1. Open the app — run in Bash: `agent-browser open {{APP_URL}}`

@@ -21,6 +21,9 @@
 using the **Bash tool** — do NOT search for MCP tools or use ToolSearch.
 Just call Bash directly with the command.
 
+**The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
+Just open the URL with `agent-browser open {{APP_URL}}` and start testing immediately.
+
 ## agent-browser Commands Reference
 
 ```bash
