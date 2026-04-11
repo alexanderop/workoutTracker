@@ -309,6 +309,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
+          track_progress: true
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read
@@ -330,6 +331,7 @@ jobs:
 
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated
+        id: claude-qa-retry
         if: steps.check-report.outputs.exists == 'false'
         uses: anthropics/claude-code-action@v1
         with:
@@ -337,6 +339,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
+          track_progress: true
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
@@ -353,6 +356,7 @@ jobs:
           claude_args: |
             --max-turns 15
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Verify report after retry
         id: check-report-retry
@@ -370,7 +374,7 @@ jobs:
         if: always()
         uses: actions/github-script@v9
         env:
-          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
         with:
           script: |
             const fs = require('fs');
