@@ -31,9 +31,11 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)) ||
+       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name) &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
+       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        contains(github.event.comment.body, '@claude verify'))
 
     runs-on: ubuntu-latest
@@ -55,9 +57,9 @@ jobs:
       NODE_VERSION: '22'
 
     steps:
-      - name: Get PR ref for issue_comment
+      - name: Get PR metadata for issue_comment
         if: github.event_name == 'issue_comment'
-        id: pr-ref
+        id: pr-metadata
         uses: actions/github-script@v9
         with:
           script: |
@@ -67,11 +69,22 @@ jobs:
               pull_number: context.payload.issue.number
             });
             core.setOutput('ref', pr.head.sha);
+            core.setOutput('number', String(pr.number));
+            core.setOutput('title', pr.title || '');
+            core.setOutput('body', pr.body || '');
+            core.setOutput('is_fork', String(pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`));
+
+      - name: Block fork PR QA on comment trigger
+        if: github.event_name == 'issue_comment' && steps.pr-metadata.outputs.is_fork == 'true'
+        shell: bash
+        run: |
+          echo "Refusing to run browser QA against fork PR code from a comment trigger."
+          exit 1
 
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.pr-ref.outputs.ref || github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup test environment
         uses: ./.github/actions/setup-test-env
@@ -103,6 +116,9 @@ jobs:
         uses: actions/github-script@v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+          PR_NUMBER_COMMENT: ${{ steps.pr-metadata.outputs.number }}
+          PR_TITLE_COMMENT: ${{ steps.pr-metadata.outputs.title }}
+          PR_BODY_COMMENT: ${{ steps.pr-metadata.outputs.body }}
         with:
           script: |
             let prNumber, prBody, prTitle;
@@ -112,14 +128,9 @@ jobs:
               prBody = context.payload.pull_request.body || '';
               prTitle = context.payload.pull_request.title;
             } else if (context.eventName === 'issue_comment') {
-              prNumber = context.payload.issue.number;
-              const { data: pr } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-              prBody = pr.body || '';
-              prTitle = pr.title;
+              prNumber = parseInt(process.env.PR_NUMBER_COMMENT, 10);
+              prBody = process.env.PR_BODY_COMMENT || '';
+              prTitle = process.env.PR_TITLE_COMMENT || '';
             } else if (process.env.PR_NUMBER_INPUT) {
               prNumber = parseInt(process.env.PR_NUMBER_INPUT, 10);
               const { data: pr } = await github.rest.pulls.get({
@@ -160,24 +171,32 @@ jobs:
 
           mkdir -p .qa-sandbox
 
-          convert -size 100x100 xc:blue .qa-sandbox/valid-small.png
-          convert -size 500x500 xc:green .qa-sandbox/valid-medium.png
-          convert -size 1000x1000 xc:red .qa-sandbox/valid-large.png
+          convert -size 100x100 gradient:blue-cyan .qa-sandbox/valid-small.png
+          convert -size 500x500 plasma:fractal .qa-sandbox/valid-medium.png
+          convert -size 1000x1000 plasma:fractal .qa-sandbox/valid-large.png
 
-          # Edge cases
-          convert -size 100x100 xc:gray .qa-sandbox/temp.png
-          truncate -s 1048576 .qa-sandbox/exactly-1mb.png
-          truncate -s 1153434 .qa-sandbox/over-limit-1.1mb.png
-          truncate -s 5242880 .qa-sandbox/way-over-5mb.png
+          # Size boundaries as valid PNG files.
+          convert -size 512x512 plasma:fractal \
+            -define png:compression-level=0 \
+            PNG32:.qa-sandbox/exactly-1mb.png
+          convert -size 530x530 plasma:fractal \
+            -define png:compression-level=0 \
+            PNG32:.qa-sandbox/over-limit-1.1mb.png
+          convert -size 1200x1200 plasma:fractal \
+            -define png:compression-level=0 \
+            PNG32:.qa-sandbox/way-over-5mb.png
+
+          # Content-validation edge cases.
           touch .qa-sandbox/empty-0bytes.png
           head -c 1024 /dev/urandom > .qa-sandbox/corrupted.png
-          convert -size 50x50 xc:yellow .qa-sandbox/wrong-extension.jpg
-          convert -size 200x200 xc:purple .qa-sandbox/valid.jpg
+          convert -size 50x50 gradient:yellow-orange PNG:.qa-sandbox/wrong-extension.jpg
+          convert -size 200x200 plasma:fractal .qa-sandbox/valid.jpg
           echo '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="blue"/></svg>' > .qa-sandbox/test.svg
           echo "This is not an image" > .qa-sandbox/fake-image.png
 
           echo "Created QA test fixtures:"
           ls -lah .qa-sandbox/
+          file .qa-sandbox/exactly-1mb.png .qa-sandbox/over-limit-1.1mb.png .qa-sandbox/way-over-5mb.png .qa-sandbox/wrong-extension.jpg
 
       - name: Start development server
         shell: bash
@@ -377,7 +396,7 @@ jobs:
             }
 
             // Use PR head sha for issue_comment, otherwise use context.sha
-            const sha = '${{ steps.pr-ref.outputs.ref }}' || context.sha;
+            const sha = '${{ steps.pr-metadata.outputs.ref }}' || context.sha;
 
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
