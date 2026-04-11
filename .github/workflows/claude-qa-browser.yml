@@ -309,7 +309,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: true
+          track_progress: ${{ github.event_name != 'workflow_dispatch' }}
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read
@@ -339,7 +339,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: true
+          track_progress: ${{ github.event_name != 'workflow_dispatch' }}
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
