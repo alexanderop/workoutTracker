@@ -3,6 +3,7 @@ export default {
   enterWeight: 'Gib dein Gewicht ein',
   placeholder: 'z.B. 75',
   save: 'Speichern',
+  saveWeight: 'Gewichtseintrag speichern',
   current: 'Aktuell',
   change7d: '7-Tage Änderung',
   trend: 'Gewichtsverlauf',

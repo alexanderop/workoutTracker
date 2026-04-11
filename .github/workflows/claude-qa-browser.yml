@@ -1,5 +1,5 @@
 # Claude QA with agent-browser
-# Alternative to claude-qa-cli.yml (playwright-cli) - uses agent-browser (vercel-labs/agent-browser)
+# Uses agent-browser (vercel-labs/agent-browser) for browser-based QA testing
 
 name: Claude QA (Browser)
 
@@ -23,19 +23,24 @@ on:
         type: string
   pull_request:
     types: [labeled]
+  issue_comment:
+    types: [created]
 
 jobs:
   qa-browser:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name))
+       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '@claude verify'))
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     concurrency:
-      group: claude-qa-browser-${{ github.event.pull_request.number || github.ref }}
+      group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
       cancel-in-progress: true
 
     permissions:
@@ -44,15 +49,29 @@ jobs:
       issues: write
       id-token: write
       statuses: write
+      actions: read
 
     env:
       NODE_VERSION: '22'
 
     steps:
+      - name: Get PR ref for issue_comment
+        if: github.event_name == 'issue_comment'
+        id: pr-ref
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            core.setOutput('ref', pr.head.sha);
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ steps.pr-ref.outputs.ref || github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup test environment
         uses: ./.github/actions/setup-test-env
@@ -72,6 +91,8 @@ jobs:
           FOCUS="${{ github.event.inputs.focus || 'general' }}"
           if [[ "${{ github.event.label.name }}" == "qa-browser-verify" ]]; then
             FOCUS="verify"
+          elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            FOCUS="verify"
           fi
           echo "focus=$FOCUS" >> $GITHUB_OUTPUT
           echo "QA focus: $FOCUS"
@@ -79,7 +100,7 @@ jobs:
       - name: Get PR context
         if: steps.qa-mode.outputs.focus == 'verify'
         id: pr-context
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
         with:
@@ -90,6 +111,15 @@ jobs:
               prNumber = context.payload.pull_request.number;
               prBody = context.payload.pull_request.body || '';
               prTitle = context.payload.pull_request.title;
+            } else if (context.eventName === 'issue_comment') {
+              prNumber = context.payload.issue.number;
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              prBody = pr.body || '';
+              prTitle = pr.title;
             } else if (process.env.PR_NUMBER_INPUT) {
               prNumber = parseInt(process.env.PR_NUMBER_INPUT, 10);
               const { data: pr } = await github.rest.pulls.get({
@@ -123,6 +153,32 @@ jobs:
             core.setOutput('pr_body', prBody || '');
             core.setOutput('linked_issues', linkedIssues);
 
+      - name: Create QA test fixtures
+        shell: bash
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+
+          mkdir -p .qa-sandbox
+
+          convert -size 100x100 xc:blue .qa-sandbox/valid-small.png
+          convert -size 500x500 xc:green .qa-sandbox/valid-medium.png
+          convert -size 1000x1000 xc:red .qa-sandbox/valid-large.png
+
+          # Edge cases
+          convert -size 100x100 xc:gray .qa-sandbox/temp.png
+          truncate -s 1048576 .qa-sandbox/exactly-1mb.png
+          truncate -s 1153434 .qa-sandbox/over-limit-1.1mb.png
+          truncate -s 5242880 .qa-sandbox/way-over-5mb.png
+          touch .qa-sandbox/empty-0bytes.png
+          head -c 1024 /dev/urandom > .qa-sandbox/corrupted.png
+          convert -size 50x50 xc:yellow .qa-sandbox/wrong-extension.jpg
+          convert -size 200x200 xc:purple .qa-sandbox/valid.jpg
+          echo '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="blue"/></svg>' > .qa-sandbox/test.svg
+          echo "This is not an image" > .qa-sandbox/fake-image.png
+
+          echo "Created QA test fixtures:"
+          ls -lah .qa-sandbox/
+
       - name: Start development server
         shell: bash
         run: |
@@ -150,6 +206,16 @@ jobs:
           echo "Dev server failed to start properly"
           exit 1
 
+      - name: Load QA system prompt
+        id: load-system-prompt
+        shell: bash
+        run: |
+          {
+            echo 'system_prompt<<SYSTEM_EOF'
+            cat .claude/prompts/qa-system-prompt.md
+            echo 'SYSTEM_EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Load QA prompt
         id: load-prompt
         shell: bash
@@ -160,7 +226,6 @@ jobs:
           TODAY=$(date +%Y-%m-%d)
           FOCUS="${{ steps.qa-mode.outputs.focus }}"
 
-          # Set allowed tools BEFORE the heredoc block (must be outside to be a separate output)
           if [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
             echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
@@ -176,13 +241,6 @@ jobs:
           {
             echo 'prompt<<PROMPT_EOF'
 
-            # System prompt (QA persona)
-            cat .claude/prompts/qa-system-prompt.md
-            echo ""
-            echo "---"
-            echo ""
-
-            # Task prompt
             TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
@@ -213,11 +271,14 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          show_full_output: true
+          display_report: true
+          use_sticky_comment: true
           prompt: ${{ steps.load-prompt.outputs.prompt }}
+          additional_permissions: |
+            actions: read
           claude_args: |
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
-            --model claude-opus-4-20250514
+            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
             --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
@@ -232,10 +293,43 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+      # Retry with a quick smoke test if main run failed to generate a report
+      - name: Retry if no report generated
+        if: steps.check-report.outputs.exists == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            IMPORTANT: The previous QA run did not generate a report.
+
+            Do a quick navigation smoke test and write qa-report.md immediately:
+            1. Navigate to http://localhost:5173
+            2. Check 3-4 main pages load correctly
+            3. Write the report with what you observed
+
+            Write `qa-report.md` now with:
+            - Summary of pages tested
+            - Any errors found
+            - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Bash(agent-browser*),Write(qa-report.md)"
+
+      - name: Verify report after retry
+        id: check-report-retry
+        if: steps.check-report.outputs.exists == 'false'
+        shell: bash
+        run: |
+          if [ -f "qa-report.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Set commit status
         id: qa-status
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
         with:
@@ -282,10 +376,13 @@ jobs:
               }
             }
 
+            // Use PR head sha for issue_comment, otherwise use context.sha
+            const sha = '${{ steps.pr-ref.outputs.ref }}' || context.sha;
+
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: context.sha,
+              sha: sha,
               state: state,
               context: 'Claude QA (Browser)',
               description: description,
@@ -297,16 +394,19 @@ jobs:
       - name: Post results to PR
         if: |
           always() &&
-          (github.event.pull_request.number || github.event.inputs.pr_number)
-        uses: actions/github-script@v7
+          (github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number || steps.pr-context.outputs.pr_number)
+        uses: actions/github-script@v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+          PR_NUMBER_CONTEXT: ${{ steps.pr-context.outputs.pr_number }}
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
         with:
           script: |
             const fs = require('fs');
             const prNumber = context.payload.pull_request?.number ||
-                            process.env.PR_NUMBER_INPUT;
+                            context.payload.issue?.number ||
+                            process.env.PR_NUMBER_INPUT ||
+                            process.env.PR_NUMBER_CONTEXT;
 
             if (!prNumber) return;
 
@@ -398,10 +498,9 @@ jobs:
             }
 
             const body = [
-              '## 🔍 Claude QA Report (Browser Mode)',
+              '## Claude QA Report (Browser Mode)',
               '',
-              `**Method**: agent-browser (ref-based)`,
-              `**Run**: [View Logs](${runUrl})`,
+              `**Method**: agent-browser | **Run**: [View Logs](${runUrl})`,
               '',
               '---',
               '',
@@ -420,7 +519,7 @@ jobs:
 
       - name: Upload QA artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: qa-browser-artifacts-${{ github.run_id }}
           path: |
@@ -431,7 +530,7 @@ jobs:
         if: |
           github.event_name == 'pull_request' &&
           contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           LABEL_NAME: ${{ github.event.label.name }}
         with:

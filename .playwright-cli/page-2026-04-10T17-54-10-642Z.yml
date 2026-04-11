@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - main [ref=e5]
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - button "Home" [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]: Home
+        - button "Workouts" [ref=e13]:
+          - img [ref=e14]
+          - generic [ref=e20]: Workouts
+        - button "Exercises" [ref=e21]:
+          - img [ref=e22]
+          - generic [ref=e24]: Exercises
+        - button "Weight" [ref=e25]:
+          - img [ref=e26]
+          - generic [ref=e30]: Weight
+        - button "Settings" [ref=e31]:
+          - img [ref=e32]
+          - generic [ref=e35]: Settings
+  - generic [ref=e36]:
+    - generic "Toggle devtools panel" [ref=e37] [cursor=pointer]:
+      - img [ref=e38]
+    - generic "Toggle Component Inspector" [ref=e43] [cursor=pointer]:
+      - img [ref=e44]

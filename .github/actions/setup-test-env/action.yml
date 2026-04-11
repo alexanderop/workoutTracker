@@ -10,16 +10,16 @@ runs:
   using: 'composite'
   steps:
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4.1.0
+      uses: pnpm/action-setup@v5.0.0
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4.4.0
+      uses: actions/setup-node@v6.3.0
       with:
         node-version: ${{ inputs.node-version }}
 
     - name: Restore node_modules
       id: cache-restore
-      uses: actions/cache/restore@v4.2.3
+      uses: actions/cache/restore@v5.0.4
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -35,7 +35,7 @@ runs:
       run: echo "version=$(pnpm list @playwright/test --depth=0 --json | jq -r '.[0].dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
 
     - name: Cache Playwright browsers
-      uses: actions/cache@v4.2.3
+      uses: actions/cache@v5.0.4
       id: playwright-cache
       with:
         path: ~/.cache/ms-playwright

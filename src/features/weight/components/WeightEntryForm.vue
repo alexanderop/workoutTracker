@@ -76,7 +76,9 @@ const isValid = computed(() => {
     <!-- Mobile: Tap to open fullscreen modal -->
     <template v-if="isTouchDevice">
       <button
+        id="weight-input"
         type="button"
+        :aria-label="`${inputValue} ${unitLabel}`"
         class="flex h-14 w-full items-center justify-center gap-2 rounded-lg border-2 border-border bg-background text-2xl font-bold tabular-nums transition-colors hover:border-primary/50 hover:bg-accent active:scale-[0.98]"
         @click="openModal"
       >
@@ -117,7 +119,12 @@ const isValid = computed(() => {
       </div>
     </template>
 
-    <Button class="w-full" :disabled="!isValid" @click="handleSave">
+    <Button
+      class="w-full"
+      :disabled="!isValid"
+      :aria-label="t('weight.saveWeight')"
+      @click="handleSave"
+    >
       {{ t('weight.save') }}
     </Button>
   </div>

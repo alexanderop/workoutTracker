@@ -1,0 +1,78 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - main [ref=e5]:
+      - generic [ref=e1908]:
+        - button "April 2026 0m Mon 6 Tue 7 Wed 8 Thu 9 Fri 10 Sat 11 Sun 12" [ref=e1909] [cursor=pointer]:
+          - generic [ref=e1910]:
+            - generic [ref=e1911]: April 2026
+            - generic [ref=e1912]:
+              - generic [ref=e1913]: 0m
+              - img [ref=e1914]
+          - generic [ref=e1916]:
+            - generic [ref=e1917]:
+              - generic [ref=e1918]: Mon
+              - generic [ref=e1919]: "6"
+            - generic [ref=e1920]:
+              - generic [ref=e1921]: Tue
+              - generic [ref=e1922]: "7"
+            - generic [ref=e1923]:
+              - generic [ref=e1924]: Wed
+              - generic [ref=e1925]: "8"
+            - generic [ref=e1926]:
+              - generic [ref=e1927]: Thu
+              - generic [ref=e1928]: "9"
+            - generic [ref=e1929]:
+              - generic [ref=e1930]: Fri
+              - generic [ref=e1931]: "10"
+            - generic [ref=e1932]:
+              - generic [ref=e1933]: Sat
+              - generic [ref=e1934]: "11"
+            - generic [ref=e1935]:
+              - generic [ref=e1936]: Sun
+              - generic [ref=e1937]: "12"
+        - generic [ref=e1938]:
+          - button "Start New Workout Track your exercises, sets, and reps" [ref=e1939] [cursor=pointer]:
+            - generic [ref=e1940]:
+              - img [ref=e1942]
+              - heading "Start New Workout" [level=2] [ref=e1944]
+              - paragraph [ref=e1945]: Track your exercises, sets, and reps
+          - button "Log Past Workout Log a workout from earlier" [ref=e1946] [cursor=pointer]:
+            - generic [ref=e1947]:
+              - img [ref=e1949]
+              - heading "Log Past Workout" [level=2] [ref=e1952]
+              - paragraph [ref=e1953]: Log a workout from earlier
+          - button "Quick Timer AMRAP, EMOM, Tabata, For Time" [ref=e1954] [cursor=pointer]:
+            - generic [ref=e1955]:
+              - img [ref=e1957]
+              - heading "Quick Timer" [level=2] [ref=e1960]
+              - paragraph [ref=e1961]: AMRAP, EMOM, Tabata, For Time
+        - generic [ref=e1962]:
+          - heading "Recent Workouts" [level=2] [ref=e1964]
+          - generic [ref=e1966]:
+            - generic [ref=e1967]:
+              - img
+            - generic [ref=e1968]:
+              - generic [ref=e1969]: No workouts yet
+              - paragraph [ref=e1970]: Start your first workout to see your progress
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - button "Home" [active] [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]: Home
+        - button "Workouts" [ref=e13]:
+          - img [ref=e14]
+          - generic [ref=e20]: Workouts
+        - button "Exercises" [ref=e21]:
+          - img [ref=e22]
+          - generic [ref=e24]: Exercises
+        - button "Weight" [ref=e25]:
+          - img [ref=e26]
+          - generic [ref=e30]: Weight
+        - button "Settings" [ref=e31]:
+          - img [ref=e32]
+          - generic [ref=e35]: Settings
+  - generic [ref=e36]:
+    - generic "Toggle devtools panel" [ref=e37] [cursor=pointer]:
+      - img [ref=e38]
+    - generic "Toggle Component Inspector" [ref=e43] [cursor=pointer]:
+      - img [ref=e44]

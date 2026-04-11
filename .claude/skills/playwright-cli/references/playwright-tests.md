@@ -10,7 +10,7 @@ PLAYWRIGHT_HTML_OPEN=never npx playwright test
 PLAYWRIGHT_HTML_OPEN=never npm run special-test-command
 ```
 
-# Debugging Playwright Tests
+## Debugging Playwright Tests
 
 To debug a failing Playwright test, run it with `--debug=cli` option. This command will pause the test at the start and print the debugging instructions.
 
