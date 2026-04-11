@@ -32,7 +32,7 @@ jobs:
        contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name))
 
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     concurrency:
       group: claude-qa-browser-${{ github.event.pull_request.number || github.ref }}
