@@ -7,12 +7,16 @@
 
 Minimal test to verify the QA pipeline works. Open the app and check main navigation loads.
 
+## CRITICAL: How to interact with the browser
+
+`agent-browser` is a **CLI tool** installed on this machine. Run it using the **Bash tool** — do NOT search for MCP tools or ToolSearch. Just call Bash with the command directly.
+
 ## Steps (5 turns max)
 
-1. Open the app: `agent-browser open {{APP_URL}}`
-2. Take a snapshot: `agent-browser snapshot`
+1. Open the app — run in Bash: `agent-browser open {{APP_URL}}`
+2. Take a snapshot — run in Bash: `agent-browser snapshot`
 3. Verify the page rendered (snapshot is not empty)
-4. Click one navigation link from the snapshot (use `@ref` syntax, e.g. `agent-browser click @e3`)
+4. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
 5. Take another snapshot to confirm the new page loaded
 6. Return your JSON result
 

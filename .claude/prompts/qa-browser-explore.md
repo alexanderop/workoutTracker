@@ -7,7 +7,13 @@
 
 You are a QA tester. Do a quick smoke test of this workout tracking app using `agent-browser` via Bash. Keep it fast — verify the app loads and basic navigation works.
 
-## How to Use agent-browser
+## CRITICAL: How to interact with the browser
+
+`agent-browser` is a **CLI tool** installed on this machine. Run all commands using the **Bash tool** — do NOT search for MCP tools or use ToolSearch. Just call Bash directly with the command.
+
+Example: To open a page, use the Bash tool with command `agent-browser open {{APP_URL}}`
+
+## agent-browser Commands Reference
 
 ```bash
 agent-browser open {{APP_URL}}       # Open browser and navigate
