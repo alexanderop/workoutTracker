@@ -247,14 +247,14 @@ jobs:
 
           if [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
-            echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            echo 'allowed_tools="Bash(agent-browser *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            echo 'allowed_tools="Bash(agent-browser *)" "Bash(curl *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
             echo "max_turns=100" >> $GITHUB_OUTPUT
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
-            echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            echo 'allowed_tools="Bash(agent-browser *)" "Bash(curl *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
           fi
 
           {
@@ -299,7 +299,7 @@ jobs:
           claude_args: |
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
-            --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
+            --allowedTools ${{ steps.load-prompt.outputs.allowed_tools }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Check report exists
@@ -336,7 +336,7 @@ jobs:
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
             --max-turns 15
-            --allowedTools "Bash(agent-browser*),Write(qa-report.md)"
+            --allowedTools "Bash(agent-browser *)" "Write(qa-report.md)"
 
       - name: Verify report after retry
         id: check-report-retry
