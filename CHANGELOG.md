@@ -1,3 +1,12 @@
+## [1.24.4](https://github.com/alexanderop/workoutTracker/compare/v1.24.3...v1.24.4) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** improve QA pipeline and audit config ([2389632](https://github.com/alexanderop/workoutTracker/commit/2389632ad1e8cb458593378d459f30ec180b4f68))
+
+
+
 ## [1.24.3](https://github.com/alexanderop/workoutTracker/compare/v1.24.2...v1.24.3) (2026-04-11)
 
 
@@ -34,15 +43,6 @@
 ### Features
 
 * **ci:** enrich QA report with test details and bug reproduction steps ([0bbee6c](https://github.com/alexanderop/workoutTracker/commit/0bbee6c240e26dd5ce3302feeba79cb47843dbf4))
-
-
-
-## [1.23.4](https://github.com/alexanderop/workoutTracker/compare/v1.23.3...v1.23.4) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** increase QA verify max_turns to 100 ([cdada52](https://github.com/alexanderop/workoutTracker/commit/cdada52a6193da1353128b9115a90ad214888bb1))
 
 
 
