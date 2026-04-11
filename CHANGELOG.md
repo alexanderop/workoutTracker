@@ -1,3 +1,12 @@
+## [1.25.4](https://github.com/alexanderop/workoutTracker/compare/v1.25.3...v1.25.4) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** use settings input + append-system-prompt for QA workflow ([1f04d14](https://github.com/alexanderop/workoutTracker/commit/1f04d149d930b1ba70655835017b5699d617a320)), closes [#1063](https://github.com/alexanderop/workoutTracker/issues/1063) [#533](https://github.com/alexanderop/workoutTracker/issues/533)
+
+
+
 ## [1.25.3](https://github.com/alexanderop/workoutTracker/compare/v1.25.2...v1.25.3) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **ci:** add [@claude](https://github.com/claude) test trigger for quick QA smoke tests ([ae8e68e](https://github.com/alexanderop/workoutTracker/commit/ae8e68ea16a3ab43e556d65928869f2dced72523))
-
-
-
-## [1.24.9](https://github.com/alexanderop/workoutTracker/compare/v1.24.8...v1.24.9) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** make track_progress conditional on event type ([0871a60](https://github.com/alexanderop/workoutTracker/commit/0871a60b577679c2e5b671d17d541a93e5299ffe))
 
 
 
