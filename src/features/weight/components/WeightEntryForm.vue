@@ -117,7 +117,12 @@ const isValid = computed(() => {
       </div>
     </template>
 
-    <Button class="w-full" :disabled="!isValid" @click="handleSave">
+    <Button
+      class="w-full"
+      :disabled="!isValid"
+      :aria-label="t('weight.save')"
+      @click="handleSave"
+    >
       {{ t('weight.save') }}
     </Button>
   </div>
