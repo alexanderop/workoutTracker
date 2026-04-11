@@ -1,3 +1,12 @@
+# [1.24.0](https://github.com/alexanderop/workoutTracker/compare/v1.23.4...v1.24.0) (2026-04-11)
+
+
+### Features
+
+* **ci:** enrich QA report with test details and bug reproduction steps ([0bbee6c](https://github.com/alexanderop/workoutTracker/commit/0bbee6c240e26dd5ce3302feeba79cb47843dbf4))
+
+
+
 ## [1.23.4](https://github.com/alexanderop/workoutTracker/compare/v1.23.3...v1.23.4) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** tell Claude not to use screenshot in agent-browser prompts ([02f7a3a](https://github.com/alexanderop/workoutTracker/commit/02f7a3a17cac339e945027237c7ae1cef33eb297))
-
-
-
-# [1.23.0](https://github.com/alexanderop/workoutTracker/compare/v1.22.2...v1.23.0) (2026-04-11)
-
-
-### Features
-
-* **ci:** add PR-aware verify mode to agent-browser QA workflow ([11bf9a0](https://github.com/alexanderop/workoutTracker/commit/11bf9a049f45400ebe788617da189e962bc3bb4a)), closes [#128](https://github.com/alexanderop/workoutTracker/issues/128)
 
 
 
