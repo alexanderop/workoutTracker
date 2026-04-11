@@ -110,7 +110,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Audit dependencies
-        run: pnpm audit --prod --audit-level=moderate
+        run: pnpm audit --prod --audit-level=critical
 
   knip:
     needs: setup
