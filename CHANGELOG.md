@@ -1,3 +1,12 @@
+## [1.24.5](https://github.com/alexanderop/workoutTracker/compare/v1.24.4...v1.24.5) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** enable show_full_output for QA workflow visibility ([6b7cb88](https://github.com/alexanderop/workoutTracker/commit/6b7cb88d6156e80ef8bf1d525b95a44cf45d0af0))
+
+
+
 ## [1.24.4](https://github.com/alexanderop/workoutTracker/compare/v1.24.3...v1.24.4) (2026-04-11)
 
 
@@ -34,15 +43,6 @@
 ### Bug Fixes
 
 * **ci:** increase QA workflow timeout to 30 minutes ([2469e03](https://github.com/alexanderop/workoutTracker/commit/2469e03f8ccc6786e624d5e542b3693a6b16a6c9))
-
-
-
-# [1.24.0](https://github.com/alexanderop/workoutTracker/compare/v1.23.4...v1.24.0) (2026-04-11)
-
-
-### Features
-
-* **ci:** enrich QA report with test details and bug reproduction steps ([0bbee6c](https://github.com/alexanderop/workoutTracker/commit/0bbee6c240e26dd5ce3302feeba79cb47843dbf4))
 
 
 
