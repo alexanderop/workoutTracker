@@ -12,6 +12,7 @@ on:
         options:
           - general
           - test
+          - verify
           - navigation
           - forms
           - workout-flow
@@ -28,7 +29,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       github.event.label.name == 'qa-browser')
+       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name))
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -64,6 +65,64 @@ jobs:
           npm install -g agent-browser
           agent-browser install
 
+      - name: Determine QA mode
+        id: qa-mode
+        shell: bash
+        run: |
+          FOCUS="${{ github.event.inputs.focus || 'general' }}"
+          if [[ "${{ github.event.label.name }}" == "qa-browser-verify" ]]; then
+            FOCUS="verify"
+          fi
+          echo "focus=$FOCUS" >> $GITHUB_OUTPUT
+          echo "QA focus: $FOCUS"
+
+      - name: Get PR context
+        if: steps.qa-mode.outputs.focus == 'verify'
+        id: pr-context
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            let prNumber, prBody, prTitle;
+
+            if (context.eventName === 'pull_request') {
+              prNumber = context.payload.pull_request.number;
+              prBody = context.payload.pull_request.body || '';
+              prTitle = context.payload.pull_request.title;
+            } else if (process.env.PR_NUMBER_INPUT) {
+              prNumber = parseInt(process.env.PR_NUMBER_INPUT, 10);
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              prBody = pr.body || '';
+              prTitle = pr.title;
+            }
+
+            // Fetch linked issues (closes #123, fixes #456)
+            let linkedIssues = '';
+            if (prBody) {
+              const matches = prBody.match(/(?:closes|fixes|resolves)\s+#(\d+)/gi) || [];
+              for (const match of matches) {
+                const issueNum = match.match(/\d+/)[0];
+                try {
+                  const { data: issue } = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: parseInt(issueNum)
+                  });
+                  linkedIssues += `\n### Issue #${issueNum}: ${issue.title}\n${issue.body || ''}\n`;
+                } catch (e) {}
+              }
+            }
+
+            core.setOutput('pr_number', prNumber || '');
+            core.setOutput('pr_title', prTitle || '');
+            core.setOutput('pr_body', prBody || '');
+            core.setOutput('linked_issues', linkedIssues);
+
       - name: Start development server
         shell: bash
         run: |
@@ -94,14 +153,21 @@ jobs:
       - name: Load QA prompt
         id: load-prompt
         shell: bash
+        env:
+          PR_BODY_RAW: ${{ steps.pr-context.outputs.pr_body }}
+          LINKED_ISSUES_RAW: ${{ steps.pr-context.outputs.linked_issues }}
         run: |
           TODAY=$(date +%Y-%m-%d)
+          FOCUS="${{ steps.qa-mode.outputs.focus }}"
 
           # Set allowed tools BEFORE the heredoc block (must be outside to be a separate output)
-          FOCUS="${{ github.event.inputs.focus || 'general' }}"
           if [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
             echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+          elif [ "$FOCUS" = "verify" ]; then
+            PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
+            echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+            echo "max_turns=30" >> $GITHUB_OUTPUT
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
             echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
@@ -120,6 +186,15 @@ jobs:
             TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
+
+            # For verify mode, inject PR context
+            if [ "$FOCUS" = "verify" ]; then
+              TASK="${TASK//\{\{PR_NUMBER\}\}/${{ steps.pr-context.outputs.pr_number }}}"
+              TASK="${TASK//\{\{PR_TITLE\}\}/${{ steps.pr-context.outputs.pr_title }}}"
+              TASK="${TASK//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
+              TASK="${TASK//\{\{LINKED_ISSUES\}\}/$LINKED_ISSUES_RAW}"
+            fi
+
             echo "$TASK"
 
             echo 'PROMPT_EOF'
@@ -141,7 +216,7 @@ jobs:
           show_full_output: true
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           claude_args: |
-            --max-turns 15
+            --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --model claude-opus-4-20250514
             --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -324,8 +399,10 @@ jobs:
       - name: Remove trigger label
         if: |
           github.event_name == 'pull_request' &&
-          github.event.label.name == 'qa-browser'
+          contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)
         uses: actions/github-script@v7
+        env:
+          LABEL_NAME: ${{ github.event.label.name }}
         with:
           script: |
             try {
@@ -333,7 +410,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                name: 'qa-browser'
+                name: process.env.LABEL_NAME
               });
             } catch (e) {
               if (e.status !== 404) core.warning(`Failed to remove label: ${e.message}`);
