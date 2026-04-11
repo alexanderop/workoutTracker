@@ -1,3 +1,12 @@
+## [1.24.7](https://github.com/alexanderop/workoutTracker/compare/v1.24.6...v1.24.7) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** overhaul QA workflow permissions and prompts ([9dae694](https://github.com/alexanderop/workoutTracker/commit/9dae69478f20f6723b837595114fb1eacf3c41a0))
+
+
+
 ## [1.24.6](https://github.com/alexanderop/workoutTracker/compare/v1.24.5...v1.24.6) (2026-04-11)
 
 
@@ -31,18 +40,6 @@
 ### Bug Fixes
 
 * **ci:** restrict workflow triggers to repo collaborators and block fork PRs ([d4a6abe](https://github.com/alexanderop/workoutTracker/commit/d4a6abef7036e21cabba03e30168ec2a3dbd24f4))
-
-
-
-## [1.24.2](https://github.com/alexanderop/workoutTracker/compare/v1.24.1...v1.24.2) (2026-04-11)
-
-
-### Bug Fixes
-
-* **a11y:** add aria-label to weight save button ([506e1fa](https://github.com/alexanderop/workoutTracker/commit/506e1fa50204e1311a677f8bd7e494e6f393e297)), closes [#128](https://github.com/alexanderop/workoutTracker/issues/128)
-* **a11y:** improve weight page accessibility and harden QA verify prompt ([1cfd002](https://github.com/alexanderop/workoutTracker/commit/1cfd0026c354780a7a9ac076e816b567edd11f11))
-* **ci:** add app context to QA system prompt ([a2fccbc](https://github.com/alexanderop/workoutTracker/commit/a2fccbc9c6abb267db67a95e33fe04b533f7ea97))
-* **ci:** update QA verify prompt for 100-turn budget ([94e38fb](https://github.com/alexanderop/workoutTracker/commit/94e38fb0df8cc831c7aaf21c82439b1a27a8963c))
 
 
 
