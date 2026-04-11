@@ -1,3 +1,12 @@
+## [1.25.1](https://github.com/alexanderop/workoutTracker/compare/v1.25.0...v1.25.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** exclude [@claude](https://github.com/claude) test/verify from general claude workflow ([5ea5841](https://github.com/alexanderop/workoutTracker/commit/5ea58413b352b191f9094e30adf5950d98e5691e))
+
+
+
 # [1.25.0](https://github.com/alexanderop/workoutTracker/compare/v1.24.9...v1.25.0) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** overhaul QA workflow permissions and prompts ([9dae694](https://github.com/alexanderop/workoutTracker/commit/9dae69478f20f6723b837595114fb1eacf3c41a0))
-
-
-
-## [1.24.6](https://github.com/alexanderop/workoutTracker/compare/v1.24.5...v1.24.6) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** fix allowedTools format for agent-browser commands ([27c59ca](https://github.com/alexanderop/workoutTracker/commit/27c59cae954a1b6d3c5d23af7a19414680f15538))
 
 
 
