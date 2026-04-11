@@ -1,3 +1,17 @@
+# [1.26.0](https://github.com/alexanderop/workoutTracker/compare/v1.25.4...v1.26.0) (2026-04-11)
+
+
+### Bug Fixes
+
+* **nav:** improve bottom navigation click handling ([84fecdc](https://github.com/alexanderop/workoutTracker/commit/84fecdc134222dd7be5aadee364ad9da396d8005))
+
+
+### Features
+
+* **ci:** add PR review and CI auto-fix workflows, fix claude permissions ([e095921](https://github.com/alexanderop/workoutTracker/commit/e095921503accccd75babef7f4a65ea07df8c7f5))
+
+
+
 ## [1.25.4](https://github.com/alexanderop/workoutTracker/compare/v1.25.3...v1.25.4) (2026-04-11)
 
 
@@ -31,15 +45,6 @@
 ### Bug Fixes
 
 * **ci:** exclude [@claude](https://github.com/claude) test/verify from general claude workflow ([5ea5841](https://github.com/alexanderop/workoutTracker/commit/5ea58413b352b191f9094e30adf5950d98e5691e))
-
-
-
-# [1.25.0](https://github.com/alexanderop/workoutTracker/compare/v1.24.9...v1.25.0) (2026-04-11)
-
-
-### Features
-
-* **ci:** add [@claude](https://github.com/claude) test trigger for quick QA smoke tests ([ae8e68e](https://github.com/alexanderop/workoutTracker/commit/ae8e68ea16a3ab43e556d65928869f2dced72523))
 
 
 
