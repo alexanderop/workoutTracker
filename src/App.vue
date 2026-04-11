@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// QA smoke test: verify browser QA pipeline works end-to-end
 import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
