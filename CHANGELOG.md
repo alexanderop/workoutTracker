@@ -1,3 +1,12 @@
+## [1.22.2](https://github.com/alexanderop/workoutTracker/compare/v1.22.1...v1.22.2) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** clarify agent-browser is a CLI tool run via Bash ([3a32eb5](https://github.com/alexanderop/workoutTracker/commit/3a32eb5e24cfe46f7a985db8e7b48f6e5678355d))
+
+
+
 ## [1.22.1](https://github.com/alexanderop/workoutTracker/compare/v1.22.0...v1.22.1) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** use Opus model for QA workflow ([6b20424](https://github.com/alexanderop/workoutTracker/commit/6b20424b12d8f18d9093523a22a0dbfac22e0fcc))
-
-
-
-## [1.21.1](https://github.com/alexanderop/workoutTracker/compare/v1.21.0...v1.21.1) (2026-04-10)
-
-
-### Bug Fixes
-
-* **ci:** install playwright-cli globally to avoid npx warning ([cb5f117](https://github.com/alexanderop/workoutTracker/commit/cb5f1175b3fc172ab4a490d166900844942efec9))
 
 
 
