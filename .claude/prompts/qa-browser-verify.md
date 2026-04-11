@@ -18,29 +18,28 @@
 ## CRITICAL: How to interact with the browser
 
 `agent-browser` is a **CLI tool** installed on this machine. Run all commands
-using the **Bash tool** — do NOT search for MCP tools or use ToolSearch.
+using the **Bash tool** — do NOT search for MCP tools, Skills, or ToolSearch.
 Just call Bash directly with the command.
 
 **The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
-Just open the URL with `agent-browser open {{APP_URL}}` and start testing immediately.
 
-## agent-browser Commands Reference
+See the system prompt for the full command reference. Key commands:
+- `agent-browser open {{APP_URL}}` — navigate
+- `agent-browser snapshot -i` — get interactive elements with refs
+- `agent-browser click @e1` / `agent-browser fill @e2 "text"` — interact by ref
+- `agent-browser console` — check for JS errors
+
+## Step 0: Dismiss Onboarding (ALWAYS do this first)
 
 ```bash
-agent-browser open {{APP_URL}}       # Open browser and navigate
-agent-browser snapshot                # Get accessibility tree with refs (@e1, @e2)
-agent-browser snapshot -i             # Interactive elements only
-agent-browser click @e15              # Click element by ref (note the @ prefix!)
-agent-browser fill @e3 "text"         # Fill input by ref
-agent-browser console                 # Check JS console errors
-agent-browser get text @e1            # Get text content
-agent-browser eval "js expression"    # Run JS in page context
-agent-browser close                   # Done
+agent-browser open {{APP_URL}}
+agent-browser snapshot -i
+# Find and click "Skip to App" or "Skip" button
+agent-browser click @eN   # use the ref from snapshot
 ```
 
-**IMPORTANT**: Do NOT use `agent-browser screenshot` — you cannot view image files.
-Use `agent-browser snapshot` or `agent-browser snapshot -i` instead. These return
-text-based accessibility trees which you CAN read and reason about.
+The app shows an onboarding carousel on first visit. In CI there is no saved
+state, so this appears every run. Dismiss it before testing anything.
 
 ### Known Gotcha: `agent-browser fill` and Vue Reactivity
 
@@ -48,20 +47,10 @@ text-based accessibility trees which you CAN read and reason about.
 Vue's reactivity system (v-model / defineModel). This can make buttons appear
 stuck or disabled even though the value looks correct in the accessibility tree.
 
-**After every `fill` command**, verify the value actually reached Vue:
-
-```bash
-agent-browser fill @e3 "100"
-agent-browser eval "document.querySelector('input').value"
-```
-
 If the UI seems stuck (button disabled, value not updating):
 1. **Reload the page** with `agent-browser open {{APP_URL}}/current-page` and retry ONCE
 2. If it still fails after reload, record it as a minor tool-sync issue and MOVE ON
 3. **Do NOT** spend multiple turns diagnosing browser tool bugs — that is not a product bug
-
-Similarly, if the accessibility tree shows stale values (e.g. a spinbutton showing
-an old number after you filled a new one), reload and re-check once before reporting.
 
 ## Your Mission
 

@@ -9,31 +9,29 @@ You are a QA tester. Do a quick smoke test of this workout tracking app using `a
 
 ## CRITICAL: How to interact with the browser
 
-`agent-browser` is a **CLI tool** installed on this machine. Run all commands using the **Bash tool** — do NOT search for MCP tools or use ToolSearch. Just call Bash directly with the command.
+`agent-browser` is a **CLI tool** installed on this machine. Run all commands
+using the **Bash tool** — do NOT search for MCP tools, Skills, or ToolSearch.
+Just call Bash directly with the command.
 
 **The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
-Just open the URL with `agent-browser open {{APP_URL}}` and start testing immediately.
 
-## agent-browser Commands Reference
+See the system prompt for the full command reference. Key commands:
+- `agent-browser open {{APP_URL}}` — navigate
+- `agent-browser snapshot -i` — get interactive elements with refs
+- `agent-browser click @e1` / `agent-browser fill @e2 "text"` — interact by ref
+- `agent-browser console` — check for JS errors
+
+## Step 0: Dismiss Onboarding (ALWAYS do this first)
 
 ```bash
-agent-browser open {{APP_URL}}       # Open browser and navigate
-agent-browser snapshot                # Get accessibility tree with refs (@e1, @e2, etc.)
-agent-browser snapshot -i             # Interactive elements only (buttons, inputs, links)
-agent-browser click @e15              # Click element by ref (note the @ prefix!)
-agent-browser fill @e3 "text"         # Clear and fill input by ref
-agent-browser console                 # Check JS console errors
-agent-browser get text @e1            # Get text content of element
-agent-browser get url                 # Get current URL
-agent-browser eval "js expression"    # Run JS in page context
-agent-browser close                   # Done
+agent-browser open {{APP_URL}}
+agent-browser snapshot -i
+# Find and click "Skip to App" or "Skip" button
+agent-browser click @eN   # use the ref from snapshot
 ```
 
-**Important**: Element refs always use the `@` prefix (e.g., `@e1`, `@e2`). Get refs from `snapshot` output.
-
-**IMPORTANT**: Do NOT use `agent-browser screenshot` — you cannot view image files.
-Use `agent-browser snapshot` or `agent-browser snapshot -i` instead. These return
-text-based accessibility trees which you CAN read and reason about.
+The app shows an onboarding carousel on first visit. In CI there is no saved
+state, so this appears every run. Dismiss it before testing anything.
 
 ## Turn Budget: 15 turns MAX
 

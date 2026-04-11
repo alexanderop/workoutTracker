@@ -97,6 +97,25 @@ jobs:
           npm install -g agent-browser
           agent-browser install
 
+      - name: Configure Claude permissions
+        shell: bash
+        run: |
+          mkdir -p .claude
+          cat > .claude/settings.local.json << 'SETTINGS_EOF'
+          {
+            "permissions": {
+              "allow": [
+                "Bash(agent-browser *)",
+                "Bash(curl *)",
+                "Write(qa-report.md)",
+                "Read",
+                "Glob",
+                "Grep"
+              ]
+            }
+          }
+          SETTINGS_EOF
+
       - name: Determine QA mode
         id: qa-mode
         shell: bash
@@ -247,14 +266,11 @@ jobs:
 
           if [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
-            echo 'allowed_tools="Bash(agent-browser *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo 'allowed_tools="Bash(agent-browser *)" "Bash(curl *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
             echo "max_turns=100" >> $GITHUB_OUTPUT
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
-            echo 'allowed_tools="Bash(agent-browser *)" "Bash(curl *)" "Write(qa-report.md)"' >> $GITHUB_OUTPUT
           fi
 
           {
@@ -299,7 +315,6 @@ jobs:
           claude_args: |
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
-            --allowedTools ${{ steps.load-prompt.outputs.allowed_tools }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Check report exists
@@ -326,9 +341,10 @@ jobs:
             IMPORTANT: The previous QA run did not generate a report.
 
             Do a quick navigation smoke test and write qa-report.md immediately:
-            1. Navigate to http://localhost:5173
-            2. Check 3-4 main pages load correctly
-            3. Write the report with what you observed
+            1. Open http://localhost:5173 with agent-browser
+            2. Dismiss onboarding (click "Skip to App")
+            3. Check 3-4 main pages load correctly
+            4. Write the report with what you observed
 
             Write `qa-report.md` now with:
             - Summary of pages tested
@@ -336,7 +352,7 @@ jobs:
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
             --max-turns 15
-            --allowedTools "Bash(agent-browser *)" "Write(qa-report.md)"
+            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Verify report after retry
         id: check-report-retry
@@ -413,132 +429,6 @@ jobs:
             });
 
             core.setOutput('qa_state', state);
-
-      - name: Post results to PR
-        if: |
-          always() &&
-          (github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number || steps.pr-context.outputs.pr_number)
-        uses: actions/github-script@v9
-        env:
-          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
-          PR_NUMBER_CONTEXT: ${{ steps.pr-context.outputs.pr_number }}
-          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
-        with:
-          script: |
-            const fs = require('fs');
-            const prNumber = context.payload.pull_request?.number ||
-                            context.payload.issue?.number ||
-                            process.env.PR_NUMBER_INPUT ||
-                            process.env.PR_NUMBER_CONTEXT;
-
-            if (!prNumber) return;
-
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            let qaReport = '';
-
-            const structuredOutput = process.env.STRUCTURED_OUTPUT;
-            if (structuredOutput && structuredOutput.trim()) {
-              try {
-                const data = JSON.parse(structuredOutput);
-                const verdictEmoji = data.verdict === 'HEALTHY' ? '✅' : data.verdict === 'MINOR_ISSUES' ? '⚠️' : '❌';
-
-                // Build test details section grouped by area
-                let testsSection = '';
-                if (data.tests && data.tests.length > 0) {
-                  const areas = {};
-                  for (const t of data.tests) {
-                    const area = t.area || 'other';
-                    if (!areas[area]) areas[area] = [];
-                    areas[area].push(t);
-                  }
-
-                  const areaRows = Object.entries(areas).map(([area, tests]) => {
-                    const label = area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    const rows = tests.map(t => {
-                      const icon = t.result === 'pass' ? '✅' : t.result === 'fail' ? '❌' : '⏭️';
-                      return `| ${icon} | ${t.name} | ${t.details} |`;
-                    }).join('\n');
-                    return `**${label}**\n\n| | Test | Details |\n|---|------|----------|\n${rows}`;
-                  }).join('\n\n');
-
-                  testsSection = `### Tests Performed\n\n${areaRows}`;
-                }
-
-                // Build coverage summary
-                const coverageSummary = `**Overall**: ${data.metrics.passed}/${data.metrics.total_tests} tests passed` +
-                  (data.metrics.failed > 0 ? ` (${data.metrics.failed} failed)` : '');
-
-                // Build bugs section with full details
-                let bugsSection = '';
-                if (data.bugs.length > 0) {
-                  const bugDetails = data.bugs.map(b => {
-                    const severityEmoji = b.severity === 'critical' ? '🔴' : b.severity === 'major' ? '🟠' : '🟡';
-                    const steps = (b.steps_to_reproduce || []).map((s, i) => `${i + 1}. ${s}`).join('\n');
-                    return [
-                      `#### ${severityEmoji} Bug #${b.id}: ${b.title}`,
-                      '',
-                      b.description,
-                      '',
-                      steps ? `**Steps to reproduce:**\n${steps}` : '',
-                      b.expected ? `**Expected:** ${b.expected}` : '',
-                      b.actual ? `**Actual:** ${b.actual}` : '',
-                    ].filter(Boolean).join('\n');
-                  }).join('\n\n');
-                  bugsSection = `### Bugs Found (${data.bugs.length})\n\n${bugDetails}`;
-                } else {
-                  bugsSection = '### Bugs Found\n\n✅ No bugs found';
-                }
-
-                // Console errors
-                let consoleSection = '';
-                if (data.console_errors && data.console_errors.length > 0) {
-                  consoleSection = `### Console Errors\n\n${data.console_errors.map(e => `- \`${e}\``).join('\n')}`;
-                }
-
-                qaReport = [
-                  `**Verdict**: ${verdictEmoji} **${data.verdict}**`,
-                  '',
-                  `**Summary**: ${data.summary}`,
-                  '',
-                  coverageSummary,
-                  '',
-                  testsSection,
-                  '',
-                  bugsSection,
-                  consoleSection ? '\n' + consoleSection : '',
-                ].filter(Boolean).join('\n');
-              } catch (parseErr) {
-                core.warning(`Failed to parse structured output: ${parseErr.message}`);
-              }
-            }
-
-            if (!qaReport) {
-              try {
-                qaReport = fs.readFileSync('qa-report.md', 'utf8');
-              } catch (e) {
-                qaReport = `⚠️ QA report not generated. Check [workflow logs](${runUrl})`;
-              }
-            }
-
-            const body = [
-              '## Claude QA Report (Browser Mode)',
-              '',
-              `**Method**: agent-browser | **Run**: [View Logs](${runUrl})`,
-              '',
-              '---',
-              '',
-              qaReport,
-              '',
-              '---',
-              '_Automated QA by Claude Code + agent-browser_'
-            ].join('\n');
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: parseInt(prNumber),
-              body: body
-            });
 
       - name: Upload QA artifacts
         if: always()
