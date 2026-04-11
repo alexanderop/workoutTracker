@@ -49,7 +49,6 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
       statuses: write
       actions: read
 
@@ -315,6 +314,7 @@ jobs:
           claude_args: |
             --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
+            --model claude-sonnet-4-6
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
@@ -369,6 +369,7 @@ jobs:
           claude_args: |
             --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns 15
+            --model claude-sonnet-4-6
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
