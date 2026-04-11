@@ -58,7 +58,7 @@ jobs:
       - name: Get PR ref for issue_comment
         if: github.event_name == 'issue_comment'
         id: pr-ref
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -100,7 +100,7 @@ jobs:
       - name: Get PR context
         if: steps.qa-mode.outputs.focus == 'verify'
         id: pr-context
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
         with:
@@ -329,7 +329,7 @@ jobs:
       - name: Set commit status
         id: qa-status
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
         with:
@@ -395,7 +395,7 @@ jobs:
         if: |
           always() &&
           (github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number || steps.pr-context.outputs.pr_number)
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
           PR_NUMBER_CONTEXT: ${{ steps.pr-context.outputs.pr_number }}
@@ -519,7 +519,7 @@ jobs:
 
       - name: Upload QA artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: qa-browser-artifacts-${{ github.run_id }}
           path: |
@@ -530,7 +530,7 @@ jobs:
         if: |
           github.event_name == 'pull_request' &&
           contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           LABEL_NAME: ${{ github.event.label.name }}
         with:

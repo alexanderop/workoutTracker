@@ -45,10 +45,10 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -57,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Cache node_modules
-        uses: actions/cache/save@v5.0.1
+        uses: actions/cache/save@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -71,15 +71,15 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -96,15 +96,15 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -121,15 +121,15 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -146,15 +146,15 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -171,7 +171,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Check composable usage
         run: pnpm check:composables
@@ -185,21 +185,21 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Cache TypeScript build info
-        uses: actions/cache@v5.0.1
+        uses: actions/cache@v5.0.4
         continue-on-error: true
         with:
           path: |
@@ -221,21 +221,21 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Cache Vite build
-        uses: actions/cache@v5.0.1
+        uses: actions/cache@v5.0.4
         continue-on-error: true
         with:
           path: |
@@ -249,7 +249,7 @@ jobs:
         run: pnpm build-only
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: dist
           path: dist/
@@ -316,21 +316,21 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.1
+        uses: actions/cache/restore@v5.0.4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: dist
           path: dist
