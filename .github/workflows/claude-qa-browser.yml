@@ -49,7 +49,6 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
       statuses: write
       actions: read
 
@@ -320,6 +319,7 @@ jobs:
             actions: read
           claude_args: |
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
+            --model claude-sonnet-4-6
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
@@ -360,6 +360,7 @@ jobs:
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
             --max-turns 15
+            --model claude-sonnet-4-6
             --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 

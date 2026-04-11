@@ -1,0 +1,56 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.github/workflows/release.yml'
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude PR Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          track_progress: true
+          use_sticky_comment: true
+          prompt: |
+            Review this pull request for a Vue 3 + TypeScript workout tracker PWA.
+
+            Focus on:
+            1. Logic errors and potential bugs
+            2. Security vulnerabilities (XSS, injection)
+            3. Performance issues (unnecessary reactivity, large bundles)
+            4. Missing error handling at system boundaries
+            5. Vue 3 anti-patterns (wrong use of reactive, missing cleanup)
+            6. TypeScript strictness (any usage, unsafe casts)
+
+            Do NOT flag:
+            - Style/formatting (ESLint handles that)
+            - Missing docs/comments on clear code
+            - Test coverage (separate CI job)
+
+            Use inline comments for specific issues. End with a summary comment.
+          claude_args: "--max-turns 10 --model claude-sonnet-4-6"
