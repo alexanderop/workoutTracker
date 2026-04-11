@@ -29,11 +29,15 @@ agent-browser snapshot                # Get accessibility tree with refs (@e1, @
 agent-browser snapshot -i             # Interactive elements only
 agent-browser click @e15              # Click element by ref (note the @ prefix!)
 agent-browser fill @e3 "text"         # Fill input by ref
-agent-browser screenshot              # Take screenshot
 agent-browser console                 # Check JS console errors
 agent-browser get text @e1            # Get text content
+agent-browser eval "js expression"    # Run JS in page context
 agent-browser close                   # Done
 ```
+
+**IMPORTANT**: Do NOT use `agent-browser screenshot` — you cannot view image files.
+Use `agent-browser snapshot` or `agent-browser snapshot -i` instead. These return
+text-based accessibility trees which you CAN read and reason about.
 
 ## Your Mission
 
