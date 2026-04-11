@@ -325,10 +325,10 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
-            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
-            --json-schema '${{ steps.load-schema.outputs.schema }}'
             --allowedTools "${{ steps.tools.outputs.allowed }}"
+            --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
+            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Check report exists
         id: check-report
@@ -366,10 +366,10 @@ jobs:
             - Any errors found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
-            --max-turns 15
-            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
-            --json-schema '${{ steps.load-schema.outputs.schema }}'
             --allowedTools "${{ steps.tools.outputs.allowed }}"
+            --max-turns 15
+            --json-schema '${{ steps.load-schema.outputs.schema }}'
+            --system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Verify report after retry
         id: check-report-retry
