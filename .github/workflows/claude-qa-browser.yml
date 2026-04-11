@@ -96,6 +96,17 @@ jobs:
         shell: bash
         run: |
           TODAY=$(date +%Y-%m-%d)
+
+          # Set allowed tools BEFORE the heredoc block (must be outside to be a separate output)
+          FOCUS="${{ github.event.inputs.focus || 'general' }}"
+          if [ "$FOCUS" = "test" ]; then
+            PROMPT_FILE=".claude/prompts/qa-browser-test.md"
+            echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+          else
+            PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
+            echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
+          fi
+
           {
             echo 'prompt<<PROMPT_EOF'
 
@@ -105,15 +116,7 @@ jobs:
             echo "---"
             echo ""
 
-            # Task prompt and tools (select based on focus input)
-            FOCUS="${{ github.event.inputs.focus || 'general' }}"
-            if [ "$FOCUS" = "test" ]; then
-              PROMPT_FILE=".claude/prompts/qa-browser-test.md"
-              echo "allowed_tools=Bash(agent-browser*),Write(qa-report.md)" >> $GITHUB_OUTPUT
-            else
-              PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
-              echo "allowed_tools=Bash(agent-browser*),Bash(curl*),Write(qa-report.md)" >> $GITHUB_OUTPUT
-            fi
+            # Task prompt
             TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
