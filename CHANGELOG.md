@@ -1,3 +1,12 @@
+## [1.26.1](https://github.com/alexanderop/workoutTracker/compare/v1.26.0...v1.26.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** add id-token: write permission to all claude workflows ([6db25e3](https://github.com/alexanderop/workoutTracker/commit/6db25e3e2caaae7e6bec928cacd33e1a17a2447e))
+
+
+
 # [1.26.0](https://github.com/alexanderop/workoutTracker/compare/v1.25.4...v1.26.0) (2026-04-11)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * **ci:** add --allowedTools to QA workflow for agent-browser access ([ffd286c](https://github.com/alexanderop/workoutTracker/commit/ffd286cf4e3afff031caa4da48aa0362369d1996))
-
-
-
-## [1.25.1](https://github.com/alexanderop/workoutTracker/compare/v1.25.0...v1.25.1) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** exclude [@claude](https://github.com/claude) test/verify from general claude workflow ([5ea5841](https://github.com/alexanderop/workoutTracker/commit/5ea58413b352b191f9094e30adf5950d98e5691e))
 
 
 
