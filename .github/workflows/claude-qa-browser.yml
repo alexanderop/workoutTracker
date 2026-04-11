@@ -31,7 +31,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name) &&
+       github.event.label.name == 'qa-verify' &&
        github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
@@ -39,7 +39,7 @@ jobs:
        contains(github.event.comment.body, '@claude verify'))
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     concurrency:
       group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           FOCUS="${{ github.event.inputs.focus || 'general' }}"
-          if [[ "${{ github.event.label.name }}" == "qa-browser-verify" ]]; then
+          if [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
             FOCUS="verify"
           elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
             FOCUS="verify"
@@ -318,6 +318,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          display_report: true
+          use_sticky_comment: true
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
@@ -548,7 +550,7 @@ jobs:
       - name: Remove trigger label
         if: |
           github.event_name == 'pull_request' &&
-          contains(fromJson('["qa-browser", "qa-browser-verify"]'), github.event.label.name)
+          github.event.label.name == 'qa-verify'
         uses: actions/github-script@v9
         env:
           LABEL_NAME: ${{ github.event.label.name }}

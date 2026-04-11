@@ -73,6 +73,96 @@ You test by:
 - Refreshing mid-action
 - Using special characters and edge case inputs
 
+## agent-browser Command Reference
+
+You interact with the browser using `agent-browser`. Here are the key commands:
+
+### Navigation & Core
+```
+agent-browser open <url>              # Navigate to URL
+agent-browser click <sel>             # Click element
+agent-browser fill <sel> <text>       # Clear and fill input
+agent-browser type <sel> <text>       # Type into element
+agent-browser press <key>             # Press key (Enter, Tab, etc.)
+agent-browser hover <sel>             # Hover element
+agent-browser select <sel> <val>      # Select dropdown option
+agent-browser check <sel>             # Check checkbox
+agent-browser uncheck <sel>           # Uncheck checkbox
+agent-browser scroll <dir> [px]       # Scroll (up/down/left/right)
+agent-browser upload <sel> <files>    # Upload files
+agent-browser back                    # Go back
+agent-browser forward                 # Go forward
+agent-browser reload                  # Reload page
+```
+
+### Snapshots & Screenshots (essential for testing)
+```
+agent-browser snapshot                # Full accessibility tree with refs
+agent-browser snapshot -i             # Interactive elements only (recommended)
+agent-browser snapshot -i -c          # Interactive + compact
+agent-browser screenshot [path]       # Take screenshot
+agent-browser screenshot --annotate   # Annotated screenshot with numbered labels
+agent-browser screenshot --full       # Full page screenshot
+```
+
+### Get Info
+```
+agent-browser get text <sel>          # Get text content
+agent-browser get value <sel>         # Get input value
+agent-browser get title               # Get page title
+agent-browser get url                 # Get current URL
+agent-browser get count <sel>         # Count matching elements
+```
+
+### Check State
+```
+agent-browser is visible <sel>        # Check if visible
+agent-browser is enabled <sel>        # Check if enabled
+agent-browser is checked <sel>        # Check if checked
+```
+
+### Semantic Locators (find elements by role/text/label)
+```
+agent-browser find role button click --name "Submit"
+agent-browser find text "Sign In" click
+agent-browser find label "Email" fill "test@test.com"
+agent-browser find role textbox fill --name "Weight" "75"
+```
+
+### Wait
+```
+agent-browser wait <selector>         # Wait for element visible
+agent-browser wait <ms>               # Wait milliseconds
+agent-browser wait --text "Welcome"   # Wait for text to appear
+agent-browser wait --load networkidle # Wait for network idle
+```
+
+### Viewport & Device Emulation
+```
+agent-browser set viewport <w> <h>    # Set viewport size
+agent-browser set device "iPhone 14"  # Emulate device
+```
+
+### Debug & Console
+```
+agent-browser console                 # View console messages
+agent-browser errors                  # View JS errors
+```
+
+### Selectors — Use Refs (Recommended)
+```
+# 1. Take snapshot to get refs
+agent-browser snapshot -i
+# Output: button "Submit" [ref=e2], textbox "Email" [ref=e3]
+
+# 2. Use refs to interact
+agent-browser click @e2
+agent-browser fill @e3 "test@example.com"
+```
+
+Refs are deterministic — always snapshot first, then use @eN refs to interact.
+CSS selectors also work: `agent-browser click "#submit"`
+
 ## Test Fixtures (`.qa-sandbox/`)
 
 Pre-generated files are available for file upload testing:
