@@ -1,3 +1,12 @@
+# [1.22.0](https://github.com/alexanderop/workoutTracker/compare/v1.21.3...v1.22.0) (2026-04-11)
+
+
+### Features
+
+* **ci:** add agent-browser QA workflow ([d5f8818](https://github.com/alexanderop/workoutTracker/commit/d5f88180768b4de10c865998f7430323707cd719))
+
+
+
 ## [1.21.3](https://github.com/alexanderop/workoutTracker/compare/v1.21.2...v1.21.3) (2026-04-10)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **ci:** enable full output logging for QA workflow visibility ([dd4d063](https://github.com/alexanderop/workoutTracker/commit/dd4d063f8ffdab5dec914116ecd2c4c12eebd716))
-
-
-
-# [1.20.0](https://github.com/alexanderop/workoutTracker/compare/v1.19.2...v1.20.0) (2026-04-10)
-
-
-### Features
-
-* **ci:** add minimal 'test' focus option for QA pipeline validation ([92f5cf1](https://github.com/alexanderop/workoutTracker/commit/92f5cf1b2172406cd8707435014e079106ccca27))
 
 
 
