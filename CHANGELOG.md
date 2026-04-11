@@ -1,3 +1,12 @@
+## [1.25.2](https://github.com/alexanderop/workoutTracker/compare/v1.25.1...v1.25.2) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** add --allowedTools to QA workflow for agent-browser access ([ffd286c](https://github.com/alexanderop/workoutTracker/commit/ffd286cf4e3afff031caa4da48aa0362369d1996))
+
+
+
 ## [1.25.1](https://github.com/alexanderop/workoutTracker/compare/v1.25.0...v1.25.1) (2026-04-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** add track_progress and json-schema to QA retry step ([5372a4c](https://github.com/alexanderop/workoutTracker/commit/5372a4c4d44d54ad920f627f65c39803104156fa))
-
-
-
-## [1.24.7](https://github.com/alexanderop/workoutTracker/compare/v1.24.6...v1.24.7) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** overhaul QA workflow permissions and prompts ([9dae694](https://github.com/alexanderop/workoutTracker/commit/9dae69478f20f6723b837595114fb1eacf3c41a0))
 
 
 
