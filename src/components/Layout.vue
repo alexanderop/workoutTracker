@@ -7,8 +7,8 @@ import { RouteNames } from '@/router'
 import type { RouteName } from '@/router'
 
 const { t } = useI18n()
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
 
 const hideNavigation = computed(() => route.meta.hideNav === true)
 
@@ -50,7 +50,7 @@ function isActive(routeName: RouteName) {
               ? 'text-primary border-t-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ]"
-          @click.prevent.stop
+          @click="router.push({ name: item.routeName })"
         >
           <component :is="item.icon" :size="24" class="mb-1" />
           <span class="text-xs font-medium">{{ item.label }}</span>
