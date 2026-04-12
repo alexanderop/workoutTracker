@@ -1,0 +1,18 @@
+msg_file="$1"
+first_line=$(head -n1 "$msg_file")
+
+# Allow merge/revert/fixup/squash commits
+case "$first_line" in
+  "Merge "*|"Revert "*|"fixup!"*|"squash!"*) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9_/.-]+\))?!?: .+'
+
+if ! printf '%s' "$first_line" | grep -Eq "$pattern"; then
+  echo "✖ Commit message does not follow Conventional Commits."
+  echo "  Got:      $first_line"
+  echo "  Expected: <type>(<scope>)?: <subject>"
+  echo "  Types:    feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+  echo "  Example:  feat(workout): add rest timer"
+  exit 1
+fi
