@@ -6,7 +6,6 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import type { PluginOption } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import vueDevTools from 'vite-plugin-vue-devtools'
 import { versionPlugin } from './vite-plugins/versionPlugin'
 
 // @ts-expect-error Rollup plugin types differ from Vite 6's PluginOption interface
@@ -22,7 +21,6 @@ export default defineConfig({
     vue(),
     versionPlugin(),
     tailwindcss(),
-    vueDevTools(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
