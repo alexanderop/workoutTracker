@@ -7,19 +7,24 @@ on:
         description: 'Test focus area'
         type: choice
         options:
+          - fast
           - general
           - test
           - verify
           - navigation
           - forms
           - workout-flow
-        default: 'general'
+        default: 'fast'
       pr_number:
         description: 'PR number (for posting results)'
         required: false
         type: string
   pull_request:
-    types: [labeled]
+    types: [opened, edited, synchronize, labeled]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.github/workflows/release.yml'
   issue_comment:
     types: [created]
 
@@ -30,8 +35,8 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       github.event.label.name == 'qa-verify' &&
-       github.event.pull_request.head.repo.full_name == github.repository) ||
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       (github.event.action != 'labeled' || github.event.label.name == 'qa-verify')) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
@@ -103,8 +108,10 @@ jobs:
           COMMENT_BODY_INPUT: ${{ github.event.comment.body || '' }}
         run: |
           set -euo pipefail
-          FOCUS="${{ github.event.inputs.focus || 'general' }}"
-          if [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
+          FOCUS="${{ github.event.inputs.focus || 'fast' }}"
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.action }}" != "labeled" ]]; then
+            FOCUS="fast"
+          elif [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
             FOCUS="verify"
           elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
             COMMENT_BODY="${COMMENT_BODY_INPUT}"
@@ -118,7 +125,7 @@ jobs:
           echo "QA focus: $FOCUS"
 
       - name: Get PR context
-        if: steps.qa-mode.outputs.focus == 'verify'
+        if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
         id: pr-context
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
@@ -129,6 +136,41 @@ jobs:
         with:
           script: |
             let prNumber, prBody, prTitle;
+            const extractSection = (body, heading) => {
+              const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const regex = new RegExp(`##\\s+${escapedHeading}\\s*\\n([\\s\\S]*?)(?=\\n##\\s+|\\n#\\s+|$)`, 'i');
+              const match = body.match(regex);
+              return match ? match[1].trim() : '';
+            };
+            const hasMeaningfulContent = (section) => {
+              if (!section) return false;
+              const normalized = section
+                .replace(/[`*_>-]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+
+              if (!normalized) return false;
+
+              const placeholderPatterns = [
+                'user can ...',
+                'existing flow still ...',
+                'affected users:',
+                'behavior change:',
+                'changed flow to verify:',
+                'one adjacent regression path to verify:',
+                'scenario:',
+                'given:',
+                'when:',
+                'then:',
+                'forms / validation',
+                'navigation / routing',
+                'persistence / saved state',
+                'mobile layout / touch interactions',
+              ];
+
+              return !placeholderPatterns.some(pattern => normalized.includes(pattern));
+            };
 
             if (context.eventName === 'pull_request') {
               prNumber = context.payload.pull_request.number;
@@ -166,10 +208,30 @@ jobs:
               }
             }
 
+            const summary = extractSection(prBody, 'Summary');
+            const userImpact = extractSection(prBody, 'User Impact');
+            const acceptanceCriteria = extractSection(prBody, 'Acceptance Criteria');
+            const qaScope = extractSection(prBody, 'QA Scope');
+            const riskAreas = extractSection(prBody, 'Risk Areas');
+            const manualTestScenarios = extractSection(prBody, 'Manual Test Scenarios');
+
+            const missingSections = [];
+            if (!hasMeaningfulContent(acceptanceCriteria)) missingSections.push('Acceptance Criteria');
+            if (!hasMeaningfulContent(qaScope)) missingSections.push('QA Scope');
+            if (!hasMeaningfulContent(riskAreas)) missingSections.push('Risk Areas');
+
             core.setOutput('pr_number', prNumber || '');
             core.setOutput('pr_title', prTitle || '');
             core.setOutput('pr_body', prBody || '');
             core.setOutput('linked_issues', linkedIssues);
+            core.setOutput('pr_summary', summary || '');
+            core.setOutput('user_impact', userImpact || '');
+            core.setOutput('acceptance_criteria', acceptanceCriteria || '');
+            core.setOutput('qa_scope', qaScope || '');
+            core.setOutput('risk_areas', riskAreas || '');
+            core.setOutput('manual_test_scenarios', manualTestScenarios || '');
+            core.setOutput('contract_valid', String(missingSections.length === 0));
+            core.setOutput('missing_sections', missingSections.join(', ') || 'None');
 
       - name: Create QA fixtures
         uses: ./.github/actions/create-qa-fixtures
@@ -199,12 +261,23 @@ jobs:
           APP_URL_VALUE: ${{ env.APP_URL }}
           PR_NUMBER_VALUE: ${{ steps.pr-context.outputs.pr_number }}
           PR_TITLE_VALUE: ${{ steps.pr-context.outputs.pr_title }}
+          PR_SUMMARY_VALUE: ${{ steps.pr-context.outputs.pr_summary }}
+          USER_IMPACT_VALUE: ${{ steps.pr-context.outputs.user_impact }}
+          ACCEPTANCE_CRITERIA_VALUE: ${{ steps.pr-context.outputs.acceptance_criteria }}
+          QA_SCOPE_VALUE: ${{ steps.pr-context.outputs.qa_scope }}
+          RISK_AREAS_VALUE: ${{ steps.pr-context.outputs.risk_areas }}
+          MANUAL_TEST_SCENARIOS_VALUE: ${{ steps.pr-context.outputs.manual_test_scenarios }}
+          CONTRACT_VALID_VALUE: ${{ steps.pr-context.outputs.contract_valid }}
+          MISSING_SECTIONS_VALUE: ${{ steps.pr-context.outputs.missing_sections }}
         run: |
           set -euo pipefail
           TODAY=$(date +%Y-%m-%d)
           FOCUS="${{ steps.qa-mode.outputs.focus }}"
 
-          if [ "$FOCUS" = "test" ]; then
+          if [ "$FOCUS" = "fast" ]; then
+            PROMPT_FILE=".claude/prompts/qa-browser-fast.md"
+            echo "max_turns=45" >> "$GITHUB_OUTPUT"
+          elif [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
@@ -220,12 +293,20 @@ jobs:
             TASK="${TASK//\{\{APP_URL\}\}/$APP_URL_VALUE}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
 
-            # For verify mode, inject PR context
-            if [ "$FOCUS" = "verify" ]; then
+            # For PR-aware modes, inject structured PR context
+            if [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "fast" ]; then
               TASK="${TASK//\{\{PR_NUMBER\}\}/$PR_NUMBER_VALUE}"
               TASK="${TASK//\{\{PR_TITLE\}\}/$PR_TITLE_VALUE}"
               TASK="${TASK//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
               TASK="${TASK//\{\{LINKED_ISSUES\}\}/$LINKED_ISSUES_RAW}"
+              TASK="${TASK//\{\{PR_SUMMARY\}\}/$PR_SUMMARY_VALUE}"
+              TASK="${TASK//\{\{USER_IMPACT\}\}/$USER_IMPACT_VALUE}"
+              TASK="${TASK//\{\{ACCEPTANCE_CRITERIA\}\}/$ACCEPTANCE_CRITERIA_VALUE}"
+              TASK="${TASK//\{\{QA_SCOPE\}\}/$QA_SCOPE_VALUE}"
+              TASK="${TASK//\{\{RISK_AREAS\}\}/$RISK_AREAS_VALUE}"
+              TASK="${TASK//\{\{MANUAL_TEST_SCENARIOS\}\}/$MANUAL_TEST_SCENARIOS_VALUE}"
+              TASK="${TASK//\{\{CONTRACT_VALID\}\}/$CONTRACT_VALID_VALUE}"
+              TASK="${TASK//\{\{MISSING_SECTIONS\}\}/$MISSING_SECTIONS_VALUE}"
             fi
 
             echo "$TASK"
@@ -348,6 +429,8 @@ jobs:
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
+          CONTRACT_VALID: ${{ steps.pr-context.outputs.contract_valid || 'true' }}
+          MISSING_SECTIONS: ${{ steps.pr-context.outputs.missing_sections || 'None' }}
         with:
           script: |
             const fs = require('fs');
@@ -362,6 +445,9 @@ jobs:
                 if (data.verdict === 'CRITICAL_BUGS' || data.metrics.critical_bugs > 0) {
                   state = 'failure';
                   description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
+                } else if (process.env.CONTRACT_VALID === 'false') {
+                  state = 'pending';
+                  description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
                 } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
                   state = 'pending';
                   const issueCount = (data.metrics.minor_bugs || 0) + (data.metrics.major_bugs || 0);
@@ -382,6 +468,9 @@ jobs:
                 if (/CRITICAL/i.test(report)) {
                   state = 'failure';
                   description = 'QA found critical issues';
+                } else if (process.env.CONTRACT_VALID === 'false') {
+                  state = 'pending';
+                  description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
                 } else if (/MINOR/i.test(report) || report.includes('WARNING')) {
                   state = 'pending';
                   description = 'QA found minor issues';
