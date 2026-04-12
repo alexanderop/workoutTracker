@@ -84,7 +84,7 @@ jobs:
             - Any issues found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
-            --allowedTools "Bash(agent-browser *),Bash(curl *),Write,Read,Glob,Grep"
+            --allowedTools "Bash,Write,Read,Glob,Grep"
             --max-turns 20
             --model ${{ env.CLAUDE_MODEL }}
 
