@@ -16,7 +16,7 @@ jobs:
        github.event.pull_request.head.repo.full_name == github.repository)
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     concurrency:
       group: claude-qa-test-${{ github.event.pull_request.number || github.ref }}
@@ -96,12 +96,20 @@ jobs:
           marker: '<!-- claude-qa-test-report -->'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Summarize Claude run
+        if: always()
+        uses: ./.github/actions/summarize-claude-run
+        with:
+          debug-dir: qa-debug
+
       - name: Upload QA report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: qa-test-report-${{ github.run_id }}
-          path: qa-report.md
+          path: |
+            qa-report.md
+            qa-debug/
           if-no-files-found: ignore
 
       - name: Remove trigger label

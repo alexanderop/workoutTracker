@@ -43,7 +43,7 @@ jobs:
        (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
 
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
 
     concurrency:
       group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -608,21 +608,11 @@ jobs:
 
             await core.summary.addRaw(lines.join('\n')).write();
 
-      - name: Capture failure artifacts
-        if: failure() || steps.qa-status.outputs.qa_state == 'failure'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p qa-debug
-          if [ -n "${DEV_PID:-}" ] && [ -f "/tmp/dev-server.log" ]; then
-            cp /tmp/dev-server.log qa-debug/dev-server.log || true
-          fi
-          if [ -d "$HOME/.agent-browser/screenshots" ]; then
-            cp -r "$HOME/.agent-browser/screenshots" qa-debug/screenshots || true
-          fi
-          if [ -d "./screenshots" ]; then
-            cp -r ./screenshots qa-debug/screenshots-local || true
-          fi
+      - name: Summarize Claude run
+        if: always()
+        uses: ./.github/actions/summarize-claude-run
+        with:
+          debug-dir: qa-debug
 
       - name: Upload QA artifacts
         if: always()
