@@ -41,6 +41,7 @@ export default {
     buildTime: 'Built',
     updateAvailable: 'Update available',
     refreshToUpdate: 'Refresh to get the latest version',
+    totalWorkouts: 'Total workouts',
   },
   languages: {
     en: 'English',
