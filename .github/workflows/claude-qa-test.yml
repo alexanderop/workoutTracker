@@ -1,0 +1,116 @@
+name: Claude QA (Test)
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  qa-test:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.label.name == 'qa-test' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: claude-qa-test-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+
+    env:
+      NODE_VERSION: '22'
+      CLAUDE_MODEL: claude-opus-4-6
+      APP_URL: http://localhost:5173
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup agent-browser
+        uses: ./.github/actions/setup-agent-browser
+
+      - name: Create QA fixtures
+        uses: ./.github/actions/create-qa-fixtures
+
+      - name: Start development server
+        uses: ./.github/actions/start-dev-server
+        with:
+          url: ${{ env.APP_URL }}
+
+      - name: Run Claude QA (hardcoded prompt)
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          use_sticky_comment: true
+          prompt: |
+            You are running a quick smoke test against the workout tracker app at ${{ env.APP_URL }}.
+
+            Steps:
+            1. Open ${{ env.APP_URL }} with agent-browser
+            2. Dismiss onboarding if shown (click "Skip to App")
+            3. Navigate to the Workouts page and confirm it loads
+            4. Navigate to the Exercises page and confirm it loads
+            5. Navigate to the Templates page and confirm it loads
+            6. Report anything unusual (console errors, broken layout, crashes)
+
+            Write a short `qa-report.md` summarizing:
+            - What you tested
+            - What worked
+            - Any issues found
+            - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
+          claude_args: |
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write,Read,Glob,Grep"
+            --max-turns 20
+            --model ${{ env.CLAUDE_MODEL }}
+
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qa-test-report-${{ github.run_id }}
+          path: qa-report.md
+          if-no-files-found: ignore
+
+      - name: Remove trigger label
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'qa-test'
+              });
+            } catch (e) {
+              if (e.status !== 404) core.warning(`Failed to remove label: ${e.message}`);
+            }
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          kill "${DEV_PID:-}" 2>/dev/null || true
+          agent-browser close 2>/dev/null || true
