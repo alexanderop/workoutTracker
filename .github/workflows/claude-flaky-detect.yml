@@ -1,0 +1,152 @@
+# Classify failed CI runs as flaky vs. real bug and auto-rerun the flaky ones.
+# Complements claude-ci-fix.yml, which tries to fix real failures.
+name: Claude Flaky Detect
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+permissions: {}
+
+env:
+  CLAUDE_MODEL: claude-haiku-4-5-20251001
+
+jobs:
+  classify:
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.pull_requests[0] &&
+      !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-') &&
+      github.event.workflow_run.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    concurrency:
+      group: claude-flaky-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 1
+
+      - name: Classify failure
+        id: classify
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          prompt: |
+            A CI run on this branch failed on its first attempt.
+
+            Failed run: ${{ github.event.workflow_run.html_url }}
+            Run ID: ${{ github.event.workflow_run.id }}
+
+            Fetch the failed job logs with:
+              gh run view ${{ github.event.workflow_run.id }} --log-failed
+
+            Classify whether this is likely a flaky failure (retry would pass)
+            or a real bug that needs code changes.
+
+            Flaky signals:
+            - Timeouts, network hiccups, rate-limit responses
+            - Race conditions, "element not found" with no clear cause
+            - Tests that passed on main within the last day for unchanged code
+            - Intermittent Vitest browser-mode / Playwright errors
+
+            Real-bug signals:
+            - Deterministic lint / type-check / knip errors
+            - Test assertion failures tied to source changes in this PR
+            - Build or compile errors
+
+            Return: is_flaky, confidence (0..1), summary (one sentence).
+          additional_permissions: |
+            actions: read
+          claude_args: |
+            --max-turns 8
+            --model ${{ env.CLAUDE_MODEL }}
+            --allowedTools "Read,Glob,Grep,Bash(gh:*),Bash(git log:*),Bash(git diff:*)"
+            --json-schema '{"type":"object","properties":{"is_flaky":{"type":"boolean"},"confidence":{"type":"number","minimum":0,"maximum":1},"summary":{"type":"string"}},"required":["is_flaky","confidence","summary"],"additionalProperties":false}'
+
+      - name: Act on classification
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.classify.outputs.structured_output }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const raw = process.env.STRUCTURED_OUTPUT;
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const runUrl = process.env.RUN_URL;
+            const runId = parseInt(process.env.RUN_ID, 10);
+
+            const summary = [];
+            summary.push('# Claude Flaky Detect');
+            summary.push('');
+
+            if (!raw || !raw.trim()) {
+              summary.push('_No structured output — skipping classification._');
+              await core.summary.addRaw(summary.join('\n')).write();
+              return;
+            }
+
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch (err) {
+              summary.push(`_Failed to parse classifier output: ${err.message}_`);
+              await core.summary.addRaw(summary.join('\n')).write();
+              return;
+            }
+
+            summary.push(`**is_flaky**: ${data.is_flaky}`);
+            summary.push(`**confidence**: ${data.confidence}`);
+            summary.push(`**summary**: ${data.summary}`);
+            summary.push('');
+
+            const shouldRetry = data.is_flaky === true && data.confidence >= 0.7;
+
+            if (shouldRetry) {
+              summary.push('→ Retrying the failed run.');
+              try {
+                await github.rest.actions.reRunWorkflowFailedJobs({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: runId,
+                });
+              } catch (err) {
+                summary.push(`⚠️ Failed to trigger rerun: ${err.message}`);
+              }
+              if (prNumber) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: `🔄 **Flaky CI failure detected** (confidence ${data.confidence})\n\n> ${data.summary}\n\nAuto-retrying failed jobs. [Original run](${runUrl})`,
+                });
+              }
+            } else if (data.is_flaky === true && prNumber) {
+              summary.push('→ Possibly flaky but confidence too low; not retrying.');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `⚠️ **Possible flaky CI failure** (confidence ${data.confidence} — below 0.7 threshold)\n\n> ${data.summary}\n\nNot retrying automatically. [Original run](${runUrl})`,
+              });
+            } else {
+              summary.push('→ Classified as real bug; deferring to claude-ci-fix.');
+            }
+
+            await core.summary.addRaw(summary.join('\n')).write();

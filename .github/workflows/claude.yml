@@ -61,4 +61,7 @@ jobs:
           track_progress: true
           additional_permissions: |
             actions: read
-          claude_args: '--max-turns 20 --model ${{ env.CLAUDE_MODEL }}'
+          claude_args: |
+            --max-turns 20
+            --model ${{ env.CLAUDE_MODEL }}
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"

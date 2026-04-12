@@ -78,3 +78,43 @@ jobs:
             --max-turns 15
             --model ${{ env.CLAUDE_MODEL }}
             --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Push fix commit if any
+        id: push-fix
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "unexpected_dirty=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Working tree dirty after Claude run; nothing committed."
+            git status --short
+            exit 0
+          fi
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
+          if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "No new commits from Claude; nothing to push."
+            exit 0
+          fi
+          git push origin "HEAD:${HEAD_BRANCH}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$LOCAL_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: steps.push-fix.outputs.pushed == 'true'
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          FIX_SHA: ${{ steps.push-fix.outputs.sha }}
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER, 10),
+              body: `🤖 **Claude auto-fix pushed** \`${process.env.FIX_SHA.slice(0, 7)}\`\n\nCI was failing; Claude diagnosed the root cause and pushed a fix. [View run](${runUrl})\n\nPlease review the change before merging.`
+            });

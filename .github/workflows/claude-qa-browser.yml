@@ -61,7 +61,6 @@ jobs:
       NODE_VERSION: '22'
       CLAUDE_MODEL: claude-sonnet-4-6
       APP_URL: http://localhost:5173
-      CLAUDE_QA_ALLOWED_TOOLS: Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep
 
     steps:
       - name: Get PR metadata for issue_comment
@@ -331,25 +330,12 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: ${{ github.event_name != 'workflow_dispatch' }}
+          track_progress: true
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read
-          settings: |
-            {
-              "permissions": {
-                "allow": [
-                  "Bash(agent-browser *)",
-                  "Bash(curl *)",
-                  "Write(qa-report.md)",
-                  "Read",
-                  "Glob",
-                  "Grep"
-                ]
-              }
-            }
           claude_args: |
-            --allowedTools "${{ env.CLAUDE_QA_ALLOWED_TOOLS }}"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -377,7 +363,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: ${{ github.event_name != 'workflow_dispatch' }}
+          track_progress: true
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
@@ -391,21 +377,8 @@ jobs:
             - Summary of pages tested
             - Any errors found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
-          settings: |
-            {
-              "permissions": {
-                "allow": [
-                  "Bash(agent-browser *)",
-                  "Bash(curl *)",
-                  "Write(qa-report.md)",
-                  "Read",
-                  "Glob",
-                  "Grep"
-                ]
-              }
-            }
           claude_args: |
-            --allowedTools "${{ env.CLAUDE_QA_ALLOWED_TOOLS }}"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
             --max-turns 15
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -496,6 +469,148 @@ jobs:
 
             core.setOutput('qa_state', state);
 
+      - name: Write structured output to file
+        if: always()
+        shell: bash
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
+        run: |
+          set -euo pipefail
+          if [ -n "${STRUCTURED_OUTPUT:-}" ]; then
+            printf '%s' "$STRUCTURED_OUTPUT" > qa-structured-output.json
+          fi
+
+      - name: Render QA summary to step summary
+        if: always()
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
+          QA_FOCUS: ${{ steps.qa-mode.outputs.focus }}
+          PR_NUMBER: ${{ steps.pr-context.outputs.pr_number }}
+          CONTRACT_VALID: ${{ steps.pr-context.outputs.contract_valid || 'true' }}
+          MISSING_SECTIONS: ${{ steps.pr-context.outputs.missing_sections || 'None' }}
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = process.env.STRUCTURED_OUTPUT;
+            const focus = process.env.QA_FOCUS || 'unknown';
+            const prNumber = process.env.PR_NUMBER || '';
+            const contractValid = process.env.CONTRACT_VALID === 'true';
+            const missingSections = process.env.MISSING_SECTIONS || 'None';
+
+            const lines = [];
+            lines.push(`# Claude QA (Browser) — \`${focus}\``);
+            if (prNumber) lines.push(`**PR**: #${prNumber}`);
+            if (!contractValid) lines.push(`> ⚠️ PR contract incomplete — missing: ${missingSections}`);
+            lines.push('');
+
+            if (!raw || !raw.trim()) {
+              lines.push('_No structured output captured._ Check the sticky PR comment or `qa-report.md` artifact.');
+              await core.summary.addRaw(lines.join('\n')).write();
+              return;
+            }
+
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch (err) {
+              lines.push(`_Could not parse structured_output as JSON: ${err.message}_`);
+              lines.push('```');
+              lines.push(raw.slice(0, 2000));
+              lines.push('```');
+              await core.summary.addRaw(lines.join('\n')).write();
+              return;
+            }
+
+            const verdictBadge = {
+              HEALTHY: '✅ HEALTHY',
+              MINOR_ISSUES: '⚠️ MINOR ISSUES',
+              CRITICAL_BUGS: '❌ CRITICAL BUGS',
+            }[data.verdict] || data.verdict || 'UNKNOWN';
+            lines.push(`## Verdict: ${verdictBadge}`);
+            if (data.summary) {
+              lines.push('');
+              lines.push(data.summary);
+            }
+            lines.push('');
+
+            const m = data.metrics || {};
+            lines.push('## Metrics');
+            lines.push('');
+            lines.push('| Total | Passed | Failed | Critical | Major | Minor |');
+            lines.push('|------:|-------:|-------:|---------:|------:|------:|');
+            lines.push(`| ${m.total_tests ?? 0} | ${m.passed ?? 0} | ${m.failed ?? 0} | ${m.critical_bugs ?? 0} | ${m.major_bugs ?? 0} | ${m.minor_bugs ?? 0} |`);
+            lines.push('');
+
+            const bugs = Array.isArray(data.bugs) ? data.bugs : [];
+            if (bugs.length) {
+              const sevOrder = { critical: 0, major: 1, minor: 2, suggestion: 3 };
+              const sevIcon = { critical: '🔴', major: '🟠', minor: '🟡', suggestion: '💡' };
+              const sorted = [...bugs].sort((a, b) => (sevOrder[a.severity] ?? 9) - (sevOrder[b.severity] ?? 9));
+              lines.push('## Bugs');
+              lines.push('');
+              lines.push('| # | Severity | Title | What happened |');
+              lines.push('|---|----------|-------|---------------|');
+              for (const bug of sorted) {
+                const icon = sevIcon[bug.severity] || '•';
+                const title = (bug.title || '').replace(/\|/g, '\\|');
+                const desc = (bug.description || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 200);
+                lines.push(`| ${bug.id ?? ''} | ${icon} ${bug.severity || ''} | ${title} | ${desc} |`);
+              }
+              lines.push('');
+            }
+
+            const tests = Array.isArray(data.tests) ? data.tests : [];
+            if (tests.length) {
+              const resultIcon = { pass: '✅', fail: '❌', skip: '⏭️' };
+              lines.push('<details><summary>Tests performed</summary>');
+              lines.push('');
+              lines.push('| # | Area | Result | Name | Details |');
+              lines.push('|---|------|--------|------|---------|');
+              tests.forEach((t, i) => {
+                const icon = resultIcon[t.result] || '•';
+                const name = (t.name || '').replace(/\|/g, '\\|');
+                const details = (t.details || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 160);
+                lines.push(`| ${i + 1} | ${t.area || ''} | ${icon} | ${name} | ${details} |`);
+              });
+              lines.push('');
+              lines.push('</details>');
+              lines.push('');
+            }
+
+            const consoleErrors = Array.isArray(data.console_errors) ? data.console_errors : [];
+            if (consoleErrors.length) {
+              lines.push(`<details><summary>Console errors (${consoleErrors.length})</summary>`);
+              lines.push('');
+              lines.push('```');
+              for (const err of consoleErrors.slice(0, 50)) lines.push(String(err));
+              lines.push('```');
+              lines.push('');
+              lines.push('</details>');
+              lines.push('');
+            }
+
+            lines.push('---');
+            lines.push('Full report: see `qa-report.md` in run artifacts.');
+
+            await core.summary.addRaw(lines.join('\n')).write();
+
+      - name: Capture failure artifacts
+        if: failure() || steps.qa-status.outputs.qa_state == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-debug
+          if [ -n "${DEV_PID:-}" ] && [ -f "/tmp/dev-server.log" ]; then
+            cp /tmp/dev-server.log qa-debug/dev-server.log || true
+          fi
+          if [ -d "$HOME/.agent-browser/screenshots" ]; then
+            cp -r "$HOME/.agent-browser/screenshots" qa-debug/screenshots || true
+          fi
+          if [ -d "./screenshots" ]; then
+            cp -r ./screenshots qa-debug/screenshots-local || true
+          fi
+
       - name: Upload QA artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -503,6 +618,8 @@ jobs:
           name: qa-browser-artifacts-${{ github.run_id }}
           path: |
             qa-report.md
+            qa-structured-output.json
+            qa-debug/
           if-no-files-found: ignore
 
       - name: Remove trigger label
