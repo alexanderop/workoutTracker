@@ -1,3 +1,12 @@
+# [1.28.0](https://github.com/alexanderop/workoutTracker/compare/v1.27.0...v1.28.0) (2026-04-12)
+
+
+### Features
+
+* **docs:** add CLAUDE, workout block model, and Vitest troubleshooting documentation ([376055c](https://github.com/alexanderop/workoutTracker/commit/376055c1b648167829aeab158df6227cd90fe85b))
+
+
+
 # [1.27.0](https://github.com/alexanderop/workoutTracker/compare/v1.26.2...v1.27.0) (2026-04-12)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **ci:** add PR review and CI auto-fix workflows, fix claude permissions ([e095921](https://github.com/alexanderop/workoutTracker/commit/e095921503accccd75babef7f4a65ea07df8c7f5))
-
-
-
-## [1.25.4](https://github.com/alexanderop/workoutTracker/compare/v1.25.3...v1.25.4) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** use settings input + append-system-prompt for QA workflow ([1f04d14](https://github.com/alexanderop/workoutTracker/commit/1f04d149d930b1ba70655835017b5699d617a320)), closes [#1063](https://github.com/alexanderop/workoutTracker/issues/1063) [#533](https://github.com/alexanderop/workoutTracker/issues/533)
 
 
 
