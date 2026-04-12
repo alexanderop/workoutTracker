@@ -1,0 +1,36 @@
+name: Setup Node Dependencies
+description: Setup pnpm, Node.js, restore node_modules cache, and install dependencies when needed
+
+inputs:
+  node-version:
+    description: Node.js version
+    required: true
+  install-command:
+    description: Command used to install dependencies when the cache is missing
+    required: false
+    default: pnpm install --frozen-lockfile --prefer-offline
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Restore node_modules
+      id: cache-restore
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install dependencies
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        ${{ inputs.install-command }}

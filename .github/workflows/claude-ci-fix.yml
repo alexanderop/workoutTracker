@@ -3,15 +3,13 @@ name: Claude Auto-Fix CI
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     types: [completed]
 
-permissions:
-  contents: write
-  pull-requests: write
-  actions: read
-  issues: write
-  id-token: write
+permissions: {}
+
+env:
+  CLAUDE_MODEL: claude-sonnet-4-6
 
 jobs:
   auto-fix:
@@ -26,41 +24,35 @@ jobs:
       group: claude-ci-fix-${{ github.event.workflow_run.head_branch }}
       cancel-in-progress: true
 
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      issues: write
+      id-token: write
+
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup git identity
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.email "41898282+claude[bot]@users.noreply.github.com"
           git config user.name "claude[bot]"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6.3.0
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-node-deps
         with:
-          node-version: 22
-
-      - name: Restore node_modules
-        uses: actions/cache/restore@v5.0.4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies (cache miss)
-        run: |
-          if [ ! -d "node_modules" ]; then
-            pnpm install --frozen-lockfile --prefer-offline
-          fi
+          node-version: '22'
 
       - name: Run Claude Auto-Fix
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
@@ -79,10 +71,10 @@ jobs:
 
             Important:
             - Fix the actual bug, don't suppress errors or weaken checks
-            - Keep changes minimal — only fix what's broken
+            - Keep changes minimal; only fix what's broken
             - Run `pnpm type-check`, `pnpm lint`, and `pnpm test` to verify
             - Commit with conventional commit format: fix(scope): description
           claude_args: |
             --max-turns 15
-            --model claude-sonnet-4-6
+            --model ${{ env.CLAUDE_MODEL }}
             --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"

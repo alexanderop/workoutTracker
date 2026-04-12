@@ -1,0 +1,52 @@
+name: Start Dev Server
+description: Start the Vite dev server in the background and wait until it is ready
+
+inputs:
+  command:
+    description: Command used to start the development server
+    required: false
+    default: pnpm dev --host 0.0.0.0 --port 5173
+  url:
+    description: Health-check URL
+    required: false
+    default: http://localhost:5173
+  ready-pattern:
+    description: Pattern expected in the health-check response
+    required: false
+    default: (id="app"|<title>)
+  timeout-seconds:
+    description: Maximum wait time before failing
+    required: false
+    default: '90'
+
+runs:
+  using: composite
+  steps:
+    - name: Start dev server
+      shell: bash
+      run: |
+        set -euo pipefail
+        ${{ inputs.command }} &
+        DEV_PID=$!
+        echo "DEV_PID=$DEV_PID" >> "$GITHUB_ENV"
+
+        sleep 2
+        if ! kill -0 "$DEV_PID" 2>/dev/null; then
+          echo "Dev server failed to start"
+          exit 1
+        fi
+
+        for ((i = 1; i <= ${{ inputs.timeout-seconds }}; i++)); do
+          if curl -sf "${{ inputs.url }}" | grep -qE '${{ inputs.ready-pattern }}'; then
+            echo "Dev server ready"
+            exit 0
+          fi
+          if ! kill -0 "$DEV_PID" 2>/dev/null; then
+            echo "Dev server process died"
+            exit 1
+          fi
+          sleep 1
+        done
+
+        echo "Dev server failed to become ready"
+        exit 1

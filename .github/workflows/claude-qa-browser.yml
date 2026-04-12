@@ -1,6 +1,3 @@
-# Claude QA with agent-browser
-# Uses agent-browser (vercel-labs/agent-browser) for browser-based QA testing
-
 name: Claude QA (Browser)
 
 on:
@@ -25,6 +22,8 @@ on:
     types: [labeled]
   issue_comment:
     types: [created]
+
+permissions: {}
 
 jobs:
   qa-browser:
@@ -55,12 +54,15 @@ jobs:
 
     env:
       NODE_VERSION: '22'
+      CLAUDE_MODEL: claude-sonnet-4-6
+      APP_URL: http://localhost:5173
+      CLAUDE_QA_ALLOWED_TOOLS: Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep
 
     steps:
       - name: Get PR metadata for issue_comment
         if: github.event_name == 'issue_comment'
         id: pr-metadata
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -82,7 +84,7 @@ jobs:
           exit 1
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.sha }}
 
@@ -91,34 +93,34 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install agent-browser
-        shell: bash
-        run: |
-          npm install -g agent-browser
-          agent-browser install
+      - name: Setup agent-browser
+        uses: ./.github/actions/setup-agent-browser
 
       - name: Determine QA mode
         id: qa-mode
         shell: bash
+        env:
+          COMMENT_BODY_INPUT: ${{ github.event.comment.body || '' }}
         run: |
+          set -euo pipefail
           FOCUS="${{ github.event.inputs.focus || 'general' }}"
           if [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
             FOCUS="verify"
           elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
-            COMMENT_BODY="${{ github.event.comment.body }}"
+            COMMENT_BODY="${COMMENT_BODY_INPUT}"
             if [[ "$COMMENT_BODY" == *"@claude test"* ]]; then
               FOCUS="test"
             else
               FOCUS="verify"
             fi
           fi
-          echo "focus=$FOCUS" >> $GITHUB_OUTPUT
+          echo "focus=$FOCUS" >> "$GITHUB_OUTPUT"
           echo "QA focus: $FOCUS"
 
       - name: Get PR context
         if: steps.qa-mode.outputs.focus == 'verify'
         id: pr-context
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
           PR_NUMBER_COMMENT: ${{ steps.pr-metadata.outputs.number }}
@@ -169,76 +171,24 @@ jobs:
             core.setOutput('pr_body', prBody || '');
             core.setOutput('linked_issues', linkedIssues);
 
-      - name: Create QA test fixtures
-        shell: bash
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
-
-          mkdir -p .qa-sandbox
-
-          convert -size 100x100 gradient:blue-cyan .qa-sandbox/valid-small.png
-          convert -size 500x500 plasma:fractal .qa-sandbox/valid-medium.png
-          convert -size 1000x1000 plasma:fractal .qa-sandbox/valid-large.png
-
-          # Size boundaries as valid PNG files.
-          convert -size 512x512 plasma:fractal \
-            -define png:compression-level=0 \
-            PNG32:.qa-sandbox/exactly-1mb.png
-          convert -size 530x530 plasma:fractal \
-            -define png:compression-level=0 \
-            PNG32:.qa-sandbox/over-limit-1.1mb.png
-          convert -size 1200x1200 plasma:fractal \
-            -define png:compression-level=0 \
-            PNG32:.qa-sandbox/way-over-5mb.png
-
-          # Content-validation edge cases.
-          touch .qa-sandbox/empty-0bytes.png
-          head -c 1024 /dev/urandom > .qa-sandbox/corrupted.png
-          convert -size 50x50 gradient:yellow-orange PNG:.qa-sandbox/wrong-extension.jpg
-          convert -size 200x200 plasma:fractal .qa-sandbox/valid.jpg
-          echo '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="blue"/></svg>' > .qa-sandbox/test.svg
-          echo "This is not an image" > .qa-sandbox/fake-image.png
-
-          echo "Created QA test fixtures:"
-          ls -lah .qa-sandbox/
-          file .qa-sandbox/exactly-1mb.png .qa-sandbox/over-limit-1.1mb.png .qa-sandbox/way-over-5mb.png .qa-sandbox/wrong-extension.jpg
+      - name: Create QA fixtures
+        uses: ./.github/actions/create-qa-fixtures
 
       - name: Start development server
-        shell: bash
-        run: |
-          pnpm dev --host 0.0.0.0 --port 5173 &
-          DEV_PID=$!
-          echo "DEV_PID=$DEV_PID" >> $GITHUB_ENV
-
-          sleep 2
-          if ! kill -0 "$DEV_PID" 2>/dev/null; then
-            echo "Dev server failed to start"
-            exit 1
-          fi
-
-          for i in {1..90}; do
-            if curl -sf http://localhost:5173 | grep -qE '(id="app"|<title>)'; then
-              echo "Dev server ready!"
-              exit 0
-            fi
-            if ! kill -0 "$DEV_PID" 2>/dev/null; then
-              echo "Dev server process died"
-              exit 1
-            fi
-            sleep 1
-          done
-          echo "Dev server failed to start properly"
-          exit 1
+        uses: ./.github/actions/start-dev-server
+        with:
+          url: ${{ env.APP_URL }}
 
       - name: Load QA system prompt
         id: load-system-prompt
         shell: bash
         run: |
+          set -euo pipefail
           {
             echo 'system_prompt<<SYSTEM_EOF'
             cat .claude/prompts/qa-system-prompt.md
             echo 'SYSTEM_EOF'
-          } >> $GITHUB_OUTPUT
+          } >> "$GITHUB_OUTPUT"
 
       - name: Load QA prompt
         id: load-prompt
@@ -246,7 +196,11 @@ jobs:
         env:
           PR_BODY_RAW: ${{ steps.pr-context.outputs.pr_body }}
           LINKED_ISSUES_RAW: ${{ steps.pr-context.outputs.linked_issues }}
+          APP_URL_VALUE: ${{ env.APP_URL }}
+          PR_NUMBER_VALUE: ${{ steps.pr-context.outputs.pr_number }}
+          PR_TITLE_VALUE: ${{ steps.pr-context.outputs.pr_title }}
         run: |
+          set -euo pipefail
           TODAY=$(date +%Y-%m-%d)
           FOCUS="${{ steps.qa-mode.outputs.focus }}"
 
@@ -254,7 +208,7 @@ jobs:
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=100" >> $GITHUB_OUTPUT
+            echo "max_turns=100" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
           fi
@@ -263,13 +217,13 @@ jobs:
             echo 'prompt<<PROMPT_EOF'
 
             TASK=$(cat "$PROMPT_FILE")
-            TASK="${TASK//\{\{APP_URL\}\}/http://localhost:5173}"
+            TASK="${TASK//\{\{APP_URL\}\}/$APP_URL_VALUE}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
 
             # For verify mode, inject PR context
             if [ "$FOCUS" = "verify" ]; then
-              TASK="${TASK//\{\{PR_NUMBER\}\}/${{ steps.pr-context.outputs.pr_number }}}"
-              TASK="${TASK//\{\{PR_TITLE\}\}/${{ steps.pr-context.outputs.pr_title }}}"
+              TASK="${TASK//\{\{PR_NUMBER\}\}/$PR_NUMBER_VALUE}"
+              TASK="${TASK//\{\{PR_TITLE\}\}/$PR_TITLE_VALUE}"
               TASK="${TASK//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
               TASK="${TASK//\{\{LINKED_ISSUES\}\}/$LINKED_ISSUES_RAW}"
             fi
@@ -277,19 +231,20 @@ jobs:
             echo "$TASK"
 
             echo 'PROMPT_EOF'
-          } >> $GITHUB_OUTPUT
+          } >> "$GITHUB_OUTPUT"
 
       - name: Load QA schema
         id: load-schema
         shell: bash
         run: |
+          set -euo pipefail
           SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
-          echo "schema=$SCHEMA" >> $GITHUB_OUTPUT
+          echo "schema=$SCHEMA" >> "$GITHUB_OUTPUT"
 
       - name: Run Claude QA (Browser mode)
         id: claude-qa
         continue-on-error: true
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
@@ -313,9 +268,9 @@ jobs:
               }
             }
           claude_args: |
-            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
+            --allowedTools "${{ env.CLAUDE_QA_ALLOWED_TOOLS }}"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
-            --model claude-sonnet-4-6
+            --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
@@ -324,17 +279,18 @@ jobs:
         if: always()
         shell: bash
         run: |
+          set -euo pipefail
           if [ -f "qa-report.md" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated
         id: claude-qa-retry
         if: steps.check-report.outputs.exists == 'false'
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
@@ -345,7 +301,7 @@ jobs:
             IMPORTANT: The previous QA run did not generate a report.
 
             Do a quick navigation smoke test and write qa-report.md immediately:
-            1. Open http://localhost:5173 with agent-browser
+            1. Open ${{ env.APP_URL }} with agent-browser
             2. Dismiss onboarding (click "Skip to App")
             3. Check 3-4 main pages load correctly
             4. Write the report with what you observed
@@ -368,9 +324,9 @@ jobs:
               }
             }
           claude_args: |
-            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
+            --allowedTools "${{ env.CLAUDE_QA_ALLOWED_TOOLS }}"
             --max-turns 15
-            --model claude-sonnet-4-6
+            --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
@@ -379,16 +335,17 @@ jobs:
         if: steps.check-report.outputs.exists == 'false'
         shell: bash
         run: |
+          set -euo pipefail
           if [ -f "qa-report.md" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set commit status
         id: qa-status
         if: always()
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
         with:
@@ -452,7 +409,7 @@ jobs:
 
       - name: Upload QA artifacts
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: qa-browser-artifacts-${{ github.run_id }}
           path: |
@@ -463,7 +420,7 @@ jobs:
         if: |
           github.event_name == 'pull_request' &&
           github.event.label.name == 'qa-verify'
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           LABEL_NAME: ${{ github.event.label.name }}
         with:
@@ -483,12 +440,14 @@ jobs:
         if: always()
         shell: bash
         run: |
-          kill $DEV_PID 2>/dev/null || true
+          set -euo pipefail
+          kill "${DEV_PID:-}" 2>/dev/null || true
           agent-browser close 2>/dev/null || true
 
       - name: Fail job if QA found issues
         if: steps.qa-status.outputs.qa_state == 'failure'
         shell: bash
         run: |
+          set -euo pipefail
           echo "❌ QA found critical issues - failing the pipeline"
           exit 1

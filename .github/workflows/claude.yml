@@ -10,6 +10,11 @@ on:
   pull_request_review:
     types: [submitted]
 
+permissions: {}
+
+env:
+  CLAUDE_MODEL: claude-sonnet-4-6
+
 jobs:
   claude:
     if: |
@@ -40,21 +45,20 @@ jobs:
       issues: write
       id-token: write
       actions: read
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
           track_progress: true
-
           additional_permissions: |
             actions: read
-
-          claude_args: "--max-turns 20 --model claude-sonnet-4-6"
+          claude_args: '--max-turns 20 --model ${{ env.CLAUDE_MODEL }}'
