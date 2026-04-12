@@ -59,7 +59,7 @@ jobs:
 
     env:
       NODE_VERSION: '22'
-      CLAUDE_MODEL: claude-sonnet-4-6
+      CLAUDE_MODEL: claude-opus-4-6
       APP_URL: http://localhost:5173
 
     steps:
