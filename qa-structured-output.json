@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 628000,
+  "duration_api_ms": 393371,
+  "num_turns": 70,
+  "result": "```json\n{\n  \"verdict\": \"MINOR_ISSUES\",\n  \"summary\": \"Auto-start rest timer and reload-resume both work: rest countdown appears after logging a strength set, reload restores the same workout with logged sets preserved, finishing clears the resume affordance, and AMRAP blocks don't inherit strength-rest behavior. Two minor bugs found (rest timer not exposed to accessibility tree; resume dialog says 'with 0 blocks' on a 1-block template). AC3 (per-block configurable rest seconds) is SKIP — no such UI affordance exists anywhere (template editor, active workout, settings), a fixture contract gap not a product regression.\",\n  \"tests\": [\n    {\"name\": \"Start workout → strength block view with set inputs (AC1)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Bench Press block rendered with spinbuttons 'Weight/Reps/RIR for set 1..3' and 'Mark set N complete' buttons\"},\n    {\"name\": \"Auto rest countdown after logging a set (AC2)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"After Mark set 1 complete + Complete Set, footer contained 'Rest 0:07' counting down (verified via eval innerText)\"},\n    {\"name\": \"Rest duration matches configured seconds (AC3)\", \"area\": \"core_features\", \"result\": \"skip\", \"details\": \"Affordance not discoverable — no rest-seconds input in template editor, Edit Sets & Reps dialog (only Target Reps + Number of Sets), workout options menu, or Settings. Fixture contract gap.\"},\n    {\"name\": \"Reload mid-workout resumes state (AC4)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Reloaded after logging 2 sets → Resume Workout? dialog → reopened on same Strength block, both sets still logged (# cell empty = checkmark)\"},\n    {\"name\": \"Resume affordance on Workouts view (AC5)\", \"area\": \"navigation\", \"result\": \"pass\", \"details\": \"Global 'Return to active workout' button visible on Workouts view while workout in progress; tapping it reopened the same workout instance. Implemented as a global footer, not a Workouts-local banner.\"},\n    {\"name\": \"Finishing clears Resume affordance (AC6)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"After Finish Workout → summary → Workouts view: no 'Return to active workout' button present\"},\n    {\"name\": \"AMRAP regression — no rest injection (AC7)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"AMRAP block rendered 'AMRAP 10:00 / 0 Rounds / +1 / Pause'; document.body.innerText.match(/rest/i) returned null\"},\n    {\"name\": \"Resume reopens same workout id (risk: route guards)\", \"area\": \"navigation\", \"result\": \"pass\", \"details\": \"Resumed workout shows same Bench Press state; no duplicate workout created\"},\n    {\"name\": \"Rest timer accessibility exposure\", \"area\": \"accessibility\", \"result\": \"fail\", \"details\": \"Rest timer renders as plain span+text in footer; no role=timer, no aria-label, no aria-live. Not present in accessibility snapshot tree — only reachable via eval.\"},\n    {\"name\": \"Set-logged state accessible name\", \"area\": \"accessibility\", \"result\": \"fail\", \"details\": \"After marking set 1 complete, button accessible name stays 'Mark set 1 complete'; no aria-pressed or updated name — SR users can't tell it's logged.\"},\n    {\"name\": \"JS console errors\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"agent-browser errors returned empty\"}\n  ],\n  \"bugs\": [\n    {\n      \"title\": \"Rest timer not exposed to accessibility tree\",\n      \"severity\": \"minor\",\n      \"description\": \"Auto-started rest countdown renders as <span>Rest</span> + text '0:07' inside a footer div with no role=timer, aria-label, or aria-live. Screen-reader users receive no announcement that rest started or its remaining time. The Workout Duration timer at the top IS exposed correctly (role=timer, name 'Workout duration') — apply the same pattern here.\",\n      \"steps_to_reproduce\": [\n        \"1. Start a workout from any template with a strength block\",\n        \"2. Fill weight + reps + RIR for set 1\",\n        \"3. Click 'Mark set 1 complete' then 'Complete Set'\",\n        \"4. Inspect the footer region / run a11y snapshot\"\n      ],\n      \"expected\": \"Rest countdown exposed with role=timer, aria-label='Rest timer', aria-live=polite\",\n      \"actual\": \"No accessible name or role; invisible to assistive tech. snapshot -i does not list the rest element; only raw DOM eval finds it.\"\n    },\n    {\n      \"title\": \"Resume dialog says 'with 0 blocks' for a template with 1 block\",\n      \"severity\": \"minor\",\n      \"description\": \"After reloading mid-workout, the Resume Workout? dialog copy reads '...with 0 blocks' even though the in-progress workout was built from a template with exactly 1 Bench Press strength block. The resume itself works fine; only the count in the copy is wrong.\",\n      \"steps_to_reproduce\": [\n        \"1. Create a template with exactly 1 strength block\",\n        \"2. Start a workout from it and log at least 1 set\",\n        \"3. Reload the browser\",\n        \"4. Observe the Resume Workout? dialog copy\"\n      ],\n      \"expected\": \"with 1 block\",\n      \"actual\": \"with 0 blocks\"\n    },\n    {\n      \"title\": \"Resume is a global footer button, not a Workouts-view banner\",\n      \"severity\": \"minor\",\n      \"description\": \"PR body describes 'A small Resume banner appears on the Workouts view'. What is rendered is a global 'Return to active workout' button pinned above the bottom navigation, visible on every route (Workouts, Settings, Home). Functionally equivalent — tapping it reopens the active workout — but the placement/semantics differ from the spec wording. Classifying minor because AC5 is still satisfied.\",\n      \"steps_to_reproduce\": [\n        \"1. Start any workout\",\n        \"2. Navigate to Workouts / Settings / Exercises — button appears globally\"\n      ],\n      \"expected\": \"A page-local banner visible specifically on the Workouts view\",\n      \"actual\": \"Global footer button labeled 'Return to active workout' persistent across all routes\"\n    },\n    {\n      \"title\": \"Set row status does not expose 'logged' state via ARIA\",\n      \"severity\": \"minor\",\n      \"description\": \"After a set is marked complete, the '#' column cell becomes empty (presumably a visual checkmark) and the button accessible name remains 'Mark set N complete'. A screen-reader user cannot tell set 1 has already been logged without additional aria-pressed or a name update.\",\n      \"steps_to_reproduce\": [\n        \"1. Start workout, fill set 1, click Mark set 1 complete\",\n        \"2. Read set 1's row name and its button name via a11y snapshot\"\n      ],\n      \"expected\": \"Button name or aria-pressed reflects logged state (e.g. 'Set 1 logged — tap to undo' or aria-pressed=true)\",\n      \"actual\": \"Button name unchanged; only the '#' cell empties visually\"\n    }\n  ],\n  \"console_errors\": [],\n  \"metrics\": {\n    \"total_tests\": 11,\n    \"passed\": 8,\n    \"failed\": 2,\n    \"skipped\": 1,\n    \"critical_bugs\": 0,\n    \"major_bugs\": 0,\n    \"minor_bugs\": 4,\n    \"suggestion_bugs\": 0\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "6f0a0670-7e85-41b3-89f7-10a46f249406",
+  "total_cost_usd": 3.6696952499999993,
+  "usage": {
+    "input_tokens": 75,
+    "cache_creation_input_tokens": 91619,
+    "cache_read_input_tokens": 5244903,
+    "output_tokens": 18970,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 91619,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [
+      {
+        "input_tokens": 1,
+        "output_tokens": 2588,
+        "cache_read_input_tokens": 110256,
+        "cache_creation_input_tokens": 2619,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2619
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-4-6": {
+      "inputTokens": 75,
+      "outputTokens": 18970,
+      "cacheReadInputTokens": 5244903,
+      "cacheCreationInputTokens": 91619,
+      "webSearchRequests": 0,
+      "costUSD": 3.6696952499999993,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "ed52b99c-00c6-403a-9fbf-939a0c3c5445"
+}

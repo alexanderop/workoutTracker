@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 636056,
+  "duration_api_ms": 395731,
+  "num_turns": 72,
+  "result": "```json\n{\n  \"verdict\": \"MINOR_ISSUES\",\n  \"summary\": \"Auto-rest after logging a strength set, mid-workout reload resume, the Workouts-view resume affordance, finish clearing the resume, and AMRAP regression all verified in the browser. One AC (block-configured rest duration) could not be verified because no per-block rest-duration configuration UI was discoverable from template edit or the in-workout edit dialog.\",\n  \"tests\": [\n    {\"name\": \"Dismiss onboarding and reach home\", \"area\": \"navigation\", \"result\": \"pass\", \"details\": \"Onboarding carousel dismissed via Skip; landed on Home with Start New Workout, bottom nav visible.\"},\n    {\"name\": \"Start workout from existing template (goku)\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Template opened, Start Workout navigated to /workout/active with Goblet Squat (Strength) Block 1 of 6 and set input rows visible.\"},\n    {\"name\": \"Log set 1 via Mark-set-complete\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"After setting KG=20/REPS=12/RIR=1 and clicking Mark set 1 complete (via role locator), row 1 turned green, set 2 became active, and REST 0:04 countdown rendered above the bottom bar.\"},\n    {\"name\": \"Auto-rest countdown appears without separate tap\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"No 'start rest' button was tapped; the REST timer appeared on its own immediately after the set was logged.\"},\n    {\"name\": \"Rest duration matches block-configured value\", \"area\": \"core_features\", \"result\": \"skip\", \"details\": \"No UI exposed to set a per-block rest duration — template block edit dialog only has Target Reps / Number of Sets; no rest field on the active-workout block either. Cannot verify configured value via UI.\"},\n    {\"name\": \"Complete block 1 advances to block 2\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Logging all 3 sets of Goblet Squat auto-advanced to Block 2 of 6 (Military Press).\"},\n    {\"name\": \"Reload mid-workout shows Resume dialog\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Reloaded at /workout/active, was presented with Discard / Resume Workout buttons.\"},\n    {\"name\": \"Resume returns to same block and same set index\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Resumed into Block 2 of 6 Military Press, set 1 active, workout duration continued from ~3:34 to 4:04 (not reset).\"},\n    {\"name\": \"Previously logged sets persist across reload\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Navigated Previous block — Goblet Squat still showed all 3 sets logged (20×12, 20×12, 20×12) with green checkmarks.\"},\n    {\"name\": \"Workouts view shows Resume affordance\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"With workout in progress, Workouts tab showed a purple floating pill 'Return to active workout' displaying elapsed time (4:33).\"},\n    {\"name\": \"Resume affordance reopens same workout\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Tapping the floating pill navigated to /workout/active on the same in-progress workout (same block/set, same duration, not a new blank one).\"},\n    {\"name\": \"Finishing workout clears Resume affordance\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Workout options → End Workout → Finish Workout landed on summary screen; returning to Workouts tab, no 'Return to active workout' pill present.\"},\n    {\"name\": \"AMRAP block still renders its own timer UI\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"Created AMRAP 10-min Burpees template, started it: AMRAP circular timer (10:00, 0 ROUNDS, Burpees, +1, Start) rendered normally with no strength-style rest countdown injected.\"},\n    {\"name\": \"Console errors during full flow\", \"area\": \"core_features\", \"result\": \"pass\", \"details\": \"No JS errors. Only WakeLock permission warnings and a Dexie reconnect warning on reload.\"},\n    {\"name\": \"Mobile viewport sanity\", \"area\": \"mobile\", \"result\": \"pass\", \"details\": \"Default viewport rendered as a phone-sized layout; bottom nav, floating resume pill, set table, and AMRAP timer all rendered correctly. Had to temporarily widen viewport to click Finish Workout because Vue devtools overlay intercepted pointer events at small viewport — test harness issue, not product.\"}\n  ],\n  \"bugs\": [\n    {\n      \"title\": \"Per-block rest duration has no discoverable configuration UI\",\n      \"severity\": \"minor\",\n      \"description\": \"AC3 says users should be able to configure a non-default rest (e.g. 17s / 23s) on a strength block and observe the initial countdown match. I could not find any rest-seconds control in the template editor, the block Edit Sets & Reps dialog, or the in-workout view. Auto-rest itself works, but its duration cannot be manually verified against a user-set value via the UI.\",\n      \"steps_to_reproduce\": [\n        \"Workouts → open goku template\",\n        \"Click Edit on any strength exercise (e.g. Goblet Squat)\",\n        \"Inspect the Edit Sets & Reps dialog — only Target Reps and Number of Sets are exposed\",\n        \"Start the workout and inspect the active block view — no rest config control either\"\n      ],\n      \"expected\": \"A field/control to configure rest seconds per strength block, so the countdown can be verified to match (17s, 23s, etc.).\",\n      \"actual\": \"Only Target Reps and Number of Sets are user-configurable; rest duration is not exposed anywhere in the visible UI.\"\n    },\n    {\n      \"title\": \"Set 'logged' state not exposed to assistive tech\",\n      \"severity\": \"minor\",\n      \"description\": \"Every row in the strength set table exposes the same accessible name 'Mark set N complete' regardless of whether the set is already logged. The visual state changes (grey/green checkmark), but the accessibility tree does not reflect logged vs unlogged, and the button lacks an aria-pressed/aria-checked state.\",\n      \"steps_to_reproduce\": [\n        \"Start a strength workout and log set 1\",\n        \"Run an accessibility snapshot of the set table\",\n        \"Compare logged row 1 vs unlogged row 2\"\n      ],\n      \"expected\": \"Logged set exposes a different accessible name or an aria-pressed=true / aria-checked=true attribute so screen-reader users can tell it is logged.\",\n      \"actual\": \"Both rows expose identical 'Mark set N complete' label with no state attribute.\"\n    }\n  ],\n  \"console_errors\": [],\n  \"metrics\": {\n    \"total_tests\": 15,\n    \"passed\": 13,\n    \"failed\": 0,\n    \"skipped\": 1,\n    \"critical_bugs\": 0,\n    \"major_bugs\": 0,\n    \"minor_bugs\": 2,\n    \"suggestions\": 0\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "649d872f-bfdb-4680-8b02-f146f29c3fcd",
+  "total_cost_usd": 3.1281774999999987,
+  "usage": {
+    "input_tokens": 81,
+    "cache_creation_input_tokens": 69644,
+    "cache_read_input_tokens": 4409943,
+    "output_tokens": 18050,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 69644,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [
+      {
+        "input_tokens": 1,
+        "output_tokens": 2384,
+        "cache_read_input_tokens": 87450,
+        "cache_creation_input_tokens": 2171,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2171
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-4-6": {
+      "inputTokens": 82,
+      "outputTokens": 18125,
+      "cacheReadInputTokens": 4475735,
+      "cacheCreationInputTokens": 69884,
+      "webSearchRequests": 0,
+      "costUSD": 3.1281774999999987,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "c8bc632a-ec33-4307-b428-d965bb862e92"
+}

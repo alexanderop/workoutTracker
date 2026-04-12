@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 81952,
+  "duration_api_ms": 66118,
+  "num_turns": 13,
+  "result": "```json\n{\n  \"summary\": \"Verified all 5 acceptance criteria for the Skip to App onboarding shortcut: button visible on welcome screen without scrolling, dismisses onboarding to main view, bottom nav immediately usable, dismissal persists across reload, and the original step-by-step flow (Next/Back) still advances. Also verified the Settings↔Workouts regression path with no JS console errors, and confirmed Skip button is tappable on mobile viewport (375x667). PR contract was complete — high confidence. Minor wording note: skip lands on Home dashboard (/) rather than the literal 'workouts view' named in the PR, but this is functionally the main app and not a bug.\",\n  \"tests\": [\n    {\"name\": \"Fresh install shows onboarding after clearing storage\", \"result\": \"pass\"},\n    {\"name\": \"AC1: Skip to App visible on first screen without scrolling\", \"result\": \"pass\"},\n    {\"name\": \"AC2: Tap Skip to App dismisses onboarding and lands on main view\", \"result\": \"pass\"},\n    {\"name\": \"AC3: Bottom nav (Home/Workouts/Exercises/Weight/Settings) reachable immediately after skip\", \"result\": \"pass\"},\n    {\"name\": \"AC4: Reload after skipping does not re-show onboarding (persistence)\", \"result\": \"pass\"},\n    {\"name\": \"AC5: Original step-by-step flow still works — Next advances to step 2 with Back button\", \"result\": \"pass\"},\n    {\"name\": \"Regression: Settings → Workouts navigation, no console JS errors\", \"result\": \"pass\"},\n    {\"name\": \"Mobile viewport 375x667 — Skip to App button visible and tappable\", \"result\": \"pass\"}\n  ],\n  \"bugs\": []\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "4ea061ef-d1ca-46d2-8f98-23ff320a6c5a",
+  "total_cost_usd": 0.49080475000000007,
+  "usage": {
+    "input_tokens": 18,
+    "cache_creation_input_tokens": 22751,
+    "cache_read_input_tokens": 512542,
+    "output_tokens": 3690,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 22751,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [
+      {
+        "input_tokens": 1,
+        "output_tokens": 589,
+        "cache_read_input_tokens": 43642,
+        "cache_creation_input_tokens": 1038,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 1038
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-4-6": {
+      "inputTokens": 18,
+      "outputTokens": 3690,
+      "cacheReadInputTokens": 512542,
+      "cacheCreationInputTokens": 22751,
+      "webSearchRequests": 0,
+      "costUSD": 0.49080475000000007,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "4cd06198-4cab-4323-a959-b6213b85fc25"
+}
