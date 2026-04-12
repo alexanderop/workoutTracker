@@ -43,7 +43,7 @@ jobs:
        (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
 
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
 
     concurrency:
       group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
