@@ -1,3 +1,12 @@
+# [1.27.0](https://github.com/alexanderop/workoutTracker/compare/v1.26.2...v1.27.0) (2026-04-12)
+
+
+### Features
+
+* Refactor testing conventions and add new skills for code review, linting, and CI management ([ea71926](https://github.com/alexanderop/workoutTracker/commit/ea7192662546a1e2ec9786c47f6d4f37a5733122))
+
+
+
 ## [1.26.2](https://github.com/alexanderop/workoutTracker/compare/v1.26.1...v1.26.2) (2026-04-12)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * **ci:** use settings input + append-system-prompt for QA workflow ([1f04d14](https://github.com/alexanderop/workoutTracker/commit/1f04d149d930b1ba70655835017b5699d617a320)), closes [#1063](https://github.com/alexanderop/workoutTracker/issues/1063) [#533](https://github.com/alexanderop/workoutTracker/issues/533)
-
-
-
-## [1.25.3](https://github.com/alexanderop/workoutTracker/compare/v1.25.2...v1.25.3) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** move --allowedTools before --system-prompt in claude_args ([44d1b69](https://github.com/alexanderop/workoutTracker/commit/44d1b690e5017a3630729e9e05065ef31645b745))
 
 
 
