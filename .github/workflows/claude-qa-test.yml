@@ -16,7 +16,7 @@ jobs:
        github.event.pull_request.head.repo.full_name == github.repository)
 
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     concurrency:
       group: claude-qa-test-${{ github.event.pull_request.number || github.ref }}
