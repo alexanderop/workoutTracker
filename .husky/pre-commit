@@ -1,2 +1,3 @@
-pnpm lint-staged
+pnpm lint
 pnpm type-check
+pnpm knip
