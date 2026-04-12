@@ -396,6 +396,15 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Post QA report as PR comment
+        if: always() && (github.event.pull_request.number || steps.pr-metadata.outputs.number || github.event.inputs.pr_number)
+        uses: ./.github/actions/post-qa-report
+        with:
+          pr-number: ${{ github.event.pull_request.number || steps.pr-metadata.outputs.number || github.event.inputs.pr_number }}
+          heading: '## Claude QA (Browser) Report'
+          marker: '<!-- claude-qa-browser-report -->'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set commit status
         id: qa-status
         if: always()

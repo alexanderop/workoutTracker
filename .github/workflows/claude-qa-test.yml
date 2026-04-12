@@ -87,22 +87,11 @@ jobs:
 
       - name: Post QA report as PR comment
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: ./.github/actions/post-qa-report
         with:
-          script: |
-            const fs = require('fs');
-            let body;
-            try {
-              body = fs.readFileSync('qa-report.md', 'utf8');
-            } catch {
-              body = '_Claude QA (Test): no `qa-report.md` was produced._';
-            }
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: `## Claude QA (Test) Report\n\n${body}`
-            });
+          heading: '## Claude QA (Test) Report'
+          marker: '<!-- claude-qa-test-report -->'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload QA report
         if: always()
