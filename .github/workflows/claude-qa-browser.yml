@@ -280,7 +280,7 @@ jobs:
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=100" >> "$GITHUB_OUTPUT"
+            echo "max_turns=50" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
           fi
@@ -321,9 +321,9 @@ jobs:
           SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
           echo "schema=$SCHEMA" >> "$GITHUB_OUTPUT"
 
-      - name: Remove stale qa-report.md from fixtures
+      - name: Remove stale fixture outputs
         shell: bash
-        run: rm -f qa-report.md
+        run: rm -f qa-report.md qa-structured-output.json
 
       - name: Run Claude QA (Browser mode)
         id: claude-qa

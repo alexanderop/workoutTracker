@@ -74,25 +74,27 @@ runs:
           | join("\n")
         ' "$LOG" 2>/dev/null || echo "")
 
-        {
-          echo "## Claude execution summary"
-          echo ""
-          echo "| Metric | Value |"
-          echo "|---|---|"
-          echo "| Assistant turns | $TURNS |"
-          echo "| Tool result messages | $USER_MSGS |"
-          echo "| Stream lines | $TOTAL_LINES |"
-          echo "| Cost (USD) | $COST |"
-          echo "| Duration (ms) | $DURATION_MS |"
-          echo "| Terminal reason | $TERMINAL |"
-          echo ""
-          echo "**Tool usage:** $TOOL_COUNTS"
-          echo ""
-          echo "### Last tool calls before exit"
-          echo ""
-          if [ -n "$LAST_TOOLS" ]; then
-            echo "$LAST_TOOLS"
-          else
-            echo "_No tool_use blocks captured._"
-          fi
-        } >> "$GITHUB_STEP_SUMMARY"
+        REPORT=$(cat <<EOF
+        ## Claude execution summary
+
+        | Metric | Value |
+        |---|---|
+        | Assistant turns | $TURNS |
+        | Tool result messages | $USER_MSGS |
+        | Stream lines | $TOTAL_LINES |
+        | Cost (USD) | $COST |
+        | Duration (ms) | $DURATION_MS |
+        | Terminal reason | $TERMINAL |
+
+        **Tool usage:** $TOOL_COUNTS
+
+        ### Last tool calls before exit
+
+        ${LAST_TOOLS:-_No tool_use blocks captured._}
+        EOF
+        )
+        echo "$REPORT" | sed 's/^        //' >> "$GITHUB_STEP_SUMMARY"
+        # Also echo to stdout so it's visible in gh run view logs, not just the web summary
+        echo "===== CLAUDE EXECUTION SUMMARY ====="
+        echo "$REPORT" | sed 's/^        //'
+        echo "===== END SUMMARY ====="
