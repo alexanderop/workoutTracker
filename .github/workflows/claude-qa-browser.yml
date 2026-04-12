@@ -335,7 +335,7 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write,Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -378,7 +378,7 @@ jobs:
             - Any errors found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
-            --allowedTools "Bash(agent-browser *),Bash(curl *),Write(qa-report.md),Read,Glob,Grep"
+            --allowedTools "Bash(agent-browser *),Bash(curl *),Write,Read,Glob,Grep"
             --max-turns 15
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'

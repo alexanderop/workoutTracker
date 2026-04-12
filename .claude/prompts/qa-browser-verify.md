@@ -46,44 +46,9 @@
 
 ---
 
-## CRITICAL: How to interact with the browser
+## Interacting with the browser
 
-`agent-browser` is a **CLI tool** installed on this machine. Run all commands
-using the **Bash tool** — do NOT search for MCP tools, Skills, or ToolSearch.
-Just call Bash directly with the command.
-
-**The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
-
-See the system prompt for the full command reference. Key commands:
-
-- `agent-browser open {{APP_URL}}` — navigate
-- `agent-browser snapshot -i` — get interactive elements with refs
-- `agent-browser click @e1` / `agent-browser fill @e2 "text"` — interact by ref
-- `agent-browser console` — check for JS errors
-
-## Step 0: Dismiss Onboarding (ALWAYS do this first)
-
-```bash
-agent-browser open {{APP_URL}}
-agent-browser snapshot -i
-# Find and click "Skip to App" or "Skip" button
-agent-browser click @eN   # use the ref from snapshot
-```
-
-The app shows an onboarding carousel on first visit. In CI there is no saved
-state, so this appears every run. Dismiss it before testing anything.
-
-### Known Gotcha: `agent-browser fill` and Vue Reactivity
-
-`agent-browser fill` sets the input value directly, which does NOT always trigger
-Vue's reactivity system (v-model / defineModel). This can make buttons appear
-stuck or disabled even though the value looks correct in the accessibility tree.
-
-If the UI seems stuck (button disabled, value not updating):
-
-1. **Reload the page** with `agent-browser open {{APP_URL}}/current-page` and retry ONCE
-2. If it still fails after reload, record it as a minor tool-sync issue and MOVE ON
-3. **Do NOT** spend multiple turns diagnosing browser tool bugs — that is not a product bug
+`agent-browser` is a CLI — call it via the **Bash tool**, not MCP/Skills/ToolSearch. The dev server is already running at {{APP_URL}}. See the system prompt for the command list, known gotchas, and verdict rubric.
 
 ## Your Mission
 
@@ -106,6 +71,16 @@ This is a deeper QA pass for a pull request. Your job is to:
 | Verify ACs         | 6-45   | Verify each requirement through the UI                 |
 | Regression + Edges | 46-70  | Related flow plus up to 3 edge cases, including mobile |
 | Report             | 71-100 | Write qa-report.md and return JSON                     |
+
+### Mid-run checkpoint (turn 35)
+
+At turn ~35, pause and self-assess:
+
+- Have I verified **at least 50%** of the acceptance criteria?
+- If NO: cut the regression + edge-case phase to zero. Go straight to the remaining ACs. Skip mobile viewport unless the PR is explicitly mobile-facing.
+- If YES: proceed with regression + 1-2 targeted edges as planned.
+
+This checkpoint exists because past runs have over-invested in setup (template creation, fixture prep) and reached the hard stop with ACs still unverified.
 
 ### HARD STOP RULE
 

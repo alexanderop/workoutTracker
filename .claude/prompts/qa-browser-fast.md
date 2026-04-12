@@ -42,20 +42,9 @@
 
 ---
 
-## CRITICAL: How to interact with the browser
+## Interacting with the browser
 
-`agent-browser` is a **CLI tool** installed on this machine. Run all commands
-using the **Bash tool**. The dev server is already running at {{APP_URL}}.
-
-## Step 0: Dismiss Onboarding
-
-```bash
-agent-browser open {{APP_URL}}
-agent-browser snapshot -i
-agent-browser click @eN
-```
-
-Dismiss the onboarding flow before testing anything else.
+`agent-browser` is a CLI — call it via the **Bash tool**. The dev server is already running at {{APP_URL}}. See the system prompt for the command list, known gotchas, verdict rubric, and the onboarding-dismissal requirement.
 
 ## Mission
 
