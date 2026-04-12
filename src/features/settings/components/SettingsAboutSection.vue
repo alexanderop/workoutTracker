@@ -10,13 +10,16 @@ import { tryCatch } from '@/lib/tryCatch'
 const { t } = useI18n()
 const { currentVersion, isNewVersion } = useVersionCheck()
 
-const totalWorkouts = ref(0)
+const totalWorkouts = ref<number | null>(null)
 
 onMounted(async () => {
   const [error, count] = await tryCatch(getWorkoutsRepository().count())
-  if (!error && typeof count === 'number') {
-    totalWorkouts.value = count
+  if (error) {
+    console.error('[SettingsAboutSection] Failed to load workout count', error)
+    totalWorkouts.value = 0
+    return
   }
+  totalWorkouts.value = count
 })
 
 const formattedBuildTime = computed(() => {
@@ -46,7 +49,7 @@ function handleRefresh() {
         <div class="flex-1">
           <p class="font-medium">{{ t('settings.labels.totalWorkouts') }}</p>
           <p class="text-sm text-muted-foreground" data-testid="settings-total-workouts">
-            {{ totalWorkouts }}
+            {{ totalWorkouts ?? '—' }}
           </p>
         </div>
       </div>
