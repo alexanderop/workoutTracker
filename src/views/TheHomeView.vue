@@ -47,6 +47,8 @@ function openCalendarSheet() {
 
 <template>
   <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4">
+    <h1 class="w-full max-w-md text-xl font-semibold sm:text-2xl">{{ t('nav.homeView.greeting') }}</h1>
+
     <!-- Week Strip -->
     <WeekStrip class="w-full max-w-md" @click="openCalendarSheet" />
 

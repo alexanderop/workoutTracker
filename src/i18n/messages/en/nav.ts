@@ -7,7 +7,7 @@ export default {
   history: 'History',
   timers: 'Timers',
   homeView: {
-    greeting: 'Good day!',
+    greeting: 'Hey Alex',
     startNewWorkout: 'Start New Workout',
     trackDescription: 'Track your exercises, sets, and reps',
     quickTimer: 'Quick Timer',
