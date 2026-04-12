@@ -61,6 +61,8 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
+          display_report: true
+          track_progress: true
           use_sticky_comment: true
           prompt: |
             You are running a quick smoke test against the workout tracker app at ${{ env.APP_URL }}.
@@ -82,6 +84,25 @@ jobs:
             --allowedTools "Bash(agent-browser *),Bash(curl *),Write,Read,Glob,Grep"
             --max-turns 20
             --model ${{ env.CLAUDE_MODEL }}
+
+      - name: Post QA report as PR comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            let body;
+            try {
+              body = fs.readFileSync('qa-report.md', 'utf8');
+            } catch {
+              body = '_Claude QA (Test): no `qa-report.md` was produced._';
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `## Claude QA (Test) Report\n\n${body}`
+            });
 
       - name: Upload QA report
         if: always()
