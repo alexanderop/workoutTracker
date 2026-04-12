@@ -1,3 +1,12 @@
+## [1.26.2](https://github.com/alexanderop/workoutTracker/compare/v1.26.1...v1.26.2) (2026-04-12)
+
+
+### Bug Fixes
+
+* **Layout:** reorder router initialization and update navigation click behavior ([e6efcab](https://github.com/alexanderop/workoutTracker/commit/e6efcab7609a642340ec3cc1efa1d89878a02fa6))
+
+
+
 ## [1.26.1](https://github.com/alexanderop/workoutTracker/compare/v1.26.0...v1.26.1) (2026-04-11)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * **ci:** move --allowedTools before --system-prompt in claude_args ([44d1b69](https://github.com/alexanderop/workoutTracker/commit/44d1b690e5017a3630729e9e05065ef31645b745))
-
-
-
-## [1.25.2](https://github.com/alexanderop/workoutTracker/compare/v1.25.1...v1.25.2) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** add --allowedTools to QA workflow for agent-browser access ([ffd286c](https://github.com/alexanderop/workoutTracker/commit/ffd286cf4e3afff031caa4da48aa0362369d1996))
 
 
 
