@@ -121,6 +121,10 @@ export const routes = [
     props: true,
   },
   {
+    path: '/templates',
+    redirect: '/workouts',
+  },
+  {
     path: '/templates/create',
     name: RouteNames.CreateTemplate,
     component: CreateTemplateView,
