@@ -57,10 +57,6 @@
     "vue-router": "catalog:frontend",
     "zod": "catalog:frontend"
   },
-  "lint-staged": {
-    "*.{ts,vue,js}": "eslint --fix --cache",
-    "*.md": "markdownlint-cli2 --fix"
-  },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:lint",
     "@eslint-community/eslint-plugin-eslint-comments": "catalog:lint",
@@ -99,7 +95,6 @@
     "jscpd": "catalog:lint",
     "jsdom": "catalog:testing",
     "knip": "catalog:lint",
-    "lint-staged": "catalog:build",
     "markdownlint-cli2": "catalog:lint",
     "npm-run-all2": "catalog:build",
     "oxlint": "catalog:lint",

@@ -72,4 +72,3 @@ src/__tests__/     # Vitest + Playwright browser mode
 - `docs/plans/dexie-improvements.md` — liveQuery, transactions, index hygiene
 - `docs/reviews/repo-dexie-review.md` — `shallowRef` for large DB structures, validation
 - `docs/tech-debt/duplication-analysis.md` — known duplication hotspots to avoid growing
-
