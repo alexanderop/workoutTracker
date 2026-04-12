@@ -62,7 +62,6 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
           display_report: true
-          track_progress: true
           use_sticky_comment: true
           prompt: |
             You are running a quick smoke test against the workout tracker app at ${{ env.APP_URL }}.
