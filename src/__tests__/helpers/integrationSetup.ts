@@ -4,6 +4,7 @@ import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkStat
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
+import { resetActivityHistory } from '@/features/activity-streak/composables/useActivityHistory'
 import { resetDatabase } from './resetDatabase'
 
 /**
@@ -15,6 +16,7 @@ export async function cleanupIntegrationTest(): Promise<void> {
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
+  resetActivityHistory()
   await resetDatabase()
   document.body.style.cssText = ''
   document.body.removeAttribute('style')
@@ -31,6 +33,7 @@ export async function setupIntegrationTest(): Promise<void> {
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
+  resetActivityHistory()
   await resetDatabase()
 
   // Mark onboarding as complete by default to avoid redirect during tests

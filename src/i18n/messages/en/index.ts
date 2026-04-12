@@ -10,6 +10,7 @@ import logPastWorkout from './logPastWorkout'
 import weight from './weight'
 import progressions from './progressions'
 import onboarding from './onboarding'
+import activityStreak from './activityStreak'
 
 export default {
   calendar,
@@ -24,4 +25,5 @@ export default {
   weight,
   progressions,
   onboarding,
+  activityStreak,
 } as const

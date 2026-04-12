@@ -1,0 +1,8 @@
+export { default as StreakCard } from './components/StreakCard.vue'
+export { default as ActivityHeatmap } from './components/ActivityHeatmap.vue'
+export { useStreak } from './composables/useStreak'
+export { useActivityHeatmap } from './composables/useActivityHeatmap'
+export { useActivityHistory } from './composables/useActivityHistory'
+export { calculateStreak } from './lib/calculateStreak'
+export { buildHeatmap, intensityForCount } from './lib/buildHeatmap'
+export type { StreakInfo, HeatmapGrid, HeatmapCell, HeatmapIntensity } from './types/streak'

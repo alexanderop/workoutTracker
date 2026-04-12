@@ -9,6 +9,7 @@ import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
 import WeekStrip from '@/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/components/WorkoutCalendarSheet.vue'
 import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
+import { StreakCard, ActivityHeatmap } from '@/features/activity-streak'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -47,6 +48,9 @@ function openCalendarSheet() {
 
 <template>
   <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4">
+    <!-- Streak Card -->
+    <StreakCard />
+
     <!-- Week Strip -->
     <WeekStrip class="w-full max-w-md" @click="openCalendarSheet" />
 
@@ -125,6 +129,9 @@ function openCalendarSheet() {
         </CardHeader>
       </Card>
     </div>
+
+    <!-- Activity Heatmap -->
+    <ActivityHeatmap />
 
     <!-- Recent Workouts -->
     <RecentWorkoutsSection />
