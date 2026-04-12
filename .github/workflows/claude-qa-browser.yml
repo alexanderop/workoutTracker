@@ -321,6 +321,10 @@ jobs:
           SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
           echo "schema=$SCHEMA" >> "$GITHUB_OUTPUT"
 
+      - name: Remove stale qa-report.md from fixtures
+        shell: bash
+        run: rm -f qa-report.md
+
       - name: Run Claude QA (Browser mode)
         id: claude-qa
         continue-on-error: true
@@ -330,7 +334,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: true
+          track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read

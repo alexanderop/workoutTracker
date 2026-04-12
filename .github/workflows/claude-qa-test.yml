@@ -56,6 +56,10 @@ jobs:
         with:
           url: ${{ env.APP_URL }}
 
+      - name: Remove stale qa-report.md from fixtures
+        shell: bash
+        run: rm -f qa-report.md
+
       - name: Run Claude QA (hardcoded prompt)
         uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
