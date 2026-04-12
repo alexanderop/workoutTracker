@@ -1,7 +1,6 @@
 ---
 name: pr
 description: Generate or update a structured pull request with summary, user impact, acceptance criteria, QA scope, risk areas, and executable test scenarios, then open it with GitHub CLI.
-disable-model-invocation: true
 allowed-tools: Bash(git status) Bash(git diff:*) Bash(git log:*) Bash(git rev-parse:*) Bash(git remote:*) Bash(git push:*) Bash(gh pr:*) Bash(gh api:*)
 ---
 
@@ -41,7 +40,7 @@ Create or update a pull request from the current branch using the repo's QA-orie
 
 ## Additional resources
 
-- PR body template: [template.md](template.md)
+- PR body template: [references/template.md](references/template.md)
 
 ## Instructions
 
@@ -70,7 +69,7 @@ Create or update a pull request from the current branch using the repo's QA-orie
   - `docs(scope): description`
   - `test(scope): description`
   - `chore(scope): description`
-- Use [template.md](template.md) as the required body shape.
+- Use [references/template.md](references/template.md) as the required body shape.
 - Fill every section. Do not omit headers.
 
 #### Body requirements

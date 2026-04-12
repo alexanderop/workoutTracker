@@ -20,7 +20,7 @@ on:
         required: false
         type: string
   pull_request:
-    types: [opened, edited, synchronize, labeled]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
     paths-ignore:
       - '*.md'
       - 'docs/**'
