@@ -22,10 +22,10 @@ See the system prompt for the full command reference.
 1. Open the app — run in Bash: `agent-browser open {{APP_URL}}`
 2. Dismiss onboarding — snapshot, find "Skip" button, click it
 3. Take a snapshot — run in Bash: `agent-browser snapshot`
-3. Verify the page rendered (snapshot is not empty)
-4. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
-5. Take another snapshot to confirm the new page loaded
-6. Return your JSON result
+4. Verify the page rendered (snapshot is not empty)
+5. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
+6. Take another snapshot to confirm the new page loaded
+7. Return your JSON result
 
 ## IMPORTANT: Structured Output
 
@@ -33,7 +33,7 @@ Your final response MUST be valid JSON matching the provided schema.
 
 - `verdict`: `HEALTHY` if both pages loaded, `CRITICAL_BUGS` if not
 - `summary`: One sentence
-- `coverage`: Set navigation `total`/`passed`/`failed` based on result. Set other areas to 0.
+- `tests`: Include at least two entries, such as "Open app" and "Navigate to second page", using the schema's fields.
 - `bugs`: Empty array if nav works, otherwise describe the issue
 - `console_errors`: Empty array
-- `metrics`: Match your coverage numbers
+- `metrics`: Set totals to match the tests you performed

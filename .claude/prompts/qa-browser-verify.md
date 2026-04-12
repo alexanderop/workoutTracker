@@ -1,4 +1,4 @@
-# PR Verification Testing (Browser Mode)
+# PR Deep Verification (Browser Mode)
 
 **App URL**: {{APP_URL}}
 **Date**: {{DATE}}
@@ -7,11 +7,42 @@
 
 **PR #{{PR_NUMBER}}**: {{PR_TITLE}}
 
-### Description
-{{PR_BODY}}
+### Summary
+
+{{PR_SUMMARY}}
+
+### User Impact
+
+{{USER_IMPACT}}
+
+### Acceptance Criteria
+
+{{ACCEPTANCE_CRITERIA}}
+
+### QA Scope
+
+{{QA_SCOPE}}
+
+### Risk Areas
+
+{{RISK_AREAS}}
+
+### Manual Test Scenarios
+
+{{MANUAL_TEST_SCENARIOS}}
+
+### PR Contract Status
+
+- Contract valid: {{CONTRACT_VALID}}
+- Missing sections: {{MISSING_SECTIONS}}
 
 ### Linked Issues
+
 {{LINKED_ISSUES}}
+
+### Full PR Body
+
+{{PR_BODY}}
 
 ---
 
@@ -24,6 +55,7 @@ Just call Bash directly with the command.
 **The dev server is ALREADY running at {{APP_URL}}** — do NOT try to start it yourself.
 
 See the system prompt for the full command reference. Key commands:
+
 - `agent-browser open {{APP_URL}}` — navigate
 - `agent-browser snapshot -i` — get interactive elements with refs
 - `agent-browser click @e1` / `agent-browser fill @e2 "text"` — interact by ref
@@ -48,29 +80,32 @@ Vue's reactivity system (v-model / defineModel). This can make buttons appear
 stuck or disabled even though the value looks correct in the accessibility tree.
 
 If the UI seems stuck (button disabled, value not updating):
+
 1. **Reload the page** with `agent-browser open {{APP_URL}}/current-page` and retry ONCE
 2. If it still fails after reload, record it as a minor tool-sync issue and MOVE ON
 3. **Do NOT** spend multiple turns diagnosing browser tool bugs — that is not a product bug
 
 ## Your Mission
 
-This PR claims to implement or fix something. Your job is to:
-1. **Parse** the PR description and extract testable requirements
-2. **Verify** each requirement actually works through the UI
-3. **Break** them with edge cases and invalid inputs
-4. **Check** for regressions in related features
+This is a deeper QA pass for a pull request. Your job is to:
+
+1. **Verify** every stated acceptance criterion through the UI
+2. **Follow** the provided manual scenarios when they are useful
+3. **Check** adjacent regressions based on the listed risk areas
+4. **Probe** a few high-value edge cases, including mobile viewport
+5. **Report** concrete findings, skips, and confidence limits
 
 ## Turn Budget: 100 turns
 
 **NOTE**: Each `agent-browser` command costs 1 turn. A typical test step
 (snapshot + action + verify) costs 2-3 turns. You have ~33 logical test steps.
 
-| Phase | Turns | Goal |
-|-------|-------|------|
-| Parse Requirements | 1-3 | Extract testable items from PR description |
-| Happy Path | 4-40 | Verify each requirement works as described |
-| Break It | 41-70 | Edge cases (pick 3 max), mobile viewport |
-| Report | 71-100 | Write qa-report.md and return JSON |
+| Phase              | Turns  | Goal                                                   |
+| ------------------ | ------ | ------------------------------------------------------ |
+| Parse Contract     | 1-5    | Read ACs, QA scope, risks, scenarios                   |
+| Verify ACs         | 6-45   | Verify each requirement through the UI                 |
+| Regression + Edges | 46-70  | Related flow plus up to 3 edge cases, including mobile |
+| Report             | 71-100 | Write qa-report.md and return JSON                     |
 
 ### HARD STOP RULE
 
@@ -91,35 +126,42 @@ reports "QA report not generated" and the run is wasted.
 - Don't verify values with both `snapshot` AND `eval` — pick one
 - Skip testing features unrelated to the PR's changes
 
-## Step 1: Parse Requirements
+## Step 1: Parse the PR contract
 
-Read the PR description and linked issues above. Extract specific, testable requirements:
-- "User can X" -> Test that user can X
-- "Fixes Y bug" -> Verify Y bug no longer occurs
-- "Adds Z feature" -> Test all aspects of Z
+Read the structured sections above first.
 
-## Step 2: Happy Path
+- If `Acceptance Criteria` is present, treat it as the primary source of truth.
+- Use `QA Scope` to stay focused.
+- Use `Risk Areas` to choose the most valuable regression checks.
+- Use `Manual Test Scenarios` as a shortcut when they are specific and useful.
+- If the PR contract is incomplete, explicitly note reduced confidence and fall back to linked issues plus the full PR body.
 
-For EACH requirement:
+## Step 2: Verify the acceptance criteria
+
+For EACH acceptance criterion:
+
 1. Navigate to the relevant page
 2. Test the exact scenario described
-3. Verify expected behavior occurs
+3. Verify the expected visible behavior occurs
+4. If the criterion is too vague to verify, mark it as skipped and explain why
 
-## Step 3: Break It
+## Step 3: Regression and edge cases
 
-Pick the **3 most important** edge cases for the PR's changes. Do NOT exhaustively
-test every boundary — focus on what is most likely to break. If you've tested 3 edge
-cases and they pass, move on to the Report phase.
+Pick the most valuable checks after the acceptance criteria pass:
 
-| Attack | How |
-|--------|-----|
-| Empty | Submit with nothing filled in |
-| Boundaries | Try 0, -1, 999999 |
-| Long strings | 100+ characters |
-| Special chars | Quotes, emoji, angle brackets |
+- 1 regression path from the listed risk areas
+- Up to 3 targeted edge cases
+- 1 mobile viewport check at 375x667 if the feature is user-facing
+
+| Attack        | How                              |
+| ------------- | -------------------------------- |
+| Empty         | Submit with nothing filled in    |
+| Boundaries    | Try 0, -1, 999999                |
+| Long strings  | 100+ characters                  |
+| Special chars | Quotes, emoji, angle brackets    |
 | Rapid actions | Click submit multiple times fast |
 
-**Choose at most 3 rows from the table above.** Do NOT try all of them.
+Do NOT try every row. Pick only the highest-signal cases.
 
 ## IMPORTANT: Structured Output
 
