@@ -6,7 +6,6 @@ import { i18n } from './i18n'
 import { router } from './router'
 import './style.css'
 
-// Setup feature guards
 setupOnboardingGuard(router)
 
 const app = createApp(App)
