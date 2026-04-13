@@ -1,3 +1,12 @@
+## [1.28.4](https://github.com/alexanderop/workoutTracker/compare/v1.28.3...v1.28.4) (2026-04-13)
+
+
+### Bug Fixes
+
+* **qa:** enable track_progress for issue_comment/review events ([bee2f26](https://github.com/alexanderop/workoutTracker/commit/bee2f26b047c70b07c496e25b7916d42f17d4f49))
+
+
+
 ## [1.28.3](https://github.com/alexanderop/workoutTracker/compare/v1.28.2...v1.28.3) (2026-04-13)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **docs:** add CLAUDE, workout block model, and Vitest troubleshooting documentation ([376055c](https://github.com/alexanderop/workoutTracker/commit/376055c1b648167829aeab158df6227cd90fe85b))
-
-
-
-# [1.27.0](https://github.com/alexanderop/workoutTracker/compare/v1.26.2...v1.27.0) (2026-04-12)
-
-
-### Features
-
-* Refactor testing conventions and add new skills for code review, linting, and CI management ([ea71926](https://github.com/alexanderop/workoutTracker/commit/ea7192662546a1e2ec9786c47f6d4f37a5733122))
 
 
 
