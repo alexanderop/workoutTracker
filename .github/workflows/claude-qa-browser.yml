@@ -377,7 +377,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: true
+          track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
