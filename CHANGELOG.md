@@ -1,3 +1,12 @@
+## [1.28.1](https://github.com/alexanderop/workoutTracker/compare/v1.28.0...v1.28.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **qa:** disable track_progress on workflow_dispatch retry step ([4c77e66](https://github.com/alexanderop/workoutTracker/commit/4c77e660071eaf7a1582252bd9800daf0b133ce5))
+
+
+
 # [1.28.0](https://github.com/alexanderop/workoutTracker/compare/v1.27.0...v1.28.0) (2026-04-12)
 
 
@@ -31,20 +40,6 @@
 ### Bug Fixes
 
 * **ci:** add id-token: write permission to all claude workflows ([6db25e3](https://github.com/alexanderop/workoutTracker/commit/6db25e3e2caaae7e6bec928cacd33e1a17a2447e))
-
-
-
-# [1.26.0](https://github.com/alexanderop/workoutTracker/compare/v1.25.4...v1.26.0) (2026-04-11)
-
-
-### Bug Fixes
-
-* **nav:** improve bottom navigation click handling ([84fecdc](https://github.com/alexanderop/workoutTracker/commit/84fecdc134222dd7be5aadee364ad9da396d8005))
-
-
-### Features
-
-* **ci:** add PR review and CI auto-fix workflows, fix claude permissions ([e095921](https://github.com/alexanderop/workoutTracker/commit/e095921503accccd75babef7f4a65ea07df8c7f5))
 
 
 
