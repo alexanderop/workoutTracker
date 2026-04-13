@@ -436,7 +436,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: ${{ (github.event_name == 'pull_request' && github.event.action != 'labeled') || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review' }}
+          track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
           prompt: ${{ steps.load-prompt.outputs.prompt }}
           additional_permissions: |
             actions: read
@@ -499,7 +499,7 @@ jobs:
           show_full_output: true
           display_report: true
           use_sticky_comment: true
-          track_progress: ${{ (github.event_name == 'pull_request' && github.event.action != 'labeled') || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review' }}
+          track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
           prompt: |
             IMPORTANT: The previous QA run did not generate a report.
 
