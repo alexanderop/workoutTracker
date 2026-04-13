@@ -327,9 +327,6 @@ jobs:
         shell: bash
         run: rm -f qa-report.md qa-structured-output.json
 
-      - name: Start Claude execution log tailer
-        uses: ./.github/actions/claude-log-tailer
-
       - name: Run Claude QA (Browser mode)
         id: claude-qa
         timeout-minutes: 50
@@ -363,14 +360,11 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Stop Claude log tailer
-        if: always()
-        shell: bash
-        run: |
-          if [ -n "${TAILER_PID:-}" ]; then
-            kill "$TAILER_PID" 2>/dev/null || true
-            wait "$TAILER_PID" 2>/dev/null || true
-          fi
+      - name: Early summarize on Claude failure
+        if: always() && (steps.claude-qa.outcome == 'failure' || steps.claude-qa.outcome == 'cancelled')
+        uses: ./.github/actions/summarize-claude-run
+        with:
+          debug-dir: qa-debug
 
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated

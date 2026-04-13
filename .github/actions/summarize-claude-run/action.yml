@@ -67,6 +67,13 @@ runs:
         DURATION_MS=$(echo "$RESULT" | jq -r '.result.durationMs // .durationMs // "n/a"')
         TERMINAL=$(echo "$RESULT" | jq -r '.result.terminal_reason // .terminal_reason // "unknown (likely killed before completion)"')
 
+        ALL_TOOLS=$(jq -rs '
+          [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")]
+          | to_entries
+          | map("\(.key + 1). **\(.value.name)**: " + ((.value.input.command // .value.input.description // (.value.input | tostring))[:300] | gsub("\n"; " ")))
+          | join("\n")
+        ' "$LOG" 2>/dev/null || echo "")
+
         LAST_TOOLS=$(jq -rs '
           [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")]
           | .[-8:]
@@ -91,6 +98,12 @@ runs:
         ### Last tool calls before exit
 
         ${LAST_TOOLS:-_No tool_use blocks captured._}
+
+        <details><summary>Full tool call sequence ($TURNS turns)</summary>
+
+        ${ALL_TOOLS:-_No tool_use blocks captured._}
+
+        </details>
         EOF
         )
         echo "$REPORT" | sed 's/^        //' >> "$GITHUB_STEP_SUMMARY"
