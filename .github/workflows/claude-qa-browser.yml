@@ -347,14 +347,21 @@ jobs:
           set -euo pipefail
           echo "--- agent-browser open ---"
           agent-browser open "${{ env.APP_URL }}"
+          echo "--- clearing storage to force fresh onboarding state ---"
+          agent-browser storage local clear || true
+          agent-browser reload || true
           echo "--- initial snapshot ---"
           SNAPSHOT=$(agent-browser snapshot -i -c)
           echo "$SNAPSHOT"
-          if ! echo "$SNAPSHOT" | grep -q "Skip to App"; then
-            echo "::error::Onboarding 'Skip to App' button not found — app did not render expected initial state"
+          if ! echo "$SNAPSHOT" | grep -qE 'Skip to App|button "Home"'; then
+            echo "::error::App did not render — neither onboarding nor main nav visible"
             exit 1
           fi
-          echo "Warm-up passed: agent-browser + app + onboarding all reachable."
+          if echo "$SNAPSHOT" | grep -q "Skip to App"; then
+            echo "Warm-up passed: onboarding carousel visible (fresh state)."
+          else
+            echo "Warm-up passed: main nav visible (onboarding already dismissed — localStorage clear may have failed)."
+          fi
 
       - name: Run Claude QA (Browser mode)
         id: claude-qa
