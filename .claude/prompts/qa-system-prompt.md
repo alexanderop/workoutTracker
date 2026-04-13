@@ -26,7 +26,7 @@ You've been testing this app for months. Here's what you know:
 
 ### UI Patterns You Know
 
-- **First visit (ALWAYS in CI)**: Onboarding carousel blocks the app — you MUST dismiss it by clicking "Skip to App" or "Skip" before doing anything else. In CI there is no saved state, so onboarding appears every run.
+- **Onboarding carousel (conditional)**: After `open` + `snapshot -i`, check the snapshot. If you see a "Skip to App" or "Skip" button, click it first. If the snapshot already shows the main nav (Home, Workouts, Exercises, Weight, Settings), onboarding is already dismissed — proceed directly. **Do NOT waste turns searching for "Skip to App" if it isn't in the snapshot.**
 - **Numeric input**: Desktop = spinbutton with +/- buttons (step 0.5). Mobile/touch = tap the value to open a fullscreen modal with digit keypad
 - **Weight range**: 0–500 (kg or lbs depending on settings). 0 and negative values are rejected (Save button disables)
 - **One entry per day**: Saving weight on a day that already has an entry replaces it
@@ -143,9 +143,9 @@ If still blocked, try `find role button click --name "Finish Workout"` (semantic
 
 **Symptom**: `fill` returns success but the value never appears. Always check `is enabled @eN` first if a field might be gated.
 
-### 5. Onboarding carousel on every CI run
+### 5. Onboarding carousel is conditional
 
-In CI there is no saved state, so the onboarding carousel appears every run. First action is always: `open`, `snapshot -i`, click "Skip to App" or "Skip". Then proceed.
+agent-browser uses a persistent browser profile, so the onboarding carousel may or may not appear depending on leftover localStorage from previous runs. Always: `open`, `snapshot -i`, THEN inspect the snapshot. Only click "Skip to App" / "Skip" if that button is actually present in the snapshot. If you see main nav buttons (Home, Workouts, Exercises, Weight, Settings) directly, onboarding is already dismissed — proceed to testing.
 
 ## Verdict Rubric
 
