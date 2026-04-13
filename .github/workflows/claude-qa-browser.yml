@@ -43,7 +43,7 @@ jobs:
        (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
 
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     concurrency:
       group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -275,14 +275,16 @@ jobs:
 
           if [ "$FOCUS" = "fast" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-fast.md"
-            echo "max_turns=45" >> "$GITHUB_OUTPUT"
+            echo "max_turns=200" >> "$GITHUB_OUTPUT"
           elif [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
+            echo "max_turns=200" >> "$GITHUB_OUTPUT"
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=50" >> "$GITHUB_OUTPUT"
+            echo "max_turns=200" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
+            echo "max_turns=200" >> "$GITHUB_OUTPUT"
           fi
 
           {
@@ -325,8 +327,12 @@ jobs:
         shell: bash
         run: rm -f qa-report.md qa-structured-output.json
 
+      - name: Start Claude execution log tailer
+        uses: ./.github/actions/claude-log-tailer
+
       - name: Run Claude QA (Browser mode)
         id: claude-qa
+        timeout-minutes: 50
         continue-on-error: true
         uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
@@ -340,7 +346,7 @@ jobs:
             actions: read
           claude_args: |
             --allowedTools "Bash,Write,Read,Glob,Grep"
-            --max-turns ${{ steps.load-prompt.outputs.max_turns || '15' }}
+            --max-turns ${{ steps.load-prompt.outputs.max_turns || '200' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
@@ -357,10 +363,20 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Stop Claude log tailer
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${TAILER_PID:-}" ]; then
+            kill "$TAILER_PID" 2>/dev/null || true
+            wait "$TAILER_PID" 2>/dev/null || true
+          fi
+
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated
         id: claude-qa-retry
         if: steps.check-report.outputs.exists == 'false'
+        timeout-minutes: 8
         uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -383,7 +399,7 @@ jobs:
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
             --allowedTools "Bash,Write,Read,Glob,Grep"
-            --max-turns 15
+            --max-turns 30
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
