@@ -136,6 +136,7 @@ jobs:
           script: |
             let prNumber, prBody, prTitle;
             const extractSection = (body, heading) => {
+              if (!body) return '';
               const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
               const regex = new RegExp(`##\\s+${escapedHeading}\\s*\\n([\\s\\S]*?)(?=\\n##\\s+|\\n#\\s+|$)`, 'i');
               const match = body.match(regex);
