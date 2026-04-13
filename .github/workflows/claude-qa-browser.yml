@@ -328,9 +328,37 @@ jobs:
         shell: bash
         run: rm -f qa-report.md qa-structured-output.json
 
+      - name: Dev server health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Verifying dev server at ${{ env.APP_URL }}..."
+          if ! curl -fsS --max-time 10 "${{ env.APP_URL }}" > /dev/null; then
+            echo "::error::Dev server is not reachable at ${{ env.APP_URL }}"
+            echo "--- dev-server.log (last 50 lines) ---"
+            tail -50 /tmp/dev-server.log 2>/dev/null || echo "(no dev-server.log)"
+            exit 1
+          fi
+          echo "Dev server is reachable."
+
+      - name: Warm-up smoke check (agent-browser + onboarding)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "--- agent-browser open ---"
+          agent-browser open "${{ env.APP_URL }}"
+          echo "--- initial snapshot ---"
+          SNAPSHOT=$(agent-browser snapshot -i -c)
+          echo "$SNAPSHOT"
+          if ! echo "$SNAPSHOT" | grep -q "Skip to App"; then
+            echo "::error::Onboarding 'Skip to App' button not found — app did not render expected initial state"
+            exit 1
+          fi
+          echo "Warm-up passed: agent-browser + app + onboarding all reachable."
+
       - name: Run Claude QA (Browser mode)
         id: claude-qa
-        timeout-minutes: 50
+        timeout-minutes: 15
         continue-on-error: true
         uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
         with:
@@ -624,6 +652,16 @@ jobs:
         uses: ./.github/actions/summarize-claude-run
         with:
           debug-dir: qa-debug
+
+      - name: Collect claude debug artifacts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-debug
+          cp /home/runner/work/_temp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null || echo "no claude-execution-output.json"
+          cp /tmp/dev-server.log qa-debug/dev-server.log 2>/dev/null || echo "no dev-server.log"
+          ls -la qa-debug/ || true
 
       - name: Upload QA artifacts
         if: always()
