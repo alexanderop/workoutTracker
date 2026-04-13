@@ -396,25 +396,30 @@ jobs:
       - name: Start claude tool-call tailer
         shell: bash
         run: |
-          LOG=/home/runner/work/_temp/claude-execution-output.json
           OUT=/tmp/claude-tailer.log
           : > "$OUT"
           echo "TAILER_OUT=$OUT" >> "$GITHUB_ENV"
+          # Delete leftover execution log from smoke test so we don't re-read it
+          rm -f /home/runner/work/_temp/claude-execution-output.json /tmp/claude-execution-output.json
           (
             LAST=0
             while :; do
-              if [ -f "$LOG" ]; then
-                TOTAL=$(jq -s 'length' "$LOG" 2>/dev/null || echo 0)
-                if [ "$TOTAL" -gt "$LAST" ]; then
-                  jq -rs --argjson start "$LAST" '
-                    .[$start:]
-                    | map(select(.type == "assistant") | .message.content[]? | select(.type == "tool_use"))
-                    | map("[\(now | strftime("%H:%M:%S"))] \(.name): " + ((.input.command // .input.description // (.input | tostring))[:200] | gsub("\n"; " ")))
-                    | .[]
-                  ' "$LOG" 2>/dev/null >> "$OUT" || true
-                  LAST=$TOTAL
+              # Try both known paths - whichever the action writes to
+              for LOG in /home/runner/work/_temp/claude-execution-output.json /tmp/claude-execution-output.json; do
+                if [ -f "$LOG" ]; then
+                  TOTAL=$(jq -r 'if type=="array" then length else 1 end' "$LOG" 2>/dev/null || echo 0)
+                  if [ "$TOTAL" -gt "$LAST" ]; then
+                    jq -r --argjson start "$LAST" '
+                      (if type=="array" then . else [.] end)[$start:]
+                      | map(select(.type == "assistant") | .message.content[]? | select(.type == "tool_use"))
+                      | map("[\(now | strftime("%H:%M:%S"))] \(.name): " + ((.input.command // .input.description // (.input | tostring))[:200] | gsub("\n"; " ")))
+                      | .[]
+                    ' "$LOG" 2>/dev/null >> "$OUT" || true
+                    LAST=$TOTAL
+                  fi
+                  break
                 fi
-              fi
+              done
               sleep 10
             done
           ) &
@@ -748,8 +753,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p qa-debug
-          cp /home/runner/work/_temp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null || echo "no claude-execution-output.json"
+          # Try both paths - base-action docs say /tmp/, summarize action uses $RUNNER_TEMP
+          cp /home/runner/work/_temp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null \
+            || cp /tmp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null \
+            || echo "no claude-execution-output.json at either path"
           cp /tmp/dev-server.log qa-debug/dev-server.log 2>/dev/null || echo "no dev-server.log"
+          cp /tmp/claude-tailer.log qa-debug/claude-tailer.log 2>/dev/null || echo "no claude-tailer.log"
+          # Dump any other claude-related files in /tmp so we can see where it writes
+          find /tmp /home/runner/work/_temp -maxdepth 2 -name "claude*" 2>/dev/null | tee qa-debug/claude-file-locations.txt || true
           ls -la qa-debug/ || true
 
       - name: Upload QA artifacts
