@@ -1,3 +1,12 @@
+## [1.28.3](https://github.com/alexanderop/workoutTracker/compare/v1.28.2...v1.28.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* **qa:** handle conditional onboarding in CI ([ef4f6bc](https://github.com/alexanderop/workoutTracker/commit/ef4f6bc4de61e7747ad9d740b621a01cbad51bba))
+
+
+
 ## [1.28.2](https://github.com/alexanderop/workoutTracker/compare/v1.28.1...v1.28.2) (2026-04-13)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * Refactor testing conventions and add new skills for code review, linting, and CI management ([ea71926](https://github.com/alexanderop/workoutTracker/commit/ea7192662546a1e2ec9786c47f6d4f37a5733122))
-
-
-
-## [1.26.2](https://github.com/alexanderop/workoutTracker/compare/v1.26.1...v1.26.2) (2026-04-12)
-
-
-### Bug Fixes
-
-* **Layout:** reorder router initialization and update navigation click behavior ([e6efcab](https://github.com/alexanderop/workoutTracker/commit/e6efcab7609a642340ec3cc1efa1d89878a02fa6))
 
 
 
