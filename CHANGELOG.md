@@ -1,3 +1,12 @@
+## [1.28.2](https://github.com/alexanderop/workoutTracker/compare/v1.28.1...v1.28.2) (2026-04-13)
+
+
+### Bug Fixes
+
+* **qa:** guard extractSection against empty pr body ([ce0257a](https://github.com/alexanderop/workoutTracker/commit/ce0257aa40bab4ee935c8cdfdfa0f040d7d66e47))
+
+
+
 ## [1.28.1](https://github.com/alexanderop/workoutTracker/compare/v1.28.0...v1.28.1) (2026-04-13)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **Layout:** reorder router initialization and update navigation click behavior ([e6efcab](https://github.com/alexanderop/workoutTracker/commit/e6efcab7609a642340ec3cc1efa1d89878a02fa6))
-
-
-
-## [1.26.1](https://github.com/alexanderop/workoutTracker/compare/v1.26.0...v1.26.1) (2026-04-11)
-
-
-### Bug Fixes
-
-* **ci:** add id-token: write permission to all claude workflows ([6db25e3](https://github.com/alexanderop/workoutTracker/commit/6db25e3e2caaae7e6bec928cacd33e1a17a2447e))
 
 
 
