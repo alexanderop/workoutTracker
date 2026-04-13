@@ -62,3 +62,4 @@ src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
 # Ralph Wiggum automation (temporary output)
 .ralph/last-output.txt
 .ralph/logs/
+.claude/scheduled_tasks.lock
