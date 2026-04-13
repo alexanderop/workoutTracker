@@ -363,6 +363,36 @@ jobs:
             echo "Warm-up passed: main nav visible (onboarding already dismissed — localStorage clear may have failed)."
           fi
 
+      - name: Smoke-test claude-code-action (trivial prompt)
+        id: claude-smoke
+        timeout-minutes: 3
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: false
+          prompt: |
+            Write the exact text `claude-smoke-ok` to a file named `claude-smoke.txt` using the Write tool, then stop. Do nothing else.
+          claude_args: |
+            --allowedTools "Write"
+            --max-turns 3
+            --model ${{ env.CLAUDE_MODEL }}
+
+      - name: Verify claude-code-action smoke output
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f claude-smoke.txt ]; then
+            echo "::error::claude-code-action smoke test failed: claude-smoke.txt was not created"
+            exit 1
+          fi
+          if ! grep -q "claude-smoke-ok" claude-smoke.txt; then
+            echo "::error::claude-code-action smoke test failed: claude-smoke.txt has unexpected content"
+            cat claude-smoke.txt
+            exit 1
+          fi
+          echo "claude-code-action smoke test passed."
+          rm -f claude-smoke.txt
+
       - name: Run Claude QA (Browser mode)
         id: claude-qa
         timeout-minutes: 15
