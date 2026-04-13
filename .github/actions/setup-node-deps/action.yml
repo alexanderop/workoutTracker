@@ -34,3 +34,10 @@ runs:
       run: |
         set -euo pipefail
         ${{ inputs.install-command }}
+
+    - name: Save node_modules
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      with:
+        path: node_modules
+        key: ${{ steps.cache-restore.outputs.cache-primary-key }}

@@ -14,17 +14,12 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
-    - name: Get Playwright version
-      id: playwright-version
-      shell: bash
-      run: echo "version=$(pnpm list @playwright/test --depth=0 --json | jq -r '.[0].dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
-
     - name: Cache Playwright browsers
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       id: playwright-cache
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+        key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
 
@@ -33,11 +28,4 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        pnpm exec playwright install chromium --with-deps
-
-    - name: Install Playwright system dependencies
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        pnpm exec playwright install-deps chromium
+        pnpm exec playwright install chromium
