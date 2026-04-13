@@ -276,16 +276,16 @@ jobs:
 
           if [ "$FOCUS" = "fast" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-fast.md"
-            echo "max_turns=200" >> "$GITHUB_OUTPUT"
+            echo "max_turns=60" >> "$GITHUB_OUTPUT"
           elif [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
-            echo "max_turns=200" >> "$GITHUB_OUTPUT"
+            echo "max_turns=80" >> "$GITHUB_OUTPUT"
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=200" >> "$GITHUB_OUTPUT"
+            echo "max_turns=60" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
-            echo "max_turns=200" >> "$GITHUB_OUTPUT"
+            echo "max_turns=80" >> "$GITHUB_OUTPUT"
           fi
 
           {
@@ -378,8 +378,9 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
+            --debug
             --allowedTools "Bash,Write,Read,Glob,Grep"
-            --max-turns ${{ steps.load-prompt.outputs.max_turns || '200' }}
+            --max-turns ${{ steps.load-prompt.outputs.max_turns || '60' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
@@ -428,6 +429,7 @@ jobs:
             - Any errors found
             - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
           claude_args: |
+            --debug
             --allowedTools "Bash,Write,Read,Glob,Grep"
             --max-turns 30
             --model ${{ env.CLAUDE_MODEL }}
