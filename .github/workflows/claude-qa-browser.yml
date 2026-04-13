@@ -393,6 +393,34 @@ jobs:
           echo "claude-code-action smoke test passed."
           rm -f claude-smoke.txt
 
+      - name: Start claude tool-call tailer
+        shell: bash
+        run: |
+          LOG=/home/runner/work/_temp/claude-execution-output.json
+          OUT=/tmp/claude-tailer.log
+          : > "$OUT"
+          echo "TAILER_OUT=$OUT" >> "$GITHUB_ENV"
+          (
+            LAST=0
+            while :; do
+              if [ -f "$LOG" ]; then
+                TOTAL=$(jq -s 'length' "$LOG" 2>/dev/null || echo 0)
+                if [ "$TOTAL" -gt "$LAST" ]; then
+                  jq -rs --argjson start "$LAST" '
+                    .[$start:]
+                    | map(select(.type == "assistant") | .message.content[]? | select(.type == "tool_use"))
+                    | map("[\(now | strftime("%H:%M:%S"))] \(.name): " + ((.input.command // .input.description // (.input | tostring))[:200] | gsub("\n"; " ")))
+                    | .[]
+                  ' "$LOG" 2>/dev/null >> "$OUT" || true
+                  LAST=$TOTAL
+                fi
+              fi
+              sleep 10
+            done
+          ) &
+          echo "TAILER_PID=$!" >> "$GITHUB_ENV"
+          disown
+
       - name: Run Claude QA (Browser mode)
         id: claude-qa
         timeout-minutes: 15
@@ -414,6 +442,28 @@ jobs:
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
+
+      - name: Stop tailer and render timeline
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${TAILER_PID:-}" ]; then
+            kill "$TAILER_PID" 2>/dev/null || true
+          fi
+          if [ -n "${TAILER_OUT:-}" ] && [ -f "$TAILER_OUT" ] && [ -s "$TAILER_OUT" ]; then
+            {
+              echo "## Claude tool-call timeline"
+              echo ''
+              echo '```'
+              cat "$TAILER_OUT"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "===== CLAUDE TOOL-CALL TIMELINE ====="
+            cat "$TAILER_OUT"
+            echo "===== END TIMELINE ====="
+          else
+            echo "No tool-call events captured by tailer."
+          fi
 
       - name: Check report exists
         id: check-report
