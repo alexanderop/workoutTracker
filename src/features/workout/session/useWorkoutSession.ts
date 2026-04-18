@@ -252,6 +252,14 @@ export const useWorkoutSession = createGlobalState(() => {
     dispatch({ type: 'CompleteSet', set, useDurationValidation })
     return lastOutcome.value ?? { kind: 'invalid' }
   }
+  function completeSet(set: Set): CompleteSetOutcome {
+    const block = currentBlock.value
+    const useDuration =
+      block && isStrengthBlock(block) && block.exerciseDefinitionId
+        ? useExercisesStore().getExerciseById(block.exerciseDefinitionId)?.metrics === 'duration'
+        : false
+    return finishSet(set, useDuration)
+  }
   function setBlockResult(
     blockIndex: number,
     result: import('./types').TimedResult,
@@ -374,6 +382,7 @@ export const useWorkoutSession = createGlobalState(() => {
     activateSet,
     setActiveSet,
     finishSet,
+    completeSet,
     setBlockResult,
     setCardioResult,
     jumpTo,

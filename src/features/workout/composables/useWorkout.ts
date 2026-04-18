@@ -34,7 +34,7 @@ type CompleteSetResult =
   | { kind: 'completed'; nextAction: 'workout-complete' }
   | { kind: 'uncompleted' }
 
-export function isSetReady(set: Readonly<Set>): boolean {
+function isSetReady(set: Readonly<Set>): boolean {
   const kg = Number(set.kg)
   const reps = Number(set.reps)
   const rir = Number(set.rir)

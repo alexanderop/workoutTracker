@@ -5,8 +5,7 @@ import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { useRestTimer } from '@/composables/timers/useRestTimer'
-import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
-import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
+import { isSetReady, useWorkoutSession } from '@/features/workout/session'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
 import type { Set } from '@/types/workout'
 import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
@@ -43,8 +42,6 @@ const {
   removeSet,
   duplicateSet,
   removeBlock,
-} = useWorkout()
-const {
   currentBlock,
   currentBlockIndex,
   totalBlocks,
@@ -53,7 +50,7 @@ const {
   returnToBuilder,
   advanceToNextBlock,
   goToPreviousBlock,
-} = useWorkoutMode()
+} = useWorkoutSession()
 
 const restTimer = useRestTimer()
 
