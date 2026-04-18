@@ -23,7 +23,7 @@ import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
 export type { Workout } from '@/types/workout'
-export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
+export { getWorkoutRef, resetWorkout } from '@/stores/workoutState'
 
 // Get reference to shared workout singleton
 const workout = getWorkoutRef()

@@ -6,8 +6,7 @@ import { seedPopularExercises } from '@/db/seedExercises'
 import { seedPopularTemplates } from '@/db/seedTemplates'
 import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
-import { getWorkoutRef, restoreWorkout } from '@/features/workout/composables/useWorkout'
-import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { useWorkoutSession } from '@/features/workout/session'
 import { tryCatch } from '@/lib/tryCatch'
 
 /**
@@ -37,8 +36,7 @@ export function useAppInitialization() {
   const router = useRouter()
   const exercisesStore = useExercisesStore()
   const settingsStore = useSettingsStore()
-  const workoutReference = getWorkoutRef()
-  const persistence = useWorkoutPersistence(workoutReference)
+  const session = useWorkoutSession()
 
   /**
    * Initialize the app: load exercises and check for active workout.
@@ -82,10 +80,9 @@ export function useAppInitialization() {
    * Resume the active workout from the database.
    */
   async function resumeWorkout(): Promise<void> {
-    const savedWorkout = await persistence.loadActiveWorkout()
+    const savedWorkout = await session.loadActiveWorkout()
     if (savedWorkout) {
-      restoreWorkout(savedWorkout)
-      persistence.markInitialized()
+      session.markInitialized()
     }
     initState.value = { status: 'ready' }
 
@@ -97,7 +94,7 @@ export function useAppInitialization() {
    * Discard the saved workout and start fresh.
    */
   async function discardWorkout(): Promise<void> {
-    await persistence.discardActiveWorkout()
+    await session.discardActiveWorkout()
     initState.value = { status: 'ready' }
   }
 

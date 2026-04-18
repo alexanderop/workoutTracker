@@ -1,16 +1,14 @@
 import { useIntervalFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { formatDuration } from '@/lib/workout-utils'
-import { useWorkout } from './useWorkout'
-import { useWorkoutMode } from './useWorkoutMode'
+import { useWorkoutSession } from '../session'
 
 /**
  * Composable for tracking total workout duration.
  * Provides a live timer that updates every second during active mode.
  */
 export function useWorkoutDurationTimer() {
-  const { workout } = useWorkout()
-  const { isActiveMode } = useWorkoutMode()
+  const { workout, isActiveMode } = useWorkoutSession()
 
   // Tick counter to force reactivity updates
   const tick = ref(0)
