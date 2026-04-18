@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { restoreWorkout } from '@/stores/workoutState'
+import { restoreWorkout } from '@/features/workout/session'
 import { RouteNames } from '@/router'
 import {
   AddBlockDialog,

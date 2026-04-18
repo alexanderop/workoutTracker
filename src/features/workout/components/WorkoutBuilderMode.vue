@@ -12,8 +12,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { useWorkout } from '@/features/workout/composables/useWorkout'
-import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
+import { useWorkoutSession } from '@/features/workout/session'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
 
@@ -24,8 +23,15 @@ const emit = defineEmits<{
   'edit-block': [index: number]
 }>()
 
-const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
-const { startWorkout, hasBlocks, hasStarted } = useWorkoutMode()
+const {
+  workout,
+  selectBlock,
+  reorderBlocks,
+  removeBlock,
+  startWorkout,
+  hasBlocks,
+  hasStarted,
+} = useWorkoutSession()
 
 function getBlockDurationSeconds(block: (typeof workout.value.blocks)[number]): number {
   if (isStrengthBlock(block)) {

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useWorkoutDurationTimer } from '../composables/useWorkoutDurationTimer'
-import { useWorkoutMode } from '../composables/useWorkoutMode'
+import { useWorkoutSession } from '../session'
 import { RouteNames } from '@/router'
 import { useI18n } from 'vue-i18n'
 
@@ -11,7 +11,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { formattedDuration } = useWorkoutDurationTimer()
-const { isActiveMode } = useWorkoutMode()
+const { isActiveMode } = useWorkoutSession()
 
 const shouldShow = computed(
   () => isActiveMode.value && route.name !== RouteNames.ActiveWorkout,
