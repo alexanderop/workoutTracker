@@ -240,21 +240,23 @@ function activateNextSetInBlock(
   }
 }
 
+function activateFirstIncompleteInBlock(workout: Workout, targetIndex: number): Workout {
+  const targetBlock = workout.blocks[targetIndex]
+  if (!targetBlock || !isStrengthBlock(targetBlock)) return workout
+  const firstIncomplete = findNextIncompleteSet(targetBlock)
+  if (!firstIncomplete) return workout
+  const activatedIndex = targetBlock.sets.findIndex((s) => s.id === firstIncomplete.id)
+  const activated = updateSetInBlock(workout, targetIndex, firstIncomplete.id, (s) => ({
+    ...s,
+    status: 'active',
+  }))
+  return { ...activated, activeSetIndex: Math.max(activatedIndex, 0) }
+}
+
 function advanceToBlock(workout: Workout, targetIndex: number): CompleteSetStep | null {
   if (targetIndex < 0 || targetIndex >= workout.blocks.length) return null
-  let next: Workout = { ...workout, selectedBlockIndex: targetIndex, activeSetIndex: null }
-  const targetBlock = next.blocks[targetIndex]
-  if (targetBlock && isStrengthBlock(targetBlock)) {
-    const firstIncomplete = findNextIncompleteSet(targetBlock)
-    if (firstIncomplete) {
-      const activatedIndex = targetBlock.sets.findIndex((s) => s.id === firstIncomplete.id)
-      next = updateSetInBlock(next, targetIndex, firstIncomplete.id, (s) => ({
-        ...s,
-        status: 'active',
-      }))
-      next = { ...next, activeSetIndex: Math.max(activatedIndex, 0) }
-    }
-  }
+  const landed: Workout = { ...workout, selectedBlockIndex: targetIndex, activeSetIndex: null }
+  const next = activateFirstIncompleteInBlock(landed, targetIndex)
   return {
     workout: next,
     outcome: { kind: 'completed', nextAction: 'next-block', blockIndex: targetIndex },
@@ -517,15 +519,8 @@ function applyRunningCommand(workout: Workout, cmd: Command): Workout {
     }
     case 'JumpTo': {
       if (cmd.blockIndex < 0 || cmd.blockIndex >= workout.blocks.length) return workout
-      let next: Workout = { ...workout, selectedBlockIndex: cmd.blockIndex, activeSetIndex: null }
-      const target = next.blocks[cmd.blockIndex]
-      if (target && isStrengthBlock(target)) {
-        const incompleteIdx = target.sets.findIndex(
-          (s) => s.status === 'planned' || s.status === 'active',
-        )
-        next = { ...next, activeSetIndex: Math.max(incompleteIdx, 0) }
-      }
-      return next
+      const landed: Workout = { ...workout, selectedBlockIndex: cmd.blockIndex, activeSetIndex: null }
+      return activateFirstIncompleteInBlock(landed, cmd.blockIndex)
     }
     default: {
       return workout
@@ -601,12 +596,13 @@ function reduceLifecycle(state: SessionState, cmd: Command): ReduceResult {
     case 'StartWorkout': {
       if (state.status !== 'draft') return { next: state, effects: NO_EFFECTS }
       if (state.workout.blocks.length === 0) return { next: state, effects: NO_EFFECTS }
+      const existingStart = state.workout.startedAt
       const started: Workout = {
         ...state.workout,
         mode: 'active',
         selectedBlockIndex: 0,
         activeSetIndex: null,
-        startedAt: cmd.now,
+        startedAt: existingStart > 0 ? existingStart : cmd.now,
       }
       const withFirstSetActive = activateFirstSetOnStart(started)
       return {
@@ -619,16 +615,7 @@ function reduceLifecycle(state: SessionState, cmd: Command): ReduceResult {
         return { next: state, effects: NO_EFFECTS }
       }
       const finished: Workout = { ...state.workout, mode: 'completed' }
-      return {
-        next: { status: 'completed', workout: finished },
-        effects: [
-          {
-            kind: 'completeWorkout',
-            notes: cmd.notes,
-            durationOverrideSeconds: cmd.durationOverrideSeconds,
-          },
-        ],
-      }
+      return { next: { status: 'completed', workout: finished }, effects: NO_EFFECTS }
     }
     case 'Discard': {
       return { next: { status: 'empty' }, effects: [{ kind: 'clearPersisted' }] }

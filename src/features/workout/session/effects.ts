@@ -13,6 +13,7 @@ type EffectRunner = {
   core: PersistenceCore
   workoutRef: Ref<Workout>
   markInitialized: () => void
+  resetPersistence: () => void
   completeWorkout: (
     notes?: string,
     durationOverrideSeconds?: number,
@@ -72,7 +73,9 @@ export function createEffectRunner(workoutRef: Ref<Workout>): EffectRunner {
       return null
     }
 
-    core.hasUnsavedChanges.value = false
+    // Neutralises the pending debounced save armed by enterCompletionMode()
+    // mutating workoutRef — otherwise it would resurrect the just-deleted active row.
+    core.markCompleted()
     return completed
   }
 
@@ -80,6 +83,7 @@ export function createEffectRunner(workoutRef: Ref<Workout>): EffectRunner {
     core,
     workoutRef,
     markInitialized: core.markInitialized,
+    resetPersistence: core.reset,
     completeWorkout,
     saveNow: core.saveNow,
     discardActive,
@@ -101,10 +105,6 @@ export async function runEffects(
       }
       case 'clearPersisted': {
         await runner.discardActive()
-        break
-      }
-      case 'completeWorkout': {
-        await runner.completeWorkout(effect.notes, effect.durationOverrideSeconds)
         break
       }
     }

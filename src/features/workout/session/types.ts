@@ -41,7 +41,7 @@ export type Command =
   | { type: 'NewDraft' }
   | { type: 'LoadActive'; workout: Workout }
   | { type: 'StartWorkout'; now: number }
-  | { type: 'FinishWorkout'; notes?: string; durationOverrideSeconds?: number }
+  | { type: 'FinishWorkout' }
   | { type: 'Discard' }
   | { type: 'ReturnToBuilder' }
   | { type: 'AddStrengthBlock'; seed: StrengthBlockSeed }
@@ -77,10 +77,7 @@ export type Command =
   | { type: 'SetCardioResult'; blockIndex: number; result: CardioResult }
   | { type: 'JumpTo'; blockIndex: number }
 
-export type Effect =
-  | { kind: 'persist' }
-  | { kind: 'clearPersisted' }
-  | { kind: 'completeWorkout'; notes?: string; durationOverrideSeconds?: number }
+export type Effect = { kind: 'persist' } | { kind: 'clearPersisted' }
 
 export type ReduceResult = { next: SessionState; effects: ReadonlyArray<Effect> }
 

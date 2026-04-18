@@ -150,7 +150,7 @@ export const useWorkoutSession = createGlobalState(() => {
     notes = '',
     durationOverrideSeconds?: number,
   ): Promise<ReturnType<typeof runner.completeWorkout>> {
-    dispatch({ type: 'FinishWorkout', notes, durationOverrideSeconds })
+    dispatch({ type: 'FinishWorkout' })
     return runner.completeWorkout(notes, durationOverrideSeconds)
   }
 
@@ -334,6 +334,7 @@ export const useWorkoutSession = createGlobalState(() => {
   function $reset(): void {
     workoutRef.value = emptyWorkout()
     lastOutcome.value = null
+    runner.resetPersistence()
   }
 
   return {

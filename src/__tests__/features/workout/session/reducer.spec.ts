@@ -139,21 +139,20 @@ describe('reduce — lifecycle', () => {
     expect(effects).toHaveLength(0)
   })
 
-  it('FinishWorkout from running → completed emits completeWorkout effect', () => {
-    const { next, effects } = reduce(makeRunning(), {
-      type: 'FinishWorkout',
-      notes: 'done',
-      durationOverrideSeconds: 3600,
-    })
+  it('StartWorkout preserves existing startedAt when resuming from builder', () => {
+    // Simulates: start workout (startedAt=500) → ReturnToBuilder → Resume (StartWorkout@now=9000)
+    const resumed = makeDraft({ startedAt: 500 })
+    const { next } = reduce(resumed, { type: 'StartWorkout', now: 9000 })
+    if (next.status !== 'running') throw new Error('expected running')
+    expect(next.workout.startedAt).toBe(500)
+  })
+
+  it('FinishWorkout from running → completed emits no effects (runner handles I/O)', () => {
+    const { next, effects } = reduce(makeRunning(), { type: 'FinishWorkout' })
     expect(next.status).toBe('completed')
     if (next.status !== 'completed') throw new Error('unreachable')
     expect(next.workout.mode).toBe('completed')
-    expect(effects).toHaveLength(1)
-    expect(effects[0]).toEqual({
-      kind: 'completeWorkout',
-      notes: 'done',
-      durationOverrideSeconds: 3600,
-    })
+    expect(effects).toEqual([])
   })
 
   it('Discard → empty emits clearPersisted', () => {
@@ -212,7 +211,7 @@ describe('reduce — CompleteSet cascade', () => {
     const state = makeRunning({
       blocks: [
         makeStrengthBlock({
-          sets: [makeCompletedSet({ id: 1 }), active.status === 'active' ? active : active],
+          sets: [makeCompletedSet({ id: 1 }), active],
         }),
         makeStrengthBlock({ id: 2, sets: [makePlannedSet({ id: 1 })] }),
       ],
@@ -552,7 +551,7 @@ describe('reduce — running commands', () => {
     expect(block.sets[1]?.status).toBe('active')
   })
 
-  it('JumpTo on strength block finds first incomplete set', () => {
+  it('JumpTo on strength block finds first incomplete set and activates it', () => {
     const state = makeRunning({
       blocks: [
         makeStrengthBlock({ id: 1 }),
@@ -567,6 +566,26 @@ describe('reduce — running commands', () => {
     if (next.status !== 'running') throw new Error('expected running')
     expect(next.workout.selectedBlockIndex).toBe(1)
     expect(next.workout.activeSetIndex).toBe(1)
+    const landed = next.workout.blocks[1]
+    if (!landed || landed.kind !== 'strength') throw new Error('expected strength')
+    expect(landed.sets[1]?.status).toBe('active')
+  })
+
+  it('JumpTo onto a fully-complete strength block leaves statuses untouched', () => {
+    const state = makeRunning({
+      blocks: [
+        makeStrengthBlock({ id: 1 }),
+        makeStrengthBlock({ id: 2, sets: [makeCompletedSet({ id: 1 })] }),
+      ],
+      selectedBlockIndex: 0,
+    })
+    const { next } = reduce(state, { type: 'JumpTo', blockIndex: 1 })
+    if (next.status !== 'running') throw new Error('expected running')
+    expect(next.workout.selectedBlockIndex).toBe(1)
+    expect(next.workout.activeSetIndex).toBeNull()
+    const landed = next.workout.blocks[1]
+    if (!landed || landed.kind !== 'strength') throw new Error('expected strength')
+    expect(landed.sets[0]?.status).toBe('completed')
   })
 })
 

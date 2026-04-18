@@ -186,6 +186,19 @@ export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceCon
     isInitialized.value = true
   }
 
+  // Neutralises any in-flight debounced save after completion/teardown.
+  // The watchDebounced callback early-returns on !isInitialized.
+  function markCompleted(): void {
+    isInitialized.value = false
+    hasUnsavedChanges.value = false
+  }
+
+  function reset(): void {
+    isInitialized.value = false
+    hasUnsavedChanges.value = false
+    persistenceState.value = { status: 'idle' }
+  }
+
   /**
    * Force save the current state immediately.
    */
@@ -205,6 +218,8 @@ export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceCon
     exists,
     discard,
     markInitialized,
+    markCompleted,
+    reset,
     saveNow,
   }
 }
