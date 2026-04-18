@@ -88,8 +88,8 @@ export class QueuePO {
   async reorderBlocks(fromIndex: number, toIndex: number): Promise<void> {
     // Call the reorderBlocks function exposed on window by the test app
     // This is what Sortable.js's onEnd handler calls
-    const { useWorkout } = await import('@/features/workout/composables/useWorkout')
-    const { reorderBlocks } = useWorkout()
+    const { useWorkoutSession } = await import('@/features/workout/session')
+    const { reorderBlocks } = useWorkoutSession()
     reorderBlocks(fromIndex, toIndex)
     // Callers should use expect.poll() to verify DOM updates
   }

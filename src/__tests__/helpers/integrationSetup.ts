@@ -1,4 +1,4 @@
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { useWorkoutSession } from '@/features/workout/session'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
@@ -11,7 +11,7 @@ import { resetDatabase } from './resetDatabase'
  * Resets workout state, benchmark state, timer, database, and clears the DOM.
  */
 export async function cleanupIntegrationTest(): Promise<void> {
-  resetWorkout()
+  useWorkoutSession().$reset()
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()

@@ -3,7 +3,6 @@ import { computed, readonly, ref, type ComputedRef, type Ref } from 'vue'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { useExercisesStore } from '@/stores/exercises'
-import { getWorkoutRef, restoreWorkout } from '@/stores/workoutState'
 import {
   isStrengthBlock,
   type AmrapConfig,
@@ -18,7 +17,14 @@ import {
 } from '@/types/blocks'
 import type { Set, Workout } from '@/types/workout'
 import { createEffectRunner, runEffects } from './effects'
-import { bucketFor, isBlockComplete, isSetReady, isSetReadyForDuration, reduce } from './reducer'
+import {
+  bucketFor,
+  emptyWorkout,
+  isBlockComplete,
+  isSetReady,
+  isSetReadyForDuration,
+  reduce,
+} from './reducer'
 import type { Command, CompleteSetOutcome, SessionState } from './types'
 
 
@@ -38,14 +44,18 @@ function deriveSession(
 }
 
 export const useWorkoutSession = createGlobalState(() => {
-  const workoutRef = getWorkoutRef()
+  const workoutRef = ref<Workout>(emptyWorkout())
   const lastOutcome = ref<CompleteSetOutcome | null>(null)
   const runner = createEffectRunner(workoutRef)
 
   const state = deriveSession(workoutRef, lastOutcome)
 
   function applyNextWorkout(next: SessionState): void {
-    if (next.status === 'empty') return
+    if (next.status === 'empty') {
+      workoutRef.value = emptyWorkout()
+      lastOutcome.value = null
+      return
+    }
     workoutRef.value = next.workout
     if (next.status === 'running') {
       lastOutcome.value = next.lastOutcome
@@ -101,7 +111,7 @@ export const useWorkoutSession = createGlobalState(() => {
   })
 
   const hasStarted = computed(() =>
-    workoutRef.value.blocks.some((b) => {
+    workoutRef.value.blocks.some((b: WorkoutBlock) => {
       if (isStrengthBlock(b)) return b.sets.some((s) => s.status === 'completed')
       return b.result !== null
     }),
@@ -119,10 +129,13 @@ export const useWorkoutSession = createGlobalState(() => {
   async function loadActive(): Promise<Workout | null> {
     const loaded = await runner.loadActive()
     if (loaded) {
-      restoreWorkout(loaded)
       dispatch({ type: 'LoadActive', workout: loaded })
     }
     return loaded
+  }
+
+  function loadWorkout(loaded: Workout): void {
+    dispatch({ type: 'LoadActive', workout: loaded })
   }
 
   async function hasActive(): Promise<boolean> {
@@ -319,6 +332,7 @@ export const useWorkoutSession = createGlobalState(() => {
   }
 
   function $reset(): void {
+    workoutRef.value = emptyWorkout()
     lastOutcome.value = null
   }
 
@@ -353,6 +367,7 @@ export const useWorkoutSession = createGlobalState(() => {
     // Lifecycle
     newDraft,
     loadActive,
+    loadWorkout,
     hasActive,
     start,
     startWorkout,

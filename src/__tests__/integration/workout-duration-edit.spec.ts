@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db'
-import { getWorkoutRef } from '@/stores/workoutState'
+import { useWorkoutSession } from '@/features/workout/session'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -17,7 +17,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 45 minutes elapsed
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       workoutRef.value.startedAt = Date.now() - 45 * 60 * 1000
 
       // Open finish dialog
@@ -50,7 +50,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed (user forgot to stop)
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       const startedAt = Date.now() - 4 * 60 * 60 * 1000
       workoutRef.value.startedAt = startedAt
 
@@ -98,7 +98,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 30 minutes elapsed
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       workoutRef.value.startedAt = Date.now() - 30 * 60 * 1000
 
       // Open finish dialog and finish without editing duration
@@ -131,7 +131,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       workoutRef.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
 
       // Open finish dialog
@@ -152,7 +152,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 1 hour elapsed (under threshold)
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       workoutRef.value.startedAt = Date.now() - 60 * 60 * 1000
 
       // Open finish dialog
@@ -173,7 +173,7 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed
-      const workoutRef = getWorkoutRef()
+      const { workout: workoutRef } = useWorkoutSession()
       workoutRef.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
 
       // Open finish dialog

@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { restoreWorkout } from '@/features/workout/session'
+import { useWorkoutSession } from '@/features/workout/session'
 import { RouteNames } from '@/router'
 import {
   AddBlockDialog,
@@ -122,11 +122,13 @@ function handleConfirmCardio(config: CardioConfig): void {
   addCardioBlock(config)
 }
 
+const session = useWorkoutSession()
+
 // Navigation handlers
 async function handleStartWorkout(): Promise<void> {
   const result = await startWorkout()
   if (result) {
-    restoreWorkout(result.workout)
+    session.loadWorkout(result.workout)
     router.push({ name: RouteNames.ActiveWorkout })
   }
 }

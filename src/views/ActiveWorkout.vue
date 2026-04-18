@@ -19,9 +19,7 @@ import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEdit
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
 import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer.vue'
-import { getWorkoutRef, resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
-import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
-import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { useWorkoutSession } from '@/features/workout/session'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -36,29 +34,31 @@ import { isStrengthBlock } from '@/types/blocks'
 const router = useRouter()
 const {
   workout,
-  selectedExercise,
-  addExercise,
-  updateExercise,
+  selectedBlock,
+  addStrengthBlock,
+  updateStrengthBlock,
   setSetCount,
   addAmrapBlock,
   addEmomBlock,
   addTabataBlock,
   addForTimeBlock,
   addCardioBlock,
-} = useWorkout()
-
-const { isBuilderMode, isActiveMode, isCompletedMode, enterCompletionMode } = useWorkoutMode()
-
-// Initialize persistence for this workout session
-const workoutReference = getWorkoutRef()
-const {
+  isBuilderMode,
+  isActiveMode,
+  isCompletedMode,
+  enterCompletionMode,
   isInitialized,
   startNewWorkoutSession,
   markInitialized,
   completeWorkout,
   saveNow,
-  discardActiveWorkout,
-} = useWorkoutPersistence(workoutReference)
+  discard,
+} = useWorkoutSession()
+
+const selectedExercise = computed(() => {
+  const block = selectedBlock.value
+  return block && isStrengthBlock(block) ? block : null
+})
 
 onMounted(() => {
   // If not already initialized (from resume), start a new session
@@ -134,21 +134,20 @@ async function handleConfirmFinish(name: string, durationSeconds: number) {
   }
 
   // Fallback if completion fails
-  resetWorkout()
+  await discard()
   router.push({ name: RouteNames.Home })
 }
 
 // Handler for completion screen button
-function handleViewDetails() {
+async function handleViewDetails() {
   if (!completionData.value) return
   const id = completionData.value.id
-  resetWorkout()
+  await discard()
   router.push({ name: RouteNames.WorkoutSummary, params: { id } })
 }
 
 async function handleConfirmCancel() {
-  await discardActiveWorkout()
-  resetWorkout()
+  await discard()
   router.push({ name: RouteNames.Home })
 }
 
@@ -189,7 +188,7 @@ function handleConfirmCardio(config: CardioConfig) {
 
 function handleSaveExercise(data: ExerciseEditData) {
   if (!selectedExercise.value) return
-  updateExercise({
+  updateStrengthBlock({
     targetReps: data.targetReps,
     targetDuration: data.targetDuration,
     targetWeight: data.targetWeight,
@@ -257,7 +256,7 @@ function handleQueueAddBlock() {
     <!-- Dialogs (shared across modes) -->
     <AddBlockDialog
       v-model:open="addBlockDialogOpen"
-      @add-exercise="(exercise) => addExercise(exercise.id ?? exercise.name, exercise.name)"
+      @add-exercise="(exercise) => addStrengthBlock(exercise.id ?? exercise.name, exercise.name)"
       @add-timed-block="handleAddTimedBlock"
       @add-cardio-block="handleAddCardioBlock"
     />

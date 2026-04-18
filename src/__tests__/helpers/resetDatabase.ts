@@ -3,10 +3,9 @@ import { resetRepositoryProvider } from '@/db/provider'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { resetWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
+import { useWorkoutSession } from '@/features/workout/session'
 import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
-import { resetWorkout } from '@/stores/workoutState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 
 /**
@@ -26,9 +25,8 @@ export async function resetDatabase(): Promise<void> {
   useOnboarding().$reset()
 
   // Reset singleton workout state
-  resetWorkout()
+  useWorkoutSession().$reset()
   resetBenchmarkWorkout()
-  resetWorkoutPersistence()
   resetInitState()
 
   // Reset timers
