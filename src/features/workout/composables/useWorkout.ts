@@ -22,7 +22,7 @@ import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
-export type { Set, Workout } from '@/types/workout'
+export type { Workout } from '@/types/workout'
 export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
 
 // Get reference to shared workout singleton
@@ -46,7 +46,7 @@ export function isSetReady(set: Readonly<Set>): boolean {
  * Check if an isometric/duration-based set is ready to be marked complete.
  * Requires duration > 0 (weight and RIR are optional for isometric exercises).
  */
-export function isSetReadyForDuration(set: Readonly<Set>): boolean {
+function isSetReadyForDuration(set: Readonly<Set>): boolean {
   const duration = Number(set.duration)
   return set.duration !== '' && duration > 0
 }

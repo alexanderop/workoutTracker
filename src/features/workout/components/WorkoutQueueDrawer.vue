@@ -11,7 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useWorkout } from '@/features/workout/composables/useWorkout'
+import { useWorkoutSession } from '@/features/workout/session'
 import { cn } from '@/lib/utils'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import WorkoutQueueItem from './WorkoutQueueItem.vue'
@@ -24,7 +24,7 @@ const emit = defineEmits<{
   'add-block': []
 }>()
 
-const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkout()
+const { workout, selectBlock, reorderBlocks, removeBlock } = useWorkoutSession()
 
 // Create a mutable copy for sortable to work with
 const blocksList = ref([...workout.value.blocks])

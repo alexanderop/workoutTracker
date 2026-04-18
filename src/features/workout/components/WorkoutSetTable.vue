@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Set } from '@/features/workout/composables/useWorkout'
+import type { Set } from '@/types/workout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'

@@ -1,4 +1,4 @@
-import type { Set } from '@/features/workout/composables/useWorkout'
+import type { Set } from '@/types/workout'
 import type { StrengthBlock,  } from '@/types/blocks'
 import { createSet, createEmptySet } from './set.factory'
 

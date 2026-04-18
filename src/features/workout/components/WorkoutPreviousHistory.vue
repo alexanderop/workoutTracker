@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Set } from '@/features/workout/composables/useWorkout'
+import type { Set } from '@/types/workout'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Separator } from '@/components/ui/separator'
