@@ -1,19 +1,7 @@
 import { computed } from 'vue'
 import { useWorkout } from './useWorkout'
-import { isStrengthBlock, isTimedBlock, type WorkoutBlock } from '@/types/blocks'
-
-/**
- * Check if a block is complete (all sets done or has result).
- */
-function isBlockComplete(block: WorkoutBlock): boolean {
-  if (isStrengthBlock(block)) {
-    return block.sets.every((s) => s.status === 'completed')
-  }
-  if (isTimedBlock(block)) {
-    return block.result !== null
-  }
-  return false // cardio blocks - not yet tracked
-}
+import { hasWorkoutBlockProgress, isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
+import { isStrengthBlock } from '@/types/blocks'
 
 /**
  * Composable for managing workout mode transitions.
@@ -44,7 +32,7 @@ export function useWorkoutMode() {
   const isLastBlock = computed(() => {
     for (let index = currentBlockIndex.value + 1; index < workout.value.blocks.length; index++) {
       const block = workout.value.blocks[index]
-      if (block && !isBlockComplete(block)) return false
+      if (block && !isWorkoutBlockComplete(block)) return false
     }
     return true
   })
@@ -54,15 +42,7 @@ export function useWorkoutMode() {
    * Used to determine whether to show "Continue Workout" vs "Start Workout".
    */
   const hasStarted = computed(() => {
-    return workout.value.blocks.some((block) => {
-      if (isStrengthBlock(block)) {
-        return block.sets.some((set) => set.status === 'completed')
-      }
-      if (isTimedBlock(block)) {
-        return block.result !== null
-      }
-      return false
-    })
+    return workout.value.blocks.some(hasWorkoutBlockProgress)
   })
 
   function initializeTimestamps() {
@@ -125,7 +105,7 @@ export function useWorkoutMode() {
     let nextIndex: number | null = null
     for (let index = workout.value.selectedBlockIndex + 1; index < workout.value.blocks.length; index++) {
       const block = workout.value.blocks[index]
-      if (block && !isBlockComplete(block)) {
+      if (block && !isWorkoutBlockComplete(block)) {
         nextIndex = index
         break
       }

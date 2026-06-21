@@ -14,6 +14,7 @@ import {
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
 } from '@/lib/workoutBlockList'
+import { findFirstIncompleteWorkoutBlockIndex } from '@/lib/workoutBlockStatus'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {
@@ -116,20 +117,6 @@ function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
 }
 
 /**
- * Check if a block is complete.
- * - Strength blocks: all sets must have status 'completed'
- * - Timed blocks (amrap, emom, tabata, fortime): result must not be null
- * - Cardio blocks: result must not be null
- */
-function isBlockComplete(block: WorkoutBlock): boolean {
-  if (isStrengthBlock(block)) {
-    return block.sets.every((s) => s.status === 'completed')
-  }
-  // Timed and cardio blocks are complete when they have a result
-  return block.result !== null
-}
-
-/**
  * Check if a set should use duration-based validation.
  * Returns true for exercises with 'duration' metrics.
  */
@@ -157,14 +144,6 @@ function createFirstSetFromHistory(lastSet: { kg: number; reps: number; duration
     rir: lastSet.rir === null ? '' : String(lastSet.rir),
     status: 'active' as const,
   }
-}
-
-/**
- * Find the first incomplete block in the workout.
- * Returns the block index, or -1 if all blocks are complete.
- */
-function findFirstIncompleteBlockIndex(blocks: ReadonlyArray<WorkoutBlock>): number {
-  return blocks.findIndex((block) => !isBlockComplete(block))
 }
 
 /**
@@ -300,7 +279,7 @@ export function useWorkout() {
     if (nextBlockResult) return nextBlockResult
 
     // Try: first incomplete block (user may have skipped earlier blocks)
-    const firstIncompleteIndex = findFirstIncompleteBlockIndex(workout.value.blocks)
+    const firstIncompleteIndex = findFirstIncompleteWorkoutBlockIndex(workout.value.blocks)
     if (firstIncompleteIndex !== -1) {
       const incompleteBlockResult = advanceToNextBlock(firstIncompleteIndex)
       if (incompleteBlockResult) return incompleteBlockResult
