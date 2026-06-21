@@ -43,6 +43,10 @@ export default {
     title: 'Übung bearbeiten',
     save: 'Speichern',
   },
+  form: {
+    saveError: 'Übung konnte nicht gespeichert werden. Bitte erneut versuchen.',
+    saveErrorTitle: 'Speichern fehlgeschlagen',
+  },
   selectors: {
     equipment: {
       title: 'Ausrüstung auswählen',

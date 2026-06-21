@@ -16,7 +16,7 @@ const { t } = useI18n()
 
 const open = defineModel<boolean>('open', { required: true })
 const workoutName = defineModel<string>('workoutName', { default: '' })
-const durationMinutes = defineModel<number>('durationMinutes', { default: 0 })
+const durationMinutes = defineModel<number | ''>('durationMinutes', { default: 0 })
 
 const emit = defineEmits<{
   confirm: [name: string, durationSeconds: number]

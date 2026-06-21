@@ -18,6 +18,7 @@ export default {
   increaseWeight: 'Increase weight',
   decreaseWeight: 'Decrease weight',
   chartLabel: 'Weight trend chart with {count} data points',
+  singleDataPoint: 'Add another entry to see a trend.',
   timeRangeSelector: 'Select time range',
   trendUp: 'trending up',
   trendDown: 'trending down',

@@ -43,6 +43,10 @@ export default {
     title: 'Edit Exercise',
     save: 'Save',
   },
+  form: {
+    saveError: 'Failed to save exercise. Please try again.',
+    saveErrorTitle: 'Save Failed',
+  },
   selectors: {
     equipment: {
       title: 'Select Equipment',

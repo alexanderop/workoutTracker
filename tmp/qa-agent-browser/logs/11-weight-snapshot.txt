@@ -1,0 +1,12 @@
+- heading "Weight" [level=1, ref=e1]
+- button "Decrease" [ref=e10]
+- spinbutton "Enter your weight" [ref=e11]: 80
+- button "Increase" [ref=e12]
+- button "Save weight entry" [ref=e2]
+- button "Home" [ref=e3]
+- button "Workouts" [ref=e4]
+- button "Exercises" [ref=e5]
+- button "Weight" [ref=e6]
+- button "Settings" [ref=e7]
+- generic "Toggle devtools panel" [ref=e8] clickable [cursor:pointer]
+- generic [ref=e9] clickable [cursor:pointer]

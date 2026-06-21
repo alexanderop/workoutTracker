@@ -10,6 +10,7 @@ export default {
     remove: 'Entfernen',
     confirm: 'Bestätigen',
     close: 'Schließen',
+    options: 'Optionen',
     discard: 'Verwerfen',
     later: 'Später',
     done: 'Fertig',
