@@ -2,12 +2,6 @@ import { ref, shallowRef } from 'vue'
 import { createGlobalState } from '@vueuse/core'
 import type {
   WorkoutBlock,
-  StrengthBlock,
-  AmrapBlock,
-  EmomBlock,
-  TabataBlock,
-  ForTimeBlock,
-  CardioBlock,
   BlockExercise,
   AmrapConfig,
   EmomConfig,
@@ -17,10 +11,18 @@ import type {
 } from '@/types/blocks'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
-import type { Equipment } from '@/types/exercises'
 import { getTemplatesRepository } from '@/db'
 import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import {
+  createAmrapWorkoutBlock,
+  createCardioWorkoutBlock,
+  createEmomWorkoutBlock,
+  createForTimeWorkoutBlock,
+  createTabataWorkoutBlock,
+  createWorkoutBlockFromHistory,
+  createWorkoutBlockFromTemplate,
+} from '@/lib/workoutBlockFactory'
 
 /**
  * Calculate the new selected index after deleting an item from a list.
@@ -50,138 +52,6 @@ function calculateIndexAfterReorder(
   return currentSelected
 }
 
-function createStrengthBlockFromTemplate(
-  templateBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; targetDuration?: number | null; targetWeight?: number | null; defaultSetCount?: number; image: Blob | null; exerciseDefinitionId?: string | null },
-  newId: number,
-): StrengthBlock {
-  const setCount = templateBlock.defaultSetCount ?? 3
-  const sets: Array<Set> = Array.from({ length: setCount }, (_, index) => ({
-    id: index + 1,
-    kg: '',
-    reps: String(templateBlock.targetReps ?? ''),
-    duration: '',
-    rir: '',
-    status: 'completed',
-  }))
-
-  return {
-    kind: 'strength',
-    id: newId,
-    exerciseDefinitionId: templateBlock.exerciseDefinitionId ?? null,
-    name: templateBlock.name,
-    equipment: templateBlock.equipment,
-    targetReps: templateBlock.targetReps ?? 8,
-    targetDuration: templateBlock.targetDuration ?? null,
-    targetWeight: templateBlock.targetWeight ?? null,
-    sets,
-    image: templateBlock.image,
-  }
-}
-
-function createStrengthBlockFromHistory(
-  historyBlock: { kind: 'strength'; name: string; equipment: Equipment; targetReps?: number; targetDuration?: number | null; targetWeight?: number | null; sets: ReadonlyArray<{ kg: string; reps: string; rir: string }>; image: Blob | null; exerciseDefinitionId?: string | null },
-  newId: number,
-): StrengthBlock {
-  const sets: Array<Set> = historyBlock.sets.map((set, setIndex) => ({
-    id: setIndex + 1,
-    kg: set.kg,
-    reps: set.reps,
-    duration: '',
-    rir: set.rir,
-    status: 'completed',
-  }))
-
-  return {
-    kind: 'strength',
-    id: newId,
-    exerciseDefinitionId: historyBlock.exerciseDefinitionId ?? null,
-    name: historyBlock.name,
-    equipment: historyBlock.equipment,
-    targetReps: historyBlock.targetReps ?? 8,
-    targetDuration: historyBlock.targetDuration ?? null,
-    targetWeight: historyBlock.targetWeight ?? null,
-    sets,
-    image: historyBlock.image,
-  }
-}
-
-function buildBlockExercise(
-  id: string,
-  source: { name: string; prescribedReps: number; load: string | null; image: Blob | null },
-): BlockExercise {
-  return {
-    id,
-    name: source.name,
-    prescribedReps: source.prescribedReps,
-    load: source.load,
-    image: source.image,
-  }
-}
-
-function convertTemplateBlockExercise(
-  exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null },
-): BlockExercise {
-  return buildBlockExercise(exercise.exerciseDefinitionId ?? crypto.randomUUID(), exercise)
-}
-
-function convertDatabaseBlockExercise(
-  exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null },
-): BlockExercise {
-  return buildBlockExercise(exercise.id, exercise)
-}
-
-function createAmrapBlockFromTemplate(
-  templateBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): AmrapBlock {
-  return {
-    kind: 'amrap',
-    id: newId,
-    config: { durationSeconds: templateBlock.config.durationSeconds },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
-    result: null,
-  }
-}
-
-function createEmomBlockFromTemplate(
-  templateBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): EmomBlock {
-  return {
-    kind: 'emom',
-    id: newId,
-    config: { minutes: templateBlock.config.minutes, exerciseRotation: templateBlock.config.exerciseRotation },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
-    result: null,
-  }
-}
-
-function createTabataBlockFromTemplate(
-  templateBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null } },
-  newId: number,
-): TabataBlock {
-  return {
-    kind: 'tabata',
-    id: newId,
-    config: { rounds: templateBlock.config.rounds, workSeconds: templateBlock.config.workSeconds, restSeconds: templateBlock.config.restSeconds },
-    exercise: convertTemplateBlockExercise(templateBlock.exercise),
-    result: null,
-  }
-}
-
-function createForTimeBlockFromTemplate(
-  templateBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ exerciseDefinitionId: string | null; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): ForTimeBlock {
-  return {
-    kind: 'fortime',
-    id: newId,
-    config: { timeCapSeconds: templateBlock.config.timeCapSeconds },
-    exercises: templateBlock.exercises.map(convertTemplateBlockExercise),
-    result: null,
-  }
-}
-
 /**
  * Creates a new set based on the previous set's values (or defaults).
  */
@@ -193,146 +63,6 @@ function createNewSetFromPrevious(setId: number, previousSet: Set | undefined): 
     duration: previousSet?.duration ?? '',
     rir: previousSet?.rir ?? '',
     status: 'completed',
-  }
-}
-
-function createCardioBlock(
-  config: {
-    activity: CardioBlock['config']['activity']
-    targetDurationSeconds: number | null
-    targetDistanceMeters: number | null
-  },
-  newId: number,
-): CardioBlock {
-  return {
-    kind: 'cardio',
-    id: newId,
-    config: {
-      activity: config.activity,
-      targetDurationSeconds: config.targetDurationSeconds,
-      targetDistanceMeters: config.targetDistanceMeters,
-    },
-    result: null,
-  }
-}
-
-function createAmrapBlockFromHistory(
-  databaseBlock: { kind: 'amrap'; config: { durationSeconds: number }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): AmrapBlock {
-  return {
-    kind: 'amrap',
-    id: newId,
-    config: { durationSeconds: databaseBlock.config.durationSeconds },
-    exercises: databaseBlock.exercises.map(convertDatabaseBlockExercise),
-    result: null,
-  }
-}
-
-function createEmomBlockFromHistory(
-  databaseBlock: { kind: 'emom'; config: { minutes: number; exerciseRotation: 'each-minute' | 'full-round' }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): EmomBlock {
-  return {
-    kind: 'emom',
-    id: newId,
-    config: { minutes: databaseBlock.config.minutes, exerciseRotation: databaseBlock.config.exerciseRotation },
-    exercises: databaseBlock.exercises.map(convertDatabaseBlockExercise),
-    result: null,
-  }
-}
-
-function createTabataBlockFromHistory(
-  databaseBlock: { kind: 'tabata'; config: { rounds: number; workSeconds: number; restSeconds: number }; exercise: { id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null } },
-  newId: number,
-): TabataBlock {
-  return {
-    kind: 'tabata',
-    id: newId,
-    config: { rounds: databaseBlock.config.rounds, workSeconds: databaseBlock.config.workSeconds, restSeconds: databaseBlock.config.restSeconds },
-    exercise: convertDatabaseBlockExercise(databaseBlock.exercise),
-    result: null,
-  }
-}
-
-function createForTimeBlockFromHistory(
-  databaseBlock: { kind: 'fortime'; config: { timeCapSeconds: number | null }; exercises: ReadonlyArray<{ id: string; name: string; prescribedReps: number; load: string | null; image: Blob | null }> },
-  newId: number,
-): ForTimeBlock {
-  return {
-    kind: 'fortime',
-    id: newId,
-    config: { timeCapSeconds: databaseBlock.config.timeCapSeconds },
-    exercises: databaseBlock.exercises.map(convertDatabaseBlockExercise),
-    result: null,
-  }
-}
-
-/**
- * Converts a template block to a workout block based on its kind.
- */
-function convertTemplateBlockToWorkoutBlock(
-  block: NonNullable<Awaited<ReturnType<ReturnType<typeof getTemplatesRepository>['getById']>>>['blocks'][number],
-  newId: number,
-): WorkoutBlock | null {
-  if (!block) return null
-
-  switch (block.kind) {
-    case 'strength': {
-      return createStrengthBlockFromTemplate(block, newId)
-    }
-    case 'amrap': {
-      return createAmrapBlockFromTemplate(block, newId)
-    }
-    case 'emom': {
-      return createEmomBlockFromTemplate(block, newId)
-    }
-    case 'tabata': {
-      return createTabataBlockFromTemplate(block, newId)
-    }
-    case 'fortime': {
-      return createForTimeBlockFromTemplate(block, newId)
-    }
-    case 'cardio': {
-      return createCardioBlock(block.config, newId)
-    }
-    default: {
-      return null
-    }
-  }
-}
-
-/**
- * Converts a history block to a workout block based on its kind.
- */
-function convertHistoryBlockToWorkoutBlock(
-  block: NonNullable<Awaited<ReturnType<ReturnType<typeof getWorkoutsRepository>['getById']>>>['blocks'][number],
-  newId: number,
-): WorkoutBlock | null {
-  if (!block) return null
-
-  switch (block.kind) {
-    case 'strength': {
-      return createStrengthBlockFromHistory(block, newId)
-    }
-    case 'amrap': {
-      return createAmrapBlockFromHistory(block, newId)
-    }
-    case 'emom': {
-      return createEmomBlockFromHistory(block, newId)
-    }
-    case 'tabata': {
-      return createTabataBlockFromHistory(block, newId)
-    }
-    case 'fortime': {
-      return createForTimeBlockFromHistory(block, newId)
-    }
-    case 'cardio': {
-      return createCardioBlock(block.config, newId)
-    }
-    default: {
-      return null
-    }
   }
 }
 
@@ -382,8 +112,7 @@ export const usePastWorkout = createGlobalState(() => {
 
     // Convert template blocks to workout blocks with empty sets
     const workoutBlocks: Array<WorkoutBlock> = template.blocks
-      .map((block, index) => convertTemplateBlockToWorkoutBlock(block, index + 1))
-      .filter((block): block is WorkoutBlock => block !== null)
+      .map((block, index) => createWorkoutBlockFromTemplate(block, index + 1))
 
     blocks.value = workoutBlocks
     sourceType.value = 'template'
@@ -405,8 +134,7 @@ export const usePastWorkout = createGlobalState(() => {
 
     // Convert DB blocks to workout blocks, preserving set values
     const workoutBlocks: Array<WorkoutBlock> = historicalWorkout.blocks
-      .map((block, index) => convertHistoryBlockToWorkoutBlock(block, index + 1))
-      .filter((block): block is WorkoutBlock => block !== null)
+      .map((block, index) => createWorkoutBlockFromHistory(block, index + 1))
 
     blocks.value = workoutBlocks
     sourceType.value = 'history'
@@ -437,76 +165,38 @@ export const usePastWorkout = createGlobalState(() => {
    * Adds an AMRAP block.
    */
   function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    const block: AmrapBlock = {
-      kind: 'amrap',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    }
-    const newBlocks = [...blocks.value, block]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    appendNewBlock(createAmrapWorkoutBlock(config, exercises, generateBlockId()))
   }
 
   /**
    * Adds an EMOM block.
    */
   function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    const block: EmomBlock = {
-      kind: 'emom',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    }
-    const newBlocks = [...blocks.value, block]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    appendNewBlock(createEmomWorkoutBlock(config, exercises, generateBlockId()))
   }
 
   /**
    * Adds a Tabata block.
    */
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
-    const block: TabataBlock = {
-      kind: 'tabata',
-      id: generateBlockId(),
-      config,
-      exercise,
-      result: null,
-    }
-    const newBlocks = [...blocks.value, block]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    appendNewBlock(createTabataWorkoutBlock(config, exercise, generateBlockId()))
   }
 
   /**
    * Adds a For Time block.
    */
   function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    const block: ForTimeBlock = {
-      kind: 'fortime',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    }
-    const newBlocks = [...blocks.value, block]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    appendNewBlock(createForTimeWorkoutBlock(config, exercises, generateBlockId()))
   }
 
   /**
    * Adds a Cardio block.
    */
   function addCardioBlock(config: CardioConfig): void {
-    const block: CardioBlock = {
-      kind: 'cardio',
-      id: generateBlockId(),
-      config,
-      result: null,
-    }
+    appendNewBlock(createCardioWorkoutBlock(config, generateBlockId()))
+  }
+
+  function appendNewBlock(block: WorkoutBlock): void {
     const newBlocks = [...blocks.value, block]
     blocks.value = newBlocks
     selectedBlockIndex.value = newBlocks.length - 1
