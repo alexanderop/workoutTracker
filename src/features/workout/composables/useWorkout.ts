@@ -1,6 +1,13 @@
 import { computed } from 'vue'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+import {
+  createAmrapWorkoutBlock,
+  createCardioWorkoutBlock,
+  createEmomWorkoutBlock,
+  createForTimeWorkoutBlock,
+  createTabataWorkoutBlock,
+} from '@/lib/workoutBlockFactory'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {
@@ -399,53 +406,24 @@ export function useWorkout() {
     })
   }
 
-  function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
-    appendBlock({
-      kind: 'amrap',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    })
+  function addAmrapBlock(config: AmrapConfig, blockExercises: ReadonlyArray<BlockExercise>) {
+    appendBlock(createAmrapWorkoutBlock(config, blockExercises, generateBlockId()))
   }
 
-  function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>) {
-    appendBlock({
-      kind: 'emom',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    })
+  function addEmomBlock(config: EmomConfig, blockExercises: ReadonlyArray<BlockExercise>) {
+    appendBlock(createEmomWorkoutBlock(config, blockExercises, generateBlockId()))
   }
 
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise) {
-    appendBlock({
-      kind: 'tabata',
-      id: generateBlockId(),
-      config,
-      exercise,
-      result: null,
-    })
+    appendBlock(createTabataWorkoutBlock(config, exercise, generateBlockId()))
   }
 
-  function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>) {
-    appendBlock({
-      kind: 'fortime',
-      id: generateBlockId(),
-      config,
-      exercises: [...exercises],
-      result: null,
-    })
+  function addForTimeBlock(config: ForTimeConfig, blockExercises: ReadonlyArray<BlockExercise>) {
+    appendBlock(createForTimeWorkoutBlock(config, blockExercises, generateBlockId()))
   }
 
   function addCardioBlock(config: CardioConfig) {
-    appendBlock({
-      kind: 'cardio',
-      id: generateBlockId(),
-      config,
-      result: null,
-    })
+    appendBlock(createCardioWorkoutBlock(config, generateBlockId()))
   }
 
   function removeBlock(blockIndex: number) {
