@@ -47,6 +47,7 @@ export default {
 
   delete: {
     title: 'Delete Progression?',
+    action: 'Delete progression',
     description: 'This will delete the progression and all session history. This action cannot be undone.',
   },
 

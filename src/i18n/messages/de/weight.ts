@@ -18,6 +18,7 @@ export default {
   increaseWeight: 'Gewicht erhöhen',
   decreaseWeight: 'Gewicht verringern',
   chartLabel: 'Gewichtstrend-Diagramm mit {count} Datenpunkten',
+  singleDataPoint: 'Füge einen weiteren Eintrag hinzu, um einen Trend zu sehen.',
   timeRangeSelector: 'Zeitraum auswählen',
   trendUp: 'steigend',
   trendDown: 'fallend',

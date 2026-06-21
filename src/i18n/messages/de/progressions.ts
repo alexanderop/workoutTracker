@@ -47,6 +47,7 @@ export default {
 
   delete: {
     title: 'Progression löschen?',
+    action: 'Progression löschen',
     description: 'Dies löscht die Progression und den gesamten Verlauf. Diese Aktion kann nicht rückgängig gemacht werden.',
   },
 

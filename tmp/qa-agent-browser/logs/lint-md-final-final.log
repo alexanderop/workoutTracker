@@ -1,0 +1,8 @@
+
+> workouttracker@1.28.5 lint:md /Users/alexanderopalic/Projects/active/workoutTracker
+> markdownlint-cli2 "**/*.md" "#node_modules"
+
+markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
+Finding: **/*.md !node_modules !CHANGELOG.md
+Linting: 178 file(s)
+Summary: 0 error(s)

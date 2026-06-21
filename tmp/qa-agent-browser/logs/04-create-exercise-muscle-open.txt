@@ -1,0 +1,8 @@
+- heading "Select Muscle Group" [level=2, ref=e1]
+- button "🏔️ Chest" [ref=e2]
+- button "🔙 Back" [ref=e3]
+- button "🦵 Legs" [ref=e4]
+- button "💪 Shoulders" [ref=e5]
+- button "💯 Arms" [ref=e6]
+- button "⭐ Core" [ref=e7]
+- button "Close" [ref=e8]

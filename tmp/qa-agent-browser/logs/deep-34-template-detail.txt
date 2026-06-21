@@ -1,0 +1,18 @@
+- button "Go back" [ref=e8]
+- heading "QA Template Push" [level=1, ref=e9]
+- textbox "Template Name" [ref=e10]: QA Template Push
+- heading "Blocks" [level=2, ref=e11]
+- button "Decrease set count" [ref=e15]
+- spinbutton "Set count" [ref=e16]: 3
+- button "Increase set count" [ref=e17]
+- button "Remove exercise" [ref=e18]
+- button "Add Block" [ref=e12]
+- button "Start Workout" [ref=e13]
+- button "Delete Template" [ref=e14]
+- button "Home" [ref=e1]
+- button "Workouts" [ref=e2]
+- button "Exercises" [ref=e3]
+- button "Weight" [ref=e4]
+- button "Settings" [ref=e5]
+- generic "Toggle devtools panel" [ref=e6] clickable [cursor:pointer]
+- generic [ref=e7] clickable [cursor:pointer]

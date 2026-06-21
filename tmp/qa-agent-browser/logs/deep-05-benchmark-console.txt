@@ -1,0 +1,3 @@
+[debug] [vite] connecting...
+[debug] [vite] connected.
+[warning] [intlify] Not found 'common.buttons.options' key in 'en' locale messages.

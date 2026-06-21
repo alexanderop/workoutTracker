@@ -1,0 +1,59 @@
+
+> workouttracker@1.28.5 build-only /Users/alexanderopalic/Projects/active/workoutTracker
+> vite build
+
+vite v8.0.16 building client environment for production...
+[2Ktransforming...✓ 5568 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.webmanifest                            0.51 kB
+dist/index.html                                      0.83 kB │ gzip:   0.44 kB
+dist/assets/ExerciseProgressView-LDHiQuZc.css        0.12 kB │ gzip:   0.09 kB
+dist/assets/index-CIaF9Pke.css                     114.05 kB │ gzip:  18.28 kB
+dist/assets/en-CyitUNjt.js                           0.05 kB │ gzip:   0.07 kB
+dist/assets/ProgressionsView-Bk1V7ueq.js             1.93 kB │ gzip:   0.82 kB
+dist/assets/CreateProgressionView-Cu1E_pWB.js        4.64 kB │ gzip:   1.86 kB
+dist/assets/ActiveProgressionView-CpskS9Qw.js        5.41 kB │ gzip:   2.01 kB
+dist/assets/workbox-window.prod.es5-Bd17z0YL.js      5.65 kB │ gzip:   2.20 kB
+dist/assets/ProgressionDetailView-CuVpUEwF.js        6.17 kB │ gzip:   2.11 kB
+dist/assets/ExerciseProgressView-RrQGwCdR.js         7.81 kB │ gzip:   2.96 kB
+dist/assets/WeightView-FaoL42eO.js                  11.62 kB │ gzip:   4.31 kB
+dist/assets/en-B2_pbaGi.js                          25.52 kB │ gzip:   8.44 kB
+dist/assets/de-CLKG0376.js                          28.35 kB │ gzip:   9.42 kB
+dist/assets/OnboardingView-DXTm4vSX.js              31.59 kB │ gzip:  11.37 kB
+dist/assets/chart-D_4GEjR0.js                      207.07 kB │ gzip:  66.58 kB
+dist/assets/index-RsNBvCpZ.js                    1,149.37 kB │ gzip: 331.57 kB
+
+[31m[INVALID_ANNOTATION] [0mA comment "/* #__PURE__ */" in "node_modules/.pnpm/@vueuse+core@14.3.0_vue@3.5.38_typescript@6.0.3_/node_modules/@vueuse/core/dist/index.js" contains an annotation that Rolldown cannot interpret due to the position of the comment.
+      [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/@vueuse+core@14.3.0_vue@3.5.38_typescript@6.0.3_/node_modules/@vueuse/core/dist/index.js:3362:1 [38;5;246m][0m
+      [38;5;246m│[0m
+ [38;5;246m3362 │[0m /* #__PURE__ */
+ [38;5;240m     │[0m ───────┬───────  
+ [38;5;240m     │[0m        ╰───────── comment ignored due to position
+ [38;5;240m     │[0m 
+ [38;5;240m     │[0m [38;5;115mHelp[0m: For more information on how to use pure annotations correctly, check the documentation: https://rolldown.rs/in-depth/dead-code-elimination#pure
+[38;5;246m──────╯[0m
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[31m[INVALID_ANNOTATION] [0mA comment "/* #__PURE__ */" in "node_modules/.pnpm/@vueuse+core@14.3.0_vue@3.5.38_typescript@6.0.3_/node_modules/@vueuse/core/dist/index.js" contains an annotation that Rolldown cannot interpret due to the position of the comment.
+      [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/@vueuse+core@14.3.0_vue@3.5.38_typescript@6.0.3_/node_modules/@vueuse/core/dist/index.js:5780:23 [38;5;246m][0m
+      [38;5;246m│[0m
+ [38;5;246m5780 │[0m [38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249md[0m[38;5;249me[0m[38;5;249mf[0m[38;5;249ma[0m[38;5;249mu[0m[38;5;249ml[0m[38;5;249mt[0m[38;5;249mS[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249m([0m/* #__PURE__ */[38;5;249m [0m[38;5;249m{[0m
+ [38;5;240m     │[0m                       ───────┬───────  
+ [38;5;240m     │[0m                              ╰───────── comment ignored due to position
+ [38;5;240m     │[0m 
+ [38;5;240m     │[0m [38;5;115mHelp[0m: For more information on how to use pure annotations correctly, check the documentation: https://rolldown.rs/in-depth/dead-code-elimination#pure
+[38;5;246m──────╯[0m
+
+✓ built in 3.16s
+
+PWA v1.3.0
+mode      generateSW
+precache  23 entries (1562.74 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-e5cff4b9.js

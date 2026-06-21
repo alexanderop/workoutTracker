@@ -11,6 +11,7 @@ export default {
     remove: 'Remove',
     confirm: 'Confirm',
     close: 'Close',
+    options: 'Options',
     discard: 'Discard',
     later: 'Later',
     done: 'Done',

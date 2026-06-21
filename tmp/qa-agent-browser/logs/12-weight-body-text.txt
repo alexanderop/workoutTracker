@@ -1,0 +1,1 @@
+"Weight\nEnter your weight\nkg\nSave\n\nCurrent\n\n82.5 kg\n\nHome\nWorkouts\nExercises\nWeight\nSettings"

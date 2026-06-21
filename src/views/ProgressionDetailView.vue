@@ -81,6 +81,7 @@ async function handleDelete(): Promise<void> {
           variant="ghost"
           size="icon"
           :disabled="isDeleting"
+          :aria-label="t('progressions.delete.action')"
           @click="showDeleteDialog = true"
         >
           <Trash2 :size="20" />

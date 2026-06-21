@@ -1,0 +1,3 @@
+- heading "Resume Workout?" [level=2, ref=e1]
+- button "Discard" [ref=e2]
+- button "Resume Workout" [ref=e3]

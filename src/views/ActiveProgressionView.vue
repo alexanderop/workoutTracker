@@ -150,7 +150,12 @@ onMounted(() => {
             <div class="text-lg text-muted-foreground">
               {{ t('progressions.session.duration', { minutes: level?.minutes }) }}
             </div>
-            <Button size="lg" class="h-20 w-20 rounded-full" @click="handleStart">
+            <Button
+              size="lg"
+              class="h-20 w-20 rounded-full"
+              :aria-label="t('progressions.session.tapToStart')"
+              @click="handleStart"
+            >
               <Play :size="40" />
             </Button>
             <div class="text-sm text-muted-foreground">

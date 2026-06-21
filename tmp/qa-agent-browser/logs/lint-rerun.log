@@ -1,0 +1,57 @@
+
+> workouttracker@1.28.5 lint /Users/alexanderopalic/Projects/active/workoutTracker
+> run-s lint:*
+
+
+> workouttracker@1.28.5 lint:oxlint /Users/alexanderopalic/Projects/active/workoutTracker
+> oxlint . --fix --ignore-path .gitignore
+
+src/features/onboarding/composables/useOnboarding.ts:58:18: warning unicorn(consistent-function-scoping): Function `checkExistingData` does not capture any variables from its parent scope help: Move `checkExistingData` to the outer scope to avoid recreating it on every call.
+src/__tests__/helpers/pages/SetRowPO.ts:220:21: warning unicorn(no-array-fill-with-reference-type): Do not use a reference value as the fill value. help: Use `Array.from({ length: n }, () => /* new value */)` or `.map(() => /* new value */)` to create a distinct value for each element.
+src/__tests__/helpers/pages/SetRowPO.ts:158:11: warning unicorn(consistent-function-scoping): Function `fillValue` does not capture any variables from its parent scope help: Move `fillValue` to the outer scope to avoid recreating it on every call.
+src/features/workout/composables/useWorkout.ts:172:17: warning unicorn(consistent-function-scoping): Function `applyPrefillToSet` does not capture any variables from its parent scope help: Move `applyPrefillToSet` to the outer scope to avoid recreating it on every call.
+src/__tests__/integration/exercise-history-creation.spec.ts:36:23: warning unicorn(no-array-fill-with-reference-type): Do not use a reference value as the fill value. help: Use `Array.from({ length: n }, () => /* new value */)` or `.map(() => /* new value */)` to create a distinct value for each element.
+src/__tests__/architecture/metrics/mainSequenceAnalyzer.ts:94:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/mainSequenceAnalyzer.ts:105:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:49:11: warning eslint(no-shadow): 'path' is already declared in the upper scope. help: Consider renaming 'path' to avoid shadowing the variable from the outer scope.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:30:12: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:103:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:108:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:199:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/instabilityAnalyzer.ts:210:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/metrics/abstractnessAnalyzer.ts:101:14: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`function_`'. help: Remove the dangling '_' or add `function_` to the 'allow' configuration.
+src/__tests__/architecture/mainSequence.test.ts:80:16: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/mainSequence.test.ts:96:16: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/mainSequence.test.ts:105:18: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/mainSequence.test.ts:114:18: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/__tests__/architecture/mainSequence.test.ts:129:16: warning eslint(no-underscore-dangle): Unexpected dangling '_' in '`module_`'. help: Remove the dangling '_' or add `module_` to the 'allow' configuration.
+src/components/SwipeableWorkoutCard.vue:64:4: warning eslint(no-shadow): 'isOpen' is already declared in the upper scope. help: Consider renaming 'isOpen' to avoid shadowing the variable from the outer scope.
+src/__tests__/browser/timer-audio.spec.ts:83:10: warning eslint(no-shadow): 'result' is already declared in the upper scope. help: Consider renaming 'result' to avoid shadowing the variable from the outer scope.
+src/__tests__/browser/timer-audio.spec.ts:119:14: warning unicorn(consistent-function-scoping): Function `setupWithSoundDisabled` does not capture any variables from its parent scope help: Move `setupWithSoundDisabled` to the outer scope to avoid recreating it on every call.
+src/__tests__/integration/numeric-input-modal.spec.ts:171:22: warning unicorn(no-array-fill-with-reference-type): Do not use a reference value as the fill value. help: Use `Array.from({ length: n }, () => /* new value */)` or `.map(() => /* new value */)` to create a distinct value for each element.
+src/features/weight/composables/useWeightEntries.ts:65:17: warning unicorn(consistent-function-scoping): Function `getEntryForToday` does not capture any variables from its parent scope help: Move `getEntryForToday` to the outer scope to avoid recreating it on every call.
+src/__tests__/helpers/pages/ActiveWorkoutPO.ts:100:11: warning unicorn(consistent-function-scoping): Function `fillValue` does not capture any variables from its parent scope help: Move `fillValue` to the outer scope to avoid recreating it on every call.
+src/__tests__/integration/active-workout-fab.spec.ts:11:9: warning unicorn(consistent-function-scoping): Function `getActiveFab` does not capture any variables from its parent scope help: Move `getActiveFab` to the outer scope to avoid recreating it on every call.
+src/__tests__/integration/set-context-menu.spec.ts:139:27: warning unicorn(no-array-fill-with-reference-type): Do not use a reference value as the fill value. help: Use `Array.from({ length: n }, () => /* new value */)` or `.map(() => /* new value */)` to create a distinct value for each element.
+
+> workouttracker@1.28.5 lint:eslint /Users/alexanderopalic/Projects/active/workoutTracker
+> eslint . --fix --cache
+
+
+/Users/alexanderopalic/Projects/active/workoutTracker/src/composables/timers/useBaseTimer.ts
+  22:3  warning  Property `completed` is defined but never used  unicorn/no-unused-properties
+
+/Users/alexanderopalic/Projects/active/workoutTracker/src/features/timers/components/TimerPresetSelector.vue
+  165:3  warning  Property `label` is defined but never used        unicorn/no-unused-properties
+  166:3  warning  Property `description` is defined but never used  unicorn/no-unused-properties
+
+✖ 3 problems (0 errors, 3 warnings)
+
+
+> workouttracker@1.28.5 lint:md /Users/alexanderopalic/Projects/active/workoutTracker
+> markdownlint-cli2 "**/*.md" "#node_modules"
+
+markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
+Finding: **/*.md !node_modules !CHANGELOG.md
+Linting: 176 file(s)
+Summary: 0 error(s)
