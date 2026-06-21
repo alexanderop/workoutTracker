@@ -78,3 +78,21 @@ export const dbForTimeConfigSchema = z
     timeCapSeconds: z.number().int().min(1).max(7200).nullable(),
   })
   .strict()
+
+const databaseCardioActivitySchema = z.enum([
+  'running',
+  'cycling',
+  'rowing',
+  'elliptical',
+  'swimming',
+  'stairclimber',
+  'walking',
+])
+
+export const dbCardioConfigSchema = z
+  .object({
+    activity: databaseCardioActivitySchema,
+    targetDurationSeconds: z.number().int().min(1).max(36_000).nullable(), // max 10 hours
+    targetDistanceMeters: z.number().int().min(1).max(1_000_000).nullable(), // max 1000km
+  })
+  .strict()
