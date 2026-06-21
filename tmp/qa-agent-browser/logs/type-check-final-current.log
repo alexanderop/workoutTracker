@@ -1,0 +1,4 @@
+
+> workouttracker@1.28.5 type-check /Users/alexanderopalic/Projects/active/workoutTracker
+> vue-tsc --build
+

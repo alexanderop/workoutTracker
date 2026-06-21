@@ -1,0 +1,4 @@
+[debug] [vite] connecting...
+[debug] [vite] connected.
+[debug] [vite] hot updated: /src/components/ExerciseListItem.vue
+[debug] [vite] hot updated: /src/style.css

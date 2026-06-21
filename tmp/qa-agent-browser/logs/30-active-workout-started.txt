@@ -1,0 +1,43 @@
+- button "Go back" [ref=e7]
+- heading "Strength" [level=1, ref=e8]
+- button "Open workout queue" [ref=e9]
+- button "Workout options" [expanded=false, ref=e10]
+- heading "BENCH PRESS" [level=1, ref=e11]
+- columnheader "#" [ref=e26]
+- columnheader "LBS" [ref=e27]
+- columnheader "REPS" [ref=e28]
+- columnheader "RIR" [ref=e29]
+- columnheader "10RM" [ref=e30]
+- columnheader "Status" [ref=e31]
+- cell "1" [ref=e17]
+- spinbutton "Weight for set 1" [ref=e35]: 0
+- spinbutton "Reps for set 1" [ref=e36]: 0
+- spinbutton "Reps in reserve for set 1" [ref=e37]: 0
+- cell "—" [ref=e18]
+- cell "Mark set 1 complete" [ref=e19]
+  - button "Mark set 1 complete" [ref=e32]
+- cell "2" [ref=e20]
+- spinbutton "Weight for set 2" [ref=e38]: 0
+- spinbutton "Reps for set 2" [ref=e39]: 0
+- spinbutton "Reps in reserve for set 2" [ref=e40]: 0
+- cell "—" [ref=e21]
+- cell "Mark set 2 complete" [ref=e22]
+  - button "Mark set 2 complete" [ref=e33]
+- cell "3" [ref=e23]
+- spinbutton "Weight for set 3" [ref=e41]: 0
+- spinbutton "Reps for set 3" [ref=e42]: 0
+- spinbutton "Reps in reserve for set 3" [ref=e43]: 0
+- cell "—" [ref=e24]
+- cell "Mark set 3 complete" [ref=e25]
+  - button "Mark set 3 complete" [ref=e34]
+- button "Add Set" [ref=e1]
+- button "Previous block" [disabled, ref=e14]
+- button "Complete Set" [disabled, ref=e15]
+- button "Next block" [ref=e16]
+- button "Home" [ref=e2]
+- button "Workouts" [ref=e3]
+- button "Exercises" [ref=e4]
+- button "Weight" [ref=e5]
+- button "Settings" [ref=e6]
+- generic "Toggle devtools panel" [ref=e12] clickable [cursor:pointer]
+- generic [ref=e13] clickable [cursor:pointer]

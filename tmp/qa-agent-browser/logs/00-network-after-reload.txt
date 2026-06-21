@@ -1,0 +1,2036 @@
+[55E3FFBB921E0832A75E37AE4F113BE2] GET http://localhost:5174/ (Document) 200
+[7382.56844] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.56845] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.56846] GET http://localhost:5174/@vite/client (Script) 200
+[7382.56847] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.56856] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.56858] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.56859] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.56860] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.56861] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.56862] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.56864] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.56865] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.56866] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.56867] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.56868] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.56869] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.56870] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.56871] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.56873] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.56874] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.56875] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.56876] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.56877] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.56881] GET http://localhost:5174/manifest.webmanifest (Manifest) 200
+[7382.56886] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.56887] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.56890] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.56891] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.56892] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.56893] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.56895] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.56896] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.56897] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.56898] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.56900] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.56901] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.56902] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.56904] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.56905] GET http://localhost:5174/@id/__x00__vite/dynamic-import-helper.js (Script) 200
+[7382.56906] GET http://localhost:5174/node_modules/.vite/deps/vue-i18n.js?v=7e9daa00 (Script) 200
+[7382.56908] GET http://localhost:5174/src/i18n/messages/en/index.ts (Script) 200
+[7382.56909] GET http://localhost:5174/src/lib/tryCatch.ts (Script) 200
+[7382.56910] GET http://localhost:5174/src/i18n/types.ts (Script) 200
+[7382.56911] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.56913] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.56914] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.56915] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.56916] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.56917] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.56918] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.56919] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.56920] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.56922] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.56923] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.56924] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.56925] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.56926] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.56927] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.56929] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.56954] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_core.js?v=7e9daa00 (Script) 200
+[7382.56955] GET http://localhost:5174/src/db/index.ts (Script) 200
+[7382.56957] GET http://localhost:5174/src/stores/settings.ts (Script) 200
+[7382.56958] GET http://localhost:5174/src/composables/useScreenWakeLock.ts (Script) 200
+[7382.56959] GET http://localhost:5174/node_modules/.vite/deps/@lucide_vue.js?v=7e9daa00 (Script) 200
+[7382.56960] GET http://localhost:5174/@vite-plugin-pwa/virtual:pwa-register/vue (Script) 200
+[7382.56965] GET http://localhost:5174/src/i18n/messages/en/calendar.ts (Script) 200
+[7382.56966] GET http://localhost:5174/src/i18n/messages/en/common.ts (Script) 200
+[7382.56967] GET http://localhost:5174/src/i18n/messages/en/nav.ts (Script) 200
+[7382.56968] GET http://localhost:5174/src/i18n/messages/en/workouts.ts (Script) 200
+[7382.56969] GET http://localhost:5174/src/i18n/messages/en/exercises.ts (Script) 200
+[7382.56970] GET http://localhost:5174/src/i18n/messages/en/settings.ts (Script) 200
+[7382.56971] GET http://localhost:5174/src/i18n/messages/en/timers.ts (Script) 200
+[7382.56973] GET http://localhost:5174/src/i18n/messages/en/dialogs.ts (Script) 200
+[7382.56974] GET http://localhost:5174/src/i18n/messages/en/logPastWorkout.ts (Script) 200
+[7382.56975] GET http://localhost:5174/src/i18n/messages/en/weight.ts (Script) 200
+[7382.56977] GET http://localhost:5174/src/i18n/messages/en/progressions.ts (Script) 200
+[7382.56978] GET http://localhost:5174/src/i18n/messages/en/onboarding.ts (Script) 200
+[7382.56980] GET http://localhost:5174/src/components/ui/button/index.ts (Script) 200
+[7382.56981] GET http://localhost:5174/src/components/ui/dialog/index.ts (Script) 200
+[7382.56982] GET http://localhost:5174/src/components/DialogActions.vue (Script) 200
+[7382.56983] GET http://localhost:5174/src/components/MobileDialogContent.vue (Script) 200
+[7382.56984] GET http://localhost:5174/src/features/workout/composables/useWorkoutDurationTimer.ts (Script) 200
+[7382.56985] GET http://localhost:5174/src/features/workout/composables/useWorkoutMode.ts (Script) 200
+[7382.56986] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue?vue&type=style&index=0&scoped=dba082aa&lang.css (Script) 200
+[7382.56988] GET http://localhost:5174/src/db/seedExercises.ts (Script) 200
+[7382.56989] GET http://localhost:5174/src/db/seedTemplates.ts (Script) 200
+[7382.56990] GET http://localhost:5174/src/stores/exercises.ts (Script) 200
+[7382.56991] GET http://localhost:5174/src/features/workout/composables/useWorkout.ts (Script) 200
+[7382.56993] GET http://localhost:5174/src/features/workout/composables/useWorkoutPersistence.ts (Script) 200
+[7382.56994] GET http://localhost:5174/src/composables/useDialogState.ts (Script) 200
+[7382.56995] GET http://localhost:5174/src/features/workout/components/WorkoutActiveMode.vue (Script) 200
+[7382.56996] GET http://localhost:5174/src/features/workout/components/WorkoutCompletionScreen.vue (Script) 200
+[7382.56997] GET http://localhost:5174/src/features/workout/components/WorkoutBuilderMode.vue (Script) 200
+[7382.56998] GET http://localhost:5174/src/components/WorkoutCancelDialog.vue (Script) 200
+[7382.57000] GET http://localhost:5174/src/components/blocks/index.ts (Script) 200
+[7382.57001] GET http://localhost:5174/src/features/workout/components/WorkoutEditExerciseDialog.vue (Script) 200
+[7382.57002] GET http://localhost:5174/src/components/WorkoutFinishDialog.vue (Script) 200
+[7382.57003] GET http://localhost:5174/src/features/workout/components/WorkoutQueueDrawer.vue (Script) 200
+[7382.57004] GET http://localhost:5174/src/types/blocks.ts (Script) 200
+[7382.57006] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveMode.vue (Script) 200
+[7382.57007] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue (Script) 200
+[7382.57008] GET http://localhost:5174/src/composables/timers/useBenchmarkGlobalTimer.ts (Script) 200
+[7382.57009] GET http://localhost:5174/src/features/benchmarks/state/benchmarkState.ts (Script) 200
+[7382.57011] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkPersistence.ts (Script) 200
+[7382.57012] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkMode.ts (Script) 200
+[7382.57013] GET http://localhost:5174/src/db/provider.ts (Script) 200
+[7382.57014] GET http://localhost:5174/src/components/PageLayout.vue (Script) 200
+[7382.57015] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkViewMode.vue (Script) 200
+[7382.57017] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkEditMode.vue (Script) 200
+[7382.57018] GET http://localhost:5174/src/components/ui/numeric-input/NumericInputModal.vue (Script) 200
+[7382.57019] GET http://localhost:5174/src/components/ExercisePicker.vue (Script) 200
+[7382.57020] GET http://localhost:5174/src/composables/useEnterAnimation.ts (Script) 200
+[7382.57022] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkDetail.ts (Script) 200
+[7382.57023] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkForm.ts (Script) 200
+[7382.57024] GET http://localhost:5174/src/lib/formatters.ts (Script) 200
+[7382.57025] GET http://localhost:5174/src/composables/useFormDraft.ts (Script) 200
+[7382.57027] GET http://localhost:5174/src/components/ui/input/index.ts (Script) 200
+[7382.57028] GET http://localhost:5174/src/components/ui/label/index.ts (Script) 200
+[7382.57029] GET http://localhost:5174/src/components/ui/dropdown-menu/index.ts (Script) 200
+[7382.57030] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseList.vue (Script) 200
+[7382.57031] GET http://localhost:5174/src/features/benchmarks/components/RoundTabs.vue (Script) 200
+[7382.57033] GET http://localhost:5174/src/features/templates/components/TemplateBlockList.vue (Script) 200
+[7382.57034] GET http://localhost:5174/src/features/templates/composables/useTemplateCreation.ts (Script) 200
+[7382.57035] GET http://localhost:5174/src/features/exercises/components/ExerciseSelectorDialog.vue (Script) 200
+[7382.57037] GET http://localhost:5174/src/features/exercises/components/ExerciseSettingsItem.vue (Script) 200
+[7382.57038] GET http://localhost:5174/src/components/ErrorDialog.vue (Script) 200
+[7382.57039] GET http://localhost:5174/src/components/ExerciseAvatar.vue (Script) 200
+[7382.57040] GET http://localhost:5174/src/features/exercises/composables/useExerciseForm.ts (Script) 200
+[7382.57041] GET http://localhost:5174/src/features/exercises/composables/useImageUpload.ts (Script) 200
+[7382.57043] GET http://localhost:5174/src/features/exercises/data/exerciseOptions.ts (Script) 200
+[7382.57044] GET http://localhost:5174/src/lib/exerciseLabels.ts (Script) 200
+[7382.57045] GET http://localhost:5174/src/features/log-past-workout/components/SourceSelector.vue (Script) 200
+[7382.57046] GET http://localhost:5174/src/features/log-past-workout/components/DateDurationPicker.vue (Script) 200
+[7382.57047] GET http://localhost:5174/src/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue (Script) 200
+[7382.57048] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkout.ts (Script) 200
+[7382.57049] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkoutSave.ts (Script) 200
+[7382.57050] GET http://localhost:5174/src/components/ExerciseFilters.vue (Script) 200
+[7382.57052] GET http://localhost:5174/src/components/ExerciseListItem.vue (Script) 200
+[7382.57053] GET http://localhost:5174/src/composables/useExerciseSearch.ts (Script) 200
+[7382.57054] GET http://localhost:5174/src/stores/workoutState.ts (Script) 200
+[7382.57055] GET http://localhost:5174/src/features/templates/composables/useTemplateDetail.ts (Script) 200
+[7382.57056] GET http://localhost:5174/node_modules/.vite/deps/date-fns.js?v=7e9daa00 (Script) 200
+[7382.57058] GET http://localhost:5174/src/lib/dateLocale.ts (Script) 200
+[7382.57059] GET http://localhost:5174/src/components/WorkoutHistoryCard.vue (Script) 200
+[7382.57060] GET http://localhost:5174/src/components/SwipeableWorkoutCard.vue (Script) 200
+[7382.57061] GET http://localhost:5174/src/components/DeleteWorkoutDialog.vue (Script) 200
+[7382.57062] GET http://localhost:5174/src/components/ui/empty/index.ts (Script) 200
+[7382.57064] GET http://localhost:5174/src/composables/useSwipeableDelete.ts (Script) 200
+[7382.57065] GET http://localhost:5174/src/components/ui/card/index.ts (Script) 200
+[7382.57066] GET http://localhost:5174/src/components/RecentWorkoutsSection.vue (Script) 200
+[7382.57067] GET http://localhost:5174/src/components/WeekStrip.vue (Script) 200
+[7382.57069] GET http://localhost:5174/src/components/WorkoutCalendarSheet.vue (Script) 200
+[7382.57070] GET http://localhost:5174/src/composables/useWorkoutCalendar.ts (Script) 200
+[7382.57071] GET http://localhost:5174/src/features/timers/components/TimerPresetSelector.vue (Script) 200
+[7382.57072] GET http://localhost:5174/src/features/timers/components/StandaloneTimerRunner.vue (Script) 200
+[7382.57074] GET http://localhost:5174/src/components/ui/separator/index.ts (Script) 200
+[7382.57075] GET http://localhost:5174/src/features/settings/components/SettingsUnitsSection.vue (Script) 200
+[7382.57076] GET http://localhost:5174/src/features/settings/components/SettingsAppearanceSection.vue (Script) 200
+[7382.57077] GET http://localhost:5174/src/features/settings/components/SettingsScreenSection.vue (Script) 200
+[7382.57078] GET http://localhost:5174/src/features/settings/components/SettingsDataSection.vue (Script) 200
+[7382.57080] GET http://localhost:5174/src/features/settings/components/SettingsDangerZoneSection.vue (Script) 200
+[7382.57081] GET http://localhost:5174/src/features/settings/components/SettingsAboutSection.vue (Script) 200
+[7382.57082] GET http://localhost:5174/src/components/ui/tabs/index.ts (Script) 200
+[7382.57083] GET http://localhost:5174/src/components/SegmentedControl.vue (Script) 200
+[7382.57084] GET http://localhost:5174/src/components/TemplateListCard.vue (Script) 200
+[7382.57085] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkListCard.vue (Script) 200
+[7382.57086] GET http://localhost:5174/src/features/progressions/components/ProgressionCard.vue (Script) 200
+[7382.57088] GET http://localhost:5174/src/composables/useWorkoutsList.ts (Script) 200
+[7382.57089] GET http://localhost:5174/src/composables/useBenchmarksList.ts (Script) 200
+[7382.57090] GET http://localhost:5174/src/features/progressions/composables/useProgressions.ts (Script) 200
+[7382.57092] GET http://localhost:5174/src/features/workout/components/WorkoutDetailExerciseCard.vue (Script) 200
+[7382.57093] GET http://localhost:5174/src/features/workout/components/WorkoutDetailStatsRow.vue (Script) 200
+[7382.57094] GET http://localhost:5174/src/features/workout/components/TimedBlockCard.vue (Script) 200
+[7382.57095] GET http://localhost:5174/src/features/workout/composables/useWorkoutDetail.ts (Script) 200
+[7382.57096] GET http://localhost:5174/src/features/workout/utils/markdownExport.ts (Script) 200
+[7382.57098] GET http://localhost:5174/src/db/implementations/dexie/exerciseProgress.ts (Script) 200
+[7382.57099] GET http://localhost:5174/src/db/implementations/dexie/database.ts (Script) 200
+[7382.57100] GET http://localhost:5174/src/db/interfaces.ts (Script) 200
+[7382.57101] GET http://localhost:5174/src/features/workout/components/WorkoutSaveTemplateDialog.vue (Script) 200
+[7382.57102] GET http://localhost:5174/src/features/workout/composables/useSummaryStats.ts (Script) 200
+[7382.57113] GET http://localhost:5174/node_modules/.vite/deps/isSameWeek-DmvcgjPr.js?v=7e9daa00 (Script) 200
+[7382.57195] GET http://localhost:5174/node_modules/.vite/deps/class-variance-authority.js?v=7e9daa00 (Script) 200
+[7382.57196] GET http://localhost:5174/src/components/ui/button/Button.vue (Script) 200
+[7382.57197] GET http://localhost:5174/src/components/ui/dialog/Dialog.vue (Script) 200
+[7382.57198] GET http://localhost:5174/src/components/ui/dialog/DialogClose.vue (Script) 200
+[7382.57199] GET http://localhost:5174/src/components/ui/dialog/DialogContent.vue (Script) 200
+[7382.57200] GET http://localhost:5174/src/components/ui/dialog/DialogDescription.vue (Script) 200
+[7382.57201] GET http://localhost:5174/src/components/ui/dialog/DialogFooter.vue (Script) 200
+[7382.57202] GET http://localhost:5174/src/components/ui/dialog/DialogHeader.vue (Script) 200
+[7382.57203] GET http://localhost:5174/src/components/ui/dialog/DialogOverlay.vue (Script) 200
+[7382.57204] GET http://localhost:5174/src/components/ui/dialog/DialogScrollContent.vue (Script) 200
+[7382.57205] GET http://localhost:5174/src/components/ui/dialog/DialogTitle.vue (Script) 200
+[7382.57206] GET http://localhost:5174/src/components/ui/dialog/DialogTrigger.vue (Script) 200
+[7382.57207] GET http://localhost:5174/src/lib/utils.ts (Script) 200
+[7382.57208] GET http://localhost:5174/node_modules/.vite/deps/reka-ui.js?v=7e9daa00 (Script) 200
+[7382.57209] GET http://localhost:5174/node_modules/.vite/deps/clsx.js?v=7e9daa00 (Script) 200
+[7382.57210] GET http://localhost:5174/src/lib/workout-utils.ts (Script) 200
+[7382.57211] GET http://localhost:5174/src/lib/workoutBlockStatus.ts (Script) 200
+[7382.57212] GET http://localhost:5174/src/data/popularExercises.ts (Script) 200
+[7382.57214] GET http://localhost:5174/src/data/popularTemplates.ts (Script) 200
+[7382.57215] GET http://localhost:5174/node_modules/.vite/deps/dist-BHbEK4D6.js?v=7e9daa00 (Script) 200
+[7382.57216] GET http://localhost:5174/node_modules/.vite/deps/calendar-hwrdK2SA.js?v=7e9daa00 (Script) 200
+[7382.57217] GET http://localhost:5174/src/db/converters.ts (Script) 200
+[7382.57218] GET http://localhost:5174/src/db/partialUpdate.ts (Script) 200
+[7382.57219] GET http://localhost:5174/src/lib/workoutBlockFactory.ts (Script) 200
+[7382.57220] GET http://localhost:5174/src/lib/workoutBlockList.ts (Script) 200
+[7382.57221] GET http://localhost:5174/src/composables/persistence/createPersistenceCore.ts (Script) 200
+[7382.57226] GET http://localhost:5174/src/composables/timers/useRestTimer.ts (Script) 200
+[7382.57227] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeFooter.vue (Script) 200
+[7382.57228] GET http://localhost:5174/src/features/workout/components/WorkoutActiveStrengthView.vue (Script) 200
+[7382.57229] GET http://localhost:5174/src/components/timers/WorkoutAmrapView.vue (Script) 200
+[7382.57231] GET http://localhost:5174/src/components/timers/WorkoutEmomView.vue (Script) 200
+[7382.57232] GET http://localhost:5174/src/components/timers/WorkoutForTimeView.vue (Script) 200
+[7382.57233] GET http://localhost:5174/src/components/timers/WorkoutTabataView.vue (Script) 200
+[7382.57234] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeHeaderActions.vue (Script) 200
+[7382.57237] GET http://localhost:5174/src/components/CompletionScreen.vue (Script) 200
+[7382.57239] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylist.vue (Script) 200
+[7382.57241] GET http://localhost:5174/src/components/blocks/AddBlockDialog.vue (Script) 200
+[7382.57242] GET http://localhost:5174/src/components/blocks/ConfigureAmrapDialog.vue (Script) 200
+[7382.57243] GET http://localhost:5174/src/components/blocks/ConfigureEmomDialog.vue (Script) 200
+[7382.57244] GET http://localhost:5174/src/components/blocks/ConfigureTabataDialog.vue (Script) 200
+[7382.57245] GET http://localhost:5174/src/components/blocks/ConfigureForTimeDialog.vue (Script) 200
+[7382.57246] GET http://localhost:5174/src/components/blocks/ConfigureCardioDialog.vue (Script) 200
+[7382.57249] GET http://localhost:5174/src/components/ui/number-field/index.ts (Script) 200
+[7382.57252] GET http://localhost:5174/src/lib/workoutName.ts (Script) 200
+[7382.57255] GET http://localhost:5174/node_modules/.vite/deps/sortablejs.js?v=7e9daa00 (Script) 200
+[7382.57256] GET http://localhost:5174/src/components/ui/sheet/index.ts (Script) 200
+[7382.57257] GET http://localhost:5174/src/features/workout/components/WorkoutQueueItem.vue (Script) 200
+[7382.57258] GET http://localhost:5174/node_modules/.vite/deps/zod.js?v=7e9daa00 (Script) 200
+[7382.57259] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueItem.vue (Script) 200
+[7382.57262] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmark.ts (Script) 200
+[7382.57264] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts (Script) 200
+[7382.57265] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkSplitComparison.ts (Script) 200
+[7382.57266] GET http://localhost:5174/src/lib/splitTracking.ts (Script) 200
+[7382.57267] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkForTimeView.vue (Script) 200
+[7382.57268] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveModeHeaderActions.vue (Script) 200
+[7382.57270] GET http://localhost:5174/src/db/implementations/dexie/index.ts (Script) 200
+[7382.57271] GET http://localhost:5174/src/components/PageHeader.vue (Script) 200
+[7382.57275] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseCard.vue (Script) 200
+[7382.57277] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkAttemptHistory.vue (Script) 200
+[7382.57278] GET http://localhost:5174/src/features/benchmarks/composables/usePersonalBestDisplay.ts (Script) 200
+[7382.57279] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkAttemptHistory.ts (Script) 200
+[7382.57281] GET http://localhost:5174/src/components/ui/numeric-input/NumericPresetList.vue (Script) 200
+[7382.57282] GET http://localhost:5174/src/components/ui/numeric-input/NumericValueDisplay.vue (Script) 200
+[7382.57283] GET http://localhost:5174/src/components/ui/numeric-input/NumericKeypad.vue (Script) 200
+[7382.57284] GET http://localhost:5174/src/components/ui/numeric-input/useNumericInput.ts (Script) 200
+[7382.57286] GET http://localhost:5174/src/components/ExercisePickerContent.vue (Script) 200
+[7382.57287] GET http://localhost:5174/src/lib/fractionalIndexing.ts (Script) 200
+[7382.57288] GET http://localhost:5174/src/components/ui/input/Input.vue (Script) 200
+[7382.57289] GET http://localhost:5174/src/components/ui/label/Label.vue (Script) 200
+[7382.57291] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenu.vue (Script) 200
+[7382.57292] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue (Script) 200
+[7382.57293] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuContent.vue (Script) 200
+[7382.57294] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuGroup.vue (Script) 200
+[7382.57295] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuItem.vue (Script) 200
+[7382.57297] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuLabel.vue (Script) 200
+[7382.57298] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioGroup.vue (Script) 200
+[7382.57300] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioItem.vue (Script) 200
+[7382.57301] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSeparator.vue (Script) 200
+[7382.57302] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuShortcut.vue (Script) 200
+[7382.57303] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSub.vue (Script) 200
+[7382.57305] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubContent.vue (Script) 200
+[7382.57306] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubTrigger.vue (Script) 200
+[7382.57307] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuTrigger.vue (Script) 200
+[7382.57308] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_integrations_useSortable.js?v=7e9daa00 (Script) 200
+[7382.57309] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseItem.vue (Script) 200
+[7382.57310] GET http://localhost:5174/src/features/templates/components/TemplateBlockItem.vue (Script) 200
+[7382.57311] GET http://localhost:5174/src/features/templates/composables/useTemplateBlockManagement.ts (Script) 200
+[7382.57312] GET http://localhost:5174/src/components/ui/avatar/index.ts (Script) 200
+[7382.57313] GET http://localhost:5174/src/lib/exerciseDisplay.ts (Script) 200
+[7382.57314] GET http://localhost:5174/src/composables/useImageConversion.ts (Script) 200
+[7382.57315] GET http://localhost:5174/src/components/ui/scroll-area/index.ts (Script) 200
+[7382.57316] GET http://localhost:5174/src/components/ui/toggle-group/index.ts (Script) 200
+[7382.57317] GET http://localhost:5174/src/components/ui/popover/index.ts (Script) 200
+[7382.57318] GET http://localhost:5174/src/components/ui/calendar/index.ts (Script) 200
+[7382.57319] GET http://localhost:5174/node_modules/.vite/deps/@internationalized_date.js?v=7e9daa00 (Script) 200
+[7382.57320] GET http://localhost:5174/src/components/ExerciseEquipmentFilter.vue (Script) 200
+[7382.57322] GET http://localhost:5174/src/components/ExerciseMuscleFilter.vue (Script) 200
+[7382.57323] GET http://localhost:5174/node_modules/.vite/deps/date-fns_locale.js?v=7e9daa00 (Script) 200
+[7382.57324] GET http://localhost:5174/src/components/ui/empty/Empty.vue (Script) 200
+[7382.57326] GET http://localhost:5174/src/components/ui/empty/EmptyContent.vue (Script) 200
+[7382.57327] GET http://localhost:5174/src/components/ui/empty/EmptyDescription.vue (Script) 200
+[7382.57328] GET http://localhost:5174/src/components/ui/empty/EmptyHeader.vue (Script) 200
+[7382.57329] GET http://localhost:5174/src/components/ui/empty/EmptyMedia.vue (Script) 200
+[7382.57330] GET http://localhost:5174/src/components/ui/empty/EmptyTitle.vue (Script) 200
+[7382.57331] GET http://localhost:5174/src/components/ui/card/Card.vue (Script) 200
+[7382.57332] GET http://localhost:5174/src/components/ui/card/CardAction.vue (Script) 200
+[7382.57333] GET http://localhost:5174/src/components/ui/card/CardContent.vue (Script) 200
+[7382.57334] GET http://localhost:5174/src/components/ui/card/CardDescription.vue (Script) 200
+[7382.57336] GET http://localhost:5174/src/components/ui/card/CardFooter.vue (Script) 200
+[7382.57337] GET http://localhost:5174/src/components/ui/card/CardHeader.vue (Script) 200
+[7382.57338] GET http://localhost:5174/src/components/ui/card/CardTitle.vue (Script) 200
+[7382.57339] GET http://localhost:5174/src/components/RecentWorkoutCard.vue (Script) 200
+[7382.57341] GET http://localhost:5174/src/composables/useRecentWorkouts.ts (Script) 200
+[7382.57342] GET http://localhost:5174/src/lib/workoutStats.ts (Script) 200
+[7382.57343] GET http://localhost:5174/src/features/timers/components/TimerPresetList.vue (Script) 200
+[7382.57345] GET http://localhost:5174/src/features/timers/components/TimerCustomForm.vue (Script) 200
+[7382.57346] GET http://localhost:5174/src/features/timers/composables/useTimerWorkoutLogger.ts (Script) 200
+[7382.57347] GET http://localhost:5174/src/components/ui/separator/Separator.vue (Script) 200
+[7382.57348] GET http://localhost:5174/src/components/ui/switch/index.ts (Script) 200
+[7382.57349] GET http://localhost:5174/src/components/ui/select/index.ts (Script) 200
+[7382.57350] GET http://localhost:5174/src/components/ui/collapsible/index.ts (Script) 200
+[7382.57351] GET http://localhost:5174/src/features/settings/components/SettingsWakeLockDiagnostics.vue (Script) 200
+[7382.57353] GET http://localhost:5174/src/features/settings/composables/useDataExportImport.ts (Script) 200
+[7382.57354] GET http://localhost:5174/src/features/settings/components/SettingsImportDataDialog.vue (Script) 200
+[7382.57356] GET http://localhost:5174/src/features/settings/components/SettingsDeleteAllDataDialog.vue (Script) 200
+[7382.57357] GET http://localhost:5174/src/composables/useVersionCheck.ts (Script) 200
+[7382.57358] GET http://localhost:5174/src/components/ui/tabs/Tabs.vue (Script) 200
+[7382.57359] GET http://localhost:5174/src/components/ui/tabs/TabsContent.vue (Script) 200
+[7382.57360] GET http://localhost:5174/src/components/ui/tabs/TabsList.vue (Script) 200
+[7382.57361] GET http://localhost:5174/src/components/ui/tabs/TabsTrigger.vue (Script) 200
+[7382.57363] GET http://localhost:5174/src/components/ui/badge/index.ts (Script) 200
+[7382.57364] GET http://localhost:5174/src/components/ui/progress/index.ts (Script) 200
+[7382.57365] GET http://localhost:5174/src/features/progressions/lib/progressionLogic.ts (Script) 200
+[7382.57367] GET http://localhost:5174/src/composables/useWeightDisplay.ts (Script) 200
+[7382.57368] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetTable.vue (Script) 200
+[7382.57369] GET http://localhost:5174/src/db/schema.ts (Script) 200
+[7382.57370] GET http://localhost:5174/src/features/workout/utils/markdownSpec.ts (Script) 200
+[7382.57372] GET http://localhost:5174/node_modules/.vite/deps/dexie.js?v=7e9daa00 (Script) 200
+[7382.57373] GET http://localhost:5174/src/composables/useAnimatedCounter.ts (Script) 200
+[7382.57374] GET http://localhost:5174/src/lib/unitConversion.ts (Script) 200
+[7382.57464] GET http://localhost:5174/node_modules/.vite/deps/tailwind-merge.js?v=7e9daa00 (Script) 200
+[7382.57465] GET http://localhost:5174/src/components/ui/table/index.ts (Script) 200
+[7382.57466] GET http://localhost:5174/src/components/ui/numeric-input/index.ts (Script) 200
+[7382.57467] GET http://localhost:5174/src/composables/useTouchDevice.ts (Script) 200
+[7382.57468] GET http://localhost:5174/src/composables/useNumberLocale.ts (Script) 200
+[7382.57469] GET http://localhost:5174/src/features/workout/components/SetContextMenu.vue (Script) 200
+[7382.57470] GET http://localhost:5174/src/composables/timers/useAmrapTimer.ts (Script) 200
+[7382.57471] GET http://localhost:5174/src/components/timers/WorkoutCircularTimer.vue (Script) 200
+[7382.57472] GET http://localhost:5174/src/composables/timers/useEmomTimer.ts (Script) 200
+[7382.57473] GET http://localhost:5174/src/composables/timers/useForTimeTimer.ts (Script) 200
+[7382.57474] GET http://localhost:5174/src/composables/timers/useTabataTimer.ts (Script) 200
+[7382.57475] GET http://localhost:5174/src/composables/timers/useTimerAudio.ts (Script) 200
+[7382.57476] GET http://localhost:5174/src/features/workout/components/WorkoutDurationBadge.vue (Script) 200
+[7382.57477] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylistItem.vue (Script) 200
+[7382.57478] GET http://localhost:5174/src/composables/useTimedBlockExercises.ts (Script) 200
+[7382.57479] GET http://localhost:5174/src/components/blocks/AmrapConfig.vue (Script) 200
+[7382.57480] GET http://localhost:5174/src/components/blocks/TimedBlockExerciseList.vue (Script) 200
+[7382.57481] GET http://localhost:5174/src/components/blocks/EmomConfig.vue (Script) 200
+[7382.57482] GET http://localhost:5174/src/components/blocks/TabataConfig.vue (Script) 200
+[7382.57483] GET http://localhost:5174/src/components/blocks/ForTimeConfig.vue (Script) 200
+[7382.57484] GET http://localhost:5174/src/components/ui/number-field/NumberField.vue (Script) 200
+[7382.57485] GET http://localhost:5174/src/components/ui/number-field/NumberFieldContent.vue (Script) 200
+[7382.57486] GET http://localhost:5174/src/components/ui/number-field/NumberFieldDecrement.vue (Script) 200
+[7382.57488] GET http://localhost:5174/src/components/ui/number-field/NumberFieldIncrement.vue (Script) 200
+[7382.57489] GET http://localhost:5174/src/components/ui/number-field/NumberFieldInput.vue (Script) 200
+[7382.57490] GET http://localhost:5174/src/components/ui/sheet/Sheet.vue (Script) 200
+[7382.57491] GET http://localhost:5174/src/components/ui/sheet/SheetClose.vue (Script) 200
+[7382.57492] GET http://localhost:5174/src/components/ui/sheet/SheetContent.vue (Script) 200
+[7382.57493] GET http://localhost:5174/src/components/ui/sheet/SheetDescription.vue (Script) 200
+[7382.57494] GET http://localhost:5174/src/components/ui/sheet/SheetFooter.vue (Script) 200
+[7382.57495] GET http://localhost:5174/src/components/ui/sheet/SheetHeader.vue (Script) 200
+[7382.57496] GET http://localhost:5174/src/components/ui/sheet/SheetTitle.vue (Script) 200
+[7382.57497] GET http://localhost:5174/src/components/ui/sheet/SheetTrigger.vue (Script) 200
+[7382.57503] GET http://localhost:5174/src/features/benchmarks/lib/splitComparison.ts (Script) 200
+[7382.57506] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseDisplay.vue (Script) 200
+[7382.57507] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkProgressBar.vue (Script) 200
+[7382.57508] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkNextExercise.vue (Script) 200
+[7382.57512] GET http://localhost:5174/src/db/implementations/dexie/activeBenchmarkWorkout.ts (Script) 200
+[7382.57513] GET http://localhost:5174/src/db/implementations/dexie/activeWorkout.ts (Script) 200
+[7382.57514] GET http://localhost:5174/src/db/implementations/dexie/benchmarks.ts (Script) 200
+[7382.57515] GET http://localhost:5174/src/db/implementations/dexie/customExercises.ts (Script) 200
+[7382.57517] GET http://localhost:5174/src/db/implementations/dexie/dataManagement.ts (Script) 200
+[7382.57518] GET http://localhost:5174/src/db/implementations/dexie/drafts.ts (Script) 200
+[7382.57519] GET http://localhost:5174/src/db/implementations/dexie/onboarding.ts (Script) 200
+[7382.57520] GET http://localhost:5174/src/db/implementations/dexie/progressions.ts (Script) 200
+[7382.57521] GET http://localhost:5174/src/db/implementations/dexie/settings.ts (Script) 200
+[7382.57523] GET http://localhost:5174/src/db/implementations/dexie/templates.ts (Script) 200
+[7382.57524] GET http://localhost:5174/src/db/implementations/dexie/weight.ts (Script) 200
+[7382.57525] GET http://localhost:5174/src/db/implementations/dexie/workouts.ts (Script) 200
+[7382.57530] GET http://localhost:5174/src/features/benchmarks/lib/pbFormatting.ts (Script) 200
+[7382.57532] GET http://localhost:5174/src/features/benchmarks/lib/attemptStats.ts (Script) 200
+[7382.57534] GET http://localhost:5174/src/components/ui/barbell-hint/index.ts (Script) 200
+[7382.57538] GET http://localhost:5174/src/features/templates/lib/templateBlock.ts (Script) 200
+[7382.57539] GET http://localhost:5174/src/components/ui/avatar/Avatar.vue (Script) 200
+[7382.57540] GET http://localhost:5174/src/components/ui/avatar/AvatarFallback.vue (Script) 200
+[7382.57541] GET http://localhost:5174/src/components/ui/avatar/AvatarImage.vue (Script) 200
+[7382.57543] GET http://localhost:5174/src/lib/imageConversion.ts (Script) 200
+[7382.57544] GET http://localhost:5174/src/components/ui/scroll-area/ScrollArea.vue (Script) 200
+[7382.57545] GET http://localhost:5174/src/components/ui/scroll-area/ScrollBar.vue (Script) 200
+[7382.57546] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroup.vue (Script) 200
+[7382.57547] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroupItem.vue (Script) 200
+[7382.57548] GET http://localhost:5174/src/components/ui/popover/Popover.vue (Script) 200
+[7382.57549] GET http://localhost:5174/src/components/ui/popover/PopoverAnchor.vue (Script) 200
+[7382.57550] GET http://localhost:5174/src/components/ui/popover/PopoverContent.vue (Script) 200
+[7382.57551] GET http://localhost:5174/src/components/ui/popover/PopoverTrigger.vue (Script) 200
+[7382.57552] GET http://localhost:5174/src/components/ui/calendar/Calendar.vue (Script) 200
+[7382.57553] GET http://localhost:5174/src/components/ui/calendar/CalendarCell.vue (Script) 200
+[7382.57554] GET http://localhost:5174/src/components/ui/calendar/CalendarCellTrigger.vue (Script) 200
+[7382.57555] GET http://localhost:5174/src/components/ui/calendar/CalendarGrid.vue (Script) 200
+[7382.57556] GET http://localhost:5174/src/components/ui/calendar/CalendarGridBody.vue (Script) 200
+[7382.57558] GET http://localhost:5174/src/components/ui/calendar/CalendarGridHead.vue (Script) 200
+[7382.57559] GET http://localhost:5174/src/components/ui/calendar/CalendarGridRow.vue (Script) 200
+[7382.57560] GET http://localhost:5174/src/components/ui/calendar/CalendarHeadCell.vue (Script) 200
+[7382.57561] GET http://localhost:5174/src/components/ui/calendar/CalendarHeader.vue (Script) 200
+[7382.57562] GET http://localhost:5174/src/components/ui/calendar/CalendarHeading.vue (Script) 200
+[7382.57563] GET http://localhost:5174/src/components/ui/calendar/CalendarNextButton.vue (Script) 200
+[7382.57565] GET http://localhost:5174/src/components/ui/calendar/CalendarPrevButton.vue (Script) 200
+[7382.57566] GET http://localhost:5174/src/lib/exercises/equipmentMetadata.ts (Script) 200
+[7382.57568] GET http://localhost:5174/src/components/ScrollFadeContainer.vue (Script) 200
+[7382.57569] GET http://localhost:5174/src/lib/exercises/muscleMetadata.ts (Script) 200
+[7382.57571] GET http://localhost:5174/src/features/timers/components/TimerPresetButton.vue (Script) 200
+[7382.57573] GET http://localhost:5174/src/components/ui/switch/Switch.vue (Script) 200
+[7382.57574] GET http://localhost:5174/src/components/ui/select/Select.vue (Script) 200
+[7382.57576] GET http://localhost:5174/src/components/ui/select/SelectContent.vue (Script) 200
+[7382.57577] GET http://localhost:5174/src/components/ui/select/SelectGroup.vue (Script) 200
+[7382.57578] GET http://localhost:5174/src/components/ui/select/SelectItem.vue (Script) 200
+[7382.57579] GET http://localhost:5174/src/components/ui/select/SelectItemText.vue (Script) 200
+[7382.57580] GET http://localhost:5174/src/components/ui/select/SelectLabel.vue (Script) 200
+[7382.57581] GET http://localhost:5174/src/components/ui/select/SelectScrollDownButton.vue (Script) 200
+[7382.57583] GET http://localhost:5174/src/components/ui/select/SelectScrollUpButton.vue (Script) 200
+[7382.57584] GET http://localhost:5174/src/components/ui/select/SelectSeparator.vue (Script) 200
+[7382.57585] GET http://localhost:5174/src/components/ui/select/SelectTrigger.vue (Script) 200
+[7382.57586] GET http://localhost:5174/src/components/ui/select/SelectValue.vue (Script) 200
+[7382.57588] GET http://localhost:5174/src/components/ui/collapsible/Collapsible.vue (Script) 200
+[7382.57589] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleContent.vue (Script) 200
+[7382.57590] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleTrigger.vue (Script) 200
+[7382.57591] GET http://localhost:5174/src/features/settings/utils/dataExport.ts (Script) 200
+[7382.57592] GET http://localhost:5174/src/features/settings/utils/dataImport.ts (Script) 200
+[7382.57594] GET http://localhost:5174/src/components/ui/badge/Badge.vue (Script) 200
+[7382.57595] GET http://localhost:5174/src/components/ui/progress/Progress.vue (Script) 200
+[7382.57596] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetRow.vue (Script) 200
+[7382.57609] GET http://localhost:5174/src/components/ui/table/Table.vue (Script) 200
+[7382.57611] GET http://localhost:5174/src/components/ui/table/TableBody.vue (Script) 200
+[7382.57612] GET http://localhost:5174/src/components/ui/table/TableCaption.vue (Script) 200
+[7382.57613] GET http://localhost:5174/src/components/ui/table/TableCell.vue (Script) 200
+[7382.57614] GET http://localhost:5174/src/components/ui/table/TableEmpty.vue (Script) 200
+[7382.57616] GET http://localhost:5174/src/components/ui/table/TableFooter.vue (Script) 200
+[7382.57617] GET http://localhost:5174/src/components/ui/table/TableHead.vue (Script) 200
+[7382.57618] GET http://localhost:5174/src/components/ui/table/TableHeader.vue (Script) 200
+[7382.57619] GET http://localhost:5174/src/components/ui/table/TableRow.vue (Script) 200
+[7382.57683] GET http://localhost:5174/src/composables/timers/useBaseTimer.ts (Script) 200
+[7382.57685] GET http://localhost:5174/src/components/ui/sheet/SheetOverlay.vue (Script) 200
+[7382.57686] GET http://localhost:5174/src/lib/structureHash.ts (Script) 200
+[7382.57687] GET http://localhost:5174/src/components/ui/barbell-hint/BarbellPlateHint.vue (Script) 200
+[7382.57688] GET http://localhost:5174/src/components/ui/toggle/index.ts (Script) 200
+[7382.57689] GET http://localhost:5174/node_modules/.vite/deps/reka-ui_date.js?v=7e9daa00 (Script) 200
+[7382.57690] GET http://localhost:5174/src/components/ui/native-select/index.ts (Script) 200
+[7382.57692] GET http://localhost:5174/src/components/ScrollFadeContainer.vue?vue&type=style&index=0&scoped=6f12b4ce&lang.css (Script) 200
+[7382.57694] GET http://localhost:5174/src/features/settings/utils/validation/index.ts (Script) 200
+[7382.57700] GET http://localhost:5174/src/lib/plateCalculation.ts (Script) 200
+[7382.57701] GET http://localhost:5174/src/components/ui/toggle/Toggle.vue (Script) 200
+[7382.57703] GET http://localhost:5174/src/components/ui/native-select/NativeSelect.vue (Script) 200
+[7382.57704] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOptGroup.vue (Script) 200
+[7382.57705] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOption.vue (Script) 200
+[7382.57710] GET http://localhost:5174/src/features/settings/utils/validation/exportDataSchema.ts (Script) 200
+[7382.57711] GET http://localhost:5174/src/features/settings/utils/validation/settingsSchema.ts (Script) 200
+[7382.57712] GET http://localhost:5174/src/features/settings/utils/validation/exerciseSchema.ts (Script) 200
+[7382.57713] GET http://localhost:5174/src/features/settings/utils/validation/blockSchemas.ts (Script) 200
+[7382.57714] GET http://localhost:5174/src/features/settings/utils/validation/templateSchema.ts (Script) 200
+[7382.57715] GET http://localhost:5174/src/features/settings/utils/validation/workoutSchema.ts (Script) 200
+[7382.57722] GET http://localhost:5174/src/features/settings/utils/validation/benchmarkSchema.ts (Script) 200
+[7382.57723] GET http://localhost:5174/src/features/settings/utils/validation/weightEntrySchema.ts (Script) 200
+[7382.57724] GET http://localhost:5174/src/features/settings/utils/validation/primitiveSchemas.ts (Script) 200
+[7382.57728] GET http://localhost:5174/src/features/settings/utils/validation/blockConfigSchemas.ts (Script) 200
+[9D68F46BAEFF002D3DB8FECD23486BCC] GET http://localhost:5174/ (Document) 200
+[7382.57731] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.57732] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.57733] GET http://localhost:5174/@vite/client (Script) 200
+[7382.57734] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.57743] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.57745] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.57746] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.57747] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.57748] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.57749] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.57750] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.57751] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.57753] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.57754] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.57755] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.57756] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.57757] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.57758] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.57759] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.57760] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.57761] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.57762] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.57764] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.57771] GET http://localhost:5174/manifest.webmanifest (Manifest) 200
+[7382.57773] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.57774] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.57777] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.57778] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.57779] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.57780] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.57781] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.57782] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.57783] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.57784] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.57785] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.57786] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.57788] GET http://localhost:5174/@id/__x00__vite/dynamic-import-helper.js (Script) 200
+[7382.57789] GET http://localhost:5174/node_modules/.vite/deps/vue-i18n.js?v=7e9daa00 (Script) 200
+[7382.57790] GET http://localhost:5174/src/i18n/messages/en/index.ts (Script) 200
+[7382.57791] GET http://localhost:5174/src/lib/tryCatch.ts (Script) 200
+[7382.57793] GET http://localhost:5174/src/i18n/types.ts (Script) 200
+[7382.57794] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.57796] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.57797] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.57798] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.57799] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.57800] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.57801] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.57803] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.57804] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.57805] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.57807] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.57808] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.57809] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.57810] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.57812] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.57813] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.57814] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.57815] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.57841] GET http://localhost:5174/node_modules/.vite/deps/@lucide_vue.js?v=7e9daa00 (Script) 200
+[7382.57842] GET http://localhost:5174/src/components/ui/button/index.ts (Script) 200
+[7382.57843] GET http://localhost:5174/src/components/ui/dialog/index.ts (Script) 200
+[7382.57844] GET http://localhost:5174/src/components/DialogActions.vue (Script) 200
+[7382.57845] GET http://localhost:5174/src/components/MobileDialogContent.vue (Script) 200
+[7382.57846] GET http://localhost:5174/src/features/workout/composables/useWorkoutDurationTimer.ts (Script) 200
+[7382.57847] GET http://localhost:5174/src/features/workout/composables/useWorkoutMode.ts (Script) 200
+[7382.57848] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue?vue&type=style&index=0&scoped=dba082aa&lang.css (Script) 200
+[7382.57849] GET http://localhost:5174/src/db/index.ts (Script) 200
+[7382.57850] GET http://localhost:5174/src/db/seedExercises.ts (Script) 200
+[7382.57851] GET http://localhost:5174/src/db/seedTemplates.ts (Script) 200
+[7382.57852] GET http://localhost:5174/src/stores/exercises.ts (Script) 200
+[7382.57853] GET http://localhost:5174/src/stores/settings.ts (Script) 200
+[7382.57854] GET http://localhost:5174/src/features/workout/composables/useWorkout.ts (Script) 200
+[7382.57855] GET http://localhost:5174/src/features/workout/composables/useWorkoutPersistence.ts (Script) 200
+[7382.57856] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_core.js?v=7e9daa00 (Script) 200
+[7382.57857] GET http://localhost:5174/src/composables/useScreenWakeLock.ts (Script) 200
+[7382.57858] GET http://localhost:5174/@vite-plugin-pwa/virtual:pwa-register/vue (Script) 200
+[7382.57860] GET http://localhost:5174/src/i18n/messages/en/calendar.ts (Script) 200
+[7382.57861] GET http://localhost:5174/src/i18n/messages/en/common.ts (Script) 200
+[7382.57862] GET http://localhost:5174/src/i18n/messages/en/nav.ts (Script) 200
+[7382.57863] GET http://localhost:5174/src/i18n/messages/en/workouts.ts (Script) 200
+[7382.57865] GET http://localhost:5174/src/i18n/messages/en/exercises.ts (Script) 200
+[7382.57866] GET http://localhost:5174/src/i18n/messages/en/settings.ts (Script) 200
+[7382.57867] GET http://localhost:5174/src/i18n/messages/en/timers.ts (Script) 200
+[7382.57868] GET http://localhost:5174/src/i18n/messages/en/dialogs.ts (Script) 200
+[7382.57869] GET http://localhost:5174/src/i18n/messages/en/logPastWorkout.ts (Script) 200
+[7382.57871] GET http://localhost:5174/src/i18n/messages/en/weight.ts (Script) 200
+[7382.57872] GET http://localhost:5174/src/i18n/messages/en/progressions.ts (Script) 200
+[7382.57873] GET http://localhost:5174/src/i18n/messages/en/onboarding.ts (Script) 200
+[7382.57875] GET http://localhost:5174/src/components/blocks/index.ts (Script) 200
+[7382.57876] GET http://localhost:5174/src/features/templates/components/TemplateBlockList.vue (Script) 200
+[7382.57877] GET http://localhost:5174/src/components/PageLayout.vue (Script) 200
+[7382.57879] GET http://localhost:5174/src/components/ui/input/index.ts (Script) 200
+[7382.57880] GET http://localhost:5174/src/features/templates/composables/useTemplateCreation.ts (Script) 200
+[7382.57881] GET http://localhost:5174/src/composables/useFormDraft.ts (Script) 200
+[7382.57882] GET http://localhost:5174/src/composables/useDialogState.ts (Script) 200
+[7382.57895] GET http://localhost:5174/src/features/workout/components/WorkoutActiveMode.vue (Script) 200
+[7382.57896] GET http://localhost:5174/src/features/workout/components/WorkoutCompletionScreen.vue (Script) 200
+[7382.57897] GET http://localhost:5174/src/features/workout/components/WorkoutBuilderMode.vue (Script) 200
+[7382.57898] GET http://localhost:5174/src/components/WorkoutCancelDialog.vue (Script) 200
+[7382.57900] GET http://localhost:5174/src/features/workout/components/WorkoutEditExerciseDialog.vue (Script) 200
+[7382.57901] GET http://localhost:5174/src/components/WorkoutFinishDialog.vue (Script) 200
+[7382.57902] GET http://localhost:5174/src/features/workout/components/WorkoutQueueDrawer.vue (Script) 200
+[7382.57903] GET http://localhost:5174/src/types/blocks.ts (Script) 200
+[7382.57904] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveMode.vue (Script) 200
+[7382.57905] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue (Script) 200
+[7382.57906] GET http://localhost:5174/src/composables/timers/useBenchmarkGlobalTimer.ts (Script) 200
+[7382.57907] GET http://localhost:5174/src/features/benchmarks/state/benchmarkState.ts (Script) 200
+[7382.57908] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkPersistence.ts (Script) 200
+[7382.57909] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkMode.ts (Script) 200
+[7382.57910] GET http://localhost:5174/src/db/provider.ts (Script) 200
+[7382.57911] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkViewMode.vue (Script) 200
+[7382.57912] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkEditMode.vue (Script) 200
+[7382.57913] GET http://localhost:5174/src/components/ui/numeric-input/NumericInputModal.vue (Script) 200
+[7382.57914] GET http://localhost:5174/src/components/ExercisePicker.vue (Script) 200
+[7382.57915] GET http://localhost:5174/src/composables/useEnterAnimation.ts (Script) 200
+[7382.57916] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkDetail.ts (Script) 200
+[7382.57918] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkForm.ts (Script) 200
+[7382.57919] GET http://localhost:5174/src/lib/formatters.ts (Script) 200
+[7382.57920] GET http://localhost:5174/src/components/ui/label/index.ts (Script) 200
+[7382.57921] GET http://localhost:5174/src/components/ui/dropdown-menu/index.ts (Script) 200
+[7382.57922] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseList.vue (Script) 200
+[7382.57923] GET http://localhost:5174/src/features/benchmarks/components/RoundTabs.vue (Script) 200
+[7382.57925] GET http://localhost:5174/src/features/exercises/components/ExerciseSelectorDialog.vue (Script) 200
+[7382.57926] GET http://localhost:5174/src/features/exercises/components/ExerciseSettingsItem.vue (Script) 200
+[7382.57927] GET http://localhost:5174/src/components/ErrorDialog.vue (Script) 200
+[7382.57928] GET http://localhost:5174/src/components/ExerciseAvatar.vue (Script) 200
+[7382.57929] GET http://localhost:5174/src/features/exercises/composables/useExerciseForm.ts (Script) 200
+[7382.57930] GET http://localhost:5174/src/features/exercises/composables/useImageUpload.ts (Script) 200
+[7382.57932] GET http://localhost:5174/src/features/exercises/data/exerciseOptions.ts (Script) 200
+[7382.57933] GET http://localhost:5174/src/lib/exerciseLabels.ts (Script) 200
+[7382.57934] GET http://localhost:5174/src/features/log-past-workout/components/SourceSelector.vue (Script) 200
+[7382.57936] GET http://localhost:5174/src/features/log-past-workout/components/DateDurationPicker.vue (Script) 200
+[7382.57937] GET http://localhost:5174/src/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue (Script) 200
+[7382.57938] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkout.ts (Script) 200
+[7382.57939] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkoutSave.ts (Script) 200
+[7382.57941] GET http://localhost:5174/node_modules/.vite/deps/date-fns.js?v=7e9daa00 (Script) 200
+[7382.57942] GET http://localhost:5174/src/lib/dateLocale.ts (Script) 200
+[7382.57943] GET http://localhost:5174/src/components/WorkoutHistoryCard.vue (Script) 200
+[7382.57945] GET http://localhost:5174/src/components/SwipeableWorkoutCard.vue (Script) 200
+[7382.57946] GET http://localhost:5174/src/components/DeleteWorkoutDialog.vue (Script) 200
+[7382.57947] GET http://localhost:5174/src/components/ui/empty/index.ts (Script) 200
+[7382.57948] GET http://localhost:5174/src/composables/useSwipeableDelete.ts (Script) 200
+[7382.57958] GET http://localhost:5174/node_modules/.vite/deps/isSameWeek-DmvcgjPr.js?v=7e9daa00 (Script) 200
+[7382.57960] GET http://localhost:5174/src/components/ui/card/index.ts (Script) 200
+[7382.57962] GET http://localhost:5174/src/components/RecentWorkoutsSection.vue (Script) 200
+[7382.57963] GET http://localhost:5174/src/components/WeekStrip.vue (Script) 200
+[7382.57964] GET http://localhost:5174/src/components/WorkoutCalendarSheet.vue (Script) 200
+[7382.57966] GET http://localhost:5174/src/composables/useWorkoutCalendar.ts (Script) 200
+[7382.57967] GET http://localhost:5174/src/stores/workoutState.ts (Script) 200
+[7382.57968] GET http://localhost:5174/src/features/templates/composables/useTemplateDetail.ts (Script) 200
+[7382.57969] GET http://localhost:5174/src/components/ExerciseFilters.vue (Script) 200
+[7382.57970] GET http://localhost:5174/src/components/ExerciseListItem.vue (Script) 200
+[7382.57971] GET http://localhost:5174/src/composables/useExerciseSearch.ts (Script) 200
+[7382.57972] GET http://localhost:5174/src/features/timers/components/TimerPresetSelector.vue (Script) 200
+[7382.57974] GET http://localhost:5174/src/features/timers/components/StandaloneTimerRunner.vue (Script) 200
+[7382.57975] GET http://localhost:5174/src/components/ui/separator/index.ts (Script) 200
+[7382.57976] GET http://localhost:5174/src/features/settings/components/SettingsUnitsSection.vue (Script) 200
+[7382.57977] GET http://localhost:5174/src/features/settings/components/SettingsAppearanceSection.vue (Script) 200
+[7382.57978] GET http://localhost:5174/src/features/settings/components/SettingsScreenSection.vue (Script) 200
+[7382.57980] GET http://localhost:5174/src/features/settings/components/SettingsDataSection.vue (Script) 200
+[7382.57981] GET http://localhost:5174/src/features/settings/components/SettingsDangerZoneSection.vue (Script) 200
+[7382.57982] GET http://localhost:5174/src/features/settings/components/SettingsAboutSection.vue (Script) 200
+[7382.57984] GET http://localhost:5174/src/components/ui/tabs/index.ts (Script) 200
+[7382.57985] GET http://localhost:5174/src/components/SegmentedControl.vue (Script) 200
+[7382.57986] GET http://localhost:5174/src/components/TemplateListCard.vue (Script) 200
+[7382.57987] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkListCard.vue (Script) 200
+[7382.57989] GET http://localhost:5174/src/features/progressions/components/ProgressionCard.vue (Script) 200
+[7382.57990] GET http://localhost:5174/src/composables/useWorkoutsList.ts (Script) 200
+[7382.57991] GET http://localhost:5174/src/composables/useBenchmarksList.ts (Script) 200
+[7382.57992] GET http://localhost:5174/src/features/progressions/composables/useProgressions.ts (Script) 200
+[7382.57994] GET http://localhost:5174/src/features/workout/components/WorkoutDetailExerciseCard.vue (Script) 200
+[7382.57995] GET http://localhost:5174/src/features/workout/components/WorkoutDetailStatsRow.vue (Script) 200
+[7382.57996] GET http://localhost:5174/src/features/workout/components/TimedBlockCard.vue (Script) 200
+[7382.57997] GET http://localhost:5174/src/features/workout/composables/useWorkoutDetail.ts (Script) 200
+[7382.57998] GET http://localhost:5174/src/features/workout/utils/markdownExport.ts (Script) 200
+[7382.58000] GET http://localhost:5174/src/features/workout/components/WorkoutSaveTemplateDialog.vue (Script) 200
+[7382.58001] GET http://localhost:5174/src/features/workout/composables/useSummaryStats.ts (Script) 200
+[7382.58076] GET http://localhost:5174/node_modules/.vite/deps/class-variance-authority.js?v=7e9daa00 (Script) 200
+[7382.58077] GET http://localhost:5174/src/components/ui/button/Button.vue (Script) 200
+[7382.58078] GET http://localhost:5174/node_modules/.vite/deps/clsx.js?v=7e9daa00 (Script) 200
+[7382.58079] GET http://localhost:5174/src/components/ui/dialog/Dialog.vue (Script) 200
+[7382.58081] GET http://localhost:5174/src/components/ui/dialog/DialogClose.vue (Script) 200
+[7382.58082] GET http://localhost:5174/src/components/ui/dialog/DialogContent.vue (Script) 200
+[7382.58083] GET http://localhost:5174/src/components/ui/dialog/DialogDescription.vue (Script) 200
+[7382.58084] GET http://localhost:5174/src/components/ui/dialog/DialogFooter.vue (Script) 200
+[7382.58085] GET http://localhost:5174/src/components/ui/dialog/DialogHeader.vue (Script) 200
+[7382.58086] GET http://localhost:5174/src/components/ui/dialog/DialogOverlay.vue (Script) 200
+[7382.58087] GET http://localhost:5174/src/components/ui/dialog/DialogScrollContent.vue (Script) 200
+[7382.58088] GET http://localhost:5174/src/components/ui/dialog/DialogTitle.vue (Script) 200
+[7382.58089] GET http://localhost:5174/src/components/ui/dialog/DialogTrigger.vue (Script) 200
+[7382.58090] GET http://localhost:5174/src/lib/utils.ts (Script) 200
+[7382.58091] GET http://localhost:5174/node_modules/.vite/deps/reka-ui.js?v=7e9daa00 (Script) 200
+[7382.58092] GET http://localhost:5174/src/lib/workout-utils.ts (Script) 200
+[7382.58093] GET http://localhost:5174/src/lib/workoutBlockStatus.ts (Script) 200
+[7382.58094] GET http://localhost:5174/src/data/popularExercises.ts (Script) 200
+[7382.58095] GET http://localhost:5174/src/data/popularTemplates.ts (Script) 200
+[7382.58097] GET http://localhost:5174/node_modules/.vite/deps/dist-BHbEK4D6.js?v=7e9daa00 (Script) 200
+[7382.58098] GET http://localhost:5174/node_modules/.vite/deps/calendar-hwrdK2SA.js?v=7e9daa00 (Script) 200
+[7382.58099] GET http://localhost:5174/src/db/implementations/dexie/exerciseProgress.ts (Script) 200
+[7382.58100] GET http://localhost:5174/src/db/implementations/dexie/database.ts (Script) 200
+[7382.58101] GET http://localhost:5174/src/db/interfaces.ts (Script) 200
+[7382.58102] GET http://localhost:5174/src/db/converters.ts (Script) 200
+[7382.58103] GET http://localhost:5174/src/db/partialUpdate.ts (Script) 200
+[7382.58104] GET http://localhost:5174/src/lib/workoutBlockFactory.ts (Script) 200
+[7382.58105] GET http://localhost:5174/src/lib/workoutBlockList.ts (Script) 200
+[7382.58106] GET http://localhost:5174/src/composables/persistence/createPersistenceCore.ts (Script) 200
+[7382.58107] GET http://localhost:5174/src/components/blocks/AddBlockDialog.vue (Script) 200
+[7382.58108] GET http://localhost:5174/src/components/blocks/ConfigureAmrapDialog.vue (Script) 200
+[7382.58109] GET http://localhost:5174/src/components/blocks/ConfigureEmomDialog.vue (Script) 200
+[7382.58110] GET http://localhost:5174/src/components/blocks/ConfigureTabataDialog.vue (Script) 200
+[7382.58111] GET http://localhost:5174/src/components/blocks/ConfigureForTimeDialog.vue (Script) 200
+[7382.58112] GET http://localhost:5174/src/components/blocks/ConfigureCardioDialog.vue (Script) 200
+[7382.58113] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_integrations_useSortable.js?v=7e9daa00 (Script) 200
+[7382.58114] GET http://localhost:5174/src/features/templates/components/TemplateBlockItem.vue (Script) 200
+[7382.58115] GET http://localhost:5174/src/components/PageHeader.vue (Script) 200
+[7382.58116] GET http://localhost:5174/src/components/ui/input/Input.vue (Script) 200
+[7382.58117] GET http://localhost:5174/node_modules/.vite/deps/sortablejs.js?v=7e9daa00 (Script) 200
+[7382.58118] GET http://localhost:5174/src/features/templates/composables/useTemplateBlockManagement.ts (Script) 200
+[7382.58119] GET http://localhost:5174/src/composables/timers/useRestTimer.ts (Script) 200
+[7382.58120] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeFooter.vue (Script) 200
+[7382.58121] GET http://localhost:5174/src/features/workout/components/WorkoutActiveStrengthView.vue (Script) 200
+[7382.58122] GET http://localhost:5174/src/components/timers/WorkoutAmrapView.vue (Script) 200
+[7382.58123] GET http://localhost:5174/src/components/timers/WorkoutEmomView.vue (Script) 200
+[7382.58124] GET http://localhost:5174/src/components/timers/WorkoutForTimeView.vue (Script) 200
+[7382.58125] GET http://localhost:5174/src/components/timers/WorkoutTabataView.vue (Script) 200
+[7382.58126] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeHeaderActions.vue (Script) 200
+[7382.58127] GET http://localhost:5174/src/components/CompletionScreen.vue (Script) 200
+[7382.58128] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylist.vue (Script) 200
+[7382.58129] GET http://localhost:5174/src/components/ui/number-field/index.ts (Script) 200
+[7382.58130] GET http://localhost:5174/src/components/ui/sheet/index.ts (Script) 200
+[7382.58131] GET http://localhost:5174/src/features/workout/components/WorkoutQueueItem.vue (Script) 200
+[7382.58132] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmark.ts (Script) 200
+[7382.58133] GET http://localhost:5174/src/db/implementations/dexie/index.ts (Script) 200
+[7382.58134] GET http://localhost:5174/src/components/ui/numeric-input/NumericPresetList.vue (Script) 200
+[7382.58135] GET http://localhost:5174/src/components/ui/numeric-input/NumericValueDisplay.vue (Script) 200
+[7382.58136] GET http://localhost:5174/src/components/ui/numeric-input/NumericKeypad.vue (Script) 200
+[7382.58137] GET http://localhost:5174/src/components/ui/numeric-input/useNumericInput.ts (Script) 200
+[7382.58138] GET http://localhost:5174/src/lib/workoutName.ts (Script) 200
+[7382.58139] GET http://localhost:5174/node_modules/.vite/deps/zod.js?v=7e9daa00 (Script) 200
+[7382.58140] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseCard.vue (Script) 200
+[7382.58141] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkAttemptHistory.vue (Script) 200
+[7382.58142] GET http://localhost:5174/src/features/benchmarks/composables/usePersonalBestDisplay.ts (Script) 200
+[7382.58143] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkAttemptHistory.ts (Script) 200
+[7382.58147] GET http://localhost:5174/src/components/ExercisePickerContent.vue (Script) 200
+[7382.58148] GET http://localhost:5174/src/lib/fractionalIndexing.ts (Script) 200
+[7382.58149] GET http://localhost:5174/src/components/ui/label/Label.vue (Script) 200
+[7382.58158] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenu.vue (Script) 200
+[7382.58159] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue (Script) 200
+[7382.58160] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuContent.vue (Script) 200
+[7382.58161] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuGroup.vue (Script) 200
+[7382.58162] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuItem.vue (Script) 200
+[7382.58163] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuLabel.vue (Script) 200
+[7382.58164] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioGroup.vue (Script) 200
+[7382.58165] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioItem.vue (Script) 200
+[7382.58166] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSeparator.vue (Script) 200
+[7382.58167] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuShortcut.vue (Script) 200
+[7382.58168] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSub.vue (Script) 200
+[7382.58169] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubContent.vue (Script) 200
+[7382.58170] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubTrigger.vue (Script) 200
+[7382.58171] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuTrigger.vue (Script) 200
+[7382.58172] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts (Script) 200
+[7382.58173] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkSplitComparison.ts (Script) 200
+[7382.58174] GET http://localhost:5174/src/lib/splitTracking.ts (Script) 200
+[7382.58175] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkForTimeView.vue (Script) 200
+[7382.58176] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveModeHeaderActions.vue (Script) 200
+[7382.58177] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueItem.vue (Script) 200
+[7382.58178] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseItem.vue (Script) 200
+[7382.58209] GET http://localhost:5174/src/components/ui/avatar/index.ts (Script) 200
+[7382.58210] GET http://localhost:5174/src/lib/exerciseDisplay.ts (Script) 200
+[7382.58211] GET http://localhost:5174/src/composables/useImageConversion.ts (Script) 200
+[7382.58212] GET http://localhost:5174/src/components/ui/scroll-area/index.ts (Script) 200
+[7382.58214] GET http://localhost:5174/src/components/ui/toggle-group/index.ts (Script) 200
+[7382.58215] GET http://localhost:5174/src/components/ui/popover/index.ts (Script) 200
+[7382.58216] GET http://localhost:5174/src/components/ui/calendar/index.ts (Script) 200
+[7382.58218] GET http://localhost:5174/node_modules/.vite/deps/@internationalized_date.js?v=7e9daa00 (Script) 200
+[7382.58256] GET http://localhost:5174/node_modules/.vite/deps/date-fns_locale.js?v=7e9daa00 (Script) 200
+[7382.58257] GET http://localhost:5174/src/components/ui/empty/Empty.vue (Script) 200
+[7382.58258] GET http://localhost:5174/src/components/ui/empty/EmptyContent.vue (Script) 200
+[7382.58260] GET http://localhost:5174/src/components/ui/empty/EmptyDescription.vue (Script) 200
+[7382.58261] GET http://localhost:5174/src/components/ui/empty/EmptyHeader.vue (Script) 200
+[7382.58262] GET http://localhost:5174/src/components/ui/empty/EmptyMedia.vue (Script) 200
+[7382.58263] GET http://localhost:5174/src/components/ui/empty/EmptyTitle.vue (Script) 200
+[7382.58267] GET http://localhost:5174/src/components/ui/card/Card.vue (Script) 200
+[7382.58268] GET http://localhost:5174/src/components/ui/card/CardAction.vue (Script) 200
+[7382.58269] GET http://localhost:5174/src/components/ui/card/CardContent.vue (Script) 200
+[7382.58270] GET http://localhost:5174/src/components/ui/card/CardDescription.vue (Script) 200
+[7382.58271] GET http://localhost:5174/src/components/ui/card/CardFooter.vue (Script) 200
+[7382.58272] GET http://localhost:5174/src/components/ui/card/CardHeader.vue (Script) 200
+[7382.58274] GET http://localhost:5174/src/components/ui/card/CardTitle.vue (Script) 200
+[7382.58275] GET http://localhost:5174/src/components/RecentWorkoutCard.vue (Script) 200
+[7382.58276] GET http://localhost:5174/src/composables/useRecentWorkouts.ts (Script) 200
+[7382.58277] GET http://localhost:5174/src/lib/workoutStats.ts (Script) 200
+[7382.58280] GET http://localhost:5174/src/components/ExerciseEquipmentFilter.vue (Script) 200
+[7382.58281] GET http://localhost:5174/src/components/ExerciseMuscleFilter.vue (Script) 200
+[7382.58282] GET http://localhost:5174/src/features/timers/components/TimerPresetList.vue (Script) 200
+[7382.58283] GET http://localhost:5174/src/features/timers/components/TimerCustomForm.vue (Script) 200
+[7382.58284] GET http://localhost:5174/src/features/timers/composables/useTimerWorkoutLogger.ts (Script) 200
+[7382.58285] GET http://localhost:5174/src/components/ui/separator/Separator.vue (Script) 200
+[7382.58287] GET http://localhost:5174/src/components/ui/switch/index.ts (Script) 200
+[7382.58288] GET http://localhost:5174/src/components/ui/select/index.ts (Script) 200
+[7382.58304] GET http://localhost:5174/src/components/ui/collapsible/index.ts (Script) 200
+[7382.58305] GET http://localhost:5174/src/features/settings/components/SettingsWakeLockDiagnostics.vue (Script) 200
+[7382.58306] GET http://localhost:5174/src/features/settings/composables/useDataExportImport.ts (Script) 200
+[7382.58307] GET http://localhost:5174/src/features/settings/components/SettingsImportDataDialog.vue (Script) 200
+[7382.58308] GET http://localhost:5174/src/features/settings/components/SettingsDeleteAllDataDialog.vue (Script) 200
+[7382.58309] GET http://localhost:5174/src/composables/useVersionCheck.ts (Script) 200
+[7382.58310] GET http://localhost:5174/src/components/ui/tabs/Tabs.vue (Script) 200
+[7382.58311] GET http://localhost:5174/src/components/ui/tabs/TabsContent.vue (Script) 200
+[7382.58312] GET http://localhost:5174/src/components/ui/tabs/TabsList.vue (Script) 200
+[7382.58313] GET http://localhost:5174/src/components/ui/tabs/TabsTrigger.vue (Script) 200
+[7382.58314] GET http://localhost:5174/src/components/ui/badge/index.ts (Script) 200
+[7382.58315] GET http://localhost:5174/src/components/ui/progress/index.ts (Script) 200
+[7382.58316] GET http://localhost:5174/src/features/progressions/lib/progressionLogic.ts (Script) 200
+[7382.58317] GET http://localhost:5174/src/composables/useWeightDisplay.ts (Script) 200
+[7382.58318] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetTable.vue (Script) 200
+[7382.58319] GET http://localhost:5174/src/db/schema.ts (Script) 200
+[7382.58320] GET http://localhost:5174/src/features/workout/utils/markdownSpec.ts (Script) 200
+[7382.58321] GET http://localhost:5174/src/composables/useAnimatedCounter.ts (Script) 200
+[7382.58322] GET http://localhost:5174/src/lib/unitConversion.ts (Script) 200
+[7382.58331] GET http://localhost:5174/node_modules/.vite/deps/tailwind-merge.js?v=7e9daa00 (Script) 200
+[7382.58332] GET http://localhost:5174/node_modules/.vite/deps/dexie.js?v=7e9daa00 (Script) 200
+[7382.58333] GET http://localhost:5174/src/composables/useTimedBlockExercises.ts (Script) 200
+[7382.58334] GET http://localhost:5174/src/components/blocks/AmrapConfig.vue (Script) 200
+[7382.58335] GET http://localhost:5174/src/components/blocks/TimedBlockExerciseList.vue (Script) 200
+[7382.58336] GET http://localhost:5174/src/components/blocks/EmomConfig.vue (Script) 200
+[7382.58338] GET http://localhost:5174/src/components/blocks/TabataConfig.vue (Script) 200
+[7382.58339] GET http://localhost:5174/src/components/blocks/ForTimeConfig.vue (Script) 200
+[7382.58358] GET http://localhost:5174/src/components/ui/numeric-input/index.ts (Script) 200
+[7382.58359] GET http://localhost:5174/src/composables/useTouchDevice.ts (Script) 200
+[7382.58360] GET http://localhost:5174/src/features/templates/lib/templateBlock.ts (Script) 200
+[7382.58361] GET http://localhost:5174/src/components/ui/table/index.ts (Script) 200
+[7382.58362] GET http://localhost:5174/src/composables/useNumberLocale.ts (Script) 200
+[7382.58363] GET http://localhost:5174/src/features/workout/components/SetContextMenu.vue (Script) 200
+[7382.58364] GET http://localhost:5174/src/composables/timers/useAmrapTimer.ts (Script) 200
+[7382.58365] GET http://localhost:5174/src/components/timers/WorkoutCircularTimer.vue (Script) 200
+[7382.58366] GET http://localhost:5174/src/composables/timers/useEmomTimer.ts (Script) 200
+[7382.58367] GET http://localhost:5174/src/composables/timers/useForTimeTimer.ts (Script) 200
+[7382.58368] GET http://localhost:5174/src/composables/timers/useTabataTimer.ts (Script) 200
+[7382.58369] GET http://localhost:5174/src/composables/timers/useTimerAudio.ts (Script) 200
+[7382.58370] GET http://localhost:5174/src/features/workout/components/WorkoutDurationBadge.vue (Script) 200
+[7382.58373] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylistItem.vue (Script) 200
+[7382.58374] GET http://localhost:5174/src/components/ui/number-field/NumberField.vue (Script) 200
+[7382.58375] GET http://localhost:5174/src/components/ui/number-field/NumberFieldContent.vue (Script) 200
+[7382.58377] GET http://localhost:5174/src/components/ui/number-field/NumberFieldDecrement.vue (Script) 200
+[7382.58378] GET http://localhost:5174/src/components/ui/number-field/NumberFieldIncrement.vue (Script) 200
+[7382.58379] GET http://localhost:5174/src/components/ui/number-field/NumberFieldInput.vue (Script) 200
+[7382.58380] GET http://localhost:5174/src/components/ui/sheet/Sheet.vue (Script) 200
+[7382.58381] GET http://localhost:5174/src/components/ui/sheet/SheetClose.vue (Script) 200
+[7382.58382] GET http://localhost:5174/src/components/ui/sheet/SheetContent.vue (Script) 200
+[7382.58383] GET http://localhost:5174/src/components/ui/sheet/SheetDescription.vue (Script) 200
+[7382.58384] GET http://localhost:5174/src/components/ui/sheet/SheetFooter.vue (Script) 200
+[7382.58385] GET http://localhost:5174/src/components/ui/sheet/SheetHeader.vue (Script) 200
+[7382.58386] GET http://localhost:5174/src/components/ui/sheet/SheetTitle.vue (Script) 200
+[7382.58388] GET http://localhost:5174/src/components/ui/sheet/SheetTrigger.vue (Script) 200
+[7382.58390] GET http://localhost:5174/src/db/implementations/dexie/activeBenchmarkWorkout.ts (Script) 200
+[7382.58391] GET http://localhost:5174/src/db/implementations/dexie/activeWorkout.ts (Script) 200
+[7382.58392] GET http://localhost:5174/src/db/implementations/dexie/benchmarks.ts (Script) 200
+[7382.58394] GET http://localhost:5174/src/db/implementations/dexie/customExercises.ts (Script) 200
+[7382.58395] GET http://localhost:5174/src/db/implementations/dexie/dataManagement.ts (Script) 200
+[7382.58396] GET http://localhost:5174/src/db/implementations/dexie/drafts.ts (Script) 200
+[7382.58397] GET http://localhost:5174/src/db/implementations/dexie/onboarding.ts (Script) 200
+[7382.58398] GET http://localhost:5174/src/db/implementations/dexie/progressions.ts (Script) 200
+[7382.58399] GET http://localhost:5174/src/db/implementations/dexie/settings.ts (Script) 200
+[7382.58400] GET http://localhost:5174/src/db/implementations/dexie/templates.ts (Script) 200
+[7382.58401] GET http://localhost:5174/src/db/implementations/dexie/weight.ts (Script) 200
+[7382.58402] GET http://localhost:5174/src/db/implementations/dexie/workouts.ts (Script) 200
+[7382.58403] GET http://localhost:5174/src/components/ui/barbell-hint/index.ts (Script) 200
+[7382.58404] GET http://localhost:5174/src/features/benchmarks/lib/pbFormatting.ts (Script) 200
+[7382.58405] GET http://localhost:5174/src/features/benchmarks/lib/attemptStats.ts (Script) 200
+[7382.58406] GET http://localhost:5174/src/features/benchmarks/lib/splitComparison.ts (Script) 200
+[7382.58407] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseDisplay.vue (Script) 200
+[7382.58408] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkProgressBar.vue (Script) 200
+[7382.58409] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkNextExercise.vue (Script) 200
+[7382.58413] GET http://localhost:5174/src/components/ui/avatar/Avatar.vue (Script) 200
+[7382.58414] GET http://localhost:5174/src/components/ui/avatar/AvatarFallback.vue (Script) 200
+[7382.58415] GET http://localhost:5174/src/components/ui/avatar/AvatarImage.vue (Script) 200
+[7382.58416] GET http://localhost:5174/src/lib/imageConversion.ts (Script) 200
+[7382.58417] GET http://localhost:5174/src/components/ui/scroll-area/ScrollArea.vue (Script) 200
+[7382.58418] GET http://localhost:5174/src/components/ui/scroll-area/ScrollBar.vue (Script) 200
+[7382.58420] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroup.vue (Script) 200
+[7382.58421] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroupItem.vue (Script) 200
+[7382.58425] GET http://localhost:5174/src/components/ui/popover/Popover.vue (Script) 200
+[7382.58426] GET http://localhost:5174/src/components/ui/popover/PopoverAnchor.vue (Script) 200
+[7382.58427] GET http://localhost:5174/src/components/ui/popover/PopoverContent.vue (Script) 200
+[7382.58429] GET http://localhost:5174/src/components/ui/popover/PopoverTrigger.vue (Script) 200
+[7382.58431] GET http://localhost:5174/src/components/ui/calendar/Calendar.vue (Script) 200
+[7382.58432] GET http://localhost:5174/src/components/ui/calendar/CalendarCell.vue (Script) 200
+[7382.58433] GET http://localhost:5174/src/components/ui/calendar/CalendarCellTrigger.vue (Script) 200
+[7382.58434] GET http://localhost:5174/src/components/ui/calendar/CalendarGrid.vue (Script) 200
+[7382.58435] GET http://localhost:5174/src/components/ui/calendar/CalendarGridBody.vue (Script) 200
+[7382.58436] GET http://localhost:5174/src/components/ui/calendar/CalendarGridHead.vue (Script) 200
+[7382.58438] GET http://localhost:5174/src/components/ui/calendar/CalendarGridRow.vue (Script) 200
+[7382.58439] GET http://localhost:5174/src/components/ui/calendar/CalendarHeadCell.vue (Script) 200
+[7382.58440] GET http://localhost:5174/src/components/ui/calendar/CalendarHeader.vue (Script) 200
+[7382.58441] GET http://localhost:5174/src/components/ui/calendar/CalendarHeading.vue (Script) 200
+[7382.58442] GET http://localhost:5174/src/components/ui/calendar/CalendarNextButton.vue (Script) 200
+[7382.58444] GET http://localhost:5174/src/components/ui/calendar/CalendarPrevButton.vue (Script) 200
+[7382.58504] GET http://localhost:5174/src/lib/exercises/muscleMetadata.ts (Script) 200
+[7382.58505] GET http://localhost:5174/src/components/ScrollFadeContainer.vue (Script) 200
+[7382.58506] GET http://localhost:5174/src/lib/exercises/equipmentMetadata.ts (Script) 200
+[7382.58507] GET http://localhost:5174/src/features/timers/components/TimerPresetButton.vue (Script) 200
+[7382.58508] GET http://localhost:5174/src/components/ui/switch/Switch.vue (Script) 200
+[7382.58509] GET http://localhost:5174/src/components/ui/select/Select.vue (Script) 200
+[7382.58510] GET http://localhost:5174/src/components/ui/select/SelectContent.vue (Script) 200
+[7382.58511] GET http://localhost:5174/src/components/ui/select/SelectGroup.vue (Script) 200
+[7382.58512] GET http://localhost:5174/src/components/ui/select/SelectItem.vue (Script) 200
+[7382.58513] GET http://localhost:5174/src/components/ui/select/SelectItemText.vue (Script) 200
+[7382.58514] GET http://localhost:5174/src/components/ui/select/SelectLabel.vue (Script) 200
+[7382.58515] GET http://localhost:5174/src/components/ui/select/SelectScrollDownButton.vue (Script) 200
+[7382.58516] GET http://localhost:5174/src/components/ui/select/SelectScrollUpButton.vue (Script) 200
+[7382.58517] GET http://localhost:5174/src/components/ui/select/SelectSeparator.vue (Script) 200
+[7382.58518] GET http://localhost:5174/src/components/ui/select/SelectTrigger.vue (Script) 200
+[7382.58519] GET http://localhost:5174/src/components/ui/select/SelectValue.vue (Script) 200
+[7382.58521] GET http://localhost:5174/src/features/settings/utils/dataExport.ts (Script) 200
+[7382.58522] GET http://localhost:5174/src/features/settings/utils/dataImport.ts (Script) 200
+[7382.58523] GET http://localhost:5174/src/components/ui/collapsible/Collapsible.vue (Script) 200
+[7382.58524] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleContent.vue (Script) 200
+[7382.58525] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleTrigger.vue (Script) 200
+[7382.58526] GET http://localhost:5174/src/components/ui/badge/Badge.vue (Script) 200
+[7382.58527] GET http://localhost:5174/src/components/ui/progress/Progress.vue (Script) 200
+[7382.58528] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetRow.vue (Script) 200
+[7382.58544] GET http://localhost:5174/src/components/ui/table/Table.vue (Script) 200
+[7382.58545] GET http://localhost:5174/src/components/ui/table/TableBody.vue (Script) 200
+[7382.58546] GET http://localhost:5174/src/components/ui/table/TableCaption.vue (Script) 200
+[7382.58547] GET http://localhost:5174/src/components/ui/table/TableCell.vue (Script) 200
+[7382.58548] GET http://localhost:5174/src/components/ui/table/TableEmpty.vue (Script) 200
+[7382.58549] GET http://localhost:5174/src/components/ui/table/TableFooter.vue (Script) 200
+[7382.58550] GET http://localhost:5174/src/components/ui/table/TableHead.vue (Script) 200
+[7382.58551] GET http://localhost:5174/src/components/ui/table/TableHeader.vue (Script) 200
+[7382.58552] GET http://localhost:5174/src/components/ui/table/TableRow.vue (Script) 200
+[7382.58553] GET http://localhost:5174/src/composables/timers/useBaseTimer.ts (Script) 200
+[7382.58562] GET http://localhost:5174/src/components/ui/sheet/SheetOverlay.vue (Script) 200
+[7382.58563] GET http://localhost:5174/src/lib/structureHash.ts (Script) 200
+[7382.58564] GET http://localhost:5174/src/components/ui/barbell-hint/BarbellPlateHint.vue (Script) 200
+[7382.58568] GET http://localhost:5174/src/components/ui/toggle/index.ts (Script) 200
+[7382.58576] GET http://localhost:5174/node_modules/.vite/deps/reka-ui_date.js?v=7e9daa00 (Script) 200
+[7382.58577] GET http://localhost:5174/src/components/ui/native-select/index.ts (Script) 200
+[7382.58582] GET http://localhost:5174/src/components/ScrollFadeContainer.vue?vue&type=style&index=0&scoped=6f12b4ce&lang.css (Script) 200
+[7382.58584] GET http://localhost:5174/src/features/settings/utils/validation/index.ts (Script) 200
+[7DC06481E84C4D0348CDB688D2FCB1D2] GET http://localhost:5174/ (Document) 200
+[7382.58587] GET http://localhost:5174/src/lib/plateCalculation.ts (Script)
+[7382.58588] GET http://localhost:5174/src/components/ui/toggle/Toggle.vue (Script)
+[7382.58589] GET http://localhost:5174/src/components/ui/native-select/NativeSelect.vue (Script)
+[7382.58590] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOptGroup.vue (Script)
+[7382.58591] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOption.vue (Script)
+[7382.58618] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.58619] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.58620] GET http://localhost:5174/@vite/client (Script) 200
+[7382.58621] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.58630] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.58632] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58633] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58634] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.58635] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58636] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.58638] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58639] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58640] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58641] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.58642] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.58643] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.58644] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.58645] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.58646] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.58648] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.58649] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.58650] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.58651] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.58659] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.58660] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.58663] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.58664] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.58665] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.58666] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.58667] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.58668] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.58670] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.58671] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.58672] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.58673] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.58674] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.58676] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.58677] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.58678] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.58679] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.58680] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.58682] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.58683] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.58684] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.58685] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.58686] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.58688] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.58689] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.58690] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.58691] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.58692] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.58694] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.58695] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.58697] GET http://localhost:5174/manifest.webmanifest (Manifest) 200
+[7382.58720] GET http://localhost:5174/pwa-icon.svg (Other) 200
+[7382.58721] GET http://localhost:5174/pwa-192x192.png (Other) 200
+[C7C1376A2894DA9B38931223A918CC1B] GET http://localhost:5174/ (Document) 200
+[7382.58723] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.58724] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.58725] GET http://localhost:5174/@vite/client (Script) 200
+[7382.58726] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.58735] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.58737] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58738] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58739] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.58740] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.58741] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.58742] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58743] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58744] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.58746] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.58747] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.58748] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.58749] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.58750] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.58751] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.58752] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.58755] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.58758] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.58759] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.58763] GET http://localhost:5174/manifest.webmanifest (Manifest)
+[7382.58765] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.58766] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.58769] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.58770] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.58771] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.58772] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.58773] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.58774] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.58775] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.58776] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.58778] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.58779] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.58780] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.58781] GET http://localhost:5174/@id/__x00__vite/dynamic-import-helper.js (Script) 200
+[7382.58782] GET http://localhost:5174/node_modules/.vite/deps/vue-i18n.js?v=7e9daa00 (Script) 200
+[7382.58783] GET http://localhost:5174/src/i18n/messages/en/index.ts (Script) 200
+[7382.58784] GET http://localhost:5174/src/lib/tryCatch.ts (Script) 200
+[7382.58785] GET http://localhost:5174/src/i18n/types.ts (Script) 200
+[7382.58787] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.58788] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.58789] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.58790] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.58792] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.58793] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.58794] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.58795] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.58796] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.58797] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.58798] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.58799] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.58801] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.58802] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.58803] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.58804] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.58806] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.58833] GET http://localhost:5174/node_modules/.vite/deps/@lucide_vue.js?v=7e9daa00 (Script) 200
+[7382.58834] GET http://localhost:5174/src/components/ui/button/index.ts (Script) 200
+[7382.58835] GET http://localhost:5174/src/components/ui/dialog/index.ts (Script) 200
+[7382.58836] GET http://localhost:5174/src/components/DialogActions.vue (Script) 200
+[7382.58837] GET http://localhost:5174/src/components/MobileDialogContent.vue (Script) 200
+[7382.58838] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_core.js?v=7e9daa00 (Script) 200
+[7382.58843] GET http://localhost:5174/src/components/ui/separator/index.ts (Script) 200
+[7382.58844] GET http://localhost:5174/src/features/settings/components/SettingsUnitsSection.vue (Script) 200
+[7382.58845] GET http://localhost:5174/src/features/settings/components/SettingsAppearanceSection.vue (Script) 200
+[7382.58846] GET http://localhost:5174/src/features/settings/components/SettingsScreenSection.vue (Script) 200
+[7382.58847] GET http://localhost:5174/src/features/settings/components/SettingsDataSection.vue (Script) 200
+[7382.58848] GET http://localhost:5174/src/features/settings/components/SettingsDangerZoneSection.vue (Script) 200
+[7382.58849] GET http://localhost:5174/src/features/settings/components/SettingsAboutSection.vue (Script) 200
+[7382.58850] GET http://localhost:5174/src/features/workout/composables/useWorkoutDurationTimer.ts (Script) 200
+[7382.58851] GET http://localhost:5174/src/features/workout/composables/useWorkoutMode.ts (Script) 200
+[7382.58853] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue?vue&type=style&index=0&scoped=dba082aa&lang.css (Script) 200
+[7382.58854] GET http://localhost:5174/src/db/index.ts (Script) 200
+[7382.58855] GET http://localhost:5174/src/db/seedExercises.ts (Script) 200
+[7382.58856] GET http://localhost:5174/src/db/seedTemplates.ts (Script) 200
+[7382.58857] GET http://localhost:5174/src/stores/exercises.ts (Script) 200
+[7382.58859] GET http://localhost:5174/src/stores/settings.ts (Script) 200
+[7382.58860] GET http://localhost:5174/src/features/workout/composables/useWorkout.ts (Script) 200
+[7382.58861] GET http://localhost:5174/src/features/workout/composables/useWorkoutPersistence.ts (Script) 200
+[7382.58862] GET http://localhost:5174/src/composables/useScreenWakeLock.ts (Script) 200
+[7382.58864] GET http://localhost:5174/@vite-plugin-pwa/virtual:pwa-register/vue (Script) 200
+[7382.58865] GET http://localhost:5174/src/i18n/messages/en/calendar.ts (Script)
+[7382.58866] GET http://localhost:5174/src/i18n/messages/en/common.ts (Script) 200
+[7382.58867] GET http://localhost:5174/src/i18n/messages/en/nav.ts (Script) 200
+[7382.58868] GET http://localhost:5174/src/i18n/messages/en/workouts.ts (Script)
+[7382.58869] GET http://localhost:5174/src/i18n/messages/en/exercises.ts (Script)
+[7382.58870] GET http://localhost:5174/src/i18n/messages/en/settings.ts (Script)
+[7382.58871] GET http://localhost:5174/src/i18n/messages/en/timers.ts (Script)
+[7382.58873] GET http://localhost:5174/src/i18n/messages/en/dialogs.ts (Script)
+[7382.58874] GET http://localhost:5174/src/i18n/messages/en/logPastWorkout.ts (Script)
+[7382.58875] GET http://localhost:5174/src/i18n/messages/en/weight.ts (Script)
+[7382.58876] GET http://localhost:5174/src/i18n/messages/en/progressions.ts (Script)
+[7382.58878] GET http://localhost:5174/src/i18n/messages/en/onboarding.ts (Script)
+[7382.58879] GET http://localhost:5174/src/composables/useDialogState.ts (Script)
+[7382.58881] GET http://localhost:5174/src/features/workout/components/WorkoutActiveMode.vue (Script)
+[7382.58882] GET http://localhost:5174/src/features/workout/components/WorkoutCompletionScreen.vue (Script)
+[7382.58883] GET http://localhost:5174/src/features/workout/components/WorkoutBuilderMode.vue (Script)
+[7382.58884] GET http://localhost:5174/src/components/WorkoutCancelDialog.vue (Script)
+[7382.58885] GET http://localhost:5174/src/components/blocks/index.ts (Script)
+[7382.58886] GET http://localhost:5174/src/features/workout/components/WorkoutEditExerciseDialog.vue (Script)
+[7382.58887] GET http://localhost:5174/src/components/WorkoutFinishDialog.vue (Script)
+[7382.58888] GET http://localhost:5174/src/features/workout/components/WorkoutQueueDrawer.vue (Script)
+[7382.58890] GET http://localhost:5174/src/types/blocks.ts (Script)
+[7382.58891] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveMode.vue (Script)
+[7382.58892] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue (Script)
+[7382.58893] GET http://localhost:5174/src/composables/timers/useBenchmarkGlobalTimer.ts (Script)
+[7382.58894] GET http://localhost:5174/src/features/benchmarks/state/benchmarkState.ts (Script)
+[7382.58895] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkPersistence.ts (Script)
+[7382.58896] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkMode.ts (Script)
+[7382.58897] GET http://localhost:5174/src/db/provider.ts (Script)
+[7382.58899] GET http://localhost:5174/src/components/PageLayout.vue (Script)
+[7382.58900] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkViewMode.vue (Script)
+[7382.58901] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkEditMode.vue (Script)
+[7382.58902] GET http://localhost:5174/src/components/ui/numeric-input/NumericInputModal.vue (Script)
+[7382.58903] GET http://localhost:5174/src/components/ExercisePicker.vue (Script)
+[7382.58904] GET http://localhost:5174/src/composables/useEnterAnimation.ts (Script)
+[7382.58906] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkDetail.ts (Script)
+[7382.58907] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkForm.ts (Script)
+[7382.58908] GET http://localhost:5174/src/lib/formatters.ts (Script)
+[7382.58909] GET http://localhost:5174/src/composables/useFormDraft.ts (Script)
+[7382.58910] GET http://localhost:5174/src/components/ui/input/index.ts (Script)
+[7382.58911] GET http://localhost:5174/src/components/ui/label/index.ts (Script)
+[7382.58912] GET http://localhost:5174/src/components/ui/dropdown-menu/index.ts (Script)
+[7382.58914] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseList.vue (Script)
+[7382.58915] GET http://localhost:5174/src/features/benchmarks/components/RoundTabs.vue (Script)
+[7382.58916] GET http://localhost:5174/src/features/exercises/components/ExerciseSelectorDialog.vue (Script)
+[7382.58918] GET http://localhost:5174/src/features/exercises/components/ExerciseSettingsItem.vue (Script)
+[7382.58919] GET http://localhost:5174/src/components/ErrorDialog.vue (Script)
+[7382.58920] GET http://localhost:5174/src/components/ExerciseAvatar.vue (Script)
+[7382.58921] GET http://localhost:5174/src/features/exercises/composables/useExerciseForm.ts (Script)
+[7382.58922] GET http://localhost:5174/src/features/exercises/composables/useImageUpload.ts (Script)
+[7382.58923] GET http://localhost:5174/src/features/exercises/data/exerciseOptions.ts (Script)
+[7382.58925] GET http://localhost:5174/src/lib/exerciseLabels.ts (Script)
+[7382.58926] GET http://localhost:5174/src/features/templates/components/TemplateBlockList.vue (Script)
+[7382.58927] GET http://localhost:5174/src/features/templates/composables/useTemplateCreation.ts (Script)
+[7382.58928] GET http://localhost:5174/src/features/log-past-workout/components/SourceSelector.vue (Script)
+[7382.58929] GET http://localhost:5174/src/features/log-past-workout/components/DateDurationPicker.vue (Script)
+[7382.58931] GET http://localhost:5174/src/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue (Script)
+[7382.58932] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkout.ts (Script)
+[7382.58933] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkoutSave.ts (Script)
+[7382.58935] GET http://localhost:5174/src/stores/workoutState.ts (Script)
+[7382.58936] GET http://localhost:5174/src/features/templates/composables/useTemplateDetail.ts (Script)
+[7382.58937] GET http://localhost:5174/src/components/ExerciseFilters.vue (Script)
+[7382.58938] GET http://localhost:5174/src/components/ExerciseListItem.vue (Script)
+[7382.58939] GET http://localhost:5174/src/composables/useExerciseSearch.ts (Script)
+[7382.58941] GET http://localhost:5174/node_modules/.vite/deps/date-fns.js?v=7e9daa00 (Script) 200
+[7382.58942] GET http://localhost:5174/src/lib/dateLocale.ts (Script)
+[7382.58943] GET http://localhost:5174/src/components/WorkoutHistoryCard.vue (Script)
+[7382.58944] GET http://localhost:5174/src/components/SwipeableWorkoutCard.vue (Script)
+[7382.58946] GET http://localhost:5174/src/components/DeleteWorkoutDialog.vue (Script)
+[7382.58947] GET http://localhost:5174/src/components/ui/empty/index.ts (Script)
+[7382.58948] GET http://localhost:5174/src/composables/useSwipeableDelete.ts (Script)
+[7382.58949] GET http://localhost:5174/src/components/ui/card/index.ts (Script)
+[7382.58950] GET http://localhost:5174/src/components/RecentWorkoutsSection.vue (Script)
+[7382.58952] GET http://localhost:5174/src/components/WeekStrip.vue (Script)
+[7382.58953] GET http://localhost:5174/src/components/WorkoutCalendarSheet.vue (Script)
+[7382.58954] GET http://localhost:5174/src/composables/useWorkoutCalendar.ts (Script)
+[7382.58955] GET http://localhost:5174/src/features/timers/components/TimerPresetSelector.vue (Script)
+[7382.58956] GET http://localhost:5174/src/features/timers/components/StandaloneTimerRunner.vue (Script)
+[7382.58958] GET http://localhost:5174/src/components/ui/tabs/index.ts (Script)
+[7382.58959] GET http://localhost:5174/src/components/SegmentedControl.vue (Script)
+[7382.58960] GET http://localhost:5174/src/components/TemplateListCard.vue (Script)
+[7382.58961] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkListCard.vue (Script)
+[7382.58962] GET http://localhost:5174/src/features/progressions/components/ProgressionCard.vue (Script)
+[7382.58963] GET http://localhost:5174/src/composables/useWorkoutsList.ts (Script)
+[7382.58965] GET http://localhost:5174/src/composables/useBenchmarksList.ts (Script)
+[7382.58966] GET http://localhost:5174/src/features/progressions/composables/useProgressions.ts (Script)
+[7382.58967] GET http://localhost:5174/src/features/workout/components/WorkoutDetailExerciseCard.vue (Script)
+[7382.58969] GET http://localhost:5174/src/features/workout/components/WorkoutDetailStatsRow.vue (Script)
+[7382.58970] GET http://localhost:5174/src/features/workout/components/TimedBlockCard.vue (Script)
+[7382.58971] GET http://localhost:5174/src/features/workout/composables/useWorkoutDetail.ts (Script)
+[7382.58972] GET http://localhost:5174/src/features/workout/utils/markdownExport.ts (Script)
+[7382.58974] GET http://localhost:5174/src/features/workout/components/WorkoutSaveTemplateDialog.vue (Script)
+[7382.58975] GET http://localhost:5174/src/features/workout/composables/useSummaryStats.ts (Script)
+[7382.58986] GET http://localhost:5174/src/components/ui/dialog/Dialog.vue (Script)
+[7382.58987] GET http://localhost:5174/src/components/ui/dialog/DialogClose.vue (Script)
+[7382.58988] GET http://localhost:5174/src/components/ui/dialog/DialogContent.vue (Script)
+[7382.58990] GET http://localhost:5174/src/components/ui/dialog/DialogDescription.vue (Script)
+[7382.58991] GET http://localhost:5174/src/components/ui/dialog/DialogFooter.vue (Script)
+[7382.58992] GET http://localhost:5174/src/components/ui/dialog/DialogHeader.vue (Script)
+[7382.58993] GET http://localhost:5174/src/components/ui/dialog/DialogOverlay.vue (Script)
+[7382.58994] GET http://localhost:5174/src/components/ui/dialog/DialogScrollContent.vue (Script)
+[7382.58996] GET http://localhost:5174/src/components/ui/dialog/DialogTitle.vue (Script)
+[7382.58997] GET http://localhost:5174/src/components/ui/dialog/DialogTrigger.vue (Script)
+[7382.58998] GET http://localhost:5174/src/lib/utils.ts (Script)
+[7382.59000] GET http://localhost:5174/node_modules/.vite/deps/class-variance-authority.js?v=7e9daa00 (Script) 200
+[7382.59001] GET http://localhost:5174/src/components/ui/button/Button.vue (Script)
+[7382.59002] GET http://localhost:5174/node_modules/.vite/deps/reka-ui.js?v=7e9daa00 (Script) 200
+[7382.59006] GET http://localhost:5174/node_modules/.vite/deps/isSameWeek-DmvcgjPr.js?v=7e9daa00 (Script) 200
+[7382.59013] GET http://localhost:5174/node_modules/.vite/deps/clsx.js?v=7e9daa00 (Script) 200
+[7382.59014] GET http://localhost:5174/node_modules/.vite/deps/dist-BHbEK4D6.js?v=7e9daa00 (Script) 200
+[7382.59015] GET http://localhost:5174/node_modules/.vite/deps/calendar-hwrdK2SA.js?v=7e9daa00 (Script) 200
+[7382.59097] GET http://localhost:5174/src/components/ui/separator/Separator.vue (Script)
+[7382.59363] GET http://localhost:5174/node_modules/.vite/deps/dexie.js?v=7e9daa00 (Script) 200
+[D10F6F7184F447940B0BE74D32180C23] GET http://localhost:5174/ (Document)
+[7382.59382] GET http://localhost:5174/src/components/ui/table/index.ts (Script)
+[7382.59383] GET http://localhost:5174/src/components/ui/numeric-input/index.ts (Script)
+[7382.59384] GET http://localhost:5174/src/composables/useTouchDevice.ts (Script)
+[7382.59385] GET http://localhost:5174/src/composables/useNumberLocale.ts (Script)
+[7382.59386] GET http://localhost:5174/src/features/workout/components/SetContextMenu.vue (Script)
+[7382.59387] GET http://localhost:5174/src/composables/timers/useAmrapTimer.ts (Script)
+[7382.59388] GET http://localhost:5174/src/components/timers/WorkoutCircularTimer.vue (Script)
+[7382.59389] GET http://localhost:5174/src/composables/timers/useEmomTimer.ts (Script)
+[7382.59390] GET http://localhost:5174/src/composables/timers/useForTimeTimer.ts (Script)
+[7382.59391] GET http://localhost:5174/src/composables/timers/useTabataTimer.ts (Script)
+[7382.59392] GET http://localhost:5174/src/composables/timers/useTimerAudio.ts (Script)
+[7382.59393] GET http://localhost:5174/src/features/workout/components/WorkoutDurationBadge.vue (Script)
+[7382.59394] GET http://localhost:5174/src/composables/useTimedBlockExercises.ts (Script)
+[7382.59395] GET http://localhost:5174/src/components/blocks/AmrapConfig.vue (Script)
+[7382.59396] GET http://localhost:5174/src/components/blocks/TimedBlockExerciseList.vue (Script)
+[7382.59397] GET http://localhost:5174/src/components/blocks/EmomConfig.vue (Script)
+[7382.59398] GET http://localhost:5174/src/components/blocks/TabataConfig.vue (Script)
+[7382.59399] GET http://localhost:5174/src/components/blocks/ForTimeConfig.vue (Script)
+[7382.59400] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylistItem.vue (Script)
+[7382.59401] GET http://localhost:5174/src/components/ui/number-field/NumberField.vue (Script)
+[7382.59402] GET http://localhost:5174/src/components/ui/number-field/NumberFieldContent.vue (Script)
+[7382.59403] GET http://localhost:5174/src/components/ui/number-field/NumberFieldDecrement.vue (Script)
+[7382.59404] GET http://localhost:5174/src/components/ui/number-field/NumberFieldIncrement.vue (Script)
+[7382.59405] GET http://localhost:5174/src/components/ui/number-field/NumberFieldInput.vue (Script)
+[7382.59406] GET http://localhost:5174/src/components/ui/sheet/Sheet.vue (Script)
+[7382.59407] GET http://localhost:5174/src/components/ui/sheet/SheetClose.vue (Script)
+[7382.59408] GET http://localhost:5174/src/components/ui/sheet/SheetContent.vue (Script)
+[7382.59409] GET http://localhost:5174/src/components/ui/sheet/SheetDescription.vue (Script)
+[7382.59410] GET http://localhost:5174/src/components/ui/sheet/SheetFooter.vue (Script)
+[7382.59411] GET http://localhost:5174/src/components/ui/sheet/SheetHeader.vue (Script)
+[7382.59412] GET http://localhost:5174/src/components/ui/sheet/SheetTitle.vue (Script)
+[7382.59413] GET http://localhost:5174/src/components/ui/sheet/SheetTrigger.vue (Script)
+[7382.59414] GET http://localhost:5174/src/features/benchmarks/lib/splitComparison.ts (Script)
+[7382.59415] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseDisplay.vue (Script)
+[7382.59416] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkProgressBar.vue (Script)
+[7382.59417] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkNextExercise.vue (Script)
+[7382.59418] GET http://localhost:5174/src/db/implementations/dexie/activeBenchmarkWorkout.ts (Script)
+[7382.59419] GET http://localhost:5174/src/db/implementations/dexie/activeWorkout.ts (Script)
+[7382.59420] GET http://localhost:5174/src/db/implementations/dexie/benchmarks.ts (Script)
+[7382.59421] GET http://localhost:5174/src/db/implementations/dexie/customExercises.ts (Script)
+[7382.59422] GET http://localhost:5174/src/db/implementations/dexie/dataManagement.ts (Script)
+[7382.59423] GET http://localhost:5174/src/db/implementations/dexie/drafts.ts (Script)
+[7382.59424] GET http://localhost:5174/src/db/implementations/dexie/onboarding.ts (Script)
+[7382.59425] GET http://localhost:5174/src/db/implementations/dexie/progressions.ts (Script)
+[7382.59426] GET http://localhost:5174/src/db/implementations/dexie/settings.ts (Script)
+[7382.59427] GET http://localhost:5174/src/db/implementations/dexie/templates.ts (Script)
+[7382.59428] GET http://localhost:5174/src/db/implementations/dexie/weight.ts (Script)
+[7382.59429] GET http://localhost:5174/src/db/implementations/dexie/workouts.ts (Script)
+[7382.59430] GET http://localhost:5174/src/features/benchmarks/lib/pbFormatting.ts (Script)
+[7382.59432] GET http://localhost:5174/src/features/benchmarks/lib/attemptStats.ts (Script)
+[7382.59433] GET http://localhost:5174/src/components/ui/barbell-hint/index.ts (Script)
+[57BFC0661C602D62BC597DFC938B9847] GET http://localhost:5174/ (Document) 200
+[7382.59484] GET http://localhost:5174/src/components/ui/avatar/Avatar.vue (Script)
+[7382.59485] GET http://localhost:5174/src/components/ui/avatar/AvatarFallback.vue (Script)
+[7382.59486] GET http://localhost:5174/src/components/ui/avatar/AvatarImage.vue (Script)
+[7382.59490] GET http://localhost:5174/src/lib/imageConversion.ts (Script)
+[7382.59492] GET http://localhost:5174/src/features/templates/lib/templateBlock.ts (Script)
+[7382.59493] GET http://localhost:5174/src/components/ui/scroll-area/ScrollArea.vue (Script)
+[7382.59494] GET http://localhost:5174/src/components/ui/scroll-area/ScrollBar.vue (Script)
+[7382.59497] GET http://localhost:5174/src/components/ui/popover/Popover.vue (Script)
+[7382.59498] GET http://localhost:5174/src/components/ui/popover/PopoverAnchor.vue (Script)
+[7382.59500] GET http://localhost:5174/src/components/ui/popover/PopoverContent.vue (Script)
+[7382.59501] GET http://localhost:5174/src/components/ui/popover/PopoverTrigger.vue (Script)
+[7382.59502] GET http://localhost:5174/src/components/ui/calendar/Calendar.vue (Script)
+[7382.59503] GET http://localhost:5174/src/components/ui/calendar/CalendarCell.vue (Script)
+[7382.59504] GET http://localhost:5174/src/components/ui/calendar/CalendarCellTrigger.vue (Script)
+[7382.59505] GET http://localhost:5174/src/components/ui/calendar/CalendarGrid.vue (Script)
+[7382.59506] GET http://localhost:5174/src/components/ui/calendar/CalendarGridBody.vue (Script)
+[7382.59507] GET http://localhost:5174/src/components/ui/calendar/CalendarGridHead.vue (Script)
+[7382.59508] GET http://localhost:5174/src/components/ui/calendar/CalendarGridRow.vue (Script)
+[7382.59509] GET http://localhost:5174/src/components/ui/calendar/CalendarHeadCell.vue (Script)
+[7382.59510] GET http://localhost:5174/src/components/ui/calendar/CalendarHeader.vue (Script)
+[7382.59511] GET http://localhost:5174/src/components/ui/calendar/CalendarHeading.vue (Script)
+[7382.59512] GET http://localhost:5174/src/components/ui/calendar/CalendarNextButton.vue (Script)
+[7382.59513] GET http://localhost:5174/src/components/ui/calendar/CalendarPrevButton.vue (Script)
+[7382.59517] GET http://localhost:5174/src/lib/exercises/equipmentMetadata.ts (Script)
+[7382.59518] GET http://localhost:5174/src/components/ScrollFadeContainer.vue (Script)
+[7382.59520] GET http://localhost:5174/src/lib/exercises/muscleMetadata.ts (Script)
+[7382.59536] GET http://localhost:5174/src/features/timers/components/TimerPresetButton.vue (Script)
+[7382.59538] GET http://localhost:5174/src/components/ui/badge/Badge.vue (Script)
+[7382.59539] GET http://localhost:5174/src/components/ui/progress/Progress.vue (Script)
+[7382.59542] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetRow.vue (Script)
+[7382.59611] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.59612] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.59613] GET http://localhost:5174/@vite/client (Script) 200
+[7382.59614] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.59623] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.59625] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.59626] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.59627] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.59628] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.59629] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.59630] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.59632] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.59633] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.59635] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.59636] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.59638] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.59639] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.59641] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.59642] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.59643] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.59644] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.59645] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.59648] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.59652] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.59653] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.59654] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.59655] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.59656] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.59657] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.59658] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.59659] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.59660] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.59661] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.59664] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.59668] GET http://localhost:5174/@id/__x00__vite/dynamic-import-helper.js (Script) 200
+[7382.59669] GET http://localhost:5174/node_modules/.vite/deps/vue-i18n.js?v=7e9daa00 (Script) 200
+[7382.59670] GET http://localhost:5174/src/i18n/messages/en/index.ts (Script) 200
+[7382.59671] GET http://localhost:5174/src/lib/tryCatch.ts (Script) 200
+[7382.59672] GET http://localhost:5174/src/i18n/types.ts (Script) 200
+[7382.59677] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.59679] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.59680] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.59681] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.59682] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.59683] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.59684] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.59685] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.59686] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.59687] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.59688] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.59689] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.59690] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.59691] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.59692] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.59693] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.59695] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.59716] GET http://localhost:5174/node_modules/.vite/deps/@lucide_vue.js?v=7e9daa00 (Script) 200
+[7382.59717] GET http://localhost:5174/src/components/ui/button/index.ts (Script) 200
+[7382.59718] GET http://localhost:5174/src/components/ui/dialog/index.ts (Script) 200
+[7382.59719] GET http://localhost:5174/src/components/DialogActions.vue (Script) 200
+[7382.59720] GET http://localhost:5174/src/components/MobileDialogContent.vue (Script) 200
+[7382.59721] GET http://localhost:5174/src/features/workout/composables/useWorkoutDurationTimer.ts (Script) 200
+[7382.59722] GET http://localhost:5174/src/features/workout/composables/useWorkoutMode.ts (Script) 200
+[7382.59723] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue?vue&type=style&index=0&scoped=dba082aa&lang.css (Script) 200
+[7382.59724] GET http://localhost:5174/src/db/index.ts (Script) 200
+[7382.59725] GET http://localhost:5174/src/db/seedExercises.ts (Script) 200
+[7382.59726] GET http://localhost:5174/src/db/seedTemplates.ts (Script) 200
+[7382.59727] GET http://localhost:5174/src/stores/exercises.ts (Script) 200
+[7382.59728] GET http://localhost:5174/src/stores/settings.ts (Script) 200
+[7382.59729] GET http://localhost:5174/src/features/workout/composables/useWorkout.ts (Script) 200
+[7382.59730] GET http://localhost:5174/src/features/workout/composables/useWorkoutPersistence.ts (Script) 200
+[7382.59731] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_core.js?v=7e9daa00 (Script) 200
+[7382.59732] GET http://localhost:5174/src/composables/useScreenWakeLock.ts (Script) 200
+[7382.59735] GET http://localhost:5174/@vite-plugin-pwa/virtual:pwa-register/vue (Script) 200
+[7382.59740] GET http://localhost:5174/src/i18n/messages/en/calendar.ts (Script) 200
+[7382.59741] GET http://localhost:5174/src/i18n/messages/en/common.ts (Script) 200
+[7382.59742] GET http://localhost:5174/src/i18n/messages/en/nav.ts (Script) 200
+[7382.59744] GET http://localhost:5174/src/i18n/messages/en/workouts.ts (Script) 200
+[7382.59745] GET http://localhost:5174/src/i18n/messages/en/exercises.ts (Script) 200
+[7382.59746] GET http://localhost:5174/src/i18n/messages/en/settings.ts (Script) 200
+[7382.59747] GET http://localhost:5174/src/i18n/messages/en/timers.ts (Script) 200
+[7382.59748] GET http://localhost:5174/src/i18n/messages/en/dialogs.ts (Script) 200
+[7382.59750] GET http://localhost:5174/src/i18n/messages/en/logPastWorkout.ts (Script) 200
+[7382.59751] GET http://localhost:5174/src/i18n/messages/en/weight.ts (Script) 200
+[7382.59752] GET http://localhost:5174/src/i18n/messages/en/progressions.ts (Script) 200
+[7382.59753] GET http://localhost:5174/src/i18n/messages/en/onboarding.ts (Script) 200
+[7382.59755] GET http://localhost:5174/src/composables/useDialogState.ts (Script) 200
+[7382.59756] GET http://localhost:5174/src/features/workout/components/WorkoutActiveMode.vue (Script) 200
+[7382.59757] GET http://localhost:5174/src/features/workout/components/WorkoutCompletionScreen.vue (Script) 200
+[7382.59758] GET http://localhost:5174/src/features/workout/components/WorkoutBuilderMode.vue (Script) 200
+[7382.59759] GET http://localhost:5174/src/components/WorkoutCancelDialog.vue (Script) 200
+[7382.59761] GET http://localhost:5174/src/components/blocks/index.ts (Script) 200
+[7382.59762] GET http://localhost:5174/src/features/workout/components/WorkoutEditExerciseDialog.vue (Script) 200
+[7382.59763] GET http://localhost:5174/src/components/WorkoutFinishDialog.vue (Script) 200
+[7382.59764] GET http://localhost:5174/src/features/workout/components/WorkoutQueueDrawer.vue (Script) 200
+[7382.59765] GET http://localhost:5174/src/types/blocks.ts (Script) 200
+[7382.59768] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveMode.vue (Script) 200
+[7382.59769] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue (Script) 200
+[7382.59770] GET http://localhost:5174/src/composables/timers/useBenchmarkGlobalTimer.ts (Script) 200
+[7382.59771] GET http://localhost:5174/src/features/benchmarks/state/benchmarkState.ts (Script) 200
+[7382.59772] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkPersistence.ts (Script) 200
+[7382.59774] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkMode.ts (Script) 200
+[7382.59775] GET http://localhost:5174/src/db/provider.ts (Script) 200
+[7382.59778] GET http://localhost:5174/src/components/PageLayout.vue (Script) 200
+[7382.59779] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkViewMode.vue (Script) 200
+[7382.59780] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkEditMode.vue (Script) 200
+[7382.59781] GET http://localhost:5174/src/components/ui/numeric-input/NumericInputModal.vue (Script) 200
+[7382.59782] GET http://localhost:5174/src/components/ExercisePicker.vue (Script) 200
+[7382.59783] GET http://localhost:5174/src/composables/useEnterAnimation.ts (Script) 200
+[7382.59784] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkDetail.ts (Script) 200
+[7382.59785] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkForm.ts (Script) 200
+[7382.59786] GET http://localhost:5174/src/lib/formatters.ts (Script) 200
+[7382.59788] GET http://localhost:5174/src/composables/useFormDraft.ts (Script) 200
+[7382.59789] GET http://localhost:5174/src/components/ui/input/index.ts (Script) 200
+[7382.59790] GET http://localhost:5174/src/components/ui/label/index.ts (Script) 200
+[7382.59791] GET http://localhost:5174/src/components/ui/dropdown-menu/index.ts (Script) 200
+[7382.59792] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseList.vue (Script) 200
+[7382.59794] GET http://localhost:5174/src/features/benchmarks/components/RoundTabs.vue (Script) 200
+[7382.59795] GET http://localhost:5174/src/features/exercises/components/ExerciseSelectorDialog.vue (Script) 200
+[7382.59796] GET http://localhost:5174/src/features/exercises/components/ExerciseSettingsItem.vue (Script) 200
+[7382.59797] GET http://localhost:5174/src/components/ErrorDialog.vue (Script) 200
+[7382.59798] GET http://localhost:5174/src/components/ExerciseAvatar.vue (Script) 200
+[7382.59800] GET http://localhost:5174/src/features/exercises/composables/useExerciseForm.ts (Script) 200
+[7382.59801] GET http://localhost:5174/src/features/exercises/composables/useImageUpload.ts (Script) 200
+[7382.59802] GET http://localhost:5174/src/features/exercises/data/exerciseOptions.ts (Script) 200
+[7382.59803] GET http://localhost:5174/src/lib/exerciseLabels.ts (Script) 200
+[7382.59805] GET http://localhost:5174/src/features/templates/components/TemplateBlockList.vue (Script) 200
+[7382.59806] GET http://localhost:5174/src/features/templates/composables/useTemplateCreation.ts (Script) 200
+[7382.59808] GET http://localhost:5174/src/features/log-past-workout/components/SourceSelector.vue (Script) 200
+[7382.59809] GET http://localhost:5174/src/features/log-past-workout/components/DateDurationPicker.vue (Script) 200
+[7382.59810] GET http://localhost:5174/src/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue (Script) 200
+[7382.59812] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkout.ts (Script) 200
+[7382.59813] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkoutSave.ts (Script) 200
+[7382.59814] GET http://localhost:5174/src/stores/workoutState.ts (Script) 200
+[7382.59815] GET http://localhost:5174/src/features/templates/composables/useTemplateDetail.ts (Script) 200
+[7382.59816] GET http://localhost:5174/src/components/ExerciseFilters.vue (Script) 200
+[7382.59818] GET http://localhost:5174/src/components/ExerciseListItem.vue (Script) 200
+[7382.59819] GET http://localhost:5174/src/composables/useExerciseSearch.ts (Script) 200
+[7382.59820] GET http://localhost:5174/node_modules/.vite/deps/date-fns.js?v=7e9daa00 (Script) 200
+[7382.59821] GET http://localhost:5174/src/lib/dateLocale.ts (Script) 200
+[7382.59822] GET http://localhost:5174/src/components/WorkoutHistoryCard.vue (Script) 200
+[7382.59824] GET http://localhost:5174/src/components/SwipeableWorkoutCard.vue (Script) 200
+[7382.59825] GET http://localhost:5174/src/components/DeleteWorkoutDialog.vue (Script) 200
+[7382.59826] GET http://localhost:5174/src/components/ui/empty/index.ts (Script) 200
+[7382.59827] GET http://localhost:5174/src/composables/useSwipeableDelete.ts (Script) 200
+[7382.59829] GET http://localhost:5174/src/components/ui/card/index.ts (Script) 200
+[7382.59830] GET http://localhost:5174/src/components/RecentWorkoutsSection.vue (Script) 200
+[7382.59831] GET http://localhost:5174/src/components/WeekStrip.vue (Script) 200
+[7382.59832] GET http://localhost:5174/src/components/WorkoutCalendarSheet.vue (Script) 200
+[7382.59833] GET http://localhost:5174/src/composables/useWorkoutCalendar.ts (Script) 200
+[7382.59834] GET http://localhost:5174/src/features/timers/components/TimerPresetSelector.vue (Script) 200
+[7382.59836] GET http://localhost:5174/src/features/timers/components/StandaloneTimerRunner.vue (Script) 200
+[7382.59838] GET http://localhost:5174/src/features/workout/components/WorkoutDetailExerciseCard.vue (Script) 200
+[7382.59839] GET http://localhost:5174/src/features/workout/components/WorkoutDetailStatsRow.vue (Script) 200
+[7382.59840] GET http://localhost:5174/src/features/workout/components/TimedBlockCard.vue (Script) 200
+[7382.59841] GET http://localhost:5174/src/features/workout/composables/useWorkoutDetail.ts (Script) 200
+[7382.59843] GET http://localhost:5174/src/features/workout/utils/markdownExport.ts (Script) 200
+[7382.59844] GET http://localhost:5174/src/components/ui/separator/index.ts (Script) 200
+[7382.59845] GET http://localhost:5174/src/features/settings/components/SettingsUnitsSection.vue (Script) 200
+[7382.59846] GET http://localhost:5174/src/features/settings/components/SettingsAppearanceSection.vue (Script) 200
+[7382.59848] GET http://localhost:5174/src/features/settings/components/SettingsScreenSection.vue (Script) 200
+[7382.59849] GET http://localhost:5174/src/features/settings/components/SettingsDataSection.vue (Script) 200
+[7382.59850] GET http://localhost:5174/src/features/settings/components/SettingsDangerZoneSection.vue (Script) 200
+[7382.59851] GET http://localhost:5174/src/features/settings/components/SettingsAboutSection.vue (Script) 200
+[7382.59853] GET http://localhost:5174/src/components/ui/tabs/index.ts (Script) 200
+[7382.59854] GET http://localhost:5174/src/components/SegmentedControl.vue (Script) 200
+[7382.59855] GET http://localhost:5174/src/components/TemplateListCard.vue (Script) 200
+[7382.59857] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkListCard.vue (Script) 200
+[7382.59858] GET http://localhost:5174/src/features/progressions/components/ProgressionCard.vue (Script) 200
+[7382.59859] GET http://localhost:5174/src/composables/useWorkoutsList.ts (Script) 200
+[7382.59860] GET http://localhost:5174/src/composables/useBenchmarksList.ts (Script) 200
+[7382.59861] GET http://localhost:5174/src/features/progressions/composables/useProgressions.ts (Script) 200
+[7382.59864] GET http://localhost:5174/src/features/workout/components/WorkoutSaveTemplateDialog.vue (Script) 200
+[7382.59865] GET http://localhost:5174/src/features/workout/composables/useSummaryStats.ts (Script) 200
+[7382.59867] GET http://localhost:5174/node_modules/.vite/deps/isSameWeek-DmvcgjPr.js?v=7e9daa00 (Script) 200
+[7382.59880] GET http://localhost:5174/manifest.webmanifest (Manifest) 200
+[7382.59947] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.59949] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.59954] GET http://localhost:5174/src/components/ui/dialog/Dialog.vue (Script) 200
+[7382.59955] GET http://localhost:5174/src/components/ui/dialog/DialogClose.vue (Script) 200
+[7382.59956] GET http://localhost:5174/src/components/ui/dialog/DialogContent.vue (Script) 200
+[7382.59957] GET http://localhost:5174/src/components/ui/dialog/DialogDescription.vue (Script) 200
+[7382.59958] GET http://localhost:5174/src/components/ui/dialog/DialogFooter.vue (Script) 200
+[7382.59959] GET http://localhost:5174/src/components/ui/dialog/DialogHeader.vue (Script) 200
+[7382.59960] GET http://localhost:5174/src/components/ui/dialog/DialogOverlay.vue (Script) 200
+[7382.59961] GET http://localhost:5174/src/components/ui/dialog/DialogScrollContent.vue (Script) 200
+[7382.59962] GET http://localhost:5174/src/components/ui/dialog/DialogTitle.vue (Script) 200
+[7382.59963] GET http://localhost:5174/src/components/ui/dialog/DialogTrigger.vue (Script) 200
+[7382.59964] GET http://localhost:5174/src/lib/utils.ts (Script) 200
+[7382.59965] GET http://localhost:5174/node_modules/.vite/deps/reka-ui.js?v=7e9daa00 (Script) 200
+[7382.59967] GET http://localhost:5174/node_modules/.vite/deps/dist-BHbEK4D6.js?v=7e9daa00 (Script) 200
+[7382.59968] GET http://localhost:5174/node_modules/.vite/deps/calendar-hwrdK2SA.js?v=7e9daa00 (Script) 200
+[7382.59970] GET http://localhost:5174/src/lib/workout-utils.ts (Script) 200
+[7382.59971] GET http://localhost:5174/src/lib/workoutBlockStatus.ts (Script) 200
+[7382.59972] GET http://localhost:5174/node_modules/.vite/deps/class-variance-authority.js?v=7e9daa00 (Script) 200
+[7382.59973] GET http://localhost:5174/src/components/ui/button/Button.vue (Script) 200
+[7382.59974] GET http://localhost:5174/src/db/implementations/dexie/exerciseProgress.ts (Script) 200
+[7382.59975] GET http://localhost:5174/src/db/implementations/dexie/database.ts (Script) 200
+[7382.59976] GET http://localhost:5174/src/db/interfaces.ts (Script) 200
+[7382.59977] GET http://localhost:5174/node_modules/.vite/deps/clsx.js?v=7e9daa00 (Script) 200
+[7382.59978] GET http://localhost:5174/src/data/popularExercises.ts (Script) 200
+[7382.59979] GET http://localhost:5174/src/data/popularTemplates.ts (Script) 200
+[7382.59981] GET http://localhost:5174/src/db/converters.ts (Script) 200
+[7382.59982] GET http://localhost:5174/src/db/partialUpdate.ts (Script) 200
+[7382.59984] GET http://localhost:5174/src/lib/workoutBlockFactory.ts (Script) 200
+[7382.59985] GET http://localhost:5174/src/lib/workoutBlockList.ts (Script) 200
+[7382.59986] GET http://localhost:5174/src/composables/persistence/createPersistenceCore.ts (Script) 200
+[7382.59996] GET http://localhost:5174/src/composables/timers/useRestTimer.ts (Script) 200
+[7382.59997] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeFooter.vue (Script) 200
+[7382.59998] GET http://localhost:5174/src/features/workout/components/WorkoutActiveStrengthView.vue (Script) 200
+[7382.59999] GET http://localhost:5174/src/components/timers/WorkoutAmrapView.vue (Script) 200
+[7382.60000] GET http://localhost:5174/src/components/timers/WorkoutEmomView.vue (Script) 200
+[7382.60001] GET http://localhost:5174/src/components/timers/WorkoutForTimeView.vue (Script) 200
+[7382.60002] GET http://localhost:5174/src/components/timers/WorkoutTabataView.vue (Script) 200
+[7382.60003] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeHeaderActions.vue (Script) 200
+[7382.60004] GET http://localhost:5174/node_modules/.vite/deps/zod.js?v=7e9daa00 (Script) 200
+[7382.60005] GET http://localhost:5174/src/components/CompletionScreen.vue (Script) 200
+[7382.60006] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylist.vue (Script) 200
+[7382.60007] GET http://localhost:5174/src/components/blocks/AddBlockDialog.vue (Script) 200
+[7382.60008] GET http://localhost:5174/src/components/blocks/ConfigureAmrapDialog.vue (Script) 200
+[7382.60009] GET http://localhost:5174/src/components/blocks/ConfigureEmomDialog.vue (Script) 200
+[7382.60010] GET http://localhost:5174/src/components/blocks/ConfigureTabataDialog.vue (Script) 200
+[7382.60011] GET http://localhost:5174/src/components/blocks/ConfigureForTimeDialog.vue (Script) 200
+[7382.60012] GET http://localhost:5174/src/components/blocks/ConfigureCardioDialog.vue (Script) 200
+[7382.60013] GET http://localhost:5174/src/components/ui/number-field/index.ts (Script) 200
+[7382.60014] GET http://localhost:5174/src/lib/workoutName.ts (Script) 200
+[7382.60015] GET http://localhost:5174/node_modules/.vite/deps/sortablejs.js?v=7e9daa00 (Script) 200
+[7382.60016] GET http://localhost:5174/src/components/ui/sheet/index.ts (Script) 200
+[7382.60018] GET http://localhost:5174/src/features/workout/components/WorkoutQueueItem.vue (Script) 200
+[7382.60020] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmark.ts (Script) 200
+[7382.60021] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts (Script) 200
+[7382.60022] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkSplitComparison.ts (Script) 200
+[7382.60023] GET http://localhost:5174/src/lib/splitTracking.ts (Script) 200
+[7382.60025] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkForTimeView.vue (Script) 200
+[7382.60026] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveModeHeaderActions.vue (Script) 200
+[7382.60027] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueItem.vue (Script) 200
+[7382.60032] GET http://localhost:5174/src/db/implementations/dexie/index.ts (Script) 200
+[7382.60033] GET http://localhost:5174/src/components/PageHeader.vue (Script) 200
+[7382.60035] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseCard.vue (Script) 200
+[7382.60036] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkAttemptHistory.vue (Script) 200
+[7382.60037] GET http://localhost:5174/src/features/benchmarks/composables/usePersonalBestDisplay.ts (Script) 200
+[7382.60038] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkAttemptHistory.ts (Script) 200
+[7382.60040] GET http://localhost:5174/src/components/ui/numeric-input/NumericPresetList.vue (Script) 200
+[7382.60041] GET http://localhost:5174/src/components/ui/numeric-input/NumericValueDisplay.vue (Script) 200
+[7382.60042] GET http://localhost:5174/src/components/ui/numeric-input/NumericKeypad.vue (Script) 200
+[7382.60043] GET http://localhost:5174/src/components/ui/numeric-input/useNumericInput.ts (Script) 200
+[7382.60045] GET http://localhost:5174/src/components/ExercisePickerContent.vue (Script) 200
+[7382.60049] GET http://localhost:5174/src/lib/fractionalIndexing.ts (Script) 200
+[7382.60050] GET http://localhost:5174/src/components/ui/input/Input.vue (Script) 200
+[7382.60051] GET http://localhost:5174/src/components/ui/label/Label.vue (Script) 200
+[7382.60052] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenu.vue (Script) 200
+[7382.60053] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue (Script) 200
+[7382.60054] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuContent.vue (Script) 200
+[7382.60055] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuGroup.vue (Script) 200
+[7382.60056] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuItem.vue (Script) 200
+[7382.60057] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuLabel.vue (Script) 200
+[7382.60058] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioGroup.vue (Script)
+[7382.60059] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioItem.vue (Script) 200
+[7382.60060] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSeparator.vue (Script)
+[7382.60061] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuShortcut.vue (Script) 200
+[7382.60062] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSub.vue (Script)
+[7382.60063] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubContent.vue (Script) 200
+[7382.60064] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubTrigger.vue (Script) 200
+[7382.60065] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuTrigger.vue (Script) 200
+[7382.60066] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_integrations_useSortable.js?v=7e9daa00 (Script) 200
+[7382.60067] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseItem.vue (Script) 200
+[7382.60068] GET http://localhost:5174/src/components/ui/avatar/index.ts (Script) 200
+[7382.60069] GET http://localhost:5174/src/lib/exerciseDisplay.ts (Script) 200
+[7382.60070] GET http://localhost:5174/src/composables/useImageConversion.ts (Script)
+[7382.60071] GET http://localhost:5174/src/features/templates/components/TemplateBlockItem.vue (Script)
+[7382.60072] GET http://localhost:5174/src/features/templates/composables/useTemplateBlockManagement.ts (Script)
+[7382.60073] GET http://localhost:5174/src/components/ui/scroll-area/index.ts (Script)
+[7382.60074] GET http://localhost:5174/src/components/ui/toggle-group/index.ts (Script)
+[7382.60075] GET http://localhost:5174/src/components/ui/popover/index.ts (Script) 200
+[7382.60076] GET http://localhost:5174/src/components/ui/calendar/index.ts (Script)
+[7382.60077] GET http://localhost:5174/node_modules/.vite/deps/@internationalized_date.js?v=7e9daa00 (Script) 200
+[7382.60078] GET http://localhost:5174/src/components/ExerciseEquipmentFilter.vue (Script)
+[7382.60079] GET http://localhost:5174/src/components/ExerciseMuscleFilter.vue (Script)
+[7382.60080] GET http://localhost:5174/node_modules/.vite/deps/date-fns_locale.js?v=7e9daa00 (Script) 200
+[7382.60081] GET http://localhost:5174/src/components/ui/empty/Empty.vue (Script) 200
+[7382.60083] GET http://localhost:5174/src/components/ui/empty/EmptyContent.vue (Script) 200
+[7382.60084] GET http://localhost:5174/src/components/ui/empty/EmptyDescription.vue (Script)
+[7382.60085] GET http://localhost:5174/src/components/ui/empty/EmptyHeader.vue (Script)
+[7382.60086] GET http://localhost:5174/src/components/ui/empty/EmptyMedia.vue (Script)
+[7382.60087] GET http://localhost:5174/src/components/ui/empty/EmptyTitle.vue (Script)
+[7382.60089] GET http://localhost:5174/src/components/ui/card/Card.vue (Script)
+[7382.60090] GET http://localhost:5174/src/components/ui/card/CardAction.vue (Script)
+[7382.60091] GET http://localhost:5174/src/components/ui/card/CardContent.vue (Script)
+[7382.60092] GET http://localhost:5174/src/components/ui/card/CardDescription.vue (Script)
+[7382.60093] GET http://localhost:5174/src/components/ui/card/CardFooter.vue (Script)
+[7382.60094] GET http://localhost:5174/src/components/ui/card/CardHeader.vue (Script)
+[7382.60096] GET http://localhost:5174/src/components/ui/card/CardTitle.vue (Script)
+[7382.60098] GET http://localhost:5174/src/components/RecentWorkoutCard.vue (Script)
+[7382.60099] GET http://localhost:5174/src/composables/useRecentWorkouts.ts (Script)
+[7382.60101] GET http://localhost:5174/src/lib/workoutStats.ts (Script)
+[7382.60102] GET http://localhost:5174/src/features/timers/components/TimerPresetList.vue (Script)
+[7382.60103] GET http://localhost:5174/src/features/timers/components/TimerCustomForm.vue (Script)
+[7382.60104] GET http://localhost:5174/src/features/timers/composables/useTimerWorkoutLogger.ts (Script)
+[7382.60106] GET http://localhost:5174/src/components/ui/collapsible/index.ts (Script)
+[7382.60107] GET http://localhost:5174/src/composables/useWeightDisplay.ts (Script)
+[7382.60108] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetTable.vue (Script)
+[7382.60114] GET http://localhost:5174/src/db/schema.ts (Script)
+[7382.60116] GET http://localhost:5174/src/features/workout/utils/markdownSpec.ts (Script)
+[7382.60117] GET http://localhost:5174/src/components/ui/tabs/Tabs.vue (Script)
+[7382.60119] GET http://localhost:5174/src/components/ui/tabs/TabsContent.vue (Script)
+[7382.60120] GET http://localhost:5174/src/components/ui/tabs/TabsList.vue (Script)
+[7382.60121] GET http://localhost:5174/src/components/ui/tabs/TabsTrigger.vue (Script)
+[7382.60124] GET http://localhost:5174/src/components/ui/badge/index.ts (Script)
+[7382.60125] GET http://localhost:5174/src/components/ui/progress/index.ts (Script)
+[7382.60126] GET http://localhost:5174/src/components/ui/separator/Separator.vue (Script)
+[7382.60128] GET http://localhost:5174/src/components/ui/switch/index.ts (Script)
+[7382.60129] GET http://localhost:5174/src/components/ui/select/index.ts (Script)
+[7382.60130] GET http://localhost:5174/src/features/settings/components/SettingsWakeLockDiagnostics.vue (Script)
+[7382.60131] GET http://localhost:5174/src/features/settings/composables/useDataExportImport.ts (Script)
+[7382.60132] GET http://localhost:5174/src/features/settings/components/SettingsImportDataDialog.vue (Script)
+[7382.60133] GET http://localhost:5174/src/features/settings/components/SettingsDeleteAllDataDialog.vue (Script)
+[7382.60134] GET http://localhost:5174/src/composables/useVersionCheck.ts (Script)
+[7382.60135] GET http://localhost:5174/src/features/progressions/lib/progressionLogic.ts (Script)
+[7382.60136] GET http://localhost:5174/src/composables/useAnimatedCounter.ts (Script)
+[7382.60137] GET http://localhost:5174/src/lib/unitConversion.ts (Script)
+[7382.60230] GET http://localhost:5174/node_modules/.vite/deps/tailwind-merge.js?v=7e9daa00 (Script) 200
+[7382.60231] GET http://localhost:5174/node_modules/.vite/deps/dexie.js?v=7e9daa00 (Script) 200
+[7382.60232] GET http://localhost:5174/src/components/ui/table/index.ts (Script)
+[7382.60233] GET http://localhost:5174/src/components/ui/numeric-input/index.ts (Script)
+[7382.60234] GET http://localhost:5174/src/composables/useTouchDevice.ts (Script)
+[7382.60235] GET http://localhost:5174/src/composables/useNumberLocale.ts (Script)
+[7382.60236] GET http://localhost:5174/src/features/workout/components/SetContextMenu.vue (Script)
+[7382.60237] GET http://localhost:5174/src/composables/timers/useAmrapTimer.ts (Script)
+[7382.60238] GET http://localhost:5174/src/components/timers/WorkoutCircularTimer.vue (Script)
+[7382.60239] GET http://localhost:5174/src/composables/timers/useEmomTimer.ts (Script)
+[0DE2FE9F2E54830560A883679D655BDD] GET http://localhost:5174/ (Document) 200
+[7382.60240] GET http://localhost:5174/src/composables/timers/useForTimeTimer.ts (Script)
+[7382.60242] GET http://localhost:5174/src/composables/timers/useTabataTimer.ts (Script)
+[7382.60243] GET http://localhost:5174/src/composables/timers/useTimerAudio.ts (Script)
+[7382.60244] GET http://localhost:5174/src/features/workout/components/WorkoutDurationBadge.vue (Script)
+[7382.60245] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylistItem.vue (Script)
+[7382.60246] GET http://localhost:5174/src/composables/useTimedBlockExercises.ts (Script)
+[7382.60247] GET http://localhost:5174/src/components/blocks/AmrapConfig.vue (Script)
+[7382.60248] GET http://localhost:5174/src/components/blocks/TimedBlockExerciseList.vue (Script)
+[7382.60249] GET http://localhost:5174/src/components/blocks/EmomConfig.vue (Script)
+[7382.60250] GET http://localhost:5174/src/components/blocks/TabataConfig.vue (Script)
+[7382.60391] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay.js (Script) 200
+[7382.60392] GET http://localhost:5174/@id/virtual:vue-inspector-path:load.js (Script) 200
+[7382.60393] GET http://localhost:5174/@vite/client (Script) 200
+[7382.60394] GET http://localhost:5174/src/main.ts?t=1782045926590 (Script) 200
+[7382.60399] GET http://localhost:5174/@vite-plugin-pwa/pwa-entry-point-loaded (Script) 200
+[7382.60442] GET http://localhost:5174/manifest.webmanifest (Manifest) 200
+[7382.60448] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-core@8.1.3_vue@3.5.38_typescript@6.0.3_/node_modules/@vue/devtools-core/dist/index.js?v=7e9daa00 (Script) 200
+[7382.60449] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-kit@8.1.3/node_modules/@vue/devtools-kit/dist/index.js?v=7e9daa00 (Script) 200
+[7382.60450] GET http://localhost:5174/@id/__x00__virtual:vue-devtools-options (Script) 200
+[7382.60451] GET http://localhost:5174/node_modules/.pnpm/@vue+devtools-shared@8.1.3/node_modules/@vue/devtools-shared/dist/index.js?v=7e9daa00 (Script) 200
+[7382.60452] GET http://localhost:5174/node_modules/.vite/deps/vue.js?v=7e9daa00 (Script) 200
+[7382.60453] GET http://localhost:5174/node_modules/.pnpm/perfect-debounce@2.1.0/node_modules/perfect-debounce/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.60454] GET http://localhost:5174/node_modules/.pnpm/hookable@5.5.3/node_modules/hookable/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.60455] GET http://localhost:5174/node_modules/.pnpm/birpc@2.9.0/node_modules/birpc/dist/index.mjs?v=7e9daa00 (Script) 200
+[7382.60456] GET http://localhost:5174/node_modules/.vite/deps/vue.runtime.esm-bundler-xCElHhYn.js?v=7e9daa00 (Script) 200
+[7382.60457] GET http://localhost:5174/node_modules/.vite/deps/chunk-B4lejLz5.js?v=7e9daa00 (Script) 200
+[7382.60458] GET http://localhost:5174/src/App.vue (Script) 200
+[7382.60459] GET http://localhost:5174/src/features/onboarding/setupOnboardingGuard.ts (Script) 200
+[7382.60460] GET http://localhost:5174/src/i18n/index.ts (Script) 200
+[7382.60462] GET http://localhost:5174/src/router/index.ts (Script) 200
+[7382.60463] GET http://localhost:5174/src/style.css?t=1782046041946 (Script)
+[7382.60464] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue (Script) 200
+[7382.60465] GET http://localhost:5174/@id/virtual:vue-inspector-options (Script) 200
+[7382.60466] GET http://localhost:5174/node_modules/.pnpm/vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0/node_modules/vite/dist/client/env.mjs (Script) 200
+[7382.60475] GET http://localhost:5174/node_modules/.vite/deps/vue-router.js?v=7e9daa00 (Script) 200
+[7382.60476] GET http://localhost:5174/src/components/Layout.vue (Script) 200
+[7382.60477] GET http://localhost:5174/src/components/ResumeWorkoutDialog.vue (Script) 200
+[7382.60478] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue (Script) 200
+[7382.60479] GET http://localhost:5174/src/features/workout/composables/useAppInitialization.ts (Script) 200
+[7382.60480] GET http://localhost:5174/src/features/settings/composables/useTheme.ts (Script) 200
+[7382.60481] GET http://localhost:5174/src/composables/useGlobalWakeLock.ts (Script) 200
+[7382.60482] GET http://localhost:5174/src/features/settings/composables/useLanguage.ts (Script) 200
+[7382.60483] GET http://localhost:5174/src/composables/usePwaUpdate.ts (Script) 200
+[7382.60484] GET http://localhost:5174/@id/__x00__plugin-vue:export-helper (Script) 200
+[7382.60494] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.css (Stylesheet) 200
+[7382.60495] GET http://localhost:5174/@id/virtual:vue-devtools-path:overlay/devtools-overlay.mjs (Script) 200
+[7382.60497] GET http://localhost:5174/src/features/onboarding/composables/useOnboarding.ts (Script) 200
+[7382.60499] GET http://localhost:5174/@id/__x00__vite/dynamic-import-helper.js (Script) 200
+[7382.60500] GET http://localhost:5174/node_modules/.vite/deps/vue-i18n.js?v=7e9daa00 (Script) 200
+[7382.60501] GET http://localhost:5174/src/i18n/messages/en/index.ts (Script) 200
+[7382.60503] GET http://localhost:5174/src/lib/tryCatch.ts (Script) 200
+[7382.60504] GET http://localhost:5174/src/i18n/types.ts (Script) 200
+[7382.60505] GET http://localhost:5174/node_modules/.pnpm/vite-plugin-vue-inspector@6.0.0_vite@8.0.16_@types+node@26.0.0_esbuild@0.27.2_jiti@2.7.0_terser@5.48.0_yaml@2.9.0_/node_modules/vite-plugin-vue-inspector/src/Overlay.vue?vue&type=style&index=0&scoped=e53120d2&lang.css (Script) 200
+[7382.60506] GET http://localhost:5174/src/views/ActiveWorkout.vue (Script) 200
+[7382.60507] GET http://localhost:5174/src/views/ActiveBenchmarkWorkout.vue (Script) 200
+[7382.60508] GET http://localhost:5174/src/views/BenchmarkDetailView.vue (Script) 200
+[7382.60509] GET http://localhost:5174/src/views/CreateBenchmarkView.vue (Script) 200
+[7382.60510] GET http://localhost:5174/src/views/ExerciseFormView.vue (Script) 200
+[7382.60511] GET http://localhost:5174/src/views/CreateTemplateView.vue (Script) 200
+[7382.60512] GET http://localhost:5174/src/views/LogPastWorkoutView.vue (Script) 200
+[7382.60513] GET http://localhost:5174/src/views/TemplateDetailView.vue (Script) 200
+[7382.60514] GET http://localhost:5174/src/views/TheExercisesView.vue (Script) 200
+[7382.60515] GET http://localhost:5174/src/views/TheHistoryView.vue (Script) 200
+[7382.60516] GET http://localhost:5174/src/views/TheHomeView.vue (Script) 200
+[7382.60517] GET http://localhost:5174/src/views/TheTimersView.vue (Script) 200
+[7382.60518] GET http://localhost:5174/src/views/TheSettingsView.vue (Script) 200
+[7382.60519] GET http://localhost:5174/src/views/TheWorkoutsView.vue (Script) 200
+[7382.60520] GET http://localhost:5174/src/views/WorkoutDetailView.vue (Script) 200
+[7382.60521] GET http://localhost:5174/src/views/WorkoutSummaryView.vue (Script) 200
+[7382.60524] GET http://localhost:5174/node_modules/.vite/deps/@lucide_vue.js?v=7e9daa00 (Script) 200
+[7382.60526] GET http://localhost:5174/src/components/ui/button/index.ts (Script) 200
+[7382.60527] GET http://localhost:5174/src/features/workout/composables/useWorkoutDurationTimer.ts (Script) 200
+[7382.60528] GET http://localhost:5174/src/features/workout/composables/useWorkoutMode.ts (Script) 200
+[7382.60529] GET http://localhost:5174/src/features/workout/components/ActiveWorkoutFab.vue?vue&type=style&index=0&scoped=dba082aa&lang.css (Script) 200
+[7382.60546] GET http://localhost:5174/src/db/index.ts (Script) 200
+[7382.60547] GET http://localhost:5174/src/db/seedExercises.ts (Script) 200
+[7382.60549] GET http://localhost:5174/src/db/seedTemplates.ts (Script) 200
+[7382.60550] GET http://localhost:5174/src/stores/exercises.ts (Script) 200
+[7382.60551] GET http://localhost:5174/src/stores/settings.ts (Script) 200
+[7382.60552] GET http://localhost:5174/src/features/workout/composables/useWorkout.ts (Script) 200
+[7382.60553] GET http://localhost:5174/src/features/workout/composables/useWorkoutPersistence.ts (Script) 200
+[7382.60555] GET http://localhost:5174/src/components/ui/dialog/index.ts (Script) 200
+[7382.60556] GET http://localhost:5174/src/components/DialogActions.vue (Script) 200
+[7382.60557] GET http://localhost:5174/src/components/MobileDialogContent.vue (Script) 200
+[7382.60558] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_core.js?v=7e9daa00 (Script) 200
+[7382.60560] GET http://localhost:5174/src/composables/useScreenWakeLock.ts (Script) 200
+[7382.60564] GET http://localhost:5174/@vite-plugin-pwa/virtual:pwa-register/vue (Script) 200
+[7382.60577] GET http://localhost:5174/src/i18n/messages/en/calendar.ts (Script) 200
+[7382.60578] GET http://localhost:5174/src/i18n/messages/en/common.ts (Script) 200
+[7382.60579] GET http://localhost:5174/src/i18n/messages/en/nav.ts (Script) 200
+[7382.60580] GET http://localhost:5174/src/i18n/messages/en/workouts.ts (Script) 200
+[7382.60581] GET http://localhost:5174/src/i18n/messages/en/exercises.ts (Script) 200
+[7382.60582] GET http://localhost:5174/src/i18n/messages/en/settings.ts (Script) 200
+[7382.60583] GET http://localhost:5174/src/i18n/messages/en/timers.ts (Script) 200
+[7382.60584] GET http://localhost:5174/src/i18n/messages/en/dialogs.ts (Script) 200
+[7382.60585] GET http://localhost:5174/src/i18n/messages/en/logPastWorkout.ts (Script) 200
+[7382.60586] GET http://localhost:5174/src/i18n/messages/en/weight.ts (Script) 200
+[7382.60587] GET http://localhost:5174/src/i18n/messages/en/progressions.ts (Script) 200
+[7382.60588] GET http://localhost:5174/src/i18n/messages/en/onboarding.ts (Script) 200
+[7382.60594] GET http://localhost:5174/src/components/ui/input/index.ts (Script) 200
+[7382.60595] GET http://localhost:5174/src/components/ui/label/index.ts (Script) 200
+[7382.60596] GET http://localhost:5174/src/components/ErrorDialog.vue (Script) 200
+[7382.60597] GET http://localhost:5174/src/features/log-past-workout/components/SourceSelector.vue (Script) 200
+[7382.60599] GET http://localhost:5174/src/features/log-past-workout/components/DateDurationPicker.vue (Script) 200
+[7382.60600] GET http://localhost:5174/src/features/log-past-workout/components/LogPastWorkoutBuilderStep.vue (Script) 200
+[7382.60601] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkout.ts (Script) 200
+[7382.60602] GET http://localhost:5174/src/features/log-past-workout/composables/usePastWorkoutSave.ts (Script) 200
+[7382.60612] GET http://localhost:5174/src/composables/useDialogState.ts (Script) 200
+[7382.60614] GET http://localhost:5174/src/features/workout/components/WorkoutActiveMode.vue (Script) 200
+[7382.60615] GET http://localhost:5174/src/features/workout/components/WorkoutCompletionScreen.vue (Script) 200
+[7382.60616] GET http://localhost:5174/src/features/workout/components/WorkoutBuilderMode.vue (Script) 200
+[7382.60617] GET http://localhost:5174/src/components/WorkoutCancelDialog.vue (Script) 200
+[7382.60618] GET http://localhost:5174/src/components/blocks/index.ts (Script) 200
+[7382.60619] GET http://localhost:5174/src/features/workout/components/WorkoutEditExerciseDialog.vue (Script) 200
+[7382.60620] GET http://localhost:5174/src/components/WorkoutFinishDialog.vue (Script) 200
+[7382.60622] GET http://localhost:5174/src/features/workout/components/WorkoutQueueDrawer.vue (Script) 200
+[7382.60623] GET http://localhost:5174/src/types/blocks.ts (Script) 200
+[7382.60624] GET http://localhost:5174/src/components/ExerciseFilters.vue (Script) 200
+[7382.60626] GET http://localhost:5174/src/components/ExerciseListItem.vue (Script) 200
+[7382.60627] GET http://localhost:5174/src/composables/useExerciseSearch.ts (Script) 200
+[7382.60629] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveMode.vue (Script) 200
+[7382.60630] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueDrawer.vue (Script) 200
+[7382.60631] GET http://localhost:5174/src/composables/timers/useBenchmarkGlobalTimer.ts (Script) 200
+[7382.60633] GET http://localhost:5174/src/features/benchmarks/state/benchmarkState.ts (Script) 200
+[7382.60634] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkPersistence.ts (Script) 200
+[7382.60635] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkMode.ts (Script) 200
+[7382.60636] GET http://localhost:5174/src/db/provider.ts (Script) 200
+[7382.60638] GET http://localhost:5174/src/components/PageLayout.vue (Script) 200
+[7382.60639] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkViewMode.vue (Script) 200
+[7382.60640] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkEditMode.vue (Script) 200
+[7382.60641] GET http://localhost:5174/src/components/ui/numeric-input/NumericInputModal.vue (Script) 200
+[7382.60642] GET http://localhost:5174/src/components/ExercisePicker.vue (Script) 200
+[7382.60643] GET http://localhost:5174/src/composables/useEnterAnimation.ts (Script) 200
+[7382.60644] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkDetail.ts (Script) 200
+[7382.60645] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkForm.ts (Script) 200
+[7382.60646] GET http://localhost:5174/src/lib/formatters.ts (Script) 200
+[7382.60648] GET http://localhost:5174/src/composables/useFormDraft.ts (Script) 200
+[7382.60649] GET http://localhost:5174/src/components/ui/dropdown-menu/index.ts (Script) 200
+[7382.60650] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseList.vue (Script) 200
+[7382.60652] GET http://localhost:5174/src/features/benchmarks/components/RoundTabs.vue (Script) 200
+[7382.60653] GET http://localhost:5174/src/features/exercises/components/ExerciseSelectorDialog.vue (Script) 200
+[7382.60654] GET http://localhost:5174/src/features/exercises/components/ExerciseSettingsItem.vue (Script) 200
+[7382.60655] GET http://localhost:5174/src/components/ExerciseAvatar.vue (Script) 200
+[7382.60657] GET http://localhost:5174/src/features/exercises/composables/useExerciseForm.ts (Script) 200
+[7382.60658] GET http://localhost:5174/src/features/exercises/composables/useImageUpload.ts (Script) 200
+[7382.60659] GET http://localhost:5174/src/features/exercises/data/exerciseOptions.ts (Script) 200
+[7382.60660] GET http://localhost:5174/src/lib/exerciseLabels.ts (Script) 200
+[7382.60661] GET http://localhost:5174/src/features/templates/components/TemplateBlockList.vue (Script) 200
+[7382.60663] GET http://localhost:5174/src/features/templates/composables/useTemplateCreation.ts (Script) 200
+[7382.60664] GET http://localhost:5174/src/stores/workoutState.ts (Script) 200
+[7382.60665] GET http://localhost:5174/src/features/templates/composables/useTemplateDetail.ts (Script) 200
+[7382.60666] GET http://localhost:5174/node_modules/.vite/deps/date-fns.js?v=7e9daa00 (Script) 200
+[7382.60668] GET http://localhost:5174/src/lib/dateLocale.ts (Script) 200
+[7382.60669] GET http://localhost:5174/src/components/WorkoutHistoryCard.vue (Script) 200
+[7382.60670] GET http://localhost:5174/src/components/SwipeableWorkoutCard.vue (Script) 200
+[7382.60672] GET http://localhost:5174/src/components/DeleteWorkoutDialog.vue (Script) 200
+[7382.60673] GET http://localhost:5174/src/components/ui/empty/index.ts (Script) 200
+[7382.60674] GET http://localhost:5174/src/composables/useSwipeableDelete.ts (Script) 200
+[7382.60675] GET http://localhost:5174/src/components/ui/card/index.ts (Script) 200
+[7382.60677] GET http://localhost:5174/src/components/RecentWorkoutsSection.vue (Script) 200
+[7382.60678] GET http://localhost:5174/src/components/WeekStrip.vue (Script) 200
+[7382.60679] GET http://localhost:5174/src/components/WorkoutCalendarSheet.vue (Script) 200
+[7382.60680] GET http://localhost:5174/src/composables/useWorkoutCalendar.ts (Script) 200
+[7382.60682] GET http://localhost:5174/src/features/timers/components/TimerPresetSelector.vue (Script) 200
+[7382.60683] GET http://localhost:5174/src/features/timers/components/StandaloneTimerRunner.vue (Script) 200
+[7382.60684] GET http://localhost:5174/src/components/ui/separator/index.ts (Script) 200
+[7382.60685] GET http://localhost:5174/src/features/settings/components/SettingsUnitsSection.vue (Script) 200
+[7382.60687] GET http://localhost:5174/src/features/settings/components/SettingsAppearanceSection.vue (Script) 200
+[7382.60688] GET http://localhost:5174/src/features/settings/components/SettingsScreenSection.vue (Script) 200
+[7382.60689] GET http://localhost:5174/src/features/settings/components/SettingsDataSection.vue (Script) 200
+[7382.60690] GET http://localhost:5174/src/features/settings/components/SettingsDangerZoneSection.vue (Script) 200
+[7382.60691] GET http://localhost:5174/src/features/settings/components/SettingsAboutSection.vue (Script) 200
+[7382.60693] GET http://localhost:5174/src/components/ui/tabs/index.ts (Script) 200
+[7382.60694] GET http://localhost:5174/src/components/SegmentedControl.vue (Script) 200
+[7382.60695] GET http://localhost:5174/src/components/TemplateListCard.vue (Script) 200
+[7382.60696] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkListCard.vue (Script) 200
+[7382.60698] GET http://localhost:5174/src/features/progressions/components/ProgressionCard.vue (Script) 200
+[7382.60699] GET http://localhost:5174/src/composables/useWorkoutsList.ts (Script) 200
+[7382.60700] GET http://localhost:5174/src/composables/useBenchmarksList.ts (Script) 200
+[7382.60701] GET http://localhost:5174/src/features/progressions/composables/useProgressions.ts (Script) 200
+[7382.60703] GET http://localhost:5174/src/features/workout/components/WorkoutDetailExerciseCard.vue (Script) 200
+[7382.60704] GET http://localhost:5174/src/features/workout/components/WorkoutDetailStatsRow.vue (Script) 200
+[7382.60705] GET http://localhost:5174/src/features/workout/components/TimedBlockCard.vue (Script) 200
+[7382.60706] GET http://localhost:5174/src/features/workout/composables/useWorkoutDetail.ts (Script) 200
+[7382.60707] GET http://localhost:5174/src/features/workout/utils/markdownExport.ts (Script) 200
+[7382.60711] GET http://localhost:5174/node_modules/.vite/deps/class-variance-authority.js?v=7e9daa00 (Script) 200
+[7382.60712] GET http://localhost:5174/src/components/ui/button/Button.vue (Script) 200
+[7382.60713] GET http://localhost:5174/src/lib/workout-utils.ts (Script) 200
+[7382.60715] GET http://localhost:5174/src/features/workout/components/WorkoutSaveTemplateDialog.vue (Script) 200
+[7382.60716] GET http://localhost:5174/src/features/workout/composables/useSummaryStats.ts (Script) 200
+[7382.60717] GET http://localhost:5174/src/lib/workoutBlockStatus.ts (Script) 200
+[7382.60722] GET http://localhost:5174/node_modules/.vite/deps/isSameWeek-DmvcgjPr.js?v=7e9daa00 (Script) 200
+[7382.60725] GET http://localhost:5174/src/db/implementations/dexie/exerciseProgress.ts (Script) 200
+[7382.60726] GET http://localhost:5174/src/db/implementations/dexie/database.ts (Script) 200
+[7382.60728] GET http://localhost:5174/src/db/interfaces.ts (Script) 200
+[7382.60781] GET http://localhost:5174/src/data/popularExercises.ts (Script) 200
+[7382.60783] GET http://localhost:5174/src/data/popularTemplates.ts (Script) 200
+[7382.60784] GET http://localhost:5174/src/db/converters.ts (Script) 200
+[7382.60786] GET http://localhost:5174/src/db/partialUpdate.ts (Script) 200
+[7382.60787] GET http://localhost:5174/node_modules/.vite/deps/clsx.js?v=7e9daa00 (Script) 200
+[7382.60789] GET http://localhost:5174/src/lib/workoutBlockFactory.ts (Script) 200
+[7382.60790] GET http://localhost:5174/src/lib/workoutBlockList.ts (Script) 200
+[7382.60791] GET http://localhost:5174/src/composables/persistence/createPersistenceCore.ts (Script) 200
+[7382.60793] GET http://localhost:5174/src/components/ui/dialog/Dialog.vue (Script) 200
+[7382.60794] GET http://localhost:5174/src/components/ui/dialog/DialogClose.vue (Script) 200
+[7382.60796] GET http://localhost:5174/src/components/ui/dialog/DialogContent.vue (Script) 200
+[7382.60797] GET http://localhost:5174/src/components/ui/dialog/DialogDescription.vue (Script) 200
+[7382.60798] GET http://localhost:5174/src/components/ui/dialog/DialogFooter.vue (Script) 200
+[7382.60799] GET http://localhost:5174/src/components/ui/dialog/DialogHeader.vue (Script) 200
+[7382.60800] GET http://localhost:5174/src/components/ui/dialog/DialogOverlay.vue (Script) 200
+[7382.60801] GET http://localhost:5174/src/components/ui/dialog/DialogScrollContent.vue (Script) 200
+[7382.60803] GET http://localhost:5174/src/components/ui/dialog/DialogTitle.vue (Script) 200
+[7382.60804] GET http://localhost:5174/src/components/ui/dialog/DialogTrigger.vue (Script) 200
+[7382.60805] GET http://localhost:5174/src/lib/utils.ts (Script) 200
+[7382.60806] GET http://localhost:5174/node_modules/.vite/deps/reka-ui.js?v=7e9daa00 (Script) 200
+[7382.60811] GET http://localhost:5174/node_modules/.vite/deps/dist-BHbEK4D6.js?v=7e9daa00 (Script) 200
+[7382.60812] GET http://localhost:5174/node_modules/.vite/deps/calendar-hwrdK2SA.js?v=7e9daa00 (Script) 200
+[7382.60831] GET http://localhost:5174/src/components/ui/input/Input.vue (Script) 200
+[7382.60832] GET http://localhost:5174/src/components/ui/label/Label.vue (Script) 200
+[7382.60833] GET http://localhost:5174/src/components/ui/scroll-area/index.ts (Script) 200
+[7382.60834] GET http://localhost:5174/src/components/ui/toggle-group/index.ts (Script) 200
+[7382.60835] GET http://localhost:5174/src/components/ui/popover/index.ts (Script) 200
+[7382.60836] GET http://localhost:5174/src/components/ui/calendar/index.ts (Script) 200
+[7382.60837] GET http://localhost:5174/node_modules/.vite/deps/@internationalized_date.js?v=7e9daa00 (Script) 200
+[7382.60838] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylist.vue (Script) 200
+[7382.60839] GET http://localhost:5174/src/components/ExerciseEquipmentFilter.vue (Script) 200
+[7382.60840] GET http://localhost:5174/src/components/ExerciseMuscleFilter.vue (Script) 200
+[7382.60841] GET http://localhost:5174/src/composables/timers/useRestTimer.ts (Script) 200
+[7382.60842] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeFooter.vue (Script) 200
+[7382.60843] GET http://localhost:5174/src/features/workout/components/WorkoutActiveStrengthView.vue (Script) 200
+[7382.60844] GET http://localhost:5174/src/components/timers/WorkoutAmrapView.vue (Script) 200
+[7382.60845] GET http://localhost:5174/src/components/timers/WorkoutEmomView.vue (Script) 200
+[7382.60846] GET http://localhost:5174/src/components/timers/WorkoutForTimeView.vue (Script) 200
+[7382.60847] GET http://localhost:5174/src/components/timers/WorkoutTabataView.vue (Script) 200
+[7382.60848] GET http://localhost:5174/src/features/workout/components/WorkoutActiveModeHeaderActions.vue (Script) 200
+[7382.60849] GET http://localhost:5174/src/components/CompletionScreen.vue (Script) 200
+[7382.60850] GET http://localhost:5174/src/components/blocks/AddBlockDialog.vue (Script) 200
+[7382.60851] GET http://localhost:5174/src/components/blocks/ConfigureAmrapDialog.vue (Script) 200
+[7382.60852] GET http://localhost:5174/src/components/blocks/ConfigureEmomDialog.vue (Script) 200
+[7382.60853] GET http://localhost:5174/src/components/blocks/ConfigureTabataDialog.vue (Script) 200
+[7382.60854] GET http://localhost:5174/src/components/blocks/ConfigureForTimeDialog.vue (Script) 200
+[7382.60855] GET http://localhost:5174/src/components/blocks/ConfigureCardioDialog.vue (Script) 200
+[7382.60857] GET http://localhost:5174/src/components/ui/number-field/index.ts (Script) 200
+[7382.60858] GET http://localhost:5174/src/lib/workoutName.ts (Script) 200
+[7382.60859] GET http://localhost:5174/node_modules/.vite/deps/sortablejs.js?v=7e9daa00 (Script) 200
+[7382.60860] GET http://localhost:5174/src/components/ui/sheet/index.ts (Script) 200
+[7382.60861] GET http://localhost:5174/src/features/workout/components/WorkoutQueueItem.vue (Script) 200
+[7382.60862] GET http://localhost:5174/node_modules/.vite/deps/zod.js?v=7e9daa00 (Script) 200
+[7382.60863] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmark.ts (Script) 200
+[7382.60864] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkExerciseNavigation.ts (Script) 200
+[7382.60865] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkSplitComparison.ts (Script) 200
+[7382.60867] GET http://localhost:5174/src/lib/splitTracking.ts (Script) 200
+[7382.60868] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkForTimeView.vue (Script) 200
+[7382.60869] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkActiveModeHeaderActions.vue (Script) 200
+[7382.60870] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseQueueItem.vue (Script) 200
+[7382.60873] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseCard.vue (Script) 200
+[7382.60874] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkAttemptHistory.vue (Script) 200
+[7382.60876] GET http://localhost:5174/src/features/benchmarks/composables/usePersonalBestDisplay.ts (Script) 200
+[7382.60877] GET http://localhost:5174/src/features/benchmarks/composables/useBenchmarkAttemptHistory.ts (Script) 200
+[7382.60884] GET http://localhost:5174/src/components/ui/numeric-input/NumericPresetList.vue (Script) 200
+[7382.60885] GET http://localhost:5174/src/components/ui/numeric-input/NumericValueDisplay.vue (Script) 200
+[7382.60886] GET http://localhost:5174/src/components/ui/numeric-input/NumericKeypad.vue (Script) 200
+[7382.60887] GET http://localhost:5174/src/components/ui/numeric-input/useNumericInput.ts (Script) 200
+[7382.60892] GET http://localhost:5174/src/components/ExercisePickerContent.vue (Script) 200
+[7382.60895] GET http://localhost:5174/src/lib/fractionalIndexing.ts (Script) 200
+[7382.60897] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenu.vue (Script) 200
+[7382.60898] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue (Script) 200
+[7382.60899] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuContent.vue (Script) 200
+[7382.60901] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuGroup.vue (Script) 200
+[7382.60902] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuItem.vue (Script) 200
+[7382.60903] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuLabel.vue (Script) 200
+[7382.60904] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioGroup.vue (Script) 200
+[7382.60905] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuRadioItem.vue (Script) 200
+[7382.60906] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSeparator.vue (Script) 200
+[7382.60907] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuShortcut.vue (Script) 200
+[7382.60909] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSub.vue (Script) 200
+[7382.60910] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubContent.vue (Script) 200
+[7382.60911] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuSubTrigger.vue (Script) 200
+[7382.60912] GET http://localhost:5174/src/components/ui/dropdown-menu/DropdownMenuTrigger.vue (Script) 200
+[7382.60914] GET http://localhost:5174/node_modules/.vite/deps/@vueuse_integrations_useSortable.js?v=7e9daa00 (Script) 200
+[7382.60915] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseItem.vue (Script) 200
+[7382.60917] GET http://localhost:5174/src/components/ui/avatar/index.ts (Script) 200
+[7382.60918] GET http://localhost:5174/src/lib/exerciseDisplay.ts (Script) 200
+[7382.60920] GET http://localhost:5174/src/composables/useImageConversion.ts (Script) 200
+[7382.60922] GET http://localhost:5174/src/features/templates/components/TemplateBlockItem.vue (Script) 200
+[7382.60924] GET http://localhost:5174/src/features/templates/composables/useTemplateBlockManagement.ts (Script) 200
+[7382.60925] GET http://localhost:5174/src/db/implementations/dexie/index.ts (Script) 200
+[7382.60926] GET http://localhost:5174/src/components/PageHeader.vue (Script) 200
+[7382.60927] GET http://localhost:5174/node_modules/.vite/deps/date-fns_locale.js?v=7e9daa00 (Script) 200
+[7382.60929] GET http://localhost:5174/src/components/ui/empty/Empty.vue (Script) 200
+[7382.60930] GET http://localhost:5174/src/components/ui/empty/EmptyContent.vue (Script) 200
+[7382.60932] GET http://localhost:5174/src/components/ui/empty/EmptyDescription.vue (Script) 200
+[7382.60933] GET http://localhost:5174/src/components/ui/empty/EmptyHeader.vue (Script) 200
+[7382.60934] GET http://localhost:5174/src/components/ui/empty/EmptyMedia.vue (Script) 200
+[7382.60935] GET http://localhost:5174/src/components/ui/empty/EmptyTitle.vue (Script) 200
+[7382.60937] GET http://localhost:5174/src/components/ui/card/Card.vue (Script) 200
+[7382.60938] GET http://localhost:5174/src/components/ui/card/CardAction.vue (Script) 200
+[7382.60939] GET http://localhost:5174/src/components/ui/card/CardContent.vue (Script) 200
+[7382.60940] GET http://localhost:5174/src/components/ui/card/CardDescription.vue (Script) 200
+[7382.60941] GET http://localhost:5174/src/components/ui/card/CardFooter.vue (Script) 200
+[7382.60942] GET http://localhost:5174/src/components/ui/card/CardHeader.vue (Script) 200
+[7382.60944] GET http://localhost:5174/src/components/ui/card/CardTitle.vue (Script) 200
+[7382.60945] GET http://localhost:5174/src/components/RecentWorkoutCard.vue (Script) 200
+[7382.60946] GET http://localhost:5174/src/composables/useRecentWorkouts.ts (Script) 200
+[7382.60947] GET http://localhost:5174/src/lib/workoutStats.ts (Script) 200
+[7382.60948] GET http://localhost:5174/src/features/timers/components/TimerPresetList.vue (Script) 200
+[7382.60949] GET http://localhost:5174/src/features/timers/components/TimerCustomForm.vue (Script) 200
+[7382.60950] GET http://localhost:5174/src/features/timers/composables/useTimerWorkoutLogger.ts (Script) 200
+[7382.60952] GET http://localhost:5174/src/components/ui/separator/Separator.vue (Script) 200
+[7382.60953] GET http://localhost:5174/src/components/ui/switch/index.ts (Script) 200
+[7382.60954] GET http://localhost:5174/src/components/ui/select/index.ts (Script) 200
+[7382.60955] GET http://localhost:5174/src/components/ui/collapsible/index.ts (Script) 200
+[7382.60957] GET http://localhost:5174/src/features/settings/components/SettingsWakeLockDiagnostics.vue (Script) 200
+[7382.60958] GET http://localhost:5174/src/features/settings/composables/useDataExportImport.ts (Script) 200
+[7382.60959] GET http://localhost:5174/src/features/settings/components/SettingsImportDataDialog.vue (Script) 200
+[7382.60960] GET http://localhost:5174/src/features/settings/components/SettingsDeleteAllDataDialog.vue (Script) 200
+[7382.60961] GET http://localhost:5174/src/composables/useVersionCheck.ts (Script) 200
+[7382.60963] GET http://localhost:5174/src/components/ui/tabs/Tabs.vue (Script) 200
+[7382.60964] GET http://localhost:5174/src/components/ui/tabs/TabsContent.vue (Script) 200
+[7382.60965] GET http://localhost:5174/src/components/ui/tabs/TabsList.vue (Script) 200
+[7382.60966] GET http://localhost:5174/src/components/ui/tabs/TabsTrigger.vue (Script) 200
+[7382.60967] GET http://localhost:5174/src/features/progressions/lib/progressionLogic.ts (Script) 200
+[7382.60969] GET http://localhost:5174/src/composables/useWeightDisplay.ts (Script) 200
+[7382.60970] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetTable.vue (Script) 200
+[7382.60971] GET http://localhost:5174/src/db/schema.ts (Script) 200
+[7382.60973] GET http://localhost:5174/src/features/workout/utils/markdownSpec.ts (Script) 200
+[7382.60974] GET http://localhost:5174/src/components/ui/badge/index.ts (Script) 200
+[7382.60975] GET http://localhost:5174/src/components/ui/progress/index.ts (Script) 200
+[7382.60976] GET http://localhost:5174/src/composables/useAnimatedCounter.ts (Script) 200
+[7382.60978] GET http://localhost:5174/src/lib/unitConversion.ts (Script) 200
+[7382.60979] GET http://localhost:5174/node_modules/.vite/deps/dexie.js?v=7e9daa00 (Script) 200
+[7382.60982] GET http://localhost:5174/node_modules/.vite/deps/tailwind-merge.js?v=7e9daa00 (Script) 200
+[7382.61054] GET http://localhost:5174/src/components/ui/scroll-area/ScrollArea.vue (Script) 200
+[7382.61055] GET http://localhost:5174/src/components/ui/scroll-area/ScrollBar.vue (Script) 200
+[7382.61056] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroup.vue (Script) 200
+[7382.61057] GET http://localhost:5174/src/components/ui/toggle-group/ToggleGroupItem.vue (Script) 200
+[7382.61058] GET http://localhost:5174/src/components/ui/popover/Popover.vue (Script) 200
+[7382.61059] GET http://localhost:5174/src/components/ui/popover/PopoverAnchor.vue (Script) 200
+[7382.61060] GET http://localhost:5174/src/components/ui/popover/PopoverContent.vue (Script) 200
+[7382.61061] GET http://localhost:5174/src/components/ui/popover/PopoverTrigger.vue (Script) 200
+[7382.61062] GET http://localhost:5174/src/lib/exercises/equipmentMetadata.ts (Script) 200
+[7382.61063] GET http://localhost:5174/src/components/ScrollFadeContainer.vue (Script) 200
+[7382.61064] GET http://localhost:5174/src/components/ui/calendar/Calendar.vue (Script) 200
+[7382.61065] GET http://localhost:5174/src/components/ui/calendar/CalendarCell.vue (Script) 200
+[7382.61066] GET http://localhost:5174/src/components/ui/calendar/CalendarCellTrigger.vue (Script) 200
+[7382.61067] GET http://localhost:5174/src/components/ui/calendar/CalendarGrid.vue (Script) 200
+[7382.61068] GET http://localhost:5174/src/components/ui/calendar/CalendarGridBody.vue (Script) 200
+[7382.61069] GET http://localhost:5174/src/components/ui/calendar/CalendarGridHead.vue (Script) 200
+[7382.61070] GET http://localhost:5174/src/components/ui/calendar/CalendarGridRow.vue (Script) 200
+[7382.61071] GET http://localhost:5174/src/components/ui/calendar/CalendarHeadCell.vue (Script) 200
+[7382.61072] GET http://localhost:5174/src/components/ui/calendar/CalendarHeader.vue (Script) 200
+[7382.61073] GET http://localhost:5174/src/components/ui/calendar/CalendarHeading.vue (Script) 200
+[7382.61074] GET http://localhost:5174/src/components/ui/calendar/CalendarNextButton.vue (Script) 200
+[7382.61075] GET http://localhost:5174/src/components/ui/calendar/CalendarPrevButton.vue (Script) 200
+[7382.61076] GET http://localhost:5174/src/components/blocks/WorkoutBlockPlaylistItem.vue (Script) 200
+[7382.61077] GET http://localhost:5174/src/lib/exercises/muscleMetadata.ts (Script) 200
+[7382.61079] GET http://localhost:5174/src/composables/timers/useAmrapTimer.ts (Script) 200
+[7382.61080] GET http://localhost:5174/src/components/timers/WorkoutCircularTimer.vue (Script) 200
+[7382.61081] GET http://localhost:5174/src/composables/timers/useEmomTimer.ts (Script) 200
+[7382.61082] GET http://localhost:5174/src/components/ui/table/index.ts (Script) 200
+[7382.61083] GET http://localhost:5174/src/components/ui/numeric-input/index.ts (Script) 200
+[7382.61084] GET http://localhost:5174/src/composables/useTouchDevice.ts (Script) 200
+[7382.61085] GET http://localhost:5174/src/composables/useNumberLocale.ts (Script) 200
+[7382.61086] GET http://localhost:5174/src/features/workout/components/SetContextMenu.vue (Script) 200
+[7382.61087] GET http://localhost:5174/src/composables/timers/useTabataTimer.ts (Script) 200
+[7382.61088] GET http://localhost:5174/src/composables/timers/useTimerAudio.ts (Script) 200
+[7382.61090] GET http://localhost:5174/src/composables/timers/useForTimeTimer.ts (Script) 200
+[7382.61091] GET http://localhost:5174/src/features/workout/components/WorkoutDurationBadge.vue (Script) 200
+[7382.61094] GET http://localhost:5174/src/composables/useTimedBlockExercises.ts (Script) 200
+[7382.61095] GET http://localhost:5174/src/components/blocks/AmrapConfig.vue (Script) 200
+[7382.61096] GET http://localhost:5174/src/components/blocks/TimedBlockExerciseList.vue (Script) 200
+[7382.61098] GET http://localhost:5174/src/components/blocks/EmomConfig.vue (Script) 200
+[7382.61100] GET http://localhost:5174/src/components/blocks/TabataConfig.vue (Script) 200
+[7382.61102] GET http://localhost:5174/src/components/blocks/ForTimeConfig.vue (Script) 200
+[7382.61103] GET http://localhost:5174/src/components/ui/number-field/NumberField.vue (Script) 200
+[7382.61104] GET http://localhost:5174/src/components/ui/number-field/NumberFieldContent.vue (Script) 200
+[7382.61105] GET http://localhost:5174/src/components/ui/number-field/NumberFieldDecrement.vue (Script) 200
+[7382.61106] GET http://localhost:5174/src/components/ui/number-field/NumberFieldIncrement.vue (Script) 200
+[7382.61107] GET http://localhost:5174/src/components/ui/number-field/NumberFieldInput.vue (Script) 200
+[7382.61109] GET http://localhost:5174/src/components/ui/sheet/Sheet.vue (Script) 200
+[7382.61111] GET http://localhost:5174/src/components/ui/sheet/SheetClose.vue (Script) 200
+[7382.61112] GET http://localhost:5174/src/components/ui/sheet/SheetContent.vue (Script) 200
+[7382.61113] GET http://localhost:5174/src/components/ui/sheet/SheetDescription.vue (Script) 200
+[7382.61114] GET http://localhost:5174/src/components/ui/sheet/SheetFooter.vue (Script) 200
+[7382.61115] GET http://localhost:5174/src/components/ui/sheet/SheetHeader.vue (Script) 200
+[7382.61117] GET http://localhost:5174/src/components/ui/sheet/SheetTitle.vue (Script) 200
+[7382.61118] GET http://localhost:5174/src/components/ui/sheet/SheetTrigger.vue (Script) 200
+[7382.61124] GET http://localhost:5174/src/features/benchmarks/lib/splitComparison.ts (Script) 200
+[7382.61125] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkExerciseDisplay.vue (Script) 200
+[7382.61127] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkProgressBar.vue (Script) 200
+[7382.61128] GET http://localhost:5174/src/features/benchmarks/components/BenchmarkNextExercise.vue (Script) 200
+[7382.61131] GET http://localhost:5174/src/features/benchmarks/lib/pbFormatting.ts (Script) 200
+[7382.61133] GET http://localhost:5174/src/features/benchmarks/lib/attemptStats.ts (Script) 200
+[7382.61135] GET http://localhost:5174/src/components/ui/barbell-hint/index.ts (Script) 200
+[7382.61140] GET http://localhost:5174/src/components/ui/avatar/Avatar.vue (Script) 200
+[7382.61141] GET http://localhost:5174/src/components/ui/avatar/AvatarFallback.vue (Script) 200
+[7382.61142] GET http://localhost:5174/src/components/ui/avatar/AvatarImage.vue (Script) 200
+[7382.61143] GET http://localhost:5174/src/lib/imageConversion.ts (Script) 200
+[7382.61144] GET http://localhost:5174/src/features/templates/lib/templateBlock.ts (Script) 200
+[7382.61145] GET http://localhost:5174/src/db/implementations/dexie/activeBenchmarkWorkout.ts (Script) 200
+[7382.61146] GET http://localhost:5174/src/db/implementations/dexie/activeWorkout.ts (Script) 200
+[7382.61147] GET http://localhost:5174/src/db/implementations/dexie/benchmarks.ts (Script) 200
+[7382.61148] GET http://localhost:5174/src/db/implementations/dexie/customExercises.ts (Script) 200
+[7382.61149] GET http://localhost:5174/src/db/implementations/dexie/dataManagement.ts (Script) 200
+[7382.61150] GET http://localhost:5174/src/db/implementations/dexie/drafts.ts (Script) 200
+[7382.61151] GET http://localhost:5174/src/db/implementations/dexie/onboarding.ts (Script) 200
+[7382.61152] GET http://localhost:5174/src/db/implementations/dexie/progressions.ts (Script) 200
+[7382.61153] GET http://localhost:5174/src/db/implementations/dexie/settings.ts (Script) 200
+[7382.61154] GET http://localhost:5174/src/db/implementations/dexie/templates.ts (Script) 200
+[7382.61155] GET http://localhost:5174/src/db/implementations/dexie/weight.ts (Script) 200
+[7382.61156] GET http://localhost:5174/src/db/implementations/dexie/workouts.ts (Script) 200
+[7382.61157] GET http://localhost:5174/src/features/timers/components/TimerPresetButton.vue (Script) 200
+[7382.61158] GET http://localhost:5174/src/components/ui/switch/Switch.vue (Script) 200
+[7382.61159] GET http://localhost:5174/src/components/ui/select/Select.vue (Script) 200
+[7382.61160] GET http://localhost:5174/src/components/ui/select/SelectContent.vue (Script) 200
+[7382.61161] GET http://localhost:5174/src/components/ui/select/SelectGroup.vue (Script) 200
+[7382.61162] GET http://localhost:5174/src/components/ui/select/SelectItem.vue (Script) 200
+[7382.61163] GET http://localhost:5174/src/components/ui/select/SelectItemText.vue (Script) 200
+[7382.61164] GET http://localhost:5174/src/components/ui/select/SelectLabel.vue (Script) 200
+[7382.61165] GET http://localhost:5174/src/components/ui/select/SelectScrollDownButton.vue (Script) 200
+[7382.61166] GET http://localhost:5174/src/components/ui/select/SelectScrollUpButton.vue (Script) 200
+[7382.61167] GET http://localhost:5174/src/components/ui/select/SelectSeparator.vue (Script) 200
+[7382.61168] GET http://localhost:5174/src/components/ui/select/SelectTrigger.vue (Script) 200
+[7382.61169] GET http://localhost:5174/src/components/ui/select/SelectValue.vue (Script) 200
+[7382.61170] GET http://localhost:5174/src/components/ui/collapsible/Collapsible.vue (Script) 200
+[7382.61171] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleContent.vue (Script) 200
+[7382.61172] GET http://localhost:5174/src/components/ui/collapsible/CollapsibleTrigger.vue (Script) 200
+[7382.61173] GET http://localhost:5174/src/features/settings/utils/dataExport.ts (Script) 200
+[7382.61174] GET http://localhost:5174/src/features/settings/utils/dataImport.ts (Script) 200
+[7382.61175] GET http://localhost:5174/src/components/ui/progress/Progress.vue (Script) 200
+[7382.61176] GET http://localhost:5174/src/features/workout/components/WorkoutDetailSetRow.vue (Script) 200
+[7382.61177] GET http://localhost:5174/src/components/ui/badge/Badge.vue (Script) 200
+[7382.61254] GET http://localhost:5174/src/components/ui/toggle/index.ts (Script) 200
+[7382.61255] GET http://localhost:5174/src/components/ScrollFadeContainer.vue?vue&type=style&index=0&scoped=6f12b4ce&lang.css (Script) 200
+[7382.61256] GET http://localhost:5174/node_modules/.vite/deps/reka-ui_date.js?v=7e9daa00 (Script) 200
+[7382.61257] GET http://localhost:5174/src/components/ui/native-select/index.ts (Script) 200
+[7382.61259] GET http://localhost:5174/src/composables/timers/useBaseTimer.ts (Script) 200
+[7382.61260] GET http://localhost:5174/src/components/ui/table/Table.vue (Script) 200
+[7382.61261] GET http://localhost:5174/src/components/ui/table/TableBody.vue (Script) 200
+[7382.61262] GET http://localhost:5174/src/components/ui/table/TableCaption.vue (Script) 200
+[7382.61263] GET http://localhost:5174/src/components/ui/table/TableCell.vue (Script) 200
+[7382.61264] GET http://localhost:5174/src/components/ui/table/TableEmpty.vue (Script) 200
+[7382.61265] GET http://localhost:5174/src/components/ui/table/TableFooter.vue (Script) 200
+[7382.61266] GET http://localhost:5174/src/components/ui/table/TableHead.vue (Script) 200
+[7382.61267] GET http://localhost:5174/src/components/ui/table/TableHeader.vue (Script) 200
+[7382.61268] GET http://localhost:5174/src/components/ui/table/TableRow.vue (Script) 200
+[7382.61271] GET http://localhost:5174/src/components/ui/sheet/SheetOverlay.vue (Script) 200
+[7382.61274] GET http://localhost:5174/src/components/ui/barbell-hint/BarbellPlateHint.vue (Script) 200
+[7382.61277] GET http://localhost:5174/src/lib/structureHash.ts (Script) 200
+[7382.61280] GET http://localhost:5174/src/features/settings/utils/validation/index.ts (Script) 200
+[7382.61289] GET http://localhost:5174/src/components/ui/toggle/Toggle.vue (Script) 200
+[7382.61290] GET http://localhost:5174/src/components/ui/native-select/NativeSelect.vue (Script) 200
+[7382.61291] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOptGroup.vue (Script) 200
+[7382.61292] GET http://localhost:5174/src/components/ui/native-select/NativeSelectOption.vue (Script) 200
+[7382.61297] GET http://localhost:5174/src/lib/plateCalculation.ts (Script) 200
+[7382.61298] GET http://localhost:5174/src/features/settings/utils/validation/exportDataSchema.ts (Script) 200
+[7382.61299] GET http://localhost:5174/src/features/settings/utils/validation/settingsSchema.ts (Script) 200
+[7382.61301] GET http://localhost:5174/src/features/settings/utils/validation/exerciseSchema.ts (Script) 200
+[7382.61302] GET http://localhost:5174/src/features/settings/utils/validation/blockSchemas.ts (Script) 200
+[7382.61303] GET http://localhost:5174/src/features/settings/utils/validation/templateSchema.ts (Script) 200
+[7382.61304] GET http://localhost:5174/src/features/settings/utils/validation/workoutSchema.ts (Script) 200
+[7382.61311] GET http://localhost:5174/src/features/settings/utils/validation/benchmarkSchema.ts (Script) 200
+[7382.61312] GET http://localhost:5174/src/features/settings/utils/validation/weightEntrySchema.ts (Script) 200
+[7382.61315] GET http://localhost:5174/src/features/settings/utils/validation/primitiveSchemas.ts (Script) 200
+[7382.61317] GET http://localhost:5174/src/features/settings/utils/validation/blockConfigSchemas.ts (Script) 200

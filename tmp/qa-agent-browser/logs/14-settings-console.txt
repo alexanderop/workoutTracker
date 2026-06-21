@@ -1,0 +1,36 @@
+[debug] [vite] connected.
+[debug] [vite] connecting...
+[debug] [vite] connected.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveError' key in 'en' locale messages.
+[warning] [intlify] Not found 'exercises.form.saveErrorTitle' key in 'en' locale messages.
+[debug] [vite] connecting...
+[debug] [vite] connected.
+[debug] [vite] connecting...
+[debug] [vite] connected.
+[warning] [Vue warn]: Unhandled error during execution of render function 
+  at <Index data= [Object] margin= {top: 10, right: 10, bottom: 30, left: 40} > 
+  at <ChartContainer key=1 config= {weight: Object} class="h-[200px] w-full"  ... > 
+  at <CardContent class="p-0 pb-4 px-2" > 
+  at <Card class="overflow-hidden" > 
+  at <WeightChart data= [Object] selected-range="30D" onUpdate:selectedRange=fn<setTimeRange> > 
+  at <WeightView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {__v_skip: true} > > 
+  at <RouterView > 
+  at <Layout > 
+  at <App>
+[warning] [Vue warn]: Unhandled error during execution of component update 
+  at <WeightView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {__v_skip: true} > > 
+  at <RouterView > 
+  at <Layout > 
+  at <App>
+[debug] [vite] connecting...
+[debug] [vite] connected.

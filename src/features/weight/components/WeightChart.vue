@@ -47,6 +47,8 @@ const displayData = computed(() =>
   })),
 )
 
+const singleEntry = computed(() => displayData.value[0])
+
 function formatWeight(value: number): string {
   return `${Math.round(value)}`
 }
@@ -82,6 +84,16 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
     <CardContent class="p-0 pb-4 px-2">
       <div v-if="displayData.length === 0" class="flex h-[200px] items-center justify-center">
         <p class="text-muted-foreground">{{ t('weight.noData') }}</p>
+      </div>
+      <div
+        v-else-if="displayData.length === 1 && singleEntry"
+        class="flex h-[200px] flex-col items-center justify-center gap-2 text-center"
+      >
+        <p class="text-3xl font-semibold">{{ formatWeight(singleEntry.weight) }}</p>
+        <p class="text-sm text-muted-foreground">
+          {{ formatDate(singleEntry.date.getTime()) }}
+        </p>
+        <p class="text-sm text-muted-foreground">{{ t('weight.singleDataPoint') }}</p>
       </div>
       <ChartContainer
         v-else

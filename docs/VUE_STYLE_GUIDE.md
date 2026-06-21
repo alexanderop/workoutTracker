@@ -624,6 +624,15 @@ const open = defineModel<boolean>('open', { required: true })
 const model = defineModel<FormData>({ required: true })
 ```
 
+For numeric inputs using `v-model.number`, allow the transient empty-string state
+when the user clears the field:
+
+```typescript
+const durationMinutes = defineModel<number | ''>('durationMinutes', { default: 0 })
+```
+
+Normalize back to a number at the save/confirm boundary.
+
 ```vue
 <!-- Parent usage -->
 <MyDialog v-model:open="isDialogOpen" />
