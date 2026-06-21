@@ -136,6 +136,7 @@ For the lighter case of adding a *field* to an existing kind, follow [TIL-adding
 
 - **Missing `case` in a switch.** TS narrowing keeps switches exhaustive only if every branch returns. The converter switches at `converters.ts:390` / `:417` and the UI switches in builder/queue components all rely on this. Adding a kind without updating every switch silently produces `undefined` returns.
 - **Result-shape mixups.** Code that takes a `WorkoutBlock` and reads `block.result` must narrow first — `StrengthBlock` has no `result`, and `AmrapResult.rounds` does not exist on `EmomResult`/`TabataResult`/etc. Use `isTimedBlock(block)` then narrow further on `block.kind`.
+- **Duplicated completion rules.** Use `src/lib/workoutBlockStatus.ts` for block completion/progress queries. Strength completion comes from `sets[].status`; timed and cardio completion comes from `result !== null`.
 - **Tabata is singular.** `block.exercise`, not `block.exercises`. Iterating with `getBlockExerciseList(block)` (`blocks.ts:321`) avoids the trap.
 - **`isTimedBlock` excludes cardio.** Cardio has a `result` but is not a `TimedBlock`, and `CardioResult` is not in `TimedBlockResult`. Don't pass cardio results to `isTimedBlockResult`.
 - **Registry vs switch drift.** `BLOCK_CONVERTERS` enforces compile-time exhaustiveness but isn't actually called — the runtime switches are the dispatch. Keep them in sync.
