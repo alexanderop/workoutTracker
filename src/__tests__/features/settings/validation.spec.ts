@@ -8,6 +8,7 @@ import {
   dbWorkoutTemplateSchema,
   exportDataSchema,
 } from '@/features/settings/utils/validation'
+import { createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock } from '@/__tests__/factories'
 
 /**
  * Creates a valid export data structure for testing.
@@ -471,6 +472,22 @@ describe('Block Schema Validation', () => {
       expect(result.success).toBe(true)
     })
 
+    it('accepts valid cardio block', () => {
+      const cardioBlock = {
+        kind: 'cardio',
+        id: 'block-1',
+        config: {
+          activity: 'running',
+          targetDurationSeconds: 1800,
+          targetDistanceMeters: 5000,
+        },
+        result: null,
+        orderIndex: 0,
+      }
+      const result = dbWorkoutBlockSchema.safeParse(cardioBlock)
+      expect(result.success).toBe(true)
+    })
+
     it('rejects block with invalid kind', () => {
       const invalidBlock = {
         kind: 'invalid',
@@ -523,6 +540,24 @@ describe('Template Schema Validation', () => {
       const longTag = 'a'.repeat(51)
       const result = dbWorkoutTemplateSchema.safeParse(createValidTemplate({ tags: [longTag] }))
       expect(result.success).toBe(false)
+    })
+
+    it('accepts template with cardio block', () => {
+      const result = dbWorkoutTemplateSchema.safeParse(
+        createValidTemplate({
+          blocks: [
+            createDatabaseTemplateCardioBlock({
+              config: {
+                activity: 'running',
+                targetDurationSeconds: 1800,
+                targetDistanceMeters: 5000,
+              },
+            }),
+          ],
+        }),
+      )
+
+      expect(result.success).toBe(true)
     })
   })
 })
