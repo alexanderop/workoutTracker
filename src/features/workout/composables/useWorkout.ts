@@ -8,6 +8,12 @@ import {
   createForTimeWorkoutBlock,
   createTabataWorkoutBlock,
 } from '@/lib/workoutBlockFactory'
+import {
+  appendWorkoutBlock,
+  getNextWorkoutBlockId,
+  removeWorkoutBlockAtIndex,
+  reorderWorkoutBlocks,
+} from '@/lib/workoutBlockList'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {
@@ -59,14 +65,6 @@ export function isSetReadyForDuration(set: Readonly<Set>): boolean {
 }
 
 /**
- * Generate a unique block ID.
- */
-function generateBlockId(): number {
-  const ids = workout.value.blocks.map((b) => b.id)
-  return ids.length > 0 ? Math.max(...ids) + 1 : 1
-}
-
-/**
  * Immutably update the workout object properties.
  */
 function updateWorkout(updates: Partial<Workout>): void {
@@ -78,8 +76,7 @@ function updateWorkout(updates: Partial<Workout>): void {
  * Extracted to avoid duplication in addXxxBlock functions.
  */
 function appendBlock(block: WorkoutBlock): void {
-  const newBlocks = [...workout.value.blocks, block]
-  updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
+  updateWorkout(appendWorkoutBlock(workout.value.blocks, block))
 }
 
 /**
@@ -168,42 +165,6 @@ function createFirstSetFromHistory(lastSet: { kg: number; reps: number; duration
  */
 function findFirstIncompleteBlockIndex(blocks: ReadonlyArray<WorkoutBlock>): number {
   return blocks.findIndex((block) => !isBlockComplete(block))
-}
-
-/**
- * Calculate the new selected index after removing a block.
- * Returns -1 if no blocks remain, otherwise ensures a valid index.
- */
-function calculateSelectedIndexAfterRemoval(
-  newLength: number,
-  currentSelected: number,
-  removedIndex: number,
-): number {
-  if (newLength === 0) return -1
-  if (currentSelected >= newLength) return Math.max(0, newLength - 1)
-  if (currentSelected > removedIndex) return currentSelected - 1
-  return currentSelected
-}
-
-/**
- * Calculate the new selected index after reordering blocks.
- * Tracks the selected block as it moves within the list.
- */
-function calculateSelectedIndexAfterReorder(
-  currentSelected: number,
-  fromIndex: number,
-  toIndex: number,
-): number {
-  // The selected block was moved
-  if (currentSelected === fromIndex) return toIndex
-
-  // Selected block shifts down (item moved from before to after)
-  if (fromIndex < currentSelected && toIndex >= currentSelected) return currentSelected - 1
-
-  // Selected block shifts up (item moved from after to before)
-  if (fromIndex > currentSelected && toIndex <= currentSelected) return currentSelected + 1
-
-  return currentSelected
 }
 
 /**
@@ -390,7 +351,7 @@ export function useWorkout() {
 
     appendBlock({
       kind: 'strength',
-      id: generateBlockId(),
+      id: getNextWorkoutBlockId(workout.value.blocks),
       exerciseDefinitionId: exerciseId,
       name,
       equipment: exercise?.equipment ?? 'bodyweight',
@@ -407,38 +368,40 @@ export function useWorkout() {
   }
 
   function addAmrapBlock(config: AmrapConfig, blockExercises: ReadonlyArray<BlockExercise>) {
-    appendBlock(createAmrapWorkoutBlock(config, blockExercises, generateBlockId()))
+    appendBlock(
+      createAmrapWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)),
+    )
   }
 
   function addEmomBlock(config: EmomConfig, blockExercises: ReadonlyArray<BlockExercise>) {
-    appendBlock(createEmomWorkoutBlock(config, blockExercises, generateBlockId()))
+    appendBlock(
+      createEmomWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)),
+    )
   }
 
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise) {
-    appendBlock(createTabataWorkoutBlock(config, exercise, generateBlockId()))
+    appendBlock(
+      createTabataWorkoutBlock(config, exercise, getNextWorkoutBlockId(workout.value.blocks)),
+    )
   }
 
   function addForTimeBlock(config: ForTimeConfig, blockExercises: ReadonlyArray<BlockExercise>) {
-    appendBlock(createForTimeWorkoutBlock(config, blockExercises, generateBlockId()))
+    appendBlock(
+      createForTimeWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)),
+    )
   }
 
   function addCardioBlock(config: CardioConfig) {
-    appendBlock(createCardioWorkoutBlock(config, generateBlockId()))
+    appendBlock(createCardioWorkoutBlock(config, getNextWorkoutBlockId(workout.value.blocks)))
   }
 
   function removeBlock(blockIndex: number) {
-    if (blockIndex < 0 || blockIndex >= workout.value.blocks.length) return
-
-    const filtered = workout.value.blocks.filter((_, index) => index !== blockIndex)
-    const currentSelected = workout.value.selectedBlockIndex
-
-    const newSelectedIndex = calculateSelectedIndexAfterRemoval(
-      filtered.length,
-      currentSelected,
+    const update = removeWorkoutBlockAtIndex(
+      workout.value.blocks,
       blockIndex,
+      workout.value.selectedBlockIndex,
     )
-
-    updateWorkout({ blocks: filtered, selectedBlockIndex: newSelectedIndex })
+    if (update) updateWorkout(update)
   }
 
   // For backward compatibility
@@ -579,21 +542,13 @@ export function useWorkout() {
   }
 
   function reorderBlocks(fromIndex: number, toIndex: number) {
-    const blocks = [...workout.value.blocks]
-    const movedBlock = blocks[fromIndex]
-    if (!movedBlock) return
-
-    blocks.splice(fromIndex, 1)
-    blocks.splice(toIndex, 0, movedBlock)
-
-    const currentSelected = workout.value.selectedBlockIndex
-    const newSelectedIndex = calculateSelectedIndexAfterReorder(
-      currentSelected,
+    const update = reorderWorkoutBlocks(
+      workout.value.blocks,
       fromIndex,
       toIndex,
+      workout.value.selectedBlockIndex,
     )
-
-    updateWorkout({ blocks, selectedBlockIndex: newSelectedIndex })
+    if (update) updateWorkout(update)
   }
 
   // For backward compatibility

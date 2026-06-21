@@ -23,34 +23,12 @@ import {
   createWorkoutBlockFromHistory,
   createWorkoutBlockFromTemplate,
 } from '@/lib/workoutBlockFactory'
-
-/**
- * Calculate the new selected index after deleting an item from a list.
- */
-function calculateIndexAfterDeletion(
-  currentSelected: number,
-  deletedIndex: number,
-  newLength: number,
-): number {
-  if (newLength === 0) return -1
-  if (currentSelected >= newLength) return newLength - 1
-  if (currentSelected > deletedIndex) return currentSelected - 1
-  return currentSelected
-}
-
-/**
- * Calculate the new selected index after reordering items in a list.
- */
-function calculateIndexAfterReorder(
-  currentSelected: number,
-  fromIndex: number,
-  toIndex: number,
-): number {
-  if (currentSelected === fromIndex) return toIndex
-  if (fromIndex < currentSelected && toIndex >= currentSelected) return currentSelected - 1
-  if (fromIndex > currentSelected && toIndex <= currentSelected) return currentSelected + 1
-  return currentSelected
-}
+import {
+  appendWorkoutBlock,
+  getNextWorkoutBlockId,
+  removeWorkoutBlockAtIndex,
+  reorderWorkoutBlocks,
+} from '@/lib/workoutBlockList'
 
 /**
  * Creates a new set based on the previous set's values (or defaults).
@@ -79,14 +57,6 @@ export const usePastWorkout = createGlobalState(() => {
   const selectedBlockIndex = ref(-1)
   const sourceType = ref<'template' | 'history' | 'blank' | undefined>(undefined)
   const sourceId = ref<string | undefined>(undefined)
-
-  /**
-   * Generates a unique block ID based on existing blocks.
-   */
-  function generateBlockId(): number {
-    const ids = blocks.value.map((b) => b.id)
-    return ids.length > 0 ? Math.max(...ids) + 1 : 1
-  }
 
   /**
    * Selects a block by index.
@@ -155,51 +125,56 @@ export const usePastWorkout = createGlobalState(() => {
    * Adds a new block to the workout and selects it.
    */
   function addBlock(block: WorkoutBlock): void {
-    const newId = generateBlockId()
-    const newBlocks = [...blocks.value, { ...block, id: newId }]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    appendNewBlock({ ...block, id: getNextWorkoutBlockId(blocks.value) })
   }
 
   /**
    * Adds an AMRAP block.
    */
   function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    appendNewBlock(createAmrapWorkoutBlock(config, exercises, generateBlockId()))
+    appendNewBlock(
+      createAmrapWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)),
+    )
   }
 
   /**
    * Adds an EMOM block.
    */
   function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    appendNewBlock(createEmomWorkoutBlock(config, exercises, generateBlockId()))
+    appendNewBlock(
+      createEmomWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)),
+    )
   }
 
   /**
    * Adds a Tabata block.
    */
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
-    appendNewBlock(createTabataWorkoutBlock(config, exercise, generateBlockId()))
+    appendNewBlock(
+      createTabataWorkoutBlock(config, exercise, getNextWorkoutBlockId(blocks.value)),
+    )
   }
 
   /**
    * Adds a For Time block.
    */
   function addForTimeBlock(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    appendNewBlock(createForTimeWorkoutBlock(config, exercises, generateBlockId()))
+    appendNewBlock(
+      createForTimeWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)),
+    )
   }
 
   /**
    * Adds a Cardio block.
    */
   function addCardioBlock(config: CardioConfig): void {
-    appendNewBlock(createCardioWorkoutBlock(config, generateBlockId()))
+    appendNewBlock(createCardioWorkoutBlock(config, getNextWorkoutBlockId(blocks.value)))
   }
 
   function appendNewBlock(block: WorkoutBlock): void {
-    const newBlocks = [...blocks.value, block]
-    blocks.value = newBlocks
-    selectedBlockIndex.value = newBlocks.length - 1
+    const update = appendWorkoutBlock(blocks.value, block)
+    blocks.value = update.blocks
+    selectedBlockIndex.value = update.selectedBlockIndex
   }
 
   /**
@@ -213,28 +188,22 @@ export const usePastWorkout = createGlobalState(() => {
    * Removes a block by its index.
    */
   function removeBlockByIndex(index: number): void {
-    if (index < 0 || index >= blocks.value.length) return
+    const update = removeWorkoutBlockAtIndex(blocks.value, index, selectedBlockIndex.value)
+    if (!update) return
 
-    const filtered = blocks.value.filter((_, index_) => index_ !== index)
-    const currentSelected = selectedBlockIndex.value
-
-    blocks.value = filtered
-    selectedBlockIndex.value = calculateIndexAfterDeletion(currentSelected, index, filtered.length)
+    blocks.value = update.blocks
+    selectedBlockIndex.value = update.selectedBlockIndex
   }
 
   /**
    * Reorders blocks by moving a block from one index to another.
    */
   function reorderBlocks(fromIndex: number, toIndex: number): void {
-    const newBlocks = [...blocks.value]
-    const movedBlock = newBlocks[fromIndex]
-    if (!movedBlock) return
+    const update = reorderWorkoutBlocks(blocks.value, fromIndex, toIndex, selectedBlockIndex.value)
+    if (!update) return
 
-    newBlocks.splice(fromIndex, 1)
-    newBlocks.splice(toIndex, 0, movedBlock)
-    blocks.value = newBlocks
-
-    selectedBlockIndex.value = calculateIndexAfterReorder(selectedBlockIndex.value, fromIndex, toIndex)
+    blocks.value = update.blocks
+    selectedBlockIndex.value = update.selectedBlockIndex
   }
 
   /**

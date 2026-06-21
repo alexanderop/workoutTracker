@@ -7,11 +7,19 @@ Generated: 2025-12-21
 
 ---
 
-## 1. Block Creation Functions (High Impact - 20 clones)
+## 1. Block Creation / Block List Functions (High Impact - 20 clones)
+
+**Status:** Partially addressed.
+
+- Block construction now lives in `src/lib/workoutBlockFactory.ts`, with shared factories used by active workouts and past-workout logging.
+- Block-list invariants now live in `src/lib/workoutBlockList.ts`, covering next-id generation, append-and-select, remove-and-repair-selection, and reorder-and-track-selection.
+- Remaining work: keep new workout-kind creation cascades pointed at these modules instead of recreating local `generateBlockId`, append, remove, or reorder helpers.
 
 **Files:**
 - `src/features/workout/composables/useWorkout.ts`
 - `src/features/log-past-workout/composables/usePastWorkout.ts`
+- `src/lib/workoutBlockFactory.ts`
+- `src/lib/workoutBlockList.ts`
 
 **Current Pattern:**
 ```ts
