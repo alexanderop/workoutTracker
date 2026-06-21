@@ -3,6 +3,7 @@ import { z } from 'zod'
 import {
   blockExerciseFieldsBase,
   dbAmrapConfigSchema as databaseAmrapConfigSchema,
+  dbCardioConfigSchema as databaseCardioConfigSchema,
   dbEmomConfigSchema as databaseEmomConfigSchema,
   dbForTimeConfigSchema as databaseForTimeConfigSchema,
   dbTabataConfigSchema as databaseTabataConfigSchema,
@@ -40,28 +41,6 @@ const databaseBlockExerciseSchema = z
   .object({
     id: safeIdSchema,
     ...blockExerciseFieldsBase,
-  })
-  .strict()
-
-// ============================================
-// Block Config Schemas (Cardio only - others imported from blockConfigSchemas.ts)
-// ============================================
-
-const databaseCardioActivitySchema = z.enum([
-  'running',
-  'cycling',
-  'rowing',
-  'elliptical',
-  'swimming',
-  'stairclimber',
-  'walking',
-])
-
-const databaseCardioConfigSchema = z
-  .object({
-    activity: databaseCardioActivitySchema,
-    targetDurationSeconds: z.number().int().min(1).max(36_000).nullable(), // max 10 hours
-    targetDistanceMeters: z.number().int().min(1).max(1_000_000).nullable(), // max 1000km
   })
   .strict()
 

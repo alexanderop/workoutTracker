@@ -3,6 +3,7 @@ import { z } from 'zod'
 import {
   blockExerciseFieldsBase,
   dbAmrapConfigSchema as databaseAmrapConfigSchema,
+  dbCardioConfigSchema as databaseCardioConfigSchema,
   dbEmomConfigSchema as databaseEmomConfigSchema,
   dbForTimeConfigSchema as databaseForTimeConfigSchema,
   dbTabataConfigSchema as databaseTabataConfigSchema,
@@ -85,6 +86,16 @@ const databaseTemplateForTimeBlockSchema = z
   .strict()
 
 /**
+ * DbTemplateCardioBlock schema matching src/db/schema.ts DatabaseTemplateCardioBlock type.
+ */
+const databaseTemplateCardioBlockSchema = z
+  .object({
+    kind: z.literal('cardio'),
+    config: databaseCardioConfigSchema,
+  })
+  .strict()
+
+/**
  * DbTemplateBlock discriminated union schema.
  * Matches src/db/schema.ts DbTemplateBlock type.
  */
@@ -94,6 +105,7 @@ const databaseTemplateBlockSchema = z.discriminatedUnion('kind', [
   databaseTemplateAmrapBlockSchema,
   databaseTemplateTabataBlockSchema,
   databaseTemplateForTimeBlockSchema,
+  databaseTemplateCardioBlockSchema,
 ])
 
 /**
