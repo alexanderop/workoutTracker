@@ -63,6 +63,16 @@ type HistoryStrengthBlockSource = {
   exerciseDefinitionId?: string | null
 }
 
+type StrengthBlockSource = {
+  name: string
+  equipment: Equipment
+  targetReps?: number
+  targetDuration?: number | null
+  targetWeight?: number | null
+  image: Blob | null
+  exerciseDefinitionId?: string | null
+}
+
 type TemplateWorkoutBlockSource =
   | TemplateStrengthBlockSource
   | { kind: 'amrap'; config: AmrapConfig; exercises: ReadonlyArray<TemplateBlockExerciseSource> }
@@ -254,18 +264,19 @@ export function createWorkoutBlockFromHistory(
 }
 
 function convertTemplateBlockExercise(exercise: TemplateBlockExerciseSource): BlockExercise {
-  return {
-    id: exercise.exerciseDefinitionId ?? crypto.randomUUID(),
-    name: exercise.name,
-    prescribedReps: exercise.prescribedReps,
-    load: exercise.load,
-    image: exercise.image,
-  }
+  return buildBlockExercise(exercise.exerciseDefinitionId ?? crypto.randomUUID(), exercise)
 }
 
 function convertHistoryBlockExercise(exercise: HistoryBlockExerciseSource): BlockExercise {
+  return buildBlockExercise(exercise.id, exercise)
+}
+
+function buildBlockExercise(
+  id: string,
+  exercise: { name: string; prescribedReps: number; load: string | null; image: Blob | null },
+): BlockExercise {
   return {
-    id: exercise.id,
+    id,
     name: exercise.name,
     prescribedReps: exercise.prescribedReps,
     load: exercise.load,
@@ -287,18 +298,7 @@ function createStrengthBlockFromTemplate(
     status: 'completed',
   }))
 
-  return {
-    kind: 'strength',
-    id,
-    exerciseDefinitionId: block.exerciseDefinitionId ?? null,
-    name: block.name,
-    equipment: block.equipment,
-    targetReps: block.targetReps ?? 8,
-    targetDuration: block.targetDuration ?? null,
-    targetWeight: block.targetWeight ?? null,
-    sets,
-    image: block.image,
-  }
+  return createStrengthWorkoutBlock(block, id, sets)
 }
 
 function createStrengthBlockFromHistory(
@@ -314,16 +314,24 @@ function createStrengthBlockFromHistory(
     status: 'completed',
   }))
 
+  return createStrengthWorkoutBlock(block, id, sets)
+}
+
+function createStrengthWorkoutBlock(
+  source: StrengthBlockSource,
+  id: number,
+  sets: Array<Set>,
+): StrengthBlock {
   return {
     kind: 'strength',
     id,
-    exerciseDefinitionId: block.exerciseDefinitionId ?? null,
-    name: block.name,
-    equipment: block.equipment,
-    targetReps: block.targetReps ?? 8,
-    targetDuration: block.targetDuration ?? null,
-    targetWeight: block.targetWeight ?? null,
+    exerciseDefinitionId: source.exerciseDefinitionId ?? null,
+    name: source.name,
+    equipment: source.equipment,
+    targetReps: source.targetReps ?? 8,
+    targetDuration: source.targetDuration ?? null,
+    targetWeight: source.targetWeight ?? null,
     sets,
-    image: block.image,
+    image: source.image,
   }
 }
