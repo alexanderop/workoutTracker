@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef, watch } from 'vue'
-import { Pause, Play, RotateCcw, X, Check, Save } from 'lucide-vue-next'
+import { Pause, Play, RotateCcw, X, Check, Save } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import PageLayout from '@/components/PageLayout.vue'

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { Button } from '@/components/ui/button'
-import { Check, Timer, Trash2 } from 'lucide-vue-next'
+import { Check, Timer, Trash2 } from '@lucide/vue'
 
 const { t } = useI18n()
 const { intlLocale } = useNumberLocale()

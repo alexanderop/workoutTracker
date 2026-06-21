@@ -6,7 +6,7 @@ import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
-import { createDbWeightEntry } from '../factories/dbWeightEntry.factory'
+import { createDbWeightEntry as createDatabaseWeightEntry } from '../factories/dbWeightEntry.factory'
 
 describe('Weight Tracking (Mobile)', () => {
   beforeEach(async () => {
@@ -24,7 +24,7 @@ describe('Weight Tracking (Mobile)', () => {
     it('centers presets around last saved weight when opening modal (pre-seeded)', async () => {
       // Seed DB with a weight entry of 65kg BEFORE navigating
       const repo = getWeightRepository()
-      await repo.add(createDbWeightEntry({ weight: 65 }))
+      await repo.add(createDatabaseWeightEntry({ weight: 65 }))
 
       const { navigateTo, cleanup } = await createTestApp()
 
@@ -125,7 +125,7 @@ describe('Weight Tracking (Mobile)', () => {
       // Simulate async data load by adding entry directly to DB
       // This mimics what happens when entries load after component mounts
       const repo = getWeightRepository()
-      await repo.add(createDbWeightEntry({ weight: 100 }))
+      await repo.add(createDatabaseWeightEntry({ weight: 100 }))
 
       // Trigger re-render by navigating away and back
       // (This simulates the reactive update from DB)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Dumbbell, Timer } from 'lucide-vue-next'
+import { Dumbbell, Timer } from '@lucide/vue'
 import type { SampleBlock } from '../../constants/previewData'
 
 const { block } = defineProps<{

@@ -18,10 +18,10 @@ type StructureRound = {
  * Simple string hash function (djb2 algorithm).
  * Produces consistent hash for structure comparison.
  */
-function hashString(str: string): string {
+function hashString(string_: string): string {
   let hash = 5381
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ (str.codePointAt(i) ?? 0)
+  for (let index = 0; index < string_.length; index++) {
+    hash = (hash * 33) ^ (string_.codePointAt(index) ?? 0)
   }
   // Convert to unsigned 32-bit integer and then to hex string
   return (hash >>> 0).toString(16)

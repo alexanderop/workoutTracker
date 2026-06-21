@@ -33,20 +33,22 @@ const { enterActiveMode } = useBenchmarkMode()
 
 onMounted(async () => {
   // Load saved benchmark if exists
-  if (await hasActiveBenchmark()) {
-    const savedWorkout = await loadActiveBenchmark()
-    if (savedWorkout) {
-      restoreBenchmarkWorkout(savedWorkout)
+  if (!await hasActiveBenchmark()) {
+	return;
+  }
 
-      // Enter active mode if not already (benchmarks skip builder mode)
-      if (savedWorkout.mode !== 'active') {
-        enterActiveMode()
-      }
+  const savedWorkout = await loadActiveBenchmark()
+  if (savedWorkout) {
+    restoreBenchmarkWorkout(savedWorkout)
 
-      // Restore timer from globalTimerStartedAt if in active mode
-      if (savedWorkout.globalTimerStartedAt) {
-        benchmarkTimer.initializeFromWorkout(savedWorkout.globalTimerStartedAt)
-      }
+    // Enter active mode if not already (benchmarks skip builder mode)
+    if (savedWorkout.mode !== 'active') {
+      enterActiveMode()
+    }
+
+    // Restore timer from globalTimerStartedAt if in active mode
+    if (savedWorkout.globalTimerStartedAt) {
+      benchmarkTimer.initializeFromWorkout(savedWorkout.globalTimerStartedAt)
     }
   }
 })
@@ -56,11 +58,13 @@ onMounted(async () => {
 watch(
   () => benchmarkWorkoutRef.value.mode,
   (mode) => {
-    if (mode === 'active') {
-      const globalTimerStartedAt = benchmarkWorkoutRef.value.globalTimerStartedAt
-      if (globalTimerStartedAt && !benchmarkTimer.isRunning.value) {
-        benchmarkTimer.initializeFromWorkout(globalTimerStartedAt)
-      }
+    if (mode !== 'active') {
+	return;
+    }
+
+    const globalTimerStartedAt = benchmarkWorkoutRef.value.globalTimerStartedAt
+    if (globalTimerStartedAt && !benchmarkTimer.isRunning.value) {
+      benchmarkTimer.initializeFromWorkout(globalTimerStartedAt)
     }
   }
 )

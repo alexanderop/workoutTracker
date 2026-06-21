@@ -17,9 +17,9 @@ import {
   startBenchmarkWorkout,
   completeExercise,
   createCompletedAttempt,
-  getBenchmarksRepository,
+  getBenchmarksRepository as getBenchmarksRepo,
 } from './helpers/benchmarkHelpers'
-import type { DbBenchmarkRound } from '../factories'
+import type { DbBenchmarkRound as DatabaseBenchmarkRound } from '../factories'
 
 /**
  * Type for benchmark with new rounds-based schema.
@@ -29,7 +29,7 @@ type BenchmarkWithRounds = {
   id: string
   name: string
   type: 'fortime' | 'amrap' | 'emom'
-  rounds: ReadonlyArray<DbBenchmarkRound>
+  rounds: ReadonlyArray<DatabaseBenchmarkRound>
   structureHash: string
   createdAt: number
   lastUsedAt: number | null
@@ -48,8 +48,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function isValidRound(round: unknown): boolean {
   if (!isRecord(round)) return false
   if (typeof round.orderKey !== 'string') return false
-  if (!Array.isArray(round.exercises)) return false
-  return true
+  return !!Array.isArray(round.exercises);
 }
 
 /**
@@ -125,7 +124,7 @@ describe('Variable Reps Benchmark', () => {
       await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify saved benchmark structure
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks).toHaveLength(1)
 
       const benchmark = benchmarks[0]
@@ -183,7 +182,7 @@ describe('Variable Reps Benchmark', () => {
       await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify Round 1 still has 40 reps, Round 2 has 30 reps
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       const benchmark = benchmarks[0]
       assertBenchmarkWithRounds(benchmark)
 
@@ -218,7 +217,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify Round 2's exercise has the same exerciseDefinitionId
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       const round2Exercise = updated.rounds[1]?.exercises[0]
 
@@ -260,7 +259,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify new order: 20, 40, 30 reps
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(20)
       expect(updated.rounds[1]?.exercises[0]?.prescribedReps).toBe(40)
@@ -291,7 +290,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify remaining rounds are unchanged
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds).toHaveLength(2)
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(40)
@@ -340,7 +339,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify Round 1 has only Burpees, Round 2 has Burpees and Pull-ups
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises).toHaveLength(1)
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Burpees')
@@ -371,7 +370,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify Round 1 has only Burpees, Round 2 still has both
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises).toHaveLength(1)
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Burpees')
@@ -410,7 +409,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify new order: Pull-ups, Burpees, Squats
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Pull-ups')
       expect(updated.rounds[0]?.exercises[1]?.name).toBe('Burpees')
@@ -446,7 +445,7 @@ describe('Variable Reps Benchmark', () => {
       await app.benchmarkForm.assertSaveDisabled()
 
       // Verify benchmark is not saved with empty round
-      const current = await getBenchmarksRepository().getById(benchmark.id)
+      const current = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(current)
       expect(current.rounds[1]?.exercises).toHaveLength(1) // Original still has exercise
 
@@ -564,7 +563,7 @@ describe('Variable Reps Benchmark', () => {
 
       // Cancel and verify not saved
       await userEvent.click(page.getByRole('button', { name: /cancel/i }))
-      const current = await getBenchmarksRepository().getById(benchmark.id)
+      const current = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(current)
       expect(current.rounds[0]?.exercises[0]?.prescribedReps).toBe(40)
 
@@ -618,7 +617,7 @@ describe('Variable Reps Benchmark', () => {
       await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
       // Verify saved
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(30)
 
@@ -651,8 +650,8 @@ describe('Variable Reps Benchmark', () => {
       await expect.element(page.getByText(/export complete|data exported/i)).toBeVisible()
 
       // Delete the original benchmark
-      await getBenchmarksRepository().delete(benchmark.id)
-      expect(await getBenchmarksRepository().getById(benchmark.id)).toBeFalsy()
+      await getBenchmarksRepo().delete(benchmark.id)
+      expect(await getBenchmarksRepo().getById(benchmark.id)).toBeFalsy()
 
       // Import via the import button flow
       await page.getByRole('button', { name: /import data/i }).click()
@@ -662,7 +661,7 @@ describe('Variable Reps Benchmark', () => {
       await expect.element(page.getByRole('dialog')).toBeVisible()
 
       // After import, verify the benchmark exists with correct structure
-      const imported = await getBenchmarksRepository().getAll()
+      const imported = await getBenchmarksRepo().getAll()
       const importedBenchmark = imported.find(b => b.name === 'Export Test')
       assertBenchmarkWithRounds(importedBenchmark)
 
@@ -694,7 +693,7 @@ describe('Variable Reps Benchmark', () => {
       ).toBeVisible()
 
       // Verify no legacy benchmark was imported
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks.find(b => b.id === 'legacy-123')).toBeFalsy()
 
       app.cleanup()

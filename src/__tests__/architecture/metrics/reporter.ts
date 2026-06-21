@@ -182,7 +182,7 @@ function buildPlotOutput(grid: Array<Array<string>>, width: number, height: numb
   const lines = ['A', '1.0 ' + getGridRow(grid, 0)]
 
   for (let y = 1; y < height; y++) {
-    const label = y === Math.round(height / 2) ? '0.5 ' : '    '
+    const label = y === Math.round(height / 2) ? '0.5 ' : ' '.repeat(4)
     lines.push(label + getGridRow(grid, y))
   }
 

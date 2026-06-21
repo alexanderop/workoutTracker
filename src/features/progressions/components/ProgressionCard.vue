@@ -44,10 +44,12 @@ const cardAriaLabel = computed(() =>
 )
 
 function handleActivationKey(event: KeyboardEvent): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    emit('click', id)
+  if (!(event.key === 'Enter' || event.key === ' ')) {
+	return;
   }
+
+  event.preventDefault()
+  emit('click', id)
 }
 </script>
 

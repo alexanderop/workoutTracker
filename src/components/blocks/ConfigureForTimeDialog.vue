@@ -37,10 +37,12 @@ const {
 } = useTimedBlockExercises()
 
 watch(open, (isOpen) => {
-  if (isOpen) {
-    config.value = { hasCap: true, capMinutes: 15 }
-    reset()
+  if (!isOpen) {
+	return;
   }
+
+  config.value = { hasCap: true, capMinutes: 15 }
+  reset()
 })
 
 function handleConfirm() {

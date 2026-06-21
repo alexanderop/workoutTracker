@@ -88,7 +88,7 @@ const rule: Rule.RuleModule = {
     schema: [],
   },
   create(context) {
-    const filename = context.filename ?? context.getFilename()
+    const filename = context.filename
 
     // Only check Vue files
     if (!filename.endsWith('.vue')) {

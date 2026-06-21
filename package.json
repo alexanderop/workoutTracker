@@ -47,7 +47,7 @@
     "date-fns": "catalog:frontend",
     "dexie": "catalog:frontend",
     "embla-carousel-vue": "catalog:ui",
-    "lucide-vue-next": "catalog:ui",
+    "@lucide/vue": "catalog:ui",
     "reka-ui": "catalog:ui",
     "sortablejs": "catalog:frontend",
     "tailwind-merge": "catalog:ui",
@@ -110,6 +110,7 @@
     "vitest": "catalog:testing",
     "vitest-browser-vue": "catalog:testing",
     "vue-tsc": "catalog:build",
+    "workbox-build": "catalog:build",
     "workbox-window": "catalog:build"
   }
 }

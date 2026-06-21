@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Exercise } from '@/composables/useExerciseSearch'
 
-import { ChevronRight } from 'lucide-vue-next'
+import { ChevronRight } from '@lucide/vue'
 
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { MUSCLE_LABELS } from '@/lib/exerciseLabels'

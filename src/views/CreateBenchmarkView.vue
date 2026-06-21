@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { ArrowLeft, Plus, Trash2, MoreHorizontal } from 'lucide-vue-next'
+import { ArrowLeft, Plus, Trash2, MoreHorizontal } from '@lucide/vue'
 import {
   DropdownMenu,
   DropdownMenuContent,

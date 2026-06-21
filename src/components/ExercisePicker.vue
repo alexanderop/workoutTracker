@@ -2,7 +2,7 @@
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Equipment, Muscle } from '@/types/exercises'
 
-import { Search, X } from 'lucide-vue-next'
+import { Search, X } from '@lucide/vue'
 import { DialogClose } from '@/components/ui/dialog'
 import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -57,14 +57,16 @@ const { searchQuery, filteredExercises } = useExerciseSearch({
 
 // Reset state when picker opens
 watch(open, (isOpen) => {
-  if (isOpen) {
-    // Reset dialog mode content
-    pickerContent.value?.reset()
-    // Reset overlay mode state
-    searchQuery.value = ''
-    muscleFilter.value = 'all'
-    equipmentFilter.value = 'all'
+  if (!isOpen) {
+	return;
   }
+
+  // Reset dialog mode content
+  pickerContent.value?.reset()
+  // Reset overlay mode state
+  searchQuery.value = ''
+  muscleFilter.value = 'all'
+  equipmentFilter.value = 'all'
 })
 
 function handleSelectExercise(exercise: Exercise) {

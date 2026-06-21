@@ -286,9 +286,9 @@ export class BenchmarkDetailPO {
    */
   async getActiveRoundTab(): Promise<number> {
     const tabs = await this.getRoundTabs()
-    for (const [i, tab] of tabs.entries()) {
+    for (const [index, tab] of tabs.entries()) {
       if (tab?.getAttribute('aria-selected') === 'true') {
-        return i + 1
+        return index + 1
       }
     }
     return 1 // Default to first tab

@@ -40,8 +40,10 @@ export function mockTouchDevice(): void {
  * Should be called in afterEach to clean up.
  */
 export function restoreMatchMedia(): void {
-  if (originalMatchMedia) {
-    globalThis.matchMedia = originalMatchMedia
-    originalMatchMedia = null
+  if (!originalMatchMedia) {
+	return;
   }
+
+  globalThis.matchMedia = originalMatchMedia
+  originalMatchMedia = null
 }

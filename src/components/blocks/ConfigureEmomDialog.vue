@@ -37,10 +37,12 @@ const {
 } = useTimedBlockExercises()
 
 watch(open, (isOpen) => {
-  if (isOpen) {
-    config.value = { minutes: 10, rotation: 'full-round' }
-    reset()
+  if (!isOpen) {
+	return;
   }
+
+  config.value = { minutes: 10, rotation: 'full-round' }
+  reset()
 })
 
 function handleConfirm() {

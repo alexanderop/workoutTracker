@@ -2,7 +2,7 @@
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Equipment, Muscle } from '@/types/exercises'
 
-import { Search } from 'lucide-vue-next'
+import { Search } from '@lucide/vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ExerciseFilters from '@/components/ExerciseFilters.vue'

@@ -9,7 +9,7 @@ import {
   completeAllExercises,
   createCompletedAttempt,
   waitForCompletionScreen,
-  getWorkoutsRepository,
+  getWorkoutsRepository as getWorkoutsRepo,
 } from './helpers/benchmarkHelpers'
 
 describe('Benchmark Results', () => {
@@ -67,7 +67,7 @@ describe('Benchmark Results', () => {
       await page.getByRole('button', { name: /view details/i }).click()
       await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
-      const workouts = await getWorkoutsRepository().getHistory()
+      const workouts = await getWorkoutsRepo().getHistory()
       expect(workouts).toHaveLength(1)
       expect(workouts[0]?.benchmarkId).toBe(benchmark.id)
 

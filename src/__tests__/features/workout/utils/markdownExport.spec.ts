@@ -250,7 +250,7 @@ describe('markdownExport', () => {
       const result = formatForTimeBlock(block)
 
       expect(result).toContain('**Result:** 8:32')
-      expect(result).toContain('\u2713') // checkmark
+      expect(result).toContain('\u{2713}') // checkmark
     })
 
     it('omits checkmark when not completed', () => {
@@ -261,7 +261,7 @@ describe('markdownExport', () => {
       const result = formatForTimeBlock(block)
 
       expect(result).toContain('**Result:** 15:00')
-      expect(result).not.toContain('\u2713')
+      expect(result).not.toContain('\u{2713}')
     })
   })
 

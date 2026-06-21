@@ -86,8 +86,8 @@ export function useFormDraft<T extends object>(
 
   // Load draft on mount
   onMounted(async () => {
-    const draftsRepository = getDraftsRepository()
-    const [getError, draft] = await tryCatch(draftsRepository.get(key))
+    const draftsRepo = getDraftsRepository()
+    const [getError, draft] = await tryCatch(draftsRepo.get(key))
     if (getError || !draft?.data) return
 
     const state = isRef(formState) ? formState.value : formState
@@ -95,7 +95,7 @@ export function useFormDraft<T extends object>(
     // Validate draft data before restoring to protect against corrupted/outdated data
     if (!isValidDraftData(draft.data, state)) {
       // Invalid draft schema - clear it
-      await tryCatch(draftsRepository.delete(key))
+      await tryCatch(draftsRepo.delete(key))
       return
     }
 

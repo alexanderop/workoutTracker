@@ -91,7 +91,7 @@ function isValidIndex(index: number, length: number): boolean {
 /**
  * Parameters for calculating a new orderKey when reordering items.
  */
-type ReorderKeyParams = {
+type ReorderKeyParameters = {
   sorted: Array<{ orderKey: string }>
   fromIndex: number
   toIndex: number
@@ -101,7 +101,7 @@ type ReorderKeyParams = {
  * Calculate a new orderKey for an item being moved to a new position.
  * Handles both moving up (before target) and moving down (after target).
  */
-function calculateReorderKey({ sorted, fromIndex, toIndex }: ReorderKeyParams): string {
+function calculateReorderKey({ sorted, fromIndex, toIndex }: ReorderKeyParameters): string {
   const isMovingDown = fromIndex < toIndex
   const targetKey = sorted[toIndex]?.orderKey ?? null
   const afterKey = toIndex < sorted.length - 1 ? sorted[toIndex + 1]?.orderKey ?? null : null
@@ -115,7 +115,7 @@ function calculateReorderKey({ sorted, fromIndex, toIndex }: ReorderKeyParams): 
 /**
  * Convert form rounds to database format.
  */
-function toDbRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
+function toDatabaseRounds(rounds: Array<RoundFormState>): ReadonlyArray<DbBenchmarkRound> {
   return rounds.map((round) => ({
     orderKey: round.orderKey,
     exercises: round.exercises.map((ex) => ({
@@ -294,8 +294,8 @@ export function useBenchmarkForm() {
 
     const copiedRound: RoundFormState = {
       orderKey: newRoundKey,
-      exercises: sortedExercises(sourceRound.exercises).map((ex, i) => ({
-        orderKey: exerciseKeys[i]!,
+      exercises: sortedExercises(sourceRound.exercises).map((ex, index) => ({
+        orderKey: exerciseKeys[index]!,
         exerciseDefinitionId: ex.exerciseDefinitionId,
         name: ex.name,
         prescribedReps: ex.prescribedReps,
@@ -332,7 +332,7 @@ export function useBenchmarkForm() {
     const isDeletingCurrent = roundIndex === currentRoundIndex.value
     const isDeletingBefore = roundIndex < currentRoundIndex.value
     const adjustment = calculateDeletionAdjustment(isDeletingCurrent, isDeletingBefore, roundIndex, currentRoundIndex.value)
-    currentRoundIndex.value = currentRoundIndex.value + adjustment
+    currentRoundIndex.value += adjustment
 
     return true
   }
@@ -374,9 +374,9 @@ export function useBenchmarkForm() {
 
     isSaving.value = true
     const data = getFormData()
-    const dbRounds = toDbRounds(data.rounds)
+    const databaseRounds = toDatabaseRounds(data.rounds)
 
-    const result = await saveToRepository(data, dbRounds)
+    const result = await saveToRepo(data, databaseRounds)
 
     isSaving.value = false
     return result
@@ -386,16 +386,16 @@ export function useBenchmarkForm() {
    * Helper to save benchmark to repository.
    * Always saves with type 'fortime' - type selection removed from UI.
    */
-  async function saveToRepository(
+  async function saveToRepo(
     data: BenchmarkFormState,
-    dbRounds: ReadonlyArray<DbBenchmarkRound>,
+    databaseRounds: ReadonlyArray<DbBenchmarkRound>,
   ): Promise<DbBenchmark | null> {
     if (editingBenchmarkId.value) {
       const [error, benchmark] = await tryCatch(
         getBenchmarksRepository().update(editingBenchmarkId.value, {
           name: data.name,
           type: 'fortime',
-          rounds: dbRounds,
+          rounds: databaseRounds,
         }),
       )
       if (error) {
@@ -409,7 +409,7 @@ export function useBenchmarkForm() {
       getBenchmarksRepository().create({
         name: data.name,
         type: 'fortime',
-        rounds: dbRounds,
+        rounds: databaseRounds,
       }),
     )
     if (error) {

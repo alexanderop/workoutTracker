@@ -51,7 +51,7 @@ async function collectExportData(): Promise<ExportData | null> {
  * Generate a filename for the export with current date.
  */
 function generateExportFilename(): string {
-  const date = new Date().toISOString().split('T')[0]
+  const date = new Date().toISOString().split('T', 1)[0]
   return `workout-tracker-backup-${date}.json`
 }
 

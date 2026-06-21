@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Maximize2, Play } from 'lucide-vue-next'
+import { Check, Maximize2, Play } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'

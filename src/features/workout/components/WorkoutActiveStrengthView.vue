@@ -14,7 +14,7 @@ import { calculate10RM } from '@/lib/workout-utils'
 import { cn } from '@/lib/utils'
 import type { StrengthBlock } from '@/types/blocks'
 import type { Set } from '@/types/workout'
-import { Check, Plus } from 'lucide-vue-next'
+import { Check, Plus } from '@lucide/vue'
 import SetContextMenu from './SetContextMenu.vue'
 
 // Strength-specific input types (subset of InputType)

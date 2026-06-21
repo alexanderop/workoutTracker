@@ -2,7 +2,7 @@
 import { computed, ref, watch, useTemplateRef } from 'vue'
 import { useSwipe } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
-import { Trash2 } from 'lucide-vue-next'
+import { Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 
 const { workoutId, isOpen } = defineProps<{

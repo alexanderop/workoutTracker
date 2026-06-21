@@ -310,7 +310,7 @@ export function createDexieExerciseProgressRepository(
       }
 
       // Convert to array and sort by workout count (most frequent first)
-      return [...exerciseMap.entries()]
+      return [...exerciseMap]
         .map(([exerciseDefinitionId, data]) => ({
           exerciseDefinitionId,
           name: data.name,

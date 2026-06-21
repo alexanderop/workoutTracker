@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
-import { Copy, Trash2 } from 'lucide-vue-next'
+import { Copy, Trash2 } from '@lucide/vue'
 
 const { t } = useI18n()
 
@@ -19,18 +19,18 @@ const emit = defineEmits<{
   duplicate: []
 }>()
 
-const menuRef = useTemplateRef<HTMLDivElement>('menu')
+const menuReference = useTemplateRef<HTMLDivElement>('menu')
 
 // Adjusted position to keep menu in viewport
 const adjustedPosition = ref({ x: 0, y: 0 })
 
 function adjustPosition() {
-  if (!menuRef.value) {
+  if (!menuReference.value) {
     adjustedPosition.value = position
     return
   }
 
-  const rect = menuRef.value.getBoundingClientRect()
+  const rect = menuReference.value.getBoundingClientRect()
   const padding = 8
   let { x, y } = position
 
@@ -69,7 +69,7 @@ function handleDuplicate() {
 }
 
 // Close on click outside
-onClickOutside(menuRef, close, { ignore: [] })
+onClickOutside(menuReference, close, { ignore: [] })
 
 // Close on escape key
 onKeyStroke('Escape', close)

@@ -65,8 +65,8 @@ export class BenchmarkFormPO {
       await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
 
       // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
-      const repsStr = String(reps)
-      for (const digit of repsStr) {
+      const repsString = String(reps)
+      for (const digit of repsString) {
         const digitButton = page.getByRole('button', { name: digit, exact: true })
         await userEvent.click(digitButton)
       }
@@ -267,8 +267,8 @@ export class BenchmarkFormPO {
     await expect.element(page.getByRole('heading', { name: /^reps$/i })).toBeVisible()
 
     // Use keypad to enter the reps value (keypad is in fresh-start mode, first digit replaces)
-    const repsStr = String(newReps)
-    for (const digit of repsStr) {
+    const repsString = String(newReps)
+    for (const digit of repsString) {
       const digitButton = page.getByRole('button', { name: digit, exact: true })
       await userEvent.click(digitButton)
     }

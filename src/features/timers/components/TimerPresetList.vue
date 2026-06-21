@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Settings2 } from 'lucide-vue-next'
+import { Settings2 } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import TimerPresetButton from './TimerPresetButton.vue'
 

@@ -28,8 +28,8 @@ import {
 // Duration Parsing Helpers
 // ============================================
 
-function parseMinutesFormat(str: string): number | null {
-  const match = str.match(/^(\d+)\s*min/)
+function parseMinutesFormat(string_: string): number | null {
+  const match = string_.match(/^(\d+)\s*min/)
   return match?.[1] ? Number.parseInt(match[1], 10) * 60 : null
 }
 
@@ -41,8 +41,8 @@ function parseHhMmSsFormat(parts: Array<number>): number {
   return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0)
 }
 
-function parseTimeFormat(str: string): number | null {
-  const match = str.match(/^(\d+):(\d+)(?::(\d+))?$/)
+function parseTimeFormat(string_: string): number | null {
+  const match = string_.match(/^(\d+):(\d+)(?::(\d+))?$/)
   if (!match?.[1] || !match[2]) return null
 
   const parts = [match[1], match[2], match[3]].filter(Boolean).map(Number)
@@ -71,8 +71,8 @@ function createFieldParserLoop<T>(parsers: ReadonlyArray<FieldParser<T>>) {
 // ============================================
 
 function findFrontmatterEndIndex(lines: ReadonlyArray<string>): number {
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i]?.trim() === '---') return i
+  for (let index = 1; index < lines.length; index++) {
+    if (lines[index]?.trim() === '---') return index
   }
   return -1
 }
@@ -620,7 +620,7 @@ export function parseForTimeBlock(
     if (resultMatch?.[1]) {
       result = {
         completionTime: parseDurationToMs(resultMatch[1]),
-        completed: resultMatch[2] === '\u2713',
+        completed: resultMatch[2] === '\u{2713}',
       }
     }
   }
@@ -762,14 +762,14 @@ function parseExerciseLine(line: string): ParsedBlockExercise | null {
   }
 }
 
-function parseDurationString(str: string): number | null {
+function parseDurationString(string_: string): number | null {
   // "45 min" or "45:30" or "1:30:00"
-  return parseMinutesFormat(str) ?? parseTimeFormat(str)
+  return parseMinutesFormat(string_) ?? parseTimeFormat(string_)
 }
 
-function parseDurationToMs(str: string): number {
+function parseDurationToMs(string_: string): number {
   // "10:32" -> ms
-  const match = str.match(/^(\d+):(\d+)$/)
+  const match = string_.match(/^(\d+):(\d+)$/)
   if (match?.[1] && match[2]) {
     const mins = Number.parseInt(match[1], 10)
     const secs = Number.parseInt(match[2], 10)
@@ -780,12 +780,14 @@ function parseDurationToMs(str: string): number {
 
 function findContentStart(lines: ReadonlyArray<string>): number {
   // Skip past frontmatter
-  let foundStart = false
-  for (const [i, line] of lines.entries()) {
-    if (line?.trim() === '---') {
-      if (foundStart) return i + 1
-      foundStart = true
+  let isFoundStart = false
+  for (const [index, line] of lines.entries()) {
+    if (line?.trim() !== '---') {
+	continue;
     }
+
+    if (isFoundStart) return index + 1
+    isFoundStart = true
   }
   return 0
 }

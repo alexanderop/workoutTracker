@@ -321,11 +321,11 @@ export class LogPastWorkoutPO {
     // Each block item has a remove button - aria-label contains "remove"
     const blockElement = await block.element()
     // eslint-disable-next-line no-restricted-syntax -- Need to find button by aria-label pattern within block
-    const removeBtn = blockElement.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
-    if (!removeBtn || !(removeBtn instanceof HTMLButtonElement)) {
+    const removeButton = blockElement.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
+    if (!removeButton || !(removeButton instanceof HTMLButtonElement)) {
       throw new Error(`Remove button not found for block at index ${blockIndex}`)
     }
-    await userEvent.click(removeBtn)
+    await userEvent.click(removeButton)
   }
 
   /**

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { Delete } from 'lucide-vue-next'
+import { Delete } from '@lucide/vue'
 import { useNumericInput } from './useNumericInput'
 import { useNumberLocale } from '@/composables/useNumberLocale'
 

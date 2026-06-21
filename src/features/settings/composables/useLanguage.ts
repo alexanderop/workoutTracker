@@ -4,7 +4,7 @@ import { loadLocale, type SupportedLocale } from '@/i18n'
 import { useSettingsStore } from '@/stores/settings'
 
 function detectBrowserLocale(): SupportedLocale {
-  const browserLang = navigator.language.split('-')[0]
+  const browserLang = navigator.language.split('-', 1)[0]
   return browserLang === 'de' ? 'de' : 'en'
 }
 

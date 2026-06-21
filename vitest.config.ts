@@ -13,7 +13,7 @@ const resolve = {
 }
 
 // Pre-bundle dependencies to avoid Vite reloads during browser tests
-const optimizeDeps = {
+const optimizeDependencies = {
   include: ['workbox-window'],
 }
 
@@ -44,7 +44,7 @@ const sharedTestConfig = {
 export default defineConfig({
   plugins,
   resolve,
-  optimizeDeps,
+  optimizeDeps: optimizeDependencies,
   test: {
     ...sharedTestConfig,
 
@@ -76,7 +76,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
-        optimizeDeps,
+        optimizeDeps: optimizeDependencies,
         test: {
           ...sharedTestConfig,
           name: 'default',
@@ -88,7 +88,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
-        optimizeDeps,
+        optimizeDeps: optimizeDependencies,
         test: {
           ...sharedTestConfig,
           name: 'a11y',
@@ -100,7 +100,7 @@ export default defineConfig({
       {
         plugins,
         resolve,
-        optimizeDeps,
+        optimizeDeps: optimizeDependencies,
         test: {
           ...sharedTestConfig,
           name: 'visual',

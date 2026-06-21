@@ -24,13 +24,13 @@ export function useGlobalWakeLock() {
     if (!isBrowser) return
 
     const enabled = settingsStore.screenWakeLock
-    const visible = visibility.value === 'visible'
+    const isVisible = visibility.value === 'visible'
     const settingsLoaded = settingsStore.isLoaded
 
     // Wait for settings to load before making decisions
     if (!settingsLoaded) return
 
-    const shouldActivate = enabled && visible
+    const shouldActivate = enabled && isVisible
 
     if (shouldActivate && !shouldBeActive) {
       wakeLock.acquireAll()

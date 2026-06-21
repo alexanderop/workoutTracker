@@ -64,10 +64,12 @@ async function handleStartWorkout() {
 }
 
 function enterEditMode() {
-  if (state.value.status === 'success') {
-    initialize(state.value.benchmark)
-    isEditMode.value = true
+  if (state.value.status !== 'success') {
+	return;
   }
+
+  initialize(state.value.benchmark)
+  isEditMode.value = true
 }
 
 async function handleSave() {

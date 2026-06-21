@@ -9,7 +9,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { versionPlugin } from './vite-plugins/versionPlugin'
 
-// @ts-expect-error Rollup plugin types differ from Vite 6's PluginOption interface
 const bundleVisualizer: PluginOption = visualizer({
   filename: './dist/stats.html',
   gzipSize: true,
@@ -41,6 +40,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        globIgnores: ['**/stats.html'],
         navigateFallbackDenylist: [/^\/version\.json$/],
         runtimeCaching: [
           {

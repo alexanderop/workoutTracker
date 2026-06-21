@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { ArrowLeft, Play, Check, X } from 'lucide-vue-next'
+import { ArrowLeft, Play, Check, X } from '@lucide/vue'
 import { useProgressionSession } from '@/features/progressions/composables/useProgressionSession'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 

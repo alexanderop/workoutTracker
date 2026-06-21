@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreHorizontal } from 'lucide-vue-next'
+import { Plus, MoreHorizontal } from '@lucide/vue'
 import RoundTabs from './RoundTabs.vue'
 import BenchmarkExerciseList from './BenchmarkExerciseList.vue'
 import type { ExerciseFormState, RoundFormState } from '../composables/useBenchmarkForm'

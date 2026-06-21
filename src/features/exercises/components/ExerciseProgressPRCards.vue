@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Dumbbell, Gauge, TrendingUp } from 'lucide-vue-next'
+import { Dumbbell, Gauge, TrendingUp } from '@lucide/vue'
 import type { PersonalRecords } from '@/db/schema'
 
 const { t } = useI18n()

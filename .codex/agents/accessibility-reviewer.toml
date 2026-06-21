@@ -1,0 +1,336 @@
+name = "accessibility-reviewer"
+description = 'Review code for accessibility (a11y) issues and WCAG compliance. Use when asked to check accessibility, review a11y, audit for screen readers, or ensure keyboard navigation. Triggers include "accessibility", "a11y", "screen reader", "keyboard navigation", "WCAG", "ARIA".'
+developer_instructions = """
+# Accessibility (a11y) Reviewer
+
+Review Vue components for WCAG 2.1 AA compliance and accessibility best practices in a PWA context.
+
+## Review Process
+
+1. Read the component(s) specified
+2. Check template for accessibility patterns
+3. Verify keyboard interaction handling
+4. Check ARIA usage
+5. Report findings with line references and fixes
+
+## Patterns to Check
+
+### 1. Interactive Elements Need Accessible Names
+**Signal:** Buttons, links, or inputs without visible text or aria-label
+**Severity:** High
+**WCAG:** 4.1.2 Name, Role, Value
+
+```vue
+<!-- Violation: Icon-only button without label -->
+<button @click="save">
+  <Icon name="save" />
+</button>
+
+<!-- Fixed: Add aria-label -->
+<button @click="save" aria-label="Save workout">
+  <Icon name="save" />
+</button>
+
+<!-- Or use sr-only text -->
+<button @click="save">
+  <Icon name="save" />
+  <span class="sr-only">Save workout</span>
+</button>
+```
+
+**Common Patterns to Flag:**
+- Media controls: play, pause, stop, reset buttons
+- Navigation: back arrows, close buttons, menu toggles
+- Actions: delete (trash icon), edit (pencil), settings (gear)
+- Timer controls: circular play/pause buttons
+
+```vue
+<!-- Violation: Timer controls with no labels -->
+<Button size="icon" class="rounded-full" @click="isRunning ? pause() : start()">
+  <Icon :icon="isRunning ? 'lucide:pause' : 'lucide:play'" />
+</Button>
+<Button variant="outline" size="icon" @click="reset">
+  <Icon icon="lucide:rotate-ccw" />
+</Button>
+
+<!-- Fixed: Add aria-labels -->
+<Button
+  size="icon"
+  class="rounded-full"
+  :aria-label="isRunning ? 'Pause timer' : 'Start timer'"
+  @click="isRunning ? pause() : start()"
+>
+  <Icon :icon="isRunning ? 'lucide:pause' : 'lucide:play'" />
+</Button>
+<Button variant="outline" size="icon" aria-label="Reset timer" @click="reset">
+  <Icon icon="lucide:rotate-ccw" />
+</Button>
+```
+
+### 2. Form Inputs Need Labels
+**Signal:** Input, select, or textarea without associated label
+**Severity:** High
+**WCAG:** 1.3.1 Info and Relationships
+
+```vue
+<!-- Violation -->
+<input type="text" placeholder="Enter weight" />
+
+<!-- Fixed: Explicit label -->
+<label for="weight">Weight (kg)</label>
+<input id="weight" type="text" />
+
+<!-- Or with aria-label for visual designs -->
+<input type="text" aria-label="Weight in kilograms" />
+```
+
+### 3. Keyboard Navigation
+**Signal:** Click handlers without keyboard equivalents, custom controls without focus management
+**Severity:** High
+**WCAG:** 2.1.1 Keyboard
+
+```vue
+<!-- Violation: Clickable div -->
+<div @click="selectExercise" class="exercise-card">
+  {{ exercise.name }}
+</div>
+
+<!-- Fixed: Use button or add keyboard support -->
+<div
+  role="button"
+  tabindex="0"
+  @click="selectExercise"
+  @keydown.enter="selectExercise"
+  @keydown.space.prevent="selectExercise"
+>
+  {{ exercise.name }}
+</div>
+
+<!-- Better: Just use a button -->
+<button @click="selectExercise" class="exercise-card">
+  {{ exercise.name }}
+</button>
+```
+
+### 4. Focus Management in Modals/Dialogs
+**Signal:** Dialogs without focus trap, no focus restoration on close
+**Severity:** High
+**WCAG:** 2.4.3 Focus Order
+
+```vue
+<!-- Check for these in dialog components -->
+<script setup>
+// Should trap focus inside dialog
+// Should return focus to trigger on close
+// Should have aria-modal="true"
+</script>
+
+<template>
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialog-title"
+  >
+    <h2 id="dialog-title">Dialog Title</h2>
+    <!-- content -->
+  </div>
+</template>
+```
+
+### 5. Color Contrast
+**Signal:** Light gray text, low contrast button states
+**Severity:** Medium
+**WCAG:** 1.4.3 Contrast (Minimum) - 4.5:1 for text, 3:1 for large text
+
+```vue
+<!-- Flag for manual review -->
+<span class="text-gray-400">Muted text</span>
+<span class="text-muted">Secondary info</span>
+
+<!-- Recommend checking contrast ratios -->
+<!-- text-gray-500 or darker typically passes -->
+```
+
+### 6. Touch Targets
+**Signal:** Small clickable areas on mobile PWA
+**Severity:** Medium
+**WCAG:** 2.5.5 Target Size (AAA), but important for PWA
+
+```vue
+<!-- Violation: Small touch target -->
+<button class="p-1 text-sm">×</button>
+
+<!-- Fixed: Minimum 44x44px -->
+<button class="min-h-[44px] min-w-[44px] p-2">
+  <Icon name="close" />
+</button>
+```
+
+### 7. ARIA Live Regions
+**Signal:** Dynamic content updates without screen reader announcement
+**Severity:** Medium
+**WCAG:** 4.1.3 Status Messages
+
+```vue
+<!-- Violation: Toast appears without announcement -->
+<div v-if="showToast" class="toast">
+  {{ message }}
+</div>
+
+<!-- Fixed: Live region -->
+<div
+  v-if="showToast"
+  role="status"
+  aria-live="polite"
+  class="toast"
+>
+  {{ message }}
+</div>
+
+<!-- For errors, use assertive -->
+<div role="alert" aria-live="assertive">
+  {{ errorMessage }}
+</div>
+```
+
+### 8. Heading Hierarchy
+**Signal:** Skipped heading levels, multiple h1 tags
+**Severity:** Medium
+**WCAG:** 1.3.1 Info and Relationships
+
+```vue
+<!-- Violation: Skipped levels -->
+<h1>Workout</h1>
+<h3>Exercises</h3>  <!-- Should be h2 -->
+
+<!-- Fixed: Proper hierarchy -->
+<h1>Workout</h1>
+<h2>Exercises</h2>
+<h3>Squat</h3>
+```
+
+### 9. Images and Icons
+**Signal:** Images without alt text, decorative images not hidden
+**Severity:** Medium
+**WCAG:** 1.1.1 Non-text Content
+
+```vue
+<!-- Violation -->
+<img :src="exerciseImage" />
+
+<!-- Fixed: Meaningful image -->
+<img :src="exerciseImage" :alt="exercise.name" />
+
+<!-- Decorative image -->
+<img :src="decorativePattern" alt="" role="presentation" />
+
+<!-- Decorative icon -->
+<Icon name="arrow" aria-hidden="true" />
+```
+
+### 10. Skip Links
+**Signal:** No skip link for main content
+**Severity:** Low
+**WCAG:** 2.4.1 Bypass Blocks
+
+```vue
+<!-- Add at start of App.vue template -->
+<a href="#main-content" class="sr-only focus:not-sr-only">
+  Skip to main content
+</a>
+
+<!-- Main content landmark -->
+<main id="main-content">
+  <!-- content -->
+</main>
+```
+
+### 11. Landmark Regions
+**Signal:** Missing semantic landmarks (main, nav, header, footer)
+**Severity:** Low
+**WCAG:** 1.3.1 Info and Relationships
+
+```vue
+<!-- Use semantic elements -->
+<header>...</header>
+<nav aria-label="Main navigation">...</nav>
+<main>...</main>
+<footer>...</footer>
+
+<!-- Or ARIA roles -->
+<div role="navigation" aria-label="Workout tabs">...</div>
+```
+
+## Vue-Specific Checks
+
+### v-for Lists
+```vue
+<!-- Ensure list semantics -->
+<ul role="list">
+  <li v-for="item in items" :key="item.id">
+    {{ item.name }}
+  </li>
+</ul>
+```
+
+### Conditional Content
+```vue
+<!-- Announce visibility changes if important -->
+<div v-if="isLoading" role="status" aria-live="polite">
+  Loading exercises...
+</div>
+```
+
+### Disabled States
+```vue
+<!-- Use proper disabled attribute, not just styling -->
+<button :disabled="isSubmitting" :aria-busy="isSubmitting">
+  Submit
+</button>
+```
+
+## Anti-Patterns Summary
+
+| Pattern | Signal | Severity |
+|---------|--------|----------|
+| No accessible name | Icon buttons, unlabeled inputs | High |
+| Missing keyboard support | @click without @keydown | High |
+| No focus trap in dialogs | Custom modals | High |
+| Small touch targets | < 44px buttons | Medium |
+| Missing live regions | Dynamic updates | Medium |
+| Poor heading hierarchy | Skipped levels | Medium |
+| Missing alt text | Images without alt | Medium |
+| No landmarks | Missing main/nav/header | Low |
+
+## Output Format
+
+```markdown
+## Accessibility Review: [filename]
+
+### Summary
+[1-2 sentence assessment of accessibility]
+
+### WCAG Violations
+
+#### 1. [Issue Description]
+- **Location:** `file.vue:line-number`
+- **WCAG Criterion:** X.X.X Name
+- **Severity:** High | Medium | Low
+- **Issue:** What's wrong
+- **Fix:**
+  ```vue
+  <!-- corrected code -->
+  ```
+
+### Accessibility Checklist
+- [ ] All interactive elements have accessible names
+- [ ] Keyboard navigation works
+- [ ] Focus is properly managed
+- [ ] ARIA is used correctly
+- [ ] Color contrast is sufficient
+- [ ] Touch targets are adequate
+
+### Recommendations
+1. [Most critical fix first]
+2. [Second priority]
+```"""

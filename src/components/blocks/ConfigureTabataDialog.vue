@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { Plus, Trash2 } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
@@ -33,11 +33,13 @@ const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)
 const canConfirm = computed(() => exercise.value !== null)
 
 watch(open, (isOpen) => {
-  if (isOpen) {
-    config.value = { rounds: 8, workSeconds: 20, restSeconds: 10 }
-    exercise.value = null
-    toggleShowExercisePicker(false)
+  if (!isOpen) {
+	return;
   }
+
+  config.value = { rounds: 8, workSeconds: 20, restSeconds: 10 }
+  exercise.value = null
+  toggleShowExercisePicker(false)
 })
 
 function handleSelectExercise(selected: Exercise) {
@@ -55,18 +57,20 @@ function removeExercise() {
 }
 
 function handleConfirm() {
-  if (exercise.value) {
-    emit(
-      'confirm',
-      {
-        rounds: config.value.rounds,
-        workSeconds: config.value.workSeconds,
-        restSeconds: config.value.restSeconds,
-      },
-      exercise.value,
-    )
-    open.value = false
+  if (!exercise.value) {
+	return;
   }
+
+  emit(
+    'confirm',
+    {
+      rounds: config.value.rounds,
+      workSeconds: config.value.workSeconds,
+      restSeconds: config.value.restSeconds,
+    },
+    exercise.value,
+  )
+  open.value = false
 }
 
 function handleClose() {

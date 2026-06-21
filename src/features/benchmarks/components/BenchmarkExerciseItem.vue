@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GripVertical, X } from 'lucide-vue-next'
+import { GripVertical, X } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'

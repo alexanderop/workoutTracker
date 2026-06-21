@@ -43,11 +43,11 @@ function renderComponent(
  * Tests real browser drag behavior that cannot be simulated in jsdom.
  */
 describe('WorkoutBlockPlaylist - drag and drop', () => {
-  const ctx: { cleanup: (() => void) | null } = { cleanup: null }
+  const context: { cleanup: (() => void) | null } = { cleanup: null }
 
   afterEach(() => {
-    ctx.cleanup?.()
-    ctx.cleanup = null
+    context.cleanup?.()
+    context.cleanup = null
   })
 
   it('renders drag handles for each block', () => {
@@ -61,7 +61,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       blocks,
       selectedIndex: 0,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation, not user-facing behavior
     const dragHandles = container.querySelectorAll('.drag-handle')
@@ -75,7 +75,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       blocks,
       selectedIndex: 0,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
     const dragHandle = container.querySelector('.drag-handle')
@@ -93,7 +93,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       blocks,
       selectedIndex: 0,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Container should have children for sortable
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS layout class implementation
@@ -113,7 +113,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       selectedIndex: 0,
       disabled: true,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Drag handles still exist but should be hidden with opacity-0
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
@@ -136,7 +136,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       blocks,
       selectedIndex: 1,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed attribute values requires DOM access
     const blockItems = container.querySelectorAll('button[aria-pressed]')
@@ -154,7 +154,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       selectedIndex: 0,
       disabled: false,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Find button with "Add Block" text
     // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
@@ -172,7 +172,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       selectedIndex: 0,
       disabled: true,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Should not find add block button when disabled
     // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
@@ -194,7 +194,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       selectedIndex: 1,
       completedBlocks: [0, 2],
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Query for block containers using aria-pressed buttons, then find their parent containers
     // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed + parent CSS classes requires DOM access
@@ -222,7 +222,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
       blocks,
       selectedIndex: 0,
     })
-    ctx.cleanup = unmount
+    context.cleanup = unmount
 
     // Should have 2 connectors for 3 blocks (between first-second, second-third)
     // Connectors use bg-border class and aria-hidden

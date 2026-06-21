@@ -64,7 +64,7 @@ const rule: Rule.RuleModule = {
     schema: [],
   },
   create(context) {
-    const filename = context.filename ?? context.getFilename()
+    const filename = context.filename
 
     // Only check files that match use*.ts pattern
     if (!filename.endsWith('.ts') || !isComposableFilename(filename)) {

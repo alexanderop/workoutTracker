@@ -16,7 +16,7 @@ import { RouteNames } from '@/router'
 import {
   createForTimeBenchmarkWithRounds,
   createForTimeBenchmark,
-  getBenchmarksRepository,
+  getBenchmarksRepository as getBenchmarksRepo,
 } from './helpers/benchmarkHelpers'
 
 /**
@@ -54,7 +54,7 @@ describe('Benchmark UX Simplification', () => {
       await app.benchmarkForm.clickSave()
 
       // Verify benchmark was saved with type 'fortime'
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks).toHaveLength(1)
       expect(benchmarks[0]?.type).toBe('fortime')
       expect(benchmarks[0]?.name).toBe('Simple Benchmark')

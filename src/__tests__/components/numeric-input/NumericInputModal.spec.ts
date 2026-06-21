@@ -5,7 +5,7 @@ import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.v
 import { i18n } from '@/i18n'
 import type { InputType } from '@/components/ui/numeric-input/useNumericInput'
 
-type ModalProps = {
+type ModalProperties = {
   open: boolean
   modelValue: number
   type: InputType
@@ -14,9 +14,9 @@ type ModalProps = {
   'onUpdate:open'?: (value: boolean) => void
 }
 
-function renderModal(props: ModalProps) {
+function renderModal(properties: ModalProperties) {
   return render(NumericInputModal, {
-    props,
+    props: properties,
     global: { plugins: [i18n] },
   })
 }

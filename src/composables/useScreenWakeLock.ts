@@ -41,7 +41,7 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   // 2. Primary State
   const videoIsActive = ref(false)
   let videoElement: HTMLVideoElement | null = null
-  let userHasInteracted = false // Track user gesture for PWA autoplay
+  let isUserHasInteracted = false // Track user gesture for PWA autoplay
 
   // Mobile detection for redundancy decision
   const isMobileDevice = computed(() => {
@@ -71,7 +71,7 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     // Only re-acquire if page is visible - otherwise we'll fail anyway
     if (visibility.value === 'hidden') return
     // Only re-acquire if user has interacted (for PWA autoplay policies)
-    if (!userHasInteracted) return
+    if (!isUserHasInteracted) return
     // Use acquireAll to try both native AND video fallback
     acquireAll()
   }
@@ -121,20 +121,20 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
   async function acquireAll(options?: { redundant?: boolean }): Promise<void> {
     // Mark that user has interacted - enables re-acquisition after forced release
-    userHasInteracted = true
+    isUserHasInteracted = true
 
     // Always use redundancy on mobile OR in PWA standalone mode (less reliable there)
     const useRedundancy = options?.redundant ?? (isMobileDevice.value || isPWAStandalone.value)
 
-    let nativeSucceeded = false
+    let isNativeSucceeded = false
     if (nativeIsSupported.value) {
       const [error] = await tryCatch(acquireNative())
-      nativeSucceeded = !error
+      isNativeSucceeded = !error
     }
 
     // On mobile/PWA, ALWAYS start video as backup (native API unreliable in PWA mode)
     // On desktop browser, only start if native failed
-    if (useRedundancy || !nativeSucceeded) {
+    if (useRedundancy || !isNativeSucceeded) {
       startVideoFallback()
     }
   }

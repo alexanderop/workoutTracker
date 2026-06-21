@@ -261,7 +261,7 @@ describe('markdownImport', () => {
     })
 
     it('parses result with checkmark', () => {
-      const lines = ['', '**Result:** 8:32 \u2713']
+      const lines = ['', '**Result:** 8:32 \u{2713}']
 
       const result = parseForTimeBlock('Fran', lines)
 

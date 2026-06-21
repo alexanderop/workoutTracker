@@ -5,7 +5,7 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getSwipeableContainer, simulateSwipeLeft } from '../helpers/swipeHelpers'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
 /**
  * Integration tests for deleting workouts from the history view.
@@ -20,7 +20,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Morning Workout')
         .withStrengthBlock()
         .build()
@@ -47,7 +47,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Evening Session')
         .withStrengthBlock()
         .build()
@@ -78,7 +78,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Leg Day')
         .withStrengthBlock()
         .build()
@@ -112,7 +112,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Push Day')
         .withStrengthBlock()
         .build()
@@ -146,7 +146,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a single workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Only Workout')
         .withStrengthBlock()
         .build()
@@ -180,12 +180,12 @@ describe('History Delete Workout', () => {
 
       // Seed workouts in different months
       await db.workouts.bulkAdd([
-        dbWorkoutBuilder()
+        databaseWorkoutBuilder()
           .withName('Recent Workout')
           .withStrengthBlock()
           .withTimestamps(now - 3_600_000, now)
           .build(),
-        dbWorkoutBuilder()
+        databaseWorkoutBuilder()
           .withName('Old Workout')
           .withStrengthBlock()
           .withTimestamps(oneMonthAgo - 3_600_000, oneMonthAgo)
@@ -216,11 +216,11 @@ describe('History Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed multiple workouts
-      const workout1 = dbWorkoutBuilder()
+      const workout1 = databaseWorkoutBuilder()
         .withName('Workout One')
         .withStrengthBlock()
         .build()
-      const workout2 = dbWorkoutBuilder()
+      const workout2 = databaseWorkoutBuilder()
         .withName('Workout Two')
         .withStrengthBlock()
         .build()

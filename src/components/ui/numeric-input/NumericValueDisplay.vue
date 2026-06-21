@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check } from 'lucide-vue-next'
+import { Check } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { BarbellPlateHint } from '@/components/ui/barbell-hint'
 import { useNumberLocale } from '@/composables/useNumberLocale'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { FileText } from 'lucide-vue-next'
+import { FileText } from '@lucide/vue'
 import type { SampleTemplate } from '../../constants/previewData'
 
 const { template } = defineProps<{

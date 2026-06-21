@@ -147,11 +147,13 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
 
       for (const workout of workouts) {
         for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            const time = block.result.completionTime
-            if (bestTime === null || time < bestTime) {
-              bestTime = time
-            }
+          if (!(block.kind === 'fortime' && block.result?.completed)) {
+	continue;
+          }
+
+          const time = block.result.completionTime
+          if (bestTime === null || time < bestTime) {
+            bestTime = time
           }
         }
       }
@@ -181,13 +183,15 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
         if (workout.benchmarkId === null) continue
 
         for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            const time = block.result.completionTime
-            const currentBest = bestTimes.get(workout.benchmarkId)
+          if (!(block.kind === 'fortime' && block.result?.completed)) {
+	continue;
+          }
 
-            if (currentBest === undefined || time < currentBest) {
-              bestTimes.set(workout.benchmarkId, time)
-            }
+          const time = block.result.completionTime
+          const currentBest = bestTimes.get(workout.benchmarkId)
+
+          if (currentBest === undefined || time < currentBest) {
+            bestTimes.set(workout.benchmarkId, time)
           }
         }
       }
@@ -208,14 +212,16 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
 
       for (const workout of workouts) {
         for (const block of workout.blocks) {
-          if (block.kind === 'fortime' && block.result?.completed) {
-            attempts.push({
-              id: workout.id,
-              completedAt: workout.completedAt,
-              completionTime: block.result.completionTime,
-            })
-            break // Only use first ForTime block
+          if (!(block.kind === 'fortime' && block.result?.completed)) {
+	continue;
           }
+
+          attempts.push({
+            id: workout.id,
+            completedAt: workout.completedAt,
+            completionTime: block.result.completionTime,
+          })
+          break // Only use first ForTime block
         }
       }
 

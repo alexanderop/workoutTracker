@@ -159,10 +159,12 @@ export class SetRowPO {
       getInput: () => Promise<HTMLInputElement>,
       value?: number,
     ): Promise<void> => {
-      if (value !== undefined) {
-        const element = await getInput()
-        await userEvent.fill(element, String(value))
+      if (value === undefined) {
+	return;
       }
+
+      const element = await getInput()
+      await userEvent.fill(element, String(value))
     }
 
     await fillValue(() => this.getWeightInput(), values.kg)

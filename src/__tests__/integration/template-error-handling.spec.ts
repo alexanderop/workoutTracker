@@ -32,7 +32,7 @@ describe('Template Error Handling', () => {
 
       // Fill name with only whitespace
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await userEvent.fill(nameInput, '   ')
+      await userEvent.fill(nameInput, ' '.repeat(3))
 
       // Save button should be disabled
       const saveButton = getByRole('button', { name: /save template/i })

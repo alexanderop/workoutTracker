@@ -35,7 +35,7 @@ exported: ${exportedAt.toISOString()}
 
 function formatMetadata(workout: DbCompletedWorkout): string {
   const date = new Date(workout.completedAt)
-  const dateStr = date.toLocaleDateString('en-US', {
+  const dateString = date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -43,7 +43,7 @@ function formatMetadata(workout: DbCompletedWorkout): string {
 
   const duration = formatDuration(workout.durationSeconds)
 
-  const lines = [`**Date:** ${dateStr}`, `**Duration:** ${duration}`]
+  const lines = [`**Date:** ${dateString}`, `**Duration:** ${duration}`]
 
   if (workout.notes.trim()) {
     lines.push(`**Notes:** ${workout.notes}`)
@@ -191,7 +191,7 @@ export function formatForTimeBlock(block: DbForTimeBlock): string {
   if (block.result) {
     lines.push('')
     const time = formatDurationMs(block.result.completionTime)
-    const check = block.result.completed ? ' \u2713' : ''
+    const check = block.result.completed ? ' \u{2713}' : ''
     lines.push(`**Result:** ${time}${check}`)
   }
 
@@ -282,7 +282,7 @@ export function exportWorkoutAsMarkdown(workout: DbCompletedWorkout): string {
 
 function formatExerciseLine(exercise: DbBlockExercise): string {
   const load = exercise.load ? ` @ ${exercise.load}` : ''
-  return `- ${exercise.prescribedReps} \u00D7 ${exercise.name}${load}`
+  return `- ${exercise.prescribedReps} \u{D7} ${exercise.name}${load}`
 }
 
 function getBlockDisplayName(
@@ -315,6 +315,6 @@ function formatPace(secondsPerKm: number): string {
   return `${mins}:${String(secs).padStart(2, '0')}`
 }
 
-function capitalizeFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
+function capitalizeFirst(string_: string): string {
+  return string_.charAt(0).toUpperCase() + string_.slice(1)
 }

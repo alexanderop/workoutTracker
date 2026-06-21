@@ -508,8 +508,8 @@ export function useWorkout() {
 
   function removeSet(blockIndex: number, setId: number) {
     const block = workout.value.blocks[blockIndex]
-    const cannotRemoveSet = !block || !isStrengthBlock(block) || block.sets.length <= 1
-    if (cannotRemoveSet) return
+    const isCannotRemoveSet = !block || !isStrengthBlock(block) || block.sets.length <= 1
+    if (isCannotRemoveSet) return
 
     updateBlockAtIndex(blockIndex, (b) => {
       if (!isStrengthBlock(b)) return b

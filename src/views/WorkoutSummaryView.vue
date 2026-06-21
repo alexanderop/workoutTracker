@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from 'lucide-vue-next'
+import { Trophy, Clock, Dumbbell, Target, Flame, Repeat } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'

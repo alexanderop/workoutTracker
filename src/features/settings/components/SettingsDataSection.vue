@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import { Download, Upload } from 'lucide-vue-next'
+import { Download, Upload } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useDataExportImport } from '../composables/useDataExportImport'
 import { Button } from '@/components/ui/button'

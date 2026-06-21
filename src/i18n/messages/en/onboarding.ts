@@ -27,7 +27,7 @@ export default {
   quickWorkout: {
     title: 'Build workouts on the fly',
     description: 'Mix strength training with timed workouts like AMRAP, EMOM, and more.',
-    setsReps: '{sets} sets \u00D7 {reps} reps',
+    setsReps: '{sets} sets \u{D7} {reps} reps',
     minAmrap: '{min} min AMRAP',
   },
   templates: {

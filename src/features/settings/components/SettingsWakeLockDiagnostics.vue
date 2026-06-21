@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Monitor, Video } from 'lucide-vue-next'
+import { Monitor, Video } from '@lucide/vue'
 import { useScreenWakeLock } from '@/composables/useScreenWakeLock'
 import { useI18n } from 'vue-i18n'
 

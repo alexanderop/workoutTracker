@@ -7,7 +7,7 @@
  * - Distance (D): |A + I - 1| - distance from ideal Main Sequence
  */
 
-export type ModuleCategory = 'core' | 'shared' | 'feature' | 'ui'
+type ModuleCategory = 'core' | 'shared' | 'feature' | 'ui'
 
 export type ModuleDefinition = {
   /** Unique module name for identification */

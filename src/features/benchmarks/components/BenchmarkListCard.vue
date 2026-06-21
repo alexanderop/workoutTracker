@@ -28,10 +28,12 @@ const totalExerciseCount = computed(() =>
 )
 
 function handleActivationKey(event: KeyboardEvent): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    emit('click', benchmark.id)
+  if (!(event.key === 'Enter' || event.key === ' ')) {
+	return;
   }
+
+  event.preventDefault()
+  emit('click', benchmark.id)
 }
 </script>
 

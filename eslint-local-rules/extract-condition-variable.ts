@@ -78,8 +78,8 @@ function countOperators(node: Node): number {
     }
 
     if (isCallExpression(n)) {
-      for (const arg of n.arguments) {
-        traverse(arg)
+      for (const argument of n.arguments) {
+        traverse(argument)
       }
     }
 
@@ -105,19 +105,19 @@ function isAlreadyVariableReference(node: Node): boolean {
  * These are type narrowing guards that must stay inline for TypeScript.
  */
 function hasOptionalChaining(node: Node): boolean {
-  let found = false
+  let isFound = false
 
   function traverse(n: Node): void {
-    if (found) return
+    if (isFound) return
 
     if (isChainExpression(n)) {
-      found = true
+      isFound = true
       return
     }
 
     if (isMemberExpression(n)) {
       if (n.optional) {
-        found = true
+        isFound = true
         return
       }
       traverse(n.object)
@@ -126,8 +126,8 @@ function hasOptionalChaining(node: Node): boolean {
 
     if (isCallExpression(n)) {
       traverse(n.callee)
-      for (const arg of n.arguments) {
-        traverse(arg)
+      for (const argument of n.arguments) {
+        traverse(argument)
       }
       return
     }
@@ -150,7 +150,7 @@ function hasOptionalChaining(node: Node): boolean {
   }
 
   traverse(node)
-  return found
+  return isFound
 }
 
 /**
@@ -171,13 +171,13 @@ function isEarlyExitGuard(consequent: Statement): boolean {
 
   // Block with single statement: if (cond) { return; }
   if (isBlockStatement(consequent) && consequent.body.length === 1) {
-    const stmt = consequent.body[0]
+    const statement = consequent.body[0]
     if (
-      stmt &&
-      (stmt.type === 'ReturnStatement' ||
-        stmt.type === 'ThrowStatement' ||
-        stmt.type === 'ContinueStatement' ||
-        stmt.type === 'BreakStatement')
+      statement &&
+      (statement.type === 'ReturnStatement' ||
+        statement.type === 'ThrowStatement' ||
+        statement.type === 'ContinueStatement' ||
+        statement.type === 'BreakStatement')
     ) {
       return true
     }
@@ -230,8 +230,8 @@ function hasTruthyNarrowingPattern(node: Node): boolean {
 
     if (isCallExpression(n)) {
       collectMemberAccess(n.callee)
-      for (const arg of n.arguments) {
-        collectMemberAccess(arg)
+      for (const argument of n.arguments) {
+        collectMemberAccess(argument)
       }
     }
   }

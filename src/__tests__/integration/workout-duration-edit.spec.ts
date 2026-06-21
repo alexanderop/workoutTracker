@@ -17,8 +17,8 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 45 minutes elapsed
-      const workoutRef = getWorkoutRef()
-      workoutRef.value.startedAt = Date.now() - 45 * 60 * 1000
+      const workoutReference = getWorkoutRef()
+      workoutReference.value.startedAt = Date.now() - 45 * 60 * 1000
 
       // Open finish dialog
       await userEvent.click(await workout.getMenuTrigger())
@@ -50,9 +50,9 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed (user forgot to stop)
-      const workoutRef = getWorkoutRef()
+      const workoutReference = getWorkoutRef()
       const startedAt = Date.now() - 4 * 60 * 60 * 1000
-      workoutRef.value.startedAt = startedAt
+      workoutReference.value.startedAt = startedAt
 
       // Open finish dialog
       await userEvent.click(await workout.getMenuTrigger())
@@ -98,8 +98,8 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 30 minutes elapsed
-      const workoutRef = getWorkoutRef()
-      workoutRef.value.startedAt = Date.now() - 30 * 60 * 1000
+      const workoutReference = getWorkoutRef()
+      workoutReference.value.startedAt = Date.now() - 30 * 60 * 1000
 
       // Open finish dialog and finish without editing duration
       await userEvent.click(await workout.getMenuTrigger())
@@ -131,8 +131,8 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed
-      const workoutRef = getWorkoutRef()
-      workoutRef.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
+      const workoutReference = getWorkoutRef()
+      workoutReference.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
 
       // Open finish dialog
       await userEvent.click(await workout.getMenuTrigger())
@@ -152,8 +152,8 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 1 hour elapsed (under threshold)
-      const workoutRef = getWorkoutRef()
-      workoutRef.value.startedAt = Date.now() - 60 * 60 * 1000
+      const workoutReference = getWorkoutRef()
+      workoutReference.value.startedAt = Date.now() - 60 * 60 * 1000
 
       // Open finish dialog
       await userEvent.click(await workout.getMenuTrigger())
@@ -173,8 +173,8 @@ describe('Workout Duration Editing', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Simulate 4 hours elapsed
-      const workoutRef = getWorkoutRef()
-      workoutRef.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
+      const workoutReference = getWorkoutRef()
+      workoutReference.value.startedAt = Date.now() - 4 * 60 * 60 * 1000
 
       // Open finish dialog
       await userEvent.click(await workout.getMenuTrigger())

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Circle, type LucideIcon } from 'lucide-vue-next'
+import { Check, Circle, type LucideIcon } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'

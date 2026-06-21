@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Info, RefreshCw } from 'lucide-vue-next'
+import { Info, RefreshCw } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { useVersionCheck } from '@/composables/useVersionCheck'

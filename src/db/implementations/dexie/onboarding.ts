@@ -1,6 +1,6 @@
 import type { OnboardingRepository } from '@/db/interfaces'
 import { tryCatch } from '@/lib/tryCatch'
-import type { WorkoutTrackerDb } from './database'
+import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 const DEFAULT_STATE = { completed: false, currentStep: 0 }
 
@@ -9,7 +9,7 @@ const DEFAULT_STATE = { completed: false, currentStep: 0 }
  * Uses singleton pattern with id always set to 'onboarding'.
  */
 export function createDexieOnboardingRepository(
-  database: WorkoutTrackerDb,
+  database: WorkoutTrackerDatabase,
 ): OnboardingRepository {
   return {
     async get() {

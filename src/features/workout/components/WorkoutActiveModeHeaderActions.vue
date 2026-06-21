@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { List, MoreVertical, SkipForward, Square, Trash2, X } from 'lucide-vue-next'
+import { List, MoreVertical, SkipForward, Square, Trash2, X } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {

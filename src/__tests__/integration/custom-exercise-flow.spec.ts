@@ -122,7 +122,7 @@ describe('Custom Exercise Flow', () => {
 
       // Type whitespace-only name
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
-      await userEvent.fill(nameInput, '   ')
+      await userEvent.fill(nameInput, ' '.repeat(3))
 
       // Assert save button remains disabled
       const saveButton = getByRole('button', { name: /save/i })

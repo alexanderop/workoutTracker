@@ -37,7 +37,7 @@ export class NumericInputModalPO {
     const element = await valueDisplay.element()
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
-    const numericPart = text.trim().split(/\s/)[0] ?? ''
+    const numericPart = text.trim().split(/\s/, 1)[0] ?? ''
     return numericPart ? Number.parseFloat(numericPart) : 0
   }
 

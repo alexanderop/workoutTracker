@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { ChevronLeft } from 'lucide-vue-next'
+import { ChevronLeft } from '@lucide/vue'
 import { RouteNames } from '@/router'
 import { useOnboarding } from '../composables/useOnboarding'
 import WelcomeSlide from './WelcomeSlide.vue'
@@ -62,10 +62,12 @@ function setApi(api: CarouselApi) {
 
 // Resume to saved step on mount (instant jump)
 onMounted(() => {
-  if (onboarding.currentStep.value > 0 && carouselApi.value) {
-    carouselApi.value.scrollTo(onboarding.currentStep.value, true)
-    currentSlide.value = onboarding.currentStep.value
+  if (!(onboarding.currentStep.value > 0 && carouselApi.value)) {
+	return;
   }
+
+  carouselApi.value.scrollTo(onboarding.currentStep.value, true)
+  currentSlide.value = onboarding.currentStep.value
 })
 
 function goBack() {

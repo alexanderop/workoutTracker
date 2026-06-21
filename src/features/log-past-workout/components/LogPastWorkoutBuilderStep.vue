@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Dumbbell } from 'lucide-vue-next'
+import { Dumbbell } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useDialogState } from '@/composables/useDialogState'
 import type { Exercise } from '@/composables/useExerciseSearch'

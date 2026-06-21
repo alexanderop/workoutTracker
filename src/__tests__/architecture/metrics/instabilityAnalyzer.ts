@@ -27,8 +27,8 @@ import type { InstabilityMetrics, ModuleDefinition } from './types'
 const PATH_TO_MODULE = new Map<string, string>()
 
 // Build path mapping on module load
-for (const mod of MODULE_DEFINITIONS) {
-  PATH_TO_MODULE.set(mod.path, mod.name)
+for (const module_ of MODULE_DEFINITIONS) {
+  PATH_TO_MODULE.set(module_.path, module_.name)
 }
 
 /**
@@ -100,13 +100,13 @@ function buildDependencyGraph(
   const graph = new Map<string, Set<string>>()
 
   // Initialize all modules with empty dependency sets
-  for (const mod of modules) {
-    graph.set(mod.name, new Set())
+  for (const module_ of modules) {
+    graph.set(module_.name, new Set())
   }
 
   // Analyze each module's files
-  for (const mod of modules) {
-    const fullPath = `${projectRoot}/${mod.path}`
+  for (const module_ of modules) {
+    const fullPath = `${projectRoot}/${module_.path}`
     const sourceFiles = project.getSourceFiles(`${fullPath}/**/*.ts`)
 
     for (const file of sourceFiles) {
@@ -115,20 +115,20 @@ function buildDependencyGraph(
       // Skip test files
       if (filePath.includes('.test.') || filePath.includes('.spec.')) continue
 
-      const deps = extractDependencies(file, mod.name)
-      const modDeps = graph.get(mod.name)
+      const dependencies = extractDependencies(file, module_.name)
+      const moduleDependencies = graph.get(module_.name)
 
-      for (const dep of deps) {
-        modDeps?.add(dep)
+      for (const dependency of dependencies) {
+        moduleDependencies?.add(dependency)
       }
     }
 
     // Also check Vue files for imports (via simple regex - ts-morph can't parse .vue)
-    const vueDeps = extractVueDependencies(fullPath, mod.name)
-    const modDeps = graph.get(mod.name)
+    const vueDependencies = extractVueDependencies(fullPath, module_.name)
+    const moduleDependencies = graph.get(module_.name)
 
-    for (const dep of vueDeps) {
-      modDeps?.add(dep)
+    for (const dependency of vueDependencies) {
+      moduleDependencies?.add(dependency)
     }
   }
 
@@ -196,20 +196,20 @@ export function analyzeInstability(
   // Calculate fan-in for each module (who depends on this module)
   const fanInMap = new Map<string, Array<string>>()
 
-  for (const mod of modules) {
-    fanInMap.set(mod.name, [])
+  for (const module_ of modules) {
+    fanInMap.set(module_.name, [])
   }
 
   for (const [moduleName, dependencies] of dependencyGraph) {
-    for (const dep of dependencies) {
-      fanInMap.get(dep)?.push(moduleName)
+    for (const dependency of dependencies) {
+      fanInMap.get(dependency)?.push(moduleName)
     }
   }
 
   // Build results for each module
-  for (const mod of modules) {
-    const dependsOn = [...(dependencyGraph.get(mod.name) ?? [])]
-    const dependedOnBy = fanInMap.get(mod.name) ?? []
+  for (const module_ of modules) {
+    const dependsOn = [...(dependencyGraph.get(module_.name) ?? [])]
+    const dependedOnBy = fanInMap.get(module_.name) ?? []
 
     const fanOut = dependsOn.length
     const fanIn = dependedOnBy.length
@@ -217,7 +217,7 @@ export function analyzeInstability(
     const total = fanIn + fanOut
     const instability = total > 0 ? fanOut / total : 0
 
-    results.set(mod.name, {
+    results.set(module_.name, {
       fanIn,
       fanOut,
       instability,

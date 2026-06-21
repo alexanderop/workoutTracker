@@ -1,4 +1,4 @@
-import { getTemplatesRepository } from './index'
+import { getTemplatesRepository as getTemplatesRepo } from './index'
 import { popularTemplates } from '@/data/popularTemplates'
 
 /**
@@ -6,7 +6,7 @@ import { popularTemplates } from '@/data/popularTemplates'
  * Checks IndexedDB directly since browsers may clear it while keeping localStorage.
  */
 export async function seedPopularTemplates(): Promise<void> {
-  const repo = getTemplatesRepository()
+  const repo = getTemplatesRepo()
   const existing = await repo.getAll()
   if (existing.length > 0) {
     return

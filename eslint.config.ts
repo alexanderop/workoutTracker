@@ -18,7 +18,16 @@ import localRules from './eslint-local-rules'
 
 export default defineConfigWithVueTs(
   {
-    ignores: ['.claude/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/node_modules/**'],
+    ignores: [
+      '.agents/**',
+      '.claude/**',
+      '.codex/**',
+      '**/dev-dist/**',
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+    ],
   },
 
   {
@@ -26,7 +35,7 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores(['.agents/**', '.claude/**', '.codex/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
@@ -39,8 +48,6 @@ export default defineConfigWithVueTs(
       // === Enable non-recommended rules that add value ===
       // Improve regexes by making them shorter, consistent, and safer
       'unicorn/better-regex': 'warn',
-      // Enforce correct Error subclassing (good for TypeScript strict mode)
-      'unicorn/custom-error-definition': 'error',
       // Detect unused object properties (dead code detection)
       'unicorn/no-unused-properties': 'warn',
       // Use destructured variables consistently over properties
@@ -53,6 +60,7 @@ export default defineConfigWithVueTs(
       'unicorn/filename-case': 'off',
       // Common abbreviations: Db, props, e, etc.
       'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       // Project uses function references in array callbacks
       'unicorn/no-array-callback-reference': 'off',
       // Common pattern: (await fetch()).json()
@@ -61,6 +69,31 @@ export default defineConfigWithVueTs(
       'unicorn/no-array-reduce': 'off',
       // mockResolvedValue(undefined) is required for TypeScript
       'unicorn/no-useless-undefined': 'off',
+      // Broad style preferences that create heavy churn in the existing codebase.
+      'unicorn/consistent-boolean-name': 'off',
+      'unicorn/consistent-class-member-order': 'off',
+      'unicorn/consistent-compound-words': 'off',
+      'unicorn/custom-error-definition': 'off',
+      'unicorn/no-computed-property-existence-check': 'off',
+      'unicorn/no-break-in-nested-loop': 'off',
+      'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/no-global-object-property-assignment': 'off',
+      'unicorn/no-incorrect-template-string-interpolation': 'off',
+      'unicorn/no-return-array-push': 'off',
+      'unicorn/no-this-outside-of-class': 'off',
+      'unicorn/no-top-level-side-effects': 'off',
+      'unicorn/no-unreadable-for-of-expression': 'off',
+      'unicorn/no-top-level-assignment-in-function': 'off',
+      'unicorn/no-useless-template-literals': 'off',
+      'unicorn/prefer-await': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/prefer-includes-over-repeated-comparisons': 'off',
+      'unicorn/prefer-logical-operator-over-ternary': 'off',
+      'unicorn/prefer-minimal-ternary': 'off',
+      'unicorn/prefer-number-coercion': 'off',
+      'unicorn/prefer-object-iterable-methods': 'off',
+      'unicorn/prefer-unicode-code-point-escapes': 'off',
+      'unicorn/require-array-sort-compare': 'off',
     },
   },
 
@@ -100,7 +133,7 @@ export default defineConfigWithVueTs(
       ],
       'vue/prop-name-casing': ['error', 'camelCase'],
       'vue/attribute-hyphenation': ['error', 'always'],
-      'vue/custom-event-name-casing': ['error', 'kebab-case'],
+      'vue/custom-event-name-casing': ['error', 'kebab-case', { ignores: ['/^[a-z]+:[a-zA-Z]+$/u'] }],
       'vue/max-template-depth': ['error', { maxDepth: 8 }],
       'vue/max-props': ['error', { maxProps: 6 }],
 
@@ -453,6 +486,6 @@ export default defineConfigWithVueTs(
 
   skipFormatting,
   {
-    ignores: ['.claude/**'],
+    ignores: ['.agents/**', '.claude/**', '.codex/**'],
   },
 )

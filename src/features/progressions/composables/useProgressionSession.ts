@@ -105,10 +105,12 @@ export function useProgressionSession(progressionId: string) {
   }
 
   function stopTimer(): void {
-    if (timerInterval.value) {
-      clearInterval(timerInterval.value)
-      timerInterval.value = null
+    if (!timerInterval.value) {
+	return;
     }
+
+    clearInterval(timerInterval.value)
+    timerInterval.value = null
   }
 
   function cancelSession(): void {

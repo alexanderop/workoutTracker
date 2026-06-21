@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown, Dumbbell } from 'lucide-vue-next'
+import { ChevronDown, Dumbbell } from '@lucide/vue'
 import { computed } from 'vue'
 import { useToggle } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'

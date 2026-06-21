@@ -4,9 +4,9 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { dbWorkoutBuilder } from '../factories'
-import { createDbAmrapBlock } from '../factories/timedBlock.factory'
-import { createDbSet } from '../factories/dbSet.factory'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
+import { createDbAmrapBlock as createDatabaseAmrapBlock } from '../factories/timedBlock.factory'
+import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
 
 /**
  * Integration tests for copying workout as markdown from detail view.
@@ -20,7 +20,7 @@ describe('Workout Detail Copy Markdown', () => {
     const { navigateTo, cleanup } = await createTestApp()
 
     // Seed a completed workout
-    const workout = dbWorkoutBuilder()
+    const workout = databaseWorkoutBuilder()
       .withName('Test Workout')
       .withStrengthBlock({ name: 'Squats' })
       .build()
@@ -47,14 +47,14 @@ describe('Workout Detail Copy Markdown', () => {
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 
     // Seed a completed workout with specific data
-    const workout = dbWorkoutBuilder()
+    const workout = databaseWorkoutBuilder()
       .withName('Morning Strength')
       .withStrengthBlock({
         name: 'Bench Press',
         equipment: 'barbell',
         sets: [
-          createDbSet({ kg: '80', reps: '5', rir: '2' }),
-          createDbSet({ kg: '85', reps: '5', rir: '1' }),
+          createDatabaseSet({ kg: '80', reps: '5', rir: '2' }),
+          createDatabaseSet({ kg: '85', reps: '5', rir: '1' }),
         ],
       })
       .build()
@@ -89,7 +89,7 @@ describe('Workout Detail Copy Markdown', () => {
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 
     // Seed workout
-    const workout = dbWorkoutBuilder()
+    const workout = databaseWorkoutBuilder()
       .withName('Leg Day')
       .withStrengthBlock()
       .build()
@@ -116,10 +116,10 @@ describe('Workout Detail Copy Markdown', () => {
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 
     // Seed workout with multiple block types
-    const amrapBlock = createDbAmrapBlock({
+    const amrapBlock = createDatabaseAmrapBlock({
       exercises: [{ id: 'ex1', name: 'Burpees', prescribedReps: 10, load: null, image: null }],
     })
-    const workout = dbWorkoutBuilder()
+    const workout = databaseWorkoutBuilder()
       .withName('Full Workout')
       .withStrengthBlock({ name: 'Deadlift' })
       .withBlock(amrapBlock)

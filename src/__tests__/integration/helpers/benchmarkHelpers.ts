@@ -4,8 +4,8 @@ import type { createTestApp } from '../../helpers/createTestApp'
 import { db, getBenchmarksRepository } from '@/db'
 import type { DbBenchmark, DbBenchmarkRound, DbCompletedWorkout } from '@/db/schema'
 import {
-  createDbBenchmarkRound,
-  createDbBenchmarkRoundExercise,
+  createDbBenchmarkRound as createDatabaseBenchmarkRound,
+  createDbBenchmarkRoundExercise as createDatabaseBenchmarkRoundExercise,
   createDbBlockExercise as createDatabaseBlockExercise,
   createDbForTimeBlock as createDatabaseForTimeBlock,
   createDbForTimeResult as createDatabaseForTimeResult,
@@ -41,13 +41,13 @@ export async function createForTimeBenchmarkWithRounds(options: {
 }): Promise<DbBenchmark> {
   const roundKeys = generateNKeysBetween(null, null, options.rounds.length)
 
-  const dbRounds: Array<DbBenchmarkRound> = options.rounds.map((round, roundIndex) => {
+  const databaseRounds: Array<DbBenchmarkRound> = options.rounds.map((round, roundIndex) => {
     const exerciseKeys = generateNKeysBetween(null, null, round.exercises.length)
 
-    return createDbBenchmarkRound({
+    return createDatabaseBenchmarkRound({
       orderKey: roundKeys[roundIndex],
       exercises: round.exercises.map((ex, exIndex) =>
-        createDbBenchmarkRoundExercise({
+        createDatabaseBenchmarkRoundExercise({
           orderKey: exerciseKeys[exIndex],
           name: ex.name,
           prescribedReps: ex.reps,
@@ -60,7 +60,7 @@ export async function createForTimeBenchmarkWithRounds(options: {
   return getBenchmarksRepository().create({
     name: options.name,
     type: 'fortime',
-    rounds: dbRounds,
+    rounds: databaseRounds,
   })
 }
 

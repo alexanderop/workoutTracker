@@ -11,7 +11,7 @@ import {
   PersonStanding,
   Waves,
   Weight,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 
 /**
  * Icon components for each equipment type, used in filter pills and selection UI.

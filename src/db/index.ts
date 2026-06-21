@@ -1,14 +1,14 @@
 import type {
-  ActiveBenchmarkWorkoutRepository,
-  ActiveWorkoutRepository,
-  BenchmarksRepository,
-  CustomExercisesRepository,
-  DataManagementRepository,
-  DraftsRepository,
-  ExerciseProgressRepository,
-  OnboardingRepository,
-  ProgressionsRepository,
-  SettingsRepository,
+  ActiveBenchmarkWorkoutRepository as ActiveBenchmarkWorkoutRepo,
+  ActiveWorkoutRepository as ActiveWorkoutRepo,
+  BenchmarksRepository as BenchmarksRepo,
+  CustomExercisesRepository as CustomExercisesRepo,
+  DataManagementRepository as DataManagementRepo,
+  DraftsRepository as DraftsRepo,
+  ExerciseProgressRepository as ExerciseProgressRepo,
+  OnboardingRepository as OnboardingRepo,
+  ProgressionsRepository as ProgressionsRepo,
+  SettingsRepository as SettingsRepo,
   TemplatesRepository,
   WeightRepository,
   WorkoutsRepository,
@@ -25,11 +25,11 @@ export * from './interfaces'
 // Repository Getters
 // ============================================
 
-export function getActiveWorkoutRepository(): ActiveWorkoutRepository {
+export function getActiveWorkoutRepository(): ActiveWorkoutRepo {
   return getRepositoryProvider().activeWorkout
 }
 
-export function getActiveBenchmarkWorkoutRepository(): ActiveBenchmarkWorkoutRepository {
+export function getActiveBenchmarkWorkoutRepository(): ActiveBenchmarkWorkoutRepo {
   return getRepositoryProvider().activeBenchmark
 }
 
@@ -41,19 +41,19 @@ export function getTemplatesRepository(): TemplatesRepository {
   return getRepositoryProvider().templates
 }
 
-export function getCustomExercisesRepository(): CustomExercisesRepository {
+export function getCustomExercisesRepository(): CustomExercisesRepo {
   return getRepositoryProvider().customExercises
 }
 
-export function getSettingsRepository(): SettingsRepository {
+export function getSettingsRepository(): SettingsRepo {
   return getRepositoryProvider().settings
 }
 
-export function getDataManagementRepository(): DataManagementRepository {
+export function getDataManagementRepository(): DataManagementRepo {
   return getRepositoryProvider().dataManagement
 }
 
-export function getBenchmarksRepository(): BenchmarksRepository {
+export function getBenchmarksRepository(): BenchmarksRepo {
   return getRepositoryProvider().benchmarks
 }
 
@@ -61,25 +61,25 @@ export function getWeightRepository(): WeightRepository {
   return getRepositoryProvider().weight
 }
 
-export function getDraftsRepository(): DraftsRepository {
+export function getDraftsRepository(): DraftsRepo {
   return getRepositoryProvider().drafts
 }
 
-export function getProgressionsRepository(): ProgressionsRepository {
+export function getProgressionsRepository(): ProgressionsRepo {
   return getRepositoryProvider().progressions
 }
 
-export function getOnboardingRepository(): OnboardingRepository {
+export function getOnboardingRepository(): OnboardingRepo {
   return getRepositoryProvider().onboarding
 }
 
-let exerciseProgressRepository: ExerciseProgressRepository | null = null
+let exerciseProgressRepo: ExerciseProgressRepo | null = null
 
-export function getExerciseProgressRepository(): ExerciseProgressRepository {
-  if (!exerciseProgressRepository) {
-    exerciseProgressRepository = createDexieExerciseProgressRepository(database)
+export function getExerciseProgressRepository(): ExerciseProgressRepo {
+  if (!exerciseProgressRepo) {
+    exerciseProgressRepo = createDexieExerciseProgressRepository(database)
   }
-  return exerciseProgressRepository
+  return exerciseProgressRepo
 }
 
 /**
@@ -87,7 +87,7 @@ export function getExerciseProgressRepository(): ExerciseProgressRepository {
  * Used in tests to ensure clean state between test files.
  */
 export function resetExerciseProgressRepository(): void {
-  exerciseProgressRepository = null
+  exerciseProgressRepo = null
 }
 
 // ============================================

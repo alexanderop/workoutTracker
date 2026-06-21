@@ -147,7 +147,7 @@ export type ParsedWorkout = {
 // Parse Result Types
 // ============================================
 
-export type ParseError = {
+type ParseError = {
   line?: number
   message: string
   context?: string

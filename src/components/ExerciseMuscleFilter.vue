@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Muscle } from '@/types/exercises'
 
-import { LayoutGrid } from 'lucide-vue-next'
+import { LayoutGrid } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MUSCLE_COLORS } from '@/lib/exercises/muscleMetadata'

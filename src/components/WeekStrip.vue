@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
-import { ChevronRight } from 'lucide-vue-next'
+import { ChevronRight } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
 import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'

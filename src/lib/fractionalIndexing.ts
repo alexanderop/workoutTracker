@@ -7,17 +7,17 @@
 export const BASE_62_DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 /** Get character at index, throwing if out of bounds. */
-function charAt(str: string, index: number): string {
-  const char = str[index]
+function charAt(string_: string, index: number): string {
+  const char = string_[index]
   if (char === undefined) {
-    throw new Error(`index ${index} out of bounds for string length ${str.length}`)
+    throw new Error(`index ${index} out of bounds for string length ${string_.length}`)
   }
   return char
 }
 
 /** Get first character of a non-empty string. */
-function firstChar(str: string): string {
-  return charAt(str, 0)
+function firstChar(string_: string): string {
+  return charAt(string_, 0)
 }
 
 /** Get the digit index for a character in the digit string. */
@@ -74,7 +74,7 @@ function midpoint(a: string, b: string | null | undefined, digits: string): stri
   }
 
   // First digits (or lack of digit) are different
-  const digitA = getDigitIndex(a[0], digits, 0)
+  const digitA = getDigitIndex(a.at(0), digits, 0)
   const digitB = b == null ? digits.length : digits.indexOf(firstChar(b))
 
   // Try to find a midpoint digit
@@ -120,8 +120,8 @@ function validateOrderKey(key: string, digits: string): void {
   }
   // getIntegerPart will throw if the first character is bad,
   // or the key is too short.
-  const i = getIntegerPart(key)
-  const f = key.slice(i.length)
+  const index = getIntegerPart(key)
+  const f = key.slice(index.length)
   if (f.slice(-1) === firstChar(digits)) {
     throw new Error(`invalid order key: ${key}`)
   }
@@ -129,13 +129,13 @@ function validateOrderKey(key: string, digits: string): void {
 
 /** Propagate increment through digits array, returns true if carry remains. */
 function propagateIncrement(digs: Array<string>, digits: string): boolean {
-  for (let i = digs.length - 1; i >= 0; i--) {
-    const d = digits.indexOf(digs[i]!) + 1
+  for (let index = digs.length - 1; index >= 0; index--) {
+    const d = digits.indexOf(digs[index]!) + 1
     if (d === digits.length) {
-      digs[i] = firstChar(digits)
+      digs[index] = firstChar(digits)
       continue
     }
-    digs[i] = charAt(digits, d)
+    digs[index] = charAt(digits, d)
     return false
   }
   return true
@@ -143,13 +143,13 @@ function propagateIncrement(digs: Array<string>, digits: string): boolean {
 
 /** Propagate decrement through digits array, returns true if borrow remains. */
 function propagateDecrement(digs: Array<string>, digits: string): boolean {
-  for (let i = digs.length - 1; i >= 0; i--) {
-    const d = digits.indexOf(digs[i]!) - 1
+  for (let index = digs.length - 1; index >= 0; index--) {
+    const d = digits.indexOf(digs[index]!) - 1
     if (d === -1) {
-      digs[i] = digits.slice(-1)
+      digs[index] = digits.slice(-1)
       continue
     }
-    digs[i] = charAt(digits, d)
+    digs[index] = charAt(digits, d)
     return false
   }
   return true
@@ -177,8 +177,8 @@ function incrementInteger(x: string, digits: string): string | null {
   const head = firstChar(x)
   const digs = [...x].slice(1)
 
-  const carry = propagateIncrement(digs, digits)
-  if (!carry) return head + digs.join('')
+  const isCarry = propagateIncrement(digs, digits)
+  if (!isCarry) return head + digs.join('')
   if (head === 'Z') return 'a' + firstChar(digits)
   if (head === 'z') return null
 
@@ -195,8 +195,8 @@ function decrementInteger(x: string, digits: string): string | null {
   const head = firstChar(x)
   const digs = [...x].slice(1)
 
-  const borrow = propagateDecrement(digs, digits)
-  if (!borrow) return head + digs.join('')
+  const isBorrow = propagateDecrement(digs, digits)
+  if (!isBorrow) return head + digs.join('')
   if (head === 'a') return 'Z' + digits.slice(-1)
   if (head === 'A') return null
 
@@ -236,8 +236,8 @@ function generateKeyBeforeB(b: string | null | undefined, digits: string): strin
 function generateKeyAfterA(a: string, digits: string): string {
   const ia = getIntegerPart(a)
   const fa = a.slice(ia.length)
-  const i = incrementInteger(ia, digits)
-  return i == null ? ia + midpoint(fa, null, digits) : i
+  const index = incrementInteger(ia, digits)
+  return index == null ? ia + midpoint(fa, null, digits) : index
 }
 
 /** Generate key between two non-null keys. */
@@ -249,9 +249,9 @@ function generateKeyBetweenBoth(a: string, b: string, digits: string): string {
 
   if (ia === ib) return ia + midpoint(fa, fb, digits)
 
-  const i = incrementInteger(ia, digits)
-  if (i == null) throw new Error('cannot increment any more')
-  if (i < b) return i
+  const index = incrementInteger(ia, digits)
+  if (index == null) throw new Error('cannot increment any more')
+  if (index < b) return index
   return ia + midpoint(fa, null, digits)
 }
 
@@ -293,7 +293,7 @@ export function generateNKeysBetween(
   if (b == null) {
     let c = generateKeyBetween(a, b, digits)
     const result = [c]
-    for (let i = 0; i < n - 1; i++) {
+    for (let index = 0; index < n - 1; index++) {
       c = generateKeyBetween(c, b, digits)
       result.push(c)
     }
@@ -303,7 +303,7 @@ export function generateNKeysBetween(
   if (a == null) {
     let c = generateKeyBetween(a, b, digits)
     const result = [c]
-    for (let i = 0; i < n - 1; i++) {
+    for (let index = 0; index < n - 1; index++) {
       c = generateKeyBetween(a, c, digits)
       result.push(c)
     }

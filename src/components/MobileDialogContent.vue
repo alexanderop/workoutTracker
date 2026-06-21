@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DialogContentEmits } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
-import { X } from 'lucide-vue-next'
+import { X } from '@lucide/vue'
 import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 import { DialogOverlay } from '@/components/ui/dialog'

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Moon, Globe } from 'lucide-vue-next'
+import { Moon, Globe } from '@lucide/vue'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from 'vue-i18n'

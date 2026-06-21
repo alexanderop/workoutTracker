@@ -2,7 +2,7 @@
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { TimedBlockKind } from '@/types/blocks'
 
-import { Activity, Clock, Gauge, RefreshCcw, Zap } from 'lucide-vue-next'
+import { Activity, Clock, Gauge, RefreshCcw, Zap } from '@lucide/vue'
 import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'

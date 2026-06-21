@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronLeft, Edit2, MoreVertical, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, Edit2, MoreVertical, Trash2 } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'

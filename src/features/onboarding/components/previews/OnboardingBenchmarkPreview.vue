@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Trophy } from 'lucide-vue-next'
+import { Trophy } from '@lucide/vue'
 import type { SampleBenchmark } from '../../constants/previewData'
 
 const { benchmark } = defineProps<{

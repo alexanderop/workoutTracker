@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { useTemplateCreation } from '@/features/templates/composables/useTemplateCreation'
 import { useFormDraft } from '@/composables/useFormDraft'
 import { useDialogState } from '@/composables/useDialogState'
-import { Trash2 } from 'lucide-vue-next'
+import { Trash2 } from '@lucide/vue'
 import type {
   AmrapConfig,
   BlockExercise,

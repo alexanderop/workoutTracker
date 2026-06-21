@@ -1,0 +1,6 @@
+[mcp_servers.cclsp]
+command = "npx"
+args = ["cclsp@latest"]
+
+[mcp_servers.cclsp.env]
+CCLSP_CONFIG_PATH = "/Users/alex/Projects/Vue/workoutTracker/cclsp.json"

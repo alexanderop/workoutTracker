@@ -22,8 +22,8 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
-function hasStringField(obj: Record<string, unknown>, key: string): boolean {
-  return key in obj && typeof obj[key] === 'string'
+function hasStringField(object: Record<string, unknown>, key: string): boolean {
+  return key in object && typeof object[key] === 'string'
 }
 
 function isVersionInfo(value: unknown): value is VersionInfo {
@@ -33,8 +33,7 @@ function isVersionInfo(value: unknown): value is VersionInfo {
   if (!hasStringField(value, 'buildTime')) return false
   // tag can be string or null
   if (!('tag' in value)) return false
-  if (typeof value.tag !== 'string' && value.tag !== null) return false
-  return true
+  return !(typeof value.tag !== 'string' && value.tag !== null);
 }
 
 async function checkVersion(): Promise<void> {

@@ -2,7 +2,7 @@
 import type { AcceptableValue } from 'reka-ui'
 import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Scale, Ruler } from 'lucide-vue-next'
+import { Scale, Ruler } from '@lucide/vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from 'vue-i18n'
 

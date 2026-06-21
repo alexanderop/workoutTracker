@@ -9,8 +9,8 @@ import {
   startBenchmarkWorkout,
   completeExercise,
   waitForCompletionScreen,
-  getWorkoutsRepository,
-  getBenchmarksRepository,
+  getWorkoutsRepository as getWorkoutsRepo,
+  getBenchmarksRepository as getBenchmarksRepo,
 } from './helpers/benchmarkHelpers'
 
 describe('Benchmark Management', () => {
@@ -48,7 +48,7 @@ describe('Benchmark Management', () => {
       await page.getByRole('button', { name: /view details/i }).click()
       await expect.poll(() => app.router.currentRoute.value.name).toBe('WorkoutSummary')
 
-      const workouts = await getWorkoutsRepository().getHistory()
+      const workouts = await getWorkoutsRepo().getHistory()
       expect(workouts).toHaveLength(1)
       expect(workouts[0]?.benchmarkId).toBe(benchmark.id)
 
@@ -66,7 +66,7 @@ describe('Benchmark Management', () => {
       await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
 
-      const deleted = await getBenchmarksRepository().getById(benchmark.id)
+      const deleted = await getBenchmarksRepo().getById(benchmark.id)
       expect(deleted).toBeFalsy()
 
       app.cleanup()
@@ -80,7 +80,7 @@ describe('Benchmark Management', () => {
         exercises: [{ name: 'Run', reps: 400 }],
       })
 
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks).toHaveLength(1)
       expect(benchmarks[0]?.name).toBe('Helen')
       expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(1)
@@ -97,7 +97,7 @@ describe('Benchmark Management', () => {
         ],
       })
 
-      const benchmarks = await getBenchmarksRepository().getAll()
+      const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks[0]?.rounds).toHaveLength(5)
       expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(3)
     })
@@ -126,7 +126,7 @@ describe('Benchmark Management', () => {
       await app.benchmarkDetail.clickSave()
 
       await expect.element(page.getByText('Updated Name')).toBeVisible()
-      const updated = await getBenchmarksRepository().getById(benchmark.id)
+      const updated = await getBenchmarksRepo().getById(benchmark.id)
       expect(updated?.name).toBe('Updated Name')
 
       app.cleanup()
@@ -146,13 +146,13 @@ describe('Benchmark Management', () => {
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await userEvent.click(page.getByRole('button', { name: /cancel/i }))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-      expect(await getBenchmarksRepository().getById(benchmark.id)).toBeTruthy()
+      expect(await getBenchmarksRepo().getById(benchmark.id)).toBeTruthy()
 
       // Test confirm
       await app.benchmarkDetail.clickDelete()
       await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
-      expect(await getBenchmarksRepository().getById(benchmark.id)).toBeFalsy()
+      expect(await getBenchmarksRepo().getById(benchmark.id)).toBeFalsy()
 
       app.cleanup()
     })

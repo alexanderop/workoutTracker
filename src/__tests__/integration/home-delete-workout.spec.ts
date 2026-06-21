@@ -5,7 +5,7 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getSwipeableContainer, simulateSwipeLeft } from '../helpers/swipeHelpers'
-import { dbWorkoutBuilder } from '../factories'
+import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
 /**
  * Integration tests for deleting workouts from the home page recent workouts section.
@@ -20,7 +20,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Morning Workout')
         .withStrengthBlock()
         .build()
@@ -48,7 +48,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Evening Session')
         .withStrengthBlock()
         .build()
@@ -82,7 +82,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Leg Day')
         .withStrengthBlock()
         .build()
@@ -119,7 +119,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Push Day')
         .withStrengthBlock()
         .build()
@@ -156,11 +156,11 @@ describe('Home Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed multiple workouts
-      const workout1 = dbWorkoutBuilder()
+      const workout1 = databaseWorkoutBuilder()
         .withName('Workout One')
         .withStrengthBlock()
         .build()
-      const workout2 = dbWorkoutBuilder()
+      const workout2 = databaseWorkoutBuilder()
         .withName('Workout Two')
         .withStrengthBlock()
         .build()
@@ -200,7 +200,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = dbWorkoutBuilder()
+      const workout = databaseWorkoutBuilder()
         .withName('Tap Test')
         .withStrengthBlock()
         .build()

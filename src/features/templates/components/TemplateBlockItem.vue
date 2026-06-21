@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { GripVertical, Minus, Plus, Trash2 } from 'lucide-vue-next'
+import { GripVertical, Minus, Plus, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { DbTemplateBlock } from '@/db/schema'

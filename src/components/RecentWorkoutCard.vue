@@ -15,10 +15,12 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 function handleActivationKey(event: KeyboardEvent): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    emit('click', workout.id)
+  if (!(event.key === 'Enter' || event.key === ' ')) {
+	return;
   }
+
+  event.preventDefault()
+  emit('click', workout.id)
 }
 </script>
 

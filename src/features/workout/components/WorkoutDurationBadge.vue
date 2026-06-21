@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Timer } from 'lucide-vue-next'
+import { Timer } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkoutDurationTimer } from '@/features/workout/composables/useWorkoutDurationTimer'
 

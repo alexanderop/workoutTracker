@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check, Timer } from 'lucide-vue-next'
+import { Check, Timer } from '@lucide/vue'
 import BenchmarkExerciseDisplay from './BenchmarkExerciseDisplay.vue'
 import CompletionScreen from '@/components/CompletionScreen.vue'
 import BenchmarkProgressBar from './BenchmarkProgressBar.vue'

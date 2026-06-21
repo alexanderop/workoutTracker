@@ -17,14 +17,14 @@ function isIdentifier(node: Node): node is Identifier {
   return node.type === 'Identifier'
 }
 
-function isRepositoryMethodCall(node: CallExpression): boolean {
+function isRepoMethodCall(node: CallExpression): boolean {
   // Check for chained call: get*Repository().method()
   if (!isMemberExpression(node.callee)) return false
 
-  const memberExpr = node.callee
-  if (!isCallExpression(memberExpr.object)) return false
+  const memberExpression = node.callee
+  if (!isCallExpression(memberExpression.object)) return false
 
-  const objectCall = memberExpr.object
+  const objectCall = memberExpression.object
   if (!isIdentifier(objectCall.callee)) return false
 
   // Match get*Repository pattern
@@ -64,7 +64,7 @@ const rule: Rule.RuleModule = {
         if (!isCallExpression(node.argument)) return
 
         // Check for get*Repository().method() pattern
-        if (!isRepositoryMethodCall(node.argument)) return
+        if (!isRepoMethodCall(node.argument)) return
 
         // Check if already wrapped in tryCatch
         if (isWrappedInTryCatch(context, node)) return

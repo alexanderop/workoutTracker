@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Clock, Dumbbell, Flame, Target } from 'lucide-vue-next'
+import { Clock, Dumbbell, Flame, Target } from '@lucide/vue'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import type { WorkoutStats } from '@/features/workout/composables/useWorkoutDetail'
 import { formatDuration } from '@/lib/formatters'

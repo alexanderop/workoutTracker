@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Play } from 'lucide-vue-next'
+import { Play } from '@lucide/vue'
 
 const { label, description, colorClass } = defineProps<{
   label: string

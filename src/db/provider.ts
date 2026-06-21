@@ -1,15 +1,15 @@
-import type { RepositoryProvider } from './interfaces'
-import { createDexieRepositoryProvider } from './implementations/dexie'
+import type { RepositoryProvider as RepoProvider } from './interfaces'
+import { createDexieRepositoryProvider as createDexieRepoProvider } from './implementations/dexie'
 
-let currentProvider: RepositoryProvider | null = null
+let currentProvider: RepoProvider | null = null
 
 /**
  * Get the current repository provider.
  * Lazily initializes Dexie provider if none set.
  */
-export function getRepositoryProvider(): RepositoryProvider {
+export function getRepositoryProvider(): RepoProvider {
   if (!currentProvider) {
-    currentProvider = createDexieRepositoryProvider()
+    currentProvider = createDexieRepoProvider()
   }
   return currentProvider
 }

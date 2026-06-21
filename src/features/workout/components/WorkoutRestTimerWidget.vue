@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { useRestTimer } from '@/composables/timers/useRestTimer'
-import { Clock, RotateCcw } from 'lucide-vue-next'
+import { Clock, RotateCcw } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'

@@ -27,7 +27,7 @@ export default {
   quickWorkout: {
     title: 'Erstelle Workouts spontan',
     description: 'Kombiniere Krafttraining mit zeitbasierten Workouts wie AMRAP, EMOM und mehr.',
-    setsReps: '{sets} Sätze \u00D7 {reps} Wdh.',
+    setsReps: '{sets} Sätze \u{D7} {reps} Wdh.',
     minAmrap: '{min} Min. AMRAP',
   },
   templates: {

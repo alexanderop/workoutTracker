@@ -57,20 +57,20 @@ function isComplexType(typeNode: TypeNode | undefined): boolean {
 /**
  * Check if a function is a type guard (returns `x is Type`)
  */
-function isTypeGuard(fn: FunctionDeclaration): boolean {
-  const returnType = fn.getReturnTypeNode()
+function isTypeGuard(function_: FunctionDeclaration): boolean {
+  const returnType = function_.getReturnTypeNode()
   return returnType?.getKind() === SyntaxKind.TypePredicate
 }
 
 /**
  * Check if a function is a factory function (named create* and returns an interface/type)
  */
-function isFactoryFunction(fn: FunctionDeclaration): boolean {
-  const name = fn.getName()
+function isFactoryFunction(function_: FunctionDeclaration): boolean {
+  const name = function_.getName()
   if (!name?.startsWith('create')) return false
 
   // Check if return type is a type reference (likely an interface)
-  const returnType = fn.getReturnTypeNode()
+  const returnType = function_.getReturnTypeNode()
   return returnType?.getKind() === SyntaxKind.TypeReference
 }
 
@@ -98,10 +98,10 @@ function countExportedFunctions(sourceFile: SourceFile): { abstract: number; con
   let abstract = 0
   let concrete = 0
 
-  for (const fn of sourceFile.getFunctions()) {
-    if (!fn.isExported()) continue
+  for (const function_ of sourceFile.getFunctions()) {
+    if (!function_.isExported()) continue
 
-    const isAbstract = isTypeGuard(fn) || isFactoryFunction(fn)
+    const isAbstract = isTypeGuard(function_) || isFactoryFunction(function_)
     abstract += isAbstract ? 1 : 0
     concrete += isAbstract ? 0 : 1
   }
@@ -118,8 +118,8 @@ function countExportedVariables(sourceFile: SourceFile): number {
   for (const statement of sourceFile.getVariableStatements()) {
     if (!statement.isExported()) continue
 
-    for (const decl of statement.getDeclarations()) {
-      if (decl.getInitializer()) {
+    for (const declaration of statement.getDeclarations()) {
+      if (declaration.getInitializer()) {
         count++
       }
     }

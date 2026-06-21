@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Download, Share, MoreVertical } from 'lucide-vue-next'
+import { Download, Share, MoreVertical } from '@lucide/vue'
 import OnboardingSlide from './OnboardingSlide.vue'
 
 const { t } = useI18n()

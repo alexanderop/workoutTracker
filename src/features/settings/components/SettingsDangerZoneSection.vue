@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-vue-next'
+import { Trash2 } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { deleteAllData } from '@/db'
 import SettingsDeleteAllDataDialog from './SettingsDeleteAllDataDialog.vue'

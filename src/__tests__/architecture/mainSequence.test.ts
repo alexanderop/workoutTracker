@@ -50,9 +50,9 @@ describe('main sequence fitness functions', () => {
 
   describe('core modules', () => {
     it('db layer should be close to Main Sequence (D < 0.25)', () => {
-      const dbMetrics = getModuleMetrics(getReport(), 'db')
-      expect(dbMetrics).toBeDefined()
-      expect(dbMetrics?.distance).toBeLessThan(0.25)
+      const databaseMetrics = getModuleMetrics(getReport(), 'db')
+      expect(databaseMetrics).toBeDefined()
+      expect(databaseMetrics?.distance).toBeLessThan(0.25)
     }, 10_000)
 
     it('types should be highly abstract and stable', () => {
@@ -77,11 +77,11 @@ describe('main sequence fitness functions', () => {
   describe('shared modules', () => {
     const sharedModules = getModulesByCategory('shared')
 
-    for (const mod of sharedModules) {
-      it(`${mod.name} should be within acceptable distance (D < ${mod.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), mod.name)
+    for (const module_ of sharedModules) {
+      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), module_.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(mod.maxDistance)
+        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
       })
     }
   })
@@ -93,17 +93,17 @@ describe('main sequence fitness functions', () => {
   describe('feature modules', () => {
     const featureModules = getModulesByCategory('feature')
 
-    for (const mod of featureModules) {
-      it(`${mod.name} should be within acceptable distance (D < ${mod.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), mod.name)
+    for (const module_ of featureModules) {
+      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), module_.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(mod.maxDistance)
+        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
       })
     }
 
     it('features should have moderate abstractness (mostly concrete)', () => {
-      for (const mod of featureModules) {
-        const metrics = getModuleMetrics(getReport(), mod.name)
+      for (const module_ of featureModules) {
+        const metrics = getModuleMetrics(getReport(), module_.name)
         // Features can have some types/interfaces but should be mostly concrete
         // templates has higher abstractness due to type definitions
         expect(metrics?.abstractness.abstractness).toBeLessThan(0.7)
@@ -111,8 +111,8 @@ describe('main sequence fitness functions', () => {
     })
 
     it('features should have high instability (dependent on stable modules)', () => {
-      for (const mod of featureModules) {
-        const metrics = getModuleMetrics(getReport(), mod.name)
+      for (const module_ of featureModules) {
+        const metrics = getModuleMetrics(getReport(), module_.name)
         // Features are expected to depend on core modules
         expect(metrics?.instability.instability).toBeGreaterThan(0.4)
       }
@@ -126,11 +126,11 @@ describe('main sequence fitness functions', () => {
   describe('ui modules', () => {
     const uiModules = getModulesByCategory('ui')
 
-    for (const mod of uiModules) {
-      it(`${mod.name} should be within acceptable distance (D < ${mod.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), mod.name)
+    for (const module_ of uiModules) {
+      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), module_.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(mod.maxDistance)
+        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
       })
     }
 
@@ -155,12 +155,12 @@ describe('main sequence fitness functions', () => {
     })
 
     it('db module should only depend on types and lib', () => {
-      const dbMetrics = getModuleMetrics(getReport(), 'db')
-      expect(dbMetrics).toBeDefined()
+      const databaseMetrics = getModuleMetrics(getReport(), 'db')
+      expect(databaseMetrics).toBeDefined()
       // DB can depend on types and lib utilities, but nothing else
-      const allowedDeps = ['types', 'lib']
-      for (const dep of dbMetrics?.instability.dependsOn ?? []) {
-        expect(allowedDeps).toContain(dep)
+      const allowedDependencies = ['types', 'lib']
+      for (const dependency of databaseMetrics?.instability.dependsOn ?? []) {
+        expect(allowedDependencies).toContain(dependency)
       }
     })
   })

@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { ArrowLeft, Play, Trash2, Check, X } from 'lucide-vue-next'
+import { ArrowLeft, Play, Trash2, Check, X } from '@lucide/vue'
 import { useProgression } from '@/features/progressions/composables/useProgression'
 
 const { id } = defineProps<{

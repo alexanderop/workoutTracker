@@ -5,7 +5,7 @@ import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbCompletedWorkout } from '../factories'
+import { createDbCompletedWorkout as createDatabaseCompletedWorkout } from '../factories'
 
 describe('Onboarding Flow', () => {
   beforeEach(setupIntegrationTest)
@@ -90,7 +90,7 @@ describe('Onboarding Flow', () => {
 
     it('detects existing workout data', async () => {
       // Seed existing workout data
-      const workout = createDbCompletedWorkout({ name: 'Previous Workout' })
+      const workout = createDatabaseCompletedWorkout({ name: 'Previous Workout' })
       await getWorkoutsRepository().add(workout)
 
       const { cleanup } = await createTestApp()
@@ -231,8 +231,8 @@ describe('Onboarding Flow', () => {
 
       // Progress should update to 20% (slide 2 of 6)
       await expect.poll(async () => {
-        const el = progress.element()
-        return el?.getAttribute('aria-valuenow')
+        const element = progress.element()
+        return element?.getAttribute('aria-valuenow')
       }).toBe('20')
 
       cleanup()
@@ -302,7 +302,7 @@ describe('Onboarding Flow', () => {
 
       // 2. Create app and add some workout data
       const { router, cleanup } = await createTestApp()
-      const workout = createDbCompletedWorkout({ name: 'Test Workout' })
+      const workout = createDatabaseCompletedWorkout({ name: 'Test Workout' })
       await getWorkoutsRepository().add(workout)
 
       // 3. Delete all data via repository

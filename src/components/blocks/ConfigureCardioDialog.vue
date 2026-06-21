@@ -34,15 +34,15 @@ const distanceModalOpen = ref(false)
 // Numeric values for mobile modals
 const durationValue = computed({
   get: () => Number.parseInt(targetMinutes.value, 10) || 0,
-  set: (val: number) => {
-    targetMinutes.value = String(val)
+  set: (value: number) => {
+    targetMinutes.value = String(value)
   },
 })
 
 const distanceValue = computed({
   get: () => Number.parseFloat(targetDistance.value) || 0,
-  set: (val: number) => {
-    targetDistance.value = val > 0 ? String(val) : ''
+  set: (value: number) => {
+    targetDistance.value = value > 0 ? String(value) : ''
   },
 })
 
@@ -56,11 +56,13 @@ const canConfirm = computed(() => {
 })
 
 watch(open, (isOpen) => {
-  if (isOpen) {
-    selectedActivity.value = 'running'
-    targetMinutes.value = '30'
-    targetDistance.value = ''
+  if (!isOpen) {
+	return;
   }
+
+  selectedActivity.value = 'running'
+  targetMinutes.value = '30'
+  targetDistance.value = ''
 })
 
 function handleConfirm() {

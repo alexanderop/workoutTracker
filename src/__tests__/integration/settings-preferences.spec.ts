@@ -30,7 +30,7 @@ describe('Settings Preferences', () => {
 
       // Get initial state
       const themeToggleElement = await themeToggle.element()
-      const initialChecked =
+      const isInitialChecked =
         themeToggleElement instanceof HTMLButtonElement
           ? themeToggleElement.dataset.state === 'checked'
           : false
@@ -40,9 +40,9 @@ describe('Settings Preferences', () => {
 
       // Verify toggle state changed
       await expect.poll(async () => {
-        const el = await themeToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state === 'checked' : false
-      }).toBe(!initialChecked)
+        const element = await themeToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state === 'checked' : false
+      }).toBe(!isInitialChecked)
 
       // Verify preference persisted to localStorage (VueUse colorMode uses localStorage)
       await expect.poll(() => {
@@ -88,8 +88,8 @@ describe('Settings Preferences', () => {
       // Verify toggle state is preserved
       const newToggle = page.getByTestId('theme-toggle')
       await expect.poll(async () => {
-        const el = await newToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await newToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe(stateAfterToggle)
 
       cleanup()
@@ -249,8 +249,8 @@ describe('Settings Preferences', () => {
 
       // Verify initially enabled (default)
       await expect.poll(async () => {
-        const el = await timerSoundsToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await timerSoundsToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('checked')
 
       // Toggle off
@@ -258,8 +258,8 @@ describe('Settings Preferences', () => {
 
       // Verify toggled off
       await expect.poll(async () => {
-        const el = await timerSoundsToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await timerSoundsToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('unchecked')
 
       // Verify persisted (stored as 'timerSoundEnabled' - singular)
@@ -281,15 +281,15 @@ describe('Settings Preferences', () => {
       // Toggle off first
       await userEvent.click(timerSoundsToggle)
       await expect.poll(async () => {
-        const el = await timerSoundsToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await timerSoundsToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('unchecked')
 
       // Toggle back on
       await userEvent.click(timerSoundsToggle)
       await expect.poll(async () => {
-        const el = await timerSoundsToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await timerSoundsToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('checked')
 
       // Verify database shows enabled
@@ -310,10 +310,10 @@ describe('Settings Preferences', () => {
       await expect.element(volumeSlider).toBeVisible()
 
       // Simulate slider change to 70% (slider uses @change event, not @input)
-      const sliderEl = await volumeSlider.element()
-      if (sliderEl instanceof HTMLInputElement) {
-        sliderEl.value = '0.7'
-        sliderEl.dispatchEvent(new Event('change', { bubbles: true }))
+      const sliderElement = await volumeSlider.element()
+      if (sliderElement instanceof HTMLInputElement) {
+        sliderElement.value = '0.7'
+        sliderElement.dispatchEvent(new Event('change', { bubbles: true }))
       }
 
       await expect.poll(async () => {
@@ -404,8 +404,8 @@ describe('Settings Preferences', () => {
       // Verify lbs is still selected (data-state="on")
       const newLbsButton = getByRole('button', { name: /pounds/i })
       await expect.poll(async () => {
-        const el = await newLbsButton.element()
-        return el.dataset.state
+        const element = await newLbsButton.element()
+        return element.dataset.state
       }).toBe('on')
 
       cleanup()
@@ -465,8 +465,8 @@ describe('Settings Preferences', () => {
 
       // Default is enabled
       await expect.poll(async () => {
-        const el = await wakeLockToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await wakeLockToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('checked')
 
       cleanup()
@@ -481,8 +481,8 @@ describe('Settings Preferences', () => {
 
       // Verify toggled off
       await expect.poll(async () => {
-        const el = await wakeLockToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await wakeLockToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('unchecked')
 
       // Verify persisted
@@ -504,15 +504,15 @@ describe('Settings Preferences', () => {
       // Toggle off first
       await userEvent.click(wakeLockToggle)
       await expect.poll(async () => {
-        const el = await wakeLockToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await wakeLockToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('unchecked')
 
       // Toggle back on
       await userEvent.click(wakeLockToggle)
       await expect.poll(async () => {
-        const el = await wakeLockToggle.element()
-        return el instanceof HTMLButtonElement ? el.dataset.state : null
+        const element = await wakeLockToggle.element()
+        return element instanceof HTMLButtonElement ? element.dataset.state : null
       }).toBe('checked')
 
       // Verify database shows enabled
