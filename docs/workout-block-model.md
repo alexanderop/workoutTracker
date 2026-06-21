@@ -120,7 +120,7 @@ Cascade order — type-check after each step:
 2. **Type guards** — add `isMyBlock` if needed; revisit `isTimedBlock` (currently `kind !== 'strength' && kind !== 'cardio'`).
 3. **DB schema** — `src/db/schema.ts`: add `DbMyBlock`, `DbMyResult`, add to `DbWorkoutBlock` union.
 4. **Converters** — `src/db/converters.ts`: add `myBlockToDatabase` / `databaseToMyBlock` (+ result converters), register in `BLOCK_CONVERTERS`, **and** add a `case 'my'` to both switches in `blockToDatabase` / `databaseToBlock`. Use `?? null` / `?? defaults` for backward compatibility on optional fields.
-5. **Zod validation** — `src/features/settings/utils/validation/blockSchemas.ts` and `blockConfigSchemas.ts`: add a discriminated-union member so import/export validation accepts the new kind.
+5. **Zod validation** — `src/features/settings/utils/validation/blockSchemas.ts`, `templateSchema.ts`, and `blockConfigSchemas.ts`: add discriminated-union members so import/export validation accepts the new kind for both completed workouts and templates.
 6. **Factories** — `src/__tests__/factories/block.factory.ts`, `timedBlock.factory.ts`, `dbBlock.factory.ts`, `template.factory.ts`: add `createMyBlock` and a DB-shape variant.
 7. **Composable** — `src/features/workout/composables/useWorkout.ts`: add `addMyBlock(config, ...)` calling `appendBlock`.
 8. **UI** — handle `kind === 'my'` in:
