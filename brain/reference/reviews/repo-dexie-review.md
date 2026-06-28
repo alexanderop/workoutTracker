@@ -16,6 +16,22 @@ timestamp: 2026-06-28T08:10:00Z
 
 Reviewed **45+ changed files** introducing a database provider/interface pattern for Dexie access. Overall the refactoring demonstrates **excellent architecture** with clean separation of concerns. Found **2 critical issues**, **8 high-priority items**, and several medium/low improvements.
 
+## Status Update (as of 2026-06-28)
+
+The following findings from this review have been resolved:
+- **DONE**: Zod validation schemas with `.strict()` mode are implemented in `src/features/settings/utils/validation/`
+- **DONE**: File size limit (10MB) is enforced in `dataImport.ts`
+- **DONE**: `@ts-expect-error` in settings and dataImport has been removed; proper type narrowing is in place
+
+The following findings remain open:
+- **OPEN**: `shallowRef` for `workout` in `workoutState.ts` and `customExercises` in `exercises.ts`
+- **OPEN**: Touch targets below 44×44px in `TemplateExerciseItem.vue`
+- **OPEN**: Missing aria-labels on interactive cards in `TheWorkoutsView.vue`
+- **OPEN**: Vue component refactoring (CreateTemplateView, TheWorkoutsView, WorkoutSummaryView)
+- **OPEN**: Deprecated `deleteAllData()` wrapper in `db/index.ts`
+
+---
+
 ---
 
 ## Critical Issues

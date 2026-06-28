@@ -48,15 +48,17 @@ flowchart TB
     subgraph Bottom Navigation
         WorkoutsTab[Workouts]
         ExercisesTab[Exercises]
+        WeightTab[Weight]
         SettingsTab[Settings]
     end
 
     Home --> WorkoutsTab
     Home --> ExercisesTab
+    Home --> WeightTab
     Home --> SettingsTab
+    Home --> RecentWorkouts --> HistoryView[History]
 
     WorkoutsTab --> Templates[Templates]
-    WorkoutsTab --> History[History]
     WorkoutsTab --> Benchmarks[Benchmarks]
 
     Templates --> CreateTemplate[Create Template]
@@ -67,7 +69,7 @@ flowchart TB
     Benchmarks --> BenchmarkDetail[Benchmark Detail]
     BenchmarkDetail --> RunBenchmark[Run Benchmark]
 
-    History --> WorkoutSummary[Workout Summary]
+    HistoryView --> WorkoutSummary[Workout Summary]
 
     StartWorkout --> ActiveWorkout[Active Workout]
     ActiveWorkout --> CompletionScreen[Completion Screen]
@@ -260,6 +262,10 @@ flowchart LR
             Tabata[Tabata<br/>20s work / 10s rest]
             ForTime[For Time<br/>Complete ASAP]
         end
+
+        subgraph "Cardio Block"
+            Cardio[Cardio<br/>Distance / Duration]
+        end
     end
 ```
 
@@ -297,6 +303,12 @@ flowchart LR
 - Optional time cap
 - Records completion time
 - Split time tracking available
+
+### Cardio Block
+
+- Continuous cardio (run, row, bike, etc.)
+- Tracks distance and/or duration
+- Logs notes and perceived effort
 
 ---
 

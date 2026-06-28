@@ -8,20 +8,20 @@ timestamp: 2026-06-28T08:10:00Z
 ---
 ## Code Duplication Analysis
 
-Generated: 2025-12-21
+Generated: 2025-12-21 (**stats are stale** — re-run `pnpm cpd` for current numbers; Sections 1, 2, and 3 have since been refactored)
 
 **Tool:** jscpd (`pnpm cpd`)
-**Current state:** 186 clones, 5.21% duplication
+**Last known state:** 186 clones, 5.21% duplication
 
 ---
 
 ## 1. Block Creation / Block List Functions (High Impact - 20 clones)
 
-**Status:** Partially addressed.
+**Status:** Fully addressed.
 
-- Block construction now lives in `src/lib/workoutBlockFactory.ts`, with shared factories used by active workouts and past-workout logging.
-- Block-list invariants now live in `src/lib/workoutBlockList.ts`, covering next-id generation, append-and-select, remove-and-repair-selection, and reorder-and-track-selection.
-- Remaining work: keep new workout-kind creation cascades pointed at these modules instead of recreating local `generateBlockId`, append, remove, or reorder helpers.
+- Block construction lives in `src/lib/workoutBlockFactory.ts`, shared by active workouts and past-workout logging.
+- Block-list invariants live in `src/lib/workoutBlockList.ts`, covering next-id generation, append-and-select, remove-and-repair-selection, and reorder-and-track-selection.
+- All `addXxxBlock` functions in `useWorkout.ts` now call `appendBlock(createXxxWorkoutBlock(...))` — the duplicated inline construction is gone.
 
 **Files:**
 
@@ -132,10 +132,13 @@ const block = new BlockBuilder('amrap').withConfig(config).withExercises(exercis
 
 ## 2. Validation Schemas (Medium Impact - 5 clones)
 
+**Status:** Addressed. Both `blockSchemas.ts` and `templateSchema.ts` now import from the shared `src/features/settings/utils/validation/blockConfigSchemas.ts` module.
+
 **Files:**
 
 - `src/features/settings/utils/validation/blockSchemas.ts`
 - `src/features/settings/utils/validation/templateSchema.ts`
+- `src/features/settings/utils/validation/blockConfigSchemas.ts` ← shared extraction
 
 **Current Pattern:**
 Same Zod schemas (e.g., `amrapConfigSchema`, `emomConfigSchema`) defined in both files.
@@ -172,13 +175,16 @@ Simple extraction - low effort, high value.
 
 ## 3. Timer Composables (Medium Impact - 10 clones)
 
+**Status:** Addressed. `useBaseTimer.ts` exists at `src/composables/timers/useBaseTimer.ts` and is used by `useAmrapTimer.ts`, `useEmomTimer.ts`, `useForTimeTimer.ts`, and `useTabataTimer.ts`.
+
 **Files:**
 
 - `src/composables/timers/useEmomTimer.ts`
 - `src/composables/timers/useForTimeTimer.ts`
 - `src/composables/timers/useAmrapTimer.ts`
+- `src/composables/timers/useBaseTimer.ts` ← base timer extraction
 
-**Current Pattern:**
+**Original Pattern (now refactored):**
 Similar timer state (elapsed, isRunning, isPaused) and control logic (start, pause, resume, stop).
 
 **Code Smell:** [Duplicated Code](https://refactoring.guru/smells/duplicate-code), potentially [Large Class](https://refactoring.guru/smells/large-class)
@@ -343,8 +349,9 @@ function createRepository<T extends { id: string }>(table: Dexie.Table<T, string
 
 **Files:**
 
-- `src/components/blocks/ConfigureEmomDialog.vue`
 - `src/components/blocks/ConfigureAmrapDialog.vue`
+- `src/components/blocks/ConfigureEmomDialog.vue`
+- `src/components/blocks/ConfigureTabataDialog.vue`
 - `src/components/blocks/ConfigureForTimeDialog.vue`
 - `src/components/blocks/ConfigureCardioDialog.vue`
 

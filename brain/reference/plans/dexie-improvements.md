@@ -175,15 +175,18 @@ async add(exercise: DbCustomExercise): Promise<void> {
 }
 ```
 
-### 4.2 Improve Version Change Handling
+### 4.2 Improve Version Change Handling (PARTIALLY DONE)
 
-**File**: `src/db/implementations/dexie/database.ts:58-60`
+**File**: `src/db/implementations/dexie/database.ts`
+
+`db.close()` on version change is already implemented. The optional user-notification
+dispatch (`window.dispatchEvent(new CustomEvent('db-version-change'))`) has not been added.
+Skip or implement notification only if cross-tab UX requires it.
 
 ```typescript
+// Current implementation (db.close already in place):
 db.on('versionchange', () => {
   db.close()
-  // Notify user to refresh
-  window.dispatchEvent(new CustomEvent('db-version-change'))
 })
 ```
 

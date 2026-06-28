@@ -35,12 +35,13 @@ Search and select from an exercise library (bench press, squat, deadlift, etc.).
 
 ### Add Timed Blocks
 
-Four CrossFit-style workout formats available:
+Five CrossFit-style workout formats available:
 
 - **AMRAP** (As Many Rounds As Possible): Set duration, add exercises, track completed rounds
 - **EMOM** (Every Minute On the Minute): Minute-by-minute timer with exercise rotation
 - **Tabata**: 20s work / 10s rest intervals with per-round rep tracking
 - **For Time**: Count-up timer with optional time cap, complete prescribed work as fast as possible
+- **Cardio**: Continuous cardio block (distance/duration) for runs, rows, bikes, etc.
 
 ### Hybrid Workouts
 
@@ -171,12 +172,39 @@ All data stored locally in browser IndexedDB:
 
 ---
 
-## 6. Planned Features (Not Yet Implemented)
+## 6. Benchmarks
 
-The following features have been designed but not built:
+Pre-loaded and custom CrossFit-style benchmark workouts (Fran, Cindy, Murph, etc.). Users can:
 
-- **Workout Scoring**: Compare performance across attempts of the same workout
-- **Benchmark WODs**: Pre-loaded CrossFit benchmarks (Fran, Cindy, Murph, etc.)
+- Define benchmark workouts with rounds-based exercise structures
+- Execute benchmarks and record times/scores
+- Track personal bests and attempt history
+- Compare split times across attempts
+
+Views: `BenchmarkDetailView.vue`, `CreateBenchmarkView.vue`, `ActiveBenchmarkWorkout.vue`.
+
+---
+
+## 7. Weight Tracking
+
+Log daily bodyweight entries with a chart view. Route: `/weight` → `WeightView.vue`.
+
+---
+
+## 8. Progressions
+
+Structured strength progressions (e.g., kettlebell swing progressions). Track sessions over time with automatic advancement logic. Routes: `/progressions/*` → `ProgressionsView.vue`, `CreateProgressionView.vue`, `ProgressionDetailView.vue`, `ActiveProgressionView.vue`.
+
+---
+
+## 9. Log Past Workout
+
+Record a workout that happened offline or in the past. Supports date/duration picker and the full block builder. Route: `/log-past-workout` → `LogPastWorkoutView.vue`.
+
+---
+
+## 10. Planned Features (Not Yet Implemented)
+
 - **Template Tags**: Filter templates by category (benchmark, hero, custom)
 - **Leaderboards**: Social comparison features
 - **Video/Movement Guidance**: Exercise demonstration content

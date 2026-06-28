@@ -94,7 +94,7 @@ src/
 │   ├── progressions/       # Strength progressions
 │   ├── settings/           # App settings & preferences
 │   ├── templates/          # Workout templates
-│   ├── timers/             # Standalone timer UI components
+│   ├── timers/             # Standalone timer feature (components + composables)
 │   ├── weight/             # Bodyweight tracking
 │   └── workout/            # Workout execution logic
 ├── views/              # Route-level page components (orchestrate features)
@@ -108,7 +108,7 @@ src/
 │   ├── settings.ts     # createGlobalState — app settings state
 │   └── workoutState.ts # plain-ref singleton — active workout state
 ├── db/                 # Dexie IndexedDB + repository pattern
-│   └── repositories/   # Data access layer
+│   └── implementations/dexie/   # Dexie repository implementations
 ├── types/              # Shared TypeScript types
 ├── lib/                # Utility functions
 ├── router/             # Vue Router configuration

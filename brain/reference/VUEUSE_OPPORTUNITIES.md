@@ -22,7 +22,7 @@ This document identifies manual implementations that can be replaced with VueUse
 | Wake lock           | `useWakeLock`           | `src/composables/useScreenWakeLock.ts`                                                    |
 | Document visibility | `useDocumentVisibility` | `src/composables/useGlobalWakeLock.ts`, `useScreenWakeLock.ts`                            |
 | Transitions         | `useTransition`         | `src/composables/useAnimatedCounter.ts`                                                   |
-| Drag & drop         | `useSortable`           | `src/features/workout/components/WorkoutQueueDrawer.vue`                                  |
+| Drag & drop         | `useSortable`           | `src/components/blocks/WorkoutBlockPlaylist.vue`, `src/features/templates/components/TemplateBlockList.vue`, `src/features/benchmarks/components/BenchmarkExerciseList.vue` |
 
 ---
 
@@ -278,14 +278,14 @@ const completedSets = useArrayFilter(
 
 ---
 
-### 7. Replace Boolean Refs with `useToggle`
+### 7. ~~Replace Boolean Refs with `useToggle`~~ (DONE)
 
-**Files:**
+**Already implemented in:**
 
-- `src/features/workout/components/WorkoutDetailExerciseCard.vue:17`
-- `src/features/workout/components/WorkoutConfigureTabataDialog.vue:27`
-- `src/features/timers/components/TimerPresetSelector.vue:97`
-- `src/features/workout/composables/useTimedBlockExercises.ts:7`
+- `src/features/workout/components/WorkoutDetailExerciseCard.vue`
+- `src/components/blocks/ConfigureTabataDialog.vue` (formerly `WorkoutConfigureTabataDialog.vue`)
+- `src/features/timers/components/TimerPresetSelector.vue`
+- `src/composables/useTimedBlockExercises.ts`
 
 **Before:**
 
@@ -321,7 +321,7 @@ toggleOpen(false) // set to false
 - [ ] `useEnterAnimation.ts` - Replace setTimeout with `useTimeoutFn`
 - [ ] `useScreenWakeLock.ts` - Replace matchMedia with `useMediaQuery`
 - [ ] `TheWorkoutsView.vue` - Consider `onKeyStroke` for keyboard handling
-- [ ] Review toggle refs for potential `useToggle` conversion
+- [x] Review toggle refs for potential `useToggle` conversion — DONE (all 4 sites converted)
 
 ---
 

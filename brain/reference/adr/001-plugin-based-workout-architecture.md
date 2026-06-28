@@ -17,7 +17,7 @@ timestamp: 2026-06-28T08:10:00Z
 
 ## Context
 
-The current workout system uses a monolithic architecture where all workout types (Strength, AMRAP, EMOM, Tabata, ForTime) share a single `Workout` state object and mixed logic in a 612-line `useWorkout` composable.
+The current workout system uses a monolithic architecture where all workout types (Strength, AMRAP, EMOM, Tabata, ForTime, Cardio) share a single `Workout` state object and mixed logic in a 584-line `useWorkout` composable.
 
 ### Current Pain Points
 
@@ -34,9 +34,9 @@ The current workout system uses a monolithic architecture where all workout type
    - `benchmarkId` - Only for Benchmark workouts
    - `globalTimerStartedAt` - Only for Benchmark global timer
 
-3. **Mixed responsibilities**: `useWorkout.ts` (612 lines) contains interleaved logic for:
+3. **Mixed responsibilities**: `useWorkout.ts` (584 lines) contains interleaved logic for:
    - Strength set management (completeSet, addSet, removeSet, setSetCount)
-   - AMRAP/EMOM/Tabata/ForTime result tracking (setBlockResult)
+   - AMRAP/EMOM/Tabata/ForTime/Cardio result tracking (setBlockResult)
    - Benchmark navigation (advanceToNextExercise, goToPreviousExercise)
    - Block operations (addBlock, removeBlock, reorderBlocks)
 
@@ -199,7 +199,7 @@ export function getActiveView(block) {
 #### Maintainability
 
 - **Testability**: Each plugin independently testable
-- **Smaller files**: 612-line `useWorkout.ts` splits into focused composables
+- **Smaller files**: 584-line `useWorkout.ts` splits into focused composables
 - **Clear ownership**: One team can own one plugin
 
 ### Negative
@@ -337,7 +337,7 @@ export function getActiveView(block) {
 - ✅ Adding new workout type requires modifying ≤ 2 files (schema.ts, main.ts)
 - ✅ All existing tests pass
 - ✅ No plugin-specific fields in `Workout` type
-- ✅ `useWorkout.ts` reduced from 612 lines to <200 lines
+- ✅ `useWorkout.ts` reduced from 584 lines to <200 lines
 - ✅ Chipper plugin added successfully to prove extensibility
 
 ### Example: Adding "Ladder" Workout Type (Post-Migration)

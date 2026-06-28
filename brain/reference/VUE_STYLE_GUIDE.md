@@ -1276,26 +1276,35 @@ async function loadWorkouts(): Promise<void> {
 Create domain-specific error types:
 
 ```typescript
-export type DatabaseErrorCode = 'NOT_FOUND' | 'DUPLICATE' | 'CONSTRAINT' | 'UNKNOWN'
+export const DatabaseErrorCode = {
+  SAVE_FAILED: 'SAVE_FAILED',
+  LOAD_FAILED: 'LOAD_FAILED',
+  NOT_FOUND: 'NOT_FOUND',
+} as const
+
+export type DatabaseErrorCode = (typeof DatabaseErrorCode)[keyof typeof DatabaseErrorCode]
 
 export class DatabaseError extends Error {
-  constructor(
-    public readonly code: DatabaseErrorCode,
-    operation: string,
-    cause?: Error,
-  ) {
+  readonly code: DatabaseErrorCode
+  readonly operation: string
+  readonly originalCause?: Error
+
+  constructor(code: DatabaseErrorCode, operation: string, cause?: Error) {
     super(`Database ${code}: ${operation}`)
     this.name = 'DatabaseError'
-    this.cause = cause
+    this.code = code
+    this.operation = operation
+    this.originalCause = cause
   }
 }
 
 export function createDatabaseError(
   code: DatabaseErrorCode,
   operation: string,
-  cause?: Error,
+  cause?: unknown,
 ): DatabaseError {
-  return new DatabaseError(code, operation, cause)
+  const errorCause = cause instanceof Error ? cause : undefined
+  return new DatabaseError(code, operation, errorCause)
 }
 ```
 

@@ -12,7 +12,13 @@ timestamp: 2026-06-28T08:10:00Z
 
 Add Vitest Browser Mode to run integration tests in real browsers, enabling testing of Web APIs that jsdom cannot simulate (Web Audio, Wake Lock, drag-drop, CSS animations).
 
-## Current State
+## Status: Implemented
+
+This plan has been executed. The actual config uses four Chromium browser-mode projects
+(`default`, `a11y`, `visual`, `arch`). See `vitest-browser-troubleshooting.md` for the
+current authoritative reference. This document is preserved as historical context.
+
+## Original Proposed State (pre-implementation)
 
 - Vitest 3.2.4 with jsdom environment
 - Heavy mocking of Web APIs in `src/__tests__/setup.ts`

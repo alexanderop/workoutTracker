@@ -626,7 +626,8 @@ const repo = getTemplatesRepository()
 // Create template from active workout
 const template = await repo.createFromWorkout(activeWorkout, 'My Template')
 
-// Start workout from template (updates lastUsedAt)
+// Build active workout from template (updates template's lastUsedAt in DB)
+// NOTE: returns DbActiveWorkout but does NOT save it — caller must call activeWorkoutRepo.save()
 const workout = await repo.startFromTemplate(templateId)
 
 // Get all templates (sorted by lastUsedAt)
@@ -665,7 +666,9 @@ const backup = await dataRepo.exportAll()
 //   settings: DbUserSetting[],
 //   customExercises: DbCustomExercise[],
 //   templates: DbWorkoutTemplate[],
-//   workouts: DbCompletedWorkout[]
+//   workouts: DbCompletedWorkout[],
+//   benchmarks: DbBenchmark[],
+//   weightEntries: DbWeightEntry[]
 // }
 
 // Import (replaces all data in transaction)

@@ -25,7 +25,7 @@ schema compatibility work.
 - `src/db/interfaces.ts`
 - `src/db/converters.ts`
 - `src/db/index.ts`
-- `src/db/repositories/`
+- `src/db/implementations/dexie/`
 - `src/features/settings/utils/validation/`
 
 ## Gotchas

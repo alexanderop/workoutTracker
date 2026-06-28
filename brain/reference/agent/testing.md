@@ -162,7 +162,7 @@ Location: `src/__tests__/factories/index.ts`
 
 All factory files in `src/__tests__/factories/`:
 
-- `benchmark.factory.ts` — benchmark test data
+- `benchmark.factory.ts` — benchmark test data (rounds-based schema: `createDbBenchmark`, `createDbBenchmarkRound`, `createDbBenchmarkRoundExercise`, `createDbForTimeBenchmark`, `createDbPyramidBenchmark`)
 - `block.factory.ts` — in-memory block builders (strength, timed, etc.)
 - `customExercise.factory.ts` — custom exercise records
 - `dbBlock.factory.ts` — DB-persisted block records
@@ -175,7 +175,7 @@ All factory files in `src/__tests__/factories/`:
 - `index.ts` — barrel re-export
 - `set.factory.ts` — in-memory set objects
 - `template.factory.ts` — workout template data
-- `timedBlock.factory.ts` — timed block (EMOM/Tabata/etc.) builders
+- `timedBlock.factory.ts` — timed block builders: ForTime, AMRAP, EMOM, Tabata, Cardio blocks and their result types
 - `workout.builder.ts` — `WorkoutBuilder` class for complex workout construction
 - `workout.factory.ts` — simple in-memory workout objects
 

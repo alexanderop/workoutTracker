@@ -32,11 +32,11 @@ src/
 ├── components/
 │   ├── ui/              # shadcn primitives (unchanged)
 │   └── timers/          # NEW: shared timer view components
-│       ├── AmrapTimerView.vue
-│       ├── EmomTimerView.vue
-│       ├── TabataTimerView.vue
-│       ├── ForTimeTimerView.vue
-│       └── CircularTimer.vue
+│       ├── WorkoutAmrapView.vue      # (kept original Workout prefix, not renamed)
+│       ├── WorkoutEmomView.vue
+│       ├── WorkoutTabataView.vue
+│       ├── WorkoutForTimeView.vue
+│       └── WorkoutCircularTimer.vue
 │
 ├── types/               # NEW: truly shared types
 │   ├── blocks.ts        # Block, StrengthBlock, TimedBlock, etc.
@@ -52,7 +52,12 @@ src/
 │   ├── exercises/       # Custom exercise CRUD only
 │   ├── workout/         # Workout logic (no more types/ subfolder)
 │   ├── timers/          # Standalone timer feature
-│   └── templates/       # Template management
+│   ├── templates/       # Template management
+│   ├── benchmarks/      # (added post-plan)
+│   ├── log-past-workout/ # (added post-plan)
+│   ├── onboarding/      # (added post-plan)
+│   ├── progressions/    # (added post-plan)
+│   └── weight/          # (added post-plan)
 │
 ├── composables/         # Shared composables (import from types/, stores/)
 ├── lib/                 # Utilities (import from types/, stores/)
@@ -61,6 +66,8 @@ src/
 ```
 
 ## Store Layer Split
+
+> **Note:** Implemented with `createGlobalState()` from VueUse, not Pinia's `defineStore()` — see `src/stores/settings.ts` and `src/stores/exercises.ts`. The code examples below are the original design pseudocode.
 
 ### Global stores (`src/stores/`)
 
@@ -149,11 +156,11 @@ export type Language = 'en' | 'es' | 'de' | /* ... */
 | `features/workout/types/blocks.ts`                     | `src/types/blocks.ts`                        |
 | `features/exercises/stores/exercises.ts` (types)       | `src/types/exercises.ts`                     |
 | `features/settings/stores/settings.ts` (types)         | `src/types/settings.ts`                      |
-| `features/workout/components/WorkoutAmrapView.vue`     | `src/components/timers/AmrapTimerView.vue`   |
-| `features/workout/components/WorkoutEmomView.vue`      | `src/components/timers/EmomTimerView.vue`    |
-| `features/workout/components/WorkoutTabataView.vue`    | `src/components/timers/TabataTimerView.vue`  |
-| `features/workout/components/WorkoutForTimeView.vue`   | `src/components/timers/ForTimeTimerView.vue` |
-| `features/workout/components/WorkoutCircularTimer.vue` | `src/components/timers/CircularTimer.vue`    |
+| `features/workout/components/WorkoutAmrapView.vue`     | `src/components/timers/WorkoutAmrapView.vue` (DONE) |
+| `features/workout/components/WorkoutEmomView.vue`      | `src/components/timers/WorkoutEmomView.vue` (DONE) |
+| `features/workout/components/WorkoutTabataView.vue`    | `src/components/timers/WorkoutTabataView.vue` (DONE) |
+| `features/workout/components/WorkoutForTimeView.vue`   | `src/components/timers/WorkoutForTimeView.vue` (DONE) |
+| `features/workout/components/WorkoutCircularTimer.vue` | `src/components/timers/WorkoutCircularTimer.vue` (DONE) |
 
 ### Files to split
 
@@ -164,7 +171,7 @@ export type Language = 'en' | 'es' | 'de' | /* ... */
 
 ### Files to delete
 
-- `src/composables/useAppInitialization.ts` → inline in `App.vue`
+- `src/features/workout/composables/useAppInitialization.ts` → inline in `App.vue` (NOT YET DONE — file still active)
 - `src/features/*/index.ts` → no longer needed
 
 ### Import updates

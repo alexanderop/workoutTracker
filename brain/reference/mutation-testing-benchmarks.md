@@ -13,6 +13,7 @@ timestamp: 2026-06-28T08:10:00Z
 **Date**: 2026-01-10
 **Score**: 0% (7 survived / 7 total)
 **Tests**: `benchmark-results.spec.ts`, `benchmark-execution.spec.ts`
+**Review status**: Recommended tests not yet verified as added — check spec files before re-running mutation analysis.
 
 ---
 

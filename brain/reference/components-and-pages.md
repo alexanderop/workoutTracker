@@ -140,7 +140,7 @@ timestamp: 2026-06-28T08:10:00Z
 │  [←] Workouts           [+ Create]      │
 ├─────────────────────────────────────────┤
 │                                         │
-│  [ Templates ]  [ History ]             │ ← Tabs
+│  [ Templates ]  [ Benchmarks ]          │ ← Tabs
 │  ══════════════                         │
 │                                         │
 │  ┌───────────────────────────────┐      │
@@ -179,7 +179,7 @@ timestamp: 2026-06-28T08:10:00Z
 
 **Key Features:**
 
-- Tabbed interface (Templates / History)
+- Tabbed interface (Templates / Benchmarks)
 - Template cards show block count and last used
 - History cards show completion date and duration
 - Empty states for each tab
@@ -739,11 +739,11 @@ timestamp: 2026-06-28T08:10:00Z
 
 ---
 
-### 11. CreateCustomExercise.vue
+### 11. ExerciseFormView.vue
 
-**Route:** `/create-exercise` (RouteNames.CreateCustomExercise)
-**Purpose:** Create custom exercises with comprehensive configuration options
-**File:** `src/views/CreateCustomExercise.vue`
+**Route:** `/create-exercise` (RouteNames.ExerciseForm) and `/exercises/:id/edit` (RouteNames.EditExercise)
+**Purpose:** Create or edit custom exercises with comprehensive configuration options
+**File:** `src/views/ExerciseFormView.vue`
 
 ```
 ┌─────────────────────────────────────────┐
@@ -926,13 +926,13 @@ timestamp: 2026-06-28T08:10:00Z
   - Edit and delete buttons
 - **Features:** Reordering (drag handles)
 
-**8. WorkoutAddBlockDialog.vue**
+**8. AddBlockDialog.vue**
 
 - **Purpose:** Add new block to workout
-- **File:** `src/features/workout/components/WorkoutAddBlockDialog.vue:1`
+- **File:** `src/components/blocks/AddBlockDialog.vue`
 - **Two Tabs:**
   - Strength: Exercise picker with set count
-  - Timed: Timer type selector (AMRAP/EMOM/Tabata/ForTime)
+  - Timed: Timer type selector (AMRAP/EMOM/Tabata/ForTime/Cardio)
 - **Emits:** `add-block: [block: Block]`
 
 **9. WorkoutExercisePicker.vue**
@@ -956,22 +956,22 @@ timestamp: 2026-06-28T08:10:00Z
 
 #### Timed Block Configuration Dialogs
 
-**11. WorkoutConfigureAmrapDialog.vue**
+**11. ConfigureAmrapDialog.vue**
 
 - **Purpose:** Configure AMRAP block
-- **File:** `src/features/workout/components/WorkoutConfigureAmrapDialog.vue:1`
+- **File:** `src/components/blocks/ConfigureAmrapDialog.vue`
 - **Inputs:** Duration (minutes), Exercises (picker)
 
-**12. WorkoutConfigureEmomDialog.vue**
+**12. ConfigureEmomDialog.vue**
 
 - **Purpose:** Configure EMOM block
-- **File:** `src/features/workout/components/WorkoutConfigureEmomDialog.vue:1`
+- **File:** `src/components/blocks/ConfigureEmomDialog.vue`
 - **Inputs:** Minutes, Exercises (picker)
 
-**13. WorkoutConfigureTabataDialog.vue**
+**13. ConfigureTabataDialog.vue**
 
 - **Purpose:** Configure Tabata block
-- **File:** `src/features/workout/components/WorkoutConfigureTabataDialog.vue:1`
+- **File:** `src/components/blocks/ConfigureTabataDialog.vue`
 - **Inputs:** Work seconds, Rest seconds, Rounds, Exercises
 
 **14. WorkoutConfigureForTimeDialog.vue**
