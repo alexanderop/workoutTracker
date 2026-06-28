@@ -200,7 +200,7 @@ src/
 - **Integration**: Use `createTestApp()` for full app testing with routing
 - **Factories**: Use builders like `workoutBuilder()` and `dbWorkoutBuilder()` for test data
 
-See `docs/agent/testing.md` for detailed testing patterns.
+See `brain/reference/agent/testing.md` for detailed testing patterns.
 
 ## IDE Setup
 

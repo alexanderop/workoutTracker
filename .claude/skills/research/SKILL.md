@@ -1,6 +1,6 @@
 ---
 name: research
-description: Deep research on a technical problem using parallel subagents for web docs, Stack Overflow, and codebase exploration, saving a markdown report to docs/research/. Use when the user says "research X", "investigate X", "find out how X works", or needs evidence-based recommendations before implementing.
+description: Deep research on a technical problem using parallel subagents for web docs, Stack Overflow, and codebase exploration, saving a markdown report to brain/reference/research/. Use when the user says "research X", "investigate X", "find out how X works", or needs evidence-based recommendations before implementing.
 allowed-tools: Task, WebSearch, WebFetch, Grep, Glob, Read, Write, Bash
 ---
 
@@ -35,7 +35,7 @@ Use the Task tool to spawn these subagents **in parallel** (all in a single mess
 
 ### Step 2: Create Research Document
 
-After all agents complete, create a markdown file at `docs/research/<topic-slug>.md`.
+After all agents complete, create a markdown file at `brain/reference/research/<topic-slug>.md`.
 
 Generate the filename from the research topic:
 - Convert to lowercase
@@ -43,11 +43,11 @@ Generate the filename from the research topic:
 - Remove special characters
 - Add today's date as prefix: `YYYY-MM-DD-<topic-slug>.md`
 
-Example: "Vue 3 Suspense" → `docs/research/2024-12-06-vue-3-suspense.md`
+Example: "Vue 3 Suspense" → `brain/reference/research/2024-12-06-vue-3-suspense.md`
 
 First, create the research folder if it doesn't exist:
 ```bash
-mkdir -p docs/research
+mkdir -p brain/reference/research
 ```
 
 ### Step 3: Write the Research Document
