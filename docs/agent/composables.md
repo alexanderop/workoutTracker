@@ -7,14 +7,31 @@ Composables are split between **shared** (`src/composables/`) and **feature-spec
 ```
 src/composables/                    # Shared composables
 ├── useAnimatedCounter.ts           # Number animation
+├── useBenchmarksList.ts            # Benchmark list loading and formatting
+├── useDialogState.ts               # Single-dialog-at-a-time state (mutual exclusion)
 ├── useEnterAnimation.ts            # Staggered list animations
 ├── useExerciseSearch.ts            # Exercise search/filter
+├── useFormDraft.ts                 # Form draft persistence via IndexedDB
 ├── useGlobalWakeLock.ts            # App-wide wake lock state
+├── useImageConversion.ts           # Image-to-WebP conversion with error state
+├── useNumberLocale.ts              # Locale-aware number formatting
+├── usePwaUpdate.ts                 # PWA service worker update handling
+├── useRecentWorkouts.ts            # Recent completed workouts with formatted dates
 ├── useScreenWakeLock.ts            # Screen wake lock API
+├── useSwipeableDelete.ts           # Swipe-to-delete gesture state
+├── useTimedBlockExercises.ts       # Timed block exercise management
+├── useTouchDevice.ts               # Touch input detection via media query
+├── useVersionCheck.ts              # App version polling and update detection
 ├── useWeightDisplay.ts             # Weight unit formatting
+├── useWorkoutCalendar.ts           # Workout calendar data (week/month views)
+├── useWorkoutsList.ts              # Workout template list loading and formatting
+├── persistence/
+│   └── createPersistenceCore.ts    # Shared auto-save/load/discard logic (debounced)
 └── timers/
+    ├── useBaseTimer.ts             # Shared timer state and interval management (base)
     ├── useRestTimer.ts             # Rest timer between sets
     ├── useAmrapTimer.ts            # AMRAP countdown
+    ├── useBenchmarkGlobalTimer.ts  # Singleton elapsed timer for benchmark workouts
     ├── useEmomTimer.ts             # EMOM minute transitions
     ├── useTabataTimer.ts           # Tabata work/rest phases
     ├── useForTimeTimer.ts          # For Time count-up
@@ -26,7 +43,7 @@ src/features/workout/composables/   # Workout feature composables
 ├── useWorkoutMode.ts               # Builder/active mode management
 ├── useWorkoutDetail.ts             # Workout history detail view
 ├── useWorkoutDurationTimer.ts      # Workout elapsed time
-├── useTimedBlockExercises.ts       # Timed block exercise management
+├── useSummaryStats.ts              # Animated summary statistics for completed workouts
 └── useAppInitialization.ts         # App startup logic
 ```
 
@@ -34,15 +51,16 @@ src/features/workout/composables/   # Workout feature composables
 
 ### useWorkout()
 
-**Singleton pattern** - all components share the same workout state via `workout.value`.
+**Singleton pattern** - all components share the same workout state. The `workout` ref is obtained via `getWorkoutRef()` from `src/stores/workoutState.ts` at module level; it is not declared inside the composable.
 
 Location: `src/features/workout/composables/useWorkout.ts`
 
 ```ts
 const {
-  workout,           // Ref<Workout> - the shared state
-  selectedBlock,     // Current block being edited/executed
-  exercises,         // Computed: strength blocks only (legacy)
+  workout,           // Ref<Workout> - the shared singleton state
+  selectedBlock,     // Computed: block at selectedBlockIndex (any kind)
+  selectedExercise,  // Computed: selectedBlock if it's a strength block (backward compat)
+  exercises,         // Computed: strength blocks only (backward compat)
 
   // Block operations
   selectBlock,
@@ -52,45 +70,56 @@ const {
   addEmomBlock,
   addTabataBlock,
   addForTimeBlock,
+  addCardioBlock,
   updateStrengthBlock,
   setBlockResult,
 
-  // Set operations (strength blocks)
+  // Exercise-based methods (backward compatibility)
+  selectExercise,
   addExercise,       // Add strength block
-  completeSet,       // Mark set complete, returns next action
+  removeExercise,
+  updateExercise,
+  reorderExercises,
+
+  // Set operations (strength blocks)
+  completeSet,       // Mark set complete, returns CompleteSetResult
   addSet,
   removeSet,
+  duplicateSet,
   setSetCount,
   updateSetValue,
+  activateSet,       // For mode transitions
 } = useWorkout()
 ```
 
-**Key functions:**
+**Re-exported from `src/stores/workoutState.ts` for backward compatibility:**
 - `resetWorkout()` - Clear to initial empty state
 - `restoreWorkout(workout)` - Restore from saved state
 - `getWorkoutRef()` - Get raw ref for persistence layer
 
 ### useWorkoutPersistence(workout)
 
-Handles auto-save to IndexedDB with debouncing.
+Handles auto-save to IndexedDB with debouncing. Internally uses `createPersistenceCore` from `src/composables/persistence/createPersistenceCore.ts`.
 
 Location: `src/features/workout/composables/useWorkoutPersistence.ts`
 
 ```ts
 const {
-  persistenceState,        // 'idle' | 'loading' | 'saving' | 'error'
+  persistenceState,        // Ref<{ status: 'idle' | 'loading' | 'saving' | 'error' }>
   hasUnsavedChanges,
   isInitialized,
 
   loadActiveWorkout,       // Load from DB, returns Workout | null
   hasActiveWorkout,        // Check if workout exists in DB
   discardActiveWorkout,    // Delete without saving to history
-  completeWorkout,         // Save to history, returns DbCompletedWorkout
-  startNewWorkoutSession,  // Initialize new workout timestamp
+  completeWorkout,         // Save to history, returns DbCompletedWorkout | null
+  startNewWorkoutSession,  // Initialize new workout timestamp (fresh start)
   markInitialized,         // For resumed workouts
   saveNow,                 // Force immediate save
 } = useWorkoutPersistence(workoutRef)
 ```
+
+Also exports `resetWorkoutPersistence()` (used in tests for clean state between files).
 
 ### useRestTimer()
 
@@ -115,7 +144,7 @@ const {
 
 ## Timer Composables
 
-All timers follow a similar pattern with state machine for phases.
+All timers follow a similar pattern with state machine for phases. `useBaseTimer.ts` provides the shared interval management used by AMRAP, EMOM, Tabata, and ForTime.
 
 Location: `src/composables/timers/`
 
@@ -197,15 +226,26 @@ const {
 } = useForTimeTimer({ timeCapMinutes: 20 })
 ```
 
+### useBenchmarkGlobalTimer()
+
+**Singleton** elapsed timer for benchmark workouts. Continues counting across app closes via timestamp-based calculation.
+
+Location: `src/composables/timers/useBenchmarkGlobalTimer.ts`
+
 ## Patterns
 
 ### Singleton State
 
-`useWorkout()` uses singleton pattern - state is shared across all component instances:
+`useWorkout()` uses singleton pattern - state is shared across all component instances. The ref is created at module level in `src/stores/workoutState.ts` via `getWorkoutRef()` and accessed at module level in `useWorkout.ts`:
 
 ```ts
+// In workoutState.ts (store)
+const workout = ref<Workout>(createInitialWorkout()) // Module-level singleton
+
+export function getWorkoutRef() { return workout }
+
 // In useWorkout.ts
-const workout = ref<Workout>(createInitialWorkout()) // Module-level
+const workout = getWorkoutRef() // Module-level, shared across all callers
 
 export function useWorkout() {
   // All callers share the same `workout` ref

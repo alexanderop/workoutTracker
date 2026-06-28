@@ -14,7 +14,7 @@ The application uses IndexedDB with Dexie.js for client-side persistence, implem
 
 ## Database Tables
 
-The application uses 5 main tables:
+The application uses 12 tables (current schema version: 6):
 
 | Table | Primary Key | Purpose |
 |-------|-------------|---------|
@@ -23,12 +23,19 @@ The application uses 5 main tables:
 | `templates` | `id` (UUID) | Reusable workout templates |
 | `customExercises` | `id` (UUID) | User-defined exercises |
 | `settings` | `key` | User preferences and configuration |
+| `activeBenchmark` | `'current-benchmark'` (singleton) | In-progress benchmark workout |
+| `benchmarks` | `id` (UUID) | Benchmark workout definitions |
+| `weightEntries` | `id` (UUID) | Daily body weight entries |
+| `drafts` | `key` (unique) | Auto-saved form drafts |
+| `progressions` | `id` (UUID) | Kettlebell swing progression plans |
+| `progressionSessions` | `id` (UUID) | Individual progression sessions |
+| `onboarding` | `'onboarding'` (singleton) | First-time user onboarding state |
 
 ## Core Data Types
 
 ### Active Workout
 
-**Type:** `DbActiveWorkout` (src/db/schema.ts:175)
+**Type:** `DbActiveWorkout` (src/db/schema.ts)
 
 A singleton record (id is always `'current'`) representing the workout currently in progress.
 
@@ -42,6 +49,9 @@ type DbActiveWorkout = {
   lastModifiedAt: number                       // Timestamp of last save
   mode: WorkoutMode                            // 'builder' | 'active'
   activeSetIndex: number | null                // Currently active set in strength block
+  activeExerciseIndex: number | null           // Currently active exercise index
+  benchmarkId: string | null                   // Linked benchmark (if benchmark workout)
+  globalTimerStartedAt: number | null          // Global timer start timestamp
 }
 ```
 
@@ -53,7 +63,7 @@ type DbActiveWorkout = {
 
 ### Completed Workout
 
-**Type:** `DbCompletedWorkout` (src/db/schema.ts:189)
+**Type:** `DbCompletedWorkout` (src/db/schema.ts)
 
 Historical record of a finished workout.
 
@@ -66,6 +76,7 @@ type DbCompletedWorkout = {
   completedAt: number                          // Timestamp when workout finished
   durationSeconds: number                      // Total workout duration
   notes: string                                // User notes (optional)
+  benchmarkId: string | null                   // Linked benchmark (if applicable)
 }
 ```
 
@@ -76,13 +87,13 @@ type DbCompletedWorkout = {
 
 ### Workout Blocks
 
-**Discriminated Union:** `DbWorkoutBlock = DbStrengthBlock | DbTimedBlock` (src/db/schema.ts:165)
+**Discriminated Union:** `DbWorkoutBlock = DbStrengthBlock | DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock | DbCardioBlock` (src/db/schema.ts)
 
 Workouts are sequences of **blocks** differentiated by `kind` property:
 
 #### Strength Block
 
-**Type:** `DbStrengthBlock` (src/db/schema.ts:115)
+**Type:** `DbStrengthBlock` (src/db/schema.ts)
 
 Traditional strength training with sets, reps, and weights.
 
@@ -92,9 +103,11 @@ type DbStrengthBlock = {
   id: string                                   // Block ID
   exerciseDefinitionId: string | null          // Reference to base exercise (null for ad-hoc)
   name: string                                 // Exercise name
-  equipment: string                            // Equipment used
+  equipment: Equipment                         // Equipment used
   targetReps: number                           // Target reps per set
-  thumbnail: string                            // Exercise image/icon
+  targetDuration: number | null                // Target duration per set (seconds)
+  targetWeight: number | null                  // Target weight (kg)
+  image: Blob | null                           // Exercise image
   sets: ReadonlyArray<DbSet>                   // Array of sets
   orderIndex: number                           // Position in workout sequence
 }
@@ -107,6 +120,7 @@ type DbSet = {
   id: string                                   // Set ID
   kg: string                                   // Weight (stored as string)
   reps: string                                 // Reps performed (stored as string)
+  duration: string                             // Duration (stored as string)
   rir: string                                  // Reps in reserve (stored as string)
   status: SetStatus                            // 'completed' | 'active' | 'planned'
   completedAt: number | null                   // Timestamp when set completed
@@ -125,7 +139,7 @@ All timed blocks share:
 
 ##### AMRAP Block
 
-**Type:** `DbAmrapBlock` (src/db/schema.ts:136)
+**Type:** `DbAmrapBlock` (src/db/schema.ts)
 
 "As Many Rounds As Possible" in a time limit.
 
@@ -150,7 +164,7 @@ type DbAmrapResult = {
 
 ##### EMOM Block
 
-**Type:** `DbEmomBlock` (src/db/schema.ts:127)
+**Type:** `DbEmomBlock` (src/db/schema.ts)
 
 "Every Minute On the Minute" - perform exercises at the start of each minute.
 
@@ -175,7 +189,7 @@ type DbEmomResult = {
 
 ##### Tabata Block
 
-**Type:** `DbTabataBlock` (src/db/schema.ts:145)
+**Type:** `DbTabataBlock` (src/db/schema.ts)
 
 High-intensity interval training with work/rest cycles.
 
@@ -200,7 +214,7 @@ type DbTabataResult = {
 
 ##### For Time Block
 
-**Type:** `DbForTimeBlock` (src/db/schema.ts:154)
+**Type:** `DbForTimeBlock` (src/db/schema.ts)
 
 Complete prescribed work as quickly as possible.
 
@@ -219,6 +233,37 @@ type DbForTimeBlock = {
 type DbForTimeResult = {
   completionTime: number                       // Time taken in seconds
   completed: boolean                           // Whether finished within time cap
+  splitTimes?: ReadonlyArray<number>           // Optional per-round split times
+}
+```
+
+##### Cardio Block
+
+**Type:** `DbCardioBlock` (src/db/schema.ts)
+
+Steady-state cardio session (run, bike, row, etc.).
+
+```typescript
+type DbCardioBlock = {
+  kind: 'cardio'
+  id: string
+  config: DatabaseCardioConfig
+  result: DbCardioResult | null
+  orderIndex: number
+}
+
+type DatabaseCardioConfig = {
+  activity: 'running' | 'cycling' | 'rowing' | 'elliptical' | 'swimming' | 'stairclimber' | 'walking'
+  targetDurationSeconds: number | null
+  targetDistanceMeters: number | null
+}
+
+type DbCardioResult = {
+  actualDurationSeconds: number
+  distanceMeters: number | null
+  avgPaceSecondsPerKm: number | null
+  calories: number | null
+  notes: string | null
 }
 ```
 
@@ -230,13 +275,13 @@ type DbBlockExercise = {
   name: string                                 // Exercise name
   prescribedReps: number                       // Target reps per round
   load: string | null                          // Load specification ("24kg", "bodyweight", etc.)
-  thumbnail: string                            // Exercise image/icon
+  image: Blob | null                           // Exercise image
 }
 ```
 
 ### Workout Templates
 
-**Type:** `DbWorkoutTemplate` (src/db/schema.ts:261)
+**Type:** `DbWorkoutTemplate` (src/db/schema.ts)
 
 Reusable workout structures for quick workout creation.
 
@@ -260,26 +305,28 @@ type DbTemplateStrengthBlock = {
   kind: 'strength'
   exerciseDefinitionId: string | null
   name: string
-  equipment: string
+  equipment: Equipment
   targetReps: number
-  thumbnail: string
+  targetDuration: number | null
+  targetWeight: number | null
   defaultSetCount: number                      // No actual sets, just default count
+  image: Blob | null
 }
 
 // Timed template blocks have same structure as workout blocks
-// but exercises use DbTemplateBlockExercise (no IDs)
+// but exercises use DbTemplateBlockExercise (no IDs, no results)
+// Cardio template block: { kind: 'cardio', config: DatabaseCardioConfig }
 ```
 
 ### Custom Exercises
 
-**Type:** `DbCustomExercise` (src/db/schema.ts:13)
+**Type:** `DbCustomExercise` (src/db/schema.ts)
 
 User-defined exercise definitions.
 
 ```typescript
 type DbCustomExercise = {
   id: string                                   // UUID
-  icon: string                                 // Emoji or icon
   name: string                                 // Exercise name
   equipment: Equipment | null                  // Required equipment
   muscle: Muscle | null                        // Primary muscle group
@@ -287,6 +334,7 @@ type DbCustomExercise = {
   metrics: Metrics                             // Tracking metrics (weight, reps, etc.)
   createdAt: number                            // Creation timestamp
   updatedAt: number                            // Last modification timestamp
+  image: Blob | null                           // Exercise image (no icon/emoji field)
 }
 ```
 
@@ -294,10 +342,11 @@ type DbCustomExercise = {
 - Uses `null` instead of `undefined` for database storage
 - Exercise definitions are referenced by ID in blocks
 - Name must be unique (case-insensitive)
+- `image` stores raw `Blob` data — there is no separate icon/emoji field
 
 ### User Settings
 
-**Type:** `DbUserSetting` (discriminated union by `key`, src/db/schema.ts:277)
+**Type:** `DbUserSetting` (discriminated union by `key`, src/db/schema.ts)
 
 User preferences stored as key-value pairs.
 
@@ -310,6 +359,7 @@ type DbUserSetting =
   | { key: 'autoSaveInterval'; value: number }
   | { key: 'screenWakeLock'; value: boolean }
   | { key: 'timerSoundEnabled'; value: boolean }
+  | { key: 'timerSoundVolume'; value: number }
   | { key: 'language'; value: 'en' | 'de' }
 ```
 
@@ -317,6 +367,144 @@ type DbUserSetting =
 - Each setting is a separate record with discriminated union type
 - Missing settings fall back to defaults defined in `SettingDefaults`
 - Type-safe get/set operations via repository overloads
+
+### Benchmarks
+
+**Type:** `DbBenchmark` (src/db/schema.ts)
+
+Benchmark workout definition for tracking performance over time.
+
+```typescript
+type DbBenchmark = {
+  id: string
+  name: string
+  type: BenchmarkType
+  rounds: ReadonlyArray<DbBenchmarkRound>      // Variable reps per round supported
+  structureHash: string                        // Used to detect structure changes
+  createdAt: number
+  lastUsedAt: number | null
+}
+
+type DbBenchmarkRound = {
+  orderKey: string                             // Fractional index for efficient reordering
+  exercises: ReadonlyArray<DbBenchmarkRoundExercise>
+}
+
+type DbBenchmarkRoundExercise = {
+  orderKey: string
+  exerciseDefinitionId: string | null
+  name: string
+  prescribedReps: number
+  image: Blob | null
+}
+```
+
+Supports pyramid/ladder workouts (e.g. 40-30-20-10) where each round can have different rep counts.
+
+### Active Benchmark Workout
+
+**Type:** `DbActiveBenchmarkWorkout` (src/db/schema.ts)
+
+Singleton (id is always `'current-benchmark'`) for the in-progress benchmark session.
+
+```typescript
+type DbActiveBenchmarkWorkout = {
+  id: 'current-benchmark'
+  name: string
+  benchmarkId: string
+  blocks: ReadonlyArray<DbForTimeBlock>
+  selectedBlockIndex: number
+  activeExerciseIndex: number
+  startedAt: number
+  lastModifiedAt: number
+  globalTimerStartedAt: number
+  mode: WorkoutMode
+}
+```
+
+### Weight Entry
+
+**Type:** `DbWeightEntry` (src/db/schema.ts)
+
+Daily body weight record. Weight is always stored in kg; display conversion is applied at the UI layer based on user settings.
+
+```typescript
+type DbWeightEntry = {
+  id: string
+  weight: number       // Always stored in kg
+  date: number         // Start-of-day timestamp (enforces one entry per day)
+  recordedAt: number   // When the entry was actually logged
+}
+```
+
+### Form Draft
+
+**Type:** `DbFormDraft` (src/db/schema.ts)
+
+Auto-saves creation form state so users can resume after navigating away.
+
+```typescript
+type DraftKey = 'benchmark-create' | 'template-create'
+
+type DbFormDraft = {
+  key: DraftKey
+  data: unknown        // Serialized form state (JSON-compatible)
+  savedAt: number      // Timestamp of last save
+}
+```
+
+The `drafts` table uses `&key` as its primary key (unique constraint, not auto-increment).
+
+### Progression
+
+**Type:** `DbProgression` and `DbProgressionSession` (src/db/schema.ts)
+
+Kettlebell swing progression plan with automatic advancement through reps → time → weight phases.
+
+```typescript
+type DbProgression = {
+  id: string
+  name: string
+  availableWeights: ReadonlyArray<number>      // e.g. [12, 16, 20, 24] kg
+  currentWeightIndex: number                   // Which KB we're on
+  currentReps: number                          // 10–20
+  currentMinutes: number                       // 10–20
+  startReps: number                            // Config: starting reps (e.g. 10)
+  maxReps: number                              // Config: max reps (e.g. 20)
+  repIncrement: number                         // Config: reps per advancement (e.g. 2)
+  startMinutes: number                         // Config: starting minutes (e.g. 10)
+  maxMinutes: number                           // Config: max minutes (e.g. 20)
+  minuteIncrement: number                      // Config: minutes per advancement (e.g. 2)
+  sessionsCompleted: number
+  isComplete: boolean                          // All KBs mastered
+  createdAt: number
+  lastSessionAt: number | null
+}
+
+type DbProgressionSession = {
+  id: string
+  progressionId: string
+  weight: number       // kg used in this session
+  reps: number         // target reps per minute
+  minutes: number      // total EMOM minutes
+  completed: boolean   // Did user complete all reps each minute?
+  completedAt: number
+}
+```
+
+### Onboarding
+
+**Type:** `DbOnboarding` (src/db/schema.ts)
+
+Singleton (id is always `'onboarding'`) for first-time user flow state.
+
+```typescript
+type DbOnboarding = {
+  id: 'onboarding'
+  completed: boolean
+  currentStep: number
+}
+```
 
 ## Data Flow
 
@@ -353,7 +541,7 @@ Active workout auto-saves use debouncing:
 
 ### Completing Workouts
 
-When completing a workout (src/db/interfaces.ts:229):
+When completing a workout (src/db/interfaces.ts):
 
 ```typescript
 // Transaction ensures atomic operation
@@ -374,11 +562,18 @@ Access all database operations through repository interfaces (src/db/interfaces.
 // Get repository instances
 import {
   getActiveWorkoutRepository,
+  getActiveBenchmarkWorkoutRepository,
   getWorkoutsRepository,
   getTemplatesRepository,
   getCustomExercisesRepository,
   getSettingsRepository,
   getDataManagementRepository,
+  getBenchmarksRepository,
+  getWeightRepository,
+  getDraftsRepository,
+  getProgressionsRepository,
+  getOnboardingRepository,
+  getExerciseProgressRepository,
 } from '@/db'
 ```
 
@@ -459,7 +654,7 @@ await repo.reset('theme')
 
 ## Data Export/Import
 
-**Type:** `ExportDataContents` (src/db/interfaces.ts:268)
+**Type:** `ExportDataContents` (src/db/interfaces.ts)
 
 ```typescript
 const dataRepo = getDataManagementRepository()
@@ -520,7 +715,7 @@ All blocks use discriminated unions with `kind` property:
 
 ### 4. String Storage for Numeric Fields
 
-Sets store `kg`, `reps`, `rir` as strings:
+Sets store `kg`, `reps`, `duration`, `rir` as strings:
 
 **Rationale:**
 - Preserves user input format (e.g., "100.5" vs "100.50")
@@ -538,11 +733,19 @@ All collections sort by timestamps:
 - No manual reordering logic needed
 - Clear temporal relationships
 
+### 6. Blob Storage for Images
+
+Exercise images (`DbCustomExercise.image`, `DbStrengthBlock.image`, `DbBlockExercise.image`) are stored as raw `Blob` values directly in IndexedDB — not as URLs or base64 strings. There is no separate icon/emoji field.
+
 ## Testing
 
-**Database isolation** (`src/__tests__/setup.ts`):
+**Database isolation:**
 
 ```typescript
+// Preferred: direct import
+import { resetDatabase } from '@/__tests__/helpers/resetDatabase'
+
+// Also works (re-exported for backward compat):
 import { resetDatabase } from '@/__tests__/setup'
 
 beforeEach(async () => {
@@ -557,18 +760,28 @@ Uses `fake-indexeddb` for all tests - no real IndexedDB needed.
 Dexie handles schema migrations automatically. When adding new fields:
 
 1. Update TypeScript types in `src/db/schema.ts`
-2. Add database schema version in Dexie configuration
+2. Add database schema version in `src/db/implementations/dexie/database.ts`
 3. Provide migration function if needed
 4. Test migration with production data backup
 
-Current version: Check `src/db/implementations/dexie/database.ts`
+**Current version: 6** (see `src/db/implementations/dexie/database.ts`)
+
+Version history:
+- v1: Initial schema (customExercises, workouts, activeWorkout, templates, settings, benchmarks)
+- v2: Added `activeBenchmark` table
+- v3: Added `weightEntries` table
+- v4: Added `drafts` table
+- v5: Added `progressions` and `progressionSessions` tables
+- v6: Added `onboarding` table
 
 ## Performance Considerations
 
 **Indexes:**
-- `workouts.completedAt` - Fast history queries
-- `templates.lastUsedAt` - Fast template sorting
-- `customExercises.name` - Fast name lookups
+- `workouts`: `completedAt`, `startedAt`, `benchmarkId` - Fast history and benchmark queries
+- `templates`: `lastUsedAt`, `createdAt` - Fast template sorting
+- `customExercises`: `name`, `muscle`, `equipment` - Fast name/filter lookups
+- `weightEntries`: `date`, `recordedAt` - Fast date range queries
+- `progressionSessions`: `progressionId`, `completedAt` - Fast session history per progression
 
 **Optimization strategies:**
 - Paginated history queries (`limit`/`offset`)

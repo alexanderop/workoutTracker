@@ -11,11 +11,16 @@ graph TB
     end
 
     subgraph Features["features/ (Self-Contained Modules)"]
-        F1[exercises/]
-        F2[settings/]
-        F3[templates/]
-        F4[timers/]
-        F5[workout/]
+        F1[benchmarks/]
+        F2[exercises/]
+        F3[log-past-workout/]
+        F4[onboarding/]
+        F5[progressions/]
+        F6[settings/]
+        F7[templates/]
+        F8[timers/]
+        F9[weight/]
+        F10[workout/]
     end
 
     subgraph Shared["Shared Code"]
@@ -26,7 +31,7 @@ graph TB
 
         subgraph State["State & Logic"]
             CO[composables/]
-            ST[stores/ - Pinia]
+            ST[stores/ - VueUse createGlobalState singletons]
         end
 
         subgraph Data["Data Layer"]
@@ -74,26 +79,34 @@ graph LR
 | `features/` | Self-contained modules | Can only import shared, NOT other features |
 | `components/` | Reusable UI components | Cannot import features |
 | `composables/` | Shared reactive logic | Cannot import features |
-| `stores/` | Pinia state (exercises, settings) | Cannot import features |
+| `stores/` | VueUse createGlobalState singletons (exercises.ts, settings.ts) + plain-ref singleton (workoutState.ts) | Cannot import features |
 | `db/` | Dexie + repository pattern | Cannot import features |
 
 ## Directory Structure
 
 ```
 src/
-├── features/           # Self-contained feature modules (Bulletproof pattern)
-│   ├── exercises/      # Exercise library CRUD
-│   ├── settings/       # App settings & preferences
-│   ├── templates/      # Workout templates
-│   ├── timers/         # Standalone timer UI components
-│   └── workout/        # Workout execution logic
+├── features/               # Self-contained feature modules (Bulletproof pattern)
+│   ├── benchmarks/         # Benchmark workouts tracking
+│   ├── exercises/          # Exercise library CRUD
+│   ├── log-past-workout/   # Logging workouts after the fact
+│   ├── onboarding/         # First-run onboarding flow
+│   ├── progressions/       # Strength progressions
+│   ├── settings/           # App settings & preferences
+│   ├── templates/          # Workout templates
+│   ├── timers/             # Standalone timer UI components
+│   ├── weight/             # Bodyweight tracking
+│   └── workout/            # Workout execution logic
 ├── views/              # Route-level page components (orchestrate features)
 ├── components/         # Shared components
 │   ├── timers/         # Timer UI components
 │   └── ui/             # shadcn-vue primitives (DO NOT EDIT)
 ├── composables/        # Shared composables (timers, animations, utilities)
 │   └── timers/         # Timer composables (rest, AMRAP, EMOM, etc.)
-├── stores/             # Pinia stores (exercises, settings only)
+├── stores/             # VueUse createGlobalState singletons + plain-ref singleton
+│   ├── exercises.ts    # createGlobalState — exercise library state
+│   ├── settings.ts     # createGlobalState — app settings state
+│   └── workoutState.ts # plain-ref singleton — active workout state
 ├── db/                 # Dexie IndexedDB + repository pattern
 │   └── repositories/   # Data access layer
 ├── types/              # Shared TypeScript types
