@@ -4,13 +4,20 @@
 
 ```
 src/__tests__/
+├── a11y/                # Accessibility tests (vitest project=a11y)
+├── architecture/        # Architecture boundary tests (vitest project=arch)
+├── browser/             # Browser-specific tests
+├── components/          # Component tests
 ├── composables/         # Unit tests for composables
-│   ├── timers/          # Timer composable tests
-│   └── *.spec.ts
-├── integration/         # Full user flow tests
+├── db/                  # Database layer tests
 ├── factories/           # Test data builders
+├── features/            # Feature-level tests
 ├── helpers/             # Test utilities
-└── setup.ts             # Global test setup
+├── integration/         # Full user flow tests
+├── lib/                 # Library utility tests
+├── stores/              # Store tests
+├── visual/              # Visual regression tests (vitest project=visual)
+└── setup.ts             # Global test setup (re-exports helpers for compat)
 ```
 
 ## Test Setup
@@ -18,12 +25,14 @@ src/__tests__/
 Tests use `fake-indexeddb` for database isolation. Import `resetDatabase` to clear tables between tests:
 
 ```ts
-import { resetDatabase } from '@/__tests__/setup'
+import { resetDatabase } from '@/__tests__/helpers/resetDatabase'
 
 beforeEach(async () => {
   await resetDatabase()
 })
 ```
+
+`resetDatabase` clears all DB tables, localStorage seeding markers, and resets all VueUse `createGlobalState` singletons (settings, exercises, onboarding, workout state, timers). The canonical import path is `@/__tests__/helpers/resetDatabase`; `setup.ts` re-exports it only for backwards compatibility.
 
 ## Unit Testing Composables
 
@@ -61,7 +70,7 @@ Location: `src/__tests__/helpers/withSetup.ts`
 
 ### createTestApp Helper
 
-Use `createTestApp()` for full app rendering with router and Pinia:
+Use `createTestApp()` for full app rendering with router and i18n. The project does NOT use Pinia — state is managed via VueUse `createGlobalState` singletons:
 
 ```ts
 import { createTestApp } from '@/__tests__/helpers/createTestApp'
@@ -148,13 +157,38 @@ const dbWorkout = dbWorkoutBuilder()
 
 Location: `src/__tests__/factories/index.ts`
 
+### Factory Files
+
+All factory files in `src/__tests__/factories/`:
+
+- `benchmark.factory.ts` — benchmark test data
+- `block.factory.ts` — in-memory block builders (strength, timed, etc.)
+- `customExercise.factory.ts` — custom exercise records
+- `dbBlock.factory.ts` — DB-persisted block records
+- `dbExercise.factory.ts` — DB-persisted exercise records
+- `dbSet.factory.ts` — DB-persisted set records
+- `dbWeightEntry.factory.ts` — DB-persisted weight entries
+- `dbWorkout.factory.ts` — DB-persisted workout records
+- `exercise.factory.ts` — in-memory exercise objects
+- `image.ts` — test image helpers
+- `index.ts` — barrel re-export
+- `set.factory.ts` — in-memory set objects
+- `template.factory.ts` — workout template data
+- `timedBlock.factory.ts` — timed block (EMOM/Tabata/etc.) builders
+- `workout.builder.ts` — `WorkoutBuilder` class for complex workout construction
+- `workout.factory.ts` — simple in-memory workout objects
+
 ## Running Tests
 
 ```bash
-pnpm test:unit                          # Run all tests
-pnpm test:unit <file>                   # Run single file
-pnpm test:unit --watch                  # Watch mode
-pnpm test:unit --coverage               # With coverage
+pnpm test                # Run all tests (vitest run --project=default)
+pnpm test:watch          # Watch mode
+pnpm test:headed         # Headed browser mode
+pnpm test:ui             # Vitest UI
+pnpm test:coverage       # With coverage
+pnpm test:a11y           # Accessibility tests
+pnpm test:visual         # Visual regression tests
+pnpm test:arch           # Architecture tests
 ```
 
 ## Component-Specific Testing Patterns
