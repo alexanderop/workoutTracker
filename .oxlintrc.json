@@ -9,14 +9,19 @@
     "typescript/no-explicit-any": "error",
     "typescript/consistent-type-definitions": "off",
     "typescript/array-type": ["error", { "default": "generic" }],
-    "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
-    "eslint/no-restricted-imports": ["error", {
-      "paths": [{
-        "name": "vue",
-        "importNames": ["reactive"],
-        "message": "Use ref() instead of reactive() for consistent reactivity patterns."
-      }]
-    }]
+    "eslint/no-console": ["error", { "allow": ["info", "warn", "error"] }],
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "vue",
+            "importNames": ["reactive"],
+            "message": "Use ref() instead of reactive() for consistent reactivity patterns."
+          }
+        ]
+      }
+    ]
   },
   "overrides": [
     {

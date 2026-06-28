@@ -28,6 +28,7 @@
     "lint": "run-s lint:*",
     "i18n:check": "pnpm dlx tsx scripts/check-i18n.ts",
     "knip": "knip",
+    "size-limit": "size-limit",
     "ralph": "./.ralph/ralph.sh",
     "cpd": "jscpd src",
     "check:composables": "bash scripts/check-composable-usage.sh",
@@ -55,10 +56,12 @@
     "vue": "catalog:frontend",
     "vue-i18n": "catalog:frontend",
     "vue-router": "catalog:frontend",
+    "web-vitals": "catalog:frontend",
     "zod": "catalog:frontend"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:lint",
+    "@e18e/eslint-plugin": "catalog:lint",
     "@eslint-community/eslint-plugin-eslint-comments": "catalog:lint",
     "@faker-js/faker": "catalog:testing",
     "@intlify/eslint-plugin-vue-i18n": "catalog:lint",
@@ -71,6 +74,7 @@
     "@types/sortablejs": "catalog:build",
     "@vite-pwa/assets-generator": "catalog:build",
     "@vitejs/plugin-vue": "catalog:build",
+    "@size-limit/file": "catalog:lint",
     "@vitest/browser": "catalog:testing",
     "@vitest/browser-playwright": "catalog:testing",
     "@vitest/coverage-v8": "catalog:testing",
@@ -87,6 +91,7 @@
     "eslint-plugin-import-x": "catalog:lint",
     "eslint-plugin-oxlint": "catalog:lint",
     "eslint-plugin-pnpm": "catalog:lint",
+    "eslint-plugin-regexp": "catalog:lint",
     "eslint-plugin-unicorn": "catalog:lint",
     "eslint-plugin-vue": "catalog:lint",
     "fake-indexeddb": "catalog:testing",
@@ -95,12 +100,14 @@
     "jscpd": "catalog:lint",
     "jsdom": "catalog:testing",
     "knip": "catalog:lint",
+    "lint-staged": "catalog:lint",
     "markdownlint-cli2": "catalog:lint",
     "npm-run-all2": "catalog:build",
     "oxlint": "catalog:lint",
     "playwright": "catalog:testing",
     "prettier": "catalog:lint",
     "rollup-plugin-visualizer": "catalog:build",
+    "size-limit": "catalog:lint",
     "ts-morph": "catalog:build",
     "tw-animate-css": "catalog:ui",
     "typescript": "catalog:build",
@@ -112,5 +119,21 @@
     "vue-tsc": "catalog:build",
     "workbox-build": "catalog:build",
     "workbox-window": "catalog:build"
+  },
+  "size-limit": [
+    {
+      "name": "production JavaScript",
+      "path": "dist/assets/*.js",
+      "limit": "430 kB"
+    }
+  ],
+  "lint-staged": {
+    "*.{ts,mts,tsx,vue}": [
+      "oxlint --fix --ignore-path .gitignore",
+      "eslint --fix --cache",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,css,yml,yaml}": "prettier --write",
+    "*.md": "markdownlint-cli2"
   }
 }

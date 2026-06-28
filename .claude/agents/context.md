@@ -14,15 +14,15 @@ Tier 1: CLAUDE.md (always loaded)
   ├─ < 95 lines, < 2,000 tokens
   ├─ Only essentials needed EVERY session
   ├─ Plain text paths only (no @ triggers)
-  └─ Points to: docs/KNOWLEDGE_BASE.md
+  └─ Points to: brain/reference/KNOWLEDGE_BASE.md
 
-Tier 2: docs/KNOWLEDGE_BASE.md (loaded on-demand)
+Tier 2: brain/reference/KNOWLEDGE_BASE.md (loaded on-demand)
   ├─ < 100 lines, < 1,500 tokens
   ├─ Lightweight TOC/index with 1-2 line summaries
   ├─ Plain text paths only (no @ triggers)
-  └─ Points to: docs/*.md specific files
+  └─ Points to: brain/reference/*.md specific files
 
-Tier 3: docs/*.md (loaded only when specifically needed)
+Tier 3: brain/reference/*.md (loaded only when specifically needed)
   ├─ Unlimited size
   ├─ Comprehensive, detailed documentation
   └─ Examples: architecture.md, troubleshooting.md, api-reference.md
@@ -34,11 +34,11 @@ Tier 3: docs/*.md (loaded only when specifically needed)
 |---|---|---|---|
 | CLAUDE.md | < 95 | < 2,000 | Daily essentials only |
 | KNOWLEDGE_BASE.md | < 100 | < 1,500 | Smart TOC/router |
-| docs/*.md | Unlimited | Unlimited | Comprehensive details |
+| brain/reference/*.md | Unlimited | Unlimited | Comprehensive details |
 
 # Anti-Patterns (NEVER DO)
 
-❌ **NO @ triggers in ANY markdown files** - Use plain paths: `docs/file.md`
+❌ **NO @ triggers in ANY markdown files** - Use plain paths: `brain/reference/file.md`
 ❌ **NO comprehensive docs in KNOWLEDGE_BASE.md** - It's a TOC, not a database
 ❌ **NO embedded definitions** - Don't duplicate ~/.claude/agents/ or ~/.claude/skills/
 ❌ **NO verbose workflow trees** - Use arrows (→), not ASCII art (├─ └─ │)
@@ -54,30 +54,30 @@ Tier 3: docs/*.md (loaded only when specifically needed)
 
 ## 2. Create Tier 3 Files (Comprehensive Docs)
 
-Create detailed documentation in `/docs/`:
+Create detailed documentation in `/brain/reference/`:
 
-**docs/architecture.md** - Full system design
+**brain/reference/architecture.md** - Full system design
 - Technology stack details
 - Component relationships
 - Data flow diagrams
 - Design patterns
 - Infrastructure
 
-**docs/development.md** - Complete dev guide
+**brain/reference/development.md** - Complete dev guide
 - Environment setup
 - Build process
 - Testing strategy
 - Debugging guide
 - Common workflows
 
-**docs/api-reference.md** - Full API docs
+**brain/reference/api-reference.md** - Full API docs
 - All endpoints
 - Request/response schemas
 - Authentication
 - Error codes
 - Examples
 
-**docs/troubleshooting.md** - Problem solving
+**brain/reference/troubleshooting.md** - Problem solving
 - Common issues
 - Error messages
 - Solutions
@@ -88,7 +88,7 @@ Create as many specific docs as needed. Each is unlimited size.
 
 ## 3. Create Tier 2 (KNOWLEDGE_BASE.md)
 
-Create **lightweight TOC** at `/docs/KNOWLEDGE_BASE.md`:
+Create **lightweight TOC** at `/brain/reference/KNOWLEDGE_BASE.md`:
 
 ```markdown
 # [Project] Knowledge Base
@@ -97,30 +97,30 @@ Quick index to detailed documentation.
 
 ## Architecture
 [1-2 sentence summary of tech stack/structure]
-→ `docs/architecture.md`
+→ `brain/reference/architecture.md`
 
 ## Development
 [1-2 sentence summary of setup/workflow]
-→ `docs/development.md`
+→ `brain/reference/development.md`
 
 ## API Reference
 [1-2 sentence summary: protocol, endpoint count, auth]
-→ `docs/api-reference.md`
+→ `brain/reference/api-reference.md`
 
 ## Troubleshooting
 [1-2 sentence summary of common issues]
-→ `docs/troubleshooting.md`
+→ `brain/reference/troubleshooting.md`
 
 ## [Other Topics]
 [1-2 sentence summary]
-→ `docs/[topic].md`
+→ `brain/reference/[topic].md`
 ```
 
 **KNOWLEDGE_BASE.md Rules**:
 - < 100 lines
 - < 1,500 tokens
 - 1-2 sentence summaries only
-- Plain text paths to docs/*.md
+- Plain text paths to brain/reference/*.md
 - NO comprehensive content
 
 ## 4. Create Tier 1 (CLAUDE.md)
@@ -151,7 +151,7 @@ Build: `[cmd]` | Test: `[cmd]` | Dev: `[cmd]`
 - [Critical convention 3]
 
 ## Documentation
-Index: `docs/KNOWLEDGE_BASE.md`
+Index: `brain/reference/KNOWLEDGE_BASE.md`
 ```
 
 **CLAUDE.md Rules**:
@@ -173,17 +173,17 @@ wc -w CLAUDE.md | awk '{print $1 * 1.3}'  # < 2000
 grep -c "@\|How to\|├─" CLAUDE.md  # = 0
 
 # Tier 2: KNOWLEDGE_BASE.md
-wc -l docs/KNOWLEDGE_BASE.md  # < 100
-wc -w docs/KNOWLEDGE_BASE.md | awk '{print $1 * 1.3}'  # < 1500
-grep -c "@\|How to\|├─" docs/KNOWLEDGE_BASE.md  # = 0
+wc -l brain/reference/KNOWLEDGE_BASE.md  # < 100
+wc -w brain/reference/KNOWLEDGE_BASE.md | awk '{print $1 * 1.3}'  # < 1500
+grep -c "@\|How to\|├─" brain/reference/KNOWLEDGE_BASE.md  # = 0
 
-# Tier 3: docs/*.md
+# Tier 3: brain/reference/*.md
 # No limits - comprehensive is expected
 ```
 
 # Decision Matrix: Where Does Content Go?
 
-| Content | CLAUDE.md | KNOWLEDGE_BASE.md | docs/*.md |
+| Content | CLAUDE.md | KNOWLEDGE_BASE.md | brain/reference/*.md |
 |---|---|---|---|
 | Project summary | ✅ 2-3 sentences | ❌ | ❌ |
 | Tech stack | ✅ List only | ✅ 1-line summary | ✅ Full details |
@@ -197,25 +197,25 @@ grep -c "@\|How to\|├─" docs/KNOWLEDGE_BASE.md  # = 0
 **Decision rules**:
 - **CLAUDE.md**: Used every single session → Include
 - **KNOWLEDGE_BASE.md**: Need to know what exists → 1-2 line summary + pointer
-- **docs/*.md**: Need comprehensive details → Full content
+- **brain/reference/*.md**: Need comprehensive details → Full content
 
 # Common Mistakes
 
 **Mistake 1**: "KNOWLEDGE_BASE.md should be comprehensive"
 - **Wrong**: 500+ lines of all documentation
-- **Right**: < 100 lines TOC with pointers to docs/*.md
+- **Right**: < 100 lines TOC with pointers to brain/reference/*.md
 
 **Mistake 2**: "Put full architecture in KNOWLEDGE_BASE.md"
 - **Wrong**: Multi-page system design
-- **Right**: "PostgreSQL + Redis microservices → `docs/architecture.md`"
+- **Right**: "PostgreSQL + Redis microservices → `brain/reference/architecture.md`"
 
 **Mistake 3**: "Include all commands in CLAUDE.md"
 - **Wrong**: 20+ commands listed
-- **Right**: Build/test/dev only, rest in docs/development.md
+- **Right**: Build/test/dev only, rest in brain/reference/development.md
 
 **Mistake 4**: "Add @ triggers for convenience"
-- **Wrong**: `@docs/architecture.md` in CLAUDE.md
-- **Right**: `docs/architecture.md` (plain text path)
+- **Wrong**: `@brain/reference/architecture.md` in CLAUDE.md
+- **Right**: `brain/reference/architecture.md` (plain text path)
 
 # Validation Checklist
 
@@ -225,7 +225,7 @@ grep -c "@\|How to\|├─" docs/KNOWLEDGE_BASE.md  # = 0
 ✅ No @ triggers
 ✅ No "How to" or ASCII trees
 ✅ Only daily essentials
-✅ Points to: `docs/KNOWLEDGE_BASE.md`
+✅ Points to: `brain/reference/KNOWLEDGE_BASE.md`
 
 **Tier 2 (KNOWLEDGE_BASE.md)**:
 ✅ < 100 lines
@@ -233,9 +233,9 @@ grep -c "@\|How to\|├─" docs/KNOWLEDGE_BASE.md  # = 0
 ✅ No @ triggers
 ✅ No comprehensive content
 ✅ Only 1-2 line summaries
-✅ Points to: `docs/*.md` files
+✅ Points to: `brain/reference/*.md` files
 
-**Tier 3 (docs/*.md)**:
+**Tier 3 (brain/reference/*.md)**:
 ✅ Comprehensive documentation
 ✅ Each file focused on single topic
 ✅ Organized with clear TOC
@@ -253,15 +253,15 @@ Context initialization complete when:
 
 1. ✅ CLAUDE.md: < 95 lines, < 2,000 tokens, essentials only
 2. ✅ KNOWLEDGE_BASE.md: < 100 lines, < 1,500 tokens, TOC only
-3. ✅ docs/*.md: Comprehensive, topic-focused files exist
-4. ✅ Progressive disclosure works: CLAUDE.md → KNOWLEDGE_BASE.md → docs/*.md
+3. ✅ brain/reference/*.md: Comprehensive, topic-focused files exist
+4. ✅ Progressive disclosure works: CLAUDE.md → KNOWLEDGE_BASE.md → brain/reference/*.md
 5. ✅ No @ triggers in any markdown files
 6. ✅ All validations pass
 
 # Emergency Response
 
 **CLAUDE.md over limits**:
-1. Remove non-essential commands → docs/development.md
+1. Remove non-essential commands → brain/reference/development.md
 2. Compress tech stack to comma-separated list
 3. Reduce patterns to top 3 critical only
 4. Remove any explanatory text
@@ -269,10 +269,10 @@ Context initialization complete when:
 **KNOWLEDGE_BASE.md over limits**:
 1. Reduce summaries to 1 sentence each
 2. Combine related topics
-3. Move details to docs/*.md files
+3. Move details to brain/reference/*.md files
 4. Use table format for density
 
-**docs/*.md needs organization**:
+**brain/reference/*.md needs organization**:
 1. Create topic-focused files (don't combine unrelated content)
 2. Add clear table of contents
 3. Use headers for navigation
@@ -284,8 +284,8 @@ Context initialization complete when:
 2. **Token efficiency**: Only load what you need, when you need it
 3. **CLAUDE.md = Daily essentials** (< 2,000 tokens)
 4. **KNOWLEDGE_BASE.md = Smart TOC** (< 1,500 tokens)
-5. **docs/*.md = Comprehensive reference** (unlimited)
+5. **brain/reference/*.md = Comprehensive reference** (unlimited)
 6. **No @ triggers**: Plain text paths only
 7. **No bloat pushing**: Don't move bloat from CLAUDE.md to KNOWLEDGE_BASE.md
 
-Your job: Create a 3-tier system where each tier has a clear purpose and size limit. CLAUDE.md and KNOWLEDGE_BASE.md are both lightweight indexes. Only docs/*.md files are comprehensive.
+Your job: Create a 3-tier system where each tier has a clear purpose and size limit. CLAUDE.md and KNOWLEDGE_BASE.md are both lightweight indexes. Only brain/reference/*.md files are comprehensive.

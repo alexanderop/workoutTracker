@@ -1,3 +1,4 @@
+import e18e from '@e18e/eslint-plugin'
 import pluginEslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 import pluginVitest from '@vitest/eslint-plugin'
@@ -6,6 +7,7 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import { configs as pnpmConfigs } from 'eslint-plugin-pnpm'
+import pluginRegexp from 'eslint-plugin-regexp'
 import pluginUnicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
@@ -35,7 +37,15 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['.agents/**', '.claude/**', '.codex/**', '**/dev-dist/**', '**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores([
+    '.agents/**',
+    '.claude/**',
+    '.codex/**',
+    '**/dev-dist/**',
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/coverage/**',
+  ]),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
@@ -133,14 +143,21 @@ export default defineConfigWithVueTs(
       ],
       'vue/prop-name-casing': ['error', 'camelCase'],
       'vue/attribute-hyphenation': ['error', 'always'],
-      'vue/custom-event-name-casing': ['error', 'kebab-case', { ignores: ['/^[a-z]+:[a-zA-Z]+$/u'] }],
+      'vue/custom-event-name-casing': [
+        'error',
+        'kebab-case',
+        { ignores: ['/^[a-z]+:[a-zA-Z]+$/u'] },
+      ],
       'vue/max-template-depth': ['error', { maxDepth: 8 }],
       'vue/max-props': ['error', { maxProps: 6 }],
 
       // Dead code detection
-      'vue/no-unused-properties': ['error', {
-        groups: ['props', 'data', 'computed', 'methods'],
-      }],
+      'vue/no-unused-properties': [
+        'error',
+        {
+          groups: ['props', 'data', 'computed', 'methods'],
+        },
+      ],
       'vue/no-unused-refs': 'error',
       'vue/no-unused-emit-declarations': 'error',
 
@@ -163,15 +180,18 @@ export default defineConfigWithVueTs(
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'CallExpression[callee.object.name="document"][callee.property.name="getElementById"]',
+          selector:
+            'CallExpression[callee.object.name="document"][callee.property.name="getElementById"]',
           message: 'Use Vue template refs (useTemplateRef) instead of document.getElementById().',
         },
         {
-          selector: 'CallExpression[callee.object.name="document"][callee.property.name=/^querySelector(All)?$/]',
+          selector:
+            'CallExpression[callee.object.name="document"][callee.property.name=/^querySelector(All)?$/]',
           message: 'Use Vue template refs (useTemplateRef) instead of document.querySelector*().',
         },
         {
-          selector: 'CallExpression[callee.object.name="document"][callee.property.name=/^getElementsBy/]',
+          selector:
+            'CallExpression[callee.object.name="document"][callee.property.name=/^getElementsBy/]',
           message: 'Use Vue template refs (useTemplateRef) instead of document.getElementsBy*().',
         },
       ],
@@ -183,7 +203,7 @@ export default defineConfigWithVueTs(
     files: ['src/**/*.{ts,vue}'],
     rules: {
       // Limit cyclomatic complexity per function
-      'complexity': ['warn', { max: 10 }],
+      complexity: ['warn', { max: 10 }],
 
       // Disallow nested ternary expressions - prefer early returns or separate variables
       'no-nested-ternary': 'error',
@@ -216,19 +236,25 @@ export default defineConfigWithVueTs(
         },
         {
           selector: 'TryStatement',
-          message: 'Use tryCatch() from @/lib/tryCatch instead of try/catch. Returns Result<T> tuple: [error, null] | [null, data].',
+          message:
+            'Use tryCatch() from @/lib/tryCatch instead of try/catch. Returns Result<T> tuple: [error, null] | [null, data].',
         },
         {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
+          selector:
+            'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
+          message:
+            'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
         },
         {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
-          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
+          selector:
+            'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
+          message:
+            'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
         },
         {
           selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
+          message:
+            'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
         },
       ],
     },
@@ -293,16 +319,21 @@ export default defineConfigWithVueTs(
         },
         // TryStatement intentionally omitted - this file implements the tryCatch utility
         {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
+          selector:
+            'CallExpression[callee.property.name="push"][callee.object.name="router"] > Literal:first-child',
+          message:
+            'Use named routes with RouteNames instead of hardcoded path strings. Example: router.push({ name: RouteNames.Home })',
         },
         {
-          selector: 'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
-          message: 'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
+          selector:
+            'CallExpression[callee.property.name="push"][callee.object.name="router"] > TemplateLiteral:first-child',
+          message:
+            'Use named routes with RouteNames instead of template literals. Example: router.push({ name: RouteNames.WorkoutDetail, params: { id } })',
         },
         {
           selector: 'CallExpression[callee.name="navigateTo"] > Literal:first-child',
-          message: 'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
+          message:
+            'Use named routes with RouteNames instead of hardcoded path strings. Example: navigateTo({ name: RouteNames.Home })',
         },
       ],
     },
@@ -321,12 +352,14 @@ export default defineConfigWithVueTs(
             {
               name: 'vitest-browser-vue',
               importNames: ['render'],
-              message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of render().',
+              message:
+                'Use createTestApp() from @/__tests__/helpers/createTestApp instead of render().',
             },
             {
               name: '@vue/test-utils',
               importNames: ['mount', 'shallowMount'],
-              message: 'Use createTestApp() from @/__tests__/helpers/createTestApp instead of mounting components directly.',
+              message:
+                'Use createTestApp() from @/__tests__/helpers/createTestApp instead of mounting components directly.',
             },
           ],
         },
@@ -343,7 +376,8 @@ export default defineConfigWithVueTs(
         'warn',
         {
           selector: 'CallExpression[callee.property.name=/^querySelector(All)?$/]',
-          message: 'Prefer page.getByRole(), page.getByText(), or page.getByTestId() over querySelector*(). Vitest locators are more resilient to DOM changes.',
+          message:
+            'Prefer page.getByRole(), page.getByText(), or page.getByTestId() over querySelector*(). Vitest locators are more resilient to DOM changes.',
         },
       ],
     },
@@ -366,29 +400,47 @@ export default defineConfigWithVueTs(
       },
     },
     rules: {
-      'import-x/no-restricted-paths': ['error', {
-        zones: [
-          // === CROSS-FEATURE ISOLATION ===
-          // Features cannot import from other features (strict Bulletproof compliance)
-          { target: './src/features/workout', from: './src/features', except: ['./workout'] },
-          { target: './src/features/exercises', from: './src/features', except: ['./exercises'] },
-          { target: './src/features/settings', from: './src/features', except: ['./settings'] },
-          { target: './src/features/timers', from: './src/features', except: ['./timers'] },
-          { target: './src/features/templates', from: './src/features', except: ['./templates'] },
-          { target: './src/features/benchmarks', from: './src/features', except: ['./benchmarks'] },
-          { target: './src/features/log-past-workout', from: './src/features', except: ['./log-past-workout'] },
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            // === CROSS-FEATURE ISOLATION ===
+            // Features cannot import from other features (strict Bulletproof compliance)
+            { target: './src/features/workout', from: './src/features', except: ['./workout'] },
+            { target: './src/features/exercises', from: './src/features', except: ['./exercises'] },
+            { target: './src/features/settings', from: './src/features', except: ['./settings'] },
+            { target: './src/features/timers', from: './src/features', except: ['./timers'] },
+            { target: './src/features/templates', from: './src/features', except: ['./templates'] },
+            {
+              target: './src/features/benchmarks',
+              from: './src/features',
+              except: ['./benchmarks'],
+            },
+            {
+              target: './src/features/log-past-workout',
+              from: './src/features',
+              except: ['./log-past-workout'],
+            },
 
-          // === UNIDIRECTIONAL FLOW ===
-          // Shared code cannot import from features or views
-          {
-            target: ['./src/components', './src/composables', './src/lib', './src/db', './src/types', './src/stores'],
-            from: ['./src/features', './src/views'],
-          },
+            // === UNIDIRECTIONAL FLOW ===
+            // Shared code cannot import from features or views
+            {
+              target: [
+                './src/components',
+                './src/composables',
+                './src/lib',
+                './src/db',
+                './src/types',
+                './src/stores',
+              ],
+              from: ['./src/features', './src/views'],
+            },
 
-          // Features cannot import from views (views are the top-level orchestrators)
-          { target: './src/features', from: './src/views' },
-        ],
-      }],
+            // Features cannot import from views (views are the top-level orchestrators)
+            { target: './src/features', from: './src/views' },
+          ],
+        },
+      ],
     },
   },
 
@@ -403,13 +455,16 @@ export default defineConfigWithVueTs(
     },
     rules: {
       // Detect hardcoded strings in templates - catches 90% of i18n issues
-      '@intlify/vue-i18n/no-raw-text': ['error', {
-        ignorePattern: '^[-#:()&+×/°′″%]+$',
-        ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', '.', 'Close'],
-        attributes: {
-          '/.+/': ['title', 'aria-label', 'aria-placeholder', 'placeholder', 'alt'],
+      '@intlify/vue-i18n/no-raw-text': [
+        'error',
+        {
+          ignorePattern: '^[-#:()&+×/°′″%]+$',
+          ignoreText: ['kg', 'lbs', 'cm', 'ft/in', '—', '•', '✓', '›', '→', '·', '.', 'Close'],
+          attributes: {
+            '/.+/': ['title', 'aria-label', 'aria-placeholder', 'placeholder', 'alt'],
+          },
         },
-      }],
+      ],
     },
   },
 
@@ -421,10 +476,7 @@ export default defineConfigWithVueTs(
       '@eslint-community/eslint-comments': pluginEslintComments,
     },
     rules: {
-      '@eslint-community/eslint-comments/no-restricted-disable': [
-        'error',
-        '@intlify/vue-i18n/*',
-      ],
+      '@eslint-community/eslint-comments/no-restricted-disable': ['error', '@intlify/vue-i18n/*'],
     },
   },
 
@@ -483,6 +535,34 @@ export default defineConfigWithVueTs(
 
   // Enforce pnpm catalogs for all dependencies
   ...pnpmConfigs.recommended,
+
+  {
+    name: 'app/regexp-correctness',
+    files: ['src/**/*.{ts,vue}', 'scripts/**/*.ts', 'vite-plugins/**/*.ts'],
+    plugins: {
+      regexp: pluginRegexp,
+    },
+    rules: {
+      'regexp/no-contradiction-with-assertion': 'warn',
+      'regexp/no-dupe-disjunctions': 'warn',
+      'regexp/no-empty-capturing-group': 'warn',
+      'regexp/no-misleading-capturing-group': 'warn',
+      'regexp/no-useless-backreference': 'warn',
+    },
+  },
+
+  {
+    name: 'app/e18e-performance',
+    files: ['src/**/*.{ts,vue}', 'scripts/**/*.ts', 'vite-plugins/**/*.ts'],
+    plugins: {
+      e18e,
+    },
+    rules: {
+      'e18e/no-spread-in-reduce': 'warn',
+      'e18e/prefer-static-collator': 'warn',
+      'e18e/prefer-static-regex': 'warn',
+    },
+  },
 
   skipFormatting,
   {

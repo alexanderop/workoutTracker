@@ -23,7 +23,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, labeled]
     paths-ignore:
       - '*.md'
-      - 'docs/**'
+      - 'brain/reference/**'
       - '.github/workflows/release.yml'
   issue_comment:
     types: [created]
