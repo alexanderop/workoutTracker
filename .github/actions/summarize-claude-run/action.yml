@@ -6,6 +6,10 @@ inputs:
     description: Directory to copy debug artifacts into.
     required: false
     default: qa-debug
+  execution-file:
+    description: Claude Code action execution_file output, when available.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -14,6 +18,7 @@ runs:
       shell: bash
       env:
         DEBUG_DIR: ${{ inputs.debug-dir }}
+        EXECUTION_FILE: ${{ inputs.execution-file }}
       run: |
         set -euo pipefail
         mkdir -p "$DEBUG_DIR"
@@ -29,8 +34,12 @@ runs:
           cp -r ./screenshots "$DEBUG_DIR/screenshots-local" || true
         fi
         # Claude execution log (full JSON stream of every turn)
-        if [ -f "/home/runner/work/_temp/claude-execution-output.json" ]; then
+        if [ -n "${EXECUTION_FILE:-}" ] && [ -f "$EXECUTION_FILE" ]; then
+          cp "$EXECUTION_FILE" "$DEBUG_DIR/claude-execution-output.json" || true
+        elif [ -f "/home/runner/work/_temp/claude-execution-output.json" ]; then
           cp /home/runner/work/_temp/claude-execution-output.json "$DEBUG_DIR/claude-execution-output.json" || true
+        elif [ -f "/tmp/claude-execution-output.json" ]; then
+          cp /tmp/claude-execution-output.json "$DEBUG_DIR/claude-execution-output.json" || true
         fi
 
     - name: Render Claude execution summary

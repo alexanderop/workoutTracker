@@ -1,11 +1,12 @@
 ---
 type: Reference
-title: "TIL: Agent Browser QA Gotchas"
+title: 'TIL: Agent Browser QA Gotchas'
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/TIL-agent-browser-qa-gotchas.md
 tags: [reference]
 timestamp: 2026-06-28T08:10:00Z
 ---
+
 ## TIL: Agent Browser QA Gotchas
 
 Notes from exploratory QA with the `agent-browser` CLI.
@@ -30,3 +31,17 @@ agent-browser --session workouttracker-qa eval \
 ```
 
 Record this as a tooling caveat unless the exact DOM click also fails.
+
+## CI Claude QA Needs Runner-Side Progress
+
+`show_full_output: true` is useful while developing the Claude QA workflow, but
+it is too broad as the only debugging surface because it can expose full tool
+outputs and it may only be practical to inspect after the run completes. Keep a
+sanitized runner-side tailer for `.github/workflows/claude-qa-browser.yml` so
+long or wedged `Run Claude QA (Browser mode)` steps show periodic heartbeats and
+the latest tool names/commands in the Actions log.
+
+Prefer the Claude Code Action's official `execution_file` output when collecting
+post-run artifacts. Keep the `/home/runner/work/_temp/claude-execution-output.json`
+and `/tmp/claude-execution-output.json` fallbacks because older action behavior
+and failed startup paths may not populate the output.

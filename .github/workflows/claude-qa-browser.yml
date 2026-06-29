@@ -419,32 +419,18 @@ jobs:
         if: steps.claude-action-guard.outputs.can_run == 'true'
         shell: bash
         run: |
+          set -euo pipefail
+          mkdir -p qa-debug
           OUT=/tmp/claude-tailer.log
           : > "$OUT"
           echo "TAILER_OUT=$OUT" >> "$GITHUB_ENV"
-          # Delete leftover execution log from smoke test so we don't re-read it
+          # Delete leftover execution log from smoke test so we do not re-read it.
           rm -f /home/runner/work/_temp/claude-execution-output.json /tmp/claude-execution-output.json
           (
-            LAST=0
-            while :; do
-              # Try both known paths - whichever the action writes to
-              for LOG in /home/runner/work/_temp/claude-execution-output.json /tmp/claude-execution-output.json; do
-                if [ -f "$LOG" ]; then
-                  TOTAL=$(jq -r 'if type=="array" then length else 1 end' "$LOG" 2>/dev/null || echo 0)
-                  if [ "$TOTAL" -gt "$LAST" ]; then
-                    jq -r --argjson start "$LAST" '
-                      (if type=="array" then . else [.] end)[$start:]
-                      | map(select(.type == "assistant") | .message.content[]? | select(.type == "tool_use"))
-                      | map("[\(now | strftime("%H:%M:%S"))] \(.name): " + ((.input.command // .input.description // (.input | tostring))[:200] | gsub("\n"; " ")))
-                      | .[]
-                    ' "$LOG" 2>/dev/null >> "$OUT" || true
-                    LAST=$TOTAL
-                  fi
-                  break
-                fi
-              done
-              sleep 10
-            done
+            node .github/scripts/tail-claude-execution.mjs \
+              --out "$OUT" \
+              --interval-ms 5000 \
+              --heartbeat-ms 30000
           ) &
           echo "TAILER_PID=$!" >> "$GITHUB_ENV"
           disown
@@ -579,6 +565,7 @@ jobs:
         uses: ./.github/actions/summarize-claude-run
         with:
           debug-dir: qa-debug
+          execution-file: ${{ steps.claude-qa.outputs.execution_file }}
 
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated
@@ -845,6 +832,7 @@ jobs:
         uses: ./.github/actions/summarize-claude-run
         with:
           debug-dir: qa-debug
+          execution-file: ${{ steps.claude-qa.outputs.execution_file || steps.claude-qa-retry.outputs.execution_file }}
 
       - name: Collect claude debug artifacts
         if: always()
@@ -852,8 +840,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p qa-debug
-          # Try both paths - base-action docs say /tmp/, summarize action uses $RUNNER_TEMP
-          cp /home/runner/work/_temp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null \
+          # Prefer the official action output, then try both observed temp paths.
+          EXECUTION_FILE="${{ steps.claude-qa.outputs.execution_file || steps.claude-qa-retry.outputs.execution_file }}"
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            cp "$EXECUTION_FILE" qa-debug/claude-execution-output.json 2>/dev/null || true
+          fi
+          [ -f qa-debug/claude-execution-output.json ] \
+            || cp /home/runner/work/_temp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null \
             || cp /tmp/claude-execution-output.json qa-debug/claude-execution-output.json 2>/dev/null \
             || echo "no claude-execution-output.json at either path"
           cp /tmp/dev-server.log qa-debug/dev-server.log 2>/dev/null || echo "no dev-server.log"
