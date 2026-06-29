@@ -67,7 +67,13 @@ function parseExecutionLog(path) {
   return raw
     .split(/\r?\n/)
     .filter(Boolean)
-    .map((line) => JSON.parse(line))
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line)]
+      } catch {
+        return []
+      }
+    })
 }
 
 function getToolUses(record) {
