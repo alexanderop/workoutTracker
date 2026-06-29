@@ -86,60 +86,22 @@ export { generateId } from '@/db'
 
 ## Phase 2: New Factories
 
-### 2.1 Create `benchmark.factory.ts`
+### 2.1 `benchmark.factory.ts` (Schema Updated — Rounds-Based)
 
-**File:** `src/__tests__/factories/benchmark.factory.ts`
+> **Note**: The benchmark schema changed to a **rounds-based** structure after this plan was written. `DbBenchmark.exercises[]` was replaced by `DbBenchmark.rounds: DbBenchmarkRound[]` where each round contains `exercises: DbBenchmarkRoundExercise[]`. The `amrap` type was removed; benchmarks are `fortime` only. The factory was implemented but uses the new schema — do NOT use the old signature below.
+
+**Actual exports in `src/__tests__/factories/benchmark.factory.ts`:**
+
+- `createDbBenchmarkRoundExercise(overrides?)` — a single exercise within a round
+- `createDbBenchmarkRound(overrides?)` — a round with exercises
+- `createDbBenchmark(overrides?)` — full benchmark (rounds-based, `type: 'fortime'`)
+
+**Old design below (DO NOT USE — schema changed):**
 
 ```typescript
-import type { DbBenchmark, DbBenchmarkExercise } from '@/db/schema'
-import { generateId } from '@/db'
-
-const DEFAULTS: Readonly<Omit<DbBenchmark, 'id' | 'exercises'>> = {
-  name: 'Fran',
-  type: 'fortime',
-  rounds: 1,
-  createdAt: Date.now(),
-  lastUsedAt: null,
-}
-
-export function createDbBenchmarkExercise(
-  overrides: Partial<DbBenchmarkExercise> = {},
-): DbBenchmarkExercise {
-  return {
-    exerciseDefinitionId: null,
-    name: 'Thrusters',
-    prescribedReps: 21,
-    thumbnail: '🏋️',
-    ...overrides,
-  }
-}
-
-export function createDbBenchmark(overrides: Partial<DbBenchmark> = {}): DbBenchmark {
-  return {
-    id: generateId(),
-    ...DEFAULTS,
-    exercises: [createDbBenchmarkExercise()],
-    ...overrides,
-  }
-}
-
-export function createDbForTimeBenchmark(overrides: Partial<DbBenchmark> = {}): DbBenchmark {
-  return createDbBenchmark({
-    type: 'fortime',
-    exercises: [
-      createDbBenchmarkExercise({ name: 'Thrusters', prescribedReps: 21 }),
-      createDbBenchmarkExercise({ name: 'Pull-ups', prescribedReps: 21 }),
-    ],
-    ...overrides,
-  })
-}
-
-export function createDbAmrapBenchmark(overrides: Partial<DbBenchmark> = {}): DbBenchmark {
-  return createDbBenchmark({
-    type: 'amrap',
-    ...overrides,
-  })
-}
+// STALE: uses DbBenchmarkExercise (no longer exists)
+export function createDbBenchmarkExercise(...): DbBenchmarkExercise { ... }
+export function createDbAmrapBenchmark(...): DbBenchmark { ... } // 'amrap' type removed
 ```
 
 ### 2.2 Create `timedBlock.factory.ts`

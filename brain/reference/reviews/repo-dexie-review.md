@@ -20,60 +20,28 @@ Reviewed **45+ changed files** introducing a database provider/interface pattern
 
 ## Critical Issues
 
-### 1. Security: Insufficient JSON Schema Validation (Prototype Pollution Risk)
+### 1. Security: Insufficient JSON Schema Validation ✅ Fixed
 
-**Location:** `src/features/settings/utils/dataImport.ts:45-85`
-**OWASP:** A03:2021 Injection / A08:2021 Data Integrity Failures
+`dataImport.ts` now uses a full Zod `exportDataSchema` imported from `validation/`. The schema uses `.strict()` mode to reject unknown properties and prevent prototype pollution. `validateExportData()` calls `exportDataSchema.safeParse()` and surfaces the first Zod issue as a user-readable error.
 
-The `validateExportData` function only validates top-level structure but not nested content. Attackers can craft JSON with `__proto__` pollution payloads.
+### 2. Security: No File Size Limits on Import ✅ Fixed
 
-**Fix:** Implement comprehensive Zod schemas with `.strict()` to reject unknown properties:
-
-```typescript
-import { z } from 'zod'
-
-const ExportDataSchema = z
-  .object({
-    version: z.number().int().min(1).max(100),
-    exportedAt: z.string().datetime(),
-    data: z
-      .object({
-        settings: z.array(DbUserSettingSchema).max(20),
-        customExercises: z.array(DbCustomExerciseSchema).max(500),
-        // ... with .strict() on all schemas
-      })
-      .strict(),
-  })
-  .strict()
-```
-
-### 2. Security: No File Size Limits on Import (DoS)
-
-**Location:** `src/features/settings/utils/dataImport.ts:96`
-
-Import accepts JSON files without size limits, enabling browser-freezing attacks.
-
-**Fix:** Add 10MB maximum file size check before parsing.
+`dataImport.ts` defines `MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024` (10MB) and rejects oversized files before parsing. `ExportData` now includes `benchmarks` and `weightEntries` fields; `importAllData` passes them through with `?? []` fallback for old exports.
 
 ---
 
 ## High Priority Issues
 
-### TypeScript: 2 Type Assertions with @ts-expect-error
+### TypeScript: @ts-expect-error ✅ Fixed
+
+All `@ts-expect-error` comments in non-test source code have been removed. The count is now 0. Proper type guards and discriminated union exhaustive switching are used instead.
+
+### Performance: Deep Reactivity on Large Data Structures (still open)
 
 **Locations:**
 
-- `src/db/implementations/dexie/settings.ts:23-24, 36-37`
-- `src/features/settings/utils/dataImport.ts:83-84`
-
-**Fix:** Replace with proper type guards using discriminated union exhaustive switching.
-
-### Performance: Deep Reactivity on Large Data Structures
-
-**Locations:**
-
-- `src/stores/workoutState.ts:17` - Workout singleton
-- `src/stores/exercises.ts:9` - Custom exercises array
+- `src/stores/workoutState.ts` - Workout singleton still uses `ref<Workout>` not `shallowRef`
+- `src/stores/exercises.ts` - `customExercises` still uses `ref<Array<CustomExercise>>` not `shallowRef`
 
 **Impact:** During active workouts, Vue tracks thousands of nested paths unnecessarily.
 
@@ -159,11 +127,11 @@ The workout state singleton shared across features is **acceptable** because it 
 
 ## Recommended Actions (Top 5)
 
-1. **[CRITICAL]** Implement Zod validation schemas for data import with `.strict()` mode
-2. **[CRITICAL]** Add file size limits (10MB max) on import
-3. **[HIGH]** Convert `workout` and `customExercises` refs to `shallowRef`
-4. **[HIGH]** Add aria-labels to interactive cards in TheWorkoutsView
-5. **[HIGH]** Replace `@ts-expect-error` comments with proper type guards
+1. ✅ **[CRITICAL]** Implement Zod validation schemas for data import with `.strict()` mode — Done
+2. ✅ **[CRITICAL]** Add file size limits (10MB max) on import — Done
+3. **[HIGH]** Convert `workout` and `customExercises` refs to `shallowRef` — still open
+4. **[HIGH]** Add aria-labels to interactive cards in TheWorkoutsView — open
+5. ✅ **[HIGH]** Replace `@ts-expect-error` comments with proper type guards — Done (0 remaining)
 
 ---
 

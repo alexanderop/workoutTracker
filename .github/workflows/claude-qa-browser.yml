@@ -363,7 +363,28 @@ jobs:
             echo "Warm-up passed: main nav visible (onboarding already dismissed — localStorage clear may have failed)."
           fi
 
+      - name: Check Claude action compatibility
+        id: claude-action-guard
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
+
+          if git diff --quiet "origin/$DEFAULT_BRANCH" -- .github/workflows/claude-qa-browser.yml; then
+            echo "can_run=true" >> "$GITHUB_OUTPUT"
+            echo "reason=" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "can_run=false"
+              echo "reason=Claude action requires this workflow file to match the default branch before it can exchange the OIDC token."
+            } >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping Claude action because .github/workflows/claude-qa-browser.yml differs from origin/$DEFAULT_BRANCH."
+          fi
+
       - name: Smoke-test claude-code-action (trivial prompt)
+        if: steps.claude-action-guard.outputs.can_run == 'true'
         id: claude-smoke
         timeout-minutes: 3
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
@@ -378,6 +399,7 @@ jobs:
             --model ${{ env.CLAUDE_MODEL }}
 
       - name: Verify claude-code-action smoke output
+        if: steps.claude-action-guard.outputs.can_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -394,6 +416,7 @@ jobs:
           rm -f claude-smoke.txt
 
       - name: Start claude tool-call tailer
+        if: steps.claude-action-guard.outputs.can_run == 'true'
         shell: bash
         run: |
           OUT=/tmp/claude-tailer.log
@@ -427,6 +450,7 @@ jobs:
           disown
 
       - name: Run Claude QA (Browser mode)
+        if: steps.claude-action-guard.outputs.can_run == 'true'
         id: claude-qa
         timeout-minutes: 15
         continue-on-error: true
@@ -474,9 +498,77 @@ jobs:
         id: check-report
         if: always()
         shell: bash
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output }}
+          CAN_RUN_CLAUDE: ${{ steps.claude-action-guard.outputs.can_run }}
+          SKIP_REASON: ${{ steps.claude-action-guard.outputs.reason }}
         run: |
           set -euo pipefail
-          if [ -f "qa-report.md" ]; then
+          if [ "${CAN_RUN_CLAUDE:-true}" != "true" ]; then
+            {
+              echo "# Claude QA (Browser) Report"
+              echo ""
+              echo "## Verdict: QA_SKIPPED"
+              echo ""
+              echo "WARNING: Claude browser QA was skipped."
+              echo ""
+              echo "${SKIP_REASON:-Claude action compatibility guard prevented this run.}"
+              echo ""
+              echo "The browser warm-up completed before this guard, so the app rendered, but the Claude exploratory QA step did not run."
+            } > qa-report.md
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          elif [ -f "qa-report.md" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "${STRUCTURED_OUTPUT:-}" ]; then
+          node <<'NODE'
+          const fs = require('fs');
+          const raw = process.env.STRUCTURED_OUTPUT || '';
+          const report = ['# Claude QA (Browser) Report', ''];
+
+          try {
+            const data = JSON.parse(raw);
+            report.push(`## Verdict: ${data.verdict || 'UNKNOWN'}`);
+            report.push('');
+            report.push(data.summary || 'Claude returned structured QA output but did not write qa-report.md.');
+
+            if (data.metrics) {
+              report.push('');
+              report.push('## Metrics');
+              report.push('');
+              report.push(`- Total tests: ${data.metrics.total_tests ?? 0}`);
+              report.push(`- Passed: ${data.metrics.passed ?? 0}`);
+              report.push(`- Failed: ${data.metrics.failed ?? 0}`);
+              report.push(`- Critical bugs: ${data.metrics.critical_bugs ?? 0}`);
+              report.push(`- Major bugs: ${data.metrics.major_bugs ?? 0}`);
+              report.push(`- Minor bugs: ${data.metrics.minor_bugs ?? 0}`);
+            }
+
+            const bugs = Array.isArray(data.bugs) ? data.bugs : [];
+            if (bugs.length > 0) {
+              report.push('');
+              report.push('## Bugs');
+              for (const bug of bugs) {
+                report.push('');
+                report.push(`### ${bug.title || bug.id || 'Bug'}`);
+                report.push(`- Severity: ${bug.severity || 'unknown'}`);
+                if (bug.description) report.push(`- Description: ${bug.description}`);
+                if (bug.reproduction) report.push(`- Reproduction: ${bug.reproduction}`);
+              }
+            }
+          } catch (error) {
+            report.push('## Verdict: UNKNOWN');
+            report.push('');
+            report.push('Claude returned structured output but qa-report.md was missing and the JSON could not be parsed.');
+            report.push('');
+            report.push('```');
+            report.push(raw.slice(0, 4000));
+            report.push('```');
+          }
+
+          report.push('');
+          report.push('_Generated from Claude structured_output because qa-report.md was missing._');
+          fs.writeFileSync('qa-report.md', `${report.join('\n')}\n`);
+          NODE
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -491,7 +583,7 @@ jobs:
       # Retry with a quick smoke test if main run failed to generate a report
       - name: Retry if no report generated
         id: claude-qa-retry
-        if: steps.check-report.outputs.exists == 'false'
+        if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
         timeout-minutes: 8
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
@@ -560,23 +652,27 @@ jobs:
             if (structuredOutput && structuredOutput.trim()) {
               try {
                 const data = JSON.parse(structuredOutput);
+                const metrics = data.metrics || {};
 
-                if (data.verdict === 'CRITICAL_BUGS' || data.metrics.critical_bugs > 0) {
+                if (data.verdict === 'QA_SKIPPED') {
+                  state = 'success';
+                  description = 'QA skipped by compatibility guard';
+                } else if (data.verdict === 'CRITICAL_BUGS' || metrics.critical_bugs > 0) {
                   state = 'failure';
-                  description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
+                  description = `QA found ${metrics.critical_bugs} critical bug(s)`;
                 } else if (process.env.CONTRACT_VALID === 'false') {
                   state = 'pending';
                   description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
-                } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
+                } else if (data.verdict === 'MINOR_ISSUES' || metrics.major_bugs > 0) {
                   state = 'pending';
-                  const issueCount = (data.metrics.minor_bugs || 0) + (data.metrics.major_bugs || 0);
+                  const issueCount = (metrics.minor_bugs || 0) + (metrics.major_bugs || 0);
                   description = `QA found ${issueCount} issue(s) to review`;
                 } else {
                   state = 'success';
-                  description = `QA passed (${data.metrics.passed}/${data.metrics.total_tests} tests)`;
+                  description = `QA passed (${metrics.passed ?? 0}/${metrics.total_tests ?? 0} tests)`;
                 }
 
-                core.setOutput('metrics', JSON.stringify(data.metrics));
+                core.setOutput('metrics', JSON.stringify(metrics));
                 core.setOutput('verdict', data.verdict);
               } catch (parseErr) {
                 core.warning(`Failed to parse structured output: ${parseErr.message}`);
@@ -584,7 +680,10 @@ jobs:
             } else {
               try {
                 const report = fs.readFileSync('qa-report.md', 'utf8');
-                if (/CRITICAL/i.test(report)) {
+                if (/QA_SKIPPED/i.test(report)) {
+                  state = 'success';
+                  description = 'QA skipped by compatibility guard';
+                } else if (/CRITICAL/i.test(report)) {
                   state = 'failure';
                   description = 'QA found critical issues';
                 } else if (process.env.CONTRACT_VALID === 'false') {

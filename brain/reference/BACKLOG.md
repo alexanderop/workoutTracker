@@ -12,13 +12,13 @@ Feature ideas and improvements to tackle next.
 
 ## High Priority
 
-- [ ] **Progress charts/stats** - Visualize workout progress over time (weight lifted, volume, frequency)
-- [ ] **Exercise history** - Show previous weights/reps when selecting an exercise in workout
+- [x] **Progress charts/stats** ✅ Done — `ExerciseProgressView.vue` with PR cards and history chart
+- [x] **Exercise history** ✅ Done — `WorkoutPreviousHistory.vue` shows last used weights in active workout
 
 ## Medium Priority
 
-- [ ] **Workout calendar** - Calendar view showing training days at a glance
-- [ ] **Personal records (PRs)** - Automatically track and celebrate PRs
+- [x] **Workout calendar** ✅ Done — `WeekStrip.vue` + `WorkoutCalendarSheet.vue` on home screen
+- [x] **Personal records (PRs)** ✅ Done — tracked in exercise progress and benchmark attempt history
 - [ ] **Rest day reminders** - Push notifications for workout reminders
 
 ## Low Priority

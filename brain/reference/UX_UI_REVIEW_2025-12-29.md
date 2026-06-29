@@ -16,21 +16,13 @@ timestamp: 2026-06-28T08:10:00Z
 
 ## High Priority Issues
 
-### 1. Language Inconsistency
+### 1. Language Inconsistency ✅ Resolved
 
-- **Location:** Throughout app
-- **Problem:** Mixed German/English
-  - "No exercises yet" (English) on Log Past Workout page
-  - "Workout Plan" header is English, buttons are German
-  - "For Time" in timer selection vs German descriptions
-- **Fix:** Full localization audit — check all `t()` calls and hardcoded strings
+vue-i18n is now fully implemented across 12 translation domains (English + German). All UI strings are extracted through `t()` calls. Any new features must use translation keys from day one.
 
-### 2. Missing Active Workout Indicator
+### 2. Missing Active Workout Indicator ✅ Resolved
 
-- **Location:** Global (all pages)
-- **Problem:** When navigating away from an active workout, there's no indicator that a workout is in progress
-- **Risk:** Users may forget they have an active workout running
-- **Fix:** Add persistent banner/FAB showing active workout status with timer, visible on all pages
+`ActiveWorkoutFab.vue` (`src/features/workout/components/ActiveWorkoutFab.vue`) now shows a persistent FAB with the active workout timer on all pages when a workout is in progress.
 
 ### 3. Save Button Enabled on Empty State
 

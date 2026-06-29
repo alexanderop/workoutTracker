@@ -35,7 +35,7 @@ graph TB
         end
 
         subgraph Data["Data Layer"]
-            DB[db/repositories/]
+            DB[db/implementations/dexie/]
             TY[types/]
         end
 
@@ -108,7 +108,7 @@ src/
 │   ├── settings.ts     # createGlobalState — app settings state
 │   └── workoutState.ts # plain-ref singleton — active workout state
 ├── db/                 # Dexie IndexedDB + repository pattern
-│   └── repositories/   # Data access layer
+│   └── implementations/dexie/   # Data access layer (concrete repository implementations)
 ├── types/              # Shared TypeScript types
 ├── lib/                # Utility functions
 ├── router/             # Vue Router configuration

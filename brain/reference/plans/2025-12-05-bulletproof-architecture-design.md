@@ -9,7 +9,19 @@ timestamp: 2026-06-28T08:10:00Z
 ## Bulletproof Architecture Refactor
 
 **Date:** 2025-12-05
-**Status:** Design approved
+**Status:** Implemented (with deviations — see note below)
+
+## Implementation Note (2026-06)
+
+This plan was largely implemented. Key divergences from the design:
+
+- **State management**: Plan uses Pinia (`defineStore(...)`) everywhere. Actual implementation uses **VueUse `createGlobalState()`** — no Pinia. Both `src/stores/settings.ts` and `src/stores/exercises.ts` use `createGlobalState`, not `defineStore`.
+- **`useAppInitialization.ts` NOT deleted**: The plan says to delete `src/composables/useAppInitialization.ts` and inline in `App.vue`. The file still exists at `src/features/workout/composables/useAppInitialization.ts` (moved but not deleted).
+- **Shared types**: `src/types/blocks.ts`, `src/types/exercises.ts`, `src/types/settings.ts` were created as planned.
+- **Timer views**: `src/components/timers/WorkoutAmrapView.vue` etc. were created as planned.
+- **ESLint enforcement**: Architecture boundary rules are enforced (see architecture tests + `no-restricted-imports` config).
+
+---
 
 ## Goal
 

@@ -46,13 +46,17 @@ flowchart TB
     Home --> QuickTimer[Quick Timer]
 
     subgraph Bottom Navigation
+        HomeTab[Home]
         WorkoutsTab[Workouts]
         ExercisesTab[Exercises]
+        WeightTab[Weight]
         SettingsTab[Settings]
     end
 
+    Home --> HomeTab
     Home --> WorkoutsTab
     Home --> ExercisesTab
+    Home --> WeightTab
     Home --> SettingsTab
 
     WorkoutsTab --> Templates[Templates]
@@ -75,6 +79,8 @@ flowchart TB
     QuickTimer --> TimerSelection[Timer Selection]
     TimerSelection --> RunTimer[Run Timer]
 
+    WeightTab --> WeightLog[Weight Log]
+
     ExercisesTab --> ExerciseLibrary[Exercise Library]
     ExerciseLibrary --> CreateExercise[Create Exercise]
 ```
@@ -90,7 +96,7 @@ flowchart TB
 **Capabilities**:
 
 - Add strength exercises from library with customizable sets
-- Add timed blocks (AMRAP, EMOM, Tabata, For Time)
+- Add timed blocks (AMRAP, EMOM, Tabata, For Time, Cardio)
 - Reorder blocks via drag-and-drop
 - Track weight (kg/lbs), reps, and RIR for each set
 - Real-time duration timer during workout
@@ -212,7 +218,40 @@ flowchart TB
 4. Run timer
 5. Exit when complete
 
-### 6. Settings
+### 6. Weight Tracking
+
+**Purpose**: Log and visualize bodyweight over time.
+
+**Capabilities**:
+
+- Log daily bodyweight entries
+- Chart of weight history with trend line
+- Statistics: current, average, min/max, change
+- Accessible from the Weight tab in bottom navigation
+
+### 7. Progressions
+
+**Purpose**: Follow structured strength progressions with session-by-session tracking.
+
+**Capabilities**:
+
+- Pre-built progressions (e.g., kettlebell swing progressions)
+- Session logging with load and reps
+- Progress through stages automatically
+- Accessible from home or Workouts section
+
+### 8. Log Past Workout
+
+**Purpose**: Record a workout that already happened (retroactively).
+
+**Capabilities**:
+
+- Select a past date
+- Add exercises and log sets just like a live workout
+- Saves to workout history with the chosen date
+- Accessible from the home screen
+
+### 9. Settings
 
 **Purpose**: Customize app behavior and manage data.
 
@@ -259,6 +298,7 @@ flowchart LR
             EMOM[EMOM<br/>Every Minute On the Minute]
             Tabata[Tabata<br/>20s work / 10s rest]
             ForTime[For Time<br/>Complete ASAP]
+            Cardio[Cardio<br/>Distance/duration tracking]
         end
     end
 ```
@@ -297,6 +337,12 @@ flowchart LR
 - Optional time cap
 - Records completion time
 - Split time tracking available
+
+### Cardio Block
+
+- Distance/duration tracking for cardio sessions
+- Records: actual duration, distance (meters), avg pace, calories, notes
+- No timer — user logs the data manually after the session
 
 ---
 
@@ -401,6 +447,8 @@ All data is stored locally on the user's device:
 - **Benchmarks**: Benchmark definitions and attempt history
 - **Workout History**: Completed workout records
 - **Active Workout**: In-progress workout state (auto-saved)
+- **Weight Entries**: Bodyweight log
+- **Progressions**: Progression session logs
 - **Settings**: User preferences
 
 Data can be exported/imported as JSON for backup and transfer between devices.

@@ -18,18 +18,19 @@ This document captures UI inconsistencies found across the codebase that should 
 
 These issues appear across multiple features and should be prioritized.
 
-### 1. Dialog Footer Patterns (High Priority)
+### 1. Dialog Footer Patterns (Partially Addressed ✅)
 
-**Problem:** 4+ different patterns for dialog button layouts
+`DialogActions` component created at `src/components/DialogActions.vue`. Pattern A dialogs (ErrorDialog, ResumeWorkoutDialog, WorkoutFinishDialog, WorkoutCancelDialog) should now use it. Configure dialogs moved to `src/components/blocks/` (ConfigureAmrapDialog.vue, ConfigureEmomDialog.vue, ConfigureTabataDialog.vue, ConfigureForTimeDialog.vue, ConfigureCardioDialog.vue).
 
-| Pattern | Location                                                                   | Classes                                          |
-| ------- | -------------------------------------------------------------------------- | ------------------------------------------------ |
-| A       | ErrorDialog, ResumeWorkoutDialog, WorkoutFinishDialog, WorkoutCancelDialog | `flex flex-col gap-3 sm:flex-row sm:justify-end` |
-| B       | WorkoutConfigureAmrapDialog                                                | `pt-4 border-t flex gap-3`                       |
-| C       | BenchmarkRepsDialog                                                        | `DialogFooter class="flex-row gap-2"`            |
-| D       | WorkoutSaveTemplateDialog                                                  | `flex gap-3`                                     |
+**Remaining inconsistencies** — still use ad-hoc footer patterns:
 
-**Recommendation:** Create a standardized `DialogActions` component:
+| Pattern | Location                   | Classes                                          |
+| ------- | -------------------------- | ------------------------------------------------ |
+| B       | ConfigureAmrapDialog       | `pt-4 border-t flex gap-3`                       |
+| C       | BenchmarkRepsDialog        | `DialogFooter class="flex-row gap-2"`            |
+| D       | WorkoutSaveTemplateDialog  | `flex gap-3`                                     |
+
+**Canonical pattern** (DialogActions component):
 
 ```vue
 <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -38,28 +39,19 @@ These issues appear across multiple features and should be prioritized.
 </div>
 ```
 
-### 2. Hardcoded Slate Colors (High Priority)
+### 2. Hardcoded Slate Colors ✅ Fixed
 
-**Problem:** Some components use `bg-slate-*` instead of theme-aware `bg-muted`
+All `bg-slate-*` / `hover:bg-slate-*` occurrences have been removed from Vue components. Theme-aware tokens (`hover:bg-muted`, `bg-muted`) are used throughout. Note: `CreateCustomExercise.vue` was renamed to `ExerciseFormView.vue`.
 
-**Affected Files:**
+### 3. Custom Button Elements (Medium Priority — Partially Fixed)
 
-- `src/features/exercises/components/ExerciseSettingsItem.vue:22` - `hover:bg-slate-50 dark:hover:bg-slate-900`
-- `src/features/exercises/components/ExerciseSelectorDialog.vue:42,62` - `hover:bg-slate-50 dark:hover:bg-slate-900`
-- `src/views/CreateCustomExercise.vue:123` - `bg-slate-700 hover:bg-slate-600`
+**Fixed:**
+- `src/features/settings/components/SettingsDataSection.vue` — Export/Import now use `<Button>` ✅
 
-**Fix:** Replace with `hover:bg-muted/50` or `hover:bg-muted`
-
-### 3. Custom Button Elements (Medium Priority)
-
-**Problem:** Several places use native `<button>` with custom styling instead of shadcn Button component
-
-**Affected Files:**
-
-- `src/features/settings/components/SettingsDataSection.vue:82-117` - Export/Import buttons
+**Still uses native `<button>`:**
 - `src/features/templates/components/TemplateExerciseItem.vue:79-103` - Increment/decrement controls
 - `src/features/benchmarks/components/BenchmarkTypeCard.vue:21-27` - Type selection card
-- `src/views/CreateCustomExercise.vue:122-127` - Icon picker button
+- Icon picker in exercise form (`src/views/ExerciseFormView.vue`) — `CreateCustomExercise.vue` was renamed
 
 **Why it matters:** Loses accessibility features, focus states, and consistent styling
 
@@ -95,14 +87,9 @@ These issues appear across multiple features and should be prioritized.
 - Emoji icons: Use `text-*` sizing
 - Standardize: action button icons = `size-4`, standalone icons = `size-5`
 
-### 6. Missing i18n (High Priority)
+### 6. Missing i18n ✅ Resolved
 
-**Affected Files:**
-
-- `src/features/benchmarks/components/BenchmarkCompletionScreen.vue:43,59,72`
-  - "Workout Complete!" (line 43)
-  - "Final Time" (line 59)
-  - "View Details" (line 72)
+Full vue-i18n is implemented across 12 translation domains (English + German). `BenchmarkCompletionScreen.vue` no longer exists as a separate component — benchmark completion UI was refactored into `BenchmarkForTimeView.vue` / `BenchmarkViewMode.vue`. Any remaining hardcoded strings should be found with `grep -r "\"[A-Z]"` rather than relying on the original file list.
 
 ---
 
@@ -128,7 +115,7 @@ These issues appear across multiple features and should be prioritized.
 
 | Issue                     | File                           | Line     | Description                              |
 | ------------------------- | ------------------------------ | -------- | ---------------------------------------- |
-| **Missing i18n**          | BenchmarkCompletionScreen.vue  | 43,59,72 | Hardcoded English strings                |
+| ~~Missing i18n~~          | ~~BenchmarkCompletionScreen.vue~~ | — | ✅ Resolved — component removed, i18n full |
 | Order badge size (view)   | BenchmarkExerciseCard.vue      | 19-23    | `size-10 text-lg font-bold`              |
 | Order badge size (edit)   | BenchmarkExerciseItem.vue      | 28-32    | `size-6 text-xs font-semibold`           |
 | Exercise icon size (view) | BenchmarkExerciseCard.vue      | 26       | `text-4xl`                               |
@@ -145,7 +132,7 @@ These issues appear across multiple features and should be prioritized.
 
 | Issue                  | File                            | Line   | Description                          |
 | ---------------------- | ------------------------------- | ------ | ------------------------------------ |
-| Custom button elements | SettingsDataSection.vue         | 82-117 | Export/Import use custom `<button>`  |
+| ~~Custom button elements~~ | ~~SettingsDataSection.vue~~   | — | ✅ Fixed — uses `<Button>` now       |
 | Mixed button heights   | Multiple                        | -      | `min-h-11` vs `min-h-9`              |
 | Spacing inconsistency  | SettingsDataSection.vue         | 80     | `space-y-3` vs `space-y-4` elsewhere |
 | Custom range input     | SettingsScreenSection.vue       | 88-98  | Manual styling instead of Slider     |
@@ -157,9 +144,9 @@ These issues appear across multiple features and should be prioritized.
 
 | Issue                 | File                       | Line    | Description                                 |
 | --------------------- | -------------------------- | ------- | ------------------------------------------- |
-| Hardcoded hover color | ExerciseSettingsItem.vue   | 22      | `hover:bg-slate-50 dark:hover:bg-slate-900` |
-| Hardcoded hover color | ExerciseSelectorDialog.vue | 42,62   | Same issue                                  |
-| Custom icon button    | CreateCustomExercise.vue   | 122-127 | `bg-slate-700` button                       |
+| ~~Hardcoded hover color~~ | ~~ExerciseSettingsItem.vue~~ | — | ✅ Fixed — slate colors removed         |
+| ~~Hardcoded hover color~~ | ~~ExerciseSelectorDialog.vue~~ | — | ✅ Fixed — slate colors removed       |
+| Custom icon button    | ExerciseFormView.vue       | —       | Renamed from CreateCustomExercise.vue       |
 | Filter pills          | TheExercisesView.vue       | 76-88   | Custom pattern, consider extraction         |
 
 ### Templates Feature

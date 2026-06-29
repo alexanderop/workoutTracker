@@ -46,8 +46,8 @@ benchmarks: 'id, createdAt, lastUsedAt',
 
 **Files**:
 
-- `src/db/implementations/dexie/benchmarks.ts:59-109` (`startFromBenchmark`)
-- `src/db/implementations/dexie/templates.ts:248-276` (`startFromTemplate`)
+- `src/db/implementations/dexie/benchmarks.ts` (~line 77, `startFromBenchmark`)
+- `src/db/implementations/dexie/templates.ts` (~line 237, `startFromTemplate`)
 
 Wrap the `lastUsedAt` update in a transaction with the read operation.
 
@@ -175,15 +175,17 @@ async add(exercise: DbCustomExercise): Promise<void> {
 }
 ```
 
-### 4.2 Improve Version Change Handling
+### 4.2 Improve Version Change Handling (Partially Done)
 
-**File**: `src/db/implementations/dexie/database.ts:58-60`
+**File**: `src/db/implementations/dexie/database.ts:124`
+
+`db.close()` on versionchange IS implemented. The user-notification step (`window.dispatchEvent(new CustomEvent('db-version-change'))`) is NOT — the tab silently closes the DB but doesn't prompt the user to refresh.
 
 ```typescript
+// Current state (database.ts:124-126)
 db.on('versionchange', () => {
   db.close()
-  // Notify user to refresh
-  window.dispatchEvent(new CustomEvent('db-version-change'))
+  // TODO: notify user → window.dispatchEvent(new CustomEvent('db-version-change'))
 })
 ```
 

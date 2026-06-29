@@ -125,4 +125,4 @@ Persistence is handled by VueUse (`localStorage`), so no custom store is needed.
 
 **Add new colors in three places, not one.** Raw var in `:root`, raw var in `.dark`, mapping in `@theme inline`. Forgetting `@theme inline` is the most common cause of "my new `bg-foo` class does nothing".
 
-**Use OKLCH, not hex.** All tokens are OKLCH so derived utilities like `oklch(from var(--success) l c h / 20%)` (see `.status-success-bg` at `src/style.css:186`) work consistently across light/dark.
+**Use OKLCH, not hex.** All tokens are OKLCH so derived utilities like `oklch(from var(--success) l c h / 20%)` (see `.status-success-bg` at `src/style.css:185`) work consistently across light/dark.

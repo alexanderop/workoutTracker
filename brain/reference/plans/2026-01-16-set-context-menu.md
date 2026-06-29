@@ -9,7 +9,7 @@ timestamp: 2026-06-28T08:10:00Z
 ## Feature Spec: Set Context Menu in Active Workout
 
 **Date:** 2026-01-16
-**Status:** Ready for implementation
+**Status:** Implemented — `SetContextMenu.vue` is live in `src/features/workout/components/`
 
 ## Problem
 

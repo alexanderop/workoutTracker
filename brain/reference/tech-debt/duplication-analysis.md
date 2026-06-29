@@ -56,7 +56,7 @@ function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise
   const newBlocks = [...workout.value.blocks, newBlock]
   updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
 }
-// ... repeated for tabata, fortime, cardio
+// ... repeated for tabata, fortime — and also addCardioBlock (5th pattern)
 ```
 
 **Code Smell:** [Duplicated Code](https://refactoring.guru/smells/duplicate-code)
@@ -185,12 +185,12 @@ Similar timer state (elapsed, isRunning, isPaused) and control logic (start, pau
 
 ### Refactoring Techniques
 
-#### Option A: Extract Superclass (Composition)
+#### Option A: Extract Superclass (Composition) ✅ Done
 
-Create a base timer composable:
+`useBaseTimer` is implemented at `src/composables/timers/useBaseTimer.ts`. The four timer composables (Amrap, Emom, Tabata, ForTime) all extend it. Existing duplication is resolved.
 
 ```ts
-// src/composables/timers/useBaseTimer.ts
+// src/composables/timers/useBaseTimer.ts (implemented)
 export function useBaseTimer() {
   const elapsed = ref(0)
   const isRunning = ref(false)

@@ -1276,7 +1276,7 @@ async function loadWorkouts(): Promise<void> {
 Create domain-specific error types:
 
 ```typescript
-export type DatabaseErrorCode = 'NOT_FOUND' | 'DUPLICATE' | 'CONSTRAINT' | 'UNKNOWN'
+export type DatabaseErrorCode = 'SAVE_FAILED' | 'LOAD_FAILED' | 'NOT_FOUND'
 
 export class DatabaseError extends Error {
   constructor(
@@ -2212,7 +2212,7 @@ export async function assertNoViolationsWithoutContrast(container: Element): Pro
 For Vue + Vite projects, use shadcn-vue:
 
 - Primitives you own and customize
-- Based on Radix Vue for accessibility
+- Built on **reka-ui** primitives for accessibility (the Vue-native Radix fork; not radix-vue)
 - Full control over styling and behavior
 
 ```bash
