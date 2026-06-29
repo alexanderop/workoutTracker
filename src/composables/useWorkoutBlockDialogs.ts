@@ -1,4 +1,4 @@
-import type { WritableComputedRef } from 'vue'
+import type { Ref, WritableComputedRef } from 'vue'
 import type { TimedBlockKind } from '@/types/blocks'
 import { useDialogState } from './useDialogState'
 
@@ -18,20 +18,20 @@ const timedBlockDialogByKind = {
 } as const satisfies Record<TimedBlockKind, WorkoutBlockDialog>
 
 export type WorkoutBlockDialogsState = {
-  addBlockDialogOpen: WritableComputedRef<boolean>
-  configureAmrapOpen: WritableComputedRef<boolean>
-  configureEmomOpen: WritableComputedRef<boolean>
-  configureTabataOpen: WritableComputedRef<boolean>
-  configureForTimeOpen: WritableComputedRef<boolean>
-  configureCardioOpen: WritableComputedRef<boolean>
+  addBlockDialogOpen: Ref<boolean>
+  configureAmrapOpen: Ref<boolean>
+  configureEmomOpen: Ref<boolean>
+  configureTabataOpen: Ref<boolean>
+  configureForTimeOpen: Ref<boolean>
+  configureCardioOpen: Ref<boolean>
   openAddBlockDialog: () => void
   openTimedBlockDialog: (kind: TimedBlockKind) => void
   openCardioBlockDialog: () => void
 }
 
 export type WorkoutBlockDialogController = {
-  createDialogModel(dialogName: WorkoutBlockDialog): WritableComputedRef<boolean>
-  open(dialogName: WorkoutBlockDialog): void
+  createDialogModel: (dialogName: WorkoutBlockDialog) => WritableComputedRef<boolean>
+  open: (dialogName: WorkoutBlockDialog) => void
 }
 
 export function useWorkoutBlockDialogs(
