@@ -60,8 +60,12 @@ function parseExecutionLog(path) {
   if (!raw) return []
 
   if (raw.startsWith('[')) {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : [parsed]
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : [parsed]
+    } catch {
+      return []
+    }
   }
 
   return raw
