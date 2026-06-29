@@ -7,14 +7,7 @@ import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.v
 import WorkoutCompletionScreen from '@/features/workout/components/WorkoutCompletionScreen.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
 import WorkoutCancelDialog from '@/components/WorkoutCancelDialog.vue'
-import {
-  AddBlockDialog,
-  ConfigureAmrapDialog,
-  ConfigureEmomDialog,
-  ConfigureTabataDialog,
-  ConfigureForTimeDialog,
-  ConfigureCardioDialog,
-} from '@/components/blocks'
+import { WorkoutBlockDialogs } from '@/components/blocks'
 import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
@@ -22,15 +15,10 @@ import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer
 import { getWorkoutRef, resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
-import type {
-  AmrapConfig,
-  BlockExercise,
-  CardioConfig,
-  EmomConfig,
-  ForTimeConfig,
-  TabataConfig,
-  TimedBlockKind,
-} from '@/types/blocks'
+import {
+  useWorkoutBlockDialogs,
+  type WorkoutBlockDialog,
+} from '@/composables/useWorkoutBlockDialogs'
 import { isStrengthBlock } from '@/types/blocks'
 
 const router = useRouter()
@@ -71,27 +59,27 @@ onMounted(() => {
 
 // Dialog state
 type WorkoutDialog =
-  | 'addBlock'
+  | WorkoutBlockDialog
   | 'editExercise'
   | 'finish'
   | 'cancel'
-  | 'configureAmrap'
-  | 'configureEmom'
-  | 'configureTabata'
-  | 'configureForTime'
-  | 'configureCardio'
 
 const { createDialogModel, open: openDialog } = useDialogState<WorkoutDialog>()
 
-const addBlockDialogOpen = createDialogModel('addBlock')
 const editExerciseDialogOpen = createDialogModel('editExercise')
 const finishDialogOpen = createDialogModel('finish')
 const cancelDialogOpen = createDialogModel('cancel')
-const configureAmrapOpen = createDialogModel('configureAmrap')
-const configureEmomOpen = createDialogModel('configureEmom')
-const configureTabataOpen = createDialogModel('configureTabata')
-const configureForTimeOpen = createDialogModel('configureForTime')
-const configureCardioOpen = createDialogModel('configureCardio')
+const {
+  addBlockDialogOpen,
+  configureAmrapOpen,
+  configureEmomOpen,
+  configureTabataOpen,
+  configureForTimeOpen,
+  configureCardioOpen,
+  openAddBlockDialog,
+  openTimedBlockDialog,
+  openCardioBlockDialog,
+} = useWorkoutBlockDialogs({ createDialogModel, open: openDialog })
 
 const editingBlockIndex = ref<number | null>(null)
 const queueDrawerOpen = ref(false)
@@ -152,41 +140,6 @@ async function handleConfirmCancel() {
   router.push({ name: RouteNames.Home })
 }
 
-// Block management handlers
-function handleAddTimedBlock(kind: TimedBlockKind) {
-  const dialogMap: Record<TimedBlockKind, WorkoutDialog> = {
-    amrap: 'configureAmrap',
-    emom: 'configureEmom',
-    tabata: 'configureTabata',
-    fortime: 'configureForTime',
-  }
-  openDialog(dialogMap[kind])
-}
-
-function handleConfirmAmrap(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addAmrapBlock(config, exercises)
-}
-
-function handleConfirmEmom(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addEmomBlock(config, exercises)
-}
-
-function handleConfirmTabata(config: TabataConfig, exercise: BlockExercise) {
-  addTabataBlock(config, exercise)
-}
-
-function handleConfirmForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addForTimeBlock(config, exercises)
-}
-
-function handleAddCardioBlock() {
-  openDialog('configureCardio')
-}
-
-function handleConfirmCardio(config: CardioConfig) {
-  addCardioBlock(config)
-}
-
 function handleSaveExercise(data: ExerciseEditData) {
   if (!selectedExercise.value) return
   updateExercise({
@@ -224,7 +177,7 @@ function handleOpenQueue() {
 
 function handleQueueAddBlock() {
   queueDrawerOpen.value = false
-  openDialog('addBlock')
+  openAddBlockDialog()
 }
 </script>
 
@@ -233,7 +186,7 @@ function handleQueueAddBlock() {
     <!-- Builder Mode -->
     <WorkoutBuilderMode
       v-if="isBuilderMode"
-      @add-block="openDialog('addBlock')"
+      @add-block="openAddBlockDialog"
       @edit-block="handleEditBlock"
     />
 
@@ -255,32 +208,21 @@ function handleQueueAddBlock() {
     />
 
     <!-- Dialogs (shared across modes) -->
-    <AddBlockDialog
-      v-model:open="addBlockDialogOpen"
+    <WorkoutBlockDialogs
+      v-model:add-block-open="addBlockDialogOpen"
+      v-model:amrap-open="configureAmrapOpen"
+      v-model:emom-open="configureEmomOpen"
+      v-model:tabata-open="configureTabataOpen"
+      v-model:for-time-open="configureForTimeOpen"
+      v-model:cardio-open="configureCardioOpen"
       @add-exercise="(exercise) => addExercise(exercise.id ?? exercise.name, exercise.name)"
-      @add-timed-block="handleAddTimedBlock"
-      @add-cardio-block="handleAddCardioBlock"
-    />
-
-    <ConfigureAmrapDialog
-      v-model:open="configureAmrapOpen"
-      @confirm="handleConfirmAmrap"
-    />
-    <ConfigureEmomDialog
-      v-model:open="configureEmomOpen"
-      @confirm="handleConfirmEmom"
-    />
-    <ConfigureTabataDialog
-      v-model:open="configureTabataOpen"
-      @confirm="handleConfirmTabata"
-    />
-    <ConfigureForTimeDialog
-      v-model:open="configureForTimeOpen"
-      @confirm="handleConfirmForTime"
-    />
-    <ConfigureCardioDialog
-      v-model:open="configureCardioOpen"
-      @confirm="handleConfirmCardio"
+      @add-timed-block="openTimedBlockDialog"
+      @add-cardio-block="openCardioBlockDialog"
+      @confirm-amrap="addAmrapBlock"
+      @confirm-emom="addEmomBlock"
+      @confirm-tabata="addTabataBlock"
+      @confirm-for-time="addForTimeBlock"
+      @confirm-cardio="addCardioBlock"
     />
 
     <WorkoutEditExerciseDialog

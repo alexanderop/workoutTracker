@@ -2,16 +2,9 @@
 import { computed } from 'vue'
 import { Dumbbell } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
-import { useDialogState } from '@/composables/useDialogState'
+import { useWorkoutBlockDialogs } from '@/composables/useWorkoutBlockDialogs'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import {
-  AddBlockDialog,
-  ConfigureAmrapDialog,
-  ConfigureEmomDialog,
-  ConfigureTabataDialog,
-  ConfigureForTimeDialog,
-  ConfigureCardioDialog,
-} from '@/components/blocks'
+import { WorkoutBlockDialogs } from '@/components/blocks'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -24,14 +17,7 @@ import {
 import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
 import { usePastWorkout } from '../composables/usePastWorkout'
 import type {
-  AmrapConfig,
-  BlockExercise,
-  CardioConfig,
-  EmomConfig,
-  ForTimeConfig,
   StrengthBlock,
-  TabataConfig,
-  TimedBlockKind,
 } from '@/types/blocks'
 
 const { t } = useI18n()
@@ -50,23 +36,17 @@ const {
   selectBlock,
 } = usePastWorkout()
 
-// Dialog state
-type PastWorkoutDialog =
-  | 'addBlock'
-  | 'configureAmrap'
-  | 'configureEmom'
-  | 'configureTabata'
-  | 'configureForTime'
-  | 'configureCardio'
-
-const { createDialogModel, open: openDialog } = useDialogState<PastWorkoutDialog>()
-
-const addBlockDialogOpen = createDialogModel('addBlock')
-const configureAmrapOpen = createDialogModel('configureAmrap')
-const configureEmomOpen = createDialogModel('configureEmom')
-const configureTabataOpen = createDialogModel('configureTabata')
-const configureForTimeOpen = createDialogModel('configureForTime')
-const configureCardioOpen = createDialogModel('configureCardio')
+const {
+  addBlockDialogOpen,
+  configureAmrapOpen,
+  configureEmomOpen,
+  configureTabataOpen,
+  configureForTimeOpen,
+  configureCardioOpen,
+  openAddBlockDialog,
+  openTimedBlockDialog,
+  openCardioBlockDialog,
+} = useWorkoutBlockDialogs()
 
 const hasBlocks = computed(() => blocks.value.length > 0)
 
@@ -98,39 +78,6 @@ function handleAddExercise(exercise: Exercise) {
   addBlock(block)
 }
 
-function handleAddTimedBlock(kind: TimedBlockKind) {
-  const dialogMap: Record<TimedBlockKind, PastWorkoutDialog> = {
-    amrap: 'configureAmrap',
-    emom: 'configureEmom',
-    tabata: 'configureTabata',
-    fortime: 'configureForTime',
-  }
-  openDialog(dialogMap[kind])
-}
-
-function handleConfirmAmrap(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addAmrapBlock(config, exercises)
-}
-
-function handleConfirmEmom(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addEmomBlock(config, exercises)
-}
-
-function handleConfirmTabata(config: TabataConfig, exercise: BlockExercise) {
-  addTabataBlock(config, exercise)
-}
-
-function handleConfirmForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addForTimeBlock(config, exercises)
-}
-
-function handleAddCardioBlock() {
-  openDialog('configureCardio')
-}
-
-function handleConfirmCardio(config: CardioConfig) {
-  addCardioBlock(config)
-}
 </script>
 
 <template>
@@ -144,7 +91,7 @@ function handleConfirmCardio(config: CardioConfig) {
       @edit="selectBlock"
       @remove="removeBlockByIndex"
       @reorder="reorderBlocks"
-      @add-block="openDialog('addBlock')"
+      @add-block="openAddBlockDialog"
     />
 
     <!-- Empty State -->
@@ -159,7 +106,7 @@ function handleConfirmCardio(config: CardioConfig) {
             {{ t('logPastWorkout.noBlocksDescription', 'Add exercises to log your past workout') }}
           </EmptyDescription>
         </EmptyHeader>
-        <Button class="gap-2" @click="openDialog('addBlock')">
+        <Button class="gap-2" @click="openAddBlockDialog">
           <Dumbbell class="icon-sm" aria-hidden="true" />
           {{ t('logPastWorkout.addFirstBlock', 'Add First Exercise') }}
         </Button>
@@ -167,32 +114,21 @@ function handleConfirmCardio(config: CardioConfig) {
     </Empty>
 
     <!-- Dialogs -->
-    <AddBlockDialog
-      v-model:open="addBlockDialogOpen"
+    <WorkoutBlockDialogs
+      v-model:add-block-open="addBlockDialogOpen"
+      v-model:amrap-open="configureAmrapOpen"
+      v-model:emom-open="configureEmomOpen"
+      v-model:tabata-open="configureTabataOpen"
+      v-model:for-time-open="configureForTimeOpen"
+      v-model:cardio-open="configureCardioOpen"
       @add-exercise="handleAddExercise"
-      @add-timed-block="handleAddTimedBlock"
-      @add-cardio-block="handleAddCardioBlock"
-    />
-
-    <ConfigureAmrapDialog
-      v-model:open="configureAmrapOpen"
-      @confirm="handleConfirmAmrap"
-    />
-    <ConfigureEmomDialog
-      v-model:open="configureEmomOpen"
-      @confirm="handleConfirmEmom"
-    />
-    <ConfigureTabataDialog
-      v-model:open="configureTabataOpen"
-      @confirm="handleConfirmTabata"
-    />
-    <ConfigureForTimeDialog
-      v-model:open="configureForTimeOpen"
-      @confirm="handleConfirmForTime"
-    />
-    <ConfigureCardioDialog
-      v-model:open="configureCardioOpen"
-      @confirm="handleConfirmCardio"
+      @add-timed-block="openTimedBlockDialog"
+      @add-cardio-block="openCardioBlockDialog"
+      @confirm-amrap="addAmrapBlock"
+      @confirm-emom="addEmomBlock"
+      @confirm-tabata="addTabataBlock"
+      @confirm-for-time="addForTimeBlock"
+      @confirm-cardio="addCardioBlock"
     />
   </div>
 </template>

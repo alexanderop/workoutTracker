@@ -373,6 +373,16 @@ When refactoring a component, check for:
 - [ ] **Complex v-for content?** → Apply List Component pattern
 - [ ] **Orchestrates multiple features?** → Apply Controller Component pattern
 - [ ] **Child component?** → Apply Humble Components pattern
+- [ ] **Repeats add/configure workout block dialogs?** → Use `useWorkoutBlockDialogs()` with `WorkoutBlockDialogs`
+
+### Workout Block Dialog Pattern
+
+When a page lets users add strength, timed, or cardio blocks, keep dialog choreography out of the page. Use:
+
+- `src/composables/useWorkoutBlockDialogs.ts` for the add/configure dialog state and timed-block routing.
+- `src/components/blocks/WorkoutBlockDialogs.vue` to render the shared add/configure dialogs and forward typed events.
+
+The page should own domain actions such as `addStrengthBlock`, `addAmrapBlock`, or `addCardioBlock`, but it should not duplicate the `TimedBlockKind` → configure-dialog map or the six-dialog template.
 
 ---
 
