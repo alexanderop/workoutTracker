@@ -66,7 +66,7 @@ jobs:
       - name: Get PR metadata for issue_comment
         if: github.event_name == 'issue_comment'
         id: pr-metadata
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -126,7 +126,7 @@ jobs:
       - name: Get PR context
         if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
         id: pr-context
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
           PR_NUMBER_COMMENT: ${{ steps.pr-metadata.outputs.number }}
@@ -637,7 +637,7 @@ jobs:
       - name: Set commit status
         id: qa-status
         if: always()
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
           CONTRACT_VALID: ${{ steps.pr-context.outputs.contract_valid || 'true' }}
@@ -727,7 +727,7 @@ jobs:
 
       - name: Render QA summary to step summary
         if: always()
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
           QA_FOCUS: ${{ steps.qa-mode.outputs.focus }}
@@ -877,7 +877,7 @@ jobs:
         if: |
           github.event_name == 'pull_request' &&
           github.event.label.name == 'qa-verify'
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           LABEL_NAME: ${{ github.event.label.name }}
         with:

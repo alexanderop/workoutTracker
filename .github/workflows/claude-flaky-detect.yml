@@ -79,7 +79,7 @@ jobs:
             --json-schema '{"type":"object","properties":{"is_flaky":{"type":"boolean"},"confidence":{"type":"number","minimum":0,"maximum":1},"summary":{"type":"string"}},"required":["is_flaky","confidence","summary"],"additionalProperties":false}'
 
       - name: Act on classification
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.classify.outputs.structured_output }}
           RUN_ID: ${{ github.event.workflow_run.id }}
