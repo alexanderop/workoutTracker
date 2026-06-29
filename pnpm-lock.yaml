@@ -252,7 +252,11 @@ catalogs:
       version: 1.4.0
 
 overrides:
+  js-yaml: 4.2.0
+  markdown-it: 14.2.0
   qs: '>=6.14.1'
+  tmp: 0.2.7
+  uuid: 11.1.1
 
 importers:
   .:
@@ -5256,12 +5260,6 @@ packages:
       }
     engines: { node: '>=14' }
 
-  argparse@1.0.10:
-    resolution:
-      {
-        integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==,
-      }
-
   argparse@2.0.1:
     resolution:
       {
@@ -8626,20 +8624,6 @@ packages:
         integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==,
       }
 
-  js-yaml@3.14.2:
-    resolution:
-      {
-        integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==,
-      }
-    hasBin: true
-
-  js-yaml@4.1.1:
-    resolution:
-      {
-        integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==,
-      }
-    hasBin: true
-
   js-yaml@4.2.0:
     resolution:
       {
@@ -9152,10 +9136,10 @@ packages:
         integrity: sha512-csNFylzntPmHWidczfgCZpvbTSmhaWvLRj9e1ezUDBEPizGgshgm3ea1T5TCNEEBq0roauu7BPuRZjA3wO4KqA==,
       }
 
-  markdown-it@14.1.1:
+  markdown-it@14.2.0:
     resolution:
       {
-        integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==,
+        integrity: sha512-1TGiQiJVRQ3NPmZH6sx5Cfnmg6GQm9jvC1ch4TK511NjSJvjzKLzn5pPfZRNZkRPZP0HqCioSndqH8v2nRaWVQ==,
       }
     hasBin: true
 
@@ -9882,13 +9866,6 @@ packages:
       }
     engines: { node: '>= 0.8.0' }
 
-  os-tmpdir@1.0.2:
-    resolution:
-      {
-        integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==,
-      }
-    engines: { node: '>=0.10.0' }
-
   own-keys@1.0.1:
     resolution:
       {
@@ -10607,14 +10584,6 @@ packages:
         integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==,
       }
 
-  rimraf@2.7.1:
-    resolution:
-      {
-        integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==,
-      }
-    deprecated: Rimraf versions prior to v4 are no longer supported
-    hasBin: true
-
   rimraf@3.0.2:
     resolution:
       {
@@ -11091,12 +11060,6 @@ packages:
         integrity: sha512-RAb22TG39LhI31MbreBgIuKiIKhVsawfTgEGqKHTK87aG+ul/PB8Sqoi3I7kVdRWiCfrKxK3uo4/YUkpNvhPbw==,
       }
 
-  sprintf-js@1.0.3:
-    resolution:
-      {
-        integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==,
-      }
-
   stable-hash-x@0.2.0:
     resolution:
       {
@@ -11500,19 +11463,12 @@ packages:
       }
     hasBin: true
 
-  tmp@0.0.33:
+  tmp@0.2.7:
     resolution:
       {
-        integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==,
+        integrity: sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==,
       }
-    engines: { node: '>=0.6.0' }
-
-  tmp@0.1.0:
-    resolution:
-      {
-        integrity: sha512-J7Z2K08jbGcdA1kkQpJSqLF6T0tdQqpR2pnSUXsIchbPdTI9v3e85cLW0d6WDhwuAleOV71j2xWs8qMPfK7nKw==,
-      }
-    engines: { node: '>=6' }
+    engines: { node: '>=14.14' }
 
   to-data-view@1.1.0:
     resolution:
@@ -11928,12 +11884,11 @@ packages:
       }
     engines: { node: '>= 0.4.0' }
 
-  uuid@8.3.2:
+  uuid@11.1.1:
     resolution:
       {
-        integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==,
+        integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==,
       }
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   vary@1.1.2:
@@ -14088,8 +14043,8 @@ snapshots:
       lighthouse-logger: 1.2.0
       open: 7.4.2
       proxy-agent: 6.5.0
-      tmp: 0.1.0
-      uuid: 8.3.2
+      tmp: 0.2.7
+      uuid: 11.1.1
       yargs: 15.4.1
       yargs-parser: 13.1.2
     transitivePeerDependencies:
@@ -14105,7 +14060,7 @@ snapshots:
     dependencies:
       debug: 4.4.3
       isomorphic-fetch: 3.0.0
-      js-yaml: 3.14.2
+      js-yaml: 4.2.0
       lighthouse: 12.6.1
       tree-kill: 1.2.2
     transitivePeerDependencies:
@@ -15705,10 +15660,6 @@ snapshots:
 
   are-docs-informative@0.0.2: {}
 
-  argparse@1.0.10:
-    dependencies:
-      sprintf-js: 1.0.3
-
   argparse@2.0.1: {}
 
   aria-hidden@1.2.6:
@@ -17123,7 +17074,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.0.33
+      tmp: 0.2.7
 
   extract-zip@2.0.1:
     dependencies:
@@ -17803,15 +17754,6 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@3.14.2:
-    dependencies:
-      argparse: 1.0.10
-      esprima: 4.0.1
-
-  js-yaml@4.1.1:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.2.0:
     dependencies:
       argparse: 2.0.1
@@ -18166,7 +18108,7 @@ snapshots:
       tinyqueue: 2.0.3
       vt-pbf: 3.1.3
 
-  markdown-it@14.1.1:
+  markdown-it@14.2.0:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
@@ -18184,10 +18126,10 @@ snapshots:
   markdownlint-cli2@0.22.1:
     dependencies:
       globby: 16.2.0
-      js-yaml: 4.1.1
+      js-yaml: 4.2.0
       jsonc-parser: 3.3.1
       jsonpointer: 5.0.1
-      markdown-it: 14.1.1
+      markdown-it: 14.2.0
       markdownlint: 0.40.0
       markdownlint-cli2-formatter-default: 0.0.6(markdownlint-cli2@0.22.1)
       micromatch: 4.0.8
@@ -18757,8 +18699,6 @@ snapshots:
       type-check: 0.4.0
       word-wrap: 1.2.5
 
-  os-tmpdir@1.0.2: {}
-
   own-keys@1.0.1:
     dependencies:
       get-intrinsic: 1.3.0
@@ -19258,10 +19198,6 @@ snapshots:
 
   rfdc@1.4.1: {}
 
-  rimraf@2.7.1:
-    dependencies:
-      glob: 7.2.3
-
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
@@ -19613,8 +19549,6 @@ snapshots:
     dependencies:
       through2: 2.0.5
 
-  sprintf-js@1.0.3: {}
-
   stable-hash-x@0.2.0: {}
 
   stackback@0.0.2: {}
@@ -19873,13 +19807,7 @@ snapshots:
     dependencies:
       tldts-core: 7.4.3
 
-  tmp@0.0.33:
-    dependencies:
-      os-tmpdir: 1.0.2
-
-  tmp@0.1.0:
-    dependencies:
-      rimraf: 2.7.1
+  tmp@0.2.7: {}
 
   to-data-view@1.1.0: {}
 
@@ -20139,7 +20067,7 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
-  uuid@8.3.2: {}
+  uuid@11.1.1: {}
 
   vary@1.1.2: {}
 
