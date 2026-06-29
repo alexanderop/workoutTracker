@@ -458,24 +458,21 @@ jobs:
             --json-schema '${{ steps.load-schema.outputs.schema }}'
             --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
-      - name: Stop tailer and render timeline
+      - name: Render Claude timeline checkpoint
         if: always()
         shell: bash
         run: |
-          if [ -n "${TAILER_PID:-}" ]; then
-            kill "$TAILER_PID" 2>/dev/null || true
-          fi
           if [ -n "${TAILER_OUT:-}" ] && [ -f "$TAILER_OUT" ] && [ -s "$TAILER_OUT" ]; then
             {
-              echo "## Claude tool-call timeline"
+              echo "## Claude tool-call timeline checkpoint"
               echo ''
               echo '```'
               cat "$TAILER_OUT"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "===== CLAUDE TOOL-CALL TIMELINE ====="
+            echo "===== CLAUDE TOOL-CALL TIMELINE CHECKPOINT ====="
             cat "$TAILER_OUT"
-            echo "===== END TIMELINE ====="
+            echo "===== END TIMELINE CHECKPOINT ====="
           else
             echo "No tool-call events captured by tailer."
           fi
@@ -610,6 +607,29 @@ jobs:
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop tailer and render final timeline
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${TAILER_PID:-}" ]; then
+            kill "$TAILER_PID" 2>/dev/null || true
+          fi
+          sleep 1
+          if [ -n "${TAILER_OUT:-}" ] && [ -f "$TAILER_OUT" ] && [ -s "$TAILER_OUT" ]; then
+            {
+              echo "## Claude tool-call timeline"
+              echo ''
+              echo '```'
+              cat "$TAILER_OUT"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "===== CLAUDE TOOL-CALL TIMELINE ====="
+            cat "$TAILER_OUT"
+            echo "===== END TIMELINE ====="
+          else
+            echo "No tool-call events captured by tailer."
           fi
 
       - name: Post QA report as PR comment

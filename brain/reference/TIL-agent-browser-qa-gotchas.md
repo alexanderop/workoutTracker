@@ -45,3 +45,9 @@ Prefer the Claude Code Action's official `execution_file` output when collecting
 post-run artifacts. Keep the `/home/runner/work/_temp/claude-execution-output.json`
 and `/tmp/claude-execution-output.json` fallbacks because older action behavior
 and failed startup paths may not populate the output.
+
+Keep the live Claude execution tailer alive until after any retry path finishes.
+If the tailer stops immediately after the first Claude step, a retry that
+generates or fails to generate the final report becomes opaque in the Actions
+log. Render a checkpoint after the first run if useful, then stop and print the
+final timeline after retry verification.

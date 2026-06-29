@@ -49,74 +49,9 @@ runs:
       run: |
         set -euo pipefail
         LOG="$DEBUG_DIR/claude-execution-output.json"
-        if [ ! -f "$LOG" ]; then
-          {
-            echo "## Claude execution summary"
-            echo ""
-            echo "_No \`claude-execution-output.json\` found — the action likely exited before Claude started (e.g. input validation error)._"
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit 0
-        fi
-
-        command -v jq >/dev/null 2>&1 || sudo apt-get install -y jq >/dev/null 2>&1 || true
-
-        TURNS=$(jq -s '[.[] | select(.type == "assistant")] | length' "$LOG" 2>/dev/null || echo 0)
-        USER_MSGS=$(jq -s '[.[] | select(.type == "user")] | length' "$LOG" 2>/dev/null || echo 0)
-        TOTAL_LINES=$(wc -l < "$LOG")
-
-        TOOL_COUNTS=$(jq -rs '
-          [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use") | .name]
-          | group_by(.) | map({name: .[0], count: length})
-          | sort_by(-.count)
-          | map("\(.name): \(.count)") | join(", ")
-        ' "$LOG" 2>/dev/null || echo "unknown")
-
-        RESULT=$(jq -s '[.[] | select(.type == "result")] | last // {}' "$LOG" 2>/dev/null || echo '{}')
-        COST=$(echo "$RESULT" | jq -r '.result.usage.costUSD // .usage.costUSD // "n/a"')
-        DURATION_MS=$(echo "$RESULT" | jq -r '.result.durationMs // .durationMs // "n/a"')
-        TERMINAL=$(echo "$RESULT" | jq -r '.result.terminal_reason // .terminal_reason // "unknown (likely killed before completion)"')
-
-        ALL_TOOLS=$(jq -rs '
-          [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")]
-          | to_entries
-          | map("\(.key + 1). **\(.value.name)**: " + ((.value.input.command // .value.input.description // (.value.input | tostring))[:300] | gsub("\n"; " ")))
-          | join("\n")
-        ' "$LOG" 2>/dev/null || echo "")
-
-        LAST_TOOLS=$(jq -rs '
-          [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")]
-          | .[-8:]
-          | map("- **\(.name)**: " + ((.input.command // .input.description // (.input | tostring))[:200] | gsub("\n"; " ")))
-          | join("\n")
-        ' "$LOG" 2>/dev/null || echo "")
-
-        REPORT=$(cat <<EOF
-        ## Claude execution summary
-
-        | Metric | Value |
-        |---|---|
-        | Assistant turns | $TURNS |
-        | Tool result messages | $USER_MSGS |
-        | Stream lines | $TOTAL_LINES |
-        | Cost (USD) | $COST |
-        | Duration (ms) | $DURATION_MS |
-        | Terminal reason | $TERMINAL |
-
-        **Tool usage:** $TOOL_COUNTS
-
-        ### Last tool calls before exit
-
-        ${LAST_TOOLS:-_No tool_use blocks captured._}
-
-        <details><summary>Full tool call sequence ($TURNS turns)</summary>
-
-        ${ALL_TOOLS:-_No tool_use blocks captured._}
-
-        </details>
-        EOF
-        )
-        echo "$REPORT" | sed 's/^        //' >> "$GITHUB_STEP_SUMMARY"
+        REPORT="$(node .github/scripts/summarize-claude-execution.mjs "$LOG")"
+        echo "$REPORT" >> "$GITHUB_STEP_SUMMARY"
         # Also echo to stdout so it's visible in gh run view logs, not just the web summary
         echo "===== CLAUDE EXECUTION SUMMARY ====="
-        echo "$REPORT" | sed 's/^        //'
+        echo "$REPORT"
         echo "===== END SUMMARY ====="
