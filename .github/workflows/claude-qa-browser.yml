@@ -832,7 +832,7 @@ jobs:
         uses: ./.github/actions/summarize-claude-run
         with:
           debug-dir: qa-debug
-          execution-file: ${{ steps.claude-qa.outputs.execution_file || steps.claude-qa-retry.outputs.execution_file }}
+          execution-file: ${{ steps.claude-qa-retry.outputs.execution_file || steps.claude-qa.outputs.execution_file }}
 
       - name: Collect claude debug artifacts
         if: always()
@@ -841,7 +841,7 @@ jobs:
           set -euo pipefail
           mkdir -p qa-debug
           # Prefer the official action output, then try both observed temp paths.
-          EXECUTION_FILE="${{ steps.claude-qa.outputs.execution_file || steps.claude-qa-retry.outputs.execution_file }}"
+          EXECUTION_FILE="${{ steps.claude-qa-retry.outputs.execution_file || steps.claude-qa.outputs.execution_file }}"
           if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
             cp "$EXECUTION_FILE" qa-debug/claude-execution-output.json 2>/dev/null || true
           fi
