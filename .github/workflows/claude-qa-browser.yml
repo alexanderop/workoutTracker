@@ -652,23 +652,27 @@ jobs:
             if (structuredOutput && structuredOutput.trim()) {
               try {
                 const data = JSON.parse(structuredOutput);
+                const metrics = data.metrics || {};
 
-                if (data.verdict === 'CRITICAL_BUGS' || data.metrics.critical_bugs > 0) {
+                if (data.verdict === 'QA_SKIPPED') {
+                  state = 'success';
+                  description = 'QA skipped by compatibility guard';
+                } else if (data.verdict === 'CRITICAL_BUGS' || metrics.critical_bugs > 0) {
                   state = 'failure';
-                  description = `QA found ${data.metrics.critical_bugs} critical bug(s)`;
+                  description = `QA found ${metrics.critical_bugs} critical bug(s)`;
                 } else if (process.env.CONTRACT_VALID === 'false') {
                   state = 'pending';
                   description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
-                } else if (data.verdict === 'MINOR_ISSUES' || data.metrics.major_bugs > 0) {
+                } else if (data.verdict === 'MINOR_ISSUES' || metrics.major_bugs > 0) {
                   state = 'pending';
-                  const issueCount = (data.metrics.minor_bugs || 0) + (data.metrics.major_bugs || 0);
+                  const issueCount = (metrics.minor_bugs || 0) + (metrics.major_bugs || 0);
                   description = `QA found ${issueCount} issue(s) to review`;
                 } else {
                   state = 'success';
-                  description = `QA passed (${data.metrics.passed}/${data.metrics.total_tests} tests)`;
+                  description = `QA passed (${metrics.passed ?? 0}/${metrics.total_tests ?? 0} tests)`;
                 }
 
-                core.setOutput('metrics', JSON.stringify(data.metrics));
+                core.setOutput('metrics', JSON.stringify(metrics));
                 core.setOutput('verdict', data.verdict);
               } catch (parseErr) {
                 core.warning(`Failed to parse structured output: ${parseErr.message}`);
@@ -676,7 +680,10 @@ jobs:
             } else {
               try {
                 const report = fs.readFileSync('qa-report.md', 'utf8');
-                if (/CRITICAL/i.test(report)) {
+                if (/QA_SKIPPED/i.test(report)) {
+                  state = 'success';
+                  description = 'QA skipped by compatibility guard';
+                } else if (/CRITICAL/i.test(report)) {
                   state = 'failure';
                   description = 'QA found critical issues';
                 } else if (process.env.CONTRACT_VALID === 'false') {
