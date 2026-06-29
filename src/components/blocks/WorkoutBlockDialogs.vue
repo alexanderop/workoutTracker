@@ -49,6 +49,10 @@ function forwardTabata(config: TabataConfig, exercise: BlockExercise): void {
 function forwardForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExercise>): void {
   emit('confirm-for-time', config, exercises)
 }
+
+function forwardCardio(config: CardioConfig): void {
+  emit('confirm-cardio', config)
+}
 </script>
 
 <template>
@@ -61,13 +65,7 @@ function forwardForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExe
 
   <ConfigureAmrapDialog v-model:open="amrapOpen" @confirm="forwardAmrap" />
   <ConfigureEmomDialog v-model:open="emomOpen" @confirm="forwardEmom" />
-  <ConfigureTabataDialog
-    v-model:open="tabataOpen"
-    @confirm="forwardTabata"
-  />
-  <ConfigureForTimeDialog
-    v-model:open="forTimeOpen"
-    @confirm="forwardForTime"
-  />
-  <ConfigureCardioDialog v-model:open="cardioOpen" @confirm="emit('confirm-cardio', $event)" />
+  <ConfigureTabataDialog v-model:open="tabataOpen" @confirm="forwardTabata" />
+  <ConfigureForTimeDialog v-model:open="forTimeOpen" @confirm="forwardForTime" />
+  <ConfigureCardioDialog v-model:open="cardioOpen" @confirm="forwardCardio" />
 </template>

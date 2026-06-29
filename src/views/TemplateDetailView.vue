@@ -52,7 +52,7 @@ const {
   openCardioBlockDialog,
 } = useWorkoutBlockDialogs()
 
-// UI-only dialog states
+// Delete confirmation stays independent from mutually exclusive block config dialogs.
 const showDeleteDialog = ref(false)
 
 // Redirect to workouts list if template not found

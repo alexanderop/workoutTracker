@@ -37,8 +37,7 @@ export type WorkoutBlockDialogController = {
 export function useWorkoutBlockDialogs(
   controller?: WorkoutBlockDialogController,
 ): WorkoutBlockDialogsState {
-  const standaloneController = useDialogState<WorkoutBlockDialog>()
-  const { createDialogModel, open } = controller ?? standaloneController
+  const { createDialogModel, open } = controller ?? useDialogState<WorkoutBlockDialog>()
 
   const addBlockDialogOpen = createDialogModel('addBlock')
   const configureAmrapOpen = createDialogModel('configureAmrap')
