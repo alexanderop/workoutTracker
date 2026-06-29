@@ -78,49 +78,56 @@ Location: `src/__tests__/helpers/withSetup.ts`
 
 ### createTestApp Helper
 
-Use `createTestApp()` for full app rendering with router and i18n. The project does NOT use Pinia — state is managed via VueUse `createGlobalState` singletons:
+Use `createTestApp()` for full app rendering with router and i18n. The project does NOT use Pinia — state is managed via VueUse `createGlobalState` singletons. It returns a **Page Object** structure, not flat helper methods:
 
 ```ts
 import { createTestApp } from '@/__tests__/helpers/createTestApp'
 
 it('navigates through workout flow', async () => {
-  const app = await createTestApp({ initialRoute: '/' })
+  const { common, builder, workout, queue, navigateTo, cleanup } =
+    await createTestApp({ initialRoute: '/' })
 
   // Navigation
-  await app.navigateTo('/workout')
-  await app.waitForRoute(/\/workout/)
+  await navigateTo('/workout')
 
-  // Dialog interactions
-  await app.waitForDialog()
-  await app.user.click(app.getDialogButton('Confirm'))
-  app.assertDialogClosed()
+  // Builder interactions via BuilderPO
+  await builder.addStrengthBlock('Bench Press')
+  await builder.startWorkout()
 
-  // Workout interactions
-  await app.startWorkout()
-  await app.fillSet(0, { kg: 100, reps: 8, rir: 2 })
+  // Active workout via ActiveWorkoutPO
+  await workout.fillSet(0, { kg: 100, reps: 8, rir: 2 })
 
-  app.cleanup()
+  // Common helpers (dialogs, selects)
+  await common.selectExercise('Deadlift')
+  await common.getDialogButton('Confirm').click()
+
+  cleanup()
 })
 ```
 
 Location: `src/__tests__/helpers/createTestApp.ts`
 
-### createTestApp API
+### createTestApp return value
 
-| Method                         | Description                      |
-| ------------------------------ | -------------------------------- |
-| `navigateTo(path)`             | Navigate to a route              |
-| `waitForRoute(pattern)`        | Wait for route to match regex    |
-| `waitForDialog()`              | Wait for dialog to appear        |
-| `getDialogButton(text)`        | Get button inside dialog         |
-| `assertDialogClosed()`         | Assert no dialog is open         |
-| `startWorkout()`               | Click "Start Workout" button     |
-| `openWorkoutMenu()`            | Open the three-dot menu          |
-| `getSetRow(index)`             | Get inputs for a set row         |
-| `fillSet(index, values)`       | Fill kg/reps/rir for a set       |
-| `getCarouselExerciseButtons()` | Get exercise buttons in carousel |
-| `getPlaylistBlockButtons()`    | Get block buttons in playlist    |
-| `cleanup()`                    | Clean up after test              |
+| Property          | Type               | Description                                       |
+| ----------------- | ------------------ | ------------------------------------------------- |
+| `common`          | `CommonPO`         | Shared helpers: dialogs, exercise picker, selects |
+| `builder`         | `BuilderPO`        | Workout builder screen interactions               |
+| `workout`         | `ActiveWorkoutPO`  | Active workout execution interactions             |
+| `queue`           | `QueuePO`          | Block queue/playlist interactions                 |
+| `benchmarks`      | `BenchmarksPO`     | Benchmarks list interactions                      |
+| `benchmarkForm`   | `BenchmarkFormPO`  | Create/edit benchmark form                        |
+| `benchmarkDetail` | `BenchmarkDetailPO`| Benchmark detail & run interactions               |
+| `logPastWorkout`  | `LogPastWorkoutPO` | Log past workout screen                           |
+| `exercises`       | `ExercisesPO`      | Exercises list/search/filter                      |
+| `weight`          | `WeightPO`         | Weight tracking screen                            |
+| `progressions`    | `ProgressionsPO`   | Progressions screen                               |
+| `router`          | `Router`           | Vue Router instance                               |
+| `navigateTo(to)`  | helper             | Navigate to a route                               |
+| `cleanup()`       | helper             | Unmount and clean up after test                   |
+| `getByRole` etc.  | raw queries        | Direct `page.getBy*` passthrough (avoid for new code) |
+
+Page Object files live in `src/__tests__/helpers/pages/`.
 
 ## Test Factories
 

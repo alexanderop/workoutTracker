@@ -36,16 +36,9 @@ if (lastSetValue) {
 }
 ```
 
-### 2. Plate Calculator Display
+### 2. Plate Calculator Display ✅ Done
 
-**Impact**: Removes mental burden, increases perceived professionalism
-
-```vue
-<!-- Add below value display in modal -->
-<div class="text-sm text-muted-foreground">
-  Load: 20kg + 10kg + 5kg (each side)
-</div>
-```
+`BarbellPlateHint.vue` at `src/components/ui/barbell-hint/BarbellPlateHint.vue` shows plate breakdowns inline during weight selection.
 
 ### 3. PR Detection Toast
 
@@ -69,7 +62,7 @@ if (isNewPR(weight, reps, exerciseId)) {
 
 ### 5. Combined Set Entry Modal
 
-Replace 3 modals with 1 unified entry form (weight + reps + RIR together).
+The set logging already uses a single `NumericInputModal` — there are not 3 separate modals. This item should be reframed as: unify weight + reps + RIR into one combined entry form instead of tapping through the modal three times per set.
 
 ### 6. Volume Tracking
 
@@ -119,7 +112,7 @@ Track which presets are most used to inform algorithm adjustments.
 | Feature                    | Strong | Hevy | Your App        |
 | -------------------------- | ------ | ---- | --------------- |
 | Auto-copy previous set     | Yes    | Yes  | **No**          |
-| Plate calculator           | Yes    | Yes  | **No**          |
+| Plate calculator           | Yes    | Yes  | **Yes ✅**      |
 | PR detection               | Yes    | Yes  | **No**          |
 | Progressive overload hints | No     | Yes  | **No**          |
 | Smart/predictive presets   | No     | No   | **Opportunity** |
@@ -162,7 +155,7 @@ Track user input patterns to improve presets:
 | -------- | ----------------------- | ------- | ------ |
 | P0       | Auto-copy previous set  | 1 day   | High   |
 | P0       | PR detection toast      | 1 day   | High   |
-| P1       | Plate calculator        | 2 days  | Medium |
+| P1       | Plate calculator        | —       | Done ✅ |
 | P1       | Exercise-specific steps | 1 day   | Medium |
 | P2       | Combined set modal      | 1 week  | High   |
 | P2       | Smart suggestions       | 2 weeks | High   |

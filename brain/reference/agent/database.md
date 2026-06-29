@@ -665,7 +665,9 @@ const backup = await dataRepo.exportAll()
 //   settings: DbUserSetting[],
 //   customExercises: DbCustomExercise[],
 //   templates: DbWorkoutTemplate[],
-//   workouts: DbCompletedWorkout[]
+//   workouts: DbCompletedWorkout[],
+//   benchmarks: DatabaseBenchmark[],
+//   weightEntries: DatabaseWeightEntry[]
 // }
 
 // Import (replaces all data in transaction)
@@ -779,7 +781,7 @@ Version history:
 **Indexes:**
 - `workouts`: `completedAt`, `startedAt`, `benchmarkId` - Fast history and benchmark queries
 - `templates`: `lastUsedAt`, `createdAt` - Fast template sorting
-- `customExercises`: `name`, `muscle`, `equipment` - Fast name/filter lookups
+- `customExercises`: `name`, `muscle`, `equipment`, `createdAt` - Fast name/filter lookups
 - `weightEntries`: `date`, `recordedAt` - Fast date range queries
 - `progressionSessions`: `progressionId`, `completedAt` - Fast session history per progression
 
@@ -791,6 +793,6 @@ Version history:
 
 ## Related Documentation
 
-- **Architecture:** `docs/agent/architecture.md` - Dependency rules and boundaries
-- **Testing:** `docs/agent/testing.md` - Test helpers and factories
-- **Composables:** `docs/agent/composables.md` - useWorkout state management
+- **Architecture:** `brain/reference/agent/architecture.md` - Dependency rules and boundaries
+- **Testing:** `brain/reference/agent/testing.md` - Test helpers and factories
+- **Composables:** `brain/reference/agent/composables.md` - useWorkout state management

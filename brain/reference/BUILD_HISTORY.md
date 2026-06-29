@@ -73,15 +73,29 @@ A step-by-step guide based on git history.
 
 30. **Swipe-to-reveal** - Added swipe gestures for block actions on mobile
 
+## Phase 12+: Additional Features (post-history)
+
+Implemented after this history was written:
+
+- Benchmarks (custom timed WODs with attempt tracking and split comparison)
+- Progressions (kettlebell swing/strength progressions with session tracking)
+- Weight tracking (bodyweight log with chart and stats)
+- Exercise progress view (PR cards + history chart per exercise)
+- Log past workout (log a workout retroactively by date)
+- Onboarding (first-run carousel)
+- Cardio block type (sixth block kind alongside strength/AMRAP/EMOM/Tabata/ForTime)
+- Architecture tests (ArchUnitTS, feature boundary enforcement)
+- Full i18n (English + German, 12 translation domains)
+
 ---
 
 ## Tech Stack Summary
 
 - **Framework**: Vue 3 + TypeScript
 - **Build**: Vite
-- **State**: Pinia (stores) + Composables (workout state)
+- **State**: VueUse `createGlobalState` singletons (stores) + plain-ref singleton (active workout) — no Pinia
 - **Database**: Dexie (IndexedDB)
-- **UI**: shadcn-vue components
-- **Testing**: Vitest + Vue Testing Library
+- **UI**: shadcn-vue components (built on reka-ui)
+- **Testing**: Vitest browser mode (Playwright/Chromium)
 - **i18n**: vue-i18n
 - **PWA**: vite-plugin-pwa

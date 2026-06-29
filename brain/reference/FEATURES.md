@@ -35,12 +35,13 @@ Search and select from an exercise library (bench press, squat, deadlift, etc.).
 
 ### Add Timed Blocks
 
-Four CrossFit-style workout formats available:
+Five CrossFit-style workout formats available:
 
 - **AMRAP** (As Many Rounds As Possible): Set duration, add exercises, track completed rounds
 - **EMOM** (Every Minute On the Minute): Minute-by-minute timer with exercise rotation
 - **Tabata**: 20s work / 10s rest intervals with per-round rep tracking
 - **For Time**: Count-up timer with optional time cap, complete prescribed work as fast as possible
+- **Cardio**: Distance/duration tracking for cardio sessions
 
 ### Hybrid Workouts
 
@@ -171,14 +172,24 @@ All data stored locally in browser IndexedDB:
 
 ---
 
-## 6. Planned Features (Not Yet Implemented)
+## 6. Additional Implemented Features
 
-The following features have been designed but not built:
+Features built after the initial documentation:
+
+- **Benchmarks** (`src/features/benchmarks/`): Custom timed WODs with attempt history, split comparison, personal-best tracking
+- **Progressions** (`src/features/progressions/`): Structured strength progressions with session logging
+- **Weight Tracking** (`src/features/weight/`): Bodyweight log with chart and trend stats
+- **Exercise Progress** (`src/features/exercises/`): Per-exercise PR cards and history chart
+- **Log Past Workout** (`src/features/log-past-workout/`): Record a workout retroactively by date
+- **Onboarding** (`src/features/onboarding/`): First-run carousel with PWA install prompt
+- **Workout Calendar** (`src/composables/useWorkoutCalendar.ts`): Weekly strip view on home screen
+
+## 7. Planned Features (Not Yet Implemented)
 
 - **Workout Scoring**: Compare performance across attempts of the same workout
-- **Benchmark WODs**: Pre-loaded CrossFit benchmarks (Fran, Cindy, Murph, etc.)
-- **Template Tags**: Filter templates by category (benchmark, hero, custom)
+- **Template Tags**: Filter templates by category (`tags` field exists in DB schema but UI not wired)
 - **Leaderboards**: Social comparison features
 - **Video/Movement Guidance**: Exercise demonstration content
 - **Audio Customization**: Custom beep sounds and voice cues
 - **Rest Between Blocks**: Explicit rest periods in hybrid workouts
+- **Streak / Activity Heatmap**: Visualize consistency over weeks/months

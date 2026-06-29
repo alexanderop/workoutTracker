@@ -18,6 +18,8 @@ timestamp: 2026-06-28T08:10:00Z
 
 ## Surviving Mutants
 
+> **Note:** Line numbers below may be stale — the benchmark DB schema migrated to rounds-based after this doc was written, shifting code in `benchmarks.ts`. The logical descriptions remain correct; verify line numbers against current source before acting on them.
+
 | #   | File                 | Line | Original             | Mutated              | Suggested Fix                      |
 | --- | -------------------- | ---- | -------------------- | -------------------- | ---------------------------------- |
 | 1   | `benchmarks.ts`      | 152  | `time < bestTime`    | `<=`                 | Test with equal completion times   |

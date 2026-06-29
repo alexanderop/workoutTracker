@@ -51,10 +51,10 @@ This document captures findings from a comprehensive code review covering Vue co
 
 ## High Priority Improvements
 
-### 1. Extract Dialog Management Composable
+### 1. Extract Dialog Management Composable ✅ Done
 
-**Location:** `src/views/ActiveWorkout.vue:66-105`
-**Problem:** 251-line component with 8 dialog types managed via repetitive computed properties
+**Location:** `src/composables/useDialogState.ts` (implemented)
+**Was:** `src/views/ActiveWorkout.vue` — 310-line component with 8 dialog types managed via repetitive computed properties
 **Impact:** Reduces component complexity by ~100 lines
 
 **Current Code:**
@@ -127,10 +127,10 @@ const addBlockDialogOpen = createDialogModel('addBlock')
 
 ---
 
-### 2. Add defineModel to ResumeWorkoutDialog
+### 2. Add defineModel to ResumeWorkoutDialog ✅ Done
 
-**Location:** `src/components/ResumeWorkoutDialog.vue:7-11`
-**Problem:** Uses `:open` prop instead of `v-model:open`, inconsistent with codebase standards
+**Location:** `src/components/ResumeWorkoutDialog.vue:8`
+**Was:** Used `:open` prop instead of `v-model:open`, inconsistent with codebase standards
 **Impact:** Consistency with Vue 3.5 patterns used elsewhere
 
 **Current Code:**
@@ -178,10 +178,10 @@ const emit = defineEmits<{
 
 ---
 
-### 3. Extract Base Timer Composable
+### 3. Extract Base Timer Composable ✅ Done
 
-**Location:** `src/composables/timers/use*Timer.ts` (4 files)
-**Problem:** ~80 lines of duplicated timer state management across AMRAP, EMOM, Tabata, and ForTime timers
+**Location:** `src/composables/timers/useBaseTimer.ts` (implemented)
+**Was:** ~80 lines of duplicated timer state management across AMRAP, EMOM, Tabata, and ForTime timers
 **Impact:** Eliminates duplication, improves testability
 
 **Duplicated Pattern (in all 4 timer composables):**
@@ -779,7 +779,7 @@ export const BLOCK_ICONS: Readonly<Record<BlockKind, Component>> = {
 
 ### 12. Remove Speculative exerciseDefinitionId from Templates
 
-**Location:** `src/db/repositories/templates.ts:33-73`
+**Location:** `src/db/implementations/dexie/templates.ts`
 **Problem:** `exerciseDefinitionId: null` is always null and never used
 
 **Current Code:**
@@ -921,14 +921,14 @@ export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
 
 ### Phase 1: Quick Wins (1-2 days)
 
-1. [ ] Add `defineModel` to `ResumeWorkoutDialog.vue`
+1. [x] Add `defineModel` to `ResumeWorkoutDialog.vue` ✅ Done
 2. [ ] Add `Readonly<>` to const lookup objects
 3. [ ] Replace icon class checks in tests with semantic queries
 
 ### Phase 2: Composable Extraction (3-5 days)
 
-4. [ ] Extract `useDialogState` composable
-5. [ ] Extract `useBaseTimer` composable
+4. [x] Extract `useDialogState` composable ✅ Done (`src/composables/useDialogState.ts`)
+5. [x] Extract `useBaseTimer` composable ✅ Done (`src/composables/timers/useBaseTimer.ts`)
 6. [ ] Refactor `completeSet` into smaller functions
 
 ### Phase 3: Architecture Improvements (1 week)
@@ -953,9 +953,9 @@ After implementing improvements:
 
 | Metric                       | Current | Target |
 | ---------------------------- | ------- | ------ |
-| Lines in ActiveWorkout.vue   | 251     | <150   |
-| Timer composable duplication | ~80 LOC | 0      |
-| `@ts-expect-error` comments  | 6       | <3     |
+| Lines in ActiveWorkout.vue   | 310     | <150   |
+| Timer composable duplication | ~80 LOC | 0 (useBaseTimer ✅) |
+| `@ts-expect-error` comments  | 0       | 0 ✅   |
 | Test icon/class queries      | 5       | 0      |
 | Block type switch statements | 3       | 1      |
 

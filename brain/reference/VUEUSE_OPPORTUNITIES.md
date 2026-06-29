@@ -15,14 +15,16 @@ This document identifies manual implementations that can be replaced with VueUse
 | Composable          | VueUse Function         | File                                                                                      |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------- |
 | Timers              | `useIntervalFn`         | `src/composables/timers/useBaseTimer.ts`, `useRestTimer.ts`, `useWorkoutDurationTimer.ts` |
-| Debounced watch     | `watchDebounced`        | `src/features/workout/composables/useWorkoutPersistence.ts`                               |
+| Debounced watch     | `watchDebounced`        | `src/composables/persistence/createPersistenceCore.ts`                                    |
 | Async state         | `useAsyncState`         | `src/features/settings/composables/useLanguage.ts`                                        |
 | Global state        | `createGlobalState`     | `src/features/settings/composables/useLanguage.ts`                                        |
 | Color mode          | `useColorMode`          | `src/features/settings/composables/useTheme.ts`                                           |
 | Wake lock           | `useWakeLock`           | `src/composables/useScreenWakeLock.ts`                                                    |
 | Document visibility | `useDocumentVisibility` | `src/composables/useGlobalWakeLock.ts`, `useScreenWakeLock.ts`                            |
 | Transitions         | `useTransition`         | `src/composables/useAnimatedCounter.ts`                                                   |
-| Drag & drop         | `useSortable`           | `src/features/workout/components/WorkoutQueueDrawer.vue`                                  |
+| Drag & drop         | `useSortable`           | `src/features/templates/components/TemplateBlockList.vue`, `src/features/benchmarks/components/BenchmarkExerciseList.vue` |
+| Timeout             | `useTimeoutFn`          | `src/composables/useEnterAnimation.ts`                                                    |
+| Media query         | `useMediaQuery`         | `src/composables/useScreenWakeLock.ts`                                                    |
 
 ---
 
@@ -74,91 +76,15 @@ onScopeDispose(() => {
 
 ---
 
-### 2. Replace Manual setTimeout with `useTimeoutFn`
+### 2. ~~Replace Manual setTimeout with `useTimeoutFn`~~ ✅ Done
 
-**File:** `src/composables/useEnterAnimation.ts` (lines 12-15)
-
-**Before:**
-
-```typescript
-export function useEnterAnimation(delay = 100) {
-  const isVisible = ref(false)
-
-  onMounted(() => {
-    setTimeout(() => {
-      isVisible.value = true
-    }, delay)
-  })
-
-  return { isVisible }
-}
-```
-
-**After:**
-
-```typescript
-import { useTimeoutFn } from '@vueuse/core'
-
-export function useEnterAnimation(delay = 100) {
-  const isVisible = ref(false)
-
-  const { start } = useTimeoutFn(
-    () => {
-      isVisible.value = true
-    },
-    delay,
-    { immediate: false },
-  )
-
-  onMounted(start)
-
-  return { isVisible }
-}
-```
-
-**Benefits:**
-
-- Automatic timeout cleanup on unmount (prevents memory leaks)
-- Pause/resume capability if needed
-- Better TypeScript support
-- Clearer lifecycle binding
+`src/composables/useEnterAnimation.ts` already uses `useTimeoutFn` from `@vueuse/core`.
 
 ---
 
-### 3. Replace Manual matchMedia with `useMediaQuery`
+### 3. ~~Replace Manual matchMedia with `useMediaQuery`~~ ✅ Done
 
-**File:** `src/composables/useScreenWakeLock.ts` (line 56)
-
-**Before:**
-
-```typescript
-const isPWAStandalone = computed(() => {
-  if (typeof window === 'undefined') return false
-  const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches
-  const isSafariStandalone =
-    'standalone' in window.navigator && window.navigator.standalone === true
-  return isStandaloneMedia || isSafariStandalone
-})
-```
-
-**After:**
-
-```typescript
-import { useMediaQuery } from '@vueuse/core'
-
-const isStandaloneMedia = useMediaQuery('(display-mode: standalone)')
-const isSafariStandalone = computed(
-  () => 'standalone' in window.navigator && window.navigator.standalone === true,
-)
-const isPWAStandalone = computed(() => isStandaloneMedia.value || isSafariStandalone.value)
-```
-
-**Benefits:**
-
-- Reactive updates when display mode changes
-- Automatic listener cleanup
-- Built-in SSR support
-- Cleaner, more declarative code
+`src/composables/useScreenWakeLock.ts` already uses `useMediaQuery` and `useEventListener` from VueUse.
 
 ---
 
@@ -318,8 +244,8 @@ toggleOpen(false) // set to false
 ## Implementation Checklist
 
 - [ ] `useScreenWakeLock.ts` - Replace addEventListener with `useEventListener`
-- [ ] `useEnterAnimation.ts` - Replace setTimeout with `useTimeoutFn`
-- [ ] `useScreenWakeLock.ts` - Replace matchMedia with `useMediaQuery`
+- [x] `useEnterAnimation.ts` - Replace setTimeout with `useTimeoutFn` ✅ Done
+- [x] `useScreenWakeLock.ts` - Replace matchMedia with `useMediaQuery` ✅ Done
 - [ ] `TheWorkoutsView.vue` - Consider `onKeyStroke` for keyboard handling
 - [ ] Review toggle refs for potential `useToggle` conversion
 

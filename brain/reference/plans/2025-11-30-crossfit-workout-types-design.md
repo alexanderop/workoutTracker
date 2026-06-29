@@ -12,6 +12,19 @@ timestamp: 2026-06-28T08:10:00Z
 **Status:** Approved
 **Author:** Brainstorm session with Alex
 
+## Status: Implemented (with deviations)
+
+This plan was fully implemented. Key divergences from the design:
+
+- **Cardio block**: A 6th block kind (`kind: 'cardio'`) was added post-plan — not in this doc's data model
+- **StrengthBlock**: Plan has `{ kind: 'strength'; exercise: WorkoutExercise }` (nested). Actual has `exerciseDefinitionId, name, equipment, targetReps, targetDuration, targetWeight, sets, image` directly on the block (no nested `exercise`)
+- **AmrapConfig.timeCap**: Plan calls it `timeCap`; actual uses `timeCapSeconds` (consistent with ForTimeConfig naming)
+- **Workout.mode / activeSetIndex**: Plan's `Workout` is simpler; actual adds `mode: 'builder' | 'active'` and `activeSetIndex: number | null`
+- **ForTimeResult.splitTimes**: Actual adds optional `splitTimes` array (not in plan)
+- **Add Blocks UI**: Shows 4 timed block options; actual shows 5 (adds Cardio)
+
+---
+
 ## Overview
 
 Extend the workout tracker to support CrossFit-style workouts (EMOM, AMRAP, Tabata, For Time) alongside traditional bodybuilding workouts, enabling hybrid sessions that mix both styles.
