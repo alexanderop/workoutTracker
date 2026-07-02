@@ -4,7 +4,10 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate as createDatabaseTemplate, createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
+import {
+  createDbTemplate as createDatabaseTemplate,
+  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
+} from '../factories'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 describe('Log Past Workout', () => {
@@ -117,7 +120,9 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Verify empty state - should show add exercise/block button
-      await expect.element(page.getByRole('button', { name: /add.*exercise|add.*block/i })).toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: /add.*exercise|add.*block/i }))
+        .toBeVisible()
 
       // Verify no blocks exist
       const blockCount = await logPastWorkout.getBlockCount()
@@ -309,8 +314,12 @@ describe('Log Past Workout', () => {
       const firstRow = block.getByTestId('set-row-0')
       const secondRow = block.getByTestId('set-row-1')
 
-      await expect.element(firstRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(140)
-      await expect.element(secondRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(150)
+      await expect
+        .element(firstRow.getByRole('spinbutton', { name: /weight|kg/i }))
+        .toHaveValue(140)
+      await expect
+        .element(secondRow.getByRole('spinbutton', { name: /weight|kg/i }))
+        .toHaveValue(150)
 
       cleanup()
     })
@@ -386,7 +395,9 @@ describe('Log Past Workout', () => {
       // This test will be more specific once we implement the feature
 
       await expect.element(page.getByRole('spinbutton', { name: /rounds/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /extra reps|additional reps/i })).toBeVisible()
+      await expect
+        .element(page.getByRole('spinbutton', { name: /extra reps|additional reps/i }))
+        .toBeVisible()
 
       // Fill in AMRAP result
       await logPastWorkout.fillAmrapResult(5, 7)
@@ -498,10 +509,12 @@ describe('Log Past Workout', () => {
       await logPastWorkout.saveWorkout()
 
       // Verify workout saved to DB with backdated timestamp
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        return workouts.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const workouts = await db.workouts.toArray()
+          return workouts.length
+        })
+        .toBe(1)
 
       const [savedWorkout] = await db.workouts.toArray()
       expect(savedWorkout?.name).toBe('My Past Workout')
@@ -589,8 +602,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.setWorkoutName('')
 
       // Save button should be disabled
-      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
-      expect(isDisabled).toBe(true)
+      await expect.element(logPastWorkout.getSaveButton()).toBeDisabled()
 
       cleanup()
     })
@@ -610,8 +622,7 @@ describe('Log Past Workout', () => {
       expect(blockCount).toBe(0)
 
       // Save button should be disabled
-      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
-      expect(isDisabled).toBe(true)
+      await expect.element(logPastWorkout.getSaveButton()).toBeDisabled()
 
       cleanup()
     })
@@ -637,8 +648,7 @@ describe('Log Past Workout', () => {
       expect(blockCount).toBe(1)
 
       // Save button should be enabled
-      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
-      expect(isDisabled).toBe(false)
+      await expect.element(logPastWorkout.getSaveButton()).toBeEnabled()
 
       cleanup()
     })
@@ -813,8 +823,7 @@ describe('Log Past Workout', () => {
       await logPastWorkout.setWorkoutName('My Test Workout')
 
       // Verify save button is enabled
-      const isDisabled = await logPastWorkout.isSaveButtonDisabled()
-      expect(isDisabled).toBe(false)
+      await expect.element(logPastWorkout.getSaveButton()).toBeEnabled()
 
       // Save the workout
       await logPastWorkout.saveWorkout()

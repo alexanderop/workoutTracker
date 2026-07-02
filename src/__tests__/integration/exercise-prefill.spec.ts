@@ -35,7 +35,8 @@ describe('Exercise Pre-fill from Previous Workout', () => {
     // Act: Navigate to builder and add Bench Press
     await builder.navigateTo()
     await builder.openAddBlockDialog()
-    await common.getDialogButton('Bench Press').click()
+    const benchPressButton = await common.getDialogButton('Bench Press')
+    benchPressButton.click()
     await common.waitForDialogClose()
 
     // Wait for the async addExercise to complete (block appears in playlist)
@@ -46,11 +47,13 @@ describe('Exercise Pre-fill from Previous Workout', () => {
     await expect.element(page.getByRole('table')).toBeVisible()
 
     // Assert: First set should be pre-filled with LAST set values (90kg, 6 reps, 1 RIR)
-    await expect.poll(async () => {
-      const activeSet = await workout.getActiveSet()
-      if (!activeSet) return null
-      return await activeSet.getValues()
-    }).toEqual({ weight: '90', reps: '6', rir: '1' })
+    await expect
+      .poll(async () => {
+        const activeSet = await workout.getActiveSet()
+        if (!activeSet) return null
+        return await activeSet.getValues()
+      })
+      .toEqual({ weight: '90', reps: '6', rir: '1' })
 
     cleanup()
   })

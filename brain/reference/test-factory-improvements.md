@@ -12,6 +12,12 @@ timestamp: 2026-06-28T08:10:00Z
 > **Estimated effort:** 2-3 hours
 > **Priority:** Medium
 > **Created:** 2025-12-14
+> **Status (2026-07-02):** ✅ Fully implemented, plus a follow-up refactor wave. All phases done (faker seed, benchmark/timedBlock factories, `Complete<T>` helper). Additional work since:
+>
+> - **Gotcha discovered:** several factories computed `Date.now()` in module-level `DEFAULTS`, freezing timestamps at import time for the entire run. Timestamps must be computed *inside* the factory function. Fixed in `dbWorkout`, `dbSet`, `customExercise`, `dbWeightEntry`, `workout` factories — keep new factories to this rule (static fields in `DEFAULTS`, per-call values inline in the return object).
+> - Added `createDbCustomExercise` (DB shape with `updatedAt`, distinct from the domain `createCustomExercise`).
+> - `CommonPO.getDialogButton`/`getExactDialogButton` are now **async and retrying** (`expect.poll` around a one-shot query) — call sites must `await`. They intentionally keep textContent matching rather than strict role locators: pickers can show multiple partial matches ("Bench Press" vs "Incline Bench Press") and strict locators would throw.
+> - Shared setup helpers: `setupTouchIntegrationTest`/`cleanupTouchIntegrationTest` (integrationSetup.ts), `seedTemplateAndOpenDetail` (templateHelpers.ts), `TimersPO` page object, `ActiveWorkoutPO.clickButtonWhenAnimationSettles` (replaces fixed sleeps for enter-animations; polls `playState === 'running'` on the element *and ancestors*, because `fill: forwards` animations never reach `getAnimations().length === 0`).
 
 ## Overview
 

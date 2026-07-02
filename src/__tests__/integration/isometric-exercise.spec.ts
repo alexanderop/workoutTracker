@@ -16,7 +16,7 @@ describe('Isometric Exercise Workflow', () => {
       // Act: Add an isometric exercise
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Plank'))
+      await userEvent.click(await common.getDialogButton('Plank'))
       await common.waitForDialogClose()
 
       // Act: Start the workout
@@ -55,7 +55,7 @@ describe('Isometric Exercise Workflow', () => {
       // Act: Add weighted plank (has weight + duration)
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Weighted Plank'))
+      await userEvent.click(await common.getDialogButton('Weighted Plank'))
       await common.waitForDialogClose()
 
       // Act: Start the workout

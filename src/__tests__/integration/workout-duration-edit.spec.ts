@@ -30,13 +30,15 @@ describe('Workout Duration Editing', () => {
       await expect.element(durationInput).toBeVisible()
 
       // Get the input value using poll to handle async element retrieval
-      await expect.poll(async () => {
-        const element = await durationInput.element()
-        if (element instanceof HTMLInputElement) {
-          return Number(element.value)
-        }
-        return null
-      }).toBeCloseTo(45, -1) // ~45 minutes
+      await expect
+        .poll(async () => {
+          const element = await durationInput.element()
+          if (element instanceof HTMLInputElement) {
+            return Number(element.value)
+          }
+          return null
+        })
+        .toBeCloseTo(45, -1) // ~45 minutes
 
       cleanup()
     })
@@ -68,25 +70,29 @@ describe('Workout Duration Editing', () => {
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(nameInput)
       await userEvent.fill(nameInput, 'Edited Duration Workout')
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       // Wait for completion
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has correct duration (45 min = 2700 seconds)
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        return workouts[0]?.durationSeconds
-      }).toBe(2700)
+      await expect
+        .poll(async () => {
+          const workouts = await db.workouts.toArray()
+          return workouts[0]?.durationSeconds
+        })
+        .toBe(2700)
 
       // Verify completedAt was back-calculated from duration
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        const saved = workouts[0]
-        if (!saved) return null
-        // completedAt should be startedAt + 45 minutes
-        return saved.completedAt - saved.startedAt
-      }).toBe(45 * 60 * 1000)
+      await expect
+        .poll(async () => {
+          const workouts = await db.workouts.toArray()
+          const saved = workouts[0]
+          if (!saved) return null
+          // completedAt should be startedAt + 45 minutes
+          return saved.completedAt - saved.startedAt
+        })
+        .toBe(45 * 60 * 1000)
 
       cleanup()
     })
@@ -109,7 +115,7 @@ describe('Workout Duration Editing', () => {
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(nameInput)
       await userEvent.fill(nameInput, 'Default Duration')
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 

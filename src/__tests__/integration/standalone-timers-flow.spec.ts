@@ -2,13 +2,9 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { TimersPO } from '../helpers/pages'
 
-// Helper to navigate to timers page from home
-async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
-  const quickTimerCard = testApp.getByText(/quick timer/i)
-  await userEvent.click(quickTimerCard)
-  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
-}
+const timers = new TimersPO()
 
 describe('Standalone Timers Flow', () => {
   beforeEach(setupIntegrationTest)
@@ -37,7 +33,7 @@ describe('Standalone Timers Flow', () => {
 
   it('displays all four timer type options on timers page', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Verify all timer types are shown with descriptions
     await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
@@ -56,7 +52,7 @@ describe('Standalone Timers Flow', () => {
 
   it('shows AMRAP presets when selecting AMRAP timer', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Click AMRAP button
     await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -73,7 +69,7 @@ describe('Standalone Timers Flow', () => {
 
   it('shows Tabata presets including Nordic protocol', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Click Tabata button
     await userEvent.click(page.getByRole('button', { name: /tabata/i }))
@@ -91,7 +87,7 @@ describe('Standalone Timers Flow', () => {
 
   it('starts AMRAP timer from preset and shows timer UI with controls', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Select AMRAP
     await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -115,7 +111,7 @@ describe('Standalone Timers Flow', () => {
 
   it('allows navigating back from preset selection to timer selection', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Select EMOM
     await userEvent.click(page.getByRole('button', { name: /emom/i }))
@@ -134,7 +130,7 @@ describe('Standalone Timers Flow', () => {
 
   it('shows custom configuration form for Tabata', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Select Tabata
     await userEvent.click(page.getByRole('button', { name: /tabata/i }))
@@ -156,7 +152,7 @@ describe('Standalone Timers Flow', () => {
 
   it('shows For Time presets including No cap option', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Click For Time button
     await userEvent.click(page.getByRole('button', { name: /for time/i }))
@@ -172,7 +168,7 @@ describe('Standalone Timers Flow', () => {
 
   it('exits timer and returns to timer selection', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Select AMRAP and start 5 min preset
     await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -193,7 +189,7 @@ describe('Standalone Timers Flow', () => {
 
   it('starts EMOM timer and shows minute display', async () => {
     const testApp = await createTestApp()
-    await goToTimersPage(testApp)
+    await timers.goToTimersPage()
 
     // Select EMOM
     await userEvent.click(page.getByRole('button', { name: /emom/i }))
@@ -211,7 +207,7 @@ describe('Standalone Timers Flow', () => {
   describe('Play/Pause button toggle', () => {
     it('toggles from play to pause icon when timer is started', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select AMRAP and start 5 min preset
       await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -236,7 +232,7 @@ describe('Standalone Timers Flow', () => {
 
     it('toggles from pause to play icon when timer is paused', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select Tabata and start Classic preset
       await userEvent.click(page.getByRole('button', { name: /tabata/i }))
@@ -267,7 +263,7 @@ describe('Standalone Timers Flow', () => {
   describe('PageLayout header visibility', () => {
     it('shows page header with timer type on preset selection screen', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select AMRAP timer type
       await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -284,7 +280,7 @@ describe('Standalone Timers Flow', () => {
 
     it('shows page header with timer type on running timer screen', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select AMRAP and start timer
       await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -302,7 +298,7 @@ describe('Standalone Timers Flow', () => {
 
     it('shows page header with timer type on running EMOM timer screen', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select EMOM and start timer
       await userEvent.click(page.getByRole('button', { name: /emom/i }))

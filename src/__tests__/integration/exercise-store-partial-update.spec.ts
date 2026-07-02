@@ -8,32 +8,22 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { useExercisesStore } from '@/stores/exercises'
 import { getCustomExercisesRepository, generateId } from '@/db'
-import type { DbCustomExercise } from '@/db/schema'
-import { resetDatabase } from '../helpers/resetDatabase'
+import { createDbCustomExercise } from '../factories'
+import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise Store Partial Updates', () => {
   beforeEach(async () => {
-    await resetDatabase()
+    await setupIntegrationTest()
   })
 
   afterEach(async () => {
-    await resetDatabase()
+    await cleanupIntegrationTest()
   })
 
   it('preserves equipment when updating only name', async () => {
     // Arrange: Create exercise with equipment directly in DB
     const exerciseId = generateId()
-    const originalExercise: DbCustomExercise = {
-      id: exerciseId,
-      name: 'Bench Press',
-      equipment: 'barbell',
-      muscle: 'chest',
-      type: 'compound',
-      metrics: 'weight-reps',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      image: null,
-    }
+    const originalExercise = createDbCustomExercise({ id: exerciseId })
     await getCustomExercisesRepository().add(originalExercise)
 
     // Load store
@@ -52,17 +42,11 @@ describe('Exercise Store Partial Updates', () => {
   it('preserves muscle when updating only name', async () => {
     // Arrange: Create exercise with muscle directly in DB
     const exerciseId = generateId()
-    const originalExercise: DbCustomExercise = {
+    const originalExercise = createDbCustomExercise({
       id: exerciseId,
       name: 'Squat',
-      equipment: 'barbell',
       muscle: 'legs',
-      type: 'compound',
-      metrics: 'weight-reps',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      image: null,
-    }
+    })
     await getCustomExercisesRepository().add(originalExercise)
 
     // Load store
@@ -82,17 +66,12 @@ describe('Exercise Store Partial Updates', () => {
     // Arrange: Create exercise with image blob directly in DB
     const exerciseId = generateId()
     const testImageBlob = new Blob(['test-image-data'], { type: 'image/png' })
-    const originalExercise: DbCustomExercise = {
+    const originalExercise = createDbCustomExercise({
       id: exerciseId,
       name: 'Deadlift',
-      equipment: 'barbell',
       muscle: 'back',
-      type: 'compound',
-      metrics: 'weight-reps',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
       image: testImageBlob,
-    }
+    })
     await getCustomExercisesRepository().add(originalExercise)
 
     // Load store
@@ -113,17 +92,14 @@ describe('Exercise Store Partial Updates', () => {
     // Arrange: Create fully populated exercise
     const exerciseId = generateId()
     const testImageBlob = new Blob(['image-data'], { type: 'image/png' })
-    const originalExercise: DbCustomExercise = {
+    const originalExercise = createDbCustomExercise({
       id: exerciseId,
       name: 'Bicep Curl',
       equipment: 'dumbbell',
       muscle: 'arms',
       type: 'isolation',
-      metrics: 'weight-reps',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
       image: testImageBlob,
-    }
+    })
     await getCustomExercisesRepository().add(originalExercise)
 
     // Load store
@@ -146,17 +122,13 @@ describe('Exercise Store Partial Updates', () => {
   it('allows explicitly setting equipment to null/undefined', async () => {
     // Arrange: Create exercise with equipment
     const exerciseId = generateId()
-    const originalExercise: DbCustomExercise = {
+    const originalExercise = createDbCustomExercise({
       id: exerciseId,
       name: 'Pull-up',
       equipment: 'bodyweight',
       muscle: 'back',
-      type: 'compound',
       metrics: 'reps-only',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      image: null,
-    }
+    })
     await getCustomExercisesRepository().add(originalExercise)
 
     // Load store

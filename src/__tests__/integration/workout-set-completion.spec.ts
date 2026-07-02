@@ -25,11 +25,13 @@ describe('Workout Set Completion', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      await expect.poll(async () => {
-        const activeSet = await workout.getActiveSet()
-        if (!activeSet) return null
-        return await activeSet.getValues()
-      }).toEqual({ weight: '100', reps: '8', rir: '2' })
+      await expect
+        .poll(async () => {
+          const activeSet = await workout.getActiveSet()
+          if (!activeSet) return null
+          return await activeSet.getValues()
+        })
+        .toEqual({ weight: '100', reps: '8', rir: '2' })
 
       cleanup()
     })
@@ -88,7 +90,7 @@ describe('Workout Set Completion', () => {
       const nameInput = page.getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(nameInput)
       await userEvent.fill(nameInput, 'Test Complete')
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
@@ -162,13 +164,16 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify rest timer appears in footer (look for a timer display)
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding timer element by CSS class
-        const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
-        return [...timerElements].some((element) =>
-          element.textContent?.match(/^\d+:\d{2}$/),
+      await expect
+        .poll(
+          () => {
+            // eslint-disable-next-line no-restricted-syntax -- Finding timer element by CSS class
+            const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
+            return [...timerElements].some((element) => element.textContent?.match(/^\d+:\d{2}$/))
+          },
+          { timeout: 2000 },
         )
-      }, { timeout: 2000 }).toBe(true)
+        .toBe(true)
 
       cleanup()
     })

@@ -157,8 +157,7 @@ describe('Custom Exercise Flow', () => {
 
   describe('Full User Journey', () => {
     it('creates custom exercise and uses it to complete a workout', async () => {
-      const { builder, common, workout, router, getByRole, cleanup } =
-        await createTestApp()
+      const { builder, common, workout, router, getByRole, cleanup } = await createTestApp()
 
       // ========================================
       // PHASE 1: Create custom exercise
@@ -188,7 +187,7 @@ describe('Custom Exercise Flow', () => {
       const addBlockButton = getByRole('button', { name: /add first block/i })
       await userEvent.click(addBlockButton)
       await common.waitForDialog()
-      const dialogButton = common.getDialogButton('My Custom Lift')
+      const dialogButton = await common.getDialogButton('My Custom Lift')
       await userEvent.click(dialogButton)
       await common.waitForDialogClose()
 
@@ -216,7 +215,7 @@ describe('Custom Exercise Flow', () => {
       const workoutNameInput = getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(workoutNameInput)
       await userEvent.fill(workoutNameInput, 'Custom Exercise Session')
-      const finishButton = common.getDialogButton('Finish Workout')
+      const finishButton = await common.getDialogButton('Finish Workout')
       await userEvent.click(finishButton)
 
       // ========================================
@@ -224,13 +223,8 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
+      // Click View Details once its enter animation settles
+      await workout.clickButtonWhenAnimationSettles(/view details/i)
 
       // ========================================
       // PHASE 7: Verify summary

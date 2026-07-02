@@ -5,6 +5,7 @@ import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobal
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetDatabase } from './resetDatabase'
+import { mockTouchDevice, restoreMatchMedia } from './mockTouchDevice'
 
 /**
  * Cleans up state after an integration test.
@@ -38,4 +39,23 @@ export async function setupIntegrationTest(): Promise<void> {
   const onboarding = useOnboarding()
   onboarding.completed.value = true
   onboarding.isInitialized.value = true
+}
+
+/**
+ * Sets up state before a touch-device integration test.
+ * Mocks the touch device (before app creation so components pick it up),
+ * then runs the standard integration setup.
+ */
+export async function setupTouchIntegrationTest(): Promise<void> {
+  mockTouchDevice()
+  await setupIntegrationTest()
+}
+
+/**
+ * Cleans up state after a touch-device integration test.
+ * Runs the standard integration cleanup, then restores window.matchMedia.
+ */
+export async function cleanupTouchIntegrationTest(): Promise<void> {
+  await cleanupIntegrationTest()
+  restoreMatchMedia()
 }

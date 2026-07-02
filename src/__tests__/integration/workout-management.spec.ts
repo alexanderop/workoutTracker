@@ -17,24 +17,24 @@ describe('Workout Management', () => {
 
       // Add a strength block (Bench Press)
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add AMRAP block with exercise
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await userEvent.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(await common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog opens - wait for it
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.element(page.getByText(/Configure/)).toBeVisible()
 
       // Set duration to 8 minutes and add exercise
-      await userEvent.click(common.getDialogButton('8'))
-      await userEvent.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(await common.getDialogButton('8'))
+      await userEvent.click(await common.getDialogButton('Add Exercise'))
       await common.selectExercise('Push-ups')
 
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify both blocks exist and start workout
@@ -68,17 +68,13 @@ describe('Workout Management', () => {
       await userEvent.clear(nameInput)
       await userEvent.fill(nameInput, 'Hybrid Session')
 
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
+      // Click View Details once its enter animation settles
+      await workout.clickButtonWhenAnimationSettles(/view details/i)
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
@@ -118,7 +114,7 @@ describe('Workout Management', () => {
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Verify the button shows "Start Workout" (not "Resume")
@@ -137,7 +133,7 @@ describe('Workout Management', () => {
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout and complete a set
@@ -166,7 +162,7 @@ describe('Workout Management', () => {
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Start workout, complete a set
@@ -193,7 +189,7 @@ describe('Workout Management', () => {
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout
@@ -203,18 +199,22 @@ describe('Workout Management', () => {
       await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Verify the badge contains a time format (m:ss or mm:ss)
-      await expect.poll(async () => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
-        const badge = document.querySelector('.tabular-nums')
-        return badge?.textContent?.match(/^\d+:\d{2}$/)
-      }).toBeTruthy()
+      await expect
+        .poll(async () => {
+          // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
+          const badge = document.querySelector('.tabular-nums')
+          return badge?.textContent?.match(/^\d+:\d{2}$/)
+        })
+        .toBeTruthy()
 
       // Verify the pulsing dot indicator exists (animate-ping class)
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding animation indicator by CSS class
-        const pulsingDot = document.querySelector('.animate-ping')
-        return pulsingDot !== null
-      }).toBe(true)
+      await expect
+        .poll(() => {
+          // eslint-disable-next-line no-restricted-syntax -- Finding animation indicator by CSS class
+          const pulsingDot = document.querySelector('.animate-ping')
+          return pulsingDot !== null
+        })
+        .toBe(true)
 
       cleanup()
     })
@@ -227,7 +227,7 @@ describe('Workout Management', () => {
       // Navigate to builder, add a block, and start workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       await builder.startWorkout()
@@ -243,7 +243,7 @@ describe('Workout Management', () => {
 
       // Confirm cancel dialog (button is "Delete Workout")
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete Workout'))
+      await userEvent.click(await common.getDialogButton('Delete Workout'))
 
       // Verify we're back at home
       await common.waitForRoute(/^\/$/)

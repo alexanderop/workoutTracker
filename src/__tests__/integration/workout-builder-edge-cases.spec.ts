@@ -23,7 +23,7 @@ describe('Workout Builder Edge Cases', () => {
       // Add strength block
       await builder.openAddBlockDialog()
       await page.getByRole('tab', { name: /exercises/i }).click()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add another timed block
@@ -47,11 +47,11 @@ describe('Workout Builder Edge Cases', () => {
 
       // Add Bench Press twice
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Verify both blocks in builder mode
@@ -74,7 +74,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Add first block
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Open dialog again to add more
@@ -149,12 +149,12 @@ describe('Workout Builder Edge Cases', () => {
 
       // Add first block
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second block
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await userEvent.click(await common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       // Verify both blocks in builder
@@ -230,10 +230,10 @@ describe('Workout Builder Edge Cases', () => {
       await builder.switchToTimedBlocksTab()
 
       // Click a timed block type (AMRAP)
-      await userEvent.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(await common.getDialogButton('AMRAP'))
 
       // Now in configure dialog, click Cancel or press Escape
-      const cancelButton = common.getDialogButton('Cancel')
+      const cancelButton = await common.getDialogButton('Cancel')
       const action = cancelButton
         ? () => userEvent.click(cancelButton)
         : () => userEvent.keyboard('{Escape}')

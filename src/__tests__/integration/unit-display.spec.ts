@@ -9,14 +9,13 @@ describe('Unit Display', () => {
   afterEach(cleanupIntegrationTest)
 
   it('displays weight in lbs when user changes unit preference', async () => {
-    const { navigateTo, common, builder, cleanup } =
-      await createTestApp()
+    const { navigateTo, common, builder, cleanup } = await createTestApp()
 
     // Start a workout and add a strength block
     await page.getByRole('button', { name: /start new workout/i }).click()
     await page.getByRole('button', { name: /add first block/i }).click()
     await common.waitForDialog()
-    await userEvent.click(common.getDialogButton('Bench Press'))
+    await userEvent.click(await common.getDialogButton('Bench Press'))
     expect(common.isDialogOpen()).toBe(false)
 
     // Start workout
@@ -47,8 +46,7 @@ describe('Unit Display', () => {
   })
 
   it('converts and displays weight correctly when switching units', async () => {
-    const { navigateTo, common, builder, workout, cleanup } =
-      await createTestApp()
+    const { navigateTo, common, builder, workout, cleanup } = await createTestApp()
 
     // Navigate to settings first and switch to lbs
     await navigateTo({ name: RouteNames.Settings })
@@ -61,7 +59,7 @@ describe('Unit Display', () => {
     // Add a strength block
     await page.getByRole('button', { name: /add first block/i }).click()
     await common.waitForDialog()
-    await userEvent.click(common.getDialogButton('Bench Press'))
+    await userEvent.click(await common.getDialogButton('Bench Press'))
     expect(common.isDialogOpen()).toBe(false)
 
     // Start workout

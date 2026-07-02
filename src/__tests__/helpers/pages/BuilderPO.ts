@@ -48,7 +48,7 @@ export class BuilderPO {
   async addStrengthBlock(exerciseName: string): Promise<void> {
     await this.navigateTo()
     await this.openAddBlockDialog()
-    await userEvent.click(this.common.getDialogButton(exerciseName))
+    await userEvent.click(await this.common.getDialogButton(exerciseName))
     await this.common.waitForDialogClose()
   }
 
@@ -82,7 +82,7 @@ export class BuilderPO {
     await this.navigateTo()
     for (const exercise of exercises) {
       await this.openAddBlockDialog()
-      await userEvent.click(this.common.getDialogButton(exercise))
+      await userEvent.click(await this.common.getDialogButton(exercise))
       await this.common.waitForDialogClose()
     }
     await this.startWorkout()
@@ -144,18 +144,18 @@ export class BuilderPO {
   ): Promise<void> {
     await this.openAddBlockDialog()
     await this.switchToTimedBlocksTab()
-    await userEvent.click(this.common.getDialogButton(blockType))
+    await userEvent.click(await this.common.getDialogButton(blockType))
 
     // Wait for configure dialog
     await expect.element(page.getByText('Configure')).toBeVisible()
 
     // Add exercise - Tabata uses "Select Exercise", others use "Add Exercise"
     const exerciseButtonText = blockType === 'Tabata' ? 'Select Exercise' : 'Add Exercise'
-    await userEvent.click(this.common.getDialogButton(exerciseButtonText))
+    await userEvent.click(await this.common.getDialogButton(exerciseButtonText))
     await this.common.selectExercise(exerciseName)
 
     // Confirm block
-    await userEvent.click(this.common.getDialogButton('Add Block'))
+    await userEvent.click(await this.common.getDialogButton('Add Block'))
     await this.common.waitForDialogClose()
   }
 
@@ -168,7 +168,7 @@ export class BuilderPO {
   async addCardioBlock(activity = 'Running'): Promise<void> {
     await this.openAddBlockDialog()
     await this.switchToTimedBlocksTab()
-    await userEvent.click(this.common.getDialogButton('Cardio'))
+    await userEvent.click(await this.common.getDialogButton('Cardio'))
 
     // Wait for configure dialog
     await expect.element(page.getByText('Configure')).toBeVisible()
@@ -177,7 +177,7 @@ export class BuilderPO {
     await userEvent.click(page.getByRole('button', { name: new RegExp(activity, 'i') }))
 
     // Duration defaults to 30 minutes, just confirm
-    await userEvent.click(this.common.getDialogButton('Add Block'))
+    await userEvent.click(await this.common.getDialogButton('Add Block'))
     await this.common.waitForDialogClose()
   }
 }

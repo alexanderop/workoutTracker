@@ -18,7 +18,7 @@ describe('Isometric Exercise Prefill', () => {
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Wall Sit'))
+      await userEvent.click(await common.getDialogButton('Wall Sit'))
       await common.waitForDialogClose()
 
       // Start the workout
@@ -43,15 +43,19 @@ describe('Isometric Exercise Prefill', () => {
       const weightInput2 = page.getByRole('spinbutton', { name: /weight for set 2/i })
       const durationInput2 = page.getByRole('spinbutton', { name: /duration for set 2/i })
 
-      await expect.poll(async () => {
-        const element = await weightInput2.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('5')
+      await expect
+        .poll(async () => {
+          const element = await weightInput2.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('5')
 
-      await expect.poll(async () => {
-        const element = await durationInput2.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('20')
+      await expect
+        .poll(async () => {
+          const element = await durationInput2.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('20')
 
       cleanup()
     })
@@ -81,7 +85,7 @@ describe('Isometric Exercise Prefill', () => {
       // Act: Navigate to builder and add Wall Sit
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Wall Sit'))
+      await userEvent.click(await common.getDialogButton('Wall Sit'))
       await common.waitForDialogClose()
 
       // Wait for the async addExercise to complete (block appears in playlist)
@@ -95,15 +99,19 @@ describe('Isometric Exercise Prefill', () => {
       const weightInput = page.getByRole('spinbutton', { name: /weight for set 1/i })
       const durationInput = page.getByRole('spinbutton', { name: /duration for set 1/i })
 
-      await expect.poll(async () => {
-        const element = await weightInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('5')
+      await expect
+        .poll(async () => {
+          const element = await weightInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('5')
 
-      await expect.poll(async () => {
-        const element = await durationInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('20')
+      await expect
+        .poll(async () => {
+          const element = await durationInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('20')
 
       cleanup()
     })
@@ -120,7 +128,7 @@ describe('Isometric Exercise Prefill', () => {
       // Act: Create workout with Wall Sit
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Wall Sit'))
+      await userEvent.click(await common.getDialogButton('Wall Sit'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -148,7 +156,7 @@ describe('Isometric Exercise Prefill', () => {
       await navigateTo({ name: RouteNames.Home })
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Wall Sit'))
+      await userEvent.click(await common.getDialogButton('Wall Sit'))
       await common.waitForDialogClose()
       await expect.element(page.getByText('Wall Sit')).toBeVisible()
       await builder.startWorkout()
@@ -158,15 +166,19 @@ describe('Isometric Exercise Prefill', () => {
       const newWeightInput = page.getByRole('spinbutton', { name: /weight for set 1/i })
       const newDurationInput = page.getByRole('spinbutton', { name: /duration for set 1/i })
 
-      await expect.poll(async () => {
-        const element = await newWeightInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('5')
+      await expect
+        .poll(async () => {
+          const element = await newWeightInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('5')
 
-      await expect.poll(async () => {
-        const element = await newDurationInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('20')
+      await expect
+        .poll(async () => {
+          const element = await newDurationInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('20')
 
       cleanup()
     })

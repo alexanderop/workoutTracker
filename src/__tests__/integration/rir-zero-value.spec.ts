@@ -1,18 +1,15 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { cleanupTouchIntegrationTest, setupTouchIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
-import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('RIR Zero Value on Mobile', () => {
   beforeEach(async () => {
-    mockTouchDevice()
-    await setupIntegrationTest()
+    await setupTouchIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
-    restoreMatchMedia()
+    await cleanupTouchIntegrationTest()
   })
 
   const modalPO = new NumericInputModalPO()

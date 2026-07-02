@@ -102,7 +102,7 @@ describe('Data Management', () => {
       await expect.element(page.getByText(/1 workout/i)).toBeVisible()
 
       // Act: Confirm import
-      await userEvent.click(common.getDialogButton('Import Data'))
+      await userEvent.click(await common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
       await expect.poll(async () => await db.workouts.count()).toBe(1)
@@ -132,7 +132,7 @@ describe('Data Management', () => {
       await expect.element(page.getByText(/not valid json/i)).toBeVisible()
 
       // Dismiss dialog
-      await userEvent.click(common.getDialogButton('OK'))
+      await userEvent.click(await common.getDialogButton('OK'))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       cleanup()
@@ -155,7 +155,7 @@ describe('Data Management', () => {
       await expect.element(page.getByRole('heading', { name: /delete all data/i })).toBeVisible()
 
       // Confirm deletion
-      await userEvent.click(common.getDialogButton('Delete All Data'))
+      await userEvent.click(await common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
       await expect.poll(async () => await db.workouts.count()).toBe(0)
@@ -189,7 +189,9 @@ describe('Data Management', () => {
       await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
-      await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
+      await expect
+        .poll(() => router.currentRoute.value.path)
+        .toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
       await expect.element(page.getByText('Push Day')).toBeVisible()

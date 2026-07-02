@@ -77,7 +77,9 @@ export class LogPastWorkoutPO {
    * @param minutes - Duration in minutes (15, 30, 45, 60, 90, 120)
    */
   async setDuration(minutes: number): Promise<void> {
-    const durationButton = page.getByRole('button', { name: new RegExp(String.raw`${minutes}\s*min`, 'i') })
+    const durationButton = page.getByRole('button', {
+      name: new RegExp(String.raw`${minutes}\s*min`, 'i'),
+    })
     await durationButton.click()
   }
 
@@ -209,7 +211,7 @@ export class LogPastWorkoutPO {
   async addStrengthBlock(exerciseName: string): Promise<void> {
     await page.getByRole('button', { name: /add.*block/i }).click()
     await this.common.waitForDialog()
-    await userEvent.click(this.common.getDialogButton(exerciseName))
+    await userEvent.click(await this.common.getDialogButton(exerciseName))
     await this.common.waitForDialogClose()
   }
 
@@ -285,13 +287,11 @@ export class LogPastWorkoutPO {
   }
 
   /**
-   * Checks if the save button is disabled.
-   * @returns true if the save button is disabled
+   * The save button locator. Assert on it with retrying matchers:
+   * `await expect.element(po.getSaveButton()).toBeDisabled()`.
    */
-  async isSaveButtonDisabled(): Promise<boolean> {
-    const saveButton = page.getByRole('button', { name: /save workout/i })
-    const element = await saveButton.element()
-    return element.hasAttribute('disabled')
+  getSaveButton() {
+    return page.getByRole('button', { name: /save workout/i })
   }
 
   /**
@@ -321,7 +321,9 @@ export class LogPastWorkoutPO {
     // Each block item has a remove button - aria-label contains "remove"
     const blockElement = await block.element()
     // eslint-disable-next-line no-restricted-syntax -- Need to find button by aria-label pattern within block
-    const removeButton = blockElement.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
+    const removeButton = blockElement.querySelector(
+      'button[aria-label*="remove" i], button[aria-label*="Remove" i]',
+    )
     if (!removeButton || !(removeButton instanceof HTMLButtonElement)) {
       throw new Error(`Remove button not found for block at index ${blockIndex}`)
     }

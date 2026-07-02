@@ -4,7 +4,11 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate as createDatabaseTemplate, createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
+import { seedTemplateAndOpenDetail } from '../helpers/templateHelpers'
+import {
+  createDbTemplate as createDatabaseTemplate,
+  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
+} from '../factories'
 
 async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
   const textElement = await page.getByText(exerciseName).element()
@@ -14,7 +18,6 @@ async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
   }
   return card
 }
-
 
 describe('Template Flow', () => {
   beforeEach(setupIntegrationTest)
@@ -32,13 +35,13 @@ describe('Template Flow', () => {
       // Add a strength block (Bench Press)
       await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add another strength block (Squat)
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await userEvent.click(await common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       // Start workout
@@ -63,47 +66,35 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Push Day')
 
       // Verify the input value was set correctly before proceeding
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        if (!(element instanceof HTMLInputElement)) {
-          return null
-        }
-        return element.value
-      }).toBe('Push Day')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          if (!(element instanceof HTMLInputElement)) {
+            return null
+          }
+          return element.value
+        })
+        .toBe('Push Day')
 
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
-      // Wait for View Details button to be clickable (animation needs to complete)
-      const viewDetailsButton = page.getByRole('button', { name: /view details/i })
-      await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      await viewDetailsButton.click()
+      // Click View Details once its enter animation settles
+      await workout.clickButtonWhenAnimationSettles(/view details/i)
 
       await common.waitForRoute(/^\/workout\/summary\//)
 
-      // Wait for summary page to load and animation to complete
-      const saveTemplateButton = page.getByRole('button', { name: /save as template/i })
-      await expect.element(saveTemplateButton, { timeout: 3000 }).toBeVisible()
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Checking animation state by CSS class
-        const button = document.querySelector('button[name*="template"], button:has([name*="template"])')
-        return !button?.parentElement?.classList.contains('opacity-0')
-      }).toBe(true)
-      // Wait for animation to complete (100ms enter delay + 1000ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 800))
-      await saveTemplateButton.click()
+      // Wait for summary page to load, then click Save as Template once its animation settles
+      await workout.clickButtonWhenAnimationSettles(/save as template/i)
       await common.waitForDialog()
 
       // Verify dialog opened and template name is pre-filled
       expect(queryByRole('heading', { name: /save as template/i })).toBeTruthy()
 
       // Confirm save
-      await userEvent.click(common.getDialogButton('Save Template'))
+      await userEvent.click(await common.getDialogButton('Save Template'))
 
       // Wait for dialog to close
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
@@ -124,8 +115,7 @@ describe('Template Flow', () => {
 
   describe('Test 1b: Start workout from template', () => {
     it('starts a new workout from an existing template', async () => {
-      const { builder, getByRole, getByText, common, router, cleanup } =
-        await createTestApp()
+      const { builder, getByRole, getByText, common, router, cleanup } = await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
       const template = createDatabaseTemplate({
@@ -180,19 +170,14 @@ describe('Template Flow', () => {
 
   describe('Test 1c: Edit and delete template', () => {
     it('edits a template name and adds an exercise', async () => {
-      const { getByRole, common, navigateTo, cleanup } =
-        await createTestApp()
+      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
-      // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDatabaseTemplate({
+      // Pre-seed DB with a template and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-edit-test',
         name: 'Original Name',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail page
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-edit-test' } })
 
       // Wait for template page to finish loading
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
@@ -205,17 +190,19 @@ describe('Template Flow', () => {
       // Add an exercise (via Add Block dialog)
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await userEvent.click(await common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       // Save changes
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify changes persisted in DB
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-edit-test')
-        return updated?.name
-      }).toBe('Updated Name')
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-edit-test')
+          return updated?.name
+        })
+        .toBe('Updated Name')
       const updatedBlocks = await db.templates.get('tpl-edit-test')
       expect(updatedBlocks?.blocks).toHaveLength(2)
 
@@ -223,19 +210,14 @@ describe('Template Flow', () => {
     })
 
     it('deletes a template', async () => {
-      const {  getByRole, queryByRole, common, router, navigateTo, cleanup } =
-        await createTestApp()
+      const { getByRole, queryByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
-      // Pre-seed DB with a template (after app creation to ensure DB is ready)
-      const template = createDatabaseTemplate({
+      // Pre-seed DB with a template and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-delete-test',
         name: 'Template to Delete',
         blocks: [createDatabaseTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail page
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-test' } })
 
       // Wait for template page to finish loading
       await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
@@ -246,7 +228,7 @@ describe('Template Flow', () => {
 
       // Confirm deletion
       expect(queryByRole('heading', { name: /delete template/i })).toBeTruthy()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await userEvent.click(await common.getDialogButton('Delete'))
 
       // Verify redirect to /workouts
       await common.waitForRoute(/^\/workouts/)
@@ -282,23 +264,25 @@ describe('Template Flow', () => {
       // Add first exercise via picker dialog
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add second exercise
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Overhead Press'))
+      await userEvent.click(await common.getDialogButton('Overhead Press'))
       await common.waitForDialogClose()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify template saved to DB
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'Upper Body')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await db.templates.toArray()
+          return templates.find((t) => t.name === 'Upper Body')
+        })
+        .toBeDefined()
 
       const templates = await db.templates.toArray()
       const upperBodyTemplate = templates.find((t) => t.name === 'Upper Body')
@@ -391,8 +375,8 @@ describe('Template Flow', () => {
     it('removes an exercise from template', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 3 exercises
-      const template = createDatabaseTemplate({
+      // Seed template with 3 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-remove-test',
         name: 'Template With Exercises',
         blocks: [
@@ -401,10 +385,6 @@ describe('Template Flow', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-test' } })
       await expect.element(page.getByText('Bench Press')).toBeVisible()
       await expect.element(page.getByText('Squat')).toBeVisible()
       await expect.element(page.getByText('Deadlift')).toBeVisible()
@@ -415,7 +395,9 @@ describe('Template Flow', () => {
       if (!(squatCard instanceof HTMLElement)) throw new Error('Squat card not found')
 
       // eslint-disable-next-line no-restricted-syntax -- Finding remove button within card scope
-      const removeButton = squatCard.querySelector('[aria-label*="remove" i], [aria-label*="Remove" i]')
+      const removeButton = squatCard.querySelector(
+        '[aria-label*="remove" i], [aria-label*="Remove" i]',
+      )
       if (!(removeButton instanceof HTMLElement)) throw new Error('Remove button not found')
       await userEvent.click(removeButton)
 
@@ -426,10 +408,12 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has 2 blocks
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-remove-test')
-        return updated?.blocks.length
-      }).toBe(2)
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-remove-test')
+          return updated?.blocks.length
+        })
+        .toBe(2)
 
       const updated = await db.templates.get('tpl-remove-test')
       const exerciseNames = updated?.blocks
@@ -447,8 +431,8 @@ describe('Template Flow', () => {
       // This test verifies the drag handle is present for reordering
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 3 exercises
-      const template = createDatabaseTemplate({
+      // Seed template with 3 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-reorder-test',
         name: 'Template To Reorder',
         blocks: [
@@ -457,10 +441,6 @@ describe('Template Flow', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Exercise C', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
       // Verify all exercises have drag handles
@@ -484,7 +464,7 @@ describe('Template Flow', () => {
       // Add an exercise (making that part valid)
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Leave name empty - verify save button is disabled
@@ -516,16 +496,12 @@ describe('Template Flow', () => {
     it('modifies default set count and reflects in started workout', async () => {
       const { builder, getByRole, navigateTo, router, cleanup } = await createTestApp()
 
-      // Seed template with default 3 sets
-      const template = createDatabaseTemplate({
+      // Seed template with default 3 sets and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-setcount-test',
         name: 'Set Count Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 3 })],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-setcount-test' } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Find the set count input and increase it
@@ -550,11 +526,13 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Wait for save to complete
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-setcount-test')
-        const firstBlock = updated?.blocks[0]
-        return firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined
-      }).toBe(5)
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-setcount-test')
+          const firstBlock = updated?.blocks[0]
+          return firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined
+        })
+        .toBe(5)
 
       // Start workout from template
       await userEvent.click(getByRole('button', { name: /start workout/i }))
@@ -579,16 +557,12 @@ describe('Template Flow', () => {
     it('discards unsaved changes when navigating away', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with original name
-      const template = createDatabaseTemplate({
+      // Seed template with original name and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-discard-test',
         name: 'Original Name',
         blocks: [createDatabaseTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-discard-test' } })
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Modify the name
@@ -597,11 +571,13 @@ describe('Template Flow', () => {
       await userEvent.fill(nameInput, 'Modified Name')
 
       // Verify input changed
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        if (!(element instanceof HTMLInputElement)) return null
-        return element.value
-      }).toBe('Modified Name')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          if (!(element instanceof HTMLInputElement)) return null
+          return element.value
+        })
+        .toBe('Modified Name')
 
       // Navigate away without saving (go to workouts page)
       await navigateTo({ name: RouteNames.Workouts })
@@ -612,11 +588,13 @@ describe('Template Flow', () => {
 
       // Verify the name is back to original (unsaved changes were discarded)
       const reloadedInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
-        const element = await reloadedInput.element()
-        if (!(element instanceof HTMLInputElement)) return null
-        return element.value
-      }).toBe('Original Name')
+      await expect
+        .poll(async () => {
+          const element = await reloadedInput.element()
+          if (!(element instanceof HTMLInputElement)) return null
+          return element.value
+        })
+        .toBe('Original Name')
 
       // Verify DB was never modified
       const databaseTemplate = await db.templates.get('tpl-discard-test')
@@ -638,17 +616,19 @@ describe('Template Flow', () => {
       // Add an exercise
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify DB has trimmed name
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'My Template')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await db.templates.toArray()
+          return templates.find((t) => t.name === 'My Template')
+        })
+        .toBeDefined()
 
       cleanup()
     })
@@ -664,17 +644,19 @@ describe('Template Flow', () => {
       // Add a bodyweight exercise (e.g., Push-ups)
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Push-ups'))
+      await userEvent.click(await common.getDialogButton('Push-ups'))
       await common.waitForDialogClose()
 
       // Save template
       await userEvent.click(getByRole('button', { name: /save template/i }))
 
       // Verify DB block has correct defaults
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'Defaults Test')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await db.templates.toArray()
+          return templates.find((t) => t.name === 'Defaults Test')
+        })
+        .toBeDefined()
 
       const templates = await db.templates.toArray()
       const template = templates.find((t) => t.name === 'Defaults Test')
@@ -707,10 +689,10 @@ describe('Template Flow', () => {
 
       // Add exercise to AMRAP
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
-      await userEvent.click(common.getDialogButton('Burpees'))
+      await userEvent.click(await common.getDialogButton('Burpees'))
 
       // Confirm AMRAP block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Save template
@@ -718,10 +700,12 @@ describe('Template Flow', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify DB has correct AMRAP data
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'AMRAP Data Test')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await db.templates.toArray()
+          return templates.find((t) => t.name === 'AMRAP Data Test')
+        })
+        .toBeDefined()
 
       const templates = await db.templates.toArray()
       const template = templates.find((t) => t.name === 'AMRAP Data Test')

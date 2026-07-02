@@ -32,23 +32,33 @@ export class CommonPO {
 
   /**
    * Finds a button inside the currently open dialog by its text content.
+   * Retries until the dialog and button are rendered — dialog content often
+   * mounts asynchronously, so a one-shot query races with rendering.
    * @param text - The text to search for within button content
    * @returns The matching button element
-   * @throws Error if no button with the specified text exists in the dialog
+   * @throws Error if no button with the specified text appears within the poll timeout
    */
-  getDialogButton(text: string): HTMLElement {
-    const dialog = page.getByRole('dialog').query()
-    if (!dialog) {
-      throw new Error('No dialog found')
-    }
-    // eslint-disable-next-line no-restricted-syntax -- Scoped search within dialog element
-    const buttons = dialog.querySelectorAll('button')
-    const button = [...buttons].find((b) => b.textContent?.includes(text))
-
+  async getDialogButton(text: string): Promise<HTMLElement> {
+    await expect
+      .poll(() => this.queryDialogButton(text), {
+        message: `Dialog button with text "${text}" not found`,
+      })
+      .toBeTruthy()
+    const button = this.queryDialogButton(text)
     if (!button) {
       throw new Error(`Dialog button with text "${text}" not found`)
     }
     return button
+  }
+
+  private queryDialogButton(text: string): HTMLElement | undefined {
+    const dialog = page.getByRole('dialog').query()
+    if (!dialog) {
+      return undefined
+    }
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within dialog element
+    const buttons = dialog.querySelectorAll('button')
+    return [...buttons].find((b) => b.textContent?.includes(text))
   }
 
   /**
@@ -67,28 +77,43 @@ export class CommonPO {
   async selectExercise(exerciseName: string): Promise<void> {
     const searchInput = page.getByRole('textbox')
     await userEvent.fill(searchInput, exerciseName)
-    await expect.poll(() => this.getExactDialogButton(exerciseName)).toBeTruthy()
-    await userEvent.click(this.getExactDialogButton(exerciseName))
+    await userEvent.click(await this.getExactDialogButton(exerciseName))
   }
 
   /**
-   * Finds a button inside the currently open dialog by exact text match.
+   * Finds a button inside the currently open dialog by exact text match,
+   * retrying until it appears.
    * Uses a more precise matching strategy than getDialogButton to avoid partial matches.
-   * For exercise selection, handles two presentation modes:
-   * - Dialog mode: <button><span>icon</span><div><p>name</p>...</div></button>
-   * - Overlay mode: <button><span>icon</span><span class="font-medium">name</span></button>
    * @param text - The exact text to match
    * @returns The matching button element
-   * @throws Error if no button with the exact text exists in the dialog
+   * @throws Error if no button with the exact text appears within the poll timeout
    */
-  private getExactDialogButton(text: string): HTMLElement {
+  private async getExactDialogButton(text: string): Promise<HTMLElement> {
+    await expect
+      .poll(() => this.queryExactDialogButton(text), {
+        message: `Dialog button with exact text "${text}" not found`,
+      })
+      .toBeTruthy()
+    const button = this.queryExactDialogButton(text)
+    if (!button) {
+      throw new Error(`Dialog button with exact text "${text}" not found`)
+    }
+    return button
+  }
+
+  /**
+   * One-shot exact-match query. For exercise selection, handles two presentation modes:
+   * - Dialog mode: <button><span>icon</span><div><p>name</p>...</div></button>
+   * - Overlay mode: <button><span>icon</span><span class="font-medium">name</span></button>
+   */
+  private queryExactDialogButton(text: string): HTMLElement | undefined {
     const dialog = page.getByRole('dialog').query()
     // eslint-disable-next-line no-restricted-syntax -- Finding overlay by CSS classes, no accessible equivalent
     const overlay = document.querySelector('[class*="absolute"][class*="inset-0"]')
     const container = dialog ?? overlay
 
     if (!container) {
-      throw new Error('No dialog or overlay found')
+      return undefined
     }
 
     // eslint-disable-next-line no-restricted-syntax -- Scoped search within container element
@@ -115,9 +140,6 @@ export class CommonPO {
       })
     }
 
-    if (!button) {
-      throw new Error(`Dialog button with exact text "${text}" not found`)
-    }
     return button
   }
 
@@ -183,7 +205,11 @@ export class CommonPO {
       globalThis.HTMLInputElement.prototype,
       'value',
     )?.set
-    const setterFunction = nativeInputValueSetter ?? ((v: string) => { input.value = v })
+    const setterFunction =
+      nativeInputValueSetter ??
+      ((v: string) => {
+        input.value = v
+      })
     setterFunction.call(input, value)
     // Dispatch input and change events to trigger Vue reactivity
     input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }))

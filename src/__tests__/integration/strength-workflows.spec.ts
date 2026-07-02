@@ -18,7 +18,7 @@ describe('Strength Workflows', () => {
       // Add an exercise by clicking "Add First Block"
       await userEvent.click(getByRole('button', { name: /add first block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       expect(common.isDialogOpen()).toBe(false)
 
       // Start the workout (transition from builder to active mode)
@@ -37,7 +37,8 @@ describe('Strength Workflows', () => {
     })
 
     it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
+      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } =
+        await createTestApp()
 
       // Setup: add strength block and start workout
       await builder.addStrengthBlock('Bench Press')
@@ -82,12 +83,14 @@ describe('Strength Workflows', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
 
       // Verify prefilled values in next set using SetRowPO
-      await expect.poll(async () => {
-        const activeSet = await workout.getActiveSet()
-        if (!activeSet) return null
-        const values = await activeSet.getValues()
-        return values.weight
-      }).toBe('100')
+      await expect
+        .poll(async () => {
+          const activeSet = await workout.getActiveSet()
+          if (!activeSet) return null
+          const values = await activeSet.getValues()
+          return values.weight
+        })
+        .toBe('100')
       const activeSet = await workout.getActiveSet()
       const values = await activeSet!.getValues()
       expect(values.reps).toBe('5')

@@ -3,21 +3,21 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-
 describe('Timed Block Workflows', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
   describe('Configuration', () => {
     it('allows user to add timed blocks from the dialog and start workout', async () => {
-      const { builder, common, cleanup } =
-        await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
 
       // Verify exercises tab is default (check aria-selected attribute)
-      await expect.element(page.getByRole('tab', { name: /exercises/i })).toHaveAttribute('aria-selected', 'true')
+      await expect
+        .element(page.getByRole('tab', { name: /exercises/i }))
+        .toHaveAttribute('aria-selected', 'true')
 
       // Switch to timed blocks tab
       await builder.switchToTimedBlocksTab()
@@ -29,18 +29,18 @@ describe('Timed Block Workflows', () => {
       await expect.element(page.getByText('For Time')).toBeInTheDocument()
 
       // Select AMRAP - this opens a configuration dialog
-      await userEvent.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(await common.getDialogButton('AMRAP'))
 
       // Wait for configuration dialog
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.element(page.getByText(/Configure/)).toBeVisible()
 
       // Add an exercise to the AMRAP
-      await userEvent.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(await common.getDialogButton('Add Exercise'))
       await common.selectExercise('Push-ups')
 
       // Confirm the block by clicking "Add Block"
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
 
       // Wait for dialog AND overlay to fully close
       await common.waitForDialogClose()
@@ -62,8 +62,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('filters exercises when searching in add block dialog', async () => {
-      const { builder, common, cleanup } =
-        await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -80,7 +79,7 @@ describe('Timed Block Workflows', () => {
       await expect.element(page.getByText('Assisted Pull-up Machine')).not.toBeInTheDocument()
 
       // Select the filtered exercise and verify it adds to workout
-      await userEvent.click(common.getDialogButton('Barbell Row'))
+      await userEvent.click(await common.getDialogButton('Barbell Row'))
 
       // Wait for dialog AND overlay to fully close
       await common.waitForDialogClose()
@@ -157,16 +156,21 @@ describe('Timed Block Workflows', () => {
       // Click Done - this directly opens the finish workout dialog (unlike other blocks)
       await doneButton.click()
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       // Wait for completion screen and navigate to summary
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
-        const element = await viewDetailsButton.element()
-        return getComputedStyle(element).opacity
-      }, { timeout: 2000 }).toBe('1')
+      await expect
+        .poll(
+          async () => {
+            const element = await viewDetailsButton.element()
+            return getComputedStyle(element).opacity
+          },
+          { timeout: 2000 },
+        )
+        .toBe('1')
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
@@ -183,7 +187,7 @@ describe('Timed Block Workflows', () => {
       await builder.openAddBlockDialog()
       // Search for exact exercise to avoid ambiguous matches with Smith Machine Bench Press
       await userEvent.fill(page.getByRole('textbox'), 'Bench Press')
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.addTimedBlock('AMRAP')
       await builder.startWorkoutAndVerifyBlocks(2)
@@ -220,10 +224,12 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
-        const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
-        return plusButton instanceof HTMLButtonElement && !plusButton.disabled
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
+          return plusButton instanceof HTMLButtonElement && !plusButton.disabled
+        })
+        .toBe(true)
 
       // Increment rounds
       await page.getByRole('button', { name: /\+1/i }).click()
@@ -273,10 +279,12 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
-        const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
-        return plusButton instanceof HTMLButtonElement && !plusButton.disabled
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
+          return plusButton instanceof HTMLButtonElement && !plusButton.disabled
+        })
+        .toBe(true)
 
       // Click +1 to record 3 rounds
       await page.getByRole('button', { name: /\+1/i }).click()

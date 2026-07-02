@@ -8,6 +8,7 @@ export { createCustomExercise, createRandomCustomExercise } from './customExerci
 
 // Database factories (for integration tests with IndexedDB)
 export { createDbSet, createDbPlannedSet } from './dbSet.factory'
+export { createDbCustomExercise } from './dbCustomExercise.factory'
 export { createDbStrengthBlock, createDbStrengthBlockWithSets } from './dbBlock.factory'
 export { createDbExercise, createDbExerciseWithSets } from './dbExercise.factory'
 export { createDbCompletedWorkout, DbWorkoutBuilder, dbWorkoutBuilder } from './dbWorkout.factory'

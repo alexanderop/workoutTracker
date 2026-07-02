@@ -17,7 +17,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -36,7 +36,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -66,7 +66,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -79,12 +79,14 @@ describe('Active Workout FAB', () => {
       await expect.element(fab).toBeVisible()
 
       // Check timer format (should be like "0:XX" at start)
-      await expect.poll(async () => {
-        const fabElement = await fab.element()
-        const timerText = fabElement.textContent?.trim()
-        // Timer format: m:ss or mm:ss (e.g., "0:05", "1:30", "12:45")
-        return timerText?.match(/^\d+:\d{2}$/) !== null
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const fabElement = await fab.element()
+          const timerText = fabElement.textContent?.trim()
+          // Timer format: m:ss or mm:ss (e.g., "0:05", "1:30", "12:45")
+          return timerText?.match(/^\d+:\d{2}$/) !== null
+        })
+        .toBe(true)
 
       cleanup()
     })
@@ -97,7 +99,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -126,7 +128,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 
@@ -147,7 +149,7 @@ describe('Active Workout FAB', () => {
 
       // Confirm cancel
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete Workout'))
+      await userEvent.click(await common.getDialogButton('Delete Workout'))
 
       // Should be at home, FAB should be gone
       await common.waitForRoute(/^\/$/)
@@ -162,7 +164,7 @@ describe('Active Workout FAB', () => {
       // Start a workout
       await builder.navigateTo()
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
       await builder.startWorkout()
 

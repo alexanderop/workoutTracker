@@ -1,18 +1,15 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { cleanupTouchIntegrationTest, setupTouchIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
-import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('Numeric Input Modal (Touch Device)', () => {
   beforeEach(async () => {
-    mockTouchDevice()
-    await setupIntegrationTest()
+    await setupTouchIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
-    restoreMatchMedia()
+    await cleanupTouchIntegrationTest()
   })
 
   const modalPO = new NumericInputModalPO()
@@ -110,9 +107,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await modalPO.waitForOpen()
 
       // Check for unit label in the selected preset (inside the dialog)
-      await expect
-        .element(page.getByTestId('preset-selected').getByText('kg'))
-        .toBeVisible()
+      await expect.element(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()

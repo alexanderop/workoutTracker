@@ -24,7 +24,7 @@ describe('Form Draft Persistence', () => {
       // Add an exercise
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Wait for debounced auto-save
@@ -47,10 +47,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
-        const element = await restoredNameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('My Draft Template')
+      await expect
+        .poll(async () => {
+          const element = await restoredNameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('My Draft Template')
 
       // Verify block was also restored
       await expect.element(page.getByText('Bench Press')).toBeVisible()
@@ -68,7 +70,7 @@ describe('Form Draft Persistence', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Saved Template')
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Squat'))
+      await userEvent.click(await common.getDialogButton('Squat'))
       await common.waitForDialogClose()
 
       // Wait for draft to be saved
@@ -106,7 +108,7 @@ describe('Form Draft Persistence', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Draft to Discard')
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Deadlift'))
+      await userEvent.click(await common.getDialogButton('Deadlift'))
       await common.waitForDialogClose()
 
       // Wait for draft and discard button to appear
@@ -126,10 +128,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('')
 
       // Verify block is removed
       await expect.element(page.getByText('Deadlift')).not.toBeInTheDocument()
@@ -152,7 +156,7 @@ describe('Form Draft Persistence', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Test Draft')
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Wait for draft to be saved
@@ -214,10 +218,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
-        const element = await restoredNameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('My Draft Benchmark')
+      await expect
+        .poll(async () => {
+          const element = await restoredNameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('My Draft Benchmark')
 
       cleanup()
     })
@@ -289,10 +295,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('')
 
       // Verify draft is cleared
       const draft = await db.drafts.get('benchmark-create')
@@ -314,7 +322,7 @@ describe('Form Draft Persistence', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Template Draft')
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Wait for template draft to be saved with correct name

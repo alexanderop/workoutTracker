@@ -4,29 +4,9 @@ import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { db } from '@/db'
 import type { DbAmrapBlock } from '@/db/schema'
+import { TimersPO } from '../helpers/pages'
 
-type TestApp = Awaited<ReturnType<typeof createTestApp>>
-
-/**
- * Helper to navigate to timers page from home
- */
-async function goToTimersPage(testApp: TestApp) {
-  const quickTimerCard = testApp.getByText(/quick timer/i)
-  await userEvent.click(quickTimerCard)
-  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
-}
-
-/**
- * Helper to start an AMRAP timer with 5 min preset
- */
-async function startAmrapTimer() {
-  await userEvent.click(page.getByRole('button', { name: /amrap/i }))
-  await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-  await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
-
-  // Wait for timer UI
-  await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
-}
+const timers = new TimersPO()
 
 /**
  * Helper to simulate timer completion.
@@ -57,8 +37,8 @@ describe('Timer Workout Logging', () => {
   describe('Log Workout button on completion', () => {
     it('shows Log Workout button when timer completes', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Verify "Log Workout" button is visible on completion screen
@@ -73,8 +53,8 @@ describe('Timer Workout Logging', () => {
 
     it('changes button to "Logged ✓" after clicking Log Workout', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Click Log Workout
@@ -94,8 +74,8 @@ describe('Timer Workout Logging', () => {
       // Verify database is empty before
       expect(await db.workouts.count()).toBe(0)
 
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Click Log Workout
@@ -120,8 +100,8 @@ describe('Timer Workout Logging', () => {
 
     it('allows logging workout and then running another timer', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Log the workout
@@ -140,8 +120,8 @@ describe('Timer Workout Logging', () => {
 
     it('resets logged state when clicking Done and starting new timer', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Log the workout
@@ -155,7 +135,7 @@ describe('Timer Workout Logging', () => {
       await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
 
       // Start a new timer
-      await startAmrapTimer()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       // Log Workout button should be available again (not "Logged ✓")
@@ -168,8 +148,8 @@ describe('Timer Workout Logging', () => {
   describe('Logged workout data', () => {
     it('creates workout with correct AMRAP block structure', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
@@ -198,8 +178,8 @@ describe('Timer Workout Logging', () => {
 
     it('generates auto-name for logged workout', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
       await completeTimer()
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
@@ -218,8 +198,8 @@ describe('Timer Workout Logging', () => {
 
     it('uses timer timestamps for workout startedAt and completedAt', async () => {
       const app = await createTestApp()
-      await goToTimersPage(app)
-      await startAmrapTimer()
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       const beforeStart = Date.now()
       await completeTimer()

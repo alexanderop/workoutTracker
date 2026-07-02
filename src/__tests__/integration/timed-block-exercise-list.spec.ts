@@ -20,7 +20,7 @@ async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestAp
   await builder.navigateTo()
   await builder.openAddBlockDialog()
   await builder.switchToTimedBlocksTab()
-  await userEvent.click(common.getDialogButton('AMRAP'))
+  await userEvent.click(await common.getDialogButton('AMRAP'))
 
   // Wait for config dialog to open
   await expect.element(page.getByText('Configure')).toBeVisible()
@@ -34,7 +34,7 @@ async function addExerciseViaOverlay(
   const { common } = app
 
   // Click Add Exercise button in the config dialog
-  await userEvent.click(common.getDialogButton('Add Exercise'))
+  await userEvent.click(await common.getDialogButton('Add Exercise'))
 
   // Wait for exercise picker overlay to appear by looking for the search placeholder
   await expect.element(page.getByPlaceholder(/search exercises/i)).toBeVisible()
@@ -50,12 +50,12 @@ async function addExerciseViaOverlay(
   // Find and click the exercise button (it's a button containing the exercise name)
   const buttons = await page.getByRole('button').all()
   const exerciseButton = await Promise.all(
-    buttons.map(async button => {
+    buttons.map(async (button) => {
       const element = await button.element()
       const text = element.textContent
       return text?.includes(exerciseName) ? button : null
-    })
-  ).then(results => results.find(Boolean))
+    }),
+  ).then((results) => results.find(Boolean))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
 
   await userEvent.click(exerciseButton)
@@ -155,7 +155,7 @@ describe('Timed Block Exercise List', () => {
   describe('editing exercise values', () => {
     it('allows setting reps value', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Push-ups')
@@ -181,7 +181,7 @@ describe('Timed Block Exercise List', () => {
 
     it('allows setting load value', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Kettlebell Swing')
@@ -209,7 +209,7 @@ describe('Timed Block Exercise List', () => {
   describe('removing exercises', () => {
     it('removes exercise when delete button clicked', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
 
@@ -223,17 +223,21 @@ describe('Timed Block Exercise List', () => {
       expect(dialog.textContent).toContain('Pull-ups')
 
       // Find remove buttons using page locators
-      const removeButtonLocators = await page.getByRole('button', { name: /remove exercise/i }).all()
+      const removeButtonLocators = await page
+        .getByRole('button', { name: /remove exercise/i })
+        .all()
       expect(removeButtonLocators.length).toBe(2)
 
       // Click first remove button
       await removeButtonLocators[0]!.click()
 
       // First exercise should be removed, second should remain
-      await expect.poll(async () => {
-        const updatedDialog = await getByRole('dialog').element()
-        return updatedDialog.textContent?.includes('Push-ups') ?? false
-      }).toBe(false)
+      await expect
+        .poll(async () => {
+          const updatedDialog = await getByRole('dialog').element()
+          return updatedDialog.textContent?.includes('Push-ups') ?? false
+        })
+        .toBe(false)
       const updatedDialog = await getByRole('dialog').element()
       expect(updatedDialog.textContent).toContain('Pull-ups')
 
@@ -244,12 +248,12 @@ describe('Timed Block Exercise List', () => {
   describe('add exercise button', () => {
     it('opens exercise picker when add button clicked', async () => {
       const app = await createTestApp()
-      const {  common } = app
+      const { common } = app
 
       await openAmrapConfigDialog(app)
 
       // Click Add Exercise button
-      await userEvent.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(await common.getDialogButton('Add Exercise'))
 
       // Exercise picker overlay should open (has a search input and exercise list)
       await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()

@@ -31,7 +31,7 @@ describe('Cardio Block Workflows', () => {
       await builder.switchToTimedBlocksTab()
 
       // Click Cardio button
-      await userEvent.click(common.getDialogButton('Cardio'))
+      await userEvent.click(await common.getDialogButton('Cardio'))
 
       // Verify configure dialog opens with activity picker
       await expect.element(page.getByRole('dialog')).toBeVisible()
@@ -54,7 +54,7 @@ describe('Cardio Block Workflows', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await userEvent.click(common.getDialogButton('Cardio'))
+      await userEvent.click(await common.getDialogButton('Cardio'))
 
       // Wait for dialog
       await expect.element(page.getByText('Configure')).toBeVisible()
@@ -63,7 +63,7 @@ describe('Cardio Block Workflows', () => {
       await userEvent.click(page.getByRole('button', { name: /cycling/i }))
 
       // Confirm block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify block was added
@@ -79,7 +79,7 @@ describe('Cardio Block Workflows', () => {
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await userEvent.click(common.getDialogButton('Cardio'))
+      await userEvent.click(await common.getDialogButton('Cardio'))
 
       // Wait for dialog
       await expect.element(page.getByText('Configure')).toBeVisible()
@@ -129,7 +129,7 @@ describe('Cardio Block Workflows', () => {
       // Add strength block after cardio - switch back to exercises tab
       await builder.openAddBlockDialog()
       await page.getByRole('tab', { name: /exercises/i }).click()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       await builder.startWorkoutAndVerifyBlocks(2)
@@ -169,7 +169,7 @@ describe('Cardio Block Workflows', () => {
 
       // Add strength block first
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add cardio block
@@ -198,7 +198,7 @@ describe('Cardio Block Workflows', () => {
 
       // Add strength block
       await builder.openAddBlockDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add EMOM block
@@ -236,7 +236,7 @@ describe('Cardio Block Workflows', () => {
 
       // Confirm dialog
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Finish Workout'))
+      await userEvent.click(await common.getDialogButton('Finish Workout'))
 
       // Verify completion/success screen
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
@@ -244,10 +244,15 @@ describe('Cardio Block Workflows', () => {
       // Wait for View Details button to be visible and clickable
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
-        const element = await viewDetailsButton.element()
-        return getComputedStyle(element).opacity
-      }, { timeout: 2000 }).toBe('1')
+      await expect
+        .poll(
+          async () => {
+            const element = await viewDetailsButton.element()
+            return getComputedStyle(element).opacity
+          },
+          { timeout: 2000 },
+        )
+        .toBe('1')
 
       // Navigate to summary
       await viewDetailsButton.click()

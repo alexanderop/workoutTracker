@@ -4,10 +4,8 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import {
-  createDbTemplate as createDatabaseTemplate,
-  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
-} from '../factories'
+import { seedTemplateAndOpenDetail } from '../helpers/templateHelpers'
+import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 
 /**
  * Integration tests for template error handling and edge cases.
@@ -27,7 +25,7 @@ describe('Template Error Handling', () => {
       // Add an exercise (making that part valid)
       await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Fill name with only whitespace
@@ -44,16 +42,12 @@ describe('Template Error Handling', () => {
     it('modifying template name and saving persists changes', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Create a template
-      const template = createDatabaseTemplate({
+      // Create a template and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-validation-test',
         name: 'Valid Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
-
-      // Navigate to edit
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-validation-test' } })
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
       // Modify the name
@@ -67,10 +61,12 @@ describe('Template Error Handling', () => {
       await userEvent.click(saveButton)
 
       // Verify changes persisted to database
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-validation-test')
-        return updated?.name
-      }).toBe('New Template Name')
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-validation-test')
+          return updated?.name
+        })
+        .toBe('New Template Name')
 
       cleanup()
     })
@@ -78,15 +74,12 @@ describe('Template Error Handling', () => {
     it('disables start workout after removing all exercises', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Create template with one exercise
-      const template = createDatabaseTemplate({
+      // Create template with one exercise and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-remove-all',
         name: 'Single Exercise Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-all' } })
       await expect.element(page.getByText('Bench Press')).toBeVisible()
 
       // Verify Start Workout is initially enabled
@@ -114,15 +107,12 @@ describe('Template Error Handling', () => {
     it('does not persist changes when navigating away without saving', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Create initial template
-      const template = createDatabaseTemplate({
+      // Create initial template and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-unsaved',
         name: 'Original Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-unsaved' } })
 
       // Modify the name
       const nameInput = getByRole('textbox', { name: /template name/i })
@@ -161,14 +151,11 @@ describe('Template Error Handling', () => {
     it('cancelling delete preserves template', async () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-delete-cancel',
         name: 'Template to Keep',
         blocks: [createDatabaseTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-delete-cancel' } })
       await expect.element(page.getByRole('button', { name: /delete template/i })).toBeVisible()
 
       // Click delete
@@ -176,7 +163,7 @@ describe('Template Error Handling', () => {
       await common.waitForDialog()
 
       // Cancel the deletion
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await userEvent.click(await common.getDialogButton('Cancel'))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Template should still exist
@@ -190,14 +177,11 @@ describe('Template Error Handling', () => {
     it('pressing escape closes delete dialog without deleting', async () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-escape-test',
         name: 'Escape Test Template',
         blocks: [createDatabaseTemplateStrengthBlock()],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-escape-test' } })
 
       // Open delete dialog
       await userEvent.click(getByRole('button', { name: /delete template/i }))
@@ -219,8 +203,8 @@ describe('Template Error Handling', () => {
     it('cannot move first exercise up', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Create template with 2 exercises
-      const template = createDatabaseTemplate({
+      // Create template with 2 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-reorder-edge',
         name: 'Reorder Test',
         blocks: [
@@ -228,9 +212,6 @@ describe('Template Error Handling', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Second Exercise' }),
         ],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-edge' } })
 
       // Find first exercise card
       const firstText = await page.getByText('First Exercise').element()
@@ -253,7 +234,7 @@ describe('Template Error Handling', () => {
     it('cannot move last exercise down', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-reorder-last',
         name: 'Reorder Last Test',
         blocks: [
@@ -261,9 +242,6 @@ describe('Template Error Handling', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Last Exercise' }),
         ],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-last' } })
 
       // Find last exercise card
       const lastText = await page.getByText('Last Exercise').element()
@@ -286,14 +264,11 @@ describe('Template Error Handling', () => {
     it('cannot decrease set count below 1', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-setcount-min',
         name: 'Set Count Min Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 1 })],
       })
-      await db.templates.add(template)
-
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-setcount-min' } })
 
       // Find the exercise card
       const squatText = await page.getByText('Squat').element()

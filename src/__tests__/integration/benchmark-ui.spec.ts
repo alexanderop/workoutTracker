@@ -18,7 +18,12 @@ describe('Benchmark UI', () => {
     it('displays benchmarks tab with empty state', async () => {
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
-      await expect.poll(() => { app.benchmarks.assertEmptyState(); return true }).toBe(true)
+      await expect
+        .poll(() => {
+          app.benchmarks.assertEmptyState()
+          return true
+        })
+        .toBe(true)
       app.cleanup()
     })
 
@@ -49,7 +54,9 @@ describe('Benchmark UI', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.waitForLoad('Fran')
 
-      await expect.poll(async () => (await page.getByText(/\d+:\d{2}/).all()).length).toBeGreaterThanOrEqual(3)
+      await expect
+        .poll(async () => (await page.getByText(/\d+:\d{2}/).all()).length)
+        .toBeGreaterThanOrEqual(3)
 
       app.cleanup()
     })
@@ -58,7 +65,12 @@ describe('Benchmark UI', () => {
       const app = await createTestApp()
       await app.benchmarkDetail.navigateToDetail('invalid-id')
 
-      await expect.poll(() => { app.benchmarkDetail.assertNotFoundState(); return true }).toBe(true)
+      await expect
+        .poll(() => {
+          app.benchmarkDetail.assertNotFoundState()
+          return true
+        })
+        .toBe(true)
       await app.benchmarkDetail.clickGoBack()
       expect(app.router.currentRoute.value.path).toBe('/workouts')
 
@@ -123,10 +135,14 @@ describe('Benchmark UI', () => {
 
       await startBenchmarkWorkout(app, benchmark.id)
       await expect.element(page.getByText('NEXT', { exact: true })).toBeVisible()
-      await expect.poll(async () => (await page.getByText(/pull-ups/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/pull-ups/i).all()).length)
+        .toBeGreaterThan(0)
 
       await completeExercise()
-      await expect.poll(async () => (await page.getByText(/box jumps/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/box jumps/i).all()).length)
+        .toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -184,7 +200,11 @@ describe('Benchmark UI', () => {
       await startBenchmarkWorkout(app, benchmark.id)
       await completeExercise()
 
-      await expect.poll(async () => await page.getByText(/you're.*ahead/i).query() !== null, { timeout: 3000 }).toBe(true)
+      await expect
+        .poll(async () => (await page.getByText(/you're.*ahead/i).query()) !== null, {
+          timeout: 3000,
+        })
+        .toBe(true)
 
       app.cleanup()
     })
@@ -201,10 +221,28 @@ describe('Benchmark UI', () => {
       const app = await createTestApp()
       await startBenchmarkWorkout(app, benchmark.id)
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Being "behind" requires wall-clock time to pass the 1s PB split — that wait
+      // is inherent to the feature. Poll the visible timer until it shows >= 2s
+      // elapsed: splits are recorded as floored seconds, so completing at a displayed
+      // 0:02 is guaranteed slower than the 1s PB split.
+      await expect
+        .poll(
+          async () => {
+            const timer = await page.getByText(/^\d+:\d{2}$/).query()
+            if (!timer) return 0
+            const [minutes = '0', seconds = '0'] = (timer.textContent ?? '').trim().split(':')
+            return Number(minutes) * 60 + Number(seconds)
+          },
+          { timeout: 5000 },
+        )
+        .toBeGreaterThanOrEqual(2)
       await completeExercise()
 
-      await expect.poll(async () => await page.getByText(/push.*behind/i).query() !== null, { timeout: 3000 }).toBe(true)
+      await expect
+        .poll(async () => (await page.getByText(/push.*behind/i).query()) !== null, {
+          timeout: 3000,
+        })
+        .toBe(true)
 
       app.cleanup()
     })

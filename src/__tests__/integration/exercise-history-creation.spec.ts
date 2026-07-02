@@ -6,7 +6,11 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
-import { getWorkoutsRepository, getCustomExercisesRepository, getExerciseProgressRepository } from '@/db'
+import {
+  getWorkoutsRepository,
+  getCustomExercisesRepository,
+  getExerciseProgressRepository,
+} from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -42,7 +46,7 @@ describe('Exercise History Creation', () => {
 
     // Handle finish dialog
     await common.waitForDialog()
-    await userEvent.click(common.getDialogButton('Finish Workout'))
+    await userEvent.click(await common.getDialogButton('Finish Workout'))
 
     // Wait for completion screen and click View Details
     await expect.element(page.getByText(/workout complete/i)).toBeVisible()
@@ -83,7 +87,7 @@ describe('Exercise History Creation', () => {
 
     // Handle the auto-opened finish dialog
     await common.waitForDialog()
-    await userEvent.click(common.getDialogButton('Finish Workout'))
+    await userEvent.click(await common.getDialogButton('Finish Workout'))
     await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
     // Now verify the database state directly

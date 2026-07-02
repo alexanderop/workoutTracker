@@ -85,7 +85,7 @@ export class WeightPO {
    * Confirms the delete action in the confirmation dialog.
    */
   async confirmDelete(): Promise<void> {
-    await userEvent.click(this.common.getDialogButton('Delete'))
+    await userEvent.click(await this.common.getDialogButton('Delete'))
     await this.common.waitForDialogClose()
   }
 

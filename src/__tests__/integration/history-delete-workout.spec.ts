@@ -78,10 +78,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Leg Day')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate to history view
@@ -96,7 +93,7 @@ describe('History Delete Workout', () => {
 
       // Confirm deletion
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await userEvent.click(await common.getDialogButton('Delete'))
 
       // Workout should be removed from the list
       await expect.element(page.getByText('Leg Day')).not.toBeInTheDocument()
@@ -112,10 +109,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Push Day')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Push Day').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate to history view
@@ -130,7 +124,7 @@ describe('History Delete Workout', () => {
 
       // Click cancel in dialog
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await userEvent.click(await common.getDialogButton('Cancel'))
 
       // Workout should still be visible
       await expect.element(page.getByText('Push Day')).toBeVisible()
@@ -146,10 +140,7 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a single workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Only Workout')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Only Workout').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate to history view
@@ -164,7 +155,7 @@ describe('History Delete Workout', () => {
 
       // Confirm deletion
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await userEvent.click(await common.getDialogButton('Delete'))
 
       // Empty state should now be visible
       await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
@@ -203,7 +194,7 @@ describe('History Delete Workout', () => {
       await simulateSwipeLeft(swipeableContainer)
       await userEvent.click(page.getByRole('button', { name: /delete/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await userEvent.click(await common.getDialogButton('Delete'))
 
       // Recent workout should be gone, old one should remain
       await expect.element(page.getByText('Recent Workout')).not.toBeInTheDocument()
@@ -216,14 +207,8 @@ describe('History Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed multiple workouts
-      const workout1 = databaseWorkoutBuilder()
-        .withName('Workout One')
-        .withStrengthBlock()
-        .build()
-      const workout2 = databaseWorkoutBuilder()
-        .withName('Workout Two')
-        .withStrengthBlock()
-        .build()
+      const workout1 = databaseWorkoutBuilder().withName('Workout One').withStrengthBlock().build()
+      const workout2 = databaseWorkoutBuilder().withName('Workout Two').withStrengthBlock().build()
       await db.workouts.bulkAdd([workout1, workout2])
 
       // Navigate to history view

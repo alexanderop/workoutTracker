@@ -17,7 +17,7 @@ describe('SegmentedControl', () => {
       await builder.switchToTimedBlocksTab()
 
       // Open EMOM config dialog
-      await userEvent.click(common.getDialogButton('EMOM'))
+      await userEvent.click(await common.getDialogButton('EMOM'))
       await expect.element(page.getByText('Configure')).toBeVisible()
 
       // Verify rotation tabs are visible (not a dropdown)
@@ -42,7 +42,7 @@ describe('SegmentedControl', () => {
       await builder.switchToTimedBlocksTab()
 
       // Open EMOM config dialog
-      await userEvent.click(common.getDialogButton('EMOM'))
+      await userEvent.click(await common.getDialogButton('EMOM'))
       await expect.element(page.getByText('Configure')).toBeVisible()
 
       const fullRoundTab = page.getByRole('tab', { name: /full round each minute/i })

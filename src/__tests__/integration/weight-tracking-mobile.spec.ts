@@ -3,19 +3,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
+import { cleanupTouchIntegrationTest, setupTouchIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { createDbWeightEntry as createDatabaseWeightEntry } from '../factories/dbWeightEntry.factory'
 
 describe('Weight Tracking (Mobile)', () => {
   beforeEach(async () => {
-    mockTouchDevice()
-    await setupIntegrationTest()
+    await setupTouchIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
-    restoreMatchMedia()
+    await cleanupTouchIntegrationTest()
   })
 
   const modalPO = new NumericInputModalPO()
@@ -78,10 +75,12 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
-        const entries = await getWeightRepository().getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       // Now the button should show 65
       const updatedButton = page.getByRole('button', { name: '65 kg' })
@@ -173,10 +172,12 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
-        const entries = await getWeightRepository().getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       // Navigate away to settings (simulating "next day")
       await navigateTo({ name: RouteNames.Settings })

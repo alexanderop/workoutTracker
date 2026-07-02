@@ -25,7 +25,9 @@ describe('Workout Queue', () => {
 
       // Assert: Dialog opens with "Workout Queue" title
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /workout queue/i })).toBeInTheDocument()
+      await expect
+        .element(page.getByRole('heading', { name: /workout queue/i }))
+        .toBeInTheDocument()
 
       cleanup()
     })
@@ -158,16 +160,18 @@ describe('Workout Queue', () => {
       await page.getByRole('button', { name: /open workout queue/i }).click()
       await common.waitForDialog()
 
-      await userEvent.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(await common.getDialogButton('Add Exercise'))
 
       // Wait for queue to close and add block dialog to open
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
-        const dialog = document.querySelector('[role="dialog"]')
-        // The add block dialog should be open and have exercises tabs
-        return dialog?.textContent?.includes('Exercises')
-      }).toBe(true)
+      await expect
+        .poll(() => {
+          // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
+          const dialog = document.querySelector('[role="dialog"]')
+          // The add block dialog should be open and have exercises tabs
+          return dialog?.textContent?.includes('Exercises')
+        })
+        .toBe(true)
 
       // Select an exercise
       await common.selectExercise('Deadlift')
@@ -188,16 +192,16 @@ describe('Workout Queue', () => {
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
-      await userEvent.click(common.getDialogButton('AMRAP'))
+      await userEvent.click(await common.getDialogButton('AMRAP'))
 
       // Configure AMRAP dialog
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.element(page.getByText(/Configure/)).toBeVisible()
 
-      await userEvent.click(common.getDialogButton('8'))
-      await userEvent.click(common.getDialogButton('Add Exercise'))
+      await userEvent.click(await common.getDialogButton('8'))
+      await userEvent.click(await common.getDialogButton('Add Exercise'))
       await common.selectExercise('Push-ups')
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
 
       await common.waitForDialogClose()
 
@@ -320,7 +324,9 @@ describe('Workout Queue', () => {
       await queue.reorderBlocks(2, 0)
 
       // Assert: Order changed to Bodyweight Squat, Bench Press, Deadlift
-      await expect.poll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+      await expect
+        .poll(() => queue.getBlockNames())
+        .toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
 
       cleanup()
     })

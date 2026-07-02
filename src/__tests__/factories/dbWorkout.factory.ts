@@ -1,22 +1,29 @@
 import type { DbCompletedWorkout, DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/db/schema'
 import { generateId } from '@/db'
-import { createDbStrengthBlock as createDatabaseStrengthBlock, createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets } from './dbBlock.factory'
+import {
+  createDbStrengthBlock as createDatabaseStrengthBlock,
+  createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets,
+} from './dbBlock.factory'
 
-const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks'>> = {
-  name: 'Test Workout',
-  startedAt: Date.now() - 3_600_000,
-  completedAt: Date.now(),
-  durationSeconds: 3600,
-  notes: '',
-  benchmarkId: null,
-}
+const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks' | 'startedAt' | 'completedAt'>> =
+  {
+    name: 'Test Workout',
+    durationSeconds: 3600,
+    notes: '',
+    benchmarkId: null,
+  }
 
 export function createDbCompletedWorkout(
   overrides: Partial<DbCompletedWorkout> = {},
 ): DbCompletedWorkout {
+  // Timestamps must be computed per call — at module level they would be
+  // frozen at import time for the entire test run.
+  const now = Date.now()
   return {
     id: generateId(),
     ...DEFAULTS,
+    startedAt: now - 3_600_000,
+    completedAt: now,
     blocks: overrides.blocks ?? [createDatabaseStrengthBlock()],
     ...overrides,
   }

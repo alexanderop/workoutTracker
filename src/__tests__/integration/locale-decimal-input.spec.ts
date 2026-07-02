@@ -2,18 +2,15 @@ import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { i18n } from '@/i18n'
 import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { cleanupTouchIntegrationTest, setupTouchIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
-import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('Locale-Aware Decimal Input', () => {
   beforeEach(async () => {
-    mockTouchDevice()
-    await setupIntegrationTest()
+    await setupTouchIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
-    restoreMatchMedia()
+    await cleanupTouchIntegrationTest()
   })
 
   const modalPO = new NumericInputModalPO()

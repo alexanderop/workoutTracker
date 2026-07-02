@@ -1,18 +1,17 @@
 import type { CustomExercise, Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 import { faker } from '@faker-js/faker'
 
-const DEFAULTS: Readonly<CustomExercise> = {
+const DEFAULTS: Readonly<Omit<CustomExercise, 'createdAt'>> = {
   id: 'test-exercise-1',
   name: 'Custom Exercise',
   equipment: 'barbell',
   muscle: 'chest',
   type: 'compound',
   metrics: 'weight-reps',
-  createdAt: Date.now(),
 }
 
 export function createCustomExercise(overrides: Partial<CustomExercise> = {}): CustomExercise {
-  return { ...DEFAULTS, ...overrides }
+  return { ...DEFAULTS, createdAt: Date.now(), ...overrides }
 }
 
 export function createRandomCustomExercise(

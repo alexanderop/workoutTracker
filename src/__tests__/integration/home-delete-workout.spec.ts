@@ -82,10 +82,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Leg Day')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate away and back to trigger reload
@@ -103,7 +100,7 @@ describe('Home Delete Workout', () => {
 
       // Confirm deletion
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Delete'))
+      await userEvent.click(await common.getDialogButton('Delete'))
 
       // Workout should be removed from the list
       await expect.element(page.getByText('Leg Day')).not.toBeInTheDocument()
@@ -119,10 +116,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Push Day')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Push Day').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate away and back to trigger reload
@@ -140,7 +134,7 @@ describe('Home Delete Workout', () => {
 
       // Click cancel in dialog
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Cancel'))
+      await userEvent.click(await common.getDialogButton('Cancel'))
 
       // Workout should still be visible
       await expect.element(page.getByText('Push Day')).toBeVisible()
@@ -156,14 +150,8 @@ describe('Home Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed multiple workouts
-      const workout1 = databaseWorkoutBuilder()
-        .withName('Workout One')
-        .withStrengthBlock()
-        .build()
-      const workout2 = databaseWorkoutBuilder()
-        .withName('Workout Two')
-        .withStrengthBlock()
-        .build()
+      const workout1 = databaseWorkoutBuilder().withName('Workout One').withStrengthBlock().build()
+      const workout2 = databaseWorkoutBuilder().withName('Workout Two').withStrengthBlock().build()
       await db.workouts.bulkAdd([workout1, workout2])
 
       // Navigate away and back to trigger reload
@@ -200,10 +188,7 @@ describe('Home Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Tap Test')
-        .withStrengthBlock()
-        .build()
+      const workout = databaseWorkoutBuilder().withName('Tap Test').withStrengthBlock().build()
       await db.workouts.add(workout)
 
       // Navigate away and back to trigger reload

@@ -9,16 +9,13 @@ import {
   restoreAudioSpies,
   setupAudioSpies,
 } from '../helpers/audioMock'
+import { TimersPO } from '../helpers/pages'
 
-// Helper to navigate to Quick Timer page
-async function goToTimersPage() {
-  await page.getByText(/quick timer/i).click()
-  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
-}
+const timers = new TimersPO()
 
 // Helper to start a Tabata timer with short intervals for testing
 async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp>>) {
-  await goToTimersPage()
+  await timers.goToTimersPage()
 
   // Select Tabata
   await page.getByRole('button', { name: /tabata/i }).click()
@@ -58,7 +55,7 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
 
 // Helper to start an EMOM timer with short duration for testing
 async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>) {
-  await goToTimersPage()
+  await timers.goToTimersPage()
 
   // Select EMOM
   await page.getByRole('button', { name: /emom/i }).click()
@@ -108,12 +105,17 @@ describe('Timer Audio Playback', () => {
       await startShortTabata(testApp)
 
       // Wait for async audio playback (AudioContext.resume() is async)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        // The timer should play work beep immediately on start (880Hz)
-        const oscillator = mocks.createOscillator?.mock.results[0]?.value
-        return oscillator?.frequency.value
-      }, { timeout: 3000 }).toBe(880)
+      await expect
+        .poll(
+          () => {
+            const mocks = getAudioMocksUnified()
+            // The timer should play work beep immediately on start (880Hz)
+            const oscillator = mocks.createOscillator?.mock.results[0]?.value
+            return oscillator?.frequency.value
+          },
+          { timeout: 3000 },
+        )
+        .toBe(880)
 
       testApp.cleanup()
     })
@@ -128,13 +130,15 @@ describe('Timer Audio Playback', () => {
       await new Promise((resolve) => setTimeout(resolve, 2500))
 
       // Verify rest beep played (440Hz)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        const restBeep = mocks.createOscillator?.mock.results.find(
-          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
-        )
-        return restBeep
-      }).toBeDefined()
+      await expect
+        .poll(() => {
+          const mocks = getAudioMocksUnified()
+          const restBeep = mocks.createOscillator?.mock.results.find(
+            (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
+          )
+          return restBeep
+        })
+        .toBeDefined()
 
       testApp.cleanup()
     })
@@ -149,13 +153,15 @@ describe('Timer Audio Playback', () => {
       await new Promise((resolve) => setTimeout(resolve, 4500))
 
       // Verify round beep played (660Hz)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        const roundBeep = mocks.createOscillator?.mock.results.find(
-          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
-        )
-        return roundBeep
-      }).toBeDefined()
+      await expect
+        .poll(() => {
+          const mocks = getAudioMocksUnified()
+          const roundBeep = mocks.createOscillator?.mock.results.find(
+            (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
+          )
+          return roundBeep
+        })
+        .toBeDefined()
 
       testApp.cleanup()
     })

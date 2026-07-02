@@ -2,16 +2,12 @@ import type { DbWeightEntry } from '@/db/schema'
 import { generateId } from '@/db'
 import { getStartOfDay } from '@/features/weight/lib/weightCalculations'
 
-const DEFAULTS: Readonly<Omit<DbWeightEntry, 'id'>> = {
-  weight: 75,
-  date: getStartOfDay(),
-  recordedAt: Date.now(),
-}
-
 export function createDbWeightEntry(overrides: Partial<DbWeightEntry> = {}): DbWeightEntry {
   return {
     id: generateId(),
-    ...DEFAULTS,
+    weight: 75,
+    date: getStartOfDay(),
+    recordedAt: Date.now(),
     ...overrides,
   }
 }

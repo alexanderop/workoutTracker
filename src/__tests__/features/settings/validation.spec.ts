@@ -8,18 +8,36 @@ import {
   dbWorkoutTemplateSchema,
   exportDataSchema,
 } from '@/features/settings/utils/validation'
-import { createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock } from '@/__tests__/factories'
+import {
+  createDbCompletedWorkout as createDatabaseCompletedWorkout,
+  createDbCustomExercise as createDatabaseCustomExercise,
+  createDbSet as createDatabaseSet,
+  createDbStrengthBlock as createDatabaseStrengthBlock,
+  createDbTemplate as createDatabaseTemplate,
+  createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock,
+  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
+} from '@/__tests__/factories'
+import {
+  createDbAmrapBlock as createDatabaseAmrapBlock,
+  createDbBlockExercise as createDatabaseBlockExercise,
+  createDbCardioBlock as createDatabaseCardioBlock,
+  createDbEmomBlock as createDatabaseEmomBlock,
+  createDbForTimeBlock as createDatabaseForTimeBlock,
+  createDbTabataBlock as createDatabaseTabataBlock,
+} from '@/__tests__/factories/timedBlock.factory'
 
 /**
  * Creates a valid export data structure for testing.
  */
-function createValidExportData(overrides: {
-  settings?: Array<unknown>
-  customExercises?: Array<unknown>
-  templates?: Array<unknown>
-  workouts?: Array<unknown>
-  benchmarks?: Array<unknown>
-} = {}) {
+function createValidExportData(
+  overrides: {
+    settings?: Array<unknown>
+    customExercises?: Array<unknown>
+    templates?: Array<unknown>
+    workouts?: Array<unknown>
+    benchmarks?: Array<unknown>
+  } = {},
+) {
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -35,92 +53,59 @@ function createValidExportData(overrides: {
 
 /**
  * Creates a valid custom exercise for testing.
+ * Thin wrapper over the shared factory; overrides stay untyped so
+ * negative tests can inject invalid values.
  */
 function createValidExercise(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'exercise-1',
-    name: 'Squat',
-    equipment: 'barbell',
-    muscle: 'legs',
-    type: 'compound',
-    metrics: 'weight-reps',
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    image: null,
+    ...createDatabaseCustomExercise({ id: 'exercise-1', name: 'Squat', muscle: 'legs' }),
     ...overrides,
   }
 }
 
 /**
  * Creates a valid strength block for testing.
+ * Thin wrapper over the shared factory; overrides stay untyped so
+ * negative tests can inject invalid values.
  */
 function createValidStrengthBlock(overrides: Record<string, unknown> = {}) {
   return {
-    kind: 'strength',
-    id: 'block-1',
-    exerciseDefinitionId: 'exercise-1',
-    name: 'Squat',
-    equipment: 'barbell',
-    targetReps: 8,
-    targetDuration: null,
-    targetWeight: null,
-    image: null,
-    sets: [
-      {
-        id: 'set-1',
-        kg: '100',
-        reps: '8',
-        duration: '',
-        rir: '2',
-        status: 'completed',
-        completedAt: Date.now(),
-      },
-    ],
-    orderIndex: 0,
+    ...createDatabaseStrengthBlock({
+      id: 'block-1',
+      exerciseDefinitionId: 'exercise-1',
+      name: 'Squat',
+      sets: [createDatabaseSet({ id: 'set-1' })],
+    }),
     ...overrides,
   }
 }
 
 /**
  * Creates a valid completed workout for testing.
+ * Thin wrapper over the shared factory; overrides stay untyped so
+ * negative tests can inject invalid values.
  */
 function createValidWorkout(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'workout-1',
-    name: 'Morning Workout',
+    ...createDatabaseCompletedWorkout({ id: 'workout-1', name: 'Morning Workout', blocks: [] }),
     blocks: [createValidStrengthBlock()],
-    startedAt: Date.now() - 3_600_000,
-    completedAt: Date.now(),
-    durationSeconds: 3600,
-    notes: '',
-    benchmarkId: null,
     ...overrides,
   }
 }
 
 /**
  * Creates a valid workout template for testing.
+ * Thin wrapper over the shared factory; overrides stay untyped so
+ * negative tests can inject invalid values.
  */
 function createValidTemplate(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'template-1',
-    name: 'Push Day',
-    blocks: [
-      {
-        kind: 'strength',
-        exerciseDefinitionId: 'exercise-1',
-        name: 'Bench Press',
-        equipment: 'barbell',
-        targetReps: 8,
-        targetDuration: null,
-        targetWeight: null,
-        image: null,
-        defaultSetCount: 3,
-      },
-    ],
-    createdAt: Date.now(),
-    lastUsedAt: null,
-    tags: ['push', 'chest'],
+    ...createDatabaseTemplate({
+      id: 'template-1',
+      name: 'Push Day',
+      blocks: [createDatabaseTemplateStrengthBlock({ exerciseDefinitionId: 'exercise-1' })],
+      tags: ['push', 'chest'],
+    }),
     ...overrides,
   }
 }
@@ -361,7 +346,7 @@ describe('Exercise Schema Validation', () => {
 
     it('rejects invalid equipment', () => {
       const result = dbCustomExerciseSchema.safeParse(
-        createValidExercise({ equipment: 'lightsaber' })
+        createValidExercise({ equipment: 'lightsaber' }),
       )
       expect(result.success).toBe(false)
     })
@@ -415,75 +400,67 @@ describe('Block Schema Validation', () => {
     })
 
     it('accepts valid AMRAP block', () => {
-      const amrapBlock = {
-        kind: 'amrap',
+      const amrapBlock = createDatabaseAmrapBlock({
         id: 'block-1',
         config: { durationSeconds: 600 },
         exercises: [
-          { id: 'ex-1', name: 'Burpee', prescribedReps: 10, load: null, image: null },
+          createDatabaseBlockExercise({ id: 'ex-1', name: 'Burpee', prescribedReps: 10 }),
         ],
-        result: null,
-        orderIndex: 0,
-      }
+      })
       const result = dbWorkoutBlockSchema.safeParse(amrapBlock)
       expect(result.success).toBe(true)
     })
 
     it('accepts valid EMOM block', () => {
-      const emomBlock = {
-        kind: 'emom',
+      const emomBlock = createDatabaseEmomBlock({
         id: 'block-1',
         config: { minutes: 10, exerciseRotation: 'each-minute' },
         exercises: [
-          { id: 'ex-1', name: 'Kettlebell Swing', prescribedReps: 15, load: '24kg', image: null },
+          createDatabaseBlockExercise({
+            id: 'ex-1',
+            name: 'Kettlebell Swing',
+            prescribedReps: 15,
+            load: '24kg',
+          }),
         ],
-        result: null,
-        orderIndex: 0,
-      }
+      })
       const result = dbWorkoutBlockSchema.safeParse(emomBlock)
       expect(result.success).toBe(true)
     })
 
     it('accepts valid Tabata block', () => {
-      const tabataBlock = {
-        kind: 'tabata',
+      const tabataBlock = createDatabaseTabataBlock({
         id: 'block-1',
         config: { rounds: 8, workSeconds: 20, restSeconds: 10 },
-        exercise: { id: 'ex-1', name: 'Squat Jump', prescribedReps: 0, load: null, image: null },
-        result: null,
-        orderIndex: 0,
-      }
+        exercise: createDatabaseBlockExercise({
+          id: 'ex-1',
+          name: 'Squat Jump',
+          prescribedReps: 0,
+        }),
+      })
       const result = dbWorkoutBlockSchema.safeParse(tabataBlock)
       expect(result.success).toBe(true)
     })
 
     it('accepts valid ForTime block', () => {
-      const forTimeBlock = {
-        kind: 'fortime',
+      const forTimeBlock = createDatabaseForTimeBlock({
         id: 'block-1',
         config: { timeCapSeconds: 1200 },
-        exercises: [
-          { id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, image: null },
-        ],
-        result: null,
-        orderIndex: 0,
-      }
+        exercises: [createDatabaseBlockExercise({ id: 'ex-1', name: 'Row', prescribedReps: 1000 })],
+      })
       const result = dbWorkoutBlockSchema.safeParse(forTimeBlock)
       expect(result.success).toBe(true)
     })
 
     it('accepts valid cardio block', () => {
-      const cardioBlock = {
-        kind: 'cardio',
+      const cardioBlock = createDatabaseCardioBlock({
         id: 'block-1',
         config: {
           activity: 'running',
           targetDurationSeconds: 1800,
           targetDistanceMeters: 5000,
         },
-        result: null,
-        orderIndex: 0,
-      }
+      })
       const result = dbWorkoutBlockSchema.safeParse(cardioBlock)
       expect(result.success).toBe(true)
     })
@@ -571,7 +548,7 @@ describe('Workout Schema Validation', () => {
 
     it('rejects workout with duration exceeding max', () => {
       const result = dbCompletedWorkoutSchema.safeParse(
-        createValidWorkout({ durationSeconds: 86_401 })
+        createValidWorkout({ durationSeconds: 86_401 }),
       )
       expect(result.success).toBe(false)
     })
@@ -599,7 +576,7 @@ describe('Size Limits', () => {
 
   it('rejects exercises array exceeding max (500)', () => {
     const customExercises = Array.from({ length: 501 }, (_, index) =>
-      createValidExercise({ id: `exercise-${index}` })
+      createValidExercise({ id: `exercise-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ customExercises }))
     expect(result.success).toBe(false)
@@ -607,7 +584,7 @@ describe('Size Limits', () => {
 
   it('rejects templates array exceeding max (100)', () => {
     const templates = Array.from({ length: 101 }, (_, index) =>
-      createValidTemplate({ id: `template-${index}` })
+      createValidTemplate({ id: `template-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ templates }))
     expect(result.success).toBe(false)
@@ -615,7 +592,7 @@ describe('Size Limits', () => {
 
   it('rejects workouts array exceeding max (5000)', () => {
     const workouts = Array.from({ length: 5001 }, (_, index) =>
-      createValidWorkout({ id: `workout-${index}` })
+      createValidWorkout({ id: `workout-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ workouts }))
     expect(result.success).toBe(false)

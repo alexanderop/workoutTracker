@@ -1,13 +1,9 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
-import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import {
-  createDbTemplate as createDatabaseTemplate,
-  createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
-} from '../factories'
+import { seedTemplateAndOpenDetail } from '../helpers/templateHelpers'
+import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 
 /**
  * Gets all block cards in their current DOM order.
@@ -33,7 +29,9 @@ function getDragHandle(card: HTMLElement): HTMLElement {
   // eslint-disable-next-line no-restricted-syntax -- Finding drag handle within card scope
   const handle = card.querySelector('.drag-handle')
   if (!(handle instanceof HTMLElement)) {
-    throw new TypeError('Drag handle not found - template blocks should have drag handles for reordering')
+    throw new TypeError(
+      'Drag handle not found - template blocks should have drag handles for reordering',
+    )
   }
   return handle
 }
@@ -75,8 +73,8 @@ describe('Template Drag-and-Drop Reordering', () => {
     it('shows drag handle on each block for reordering', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 2 exercises
-      const template = createDatabaseTemplate({
+      // Seed template with 2 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-drag-handle-test',
         name: 'Drag Handle Test',
         blocks: [
@@ -84,10 +82,6 @@ describe('Template Drag-and-Drop Reordering', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-drag-handle-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
       await expect.element(page.getByText('Exercise B')).toBeVisible()
 
@@ -108,8 +102,8 @@ describe('Template Drag-and-Drop Reordering', () => {
     it('does not show move up/down arrow buttons (replaced by drag)', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 2 exercises
-      const template = createDatabaseTemplate({
+      // Seed template with 2 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-no-arrows-test',
         name: 'No Arrows Test',
         blocks: [
@@ -117,10 +111,6 @@ describe('Template Drag-and-Drop Reordering', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-no-arrows-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
       // Assert: Move up/down buttons should NOT exist
@@ -138,8 +128,8 @@ describe('Template Drag-and-Drop Reordering', () => {
     it('has sortable container with correct structure', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 2 exercises
-      const template = createDatabaseTemplate({
+      // Seed template with 2 exercises and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-sortable-test',
         name: 'Sortable Structure Test',
         blocks: [
@@ -147,10 +137,6 @@ describe('Template Drag-and-Drop Reordering', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-sortable-test' } })
       await expect.element(page.getByText('Exercise A')).toBeVisible()
 
       // Verify the list container has the role="list" (used as sortable container)
@@ -172,8 +158,8 @@ describe('Template Drag-and-Drop Reordering', () => {
     it('displays blocks in correct initial order', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with 3 exercises in specific order
-      const template = createDatabaseTemplate({
+      // Seed template with 3 exercises in specific order and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-order-test',
         name: 'Order Test',
         blocks: [
@@ -182,10 +168,6 @@ describe('Template Drag-and-Drop Reordering', () => {
           createDatabaseTemplateStrengthBlock({ name: 'Third Exercise', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-order-test' } })
       await expect.element(page.getByText('First Exercise')).toBeVisible()
 
       // Verify blocks are displayed in correct order

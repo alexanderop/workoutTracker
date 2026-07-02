@@ -4,8 +4,8 @@ import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { seedTemplateAndOpenDetail } from '../helpers/templateHelpers'
 import {
-  createDbTemplate as createDatabaseTemplate,
   createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
   createDbTemplateAmrapBlock as createDatabaseTemplateAmrapBlock,
   createDbTemplateEmomBlock as createDatabaseTemplateEmomBlock,
@@ -44,13 +44,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Select an exercise (overlay picker within the dialog)
       await expect.element(page.getByText('Burpees')).toBeVisible()
-      await userEvent.click(common.getDialogButton('Burpees'))
+      await userEvent.click(await common.getDialogButton('Burpees'))
 
       // Wait for exercise to appear in the block config (overlay closes, dialog stays open)
       await expect.element(page.getByText('Burpees')).toBeVisible()
 
       // Confirm AMRAP block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify AMRAP block appears in the template (check for the block title)
@@ -64,10 +64,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify template saved to DB with AMRAP block
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'Full Body Circuit')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await db.templates.toArray()
+          return templates.find((t) => t.name === 'Full Body Circuit')
+        })
+        .toBeDefined()
 
       const templates = await db.templates.toArray()
       const template = templates.find((t) => t.name === 'Full Body Circuit')
@@ -103,7 +105,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(page.getByText(/running/i))
 
       // Confirm cardio block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify cardio block appears in the template
@@ -137,7 +139,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Add a strength block first
       await userEvent.click(getByRole('button', { name: /add/i }))
       await common.waitForDialog()
-      await userEvent.click(common.getDialogButton('Bench Press'))
+      await userEvent.click(await common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add an EMOM block
@@ -150,11 +152,11 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Add exercise to EMOM
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
       await expect.element(page.getByText('Burpees')).toBeVisible()
-      await userEvent.click(common.getDialogButton('Burpees'))
+      await userEvent.click(await common.getDialogButton('Burpees'))
       await expect.element(page.getByText('Burpees')).toBeVisible()
 
       // Confirm EMOM block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify both blocks appear
@@ -180,16 +182,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
     it('adds an AMRAP block to an existing template', async () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with strength block
-      const template = createDatabaseTemplate({
+      // Seed template with strength block and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-add-amrap',
         name: 'Original Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat' })],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-add-amrap' } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Add AMRAP block
@@ -202,11 +200,11 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Add exercise to AMRAP
       await userEvent.click(getByRole('button', { name: /add exercise/i }))
       await expect.element(page.getByText('Burpees')).toBeVisible()
-      await userEvent.click(common.getDialogButton('Burpees'))
+      await userEvent.click(await common.getDialogButton('Burpees'))
       await expect.element(page.getByText('Burpees')).toBeVisible()
 
       // Confirm AMRAP block
-      await userEvent.click(common.getDialogButton('Add Block'))
+      await userEvent.click(await common.getDialogButton('Add Block'))
       await common.waitForDialogClose()
 
       // Verify AMRAP block appears
@@ -216,10 +214,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has both blocks
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-add-amrap')
-        return updated?.blocks.length
-      }).toBe(2)
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-add-amrap')
+          return updated?.blocks.length
+        })
+        .toBe(2)
 
       const updated = await db.templates.get('tpl-add-amrap')
       expect(updated?.blocks[0]?.kind).toBe('strength')
@@ -231,21 +231,19 @@ describe('Template Blocks - Timed and Cardio Support', () => {
     it('displays existing timed blocks when editing template', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with AMRAP block
-      const template = createDatabaseTemplate({
+      // Seed template with AMRAP block and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-view-amrap',
         name: 'AMRAP Template',
         blocks: [
           createDatabaseTemplateAmrapBlock({
             config: { durationSeconds: 600 },
-            exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 })],
+            exercises: [
+              createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 }),
+            ],
           }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-view-amrap' } })
 
       // Verify AMRAP block is displayed
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
@@ -261,8 +259,8 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Note: Drag-and-drop reordering is tested in template-drag-reorder.spec.ts
       const { navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with mixed blocks: Strength, AMRAP, Cardio
-      const template = createDatabaseTemplate({
+      // Seed template with mixed blocks (Strength, AMRAP, Cardio) and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-reorder-mixed',
         name: 'Mixed Template',
         blocks: [
@@ -270,13 +268,15 @@ describe('Template Blocks - Timed and Cardio Support', () => {
           createDatabaseTemplateAmrapBlock({
             exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees' })],
           }),
-          createDatabaseTemplateCardioBlock({ config: { activity: 'running', targetDurationSeconds: 1800, targetDistanceMeters: null } }),
+          createDatabaseTemplateCardioBlock({
+            config: {
+              activity: 'running',
+              targetDurationSeconds: 1800,
+              targetDistanceMeters: null,
+            },
+          }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-mixed' } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Verify all block types have drag handles for reordering
@@ -292,8 +292,8 @@ describe('Template Blocks - Timed and Cardio Support', () => {
     it('starts a workout from a template with AMRAP block', async () => {
       const { builder, getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with AMRAP block
-      const template = createDatabaseTemplate({
+      // Seed template with AMRAP block and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-start-amrap',
         name: 'AMRAP Workout',
         blocks: [
@@ -306,10 +306,6 @@ describe('Template Blocks - Timed and Cardio Support', () => {
           }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-amrap' } })
       await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
@@ -332,22 +328,20 @@ describe('Template Blocks - Timed and Cardio Support', () => {
     it('starts a workout from a template with mixed blocks', async () => {
       const { builder, getByRole, common, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with strength + EMOM
-      const template = createDatabaseTemplate({
+      // Seed template with strength + EMOM and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-start-mixed',
         name: 'Mixed Workout',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Bench Press', defaultSetCount: 3 }),
           createDatabaseTemplateEmomBlock({
             config: { minutes: 10, exerciseRotation: 'full-round' },
-            exercises: [createDatabaseTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 })],
+            exercises: [
+              createDatabaseTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 }),
+            ],
           }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-mixed' } })
       await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
@@ -366,8 +360,8 @@ describe('Template Blocks - Timed and Cardio Support', () => {
     it('removes an AMRAP block from template', async () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
-      // Seed template with strength + AMRAP
-      const template = createDatabaseTemplate({
+      // Seed template with strength + AMRAP and open its detail page
+      await seedTemplateAndOpenDetail(navigateTo, {
         id: 'tpl-remove-amrap',
         name: 'Template to Edit',
         blocks: [
@@ -377,10 +371,6 @@ describe('Template Blocks - Timed and Cardio Support', () => {
           }),
         ],
       })
-      await db.templates.add(template)
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-amrap' } })
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
 
       // Find AMRAP card and remove button
@@ -402,10 +392,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has only strength block
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-remove-amrap')
-        return updated?.blocks.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const updated = await db.templates.get('tpl-remove-amrap')
+          return updated?.blocks.length
+        })
+        .toBe(1)
 
       const updated = await db.templates.get('tpl-remove-amrap')
       expect(updated?.blocks[0]?.kind).toBe('strength')

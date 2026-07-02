@@ -25,8 +25,11 @@ describe('Benchmark Results', () => {
       await completeAllExercises(2)
 
       await waitForCompletionScreen()
-      expect((await page.getByText('Fran').all()).length).toBeGreaterThan(0)
-      expect((await page.getByText(/\d+:\d{2}/).all()).length).toBeGreaterThan(0)
+      // Benchmark name appears exactly twice: page header h1 + completion screen subtitle
+      expect((await page.getByText('Fran', { exact: true }).all()).length).toBe(2)
+      // The running timer is unmounted on completion, so the only m:ss on screen is the final time
+      await expect.element(page.getByText(/^\d+:\d{2}$/)).toBeVisible()
+      await expect.element(page.getByText('Final Time')).toBeVisible()
 
       app.cleanup()
     })
@@ -39,19 +42,26 @@ describe('Benchmark Results', () => {
       await completeAllExercises(2)
 
       const captured: { completionTime: string | null } = { completionTime: null }
-      await expect.poll(async () => {
-        const element = await page.getByText(/\d+:\d{2}/).element()
-        if (element.classList.contains('text-6xl')) {
-          captured.completionTime = element.textContent
-          return captured.completionTime
-        }
-        return null
-      }).toBeTruthy()
+      await expect
+        .poll(async () => {
+          const element = await page.getByText(/\d+:\d{2}/).element()
+          if (element.classList.contains('text-6xl')) {
+            captured.completionTime = element.textContent
+            return captured.completionTime
+          }
+          return null
+        })
+        .toBeTruthy()
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Wall-clock wait is genuinely needed here: a still-running timer updates its
+      // display once per second, so we must wait longer than one 1s tick interval
+      // to detect the bug where the timer keeps ticking after completion.
+      await new Promise((resolve) => setTimeout(resolve, 1200))
 
       const currentElement = await page.getByText(/\d+:\d{2}/).element()
-      const currentTime = currentElement.classList.contains('text-6xl') ? currentElement.textContent : null
+      const currentTime = currentElement.classList.contains('text-6xl')
+        ? currentElement.textContent
+        : null
       expect(currentTime).toBe(captured.completionTime)
 
       app.cleanup()
@@ -94,7 +104,9 @@ describe('Benchmark Results', () => {
 
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
-      await expect.poll(async () => (await page.getByText(/personal best/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/personal best/i).all()).length)
+        .toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -130,7 +142,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Thrusters', reps: 21 },
           { name: 'Pull-ups', reps: 21 },
-        ]
+        ],
       })
       await createCompletedAttempt(benchmark.id, 180, 5, [90])
 
@@ -140,12 +152,14 @@ describe('Benchmark Results', () => {
       await completeExercise()
       await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
-      await expect.poll(async () => {
-        const hasSplit = await page.getByText(/split/i).query() !== null
-        const hasComparison = await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query() !== null
-        const hasPace = await page.getByText(/ahead|behind|on pace/i).query() !== null
-        return hasSplit || hasComparison || hasPace
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const hasSplit = (await page.getByText(/split/i).query()) !== null
+          const hasComparison = (await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query()) !== null
+          const hasPace = (await page.getByText(/ahead|behind|on pace/i).query()) !== null
+          return hasSplit || hasComparison || hasPace
+        })
+        .toBe(true)
 
       app.cleanup()
     })
@@ -187,7 +201,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-        ]
+        ],
       })
       // PB with 60s first split
       await createCompletedAttempt(benchmark.id, 120, 5, [60, 60])
@@ -209,7 +223,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-        ]
+        ],
       })
       // PB with splits for both exercises
       await createCompletedAttempt(benchmark.id, 120, 5, [60, 60])

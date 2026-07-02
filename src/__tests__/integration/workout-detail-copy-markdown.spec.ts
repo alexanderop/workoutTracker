@@ -5,7 +5,10 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
-import { createDbAmrapBlock as createDatabaseAmrapBlock } from '../factories/timedBlock.factory'
+import {
+  createDbAmrapBlock as createDatabaseAmrapBlock,
+  createDbBlockExercise,
+} from '../factories/timedBlock.factory'
 import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
 
 /**
@@ -33,9 +36,7 @@ describe('Workout Detail Copy Markdown', () => {
     await expect.element(page.getByText('Test Workout')).toBeVisible()
 
     // Copy button should be visible in header
-    await expect.element(
-      page.getByRole('button', { name: /copy|share|export/i }),
-    ).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /copy|share|export/i })).toBeVisible()
 
     cleanup()
   })
@@ -89,10 +90,7 @@ describe('Workout Detail Copy Markdown', () => {
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 
     // Seed workout
-    const workout = databaseWorkoutBuilder()
-      .withName('Leg Day')
-      .withStrengthBlock()
-      .build()
+    const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
     await db.workouts.add(workout)
 
     // Navigate to detail
@@ -117,7 +115,7 @@ describe('Workout Detail Copy Markdown', () => {
 
     // Seed workout with multiple block types
     const amrapBlock = createDatabaseAmrapBlock({
-      exercises: [{ id: 'ex1', name: 'Burpees', prescribedReps: 10, load: null, image: null }],
+      exercises: [createDbBlockExercise({ id: 'ex1', name: 'Burpees', prescribedReps: 10 })],
     })
     const workout = databaseWorkoutBuilder()
       .withName('Full Workout')

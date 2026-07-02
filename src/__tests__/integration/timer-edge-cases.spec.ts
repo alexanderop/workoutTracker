@@ -2,22 +2,9 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { TimersPO } from '../helpers/pages'
 
-// Helper to navigate to timers page from home
-async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
-  const quickTimerCard = testApp.getByText(/quick timer/i)
-  await userEvent.click(quickTimerCard)
-  await expect.element(page.getByText(/AMRAP/)).toBeVisible()
-}
-
-// Helper to start an AMRAP timer
-async function startAmrapTimer(testApp: Awaited<ReturnType<typeof createTestApp>>) {
-  await goToTimersPage(testApp)
-  await userEvent.click(page.getByRole('button', { name: /amrap/i }))
-  await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
-  await userEvent.click(page.getByRole('button', { name: /quick burst/i }))
-  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
-}
+const timers = new TimersPO()
 
 /**
  * Integration tests for timer edge cases.
@@ -30,14 +17,17 @@ describe('Timer Edge Cases', () => {
   describe('Exit Timer Early', () => {
     it('exit button closes timer screen', async () => {
       const testApp = await createTestApp()
-      await startAmrapTimer(testApp)
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       // Click exit button
       const exitButton = page.getByRole('button', { name: /exit timer/i })
       await userEvent.click(exitButton)
 
       // Timer controls should no longer be visible
-      await expect.element(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('button', { name: /exit timer/i }))
+        .not.toBeInTheDocument()
 
       // Should show either preset selection or timer type selection
       await expect.element(page.getByRole('main')).toBeVisible()
@@ -47,7 +37,8 @@ describe('Timer Edge Cases', () => {
 
     it('exiting running timer stops the timer', async () => {
       const testApp = await createTestApp()
-      await startAmrapTimer(testApp)
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       // Start the timer
       const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
@@ -59,7 +50,9 @@ describe('Timer Edge Cases', () => {
       await userEvent.click(exitButton)
 
       // Timer controls should no longer be visible
-      await expect.element(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('button', { name: /exit timer/i }))
+        .not.toBeInTheDocument()
 
       testApp.cleanup()
     })
@@ -68,7 +61,8 @@ describe('Timer Edge Cases', () => {
   describe('Pause and Resume', () => {
     it('can pause and resume timer multiple times', async () => {
       const testApp = await createTestApp()
-      await startAmrapTimer(testApp)
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       // Start
       const startButton = await testApp.workout.getTimerPlayPauseButton()
@@ -95,7 +89,8 @@ describe('Timer Edge Cases', () => {
 
     it('paused timer does not show as running', async () => {
       const testApp = await createTestApp()
-      await startAmrapTimer(testApp)
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       // Timer should start paused
       expect(testApp.workout.isTimerRunning()).toBe(false)
@@ -120,7 +115,7 @@ describe('Timer Edge Cases', () => {
   describe('Navigation Edge Cases', () => {
     it('back button from preset selection returns to timer type selection', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select AMRAP to go to presets
       await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -139,7 +134,7 @@ describe('Timer Edge Cases', () => {
 
     it('can start different timer type after returning from preset', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Go to AMRAP presets
       await userEvent.click(page.getByRole('button', { name: /amrap/i }))
@@ -163,7 +158,8 @@ describe('Timer Edge Cases', () => {
   describe('Timer Reset', () => {
     it('reset button restarts timer from beginning', async () => {
       const testApp = await createTestApp()
-      await startAmrapTimer(testApp)
+      await timers.goToTimersPage()
+      await timers.startAmrapTimer()
 
       // Start the timer and wait a moment
       const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
@@ -189,7 +185,7 @@ describe('Timer Edge Cases', () => {
   describe('Tabata Edge Cases', () => {
     it('displays work and rest phases correctly', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select Tabata Classic
       await userEvent.click(page.getByRole('button', { name: /tabata/i }))
@@ -209,7 +205,7 @@ describe('Timer Edge Cases', () => {
   describe('EMOM Edge Cases', () => {
     it('displays minute counter correctly', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select EMOM 10 min
       await userEvent.click(page.getByRole('button', { name: /emom/i }))
@@ -228,7 +224,7 @@ describe('Timer Edge Cases', () => {
   describe('For Time Edge Cases', () => {
     it('can select no cap option', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select For Time
       await userEvent.click(page.getByRole('button', { name: /for time/i }))
@@ -241,7 +237,7 @@ describe('Timer Edge Cases', () => {
 
     it('done button is visible for For Time timer', async () => {
       const testApp = await createTestApp()
-      await goToTimersPage(testApp)
+      await timers.goToTimersPage()
 
       // Select For Time with a time cap
       await userEvent.click(page.getByRole('button', { name: /for time/i }))
