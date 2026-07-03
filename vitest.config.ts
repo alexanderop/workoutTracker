@@ -56,10 +56,10 @@ const coverageConfig = {
   include: ['src/**/*.{ts,vue}'],
   exclude: ['src/**/*.d.ts', 'src/__tests__/**', 'src/components/ui/**'],
   thresholds: {
-    lines: 82,
-    functions: 80,
-    branches: 69,
-    statements: 80,
+    lines: 86,
+    functions: 84,
+    branches: 73,
+    statements: 84,
   },
 }
 
