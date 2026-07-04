@@ -1,0 +1,845 @@
+<title>Swappable Persistence — Architecture Plan</title>
+<style>
+  :root {
+    --paper: #f3f5f7;
+    --card: #ffffff;
+    --ink: #1b222b;
+    --ink-soft: #4a5560;
+    --ink-faint: #77828d;
+    --line: #d8dee4;
+    --line-soft: #e6eaee;
+    --dexie: #b0700e;
+    --dexie-bg: #faf1e0;
+    --jazz: #4f55c9;
+    --jazz-bg: #ebecfa;
+    --seam: #2e6e63;
+    --seam-bg: #e3efec;
+    --good: #2e7d4f;
+    --good-bg: #e4f1e8;
+    --risk: #ad4128;
+    --risk-bg: #f8e9e4;
+    --code-bg: #eceff2;
+    --shadow: 0 1px 2px rgba(27, 34, 43, 0.06), 0 4px 16px rgba(27, 34, 43, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181d;
+      --card: #1c2229;
+      --ink: #e6eaee;
+      --ink-soft: #a8b2bc;
+      --ink-faint: #78838e;
+      --line: #333c46;
+      --line-soft: #262e37;
+      --dexie: #e3a648;
+      --dexie-bg: #302512;
+      --jazz: #979cff;
+      --jazz-bg: #23264a;
+      --seam: #5fb3a4;
+      --seam-bg: #16312c;
+      --good: #6fbe8e;
+      --good-bg: #17301f;
+      --risk: #e58d72;
+      --risk-bg: #381e16;
+      --code-bg: #232a32;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f3f5f7;
+    --card: #ffffff;
+    --ink: #1b222b;
+    --ink-soft: #4a5560;
+    --ink-faint: #77828d;
+    --line: #d8dee4;
+    --line-soft: #e6eaee;
+    --dexie: #b0700e;
+    --dexie-bg: #faf1e0;
+    --jazz: #4f55c9;
+    --jazz-bg: #ebecfa;
+    --seam: #2e6e63;
+    --seam-bg: #e3efec;
+    --good: #2e7d4f;
+    --good-bg: #e4f1e8;
+    --risk: #ad4128;
+    --risk-bg: #f8e9e4;
+    --code-bg: #eceff2;
+    --shadow: 0 1px 2px rgba(27, 34, 43, 0.06), 0 4px 16px rgba(27, 34, 43, 0.05);
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181d;
+    --card: #1c2229;
+    --ink: #e6eaee;
+    --ink-soft: #a8b2bc;
+    --ink-faint: #78838e;
+    --line: #333c46;
+    --line-soft: #262e37;
+    --dexie: #e3a648;
+    --dexie-bg: #302512;
+    --jazz: #979cff;
+    --jazz-bg: #23264a;
+    --seam: #5fb3a4;
+    --seam-bg: #16312c;
+    --good: #6fbe8e;
+    --good-bg: #17301f;
+    --risk: #e58d72;
+    --risk-bg: #381e16;
+    --code-bg: #232a32;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 6rem;
+  }
+  .prose { max-width: 46rem; }
+
+  .mono, code, .filepath {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+    font-size: 0.86em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    line-height: 1.55;
+    font-size: 0.82rem;
+    margin: 1rem 0;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  h1, h2, h3, h4 { line-height: 1.25; text-wrap: balance; font-weight: 700; }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); letter-spacing: -0.02em; margin: 0.5rem 0 0.75rem; }
+  h2 { font-size: 1.45rem; letter-spacing: -0.01em; margin: 0 0 0.9rem; }
+  h3 { font-size: 1.08rem; margin: 1.8rem 0 0.5rem; }
+  p { margin: 0.7rem 0; }
+  a { color: var(--jazz); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--jazz); outline-offset: 2px; border-radius: 2px; }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 44rem; }
+
+  header.doc-head {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1.75rem;
+    margin-bottom: 2.5rem;
+  }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem;
+    margin-top: 1.1rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+  }
+  .meta-row strong { color: var(--ink-soft); font-weight: 600; }
+
+  section { margin: 3.25rem 0; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 0.85rem;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 0.6rem; margin-bottom: 1.25rem;
+  }
+  .sec-num {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem; color: var(--ink-faint); font-weight: 600;
+    min-width: 2rem;
+  }
+  .sec-head h2 { margin: 0; }
+
+  /* verdict */
+  .verdict {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem 1.75rem;
+    margin: 2rem 0;
+  }
+  .verdict h2 { font-size: 1.05rem; margin: 0 0 0.75rem; }
+  .verdict-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem; margin-top: 1rem;
+  }
+  .verdict-item {
+    border-left: 3px solid var(--line);
+    padding: 0.1rem 0 0.1rem 0.85rem;
+  }
+  .verdict-item.v-good { border-left-color: var(--good); }
+  .verdict-item.v-jazz { border-left-color: var(--jazz); }
+  .verdict-item.v-dexie { border-left-color: var(--dexie); }
+  .verdict-item .k {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); display: block; margin-bottom: 0.2rem;
+  }
+  .verdict-item .v { font-weight: 600; font-size: 0.95rem; }
+  .verdict-item p { font-size: 0.85rem; color: var(--ink-soft); margin: 0.3rem 0 0; }
+
+  /* pills */
+  .pill {
+    display: inline-block; border-radius: 99px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
+    padding: 0.15rem 0.6rem; vertical-align: 0.1em;
+    white-space: nowrap;
+  }
+  .pill-good { background: var(--good-bg); color: var(--good); }
+  .pill-risk { background: var(--risk-bg); color: var(--risk); }
+  .pill-dexie { background: var(--dexie-bg); color: var(--dexie); }
+  .pill-jazz { background: var(--jazz-bg); color: var(--jazz); }
+  .pill-seam { background: var(--seam-bg); color: var(--seam); }
+  .pill-neutral { background: var(--code-bg); color: var(--ink-soft); }
+
+  /* tables */
+  .tbl-scroll { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  th {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600;
+    background: color-mix(in srgb, var(--card) 60%, var(--paper));
+  }
+  td.num { font-variant-numeric: tabular-nums; }
+  .filepath { font-size: 0.8rem; color: var(--ink-soft); }
+
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.35rem 0; }
+  li::marker { color: var(--ink-faint); }
+
+  /* architecture diagram */
+  .diagram {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto;
+  }
+  .diagram-inner { min-width: 620px; display: flex; flex-direction: column; gap: 0; }
+  .layer {
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 0.8rem 1rem;
+    background: color-mix(in srgb, var(--card) 70%, var(--paper));
+  }
+  .layer-label {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 0.5rem;
+  }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .chip {
+    border: 1px solid var(--line); border-radius: 7px;
+    padding: 0.28rem 0.65rem; font-size: 0.78rem; background: var(--card);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .chip.emph { font-weight: 600; }
+  .layer.seam-layer { border-color: var(--seam); border-width: 2px; background: var(--seam-bg); }
+  .layer.seam-layer .layer-label { color: var(--seam); }
+  .connector {
+    text-align: center; color: var(--ink-faint); font-size: 0.95rem;
+    padding: 0.3rem 0; line-height: 1;
+  }
+  .connector .lbl {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.66rem; letter-spacing: 0.08em; margin-left: 0.5rem;
+  }
+  .adapters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .adapter { border-radius: 10px; padding: 0.8rem 1rem; border: 1px solid var(--line); }
+  .adapter h4 { margin: 0 0 0.35rem; font-size: 0.85rem; }
+  .adapter p { margin: 0; font-size: 0.75rem; color: var(--ink-soft); }
+  .adapter.a-dexie { background: var(--dexie-bg); border-color: color-mix(in srgb, var(--dexie) 40%, transparent); }
+  .adapter.a-dexie h4 { color: var(--dexie); }
+  .adapter.a-jazz { background: var(--jazz-bg); border-color: color-mix(in srgb, var(--jazz) 40%, transparent); }
+  .adapter.a-jazz h4 { color: var(--jazz); }
+  .adapter.a-mock { background: var(--code-bg); }
+
+  /* phases */
+  .phase {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.4rem 1.6rem; margin: 1.25rem 0;
+  }
+  .phase-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.7rem; margin-bottom: 0.4rem; }
+  .phase-num {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 700; font-size: 0.78rem; color: var(--seam);
+    background: var(--seam-bg); border-radius: 6px; padding: 0.18rem 0.55rem;
+  }
+  .phase h3 { margin: 0; font-size: 1.08rem; flex: 1; min-width: 12rem; }
+  .effort {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem; color: var(--ink-faint);
+  }
+  .phase .goal { color: var(--ink-soft); font-size: 0.92rem; margin-top: 0.15rem; }
+  .phase ul { font-size: 0.92rem; }
+  .done-note { font-size: 0.85rem; color: var(--good); font-weight: 600; }
+
+  details {
+    border: 1px solid var(--line-soft); border-radius: 8px;
+    padding: 0.5rem 0.9rem; margin: 0.75rem 0; background: color-mix(in srgb, var(--card) 55%, var(--paper));
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; color: var(--ink-soft); }
+  details[open] summary { margin-bottom: 0.4rem; }
+
+  .adr {
+    border-left: 3px solid var(--seam);
+    background: var(--card); border-radius: 0 10px 10px 0;
+    padding: 1rem 1.3rem; margin: 1rem 0;
+    box-shadow: var(--shadow);
+  }
+  .adr h3 { margin: 0 0 0.3rem; font-size: 0.98rem; }
+  .adr .decision { font-weight: 600; }
+  .adr p { font-size: 0.9rem; margin: 0.4rem 0; }
+  .adr .status {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--seam);
+  }
+
+  .risk-item { border-left: 3px solid var(--risk); padding-left: 0.9rem; margin: 1rem 0; }
+  .risk-item .r-title { font-weight: 600; font-size: 0.95rem; }
+  .risk-item p { font-size: 0.88rem; color: var(--ink-soft); margin: 0.25rem 0; }
+  .risk-item .mitigation { color: var(--ink); }
+  .risk-item .mitigation::before { content: "Mitigation — "; font-weight: 600; color: var(--good); }
+
+  .callout {
+    background: var(--jazz-bg); border: 1px solid color-mix(in srgb, var(--jazz) 35%, transparent);
+    border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 0.93rem;
+  }
+  .callout.warn { background: var(--risk-bg); border-color: color-mix(in srgb, var(--risk) 35%, transparent); }
+  .callout.ok { background: var(--good-bg); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
+  .callout strong:first-child { display: block; margin-bottom: 0.25rem; }
+
+  .toc {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.4rem 1.5rem; padding: 0; margin: 1.25rem 0 0; list-style: none;
+    font-size: 0.9rem;
+  }
+  .toc a { color: var(--ink-soft); text-decoration: none; }
+  .toc a:hover { color: var(--jazz); text-decoration: underline; }
+  .toc .n { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.72rem; color: var(--ink-faint); margin-right: 0.5rem; }
+
+  @media (max-width: 700px) {
+    .adapters { grid-template-columns: 1fr; }
+    .wrap { padding-top: 1.5rem; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="doc-head">
+  <span class="eyebrow">workoutTracker · Architecture Decision Plan</span>
+  <h1>Swappable Persistence: from Dexie-only to a pluggable local-first data layer</h1>
+  <p class="lede">How to evolve the workout tracker so the storage engine and sync behavior become interchangeable adapters — with Jazz as the concrete first alternative — without slowing down a single set logged in the gym.</p>
+  <div class="meta-row">
+    <span><strong>Status</strong> Proposed</span>
+    <span><strong>Date</strong> 2026-07-04</span>
+    <span><strong>Today</strong> Dexie / IndexedDB</span>
+    <span><strong>Candidate</strong> jazz-tools (0.20.19 stable · 2.0.0-alpha)</span>
+  </div>
+  <ul class="toc">
+    <li><a href="#verdict"><span class="n">TL;DR</span>Verdict</a></li>
+    <li><a href="#current"><span class="n">01</span>Where the codebase stands</a></li>
+    <li><a href="#jazz"><span class="n">02</span>What Jazz actually is</a></li>
+    <li><a href="#target"><span class="n">03</span>Target architecture</a></li>
+    <li><a href="#moves"><span class="n">04</span>The five design moves</a></li>
+    <li><a href="#roadmap"><span class="n">05</span>Phased roadmap</a></li>
+    <li><a href="#adr"><span class="n">06</span>Decision log</a></li>
+    <li><a href="#risks"><span class="n">07</span>Risks</a></li>
+  </ul>
+</header>
+
+<div class="verdict" id="verdict">
+  <h2>TL;DR — the architect's verdict</h2>
+  <p class="prose">You are roughly <strong>70% of the way to swappable persistence already</strong>. Every repository has a TypeScript interface, Dexie is confined to one folder, and a full mock provider proves the seam works. The remaining work is closing four seam leaks, adding a <em>reactivity port</em> (the one capability the current design lacks and the one sync will demand), and writing a second adapter. Jazz itself is mid-rewrite — target its <strong>2.0 relational model</strong> in your interfaces, but don't ship it to production until 2.0 stabilizes.</p>
+  <div class="verdict-grid">
+    <div class="verdict-item v-good">
+      <span class="k">Seam quality today</span>
+      <span class="v">Strong — interfaces + factory + mock exist</span>
+      <p>12 repository interfaces, DI'd factories, zero Dexie imports outside <code>src/db</code>.</p>
+    </div>
+    <div class="verdict-item v-dexie">
+      <span class="k">Dexie</span>
+      <span class="v">Stays the production default</span>
+      <p>Fast, tiny, proven. It becomes "adapter #1", not legacy code.</p>
+    </div>
+    <div class="verdict-item v-jazz">
+      <span class="k">Jazz</span>
+      <span class="v">Spike behind a flag, don't adopt yet</span>
+      <p>2.0 (tables + WHERE queries) is nearly isomorphic to Dexie — but it's alpha, with a WASM/OPFS footprint.</p>
+    </div>
+    <div class="verdict-item v-good">
+      <span class="k">Biggest structural gap</span>
+      <span class="v">No reactive read layer</span>
+      <p>All reads are one-shot <code>async</code> + manual reload. Sync-capable backends need subscriptions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<section id="current">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Where the codebase stands</h2></div>
+
+  <p class="prose">"I use Dexie for everything" undersells your own architecture. The audit of <code>src/db/</code> (23 files, ~3,800 lines) shows a deliberate ports-and-adapters layout that already exists:</p>
+
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Seam component</th><th>File</th><th>State</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Repository interfaces — all 13, pure TS, no Dexie types in any signature</td>
+          <td class="filepath">src/db/interfaces.ts (627 ln)</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td><code>RepositoryProvider</code> aggregate + lazy singleton</td>
+          <td class="filepath">src/db/provider.ts</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td>Dexie fully isolated — <code>from 'dexie'</code> appears in exactly one file</td>
+          <td class="filepath">src/db/implementations/dexie/</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td>Per-repo DI factories (<code>createDexie*Repository(database)</code>)</td>
+          <td class="filepath">src/db/implementations/dexie/index.ts</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td>Fully-typed mock provider — proves the interface is complete and mockable</td>
+          <td class="filepath">src/__tests__/helpers/mockRepositories.ts</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td>Client-generated string UUIDs everywhere, no auto-increment — CRDT-ready IDs</td>
+          <td class="filepath">generateId() · crypto.randomUUID()</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+        <tr>
+          <td>Denormalized document model — blocks/sets embedded inside workouts</td>
+          <td class="filepath">src/db/schema.ts (557 ln)</td>
+          <td><span class="pill pill-good">EXISTS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The six leaks that block a clean swap</h3>
+  <p class="prose">These are the places where the abstraction is pierced or incomplete. They are the actual work — everything else is additive.</p>
+
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>#</th><th>Leak</th><th>Where</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">L1</td>
+          <td><strong>No reactive reads.</strong> Zero uses of <code>liveQuery</code> anywhere; ~20 composables do <code>onMounted</code> → load → manual refresh after mutations. A sync backend that changes data <em>underneath</em> the UI has no channel to push updates.</td>
+          <td class="filepath">composables/*, features/*/composables/*</td>
+          <td><span class="pill pill-risk">STRUCTURAL</span></td>
+        </tr>
+        <tr>
+          <td class="num">L2</td>
+          <td><strong><code>Db*</code> types imported by ~40 UI files.</strong> Conceptual coupling only — the types are plain TS and storage-agnostic in content, but their name and home (<code>@/db/schema</code>) brand them as Dexie's.</td>
+          <td class="filepath">features/, components/, views/, lib/</td>
+          <td><span class="pill pill-neutral">NAMING</span></td>
+        </tr>
+        <tr>
+          <td class="num">L3</td>
+          <td><strong><code>exerciseProgress</code> lives outside the provider</strong> — a separately cached singleton constructed directly with the concrete Dexie <code>database</code> instance, plus its own reset function.</td>
+          <td class="filepath">src/db/index.ts:76–83</td>
+          <td><span class="pill pill-risk">LEAK</span></td>
+        </tr>
+        <tr>
+          <td class="num">L4</td>
+          <td><strong>No <code>setRepositoryProvider()</code>.</strong> The provider can only be lazily created (hardcoded to Dexie) or reset — there is no injection API, so there is no runtime swap point yet.</td>
+          <td class="filepath">src/db/provider.ts</td>
+          <td><span class="pill pill-risk">LEAK</span></td>
+        </tr>
+        <tr>
+          <td class="num">L5</td>
+          <td><strong>~30 test files import the raw <code>db</code> instance</strong> for seeding/assertions, binding the test suite to the Dexie adapter. One view (<code>ActiveBenchmarkWorkout.vue</code>) also bypasses the getters.</td>
+          <td class="filepath">src/__tests__/integration/*, views/ActiveBenchmarkWorkout.vue</td>
+          <td><span class="pill pill-neutral">TESTS</span></td>
+        </tr>
+        <tr>
+          <td class="num">L6</td>
+          <td><strong>6 multi-table ACID transactions</strong> (completeWorkout, importAll, deleteAll, progression ops). Fine that they exist — they're already wrapped in intent-named repository methods — but a CRDT backend offers eventual consistency, not ACID, so each intent needs defined semantics.</td>
+          <td class="filepath">workouts.ts:72, dataManagement.ts:53/79, progressions.ts:64/113, activeBenchmarkWorkout.ts:49</td>
+          <td><span class="pill pill-neutral">SEMANTIC</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="jazz">
+  <div class="sec-head"><span class="sec-num">02</span><h2>What Jazz actually is (July 2026)</h2></div>
+
+  <div class="callout warn">
+    <strong>The most important research finding: there are two Jazzes.</strong>
+    The monorepo you cloned is <code>2.0.0-alpha.52</code> — a ground-up rewrite. <code>npm install jazz-tools</code> gives you <code>0.20.19</code>, a completely different API. The live docs at jazz.tools already describe 2.0, so online documentation and the installable stable package <em>do not match</em>. Any plan must pick a side.
+  </div>
+
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th></th><th><span class="pill pill-neutral">CLASSIC 0.20.19 · npm latest</span></th><th><span class="pill pill-jazz">REWRITE 2.0.0-alpha.52 · the clone</span></th></tr></thead>
+      <tbody>
+        <tr><td><strong>Data model</strong></td><td>CoValue object graph: <code>CoMap</code>, <code>CoList</code>, <code>CoFeed</code>, <code>FileStream</code></td><td>Relational tables (SQLite-class engine in Rust/WASM), rows, <code>s.ref()</code> foreign keys</td></tr>
+        <tr><td><strong>Schema API</strong></td><td><code>co.map({...})</code> + Zod-style <code>z</code></td><td><code>s.table({...})</code> · <code>s.defineApp(schema)</code></td></tr>
+        <tr><td><strong>Queries</strong></td><td>Load graph with <code>resolve</code> depth, filter in memory — no indexes, no where-clauses</td><td><code>.where({eq,gt,in,contains…}).orderBy().limit().offset()</code> with real storage indexes</td></tr>
+        <tr><td><strong>Vue support</strong></td><td><code>jazz-tools/vue</code>: <code>useCoState</code>, <code>useAccount</code></td><td><code>jazz-tools/vue</code>: <code>JazzProvider</code>, <code>useAll</code>, <code>useDb</code>, <code>useSession</code> — first-class, Vue ≥3.5 peer dep</td></tr>
+        <tr><td><strong>Local storage</strong></td><td>IndexedDB (like Dexie)</td><td>OPFS B-tree + WASM engine in a SharedWorker; needs secure context</td></tr>
+        <tr><td><strong>Offline / no server</strong></td><td>Fully offline; sync optional</td><td>Fully offline; omit <code>serverUrl</code> → pure local. Durability tiers <code>local | edge | global</code></td></tr>
+        <tr><td><strong>Auth</strong></td><td>Anonymous account → promote via passkey/passphrase/Clerk</td><td>Local self-signed secret (<code>generateAuthSecret()</code>) → no accounts needed; Better&nbsp;Auth adapter for later</td></tr>
+        <tr><td><strong>Fit for this app</strong></td><td><span class="pill pill-risk">POOR</span> in-memory filtering won't scale to years of workout history; API being retired</td><td><span class="pill pill-good">STRONG</span> near-isomorphic to Dexie — but alpha, churning, heavier bundle</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="prose">What a 2.0 schema and reactive Vue read look like — note how close this is to a Dexie table + a live query:</p>
+
+<pre><code>// schema — jazz-tools 2.0
+import { schema as s } from "jazz-tools";
+
+const schema = {
+  workouts: s.table({
+    startedAt:   s.timestamp(),
+    completedAt: s.timestamp().optional(),
+    benchmarkId: s.ref("benchmarks").optional(),
+    blocks:      s.json(),          // your DbWorkoutBlock[] union, as-is
+    legacyId:    s.string(),        // old Dexie UUID, for migration integrity
+  }),
+  benchmarks: s.table({ name: s.string(), rounds: s.json(), /* … */ }),
+};
+export const app = s.defineApp(schema);
+
+// component — reactive, index-backed query
+import { useAll, useDb } from "jazz-tools/vue";
+const { data: recent } = useAll(
+  app.workouts.where({ completedAt: { isNull: false } })
+              .orderBy("completedAt", "desc").limit(20)
+);</code></pre>
+
+  <div class="callout ok">
+    <strong>Why this matters for the plan.</strong>
+    Jazz 2.0's surface (<code>insert / update / delete / where / orderBy / limit</code> + reactive subscriptions + optional sync URL) is close enough to Dexie's that <em>one repository interface can be implemented faithfully by both</em>. That's the property that makes "swappable" realistic rather than aspirational. Your embedded-blocks document model and client-generated UUIDs already fit; sync becomes a config flag (<code>serverUrl</code>), not a rewrite.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="target">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Target architecture</h2></div>
+
+  <p class="prose">Classic hexagonal: the feature layer talks to <em>ports</em> (repository interfaces + a new reactivity port), and each storage engine is an <em>adapter</em> behind them. Nothing above the seam knows which adapter is live.</p>
+
+  <div class="diagram" role="img" aria-label="Layer diagram: UI features and stores on top, composables below, then the persistence port (domain document types, repository interfaces, reactivity port, provider registry), then three adapters: Dexie, Jazz, and in-memory mock.">
+    <div class="diagram-inner">
+      <div class="layer">
+        <div class="layer-label">UI · features · views</div>
+        <div class="chip-row">
+          <span class="chip">features/workout</span><span class="chip">features/benchmarks</span><span class="chip">features/templates</span><span class="chip">features/progressions</span><span class="chip">stores/* (createGlobalState)</span>
+        </div>
+      </div>
+      <div class="connector">↓ <span class="lbl">domain types only — never Db*, never adapter imports</span></div>
+      <div class="layer">
+        <div class="layer-label">Composables (read models &amp; intents)</div>
+        <div class="chip-row">
+          <span class="chip">useRecentWorkouts</span><span class="chip">useBenchmarksList</span><span class="chip">useWorkoutCalendar</span><span class="chip emph">+ useLive*(query) — new</span>
+        </div>
+      </div>
+      <div class="connector">↓ <span class="lbl">the seam</span></div>
+      <div class="layer seam-layer">
+        <div class="layer-label">Persistence port — src/db (rename target: src/data)</div>
+        <div class="chip-row">
+          <span class="chip emph">Document types (schema.ts, adapter-neutral)</span>
+          <span class="chip emph">13 repository interfaces</span>
+          <span class="chip emph">Reactivity port: observe() → LiveQuery&lt;T&gt;</span>
+          <span class="chip emph">Provider registry: set/get/resetRepositoryProvider</span>
+          <span class="chip">generateId()</span>
+          <span class="chip">Export format v1 (JSON)</span>
+        </div>
+      </div>
+      <div class="connector">↓ <span class="lbl">one adapter active at runtime, chosen at bootstrap</span></div>
+      <div class="adapters">
+        <div class="adapter a-dexie">
+          <h4>Dexie adapter — production default</h4>
+          <p>implementations/dexie/ · IndexedDB · ACID transactions · liveQuery() backs the reactivity port</p>
+        </div>
+        <div class="adapter a-jazz">
+          <h4>Jazz adapter — spike → future</h4>
+          <p>implementations/jazz/ · OPFS + WASM · CRDT merge · subscriptions back the reactivity port · sync = serverUrl flag</p>
+        </div>
+        <div class="adapter a-mock">
+          <h4>In-memory adapter — tests</h4>
+          <p>Replaces raw-db test access · same interface · deterministic, no fake-indexeddb needed</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Rules that keep it swappable</h3>
+  <ul class="prose">
+    <li><strong>The interface is the contract, Dexie is not the spec.</strong> Any capability an adapter can't honor (e.g. ACID) must be expressible in the interface's documented semantics, not assumed by callers.</li>
+    <li><strong>Intents over table operations.</strong> Repositories keep exposing verbs like <code>completeWorkout()</code>, never "run a transaction over these tables". Atomicity is an adapter implementation detail.</li>
+    <li><strong>Reads through the reactivity port wherever data can change underneath the UI</strong> — which after sync ships is everywhere.</li>
+    <li><strong>Adapter chosen once, at bootstrap</strong> (env/flag), not per-call. No dual-running in production; dual-write exists only inside the one-time migrator.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="moves">
+  <div class="sec-head"><span class="sec-num">04</span><h2>The five design moves</h2></div>
+
+  <h3>Move 1 — Complete the provider registry (the actual swap switch)</h3>
+  <p class="prose">Today the provider is lazily hardcoded to Dexie. Add injection and fold the stray <code>exerciseProgress</code> singleton into the provider so there is exactly one seam:</p>
+<pre><code>// src/db/provider.ts
+let provider: RepositoryProvider | null = null;
+
+export function setRepositoryProvider(p: RepositoryProvider): void { provider = p; }
+export function getRepositoryProvider(): RepositoryProvider {
+  return (provider ??= createDefaultProvider());
+}
+
+// src/main.ts — the ONLY place that knows adapters exist
+const backend = import.meta.env.VITE_DATA_BACKEND ?? "dexie";
+setRepositoryProvider(
+  backend === "jazz"
+    ? await createJazzRepositoryProvider()
+    : createDexieRepositoryProvider()
+);</code></pre>
+  <p class="prose"><code>RepositoryProvider</code> gains <code>exerciseProgress</code> as its 13th member, and <code>ActiveBenchmarkWorkout.vue</code> goes back through the standard getter.</p>
+
+  <h3>Move 2 — Rebrand the document model as adapter-neutral (avoid the 40-file trap)</h3>
+  <p class="prose">The tempting-but-wrong move is inventing a parallel set of "clean domain types" and mapping at every boundary — a ~40-file refactor that adds a translation layer with no behavior. The audit shows the <code>Db*</code> types are <em>already</em> storage-agnostic plain TypeScript (discriminated unions, embedded arrays, nullable fields). They are your document model; only their name and address say "Dexie".</p>
+  <ul class="prose">
+    <li>Declare <code>schema.ts</code> the canonical, adapter-neutral <strong>persisted document model</strong> shared by all adapters. Both Dexie and Jazz store these exact shapes (Jazz: blocks land in a <code>s.json()</code> column, scalars/refs become real columns).</li>
+    <li>Do the rename as a mechanical, zero-risk alias pass when convenient: <code>Db*</code> → <code>Stored*</code> (or re-export under new names and deprecate old ones). Ship it separately from any behavior change.</li>
+    <li>One real type-level task remains: the persisted-vs-domain conversion in <code>converters.ts</code> stays exactly where it is — above the adapters, below the UI. Adapters must not re-implement conversion.</li>
+  </ul>
+
+  <h3>Move 3 — Add the reactivity port (the one missing capability)</h3>
+  <p class="prose">This is the structural gap. Define a minimal live-read contract on the interfaces — small enough that Dexie, Jazz, and the mock can all honor it:</p>
+<pre><code>// src/db/interfaces.ts
+export interface LiveQuery&lt;T&gt; {
+  /** Current snapshot; resolves immediately from local storage. */
+  get(): Promise&lt;T&gt;;
+  /** Fires with a fresh snapshot on every change, including remote/sync changes. */
+  subscribe(onChange: (value: T) =&gt; void): () =&gt; void; // returns unsubscribe
+}
+
+export interface WorkoutsRepository {
+  // existing one-shot methods stay …
+  observeHistory(limit?: number): LiveQuery&lt;DbCompletedWorkout[]&gt;;
+}
+
+// src/composables/useLiveQuery.ts — the one Vue bridge, written once
+export function useLiveQuery&lt;T&gt;(make: () =&gt; LiveQuery&lt;T&gt;) {
+  const data = shallowRef&lt;T&gt;();
+  let stop: (() =&gt; void) | undefined;
+  onMounted(() =&gt; { const q = make(); q.get().then(v =&gt; (data.value = v));
+                    stop = q.subscribe(v =&gt; (data.value = v)); });
+  onUnmounted(() =&gt; stop?.());
+  return { data };
+}</code></pre>
+  <ul class="prose">
+    <li><strong>Dexie adapter:</strong> implement with <code>liveQuery()</code> from Dexie itself — this also delivers the cross-tab reactivity your <code>dexie-improvements.md</code> Phase 2 wanted, so that plan is subsumed rather than duplicated.</li>
+    <li><strong>Jazz adapter:</strong> implement with its subscription engine (what <code>useAll</code> uses internally) — remote sync updates flow through the same pipe for free.</li>
+    <li><strong>Migration is incremental:</strong> convert composables one at a time (start with <code>useRecentWorkouts</code>, settings, active workout). One-shot methods remain valid for write-then-navigate flows.</li>
+    <li>Use <code>shallowRef</code> for the snapshots — consistent with the open perf note in <code>repo-dexie-review.md</code>.</li>
+  </ul>
+
+  <h3>Move 4 — Pin down intent semantics instead of transaction semantics</h3>
+  <p class="prose">Your six ACID transactions are already hidden behind intent methods — the design is right, the contract is just implicit. Make it explicit in the interface docs so a CRDT adapter can implement honestly:</p>
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Intent</th><th>Required guarantee (the contract)</th><th>Dexie</th><th>Jazz 2.0</th></tr></thead>
+      <tbody>
+        <tr><td><code>completeWorkout()</code></td><td>History entry appears AND active workout clears; never both-visible, never neither. Idempotent on retry (UUID key).</td><td>ACID txn</td><td>Single <code>db.transaction</code> batch; CRDT merge keeps it atomic per-device</td></tr>
+        <tr><td><code>importAll()</code></td><td>All-or-nothing restore</td><td>ACID txn</td><td>Batched transaction; on failure, delete-by-import-tag rollback</td></tr>
+        <tr><td><code>deleteAll()</code></td><td>Complete wipe (modulo onboarding flag)</td><td>ACID txn</td><td>Iterate tables in one transaction</td></tr>
+        <tr><td><code>recordSession()</code> / <code>deleteProgression()</code></td><td>Session and parent progression stay consistent</td><td>ACID txn</td><td>Batch write; orphan-tolerant reads as backstop</td></tr>
+        <tr><td><code>startFromTemplate/Benchmark()</code></td><td>lastUsedAt bump is best-effort (already non-transactional in Dexie today)</td><td>2 writes</td><td>2 writes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="prose">Also fold in the two open Dexie hygiene items while you're in these files: transactions around <code>startFrom*</code> if you decide they matter, and <code>exists()</code> via <code>count()</code>.</p>
+
+  <h3>Move 5 — Make tests adapter-agnostic (they are your swap insurance)</h3>
+  <ul class="prose">
+    <li>Replace the ~30 raw-<code>db</code> imports in integration tests with seed/assert helpers that go through repositories: <code>dbAssertions.ts</code> and <code>benchmarkHelpers.ts</code> already centralize much of this — finish the job so only those helpers may touch storage.</li>
+    <li>Then flip the whole integration suite into a <strong>contract test suite</strong>: run it once against Dexie (fake-indexeddb, as today) and once against any new adapter (Jazz memory driver: <code>{ type: "memory" }</code>). Green suite on both = the adapter is certified. This is the strongest possible definition of "swappable".</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="roadmap">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Phased roadmap</h2></div>
+  <p class="prose">Ordered so every phase ships value on its own, even if you never adopt Jazz. Phases 1–3 are pure hardening of the app you have; Jazz only enters at Phase 4. Effort assumes solo work alongside normal feature development.</p>
+
+  <div class="phase">
+    <div class="phase-head"><span class="phase-num">PHASE 1</span><h3>Close the seam</h3><span class="effort">~2–3 days · no behavior change</span></div>
+    <p class="goal">After this phase, "which database?" is answered in exactly one file.</p>
+    <ul>
+      <li>Add <code>setRepositoryProvider()</code> to <code>provider.ts</code>; select adapter in <code>main.ts</code> via <code>VITE_DATA_BACKEND</code>.</li>
+      <li>Fold <code>exerciseProgress</code> into <code>RepositoryProvider</code>; delete its special-case singleton and reset function.</li>
+      <li>Route <code>ActiveBenchmarkWorkout.vue</code> through <code>getBenchmarksRepository()</code>.</li>
+      <li>Deduplicate <code>generateId()</code> (defined in both <code>index.ts</code> and <code>database.ts</code>) into one seam-level export.</li>
+      <li>Exit check: <code>grep</code> proves no production import of <code>implementations/dexie</code> outside <code>src/db</code>.</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><span class="phase-num">PHASE 2</span><h3>Reactivity port</h3><span class="effort">~1 week, incremental · immediate UX win</span></div>
+    <p class="goal">Live reads through the seam; Dexie's liveQuery backs them today, sync backs them tomorrow.</p>
+    <ul>
+      <li>Add <code>LiveQuery&lt;T&gt;</code> + <code>observe*()</code> methods to the interfaces (start with workouts, settings, activeWorkout, templates, weight).</li>
+      <li>Implement in the Dexie adapter via <code>liveQuery()</code>; write the single <code>useLiveQuery</code> Vue bridge.</li>
+      <li>Convert composables opportunistically — each conversion deletes a manual-refresh call site and gains cross-tab updates.</li>
+      <li>This supersedes <code>brain/reference/plans/dexie-improvements.md</code> Phase 2 (mark it there).</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><span class="phase-num">PHASE 3</span><h3>Contract test suite + type rebrand</h3><span class="effort">~1 week · mostly mechanical</span></div>
+    <p class="goal">The integration suite becomes the certification harness for any adapter.</p>
+    <ul>
+      <li>Purge raw <code>db</code> imports from tests; all storage access via repository-backed helpers.</li>
+      <li>Parametrize the suite over a provider factory (Dexie first; any future adapter plugs in).</li>
+      <li>Mechanical rename <code>Db*</code> → <code>Stored*</code> with temporary re-export aliases; move nothing, break nothing.</li>
+      <li>Document intent-level consistency guarantees (§04 Move 4 table) as TSDoc on the interfaces.</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><span class="phase-num">PHASE 4</span><h3>Jazz spike (time-boxed, behind a flag)</h3><span class="effort">~1–2 weeks, time-boxed · decision artifact, not production code</span></div>
+    <p class="goal">A worktree/branch spike answering the adoption question with numbers, not vibes.</p>
+    <ul>
+      <li>Pin <code>jazz-tools@alpha</code> (2.0). Define the schema: real columns for ids/timestamps/refs, <code>s.json()</code> for block payloads, <code>legacyId</code> everywhere.</li>
+      <li>Implement <code>createJazzRepositoryProvider()</code> for 3 repositories first: workouts, settings, activeWorkout (the hot gym path).</li>
+      <li>Run the contract suite against it (memory driver in CI, OPFS in the browser).</li>
+      <li>Measure on a mid-range phone: bundle delta (WASM engine vs Dexie's ~tens of KB), cold-start to first render, set-logging write latency, 2k-workout history query.</li>
+      <li>Go/no-go gate: instant-input budget holds, contract suite green, bundle cost acceptable for a PWA.</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><span class="phase-num">PHASE 5</span><h3>Migration &amp; sync enablement</h3><span class="effort">only after Jazz 2.0 ships stable · gated on Phase 4 “go”</span></div>
+    <p class="goal">One-way, verified, reversible-by-backup migration; sync as a user-visible opt-in.</p>
+    <ul>
+      <li>Migrator = read via Dexie repositories → batched <code>db.transaction</code> inserts in dependency order → verify counts + spot-check hashes → flip <code>VITE_DATA_BACKEND</code> flag → keep Dexie data untouched as rollback for N releases.</li>
+      <li>Force a JSON export (existing v1 format) before migrating — the export file is the true safety net and stays adapter-neutral forever.</li>
+      <li>IDs: keep existing UUIDs as <code>legacyId</code>; soft references (<code>benchmarkId</code>, <code>exerciseDefinitionId</code>, <code>progressionId</code>) are remapped in one pass.</li>
+      <li>Sync = add <code>serverUrl</code> (Jazz Cloud or self-hosted) + auth upgrade path (local secret → passkey via Better Auth). Local-only remains the default — accounts stay optional, honoring the no-accounts principle.</li>
+      <li>Revisit <code>exerciseProgress</code>: today it full-scans workouts; with Jazz indexes, back it with an indexed query (or a small denormalized table — same fix Dexie's improvement plan proposed).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="adr">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Decision log</h2></div>
+
+  <div class="adr">
+    <span class="status">ADR-01 · Proposed</span>
+    <h3>Keep Dexie as the production engine; treat it as adapter #1, not legacy</h3>
+    <p class="decision">Dexie stays the default until an alternative beats it on the app's own metrics.</p>
+    <p>It is small, synchronous-feeling, battle-tested in this app, and satisfies every current requirement. "Swappable" is about optionality, not about leaving. Rewriting the working engine before the seam is closed would be motion without progress.</p>
+  </div>
+
+  <div class="adr">
+    <span class="status">ADR-02 · Proposed</span>
+    <h3>Target the Jazz 2.0 relational model; ignore the 0.20 CoValue API</h3>
+    <p class="decision">All interface design assumes a table/where/subscribe-shaped backend; no code is written against <code>co.map()</code>.</p>
+    <p>0.20's load-graph-and-filter-in-memory querying doesn't scale to years of workout history, and the vendor's own docs have already moved to 2.0. Designing for 2.0 also keeps the interfaces isomorphic to Dexie — one contract, two honest implementations. The cost: waiting for 2.0 to leave alpha before Phase 5.</p>
+  </div>
+
+  <div class="adr">
+    <span class="status">ADR-03 · Proposed</span>
+    <h3>No parallel "clean domain model" layer</h3>
+    <p class="decision">The existing persisted document types are declared adapter-neutral and renamed; no per-boundary mapping layer is introduced.</p>
+    <p>The types contain no Dexie constructs. A second model + mappers for ~40 files would add a permanent translation tax to every feature to fix what is only a naming problem. <code>converters.ts</code> (persisted ↔ runtime domain) already exists and remains the single conversion point.</p>
+  </div>
+
+  <div class="adr">
+    <span class="status">ADR-04 · Proposed</span>
+    <h3>Reactivity becomes part of the port, not a Dexie feature</h3>
+    <p class="decision">Live reads are expressed as <code>LiveQuery&lt;T&gt;</code> on the repository interfaces; <code>liveQuery()</code> / Jazz subscriptions are hidden implementations.</p>
+    <p>If composables imported Dexie's <code>liveQuery</code> directly (the old improvement plan's approach), every converted composable would become new coupling to un-swap later. Putting subscription in the contract makes sync a backend detail — the UI can't tell a cross-tab update from a cross-device one. That is the whole point.</p>
+  </div>
+
+  <div class="adr">
+    <span class="status">ADR-05 · Proposed</span>
+    <h3>The contract test suite is the definition of "swappable"</h3>
+    <p class="decision">An adapter is supported if and only if the shared integration suite passes against it.</p>
+    <p>Interfaces guarantee shape, not behavior. Only executable contracts catch semantic drift (ordering, null handling, intent atomicity). This also converts the existing raw-<code>db</code> test debt into the project's strongest asset.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="risks">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Risks &amp; mitigations</h2></div>
+
+  <div class="risk-item">
+    <div class="r-title">Jazz 2.0 API churn <span class="pill pill-risk">HIGH · external</span></div>
+    <p>Alpha software; DSL, permissions, and query surface are actively moving. Code written today needs maintenance before stable.</p>
+    <p class="mitigation">All Jazz code stays inside <code>implementations/jazz/</code> behind the contract suite; churn is absorbed in one folder. Phase 5 is explicitly gated on a stable release.</p>
+  </div>
+
+  <div class="risk-item">
+    <div class="r-title">WASM + OPFS footprint vs. "instant PWA in the gym" <span class="pill pill-risk">MEDIUM</span></div>
+    <p>Jazz 2.0 ships a Rust/WASM engine in a SharedWorker over OPFS — heavier download and cold-start than Dexie; OPFS needs a secure context and is shakier in some webviews.</p>
+    <p class="mitigation">Phase 4 measures exactly this on a mid-range phone before any commitment; the no-go path (stay on Dexie, keep the port) is a fully acceptable outcome that still delivers Phases 1–3's value.</p>
+  </div>
+
+  <div class="risk-item">
+    <div class="r-title">Abstraction tax on daily feature work <span class="pill pill-risk">MEDIUM · self-inflicted</span></div>
+    <p>Over-generalizing the port ("support any conceivable database") would slow every feature down — the opposite of the app's north star.</p>
+    <p class="mitigation">The port's API is the union of what Dexie and Jazz 2.0 both do well, nothing more. No generic query builder, no capability flags. If a third backend ever demands more, extend then.</p>
+  </div>
+
+  <div class="risk-item">
+    <div class="r-title">Migration data loss / broken references <span class="pill pill-risk">LOW likelihood · HIGH impact</span></div>
+    <p>Thousands of records with soft foreign keys (<code>benchmarkId</code>, <code>progressionId</code>, <code>exerciseDefinitionId</code>) must survive the move intact.</p>
+    <p class="mitigation">Forced JSON export first; <code>legacyId</code> columns preserve original identity; count + referential-integrity verification before the flag flips; Dexie data retained untouched for rollback across several releases.</p>
+  </div>
+
+  <div class="risk-item">
+    <div class="r-title">Eventual consistency surprises after sync ships <span class="pill pill-risk">DEFERRED</span></div>
+    <p>Two devices completing/editing the same workout concurrently produce merge outcomes ACID never had to define.</p>
+    <p class="mitigation">Intent-level semantics documented now (Move 4) so every adapter implements a stated contract; embedded-document model means most merges are whole-document and naturally conflict-free. Full conflict UX is a Phase 5 concern, deliberately out of scope today.</p>
+  </div>
+
+  <footer style="margin-top:4rem; padding-top:1.25rem; border-top:1px solid var(--line); font-size:0.78rem; color:var(--ink-faint); font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;">
+    Sources: full audit of src/db (23 files) · jazz monorepo clone @ 2.0.0-alpha.52 · jazz.tools docs · npm dist-tags · brain/reference/{reviews/repo-dexie-review.md, plans/dexie-improvements.md} — 2026-07-04
+  </footer>
+</section>
+
+</div>
