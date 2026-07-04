@@ -244,6 +244,18 @@ export type TemplatesRepository = {
 }
 
 // ============================================
+// Live Query Reactivity Port
+// ============================================
+
+/** A reactive read. `get()` resolves from local storage immediately;
+ *  `subscribe()` fires with a fresh snapshot on every change (including
+ *  changes from other tabs — and, with a sync backend, other devices). */
+export interface LiveQuery<T> {
+  get(): Promise<T>
+  subscribe(onChange: (value: T) => void): () => void
+}
+
+// ============================================
 // Workouts Repository (Completed Workouts)
 // ============================================
 
@@ -281,6 +293,11 @@ export type WorkoutsRepository = {
    * Retrieve completed workouts sorted by completion date (most recent first). Defaults to limit=50, offset=0.
    */
   getHistory(parameters?: GetHistoryParams): Promise<ReadonlyArray<DatabaseCompletedWorkout>>
+  /**
+   * Reactive read of the completed workout history (most recent first). Fires again whenever
+   * the underlying data changes, including from other tabs.
+   */
+  observeHistory(limit?: number): LiveQuery<ReadonlyArray<DatabaseCompletedWorkout>>
   /**
    * Retrieve completed workouts within a specific date range (inclusive).
    */

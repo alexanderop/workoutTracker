@@ -74,6 +74,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         notes: '',
       }),
       getHistory: vi.fn().mockResolvedValue([]),
+      observeHistory: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
       getByDateRange: vi.fn().mockResolvedValue([]),
       getById: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
