@@ -94,12 +94,7 @@ export function resetExerciseProgressRepository(): void {
 // Utilities
 // ============================================
 
-/**
- * Generate a unique ID for database records.
- */
-export function generateId(): string {
-  return crypto.randomUUID()
-}
+export { generateId } from './generateId'
 
 /**
  * Delete all data from the database and recreate it.
