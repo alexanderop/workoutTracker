@@ -1,3 +1,12 @@
+# [1.29.0](https://github.com/alexanderop/workoutTracker/compare/v1.28.8...v1.29.0) (2026-07-04)
+
+
+### Features
+
+* **db:** swappable persistence layer with live queries (phases 1-3) ([#151](https://github.com/alexanderop/workoutTracker/issues/151)) ([bf1d7d3](https://github.com/alexanderop/workoutTracker/commit/bf1d7d31046df9e685ed742cfced11fcdcc7447d))
+
+
+
 ## [1.28.8](https://github.com/alexanderop/workoutTracker/compare/v1.28.7...v1.28.8) (2026-07-04)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * **qa:** disable track_progress on comment events to preserve agent mode ([6d64dd5](https://github.com/alexanderop/workoutTracker/commit/6d64dd50290f437fe2dae0f6172ae0ce0e962098))
-
-
-
-## [1.28.4](https://github.com/alexanderop/workoutTracker/compare/v1.28.3...v1.28.4) (2026-04-13)
-
-
-### Bug Fixes
-
-* **qa:** enable track_progress for issue_comment/review events ([bee2f26](https://github.com/alexanderop/workoutTracker/commit/bee2f26b047c70b07c496e25b7916d42f17d4f49))
 
 
 
