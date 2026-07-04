@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
+import { db, getSettingsRepository } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -39,15 +39,19 @@ describe('Settings Preferences', () => {
       await userEvent.click(themeToggle)
 
       // Verify toggle state changed
-      await expect.poll(async () => {
-        const element = await themeToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state === 'checked' : false
-      }).toBe(!isInitialChecked)
+      await expect
+        .poll(async () => {
+          const element = await themeToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state === 'checked' : false
+        })
+        .toBe(!isInitialChecked)
 
       // Verify preference persisted to localStorage (VueUse colorMode uses localStorage)
-      await expect.poll(() => {
-        return localStorage.getItem('vueuse-color-scheme')
-      }).toBeTruthy()
+      await expect
+        .poll(() => {
+          return localStorage.getItem('vueuse-color-scheme')
+        })
+        .toBeTruthy()
 
       cleanup()
     })
@@ -61,7 +65,9 @@ describe('Settings Preferences', () => {
 
       await userEvent.click(themeToggle)
 
-      await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(!initialIsDark)
+      await expect
+        .poll(() => document.documentElement.classList.contains('dark'))
+        .toBe(!initialIsDark)
 
       cleanup()
     })
@@ -87,10 +93,12 @@ describe('Settings Preferences', () => {
 
       // Verify toggle state is preserved
       const newToggle = page.getByTestId('theme-toggle')
-      await expect.poll(async () => {
-        const element = await newToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe(stateAfterToggle)
+      await expect
+        .poll(async () => {
+          const element = await newToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe(stateAfterToggle)
 
       cleanup()
     })
@@ -114,9 +122,9 @@ describe('Settings Preferences', () => {
       await userEvent.click(germanOption)
 
       // Verify UI updated to German (the heading changes)
-      await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent(
-        'Einstellungen',
-      )
+      await expect
+        .element(page.getByRole('heading', { level: 1 }), { timeout: 3000 })
+        .toHaveTextContent('Einstellungen')
 
       cleanup()
     })
@@ -125,7 +133,9 @@ describe('Settings Preferences', () => {
       const { common, getByRole, findByText, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
-      await expect.element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 }).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 })
+        .toBeVisible()
 
       const languageSelect = getByRole('combobox', { name: /language/i })
       await userEvent.click(languageSelect)
@@ -142,7 +152,9 @@ describe('Settings Preferences', () => {
       await common.navigateToSettings()
 
       // Wait for settings page to load
-      await expect.element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 }).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 })
+        .toBeVisible()
 
       // Open language select and change to German
       const languageSelect = getByRole('combobox', { name: /language/i })
@@ -151,11 +163,13 @@ describe('Settings Preferences', () => {
       await userEvent.click(germanOption)
 
       // Verify persisted to database
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const langSetting = settings.find((s) => s.key === 'language')
-        return langSetting?.value
-      }).toBe('de')
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const langSetting = settings.find((s) => s.key === 'language')
+          return langSetting?.value
+        })
+        .toBe('de')
 
       cleanup()
     })
@@ -248,26 +262,32 @@ describe('Settings Preferences', () => {
       await expect.element(timerSoundsToggle).toBeVisible()
 
       // Verify initially enabled (default)
-      await expect.poll(async () => {
-        const element = await timerSoundsToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('checked')
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('checked')
 
       // Toggle off
       await userEvent.click(timerSoundsToggle)
 
       // Verify toggled off
-      await expect.poll(async () => {
-        const element = await timerSoundsToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('unchecked')
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('unchecked')
 
       // Verify persisted (stored as 'timerSoundEnabled' - singular)
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
-        return soundSetting?.value
-      }).toBe(false)
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
+          return soundSetting?.value
+        })
+        .toBe(false)
 
       cleanup()
     })
@@ -280,24 +300,30 @@ describe('Settings Preferences', () => {
 
       // Toggle off first
       await userEvent.click(timerSoundsToggle)
-      await expect.poll(async () => {
-        const element = await timerSoundsToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('unchecked')
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('unchecked')
 
       // Toggle back on
       await userEvent.click(timerSoundsToggle)
-      await expect.poll(async () => {
-        const element = await timerSoundsToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('checked')
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('checked')
 
       // Verify database shows enabled
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
-        return soundSetting?.value
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
+          return soundSetting?.value
+        })
+        .toBe(true)
 
       cleanup()
     })
@@ -316,11 +342,13 @@ describe('Settings Preferences', () => {
         sliderElement.dispatchEvent(new Event('change', { bubbles: true }))
       }
 
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const volumeSetting = settings.find((s) => s.key === 'timerSoundVolume')
-        return volumeSetting?.value
-      }).toBe(0.7)
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const volumeSetting = settings.find((s) => s.key === 'timerSoundVolume')
+          return volumeSetting?.value
+        })
+        .toBe(0.7)
 
       cleanup()
     })
@@ -344,6 +372,38 @@ describe('Settings Preferences', () => {
     })
   })
 
+  describe('Live Updates', () => {
+    it('reflects a setting changed through the repository without a manual reload', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const timerSoundsToggle = page.getByRole('switch', { name: /timer sounds/i })
+      await expect.element(timerSoundsToggle).toBeVisible()
+
+      // Confirm the default (enabled) state before making the change.
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('checked')
+
+      // Change the setting directly through the repository (bypassing the
+      // store's own setter and the UI) to simulate a cross-tab change. The
+      // store's live subscription — not a manual reload call — must pick this up.
+      await getSettingsRepository().set({ key: 'timerSoundEnabled', value: false })
+
+      await expect
+        .poll(async () => {
+          const element = await timerSoundsToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('unchecked')
+
+      cleanup()
+    })
+  })
+
   describe('Weight Unit Setting', () => {
     it('switches from kg to lbs and persists', async () => {
       const { common, getByRole, cleanup } = await createTestApp()
@@ -355,11 +415,13 @@ describe('Settings Preferences', () => {
       await userEvent.click(lbsButton)
 
       // Verify persisted to database
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const unitSetting = settings.find((s) => s.key === 'weightUnit')
-        return unitSetting?.value
-      }).toBe('lbs')
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const unitSetting = settings.find((s) => s.key === 'weightUnit')
+          return unitSetting?.value
+        })
+        .toBe('lbs')
 
       cleanup()
     })
@@ -377,11 +439,13 @@ describe('Settings Preferences', () => {
       await userEvent.click(kgButton)
 
       // Verify persisted to database
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const unitSetting = settings.find((s) => s.key === 'weightUnit')
-        return unitSetting?.value
-      }).toBe('kg')
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const unitSetting = settings.find((s) => s.key === 'weightUnit')
+          return unitSetting?.value
+        })
+        .toBe('kg')
 
       cleanup()
     })
@@ -403,10 +467,12 @@ describe('Settings Preferences', () => {
 
       // Verify lbs is still selected (data-state="on")
       const newLbsButton = getByRole('button', { name: /pounds/i })
-      await expect.poll(async () => {
-        const element = await newLbsButton.element()
-        return element.dataset.state
-      }).toBe('on')
+      await expect
+        .poll(async () => {
+          const element = await newLbsButton.element()
+          return element.dataset.state
+        })
+        .toBe('on')
 
       cleanup()
     })
@@ -423,11 +489,13 @@ describe('Settings Preferences', () => {
       await userEvent.click(ftInButton)
 
       // Verify persisted to database
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const unitSetting = settings.find((s) => s.key === 'heightUnit')
-        return unitSetting?.value
-      }).toBe('ft-in')
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const unitSetting = settings.find((s) => s.key === 'heightUnit')
+          return unitSetting?.value
+        })
+        .toBe('ft-in')
 
       cleanup()
     })
@@ -445,11 +513,13 @@ describe('Settings Preferences', () => {
       await userEvent.click(cmButton)
 
       // Verify persisted to database
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const unitSetting = settings.find((s) => s.key === 'heightUnit')
-        return unitSetting?.value
-      }).toBe('cm')
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const unitSetting = settings.find((s) => s.key === 'heightUnit')
+          return unitSetting?.value
+        })
+        .toBe('cm')
 
       cleanup()
     })
@@ -464,10 +534,12 @@ describe('Settings Preferences', () => {
       await expect.element(wakeLockToggle).toBeVisible()
 
       // Default is enabled
-      await expect.poll(async () => {
-        const element = await wakeLockToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('checked')
+      await expect
+        .poll(async () => {
+          const element = await wakeLockToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('checked')
 
       cleanup()
     })
@@ -480,17 +552,21 @@ describe('Settings Preferences', () => {
       await userEvent.click(wakeLockToggle)
 
       // Verify toggled off
-      await expect.poll(async () => {
-        const element = await wakeLockToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('unchecked')
+      await expect
+        .poll(async () => {
+          const element = await wakeLockToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('unchecked')
 
       // Verify persisted
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
-        return wakeLockSetting?.value
-      }).toBe(false)
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
+          return wakeLockSetting?.value
+        })
+        .toBe(false)
 
       cleanup()
     })
@@ -503,24 +579,30 @@ describe('Settings Preferences', () => {
 
       // Toggle off first
       await userEvent.click(wakeLockToggle)
-      await expect.poll(async () => {
-        const element = await wakeLockToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('unchecked')
+      await expect
+        .poll(async () => {
+          const element = await wakeLockToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('unchecked')
 
       // Toggle back on
       await userEvent.click(wakeLockToggle)
-      await expect.poll(async () => {
-        const element = await wakeLockToggle.element()
-        return element instanceof HTMLButtonElement ? element.dataset.state : null
-      }).toBe('checked')
+      await expect
+        .poll(async () => {
+          const element = await wakeLockToggle.element()
+          return element instanceof HTMLButtonElement ? element.dataset.state : null
+        })
+        .toBe('checked')
 
       // Verify database shows enabled
-      await expect.poll(async () => {
-        const settings = await db.settings.toArray()
-        const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
-        return wakeLockSetting?.value
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const settings = await db.settings.toArray()
+          const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
+          return wakeLockSetting?.value
+        })
+        .toBe(true)
 
       cleanup()
     })

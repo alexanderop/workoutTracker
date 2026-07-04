@@ -1,4 +1,5 @@
-import type { SettingDefaults, SettingsRepository } from '@/db/interfaces'
+import { liveQuery } from 'dexie'
+import type { LiveQuery, SettingDefaults, SettingsRepository } from '@/db/interfaces'
 import type { DbUserSetting, UserSettingKey } from '@/db/schema'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
@@ -86,7 +87,17 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
   }
 }
 
-export function createDexieSettingsRepository(database: WorkoutTrackerDatabase): SettingsRepository {
+/**
+ * Shared query logic for `getAll()` and `observeAll()` so both read the same
+ * raw rows from the table.
+ */
+function queryAll(database: WorkoutTrackerDatabase): Promise<ReadonlyArray<DbUserSetting>> {
+  return database.settings.toArray()
+}
+
+export function createDexieSettingsRepository(
+  database: WorkoutTrackerDatabase,
+): SettingsRepository {
   return {
     get: createGetFunction(database),
 
@@ -95,7 +106,7 @@ export function createDexieSettingsRepository(database: WorkoutTrackerDatabase):
     },
 
     async getAll(): Promise<SettingDefaults> {
-      const settings = await database.settings.toArray()
+      const settings = await queryAll(database)
       const result = { ...SETTING_DEFAULTS }
 
       for (const setting of settings) {
@@ -103,6 +114,17 @@ export function createDexieSettingsRepository(database: WorkoutTrackerDatabase):
       }
 
       return result
+    },
+
+    observeAll(): LiveQuery<ReadonlyArray<DbUserSetting>> {
+      const run = () => queryAll(database)
+      return {
+        get: () => run(),
+        subscribe(onChange: (value: ReadonlyArray<DbUserSetting>) => void) {
+          const subscription = liveQuery(run).subscribe({ next: onChange })
+          return () => subscription.unsubscribe()
+        },
+      }
     },
 
     async reset(key: UserSettingKey): Promise<void> {

@@ -84,6 +84,11 @@ export type SettingsRepository = {
    */
   getAll(): Promise<SettingDefaults>
   /**
+   * Reactive read of all stored user settings (raw rows, no defaults applied).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeAll(): LiveQuery<ReadonlyArray<DatabaseUserSetting>>
+  /**
    * Reset a single setting to its default value by removing from database.
    */
   reset(key: UserSettingKey): Promise<void>

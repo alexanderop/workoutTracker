@@ -125,6 +125,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       }),
       set: vi.fn().mockResolvedValue(undefined),
       getAll: vi.fn().mockResolvedValue(defaultSettings),
+      observeAll: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue([]),
+        subscribe: vi.fn(() => vi.fn()),
+      })),
       reset: vi.fn().mockResolvedValue(undefined),
       resetAll: vi.fn().mockResolvedValue(undefined),
     },
