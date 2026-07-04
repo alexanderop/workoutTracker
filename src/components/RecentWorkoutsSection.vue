@@ -13,7 +13,7 @@ import { useSwipeableDelete } from '@/composables/useSwipeableDelete'
 
 const { t } = useI18n()
 const router = useRouter()
-const { recentWorkouts, hasHistory, isLoading, loadRecent } = useRecentWorkouts(3)
+const { recentWorkouts, hasHistory, isLoading } = useRecentWorkouts(3)
 
 const {
   openCardId,
@@ -26,7 +26,6 @@ const {
   isCardSwiped,
 } = useSwipeableDelete({
   workouts: recentWorkouts,
-  onDeleted: loadRecent,
 })
 
 function navigateToWorkoutDetail(id: string): void {
@@ -71,10 +70,7 @@ function navigateToHistory(): void {
         @close="handleCardClose"
         @delete="handleDeleteRequest"
       >
-        <RecentWorkoutCard
-          :workout="workout"
-          @click="navigateToWorkoutDetail"
-        />
+        <RecentWorkoutCard :workout="workout" @click="navigateToWorkoutDetail" />
       </SwipeableWorkoutCard>
     </div>
 

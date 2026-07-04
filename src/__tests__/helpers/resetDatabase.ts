@@ -1,5 +1,4 @@
-import { getDataManagementRepository, resetExerciseProgressRepository } from '@/db'
-import { resetRepositoryProvider } from '@/db/provider'
+import { getDataManagementRepository } from '@/db'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
@@ -8,6 +7,7 @@ import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
 import { resetWorkout } from '@/stores/workoutState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
+import { installProviderUnderTest } from './providerUnderTest'
 
 /**
  * Reset the database and all singleton state between tests.
@@ -34,7 +34,7 @@ export async function resetDatabase(): Promise<void> {
   // Reset timers
   useBenchmarkGlobalTimer().reset()
 
-  // Reset repository caches (forces fresh instances on next access)
-  resetExerciseProgressRepository()
-  resetRepositoryProvider()
+  // Re-install the provider under test (forces fresh repository instances,
+  // and is the single seam every integration spec runs through — see AC8).
+  installProviderUnderTest()
 }

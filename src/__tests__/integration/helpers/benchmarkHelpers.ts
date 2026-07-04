@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { createTestApp } from '../../helpers/createTestApp'
-import { db, getBenchmarksRepository } from '@/db'
+import { getBenchmarksRepository, getWorkoutsRepository } from '@/db'
 import type { DbBenchmark, DbBenchmarkRound, DbCompletedWorkout } from '@/db/schema'
 import {
   createDbBenchmarkRound as createDatabaseBenchmarkRound,
@@ -219,7 +219,7 @@ export async function createCompletedAttempt(
     blocks,
   }
 
-  await db.workouts.add(workout)
+  await getWorkoutsRepository().add(workout)
 }
 
 /**

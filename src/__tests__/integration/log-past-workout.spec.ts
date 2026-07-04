@@ -1,10 +1,10 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
+import { getAllWorkouts, seedCompletedWorkout, seedTemplate } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { createDbTemplate as createDatabaseTemplate, createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
+import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 describe('Log Past Workout', () => {
@@ -40,15 +40,13 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a template
-      const template = createDatabaseTemplate({
-        id: 'tpl-past-workout',
+      await seedTemplate({
         name: 'Push Day',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'barbell' }),
           createDatabaseTemplateStrengthBlock({ name: 'Overhead Press', equipment: 'barbell' }),
         ],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
@@ -86,7 +84,7 @@ describe('Log Past Workout', () => {
           { name: 'Squat', equipment: 'barbell' },
         )
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
@@ -117,7 +115,9 @@ describe('Log Past Workout', () => {
       await logPastWorkout.proceedToNextStep()
 
       // Verify empty state - should show add exercise/block button
-      await expect.element(page.getByRole('button', { name: /add.*exercise|add.*block/i })).toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: /add.*exercise|add.*block/i }))
+        .toBeVisible()
 
       // Verify no blocks exist
       const blockCount = await logPastWorkout.getBlockCount()
@@ -224,7 +224,7 @@ describe('Log Past Workout', () => {
       await common.waitForRoute(/^\/history/)
 
       // Verify duration is valid (not NaN)
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       expect(workouts.length).toBe(1)
       expect(workouts[0]?.durationSeconds).toBe(45 * 60)
       expect(Number.isNaN(workouts[0]?.durationSeconds)).toBe(false)
@@ -240,12 +240,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 4 sets
-      const template = createDatabaseTemplate({
-        id: 'tpl-grid-test',
+      await seedTemplate({
         name: 'Strength Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', defaultSetCount: 4 })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -263,12 +261,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Template with target values
-      const template = createDatabaseTemplate({
-        id: 'tpl-prefill-test',
+      await seedTemplate({
         name: 'Prefill Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press', targetReps: 8 })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -286,12 +282,10 @@ describe('Log Past Workout', () => {
     it('allows editing weight/reps/rir for each set', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
-        id: 'tpl-edit-test',
+      await seedTemplate({
         name: 'Edit Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift' })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -309,8 +303,12 @@ describe('Log Past Workout', () => {
       const firstRow = block.getByTestId('set-row-0')
       const secondRow = block.getByTestId('set-row-1')
 
-      await expect.element(firstRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(140)
-      await expect.element(secondRow.getByRole('spinbutton', { name: /weight|kg/i })).toHaveValue(150)
+      await expect
+        .element(firstRow.getByRole('spinbutton', { name: /weight|kg/i }))
+        .toHaveValue(140)
+      await expect
+        .element(secondRow.getByRole('spinbutton', { name: /weight|kg/i }))
+        .toHaveValue(150)
 
       cleanup()
     })
@@ -318,12 +316,10 @@ describe('Log Past Workout', () => {
     it('allows adding new sets', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
-        id: 'tpl-add-set-test',
+      await seedTemplate({
         name: 'Add Set Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Rows', defaultSetCount: 2 })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -347,12 +343,10 @@ describe('Log Past Workout', () => {
     it('allows removing sets', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
-        id: 'tpl-remove-set-test',
+      await seedTemplate({
         name: 'Remove Set Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Curls', defaultSetCount: 4 })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -386,7 +380,9 @@ describe('Log Past Workout', () => {
       // This test will be more specific once we implement the feature
 
       await expect.element(page.getByRole('spinbutton', { name: /rounds/i })).toBeVisible()
-      await expect.element(page.getByRole('spinbutton', { name: /extra reps|additional reps/i })).toBeVisible()
+      await expect
+        .element(page.getByRole('spinbutton', { name: /extra reps|additional reps/i }))
+        .toBeVisible()
 
       // Fill in AMRAP result
       await logPastWorkout.fillAmrapResult(5, 7)
@@ -469,12 +465,10 @@ describe('Log Past Workout', () => {
     it('saves workout with backdated timestamp', async () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
-      const template = createDatabaseTemplate({
-        id: 'tpl-save-test',
+      await seedTemplate({
         name: 'Save Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Press' })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -498,12 +492,14 @@ describe('Log Past Workout', () => {
       await logPastWorkout.saveWorkout()
 
       // Verify workout saved to DB with backdated timestamp
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        return workouts.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const workouts = await getAllWorkouts()
+          return workouts.length
+        })
+        .toBe(1)
 
-      const [savedWorkout] = await db.workouts.toArray()
+      const [savedWorkout] = await getAllWorkouts()
       expect(savedWorkout?.name).toBe('My Past Workout')
 
       // Verify the startedAt is backdated (within 24 hours of 3 days ago)
@@ -522,15 +518,13 @@ describe('Log Past Workout', () => {
         .withName('Today Workout')
         .withExerciseAndSets([{ kg: '100', reps: '5', status: 'completed' }], { name: 'Squat' })
         .build()
-      await db.workouts.add(todayWorkout)
+      await seedCompletedWorkout(todayWorkout)
 
       // Create a template for the past workout
-      const template = createDatabaseTemplate({
-        id: 'tpl-history-test',
+      await seedTemplate({
         name: 'History Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Bench Press' })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -569,12 +563,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a template to get a block
-      const template = createDatabaseTemplate({
-        id: 'tpl-validation-name',
+      await seedTemplate({
         name: 'Validation Name Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -620,12 +612,10 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a template
-      const template = createDatabaseTemplate({
-        id: 'tpl-validation-enabled',
+      await seedTemplate({
         name: 'Validation Enabled Test',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Deadlift', equipment: 'barbell' })],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -735,15 +725,13 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
 
       // Seed a template with 2 blocks
-      const template = createDatabaseTemplate({
-        id: 'tpl-remove-block',
+      await seedTemplate({
         name: 'Remove Block Test',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Bench Press', equipment: 'barbell' }),
           createDatabaseTemplateStrengthBlock({ name: 'Dumbbell Fly', equipment: 'dumbbell' }),
         ],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('template')
@@ -823,7 +811,7 @@ describe('Log Past Workout', () => {
       await common.waitForRoute(/^\/history/)
 
       // Verify workout was saved to DB
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       expect(workouts.length).toBe(1)
       expect(workouts[0]?.name).toBe('My Test Workout')
       expect(workouts[0]?.durationSeconds).toBe(30 * 60)
@@ -835,15 +823,13 @@ describe('Log Past Workout', () => {
       const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a template
-      const template = createDatabaseTemplate({
-        id: 'tpl-complete-workflow',
+      await seedTemplate({
         name: 'Complete Workflow Template',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Squat', equipment: 'barbell' }),
           createDatabaseTemplateStrengthBlock({ name: 'Leg Press', equipment: 'machine' }),
         ],
       })
-      await db.templates.add(template)
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
@@ -866,7 +852,7 @@ describe('Log Past Workout', () => {
       await common.waitForRoute(/^\/history/)
 
       // Verify workout was saved with template name
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       expect(workouts.length).toBe(1)
       expect(workouts[0]?.name).toBe('Complete Workflow Template')
       expect(workouts[0]?.blocks.length).toBe(2)

@@ -1,8 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { getWorkoutRef } from '@/stores/workoutState'
 import { createTestApp } from '../helpers/createTestApp'
+import { getAllWorkouts } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Duration Editing', () => {
@@ -30,13 +30,15 @@ describe('Workout Duration Editing', () => {
       await expect.element(durationInput).toBeVisible()
 
       // Get the input value using poll to handle async element retrieval
-      await expect.poll(async () => {
-        const element = await durationInput.element()
-        if (element instanceof HTMLInputElement) {
-          return Number(element.value)
-        }
-        return null
-      }).toBeCloseTo(45, -1) // ~45 minutes
+      await expect
+        .poll(async () => {
+          const element = await durationInput.element()
+          if (element instanceof HTMLInputElement) {
+            return Number(element.value)
+          }
+          return null
+        })
+        .toBeCloseTo(45, -1) // ~45 minutes
 
       cleanup()
     })
@@ -74,19 +76,23 @@ describe('Workout Duration Editing', () => {
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has correct duration (45 min = 2700 seconds)
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        return workouts[0]?.durationSeconds
-      }).toBe(2700)
+      await expect
+        .poll(async () => {
+          const workouts = await getAllWorkouts()
+          return workouts[0]?.durationSeconds
+        })
+        .toBe(2700)
 
       // Verify completedAt was back-calculated from duration
-      await expect.poll(async () => {
-        const workouts = await db.workouts.toArray()
-        const saved = workouts[0]
-        if (!saved) return null
-        // completedAt should be startedAt + 45 minutes
-        return saved.completedAt - saved.startedAt
-      }).toBe(45 * 60 * 1000)
+      await expect
+        .poll(async () => {
+          const workouts = await getAllWorkouts()
+          const saved = workouts[0]
+          if (!saved) return null
+          // completedAt should be startedAt + 45 minutes
+          return saved.completedAt - saved.startedAt
+        })
+        .toBe(45 * 60 * 1000)
 
       cleanup()
     })
@@ -114,7 +120,7 @@ describe('Workout Duration Editing', () => {
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
 
       // Verify saved workout has duration close to 30 minutes
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       const duration = workouts[0]?.durationSeconds ?? 0
       expect(duration).toBeGreaterThanOrEqual(1790)
       expect(duration).toBeLessThanOrEqual(1810)

@@ -8,10 +8,14 @@ import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
 import WorkoutCancelDialog from '@/components/WorkoutCancelDialog.vue'
 import { useDialogState } from '@/composables/useDialogState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
-import { getBenchmarkWorkoutRef, resetBenchmarkWorkout, restoreBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
+import {
+  getBenchmarkWorkoutRef,
+  resetBenchmarkWorkout,
+  restoreBenchmarkWorkout,
+} from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkPersistence } from '@/features/benchmarks/composables/useBenchmarkPersistence'
 import { useBenchmarkMode } from '@/features/benchmarks/composables/useBenchmarkMode'
-import { getRepositoryProvider } from '@/db/provider'
+import { getBenchmarksRepository } from '@/db'
 
 const router = useRouter()
 const benchmarkWorkoutRef = getBenchmarkWorkoutRef()
@@ -33,8 +37,8 @@ const { enterActiveMode } = useBenchmarkMode()
 
 onMounted(async () => {
   // Load saved benchmark if exists
-  if (!await hasActiveBenchmark()) {
-	return;
+  if (!(await hasActiveBenchmark())) {
+    return
   }
 
   const savedWorkout = await loadActiveBenchmark()
@@ -59,14 +63,14 @@ watch(
   () => benchmarkWorkoutRef.value.mode,
   (mode) => {
     if (mode !== 'active') {
-	return;
+      return
     }
 
     const globalTimerStartedAt = benchmarkWorkoutRef.value.globalTimerStartedAt
     if (globalTimerStartedAt && !benchmarkTimer.isRunning.value) {
       benchmarkTimer.initializeFromWorkout(globalTimerStartedAt)
     }
-  }
+  },
 )
 
 // Dialog state
@@ -105,7 +109,7 @@ async function handleConfirmFinish(name: string) {
     router.push({ name: RouteNames.WorkoutSummary, params: { id: completed.id } })
 
     // Update benchmark lastUsedAt timestamp
-    const benchmarksRepo = getRepositoryProvider().benchmarks
+    const benchmarksRepo = getBenchmarksRepository()
     await benchmarksRepo.updateLastUsed(workout.benchmarkId)
     return
   }
@@ -143,15 +147,9 @@ function handleOpenQueue() {
     />
 
     <!-- Dialogs -->
-    <WorkoutFinishDialog
-      v-model:open="finishDialogOpen"
-      @confirm="handleConfirmFinish"
-    />
+    <WorkoutFinishDialog v-model:open="finishDialogOpen" @confirm="handleConfirmFinish" />
 
-    <WorkoutCancelDialog
-      v-model:open="cancelDialogOpen"
-      @confirm="handleConfirmCancel"
-    />
+    <WorkoutCancelDialog v-model:open="cancelDialogOpen" @confirm="handleConfirmCancel" />
 
     <!-- Benchmark Exercise Queue Drawer -->
     <BenchmarkExerciseQueueDrawer

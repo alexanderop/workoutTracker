@@ -125,9 +125,4 @@ db.on('versionchange', () => {
   db.close()
 })
 
-/**
- * Generate a unique ID for database records.
- */
-export function generateId(): string {
-  return crypto.randomUUID()
-}
+export { generateId } from '../../generateId'

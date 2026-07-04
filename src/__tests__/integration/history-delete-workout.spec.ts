@@ -1,8 +1,12 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
+import {
+  expectWorkoutCount,
+  seedCompletedWorkout,
+  seedCompletedWorkouts,
+} from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getSwipeableContainer, simulateSwipeLeft } from '../helpers/swipeHelpers'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
@@ -24,7 +28,7 @@ describe('History Delete Workout', () => {
         .withName('Morning Workout')
         .withStrengthBlock()
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })
@@ -51,7 +55,7 @@ describe('History Delete Workout', () => {
         .withName('Evening Session')
         .withStrengthBlock()
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })
@@ -78,11 +82,8 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Leg Day')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.add(workout)
+      const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
+      await seedCompletedWorkout(workout)
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })
@@ -102,8 +103,7 @@ describe('History Delete Workout', () => {
       await expect.element(page.getByText('Leg Day')).not.toBeInTheDocument()
 
       // Verify it's deleted from database
-      const count = await db.workouts.count()
-      expect(count).toBe(0)
+      await expectWorkoutCount(0)
 
       cleanup()
     })
@@ -112,11 +112,8 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Push Day')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.add(workout)
+      const workout = databaseWorkoutBuilder().withName('Push Day').withStrengthBlock().build()
+      await seedCompletedWorkout(workout)
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })
@@ -136,8 +133,7 @@ describe('History Delete Workout', () => {
       await expect.element(page.getByText('Push Day')).toBeVisible()
 
       // Verify it's still in database
-      const count = await db.workouts.count()
-      expect(count).toBe(1)
+      await expectWorkoutCount(1)
 
       cleanup()
     })
@@ -146,11 +142,8 @@ describe('History Delete Workout', () => {
       const { navigateTo, common, cleanup } = await createTestApp()
 
       // Seed a single workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Only Workout')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.add(workout)
+      const workout = databaseWorkoutBuilder().withName('Only Workout').withStrengthBlock().build()
+      await seedCompletedWorkout(workout)
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })
@@ -179,7 +172,7 @@ describe('History Delete Workout', () => {
       const oneMonthAgo = now - 31 * 24 * 60 * 60 * 1000
 
       // Seed workouts in different months
-      await db.workouts.bulkAdd([
+      await seedCompletedWorkouts([
         databaseWorkoutBuilder()
           .withName('Recent Workout')
           .withStrengthBlock()
@@ -216,15 +209,9 @@ describe('History Delete Workout', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed multiple workouts
-      const workout1 = databaseWorkoutBuilder()
-        .withName('Workout One')
-        .withStrengthBlock()
-        .build()
-      const workout2 = databaseWorkoutBuilder()
-        .withName('Workout Two')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.bulkAdd([workout1, workout2])
+      const workout1 = databaseWorkoutBuilder().withName('Workout One').withStrengthBlock().build()
+      const workout2 = databaseWorkoutBuilder().withName('Workout Two').withStrengthBlock().build()
+      await seedCompletedWorkouts([workout1, workout2])
 
       // Navigate to history view
       await navigateTo({ name: RouteNames.History })

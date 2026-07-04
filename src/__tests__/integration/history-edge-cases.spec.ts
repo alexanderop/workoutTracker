@@ -1,8 +1,8 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
+import { seedCompletedWorkout, seedCompletedWorkouts } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
@@ -35,11 +35,8 @@ describe('History Edge Cases', () => {
       await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
 
       // Add a workout to database
-      const workout = databaseWorkoutBuilder()
-        .withName('New Workout')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.add(workout)
+      const workout = databaseWorkoutBuilder().withName('New Workout').withStrengthBlock().build()
+      await seedCompletedWorkout(workout)
 
       // Navigate away and back to trigger reload
       await navigateTo({ name: RouteNames.Home })
@@ -62,7 +59,7 @@ describe('History Edge Cases', () => {
       const twoMonthsAgo = now - 62 * 24 * 60 * 60 * 1000
 
       // Add workouts in different months
-      await db.workouts.bulkAdd([
+      await seedCompletedWorkouts([
         databaseWorkoutBuilder()
           .withName('Recent Workout')
           .withStrengthBlock()
@@ -102,7 +99,7 @@ describe('History Edge Cases', () => {
       const yesterday = now - 24 * 60 * 60 * 1000
 
       // Add workouts on different days in same month
-      await db.workouts.bulkAdd([
+      await seedCompletedWorkouts([
         databaseWorkoutBuilder()
           .withName('Yesterday Workout')
           .withStrengthBlock()
@@ -155,11 +152,8 @@ describe('History Edge Cases', () => {
       const { navigateTo, router, cleanup } = await createTestApp()
 
       // Add a workout
-      const workout = databaseWorkoutBuilder()
-        .withName('Test Workout')
-        .withStrengthBlock()
-        .build()
-      await db.workouts.add(workout)
+      const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
+      await seedCompletedWorkout(workout)
 
       // Navigate to history
       await navigateTo({ name: RouteNames.History })
@@ -195,7 +189,7 @@ describe('History Edge Cases', () => {
           { name: 'Barbell Squat', equipment: 'barbell' },
         )
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
@@ -213,16 +207,16 @@ describe('History Edge Cases', () => {
 
       const workout = databaseWorkoutBuilder()
         .withName('Full Body Session')
-        .withExerciseAndSets(
-          [{ kg: '60', reps: '8', rir: '2' }],
-          { name: 'Bench Press', equipment: 'barbell' },
-        )
-        .withExerciseAndSets(
-          [{ kg: '100', reps: '5', rir: '2' }],
-          { name: 'Squat', equipment: 'barbell' },
-        )
+        .withExerciseAndSets([{ kg: '60', reps: '8', rir: '2' }], {
+          name: 'Bench Press',
+          equipment: 'barbell',
+        })
+        .withExerciseAndSets([{ kg: '100', reps: '5', rir: '2' }], {
+          name: 'Squat',
+          equipment: 'barbell',
+        })
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
@@ -245,7 +239,7 @@ describe('History Edge Cases', () => {
         .withName('Completed Workout')
         .withStrengthBlock()
         .build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 

@@ -33,6 +33,15 @@ schema compatibility work.
 - All DB access goes through repositories.
 - Schema changes require converter updates for backward compatibility.
 - Large DB-backed collections should avoid unnecessarily deep reactivity.
+- `TemplatesRepository.create()` always generates its own `id` — there is no
+  method to insert a template with a caller-chosen id. Tests must use the `id`
+  on the returned template, never a hardcoded literal.
+- Under `fake-indexeddb`, pass `Infinity` (not `Number.MAX_SAFE_INTEGER`) for
+  "no limit" queries. Real Dexie special-cases `Infinity` to skip the `count`
+  argument to `IDBIndex.getAll()`; `Number.MAX_SAFE_INTEGER` gets forwarded
+  and exceeds IndexedDB's `[EnforceRange] unsigned long`, throwing under
+  `fake-indexeddb`. See `getAllWorkouts()` in
+  [`dbAssertions.ts`](../../src/__tests__/helpers/dbAssertions.ts).
 
 ## Verification
 

@@ -1,4 +1,10 @@
-import type { GetByDateRangeParams, GetHistoryParams, WorkoutsRepository } from '@/db/interfaces'
+import { liveQuery } from 'dexie'
+import type {
+  GetByDateRangeParams,
+  GetHistoryParams,
+  LiveQuery,
+  WorkoutsRepository,
+} from '@/db/interfaces'
 import type {
   DbActiveWorkout,
   DbCompletedWorkout,
@@ -43,7 +49,21 @@ function autoCompleteSetsWithData(
   })
 }
 
-export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase): WorkoutsRepository {
+/**
+ * Shared query logic for `getHistory()` and `observeHistory()` so both read the
+ * same ordering/pagination rules.
+ */
+function queryHistory(
+  database: WorkoutTrackerDatabase,
+  parameters: GetHistoryParams = {},
+): Promise<ReadonlyArray<DbCompletedWorkout>> {
+  const { limit = 50, offset = 0 } = parameters
+  return database.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()
+}
+
+export function createDexieWorkoutsRepository(
+  database: WorkoutTrackerDatabase,
+): WorkoutsRepository {
   return {
     async completeWorkout(
       activeWorkout: Readonly<DbActiveWorkout>,
@@ -52,7 +72,8 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
     ): Promise<DbCompletedWorkout> {
       // Calculate duration and completedAt
       // If duration override is provided, back-calculate completedAt from startedAt + duration
-      const durationSeconds = durationOverrideSeconds ?? Math.floor((Date.now() - activeWorkout.startedAt) / 1000)
+      const durationSeconds =
+        durationOverrideSeconds ?? Math.floor((Date.now() - activeWorkout.startedAt) / 1000)
       const completedAt = activeWorkout.startedAt + durationSeconds * 1000
 
       // Auto-complete sets with data when finishing workout
@@ -81,15 +102,30 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
       await database.workouts.add(workout)
     },
 
-    async getHistory(parameters: GetHistoryParams = {}): Promise<ReadonlyArray<DbCompletedWorkout>> {
-      const { limit = 50, offset = 0 } = parameters
-      return database.workouts.orderBy('completedAt').reverse().offset(offset).limit(limit).toArray()
+    async getHistory(
+      parameters: GetHistoryParams = {},
+    ): Promise<ReadonlyArray<DbCompletedWorkout>> {
+      return queryHistory(database, parameters)
+    },
+
+    observeHistory(limit?: number): LiveQuery<ReadonlyArray<DbCompletedWorkout>> {
+      const run = () => queryHistory(database, { limit })
+      return {
+        get: () => run(),
+        subscribe(onChange: (value: ReadonlyArray<DbCompletedWorkout>) => void) {
+          const subscription = liveQuery(run).subscribe({ next: onChange })
+          return () => subscription.unsubscribe()
+        },
+      }
     },
 
     async getByDateRange(
       parameters: GetByDateRangeParams,
     ): Promise<ReadonlyArray<DbCompletedWorkout>> {
-      return database.workouts.where('completedAt').between(parameters.startDate, parameters.endDate).toArray()
+      return database.workouts
+        .where('completedAt')
+        .between(parameters.startDate, parameters.endDate)
+        .toArray()
     },
 
     async getById(id: string): Promise<DbCompletedWorkout | undefined> {
@@ -113,9 +149,7 @@ export function createDexieWorkoutsRepository(database: WorkoutTrackerDatabase):
       const now = Date.now()
 
       // Sort blocks by orderIndex to ensure correct order
-      const sortedBlocks = completedWorkout.blocks.toSorted(
-        (a, b) => a.orderIndex - b.orderIndex,
-      )
+      const sortedBlocks = completedWorkout.blocks.toSorted((a, b) => a.orderIndex - b.orderIndex)
 
       // Map blocks with new IDs while preserving all data
       const newBlocks: ReadonlyArray<DbWorkoutBlock> = sortedBlocks.map((block) => {

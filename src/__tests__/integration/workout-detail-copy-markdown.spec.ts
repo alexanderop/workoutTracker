@@ -1,8 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
+import { seedCompletedWorkout } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { createDbAmrapBlock as createDatabaseAmrapBlock } from '../factories/timedBlock.factory'
@@ -24,7 +24,7 @@ describe('Workout Detail Copy Markdown', () => {
       .withName('Test Workout')
       .withStrengthBlock({ name: 'Squats' })
       .build()
-    await db.workouts.add(workout)
+    await seedCompletedWorkout(workout)
 
     // Navigate to workout detail
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
@@ -33,9 +33,7 @@ describe('Workout Detail Copy Markdown', () => {
     await expect.element(page.getByText('Test Workout')).toBeVisible()
 
     // Copy button should be visible in header
-    await expect.element(
-      page.getByRole('button', { name: /copy|share|export/i }),
-    ).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /copy|share|export/i })).toBeVisible()
 
     cleanup()
   })
@@ -58,7 +56,7 @@ describe('Workout Detail Copy Markdown', () => {
         ],
       })
       .build()
-    await db.workouts.add(workout)
+    await seedCompletedWorkout(workout)
 
     // Navigate to workout detail
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
@@ -89,11 +87,8 @@ describe('Workout Detail Copy Markdown', () => {
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
 
     // Seed workout
-    const workout = databaseWorkoutBuilder()
-      .withName('Leg Day')
-      .withStrengthBlock()
-      .build()
-    await db.workouts.add(workout)
+    const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
+    await seedCompletedWorkout(workout)
 
     // Navigate to detail
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
@@ -124,7 +119,7 @@ describe('Workout Detail Copy Markdown', () => {
       .withStrengthBlock({ name: 'Deadlift' })
       .withBlock(amrapBlock)
       .build()
-    await db.workouts.add(workout)
+    await seedCompletedWorkout(workout)
 
     // Navigate and copy
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })

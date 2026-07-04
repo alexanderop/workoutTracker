@@ -1,8 +1,8 @@
-import { computed, onMounted, readonly, ref, shallowRef } from 'vue'
+import { computed } from 'vue'
+import { useLiveQuery } from '@/composables/useLiveQuery'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { formatDurationMinutes, formatRelativeDate } from '@/lib/formatters'
-import { tryCatch } from '@/lib/tryCatch'
 import { countCompletedSets } from '@/lib/workoutStats'
 
 // ============================================
@@ -36,42 +36,26 @@ function mapToRecentWorkout(workout: DbCompletedWorkout): RecentWorkout {
 // ============================================
 
 export function useRecentWorkouts(limit = 3) {
-  // Primary State
-  const workouts = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
-
-  // State Metadata
-  const isLoading = ref(true)
-
-  // Computed
-  const hasHistory = computed(() => workouts.value.length > 0)
-
-  const recentWorkouts = computed<ReadonlyArray<RecentWorkout>>(() =>
-    workouts.value.map((workout) => mapToRecentWorkout(workout)),
+  // Primary State — live query keeps `data` in sync with storage, including
+  // changes made from other tabs, so no manual reload is needed.
+  const { data: workouts } = useLiveQuery<ReadonlyArray<DbCompletedWorkout>>(() =>
+    getWorkoutsRepository().observeHistory(limit),
   )
 
-  // Methods
-  async function loadRecent(): Promise<void> {
-    isLoading.value = true
-    const [error, result] = await tryCatch(getWorkoutsRepository().getHistory({ limit }))
+  // Computed
+  const hasHistory = computed(() => (workouts.value?.length ?? 0) > 0)
 
-    if (!error && result) {
-      workouts.value = result
-    }
+  // State Metadata — no snapshot yet means the initial `get()` hasn't resolved
+  const isLoading = computed(() => workouts.value === undefined)
 
-    isLoading.value = false
-  }
-
-  // Lifecycle Hooks
-  onMounted(() => {
-    loadRecent()
-  })
+  const recentWorkouts = computed<ReadonlyArray<RecentWorkout>>(() =>
+    (workouts.value ?? []).map((workout) => mapToRecentWorkout(workout)),
+  )
 
   return {
     // State
     recentWorkouts,
     hasHistory,
-    isLoading: readonly(isLoading),
-    // Methods
-    loadRecent,
+    isLoading,
   }
 }

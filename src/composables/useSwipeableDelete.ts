@@ -6,7 +6,12 @@ type WorkoutLike = { id: string; name: string }
 
 type UseSwipeableDeleteOptions<T extends WorkoutLike> = {
   workouts: Ref<ReadonlyArray<T>> | ComputedRef<ReadonlyArray<T>>
-  onDeleted: () => Promise<void> | void
+  /**
+   * Optional post-delete hook. Not needed when `workouts` is backed by a live
+   * query (it updates on its own once the delete lands); provide it when the
+   * caller still loads its list manually.
+   */
+  onDeleted?: () => Promise<void> | void
 }
 
 /**
@@ -14,9 +19,7 @@ type UseSwipeableDeleteOptions<T extends WorkoutLike> = {
  * Handles swipe state (one card open at a time), delete confirmation dialog,
  * and the actual deletion workflow.
  */
-export function useSwipeableDelete<T extends WorkoutLike>(
-  options: UseSwipeableDeleteOptions<T>,
-) {
+export function useSwipeableDelete<T extends WorkoutLike>(options: UseSwipeableDeleteOptions<T>) {
   const { workouts, onDeleted } = options
 
   // Swipe state - only one card can be open at a time
@@ -54,7 +57,7 @@ export function useSwipeableDelete<T extends WorkoutLike>(
     workoutToDelete.value = null
     openCardId.value = null
 
-    await onDeleted()
+    await onDeleted?.()
   }
 
   /**

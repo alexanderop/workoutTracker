@@ -32,6 +32,26 @@ the CLI blocked (waiting on stdin) before initialization:
   arg; escaping as `\'` does NOT survive claude_args parsing (that's POSIX
   shell semantics, not this parser's).
 
+### How it was isolated (reusable technique)
+
+- **Pre-init hang signature**: in a healthy run the `{"type": "system",
+  "subtype": "init"}` message appears seconds after `SDK options`. If it never
+  appears, the CLI died/blocked during startup — the problem is invocation
+  (args, auth, settings), not the prompt or the app under test.
+- **Minimal smoke step as control**: the workflow's trivial smoke prompt
+  (`--allowedTools "Write" --max-turns 3`, no schema, no system prompt) passed
+  in the same job, on the same runner, same OAuth token, same Claude version.
+  Diffing the two invocations' flags narrowed the culprit to
+  `--json-schema` / `--append-system-prompt`.
+- **Version regression ruled out via npm registry**: the action (pinned
+  v1.0.93) installs a pinned Claude Code 2.1.101 (published 2026-04-10), not
+  "latest" — so identical versions on the passing and failing dates. Check
+  `registry.npmjs.org/@anthropic-ai/claude-code` `time` map before blaming a
+  release.
+- **The schema's single quote was introduced 2026-04-11** (commit `0bbee6c2`);
+  the April 13 debugging spree (smoke test, tailer, `--debug`, retry step) was
+  chasing exactly this hang without finding the quoting cause.
+
 ### Rules
 
 1. Never interpolate file contents into `claude_args`. Put long instructions
@@ -47,9 +67,18 @@ the CLI blocked (waiting on stdin) before initialization:
    on main: the app token exchange 401s with "Workflow validation failed"
    unless the workflow file is byte-identical to the default branch. Ship CI
    fixes as their own PR to main, then merge main into feature branches.
+   The 401 is per-workflow-file: a PR that only touches
+   `claude-qa-browser.yml` still gets a working `claude-pr-review.yml` run.
+6. Prompt files (`.claude/prompts/*.md`) and schemas are read by workflow
+   steps from the PR-branch checkout, so they do NOT need to match main —
+   only the workflow yml itself does. (The action separately restores
+   `.claude/` settings from origin/main at runtime for untrusted heads.)
 
 ### Related
 
 - PR review workflow: `--max-turns 10` was too few once PRs grew and CLAUDE.md
   pushed agents to read brain docs first; the action fails the job when max
-  turns is reached. Now 50.
+  turns is reached. Now 50, with a 20-minute job timeout.
+- [QA agent turn economics](./qa-agent-turn-economics.md) — the follow-up
+  failure mode once the hang was fixed.
+- Fixed in PRs #152 and #153 (2026-07-04).

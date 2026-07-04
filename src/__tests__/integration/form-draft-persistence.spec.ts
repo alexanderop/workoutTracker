@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { RouteNames } from '@/router'
-import { db } from '@/db'
+import { getDraft } from '../helpers/dbAssertions'
 
 describe('Form Draft Persistence', () => {
   beforeEach(setupIntegrationTest)
@@ -30,7 +30,7 @@ describe('Form Draft Persistence', () => {
       // Wait for debounced auto-save
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('template-create')
+          const draft = await getDraft('template-create')
           expect(draft).toBeTruthy()
           expect(draft?.data).toMatchObject({ name: 'My Draft Template' })
         },
@@ -47,10 +47,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
-        const element = await restoredNameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('My Draft Template')
+      await expect
+        .poll(async () => {
+          const element = await restoredNameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('My Draft Template')
 
       // Verify block was also restored
       await expect.element(page.getByText('Bench Press')).toBeVisible()
@@ -74,7 +76,7 @@ describe('Form Draft Persistence', () => {
       // Wait for draft to be saved
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('template-create')
+          const draft = await getDraft('template-create')
           expect(draft).toBeTruthy()
         },
         { timeout: 1000 },
@@ -87,7 +89,7 @@ describe('Form Draft Persistence', () => {
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.TemplateDetail)
 
       // Verify draft was cleared
-      const draft = await db.drafts.get('template-create')
+      const draft = await getDraft('template-create')
       expect(draft).toBeUndefined()
 
       cleanup()
@@ -112,7 +114,7 @@ describe('Form Draft Persistence', () => {
       // Wait for draft and discard button to appear
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('template-create')
+          const draft = await getDraft('template-create')
           expect(draft).toBeTruthy()
         },
         { timeout: 1000 },
@@ -126,16 +128,18 @@ describe('Form Draft Persistence', () => {
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /template name/i })
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('')
 
       // Verify block is removed
       await expect.element(page.getByText('Deadlift')).not.toBeInTheDocument()
 
       // Verify draft is cleared
-      const draft = await db.drafts.get('template-create')
+      const draft = await getDraft('template-create')
       expect(draft).toBeUndefined()
 
       // Discard button should be hidden
@@ -158,7 +162,7 @@ describe('Form Draft Persistence', () => {
       // Wait for draft to be saved
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('template-create')
+          const draft = await getDraft('template-create')
           expect(draft).toBeTruthy()
         },
         { timeout: 1000 },
@@ -177,7 +181,7 @@ describe('Form Draft Persistence', () => {
       await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
 
       // Verify no draft exists in database
-      const draft = await db.drafts.get('template-create')
+      const draft = await getDraft('template-create')
       expect(draft).toBeUndefined()
 
       cleanup()
@@ -198,7 +202,7 @@ describe('Form Draft Persistence', () => {
       // Wait for debounced auto-save
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('benchmark-create')
+          const draft = await getDraft('benchmark-create')
           expect(draft).toBeTruthy()
           expect(draft?.data).toMatchObject({ name: 'My Draft Benchmark' })
         },
@@ -214,10 +218,12 @@ describe('Form Draft Persistence', () => {
 
       // Verify draft was restored
       const restoredNameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
-        const element = await restoredNameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('My Draft Benchmark')
+      await expect
+        .poll(async () => {
+          const element = await restoredNameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('My Draft Benchmark')
 
       cleanup()
     })
@@ -234,7 +240,7 @@ describe('Form Draft Persistence', () => {
       // Wait for draft to be saved
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('benchmark-create')
+          const draft = await getDraft('benchmark-create')
           expect(draft).toBeTruthy()
         },
         { timeout: 1000 },
@@ -254,7 +260,7 @@ describe('Form Draft Persistence', () => {
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.BenchmarkDetail)
 
       // Verify draft was cleared
-      const draft = await db.drafts.get('benchmark-create')
+      const draft = await getDraft('benchmark-create')
       expect(draft).toBeUndefined()
 
       cleanup()
@@ -275,7 +281,7 @@ describe('Form Draft Persistence', () => {
       // Wait for draft to be saved
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('benchmark-create')
+          const draft = await getDraft('benchmark-create')
           expect(draft).toBeTruthy()
         },
         { timeout: 1000 },
@@ -289,13 +295,15 @@ describe('Form Draft Persistence', () => {
 
       // Verify form is reset
       const nameInput = getByRole('textbox', { name: /name/i })
-      await expect.poll(async () => {
-        const element = await nameInput.element()
-        return element instanceof HTMLInputElement ? element.value : null
-      }).toBe('')
+      await expect
+        .poll(async () => {
+          const element = await nameInput.element()
+          return element instanceof HTMLInputElement ? element.value : null
+        })
+        .toBe('')
 
       // Verify draft is cleared
-      const draft = await db.drafts.get('benchmark-create')
+      const draft = await getDraft('benchmark-create')
       expect(draft).toBeUndefined()
 
       // Discard button should be hidden
@@ -320,7 +328,7 @@ describe('Form Draft Persistence', () => {
       // Wait for template draft to be saved with correct name
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('template-create')
+          const draft = await getDraft('template-create')
           expect(draft?.data).toMatchObject({ name: 'Template Draft' })
         },
         { timeout: 1000 },
@@ -334,15 +342,15 @@ describe('Form Draft Persistence', () => {
       // Wait for benchmark draft to be saved with correct name
       await vi.waitFor(
         async () => {
-          const draft = await db.drafts.get('benchmark-create')
+          const draft = await getDraft('benchmark-create')
           expect(draft?.data).toMatchObject({ name: 'Benchmark Draft' })
         },
         { timeout: 1000 },
       )
 
       // Verify both drafts exist independently
-      const templateDraft = await db.drafts.get('template-create')
-      const benchmarkDraft = await db.drafts.get('benchmark-create')
+      const templateDraft = await getDraft('template-create')
+      const benchmarkDraft = await getDraft('benchmark-create')
 
       expect(templateDraft?.data).toMatchObject({ name: 'Template Draft' })
       expect(benchmarkDraft?.data).toMatchObject({ name: 'Benchmark Draft' })
@@ -353,11 +361,11 @@ describe('Form Draft Persistence', () => {
 
       // Verify only benchmark draft was cleared
       await vi.waitFor(async () => {
-        const benchmarkDraftAfter = await db.drafts.get('benchmark-create')
+        const benchmarkDraftAfter = await getDraft('benchmark-create')
         expect(benchmarkDraftAfter).toBeUndefined()
       })
 
-      const templateDraftAfter = await db.drafts.get('template-create')
+      const templateDraftAfter = await getDraft('template-create')
       expect(templateDraftAfter?.data).toMatchObject({ name: 'Template Draft' })
 
       cleanup()

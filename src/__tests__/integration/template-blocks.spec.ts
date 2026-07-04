@@ -1,17 +1,16 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
-  createDbTemplate as createDatabaseTemplate,
   createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
   createDbTemplateAmrapBlock as createDatabaseTemplateAmrapBlock,
   createDbTemplateEmomBlock as createDatabaseTemplateEmomBlock,
   createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock,
   createDbTemplateBlockExercise as createDatabaseTemplateBlockExercise,
 } from '../factories'
+import { getAllTemplates, getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 
 describe('Template Blocks - Timed and Cardio Support', () => {
   beforeEach(setupIntegrationTest)
@@ -64,12 +63,14 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify template saved to DB with AMRAP block
-      await expect.poll(async () => {
-        const templates = await db.templates.toArray()
-        return templates.find((t) => t.name === 'Full Body Circuit')
-      }).toBeDefined()
+      await expect
+        .poll(async () => {
+          const templates = await getAllTemplates()
+          return templates.find((t) => t.name === 'Full Body Circuit')
+        })
+        .toBeDefined()
 
-      const templates = await db.templates.toArray()
+      const templates = await getAllTemplates()
       const template = templates.find((t) => t.name === 'Full Body Circuit')
       expect(template).toBeDefined()
       expect(template?.blocks).toHaveLength(1)
@@ -116,7 +117,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify template saved to DB with cardio block
-      const templates = await db.templates.toArray()
+      const templates = await getAllTemplates()
       const template = templates.find((t) => t.name === 'Cardio Day')
       expect(template).toBeDefined()
       expect(template?.blocks[0]?.kind).toBe('cardio')
@@ -166,7 +167,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await common.waitForRoute(/^\/templates\//)
 
       // Verify template saved with both blocks
-      const templates = await db.templates.toArray()
+      const templates = await getAllTemplates()
       const template = templates.find((t) => t.name === 'Mixed Workout')
       expect(template?.blocks).toHaveLength(2)
       expect(template?.blocks[0]?.kind).toBe('strength')
@@ -181,15 +182,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength block
-      const template = createDatabaseTemplate({
-        id: 'tpl-add-amrap',
+      const template = await seedTemplate({
         name: 'Original Template',
         blocks: [createDatabaseTemplateStrengthBlock({ name: 'Squat' })],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-add-amrap' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Add AMRAP block
@@ -216,12 +215,14 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has both blocks
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-add-amrap')
-        return updated?.blocks.length
-      }).toBe(2)
+      await expect
+        .poll(async () => {
+          const updated = await getTemplateById(template.id)
+          return updated?.blocks.length
+        })
+        .toBe(2)
 
-      const updated = await db.templates.get('tpl-add-amrap')
+      const updated = await getTemplateById(template.id)
       expect(updated?.blocks[0]?.kind).toBe('strength')
       expect(updated?.blocks[1]?.kind).toBe('amrap')
 
@@ -232,20 +233,20 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with AMRAP block
-      const template = createDatabaseTemplate({
-        id: 'tpl-view-amrap',
+      const template = await seedTemplate({
         name: 'AMRAP Template',
         blocks: [
           createDatabaseTemplateAmrapBlock({
             config: { durationSeconds: 600 },
-            exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 })],
+            exercises: [
+              createDatabaseTemplateBlockExercise({ name: 'Burpees', prescribedReps: 10 }),
+            ],
           }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-view-amrap' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       // Verify AMRAP block is displayed
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
@@ -262,21 +263,25 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with mixed blocks: Strength, AMRAP, Cardio
-      const template = createDatabaseTemplate({
-        id: 'tpl-reorder-mixed',
+      const template = await seedTemplate({
         name: 'Mixed Template',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Squat' }),
           createDatabaseTemplateAmrapBlock({
             exercises: [createDatabaseTemplateBlockExercise({ name: 'Burpees' })],
           }),
-          createDatabaseTemplateCardioBlock({ config: { activity: 'running', targetDurationSeconds: 1800, targetDistanceMeters: null } }),
+          createDatabaseTemplateCardioBlock({
+            config: {
+              activity: 'running',
+              targetDurationSeconds: 1800,
+              targetDistanceMeters: null,
+            },
+          }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-reorder-mixed' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Verify all block types have drag handles for reordering
@@ -293,8 +298,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { builder, getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with AMRAP block
-      const template = createDatabaseTemplate({
-        id: 'tpl-start-amrap',
+      const template = await seedTemplate({
         name: 'AMRAP Workout',
         blocks: [
           createDatabaseTemplateAmrapBlock({
@@ -306,10 +310,9 @@ describe('Template Blocks - Timed and Cardio Support', () => {
           }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-amrap' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
@@ -333,21 +336,21 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { builder, getByRole, common, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength + EMOM
-      const template = createDatabaseTemplate({
-        id: 'tpl-start-mixed',
+      const template = await seedTemplate({
         name: 'Mixed Workout',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Bench Press', defaultSetCount: 3 }),
           createDatabaseTemplateEmomBlock({
             config: { minutes: 10, exerciseRotation: 'full-round' },
-            exercises: [createDatabaseTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 })],
+            exercises: [
+              createDatabaseTemplateBlockExercise({ name: 'Push-ups', prescribedReps: 10 }),
+            ],
           }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-start-mixed' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByRole('button', { name: /start workout/i })).toBeVisible()
 
       // Start workout
@@ -367,8 +370,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const { getByRole, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with strength + AMRAP
-      const template = createDatabaseTemplate({
-        id: 'tpl-remove-amrap',
+      const template = await seedTemplate({
         name: 'Template to Edit',
         blocks: [
           createDatabaseTemplateStrengthBlock({ name: 'Squat' }),
@@ -377,10 +379,9 @@ describe('Template Blocks - Timed and Cardio Support', () => {
           }),
         ],
       })
-      await db.templates.add(template)
 
       // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'tpl-remove-amrap' } })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
 
       // Find AMRAP card and remove button
@@ -402,12 +403,14 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.click(getByRole('button', { name: /save changes/i }))
 
       // Verify DB has only strength block
-      await expect.poll(async () => {
-        const updated = await db.templates.get('tpl-remove-amrap')
-        return updated?.blocks.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const updated = await getTemplateById(template.id)
+          return updated?.blocks.length
+        })
+        .toBe(1)
 
-      const updated = await db.templates.get('tpl-remove-amrap')
+      const updated = await getTemplateById(template.id)
       expect(updated?.blocks[0]?.kind).toBe('strength')
 
       cleanup()

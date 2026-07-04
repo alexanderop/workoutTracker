@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import { getActiveWorkoutRepository } from '@/db'
+import { getActiveWorkoutRepository, type LiveQuery } from '@/db'
+import type { DbActiveWorkout } from '@/db/schema'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { seedPopularTemplates } from '@/db/seedTemplates'
 import { useExercisesStore } from '@/stores/exercises'
@@ -27,6 +28,39 @@ const isInitialized = computed(() => initState.value.status === 'ready')
  */
 export function resetInitState(): void {
   initState.value = { status: 'loading' }
+}
+
+// Lazily-created, module-lifetime live query over the active workout. Created
+// on first use (not at module import time) so it never races repository
+// provider setup. Its `subscribe()` only reacts while `initState` is parked in
+// `prompt-resume` -- once the user resumes, the in-memory working copy in
+// `useWorkout` plus `createPersistenceCore`'s own debounced auto-save become
+// the source of truth, and this subscription intentionally stops touching
+// `initState` so a stale snapshot can never clobber in-progress edits. This
+// gives cross-tab awareness for the one window where it's safe: another tab
+// discarding/completing the workout while this tab is still asking "resume?".
+let activeWorkoutQuery: LiveQuery<DbActiveWorkout | undefined> | undefined
+
+function getActiveWorkoutQuery(): LiveQuery<DbActiveWorkout | undefined> {
+  if (!activeWorkoutQuery) {
+    activeWorkoutQuery = getActiveWorkoutRepository().observe()
+    activeWorkoutQuery.subscribe((activeWorkout) => {
+      if (initState.value.status !== 'prompt-resume') return
+
+      if (!activeWorkout || activeWorkout.blocks.length === 0) {
+        initState.value = { status: 'ready' }
+        return
+      }
+
+      initState.value = {
+        status: 'prompt-resume',
+        workoutName: activeWorkout.name,
+        blockCount: activeWorkout.blocks.length,
+      }
+    })
+  }
+
+  return activeWorkoutQuery
 }
 
 /**
@@ -57,7 +91,7 @@ export function useAppInitialization() {
         await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])
 
         // Check for active workout
-        const activeWorkout = await getActiveWorkoutRepository().get()
+        const activeWorkout = await getActiveWorkoutQuery().get()
 
         if (activeWorkout && activeWorkout.blocks.length > 0) {
           // Prompt user to resume

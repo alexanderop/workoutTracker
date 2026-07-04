@@ -1,7 +1,7 @@
-import { onMounted, ref } from 'vue'
+import { computed } from 'vue'
+import { useLiveQuery } from '@/composables/useLiveQuery'
 import { getTemplatesRepository } from '@/db'
 import { formatDate } from '@/lib/formatters'
-import { tryCatch } from '@/lib/tryCatch'
 import type { DbWorkoutTemplate } from '@/db/schema'
 
 // ============================================
@@ -21,33 +21,19 @@ function formatTemplateDate(timestamp: number | null): string {
 // ============================================
 
 export function useWorkoutsList() {
-  // Primary State
-  const templates = ref<ReadonlyArray<DbWorkoutTemplate>>([])
+  // Primary State — live query keeps `templates` in sync with storage, including
+  // changes made from other tabs, so no manual reload is needed.
+  const { data: templates } = useLiveQuery<ReadonlyArray<DbWorkoutTemplate>>(() =>
+    getTemplatesRepository().observeAll(),
+  )
 
-  // State Metadata
-  const isLoading = ref(true)
-
-  // Methods
-  async function loadAll(): Promise<void> {
-    isLoading.value = true
-    const [error, result] = await tryCatch(getTemplatesRepository().getAll())
-    if (!error && result) {
-      templates.value = result
-    }
-    isLoading.value = false
-  }
-
-  // Lifecycle Hooks
-  onMounted(() => {
-    loadAll()
-  })
+  // State Metadata — no snapshot yet means the initial `get()` hasn't resolved
+  const isLoading = computed(() => templates.value === undefined)
 
   return {
     // State
-    templates,
+    templates: computed(() => templates.value ?? []),
     isLoading,
-    // Methods
-    loadAll,
     formatTemplateDate,
   }
 }

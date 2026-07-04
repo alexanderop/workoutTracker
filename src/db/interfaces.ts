@@ -84,6 +84,11 @@ export type SettingsRepository = {
    */
   getAll(): Promise<SettingDefaults>
   /**
+   * Reactive read of all stored user settings (raw rows, no defaults applied).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeAll(): LiveQuery<ReadonlyArray<DatabaseUserSetting>>
+  /**
    * Reset a single setting to its default value by removing from database.
    */
   reset(key: UserSettingKey): Promise<void>
@@ -153,6 +158,22 @@ export type ActiveWorkoutRepository = {
    * Check if an active workout is currently in progress.
    */
   exists(): Promise<boolean>
+  /**
+   * A live view of the current active workout (or `undefined` if none exists).
+   * `get()` resolves the same snapshot as {@link ActiveWorkoutRepository.get},
+   * `subscribe()` fires on every underlying change (including other tabs).
+   *
+   * The active workout is mutated on nearly every keystroke while a workout is
+   * in progress, and the in-memory working copy is the source of truth during
+   * that window (see `useWorkoutPersistence`/`createPersistenceCore`, which
+   * debounce writes to this repository). Consumers must not blindly apply
+   * every emission onto an in-progress working copy -- that would clobber
+   * newer local edits with a stale, already-superseded snapshot. This live
+   * query is intended for reads that happen outside active editing: the
+   * initial load, and detecting an active workout appearing/disappearing in
+   * another tab while this tab hasn't started editing it yet.
+   */
+  observe(): LiveQuery<DatabaseActiveWorkout | undefined>
 }
 
 // ============================================
@@ -180,7 +201,9 @@ export type ActiveBenchmarkWorkoutRepository = {
    * Complete the benchmark workout and save to history with benchmarkId.
    * Removes the active benchmark from database in a transaction.
    */
-  complete(activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>): Promise<DatabaseCompletedWorkout>
+  complete(
+    activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>,
+  ): Promise<DatabaseCompletedWorkout>
 }
 
 // ============================================
@@ -239,6 +262,23 @@ export type TemplatesRepository = {
    * Create a new workout template from structured data.
    */
   create(data: CreateTemplateData): Promise<DatabaseWorkoutTemplate>
+  /**
+   * Reactive read of all workout templates (same ordering as {@link TemplatesRepository.getAll}).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeAll(): LiveQuery<ReadonlyArray<DatabaseWorkoutTemplate>>
+}
+
+// ============================================
+// Live Query Reactivity Port
+// ============================================
+
+/** A reactive read. `get()` resolves from local storage immediately;
+ *  `subscribe()` fires with a fresh snapshot on every change (including
+ *  changes from other tabs — and, with a sync backend, other devices). */
+export interface LiveQuery<T> {
+  get(): Promise<T>
+  subscribe(onChange: (value: T) => void): () => void
 }
 
 // ============================================
@@ -264,6 +304,11 @@ export type GetByDateRangeParams = {
 export type WorkoutsRepository = {
   /**
    * Mark an active workout as completed and save to history. Removes active workout from database in a transaction.
+   *
+   * Intent guarantee: atomically moves the active workout into history — after
+   * resolution the history entry exists AND the active workout is cleared. An
+   * adapter must never leave both visible or neither. Idempotent for the same
+   * workout id.
    * @param durationOverrideSeconds - Optional duration override in seconds. If provided, completedAt is back-calculated.
    */
   completeWorkout(
@@ -279,6 +324,11 @@ export type WorkoutsRepository = {
    * Retrieve completed workouts sorted by completion date (most recent first). Defaults to limit=50, offset=0.
    */
   getHistory(parameters?: GetHistoryParams): Promise<ReadonlyArray<DatabaseCompletedWorkout>>
+  /**
+   * Reactive read of the completed workout history (most recent first). Fires again whenever
+   * the underlying data changes, including from other tabs.
+   */
+  observeHistory(limit?: number): LiveQuery<ReadonlyArray<DatabaseCompletedWorkout>>
   /**
    * Retrieve completed workouts within a specific date range (inclusive).
    */
@@ -325,10 +375,18 @@ export type DataManagementRepository = {
   exportAll(): Promise<ExportDataContents>
   /**
    * Import user data from backup. Clears all existing data and replaces with imported data in a transaction.
+   *
+   * Intent guarantee: all-or-nothing restore. An adapter must never leave a
+   * partially imported state visible — if any part of the import fails, none
+   * of it should be visible.
    */
   importAll(data: ExportDataContents): Promise<void>
   /**
    * Permanently delete all user data including active workout. This action cannot be undone.
+   *
+   * Intent guarantee: a complete wipe (modulo the onboarding flag). An
+   * adapter must never leave a partial wipe visible — every table ends up
+   * empty except, when `preserveOnboarding` is true, the onboarding record.
    * @param options.preserveOnboarding - If true, onboarding completion state is preserved (default: true)
    */
   deleteAll(options?: { preserveOnboarding?: boolean }): Promise<void>
@@ -470,6 +528,12 @@ export type WeightRepository = {
   getAll(): Promise<ReadonlyArray<DatabaseWeightEntry>>
 
   /**
+   * Reactive read of all weight entries (same ordering as {@link WeightRepository.getAll}).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeEntries(): LiveQuery<ReadonlyArray<DatabaseWeightEntry>>
+
+  /**
    * Get weight entries within a specific date range (inclusive).
    */
   getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DatabaseWeightEntry>>
@@ -554,19 +618,24 @@ export type ProgressionsRepository = {
    * Update an existing progression.
    * @throws Error if progression with id not found
    */
-  update(
-    id: string,
-    updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  update(id: string, updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>): Promise<void>
 
   /**
    * Delete a progression and all its sessions by ID.
+   *
+   * Intent guarantee (`deleteProgression`): the progression and its sessions
+   * stay consistent — an adapter must never leave orphaned sessions
+   * referencing a deleted progression.
    */
   delete(id: string): Promise<void>
 
   /**
    * Record a completed session and update progression state.
    * When completed is true, nextLevel must be provided to advance the progression.
+   *
+   * Intent guarantee: the session and its parent progression stay consistent
+   * — an adapter must make the new session record and the progression's
+   * updated state visible together, never one without the other.
    */
   recordSession(
     progressionId: string,
@@ -620,6 +689,7 @@ export type RepositoryProvider = {
   settings: SettingsRepository
   dataManagement: DataManagementRepository
   benchmarks: BenchmarksRepository
+  exerciseProgress: ExerciseProgressRepository
   weight: WeightRepository
   drafts: DraftsRepository
   progressions: ProgressionsRepository

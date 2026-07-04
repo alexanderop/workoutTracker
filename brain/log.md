@@ -9,6 +9,15 @@ timestamp: 2026-06-28T08:05:00Z
 
 ## Brain Maintenance Log
 
+## 2026-07-04
+
+- Diagnosed and fixed the two chronically failing Claude CI checks (PR #151;
+  fixes merged via PRs #152/#153). Captured the findings as two lessons:
+  [claude_args quoting hangs the CLI silently](./lessons/claude-args-quoting-hang.md)
+  and [QA agent turn economics](./lessons/qa-agent-turn-economics.md).
+- Added a quoting warning to the agent-browser QA tutorial's `--json-schema`
+  section so the blog draft doesn't teach the trap.
+
 ## 2026-06-28
 
 - Added the initial `brain/` vault after comparing Brainmaxxing with the pasted

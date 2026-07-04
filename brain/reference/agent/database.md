@@ -791,6 +791,76 @@ Version history:
 - Batch operations wrapped in transactions
 - Cached repository instances (singleton pattern)
 
+## Live Queries (Reactivity Port)
+
+Some repositories expose `observe*()` methods returning a `LiveQuery<T>`
+instead of a one-shot `get*()` promise, so the UI updates when data changes
+underneath it — including cross-tab changes today, and sync changes with a
+future backend.
+
+**The pattern (copy this for any new live-reading screen):**
+
+1. **Interface** (`src/db/interfaces.ts`) — declare `LiveQuery<T>`:
+
+   ```typescript
+   export interface LiveQuery<T> {
+     get(): Promise<T>
+     subscribe(onChange: (value: T) => void): () => void
+   }
+   ```
+
+   Then add an `observeX(): LiveQuery<T>` method to the relevant repository
+   interface (e.g. `observeHistory`, `observeAll`, `observe`, `observeEntries`).
+
+2. **Dexie implementation** (`src/db/implementations/dexie/*.ts`) — wrap
+   Dexie's own `liveQuery()`:
+
+   ```typescript
+   observeHistory(limit) {
+     const run = () => /* same query the get* method uses */
+     return {
+       get: () => run(),
+       subscribe(onChange) {
+         const sub = liveQuery(run).subscribe({ next: onChange })
+         return () => sub.unsubscribe()
+       },
+     }
+   }
+   ```
+
+3. **Vue bridge** (`src/composables/useLiveQuery.ts`) — the single generic
+   composable every component uses:
+
+   ```typescript
+   export function useLiveQuery<T>(make: () => LiveQuery<T>) {
+     const data = shallowRef<T>()
+     let stop: (() => void) | undefined
+     onMounted(() => {
+       const q = make()
+       q.get().then((v) => { data.value = v })
+       stop = q.subscribe((v) => { data.value = v })
+     })
+     onUnmounted(() => stop?.())
+     return { data }
+   }
+   ```
+
+   `shallowRef` is deliberate for large DB-backed collections — see
+   [Repo Dexie review](../reviews/repo-dexie-review.md).
+
+**Consumer shape differs by lifetime:**
+
+- **Components** call `useLiveQuery()` directly — it subscribes in
+  `onMounted` and tears down in `onUnmounted`.
+- **`createGlobalState` singleton stores** (e.g. `src/stores/settings.ts`)
+  are not components, so they subscribe once at store-creation time instead
+  of `onMounted`, and expose an explicit `stop()` if the store supports
+  teardown for tests. They do not use `useLiveQuery` directly — they call
+  `observeX().subscribe(...)` themselves.
+
+Live conversions so far: recent workouts history, settings, active workout,
+templates, weight entries. Each is a real example to copy from.
+
 ## Related Documentation
 
 - **Architecture:** `brain/reference/agent/architecture.md` - Dependency rules and boundaries

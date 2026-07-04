@@ -6,9 +6,7 @@ import type { DbActiveWorkout } from '@/db/schema'
  * Create a mock DbActiveWorkout with sensible defaults.
  * Ensures type safety by enforcing the complete DbActiveWorkout shape.
  */
-function createMockActiveWorkout(
-  overrides?: Partial<DbActiveWorkout>
-): DbActiveWorkout {
+function createMockActiveWorkout(overrides?: Partial<DbActiveWorkout>): DbActiveWorkout {
   return {
     id: 'current',
     name: 'Test Workout',
@@ -48,6 +46,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       save: vi.fn().mockResolvedValue(undefined),
       clear: vi.fn().mockResolvedValue(undefined),
       exists: vi.fn().mockResolvedValue(false),
+      observe: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
     },
     activeBenchmark: {
       load: vi.fn().mockResolvedValue(undefined),
@@ -76,6 +75,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         notes: '',
       }),
       getHistory: vi.fn().mockResolvedValue([]),
+      observeHistory: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
       getByDateRange: vi.fn().mockResolvedValue([]),
       getById: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
@@ -110,6 +110,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         lastUsedAt: null,
         tags: [],
       }),
+      observeAll: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
     },
     customExercises: {
       getAll: vi.fn().mockResolvedValue([]),
@@ -126,6 +127,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       }),
       set: vi.fn().mockResolvedValue(undefined),
       getAll: vi.fn().mockResolvedValue(defaultSettings),
+      observeAll: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue([]),
+        subscribe: vi.fn(() => vi.fn()),
+      })),
       reset: vi.fn().mockResolvedValue(undefined),
       resetAll: vi.fn().mockResolvedValue(undefined),
     },
@@ -174,9 +179,29 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getAttemptHistory: vi.fn().mockResolvedValue([]),
       hasResults: vi.fn().mockResolvedValue(false),
     },
+    exerciseProgress: {
+      getExerciseHistory: vi.fn().mockResolvedValue([]),
+      getExerciseStats: vi.fn().mockResolvedValue({
+        exerciseDefinitionId: 'exercise-1',
+        exerciseName: 'Test Exercise',
+        totalSessions: 0,
+        lastPerformed: null,
+        firstPerformed: null,
+        avgVolumePerSession: 0,
+        avgFrequencyDays: null,
+      }),
+      getPersonalRecords: vi.fn().mockResolvedValue({
+        maxWeight: null,
+        estimated1RM: null,
+        maxVolume: null,
+        maxRepsAtWeight: new Map(),
+      }),
+      getPerformedExercises: vi.fn().mockResolvedValue([]),
+    },
     weight: {
       add: vi.fn().mockResolvedValue(undefined),
       getAll: vi.fn().mockResolvedValue([]),
+      observeEntries: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
       getByDateRange: vi.fn().mockResolvedValue([]),
       getLatest: vi.fn().mockResolvedValue(undefined),
       getByDate: vi.fn().mockResolvedValue(undefined),

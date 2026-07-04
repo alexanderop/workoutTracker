@@ -55,6 +55,8 @@ Wrap the `lastUsedAt` update in a transaction with the read operation.
 
 ## Phase 2: Reactive Queries with liveQuery
 
+> **Superseded** by the `LiveQuery<T>` port in [`2026-07-04-persistence-swap-ticket.md`](2026-07-04-persistence-swap-ticket.md), which implements this without the `@vueuse/rxjs` dependency below.
+
 ### 2.1 Add VueUse RxJS Integration
 
 ```bash

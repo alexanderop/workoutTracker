@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { db } from '@/db'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { popularExercises } from '@/data/popularExercises'
 import { resetDatabase } from '@/__tests__/setup'
+import { getCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'
 
 /**
  * Seed data integrity tests.
@@ -17,7 +17,7 @@ describe('seedPopularExercises', () => {
 
   it('seeds exercises on first run', async () => {
     await seedPopularExercises()
-    const count = await db.customExercises.count()
+    const count = await getCustomExerciseCount()
     expect(count).toBe(popularExercises.length)
   })
 
@@ -29,18 +29,18 @@ describe('seedPopularExercises', () => {
     await seedPopularExercises()
 
     // Should detect empty IndexedDB and re-seed
-    const count = await db.customExercises.count()
+    const count = await getCustomExerciseCount()
     expect(count).toBe(popularExercises.length)
   })
 
   it('skips seeding when exercises already exist', async () => {
     // First seed
     await seedPopularExercises()
-    const firstCount = await db.customExercises.count()
+    const firstCount = await getCustomExerciseCount()
 
     // Second call should not duplicate
     await seedPopularExercises()
-    const secondCount = await db.customExercises.count()
+    const secondCount = await getCustomExerciseCount()
 
     expect(secondCount).toBe(firstCount)
   })

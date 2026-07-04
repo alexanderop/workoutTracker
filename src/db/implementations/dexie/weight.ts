@@ -1,4 +1,5 @@
-import type { WeightRepository } from '@/db/interfaces'
+import { liveQuery } from 'dexie'
+import type { LiveQuery, WeightRepository } from '@/db/interfaces'
 import type { DbWeightEntry } from '@/db/schema'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
@@ -10,6 +11,14 @@ function getStartOfDay(date: Date): number {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
   return d.getTime()
+}
+
+/**
+ * Shared query logic for `getAll()` and `observeEntries()` so both read the
+ * same ordering (newest first).
+ */
+function queryAll(database: WorkoutTrackerDatabase): Promise<ReadonlyArray<DbWeightEntry>> {
+  return database.weightEntries.orderBy('date').reverse().toArray()
 }
 
 export function createDexieWeightRepository(database: WorkoutTrackerDatabase): WeightRepository {
@@ -27,7 +36,18 @@ export function createDexieWeightRepository(database: WorkoutTrackerDatabase): W
     },
 
     async getAll(): Promise<ReadonlyArray<DbWeightEntry>> {
-      return database.weightEntries.orderBy('date').reverse().toArray()
+      return queryAll(database)
+    },
+
+    observeEntries(): LiveQuery<ReadonlyArray<DbWeightEntry>> {
+      const run = () => queryAll(database)
+      return {
+        get: () => run(),
+        subscribe(onChange: (value: ReadonlyArray<DbWeightEntry>) => void) {
+          const subscription = liveQuery(run).subscribe({ next: onChange })
+          return () => subscription.unsubscribe()
+        },
+      }
     },
 
     async getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DbWeightEntry>> {

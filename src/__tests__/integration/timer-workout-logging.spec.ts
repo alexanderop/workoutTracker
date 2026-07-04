@@ -1,8 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
+import { expectWorkoutCount, getAllWorkouts, getWorkoutCount } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { db } from '@/db'
 import type { DbAmrapBlock } from '@/db/schema'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
@@ -92,7 +92,7 @@ describe('Timer Workout Logging', () => {
       const app = await createTestApp()
 
       // Verify database is empty before
-      expect(await db.workouts.count()).toBe(0)
+      expect(await getWorkoutCount()).toBe(0)
 
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -102,10 +102,10 @@ describe('Timer Workout Logging', () => {
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
       // Verify workout was saved to database
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectWorkoutCount(1)
 
       // Verify workout data
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       const savedWorkout = workouts[0]
       if (!savedWorkout) throw new Error('No workout found')
 
@@ -175,9 +175,9 @@ describe('Timer Workout Logging', () => {
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
       // Wait for save
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectWorkoutCount(1)
 
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       const workout = workouts[0]
       if (!workout) throw new Error('No workout found')
 
@@ -204,9 +204,9 @@ describe('Timer Workout Logging', () => {
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectWorkoutCount(1)
 
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       const workout = workouts[0]
       if (!workout) throw new Error('No workout found')
 
@@ -227,9 +227,9 @@ describe('Timer Workout Logging', () => {
 
       await userEvent.click(page.getByRole('button', { name: /log workout/i }))
 
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
+      await expectWorkoutCount(1)
 
-      const workouts = await db.workouts.toArray()
+      const workouts = await getAllWorkouts()
       const workout = workouts[0]
       if (!workout) throw new Error('No workout found')
 

@@ -1,4 +1,5 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useLiveQuery } from '@/composables/useLiveQuery'
 import { generateId, getWeightRepository } from '@/db'
 import type { DbWeightEntry } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
@@ -7,11 +8,6 @@ import { getStartOfDay } from '../lib/weightCalculations'
 // ============================================
 // Types
 // ============================================
-
-type WeightEntriesState =
-  | { status: 'loading' }
-  | { status: 'success'; entries: ReadonlyArray<DbWeightEntry> }
-  | { status: 'error'; error: Error }
 
 export type TimeRange = '7D' | '30D' | '90D' | 'All'
 
@@ -49,9 +45,7 @@ function filterByTimeRange(
  * Transform entries to chart-friendly format.
  * Returns entries in chronological order (oldest first) for x-axis progression.
  */
-function transformToChartData(
-  entries: ReadonlyArray<DbWeightEntry>,
-): Array<WeightChartDataPoint> {
+function transformToChartData(entries: ReadonlyArray<DbWeightEntry>): Array<WeightChartDataPoint> {
   return [...entries].toReversed().map((entry) => ({
     date: new Date(entry.date),
     weight: entry.weight,
@@ -63,17 +57,15 @@ function transformToChartData(
 // ============================================
 
 export function useWeightEntries() {
-  // Primary State
-  const state = ref<WeightEntriesState>({ status: 'loading' })
+  // Primary State — live query keeps `entries` in sync with storage, including
+  // changes made from other tabs, so add/delete below don't need a manual reload.
+  const { data: entriesData } = useLiveQuery<ReadonlyArray<DbWeightEntry>>(() =>
+    getWeightRepository().observeEntries(),
+  )
   const selectedRange = ref<TimeRange>('30D')
 
   // Computed - all entries (newest first)
-  const entries = computed<ReadonlyArray<DbWeightEntry>>(() => {
-    if (state.value.status !== 'success') {
-      return []
-    }
-    return state.value.entries
-  })
+  const entries = computed<ReadonlyArray<DbWeightEntry>>(() => entriesData.value ?? [])
 
   // Computed - entries filtered by time range
   const filteredEntries = computed<ReadonlyArray<DbWeightEntry>>(() => {
@@ -95,21 +87,10 @@ export function useWeightEntries() {
     return entries.value.length > 0
   })
 
+  // State Metadata — no snapshot yet means the initial `get()` hasn't resolved
+  const isLoading = computed(() => entriesData.value === undefined)
+
   // Methods
-  async function loadEntries() {
-    state.value = { status: 'loading' }
-
-    const repo = getWeightRepository()
-    const [error, result] = await tryCatch(repo.getAll())
-
-    if (error) {
-      state.value = { status: 'error', error }
-      return
-    }
-
-    state.value = { status: 'success', entries: result }
-  }
-
   async function addEntry(weight: number): Promise<boolean> {
     const repo = getWeightRepository()
     const now = Date.now()
@@ -128,8 +109,6 @@ export function useWeightEntries() {
       return false
     }
 
-    // Reload entries to get updated list
-    await loadEntries()
     return true
   }
 
@@ -142,8 +121,6 @@ export function useWeightEntries() {
       return false
     }
 
-    // Reload entries to get updated list
-    await loadEntries()
     return true
   }
 
@@ -161,20 +138,14 @@ export function useWeightEntries() {
     return entry
   }
 
-  // Lifecycle Hooks
-  onMounted(() => {
-    loadEntries()
-  })
-
   return {
-    state,
     entries,
     filteredEntries,
     chartData,
     latestEntry,
     hasEntries,
+    isLoading,
     selectedRange,
-    loadEntries,
     addEntry,
     deleteEntry,
     setTimeRange,

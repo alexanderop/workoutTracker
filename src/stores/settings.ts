@@ -1,18 +1,83 @@
 import { createGlobalState } from '@vueuse/core'
 import { reactive, ref } from 'vue'
 import { getSettingsRepository } from '@/db'
+import type { DbUserSetting } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import type { HeightUnit, Language, WeightUnit } from '@/types/settings'
 
+// Mirrors `SETTING_DEFAULTS` in the Dexie settings adapter for the subset of
+// keys this store tracks.
+const DEFAULT_WEIGHT_UNIT: WeightUnit = 'kg'
+const DEFAULT_HEIGHT_UNIT: HeightUnit = 'cm'
+const DEFAULT_SCREEN_WAKE_LOCK = true
+const DEFAULT_TIMER_SOUND_ENABLED = true
+const DEFAULT_TIMER_SOUND_VOLUME = 0.8
+
 export const useSettingsStore = createGlobalState(() => {
-  const weightUnit = ref<WeightUnit>('kg')
-  const heightUnit = ref<HeightUnit>('cm')
-  const screenWakeLock = ref(true)
-  const timerSoundEnabled = ref(true)
-  const timerSoundVolume = ref(0.8)
+  const weightUnit = ref<WeightUnit>(DEFAULT_WEIGHT_UNIT)
+  const heightUnit = ref<HeightUnit>(DEFAULT_HEIGHT_UNIT)
+  const screenWakeLock = ref(DEFAULT_SCREEN_WAKE_LOCK)
+  const timerSoundEnabled = ref(DEFAULT_TIMER_SOUND_ENABLED)
+  const timerSoundVolume = ref(DEFAULT_TIMER_SOUND_VOLUME)
   const language = ref<Language | undefined>(undefined)
   const isLoaded = ref(false)
   const isLoading = ref(false)
+
+  /**
+   * Apply a raw settings snapshot onto this store's refs, resetting to
+   * defaults first so a deleted/reset row reverts a field rather than
+   * leaving it stale.
+   */
+  function applySnapshot(snapshot: ReadonlyArray<DbUserSetting>): void {
+    weightUnit.value = DEFAULT_WEIGHT_UNIT
+    heightUnit.value = DEFAULT_HEIGHT_UNIT
+    screenWakeLock.value = DEFAULT_SCREEN_WAKE_LOCK
+    timerSoundEnabled.value = DEFAULT_TIMER_SOUND_ENABLED
+    timerSoundVolume.value = DEFAULT_TIMER_SOUND_VOLUME
+    language.value = undefined
+
+    for (const setting of snapshot) {
+      switch (setting.key) {
+        case 'weightUnit': {
+          weightUnit.value = setting.value
+          break
+        }
+        case 'heightUnit': {
+          heightUnit.value = setting.value
+          break
+        }
+        case 'screenWakeLock': {
+          screenWakeLock.value = setting.value
+          break
+        }
+        case 'timerSoundEnabled': {
+          timerSoundEnabled.value = setting.value
+          break
+        }
+        case 'timerSoundVolume': {
+          timerSoundVolume.value = setting.value
+          break
+        }
+        case 'language': {
+          language.value = setting.value
+          break
+        }
+        default: {
+          // theme / defaultRestTimer / autoSaveInterval are not tracked by this store.
+          break
+        }
+      }
+    }
+  }
+
+  // Subscribed once for the lifetime of this singleton store (createGlobalState
+  // memoizes this factory body). NOT onMounted/onUnmounted — this store is not
+  // tied to a component. Keeps refs in sync with storage, including changes
+  // from other tabs. `stop()` below exists so tests can explicitly tear it down.
+  const settingsQuery = getSettingsRepository().observeAll()
+  let stopSettingsSubscription: (() => void) | undefined = settingsQuery.subscribe((snapshot) => {
+    applySnapshot(snapshot)
+  })
 
   /**
    * Load all settings from the database.
@@ -22,18 +87,22 @@ export const useSettingsStore = createGlobalState(() => {
     if (isLoading.value) return
 
     isLoading.value = true
-    const [error, settings] = await tryCatch(getSettingsRepository().getAll())
+    const [error, snapshot] = await tryCatch(settingsQuery.get())
     isLoading.value = false
 
     if (error) return
 
-    weightUnit.value = settings.weightUnit
-    heightUnit.value = settings.heightUnit
-    screenWakeLock.value = settings.screenWakeLock
-    timerSoundEnabled.value = settings.timerSoundEnabled
-    timerSoundVolume.value = settings.timerSoundVolume
-    language.value = settings.language
+    applySnapshot(snapshot)
     isLoaded.value = true
+  }
+
+  /**
+   * Stop the live settings subscription. Exposed for test teardown; not
+   * called during normal app operation.
+   */
+  function stop(): void {
+    stopSettingsSubscription?.()
+    stopSettingsSubscription = undefined
   }
 
   async function setWeightUnit(unit: WeightUnit): Promise<void> {
@@ -69,11 +138,11 @@ export const useSettingsStore = createGlobalState(() => {
 
   /** Reset state to defaults (for test isolation) */
   function $reset(): void {
-    weightUnit.value = 'kg'
-    heightUnit.value = 'cm'
-    screenWakeLock.value = true
-    timerSoundEnabled.value = true
-    timerSoundVolume.value = 0.8
+    weightUnit.value = DEFAULT_WEIGHT_UNIT
+    heightUnit.value = DEFAULT_HEIGHT_UNIT
+    screenWakeLock.value = DEFAULT_SCREEN_WAKE_LOCK
+    timerSoundEnabled.value = DEFAULT_TIMER_SOUND_ENABLED
+    timerSoundVolume.value = DEFAULT_TIMER_SOUND_VOLUME
     language.value = undefined
     isLoaded.value = false
     isLoading.value = false
@@ -95,6 +164,7 @@ export const useSettingsStore = createGlobalState(() => {
     setLanguage,
     setTimerSoundEnabled,
     setTimerSoundVolume,
+    stop,
     $reset,
   })
 })
