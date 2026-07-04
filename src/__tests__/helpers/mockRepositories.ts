@@ -6,9 +6,7 @@ import type { DbActiveWorkout } from '@/db/schema'
  * Create a mock DbActiveWorkout with sensible defaults.
  * Ensures type safety by enforcing the complete DbActiveWorkout shape.
  */
-function createMockActiveWorkout(
-  overrides?: Partial<DbActiveWorkout>
-): DbActiveWorkout {
+function createMockActiveWorkout(overrides?: Partial<DbActiveWorkout>): DbActiveWorkout {
   return {
     id: 'current',
     name: 'Test Workout',
@@ -173,6 +171,25 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getPersonalBests: vi.fn().mockResolvedValue(new Map()),
       getAttemptHistory: vi.fn().mockResolvedValue([]),
       hasResults: vi.fn().mockResolvedValue(false),
+    },
+    exerciseProgress: {
+      getExerciseHistory: vi.fn().mockResolvedValue([]),
+      getExerciseStats: vi.fn().mockResolvedValue({
+        exerciseDefinitionId: 'exercise-1',
+        exerciseName: 'Test Exercise',
+        totalSessions: 0,
+        lastPerformed: null,
+        firstPerformed: null,
+        avgVolumePerSession: 0,
+        avgFrequencyDays: null,
+      }),
+      getPersonalRecords: vi.fn().mockResolvedValue({
+        maxWeight: null,
+        estimated1RM: null,
+        maxVolume: null,
+        maxRepsAtWeight: new Map(),
+      }),
+      getPerformedExercises: vi.fn().mockResolvedValue([]),
     },
     weight: {
       add: vi.fn().mockResolvedValue(undefined),

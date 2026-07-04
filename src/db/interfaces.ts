@@ -180,7 +180,9 @@ export type ActiveBenchmarkWorkoutRepository = {
    * Complete the benchmark workout and save to history with benchmarkId.
    * Removes the active benchmark from database in a transaction.
    */
-  complete(activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>): Promise<DatabaseCompletedWorkout>
+  complete(
+    activeBenchmark: Readonly<DatabaseActiveBenchmarkWorkout>,
+  ): Promise<DatabaseCompletedWorkout>
 }
 
 // ============================================
@@ -554,10 +556,7 @@ export type ProgressionsRepository = {
    * Update an existing progression.
    * @throws Error if progression with id not found
    */
-  update(
-    id: string,
-    updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>,
-  ): Promise<void>
+  update(id: string, updates: Partial<Omit<DatabaseProgression, 'id' | 'createdAt'>>): Promise<void>
 
   /**
    * Delete a progression and all its sessions by ID.
@@ -620,6 +619,7 @@ export type RepositoryProvider = {
   settings: SettingsRepository
   dataManagement: DataManagementRepository
   benchmarks: BenchmarksRepository
+  exerciseProgress: ExerciseProgressRepository
   weight: WeightRepository
   drafts: DraftsRepository
   progressions: ProgressionsRepository

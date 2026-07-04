@@ -1,4 +1,4 @@
-import { getDataManagementRepository, resetExerciseProgressRepository } from '@/db'
+import { getDataManagementRepository } from '@/db'
 import { resetRepositoryProvider } from '@/db/provider'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
@@ -35,6 +35,5 @@ export async function resetDatabase(): Promise<void> {
   useBenchmarkGlobalTimer().reset()
 
   // Reset repository caches (forces fresh instances on next access)
-  resetExerciseProgressRepository()
   resetRepositoryProvider()
 }

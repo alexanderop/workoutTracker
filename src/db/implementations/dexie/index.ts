@@ -6,6 +6,7 @@ import { createDexieBenchmarksRepository as createDexieBenchmarksRepo } from './
 import { createDexieCustomExercisesRepository as createDexieCustomExercisesRepo } from './customExercises'
 import { createDexieDataManagementRepository as createDexieDataManagementRepo } from './dataManagement'
 import { createDexieDraftsRepository as createDexieDraftsRepo } from './drafts'
+import { createDexieExerciseProgressRepository } from './exerciseProgress'
 import { createDexieOnboardingRepository as createDexieOnboardingRepo } from './onboarding'
 import { createDexieProgressionsRepository as createDexieProgressionsRepo } from './progressions'
 import { createDexieSettingsRepository as createDexieSettingsRepo } from './settings'
@@ -23,10 +24,10 @@ export function createDexieRepositoryProvider(): RepositoryProvider {
     settings: createDexieSettingsRepo(database),
     dataManagement: createDexieDataManagementRepo(database),
     benchmarks: createDexieBenchmarksRepo(database),
+    exerciseProgress: createDexieExerciseProgressRepository(database),
     weight: createDexieWeightRepository(database),
     drafts: createDexieDraftsRepo(database),
     progressions: createDexieProgressionsRepo(database),
     onboarding: createDexieOnboardingRepo(database),
   }
 }
-
