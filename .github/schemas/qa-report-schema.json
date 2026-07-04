@@ -16,10 +16,26 @@
       "items": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "description": "Short test name, e.g. 'Navigate to Weight page'" },
-          "area": { "type": "string", "enum": ["navigation", "forms", "core_features", "mobile", "accessibility", "edge_cases"] },
+          "name": {
+            "type": "string",
+            "description": "Short test name, e.g. Navigate to Weight page"
+          },
+          "area": {
+            "type": "string",
+            "enum": [
+              "navigation",
+              "forms",
+              "core_features",
+              "mobile",
+              "accessibility",
+              "edge_cases"
+            ]
+          },
           "result": { "type": "string", "enum": ["pass", "fail", "skip"] },
-          "details": { "type": "string", "description": "What you observed — be specific about what you saw on screen" }
+          "details": {
+            "type": "string",
+            "description": "What you observed — be specific about what you saw on screen"
+          }
         },
         "required": ["name", "area", "result", "details"],
         "additionalProperties": false
@@ -36,7 +52,10 @@
             "enum": ["critical", "major", "minor", "suggestion"]
           },
           "title": { "type": "string" },
-          "description": { "type": "string", "description": "What happened vs what should have happened" },
+          "description": {
+            "type": "string",
+            "description": "What happened vs what should have happened"
+          },
           "steps_to_reproduce": {
             "type": "array",
             "items": { "type": "string" },
@@ -45,7 +64,15 @@
           "expected": { "type": "string", "description": "What should have happened" },
           "actual": { "type": "string", "description": "What actually happened" }
         },
-        "required": ["id", "severity", "title", "description", "steps_to_reproduce", "expected", "actual"],
+        "required": [
+          "id",
+          "severity",
+          "title",
+          "description",
+          "steps_to_reproduce",
+          "expected",
+          "actual"
+        ],
         "additionalProperties": false
       }
     },

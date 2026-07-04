@@ -105,14 +105,18 @@ jobs:
         shell: bash
         env:
           COMMENT_BODY_INPUT: ${{ github.event.comment.body || '' }}
+          FOCUS_INPUT: ${{ github.event.inputs.focus || 'fast' }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          LABEL_NAME: ${{ github.event.label.name }}
         run: |
           set -euo pipefail
-          FOCUS="${{ github.event.inputs.focus || 'fast' }}"
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.action }}" != "labeled" ]]; then
+          FOCUS="$FOCUS_INPUT"
+          if [[ "$EVENT_NAME" == "pull_request" && "$EVENT_ACTION" != "labeled" ]]; then
             FOCUS="fast"
-          elif [[ "${{ github.event.label.name }}" == "qa-verify" ]]; then
+          elif [[ "$LABEL_NAME" == "qa-verify" ]]; then
             FOCUS="verify"
-          elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+          elif [[ "$EVENT_NAME" == "issue_comment" ]]; then
             COMMENT_BODY="${COMMENT_BODY_INPUT}"
             if [[ "$COMMENT_BODY" == *"@claude test"* ]]; then
               FOCUS="test"
@@ -241,17 +245,10 @@ jobs:
         with:
           url: ${{ env.APP_URL }}
 
-      - name: Load QA system prompt
-        id: load-system-prompt
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo 'system_prompt<<SYSTEM_EOF'
-            cat .claude/prompts/qa-system-prompt.md
-            echo 'SYSTEM_EOF'
-          } >> "$GITHUB_OUTPUT"
-
+      # NOTE: the QA system prompt is injected into the file-based `prompt`
+      # input instead of `--append-system-prompt` in claude_args. The file
+      # contains double quotes and backticks, which break claude_args
+      # tokenization and hang the CLI at startup with no output.
       - name: Load QA prompt
         id: load-prompt
         shell: bash
@@ -291,6 +288,11 @@ jobs:
           {
             echo 'prompt<<PROMPT_EOF'
 
+            cat .claude/prompts/qa-system-prompt.md
+            echo ''
+            echo '---'
+            echo ''
+
             TASK=$(cat "$PROMPT_FILE")
             TASK="${TASK//\{\{APP_URL\}\}/$APP_URL_VALUE}"
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
@@ -321,7 +323,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
+          # The schema is embedded single-quoted in claude_args; a single quote
+          # in the file breaks tokenization and hangs the CLI at startup
+          # (escaping as \' does NOT survive claude_args parsing).
+          if grep -q "'" .github/schemas/qa-report-schema.json; then
+            echo "::error::qa-report-schema.json must not contain single quotes"
+            exit 1
+          fi
+          SCHEMA=$(jq -c . .github/schemas/qa-report-schema.json)
           echo "schema=$SCHEMA" >> "$GITHUB_OUTPUT"
 
       - name: Remove stale fixture outputs
@@ -465,12 +474,10 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --debug
             --allowedTools "Bash,Write,Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '60' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
-            --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Stop tailer and render timeline
         if: always()
@@ -581,6 +588,33 @@ jobs:
           debug-dir: qa-debug
 
       # Retry with a quick smoke test if main run failed to generate a report
+      - name: Load retry prompt
+        id: load-retry-prompt
+        if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'prompt<<RETRY_PROMPT_EOF'
+            cat .claude/prompts/qa-system-prompt.md
+            echo ''
+            echo '---'
+            echo ''
+            echo 'IMPORTANT: The previous QA run did not generate a report.'
+            echo ''
+            echo 'Do a quick navigation smoke test and write qa-report.md immediately:'
+            echo "1. Open ${APP_URL} with agent-browser"
+            echo '2. Dismiss onboarding (click "Skip to App")'
+            echo '3. Check 3-4 main pages load correctly'
+            echo '4. Write the report with what you observed'
+            echo ''
+            echo 'Write `qa-report.md` now with:'
+            echo '- Summary of pages tested'
+            echo '- Any errors found'
+            echo '- Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS'
+            echo 'RETRY_PROMPT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Retry if no report generated
         id: claude-qa-retry
         if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
@@ -592,26 +626,12 @@ jobs:
           display_report: true
           use_sticky_comment: true
           track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
-          prompt: |
-            IMPORTANT: The previous QA run did not generate a report.
-
-            Do a quick navigation smoke test and write qa-report.md immediately:
-            1. Open ${{ env.APP_URL }} with agent-browser
-            2. Dismiss onboarding (click "Skip to App")
-            3. Check 3-4 main pages load correctly
-            4. Write the report with what you observed
-
-            Write `qa-report.md` now with:
-            - Summary of pages tested
-            - Any errors found
-            - Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS
+          prompt: ${{ steps.load-retry-prompt.outputs.prompt }}
           claude_args: |
-            --debug
             --allowedTools "Bash,Write,Read,Glob,Grep"
             --max-turns 30
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
-            --append-system-prompt "${{ steps.load-system-prompt.outputs.system_prompt }}"
 
       - name: Verify report after retry
         id: check-report-retry
