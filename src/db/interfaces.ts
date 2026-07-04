@@ -304,6 +304,11 @@ export type GetByDateRangeParams = {
 export type WorkoutsRepository = {
   /**
    * Mark an active workout as completed and save to history. Removes active workout from database in a transaction.
+   *
+   * Intent guarantee: atomically moves the active workout into history — after
+   * resolution the history entry exists AND the active workout is cleared. An
+   * adapter must never leave both visible or neither. Idempotent for the same
+   * workout id.
    * @param durationOverrideSeconds - Optional duration override in seconds. If provided, completedAt is back-calculated.
    */
   completeWorkout(
@@ -370,10 +375,18 @@ export type DataManagementRepository = {
   exportAll(): Promise<ExportDataContents>
   /**
    * Import user data from backup. Clears all existing data and replaces with imported data in a transaction.
+   *
+   * Intent guarantee: all-or-nothing restore. An adapter must never leave a
+   * partially imported state visible — if any part of the import fails, none
+   * of it should be visible.
    */
   importAll(data: ExportDataContents): Promise<void>
   /**
    * Permanently delete all user data including active workout. This action cannot be undone.
+   *
+   * Intent guarantee: a complete wipe (modulo the onboarding flag). An
+   * adapter must never leave a partial wipe visible — every table ends up
+   * empty except, when `preserveOnboarding` is true, the onboarding record.
    * @param options.preserveOnboarding - If true, onboarding completion state is preserved (default: true)
    */
   deleteAll(options?: { preserveOnboarding?: boolean }): Promise<void>
@@ -609,12 +622,20 @@ export type ProgressionsRepository = {
 
   /**
    * Delete a progression and all its sessions by ID.
+   *
+   * Intent guarantee (`deleteProgression`): the progression and its sessions
+   * stay consistent — an adapter must never leave orphaned sessions
+   * referencing a deleted progression.
    */
   delete(id: string): Promise<void>
 
   /**
    * Record a completed session and update progression state.
    * When completed is true, nextLevel must be provided to advance the progression.
+   *
+   * Intent guarantee: the session and its parent progression stay consistent
+   * — an adapter must make the new session record and the progression's
+   * updated state visible together, never one without the other.
    */
   recordSession(
     progressionId: string,
