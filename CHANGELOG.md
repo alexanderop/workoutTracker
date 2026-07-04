@@ -1,3 +1,12 @@
+## [1.28.8](https://github.com/alexanderop/workoutTracker/compare/v1.28.7...v1.28.8) (2026-07-04)
+
+
+### Bug Fixes
+
+* **ci:** give browser QA realistic turn budget and crash-safe report ([#153](https://github.com/alexanderop/workoutTracker/issues/153)) ([0efa3b7](https://github.com/alexanderop/workoutTracker/commit/0efa3b77c66cb1bb85407a676b64a9c69fbdd664))
+
+
+
 ## [1.28.7](https://github.com/alexanderop/workoutTracker/compare/v1.28.6...v1.28.7) (2026-07-04)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * **qa:** enable track_progress for issue_comment/review events ([bee2f26](https://github.com/alexanderop/workoutTracker/commit/bee2f26b047c70b07c496e25b7916d42f17d4f49))
-
-
-
-## [1.28.3](https://github.com/alexanderop/workoutTracker/compare/v1.28.2...v1.28.3) (2026-04-13)
-
-
-### Bug Fixes
-
-* **qa:** handle conditional onboarding in CI ([ef4f6bc](https://github.com/alexanderop/workoutTracker/commit/ef4f6bc4de61e7747ad9d740b621a01cbad51bba))
 
 
 
