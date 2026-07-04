@@ -16,7 +16,7 @@ env:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     concurrency:
       group: claude-review-${{ github.event.pull_request.number }}
@@ -59,4 +59,4 @@ jobs:
             - Test coverage (separate CI job)
 
             Use inline comments for specific issues. End with a summary comment.
-          claude_args: '--max-turns 10 --model ${{ env.CLAUDE_MODEL }}'
+          claude_args: '--max-turns 50 --model ${{ env.CLAUDE_MODEL }}'
