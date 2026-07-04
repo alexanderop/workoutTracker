@@ -1,3 +1,12 @@
+## [1.28.7](https://github.com/alexanderop/workoutTracker/compare/v1.28.6...v1.28.7) (2026-07-04)
+
+
+### Bug Fixes
+
+* **ci:** unbreak Claude PR review and browser QA workflows ([#152](https://github.com/alexanderop/workoutTracker/issues/152)) ([c9d3b27](https://github.com/alexanderop/workoutTracker/commit/c9d3b27b69373d895d5f6dd0ca763ea62675f918))
+
+
+
 ## [1.28.6](https://github.com/alexanderop/workoutTracker/compare/v1.28.5...v1.28.6) (2026-06-28)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * **qa:** handle conditional onboarding in CI ([ef4f6bc](https://github.com/alexanderop/workoutTracker/commit/ef4f6bc4de61e7747ad9d740b621a01cbad51bba))
-
-
-
-## [1.28.2](https://github.com/alexanderop/workoutTracker/compare/v1.28.1...v1.28.2) (2026-04-13)
-
-
-### Bug Fixes
-
-* **qa:** guard extractSection against empty pr body ([ce0257a](https://github.com/alexanderop/workoutTracker/commit/ce0257aa40bab4ee935c8cdfdfa0f040d7d66e47))
 
 
 

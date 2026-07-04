@@ -50,21 +50,35 @@
 
 You are doing a **fast, pragmatic QA pass** for this PR.
 
+First, triage the acceptance criteria: **only UI-verifiable criteria get browser
+turns.** Code-level criteria (grep results, TSDoc, type-check/lint/test runs,
+internal refactors) are not observable through the UI — mark them `skip` with
+reason "not UI-verifiable" immediately, without spending any browser turns.
+
 Priority order:
 
-1. Verify the stated acceptance criteria through the UI
+1. Verify the 3-5 most user-impactful UI-verifiable acceptance criteria
 2. Verify one adjacent regression path based on the listed risk areas
-3. If time remains, probe 1 targeted edge case
+3. If budget remains, probe 1 targeted edge case
 4. Stop and report
 
 If the PR contract is incomplete, say so clearly and do a best-effort check based
 on the available PR summary and linked issue context. Missing sections reduce confidence.
 
-## Turn Budget: 45 turns MAX
+## Turn Budget: 100 turns HARD LIMIT — the run is killed at the limit
 
-- Spend most turns on the explicit acceptance criteria.
+Turn economics: every `agent-browser` command is one turn, and most interactions
+need a follow-up `snapshot` — so one UI action costs ~2 turns. Budget accordingly.
+
+- **Immediately after your first successful snapshot**, Write `qa-report.md` as a
+  skeleton (verdict line, empty AC table with every AC listed, empty sections).
+  If the run dies later, this file is what CI falls back on.
+- **Update `qa-report.md` after completing each acceptance criterion** — never
+  let it fall more than one AC behind what you've tested.
+- **At 75 turns spent, STOP testing** no matter what remains, mark untested ACs
+  as `skip`, and finalize the report. An incomplete report that exists beats a
+  complete report that never got written.
 - Do not wander into unrelated exploratory testing.
-- If you have verified the criteria and one regression path, move to the report.
 
 ## Test Guidance
 
