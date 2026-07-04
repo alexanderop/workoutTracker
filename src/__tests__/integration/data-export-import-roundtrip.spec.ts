@@ -1,9 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { getDataManagementRepository } from '@/db'
 import { parseExportFile, importAllData } from '@/features/settings/utils/dataImport'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import {
+  getAllWorkouts,
+  getRawSettings,
+  getSettingsCount,
+  getWorkoutCount,
+  seedCompletedWorkout,
+  seedSetting,
+} from '../helpers/dbAssertions'
 
 /**
  * Integration test for export/import round-trip.
@@ -19,10 +26,10 @@ describe('Export/Import Round-Trip', () => {
   it('successfully imports data that was just exported', async () => {
     // Arrange: Create test data in the database
     const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
-    await db.workouts.add(workout)
+    await seedCompletedWorkout(workout)
 
     // Verify data exists
-    expect(await db.workouts.count()).toBe(1)
+    expect(await getWorkoutCount()).toBe(1)
 
     // Act: Export all data using the repository (same as the export feature uses)
     const exportedData = await getDataManagementRepository().exportAll()
@@ -45,7 +52,9 @@ describe('Export/Import Round-Trip', () => {
     // Assert: Validation should succeed
     // If it fails, include the error details in the assertion message
     if (!parseResult.success) {
-      expect.fail(`Import validation failed: ${parseResult.error} - ${parseResult.details ?? 'no details'}`)
+      expect.fail(
+        `Import validation failed: ${parseResult.error} - ${parseResult.details ?? 'no details'}`,
+      )
     }
     expect(parseResult.success).toBe(true)
 
@@ -56,8 +65,8 @@ describe('Export/Import Round-Trip', () => {
     expect(importSuccess).toBe(true)
 
     // Assert: Data should be in the database
-    expect(await db.workouts.count()).toBe(1)
-    const workouts = await db.workouts.toArray()
+    expect(await getWorkoutCount()).toBe(1)
+    const workouts = await getAllWorkouts()
     expect(workouts[0]?.name).toBe('Test Workout')
   })
 
@@ -69,12 +78,12 @@ describe('Export/Import Round-Trip', () => {
       .withDuration(3600)
       .build()
 
-    await db.workouts.add(workout)
-    await db.settings.put({ key: 'theme', value: 'dark' })
+    await seedCompletedWorkout(workout)
+    await seedSetting({ key: 'theme', value: 'dark' })
 
     // Verify initial state
-    expect(await db.workouts.count()).toBe(1)
-    expect(await db.settings.count()).toBe(1)
+    expect(await getWorkoutCount()).toBe(1)
+    expect(await getSettingsCount()).toBe(1)
 
     // Act: Export
     const exportedData = await getDataManagementRepository().exportAll()
@@ -91,7 +100,9 @@ describe('Export/Import Round-Trip', () => {
     const parseResult = await parseExportFile(file)
 
     if (!parseResult.success) {
-      expect.fail(`Import validation failed: ${parseResult.error} - ${parseResult.details ?? 'no details'}`)
+      expect.fail(
+        `Import validation failed: ${parseResult.error} - ${parseResult.details ?? 'no details'}`,
+      )
     }
     expect(parseResult.success).toBe(true)
 
@@ -99,14 +110,14 @@ describe('Export/Import Round-Trip', () => {
     expect(importSuccess).toBe(true)
 
     // Assert: All data preserved
-    expect(await db.workouts.count()).toBe(1)
-    expect(await db.settings.count()).toBe(1)
+    expect(await getWorkoutCount()).toBe(1)
+    expect(await getSettingsCount()).toBe(1)
 
-    const workouts = await db.workouts.toArray()
+    const workouts = await getAllWorkouts()
     expect(workouts[0]?.name).toBe('Full Workout')
     expect(workouts[0]?.durationSeconds).toBe(3600)
 
-    const settings = await db.settings.toArray()
+    const settings = await getRawSettings()
     expect(settings[0]?.value).toBe('dark')
   })
 })

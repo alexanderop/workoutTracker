@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { db } from '@/db'
 import { seedPopularTemplates } from '@/db/seedTemplates'
 import { popularTemplates } from '@/data/popularTemplates'
 import { resetDatabase } from '@/__tests__/setup'
+import { getAllTemplates, getTemplateCount } from '@/__tests__/helpers/dbAssertions'
 
 describe('seedPopularTemplates', () => {
   beforeEach(async () => {
@@ -11,25 +11,25 @@ describe('seedPopularTemplates', () => {
 
   it('seeds templates on first run', async () => {
     await seedPopularTemplates()
-    const count = await db.templates.count()
+    const count = await getTemplateCount()
     expect(count).toBe(popularTemplates.length)
   })
 
   it('skips seeding when templates already exist', async () => {
     // First seed
     await seedPopularTemplates()
-    const firstCount = await db.templates.count()
+    const firstCount = await getTemplateCount()
 
     // Second call should not duplicate
     await seedPopularTemplates()
-    const secondCount = await db.templates.count()
+    const secondCount = await getTemplateCount()
 
     expect(secondCount).toBe(firstCount)
   })
 
   it('seeds goku template with correct structure', async () => {
     await seedPopularTemplates()
-    const templates = await db.templates.toArray()
+    const templates = await getAllTemplates()
     const gokuTemplate = templates.find((t) => t.name === 'goku')
 
     expect(gokuTemplate).toBeDefined()
@@ -44,7 +44,7 @@ describe('seedPopularTemplates', () => {
 
   it('seeds goku extreme template with 8 exercises', async () => {
     await seedPopularTemplates()
-    const templates = await db.templates.toArray()
+    const templates = await getAllTemplates()
     const extremeTemplate = templates.find((t) => t.name === 'goku extreme')
 
     expect(extremeTemplate).toBeDefined()

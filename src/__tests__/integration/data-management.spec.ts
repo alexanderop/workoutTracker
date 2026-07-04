@@ -1,11 +1,16 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { db } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import {
+  expectWorkoutCount,
+  getAllWorkouts,
+  getWorkoutCount,
+  seedCompletedWorkout,
+} from '../helpers/dbAssertions'
 
 // Detect browser mode - location.reload is read-only in real browsers
 const isBrowserMode = (() => {
@@ -48,7 +53,7 @@ describe('Data Management', () => {
     it('exports data when clicking Export Data button', async () => {
       // Arrange: Add test data to DB
       const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       const { common, getByRole, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -65,7 +70,7 @@ describe('Data Management', () => {
 
     it('imports data from a valid backup file', async () => {
       // Arrange: Verify DB is empty
-      expect(await db.workouts.count()).toBe(0)
+      expect(await getWorkoutCount()).toBe(0)
 
       const importedWorkout = databaseWorkoutBuilder()
         .withName('Imported Workout')
@@ -105,8 +110,8 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Import Data'))
 
       // Assert: Data was actually persisted to DB
-      await expect.poll(async () => await db.workouts.count()).toBe(1)
-      const workouts = await db.workouts.toArray()
+      await expectWorkoutCount(1)
+      const workouts = await getAllWorkouts()
       expect(workouts[0]?.name).toBe('Imported Workout')
 
       cleanup()
@@ -140,8 +145,8 @@ describe('Data Management', () => {
 
     it('deletes all data when confirmed', async () => {
       // Arrange: Add data to database
-      await db.workouts.add(databaseWorkoutBuilder().withStrengthBlock().build())
-      expect(await db.workouts.count()).toBe(1)
+      await seedCompletedWorkout(databaseWorkoutBuilder().withStrengthBlock().build())
+      expect(await getWorkoutCount()).toBe(1)
 
       const { getByRole, common, cleanup } = await createTestApp()
       await common.navigateToSettings()
@@ -158,7 +163,7 @@ describe('Data Management', () => {
       await userEvent.click(common.getDialogButton('Delete All Data'))
 
       // Assert: Data was actually deleted from DB
-      await expect.poll(async () => await db.workouts.count()).toBe(0)
+      await expectWorkoutCount(0)
 
       cleanup()
     })
@@ -178,7 +183,7 @@ describe('Data Management', () => {
         })
         .build()
 
-      await db.workouts.add(completedWorkout)
+      await seedCompletedWorkout(completedWorkout)
 
       // Act: Start at home and navigate to history page
       const { router, findByText, cleanup } = await createTestApp()
@@ -189,7 +194,9 @@ describe('Data Management', () => {
       await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
-      await expect.poll(() => router.currentRoute.value.path).toBe(`/workouts/${completedWorkout.id}`)
+      await expect
+        .poll(() => router.currentRoute.value.path)
+        .toBe(`/workouts/${completedWorkout.id}`)
 
       // Assert: Verify workout details are displayed (wait for page render)
       await expect.element(page.getByText('Push Day')).toBeVisible()

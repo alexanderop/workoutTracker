@@ -1,8 +1,14 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db, getSettingsRepository } from '@/db'
+import { getSettingsRepository } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import {
+  expectSettingValue,
+  getTemplateById,
+  getTemplateCount,
+  seedTemplate,
+} from '../helpers/dbAssertions'
 
 // Clear VueUse localStorage key before each test
 const VUEUSE_COLOR_SCHEME_KEY = 'vueuse-color-scheme'
@@ -163,13 +169,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(germanOption)
 
       // Verify persisted to database
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const langSetting = settings.find((s) => s.key === 'language')
-          return langSetting?.value
-        })
-        .toBe('de')
+      await expectSettingValue('language', 'de')
 
       cleanup()
     })
@@ -180,15 +180,8 @@ describe('Settings Preferences', () => {
       const { common, getByRole, cleanup } = await createTestApp()
 
       // Add some data to verify it persists
-      await db.templates.add({
-        id: 'test-template-delete-cancel',
-        name: 'Test Template For Delete Cancel',
-        blocks: [],
-        createdAt: Date.now(),
-        lastUsedAt: null,
-        tags: [],
-      })
-      const initialCount = await db.templates.count()
+      const seededTemplate = await seedTemplate({ name: 'Test Template For Delete Cancel' })
+      const initialCount = await getTemplateCount()
       expect(initialCount).toBeGreaterThan(0)
 
       await common.navigateToSettings()
@@ -208,9 +201,9 @@ describe('Settings Preferences', () => {
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Data is preserved - count should be the same
-      expect(await db.templates.count()).toBe(initialCount)
+      expect(await getTemplateCount()).toBe(initialCount)
       // Specifically verify our test template still exists
-      const testTemplate = await db.templates.get('test-template-delete-cancel')
+      const testTemplate = await getTemplateById(seededTemplate.id)
       expect(testTemplate).toBeTruthy()
 
       cleanup()
@@ -220,15 +213,8 @@ describe('Settings Preferences', () => {
       const { common, getByRole, cleanup } = await createTestApp()
 
       // Add test data
-      await db.templates.add({
-        id: 'test-template-escape-close',
-        name: 'Test Template For Escape Close',
-        blocks: [],
-        createdAt: Date.now(),
-        lastUsedAt: null,
-        tags: [],
-      })
-      const initialCount = await db.templates.count()
+      const seededTemplate = await seedTemplate({ name: 'Test Template For Escape Close' })
+      const initialCount = await getTemplateCount()
 
       await common.navigateToSettings()
 
@@ -243,9 +229,9 @@ describe('Settings Preferences', () => {
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
 
       // Data preserved
-      expect(await db.templates.count()).toBe(initialCount)
+      expect(await getTemplateCount()).toBe(initialCount)
       // Specifically verify our test template still exists
-      const testTemplate = await db.templates.get('test-template-escape-close')
+      const testTemplate = await getTemplateById(seededTemplate.id)
       expect(testTemplate).toBeTruthy()
 
       cleanup()
@@ -281,13 +267,7 @@ describe('Settings Preferences', () => {
         .toBe('unchecked')
 
       // Verify persisted (stored as 'timerSoundEnabled' - singular)
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
-          return soundSetting?.value
-        })
-        .toBe(false)
+      await expectSettingValue('timerSoundEnabled', false)
 
       cleanup()
     })
@@ -317,13 +297,7 @@ describe('Settings Preferences', () => {
         .toBe('checked')
 
       // Verify database shows enabled
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const soundSetting = settings.find((s) => s.key === 'timerSoundEnabled')
-          return soundSetting?.value
-        })
-        .toBe(true)
+      await expectSettingValue('timerSoundEnabled', true)
 
       cleanup()
     })
@@ -342,13 +316,7 @@ describe('Settings Preferences', () => {
         sliderElement.dispatchEvent(new Event('change', { bubbles: true }))
       }
 
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const volumeSetting = settings.find((s) => s.key === 'timerSoundVolume')
-          return volumeSetting?.value
-        })
-        .toBe(0.7)
+      await expectSettingValue('timerSoundVolume', 0.7)
 
       cleanup()
     })
@@ -415,13 +383,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(lbsButton)
 
       // Verify persisted to database
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const unitSetting = settings.find((s) => s.key === 'weightUnit')
-          return unitSetting?.value
-        })
-        .toBe('lbs')
+      await expectSettingValue('weightUnit', 'lbs')
 
       cleanup()
     })
@@ -439,13 +401,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(kgButton)
 
       // Verify persisted to database
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const unitSetting = settings.find((s) => s.key === 'weightUnit')
-          return unitSetting?.value
-        })
-        .toBe('kg')
+      await expectSettingValue('weightUnit', 'kg')
 
       cleanup()
     })
@@ -489,13 +445,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(ftInButton)
 
       // Verify persisted to database
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const unitSetting = settings.find((s) => s.key === 'heightUnit')
-          return unitSetting?.value
-        })
-        .toBe('ft-in')
+      await expectSettingValue('heightUnit', 'ft-in')
 
       cleanup()
     })
@@ -513,13 +463,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(cmButton)
 
       // Verify persisted to database
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const unitSetting = settings.find((s) => s.key === 'heightUnit')
-          return unitSetting?.value
-        })
-        .toBe('cm')
+      await expectSettingValue('heightUnit', 'cm')
 
       cleanup()
     })
@@ -560,13 +504,7 @@ describe('Settings Preferences', () => {
         .toBe('unchecked')
 
       // Verify persisted
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
-          return wakeLockSetting?.value
-        })
-        .toBe(false)
+      await expectSettingValue('screenWakeLock', false)
 
       cleanup()
     })
@@ -596,13 +534,7 @@ describe('Settings Preferences', () => {
         .toBe('checked')
 
       // Verify database shows enabled
-      await expect
-        .poll(async () => {
-          const settings = await db.settings.toArray()
-          const wakeLockSetting = settings.find((s) => s.key === 'screenWakeLock')
-          return wakeLockSetting?.value
-        })
-        .toBe(true)
+      await expectSettingValue('screenWakeLock', true)
 
       cleanup()
     })

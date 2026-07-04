@@ -72,6 +72,24 @@ export async function getAllTemplates(): Promise<ReadonlyArray<DbWorkoutTemplate
 }
 
 /**
+ * Retrieves a single template by id, or `undefined` if it doesn't exist.
+ * Replacement for `db.templates.get(id)`.
+ */
+export async function getTemplateById(id: string): Promise<DbWorkoutTemplate | undefined> {
+  return getTemplatesRepository().getById(id)
+}
+
+/**
+ * Retrieves the current number of templates, unpolled.
+ * Replacement for a one-off `db.templates.count()` read that isn't waiting
+ * on an async UI update (e.g. an initial-state assertion).
+ */
+export async function getTemplateCount(): Promise<number> {
+  const templates = await getAllTemplates()
+  return templates.length
+}
+
+/**
  * Waits for and asserts that a template with the given name was saved to the database.
  * @param name - The name of the template to find
  */
@@ -190,6 +208,16 @@ export async function getAllCustomExercises(): Promise<ReadonlyArray<DbCustomExe
 }
 
 /**
+ * Retrieves the current number of custom exercises, unpolled.
+ * Replacement for a one-off `db.customExercises.count()` read that isn't
+ * waiting on an async UI update (e.g. an initial-state assertion).
+ */
+export async function getCustomExerciseCount(): Promise<number> {
+  const exercises = await getAllCustomExercises()
+  return exercises.length
+}
+
+/**
  * Waits for and asserts the number of custom exercises in the database.
  * Replacement for `db.customExercises.count()`.
  */
@@ -222,6 +250,16 @@ export async function seedSetting(setting: DbUserSetting): Promise<void> {
  */
 export async function getRawSettings(): Promise<ReadonlyArray<DbUserSetting>> {
   return getSettingsRepository().observeAll().get()
+}
+
+/**
+ * Retrieves the current number of raw setting rows stored, unpolled.
+ * Replacement for a one-off `db.settings.count()` read that isn't waiting
+ * on an async UI update (e.g. an initial-state assertion).
+ */
+export async function getSettingsCount(): Promise<number> {
+  const settings = await getRawSettings()
+  return settings.length
 }
 
 /**
