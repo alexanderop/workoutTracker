@@ -273,7 +273,7 @@ jobs:
 
           if [ "$FOCUS" = "fast" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-fast.md"
-            echo "max_turns=60" >> "$GITHUB_OUTPUT"
+            echo "max_turns=100" >> "$GITHUB_OUTPUT"
           elif [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
             echo "max_turns=80" >> "$GITHUB_OUTPUT"
@@ -461,7 +461,7 @@ jobs:
       - name: Run Claude QA (Browser mode)
         if: steps.claude-action-guard.outputs.can_run == 'true'
         id: claude-qa
-        timeout-minutes: 15
+        timeout-minutes: 20
         continue-on-error: true
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
@@ -602,13 +602,14 @@ jobs:
             echo ''
             echo 'IMPORTANT: The previous QA run did not generate a report.'
             echo ''
-            echo 'Do a quick navigation smoke test and write qa-report.md immediately:'
-            echo "1. Open ${APP_URL} with agent-browser"
-            echo '2. Dismiss onboarding (click "Skip to App")'
-            echo '3. Check 3-4 main pages load correctly'
-            echo '4. Write the report with what you observed'
+            echo 'Do a quick navigation smoke test with qa-report.md written FIRST:'
+            echo '1. FIRST ACTION: Write qa-report.md as a skeleton (verdict UNKNOWN, empty sections) so a report exists even if this run dies'
+            echo "2. Open ${APP_URL} with agent-browser"
+            echo '3. Dismiss onboarding if a "Skip to App" button is in the snapshot'
+            echo '4. Check 3-4 main pages load correctly, updating qa-report.md after each page'
+            echo '5. Finalize qa-report.md no later than 30 turns spent (hard limit is 40)'
             echo ''
-            echo 'Write `qa-report.md` now with:'
+            echo 'qa-report.md must contain:'
             echo '- Summary of pages tested'
             echo '- Any errors found'
             echo '- Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS'
@@ -629,7 +630,7 @@ jobs:
           prompt: ${{ steps.load-retry-prompt.outputs.prompt }}
           claude_args: |
             --allowedTools "Bash,Write,Read,Glob,Grep"
-            --max-turns 30
+            --max-turns 40
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
