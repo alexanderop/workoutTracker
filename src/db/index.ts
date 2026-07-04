@@ -87,13 +87,3 @@ export { generateId } from './generateId'
 export async function deleteAllData(): Promise<void> {
   await tryCatch(getDataManagementRepository().deleteAll())
 }
-
-// ============================================
-// Test Utilities
-// ============================================
-
-/**
- * Get the underlying Dexie database instance for test setup/teardown.
- * Only use this in integration tests - prefer repository methods for production code.
- */
-export { db } from './implementations/dexie/database'

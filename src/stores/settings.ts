@@ -5,8 +5,8 @@ import type { DbUserSetting } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import type { HeightUnit, Language, WeightUnit } from '@/types/settings'
 
-// Mirrors `SETTING_DEFAULTS` in `src/db/implementations/dexie/settings.ts` for
-// the subset of keys this store tracks.
+// Mirrors `SETTING_DEFAULTS` in the Dexie settings adapter for the subset of
+// keys this store tracks.
 const DEFAULT_WEIGHT_UNIT: WeightUnit = 'kg'
 const DEFAULT_HEIGHT_UNIT: HeightUnit = 'cm'
 const DEFAULT_SCREEN_WAKE_LOCK = true

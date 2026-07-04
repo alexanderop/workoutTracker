@@ -19,9 +19,9 @@ import type {
 /**
  * Repository-backed seed and assertion helpers for integration tests.
  *
- * These exist so specs never need `import { db } from '@/db'` directly (see
- * `brain/reference/plans/2026-07-04-persistence-swap-ticket.md` Slice 6 / AC7).
- * Every helper here reads and writes exclusively through the repository
+ * These exist so specs never need the raw Dexie database instance directly
+ * (see `brain/reference/plans/2026-07-04-persistence-swap-ticket.md` Slice 6 /
+ * AC7). Every helper here reads and writes exclusively through the repository
  * getters, so the same specs stay valid against any future adapter.
  */
 
@@ -65,7 +65,6 @@ export async function seedTemplate(
 
 /**
  * Retrieves all workout templates (same ordering as the templates list UI).
- * Replacement for `db.templates.toArray()`.
  */
 export async function getAllTemplates(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
   return getTemplatesRepository().getAll()
@@ -73,16 +72,15 @@ export async function getAllTemplates(): Promise<ReadonlyArray<DbWorkoutTemplate
 
 /**
  * Retrieves a single template by id, or `undefined` if it doesn't exist.
- * Replacement for `db.templates.get(id)`.
  */
 export async function getTemplateById(id: string): Promise<DbWorkoutTemplate | undefined> {
   return getTemplatesRepository().getById(id)
 }
 
 /**
- * Retrieves the current number of templates, unpolled.
- * Replacement for a one-off `db.templates.count()` read that isn't waiting
- * on an async UI update (e.g. an initial-state assertion).
+ * Retrieves the current number of templates, unpolled. For a one-off count
+ * read that isn't waiting on an async UI update (e.g. an initial-state
+ * assertion).
  */
 export async function getTemplateCount(): Promise<number> {
   const templates = await getAllTemplates()
@@ -117,7 +115,6 @@ export async function expectTemplateCount(expectedCount: number): Promise<void> 
 
 /**
  * Deletes every template in the database, through the repository.
- * Replacement for `db.templates.clear()`.
  */
 export async function clearAllTemplates(): Promise<void> {
   const repository = getTemplatesRepository()
@@ -133,7 +130,6 @@ export async function clearAllTemplates(): Promise<void> {
 
 /**
  * Seeds a single completed workout directly into history, bypassing the UI.
- * Replacement for `db.workouts.add(workout)`.
  */
 export async function seedCompletedWorkout(
   workout: Readonly<DbCompletedWorkout>,
@@ -144,8 +140,8 @@ export async function seedCompletedWorkout(
 
 /**
  * Seeds multiple completed workouts directly into history, bypassing the UI.
- * Replacement for `db.workouts.bulkAdd([...])`. Adds sequentially so seed
- * order is deterministic for tests that assert on ordering.
+ * Adds sequentially so seed order is deterministic for tests that assert on
+ * ordering.
  */
 export async function seedCompletedWorkouts(
   workouts: ReadonlyArray<DbCompletedWorkout>,
@@ -158,7 +154,6 @@ export async function seedCompletedWorkouts(
 
 /**
  * Retrieves every completed workout in history (unbounded).
- * Replacement for `db.workouts.toArray()`.
  *
  * Uses `Infinity` rather than `Number.MAX_SAFE_INTEGER` for "no limit": Dexie
  * special-cases `Infinity` to skip passing a `count` to the underlying
@@ -180,17 +175,15 @@ export async function expectWorkoutSaved(expectedCount = 1): Promise<void> {
 
 /**
  * Waits for and asserts that the expected number of completed workouts exist.
- * Replacement for `expect(await db.workouts.count()).toBe(n)` /
- * `expect.poll(() => db.workouts.count())`.
  */
 export async function expectWorkoutCount(expectedCount: number): Promise<void> {
   await expect.poll(async () => getWorkoutsRepository().count()).toBe(expectedCount)
 }
 
 /**
- * Retrieves the current number of completed workouts, unpolled.
- * Replacement for a one-off `db.workouts.count()` read that isn't waiting
- * on an async UI update (e.g. an initial-state assertion).
+ * Retrieves the current number of completed workouts, unpolled. For a
+ * one-off count read that isn't waiting on an async UI update (e.g. an
+ * initial-state assertion).
  */
 export async function getWorkoutCount(): Promise<number> {
   return getWorkoutsRepository().count()
@@ -201,16 +194,16 @@ export async function getWorkoutCount(): Promise<number> {
 // ============================================
 
 /**
- * Retrieves every custom exercise. Replacement for `db.customExercises.toArray()`.
+ * Retrieves every custom exercise.
  */
 export async function getAllCustomExercises(): Promise<ReadonlyArray<DbCustomExercise>> {
   return getCustomExercisesRepository().getAll()
 }
 
 /**
- * Retrieves the current number of custom exercises, unpolled.
- * Replacement for a one-off `db.customExercises.count()` read that isn't
- * waiting on an async UI update (e.g. an initial-state assertion).
+ * Retrieves the current number of custom exercises, unpolled. For a
+ * one-off count read that isn't waiting on an async UI update (e.g. an
+ * initial-state assertion).
  */
 export async function getCustomExerciseCount(): Promise<number> {
   const exercises = await getAllCustomExercises()
@@ -219,7 +212,6 @@ export async function getCustomExerciseCount(): Promise<number> {
 
 /**
  * Waits for and asserts the number of custom exercises in the database.
- * Replacement for `db.customExercises.count()`.
  */
 export async function expectCustomExerciseCount(expectedCount: number): Promise<void> {
   await expect
@@ -235,10 +227,9 @@ export async function expectCustomExerciseCount(expectedCount: number): Promise<
 // ============================================
 
 /**
- * Seeds a single user setting directly, bypassing the UI.
- * Replacement for `db.settings.put({ key, value })`. Accepts the same
- * discriminated-union shape the repository's `set()` expects, so callers
- * pass e.g. `{ key: 'theme', value: 'dark' }` exactly as they did with `db.settings.put`.
+ * Seeds a single user setting directly, bypassing the UI. Accepts the same
+ * discriminated-union shape the repository's `set()` expects, e.g.
+ * `{ key: 'theme', value: 'dark' }`.
  */
 export async function seedSetting(setting: DbUserSetting): Promise<void> {
   await getSettingsRepository().set(setting)
@@ -246,16 +237,15 @@ export async function seedSetting(setting: DbUserSetting): Promise<void> {
 
 /**
  * Retrieves the raw stored settings rows (no defaults merged in).
- * Replacement for `db.settings.toArray()`.
  */
 export async function getRawSettings(): Promise<ReadonlyArray<DbUserSetting>> {
   return getSettingsRepository().observeAll().get()
 }
 
 /**
- * Retrieves the current number of raw setting rows stored, unpolled.
- * Replacement for a one-off `db.settings.count()` read that isn't waiting
- * on an async UI update (e.g. an initial-state assertion).
+ * Retrieves the current number of raw setting rows stored, unpolled. For a
+ * one-off count read that isn't waiting on an async UI update (e.g. an
+ * initial-state assertion).
  */
 export async function getSettingsCount(): Promise<number> {
   const settings = await getRawSettings()
@@ -264,7 +254,6 @@ export async function getSettingsCount(): Promise<number> {
 
 /**
  * Waits for and asserts the number of raw setting rows stored.
- * Replacement for `db.settings.count()`.
  */
 export async function expectSettingsCount(expectedCount: number): Promise<void> {
   await expect
@@ -277,8 +266,6 @@ export async function expectSettingsCount(expectedCount: number): Promise<void> 
 
 /**
  * Waits for and asserts a single raw setting row's stored value.
- * Replacement for the common
- * `expect.poll(() => db.settings.toArray().find(s => s.key === key)?.value)` pattern.
  */
 export async function expectSettingValue(
   key: DbUserSetting['key'],
@@ -297,7 +284,7 @@ export async function expectSettingValue(
 // ============================================
 
 /**
- * Retrieves a form draft by key. Replacement for `db.drafts.get(key)`.
+ * Retrieves a form draft by key.
  */
 export async function getDraft(key: DraftKey): Promise<DbFormDraft | undefined> {
   return getDraftsRepository().get(key)
