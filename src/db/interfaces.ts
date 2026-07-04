@@ -515,6 +515,12 @@ export type WeightRepository = {
   getAll(): Promise<ReadonlyArray<DatabaseWeightEntry>>
 
   /**
+   * Reactive read of all weight entries (same ordering as {@link WeightRepository.getAll}).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeEntries(): LiveQuery<ReadonlyArray<DatabaseWeightEntry>>
+
+  /**
    * Get weight entries within a specific date range (inclusive).
    */
   getByDateRange(startDate: Date, endDate: Date): Promise<ReadonlyArray<DatabaseWeightEntry>>

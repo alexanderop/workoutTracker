@@ -201,6 +201,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
     weight: {
       add: vi.fn().mockResolvedValue(undefined),
       getAll: vi.fn().mockResolvedValue([]),
+      observeEntries: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
       getByDateRange: vi.fn().mockResolvedValue([]),
       getLatest: vi.fn().mockResolvedValue(undefined),
       getByDate: vi.fn().mockResolvedValue(undefined),
