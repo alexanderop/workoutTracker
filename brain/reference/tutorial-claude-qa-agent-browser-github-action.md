@@ -386,7 +386,15 @@ jobs:
       - name: Load QA schema
         id: load-schema
         run: |
-          SCHEMA=$(cat .github/schemas/qa-report-schema.json | tr -d '\n' | sed "s/'/\\\\'/g")
+          # claude_args is tokenized shell-words style: a single quote inside
+          # the schema closes the --json-schema '...' arg and silently hangs
+          # the CLI at startup. Escaping as \' does NOT survive the parser —
+          # ban the character instead of trying to escape it.
+          if grep -q "'" .github/schemas/qa-report-schema.json; then
+            echo "::error::schema must not contain single quotes"
+            exit 1
+          fi
+          SCHEMA=$(jq -c . .github/schemas/qa-report-schema.json)
           echo "schema=$SCHEMA" >> $GITHUB_OUTPUT
 
       - name: Run Claude QA
@@ -402,6 +410,13 @@ jobs:
             --model claude-opus-4-20250514
             --allowedTools "${{ steps.load-prompt.outputs.allowed_tools }}"
             --json-schema '${{ steps.load-schema.outputs.schema }}'
+
+      # ⚠️ Never interpolate file contents into claude_args (e.g.
+      # --append-system-prompt "$(cat prompt.md)"): any embedded quote breaks
+      # tokenization and the CLI hangs BEFORE init with zero output — the log
+      # shows "SDK options: {...}" and then nothing until the timeout. Long
+      # instructions belong in the file-based `prompt` input, which is never
+      # shell-parsed. Post-mortem: brain/lessons/claude-args-quoting-hang.md
 
       - name: Set commit status
         id: qa-status

@@ -14,3 +14,4 @@ timestamp: 2026-06-28T08:05:00Z
 - [Claude Code docs agent architecture](./claude-code-docs-agent-architecture.md)
 - [Vue style guide compliance](./vue-style-guide-compliance.md)
 - [claude_args quoting hangs the CLI silently](./claude-args-quoting-hang.md)
+- [QA agent turn economics and crash-safe reports](./qa-agent-turn-economics.md)
