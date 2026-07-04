@@ -141,9 +141,15 @@ export async function seedCompletedWorkouts(
 /**
  * Retrieves every completed workout in history (unbounded).
  * Replacement for `db.workouts.toArray()`.
+ *
+ * Uses `Infinity` rather than `Number.MAX_SAFE_INTEGER` for "no limit": Dexie
+ * special-cases `Infinity` to skip passing a `count` to the underlying
+ * `IDBIndex.getAll()`, whereas `Number.MAX_SAFE_INTEGER` gets forwarded as
+ * `count` and exceeds IndexedDB's `[EnforceRange] unsigned long`, throwing a
+ * `TypeError` under fake-indexeddb.
  */
 export async function getAllWorkouts(): Promise<ReadonlyArray<DbCompletedWorkout>> {
-  return getWorkoutsRepository().getHistory({ limit: Number.MAX_SAFE_INTEGER })
+  return getWorkoutsRepository().getHistory({ limit: Infinity })
 }
 
 /**
@@ -161,6 +167,15 @@ export async function expectWorkoutSaved(expectedCount = 1): Promise<void> {
  */
 export async function expectWorkoutCount(expectedCount: number): Promise<void> {
   await expect.poll(async () => getWorkoutsRepository().count()).toBe(expectedCount)
+}
+
+/**
+ * Retrieves the current number of completed workouts, unpolled.
+ * Replacement for a one-off `db.workouts.count()` read that isn't waiting
+ * on an async UI update (e.g. an initial-state assertion).
+ */
+export async function getWorkoutCount(): Promise<number> {
+  return getWorkoutsRepository().count()
 }
 
 // ============================================

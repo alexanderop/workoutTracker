@@ -2,8 +2,8 @@ import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { addDays, subDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
+import { seedCompletedWorkout } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-import { db } from '@/db'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 // Helper to get week strip button by current month
@@ -44,7 +44,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       const { cleanup } = await createTestApp()
 
@@ -78,8 +78,8 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Deadlift' })
         .build()
 
-      await db.workouts.add(workoutTuesday)
-      await db.workouts.add(workoutWednesday)
+      await seedCompletedWorkout(workoutTuesday)
+      await seedCompletedWorkout(workoutWednesday)
 
       const { cleanup } = await createTestApp()
 
@@ -88,10 +88,15 @@ describe('Workout Calendar', () => {
 
       // Wait for workout data to load and render (async loadWorkouts in onMounted)
       // Use longer timeout to handle race condition with IndexedDB
-      await expect.poll(async () => {
-        const dots = await page.getByLabelText(/workout completed/i).all()
-        return dots.length
-      }, { timeout: 5000 }).toBeGreaterThanOrEqual(2)
+      await expect
+        .poll(
+          async () => {
+            const dots = await page.getByLabelText(/workout completed/i).all()
+            return dots.length
+          },
+          { timeout: 5000 },
+        )
+        .toBeGreaterThanOrEqual(2)
 
       cleanup()
     })
@@ -118,8 +123,8 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      await db.workouts.add(workout1)
-      await db.workouts.add(workout2)
+      await seedCompletedWorkout(workout1)
+      await seedCompletedWorkout(workout2)
 
       const { cleanup } = await createTestApp()
 
@@ -153,7 +158,9 @@ describe('Workout Calendar', () => {
 
       // Should show month heading in the sheet title
       const currentMonth = format(new Date(), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: currentMonth, exact: true }))
+        .toBeVisible()
 
       cleanup()
     })
@@ -169,7 +176,9 @@ describe('Workout Calendar', () => {
 
       // Get current month display
       const currentMonth = format(new Date(), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonth, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: currentMonth, exact: true }))
+        .toBeVisible()
 
       // Click previous month button
       const previousButton = page.getByRole('button', { name: /previous month/i })
@@ -177,7 +186,9 @@ describe('Workout Calendar', () => {
 
       // Should show previous month in sheet title
       const previousMonth = format(subMonths(new Date(), 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: previousMonth, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: previousMonth, exact: true }))
+        .toBeVisible()
 
       // Click next month button twice to go forward
       const nextButton = page.getByRole('button', { name: /next month/i })
@@ -186,7 +197,9 @@ describe('Workout Calendar', () => {
 
       // Should show next month
       const nextMonth = format(addMonths(new Date(), 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: nextMonth, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: nextMonth, exact: true }))
+        .toBeVisible()
 
       cleanup()
     })
@@ -203,7 +216,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Squat' })
         .build()
 
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       const { cleanup } = await createTestApp()
 
@@ -215,7 +228,9 @@ describe('Workout Calendar', () => {
       // Current month should NOT show the workout (it's in previous month)
       // The calendar grid uses CalendarHeading for its internal heading display
       const currentMonthHeading = format(today, 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: currentMonthHeading, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: currentMonthHeading, exact: true }))
+        .toBeVisible()
 
       // Navigate to previous month
       const previousButton = page.getByRole('button', { name: /previous month/i })
@@ -223,7 +238,9 @@ describe('Workout Calendar', () => {
 
       // Sheet title should update to previous month
       const previousMonthHeading = format(subMonths(today, 1), 'MMMM yyyy')
-      await expect.element(page.getByRole('heading', { name: previousMonthHeading, exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('heading', { name: previousMonthHeading, exact: true }))
+        .toBeVisible()
 
       // CRITICAL: The CalendarRoot's internal heading should ALSO show previous month
       // If bug exists, CalendarHeading stays on current month while sheet title changes
@@ -288,7 +305,7 @@ describe('Workout Calendar', () => {
         .withStrengthBlock({ name: 'Bench Press' })
         .build()
 
-      await db.workouts.add(workout)
+      await seedCompletedWorkout(workout)
 
       const { cleanup } = await createTestApp()
 
@@ -300,11 +317,13 @@ describe('Workout Calendar', () => {
 
       // The calendar should have green dots for workout days
       // We verify by counting workout indicators
-      await expect.poll(async () => {
-        const dots = await page.getByLabelText(/workout completed/i).all()
-        // Should have dots in both the week strip AND calendar
-        return dots.length
-      }).toBeGreaterThanOrEqual(1)
+      await expect
+        .poll(async () => {
+          const dots = await page.getByLabelText(/workout completed/i).all()
+          // Should have dots in both the week strip AND calendar
+          return dots.length
+        })
+        .toBeGreaterThanOrEqual(1)
 
       cleanup()
     })

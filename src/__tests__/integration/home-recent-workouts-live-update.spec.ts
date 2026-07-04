@@ -1,7 +1,7 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
+import { seedCompletedWorkout } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
@@ -28,7 +28,7 @@ describe('Home Recent Workouts Live Update', () => {
       .withName('Cross-Tab Workout')
       .withStrengthBlock()
       .build()
-    await db.workouts.add(workout)
+    await seedCompletedWorkout(workout)
 
     // The live query subscription should push the new snapshot through
     // without any manual reload call.
