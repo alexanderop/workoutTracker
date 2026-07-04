@@ -158,6 +158,22 @@ export type ActiveWorkoutRepository = {
    * Check if an active workout is currently in progress.
    */
   exists(): Promise<boolean>
+  /**
+   * A live view of the current active workout (or `undefined` if none exists).
+   * `get()` resolves the same snapshot as {@link ActiveWorkoutRepository.get},
+   * `subscribe()` fires on every underlying change (including other tabs).
+   *
+   * The active workout is mutated on nearly every keystroke while a workout is
+   * in progress, and the in-memory working copy is the source of truth during
+   * that window (see `useWorkoutPersistence`/`createPersistenceCore`, which
+   * debounce writes to this repository). Consumers must not blindly apply
+   * every emission onto an in-progress working copy -- that would clobber
+   * newer local edits with a stale, already-superseded snapshot. This live
+   * query is intended for reads that happen outside active editing: the
+   * initial load, and detecting an active workout appearing/disappearing in
+   * another tab while this tab hasn't started editing it yet.
+   */
+  observe(): LiveQuery<DatabaseActiveWorkout | undefined>
 }
 
 // ============================================

@@ -23,13 +23,21 @@ export function resetWorkoutPersistence(): void {
  */
 export function useWorkoutPersistence(workout: Ref<Workout>) {
   const repo = getActiveWorkoutRepository()
+  // Reads go through the live query's `get()` (same underlying query as
+  // `repo.get()`), but this composable deliberately never calls `subscribe()`:
+  // the active workout is mutated on nearly every keystroke while a workout
+  // is in progress, and `createPersistenceCore` below already owns writing
+  // `workout` to the repository (debounced). Applying live snapshots onto
+  // that in-memory working copy here would fight the debounced auto-save and
+  // could clobber newer local edits with a stale, already-superseded value.
+  const activeWorkoutQuery = repo.observe()
 
   const core = createPersistenceCore({
     source: workout,
     toDb: () => workoutToDb(workout.value, currentWorkoutStartedAt ?? undefined),
     fromDb: dbToWorkout,
     repository: {
-      get: () => repo.get(),
+      get: () => activeWorkoutQuery.get(),
       save: (database) => repo.save(database),
       clear: () => repo.clear(),
       exists: () => repo.exists(),
@@ -46,7 +54,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
 
     if (loaded) {
       // Get the startedAt from the database
-      const [, databaseWorkout] = await tryCatch(repo.get())
+      const [, databaseWorkout] = await tryCatch(activeWorkoutQuery.get())
       if (databaseWorkout) {
         currentWorkoutStartedAt = databaseWorkout.startedAt
       }
@@ -77,8 +85,11 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
    * @param notes - Optional notes for the workout
    * @param durationOverrideSeconds - Optional duration override in seconds. If provided, completedAt is back-calculated.
    */
-  async function completeWorkout(notes = '', durationOverrideSeconds?: number): Promise<DbCompletedWorkout | null> {
-    const [getError, databaseWorkout] = await tryCatch(repo.get())
+  async function completeWorkout(
+    notes = '',
+    durationOverrideSeconds?: number,
+  ): Promise<DbCompletedWorkout | null> {
+    const [getError, databaseWorkout] = await tryCatch(activeWorkoutQuery.get())
 
     if (getError) {
       core.persistenceState.value = { status: 'error', error: getError }

@@ -46,6 +46,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       save: vi.fn().mockResolvedValue(undefined),
       clear: vi.fn().mockResolvedValue(undefined),
       exists: vi.fn().mockResolvedValue(false),
+      observe: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
     },
     activeBenchmark: {
       load: vi.fn().mockResolvedValue(undefined),
