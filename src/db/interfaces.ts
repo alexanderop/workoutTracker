@@ -262,6 +262,11 @@ export type TemplatesRepository = {
    * Create a new workout template from structured data.
    */
   create(data: CreateTemplateData): Promise<DatabaseWorkoutTemplate>
+  /**
+   * Reactive read of all workout templates (same ordering as {@link TemplatesRepository.getAll}).
+   * Fires again whenever the underlying data changes, including from other tabs.
+   */
+  observeAll(): LiveQuery<ReadonlyArray<DatabaseWorkoutTemplate>>
 }
 
 // ============================================

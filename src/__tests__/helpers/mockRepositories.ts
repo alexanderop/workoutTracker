@@ -110,6 +110,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         lastUsedAt: null,
         tags: [],
       }),
+      observeAll: vi.fn(() => ({ get: vi.fn(), subscribe: vi.fn(() => vi.fn()) })),
     },
     customExercises: {
       getAll: vi.fn().mockResolvedValue([]),

@@ -1,4 +1,5 @@
-import type { CreateTemplateData, TemplatesRepository } from '@/db/interfaces'
+import { liveQuery } from 'dexie'
+import type { CreateTemplateData, LiveQuery, TemplatesRepository } from '@/db/interfaces'
 import type {
   DbActiveWorkout,
   DbBlockExercise,
@@ -200,17 +201,38 @@ function templateBlockToWorkoutBlock(
   }
 }
 
-export function createDexieTemplatesRepository(database: WorkoutTrackerDatabase): TemplatesRepository {
+/**
+ * Shared query logic for `getAll()` and `observeAll()` so both read the same
+ * ordering: by lastUsedAt descending, with never-used templates last.
+ */
+function queryAll(database: WorkoutTrackerDatabase): Promise<ReadonlyArray<DbWorkoutTemplate>> {
+  return database.templates.toArray().then((templates) =>
+    templates.toSorted((a, b) => {
+      if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
+      if (a.lastUsedAt === null) return 1
+      if (b.lastUsedAt === null) return -1
+      return b.lastUsedAt - a.lastUsedAt
+    }),
+  )
+}
+
+export function createDexieTemplatesRepository(
+  database: WorkoutTrackerDatabase,
+): TemplatesRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbWorkoutTemplate>> {
-      const templates = await database.templates.toArray()
-      // Sort by lastUsedAt descending, with null values at the end
-      return templates.toSorted((a, b) => {
-        if (a.lastUsedAt === null && b.lastUsedAt === null) return 0
-        if (a.lastUsedAt === null) return 1
-        if (b.lastUsedAt === null) return -1
-        return b.lastUsedAt - a.lastUsedAt
-      })
+      return queryAll(database)
+    },
+
+    observeAll(): LiveQuery<ReadonlyArray<DbWorkoutTemplate>> {
+      const run = () => queryAll(database)
+      return {
+        get: () => run(),
+        subscribe(onChange: (value: ReadonlyArray<DbWorkoutTemplate>) => void) {
+          const subscription = liveQuery(run).subscribe({ next: onChange })
+          return () => subscription.unsubscribe()
+        },
+      }
     },
 
     async getById(id: string): Promise<DbWorkoutTemplate | undefined> {
