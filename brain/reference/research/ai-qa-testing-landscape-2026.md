@@ -12,12 +12,9 @@ Research report on how teams are using AI agents for automated QA testing, with 
 
 ## Our Approach
 
-Claude Code running as "Quinn" — a QA persona — in GitHub Actions with Playwright for browser automation. Two modes:
+Claude Code running as "Quinn" — a QA persona — in GitHub Actions using `agent-browser` (Vercel's Rust-based CLI) for browser automation, driven entirely through Bash commands (see `.github/workflows/claude-qa-browser.yml` and `.github/workflows/claude-qa-test.yml`). We evaluated the `@playwright/cli` approach first (see `tutorial-claude-qa-github-action.md`) but standardized on `agent-browser`, which now covers multiple focus modes (`fast`, `general`, `test`, `verify`, `navigation`, `forms`, `workout-flow`) selected via workflow-dispatch input or PR event.
 
-- **MCP mode** (`claude-qa.yml`): Uses `@playwright/mcp` server for interactive browser control. ~114k tokens per task.
-- **CLI mode** (`claude-qa-cli.yml`): Uses `@playwright/cli` via Bash commands. ~27k tokens per task (4x cheaper).
-
-Both produce structured JSON output (`--json-schema`) for CI pass/fail gating and post QA reports as PR comments.
+All modes produce structured JSON output (`--json-schema`) for CI pass/fail gating and post QA reports as PR comments.
 
 ---
 
@@ -128,16 +125,18 @@ Using `--json-schema` to get structured verdicts (HEALTHY / MINOR_ISSUES / CRITI
 | CI integration       | GitHub Actions | GitHub Actions | Internal     | Demo     | GitHub Actions |
 | Structured output    | JSON schema    | Reports        | PR comments  | Reports  | Test results   |
 | Pass/fail gating     | Commit status  | Pipeline       | PR review    | Manual   | Test exit code |
-| MCP browser          | Yes            | Yes            | Yes (custom) | Yes      | No             |
-| CLI browser          | Yes (new)      | No             | No           | Yes      | No             |
-| Token efficiency     | ~27k (CLI)     | Unknown        | Unknown      | Unknown  | N/A            |
+| MCP browser          | No (dropped)   | Yes            | Yes (custom) | Yes      | No             |
+| CLI browser          | Yes (agent-browser) | No       | No           | Yes      | No             |
+| Token efficiency     | Unmeasured     | Unknown        | Unknown      | Unknown  | N/A            |
 | Self-QA loop         | No             | No             | Yes          | No       | No             |
 | Multi-agent          | No (single)    | Yes (8)        | No           | Yes (4)  | No             |
 | Mobile testing       | Yes (resize)   | Unknown        | No           | Unknown  | No             |
 
+Note: we standardized on `agent-browser` (not `@playwright/cli` or `@playwright/mcp`); the CLI-token-efficiency figures above are historical estimates from the evaluation phase, not current measurements.
+
 ### What we do well
 
-- Dual MCP + CLI modes for cost/quality tradeoff
+- Multiple focus modes (fast/general/test/verify/navigation/forms/workout-flow) via a single `agent-browser` CLI approach
 - Structured JSON output for automated CI gating
 - QA persona that tests like a real user (UI-only, no source code access)
 - Mobile viewport testing
