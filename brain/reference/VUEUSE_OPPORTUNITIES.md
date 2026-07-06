@@ -30,49 +30,11 @@ This document identifies manual implementations that can be replaced with VueUse
 
 ## High Priority Changes
 
-### 1. Replace Manual Event Listeners with `useEventListener`
+### 1. ~~Replace Manual Event Listeners with `useEventListener`~~ ✅ Done
 
-**File:** `src/composables/useScreenWakeLock.ts` (lines 150-162)
-
-**Before:**
-
-```typescript
-watch(sentinel, (newSentinel, oldSentinel) => {
-  if (oldSentinel) {
-    oldSentinel.removeEventListener('release', handleForcedRelease)
-  }
-  if (newSentinel && !newSentinel.released) {
-    newSentinel.addEventListener('release', handleForcedRelease)
-  }
-})
-
-onScopeDispose(() => {
-  if (sentinel.value) {
-    sentinel.value.removeEventListener('release', handleForcedRelease)
-  }
-  releaseAll()
-})
-```
-
-**After:**
-
-```typescript
-import { useEventListener } from '@vueuse/core'
-
-// Automatic cleanup - no manual removeEventListener needed
-useEventListener(sentinel, 'release', handleForcedRelease)
-
-onScopeDispose(() => {
-  releaseAll()
-})
-```
-
-**Benefits:**
-
-- Automatic cleanup on component unmount
-- Handles dynamic elements/refs automatically
-- Reduces 17 lines to 1 line
-- Prevents memory leaks
+`src/composables/useScreenWakeLock.ts` now imports `useEventListener` from `@vueuse/core` and calls
+`useEventListener(sentinel, 'release', handleForcedRelease)` — the manual `addEventListener` /
+`removeEventListener` watch pair described below has been removed.
 
 ---
 
@@ -92,9 +54,12 @@ onScopeDispose(() => {
 
 ### 4. Replace Manual Keyboard Handlers with `useMagicKeys`
 
-**File:** `src/views/TheWorkoutsView.vue` (lines 39-51)
+**Status:** `src/views/TheWorkoutsView.vue` no longer contains the `handleWorkoutKeyDown` /
+`handleTemplateKeyDown` handlers this section described — that manual keydown logic has since been
+removed from the view entirely. The `useMagicKeys` pattern below remains a valid template for any
+future manual keyboard handling elsewhere in the app.
 
-**Before:**
+**Before (illustrative, no longer present in the codebase):**
 
 ```typescript
 function handleWorkoutKeyDown(event: KeyboardEvent, workoutId: string): void {
@@ -145,8 +110,10 @@ function useActivateOnKey(elementRef: Ref<HTMLElement | null>, onActivate: () =>
 
 **Files:**
 
-- `src/features/workout/components/WorkoutQueueItem.vue` (lines 70-71)
-- `src/features/workout/components/WorkoutBlockPlaylistItem.vue` (lines 83-84)
+- `src/features/workout/components/WorkoutQueueItem.vue` (lines 75-76)
+
+(`src/components/blocks/WorkoutBlockPlaylistItem.vue`, previously listed here, no longer has a
+keydown handler.)
 
 **Current (Vue event modifiers - acceptable):**
 
@@ -204,50 +171,24 @@ const completedSets = useArrayFilter(
 
 ---
 
-### 7. Replace Boolean Refs with `useToggle`
+### 7. ~~Replace Boolean Refs with `useToggle`~~ ✅ Done
 
-**Files:**
+All four files originally listed here already use `useToggle` from `@vueuse/core`:
 
-- `src/features/workout/components/WorkoutDetailExerciseCard.vue:17`
-- `src/features/workout/components/WorkoutConfigureTabataDialog.vue:27`
-- `src/features/timers/components/TimerPresetSelector.vue:97`
-- `src/features/workout/composables/useTimedBlockExercises.ts:7`
-
-**Before:**
-
-```typescript
-const isOpen = ref(false)
-// Toggle manually
-isOpen.value = !isOpen.value
-```
-
-**After:**
-
-```typescript
-import { useToggle } from '@vueuse/core'
-
-const [isOpen, toggleOpen] = useToggle(false)
-// Use explicit methods
-toggleOpen() // toggle
-toggleOpen(true) // set to true
-toggleOpen(false) // set to false
-```
-
-**Benefits:**
-
-- More expressive API
-- Explicit toggle/on/off methods
-- Cleaner code when toggling state
+- `src/features/workout/components/WorkoutDetailExerciseCard.vue`
+- `src/components/blocks/ConfigureTabataDialog.vue` (renamed from `WorkoutConfigureTabataDialog.vue`)
+- `src/features/timers/components/TimerPresetSelector.vue`
+- `src/composables/useTimedBlockExercises.ts` (moved from `src/features/workout/composables/`)
 
 ---
 
 ## Implementation Checklist
 
-- [ ] `useScreenWakeLock.ts` - Replace addEventListener with `useEventListener`
+- [x] `useScreenWakeLock.ts` - Replace addEventListener with `useEventListener` ✅ Done
 - [x] `useEnterAnimation.ts` - Replace setTimeout with `useTimeoutFn` ✅ Done
 - [x] `useScreenWakeLock.ts` - Replace matchMedia with `useMediaQuery` ✅ Done
-- [ ] `TheWorkoutsView.vue` - Consider `onKeyStroke` for keyboard handling
-- [ ] Review toggle refs for potential `useToggle` conversion
+- [ ] `TheWorkoutsView.vue` - manual keydown handlers have since been removed; no longer applicable
+- [x] Review toggle refs for potential `useToggle` conversion ✅ Done (all four originally-flagged files converted)
 
 ---
 

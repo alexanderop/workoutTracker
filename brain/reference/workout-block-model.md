@@ -82,15 +82,17 @@ export type CardioResult = {
 All creation goes through `appendBlock` in the workout composable, with one factory per kind:
 
 ```ts
-// src/features/workout/composables/useWorkout.ts:402-447
-function addAmrapBlock(config, exercises) { appendBlock({ kind: 'amrap', id: generateBlockId(), config, exercises: [...exercises], result: null }) }
-function addEmomBlock(...)   { appendBlock({ kind: 'emom', ... }) }
-function addTabataBlock(...) { appendBlock({ kind: 'tabata', ..., exercise }) }   // singular
-function addForTimeBlock(...) { appendBlock({ kind: 'fortime', ... }) }
-function addCardioBlock(...) { appendBlock({ kind: 'cardio', ..., result: null }) }
+// src/features/workout/composables/useWorkout.ts:349-375
+function addAmrapBlock(config, exercises) { appendBlock(createAmrapWorkoutBlock(config, exercises, getNextWorkoutBlockId(workout.value.blocks))) }
+function addEmomBlock(...)   { appendBlock(createEmomWorkoutBlock(...)) }
+function addTabataBlock(...) { appendBlock(createTabataWorkoutBlock(...)) }   // singular exercise
+function addForTimeBlock(...) { appendBlock(createForTimeWorkoutBlock(...)) }
+function addCardioBlock(...) { appendBlock(createCardioWorkoutBlock(...)) }
 ```
 
-Strength blocks are added by `addExercise()` in the same file (line ~382), which seeds `sets` from history.
+The actual block object construction lives in the `create*WorkoutBlock` factories in `src/lib/workoutBlockFactory.ts`; `getNextWorkoutBlockId` (`src/lib/workoutBlockList.ts:8`) assigns the new block's id.
+
+Strength blocks are added by `addExercise()` in the same file (line ~318), which seeds `sets` from history.
 
 Test factories live in `src/__tests__/factories/block.factory.ts` and `timedBlock.factory.ts` (e.g. `createStrengthBlock` at line 17). The corresponding DB-shape factories are in `dbBlock.factory.ts`.
 

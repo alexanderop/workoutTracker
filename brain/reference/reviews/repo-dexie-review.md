@@ -4,7 +4,7 @@ title: "Code Review: repo-dexie Branch"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/reviews/repo-dexie-review.md
 tags: [reference, reviews]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-06T00:00:00Z
 ---
 ## Code Review: repo-dexie Branch
 
@@ -47,19 +47,24 @@ All `@ts-expect-error` comments in non-test source code have been removed. The c
 
 **Fix:** Change `ref` to `shallowRef` (1-line change each; existing immutable update patterns already support this).
 
-### Accessibility: Missing ARIA Labels on Interactive Cards
+### Accessibility: Missing ARIA Labels on Interactive Cards (partially fixed)
 
-**Location:** `src/views/TheWorkoutsView.vue:86-107, 126-145`
+**Update:** The raw cards in `TheWorkoutsView.vue` were since extracted into
+`src/features/benchmarks/components/BenchmarkListCard.vue` (which now has
+`role="button"` + `:aria-label="cardAriaLabel"` — fixed) and
+`src/components/TemplateListCard.vue` (still `role="button"` with **no**
+`aria-label` — still open).
 
-Cards with `role="button"` lack `aria-label`. Screen readers announce "button" without context.
+**Fix:** Add an aria-label to `TemplateListCard.vue` mirroring the pattern
+already used in `BenchmarkListCard.vue`.
 
-**Fix:** Add `:aria-label="t('workouts.aria.openTemplate') + ' ' + template.name"`.
+### Accessibility: Touch Targets Too Small (still open)
 
-### Accessibility: Touch Targets Too Small
-
-**Location:** `src/features/templates/components/TemplateExerciseItem.vue:79-103`
-
-Set count controls are 40x40px, below 44x44px PWA recommendation.
+**Location:** `src/features/templates/components/TemplateBlockItem.vue`
+(renamed from `TemplateExerciseItem.vue`), set-count `+`/`-` buttons use
+`size="icon"` which resolves to `size-9` (36px) in
+`src/components/ui/button/index.ts` — still below the 44x44px PWA
+recommendation.
 
 ---
 
@@ -71,20 +76,20 @@ Set count controls are 40x40px, below 44x44px PWA recommendation.
 | High     | Repetitive block converters       | `converters.ts:153-320` | Use converter registry pattern                     |
 | Medium   | Settings setter duplication       | `settings.ts:40-75`     | Factory function `createSettingSetter()`           |
 | Medium   | Trivial repository getters        | `db/index.ts:18-40`     | Consider direct property access `db.activeWorkout` |
-| Low      | Deprecated function               | `db/index.ts:57-59`     | Remove `deleteAllData()` wrapper                   |
+| Low      | Deprecated function               | `db/index.ts:87-89`     | Remove `deleteAllData()` wrapper                   |
 
 ---
 
 ## Vue Component Issues
 
-| Component              | Issue                                           | Impact |
-| ---------------------- | ----------------------------------------------- | ------ |
-| CreateTemplateView.vue | Business logic in view (50+ lines)              | Medium |
-| TheWorkoutsView.vue    | Data fetching in view, duplicate card rendering | Medium |
-| WorkoutSummaryView.vue | 292 lines mixing stats, confetti, dialogs       | Medium |
-| WorkoutDetailView.vue  | Complex template conditionals for block types   | Low    |
+| Component              | Issue                                           | Impact | Status |
+| ---------------------- | ----------------------------------------------- | ------ | ------ |
+| CreateTemplateView.vue | Business logic in view (50+ lines)              | Medium | Reduced to 159 lines — appears fixed |
+| TheWorkoutsView.vue    | Data fetching in view, duplicate card rendering | Medium | Fixed — extracted `TemplateListCard`/`BenchmarkListCard` |
+| WorkoutSummaryView.vue | 292 lines mixing stats, confetti, dialogs       | Medium | Still ~268 lines, largely unaddressed |
+| WorkoutDetailView.vue  | Complex template conditionals for block types   | Low    | Not re-verified |
 
-**Fix:** Extract `useTemplateCreation`, `useWorkoutsList` composables; create `TemplateListCard`, `WorkoutHistoryCard` components.
+**Fix:** Extract `useTemplateCreation`, `useWorkoutsList` composables; create `TemplateListCard`, `WorkoutHistoryCard` components — the card-extraction part is done (see above); composable extraction was not re-verified.
 
 ---
 

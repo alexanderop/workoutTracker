@@ -343,16 +343,11 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
 
 ---
 
-### 4. Replace Test Icon Class Checks with Semantic Queries
+### 4. Replace Test Icon Class Checks with Semantic Queries ✅ Done
 
-**Locations:**
+**Was:** `src/__tests__/integration/workout-management.spec.ts` and `workout-queue.spec.ts` queried icon CSS classes (`svg.lucide-play`, `svg.lucide-rotate-ccw`) to assert button state — these have since been replaced with semantic queries; no such icon-class assertions remain in those files.
 
-- `src/__tests__/integration/workout-management.spec.ts:173-174`
-- `src/__tests__/integration/workout-management.spec.ts:220-221`
-- `src/__tests__/integration/workout-management.spec.ts:265`
-- `src/__tests__/integration/workout-queue.spec.ts:154`
-
-**Problem:** Tests query icon CSS classes which are implementation details
+**Problem (historical):** Tests query icon CSS classes which are implementation details
 
 **Current Code:**
 
@@ -842,7 +837,7 @@ The test suite follows Kent C. Dodds' testing philosophy exceptionally well:
 
 | Issue                  | Location                             | Recommendation                |
 | ---------------------- | ------------------------------------ | ----------------------------- |
-| Icon class checks      | `workout-management.spec.ts`         | Use semantic button names     |
+| ~~Icon class checks~~  | ~~`workout-management.spec.ts`~~     | ✅ Resolved — semantic queries used now |
 | CSS class queries      | `timed-block-exercise-list.spec.ts`  | Add list semantics            |
 | DOM traversal          | `workout-management.spec.ts:204`     | Add aria-label to back button |
 | Missing keyboard tests | N/A                                  | Add accessibility test file   |
@@ -923,7 +918,7 @@ export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
 
 1. [x] Add `defineModel` to `ResumeWorkoutDialog.vue` ✅ Done
 2. [ ] Add `Readonly<>` to const lookup objects
-3. [ ] Replace icon class checks in tests with semantic queries
+3. [x] Replace icon class checks in tests with semantic queries ✅ Done
 
 ### Phase 2: Composable Extraction (3-5 days)
 

@@ -14,7 +14,7 @@ Use this map before writing or debugging tests.
 ## Read First
 
 - [Agent testing guide](../reference/agent/testing.md)
-- [Vitest browser mode plan](../reference/vitest-browser-mode-plan.md)
+- [Vitest browser mode plan](../reference/blog/vitest-browser-mode.md)
 - [Vitest browser troubleshooting](../reference/vitest-browser-troubleshooting.md)
 - [Test factory improvements](../reference/test-factory-improvements.md)
 
