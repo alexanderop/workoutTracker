@@ -4,7 +4,7 @@ title: "VueUse-Style Composables Plan"
 description: VueUse authoring and testing conventions to adopt in this app (library/docs machinery excluded), with a gap analysis of all ~65 composables and a prioritized checklist (July 2026).
 resource: brain/reference/plans/vueuse-style-composables.md
 tags: [reference, plans, composables, vueuse, testing]
-timestamp: 2026-07-04T09:38:00Z
+timestamp: 2026-07-06T00:00:00Z
 ---
 
 ## VueUse-Style Composables Plan
@@ -165,7 +165,7 @@ Apply to `useExerciseProgress`, `useBenchmarkAttemptHistory`, `useWorkoutDetail`
 
 ### GAP 3 — Two competing list-loading idioms mid-migration (do next)
 
-`useRecentWorkouts` uses the new `useLiveQuery`; `useWorkoutsList`, `useBenchmarksList`, `useWeightEntries`, `useWorkoutCalendar` still hand-roll `onMounted` fetch + manual reload-after-mutation. Finish the migration. Also fix the drift: `useBenchmarksList` calls the repository **without `tryCatch`** while its near-identical sibling `useWorkoutsList` wraps it.
+**Update (2026-07-06):** `useWorkoutsList` and `useWeightEntries` have since been migrated to `useLiveQuery` (via the persistence-swap ticket's Slice 5). `useBenchmarksList` and `useWorkoutCalendar` still hand-roll `onMounted` fetch + manual reload-after-mutation — finish those two. Also fix the drift: `useBenchmarksList` calls the repository **without `tryCatch`** (its previous point of comparison, `useWorkoutsList`, no longer calls the repository directly at all — it reads through `observeAll()`/`useLiveQuery` instead).
 
 ### GAP 4 — Shared `Pausable`/`Stoppable` interfaces + readonly returns (do next)
 
@@ -190,7 +190,7 @@ Several thin wrappers (`useWorkoutDetail`, `useBenchmarkDetail`, `useExerciseFor
 | 1 | Rewrite `useLiveQuery` on `tryOnScopeDispose`; subscribe immediately | `useLiveQuery.ts` + spec | Small |
 | 2 | Create shared `Pausable`/`Stoppable`/configurable-globals types module | new `src/composables/types.ts` | Small |
 | 3 | `MaybeRefOrGetter` + `toValue` + `watch immediate` for id-keyed composables | ~6 data composables | Medium |
-| 4 | Migrate remaining list composables to `useLiveQuery`; add missing `tryCatch` in `useBenchmarksList` | 4 list composables | Medium |
+| 4 | Migrate remaining list composables to `useLiveQuery` (done: `useWorkoutsList`, `useWeightEntries`; remaining: `useBenchmarksList`, `useWorkoutCalendar`); add missing `tryCatch` in `useBenchmarksList` | 2 list composables | Medium |
 | 5 | Timers return `Pausable`; `readonly()` all exposed refs (fix `useRestTimer`) | `timers/*` | Small |
 | 6 | Deprecate `useWorkout` legacy aliases with `@deprecated`, then remove | `useWorkout.ts` + call sites | Large |
 | 7 | One-line JSDoc description on every composable; fold conventions into `brain/reference/agent/composables.md` | sweep | Small |

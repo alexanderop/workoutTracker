@@ -358,10 +358,20 @@
   <h1>Swappable Persistence: from Dexie-only to a pluggable local-first data layer</h1>
   <p class="lede">How to evolve the workout tracker so the storage engine and sync behavior become interchangeable adapters — with Jazz as the concrete first alternative — without slowing down a single set logged in the gym.</p>
   <div class="meta-row">
-    <span><strong>Status</strong> Proposed</span>
+    <span><strong>Status</strong> Phases 1&ndash;3 shipped 2026-07-06 &middot; Phase 4 (Jazz spike) not started</span>
     <span><strong>Date</strong> 2026-07-04</span>
     <span><strong>Today</strong> Dexie / IndexedDB</span>
     <span><strong>Candidate</strong> jazz-tools (0.20.19 stable · 2.0.0-alpha)</span>
+  </div>
+  <div class="callout ok">
+    <strong>Update (2026-07-06).</strong>
+    Phases 1&ndash;3 (the seam, the reactivity port, the contract test suite) are implemented &mdash; see
+    <code>2026-07-04-persistence-swap-ticket.md</code>, now historical. <code>setRepositoryProvider()</code>,
+    the folded <code>exerciseProgress</code> repository, deduplicated <code>generateId()</code>,
+    <code>LiveQuery&lt;T&gt;</code>/<code>observe*()</code> on workouts/settings/activeWorkout/templates/weight,
+    and a raw-<code>db</code>-free test suite all exist in <code>src/db/</code> today. <code>jazz-tools</code> is
+    still not a dependency and <code>src/db/implementations/jazz/</code> does not exist &mdash; Phase 4 (the Jazz
+    spike) and Phase 5 (migration &amp; sync) remain not started.
   </div>
   <ul class="toc">
     <li><a href="#verdict"><span class="n">TL;DR</span>Verdict</a></li>

@@ -1,7 +1,7 @@
 # Ticket: Swappable Persistence Layer (Phases 1–3)
 
 > **Parent plan:** `brain/reference/plans/persistence-swap-architecture-plan.html`
-> **Status:** Ready for development
+> **Status:** Implemented — all slices 1–7 and AC1–AC10 verified against the current codebase (`setRepositoryProvider()`, `LiveQuery<T>`/`observe*()` on workouts/settings/activeWorkout/templates/weight, `exerciseProgress` folded into `RepositoryProvider`, single `generateId()`, no raw `db` imports in tests, `providerUnderTest.ts` contract-suite factory). The Jazz adapter (Phase 4, "out of scope" below) is still not started.
 > **Audience:** Junior developer — every slice is self-contained, tested, and committed before moving on.
 
 ## Context
