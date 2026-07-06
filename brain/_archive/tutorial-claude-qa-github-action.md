@@ -1,11 +1,19 @@
 ---
 type: Reference
 title: "Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions"
-description: Migrated reference documentation from the former root documentation tree.
-resource: brain/reference/tutorial-claude-qa-github-action.md
-tags: [reference]
-timestamp: 2026-06-28T08:10:00Z
+description: Archived — the @playwright/cli workflow this describes (claude-qa-cli.yml) no longer exists; superseded by agent-browser.
+resource: brain/_archive/tutorial-claude-qa-github-action.md
+tags: [reference, archive]
+timestamp: 2026-07-06T00:00:00Z
 ---
+
+> **Archived (2026-07-06):** this tutorial builds a `claude-qa-cli.yml` workflow
+> around `@playwright/cli`. That workflow and approach no longer exist in this
+> repo — QA automation was fully migrated to `agent-browser` (see
+> `.github/workflows/claude-qa-browser.yml` and
+> `brain/reference/tutorial-claude-qa-agent-browser-github-action.md` for the
+> current approach). Kept for historical reference only.
+
 ## Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions
 
 ## The Problem

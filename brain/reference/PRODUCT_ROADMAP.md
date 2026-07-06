@@ -113,9 +113,9 @@ Target Date: March 2025
 
 #### 2.4 Body Metrics (Optional)
 
-- Bodyweight logging with trend chart
-- Measurement tracking (arms, chest, waist)
-- Integration point for Apple Health/Google Fit
+- ✅ Done — Bodyweight logging with trend chart (`src/features/weight/`: `WeightChart.vue`, `WeightStatsSummary.vue`, `useWeightStats.ts`)
+- Measurement tracking (arms, chest, waist) — still not implemented
+- Integration point for Apple Health/Google Fit — still not implemented
 
 #### 2.5 Calendar Heat Map
 
@@ -386,19 +386,17 @@ Radar chart showing volume distribution:
 - Round completion: "Round 5 complete"
 - Configurable on/off in settings
 
-#### 7.2 Plate Calculator
+#### 7.2 Plate Calculator ✅ Done
 
-Input: Target weight (e.g., 100kg)
-Output:
+Implemented as `BarbellPlateHint.vue` (`src/components/ui/barbell-hint/BarbellPlateHint.vue`), shown inline during weight selection.
+
+Original proposal (for reference):
 
 ```
 Bar: 20kg
 Each side: 20kg + 15kg + 5kg
 Total: 100kg
 ```
-
-- Configurable available plates
-- Shows nearest achievable weight if exact not possible
 
 #### 7.3 Superset/Circuit Mode
 
@@ -646,7 +644,7 @@ Longest Streak: 34 days
 | PR celebration animation           | Low    | Medium | Gamification |
 | Weekly summary card                | Low    | High   | Analytics    |
 | Empty state with starter templates | Low    | High   | Onboarding   |
-| Plate calculator widget            | Medium | High   | Workout UX   |
+| ~~Plate calculator widget~~ ✅ Done | Medium | High   | Workout UX   |
 | Progressive overload hints         | Medium | High   | Suggestions  |
 | Share workout as image             | Medium | Medium | Social       |
 | Calendar heat map                  | Medium | Medium | Goals        |
@@ -698,7 +696,7 @@ Longest Streak: 34 days
 - [ ] Progressive overload suggestions
 - [ ] Adaptive rest timer recommendations
 - [ ] Deload reminders
-- [ ] Plate calculator
+- [x] Plate calculator ✅ Done — `BarbellPlateHint.vue`
 - [ ] Superset/circuit block type
 
 **Success Metrics**:

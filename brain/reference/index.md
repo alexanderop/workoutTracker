@@ -38,7 +38,6 @@ These files used to live under the root documentation tree. The root docs folder
 - [State Machine Pattern for Exclusive UI States](./state-machine-pattern.md)
 - [Test Factory Improvements Plan](./test-factory-improvements.md)
 - [AI-Powered QA in GitHub Actions with Claude Code Action and Agent Browser](./tutorial-claude-qa-agent-browser-github-action.md)
-- [Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions](./tutorial-claude-qa-github-action.md)
 - [User Research: Fitness Tracking Apps for Hybrid Athletes](./user-research-findings.md)
 - [Vitest Browser Mode Troubleshooting](./vitest-browser-troubleshooting.md)
 - [Workout Block Model](./workout-block-model.md)

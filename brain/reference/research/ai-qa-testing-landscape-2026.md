@@ -12,7 +12,7 @@ Research report on how teams are using AI agents for automated QA testing, with 
 
 ## Our Approach
 
-Claude Code running as "Quinn" — a QA persona — in GitHub Actions using `agent-browser` (Vercel's Rust-based CLI) for browser automation, driven entirely through Bash commands (see `.github/workflows/claude-qa-browser.yml` and `.github/workflows/claude-qa-test.yml`). We evaluated the `@playwright/cli` approach first (see `tutorial-claude-qa-github-action.md`) but standardized on `agent-browser`, which now covers multiple focus modes (`fast`, `general`, `test`, `verify`, `navigation`, `forms`, `workout-flow`) selected via workflow-dispatch input or PR event.
+Claude Code running as "Quinn" — a QA persona — in GitHub Actions using `agent-browser` (Vercel's Rust-based CLI) for browser automation, driven entirely through Bash commands (see `.github/workflows/claude-qa-browser.yml` and `.github/workflows/claude-qa-test.yml`). We evaluated the `@playwright/cli` approach first (see the archived `_archive/tutorial-claude-qa-github-action.md`) but standardized on `agent-browser`, which now covers multiple focus modes (`fast`, `general`, `test`, `verify`, `navigation`, `forms`, `workout-flow`) selected via workflow-dispatch input or PR event.
 
 All modes produce structured JSON output (`--json-schema`) for CI pass/fail gating and post QA reports as PR comments.
 
