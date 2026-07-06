@@ -4,14 +4,21 @@ title: "Code Duplication Analysis"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/tech-debt/duplication-analysis.md
 tags: [reference, tech-debt]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-06T00:00:00Z
 ---
 ## Code Duplication Analysis
 
 Generated: 2025-12-21
 
 **Tool:** jscpd (`pnpm cpd`)
-**Current state:** 186 clones, 5.21% duplication
+**State at generation time:** 186 clones, 5.21% duplication
+
+> **2026-07-06 audit:** the clone count above is not re-verified (jscpd wasn't
+> installed in the audit environment — `pnpm cpd` requires `pnpm install`
+> first). Items 1 (block creation), 2 (validation schemas), and 3 (timer
+> composables) below have since been fixed in the codebase, so the real
+> current clone count is very likely lower than 186. Re-run `pnpm cpd` for a
+> fresh number before relying on this figure.
 
 ---
 
@@ -157,8 +164,17 @@ Similar timer state (elapsed, isRunning, isPaused) and control logic (start, pau
 
 `useBaseTimer` is implemented at `src/composables/timers/useBaseTimer.ts`. The four timer composables (Amrap, Emom, Tabata, ForTime) all extend it. Existing duplication is resolved.
 
+The illustrative sketch below was the original proposal; the real
+implementation is more robust — it uses an explicit `TRANSITIONS` state
+machine (`idle → running → paused/completed`) driven by `useIntervalFn` from
+VueUse, exposes `status`/`elapsedMs`/`elapsedSeconds`/`isRunning`/`isPaused`/
+`isCompleted`/`isIdle` as readonly refs/computeds, and methods
+`start`/`pause`/`toggle`/`resetState`/`complete` (no bare `stop()`). See
+`useBaseTimer.ts` directly for the current API rather than relying on the
+snippet below.
+
 ```ts
-// src/composables/timers/useBaseTimer.ts (implemented)
+// Original proposal (simplified compared to the actual implementation)
 export function useBaseTimer() {
   const elapsed = ref(0)
   const isRunning = ref(false)
@@ -186,7 +202,7 @@ export function useEmomTimer(config: EmomConfig) {
   const base = useBaseTimer()
   const currentMinute = ref(1)
 
-  // EMOM-specific logic using base.elapsed, base.isRunning, etc.
+  // EMOM-specific logic using base.elapsedSeconds, base.isRunning, etc.
 
   return { ...base, currentMinute }
 }

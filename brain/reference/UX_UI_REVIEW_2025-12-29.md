@@ -24,11 +24,9 @@ vue-i18n is now fully implemented across 12 translation domains (English + Germa
 
 `ActiveWorkoutFab.vue` (`src/features/workout/components/ActiveWorkoutFab.vue`) now shows a persistent FAB with the active workout timer on all pages when a workout is in progress.
 
-### 3. Save Button Enabled on Empty State
+### 3. Save Button Enabled on Empty State ✅ Resolved
 
-- **Location:** `src/views/LogPastWorkoutView.vue` (likely)
-- **Problem:** "Workout speichern" button appears enabled with no exercises added
-- **Fix:** Add `:disabled="exercises.length === 0"` or computed property
+`src/views/LogPastWorkoutView.vue` now has a `canSave` computed (`workoutName.value.trim().length > 0 && blocks.value.length > 0`) bound to the save button's `:disabled`.
 
 ---
 

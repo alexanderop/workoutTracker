@@ -71,7 +71,7 @@ brain references.
 - `brain/reference/workout-block-model.md` — discriminated-union block kinds, result shapes, cascade for new kinds
 - `brain/reference/TIL-adding-fields-to-block-types.md` — cascade checklist when changing block types
 - `brain/reference/VUEUSE_OPPORTUNITIES.md` — prefer VueUse over manual listeners/timeouts
-- `brain/reference/vitest-browser-mode-plan.md` — Vitest + Playwright projects, setup, headless
+- `brain/reference/blog/vitest-browser-mode.md` — Vitest + Playwright projects, setup, headless
 - `brain/reference/vitest-browser-troubleshooting.md` — flaky tests, singleton leakage, fake-indexeddb, console filtering
 - `brain/reference/shadcn-vue-theming.md` — Tailwind v4 OKLCH tokens, reka-ui (not radix-vue), dark mode via `useTheme()`
 - `brain/reference/plans/dexie-improvements.md` — liveQuery, transactions, index hygiene

@@ -101,13 +101,13 @@ Full vue-i18n is implemented across 12 translation domains (English + German). `
 
 | Issue                      | File                            | Line    | Description                                         |
 | -------------------------- | ------------------------------- | ------- | --------------------------------------------------- |
-| Custom close button        | WorkoutConfigureAmrapDialog.vue | 62-68   | Should use MobileDialogContent's showCloseButton    |
-| Custom close button        | WorkoutAddBlockDialog.vue       | 103-109 | Same issue                                          |
-| Inconsistent dialog footer | WorkoutSaveTemplateDialog.vue   | 60      | Uses plain div, not DialogFooter                    |
-| Footer border              | WorkoutConfigureAmrapDialog.vue | 107     | Has `border-t`, others don't                        |
-| Input height               | WorkoutEditExerciseDialog.vue   | 89,99   | Uses `h-12`, WorkoutSaveTemplateDialog uses default |
-| Button with manual height  | WorkoutBuilderMode.vue          | 131     | `size="lg" class="h-14"` - conflicting              |
-| Empty state pattern        | WorkoutAddBlockDialog.vue       | 148-154 | Custom div instead of Empty component               |
+| ~~Custom close button~~    | ~~WorkoutConfigureAmrapDialog.vue~~ | — | ✅ Resolved — dialog moved to `src/components/blocks/ConfigureAmrapDialog.vue` |
+| ~~Custom close button~~    | ~~WorkoutAddBlockDialog.vue~~   | —       | ✅ Resolved — dialog moved to `src/components/blocks/AddBlockDialog.vue` |
+| ~~Inconsistent dialog footer~~ | ~~WorkoutSaveTemplateDialog.vue~~ | — | ✅ Fixed — now uses `DialogActions`                    |
+| ~~Footer border~~          | ~~WorkoutConfigureAmrapDialog.vue~~ | — | ✅ Fixed — `ConfigureAmrapDialog.vue` no longer has `border-t` |
+| ~~Input height~~           | ~~WorkoutEditExerciseDialog.vue~~ | — | ✅ Fixed — no `h-12` override remains                  |
+| ~~Button with manual height~~ | ~~WorkoutBuilderMode.vue~~   | —       | ✅ Fixed — no `h-14` override remains                  |
+| Empty state pattern        | AddBlockDialog.vue (was WorkoutAddBlockDialog.vue) | ~148 | Custom div instead of Empty component (unverified after rename) |
 
 ### Benchmarks Feature
 
@@ -122,9 +122,8 @@ Full vue-i18n is implemented across 12 translation domains (English + German). `
 | Exercise icon size (edit) | BenchmarkExerciseItem.vue      | 35       | `text-2xl`                               |
 | Hard-coded color          | BenchmarkExerciseQueueItem.vue | 34       | `text-green-500` instead of semantic     |
 | Redundant status badge    | BenchmarkExerciseQueueItem.vue | 99-101   | "Active" badge duplicates icon indicator |
-| Custom button             | BenchmarkTypeCard.vue          | 21-27    | Uses `<button>` not Button component     |
+| ~~Custom button~~         | ~~BenchmarkTypeCard.vue~~      | —        | ✅ Fixed — uses `<Button>` component now |
 | Manual icon size          | BenchmarkEditMode.vue          | 95       | `<Plus class="mr-2 size-5" />`           |
-| Manual icon size          | BenchmarkCompletionScreen.vue  | 71       | `<Check class="size-5" />`               |
 
 ### Settings Feature
 
@@ -155,8 +154,8 @@ Full vue-i18n is implemented across 12 translation domains (English + German). `
 
 | Issue                    | File                     | Line        | Description                             |
 | ------------------------ | ------------------------ | ----------- | --------------------------------------- |
-| Custom increment buttons | TemplateExerciseItem.vue | 79-103      | Uses `<button>` not Button              |
-| Icon size inconsistency  | TemplateExerciseItem.vue | 116,125,134 | Action icons `size-5`, inc/dec `size-4` |
+| ~~Custom increment buttons~~ | ~~TemplateExerciseItem.vue~~ | — | ✅ Fixed — component renamed to `TemplateBlockItem.vue` and uses `<Button>` |
+| Icon size inconsistency  | TemplateBlockItem.vue (was TemplateExerciseItem.vue) | unverified | Action icons `size-5`, inc/dec `size-4` (unverified after rename) |
 | Footer spacing           | CreateTemplateView.vue   | 87          | `gap-3` vs `gap-2` elsewhere            |
 | Footer spacing           | TemplateDetailView.vue   | 126         | `gap-3` vs `gap-2` elsewhere            |
 
@@ -182,13 +181,13 @@ Full vue-i18n is implemented across 12 translation domains (English + German). `
 | Issue                    | File                        | Line  | Description                             |
 | ------------------------ | --------------------------- | ----- | --------------------------------------- |
 | Dialog footer pattern A  | ErrorDialog.vue             | 34    | `flex flex-col gap-3 sm:flex-row`       |
-| Dialog footer pattern B  | WorkoutConfigureAmrapDialog | 107   | `pt-4 border-t flex gap-3`              |
-| Custom close buttons     | ExercisePicker.vue          | 85-91 | Duplicates MobileDialogContent          |
-| Card interactive pattern | TemplateListCard.vue        | 33    | `<Card role="button">` vs native button |
-| Text chevron             | TemplateListCard.vue        | 47    | Uses `›` text, not ChevronRight icon    |
-| Text chevron             | ExerciseListItem.vue        | 35-37 | Same issue                              |
-| Mobile height values     | ExercisePicker.vue          | 82    | `sm:max-h-[80vh]`                       |
-| Mobile height values     | WorkoutConfigureAmrapDialog | 60    | `sm:max-h-[85vh]`                       |
+| ~~Dialog footer pattern B~~ | ~~WorkoutConfigureAmrapDialog~~ | — | ✅ Fixed — now `ConfigureAmrapDialog.vue`, uses `DialogActions`, no `border-t` |
+| Custom close buttons     | ExercisePicker.vue          | ~100  | Duplicates MobileDialogContent (still present) |
+| Card interactive pattern | TemplateListCard.vue        | ~33   | `<Card role="button">` vs native button (still present) |
+| Text chevron             | TemplateListCard.vue        | ~49   | Uses `›` text, not ChevronRight icon (still present) |
+| ~~Text chevron~~         | ~~ExerciseListItem.vue~~    | —     | ✅ Fixed — now uses `ChevronRight` icon |
+| Mobile height values     | ExercisePicker.vue          | ~97   | `sm:max-h-[80vh]` (still present)       |
+| Mobile height values     | ConfigureAmrapDialog.vue (was WorkoutConfigureAmrapDialog) | ~61 | `sm:max-h-[85vh]` (still present) |
 
 ---
 
@@ -196,17 +195,17 @@ Full vue-i18n is implemented across 12 translation domains (English + German). `
 
 ### Phase 1: High Priority (Breaking Issues)
 
-- [ ] Add i18n to BenchmarkCompletionScreen (3 strings)
+- [x] ~~Add i18n to BenchmarkCompletionScreen (3 strings)~~ — ✅ moot, component removed
 - [ ] Replace `bg-slate-*` with `bg-muted` in exercises feature (4 locations)
-- [ ] Standardize dialog footer pattern (create DialogActions component)
+- [x] Standardize dialog footer pattern (create DialogActions component) ✅ Done — `src/components/DialogActions.vue`
 
 ### Phase 2: Medium Priority (Consistency)
 
 - [ ] Replace custom `<button>` with Button component in:
-  - [ ] SettingsDataSection (export/import)
-  - [ ] TemplateExerciseItem (increment/decrement)
-  - [ ] BenchmarkTypeCard (type selection)
-  - [ ] CreateCustomExercise (icon picker)
+  - [x] SettingsDataSection (export/import) ✅ Done
+  - [x] TemplateExerciseItem, now `TemplateBlockItem.vue` (increment/decrement) ✅ Done
+  - [x] BenchmarkTypeCard (type selection) ✅ Done
+  - [ ] ExerciseFormView, was CreateCustomExercise (icon picker)
 - [ ] Standardize button sizing hierarchy
 - [ ] Replace custom empty states with Empty component
 - [ ] Remove redundant close buttons (use MobileDialogContent prop)

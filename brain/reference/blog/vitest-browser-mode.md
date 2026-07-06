@@ -4,9 +4,18 @@ title: "jsdom Tests Are Dead, Long Live Vitest Browser Mode"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/blog/vitest-browser-mode.md
 tags: [reference, blog]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-06T00:00:00Z
 ---
 ## jsdom Tests Are Dead, Long Live Vitest Browser Mode
+
+> **Editorial note (2026-07-06):** this post captures a point-in-time
+> migration story. The `vitest.config.ts` and npm scripts shown below
+> (`unit`/`integration-browser`/`browser` projects, `test:browser`,
+> `test:all`) are no longer accurate — the project has since consolidated
+> onto **all-browser-mode** testing with four projects (`default`, `a11y`,
+> `visual`, `arch`) and scripts `pnpm test` / `test:a11y` / `test:visual` /
+> `test:arch`. See [`../vitest-browser-troubleshooting.md`](../vitest-browser-troubleshooting.md)
+> for the current setup; there is no `jsdom` project left in this repo.
 
 I don't write code anymore. Claude Code does.
 
