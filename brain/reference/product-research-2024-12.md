@@ -23,7 +23,7 @@ Based on analysis of the current codebase and competitive research, this documen
 
 The app has a solid foundation:
 
-- ✅ **Block-based workout model** (strength + 4 timed types: AMRAP, EMOM, Tabata, For Time)
+- ✅ **Block-based workout model** (strength + 5 timed types: AMRAP, EMOM, Tabata, For Time, Cardio — added later)
 - ✅ **Timer functionality** with rest timer widget
 - ✅ **Exercise library** with custom exercise creation
 - ✅ **Template system** for reusable workouts
@@ -148,13 +148,13 @@ _Why it matters:_ CrossFitters love benchmark WODs (Fran, Murph, etc.). Comparin
 
 ---
 
-#### 8. Templates with Timed Block Support
+#### 8. Templates with Timed Block Support ✅ Done
 
 **Complexity:** Low | **Impact:** Medium
 
-_Why it matters:_ Known gap documented in CLAUDE.md. Templates only support strength blocks currently.
+_Status update:_ This gap has been closed — `useTemplateBlockManagement.ts` and `CreateTemplateView.vue` now support adding AMRAP, EMOM, Tabata, and ForTime blocks to templates alongside strength blocks.
 
-**Implement:**
+**Was (historical):**
 
 - Add AMRAP, EMOM, Tabata, ForTime blocks to template creation
 - Allow mixed templates (strength + conditioning in one workout)

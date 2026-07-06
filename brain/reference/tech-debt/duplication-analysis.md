@@ -30,7 +30,7 @@ Generated: 2025-12-21
 - `src/lib/workoutBlockFactory.ts`
 - `src/lib/workoutBlockList.ts`
 
-**Current Pattern:**
+**Historical pattern (pre-refactor, no longer in the codebase):**
 
 ```ts
 function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
@@ -63,24 +63,19 @@ function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise
 
 ### Refactoring Techniques
 
-#### Option A: Extract Method + Parameterize Method
+#### Option A: Extract Method + Parameterize Method — ✅ Done
 
-Extract the common "add block and update" logic:
+`src/features/workout/composables/useWorkout.ts` now does exactly this: each
+`addXBlock` is a one-line call into `createXWorkoutBlock` (from
+`workoutBlockFactory.ts`) piped through a shared `appendBlock()` helper, with
+`getNextWorkoutBlockId()` (from `workoutBlockList.ts`) replacing the old
+`generateBlockId()`:
 
 ```ts
-function addBlock(block: WorkoutBlock) {
-  const newBlocks = [...workout.value.blocks, block]
-  updateWorkout({ blocks: newBlocks, selectedBlockIndex: newBlocks.length - 1 })
-}
-
-function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>) {
-  addBlock({
-    kind: 'amrap',
-    id: generateBlockId(),
-    config,
-    exercises: [...exercises],
-    result: null,
-  })
+function addAmrapBlock(config: AmrapConfig, blockExercises: ReadonlyArray<BlockExercise>) {
+  appendBlock(
+    createAmrapWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)),
+  )
 }
 ```
 
@@ -130,43 +125,16 @@ const block = new BlockBuilder('amrap').withConfig(config).withExercises(exercis
 
 ---
 
-## 2. Validation Schemas (Medium Impact - 5 clones)
+## 2. Validation Schemas — ✅ Done
 
-**Files:**
-
-- `src/features/settings/utils/validation/blockSchemas.ts`
-- `src/features/settings/utils/validation/templateSchema.ts`
-
-**Current Pattern:**
-Same Zod schemas (e.g., `amrapConfigSchema`, `emomConfigSchema`) defined in both files.
-
-**Code Smell:** [Duplicated Code](https://refactoring.guru/smells/duplicate-code)
-
-### Refactoring Techniques
-
-#### Extract to Shared Module
-
-```ts
-// src/features/settings/utils/validation/shared/configSchemas.ts
-export const amrapConfigSchema = z.object({
-  durationSeconds: z.number().min(1).max(3600),
-})
-
-export const emomConfigSchema = z.object({
-  minutes: z.number().min(1).max(60),
-  exerciseRotation: z.enum(['each-minute', 'full-round']),
-})
-
-// blockSchemas.ts
-import { amrapConfigSchema, emomConfigSchema } from './shared/configSchemas'
-
-// templateSchema.ts
-import { amrapConfigSchema, emomConfigSchema } from './shared/configSchemas'
-```
-
-### Recommended Approach
-
-Simple extraction - low effort, high value.
+**Status:** Fixed. The shared module was created as
+`src/features/settings/utils/validation/blockConfigSchemas.ts`, exporting
+`dbAmrapConfigSchema`, `dbEmomConfigSchema`, `dbTabataConfigSchema`,
+`dbForTimeConfigSchema`, `dbCardioConfigSchema`, plus shared field groups
+(`blockExerciseFieldsBase`, `strengthBlockFieldsBase`). Both
+`blockSchemas.ts` and `templateSchema.ts` import from it (`blockSchemas.ts`
+aliases the imports, e.g. `dbAmrapConfigSchema as databaseAmrapConfigSchema`)
+instead of redefining the schemas — no more duplication here.
 
 ---
 

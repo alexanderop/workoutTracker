@@ -20,7 +20,6 @@ These files used to live under the root documentation tree. The root docs folder
 - [Workout Tracker - Product Features](./PRODUCT_FEATURES.md)
 - [Product Roadmap & Improvement Analysis](./PRODUCT_ROADMAP.md)
 - [Vue Design Patterns for Component Refactoring](./REFACTORING_PATTERNS.md)
-- [Using the /refactor-component Slash Command](./REFACTOR_COMMAND_USAGE.md)
 - [Vue PWA Starter Template - Extraction Plan](./TEMPLATE_PLAN.md)
 - [TIL: Adding Fields to Block Types (Discriminated Unions)](./TIL-adding-fields-to-block-types.md)
 - [TIL: Agent Browser QA Gotchas](./TIL-agent-browser-qa-gotchas.md)
@@ -31,7 +30,6 @@ These files used to live under the root documentation tree. The root docs folder
 - [Vue Style Guide](./VUE_STYLE_GUIDE.md)
 - [AI-Powered Workout Generation Research](./ai-workout-generation-research.md)
 - [Mutation Testing Without Stryker: How AI Agents Fill the Gap](./blog-draft-mutation-testing-with-ai.md)
-- [Workout Tracker - Complete Component & Page Reference](./components-and-pages.md)
 - [Dependency Update Notes](./dependency-updates.md)
 - [NumericInput Feature Roadmap](./feature-roadmap-numeric-input.md)
 - [Mutation Testing: Benchmarks Integration Tests](./mutation-testing-benchmarks.md)
@@ -42,7 +40,6 @@ These files used to live under the root documentation tree. The root docs folder
 - [AI-Powered QA in GitHub Actions with Claude Code Action and Agent Browser](./tutorial-claude-qa-agent-browser-github-action.md)
 - [Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions](./tutorial-claude-qa-github-action.md)
 - [User Research: Fitness Tracking Apps for Hybrid Athletes](./user-research-findings.md)
-- [Vitest Browser Mode Implementation Plan](./vitest-browser-mode-plan.md)
 - [Vitest Browser Mode Troubleshooting](./vitest-browser-troubleshooting.md)
 - [Workout Block Model](./workout-block-model.md)
 
@@ -65,16 +62,17 @@ These files used to live under the root documentation tree. The root docs folder
 
 ## Plans References
 
-- [Workout Calendar Feature Design](./plans/2024-12-14-workout-calendar-design.md)
 - [CrossFit Workout Types Design](./plans/2025-11-30-crossfit-workout-types-design.md)
 - [Internationalization Design](./plans/2025-12-03-i18n-design.md)
 - [Bulletproof Architecture Refactor](./plans/2025-12-05-bulletproof-architecture-design.md)
-- [Benchmark Workout UI Redesign - Implementation Plan](./plans/2025-12-14-benchmark-workout-ui-implementation.md)
-- [Benchmark Workout UI Redesign](./plans/2025-12-14-benchmark-workout-ui-redesign.md)
 - [Plan: Refactor Strength Block Targets to Discriminated Union](./plans/2026-01-06-strength-block-discriminated-union.md)
 - [Feature Spec: Set Context Menu in Active Workout](./plans/2026-01-16-set-context-menu.md)
+- [Jazz 2.0 Schema Design — target database structure](./plans/2026-07-04-jazz-schema-design.md)
+- [Ticket: Swappable Persistence Layer (Phases 1–3)](./plans/2026-07-04-persistence-swap-ticket.md)
 - [Dexie.js Improvement Plan](./plans/dexie-improvements.md)
+- [Swappable Persistence — Architecture Plan](./plans/persistence-swap-architecture-plan.html)
 - [[WT-XXX] Add workout streak counter and activity heatmap to Home view](./plans/streak-heatmap-ticket.md)
+- [VueUse-Style Composables Plan](./plans/vueuse-style-composables.md)
 
 ## Research References
 

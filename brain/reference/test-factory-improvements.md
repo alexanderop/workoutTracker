@@ -4,7 +4,7 @@ title: "Test Factory Improvements Plan"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/test-factory-improvements.md
 tags: [reference]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-06T00:00:00Z
 ---
 ## Test Factory Improvements Plan
 
@@ -12,6 +12,20 @@ timestamp: 2026-06-28T08:10:00Z
 > **Estimated effort:** 2-3 hours
 > **Priority:** Medium
 > **Created:** 2025-12-14
+
+> **Status update (2026-07-06):** This plan has been implemented. `faker.seed(12_345)`
+> is in `src/__tests__/setup.ts`, `benchmark.factory.ts` and `timedBlock.factory.ts`
+> exist under `src/__tests__/factories/` and are exported from `factories/index.ts`,
+> and no test under `src/__tests__/` builds IDs with `Date.now()`/`Math.random()`
+> anymore. Note `benchmark-flows.spec.ts` no longer exists as a single file — the
+> benchmark integration tests were split into `benchmark-execution.spec.ts`,
+> `benchmark-results.spec.ts`, `benchmark-management.spec.ts`, etc., under
+> `src/__tests__/integration/`. See the schema-drift note in Phase 2.1 below — the
+> code samples in 2.3 and 3.1 still show the pre-rounds-schema function names
+> (`createDbBenchmarkExercise`, `createDbAmrapBenchmark`, `createDbForTimeBenchmark`
+> with an `exercises` array) and should not be used as a reference; check
+> `src/__tests__/factories/benchmark.factory.ts` and `factories/index.ts` for the
+> real, current exports.
 
 ## Overview
 
@@ -335,17 +349,19 @@ export function createSet(overrides: Partial<Set> = {}): Set {
 
 ### Must Have
 
-- [ ] `faker.seed(12345)` added to `src/__tests__/setup.ts`
-- [ ] `benchmark.factory.ts` created with `createDbBenchmark`, `createDbForTimeBenchmark`, `createDbAmrapBenchmark`
-- [ ] `timedBlock.factory.ts` created with `createDbForTimeBlock`, `createDbBlockExercise`, `createDbForTimeResult`
-- [ ] All new factories exported from `src/__tests__/factories/index.ts`
-- [ ] `benchmark-flows.spec.ts` refactored to use new factories (no more `Date.now() + Math.random()` IDs)
-- [ ] All tests pass: `pnpm type-check && pnpm lint && pnpm test`
+- [x] `faker.seed(12_345)` added to `src/__tests__/setup.ts`
+- [x] `benchmark.factory.ts` created (with `createDbBenchmark`, `createDbForTimeBenchmark`,
+      `createDbPyramidBenchmark` — rounds-based, `createDbAmrapBenchmark` was not
+      carried over since `amrap` benchmarks were removed)
+- [x] `timedBlock.factory.ts` created with `createDbForTimeBlock`, `createDbBlockExercise`, `createDbForTimeResult`
+- [x] All new factories exported from `src/__tests__/factories/index.ts`
+- [x] Benchmark integration tests use factories, no more `Date.now() + Math.random()` IDs
+- [x] Tests pass (verify with `pnpm type-check && pnpm lint && pnpm test`)
 
 ### Nice to Have
 
-- [ ] `Complete<T>` helper created in `src/__tests__/helpers/types.ts`
-- [ ] At least one existing factory updated to use `Complete<T>`
+- [x] `Complete<T>` helper created in `src/__tests__/helpers/types.ts`
+- [ ] At least one existing factory updated to use `Complete<T>` (e.g. `set.factory.ts` still uses plain spread, not `Complete<Set>`)
 
 ---
 
