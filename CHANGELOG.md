@@ -1,3 +1,17 @@
+# [1.30.0](https://github.com/alexanderop/workoutTracker/compare/v1.29.0...v1.30.0) (2026-07-07)
+
+
+### Bug Fixes
+
+* **workout:** stop auto-save from resurrecting finished workout drafts ([1378a71](https://github.com/alexanderop/workoutTracker/commit/1378a71ec65abb6d5fc22d1606d9803b0b19b78c))
+
+
+### Features
+
+* **app:** fix findings from the 2026-07-04 UX/UI review ([68d985d](https://github.com/alexanderop/workoutTracker/commit/68d985da9953387f6704c7204d7d87db20b63612))
+
+
+
 # [1.29.0](https://github.com/alexanderop/workoutTracker/compare/v1.28.8...v1.29.0) (2026-07-04)
 
 
@@ -32,15 +46,6 @@
 
 * **qa:** address agent browser findings ([dcdc8d2](https://github.com/alexanderop/workoutTracker/commit/dcdc8d25fc3864bdcb47bc2e5d80fc4ae1d5a23b))
 * **settings:** accept cardio template imports ([b7cdb31](https://github.com/alexanderop/workoutTracker/commit/b7cdb31d504aaaa0874c8d39fa9cc4b2f768acf7))
-
-
-
-## [1.28.5](https://github.com/alexanderop/workoutTracker/compare/v1.28.4...v1.28.5) (2026-04-13)
-
-
-### Bug Fixes
-
-* **qa:** disable track_progress on comment events to preserve agent mode ([6d64dd5](https://github.com/alexanderop/workoutTracker/commit/6d64dd50290f437fe2dae0f6172ae0ce0e962098))
 
 
 
