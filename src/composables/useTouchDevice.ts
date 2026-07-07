@@ -1,6 +1,10 @@
 import type { Ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 
+export type UseTouchDeviceReturn = {
+  isTouchDevice: Ref<boolean>
+}
+
 /**
  * Detects if the current device uses touch input.
  *
@@ -12,7 +16,7 @@ import { useMediaQuery } from '@vueuse/core'
  *
  * @returns Object with `isTouchDevice` computed ref
  */
-export function useTouchDevice(): { isTouchDevice: Ref<boolean> } {
+export function useTouchDevice(): UseTouchDeviceReturn {
   const isTouchDevice = useMediaQuery('(pointer: coarse)')
 
   return { isTouchDevice }

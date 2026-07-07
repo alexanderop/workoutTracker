@@ -7,11 +7,13 @@ import { RouteNames } from '@/router'
 import { WorkoutBlockDialogs } from '@/components/blocks'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
+import UnsavedChangesDialog from '@/components/UnsavedChangesDialog.vue'
 import TemplateBlockList from '@/features/templates/components/TemplateBlockList.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useTemplateDetail } from '@/features/templates/composables/useTemplateDetail'
+import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard'
 import { useWorkoutBlockDialogs } from '@/composables/useWorkoutBlockDialogs'
 
 const { t } = useI18n()
@@ -39,6 +41,14 @@ const {
   updateBlocks,
   reorderBlocks,
 } = useTemplateDetail(templateId)
+
+// Warn before discarding unsaved changes on back navigation, browser back,
+// or tab close (see brain/reference/reviews/ux-ui-review-2026-07-04.md Finding 5).
+const {
+  showDialog: showUnsavedChangesDialog,
+  confirmDiscard,
+  cancelDiscard,
+} = useUnsavedChangesGuard(isEdited)
 
 const {
   addBlockDialogOpen,
@@ -80,9 +90,8 @@ async function handleDeleteTemplate(): Promise<void> {
 }
 
 function handleCancel(): void {
-  if (isEdited.value && !confirm('Discard changes?')) {
-    return
-  }
+  // The unsaved-changes route guard shows a confirm dialog when isEdited is
+  // true, so this only needs to trigger the navigation.
   router.back()
 }
 </script>
@@ -205,5 +214,11 @@ function handleCancel(): void {
         </div>
       </MobileDialogContent>
     </Dialog>
+
+    <UnsavedChangesDialog
+      :open="showUnsavedChangesDialog"
+      @cancel="cancelDiscard"
+      @discard="confirmDiscard"
+    />
   </PageLayout>
 </template>

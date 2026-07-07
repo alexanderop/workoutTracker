@@ -5,8 +5,9 @@ import { GripVertical, Minus, Plus, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import type { DbTemplateBlock } from '@/db/schema'
-import { BLOCK_COLORS, BLOCK_ICONS, BLOCK_LABELS } from '@/types/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
 import { CARDIO_ACTIVITIES } from '@/types/blocks'
+import { getTemplateBlockExerciseNames } from '@/features/templates/lib/templateBlock'
 
 const { t } = useI18n()
 
@@ -24,30 +25,6 @@ const emit = defineEmits<Emits>()
 
 const isStrength = computed(() => block.kind === 'strength')
 
-const strengthImage = computed(() => {
-  if (block.kind === 'strength') {
-    return block.image
-  }
-  return null
-})
-
-const strengthName = computed(() => {
-  if (block.kind === 'strength') {
-    return block.name
-  }
-  return ''
-})
-
-const blockIcon = computed(() => {
-  if (block.kind === 'strength') {
-    return null // Use ExerciseAvatar instead
-  }
-  if (block.kind === 'cardio') {
-    return CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)?.icon ?? '🏃'
-  }
-  return BLOCK_ICONS[block.kind]
-})
-
 const blockTitle = computed(() => {
   if (block.kind === 'strength') {
     return block.name
@@ -56,6 +33,40 @@ const blockTitle = computed(() => {
     return CARDIO_ACTIVITIES.find((a) => a.value === block.config.activity)?.label ?? 'Cardio'
   }
   return BLOCK_LABELS[block.kind]
+})
+
+// Only strength blocks carry a custom exercise image; other kinds fall back
+// to ExerciseAvatar's initials treatment, matching the icon treatment
+// already used by WorkoutQueueItem/WorkoutBlockPlaylistItem -- this used to
+// be a colored emoji square instead (block-icon harmonization, UX review
+// 2026-07-04).
+const avatarImage = computed(() => {
+  if (block.kind === 'strength') {
+    return block.image
+  }
+  return null
+})
+
+const avatarName = computed(() => {
+  if (block.kind === 'strength') {
+    return block.name
+  }
+  return blockTitle.value
+})
+
+// Exercise names contained in the block, shown inline on the card and used
+// to build distinguishable accessible names (Findings M6 & M7, UX review
+// 2026-07-04). Empty for strength (name already shown via blockTitle) and
+// cardio (no exercises).
+const exerciseNames = computed(() => getTemplateBlockExerciseNames(block))
+
+// Accessible name for the card's group role and its per-block controls.
+// Includes exercise names for timed blocks so two AMRAP cards, say, don't
+// both announce as just "AMRAP" -- a screen-reader user needs to tell them
+// apart the same way a sighted user does by reading the exercise list.
+const ariaBlockName = computed(() => {
+  if (exerciseNames.value.length === 0) return blockTitle.value
+  return `${blockTitle.value}: ${exerciseNames.value.join(', ')}`
 })
 
 function formatExerciseCount(count: number): string {
@@ -74,7 +85,7 @@ function getBlockSubtitle(blk: DbTemplateBlock): string {
       return `${blk.config.minutes} min · ${blk.config.exerciseRotation === 'full-round' ? 'Full Round' : 'Per Exercise'}`
     }
     case 'tabata': {
-      return `${blk.config.rounds} rounds · ${Math.floor(blk.config.rounds * (blk.config.workSeconds + blk.config.restSeconds) / 60)} min`
+      return `${blk.config.rounds} rounds · ${Math.floor((blk.config.rounds * (blk.config.workSeconds + blk.config.restSeconds)) / 60)} min`
     }
     case 'fortime': {
       return `${blk.config.timeCapSeconds ? `Cap: ${Math.floor(blk.config.timeCapSeconds / 60)} min` : 'No cap'} · ${formatExerciseCount(blk.exercises.length)}`
@@ -135,7 +146,11 @@ function decrementSetCount(): void {
 </script>
 
 <template>
-  <div class="bg-muted/30 rounded-xl border border-border/50 overflow-hidden">
+  <div
+    class="bg-muted/30 rounded-xl border border-border/50 overflow-hidden"
+    role="group"
+    :aria-label="ariaBlockName"
+  >
     <!-- Top row: Block info -->
     <div class="flex items-center gap-3 p-4">
       <!-- Drag handle -->
@@ -143,23 +158,7 @@ function decrementSetCount(): void {
         <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
       </div>
 
-      <ExerciseAvatar
-        v-if="block.kind === 'strength'"
-        :name="strengthName"
-        :image="strengthImage"
-        size="lg"
-      />
-      <div
-        v-else
-        :class="[
-          'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-2xl',
-          blockColors.bg,
-        ]"
-        role="img"
-        :aria-label="blockTitle"
-      >
-        {{ blockIcon }}
-      </div>
+      <ExerciseAvatar :name="avatarName" :image="avatarImage" size="lg" />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
           <p class="font-semibold text-base leading-tight">{{ blockTitle }}</p>
@@ -175,6 +174,13 @@ function decrementSetCount(): void {
           </span>
         </div>
         <p class="text-sm text-muted-foreground mt-0.5">{{ blockSubtitle }}</p>
+        <!-- Contained exercise names (Finding M7): timed-block cards used to
+             hide which exercises they held behind a summary like "12 min ·
+             1 exercise". Strength cards already show the name via blockTitle
+             above, and cardio has no exercises, so both are excluded. -->
+        <p v-if="exerciseNames.length > 0" class="text-sm text-muted-foreground mt-0.5">
+          {{ exerciseNames.join(', ') }}
+        </p>
       </div>
     </div>
 
@@ -193,7 +199,7 @@ function decrementSetCount(): void {
             size="icon"
             class="rounded-l-lg rounded-r-none"
             :disabled="setCount === 1"
-            :aria-label="t('common.aria.decreaseSetCount')"
+            :aria-label="t('common.aria.decreaseSetCountFor', { name: ariaBlockName })"
             @click="decrementSetCount"
           >
             <Minus class="icon-sm" />
@@ -203,7 +209,7 @@ function decrementSetCount(): void {
             :value="setCount"
             min="1"
             max="10"
-            :aria-label="t('common.aria.setCount')"
+            :aria-label="t('common.aria.setCountFor', { name: ariaBlockName })"
             class="w-10 text-center text-base font-semibold border-0 bg-transparent focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             @change="handleSetCountChange"
           />
@@ -211,7 +217,7 @@ function decrementSetCount(): void {
             variant="ghost"
             size="icon"
             class="rounded-r-lg rounded-l-none"
-            :aria-label="t('common.aria.increaseSetCount')"
+            :aria-label="t('common.aria.increaseSetCountFor', { name: ariaBlockName })"
             @click="incrementSetCount"
           >
             <Plus class="icon-sm" />
@@ -228,7 +234,7 @@ function decrementSetCount(): void {
           variant="ghost"
           size="icon"
           class="text-destructive hover:text-destructive hover:bg-destructive/10"
-          :aria-label="t('common.aria.removeExercise')"
+          :aria-label="t('common.aria.removeBlock', { name: ariaBlockName })"
           @click="$emit('remove')"
         >
           <Trash2 class="icon-md" />

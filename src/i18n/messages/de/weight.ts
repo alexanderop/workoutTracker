@@ -10,7 +10,8 @@ export default {
   history: 'Verlauf',
   noData: 'Keine Daten für diesen Zeitraum',
   noEntries: 'Noch keine Gewichtseinträge',
-  emptyState: 'Starte das Tracking deines Gewichts, indem du oben deinen ersten Eintrag hinzufügst.',
+  emptyState:
+    'Starte das Tracking deines Gewichts, indem du oben deinen ersten Eintrag hinzufügst.',
   delete: 'Löschen',
   deleteTitle: 'Eintrag löschen',
   deleteConfirm: 'Bist du sicher, dass du diesen Gewichtseintrag löschen möchtest?',
@@ -24,4 +25,10 @@ export default {
   trendDown: 'fallend',
   trendStable: 'stabil',
   deleteEntryLabel: 'Eintrag löschen: {weight} am {date}',
+  outlierConfirm: {
+    message:
+      'Das ist eine große Veränderung im Vergleich zum letzten Mal ({weight}). Trotzdem speichern?',
+    confirm: 'Trotzdem speichern',
+    cancel: 'Abbrechen',
+  },
 } as const

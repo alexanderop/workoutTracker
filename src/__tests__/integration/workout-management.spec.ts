@@ -1,5 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { getActiveWorkoutRepository } from '@/db'
+import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -203,20 +206,134 @@ describe('Workout Management', () => {
       await expect.element(page.getByRole('timer')).toBeVisible()
 
       // Verify the badge contains a time format (m:ss or mm:ss)
-      await expect.poll(async () => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
-        const badge = document.querySelector('.tabular-nums')
-        return badge?.textContent?.match(/^\d+:\d{2}$/)
-      }).toBeTruthy()
+      await expect
+        .poll(async () => {
+          // eslint-disable-next-line no-restricted-syntax -- Finding by CSS class, no accessible equivalent
+          const badge = document.querySelector('.tabular-nums')
+          return badge?.textContent?.match(/^\d+:\d{2}$/)
+        })
+        .toBeTruthy()
 
       // Verify the pulsing dot indicator exists (animate-ping class)
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding animation indicator by CSS class
-        const pulsingDot = document.querySelector('.animate-ping')
-        return pulsingDot !== null
-      }).toBe(true)
+      await expect
+        .poll(() => {
+          // eslint-disable-next-line no-restricted-syntax -- Finding animation indicator by CSS class
+          const pulsingDot = document.querySelector('.animate-ping')
+          return pulsingDot !== null
+        })
+        .toBe(true)
 
       cleanup()
+    })
+  })
+
+  describe('Reload Persistence', () => {
+    it('should keep a completed set marked complete after reloading and resuming the workout', async () => {
+      const { builder, workout, common, cleanup } = await createTestApp()
+
+      // Start a workout and complete its first set
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await workout.waitForTableVisible()
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
+      expect(await workout.isSetCompleted(0)).toBe(true)
+
+      // Wait for the debounced auto-save to persist the completed status to IndexedDB
+      await expect
+        .poll(async () => {
+          const saved = await getActiveWorkoutRepository().get()
+          const block = saved?.blocks[0]
+          return block?.kind === 'strength' ? block.sets[0]?.status : undefined
+        })
+        .toBe('completed')
+
+      // Simulate a full page reload: unmount the app and reset in-memory
+      // module state (the workout singleton + app init state), but leave
+      // IndexedDB untouched -- that's what actually happens on a browser
+      // reload, unlike `cleanupIntegrationTest` which also wipes the DB.
+      cleanup()
+      resetWorkout()
+      resetInitState()
+
+      const fresh = await createTestApp()
+
+      // App boots straight into the "Resume Workout?" prompt
+      await fresh.common.waitForDialog()
+      await userEvent.click(fresh.common.getDialogButton('Resume Workout'))
+      await fresh.common.waitForDialogClose()
+      await fresh.workout.waitForTableVisible()
+
+      // (a) The completed status must survive the reload/resume round trip
+      expect(await fresh.workout.isSetCompleted(0)).toBe(true)
+
+      // (b) Completing another set after resume must still work
+      await fresh.workout.fillCardSetAndComplete({ weight: '85', reps: '8', rir: '1' })
+      expect(await fresh.workout.isSetCompleted(1)).toBe(true)
+
+      fresh.cleanup()
+    })
+
+    it('should keep the "Complete Set" CTA usable after reloading a workout that was interrupted from the builder screen', async () => {
+      const { builder, workout, common, cleanup } = await createTestApp()
+
+      // Start a workout and complete its first set
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await userEvent.click(common.getDialogButton('Bench Press'))
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await workout.waitForTableVisible()
+      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
+      expect(await workout.isSetCompleted(0)).toBe(true)
+
+      // Step back to the builder screen -- a common mid-workout detour (e.g.
+      // reviewing the plan) that persists the workout with `mode: 'builder'`.
+      // A reload landing on this state is exactly what puts the resumed
+      // workout's first set back in front of the user as already completed.
+      await page.getByRole('button', { name: /go back/i }).click()
+      await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
+
+      // Wait for the debounced auto-save to persist `mode: 'builder'`
+      await expect
+        .poll(async () => (await getActiveWorkoutRepository().get())?.mode)
+        .toBe('builder')
+
+      // Simulate a full page reload (see helper comment above for why DB is
+      // left untouched while in-memory module state resets).
+      cleanup()
+      resetWorkout()
+      resetInitState()
+
+      const fresh = await createTestApp()
+
+      // App boots straight into the "Resume Workout?" prompt
+      await fresh.common.waitForDialog()
+      await userEvent.click(fresh.common.getDialogButton('Resume Workout'))
+      await fresh.common.waitForDialogClose()
+
+      // Resuming from the reload prompt lands back on the builder screen
+      // (the mode that was actually persisted); re-enter active mode via its
+      // own "Resume Workout" call to action.
+      await expect.element(page.getByRole('button', { name: /resume workout/i })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: /resume workout/i }))
+      await fresh.workout.waitForTableVisible()
+
+      // (a) The completed status must survive the round trip
+      expect(await fresh.workout.isSetCompleted(0)).toBe(true)
+
+      // (b) Completing the next set must still work: the footer CTA must not
+      // be stuck disabled, and completing a set must actually change state.
+      const completeSetButton = page.getByRole('button', { name: /complete set/i })
+      await expect.element(completeSetButton).toBeEnabled()
+      await userEvent.click(completeSetButton)
+      expect(await fresh.workout.isSetCompleted(1)).toBe(true)
+
+      fresh.cleanup()
     })
   })
 

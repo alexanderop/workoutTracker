@@ -23,8 +23,11 @@ const summary = computed(() => {
   const sets = completedSets.value
   if (sets.length === 0) return t('workouts.sets.noSetsCompleted')
 
-  const bestWeightKg = Math.max(...sets.map((s) => Number.parseFloat(s.kg) || 0))
-  return `${sets.length} set${sets.length > 1 ? 's' : ''} × ${formatWithUnit(bestWeightKg, 1)}`
+  // "top set" wording, not "×" -- sets are frequently uneven (e.g. 80/80/999
+  // on a ramping set), and "3 sets × 999 kg" previously implied all three
+  // sets were done at the heaviest weight (UX review finding).
+  const topWeightKg = Math.max(...sets.map((s) => Number.parseFloat(s.kg) || 0))
+  return t('workouts.sets.topSetSummary', { weight: formatWithUnit(topWeightKg, 0) }, sets.length)
 })
 </script>
 

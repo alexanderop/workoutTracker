@@ -7,12 +7,13 @@ import { RouteNames } from '@/router'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
+import { Dumbbell } from '@lucide/vue'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 import PageLayout from '@/components/PageLayout.vue'
 import WorkoutHistoryCard from '@/components/WorkoutHistoryCard.vue'
 import SwipeableWorkoutCard from '@/components/SwipeableWorkoutCard.vue'
 import DeleteWorkoutDialog from '@/components/DeleteWorkoutDialog.vue'
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { useSwipeableDelete } from '@/composables/useSwipeableDelete'
 
 // ============================================
@@ -139,10 +140,7 @@ onMounted(() => {
             @close="handleCardClose"
             @delete="handleDeleteRequest"
           >
-            <WorkoutHistoryCard
-              :workout="workout"
-              @click="navigateToWorkoutDetail"
-            />
+            <WorkoutHistoryCard :workout="workout" @click="navigateToWorkoutDetail" />
           </SwipeableWorkoutCard>
         </div>
       </section>
@@ -151,6 +149,9 @@ onMounted(() => {
     <!-- Empty state -->
     <div v-else class="flex flex-1 items-center justify-center">
       <Empty>
+        <EmptyMedia>
+          <Dumbbell class="h-10 w-10 text-muted-foreground" />
+        </EmptyMedia>
         <EmptyHeader>
           <EmptyTitle>{{ t('workouts.empty.history.title') }}</EmptyTitle>
           <EmptyDescription>{{ t('workouts.empty.history.description') }}</EmptyDescription>

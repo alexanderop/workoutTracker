@@ -18,9 +18,8 @@ async function recordSessionWithAdvancement(
   const progression = await repo.getById(progressionId)
   if (!progression) throw new Error(`Progression ${progressionId} not found`)
 
-  const nextLevel = completed && !progression.isComplete
-    ? calculateNextLevel(progression)
-    : undefined
+  const nextLevel =
+    completed && !progression.isComplete ? calculateNextLevel(progression) : undefined
 
   await repo.recordSession(progressionId, completed, nextLevel)
 }
@@ -251,7 +250,9 @@ describe('Progression Management', () => {
       await app.progressions.assertCompleteBadge()
 
       // Start session button should not be visible
-      await expect.element(page.getByRole('button', { name: /start session/i })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('button', { name: /start session/i }))
+        .not.toBeInTheDocument()
 
       app.cleanup()
     })
@@ -348,6 +349,28 @@ describe('Progression Management', () => {
 
       // Should show advanced level
       await app.progressions.assertCurrentLevel(20, 12, 10)
+
+      app.cleanup()
+    })
+  })
+
+  describe('Scope Copy', () => {
+    it('scopes the page to kettlebell EMOM without assuming a specific exercise', async () => {
+      const app = await createTestApp()
+
+      // resetDatabase()/deleteAll() clears the progressions table (see
+      // src/__tests__/db/dataManagement.spec.ts), so this starts empty.
+      await app.navigateTo('/progressions')
+
+      // Subtitle makes the kettlebell-EMOM-only scope explicit...
+      await expect
+        .element(page.getByText('Kettlebell EMOM progressions', { exact: true }))
+        .toBeVisible()
+
+      // ...and the empty state no longer assumes the exercise is specifically "swing".
+      await app.progressions.assertEmptyState()
+      await expect.element(page.getByText(/kettlebell emom progression plan/i)).toBeVisible()
+      await expect.element(page.getByText(/kettlebell swing/i)).not.toBeInTheDocument()
 
       app.cleanup()
     })

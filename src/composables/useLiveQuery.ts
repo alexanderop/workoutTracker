@@ -1,30 +1,54 @@
-import { onMounted, onUnmounted, shallowRef } from 'vue'
+import { tryOnScopeDispose } from '@vueuse/core'
+import type { ShallowRef } from 'vue'
+import { shallowReadonly, shallowRef, watch } from 'vue'
 import type { LiveQuery } from '@/db'
 
+export type UseLiveQueryReturn<T> = {
+  data: Readonly<ShallowRef<T | undefined>>
+  /** Manually stop the live subscription. */
+  stop: () => void
+}
+
 /**
- * Bridges a repository `LiveQuery<T>` into Vue reactivity. Reads the initial
- * snapshot via `get()` on mount, then keeps `data` in sync via `subscribe()`
- * until the owning component unmounts.
+ * Bridges a repository `LiveQuery<T>` into Vue reactivity. Subscribes at setup
+ * time (the subscription emits the current snapshot immediately, see
+ * {@link LiveQuery.subscribe}) and keeps `data` in sync until the owning
+ * effect scope is disposed or `stop()` is called.
+ *
+ * Reactive values read inside `make` (e.g. `toValue(limit)`) are tracked
+ * automatically: when they change, the old subscription is torn down and the
+ * factory re-runs — no separate dependency bookkeeping needed.
  *
  * `shallowRef` is deliberate: live query snapshots are replaced wholesale on
  * every emission, so deep reactivity tracking on nested fields is unnecessary
  * overhead (see brain/reference/reviews/repo-dexie-review.md).
+ *
+ * @param make Factory creating the `LiveQuery`; re-invoked whenever its reactive dependencies change
  */
-export function useLiveQuery<T>(make: () => LiveQuery<T>) {
+export function useLiveQuery<T>(make: () => LiveQuery<T>): UseLiveQueryReturn<T> {
   const data = shallowRef<T>()
-  let stop: (() => void) | undefined
+  let unsubscribe: (() => void) | undefined
 
-  onMounted(() => {
-    const query = make()
-    query.get().then((value) => {
-      data.value = value
-    })
-    stop = query.subscribe((value) => {
-      data.value = value
-    })
-  })
+  // The watcher both performs the initial subscription and re-subscribes when
+  // a reactive dependency of `make` changes.
+  const unwatch = watch(
+    make,
+    (query) => {
+      unsubscribe?.()
+      unsubscribe = query.subscribe((value) => {
+        data.value = value
+      })
+    },
+    { immediate: true },
+  )
 
-  onUnmounted(() => stop?.())
+  function stop() {
+    unwatch()
+    unsubscribe?.()
+    unsubscribe = undefined
+  }
 
-  return { data }
+  tryOnScopeDispose(stop)
+
+  return { data: shallowReadonly(data), stop }
 }

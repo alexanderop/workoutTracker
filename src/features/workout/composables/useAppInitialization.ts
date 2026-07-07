@@ -47,7 +47,9 @@ function getActiveWorkoutQuery(): LiveQuery<DbActiveWorkout | undefined> {
     activeWorkoutQuery.subscribe((activeWorkout) => {
       if (initState.value.status !== 'prompt-resume') return
 
-      if (!activeWorkout || activeWorkout.blocks.length === 0) {
+      const isResumable =
+        activeWorkout && activeWorkout.blocks.length > 0 && activeWorkout.mode !== 'completed'
+      if (!isResumable) {
         initState.value = { status: 'ready' }
         return
       }
@@ -92,6 +94,16 @@ export function useAppInitialization() {
 
         // Check for active workout
         const activeWorkout = await getActiveWorkoutQuery().get()
+
+        // A draft in 'completed' mode is a finished workout that already
+        // lives in history (older builds' debounced auto-save resurrected the
+        // draft after completion deleted it). Drop it instead of offering to
+        // resume -- resuming would duplicate the workout.
+        if (activeWorkout && activeWorkout.mode === 'completed') {
+          await getActiveWorkoutRepository().clear()
+          initState.value = { status: 'ready' }
+          return
+        }
 
         if (activeWorkout && activeWorkout.blocks.length > 0) {
           // Prompt user to resume

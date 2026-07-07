@@ -17,11 +17,27 @@ const MAX_SUPPORTED_VERSION = 1
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
 
 /**
+ * Every error code `parseExportFile` can return.
+ * Each one is looked up as a translation key at `settings.errors.<code>`
+ * (see `useDataExportImport.ts`) — see `dataImportLocales.spec.ts` for the
+ * test that keeps every locale in sync with this list.
+ */
+export const IMPORT_ERROR_CODES = [
+  'validationFailed',
+  'newerVersion',
+  'fileTooLarge',
+  'readFailed',
+  'invalidJson',
+] as const
+
+export type ImportErrorCode = (typeof IMPORT_ERROR_CODES)[number]
+
+/**
  * Result of parsing an export file.
  */
 type ParseResult =
   | { success: true; data: ExportData }
-  | { success: false; error: string; details?: string }
+  | { success: false; error: ImportErrorCode; details?: string }
 
 /**
  * Read a File as text.

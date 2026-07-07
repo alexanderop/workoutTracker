@@ -1,4 +1,5 @@
-import { computed, onMounted, readonly, ref, shallowRef, watch } from 'vue'
+import type { ComputedRef, ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef, watch } from 'vue'
 import {
   startOfWeek,
   endOfWeek,
@@ -97,17 +98,45 @@ function mapDaysToWorkoutDays(
 // Composable (Imperative Shell)
 // ============================================
 
-export function useWorkoutCalendar() {
+export type UseWorkoutCalendarReturn = {
+  currentWeek: ComputedRef<ReadonlyArray<WorkoutDay>>
+  weekNumber: ComputedRef<number>
+  weeklyDuration: ComputedRef<string>
+  selectedMonth: Readonly<ShallowRef<Date>>
+  currentMonthYear: ComputedRef<string>
+  monthDays: ComputedRef<ReadonlyArray<WorkoutDay>>
+  selectedDate: Readonly<ShallowRef<Date | null>>
+  selectedDayWorkouts: ComputedRef<ReadonlyArray<CalendarWorkout>>
+  selectedDateFormatted: ComputedRef<string>
+  goToPreviousMonth: () => void
+  goToNextMonth: () => void
+  selectDate: (date: Date) => void
+  clearSelection: () => void
+  resetToCurrentMonth: () => void
+  isLoading: Readonly<ShallowRef<boolean>>
+  /** Reload the workouts cache from the repository. */
+  refresh: () => Promise<void>
+}
+
+/**
+ * Reactive week-strip and month-calendar data derived from completed
+ * workouts. Loads at setup time (scope-based, no component instance
+ * required); call `refresh` after mutations.
+ *
+ * Follow-up: migrate the cache to `useLiveQuery` once the workouts
+ * repository exposes an `observeByDateRange()` live query.
+ */
+export function useWorkoutCalendar(): UseWorkoutCalendarReturn {
   const locale = getCurrentLocale()
   const dateLocale = getDateLocale(locale)
 
   // Primary State
   const workoutsCache = shallowRef<ReadonlyArray<DbCompletedWorkout>>([])
-  const selectedMonth = ref(new Date())
-  const selectedDate = ref<Date | null>(null)
+  const selectedMonth = shallowRef(new Date())
+  const selectedDate = shallowRef<Date | null>(null)
 
   // State Metadata
-  const isLoading = ref(false)
+  const isLoading = shallowRef(false)
 
   // Computed: Current week (Mon-Sun)
   const currentWeek = computed<ReadonlyArray<WorkoutDay>>(() => {
@@ -209,10 +238,7 @@ export function useWorkoutCalendar() {
     selectedDate.value = null
   }
 
-  // Load workouts on mount
-  onMounted(() => {
-    loadWorkouts()
-  })
+  void loadWorkouts()
 
   // Refresh when month changes (for potential lazy loading in future)
   watch(selectedMonth, () => {
@@ -227,12 +253,12 @@ export function useWorkoutCalendar() {
     weeklyDuration,
 
     // Calendar data
-    selectedMonth: readonly(selectedMonth),
+    selectedMonth: shallowReadonly(selectedMonth),
     currentMonthYear,
     monthDays,
 
     // Selection
-    selectedDate: readonly(selectedDate),
+    selectedDate: shallowReadonly(selectedDate),
     selectedDayWorkouts,
     selectedDateFormatted,
 
@@ -244,7 +270,7 @@ export function useWorkoutCalendar() {
     resetToCurrentMonth,
 
     // State
-    isLoading: readonly(isLoading),
+    isLoading: shallowReadonly(isLoading),
     refresh: loadWorkouts,
   }
 }

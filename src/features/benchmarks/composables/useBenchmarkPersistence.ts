@@ -57,7 +57,7 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
     const [loadError, databaseBenchmark] = await tryCatch(repo.load())
 
     if (loadError) {
-      core.persistenceState.value = { status: 'error', error: loadError }
+      core.setError(loadError)
       return null
     }
 
@@ -67,11 +67,11 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
     const [completeError, completed] = await tryCatch(repo.complete(databaseBenchmark))
 
     if (completeError) {
-      core.persistenceState.value = { status: 'error', error: completeError }
+      core.setError(completeError)
       return null
     }
 
-    core.hasUnsavedChanges.value = false
+    core.markSaved()
     return completed
   }
 

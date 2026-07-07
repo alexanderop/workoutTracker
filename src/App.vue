@@ -4,6 +4,7 @@ import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
+import ToastViewport from '@/components/ToastViewport.vue'
 import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
@@ -50,5 +51,7 @@ onMounted(() => {
       @resume="resumeWorkout"
       @discard="discardWorkout"
     />
+
+    <ToastViewport />
   </div>
 </template>

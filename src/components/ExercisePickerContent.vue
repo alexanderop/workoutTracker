@@ -3,13 +3,14 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 import type { Equipment, Muscle } from '@/types/exercises'
 
 import { Search } from '@lucide/vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ExerciseFilters from '@/components/ExerciseFilters.vue'
 import ExerciseListItem from '@/components/ExerciseListItem.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
+import { useTouchDevice } from '@/composables/useTouchDevice'
 
 /**
  * Reusable exercise picker content with search, filters, and exercise list.
@@ -50,6 +51,15 @@ const { searchQuery, filteredExercises } = useExerciseSearch({
   equipmentFilter,
 })
 
+// On touch devices, autofocusing the search input opens the on-screen
+// keyboard the instant this sheet mounts, which resizes the viewport while
+// the user's very first tap may already be in flight. That race is the root
+// cause of taps on the unfiltered exercise list silently missing their
+// target (see the "Add to Workout" tap-selection UX finding). Autofocus is
+// safe to keep on non-touch devices, where there is no on-screen keyboard.
+const { isTouchDevice } = useTouchDevice()
+const shouldAutofocus = computed(() => autofocus && !isTouchDevice.value)
+
 function handleSelect(exercise: Exercise) {
   emit('select', exercise)
 }
@@ -83,7 +93,7 @@ defineExpose({ reset })
         v-model="searchQuery"
         :placeholder="t(searchPlaceholder)"
         class="w-full pl-10 h-12 text-base bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-        :autofocus="autofocus"
+        :autofocus="shouldAutofocus"
       />
     </div>
 

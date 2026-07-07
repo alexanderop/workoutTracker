@@ -79,6 +79,32 @@ describe('Accessibility', () => {
 
       cleanup()
     })
+
+    it('exposes a per-row set options button with a unique accessible name for each set', async () => {
+      // Finding 9, July 2026 UX review: delete/duplicate had no a11y-tree presence at
+      // all (long-press only). Each set row must now expose a real, uniquely-named
+      // button so screen-reader users can tell rows apart and reach the actions menu.
+      const { builder, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.startWorkout()
+
+      await expect
+        .poll(() => page.getByRole('heading', { name: /bench press/i }).query())
+        .toBeTruthy()
+
+      const optionsButtons = await page.getByRole('button', { name: /options for set \d+/i }).all()
+      expect(optionsButtons.length).toBeGreaterThanOrEqual(3)
+
+      const names = await Promise.all(
+        optionsButtons.map(async (button) => (await button.element()).getAttribute('aria-label')),
+      )
+
+      expect(names.every((name) => typeof name === 'string' && name.length > 0)).toBe(true)
+      expect(new Set(names).size).toBe(names.length)
+
+      cleanup()
+    })
   })
 
   describe('Settings Page', () => {

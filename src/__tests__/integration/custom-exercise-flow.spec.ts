@@ -9,7 +9,7 @@ describe('Custom Exercise Flow', () => {
   afterEach(cleanupIntegrationTest)
 
   it('creates a custom exercise and displays it in the exercises view', async () => {
-    const { common, getByRole, cleanup } = await createTestApp()
+    const { common, exercises, getByRole, cleanup } = await createTestApp()
 
     // Step 1: Navigate to exercises view
     await common.navigateToExercises()
@@ -19,9 +19,10 @@ describe('Custom Exercise Flow', () => {
     await userEvent.click(createButton)
     await common.waitForRoute(/^\/create-exercise$/)
 
-    // Step 3: Fill in exercise name
+    // Step 3: Fill in exercise name and required muscle group (Finding M5)
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await userEvent.fill(nameInput, 'My Awesome Lift')
+    await exercises.selectMuscle('Back')
 
     // Step 4: Save the exercise
     const saveButton = getByRole('button', { name: /save/i })
@@ -37,7 +38,7 @@ describe('Custom Exercise Flow', () => {
   })
 
   it('creates a custom exercise and shows it in the add exercise dialog', async () => {
-    const { common, router, getByRole, cleanup } = await createTestApp()
+    const { common, exercises, router, getByRole, cleanup } = await createTestApp()
 
     // Create custom exercise via UI
     await common.navigateToExercises()
@@ -48,6 +49,7 @@ describe('Custom Exercise Flow', () => {
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await userEvent.fill(nameInput, 'Custom Compound Move')
+    await exercises.selectMuscle('Chest')
 
     const saveButton = getByRole('button', { name: /save/i })
     await userEvent.click(saveButton)
@@ -68,7 +70,7 @@ describe('Custom Exercise Flow', () => {
   })
 
   it('finds created custom exercise via search', async () => {
-    const { common, getByRole, cleanup } = await createTestApp()
+    const { common, exercises, getByRole, cleanup } = await createTestApp()
 
     // Create custom exercise with unique name
     await common.navigateToExercises()
@@ -79,6 +81,7 @@ describe('Custom Exercise Flow', () => {
 
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await userEvent.fill(nameInput, 'Zyzz Special Curl')
+    await exercises.selectMuscle('Arms')
 
     const saveButton = getByRole('button', { name: /save/i })
     await userEvent.click(saveButton)
@@ -131,7 +134,7 @@ describe('Custom Exercise Flow', () => {
       cleanup()
     })
 
-    it('enables save button when valid name is entered', async () => {
+    it('keeps save disabled with only a name -- a muscle group is also required (Finding M5)', async () => {
       const { common, getByRole, cleanup } = await createTestApp()
 
       // Navigate to create exercise page
@@ -148,7 +151,32 @@ describe('Custom Exercise Flow', () => {
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
       await userEvent.fill(nameInput, 'Valid Exercise')
 
-      // Assert save button is now enabled
+      // Name alone is not enough -- a muscle-less exercise is invisible in
+      // every filtered library view, so save stays disabled.
+      await expect.element(saveButton).toBeDisabled()
+
+      cleanup()
+    })
+
+    it('enables save button when a valid name and muscle group are entered', async () => {
+      const { common, exercises, getByRole, cleanup } = await createTestApp()
+
+      // Navigate to create exercise page
+      await common.navigateToExercises()
+      const createButton = getByRole('button', { name: /create.*custom/i })
+      await userEvent.click(createButton)
+      await common.waitForRoute(/^\/create-exercise$/)
+
+      // Type valid name
+      const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
+      await userEvent.fill(nameInput, 'Valid Exercise')
+
+      const saveButton = getByRole('button', { name: /save/i })
+      await expect.element(saveButton).toBeDisabled()
+
+      // Selecting a muscle group is what enables save
+      await exercises.selectMuscle('Legs')
+
       await expect.element(saveButton).not.toBeDisabled()
 
       cleanup()
@@ -157,7 +185,7 @@ describe('Custom Exercise Flow', () => {
 
   describe('Full User Journey', () => {
     it('creates custom exercise and uses it to complete a workout', async () => {
-      const { builder, common, workout, router, getByRole, cleanup } =
+      const { builder, common, exercises, workout, router, getByRole, cleanup } =
         await createTestApp()
 
       // ========================================
@@ -170,6 +198,7 @@ describe('Custom Exercise Flow', () => {
 
       const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
       await userEvent.fill(nameInput, 'My Custom Lift')
+      await exercises.selectMuscle('Back')
       const saveButton = getByRole('button', { name: /save/i })
       await userEvent.click(saveButton)
       await common.waitForRoute(/^\/exercises$/)

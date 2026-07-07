@@ -17,7 +17,7 @@ const timedBlockDialogByKind = {
   fortime: 'configureForTime',
 } as const satisfies Record<TimedBlockKind, WorkoutBlockDialog>
 
-export type WorkoutBlockDialogsState = {
+export type UseWorkoutBlockDialogsReturn = {
   addBlockDialogOpen: WritableComputedRef<boolean>
   configureAmrapOpen: WritableComputedRef<boolean>
   configureEmomOpen: WritableComputedRef<boolean>
@@ -34,9 +34,16 @@ export type WorkoutBlockDialogController = {
   open(dialogName: WorkoutBlockDialog): void
 }
 
+/**
+ * v-model bindings and open helpers for the workout block dialogs (add block
+ * plus the per-kind configure dialogs). Only one dialog is open at a time.
+ *
+ * @param controller Optional shared dialog controller (e.g. from a parent view);
+ * defaults to a standalone `useDialogState` instance
+ */
 export function useWorkoutBlockDialogs(
   controller?: WorkoutBlockDialogController,
-): WorkoutBlockDialogsState {
+): UseWorkoutBlockDialogsReturn {
   const standaloneController = useDialogState<WorkoutBlockDialog>()
   const { createDialogModel, open } = controller ?? standaloneController
 

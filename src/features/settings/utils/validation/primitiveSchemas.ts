@@ -1,5 +1,12 @@
 import { z } from 'zod'
 
+import {
+  EQUIPMENT_VALUES,
+  EXERCISE_TYPE_VALUES,
+  METRICS_VALUES,
+  MUSCLE_VALUES,
+} from '@/types/exercises'
+
 /**
  * Reserved keywords that could enable prototype pollution attacks.
  */
@@ -21,42 +28,31 @@ export const safeIdSchema = z
  */
 export const safeStringSchema = z.string().max(1000)
 
-/**
- * Equipment types matching src/types/exercises.ts
- */
-export const equipmentSchema = z.enum([
-  'barbell',
-  'dumbbell',
-  'machine',
-  'cable',
-  'bodyweight',
-  'kettlebell',
-  'band',
-  'ez-bar',
-  'hex-bar',
-  'club',
-])
+// The enums below consume the runtime value tuples that the domain union
+// types in `@/types/exercises` are themselves derived from, so they cannot
+// drift (the incident this guards against: the seeded exercise library used
+// `type: 'isometric'` and `equipment: 'battle-rope'`, which weren't in these
+// enums, so the app's own export failed its own import validation).
 
 /**
- * Muscle groups matching src/types/exercises.ts
+ * Equipment types (derived from src/types/exercises.ts).
  */
-export const muscleSchema = z.enum(['chest', 'back', 'legs', 'shoulders', 'arms', 'core'])
+export const equipmentSchema = z.enum(EQUIPMENT_VALUES)
 
 /**
- * Exercise types matching src/types/exercises.ts
+ * Muscle groups (derived from src/types/exercises.ts).
  */
-export const exerciseTypeSchema = z.enum(['compound', 'isolation', 'stability', 'cardio'])
+export const muscleSchema = z.enum(MUSCLE_VALUES)
 
 /**
- * Exercise metrics matching src/types/exercises.ts
+ * Exercise types (derived from src/types/exercises.ts).
  */
-export const metricsSchema = z.enum([
-  'weight-reps',
-  'reps-only',
-  'duration',
-  'distance-duration',
-  'weight-distance',
-])
+export const exerciseTypeSchema = z.enum(EXERCISE_TYPE_VALUES)
+
+/**
+ * Exercise metrics (derived from src/types/exercises.ts).
+ */
+export const metricsSchema = z.enum(METRICS_VALUES)
 
 /**
  * Set status matching src/types/workout.ts

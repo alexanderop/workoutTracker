@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { TrendingUp } from '@lucide/vue'
 import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import ProgressionCard from '@/features/progressions/components/ProgressionCard.vue'
 import { useProgressions } from '@/features/progressions/composables/useProgressions'
 
@@ -66,6 +67,9 @@ function handleCreate(): void {
       <!-- Empty state -->
       <div v-else class="flex flex-1 items-center justify-center">
         <Empty>
+          <EmptyMedia>
+            <TrendingUp class="h-10 w-10 text-muted-foreground" />
+          </EmptyMedia>
           <EmptyHeader>
             <EmptyTitle>{{ t('progressions.empty.title') }}</EmptyTitle>
             <EmptyDescription>{{ t('progressions.empty.description') }}</EmptyDescription>

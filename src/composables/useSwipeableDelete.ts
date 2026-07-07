@@ -1,11 +1,21 @@
-import { computed, ref, readonly, type ComputedRef, type Ref } from 'vue'
+import {
+  computed,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  type Ref,
+  type ShallowRef,
+} from 'vue'
 import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
 type WorkoutLike = { id: string; name: string }
 
-type UseSwipeableDeleteOptions<T extends WorkoutLike> = {
-  workouts: Ref<ReadonlyArray<T>> | ComputedRef<ReadonlyArray<T>>
+export type UseSwipeableDeleteOptions<T extends WorkoutLike> = {
+  /** The workout list to delete from; a ref or getter stays reactive. */
+  workouts: MaybeRefOrGetter<ReadonlyArray<T>>
   /**
    * Optional post-delete hook. Not needed when `workouts` is backed by a live
    * query (it updates on its own once the delete lands); provide it when the
@@ -14,20 +24,36 @@ type UseSwipeableDeleteOptions<T extends WorkoutLike> = {
   onDeleted?: () => Promise<void> | void
 }
 
+export type UseSwipeableDeleteReturn = {
+  openCardId: Readonly<ShallowRef<string | null>>
+  /** Writable on purpose: bound via v-model to the confirmation dialog. */
+  deleteDialogOpen: Ref<boolean>
+  workoutToDelete: Readonly<ShallowRef<WorkoutLike | null>>
+  handleCardOpen: (id: string) => void
+  handleCardClose: () => void
+  handleDeleteRequest: (id: string) => void
+  handleDeleteConfirm: () => Promise<void>
+  isCardSwiped: ComputedRef<boolean>
+}
+
 /**
  * Composable for managing swipeable workout card deletion.
  * Handles swipe state (one card open at a time), delete confirmation dialog,
  * and the actual deletion workflow.
+ *
+ * @param options
  */
-export function useSwipeableDelete<T extends WorkoutLike>(options: UseSwipeableDeleteOptions<T>) {
+export function useSwipeableDelete<T extends WorkoutLike>(
+  options: UseSwipeableDeleteOptions<T>,
+): UseSwipeableDeleteReturn {
   const { workouts, onDeleted } = options
 
   // Swipe state - only one card can be open at a time
-  const openCardId = ref<string | null>(null)
+  const openCardId = shallowRef<string | null>(null)
 
   // Delete confirmation dialog state
-  const deleteDialogOpen = ref(false)
-  const workoutToDelete = ref<{ id: string; name: string } | null>(null)
+  const deleteDialogOpen = shallowRef(false)
+  const workoutToDelete = shallowRef<{ id: string; name: string } | null>(null)
 
   function handleCardOpen(id: string): void {
     openCardId.value = id
@@ -38,7 +64,7 @@ export function useSwipeableDelete<T extends WorkoutLike>(options: UseSwipeableD
   }
 
   function handleDeleteRequest(id: string): void {
-    const workout = workouts.value.find((w) => w.id === id)
+    const workout = toValue(workouts).find((w) => w.id === id)
     if (!workout) return
 
     workoutToDelete.value = { id: workout.id, name: workout.name }
@@ -68,9 +94,9 @@ export function useSwipeableDelete<T extends WorkoutLike>(options: UseSwipeableD
 
   return {
     // State (readonly where appropriate)
-    openCardId: readonly(openCardId),
+    openCardId: shallowReadonly(openCardId),
     deleteDialogOpen,
-    workoutToDelete: readonly(workoutToDelete),
+    workoutToDelete: shallowReadonly(workoutToDelete),
     // Methods
     handleCardOpen,
     handleCardClose,

@@ -46,6 +46,9 @@ export default {
     setCount: 'Set count',
     decreaseSetCount: 'Decrease set count',
     increaseSetCount: 'Increase set count',
+    setCountFor: 'Set count for {name}',
+    decreaseSetCountFor: 'Decrease set count for {name}',
+    increaseSetCountFor: 'Increase set count for {name}',
     moveUp: 'Move up',
     moveDown: 'Move down',
     removeExercise: 'Remove exercise',
@@ -59,6 +62,7 @@ export default {
     removeBlock: 'Remove {name}',
     deleteSet: 'Delete set {index}',
     setActionsMenu: 'Set actions',
+    setOptionsForSet: 'Options for set {number}',
     incrementByAmount: 'Increase by {amount}',
     decrementByAmount: 'Decrease by {amount}',
     statusColumn: 'Status',
@@ -66,6 +70,9 @@ export default {
     searchExercises: 'Search exercises',
     clearSearch: 'Clear search',
     activeWorkoutFab: 'Return to active workout',
+    decreaseRestTarget: 'Decrease rest time by {seconds} seconds',
+    increaseRestTarget: 'Increase rest time by {seconds} seconds',
+    dismissRestTimer: 'Dismiss rest timer',
   },
   states: {
     loading: 'Loading...',
@@ -78,13 +85,9 @@ export default {
     title: 'Nothing here yet',
     description: 'Get started by creating your first item',
   },
-  rest: {
-    timer: {
-      stop: 'Stop',
-      start: 'Start',
-      cancel: 'Cancel',
-      finishWorkout: 'Finish Workout',
-    },
+  notFound: {
+    title: 'Page not found',
+    description: "The page you're looking for doesn't exist or may have moved.",
   },
   settings: {
     placeholder: 'Please select',
@@ -117,4 +120,7 @@ export default {
   exercises: 'exercises',
   blocks: 'blocks',
   reps: 'reps',
+  toast: {
+    exerciseAdded: 'Added {name}',
+  },
 } as const

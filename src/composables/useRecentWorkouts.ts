@@ -1,4 +1,5 @@
-import { computed } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter } from 'vue'
+import { computed, toValue } from 'vue'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
@@ -15,6 +16,12 @@ export type RecentWorkout = {
   relativeDate: string
   durationMinutes: string
   setCount: number
+}
+
+export type UseRecentWorkoutsReturn = {
+  recentWorkouts: ComputedRef<ReadonlyArray<RecentWorkout>>
+  hasHistory: ComputedRef<boolean>
+  isLoading: ComputedRef<boolean>
 }
 
 // ============================================
@@ -35,17 +42,24 @@ function mapToRecentWorkout(workout: DbCompletedWorkout): RecentWorkout {
 // Composable (Imperative Shell)
 // ============================================
 
-export function useRecentWorkouts(limit = 3) {
+/**
+ * Reactive list of the most recently completed workouts, kept in sync with
+ * storage via a live query (including changes from other tabs).
+ *
+ * @param limit Maximum number of workouts to expose; a ref or getter re-runs the query when it changes
+ */
+export function useRecentWorkouts(limit: MaybeRefOrGetter<number> = 3): UseRecentWorkoutsReturn {
   // Primary State — live query keeps `data` in sync with storage, including
-  // changes made from other tabs, so no manual reload is needed.
+  // changes made from other tabs, so no manual reload is needed. `limit` is
+  // read inside the factory, so changing it re-runs the query automatically.
   const { data: workouts } = useLiveQuery<ReadonlyArray<DbCompletedWorkout>>(() =>
-    getWorkoutsRepository().observeHistory(limit),
+    getWorkoutsRepository().observeHistory(toValue(limit)),
   )
 
   // Computed
   const hasHistory = computed(() => (workouts.value?.length ?? 0) > 0)
 
-  // State Metadata — no snapshot yet means the initial `get()` hasn't resolved
+  // State Metadata — no snapshot yet means the subscription hasn't emitted
   const isLoading = computed(() => workouts.value === undefined)
 
   const recentWorkouts = computed<ReadonlyArray<RecentWorkout>>(() =>

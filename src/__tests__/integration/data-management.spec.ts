@@ -169,6 +169,57 @@ describe('Data Management', () => {
     })
   })
 
+  // Not gated by isBrowserMode: unlike the Import/Export suite above, this
+  // never reaches the success path that calls `location.reload()`, so it's
+  // safe to run in a real browser too.
+  describe('Import validation errors', () => {
+    it('shows a translated message and validation details when importing a file that fails schema validation', async () => {
+      // A structurally valid export that fails Zod's `.strict()` check because
+      // of an unrecognized property under `data` — this is the failure mode
+      // `dataImport.ts` reports as the `validationFailed` error code.
+      const invalidData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: {
+          settings: [],
+          customExercises: [],
+          templates: [],
+          workouts: [],
+          benchmarks: [],
+          unexpectedField: 'should not be here',
+        },
+      }
+      const file = new File([JSON.stringify(invalidData)], 'backup.json', {
+        type: 'application/json',
+      })
+
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
+      const fileInput = document.querySelector('input[type="file"]')
+      if (!(fileInput instanceof HTMLInputElement)) {
+        throw new TypeError('File input not found')
+      }
+      await userEvent.upload(fileInput, file)
+
+      // Assert: Error dialog appears with the real translation, not a raw i18n key,
+      // and includes the validation details for debuggability.
+      await common.waitForDialog()
+      await expect.element(page.getByRole('heading', { name: /import failed/i })).toBeVisible()
+      await expect
+        .element(page.getByText(/settings\.errors\.validationFailed/i))
+        .not.toBeInTheDocument()
+      await expect.element(page.getByText(/not a valid workout tracker backup/i)).toBeVisible()
+      await expect.element(page.getByText(/unexpectedField/i)).toBeVisible()
+
+      await userEvent.click(common.getDialogButton('OK'))
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+
+      cleanup()
+    })
+  })
+
   describe('History', () => {
     it('navigates to detail view when clicking a completed workout and displays exercise and set information', async () => {
       // Arrange: Create a completed workout in the database

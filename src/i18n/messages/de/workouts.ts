@@ -62,7 +62,8 @@ export default {
     title: 'Aktives Workout',
     inProgress: 'Workout läuft',
     errorNoBlock: 'Block konnte nicht geladen werden',
-    errorNoBlockDescription: 'Beim Laden deines Workouts ist etwas schief gelaufen. Versuche, zum Workout-Plan zurückzukehren.',
+    errorNoBlockDescription:
+      'Beim Laden deines Workouts ist etwas schief gelaufen. Versuche, zum Workout-Plan zurückzukehren.',
     returnToBuilder: 'Zurück zum Plan',
     mode: {
       skipBlock: 'Block überspringen',
@@ -78,6 +79,8 @@ export default {
       addBlock: 'Übung hinzufügen',
       active: '(Aktiv)',
       exercises: '{count} Übungen',
+      moveUp: '{name} nach oben verschieben',
+      moveDown: '{name} nach unten verschieben',
     },
     footer: {
       completeSet: 'Satz abschließen',
@@ -86,11 +89,13 @@ export default {
       done: 'Fertig',
       back: 'Zurück',
       rest: 'Pause',
+      restComplete: 'Los',
     },
     strength: {
       reps: 'Wdh.',
       rir: 'RIR',
       last: 'Letzt: ',
+      valueClamped: 'Wert auf {max} begrenzt',
     },
   },
   summary: {
@@ -139,11 +144,13 @@ export default {
   },
   deleteWorkout: {
     title: 'Workout löschen',
-    description: 'Bist du sicher, dass du "{name}" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.',
+    description:
+      'Bist du sicher, dass du "{name}" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.',
     confirmButton: 'Löschen',
   },
   swipe: {
-    deleteRevealed: 'Löschen-Button sichtbar. Drücke Entfernen-Taste oder aktiviere den Button zum Löschen.',
+    deleteRevealed:
+      'Löschen-Button sichtbar. Drücke Entfernen-Taste oder aktiviere den Button zum Löschen.',
   },
   table: {
     headers: {
@@ -160,6 +167,7 @@ export default {
     addSet: 'Satz hinzufügen',
     noSetsCompleted: 'Keine Sätze abgeschlossen',
     target: 'Ziel: {reps} Wdh.',
+    topSetSummary: '{count} Satz · Topsatz {weight} | {count} Sätze · Topsatz {weight}',
   },
   previous: {
     label: 'Vorher ({date})',
@@ -201,6 +209,8 @@ export default {
   },
   benchmarks: {
     create: 'Benchmark Erstellen',
+    createHelperText:
+      'Ein Benchmark ist ein Workout, das du regelmäßig wiederholst, um deinen Fortschritt zu messen — wie Murph oder ein 5-Wiederholungs-Maximum-Test.',
     edit: 'Benchmark Bearbeiten',
     name: 'Trainingsname',
     namePlaceholder: 'z.B. Murph, Fran, Cindy',
@@ -222,7 +232,8 @@ export default {
     deleteRound: 'Runde löschen',
     emptyRoundError: 'Jede Runde muss mindestens eine Übung haben',
     round: 'Runde {current}/{total}',
-    noExercises: 'Noch keine Übungen hinzugefügt. Füge Übungen hinzu, um deinen Benchmark zu erstellen.',
+    noExercises:
+      'Noch keine Übungen hinzugefügt. Füge Übungen hinzu, um deinen Benchmark zu erstellen.',
     saveChanges: 'Änderungen speichern',
     cancelEdit: 'Abbrechen',
     deleteBenchmark: 'Benchmark löschen',

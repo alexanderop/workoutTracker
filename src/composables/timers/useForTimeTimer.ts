@@ -4,30 +4,48 @@
  * Counts up until completion or time cap is reached.
  */
 
-import { computed, ref, shallowRef } from 'vue'
+import type { ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
-import { formatTime } from '@/lib/workout-utils'
-import { useBaseTimer } from './useBaseTimer'
+import type { BlockTimerReturn } from './useBaseTimer'
+import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
-type ForTimeTimerConfig = Readonly<{
+export type UseForTimeTimerOptions = Readonly<{
+  /** Called once when the timer completes (time cap reached or finished manually). */
   onComplete?: () => void
 }>
 
-export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
+export type UseForTimeTimerReturn = BlockTimerReturn<ForTimeBlock, ForTimeResult> & {
+  completedExercises: Readonly<ShallowRef<Array<string>>>
+  finishedBeforeCap: Readonly<ShallowRef<boolean>>
+  markExerciseComplete: (exerciseId: string) => void
+  finishWorkout: () => void
+}
+
+/**
+ * Count-up timer for a For Time block that tracks per-exercise completion and
+ * completes when the athlete finishes or the optional time cap is reached.
+ *
+ * @param options
+ */
+export function useForTimeTimer(options: UseForTimeTimerOptions = {}): UseForTimeTimerReturn {
   // ForTime-specific state
   const block = shallowRef<ForTimeBlock | null>(null)
-  const completedExercises = ref<Array<string>>([])
-  const finishedBeforeCap = ref(false)
+  const completedExercises = shallowRef<Array<string>>([])
+  const finishedBeforeCap = shallowRef(false)
 
   // Base timer with tick handler for time cap checking
   const baseTimer = useBaseTimer({
     onTick: () => {
       // Check for time cap
-      if (block.value?.config.timeCapSeconds && baseTimer.elapsedSeconds.value >= block.value.config.timeCapSeconds) {
-          complete()
-        }
+      if (
+        block.value?.config.timeCapSeconds &&
+        baseTimer.elapsedSeconds.value >= block.value.config.timeCapSeconds
+      ) {
+        complete()
+      }
     },
-    onComplete: config.onComplete,
+    onComplete: options.onComplete,
   })
 
   // ForTime-specific computed
@@ -41,8 +59,10 @@ export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
     return Math.min(100, (baseTimer.elapsedSeconds.value / block.value.config.timeCapSeconds) * 100)
   })
 
-  const formattedElapsed = computed(() => formatTime(baseTimer.elapsedSeconds.value))
-  const formattedRemaining = computed(() => formatTime(remainingSeconds.value))
+  const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(
+    baseTimer.elapsedSeconds,
+    remainingSeconds,
+  )
 
   // Methods
   function initialize(forTimeBlock: ForTimeBlock) {
@@ -83,20 +103,22 @@ export function useForTimeTimer(config: ForTimeTimerConfig = {}) {
     isPaused: baseTimer.isPaused,
     isCompleted: baseTimer.isCompleted,
     isIdle: baseTimer.isIdle,
+    isActive: baseTimer.isActive,
 
     // ForTime-specific state
-    block,
+    block: shallowReadonly(block),
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    completedExercises,
-    finishedBeforeCap,
+    completedExercises: shallowReadonly(completedExercises),
+    finishedBeforeCap: shallowReadonly(finishedBeforeCap),
 
     // Methods
     initialize,
     start: baseTimer.start,
     pause: baseTimer.pause,
+    resume: baseTimer.resume,
     toggle: baseTimer.toggle,
     reset,
     complete,

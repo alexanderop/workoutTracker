@@ -1,4 +1,4 @@
-import { computed, readonly, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, shallowReadonly, shallowRef, type ComputedRef, type ShallowRef } from 'vue'
 import { convertImageToWebP, type ConversionResult } from '@/lib/imageConversion'
 
 type ErrorCode = 'file-too-large' | 'conversion-failed' | 'invalid-image'
@@ -9,8 +9,8 @@ type ConversionState =
   | { status: 'success'; blob: Blob }
   | { status: 'error'; error: ErrorCode }
 
-type UseImageConversionReturn = {
-  state: Readonly<Ref<ConversionState>>
+export type UseImageConversionReturn = {
+  state: Readonly<ShallowRef<ConversionState>>
   isConverting: ComputedRef<boolean>
   hasError: ComputedRef<boolean>
   convertedBlob: ComputedRef<Blob | undefined>
@@ -26,7 +26,7 @@ type UseImageConversionReturn = {
  * - Reactive state tracking (idle, converting, success, error)
  */
 export function useImageConversion(): UseImageConversionReturn {
-  const state = ref<ConversionState>({ status: 'idle' })
+  const state = shallowRef<ConversionState>({ status: 'idle' })
 
   const isConverting = computed(() => state.value.status === 'converting')
 
@@ -42,7 +42,9 @@ export function useImageConversion(): UseImageConversionReturn {
 
     const result = await convertImageToWebP(file)
 
-    state.value = result.success ? { status: 'success', blob: result.blob } : { status: 'error', error: result.error };
+    state.value = result.success
+      ? { status: 'success', blob: result.blob }
+      : { status: 'error', error: result.error }
 
     return result
   }
@@ -52,7 +54,7 @@ export function useImageConversion(): UseImageConversionReturn {
   }
 
   return {
-    state: readonly(state),
+    state: shallowReadonly(state),
     isConverting,
     hasError,
     convertedBlob,

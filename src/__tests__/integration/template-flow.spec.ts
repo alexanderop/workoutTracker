@@ -567,8 +567,11 @@ describe('Template Flow', () => {
   })
 
   describe('Test 7: Discard changes flow', () => {
-    it('discards unsaved changes when navigating away', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('discards unsaved changes when the user confirms leaving a dirty form', async () => {
+      // See brain/reference/reviews/ux-ui-review-2026-07-04.md Finding 5: navigating
+      // away from a dirty form must go through a confirm-discard dialog rather than
+      // silently discarding the change.
+      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
       // Seed template with original name
       const template = await seedTemplate({
@@ -594,8 +597,13 @@ describe('Template Flow', () => {
         })
         .toBe('Modified Name')
 
-      // Navigate away without saving (go to workouts page)
-      await navigateTo({ name: RouteNames.Workouts })
+      // Navigate away without saving (go to workouts page) -- the unsaved-changes
+      // guard intercepts this, so don't await the push directly (it won't resolve
+      // until the dialog is answered).
+      router.push({ name: RouteNames.Workouts })
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Leave'))
+      await common.waitForRoute(/^\/workouts/)
 
       // Navigate back to template detail
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
@@ -614,6 +622,35 @@ describe('Template Flow', () => {
       // Verify DB was never modified
       const databaseTemplate = await getTemplateById(template.id)
       expect(databaseTemplate?.name).toBe('Original Name')
+
+      cleanup()
+    })
+
+    it('keeps unsaved changes when the user cancels leaving a dirty form', async () => {
+      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+
+      const template = await seedTemplate({
+        name: 'Original Name',
+        blocks: [createDatabaseTemplateStrengthBlock()],
+      })
+
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
+      await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
+
+      const nameInput = getByRole('textbox', { name: /template name/i })
+      await userEvent.clear(nameInput)
+      await userEvent.fill(nameInput, 'Modified Name')
+
+      router.push({ name: RouteNames.Workouts })
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Cancel'))
+      await common.waitForDialogClose()
+
+      // Still on the template detail page with the edit intact
+      expect(router.currentRoute.value.path).toBe(`/templates/${template.id}`)
+      await expect
+        .element(getByRole('textbox', { name: /template name/i }))
+        .toHaveValue('Modified Name')
 
       cleanup()
     })

@@ -13,6 +13,7 @@ import {
 import { NumericInputModal } from '@/components/ui/numeric-input'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { useTouchDevice } from '@/composables/useTouchDevice'
+import { cn } from '@/lib/utils'
 
 type Properties = {
   /** Last recorded weight in display units (kg or lbs), used to center presets */
@@ -70,33 +71,28 @@ const isValid = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-3">
-    <Label for="weight-input">{{ t('weight.enterWeight') }}</Label>
+  <div class="space-y-2">
+    <!-- Visually hidden: the weight display/input below is self-describing via aria-label -->
+    <Label for="weight-input" class="sr-only">{{ t('weight.enterWeight') }}</Label>
 
-    <!-- Mobile: Tap to open fullscreen modal -->
-    <template v-if="isTouchDevice">
+    <!-- Input and Save share one row to keep the entry form compact so
+         trend/history stay visible without scrolling. -->
+    <div class="flex items-center gap-2">
+      <!-- Mobile: Tap to open fullscreen modal -->
       <button
+        v-if="isTouchDevice"
         id="weight-input"
         type="button"
         :aria-label="`${inputValue} ${unitLabel}`"
-        class="flex h-14 w-full items-center justify-center gap-2 rounded-lg border-2 border-border bg-background text-2xl font-bold tabular-nums transition-colors hover:border-primary/50 hover:bg-accent active:scale-[0.98]"
+        class="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border-2 border-border bg-background text-xl font-bold tabular-nums transition-colors hover:border-primary/50 hover:bg-accent active:scale-[0.98]"
         @click="openModal"
       >
         <span>{{ inputValue }}</span>
-        <span class="text-lg font-normal text-muted-foreground">{{ unitLabel }}</span>
+        <span class="text-base font-normal text-muted-foreground">{{ unitLabel }}</span>
       </button>
 
-      <NumericInputModal
-        v-model="inputValue"
-        v-model:open="modalOpen"
-        type="weight"
-        :unit="unitLabel"
-      />
-    </template>
-
-    <!-- Desktop: Inline NumberField with +/- buttons -->
-    <template v-else>
-      <div class="flex items-center gap-2">
+      <!-- Desktop: Inline NumberField with +/- buttons -->
+      <template v-else>
         <NumberField
           id="weight-input"
           v-model="inputValue"
@@ -116,16 +112,24 @@ const isValid = computed(() => {
           </NumberFieldContent>
         </NumberField>
         <span class="text-muted-foreground">{{ unitLabel }}</span>
-      </div>
-    </template>
+      </template>
 
-    <Button
-      class="w-full"
-      :disabled="!isValid"
-      :aria-label="t('weight.saveWeight')"
-      @click="handleSave"
-    >
-      {{ t('weight.save') }}
-    </Button>
+      <Button
+        :class="cn('shrink-0', isTouchDevice && 'h-12')"
+        :disabled="!isValid"
+        :aria-label="t('weight.saveWeight')"
+        @click="handleSave"
+      >
+        {{ t('weight.save') }}
+      </Button>
+    </div>
+
+    <NumericInputModal
+      v-if="isTouchDevice"
+      v-model="inputValue"
+      v-model:open="modalOpen"
+      type="weight"
+      :unit="unitLabel"
+    />
   </div>
 </template>

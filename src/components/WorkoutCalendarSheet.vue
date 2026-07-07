@@ -40,14 +40,8 @@ type Properties = {
   selectedDateFormatted: string
 }
 
-const {
-  open,
-  monthDays,
-  selectedDate,
-  selectedMonth,
-  selectedDayWorkouts,
-  selectedDateFormatted,
-} = defineProps<Properties>()
+const { open, monthDays, selectedDate, selectedMonth, selectedDayWorkouts, selectedDateFormatted } =
+  defineProps<Properties>()
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -133,6 +127,7 @@ function handleNextMonth() {
         class="w-full"
         weekday-format="short"
         :locale="locale"
+        :week-starts-on="1"
         @update:model-value="(v) => v && handleDateSelect(v)"
       >
         <!-- Navigation -->
@@ -185,11 +180,7 @@ function handleNextMonth() {
                 :date="weekDate"
                 class="relative flex flex-col items-center"
               >
-                <CalendarCellTrigger
-                  :day="weekDate"
-                  :month="month.value"
-                  class="size-10"
-                />
+                <CalendarCellTrigger :day="weekDate" :month="month.value" class="size-10" />
                 <!-- Workout indicator dot -->
                 <span
                   v-if="hasWorkoutOnDate(weekDate.toDate(getLocalTimeZone()))"

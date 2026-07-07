@@ -4,14 +4,17 @@ import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { Camera } from '@lucide/vue'
 import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
 import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
+import UnsavedChangesDialog from '@/components/UnsavedChangesDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDialogState } from '@/composables/useDialogState'
+import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard'
 import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
 import { useImageUpload } from '@/features/exercises/composables/useImageUpload'
 import {
@@ -41,7 +44,30 @@ const saveButtonText = computed(() =>
 )
 
 // Form state and validation
-const { form, isNameValid, isSaveDisabled, getFormData, populateFromExercise } = useExerciseForm()
+const {
+  form,
+  isNameValid,
+  isDuplicateName,
+  isMuscleValid,
+  isSaveDisabled,
+  isDirty,
+  getFormData,
+  populateFromExercise,
+  markSaved,
+} = useExerciseForm(() => exercisesStore.customExercises)
+
+// Equipment stays optional; the label makes that explicit (Finding M5).
+const equipmentLabel = computed(
+  () => `${t('exercises.labels.equipment')} (${t('common.labels.optional')})`,
+)
+
+// Warn before discarding unsaved changes on back navigation, browser back,
+// or tab close (see brain/reference/reviews/ux-ui-review-2026-07-04.md Finding 5).
+const {
+  showDialog: showUnsavedChangesDialog,
+  confirmDiscard,
+  cancelDiscard,
+} = useUnsavedChangesGuard(isDirty)
 
 // Save operation state
 const isSaving = ref(false)
@@ -90,7 +116,7 @@ function handleMetricsSelect(selected: Metrics) {
 }
 
 async function handleSave() {
-  if (!isNameValid.value) return
+  if (!isNameValid.value || isDuplicateName.value) return
 
   isSaving.value = true
   const formData = getFormData()
@@ -102,6 +128,7 @@ async function handleSave() {
       showError.value = true
       return
     }
+    markSaved()
     router.back()
     return
   }
@@ -112,6 +139,7 @@ async function handleSave() {
     showError.value = true
     return
   }
+  markSaved()
   router.back()
 }
 </script>
@@ -126,21 +154,34 @@ async function handleSave() {
 
     <!-- Main Content -->
     <div class="p-4">
-      <!-- Avatar with image preview or initials -->
+      <!-- Avatar with image preview or initials -- the single control for
+           picking an image (previously duplicated by an "Add Image" row
+           below, which opened the exact same picker; UX review finding). -->
       <div class="mb-6 flex gap-4">
-        <button
-          type="button"
-          :aria-label="t('exercises.create.addImage')"
-          class="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          @click="handleImageClick"
-        >
-          <ExerciseAvatar
-            :name="form.name"
-            :image="form.image"
-            size="lg"
-            class="flex-shrink-0 hover:opacity-80 transition-opacity"
-          />
-        </button>
+        <div class="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            :aria-label="t('exercises.create.addImage')"
+            class="relative rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            @click="handleImageClick"
+          >
+            <ExerciseAvatar
+              :name="form.name"
+              :image="form.image"
+              size="lg"
+              class="flex-shrink-0 hover:opacity-80 transition-opacity"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background"
+            >
+              <Camera class="h-3 w-3" />
+            </span>
+          </button>
+          <span v-if="imageDisplayText" class="text-xs text-muted-foreground">{{
+            imageDisplayText
+          }}</span>
+        </div>
 
         <!-- Name Input -->
         <div class="flex-1">
@@ -157,6 +198,17 @@ async function handleSave() {
         </div>
       </div>
 
+      <!-- Duplicate Name Error -->
+      <div
+        v-if="isDuplicateName"
+        role="alert"
+        aria-live="assertive"
+        data-testid="exercise-name-duplicate-error"
+        class="mt-2 text-sm text-destructive"
+      >
+        {{ t('exercises.form.errors.duplicateName') }}
+      </div>
+
       <!-- Image Upload Error -->
       <div
         v-if="form.imageError"
@@ -171,7 +223,7 @@ async function handleSave() {
       <!-- Configuration List -->
       <div class="space-y-0 overflow-hidden rounded-lg border border-border">
         <ExerciseSettingsItem
-          :label="t('exercises.labels.equipment')"
+          :label="equipmentLabel"
           :value="form.equipment ? EQUIPMENT_LABELS[form.equipment] : ''"
           @click="openModal('equipment')"
         />
@@ -190,11 +242,17 @@ async function handleSave() {
           :value="METRICS_LABELS[form.metrics]"
           @click="openModal('metrics')"
         />
-        <ExerciseSettingsItem
-          :label="t('exercises.create.addImage')"
-          :value="imageDisplayText"
-          @click="handleImageClick"
-        />
+      </div>
+
+      <!-- Muscle Group Required Hint -->
+      <div
+        v-if="!isMuscleValid"
+        role="alert"
+        aria-live="polite"
+        data-testid="exercise-muscle-required-hint"
+        class="mt-2 text-sm text-muted-foreground"
+      >
+        {{ t('exercises.form.errors.muscleRequired') }}
       </div>
     </div>
 
@@ -250,6 +308,12 @@ async function handleSave() {
       v-model:open="showError"
       :error="t('exercises.form.saveError', 'Failed to save exercise. Please try again.')"
       :title="t('exercises.form.saveErrorTitle', 'Save Failed')"
+    />
+
+    <UnsavedChangesDialog
+      :open="showUnsavedChangesDialog"
+      @cancel="cancelDiscard"
+      @discard="confirmDiscard"
     />
   </PageLayout>
 </template>

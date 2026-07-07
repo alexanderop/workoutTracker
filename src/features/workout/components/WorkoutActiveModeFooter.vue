@@ -1,5 +1,19 @@
+<script lang="ts">
+// +/-15s taps on the rest timer adjust the persisted default rest target
+// in-place (see Finding 8, July 2026 UX review -- `brain/reference/reviews/`).
+// Also used by the parent as the floor a running countdown may be lowered to,
+// and interpolated into the +/- buttons' aria labels.
+export const REST_ADJUST_STEP_SECONDS = 15
+
+export type TimerDisplayData = {
+  isRunning: boolean
+  display: string
+  label: string
+}
+</script>
+
 <script setup lang="ts">
-import { Check, ChevronLeft, ChevronRight, Pause, Play } from '@lucide/vue'
+import { Check, ChevronLeft, ChevronRight, Minus, Pause, Play, Plus } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -17,12 +31,6 @@ type PrimaryAction = {
   icon: typeof Check
   emit: 'complete-set' | 'toggle-timer' | 'complete-block'
   variant: ButtonVariant
-}
-
-export type TimerDisplayData = {
-  isRunning: boolean
-  display: string
-  label: string
 }
 
 type WorkoutState = {
@@ -54,19 +62,29 @@ const emit = defineEmits<{
   'complete-set': []
   'toggle-timer': []
   'complete-block': []
+  'adjust-rest-target': [deltaSeconds: number]
+  'dismiss-rest': []
 }>()
 
 const blockColors = computed(() => BLOCK_COLORS[block.kind])
 
+// The rest timer row is shown once a rest is in progress (elapsed > 0) --
+// distinct from timed-block rows (AMRAP/EMOM/...), which are read-only and
+// driven by the `timer` prop instead.
+const isRestRow = computed(
+  () => isStrengthBlock(block) && !!restTimer && restTimer.elapsedSeconds.value > 0,
+)
+const restIsDone = computed(() => isRestRow.value && (restTimer?.isDone.value ?? false))
+const showRestAdjustButtons = computed(
+  () => isRestRow.value && (restTimer?.hasTarget.value ?? false),
+)
+
 // Timer display for footer - uses props for timed blocks, computes for rest timer
 const displayedTimer = computed((): string | null => {
-  // For strength blocks, show rest timer
-  if (isStrengthBlock(block) && restTimer) {
-    const elapsed = restTimer.elapsedSeconds.value
-    if (elapsed === 0) return null
-    const mins = Math.floor(elapsed / 60)
-    const secs = elapsed % 60
-    return `${mins}:${String(secs).padStart(2, '0')}`
+  if (isRestRow.value && restTimer) {
+    return restIsDone.value
+      ? t('workouts.active.footer.restComplete')
+      : restTimer.formattedTime.value
   }
 
   // For timed blocks, use the prop value passed from parent
@@ -78,7 +96,7 @@ const displayedTimer = computed((): string | null => {
 })
 
 const displayedTimerLabel = computed((): string | null => {
-  if (isStrengthBlock(block) && restTimer?.elapsedSeconds.value) {
+  if (isRestRow.value) {
     return t('workouts.active.footer.rest')
   }
   if (isTimedBlock(block) && timer?.label) {
@@ -100,9 +118,7 @@ function getStrengthAction(): PrimaryAction {
 // Strategy: Timer-controlled blocks (amrap, emom, tabata) toggle play/pause
 function getTimerToggleAction(isRunning: boolean): PrimaryAction {
   return {
-    label: isRunning
-      ? t('workouts.active.footer.pause')
-      : t('workouts.active.footer.start'),
+    label: isRunning ? t('workouts.active.footer.pause') : t('workouts.active.footer.start'),
     icon: isRunning ? Pause : Play,
     emit: 'toggle-timer',
     variant: isRunning ? 'secondary' : 'default',
@@ -171,12 +187,53 @@ function handlePrimaryAction() {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      class="flex items-center justify-center gap-3 py-2 mb-2 -mx-4 px-4"
+      class="flex items-center justify-center gap-1 py-2 mb-2 -mx-4 px-4"
     >
-      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-2">
         {{ displayedTimerLabel }}
       </span>
-      <span :class="cn('font-mono text-2xl font-bold tabular-nums', blockColors.text)">
+
+      <!-- Rest timer: adjustable via +/-15s and tap-to-dismiss. Never blocks
+           logging -- purely informational, no modal. -->
+      <template v-if="isRestRow">
+        <Button
+          v-if="showRestAdjustButtons"
+          variant="ghost"
+          size="icon"
+          class="size-touch shrink-0"
+          :aria-label="t('common.aria.decreaseRestTarget', { seconds: REST_ADJUST_STEP_SECONDS })"
+          @click="emit('adjust-rest-target', -REST_ADJUST_STEP_SECONDS)"
+        >
+          <Minus class="icon-sm" aria-hidden="true" />
+        </Button>
+
+        <button
+          type="button"
+          :class="
+            cn(
+              'font-mono text-2xl font-bold tabular-nums px-2 rounded-md transition-colors',
+              restIsDone ? 'text-success' : blockColors.text,
+            )
+          "
+          :aria-label="t('common.aria.dismissRestTimer')"
+          @click="emit('dismiss-rest')"
+        >
+          {{ displayedTimer }}
+        </button>
+
+        <Button
+          v-if="showRestAdjustButtons"
+          variant="ghost"
+          size="icon"
+          class="size-touch shrink-0"
+          :aria-label="t('common.aria.increaseRestTarget', { seconds: REST_ADJUST_STEP_SECONDS })"
+          @click="emit('adjust-rest-target', REST_ADJUST_STEP_SECONDS)"
+        >
+          <Plus class="icon-sm" aria-hidden="true" />
+        </Button>
+      </template>
+
+      <span v-else :class="cn('font-mono text-2xl font-bold tabular-nums', blockColors.text)">
         {{ displayedTimer }}
       </span>
     </div>

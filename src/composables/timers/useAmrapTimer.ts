@@ -4,19 +4,34 @@
  * Counts down from a set duration while tracking completed rounds.
  */
 
-import { computed, ref, shallowRef } from 'vue'
+import type { ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { AmrapBlock, AmrapResult } from '@/types/blocks'
+import type { BlockTimerReturn } from './useBaseTimer'
 import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
-type AmrapTimerConfig = Readonly<{
+export type UseAmrapTimerOptions = Readonly<{
+  /** Called once when the timer completes (duration reached or completed manually). */
   onComplete?: () => void
 }>
 
-export function useAmrapTimer(config: AmrapTimerConfig = {}) {
+export type UseAmrapTimerReturn = BlockTimerReturn<AmrapBlock, AmrapResult> & {
+  rounds: Readonly<ShallowRef<number>>
+  currentExerciseIndex: Readonly<ShallowRef<number>>
+  incrementRound: () => void
+}
+
+/**
+ * Countdown timer for an AMRAP block with round tracking; completes
+ * automatically when the configured duration is reached.
+ *
+ * @param options
+ */
+export function useAmrapTimer(options: UseAmrapTimerOptions = {}): UseAmrapTimerReturn {
   // AMRAP-specific state
   const block = shallowRef<AmrapBlock | null>(null)
-  const rounds = ref(0)
-  const currentExerciseIndex = ref(0)
+  const rounds = shallowRef(0)
+  const currentExerciseIndex = shallowRef(0)
 
   // Base timer with tick handler for completion check
   const baseTimer = useBaseTimer({
@@ -25,7 +40,7 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
         complete()
       }
     },
-    onComplete: config.onComplete,
+    onComplete: options.onComplete,
   })
 
   // AMRAP-specific computed
@@ -36,7 +51,10 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
 
   const progress = computed(() => {
     if (!block.value) return 0
-    return Math.min(100, (baseTimer.elapsedSeconds.value / block.value.config.durationSeconds) * 100)
+    return Math.min(
+      100,
+      (baseTimer.elapsedSeconds.value / block.value.config.durationSeconds) * 100,
+    )
   })
 
   const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(
@@ -79,20 +97,22 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
     isPaused: baseTimer.isPaused,
     isCompleted: baseTimer.isCompleted,
     isIdle: baseTimer.isIdle,
+    isActive: baseTimer.isActive,
 
     // AMRAP-specific state
-    block,
+    block: shallowReadonly(block),
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    rounds,
-    currentExerciseIndex,
+    rounds: shallowReadonly(rounds),
+    currentExerciseIndex: shallowReadonly(currentExerciseIndex),
 
     // Methods
     initialize,
     start: baseTimer.start,
     pause: baseTimer.pause,
+    resume: baseTimer.resume,
     toggle: baseTimer.toggle,
     reset,
     complete,

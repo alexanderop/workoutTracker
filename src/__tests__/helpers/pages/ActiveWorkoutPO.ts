@@ -19,7 +19,10 @@ export class ActiveWorkoutPO {
    * @param name - The accessible name pattern to match
    * @returns The input element
    */
-  private async getInputFromRow(rowLocator: ReturnType<typeof page.getByRole>, name: RegExp): Promise<HTMLInputElement> {
+  private async getInputFromRow(
+    rowLocator: ReturnType<typeof page.getByRole>,
+    name: RegExp,
+  ): Promise<HTMLInputElement> {
     const input = await rowLocator.getByRole('spinbutton', { name }).element()
     if (!(input instanceof HTMLInputElement)) {
       throw new TypeError(`Input matching ${name} is not an HTMLInputElement`)
@@ -32,8 +35,12 @@ export class ActiveWorkoutPO {
    * @param rowLocator - The table row locator to search within
    * @returns The complete button element
    */
-  private async getCompleteButtonFromRow(rowLocator: ReturnType<typeof page.getByRole>): Promise<HTMLElement> {
-    return ensureHTMLElement(await rowLocator.getByRole('button', { name: /mark set.*(complete|done)/i }).element())
+  private async getCompleteButtonFromRow(
+    rowLocator: ReturnType<typeof page.getByRole>,
+  ): Promise<HTMLElement> {
+    return ensureHTMLElement(
+      await rowLocator.getByRole('button', { name: /mark set.*(complete|done)/i }).element(),
+    )
   }
 
   /**
@@ -44,7 +51,10 @@ export class ActiveWorkoutPO {
    */
   async getSetRow(setIndex: number): Promise<SetInputs> {
     // Skip header row (index 0) by adding 1 to setIndex
-    const row = page.getByRole('table').getByRole('row').nth(setIndex + 1)
+    const row = page
+      .getByRole('table')
+      .getByRole('row')
+      .nth(setIndex + 1)
 
     return {
       kg: await this.getInputFromRow(row, /weight for set/i),
@@ -61,7 +71,10 @@ export class ActiveWorkoutPO {
    * @returns SetRowPO for the specified row
    */
   getSet(setIndex: number): SetRowPO {
-    const rowLocator = page.getByRole('table').getByRole('row').nth(setIndex + 1)
+    const rowLocator = page
+      .getByRole('table')
+      .getByRole('row')
+      .nth(setIndex + 1)
     return new SetRowPO(rowLocator, setIndex)
   }
 
@@ -80,7 +93,9 @@ export class ActiveWorkoutPO {
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
       // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-      const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
+      const activeIndicator = firstCellElement.querySelector(
+        '[data-set-state="active"], .bg-primary',
+      )
       if (activeIndicator) {
         return this.getSet(index - 1) // Convert row index to set index
       }
@@ -117,6 +132,18 @@ export class ActiveWorkoutPO {
   }
 
   /**
+   * Gets the per-row overflow ("options") button for a specific set.
+   * This is the keyboard/screen-reader-accessible alternative to the
+   * long-press context menu -- see Finding 9, July 2026 UX review.
+   * @param setIndex - Zero-based index of the set row in the table
+   */
+  getSetOptionsButton(setIndex: number): ReturnType<typeof page.getByRole> {
+    return page.getByRole('button', {
+      name: new RegExp(String.raw`options for set ${setIndex + 1}\b`, 'i'),
+    })
+  }
+
+  /**
    * Opens the workout options menu by clicking the menu trigger button.
    */
   async openMenu(): Promise<void> {
@@ -138,7 +165,9 @@ export class ActiveWorkoutPO {
    * @returns The menu trigger button element
    */
   async getMenuTrigger(): Promise<HTMLElement> {
-    return ensureHTMLElement(await page.getByRole('button', { name: /workout options|more options/i }).element())
+    return ensureHTMLElement(
+      await page.getByRole('button', { name: /workout options|more options/i }).element(),
+    )
   }
 
   /**
@@ -198,7 +227,9 @@ export class ActiveWorkoutPO {
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The active state shows a div with data-set-state="active" and bg-primary class
       // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-      const activeIndicator = firstCellElement.querySelector('[data-set-state="active"], .bg-primary')
+      const activeIndicator = firstCellElement.querySelector(
+        '[data-set-state="active"], .bg-primary',
+      )
       if (activeIndicator) {
         return rowElement
       }
@@ -211,7 +242,11 @@ export class ActiveWorkoutPO {
    * Useful for verifying prefilled values after completing a set.
    * @returns Object with weight, reps, rir inputs, or null if no active row
    */
-  async getActiveRowInputs(): Promise<{ weight: HTMLInputElement; reps: HTMLInputElement; rir: HTMLInputElement } | null> {
+  async getActiveRowInputs(): Promise<{
+    weight: HTMLInputElement
+    reps: HTMLInputElement
+    rir: HTMLInputElement
+  } | null> {
     const [error, row] = await tryCatch(this.getActiveRow())
     if (error || !row) return null
 
@@ -240,14 +275,19 @@ export class ActiveWorkoutPO {
    * @returns true if the row shows a completion indicator (checkmark)
    */
   async isSetCompleted(setIndex: number): Promise<boolean> {
-    const row = page.getByRole('table').getByRole('row').nth(setIndex + 1) // Skip header
+    const row = page
+      .getByRole('table')
+      .getByRole('row')
+      .nth(setIndex + 1) // Skip header
     const cells = await row.getByRole('cell').all()
     const firstCell = cells[0]
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
     // The completed state shows a div with data-set-state="completed" and bg-success/20 class
     // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-    const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
+    const completedIndicator = firstCellElement.querySelector(
+      String.raw`[data-set-state="completed"], .bg-success\/20`,
+    )
     return completedIndicator !== null
   }
 
@@ -269,7 +309,9 @@ export class ActiveWorkoutPO {
       const firstCellElement = ensureHTMLElement(await firstCell.element())
       // The completed state shows a div with data-set-state="completed" and bg-success/20 class
       // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-      const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
+      const completedIndicator = firstCellElement.querySelector(
+        String.raw`[data-set-state="completed"], .bg-success\/20`,
+      )
       if (completedIndicator) {
         count++
       }
@@ -297,7 +339,11 @@ export class ActiveWorkoutPO {
    * Finds the active row (with enabled inputs) and fills it.
    * @param values - Object with weight, reps, rir values as strings
    */
-  async fillCardSetAndComplete(values: { weight: string; reps: string; rir: string }): Promise<void> {
+  async fillCardSetAndComplete(values: {
+    weight: string
+    reps: string
+    rir: string
+  }): Promise<void> {
     const rowElement = await this.getActiveRow()
 
     // Find the row index
@@ -348,10 +394,15 @@ export class ActiveWorkoutPO {
     const viewDetailsButton = page.getByRole('button', { name: /view details/i })
     await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
     // Poll for animation to complete (opacity becomes 1)
-    await expect.poll(async () => {
-      const element = await viewDetailsButton.element()
-      return getComputedStyle(element).opacity
-    }, { timeout: 2000 }).toBe('1')
+    await expect
+      .poll(
+        async () => {
+          const element = await viewDetailsButton.element()
+          return getComputedStyle(element).opacity
+        },
+        { timeout: 2000 },
+      )
+      .toBe('1')
     await viewDetailsButton.click()
 
     // Wait for navigation to summary

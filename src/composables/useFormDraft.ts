@@ -1,15 +1,28 @@
-import { isRef, onMounted, onScopeDispose, readonly, ref, toRaw, type Ref } from 'vue'
-import { watchDebounced } from '@vueuse/core'
+import { isRef, shallowReadonly, shallowRef, toRaw, type Ref, type ShallowRef } from 'vue'
+import { tryOnScopeDispose, watchDebounced } from '@vueuse/core'
 import { getDraftsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import type { DraftKey } from '@/db/schema'
 
-type FormDraftOptions<T> = {
-  /** Debounce delay in milliseconds (default: 1500) */
+export type UseFormDraftOptions<T> = {
+  /**
+   * Debounce delay in milliseconds.
+   * @default 1500
+   */
   debounce?: number
   /** Determine if form state is empty/default (should not be saved as draft) */
   isEmpty?: (state: T) => boolean
 }
+
+export type UseFormDraftReturn = {
+  /** Whether a draft exists for this form */
+  hasDraft: Readonly<ShallowRef<boolean>>
+  /** Clear the draft from storage */
+  clearDraft: () => Promise<void>
+}
+
+// Use shorter debounce in tests to avoid long waits
+const DEFAULT_DEBOUNCE_MS = import.meta.env.MODE === 'test' ? 50 : 1500
 
 /**
  * JSON replacer that handles non-serializable values.
@@ -42,7 +55,7 @@ function isValidDraftData<T extends object>(data: unknown, template: T): data is
 }
 
 /**
- * Auto-save form state to IndexedDB and restore on mount.
+ * Auto-save form state to IndexedDB and restore it at setup time.
  * Prevents users from losing progress when navigating away during form creation.
  *
  * @param key - Unique identifier for the draft (e.g., 'benchmark-create')
@@ -65,30 +78,28 @@ function isValidDraftData<T extends object>(data: unknown, template: T): data is
  *   clearDraft()
  * }
  */
-// Use shorter debounce in tests to avoid long waits
-const DEFAULT_DEBOUNCE_MS = import.meta.env.MODE === 'test' ? 50 : 1500
-
 export function useFormDraft<T extends object>(
   key: DraftKey,
   formState: T | Ref<T>,
-  options: FormDraftOptions<T> = {},
-) {
+  options: UseFormDraftOptions<T> = {},
+): UseFormDraftReturn {
   const { debounce = DEFAULT_DEBOUNCE_MS, isEmpty } = options
-  const hasDraft = ref(false)
+  const hasDraft = shallowRef(false)
 
-  // Track disposal to prevent writes after component unmount
+  // Track disposal to prevent writes after scope teardown
   // This guards against race conditions where the debounced watcher
   // fires after cleanup but before the watcher is fully stopped
   let isDisposed = false
-  onScopeDispose(() => {
+  tryOnScopeDispose(() => {
     isDisposed = true
   })
 
-  // Load draft on mount
-  onMounted(async () => {
+  // Restore the draft at setup time (scope-based, no component instance
+  // required); `isDisposed` guards against a restore landing after teardown.
+  async function restore(): Promise<void> {
     const draftsRepo = getDraftsRepository()
     const [getError, draft] = await tryCatch(draftsRepo.get(key))
-    if (getError || !draft?.data) return
+    if (getError || !draft?.data || isDisposed) return
 
     const state = isRef(formState) ? formState.value : formState
 
@@ -101,7 +112,9 @@ export function useFormDraft<T extends object>(
 
     Object.assign(state, draft.data)
     hasDraft.value = true
-  })
+  }
+
+  void restore()
 
   // Auto-save with VueUse's watchDebounced
   // Use toPlainObject to remove Vue reactivity and handle Blobs
@@ -136,9 +149,7 @@ export function useFormDraft<T extends object>(
   }
 
   return {
-    /** Whether a draft exists for this form */
-    hasDraft: readonly(hasDraft),
-    /** Clear the draft from storage */
+    hasDraft: shallowReadonly(hasDraft),
     clearDraft,
   }
 }

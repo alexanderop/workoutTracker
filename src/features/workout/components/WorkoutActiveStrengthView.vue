@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { NumberField, NumberFieldInput } from '@/components/ui/number-field'
 import { NumericInputModal, type InputType } from '@/components/ui/numeric-input'
 import { Button } from '@/components/ui/button'
@@ -31,11 +38,19 @@ type Properties = {
 }
 
 const emit = defineEmits<{
-  'update-set': [setId: number, field: 'kg' | 'reps' | 'rir' | 'duration', value: number | undefined]
+  'update-set': [
+    setId: number,
+    field: 'kg' | 'reps' | 'rir' | 'duration',
+    value: number | undefined,
+  ]
   'toggle-complete': [set: Set]
   'add-set': []
   'delete-set': [setId: number]
   'duplicate-set': [setId: number]
+  // Readiness of the active set, including not-yet-committed keystrokes. Lets
+  // ancestors (e.g. the footer's "Complete Set" CTA) reflect readiness live
+  // instead of lagging one blur behind -- see Finding 6, July 2026 UX review.
+  'active-set-ready': [ready: boolean]
 }>()
 
 const { block, activeSetIndex } = defineProps<Properties>()
@@ -51,12 +66,11 @@ const { unitLabel, toDisplayValue, toStorageValue } = useWeightDisplay()
 
 const weightLabel = computed(() => unitLabel.value.toUpperCase())
 
-const tableAriaLabel = computed(() =>
-  t('common.aria.workoutSetsTable', { exercise: block.name }),
-)
+const tableAriaLabel = computed(() => t('common.aria.workoutSetsTable', { exercise: block.name }))
 
 // Class generation functions (extracted to reduce computed complexity)
-const baseInputClass = 'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 font-bold text-base tabular-nums rounded-lg text-center'
+const baseInputClass =
+  'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 font-bold text-base tabular-nums rounded-lg text-center'
 
 // Allow 2 decimal places for weight (micro plates like 0.25kg)
 const weightFormatOptions = {
@@ -81,7 +95,8 @@ function getRepsInputClass(isActive: boolean) {
 }
 
 function getRirInputClass(isActive: boolean) {
-  const base = 'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 text-muted-foreground tabular-nums rounded-lg text-center'
+  const base =
+    'border-0 shadow-none focus-visible:ring-1 focus-visible:ring-primary h-11 text-muted-foreground tabular-nums rounded-lg text-center'
   return cn(base, isActive ? 'bg-secondary' : 'bg-transparent')
 }
 
@@ -115,13 +130,87 @@ function getEstimated10RM(kg: string | number | undefined, reps: string | number
   return calculated?.toString() ?? '—'
 }
 
+// Live (uncommitted) input tracking, keyed by set id.
+//
+// reka-ui's NumberField only commits a typed value on blur/Enter (see
+// NumberFieldInput's `@blur="applyInputValue"` -- there is no equivalent on `@input`,
+// by design, so it doesn't reformat/disrupt the value while the user is still typing).
+// That means `set.kg`/`set.reps`/`set.rir` lag one blur behind what's on screen. The
+// readiness indicator (checkmark tint) and the footer "Complete Set" CTA must not lag
+// with it, so we shadow-track the raw typed text here via native `input` events
+// (delegated on the row) purely for readiness checks -- the authoritative commit to
+// the domain `Set` still only happens through `update-set` (blur/Enter/step buttons),
+// so typing decimals like "60.5" is never disrupted. See Finding 6, July 2026 UX review.
+type LiveField = 'kg' | 'reps' | 'rir' | 'duration'
+const liveValuesBySetId = ref<Record<number, Partial<Record<LiveField, string>>>>({})
+
+function isLiveField(field: string | undefined): field is LiveField {
+  return field === 'kg' || field === 'reps' || field === 'rir' || field === 'duration'
+}
+
+function handleRowInput(setId: number, event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const field = target.dataset.field
+  if (!isLiveField(field)) return
+
+  liveValuesBySetId.value = {
+    ...liveValuesBySetId.value,
+    [setId]: { ...liveValuesBySetId.value[setId], [field]: target.value },
+  }
+}
+
+// A commit (blur/Enter) makes the domain `Set` the source of truth again, so
+// drop the shadow-tracked keystrokes for that field. This also ends the clamp
+// signal below, since it derives from the live value.
+function clearLiveValue(setId: number, field: LiveField) {
+  const live = liveValuesBySetId.value[setId]
+  if (!live || live[field] === undefined) return
+  const rest = { ...live }
+  delete rest[field]
+  liveValuesBySetId.value = { ...liveValuesBySetId.value, [setId]: rest }
+}
+
+// Bound to the NumberField `:max` props in the template below -- one place, so
+// the clamp-signal detection and the inputs' actual bounds never drift.
+const FIELD_MAX: Record<LiveField, number> = {
+  kg: 999,
+  reps: 999,
+  rir: 10,
+  duration: 9999,
+}
+
+type ClampSignal = { class: string | undefined; title: string | undefined }
+
+// reka-ui's NumberField silently clamps to `max` on blur/Enter with no feedback --
+// while the user is typing past the limit this drives a brief shake animation +
+// title hint on the input itself. Derived from the live (uncommitted) text, so it
+// clears when the field commits. See UX review Low finding "Weight/reps clamp
+// silently at 999".
+function getClampSignal(setId: number, field: LiveField): ClampSignal {
+  const raw = liveValuesBySetId.value[setId]?.[field]
+  const clamped = raw !== undefined && Number(raw) > FIELD_MAX[field]
+  return {
+    class: clamped ? 'animate-shake-clamp' : undefined,
+    title: clamped
+      ? t('workouts.active.strength.valueClamped', { max: FIELD_MAX[field] })
+      : undefined,
+  }
+}
+
 // Pre-compute all derived state for each set
 const setStates = computed(() =>
   block.sets.map((set, index) => {
     const isCompleted = set.status === 'completed'
     const isActive = index === activeSetIndex
+    // Merge in not-yet-committed keystrokes so readiness reflects what's on screen,
+    // not just the last blurred value.
+    const live = liveValuesBySetId.value[set.id]
+    const effectiveSet = live ? { ...set, ...live } : set
     // Use appropriate readiness check based on exercise metrics
-    const ready = isDurationBased.value ? isSetReadyForDuration(set) : isSetReady(set)
+    const ready = isDurationBased.value
+      ? isSetReadyForDuration(effectiveSet)
+      : isSetReady(effectiveSet)
 
     return {
       set,
@@ -131,6 +220,13 @@ const setStates = computed(() =>
       isActive,
       isPending: !isCompleted && !isActive,
       ready,
+      // The checkmark toggles a completed set back to active regardless of
+      // current field validity (editing a completed set's values shouldn't trap
+      // it as "completed"), but must otherwise mirror the footer CTA's readiness
+      // gate -- an empty/incomplete set's checkmark should look and behave
+      // disabled instead of doing nothing on tap. See Finding "Row checkmarks
+      // look enabled on empty sets but do nothing", July 2026 UX review.
+      canToggleComplete: isCompleted || ready,
       weightValue: toDisplayValue(set.kg),
       repsValue: set.reps ? Number(set.reps) : undefined,
       durationValue: set.duration ? Number(set.duration) : undefined,
@@ -142,23 +238,37 @@ const setStates = computed(() =>
       rirInputClass: getRirInputClass(isActive),
       completeButtonClass: getCompleteButtonClass(isCompleted, ready),
       checkIconClass: getCheckIconClass(isCompleted, ready),
+      kgClamp: getClampSignal(set.id, 'kg'),
+      repsClamp: getClampSignal(set.id, 'reps'),
+      rirClamp: getClampSignal(set.id, 'rir'),
+      durationClamp: getClampSignal(set.id, 'duration'),
     }
   }),
 )
 
+// Surface the active set's live readiness to the parent (it drives the footer
+// "Complete Set" CTA). Emitting the derived boolean -- not raw keystrokes --
+// keeps this component the single owner of the readiness rule.
+const activeSetReady = computed(() => setStates.value[activeSetIndex]?.ready ?? false)
+watch(activeSetReady, (ready) => emit('active-set-ready', ready), { immediate: true })
+
 function handleWeightChange(set: Set, displayValue: number | undefined) {
+  clearLiveValue(set.id, 'kg')
   emit('update-set', set.id, 'kg', toStorageValue(displayValue))
 }
 
 function handleRepsChange(set: Set, value: number | undefined) {
+  clearLiveValue(set.id, 'reps')
   emit('update-set', set.id, 'reps', value)
 }
 
 function handleRirChange(set: Set, value: number | undefined) {
+  clearLiveValue(set.id, 'rir')
   emit('update-set', set.id, 'rir', value)
 }
 
 function handleDurationChange(set: Set, value: number | undefined) {
+  clearLiveValue(set.id, 'duration')
   emit('update-set', set.id, 'duration', value)
 }
 
@@ -198,10 +308,15 @@ function formatDisplayValue(value: number | undefined, type: StrengthInputType):
   return String(value)
 }
 
-// Context menu state
-const contextMenuOpen = ref(false)
-const contextMenuPosition = ref({ x: 0, y: 0 })
-const contextMenuSetId = ref<number | null>(null)
+// Context menu state -- tracks which row's menu is open. Opened either by the
+// per-row overflow button (keyboard/screen-reader-reachable, see SetContextMenu.vue)
+// or by long-pressing the row (secondary shortcut, kept for touch users who
+// discover it). See Finding 9, July 2026 UX review.
+const contextMenuOpenSetId = ref<number | null>(null)
+
+function setContextMenuOpen(setId: number, isOpen: boolean) {
+  contextMenuOpenSetId.value = isOpen ? setId : null
+}
 
 // Long press configuration
 const LONG_PRESS_DELAY = 500
@@ -209,21 +324,15 @@ const LONG_PRESS_DISTANCE_THRESHOLD = 10
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 let pointerStartPosition: { x: number; y: number } | null = null
 
-function openContextMenu(setId: number, event: PointerEvent) {
-  contextMenuSetId.value = setId
-  contextMenuPosition.value = { x: event.clientX, y: event.clientY }
-  contextMenuOpen.value = true
-}
-
 function handlePointerDown(setId: number, event: PointerEvent) {
-  // Don't trigger on inputs - use instanceof for type-safe check
+  // Don't trigger on inputs/buttons - use instanceof for type-safe check
   const target = event.target
   if (target instanceof HTMLElement && target.closest('input, button')) return
 
   pointerStartPosition = { x: event.clientX, y: event.clientY }
 
   longPressTimer = setTimeout(() => {
-    openContextMenu(setId, event)
+    contextMenuOpenSetId.value = setId
     longPressTimer = null
   }, LONG_PRESS_DELAY)
 }
@@ -232,8 +341,8 @@ function handlePointerMove(event: PointerEvent) {
   if (!longPressTimer || !pointerStartPosition) return
 
   const distance = Math.hypot(
-    (event.clientX - pointerStartPosition.x),
-    (event.clientY - pointerStartPosition.y),
+    event.clientX - pointerStartPosition.x,
+    event.clientY - pointerStartPosition.y,
   )
 
   if (distance > LONG_PRESS_DISTANCE_THRESHOLD) {
@@ -253,18 +362,6 @@ function handlePointerUp() {
 
 function handlePointerCancel() {
   handlePointerUp()
-}
-
-function handleDeleteSet() {
-  if (contextMenuSetId.value !== null) {
-    emit('delete-set', contextMenuSetId.value)
-  }
-}
-
-function handleDuplicateSet() {
-  if (contextMenuSetId.value !== null) {
-    emit('duplicate-set', contextMenuSetId.value)
-  }
 }
 
 const isDeleteDisabled = computed(() => block.sets.length <= 1)
@@ -297,16 +394,25 @@ onUnmounted(() => {
             <TableHead class="w-12 h-8 p-1 text-xs">#</TableHead>
             <TableHead class="h-8 p-1 text-xs text-center">{{ weightLabel }}</TableHead>
             <TableHead class="h-8 p-1 text-xs text-center">
-              {{ isDurationBased ? t('workouts.table.headers.duration').toUpperCase() : t('workouts.table.headers.reps').toUpperCase() }}
+              {{
+                isDurationBased
+                  ? t('workouts.table.headers.duration').toUpperCase()
+                  : t('workouts.table.headers.reps').toUpperCase()
+              }}
             </TableHead>
             <TableHead v-if="!isDurationBased" class="h-8 p-1 text-xs text-center">{{
               t('workouts.table.headers.rir').toUpperCase()
             }}</TableHead>
-            <TableHead v-if="!isDurationBased" class="h-8 p-1 text-xs text-center hidden sm:table-cell">{{
-              t('workouts.table.headers.tenRm')
-            }}</TableHead>
+            <TableHead
+              v-if="!isDurationBased"
+              class="h-8 p-1 text-xs text-center hidden sm:table-cell"
+              >{{ t('workouts.table.headers.tenRm') }}</TableHead
+            >
             <TableHead class="w-14 h-8 p-1">
               <span class="sr-only">{{ t('common.aria.statusColumn') }}</span>
+            </TableHead>
+            <TableHead class="w-11 h-8 p-1">
+              <span class="sr-only">{{ t('common.aria.actionsColumn') }}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -320,6 +426,7 @@ onUnmounted(() => {
             @pointermove="handlePointerMove"
             @pointerup="handlePointerUp"
             @pointercancel="handlePointerCancel"
+            @input="handleRowInput(state.set.id, $event)"
           >
             <!-- Set Number -->
             <TableCell class="p-1 h-14">
@@ -335,7 +442,9 @@ onUnmounted(() => {
               >
                 {{ state.setNumber }}
               </div>
-              <span v-else class="text-muted-foreground tabular-nums pl-2">{{ state.setNumber }}</span>
+              <span v-else class="text-muted-foreground tabular-nums pl-2">{{
+                state.setNumber
+              }}</span>
             </TableCell>
 
             <!-- Weight -->
@@ -355,7 +464,7 @@ onUnmounted(() => {
                 v-else
                 :model-value="state.weightValue"
                 :min="0"
-                :max="999"
+                :max="FIELD_MAX.kg"
                 :step="0.01"
                 :format-options="weightFormatOptions"
                 :locale="intlLocale"
@@ -363,8 +472,10 @@ onUnmounted(() => {
               >
                 <NumberFieldInput
                   placeholder="—"
+                  data-field="kg"
                   :aria-label="t('common.aria.weightForSet', { number: state.setNumber })"
-                  :class="state.inputClass"
+                  :class="cn(state.inputClass, state.kgClamp.class)"
+                  :title="state.kgClamp.title"
                 />
               </NumberField>
             </TableCell>
@@ -386,13 +497,15 @@ onUnmounted(() => {
                 v-else-if="isDurationBased"
                 :model-value="state.durationValue"
                 :min="0"
-                :max="9999"
+                :max="FIELD_MAX.duration"
                 @update:model-value="handleDurationChange(state.set, $event)"
               >
                 <NumberFieldInput
                   placeholder="—"
+                  data-field="duration"
                   :aria-label="t('common.aria.durationForSet', { number: state.setNumber })"
-                  :class="state.repsInputClass"
+                  :class="cn(state.repsInputClass, state.durationClamp.class)"
+                  :title="state.durationClamp.title"
                 />
               </NumberField>
               <!-- Reps mode: Touch trigger -->
@@ -410,13 +523,15 @@ onUnmounted(() => {
                 v-else
                 :model-value="state.repsValue"
                 :min="0"
-                :max="999"
+                :max="FIELD_MAX.reps"
                 @update:model-value="handleRepsChange(state.set, $event)"
               >
                 <NumberFieldInput
                   placeholder="—"
+                  data-field="reps"
                   :aria-label="t('common.aria.repsForSet', { number: state.setNumber })"
-                  :class="state.repsInputClass"
+                  :class="cn(state.repsInputClass, state.repsClamp.class)"
+                  :title="state.repsClamp.title"
                 />
               </NumberField>
             </TableCell>
@@ -438,19 +553,24 @@ onUnmounted(() => {
                 v-else
                 :model-value="state.rirValue"
                 :min="0"
-                :max="10"
+                :max="FIELD_MAX.rir"
                 @update:model-value="handleRirChange(state.set, $event)"
               >
                 <NumberFieldInput
                   placeholder="—"
+                  data-field="rir"
                   :aria-label="t('common.aria.repsInReserveForSet', { number: state.setNumber })"
-                  :class="state.rirInputClass"
+                  :class="cn(state.rirInputClass, state.rirClamp.class)"
+                  :title="state.rirClamp.title"
                 />
               </NumberField>
             </TableCell>
 
             <!-- 10RM (hidden on small screens and for duration-based exercises) -->
-            <TableCell v-if="!isDurationBased" class="p-1 h-14 text-center text-xs text-muted-foreground hidden sm:table-cell">
+            <TableCell
+              v-if="!isDurationBased"
+              class="p-1 h-14 text-center text-xs text-muted-foreground hidden sm:table-cell"
+            >
               {{ state.estimated10RM }}
             </TableCell>
 
@@ -460,10 +580,23 @@ onUnmounted(() => {
                 size="icon"
                 :aria-label="t('common.aria.markSetNumberComplete', { number: state.setNumber })"
                 :class="state.completeButtonClass"
+                :disabled="!state.canToggleComplete"
                 @click="emit('toggle-complete', state.set)"
               >
                 <Check :class="state.checkIconClass" aria-hidden="true" />
               </Button>
+            </TableCell>
+
+            <!-- Options (overflow menu: delete/duplicate) -->
+            <TableCell class="p-1 h-14 text-center">
+              <SetContextMenu
+                :open="contextMenuOpenSetId === state.set.id"
+                :set-number="state.setNumber"
+                :delete-disabled="isDeleteDisabled"
+                @update:open="setContextMenuOpen(state.set.id, $event)"
+                @delete="emit('delete-set', state.set.id)"
+                @duplicate="emit('duplicate-set', state.set.id)"
+              />
             </TableCell>
           </TableRow>
         </TableBody>
@@ -488,15 +621,6 @@ onUnmounted(() => {
       :unit="modalType === 'weight' ? unitLabel : ''"
       :equipment="block.equipment"
       @update:model-value="handleModalConfirm"
-    />
-
-    <!-- Set Context Menu (long-press) -->
-    <SetContextMenu
-      v-model:open="contextMenuOpen"
-      :position="contextMenuPosition"
-      :delete-disabled="isDeleteDisabled"
-      @delete="handleDeleteSet"
-      @duplicate="handleDuplicateSet"
     />
   </div>
 </template>

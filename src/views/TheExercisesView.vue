@@ -62,7 +62,7 @@ function handleExerciseSelect(exercise: Exercise) {
           v-model="searchQuery"
           :placeholder="t('exercises.searchPlaceholder')"
           :aria-label="t('common.aria.searchExercises')"
-          class="w-full pl-12 pr-10 h-14 text-base rounded-2xl bg-muted/40 border-transparent placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-200"
+          class="w-full truncate pl-12 pr-10 h-14 text-base rounded-2xl bg-muted/40 border-transparent placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-200"
         />
         <button
           v-if="searchQuery"

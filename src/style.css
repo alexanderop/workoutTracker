@@ -409,3 +409,30 @@
     box-shadow: 0 0 0 8px oklch(0.75 0.2 290 / 0);
   }
 }
+
+/* Brief shake to signal a NumberField value is about to be clamped to its max
+   (e.g. typing "1500" into a weight field capped at 999). Kept subtle -- a couple
+   of small horizontal nudges, not a jarring wobble. See UX review Low finding
+   "Weight/reps clamp silently at 999". */
+@keyframes shake-clamp {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-shake-clamp {
+  animation: shake-clamp 0.15s ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake-clamp {
+    animation: none;
+  }
+}

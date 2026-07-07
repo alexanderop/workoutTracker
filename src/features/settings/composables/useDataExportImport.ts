@@ -41,7 +41,8 @@ export function useDataExportImport(): DataExportImportReturn {
     const result = await parseExportFile(file)
 
     if (!result.success) {
-      importError.value = t(`settings.errors.${result.error}`)
+      const message = t(`settings.errors.${result.error}`)
+      importError.value = result.details ? `${message} (${result.details})` : message
       showImportErrorDialog.value = true
       return
     }

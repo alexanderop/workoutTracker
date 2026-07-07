@@ -7,6 +7,7 @@ import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
 import { resetWorkout } from '@/stores/workoutState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
+import { useToastStore } from '@/stores/toast'
 import { installProviderUnderTest } from './providerUnderTest'
 
 /**
@@ -24,6 +25,7 @@ export async function resetDatabase(): Promise<void> {
   useSettingsStore().$reset()
   useExercisesStore().$reset()
   useOnboarding().$reset()
+  useToastStore().$reset()
 
   // Reset singleton workout state
   resetWorkout()

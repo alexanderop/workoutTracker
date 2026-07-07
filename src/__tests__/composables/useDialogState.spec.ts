@@ -4,6 +4,10 @@ import { useDialogState } from '@/composables/useDialogState'
 type TestDialog = 'edit' | 'delete' | 'confirm'
 
 describe('useDialogState', () => {
+  it('should be defined', () => {
+    expect(useDialogState).toBeDefined()
+  })
+
   describe('initial state', () => {
     it('starts with no dialog open', () => {
       const { activeDialog } = useDialogState<TestDialog>()

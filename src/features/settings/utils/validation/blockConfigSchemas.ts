@@ -1,21 +1,11 @@
 import { z } from 'zod'
 
-import { exerciseRotationSchema, safeIdSchema, safeStringSchema } from './primitiveSchemas'
-
-// Equipment values matching src/types/exercises.ts Equipment type
-const equipmentValues = [
-  'barbell',
-  'dumbbell',
-  'machine',
-  'cable',
-  'bodyweight',
-  'kettlebell',
-  'band',
-  'ez-bar',
-  'hex-bar',
-  'club',
-  'battle-rope',
-] as const
+import {
+  equipmentSchema,
+  exerciseRotationSchema,
+  safeIdSchema,
+  safeStringSchema,
+} from './primitiveSchemas'
 
 // ============================================
 // Shared Block Exercise Fields
@@ -40,7 +30,7 @@ export const blockExerciseFieldsBase = {
 export const strengthBlockFieldsBase = {
   exerciseDefinitionId: safeIdSchema.nullable(),
   name: safeStringSchema.min(1).max(200),
-  equipment: z.enum(equipmentValues),
+  equipment: equipmentSchema,
   targetReps: z.number().int().min(0).max(1000),
   targetDuration: z.number().int().min(0).max(3600).nullable(), // seconds for isometric exercises
   targetWeight: z.number().min(0).max(1000).nullable(), // kg for weighted holds

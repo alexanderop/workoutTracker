@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
-import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
-import { cn } from '@/lib/utils'
-import { Copy, Trash2 } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Copy, MoreVertical, Trash2 } from '@lucide/vue'
 
 const { t } = useI18n()
 
-const open = defineModel<boolean>('open', { required: true })
+const open = defineModel<boolean>('open', { default: false })
 
-const { position, deleteDisabled = false } = defineProps<{
-  position: { x: number; y: number }
+const { setNumber, deleteDisabled = false } = defineProps<{
+  /** 1-based set number shown to the user, used to build a distinguishable accessible name. */
+  setNumber: number
   deleteDisabled?: boolean
 }>()
 
@@ -19,124 +24,46 @@ const emit = defineEmits<{
   duplicate: []
 }>()
 
-const menuReference = useTemplateRef<HTMLDivElement>('menu')
-
-// Adjusted position to keep menu in viewport
-const adjustedPosition = ref({ x: 0, y: 0 })
-
-function adjustPosition() {
-  if (!menuReference.value) {
-    adjustedPosition.value = position
-    return
-  }
-
-  const rect = menuReference.value.getBoundingClientRect()
-  const padding = 8
-  let { x, y } = position
-
-  // Adjust horizontal position
-  if (x + rect.width > window.innerWidth - padding) {
-    x = window.innerWidth - rect.width - padding
-  }
-  if (x < padding) {
-    x = padding
-  }
-
-  // Adjust vertical position
-  if (y + rect.height > window.innerHeight - padding) {
-    y = window.innerHeight - rect.height - padding
-  }
-  if (y < padding) {
-    y = padding
-  }
-
-  adjustedPosition.value = { x, y }
-}
-
-function close() {
-  open.value = false
-}
-
 function handleDelete() {
   if (deleteDisabled) return
   emit('delete')
-  close()
+  open.value = false
 }
 
 function handleDuplicate() {
   emit('duplicate')
-  close()
+  open.value = false
 }
-
-// Close on click outside
-onClickOutside(menuReference, close, { ignore: [] })
-
-// Close on escape key
-onKeyStroke('Escape', close)
-
-// Adjust position when menu opens or position changes
-watch(
-  () => [open.value, position] as const,
-  () => {
-    if (open.value) {
-      // Use nextTick-like behavior with requestAnimationFrame
-      requestAnimationFrame(adjustPosition)
-    }
-  },
-  { immediate: true },
-)
-
-// Recalculate on resize
-onMounted(() => {
-  window.addEventListener('resize', adjustPosition)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', adjustPosition)
-})
-
-// Static class string - no reactive dependencies
-const MENU_ITEM_CLASS = 'flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none'
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="open"
-      ref="menu"
-      role="menu"
-      :aria-label="t('common.aria.setActionsMenu')"
-      class="fixed z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
-      :style="{
-        left: `${adjustedPosition.x}px`,
-        top: `${adjustedPosition.y}px`,
-      }"
-    >
-      <button
-        role="menuitem"
-        :class="cn(
-          MENU_ITEM_CLASS,
-          'w-full text-left focus:bg-accent focus:text-accent-foreground',
-          deleteDisabled && 'pointer-events-none opacity-50',
-        )"
-        :aria-disabled="deleteDisabled"
-        :disabled="deleteDisabled"
-        @click="handleDelete"
+  <DropdownMenu v-model:open="open">
+    <DropdownMenuTrigger as-child>
+      <!--
+        Per-row overflow button -- the discoverable, keyboard/screen-reader-reachable
+        entry point for delete/duplicate. The 500ms long-press on the row (see
+        WorkoutActiveStrengthView.vue) opens this same menu as a secondary shortcut.
+        See Finding 9, July 2026 UX review.
+      -->
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        class="h-11 w-11 text-muted-foreground/70 hover:text-foreground hover:bg-transparent"
+        :aria-label="t('common.aria.setOptionsForSet', { number: setNumber })"
       >
-        <Trash2 class="h-4 w-4 text-destructive" aria-hidden="true" />
+        <MoreVertical class="h-4 w-4" aria-hidden="true" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" :aria-label="t('common.aria.setActionsMenu')">
+      <DropdownMenuItem variant="destructive" :disabled="deleteDisabled" @click="handleDelete">
+        <Trash2 class="h-4 w-4" aria-hidden="true" />
         <span>{{ t('common.buttons.delete') }}</span>
-      </button>
-      <button
-        role="menuitem"
-        :class="cn(
-          MENU_ITEM_CLASS,
-          'w-full text-left focus:bg-accent focus:text-accent-foreground',
-        )"
-        @click="handleDuplicate"
-      >
+      </DropdownMenuItem>
+      <DropdownMenuItem @click="handleDuplicate">
         <Copy class="h-4 w-4" aria-hidden="true" />
         <span>{{ t('common.buttons.duplicate') }}</span>
-      </button>
-    </div>
-  </Teleport>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>

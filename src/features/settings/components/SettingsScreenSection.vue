@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import type { AcceptableValue } from 'reka-ui'
 import { ref } from 'vue'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Smartphone, Volume2, ChevronDown } from '@lucide/vue'
+import { Smartphone, Volume2, Timer, ChevronDown } from '@lucide/vue'
 import { useSettingsStore } from '@/stores/settings'
+import { formatTime } from '@/lib/workout-utils'
 import { useI18n } from 'vue-i18n'
 import SettingsWakeLockDiagnostics from './SettingsWakeLockDiagnostics.vue'
+
+// Rest timer presets shown in Settings. `0` means "off" -- the rest timer
+// falls back to a plain count-up display with no target/countdown/vibration.
+const REST_TIMER_PRESETS_SECONDS = [0, 60, 90, 120, 180] as const
 
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
@@ -26,6 +33,23 @@ function handleTimerSoundVolumeChange(event: Event) {
   if (!(target instanceof HTMLInputElement)) return
   const volume = Number.parseFloat(target.value)
   settingsStore.setTimerSoundVolume(volume)
+}
+
+function formatRestPresetLabel(seconds: number): string {
+  if (seconds === 0) return t('settings.labels.restTimerOff')
+  return formatTime(seconds)
+}
+
+function restPresetAriaLabel(seconds: number): string {
+  return seconds === 0
+    ? t('settings.labels.ariaRestTimerOff')
+    : t('settings.labels.ariaRestTimerSeconds', { seconds })
+}
+
+function handleDefaultRestTimerChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>) {
+  const seconds = Number(value)
+  if (Number.isNaN(seconds)) return
+  void settingsStore.setDefaultRestTimer(seconds)
 }
 </script>
 
@@ -101,6 +125,37 @@ function handleTimerSoundVolumeChange(event: Event) {
           </span>
         </div>
         <p class="text-xs text-muted-foreground">{{ t('settings.labels.volumeRange') }}</p>
+      </div>
+
+      <!-- Default Rest Timer -->
+      <div class="flex flex-col gap-3">
+        <div class="flex items-start gap-3 min-w-0">
+          <Timer class="icon-md text-muted-foreground mt-0.5 shrink-0" />
+          <div class="min-w-0">
+            <Label class="text-base">{{ t('settings.labels.defaultRestTimer') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('settings.labels.restTimerDescription') }}
+            </p>
+          </div>
+        </div>
+        <ToggleGroup
+          type="single"
+          :model-value="String(settingsStore.defaultRestTimer)"
+          variant="outline"
+          data-testid="default-rest-timer-toggle"
+          class="w-full [&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
+          @update:model-value="handleDefaultRestTimerChange"
+        >
+          <ToggleGroupItem
+            v-for="seconds in REST_TIMER_PRESETS_SECONDS"
+            :key="seconds"
+            :value="String(seconds)"
+            :aria-label="restPresetAriaLabel(seconds)"
+            class="flex-1 min-h-11 px-2"
+          >
+            {{ formatRestPresetLabel(seconds) }}
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       <!-- Advanced/Debug Section -->

@@ -3,7 +3,9 @@ export default {
   new: 'New Exercise',
   custom: 'Custom Exercises',
   search: 'Search exercises...',
-  searchPlaceholder: 'Search by name, muscle, or equipment...',
+  // Shortened from "Search by name, muscle, or equipment..." -- the longer
+  // copy clipped without an ellipsis at 390px viewport width (UX review).
+  searchPlaceholder: 'Search by name or muscle...',
   count: '{count} exercises',
   filters: {
     all: 'All',
@@ -46,6 +48,10 @@ export default {
   form: {
     saveError: 'Failed to save exercise. Please try again.',
     saveErrorTitle: 'Save Failed',
+    errors: {
+      duplicateName: 'An exercise with this name already exists.',
+      muscleRequired: 'Select a muscle group so this exercise appears in exercise filters.',
+    },
   },
   selectors: {
     equipment: {

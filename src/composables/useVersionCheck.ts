@@ -1,4 +1,4 @@
-import { computed, ref, shallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import type { VersionInfo } from '@/types/version'
 import { tryCatch } from '@/lib/tryCatch'
@@ -7,8 +7,8 @@ const POLL_INTERVAL_MS = 30_000 // 30 seconds
 
 // Singleton state - shared across all instances
 const serverVersion = shallowRef<VersionInfo | null>(null)
-const error = ref<Error | null>(null)
-const isChecking = ref(false)
+const error = shallowRef<Error | null>(null)
+const isChecking = shallowRef(false)
 
 // Built-in version from build time (static)
 const currentVersion: VersionInfo = {
@@ -33,7 +33,7 @@ function isVersionInfo(value: unknown): value is VersionInfo {
   if (!hasStringField(value, 'buildTime')) return false
   // tag can be string or null
   if (!('tag' in value)) return false
-  return !(typeof value.tag !== 'string' && value.tag !== null);
+  return !(typeof value.tag !== 'string' && value.tag !== null)
 }
 
 async function checkVersion(): Promise<void> {
@@ -85,6 +85,12 @@ const isNewVersion = computed(() => {
   return serverVersion.value.commit !== currentVersion.commit
 })
 
+/**
+ * Polls `/version.json` to detect newly deployed app versions. Version state
+ * is a module-level singleton, but polling is scope-bound per caller: the
+ * interval stops when the calling component's scope is disposed, so checking
+ * only runs while a consumer (e.g. the Settings view) is alive.
+ */
 export function useVersionCheck() {
   // Start polling when first used
   const { pause, resume } = useIntervalFn(checkVersion, POLL_INTERVAL_MS, {
@@ -95,10 +101,10 @@ export function useVersionCheck() {
   return {
     // State
     currentVersion,
-    serverVersion,
+    serverVersion: shallowReadonly(serverVersion),
     isNewVersion,
-    error,
-    isChecking,
+    error: shallowReadonly(error),
+    isChecking: shallowReadonly(isChecking),
 
     // Methods
     checkVersion,

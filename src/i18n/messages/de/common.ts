@@ -46,6 +46,9 @@ export default {
     setCount: 'Satzanzahl',
     decreaseSetCount: 'Satzanzahl verringern',
     increaseSetCount: 'Satzanzahl erhöhen',
+    setCountFor: 'Satzanzahl für {name}',
+    decreaseSetCountFor: 'Satzanzahl für {name} verringern',
+    increaseSetCountFor: 'Satzanzahl für {name} erhöhen',
     moveUp: 'Nach oben',
     moveDown: 'Nach unten',
     removeExercise: 'Übung entfernen',
@@ -58,6 +61,7 @@ export default {
     editBlock: '{name} bearbeiten',
     removeBlock: '{name} entfernen',
     deleteSet: 'Satz {index} löschen',
+    setOptionsForSet: 'Optionen für Satz {number}',
     incrementByAmount: 'Um {amount} erhöhen',
     decrementByAmount: 'Um {amount} verringern',
     statusColumn: 'Status',
@@ -66,6 +70,9 @@ export default {
     clearSearch: 'Suche löschen',
     activeWorkoutFab: 'Zum aktiven Workout zurückkehren',
     setActionsMenu: 'Satz-Aktionen',
+    decreaseRestTarget: 'Pausenzeit um {seconds} Sekunden verringern',
+    increaseRestTarget: 'Pausenzeit um {seconds} Sekunden erhöhen',
+    dismissRestTimer: 'Pausen-Timer ausblenden',
   },
   states: {
     loading: 'Lädt...',
@@ -78,13 +85,9 @@ export default {
     title: 'Noch nichts hier',
     description: 'Erstelle dein erstes Element um zu beginnen',
   },
-  rest: {
-    timer: {
-      stop: 'Stopp',
-      start: 'Start',
-      cancel: 'Abbrechen',
-      finishWorkout: 'Workout beenden',
-    },
+  notFound: {
+    title: 'Seite nicht gefunden',
+    description: 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
   },
   settings: {
     placeholder: 'Bitte wählen',
@@ -117,4 +120,7 @@ export default {
   saving: 'Speichert...',
   exercises: 'Übungen',
   blocks: 'Blöcke',
+  toast: {
+    exerciseAdded: '{name} hinzugefügt',
+  },
 } as const

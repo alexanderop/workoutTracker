@@ -5,7 +5,7 @@ const LONG_PRESS_DELAY = 500
 const EVENT_PROCESSING_DELAY = 50
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function createPointerEvent(type: string, clientX: number, clientY: number): PointerEvent {
@@ -51,23 +51,30 @@ export class SetContextMenuPO {
 
   /**
    * Waits for context menu to be visible.
+   *
+   * Not filtered by accessible name: the menu is now per-row (opened either via the
+   * row's overflow button or long-press) and its accessible name is supplied via
+   * `aria-labelledby` pointing at the trigger button (e.g. "Options for set 2"), which
+   * takes precedence over any `aria-label` on the menu itself per the ARIA name
+   * computation algorithm. Only one context menu is ever open at a time, so matching
+   * by role alone is unambiguous. See Finding 9, July 2026 UX review.
    */
   async waitForOpen(): Promise<void> {
-    await expect.element(page.getByRole('menu', { name: /set actions/i })).toBeVisible()
+    await expect.element(page.getByRole('menu')).toBeVisible()
   }
 
   /**
    * Waits for context menu to close.
    */
   async waitForClose(): Promise<void> {
-    await expect.element(page.getByRole('menu', { name: /set actions/i })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
   }
 
   /**
    * Checks if the context menu is visible.
    */
   isVisible(): boolean {
-    return page.getByRole('menu', { name: /set actions/i }).query() !== null
+    return page.getByRole('menu').query() !== null
   }
 
   /**
@@ -100,8 +107,30 @@ export class SetContextMenuPO {
 
   /**
    * Clicks outside the menu to dismiss it.
+   *
+   * Dispatches a `pointerdown` directly on `document.body` rather than going
+   * through Playwright's role-based locators or `.click()`. reka-ui's DropdownMenu
+   * is a modal dismissable layer that, while open: (1) applies `aria-hidden` to
+   * every other element on the page via the `aria-hidden` package's `hideOthers()`
+   * (see `useHideOthers.js`), which makes `page.getByRole(...)` unable to find
+   * *any* background element -- there is nothing "outside" left in the a11y tree;
+   * and (2) sets `document.body.style.pointerEvents = 'none'` (see
+   * DismissableLayer.js), so a real hit-tested click on a background element never
+   * arrives. `document.body` itself is unaffected by both (it's the ancestor doing
+   * the hiding, and the layer's own outside-dismiss detection listens for
+   * `pointerdown` bubbling to `document` regardless of `pointer-events`). See
+   * Finding 9, July 2026 UX review.
    */
   async clickOutside(): Promise<void> {
-    await page.getByRole('heading', { name: 'Strength' }).click()
+    document.body.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: 'mouse',
+        button: 0,
+        isPrimary: true,
+      }),
+    )
   }
 }

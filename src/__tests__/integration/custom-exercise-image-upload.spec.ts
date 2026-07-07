@@ -10,7 +10,7 @@ describe('Custom Exercise Image Upload', () => {
   afterEach(cleanupIntegrationTest)
 
   it('uploads an image when creating a custom exercise', async () => {
-    const { common, cleanup } = await createTestApp()
+    const { common, exercises, cleanup } = await createTestApp()
 
     // Navigate to exercises view
     await common.navigateToExercises()
@@ -20,11 +20,12 @@ describe('Custom Exercise Image Upload', () => {
     await userEvent.click(createButton)
     await common.waitForRoute(/^\/create-exercise$/)
 
-    // Fill exercise name
+    // Fill exercise name and required muscle group (Finding M5)
     const nameInput = page.getByPlaceholder(/name.*e\.g\./i)
     await userEvent.fill(nameInput, 'Exercise With Image')
+    await exercises.selectMuscle('Shoulders')
 
-    // Verify save button is enabled after name is entered
+    // Verify save button is enabled after name and muscle group are entered
     const saveButton = page.getByRole('button', { name: /save/i })
     await expect.element(saveButton).not.toBeDisabled()
 

@@ -20,6 +20,12 @@ export default {
     playAudioCues: 'Audiosignale während zeitgesteuerten Trainings abspielen',
     timerSoundVolume: 'Lautstärke',
     volumeRange: 'Anpassung zwischen 50% und 100%',
+    defaultRestTimer: 'Standard-Pausenzeit',
+    restTimerDescription:
+      'Countdown nach Abschluss eines Kraft-Satzes. Während des Workouts antippen, um sie um 15s anzupassen oder frühzeitig auszublenden.',
+    restTimerOff: 'Aus',
+    ariaRestTimerOff: 'Kein Pausenzeit-Ziel',
+    ariaRestTimerSeconds: '{seconds} Sekunden Pausenzeit-Ziel',
     advancedDiagnostics: 'Erweiterte Diagnose',
     exportData: 'Daten exportieren',
     downloadBackup: 'Sicherungsdatei herunterladen',
@@ -99,9 +105,9 @@ export default {
     fileTooLarge: 'Datei überschreitet die maximale Größe von 10MB',
     readFailed: 'Die ausgewählte Datei konnte nicht gelesen werden',
     invalidJson: 'Die ausgewählte Datei ist kein gültiges JSON',
-    invalidFileFormat: 'Ungültiges Dateiformat',
-    notValidExport: 'Diese Datei ist kein gültiger Workout-Tracker-Export',
-    newerVersion: 'Diese Exportdatei stammt aus einer neueren Version und kann nicht importiert werden',
+    validationFailed: 'Diese Datei ist keine gültige Workout-Tracker-Sicherung',
+    newerVersion:
+      'Diese Exportdatei stammt aus einer neueren Version und kann nicht importiert werden',
     corrupted: 'Exportdatei ist beschädigt oder unvollständig',
   },
 } as const

@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { getCurrentLocale, type SupportedLocale } from '@/lib/dateLocale'
 
-type NumberLocaleReturn = {
+export type UseNumberLocaleReturn = {
   locale: ComputedRef<SupportedLocale>
   intlLocale: ComputedRef<string>
   decimalSeparator: ComputedRef<string>
@@ -45,7 +45,7 @@ function parseNumber(input: string): number | undefined {
  * Composable for locale-aware number formatting and parsing.
  * Ties decimal separator to app language setting.
  */
-export function useNumberLocale(): NumberLocaleReturn {
+export function useNumberLocale(): UseNumberLocaleReturn {
   const locale = computed(() => getCurrentLocale())
 
   const intlLocale = computed(() => INTL_LOCALE_MAP[locale.value])

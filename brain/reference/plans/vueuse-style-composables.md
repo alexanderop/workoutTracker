@@ -143,7 +143,7 @@ const stop = query.subscribe(v => { data.value = v })
 tryOnScopeDispose(stop)
 ```
 
-If mount-deferral matters for a consumer, make it an option (`{ initOnMounted: true }`) like `useStorage` does.
+If mount-deferral matters for a consumer, make it an option (`{ initOnMounted: true }`) like `useStorage` does. *(2026-07-07 simplify pass: shipped without the option — no consumer needed it; re-add when one does. Same pass dropped the `get()` call: the `LiveQuery.subscribe` contract now guarantees an immediate initial emission, so `get()`+`subscribe` would double-query. Re-subscription is driven by a `watch` on the factory itself — reactive reads inside `make` are tracked automatically, no `deps` option.)*
 
 ### GAP 2 — `MaybeRefOrGetter` documented as convention, used in 3/65 files (do now)
 
@@ -185,15 +185,29 @@ Several thin wrappers (`useWorkoutDetail`, `useBenchmarkDetail`, `useExerciseFor
 
 ## Adoption checklist (dependency order)
 
-| # | Action | Touches | Effort |
+Status 2026-07-07: executed for ALL of `src/composables/` (shared composables, timers, persistence) on branch `newFeature`. Feature composables (`src/features/*/composables/`) remain for a follow-up pass.
+
+| # | Action | Touches | Status |
 |---|---|---|---|
-| 1 | Rewrite `useLiveQuery` on `tryOnScopeDispose`; subscribe immediately | `useLiveQuery.ts` + spec | Small |
-| 2 | Create shared `Pausable`/`Stoppable`/configurable-globals types module | new `src/composables/types.ts` | Small |
-| 3 | `MaybeRefOrGetter` + `toValue` + `watch immediate` for id-keyed composables | ~6 data composables | Medium |
-| 4 | Migrate remaining list composables to `useLiveQuery`; add missing `tryCatch` in `useBenchmarksList` | 4 list composables | Medium |
-| 5 | Timers return `Pausable`; `readonly()` all exposed refs (fix `useRestTimer`) | `timers/*` | Small |
-| 6 | Deprecate `useWorkout` legacy aliases with `@deprecated`, then remove | `useWorkout.ts` + call sites | Large |
-| 7 | One-line JSDoc description on every composable; fold conventions into `brain/reference/agent/composables.md` | sweep | Small |
+| 1 | Rewrite `useLiveQuery` on `tryOnScopeDispose`; subscribe immediately | `useLiveQuery.ts` + spec | ✅ done — re-subscribes via a `watch` on the factory (auto-tracked deps, no options); relies on `subscribe`'s guaranteed initial emission instead of `get()` |
+| 2 | Create shared `Pausable`/`Stoppable`/configurable-globals types module | ~~new `src/composables/types.ts`~~ | ✅ resolved differently — import `Pausable`, `tryOnScopeDispose`, `tryOnMounted` from `@vueuse/core` (already a dependency); no local duplicates. `Stoppable` fits nothing in scope; `ConfigurableWindow` unneeded (no SSR, real-browser tests) |
+| 3 | `MaybeRefOrGetter` + `toValue` for reactive inputs | shared composables (`useRecentWorkouts` limit, `useEnterAnimation` delay, `useExerciseSearch` filters, `useSwipeableDelete` workouts) | ✅ done for shared scope — feature id-keyed composables (`useExerciseProgress` etc.) still open |
+| 4 | Migrate remaining list composables to `useLiveQuery`; add missing `tryCatch` in `useBenchmarksList` | 4 list composables | ✅ partially — `tryCatch` parity + scope-based loads done; full LiveQuery migration of `useBenchmarksList`/`useWorkoutCalendar` **blocked** on repo `observeAll()`/`observeByDateRange()` live queries (follow-up) |
+| 5 | Timers return `Pausable`; readonly all exposed refs | `timers/*` | ✅ done — options-last `UseXTimerOptions`, `UseXTimerReturn = Pausable & {...}`, `shallowReadonly()` wraps, `resume()` added to base; `useBenchmarkGlobalTimer` moved into `createGlobalState` |
+| 6 | Deprecate `useWorkout` legacy aliases with `@deprecated`, then remove | `useWorkout.ts` + call sites | ⏸ deferred (user decision 2026-07-07) |
+| 7 | One-line JSDoc description on every composable | sweep | ✅ done for `src/composables/` |
+
+### Gotchas discovered during the 2026-07-07 rewrite
+
+- `Pausable.isActive` is typed `Readonly<ShallowRef<boolean>>`, and a `ComputedRef<boolean>` **is** structurally assignable — `UseXReturn = Pausable & {...}` with `isActive: someComputed` passes vue-tsc, no fallback needed.
+- `useExercisesStore` returns `reactive({...})`, so store refs arrive **unwrapped** in tests: seed with `store.customExercises = [...]`, not `.value`.
+- `reactive` import from `vue` is oxlint-banned outside `**/stores/**`; specs must build form state with `ref()`.
+- `Promise.withResolvers` is unavailable (`tsconfig.app.json` pins `lib: ES2023`); deferred promises in specs use `new Promise((resolve) => setTimeout(...))`.
+- `useFormDraft` restore mutates the form state, which schedules a debounced auto-save — tests that `clearDraft()` must let that save land first or the draft reappears.
+- Repo hooks block `else` blocks (early returns/ternaries only) and eslint bans bare ternary expression statements — branch on two `if`s instead.
+- `createPersistenceCore` returns its refs `shallowReadonly`; the feature wrappers (`useWorkoutPersistence`, `useBenchmarkPersistence`) drive the state machine through `setError()`/`markSaved()`/`markInitialized()` instead of poking `.value` from outside.
+- The four block timers share `BlockTimerReturn<TBlock, TResult>` from `useBaseTimer.ts`; extend it for kind-specific members instead of re-declaring the base surface.
+- `useVersionCheck` deliberately keeps per-caller scope-bound polling (interval dies with the Settings view); wrapping it in `createGlobalState` would make polling immortal.
 
 ## Rule of thumb for every new composable
 

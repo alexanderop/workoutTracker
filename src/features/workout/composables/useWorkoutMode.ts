@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useWorkout } from './useWorkout'
+import { findNextIncompleteSet, useWorkout } from './useWorkout'
 import { hasWorkoutBlockProgress, isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/types/blocks'
 
@@ -51,8 +51,24 @@ export function useWorkoutMode() {
     workout.value.startedAt = Date.now()
   }
 
+  /**
+   * Activate the first *incomplete* set of a strength block (not necessarily
+   * index 0 -- a block re-entered after resuming a workout may already have
+   * its earlier sets completed). No-ops if the block has no incomplete sets
+   * left, leaving `activeSetIndex` as-is rather than pointing at a
+   * completed set.
+   */
   function activateFirstSet(blockIndex: number) {
-    activateSet(blockIndex, 0)
+    const block = workout.value.blocks[blockIndex]
+    if (!block || !isStrengthBlock(block)) return
+
+    const nextSet = findNextIncompleteSet(block)
+    if (!nextSet) return
+
+    const setIndex = block.sets.findIndex((s) => s.id === nextSet.id)
+    if (setIndex === -1) return
+
+    activateSet(blockIndex, setIndex)
   }
 
   function initializeFirstBlock() {
@@ -103,7 +119,11 @@ export function useWorkoutMode() {
   function advanceToNextBlock(): boolean {
     // Find next incomplete block (skip completed ones)
     let nextIndex: number | null = null
-    for (let index = workout.value.selectedBlockIndex + 1; index < workout.value.blocks.length; index++) {
+    for (
+      let index = workout.value.selectedBlockIndex + 1;
+      index < workout.value.blocks.length;
+      index++
+    ) {
       const block = workout.value.blocks[index]
       if (block && !isWorkoutBlockComplete(block)) {
         nextIndex = index

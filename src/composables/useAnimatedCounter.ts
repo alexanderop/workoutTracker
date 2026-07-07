@@ -1,24 +1,45 @@
-import type { MaybeRefOrGetter } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 
 import { TransitionPresets, useTransition } from '@vueuse/core'
-import { computed, ref, toValue, watch } from 'vue'
+import { computed, shallowRef, toValue, watch } from 'vue'
 
-type UseAnimatedCounterOptions = {
+export type UseAnimatedCounterOptions = {
+  /**
+   * Animation duration in milliseconds.
+   * @default 1500
+   */
   duration?: number
+  /**
+   * Delay before the animation starts, in milliseconds.
+   * @default 0
+   */
   delay?: number
+  /**
+   * Decimal places to round the animated value to.
+   * @default 0
+   */
   decimals?: number
+}
+
+export type UseAnimatedCounterReturn = {
+  displayValue: ComputedRef<number>
+  /** Restart the animation from 0 toward the current target. */
+  restart: () => void
 }
 
 /**
  * Animates a number from 0 to a target value using easeOutExpo easing.
+ *
+ * @param target The value to animate toward; a ref or getter restarts the animation on change
+ * @param options
  */
 export function useAnimatedCounter(
   target: MaybeRefOrGetter<number>,
   options: UseAnimatedCounterOptions = {},
-) {
+): UseAnimatedCounterReturn {
   const { duration = 1500, delay = 0, decimals = 0 } = options
 
-  const source = ref(0)
+  const source = shallowRef(0)
 
   const rawValue = useTransition(source, {
     duration,

@@ -43,6 +43,13 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
       exists: () => repo.exists(),
     },
     isEmpty: (w) => w.blocks.length === 0,
+    // A completed workout lives in history, not in the active-workout draft.
+    // completeWorkout() below deletes the draft in the same transaction that
+    // writes history; without this gate the mode-change mutation that shows
+    // the completion screen re-triggers the debounced auto-save and
+    // resurrects the deleted draft, causing a phantom "Resume Workout?"
+    // prompt on the next app start.
+    shouldPersist: (w) => w.mode !== 'completed',
   })
 
   /**
@@ -92,7 +99,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     const [getError, databaseWorkout] = await tryCatch(activeWorkoutQuery.get())
 
     if (getError) {
-      core.persistenceState.value = { status: 'error', error: getError }
+      core.setError(getError)
       return null
     }
 
@@ -106,12 +113,12 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     )
 
     if (completeError) {
-      core.persistenceState.value = { status: 'error', error: completeError }
+      core.setError(completeError)
       return null
     }
 
     currentWorkoutStartedAt = null
-    core.hasUnsavedChanges.value = false
+    core.markSaved()
     return completed
   }
 

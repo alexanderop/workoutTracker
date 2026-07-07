@@ -4,8 +4,10 @@ import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 export function createDexieDataManagementRepository(
   database: WorkoutTrackerDatabase,
 ): DataManagementRepository {
-  // Shared table list for transactions
-  const allTables = [
+  // Tables covered by export/import backups. Kept separate from the full
+  // wipe list below so importAll's semantics (restore exactly what the
+  // backup contains) don't change if the wipe list grows.
+  const backupTables = [
     database.settings,
     database.customExercises,
     database.templates,
@@ -18,20 +20,16 @@ export function createDexieDataManagementRepository(
     database.onboarding,
   ] as const
 
-  // Shared helper to clear all tables
-  async function clearAllTables(): Promise<void> {
-    await Promise.all([
-      database.settings.clear(),
-      database.customExercises.clear(),
-      database.templates.clear(),
-      database.workouts.clear(),
-      database.benchmarks.clear(),
-      database.activeWorkout.clear(),
-      database.activeBenchmark.clear(),
-      database.weightEntries.clear(),
-      database.drafts.clear(),
-      database.onboarding.clear(),
-    ])
+  // Every table in the schema, for a full wipe (Settings > Delete All Data).
+  // Taken live from the Dexie schema so tables added in future versions are
+  // wiped automatically — a hand-maintained list previously missed
+  // progressions/progressionSessions (added in schema version 5), silently
+  // leaving progression data behind after "delete all data" (UX review).
+  const allTables = database.tables
+
+  // Shared helper to clear a given set of tables
+  async function clearTables(tables: ReadonlyArray<{ clear(): Promise<void> }>): Promise<void> {
+    await Promise.all(tables.map((table) => table.clear()))
   }
 
   return {
@@ -50,8 +48,8 @@ export function createDexieDataManagementRepository(
     },
 
     async importAll(data: ExportDataContents): Promise<void> {
-      await database.transaction('rw', allTables, async () => {
-        await clearAllTables()
+      await database.transaction('rw', backupTables, async () => {
+        await clearTables(backupTables)
 
         const { settings, customExercises, templates, workouts, benchmarks, weightEntries } = data
 
@@ -77,7 +75,7 @@ export function createDexieDataManagementRepository(
       const onboardingData = preserveOnboarding ? await database.onboarding.toArray() : []
 
       await database.transaction('rw', allTables, async () => {
-        await clearAllTables()
+        await clearTables(allTables)
         // Restore onboarding state if requested
         if (onboardingData.length > 0) {
           await database.onboarding.bulkAdd(onboardingData)

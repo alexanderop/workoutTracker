@@ -30,7 +30,9 @@ export class SetRowPO {
    * Gets the weight input element from the row.
    */
   private async getWeightInput(): Promise<HTMLInputElement> {
-    const input = await this.rowLocator.getByRole('spinbutton', { name: /weight for set/i }).element()
+    const input = await this.rowLocator
+      .getByRole('spinbutton', { name: /weight for set/i })
+      .element()
     if (!(input instanceof HTMLInputElement)) {
       throw new TypeError('Weight input is not an HTMLInputElement')
     }
@@ -41,7 +43,9 @@ export class SetRowPO {
    * Gets the reps input element from the row.
    */
   private async getRepsInput(): Promise<HTMLInputElement> {
-    const input = await this.rowLocator.getByRole('spinbutton', { name: /^reps for set/i }).element()
+    const input = await this.rowLocator
+      .getByRole('spinbutton', { name: /^reps for set/i })
+      .element()
     if (!(input instanceof HTMLInputElement)) {
       throw new TypeError('Reps input is not an HTMLInputElement')
     }
@@ -52,7 +56,9 @@ export class SetRowPO {
    * Gets the RIR input element from the row (desktop mode only).
    */
   private async getRirInput(): Promise<HTMLInputElement> {
-    const input = await this.rowLocator.getByRole('spinbutton', { name: /reps in reserve for set/i }).element()
+    const input = await this.rowLocator
+      .getByRole('spinbutton', { name: /reps in reserve for set/i })
+      .element()
     if (!(input instanceof HTMLInputElement)) {
       throw new TypeError('RIR input is not an HTMLInputElement')
     }
@@ -160,7 +166,7 @@ export class SetRowPO {
       value?: number,
     ): Promise<void> => {
       if (value === undefined) {
-	return;
+        return
       }
 
       const element = await getInput()
@@ -213,6 +219,17 @@ export class SetRowPO {
   }
 
   /**
+   * Checks whether the row's complete (checkmark) button is disabled.
+   * Used to verify the checkmark mirrors the footer CTA's readiness state --
+   * see Finding "Row checkmarks look enabled on empty sets but do nothing",
+   * July 2026 UX review.
+   */
+  async isCompleteButtonDisabled(): Promise<boolean> {
+    const button = await this.getCompleteButton()
+    return button instanceof HTMLButtonElement ? button.disabled : false
+  }
+
+  /**
    * Fills values and clicks complete in one operation.
    * @param values - Object with weight, reps, rir as strings
    */
@@ -235,7 +252,9 @@ export class SetRowPO {
     if (!firstCell) return false
     const firstCellElement = ensureHTMLElement(await firstCell.element())
     // eslint-disable-next-line no-restricted-syntax -- Testing data attribute + CSS class, no accessible equivalent
-    const completedIndicator = firstCellElement.querySelector(String.raw`[data-set-state="completed"], .bg-success\/20`)
+    const completedIndicator = firstCellElement.querySelector(
+      String.raw`[data-set-state="completed"], .bg-success\/20`,
+    )
     return completedIndicator !== null
   }
 

@@ -41,8 +41,12 @@ describe('ExercisesView', () => {
 
       // Should show equipment filter options
       await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: 'Dumbbell', exact: true }))
+        .toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+        .toBeVisible()
 
       cleanup()
     })
@@ -99,6 +103,25 @@ describe('ExercisesView', () => {
       // Should show all exercises again
       await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
       await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
+
+      cleanup()
+    })
+  })
+
+  describe('Search input', () => {
+    it('should keep the search placeholder short enough and truncated to avoid clipping on narrow screens', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.Exercises })
+
+      const search = page.getByRole('textbox', { name: /search exercises/i })
+      const input = await search.element()
+
+      // Old copy ("Search by name, muscle, or equipment...") clipped without
+      // an ellipsis at 390px (UX review finding) -- kept short instead.
+      expect(input.getAttribute('placeholder')).toBe('Search by name or muscle...')
+      // Defense in depth: even if the copy grows again, `truncate` ensures
+      // any overflow ends in an ellipsis rather than an abrupt cutoff.
+      expect(input.className).toContain('truncate')
 
       cleanup()
     })

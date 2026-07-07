@@ -1,6 +1,6 @@
 export default {
   title: 'Progressions',
-  subtitle: 'Track your kettlebell swing progression',
+  subtitle: 'Kettlebell EMOM progressions',
 
   buttons: {
     create: 'Create Progression',
@@ -8,7 +8,7 @@ export default {
 
   empty: {
     title: 'No progressions yet',
-    description: 'Create a progression plan to track your kettlebell swing progress',
+    description: 'Create a kettlebell EMOM progression plan to track your progress',
   },
 
   status: {
@@ -48,7 +48,8 @@ export default {
   delete: {
     title: 'Delete Progression?',
     action: 'Delete progression',
-    description: 'This will delete the progression and all session history. This action cannot be undone.',
+    description:
+      'This will delete the progression and all session history. This action cannot be undone.',
   },
 
   session: {
