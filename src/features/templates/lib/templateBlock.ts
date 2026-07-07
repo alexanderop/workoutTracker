@@ -1,10 +1,6 @@
 import { popularExercises } from '@/data/popularExercises'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type {
-  DbTemplateBlock,
-  DbTemplateBlockExercise,
-  DbTemplateStrengthBlock,
-} from '@/db/schema'
+import type { DbTemplateBlock, DbTemplateBlockExercise, DbTemplateStrengthBlock } from '@/db/schema'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -118,5 +114,33 @@ export function createTemplateCardioBlock(config: CardioConfig): DbTemplateBlock
       targetDurationSeconds: config.targetDurationSeconds,
       targetDistanceMeters: config.targetDistanceMeters,
     },
+  }
+}
+
+/**
+ * Returns the exercise names contained in a template block, for display on
+ * block cards (see brain/reference/reviews/ux-ui-review-2026-07-04.md
+ * Finding M7 -- timed-block cards previously showed only a summary line
+ * like "12 min · 1 exercise" with no indication of which exercises).
+ *
+ * Strength blocks track their own exercise via `name` (shown separately by
+ * the card), and cardio blocks have no exercises, so both return an empty
+ * list. Tabata is singular (`exercise`, not `exercises`) -- see
+ * brain/reference/workout-block-model.md.
+ */
+export function getTemplateBlockExerciseNames(block: DbTemplateBlock): ReadonlyArray<string> {
+  switch (block.kind) {
+    case 'amrap':
+    case 'emom':
+    case 'fortime': {
+      return block.exercises.map((exercise) => exercise.name)
+    }
+    case 'tabata': {
+      return [block.exercise.name]
+    }
+    case 'strength':
+    case 'cardio': {
+      return []
+    }
   }
 }

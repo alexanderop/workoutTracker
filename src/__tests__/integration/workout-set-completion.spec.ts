@@ -1,6 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
+import { expectSettingValue } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Set Completion', () => {
@@ -25,11 +26,13 @@ describe('Workout Set Completion', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      await expect.poll(async () => {
-        const activeSet = await workout.getActiveSet()
-        if (!activeSet) return null
-        return await activeSet.getValues()
-      }).toEqual({ weight: '100', reps: '8', rir: '2' })
+      await expect
+        .poll(async () => {
+          const activeSet = await workout.getActiveSet()
+          if (!activeSet) return null
+          return await activeSet.getValues()
+        })
+        .toEqual({ weight: '100', reps: '8', rir: '2' })
 
       cleanup()
     })
@@ -144,8 +147,13 @@ describe('Workout Set Completion', () => {
       await userEvent.fill(row.kg, '100')
       await userEvent.fill(row.rir, '2')
 
-      // Try to complete set with empty reps
-      await userEvent.click(row.complete)
+      // Regression coverage for UX review Low finding "Row checkmarks look enabled
+      // on empty sets but do nothing" -- the checkmark now mirrors the footer CTA's
+      // readiness gate and is genuinely disabled while reps is missing, instead of
+      // being clickable and silently no-op'ing.
+      await expect
+        .poll(() => (row.complete instanceof HTMLButtonElement ? row.complete.disabled : false))
+        .toBe(true)
 
       // Set should NOT be completed (validation should reject it)
       await expect.poll(() => workout.isSetCompleted(0)).toBe(false)
@@ -154,6 +162,69 @@ describe('Workout Set Completion', () => {
     })
   })
 
+  // Regression coverage for UX review Finding 6 (High): reka-ui's NumberField only
+  // commits typed values on blur/Enter, not on every keystroke. `SetRowPO.fill()`
+  // types kg -> reps -> rir in sequence; moving focus between fields blurs (and
+  // commits) the previous one, but the LAST field filled (rir) is left focused and
+  // therefore uncommitted -- exactly the "first-set completion" repro from the review.
+  describe('Focus/Blur Commit Timing (Finding 6)', () => {
+    it('should enable the complete-set footer CTA once weight, reps, and rir are entered even while the last input still has focus', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      const row = workout.getSet(0)
+      // Leaves focus in the rir input without blurring it.
+      await row.fill({ kg: 60, reps: 10, rir: 2 })
+
+      await expect
+        .poll(() => {
+          const button = page.getByRole('button', { name: /complete set/i }).query()
+          return button instanceof HTMLButtonElement ? button.disabled : null
+        })
+        .toBe(false)
+
+      cleanup()
+    })
+
+    it('should complete the set with a single tap on the row checkmark while an input still has focus', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      const row = workout.getSet(0)
+      await row.fill({ kg: 60, reps: 10, rir: 2 })
+
+      // Single tap -- should both commit the pending rir value and complete the set.
+      await row.complete()
+
+      await expect.poll(() => row.isCompleted()).toBe(true)
+
+      cleanup()
+    })
+
+    it('should persist the typed values (not blank data) when completed via a single tap while focused', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      const row = workout.getSet(0)
+      await row.fill({ kg: 60, reps: 10, rir: 2 })
+      await row.complete()
+
+      await expect.poll(() => row.isCompleted()).toBe(true)
+      // The commit-on-tap fix must not mark the set complete while leaving stale/empty
+      // data behind -- the actual typed values must be the ones that get persisted.
+      expect(await row.getValues()).toEqual({ weight: '60', reps: '10', rir: '2' })
+
+      cleanup()
+    })
+  })
+
+  // Regression coverage for UX review Finding 8 (High): the rest timer used to
+  // count UP with no target, countdown, or completion signal. It now counts
+  // DOWN toward a configurable target (90s default), is tap-to-dismiss, and
+  // never blocks logging the next set (no modal).
   describe('Rest Timer Integration', () => {
     it('shows rest timer in footer after completing a set', async () => {
       const { builder, workout, cleanup } = await createTestApp()
@@ -162,13 +233,96 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       // Verify rest timer appears in footer (look for a timer display)
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Finding timer element by CSS class
-        const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
-        return [...timerElements].some((element) =>
-          element.textContent?.match(/^\d+:\d{2}$/),
+      await expect
+        .poll(
+          () => {
+            // eslint-disable-next-line no-restricted-syntax -- Finding timer element by CSS class
+            const timerElements = document.querySelectorAll('.font-mono.tabular-nums')
+            return [...timerElements].some((element) => element.textContent?.match(/^\d+:\d{2}$/))
+          },
+          { timeout: 2000 },
         )
-      }, { timeout: 2000 }).toBe(true)
+        .toBe(true)
+
+      cleanup()
+    })
+
+    it('counts down toward the configured rest target instead of counting up', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+      // Default rest target is 90s (see `useSettingsStore`'s defaultRestTimer
+      // default) -- the display must start at/near 90 and count DOWN, never
+      // exceeding it the way the old count-up-forever timer did.
+      const timerButton = page.getByRole('button', { name: /dismiss rest timer/i })
+      await expect.element(timerButton, { timeout: 2000 }).toBeVisible()
+
+      await expect
+        .poll(async () => {
+          const element = await timerButton.element()
+          const [minutes, seconds] = (element.textContent ?? '').trim().split(':').map(Number)
+          if (minutes === undefined || seconds === undefined) return null
+          return minutes * 60 + seconds
+        })
+        .toBeLessThanOrEqual(90)
+
+      cleanup()
+    })
+
+    it('adjusts and persists the rest target by 15s when tapping +/- on the timer itself', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+      const timerButton = page.getByRole('button', { name: /dismiss rest timer/i })
+      await expect.element(timerButton, { timeout: 2000 }).toBeVisible()
+
+      const increaseButton = page.getByRole('button', { name: /increase rest time by 15 seconds/i })
+      await userEvent.click(increaseButton)
+      await userEvent.click(increaseButton)
+
+      // Two +15s taps on top of the 90s default -- persisted immediately so
+      // it sticks for the next set/session (see `useSettingsStore.setDefaultRestTimer`).
+      await expectSettingValue('defaultRestTimer', 120)
+
+      cleanup()
+    })
+
+    it('dismisses the rest timer when tapped, without opening a dialog', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+      const timerButton = page.getByRole('button', { name: /dismiss rest timer/i })
+      await expect.element(timerButton, { timeout: 2000 }).toBeVisible()
+
+      await userEvent.click(timerButton)
+
+      await expect.element(timerButton).not.toBeInTheDocument()
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('never blocks logging the next set while a rest is in progress', async () => {
+      const { builder, workout, cleanup } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+      const timerButton = page.getByRole('button', { name: /dismiss rest timer/i })
+      await expect.element(timerButton, { timeout: 2000 }).toBeVisible()
+
+      // The rest timer is purely informational -- no modal should block the
+      // next set from being completed while it's showing.
+      await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
+
+      await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
 
       cleanup()
     })

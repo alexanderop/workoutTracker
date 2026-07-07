@@ -19,6 +19,37 @@ async function startAmrapTimer(testApp: Awaited<ReturnType<typeof createTestApp>
   await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
 }
 
+// Helper to start a custom Tabata timer with short work/rest intervals so
+// phase transitions can be observed quickly in tests.
+async function startShortCustomTabata(
+  testApp: Awaited<ReturnType<typeof createTestApp>>,
+  options: { rounds: string; workSeconds: string; restSeconds: string },
+) {
+  await goToTimersPage(testApp)
+  await userEvent.click(page.getByRole('button', { name: /tabata/i }))
+  await expect.element(page.getByText(/Custom/)).toBeVisible()
+  await userEvent.click(page.getByRole('button', { name: /custom/i }))
+  await expect.element(page.getByText(/Rounds/)).toBeVisible()
+
+  const roundsInput = page.getByRole('spinbutton', { name: /rounds/i })
+  const workInput = page.getByRole('spinbutton', { name: /work/i })
+  const restInput = page.getByRole('spinbutton', { name: /rest/i })
+
+  await userEvent.clear(roundsInput)
+  await userEvent.fill(roundsInput, options.rounds)
+  await userEvent.clear(workInput)
+  await userEvent.fill(workInput, options.workSeconds)
+  await userEvent.clear(restInput)
+  await userEvent.fill(restInput, options.restSeconds)
+
+  await userEvent.click(page.getByRole('button', { name: /start/i }))
+  await expect.poll(() => testApp.workout.getTimerControlButton('exit')).toBeTruthy()
+
+  const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
+  await userEvent.click(playPauseButton)
+  await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
+}
+
 /**
  * Integration tests for timer edge cases.
  * Tests exit behavior, pause/resume, and navigation scenarios.
@@ -37,7 +68,9 @@ describe('Timer Edge Cases', () => {
       await userEvent.click(exitButton)
 
       // Timer controls should no longer be visible
-      await expect.element(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('button', { name: /exit timer/i }))
+        .not.toBeInTheDocument()
 
       // Should show either preset selection or timer type selection
       await expect.element(page.getByRole('main')).toBeVisible()
@@ -59,7 +92,9 @@ describe('Timer Edge Cases', () => {
       await userEvent.click(exitButton)
 
       // Timer controls should no longer be visible
-      await expect.element(page.getByRole('button', { name: /exit timer/i })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('button', { name: /exit timer/i }))
+        .not.toBeInTheDocument()
 
       testApp.cleanup()
     })
@@ -200,10 +235,36 @@ describe('Timer Edge Cases', () => {
 
       // Should show phase information (work/rest)
       // Timer starts on work phase - use exact match to avoid "Workouts" in nav
-      await expect.element(page.getByText('WORK', { exact: true })).toBeVisible()
+      // The placeholder exercise sub-label also reads "WORK", so match the first
+      // occurrence (the phase badge).
+      await expect.element(page.getByText('WORK', { exact: true }).first()).toBeVisible()
 
       testApp.cleanup()
     })
+
+    it(
+      'updates exercise sub-label to REST when phase changes from work, matching the phase badge',
+      { timeout: 10_000 },
+      async () => {
+        const testApp = await createTestApp()
+        await startShortCustomTabata(testApp, { rounds: '2', workSeconds: '1', restSeconds: '3' })
+
+        // Both the phase badge and the placeholder exercise sub-label read WORK at first
+        await expect
+          .poll(async () => (await page.getByText('WORK', { exact: true }).all()).length)
+          .toBe(2)
+
+        // After the 1s work phase elapses, both should flip to REST together -
+        // the sub-label must not stay stuck on "Work"
+        await expect
+          .poll(async () => (await page.getByText('REST', { exact: true }).all()).length, {
+            timeout: 5000,
+          })
+          .toBe(2)
+
+        testApp.cleanup()
+      },
+    )
   })
 
   describe('EMOM Edge Cases', () => {

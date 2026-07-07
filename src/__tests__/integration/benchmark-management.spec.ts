@@ -27,7 +27,7 @@ describe('Benchmark Management', () => {
         exercises: [
           { name: 'Thrusters', reps: 21 },
           { name: 'Pull-ups', reps: 21 },
-        ]
+        ],
       })
 
       // Navigate to detail and verify
@@ -109,6 +109,17 @@ describe('Benchmark Management', () => {
       await app.benchmarkForm.fillName('Test Benchmark')
       // No type selection needed - all benchmarks are ForTime
       app.benchmarkForm.assertSaveDisabled()
+
+      app.cleanup()
+    })
+
+    it('explains what a benchmark is on the create screen', async () => {
+      const app = await createTestApp()
+      await app.navigateTo({ name: RouteNames.CreateBenchmark })
+
+      await expect
+        .element(page.getByText(/a workout you repeat over time to measure progress/i))
+        .toBeVisible()
 
       app.cleanup()
     })

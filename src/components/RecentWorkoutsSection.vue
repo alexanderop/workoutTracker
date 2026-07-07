@@ -42,13 +42,7 @@ function navigateToHistory(): void {
   <section class="w-full max-w-md">
     <div class="mb-3 flex items-center justify-between">
       <h2 class="text-lg font-semibold">{{ t('nav.homeView.recentWorkouts') }}</h2>
-      <Button
-        v-if="hasHistory"
-        variant="link"
-        size="sm"
-        class="h-auto p-0 text-primary"
-        @click="navigateToHistory"
-      >
+      <Button variant="link" size="sm" class="h-auto p-0 text-primary" @click="navigateToHistory">
         {{ t('nav.homeView.viewAll') }}
         <ChevronRight class="ml-1 h-4 w-4" />
       </Button>

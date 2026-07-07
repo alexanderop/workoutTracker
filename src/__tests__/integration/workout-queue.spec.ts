@@ -25,7 +25,9 @@ describe('Workout Queue', () => {
 
       // Assert: Dialog opens with "Workout Queue" title
       await common.waitForDialog()
-      await expect.element(page.getByRole('heading', { name: /workout queue/i })).toBeInTheDocument()
+      await expect
+        .element(page.getByRole('heading', { name: /workout queue/i }))
+        .toBeInTheDocument()
 
       cleanup()
     })
@@ -162,12 +164,14 @@ describe('Workout Queue', () => {
 
       // Wait for queue to close and add block dialog to open
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.poll(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
-        const dialog = document.querySelector('[role="dialog"]')
-        // The add block dialog should be open and have exercises tabs
-        return dialog?.textContent?.includes('Exercises')
-      }).toBe(true)
+      await expect
+        .poll(() => {
+          // eslint-disable-next-line no-restricted-syntax -- Checking dialog content by role selector
+          const dialog = document.querySelector('[role="dialog"]')
+          // The add block dialog should be open and have exercises tabs
+          return dialog?.textContent?.includes('Exercises')
+        })
+        .toBe(true)
 
       // Select an exercise
       await common.selectExercise('Deadlift')
@@ -320,7 +324,151 @@ describe('Workout Queue', () => {
       await queue.reorderBlocks(2, 0)
 
       // Assert: Order changed to Bodyweight Squat, Bench Press, Deadlift
-      await expect.poll(() => queue.getBlockNames()).toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+      await expect
+        .poll(() => queue.getBlockNames())
+        .toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
+
+      cleanup()
+    })
+  })
+
+  // Regression coverage for UX review Low finding: "No way to reorder exercises
+  // in the workout queue drawer (remove + jump exist)." Drag-and-drop already
+  // exists (Sortable.js) but is mouse/touch-only and isn't reachable through a
+  // real UI interaction in tests (see the "reordering blocks" describe above,
+  // which calls `reorderBlocks` directly). These per-item up/down buttons are the
+  // keyboard/screen-reader-accessible, UI-drivable way to reorder.
+  describe('reordering via move up/down buttons', () => {
+    it('reorders blocks when the move-down button is clicked', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Deadlift')
+      await common.waitForDialogClose()
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Bodyweight Squat')
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+
+      await queue.open()
+      expect(queue.getBlockNames()).toEqual(['Bench Press', 'Deadlift', 'Bodyweight Squat'])
+
+      // Move Bench Press (index 0) down one position via the real button click.
+      await queue.moveDown(0)
+
+      await expect
+        .poll(() => queue.getBlockNames())
+        .toEqual(['Deadlift', 'Bench Press', 'Bodyweight Squat'])
+
+      cleanup()
+    })
+
+    it('reorders blocks when the move-up button is clicked', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Deadlift')
+      await common.waitForDialogClose()
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Bodyweight Squat')
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
+
+      await queue.open()
+
+      // Move Bodyweight Squat (index 2) up one position.
+      await queue.moveUp(2)
+
+      await expect
+        .poll(() => queue.getBlockNames())
+        .toEqual(['Bench Press', 'Bodyweight Squat', 'Deadlift'])
+
+      cleanup()
+    })
+
+    it('disables the move-up button for the first item and the move-down button for the last item', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Deadlift')
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      await queue.open()
+
+      const firstMoveUp = queue.getMoveUpButton(0)
+      const lastMoveDown = queue.getMoveDownButton(1)
+
+      expect(firstMoveUp instanceof HTMLButtonElement && firstMoveUp.disabled).toBe(true)
+      expect(lastMoveDown instanceof HTMLButtonElement && lastMoveDown.disabled).toBe(true)
+
+      // The complementary buttons on the same items must stay enabled.
+      const firstMoveDown = queue.getMoveDownButton(0)
+      const lastMoveUp = queue.getMoveUpButton(1)
+      expect(firstMoveDown instanceof HTMLButtonElement && firstMoveDown.disabled).toBe(false)
+      expect(lastMoveUp instanceof HTMLButtonElement && lastMoveUp.disabled).toBe(false)
+
+      cleanup()
+    })
+
+    it('exposes a distinguishable accessible name that includes the exercise name', async () => {
+      const { builder, queue, common, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Deadlift')
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      await queue.open()
+
+      const moveDownButton = queue.getMoveDownButton(0)
+      expect(moveDownButton?.getAttribute('aria-label')).toMatch(/bench press/i)
+
+      const moveUpButton = queue.getMoveUpButton(1)
+      expect(moveUpButton?.getAttribute('aria-label')).toMatch(/deadlift/i)
+
+      cleanup()
+    })
+
+    it('keeps the active block marked active after it moves position', async () => {
+      const { builder, workout, queue, common, cleanup } = await createTestApp()
+
+      await builder.addStrengthBlock('Bench Press')
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Deadlift')
+      await common.waitForDialogClose()
+
+      await builder.startWorkout()
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
+
+      // Advance to block 2 (Deadlift) so it's the active block.
+      await userEvent.click(await workout.getFooterButton('next'))
+      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
+
+      await queue.open()
+      const activeItemBefore = queue.getActiveItem()
+      expect(activeItemBefore?.textContent).toContain('Deadlift')
+
+      // Move Bench Press (the inactive, first item) down past the active Deadlift.
+      await queue.moveDown(0)
+
+      // Order flips, but the active block must still be Deadlift by identity, now
+      // showing at index 0.
+      await expect.poll(() => queue.getBlockNames()).toEqual(['Deadlift', 'Bench Press'])
+      const activeItemAfter = queue.getActiveItem()
+      expect(activeItemAfter?.textContent).toContain('Deadlift')
 
       cleanup()
     })

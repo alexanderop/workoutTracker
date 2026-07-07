@@ -3,7 +3,7 @@ export default {
   new: 'Neue Übung',
   custom: 'Eigene Übungen',
   search: 'Übungen suchen...',
-  searchPlaceholder: 'Nach Name, Muskel oder Ausrüstung suchen...',
+  searchPlaceholder: 'Nach Name oder Muskel suchen...',
   count: '{count} Übungen',
   filters: {
     all: 'Alle',
@@ -34,7 +34,8 @@ export default {
     addImage: 'Bild hinzufügen',
     imageUploaded: 'Bild hinzugefügt',
     errors: {
-      imageTooLarge: 'Bild überschreitet 1MB nach Konvertierung. Bitte ein kleineres Bild verwenden.',
+      imageTooLarge:
+        'Bild überschreitet 1MB nach Konvertierung. Bitte ein kleineres Bild verwenden.',
       invalidImage: 'Ungültige Bilddatei. Bitte ein gültiges Bild auswählen.',
       conversionFailed: 'Konvertierung fehlgeschlagen. Bitte eine andere Datei verwenden.',
     },
@@ -46,6 +47,10 @@ export default {
   form: {
     saveError: 'Übung konnte nicht gespeichert werden. Bitte erneut versuchen.',
     saveErrorTitle: 'Speichern fehlgeschlagen',
+    errors: {
+      duplicateName: 'Eine Übung mit diesem Namen existiert bereits.',
+      muscleRequired: 'Wähle eine Muskelgruppe, damit diese Übung in den Übungsfiltern erscheint.',
+    },
   },
   selectors: {
     equipment: {

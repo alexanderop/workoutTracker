@@ -26,8 +26,9 @@ describe('Exercise Form Error Handling', () => {
       await exercises.navigateTo()
       await exercises.clickCreateCustomExercise()
 
-      // Fill valid name
+      // Fill valid name and required muscle group (Finding M5)
       await exercises.fillName('Test Exercise')
+      await exercises.selectMuscle('Chest')
 
       // Mock store to return null (failure)
       const store = useExercisesStore()
@@ -53,6 +54,7 @@ describe('Exercise Form Error Handling', () => {
       await exercises.navigateTo()
       await exercises.clickCreateCustomExercise()
       await exercises.fillName('Retry Exercise')
+      await exercises.selectMuscle('Back')
 
       // First attempt fails
       const store = useExercisesStore()
@@ -117,12 +119,16 @@ describe('Exercise Form Error Handling', () => {
       await exercises.navigateTo()
       await exercises.clickCreateCustomExercise()
       await exercises.fillName('Loading Test')
+      await exercises.selectMuscle('Core')
 
       // Mock addExercise with delayed resolution
       const store = useExercisesStore()
       const deferred: { resolve: ((value: null) => void) | null } = { resolve: null }
       vi.spyOn(store, 'addExercise').mockImplementation(
-        () => new Promise((resolve) => { deferred.resolve = resolve }),
+        () =>
+          new Promise((resolve) => {
+            deferred.resolve = resolve
+          }),
       )
 
       // Click save

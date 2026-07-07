@@ -111,12 +111,7 @@ async function handleSave() {
     <!-- Header -->
     <header class="flex items-center justify-between border-b p-4">
       <div class="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          :aria-label="t('common.goBack')"
-          @click="handleBack"
-        >
+        <Button variant="ghost" size="icon" :aria-label="t('common.goBack')" @click="handleBack">
           <ArrowLeft :size="20" />
         </Button>
         <h1 class="text-lg font-semibold">{{ t('workouts.benchmarks.create') }}</h1>
@@ -132,10 +127,7 @@ async function handleSave() {
           <Trash2 class="mr-1 icon-sm" />
           {{ t('common.buttons.discard') }}
         </Button>
-        <Button
-          :disabled="isSaveDisabled || isSaving"
-          @click="handleSave"
-        >
+        <Button :disabled="isSaveDisabled || isSaving" @click="handleSave">
           {{ isSaving ? t('common.states.saving') : t('common.buttons.save') }}
         </Button>
       </div>
@@ -144,6 +136,11 @@ async function handleSave() {
     <!-- Form Content -->
     <div class="flex-1 overflow-y-auto p-4">
       <div class="mx-auto max-w-md space-y-6">
+        <!-- Benchmark Explainer -->
+        <p class="text-sm text-muted-foreground">
+          {{ t('workouts.benchmarks.createHelperText') }}
+        </p>
+
         <!-- Workout Name -->
         <div class="space-y-2">
           <Label for="workout-name">{{ t('workouts.benchmarks.name') }}</Label>
@@ -164,15 +161,13 @@ async function handleSave() {
         <!-- Round Header with Actions -->
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-medium text-muted-foreground">
-            {{ t('workouts.benchmarks.round', { current: currentRoundIndex + 1, total: roundCount }) }}
+            {{
+              t('workouts.benchmarks.round', { current: currentRoundIndex + 1, total: roundCount })
+            }}
           </h2>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button
-                variant="ghost"
-                size="icon"
-                :aria-label="t('common.buttons.options')"
-              >
+              <Button variant="ghost" size="icon" :aria-label="t('common.buttons.options')">
                 <MoreHorizontal class="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -180,10 +175,7 @@ async function handleSave() {
               <DropdownMenuItem @select="handleCopyRound">
                 {{ t('workouts.benchmarks.copyRound') }}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                :disabled="!canDeleteRound"
-                @select="handleDeleteRound"
-              >
+              <DropdownMenuItem :disabled="!canDeleteRound" @select="handleDeleteRound">
                 {{ t('workouts.benchmarks.deleteRound') }}
               </DropdownMenuItem>
             </DropdownMenuContent>

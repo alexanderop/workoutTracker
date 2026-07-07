@@ -26,7 +26,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { toDisplayValue } = useWeightDisplay()
+const { toDisplayValue, formatWithUnit } = useWeightDisplay()
 
 // Chart config defines colors that ChartStyle converts to --color-{key} CSS variables
 const chartConfig = computed<ChartConfig>(() => ({
@@ -47,7 +47,8 @@ const displayData = computed(() =>
   })),
 )
 
-const singleEntry = computed(() => displayData.value[0])
+// Raw (kg) entry -- formatWithUnit converts to the display unit itself.
+const singleEntry = computed(() => data[0])
 
 function formatWeight(value: number): string {
   return `${Math.round(value)}`
@@ -89,7 +90,7 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
         v-else-if="displayData.length === 1 && singleEntry"
         class="flex h-[200px] flex-col items-center justify-center gap-2 text-center"
       >
-        <p class="text-3xl font-semibold">{{ formatWeight(singleEntry.weight) }}</p>
+        <p class="text-3xl font-semibold">{{ formatWithUnit(singleEntry.weight) }}</p>
         <p class="text-sm text-muted-foreground">
           {{ formatDate(singleEntry.date.getTime()) }}
         </p>
@@ -119,7 +120,9 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
           />
           <VisAxis
             type="x"
-            :tick-format="(i: number) => (displayData[i] ? formatDate(displayData[i]!.date.getTime()) : '')"
+            :tick-format="
+              (i: number) => (displayData[i] ? formatDate(displayData[i]!.date.getTime()) : '')
+            "
             :tick-line="false"
             :domain-line="false"
             :grid-line="false"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, GripVertical, X } from '@lucide/vue'
+import { Check, ChevronDown, ChevronUp, GripVertical, X } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
@@ -20,13 +20,22 @@ type Properties = {
   block: WorkoutBlock
   status: 'completed' | 'active' | 'planned'
   index: number
+  /** Disables the move-up button -- there's nothing above the first item. */
+  isFirst?: boolean
+  /** Disables the move-down button -- there's nothing below the last item. */
+  isLast?: boolean
 }
 
-const { block, status, index } = defineProps<Properties>()
+const { block, status, index, isFirst = false, isLast = false } = defineProps<Properties>()
 
 const emit = defineEmits<{
   select: []
   remove: []
+  // Keyboard/screen-reader-accessible reordering alongside the existing
+  // pointer-only drag handle -- see Finding "No way to reorder exercises in the
+  // workout queue drawer", July 2026 UX review.
+  'move-up': []
+  'move-down': []
 }>()
 
 const { t } = useI18n()
@@ -92,7 +101,10 @@ const isCompleted = computed(() => status === 'completed')
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2">
         <span class="font-medium truncate">{{ blockName }}</span>
-        <span v-if="isTimedBlock(block)" :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)">
+        <span
+          v-if="isTimedBlock(block)"
+          :class="cn('text-xs px-1.5 py-0.5 rounded', blockColors.bg, blockColors.text)"
+        >
           {{ block.kind.toUpperCase() }}
         </span>
         <span v-if="isActive" class="text-xs text-primary font-medium">
@@ -112,6 +124,31 @@ const isCompleted = computed(() => status === 'completed')
       :aria-label="t('common.aria.blockCompleted')"
     >
       <Check class="icon-md status-success" aria-hidden="true" />
+    </div>
+
+    <!-- Move up/down: keyboard/screen-reader-accessible reordering, complementing
+         the pointer-only drag handle above. -->
+    <div class="flex-shrink-0 flex flex-col">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="text-muted-foreground hover:text-foreground"
+        :disabled="isFirst"
+        :aria-label="t('workouts.active.queue.moveUp', { name: blockName })"
+        @click.stop="emit('move-up')"
+      >
+        <ChevronUp class="icon-sm" aria-hidden="true" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="text-muted-foreground hover:text-foreground"
+        :disabled="isLast"
+        :aria-label="t('workouts.active.queue.moveDown', { name: blockName })"
+        @click.stop="emit('move-down')"
+      >
+        <ChevronDown class="icon-sm" aria-hidden="true" />
+      </Button>
     </div>
 
     <!-- Remove button -->

@@ -50,7 +50,9 @@ export class QueuePO {
     const item = items[index]
     if (!item) return null
     // eslint-disable-next-line no-restricted-syntax -- Scoped search within queue item element
-    const button = item.querySelector('button[aria-label*="remove" i], button[aria-label*="Remove" i]')
+    const button = item.querySelector(
+      'button[aria-label*="remove" i], button[aria-label*="Remove" i]',
+    )
     if (button instanceof HTMLElement) {
       return button
     }
@@ -106,5 +108,51 @@ export class QueuePO {
       const nameSpan = item.querySelector('.font-medium.truncate')
       return nameSpan?.textContent?.trim() ?? ''
     })
+  }
+
+  /**
+   * Gets the "move up"/"move down" button for a queue item at the given index.
+   * Keyboard/screen-reader-reachable alternative to drag-and-drop reordering --
+   * see Finding "No way to reorder exercises in the workout queue drawer",
+   * July 2026 UX review.
+   * @param index - Zero-based index of the queue item
+   */
+  private getMoveButton(index: number, direction: 'up' | 'down'): HTMLElement | null {
+    const items = this.getItems()
+    const item = items[index]
+    if (!item) return null
+    // eslint-disable-next-line no-restricted-syntax -- Scoped search within queue item element
+    const button = item.querySelector(
+      `button[aria-label*="move" i][aria-label*="${CSS.escape(direction)}" i]`,
+    )
+    return button instanceof HTMLElement ? button : null
+  }
+
+  /**
+   * Clicks the "move up"/"move down" button for the queue item at the given index.
+   * @param index - Zero-based index of the block to move
+   */
+  private async move(index: number, direction: 'up' | 'down'): Promise<void> {
+    const button = this.getMoveButton(index, direction)
+    if (!button) {
+      throw new Error(`Move ${direction} button not found for queue item at index ${index}`)
+    }
+    await userEvent.click(button)
+  }
+
+  getMoveUpButton(index: number): HTMLElement | null {
+    return this.getMoveButton(index, 'up')
+  }
+
+  getMoveDownButton(index: number): HTMLElement | null {
+    return this.getMoveButton(index, 'down')
+  }
+
+  moveUp(index: number): Promise<void> {
+    return this.move(index, 'up')
+  }
+
+  moveDown(index: number): Promise<void> {
+    return this.move(index, 'down')
   }
 }

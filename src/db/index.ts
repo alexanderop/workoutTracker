@@ -83,7 +83,15 @@ export { generateId } from './generateId'
 
 /**
  * Delete all data from the database and recreate it.
+ *
+ * This is the production call site for Settings → Delete All Data
+ * (see SettingsDangerZoneSection.vue). Unlike DataManagementRepository's
+ * `deleteAll()` default, it explicitly does NOT preserve the onboarding
+ * flag: a user-initiated full wipe should be a true first run, not show the
+ * "Welcome back" variant (UX review M4). Repository consumers that want the
+ * "keep onboarding" behavior (e.g. test isolation resets an existing user
+ * would expect) can call `getDataManagementRepository().deleteAll()` directly.
  */
 export async function deleteAllData(): Promise<void> {
-  await tryCatch(getDataManagementRepository().deleteAll())
+  await tryCatch(getDataManagementRepository().deleteAll({ preserveOnboarding: false }))
 }

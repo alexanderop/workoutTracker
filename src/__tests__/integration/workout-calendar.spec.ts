@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { addDays, subDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
+import { addDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
 import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
@@ -207,7 +207,10 @@ describe('Workout Calendar', () => {
     it('updates calendar grid when navigating months (not just heading)', async () => {
       // Seed a workout for a specific date in previous month
       const today = new Date()
-      const previousMonthDate = subDays(today, 35) // ~5 weeks ago, definitely in previous month
+      // Same day-of-month one month back (date-fns clamps overflow), so the
+      // date is always in the previous month -- subDays(today, 35) lands two
+      // months back early in the month (e.g. July 5 - 35d = May 31).
+      const previousMonthDate = subMonths(today, 1)
 
       const workout = databaseWorkoutBuilder()
         .withName('Previous Month Workout')
@@ -291,6 +294,27 @@ describe('Workout Calendar', () => {
 
       // Should have weekday headers (at least one - use first to avoid strict mode)
       await expect.element(page.getByText('Mon').first()).toBeVisible()
+
+      cleanup()
+    })
+
+    it('should start the week on Monday to match the home week strip', async () => {
+      const { cleanup } = await createTestApp()
+
+      // Open calendar sheet
+      const weekStrip = getWeekStripButton()
+      await userEvent.click(weekStrip)
+      await expect.element(page.getByRole('dialog')).toBeVisible()
+
+      // The month grid's weekday headers must start with Monday, the same
+      // convention the home week strip already uses (UX review finding:
+      // week strip starts Monday, month calendar started Sunday). The head
+      // row isn't exposed with table-header roles (flex layout resets the
+      // implicit ARIA table semantics), so match on DOM order instead.
+      // Scoped to the dialog: the week strip behind it also renders "Mon".
+      const dialog = page.getByRole('dialog')
+      const firstHeader = dialog.getByText(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/).first()
+      await expect.element(firstHeader).toHaveTextContent('Mon')
 
       cleanup()
     })

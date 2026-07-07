@@ -58,6 +58,12 @@ watch(timer.isRunning, (isRunning, wasRunning) => {
 const exercises = computed(() => getBlockExerciseList(block))
 const currentExercise = computed(() => exercises.value[0])
 
+// Standalone quick-timer tabata sessions use a generic placeholder exercise
+// ("Work") that has no real name to show. Real workout exercises keep their
+// own name across both phases; the placeholder tracks the current phase
+// instead so it never reads stale (e.g. "Work" while resting).
+const isPlaceholderExercise = computed(() => currentExercise.value?.id === 'standalone')
+
 const isUrgent = computed(() => timer.secondsInCurrentPhase.value <= 3)
 
 // Industrial gym colors - high contrast, saturated
@@ -164,7 +170,7 @@ defineExpose({
       <!-- Current Exercise (inside circle) - smaller, secondary -->
       <div v-if="currentExercise" class="mt-2 text-center max-w-[220px]">
         <p class="text-base font-semibold text-foreground/80 truncate">
-          {{ currentExercise.name }}
+          {{ isPlaceholderExercise ? phaseLabel : currentExercise.name }}
         </p>
       </div>
     </WorkoutCircularTimer>

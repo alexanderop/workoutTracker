@@ -118,4 +118,26 @@ export class WeightPO {
   getChart() {
     return page.getByRole('region', { name: /trend/i })
   }
+
+  /**
+   * Gets the outlier confirmation banner shown when a new entry deviates
+   * wildly from the previous one.
+   */
+  getOutlierConfirmBanner() {
+    return page.getByRole('alert')
+  }
+
+  /**
+   * Confirms saving an entry flagged as an outlier ("Save anyway").
+   */
+  async confirmOutlierSave(): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name: /save anyway/i }))
+  }
+
+  /**
+   * Cancels saving an entry flagged as an outlier.
+   */
+  async cancelOutlierSave(): Promise<void> {
+    await userEvent.click(page.getByRole('alert').getByRole('button', { name: /cancel/i }))
+  }
 }

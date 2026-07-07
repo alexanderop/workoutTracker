@@ -111,8 +111,11 @@ function updateSetInBlock(blockIndex: number, setId: number, updater: (set: Set)
 
 /**
  * Find the first incomplete set in a strength block.
+ * Exported so `useWorkoutMode` can locate the correct set to (re)activate
+ * when entering/resuming active mode, instead of assuming index 0 is always
+ * the right one (see `activateSet` for why that assumption is unsafe).
  */
-function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
+export function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
   return block.sets.find((s) => s.status === 'planned' || s.status === 'active')
 }
 
@@ -132,7 +135,9 @@ function shouldUseDurationValidation(block: WorkoutBlock): boolean {
  * Create a pre-filled first set from last workout data.
  * Returns the pre-filled set or a blank active set if no history.
  */
-function createFirstSetFromHistory(lastSet: { kg: number; reps: number; duration: number; rir: number | null } | undefined): Set {
+function createFirstSetFromHistory(
+  lastSet: { kg: number; reps: number; duration: number; rir: number | null } | undefined,
+): Set {
   if (!lastSet) {
     return { id: 1, kg: '', reps: '', duration: '', rir: '', status: 'active' as const }
   }
@@ -206,10 +211,7 @@ export function useWorkout() {
    * Uses "keep if exists, else use prefill" logic.
    * TypeScript's `satisfies` ensures all prefillable fields are handled.
    */
-  function applyPrefillToSet(
-    target: Readonly<Set>,
-    source: Readonly<Set>,
-  ): PrefillableSetFields {
+  function applyPrefillToSet(target: Readonly<Set>, source: Readonly<Set>): PrefillableSetFields {
     return {
       kg: target.kg || source.kg,
       reps: target.reps || source.reps,
@@ -366,7 +368,11 @@ export function useWorkout() {
 
   function addForTimeBlock(config: ForTimeConfig, blockExercises: ReadonlyArray<BlockExercise>) {
     appendBlock(
-      createForTimeWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)),
+      createForTimeWorkoutBlock(
+        config,
+        blockExercises,
+        getNextWorkoutBlockId(workout.value.blocks),
+      ),
     )
   }
 
@@ -392,7 +398,9 @@ export function useWorkout() {
   }
 
   function updateStrengthBlock(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
+    updates: Partial<
+      Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>
+    >,
   ) {
     const blockIndex = workout.value.selectedBlockIndex
     const block = workout.value.blocks[blockIndex]
@@ -406,7 +414,9 @@ export function useWorkout() {
 
   // For backward compatibility
   function updateExercise(
-    updates: Partial<Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>>,
+    updates: Partial<
+      Pick<StrengthBlock, 'name' | 'equipment' | 'targetReps' | 'targetDuration' | 'targetWeight'>
+    >,
   ) {
     updateStrengthBlock(updates)
   }
@@ -421,7 +431,10 @@ export function useWorkout() {
       const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
       return {
         ...b,
-        sets: [...b.sets, { id: newId, kg: '', reps: '', duration: '', rir: '', status: 'planned' as const }],
+        sets: [
+          ...b.sets,
+          { id: newId, kg: '', reps: '', duration: '', rir: '', status: 'planned' as const },
+        ],
       }
     })
   }
@@ -478,7 +491,13 @@ export function useWorkout() {
     if (!block || !isStrengthBlock(block)) return
 
     const set = block.sets[setIndex]
-    if (!set || set.status !== 'planned') return
+    // Reject only completed sets - a set can be (re)activated whether it's
+    // still 'planned' or already 'active' (e.g. re-entering active mode
+    // after resuming a workout whose current set was activated in a prior
+    // session). Rejecting 'active' too would make activation a one-shot
+    // no-op the moment a set stops being freshly 'planned', which is exactly
+    // what left `activeSetIndex` stuck at null after resume.
+    if (!set || set.status === 'completed') return
 
     updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'active' }))
     updateWorkout({ activeSetIndex: setIndex })
@@ -506,7 +525,11 @@ export function useWorkout() {
     }
   }
 
-  function updateSetValue(setId: number, field: 'kg' | 'reps' | 'duration' | 'rir', value: number | undefined) {
+  function updateSetValue(
+    setId: number,
+    field: 'kg' | 'reps' | 'duration' | 'rir',
+    value: number | undefined,
+  ) {
     const blockIndex = workout.value.selectedBlockIndex
     const block = workout.value.blocks[blockIndex]
     if (!block || !isStrengthBlock(block)) return

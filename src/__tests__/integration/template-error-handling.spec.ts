@@ -106,8 +106,11 @@ describe('Template Error Handling', () => {
   })
 
   describe('Navigation with Unsaved Changes', () => {
-    it('does not persist changes when navigating away without saving', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('does not persist changes when the user confirms discarding on navigate away', async () => {
+      // The unsaved-changes guard (Finding 5, ux-ui-review-2026-07-04.md) intercepts
+      // this navigation with a confirm dialog; don't await the push directly since
+      // it won't resolve until the dialog is answered.
+      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 
       // Create initial template
       const template = await seedTemplate({
@@ -123,7 +126,10 @@ describe('Template Error Handling', () => {
       await userEvent.fill(nameInput, 'Modified Name')
 
       // Navigate away without saving
-      await navigateTo({ name: RouteNames.Home })
+      router.push({ name: RouteNames.Home })
+      await common.waitForDialog()
+      await userEvent.click(common.getDialogButton('Leave'))
+      await common.waitForRoute(/^\/$/)
 
       // Verify database was not modified
       const unchanged = await getTemplateById(template.id)

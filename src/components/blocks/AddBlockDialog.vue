@@ -12,6 +12,7 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useToastStore } from '@/stores/toast'
 import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
 
 const { t } = useI18n()
@@ -25,6 +26,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const toastStore = useToastStore()
 const activeTab = ref('exercises')
 const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
 
@@ -69,6 +71,9 @@ const timedBlockTypes: ReadonlyArray<{
 
 function handleSelectExercise(exercise: Exercise) {
   emit('add-exercise', exercise)
+  // Never-silent guarantee: the sheet closes immediately on selection, so a
+  // toast is the only feedback the user gets that anything happened.
+  toastStore.showToast(t('common.toast.exerciseAdded', { name: exercise.name }))
   open.value = false
 }
 
@@ -168,7 +173,9 @@ function handleOpenChange(value: boolean) {
               </div>
               <div class="flex-1">
                 <p class="font-semibold text-lg text-cyan-500">{{ BLOCK_LABELS.cardio }}</p>
-                <p class="text-sm text-muted-foreground">{{ t('dialogs.addBlock.cardioDescription') }}</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('dialogs.addBlock.cardioDescription') }}
+                </p>
               </div>
               <span class="text-cyan-500/50 text-xl">›</span>
             </button>

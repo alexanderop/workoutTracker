@@ -62,7 +62,8 @@ export default {
     title: 'Active Workout',
     inProgress: 'Workout in progress',
     errorNoBlock: 'Unable to load block',
-    errorNoBlockDescription: 'Something went wrong loading your workout. Try returning to the workout plan.',
+    errorNoBlockDescription:
+      'Something went wrong loading your workout. Try returning to the workout plan.',
     returnToBuilder: 'Return to Plan',
     mode: {
       skipBlock: 'Skip Block',
@@ -78,6 +79,8 @@ export default {
       addBlock: 'Add Exercise',
       active: '(Active)',
       exercises: '{count} exercises',
+      moveUp: 'Move {name} up',
+      moveDown: 'Move {name} down',
     },
     footer: {
       completeSet: 'Complete Set',
@@ -86,11 +89,13 @@ export default {
       done: 'Done',
       back: 'Back',
       rest: 'Rest',
+      restComplete: 'Go',
     },
     strength: {
       reps: 'reps',
       rir: 'rir',
       last: 'Last: ',
+      valueClamped: 'Value limited to {max}',
     },
   },
   summary: {
@@ -160,6 +165,9 @@ export default {
     addSet: 'Add Set',
     noSetsCompleted: 'No sets completed',
     target: 'Target: {reps} reps',
+    // "Top set" phrasing avoids implying every set used the heaviest weight
+    // (e.g. 80/80/999 kg should read as "top 999 kg", not "× 999 kg").
+    topSetSummary: '{count} set · top {weight} | {count} sets · top {weight}',
   },
   previous: {
     label: 'Previous ({date})',
@@ -201,6 +209,8 @@ export default {
   },
   benchmarks: {
     create: 'Create Benchmark',
+    createHelperText:
+      'A benchmark is a workout you repeat over time to measure progress — like Murph or a 5RM test.',
     edit: 'Edit Benchmark',
     name: 'Workout Name',
     namePlaceholder: 'e.g., Murph, Fran, Cindy',

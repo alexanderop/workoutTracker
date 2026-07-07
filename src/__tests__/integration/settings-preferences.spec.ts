@@ -540,6 +540,71 @@ describe('Settings Preferences', () => {
     })
   })
 
+  describe('Rest Timer Setting', () => {
+    it('defaults to 90 seconds', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const preset = page.getByRole('button', { name: /90 second rest timer target/i })
+      await expect.element(preset).toBeVisible()
+      await expect
+        .poll(async () => {
+          const element = await preset.element()
+          return element.dataset.state
+        })
+        .toBe('on')
+
+      cleanup()
+    })
+
+    it('selecting a preset persists the new default rest timer', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const twoMinutePreset = page.getByRole('button', { name: /120 second rest timer target/i })
+      await userEvent.click(twoMinutePreset)
+
+      await expectSettingValue('defaultRestTimer', 120)
+
+      cleanup()
+    })
+
+    it('selecting "Off" disables the rest timer target and persists 0', async () => {
+      const { common, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const offPreset = page.getByRole('button', { name: /no rest timer target/i })
+      await userEvent.click(offPreset)
+
+      await expectSettingValue('defaultRestTimer', 0)
+
+      cleanup()
+    })
+
+    it('rest timer preference survives page navigation', async () => {
+      const { common, router, cleanup } = await createTestApp()
+      await common.navigateToSettings()
+
+      const twoMinutePreset = page.getByRole('button', { name: /120 second rest timer target/i })
+      await userEvent.click(twoMinutePreset)
+
+      await router.push('/')
+      await expect.poll(() => router.currentRoute.value.path).toBe('/')
+
+      await common.navigateToSettings()
+
+      const persistedPreset = page.getByRole('button', { name: /120 second rest timer target/i })
+      await expect
+        .poll(async () => {
+          const element = await persistedPreset.element()
+          return element.dataset.state
+        })
+        .toBe('on')
+
+      cleanup()
+    })
+  })
+
   describe('Advanced Diagnostics Section', () => {
     it('expands and collapses advanced diagnostics section', async () => {
       const { common, cleanup } = await createTestApp()

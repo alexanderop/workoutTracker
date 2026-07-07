@@ -64,7 +64,8 @@ watch(
         swapThreshold: 0.65,
         onEnd: (event) => {
           const { oldIndex, newIndex } = event
-          const isValidReorder = oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex
+          const isValidReorder =
+            oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex
           if (isValidReorder) {
             reorderBlocks(oldIndex, newIndex)
           }
@@ -78,7 +79,7 @@ watch(
 // Cleanup on unmount to prevent memory leaks if component unmounts while drawer is open
 onUnmounted(() => {
   if (!sortableInstance.value) {
-	return;
+    return
   }
 
   sortableInstance.value.destroy()
@@ -102,9 +103,9 @@ function getBlockStatus(index: number): 'completed' | 'active' | 'planned' {
 
   // If block is before the current block, check if it has any progress
   if (index < workout.value.selectedBlockIndex && isStrengthBlock(block)) {
-      const hasCompleted = block.sets.some((s) => s.status === 'completed')
-      if (hasCompleted) return 'completed'
-    }
+    const hasCompleted = block.sets.some((s) => s.status === 'completed')
+    if (hasCompleted) return 'completed'
+  }
 
   return 'planned'
 }
@@ -128,6 +129,19 @@ function handleRemoveBlock(index: number) {
   if (workout.value.blocks.length === 0) {
     open.value = false
   }
+}
+
+// Up/down buttons -- keyboard/screen-reader-accessible alternative to the
+// pointer-only Sortable.js drag handle above. `reorderBlocks` already keeps the
+// active block's identity correct across a reorder (see `reorderWorkoutBlocks`
+// in `src/lib/workoutBlockList.ts`). See Finding "No way to reorder exercises in
+// the workout queue drawer", July 2026 UX review.
+function handleMoveUp(index: number) {
+  reorderBlocks(index, index - 1)
+}
+
+function handleMoveDown(index: number) {
+  reorderBlocks(index, index + 1)
 }
 </script>
 
@@ -174,8 +188,12 @@ function handleRemoveBlock(index: number) {
           :block="block"
           :index="index"
           :status="blockStatuses[index] ?? 'planned'"
+          :is-first="index === 0"
+          :is-last="index === blocksList.length - 1"
           @select="handleSelectBlock(index)"
           @remove="handleRemoveBlock(index)"
+          @move-up="handleMoveUp(index)"
+          @move-down="handleMoveDown(index)"
         />
       </div>
 

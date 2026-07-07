@@ -78,20 +78,24 @@ describe('Weight Tracking', () => {
       await weight.addEntry('75')
 
       // Verify entry was saved
-      await expect.poll(async () => {
-        const entries = await getWeightRepository().getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       // Add second entry for same day - this should replace the first
       await weight.addEntry('76')
 
       // Verify database has only one entry with newest value
       const repo = getWeightRepository()
-      await expect.poll(async () => {
-        const entries = await repo.getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await repo.getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       const entries = await repo.getAll()
       expect(entries[0]?.weight).toBe(76)
@@ -114,10 +118,12 @@ describe('Weight Tracking', () => {
 
       // Verify stored internally as kg (220 lbs = 99.79 kg)
       const repo = getWeightRepository()
-      await expect.poll(async () => {
-        const entries = await repo.getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await repo.getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       const entries = await repo.getAll()
       expect(entries[0]?.weight).toBeCloseTo(99.79, 1)
@@ -131,7 +137,10 @@ describe('Weight Tracking', () => {
       // Seed data: entries over the past week
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 7)
-      const entries = createDatabaseWeightEntriesForDays(startDate, [74, 74.5, 75, 75.5, 76, 75.8, 75.5, 75])
+      const entries = createDatabaseWeightEntriesForDays(
+        startDate,
+        [74, 74.5, 75, 75.5, 76, 75.8, 75.5, 75],
+      )
 
       const repo = getWeightRepository()
       for (const entry of entries) {
@@ -188,6 +197,107 @@ describe('Weight Tracking', () => {
       await expect.element(page.getByRole('tab', { name: '30D' })).toBeVisible()
       await expect.element(page.getByRole('tab', { name: '90D' })).toBeVisible()
       await expect.element(page.getByRole('tab', { name: 'All' })).toBeVisible()
+
+      cleanup()
+    })
+
+    it('shows the unit alongside the weight for a single data point', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+      await weight.addEntry('80')
+
+      // With only one entry, the chart falls back to a single-value display
+      // (distinct from the stats summary, which already shows the unit).
+      // It must show the unit too, not just the bare number.
+      await expect
+        .poll(() => {
+          // eslint-disable-next-line no-restricted-syntax -- Chart's single-value display has no accessible label of its own
+          const chartValue = document.querySelector('.text-3xl.font-semibold')
+          return chartValue?.textContent?.trim()
+        })
+        .toBe('80 kg')
+
+      cleanup()
+    })
+  })
+
+  describe('outlier confirmation', () => {
+    it('saves the first entry immediately without asking for confirmation', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      // Even a wild first entry should save immediately - there's nothing to compare against.
+      await weight.addEntry('500')
+
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+      await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('asks for confirmation when a new entry deviates wildly from the last one', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.addEntry('80')
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+
+      // 500kg is both >15kg and >20% away from 80kg
+      await weight.addEntry('500')
+
+      // Should not have saved yet - the confirmation banner is shown instead
+      await expect.element(weight.getOutlierConfirmBanner()).toBeVisible()
+      await expect.element(page.getByText(/80 kg/)).toBeVisible()
+      const repo = getWeightRepository()
+      expect((await repo.getAll()).length).toBe(1)
+
+      // Confirming saves the outlier value. Both entries are for "today" so the
+      // same-day dedup rule replaces the first row rather than adding a second.
+      await weight.confirmOutlierSave()
+      await expect.poll(async () => (await repo.getAll())[0]?.weight).toBe(500)
+      expect((await repo.getAll()).length).toBe(1)
+      await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
+
+      cleanup()
+    })
+
+    it('does not save when the outlier confirmation is cancelled', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.addEntry('80')
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+
+      await weight.addEntry('500')
+      await expect.element(weight.getOutlierConfirmBanner()).toBeVisible()
+
+      await weight.cancelOutlierSave()
+
+      await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
+      const repo = getWeightRepository()
+      expect((await repo.getAll()).length).toBe(1)
+      expect((await repo.getAll())[0]?.weight).toBe(80)
+
+      cleanup()
+    })
+
+    it('does not ask for confirmation when the change is small', async () => {
+      const { navigateTo, weight, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.addEntry('80')
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+
+      // 82kg is a 2.5% / 2kg change from 80kg - well within tolerance
+      await weight.addEntry('82')
+
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+      await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
 
       cleanup()
     })

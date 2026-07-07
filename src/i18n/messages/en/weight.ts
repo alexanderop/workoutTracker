@@ -24,4 +24,9 @@ export default {
   trendDown: 'trending down',
   trendStable: 'stable',
   deleteEntryLabel: 'Delete entry: {weight} on {date}',
+  outlierConfirm: {
+    message: "That's a big change from last time ({weight}). Save anyway?",
+    confirm: 'Save anyway',
+    cancel: 'Cancel',
+  },
 } as const

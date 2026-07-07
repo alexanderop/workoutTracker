@@ -3,10 +3,9 @@ import { render } from 'vitest-browser-vue'
 import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createMemoryHistory } from 'vue-router'
 import App from '@/App.vue'
-import { setupOnboardingGuard } from '@/features/onboarding/setupOnboardingGuard'
-import { routes } from '@/router'
+import { createAppRouter } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
@@ -59,13 +58,9 @@ type TestApp = {
 export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
   const { initialRoute = '/' } = options
 
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes,
-  })
-
-  // Register onboarding guard (same as production router)
-  setupOnboardingGuard(router)
+  // Same factory as production (routes, document titles, onboarding guard) --
+  // only the history implementation differs.
+  const router = createAppRouter(createMemoryHistory())
 
   if (initialRoute !== '/') {
     router.push(initialRoute)

@@ -1,6 +1,11 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getDataManagementRepository, getOnboardingRepository, getWorkoutsRepository } from '@/db'
+import {
+  deleteAllData,
+  getDataManagementRepository,
+  getOnboardingRepository,
+  getWorkoutsRepository,
+} from '@/db'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
@@ -230,10 +235,12 @@ describe('Onboarding Flow', () => {
       await userEvent.click(nextButton)
 
       // Progress should update to 20% (slide 2 of 6)
-      await expect.poll(async () => {
-        const element = progress.element()
-        return element?.getAttribute('aria-valuenow')
-      }).toBe('20')
+      await expect
+        .poll(async () => {
+          const element = progress.element()
+          return element?.getAttribute('aria-valuenow')
+        })
+        .toBe('20')
 
       cleanup()
     })
@@ -319,6 +326,42 @@ describe('Onboarding Flow', () => {
       // 6. Assert: User should NOT be redirected to onboarding
       await router.push({ name: RouteNames.Home })
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
+
+      cleanup()
+    })
+
+    it('resets onboarding state so Settings "Delete All Data" produces a true first run', async () => {
+      // 1. Complete onboarding, simulating an existing user
+      const onboarding = useOnboarding()
+      await onboarding.markComplete()
+      expect(onboarding.completed.value).toBe(true)
+
+      // 2. Add workout data
+      const { router, cleanup } = await createTestApp()
+      const workout = createDatabaseCompletedWorkout({ name: 'Test Workout' })
+      await getWorkoutsRepository().add(workout)
+
+      // 3. Trigger the same delete-all path Settings → Delete All Data uses
+      // (src/db/index.ts's deleteAllData(), the only production call site for
+      // SettingsDangerZoneSection.vue's danger-zone button)
+      await deleteAllData()
+
+      // 4. Re-initialize onboarding state (simulates the location.reload()
+      // that follows deleteAllData() in the Settings UI)
+      onboarding.$reset()
+      await onboarding.initialize()
+
+      // 5. Assert: onboarding is reset to incomplete - a true first run,
+      // not the "Welcome back" returning-user variant
+      expect(onboarding.completed.value).toBe(false)
+
+      // 6. Assert: user is redirected to onboarding, not Home.
+      // Navigate to a route other than the current one first — the router is
+      // already sitting on Home from createTestApp()'s initial navigation,
+      // and pushing to the same route again is a no-op duplicate navigation
+      // that never re-runs the guard.
+      await router.push({ name: RouteNames.Settings })
+      await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
 
       cleanup()
     })

@@ -12,6 +12,11 @@ const DEFAULT_HEIGHT_UNIT: HeightUnit = 'cm'
 const DEFAULT_SCREEN_WAKE_LOCK = true
 const DEFAULT_TIMER_SOUND_ENABLED = true
 const DEFAULT_TIMER_SOUND_VOLUME = 0.8
+// Mirrors SETTING_DEFAULTS.defaultRestTimer in the Dexie settings adapter (90s).
+const DEFAULT_REST_TIMER_SECONDS = 90
+// Matches defaultRestTimerSettingSchema's `z.number().int().min(0).max(3600)`.
+const MIN_REST_TIMER_SECONDS = 0
+const MAX_REST_TIMER_SECONDS = 3600
 
 export const useSettingsStore = createGlobalState(() => {
   const weightUnit = ref<WeightUnit>(DEFAULT_WEIGHT_UNIT)
@@ -19,6 +24,7 @@ export const useSettingsStore = createGlobalState(() => {
   const screenWakeLock = ref(DEFAULT_SCREEN_WAKE_LOCK)
   const timerSoundEnabled = ref(DEFAULT_TIMER_SOUND_ENABLED)
   const timerSoundVolume = ref(DEFAULT_TIMER_SOUND_VOLUME)
+  const defaultRestTimer = ref(DEFAULT_REST_TIMER_SECONDS)
   const language = ref<Language | undefined>(undefined)
   const isLoaded = ref(false)
   const isLoading = ref(false)
@@ -34,6 +40,7 @@ export const useSettingsStore = createGlobalState(() => {
     screenWakeLock.value = DEFAULT_SCREEN_WAKE_LOCK
     timerSoundEnabled.value = DEFAULT_TIMER_SOUND_ENABLED
     timerSoundVolume.value = DEFAULT_TIMER_SOUND_VOLUME
+    defaultRestTimer.value = DEFAULT_REST_TIMER_SECONDS
     language.value = undefined
 
     for (const setting of snapshot) {
@@ -58,12 +65,16 @@ export const useSettingsStore = createGlobalState(() => {
           timerSoundVolume.value = setting.value
           break
         }
+        case 'defaultRestTimer': {
+          defaultRestTimer.value = setting.value
+          break
+        }
         case 'language': {
           language.value = setting.value
           break
         }
         default: {
-          // theme / defaultRestTimer / autoSaveInterval are not tracked by this store.
+          // theme / autoSaveInterval are not tracked by this store.
           break
         }
       }
@@ -136,6 +147,19 @@ export const useSettingsStore = createGlobalState(() => {
     await tryCatch(getSettingsRepository().set({ key: 'timerSoundVolume', value: clampedVolume }))
   }
 
+  /**
+   * Set the default rest timer duration in seconds. `0` disables the rest
+   * target entirely (the rest timer falls back to a plain count-up display).
+   * Clamped to the range accepted by `defaultRestTimerSettingSchema`.
+   */
+  async function setDefaultRestTimer(seconds: number): Promise<void> {
+    const clampedSeconds = Math.round(
+      Math.min(Math.max(seconds, MIN_REST_TIMER_SECONDS), MAX_REST_TIMER_SECONDS),
+    )
+    defaultRestTimer.value = clampedSeconds
+    await tryCatch(getSettingsRepository().set({ key: 'defaultRestTimer', value: clampedSeconds }))
+  }
+
   /** Reset state to defaults (for test isolation) */
   function $reset(): void {
     weightUnit.value = DEFAULT_WEIGHT_UNIT
@@ -143,6 +167,7 @@ export const useSettingsStore = createGlobalState(() => {
     screenWakeLock.value = DEFAULT_SCREEN_WAKE_LOCK
     timerSoundEnabled.value = DEFAULT_TIMER_SOUND_ENABLED
     timerSoundVolume.value = DEFAULT_TIMER_SOUND_VOLUME
+    defaultRestTimer.value = DEFAULT_REST_TIMER_SECONDS
     language.value = undefined
     isLoaded.value = false
     isLoading.value = false
@@ -154,6 +179,7 @@ export const useSettingsStore = createGlobalState(() => {
     screenWakeLock,
     timerSoundEnabled,
     timerSoundVolume,
+    defaultRestTimer,
     language,
     isLoaded,
     isLoading,
@@ -164,6 +190,7 @@ export const useSettingsStore = createGlobalState(() => {
     setLanguage,
     setTimerSoundEnabled,
     setTimerSoundVolume,
+    setDefaultRestTimer,
     stop,
     $reset,
   })

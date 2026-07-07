@@ -40,6 +40,20 @@ export class ExercisesPO {
   }
 
   /**
+   * Opens the Muscle Group selector and picks the given option.
+   * Required for save to be enabled -- see Finding M5 (UX review 2026-07-04):
+   * exercises without a muscle group are invisible in every filtered library
+   * view, so the form blocks save until one is chosen.
+   * @param muscleLabel - The visible label of the muscle option (e.g. "Chest")
+   */
+  async selectMuscle(muscleLabel: string): Promise<void> {
+    const muscleRow = page.getByRole('button', { name: /muscle group/i })
+    await userEvent.click(muscleRow)
+    const option = page.getByRole('button', { name: new RegExp(muscleLabel, 'i') })
+    await userEvent.click(option)
+  }
+
+  /**
    * Uploads an image file to the image upload input.
    * Uses DataTransfer API for reliable image file handling in tests.
    * @param file - The File object to upload

@@ -1,6 +1,6 @@
 export default {
   title: 'Progressionen',
-  subtitle: 'Verfolge deinen Kettlebell-Swing-Fortschritt',
+  subtitle: 'Kettlebell-EMOM-Progressionen',
 
   buttons: {
     create: 'Progression erstellen',
@@ -8,7 +8,8 @@ export default {
 
   empty: {
     title: 'Noch keine Progressionen',
-    description: 'Erstelle einen Progressionsplan für deinen Kettlebell-Swing-Fortschritt',
+    description:
+      'Erstelle einen Kettlebell-EMOM-Progressionsplan, um deinen Fortschritt zu verfolgen',
   },
 
   status: {
@@ -48,7 +49,8 @@ export default {
   delete: {
     title: 'Progression löschen?',
     action: 'Progression löschen',
-    description: 'Dies löscht die Progression und den gesamten Verlauf. Diese Aktion kann nicht rückgängig gemacht werden.',
+    description:
+      'Dies löscht die Progression und den gesamten Verlauf. Diese Aktion kann nicht rückgängig gemacht werden.',
   },
 
   session: {

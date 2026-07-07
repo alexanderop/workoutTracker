@@ -5,11 +5,15 @@ import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { useRestTimer } from '@/composables/timers/useRestTimer'
-import { isSetReady, useWorkout } from '@/features/workout/composables/useWorkout'
+import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
+import { useSettingsStore } from '@/stores/settings'
 import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
 import type { Set } from '@/types/workout'
-import WorkoutActiveModeFooter, { type TimerDisplayData } from './WorkoutActiveModeFooter.vue'
+import WorkoutActiveModeFooter, {
+  REST_ADJUST_STEP_SECONDS,
+  type TimerDisplayData,
+} from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
 import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
 import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
@@ -55,7 +59,11 @@ const {
   goToPreviousBlock,
 } = useWorkoutMode()
 
-const restTimer = useRestTimer()
+const settingsStore = useSettingsStore()
+// Reactive target: settings drive the rest timer's countdown, and a +/-15s
+// tap on the timer itself (see `handleAdjustRestTarget`) writes straight back
+// through this store so the new duration sticks between sets/sessions.
+const restTimer = useRestTimer({ target: () => settingsStore.defaultRestTimer })
 
 // Template ref for timed view components - they expose timer methods
 const timedViewReference = useTemplateRef<{
@@ -107,10 +115,15 @@ const headerSubtitle = computed(() => {
 
 const canSkipBlock = computed(() => currentBlockIndex.value < totalBlocks.value - 1)
 
-const canCompleteSet = computed(() => {
-  if (!activeSet.value) return false
-  return isSetReady(activeSet.value)
-})
+// Readiness of the active set, derived and emitted by `WorkoutActiveStrengthView`
+// (which shadow-tracks uncommitted NumberField keystrokes -- reka-ui only commits
+// to the domain `Set` on blur/Enter, so readiness must not lag one blur behind: a
+// `disabled` footer CTA can't receive the click that would otherwise flush the
+// pending edit). The child owns the readiness rule; this just mirrors its verdict.
+// See Finding 6, July 2026 UX review (`brain/reference/reviews/`).
+const activeSetReady = ref(false)
+
+const canCompleteSet = computed(() => !!activeSet.value && activeSetReady.value)
 
 const footerState = computed(() => ({
   canComplete: canCompleteSet.value,
@@ -118,6 +131,22 @@ const footerState = computed(() => ({
   isLastBlock: isLastBlock.value,
   isTransitioning: false,
 }))
+
+/**
+ * Flush any in-progress edit before evaluating/completing a set.
+ *
+ * reka-ui's NumberField commits on blur, not on every keystroke (see
+ * `NumberFieldInput.vue`'s `@blur="applyInputValue"`). Blurring here forces that
+ * commit synchronously -- before `completeSet()` reads the set's fields -- so a tap
+ * on the row checkmark or the footer CTA can't land while the just-typed value is
+ * still buffered inside the input. See Finding 6, July 2026 UX review.
+ */
+function commitFocusedInput(): void {
+  const active = document.activeElement
+  if (active instanceof HTMLInputElement) {
+    active.blur()
+  }
+}
 
 function handleSetCompletion(result: ReturnType<typeof completeSet>) {
   if (result.kind !== 'completed') return
@@ -131,6 +160,7 @@ function handleSetCompletion(result: ReturnType<typeof completeSet>) {
 }
 
 function handleCompleteSet() {
+  commitFocusedInput()
   if (!activeSet.value) return
   handleSetCompletion(completeSet(activeSet.value))
 }
@@ -170,6 +200,15 @@ function handleNextBlock() {
   advanceToNextBlock()
 }
 
+// Footer +/-15s taps must never let a running rest countdown collapse to "no
+// target" out from under the user -- that transition is only available
+// explicitly via the Settings "Off" preset (see `SettingsScreenSection.vue`),
+// so the target is floored at one adjustment step.
+function handleAdjustRestTarget(deltaSeconds: number) {
+  const next = Math.max(REST_ADJUST_STEP_SECONDS, settingsStore.defaultRestTimer + deltaSeconds)
+  settingsStore.setDefaultRestTimer(next)
+}
+
 function handleRemoveBlock() {
   removeBlock(currentBlockIndex.value)
   // If no blocks remain, return to builder mode
@@ -178,12 +217,24 @@ function handleRemoveBlock() {
   }
 }
 
-function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'duration' | 'rir', value: number | undefined) {
+function handleUpdateSet(
+  setId: number,
+  field: 'kg' | 'reps' | 'duration' | 'rir',
+  value: number | undefined,
+) {
   updateSetValue(setId, field, value)
 }
 
 function handleToggleComplete(set: Set) {
-  handleSetCompletion(completeSet(set))
+  commitFocusedInput()
+  // Re-fetch by id rather than trusting `set` -- updates are applied immutably
+  // (see VUE_STYLE_GUIDE), so the object captured at click time may already be
+  // stale once `commitFocusedInput()` has committed a pending edit above.
+  const freshSet =
+    currentBlock.value && isStrengthBlock(currentBlock.value)
+      ? (currentBlock.value.sets.find((s) => s.id === set.id) ?? set)
+      : set
+  handleSetCompletion(completeSet(freshSet))
 }
 
 function handleAddSet() {
@@ -229,6 +280,7 @@ function handleDuplicateSet(setId: number) {
         @add-set="handleAddSet"
         @delete-set="handleDeleteSet"
         @duplicate-set="handleDuplicateSet"
+        @active-set-ready="activeSetReady = $event"
       />
 
       <!-- Timed block views - dynamically rendered based on block kind -->
@@ -249,7 +301,9 @@ function handleDuplicateSet(setId: number) {
       </div>
       <div class="space-y-2">
         <h2 class="text-lg font-semibold">{{ t('workouts.active.errorNoBlock') }}</h2>
-        <p class="text-muted-foreground text-sm">{{ t('workouts.active.errorNoBlockDescription') }}</p>
+        <p class="text-muted-foreground text-sm">
+          {{ t('workouts.active.errorNoBlockDescription') }}
+        </p>
       </div>
       <Button variant="outline" @click="returnToBuilder">
         {{ t('workouts.active.returnToBuilder') }}
@@ -268,6 +322,8 @@ function handleDuplicateSet(setId: number) {
         @complete-set="handleCompleteSet"
         @toggle-timer="handleToggleTimer"
         @complete-block="handleCompleteBlock"
+        @adjust-rest-target="handleAdjustRestTarget"
+        @dismiss-rest="restTimer.reset"
       />
     </template>
   </PageLayout>

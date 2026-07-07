@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getDataManagementRepository } from '@/db'
+import { seedPopularExercises } from '@/db/seedExercises'
 import { parseExportFile, importAllData } from '@/features/settings/utils/dataImport'
+import { exportDataSchema } from '@/features/settings/utils/validation'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
@@ -119,5 +121,28 @@ describe('Export/Import Round-Trip', () => {
 
     const settings = await getRawSettings()
     expect(settings[0]?.value).toBe('dark')
+  })
+
+  it('should pass export schema validation when the full seeded exercise library is exported', async () => {
+    // Arrange: seed the same popular-exercise library the app seeds on first launch.
+    // This library includes exercise types/equipment (e.g. 'isometric', 'battle-rope')
+    // that a drifted validation schema would reject.
+    await seedPopularExercises()
+
+    // Act: export exactly as the app's own export feature does.
+    const exportedData = await getDataManagementRepository().exportAll()
+    const exportFile = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      data: exportedData,
+    }
+
+    // Assert: the app's own export must pass its own import validation.
+    const result = exportDataSchema.safeParse(exportFile)
+
+    if (!result.success) {
+      expect.fail(`Seeded exercise library failed export validation: ${result.error.message}`)
+    }
+    expect(result.success).toBe(true)
   })
 })
