@@ -33,6 +33,14 @@ export type CreatePersistenceCoreOptions<TDomain, TDatabase> = {
   /** Check if the domain data is empty (should trigger clear instead of save) */
   isEmpty: (domain: TDomain) => boolean
   /**
+   * Gate deciding whether the current domain state may be written to the
+   * repository. When it returns false, auto-save and saveNow() are skipped
+   * (clearing empty data still happens). Needed for terminal states: a
+   * completed workout's draft is deleted by the completion transaction, and a
+   * still-pending debounced save must not resurrect it afterwards.
+   */
+  shouldPersist?: (domain: TDomain) => boolean
+  /**
    * Debounce interval for auto-save in milliseconds.
    * @default 1000
    */
@@ -57,7 +65,15 @@ export type CreatePersistenceCoreOptions<TDomain, TDatabase> = {
 export function createPersistenceCore<TDomain, TDatabase>(
   options: CreatePersistenceCoreOptions<TDomain, TDatabase>,
 ) {
-  const { source, toDb, fromDb, repository, isEmpty, debounceMs = AUTO_SAVE_DEBOUNCE_MS } = options
+  const {
+    source,
+    toDb,
+    fromDb,
+    repository,
+    isEmpty,
+    shouldPersist,
+    debounceMs = AUTO_SAVE_DEBOUNCE_MS,
+  } = options
 
   // State — exposed readonly; the feature persistence wrappers drive the
   // state machine through setError()/markSaved()/markInitialized() below.
@@ -121,6 +137,8 @@ export function createPersistenceCore<TDomain, TDatabase>(
         hasUnsavedChanges.value = false
         return
       }
+
+      if (shouldPersist && !shouldPersist(newValue)) return
 
       await performSave()
     },
@@ -206,6 +224,7 @@ export function createPersistenceCore<TDomain, TDatabase>(
    */
   async function saveNow(): Promise<void> {
     if (isEmpty(source.value)) return
+    if (shouldPersist && !shouldPersist(source.value)) return
     await performSave()
   }
 

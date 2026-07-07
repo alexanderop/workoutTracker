@@ -13,7 +13,10 @@ function createMockRepository() {
   }
 }
 
-function createCore(repository = createMockRepository()) {
+function createCore(
+  repository = createMockRepository(),
+  shouldPersist?: (domain: Domain) => boolean,
+) {
   const source = shallowRef<Domain>({ items: [] })
   const core = createPersistenceCore<Domain, Domain>({
     source,
@@ -21,6 +24,7 @@ function createCore(repository = createMockRepository()) {
     fromDb: (database) => database,
     repository,
     isEmpty: (domain) => domain.items.length === 0,
+    shouldPersist,
     debounceMs: 100,
   })
   return { source, core, repository }
@@ -107,6 +111,43 @@ describe('createPersistenceCore', () => {
     await vi.advanceTimersByTimeAsync(150)
 
     expect(core.persistenceState.value).toEqual({ status: 'error', error: failure })
+  })
+
+  it('skips the debounced auto-save when shouldPersist returns false', async () => {
+    const repository = createMockRepository()
+    const { source, core } = createCore(repository, (domain) => !domain.items.includes('completed'))
+    core.markInitialized()
+
+    source.value = { items: ['squat', 'completed'] }
+    await vi.advanceTimersByTimeAsync(150)
+
+    expect(repository.save).not.toHaveBeenCalled()
+    expect(repository.clear).not.toHaveBeenCalled()
+  })
+
+  it('skips saveNow when shouldPersist returns false', async () => {
+    const repository = createMockRepository()
+    const { source, core } = createCore(repository, (domain) => !domain.items.includes('completed'))
+    core.markInitialized()
+
+    source.value = { items: ['completed'] }
+    await core.saveNow()
+
+    expect(repository.save).not.toHaveBeenCalled()
+  })
+
+  it('still clears empty data when shouldPersist returns false', async () => {
+    const repository = createMockRepository()
+    const { source, core } = createCore(repository, () => false)
+    core.markInitialized()
+
+    source.value = { items: ['squat'] }
+    await vi.advanceTimersByTimeAsync(150)
+    source.value = { items: [] }
+    await vi.advanceTimersByTimeAsync(150)
+
+    expect(repository.save).not.toHaveBeenCalled()
+    expect(repository.clear).toHaveBeenCalledOnce()
   })
 
   it('saveNow persists immediately without waiting for the debounce', async () => {
