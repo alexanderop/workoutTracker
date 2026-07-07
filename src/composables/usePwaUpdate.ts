@@ -9,6 +9,10 @@ const UNSAFE_ROUTES: ReadonlySet<RouteRecordNameGeneric> = new Set([
   RouteNames.ActiveBenchmark,
 ])
 
+/**
+ * Applies pending PWA service-worker updates automatically, but only on
+ * routes where a reload can't lose in-progress data (never mid-workout).
+ */
 export function usePwaUpdate() {
   const router = useRouter()
   const { needRefresh, updateServiceWorker } = useRegisterSW()

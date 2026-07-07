@@ -3,24 +3,32 @@
  * Tracks total elapsed time across all blocks.
  * Continues counting even when app closes by using timestamp-based calculation.
  *
- * This is a SINGLETON composable - all components share the same timer instance.
+ * This is a SINGLETON composable - all components share the same timer
+ * instance via `createGlobalState` (a permanent detached effect scope).
  */
-import { useTimestamp } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { createGlobalState, useTimestamp } from '@vueuse/core'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
 
-// Singleton state - shared across all components
-const startedAt = ref<number | null>(null)
-const isRunning = ref(false)
+/**
+ * Shared benchmark workout timer: timestamp-based elapsed time that survives
+ * app restarts (restored via `initializeFromWorkout`).
+ */
+export const useBenchmarkGlobalTimer = createGlobalState(() => {
+  // Singleton state - shared across all components
+  const startedAt = shallowRef<number | null>(null)
+  const isRunning = shallowRef(false)
 
-// Use useTimestamp for reactive updates (updates every second for display)
-const { timestamp, pause: stopInterval, resume: startInterval } = useTimestamp({
-  controls: true,
-  interval: 1000,
-  immediate: false,
-})
-
-export function useBenchmarkGlobalTimer() {
+  // Use useTimestamp for reactive updates (updates every second for display)
+  const {
+    timestamp,
+    pause: stopInterval,
+    resume: startInterval,
+  } = useTimestamp({
+    controls: true,
+    interval: 1000,
+    immediate: false,
+  })
 
   // Display value (updates every second)
   const elapsedSeconds = computed(() => {
@@ -116,7 +124,7 @@ export function useBenchmarkGlobalTimer() {
   }
 
   return {
-    isRunning,
+    isRunning: shallowReadonly(isRunning),
     elapsedSeconds,
     formattedElapsed,
     getPreciseElapsedSeconds,
@@ -127,4 +135,4 @@ export function useBenchmarkGlobalTimer() {
     initializeFromWorkout,
     getStartedAt,
   }
-}
+})

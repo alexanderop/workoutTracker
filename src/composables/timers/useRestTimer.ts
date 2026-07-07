@@ -1,5 +1,6 @@
+import type { Pausable } from '@vueuse/core'
 import { useVibrate } from '@vueuse/core'
-import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
 import { useBaseTimer } from './useBaseTimer'
 
@@ -21,8 +22,30 @@ export type UseRestTimerOptions = {
   target?: MaybeRefOrGetter<number>
 }
 
-export function useRestTimer(options: UseRestTimerOptions = {}) {
-  const hasVibratedForCompletion = ref(false)
+export type UseRestTimerReturn = Pausable & {
+  elapsedSeconds: ComputedRef<number>
+  remainingSeconds: ComputedRef<number>
+  hasTarget: ComputedRef<boolean>
+  isDone: ComputedRef<boolean>
+  isRunning: ComputedRef<boolean>
+  formattedTime: ComputedRef<string>
+  /** (Re)start the rest from zero -- called each time a set is completed. */
+  start: () => void
+  /** @deprecated Alias of `pause`; migrate call sites to `pause()`. */
+  stop: () => void
+  reset: () => void
+  toggle: () => void
+}
+
+/**
+ * Count-up rest timer with an optional reactive target: counts rest between
+ * sets, vibrates once when the target is reached, and pauses itself at a
+ * safety cap so an unattended timer doesn't tick forever.
+ *
+ * @param options
+ */
+export function useRestTimer(options: UseRestTimerOptions = {}): UseRestTimerReturn {
+  const hasVibratedForCompletion = shallowRef(false)
 
   // `interval` is a required (but deprecated) option for persistent vibration;
   // 0 disables it since we only want the one-shot completion buzz below.
@@ -67,28 +90,19 @@ export function useRestTimer(options: UseRestTimerOptions = {}) {
     base.start()
   }
 
-  function stop(): void {
-    base.pause()
-  }
-
-  /** Resume a paused rest; a no-op unless the timer is actually paused. */
-  function resume(): void {
-    if (base.isPaused.value) {
-      base.start()
-    }
-  }
-
   function reset(): void {
     base.resetState()
     hasVibratedForCompletion.value = false
   }
 
+  // Unlike base.toggle, deliberately never starts from idle: a rest only
+  // begins via start() when a set is completed.
   function toggle(): void {
     if (base.isRunning.value) {
-      stop()
+      base.pause()
       return
     }
-    resume()
+    base.resume()
   }
 
   return {
@@ -97,10 +111,12 @@ export function useRestTimer(options: UseRestTimerOptions = {}) {
     hasTarget,
     isDone,
     isRunning: base.isRunning,
+    isActive: base.isActive,
     formattedTime,
     start,
-    stop,
-    resume,
+    stop: base.pause,
+    pause: base.pause,
+    resume: base.resume,
     reset,
     toggle,
   }

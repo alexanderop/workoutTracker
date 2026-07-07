@@ -5,9 +5,10 @@
  * used by AMRAP, EMOM, Tabata, and ForTime timer composables.
  */
 
+import type { Pausable } from '@vueuse/core'
 import { useIntervalFn } from '@vueuse/core'
-import type { ComputedRef } from 'vue'
-import { computed, readonly, ref } from 'vue'
+import type { ComputedRef, ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
 
 type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
@@ -16,17 +17,64 @@ type TimerAction = 'start' | 'resume' | 'pause' | 'complete'
 
 // State machine transition map - documents all valid state changes
 const TRANSITIONS = {
-  idle:      { start: 'running' },
-  running:   { pause: 'paused', complete: 'completed' },
-  paused:    { resume: 'running' },
+  idle: { start: 'running' },
+  running: { pause: 'paused', complete: 'completed' },
+  paused: { resume: 'running' },
   completed: {},
 } as const satisfies Record<TimerStatus, Partial<Record<TimerAction, TimerStatus>>>
 
-type BaseTimerConfig = Readonly<{
+export type UseBaseTimerOptions = Readonly<{
+  /** Called on every interval tick while running. */
   onTick?: () => void
+  /** Called once when the timer first completes. */
   onComplete?: () => void
+  /**
+   * Interval between ticks in milliseconds.
+   * @default 100
+   */
   tickInterval?: number
 }>
+
+export type UseBaseTimerReturn = Pausable & {
+  status: Readonly<ShallowRef<TimerStatus>>
+  elapsedMs: Readonly<ShallowRef<number>>
+  elapsedSeconds: ComputedRef<number>
+  isRunning: ComputedRef<boolean>
+  isPaused: ComputedRef<boolean>
+  isCompleted: ComputedRef<boolean>
+  isIdle: ComputedRef<boolean>
+  /** Start a fresh timer, or resume when paused. */
+  start: () => void
+  toggle: () => void
+  resetState: () => void
+  /** Transition to completed; returns true when the timer was already completed. */
+  complete: () => boolean
+}
+
+/**
+ * Return surface shared by the block timer composables (AMRAP, EMOM, Tabata,
+ * ForTime): the base timer state plus the block ref, countdown/progress
+ * computeds, and lifecycle methods. Each timer extends this with its
+ * kind-specific state and actions.
+ */
+export type BlockTimerReturn<TBlock, TResult> = Pausable & {
+  elapsedMs: Readonly<ShallowRef<number>>
+  elapsedSeconds: ComputedRef<number>
+  isRunning: ComputedRef<boolean>
+  isPaused: ComputedRef<boolean>
+  isCompleted: ComputedRef<boolean>
+  isIdle: ComputedRef<boolean>
+  block: Readonly<ShallowRef<TBlock | null>>
+  remainingSeconds: ComputedRef<number>
+  progress: ComputedRef<number>
+  formattedElapsed: ComputedRef<string>
+  formattedRemaining: ComputedRef<string>
+  initialize: (block: TBlock) => void
+  start: () => void
+  toggle: () => void
+  reset: () => void
+  complete: () => TResult
+}
 
 /**
  * Creates formatted time computed properties for timer displays.
@@ -42,21 +90,28 @@ export function createFormattedTimeComputeds(
   }
 }
 
-export function useBaseTimer(config: BaseTimerConfig = {}) {
-  const { tickInterval = 100 } = config
+/**
+ * Timestamp-based timer state machine (idle → running ⇄ paused → completed)
+ * driven by a scope-bound `useIntervalFn`, so ticking stops with the owning
+ * effect scope.
+ *
+ * @param options
+ */
+export function useBaseTimer(options: UseBaseTimerOptions = {}): UseBaseTimerReturn {
+  const { tickInterval = 100 } = options
 
   // Core State
-  const status = ref<TimerStatus>('idle')
-  const elapsedMs = ref(0)
-  const startedAt = ref<number | null>(null)
-  const pausedDuration = ref(0)
+  const status = shallowRef<TimerStatus>('idle')
+  const elapsedMs = shallowRef(0)
+  const startedAt = shallowRef<number | null>(null)
+  const pausedDuration = shallowRef(0)
 
   // Interval Management
   const { pause: stopInterval, resume: startInterval } = useIntervalFn(
     () => {
       if (status.value !== 'running' || !startedAt.value) return
       elapsedMs.value = Date.now() - startedAt.value - pausedDuration.value
-      config.onTick?.()
+      options.onTick?.()
     },
     tickInterval,
     { immediate: false },
@@ -97,14 +152,19 @@ export function useBaseTimer(config: BaseTimerConfig = {}) {
   }
 
   // Methods
+  function resume() {
+    if (!startedAt.value) return
+    if (!transition('resume')) return
+    // Resume from pause
+    const now = Date.now()
+    const pauseStart = startedAt.value + elapsedMs.value + pausedDuration.value
+    pausedDuration.value += now - pauseStart
+    startInterval()
+  }
+
   function start() {
-    if (status.value === 'paused' && startedAt.value) {
-      if (!transition('resume')) return
-      // Resume from pause
-      const now = Date.now()
-      const pauseStart = startedAt.value + elapsedMs.value + pausedDuration.value
-      pausedDuration.value += now - pauseStart
-      startInterval()
+    if (status.value === 'paused') {
+      resume()
       return
     }
 
@@ -141,23 +201,25 @@ export function useBaseTimer(config: BaseTimerConfig = {}) {
     const wasAlreadyCompleted = !transition('complete')
     if (wasAlreadyCompleted) return true
     stopInterval()
-    config.onComplete?.()
+    options.onComplete?.()
     return false
   }
 
   return {
     // State (readonly to prevent external mutation)
-    status: readonly(status),
-    elapsedMs: readonly(elapsedMs),
+    status: shallowReadonly(status),
+    elapsedMs: shallowReadonly(elapsedMs),
     elapsedSeconds,
     isRunning,
     isPaused,
     isCompleted,
     isIdle,
+    isActive: isRunning,
 
     // Methods
     start,
     pause,
+    resume,
     toggle,
     resetState,
     complete,

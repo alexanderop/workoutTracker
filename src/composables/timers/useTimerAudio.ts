@@ -1,5 +1,10 @@
 import { useSettingsStore } from '@/stores/settings'
 
+/**
+ * Web-Audio beep cues for timer phase changes, respecting the user's timer
+ * sound settings. Lazily creates (and resumes) an `AudioContext`, since
+ * mobile browsers start audio suspended.
+ */
 export function useTimerAudio() {
   const settings = useSettingsStore()
   let audioContext: AudioContext | null = null

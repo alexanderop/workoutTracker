@@ -1,17 +1,23 @@
-import { watch, onScopeDispose } from 'vue'
-import { useDocumentVisibility } from '@vueuse/core'
+import type { ComputedRef } from 'vue'
+import { watch } from 'vue'
+import { tryOnScopeDispose, useDocumentVisibility } from '@vueuse/core'
 import { useSettingsStore } from '@/stores/settings'
 import { useScreenWakeLock } from './useScreenWakeLock'
 
 // Check for browser environment
 const isBrowser = typeof document !== 'undefined'
 
+export type UseGlobalWakeLockReturn = {
+  isSupported: ComputedRef<boolean>
+  isActive: ComputedRef<boolean>
+}
+
 /**
  * Global wake lock composable that respects user settings.
  * Keeps screen awake when enabled and page is visible.
  * Call this once at the app root level (App.vue).
  */
-export function useGlobalWakeLock() {
+export function useGlobalWakeLock(): UseGlobalWakeLockReturn {
   const settingsStore = useSettingsStore()
   const visibility = useDocumentVisibility()
   const wakeLock = useScreenWakeLock()
@@ -74,7 +80,7 @@ export function useGlobalWakeLock() {
     }
   })
 
-  onScopeDispose(() => {
+  tryOnScopeDispose(() => {
     wakeLock.releaseAll()
     shouldBeActive = false
   })

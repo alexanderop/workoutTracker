@@ -92,7 +92,7 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     const [getError, databaseWorkout] = await tryCatch(activeWorkoutQuery.get())
 
     if (getError) {
-      core.persistenceState.value = { status: 'error', error: getError }
+      core.setError(getError)
       return null
     }
 
@@ -106,12 +106,12 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     )
 
     if (completeError) {
-      core.persistenceState.value = { status: 'error', error: completeError }
+      core.setError(completeError)
       return null
     }
 
     currentWorkoutStartedAt = null
-    core.hasUnsavedChanges.value = false
+    core.markSaved()
     return completed
   }
 

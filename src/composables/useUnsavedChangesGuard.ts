@@ -1,6 +1,13 @@
 import { onBeforeRouteLeave } from 'vue-router'
-import { ref, toValue, type MaybeRefOrGetter } from 'vue'
+import { shallowRef, toValue, type MaybeRefOrGetter, type ShallowRef } from 'vue'
 import { useEventListener } from '@vueuse/core'
+
+export type UseUnsavedChangesGuardReturn = {
+  /** Writable on purpose: bound via v-model to the discard-confirmation dialog. */
+  showDialog: ShallowRef<boolean>
+  confirmDiscard: () => void
+  cancelDiscard: () => void
+}
 
 /**
  * Route-guards navigation away from a dirty form and asks the user to
@@ -22,8 +29,10 @@ import { useEventListener } from '@vueuse/core'
  * const { isEdited, ... } = useTemplateDetail(templateId)
  * const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard(isEdited)
  */
-export function useUnsavedChangesGuard(isDirty: MaybeRefOrGetter<boolean>) {
-  const showDialog = ref(false)
+export function useUnsavedChangesGuard(
+  isDirty: MaybeRefOrGetter<boolean>,
+): UseUnsavedChangesGuardReturn {
+  const showDialog = shallowRef(false)
   let resolveNavigation: ((proceed: boolean) => void) | null = null
 
   onBeforeRouteLeave(() => {

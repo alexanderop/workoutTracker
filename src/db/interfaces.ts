@@ -274,8 +274,10 @@ export type TemplatesRepository = {
 // ============================================
 
 /** A reactive read. `get()` resolves from local storage immediately;
- *  `subscribe()` fires with a fresh snapshot on every change (including
- *  changes from other tabs — and, with a sync backend, other devices). */
+ *  `subscribe()` fires with the current snapshot right after subscribing,
+ *  then again on every change (including changes from other tabs — and,
+ *  with a sync backend, other devices). Adapters must honor the initial
+ *  emission: `useLiveQuery` relies on it instead of calling `get()`. */
 export interface LiveQuery<T> {
   get(): Promise<T>
   subscribe(onChange: (value: T) => void): () => void

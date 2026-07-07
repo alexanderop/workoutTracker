@@ -1,5 +1,5 @@
-import { onScopeDispose, ref, type Ref, watch } from 'vue'
-import { watchDebounced } from '@vueuse/core'
+import { shallowReadonly, shallowRef, type Ref, watch } from 'vue'
+import { tryOnScopeDispose, watchDebounced } from '@vueuse/core'
 import { tryCatch } from '@/lib/tryCatch'
 
 const AUTO_SAVE_DEBOUNCE_MS = 1000
@@ -16,7 +16,7 @@ type PersistenceState =
 /**
  * Configuration for the persistence core factory.
  */
-type PersistenceConfig<TDomain, TDatabase> = {
+export type CreatePersistenceCoreOptions<TDomain, TDatabase> = {
   /** The reactive ref containing the domain data */
   source: Ref<TDomain>
   /** Convert domain model to database model */
@@ -32,7 +32,10 @@ type PersistenceConfig<TDomain, TDatabase> = {
   }
   /** Check if the domain data is empty (should trigger clear instead of save) */
   isEmpty: (domain: TDomain) => boolean
-  /** Debounce interval for auto-save in milliseconds */
+  /**
+   * Debounce interval for auto-save in milliseconds.
+   * @default 1000
+   */
   debounceMs?: number
 }
 
@@ -51,26 +54,22 @@ type PersistenceConfig<TDomain, TDatabase> = {
  * })
  * ```
  */
-export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceConfig<TDomain, TDatabase>) {
-  const {
-    source,
-    toDb,
-    fromDb,
-    repository,
-    isEmpty,
-    debounceMs = AUTO_SAVE_DEBOUNCE_MS,
-  } = config
+export function createPersistenceCore<TDomain, TDatabase>(
+  options: CreatePersistenceCoreOptions<TDomain, TDatabase>,
+) {
+  const { source, toDb, fromDb, repository, isEmpty, debounceMs = AUTO_SAVE_DEBOUNCE_MS } = options
 
-  // State
-  const persistenceState = ref<PersistenceState>({ status: 'idle' })
-  const hasUnsavedChanges = ref(false)
-  const isInitialized = ref(false)
+  // State — exposed readonly; the feature persistence wrappers drive the
+  // state machine through setError()/markSaved()/markInitialized() below.
+  const persistenceState = shallowRef<PersistenceState>({ status: 'idle' })
+  const hasUnsavedChanges = shallowRef(false)
+  const isInitialized = shallowRef(false)
 
   // Track if the composable scope is disposed (component unmounted)
   // This prevents pending debounced callbacks from writing stale data
   let isDisposed = false
 
-  onScopeDispose(() => {
+  tryOnScopeDispose(() => {
     isDisposed = true
   })
 
@@ -187,6 +186,22 @@ export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceCon
   }
 
   /**
+   * Surface an error from a persistence operation the wrapper ran itself
+   * (e.g. completing a workout through a different repository).
+   */
+  function setError(error: Error): void {
+    persistenceState.value = { status: 'error', error }
+  }
+
+  /**
+   * Mark the current state as persisted after a wrapper-run operation
+   * that made the in-memory data durable (e.g. completing a workout).
+   */
+  function markSaved(): void {
+    hasUnsavedChanges.value = false
+  }
+
+  /**
    * Force save the current state immediately.
    */
   async function saveNow(): Promise<void> {
@@ -195,16 +210,18 @@ export function createPersistenceCore<TDomain, TDatabase>(config: PersistenceCon
   }
 
   return {
-    // State
-    persistenceState,
-    hasUnsavedChanges,
-    isInitialized,
+    // State (readonly — transitions go through the methods below)
+    persistenceState: shallowReadonly(persistenceState),
+    hasUnsavedChanges: shallowReadonly(hasUnsavedChanges),
+    isInitialized: shallowReadonly(isInitialized),
 
     // Methods
     load,
     exists,
     discard,
     markInitialized,
+    setError,
+    markSaved,
     saveNow,
   }
 }

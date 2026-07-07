@@ -1,3 +1,4 @@
+import type { ComputedRef } from 'vue'
 import { computed } from 'vue'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 import { getTemplatesRepository } from '@/db'
@@ -20,7 +21,17 @@ function formatTemplateDate(timestamp: number | null): string {
 // Composable (Imperative Shell)
 // ============================================
 
-export function useWorkoutsList() {
+export type UseWorkoutsListReturn = {
+  templates: ComputedRef<ReadonlyArray<DbWorkoutTemplate>>
+  isLoading: ComputedRef<boolean>
+  formatTemplateDate: (timestamp: number | null) => string
+}
+
+/**
+ * Reactive list of workout templates, kept in sync with storage via a live
+ * query (including changes from other tabs).
+ */
+export function useWorkoutsList(): UseWorkoutsListReturn {
   // Primary State — live query keeps `templates` in sync with storage, including
   // changes made from other tabs, so no manual reload is needed.
   const { data: templates } = useLiveQuery<ReadonlyArray<DbWorkoutTemplate>>(() =>

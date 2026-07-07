@@ -4,26 +4,44 @@
  * Tracks minute transitions and exercise rotation throughout the EMOM duration.
  */
 
-import { computed, ref, shallowRef } from 'vue'
+import type { ComputedRef, ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { EmomBlock, EmomResult } from '@/types/blocks'
+import type { BlockTimerReturn } from './useBaseTimer'
 import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
-type EmomTimerConfig = Readonly<{
+export type UseEmomTimerOptions = Readonly<{
+  /** Called when a new minute begins (with the 1-based minute number). */
   onMinuteChange?: (minute: number) => void
+  /** Called once when the timer completes (all minutes elapsed or completed manually). */
   onComplete?: () => void
 }>
 
-export function useEmomTimer(config: EmomTimerConfig = {}) {
+export type UseEmomTimerReturn = BlockTimerReturn<EmomBlock, EmomResult> & {
+  currentMinute: Readonly<ShallowRef<number>>
+  secondsRemainingInMinute: ComputedRef<number>
+  currentExerciseIndex: Readonly<ShallowRef<number>>
+  missedMinutes: Readonly<ShallowRef<Array<number>>>
+  markMinuteMissed: (minute: number) => void
+}
+
+/**
+ * Count-up timer for an EMOM block that fires minute transitions, rotates
+ * exercises when configured, and completes when all minutes have elapsed.
+ *
+ * @param options
+ */
+export function useEmomTimer(options: UseEmomTimerOptions = {}): UseEmomTimerReturn {
   // EMOM-specific state
   const block = shallowRef<EmomBlock | null>(null)
-  const currentMinute = ref(1)
-  const currentExerciseIndex = ref(0)
-  const missedMinutes = ref<Array<number>>([])
+  const currentMinute = shallowRef(1)
+  const currentExerciseIndex = shallowRef(0)
+  const missedMinutes = shallowRef<Array<number>>([])
 
   // Base timer with tick handler for minute transitions
   const baseTimer = useBaseTimer({
     onTick: handleTick,
-    onComplete: config.onComplete,
+    onComplete: options.onComplete,
   })
 
   function handleTick() {
@@ -48,7 +66,7 @@ export function useEmomTimer(config: EmomTimerConfig = {}) {
         currentExerciseIndex.value = (currentExerciseIndex.value + 1) % block.value.exercises.length
       }
 
-      config.onMinuteChange?.(newMinute)
+      options.onMinuteChange?.(newMinute)
     }
   }
 
@@ -108,22 +126,24 @@ export function useEmomTimer(config: EmomTimerConfig = {}) {
     isPaused: baseTimer.isPaused,
     isCompleted: baseTimer.isCompleted,
     isIdle: baseTimer.isIdle,
+    isActive: baseTimer.isActive,
 
     // EMOM-specific state
-    block,
+    block: shallowReadonly(block),
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    currentMinute,
+    currentMinute: shallowReadonly(currentMinute),
     secondsRemainingInMinute,
-    currentExerciseIndex,
-    missedMinutes,
+    currentExerciseIndex: shallowReadonly(currentExerciseIndex),
+    missedMinutes: shallowReadonly(missedMinutes),
 
     // Methods
     initialize,
     start: baseTimer.start,
     pause: baseTimer.pause,
+    resume: baseTimer.resume,
     toggle: baseTimer.toggle,
     reset,
     complete,

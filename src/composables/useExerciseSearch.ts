@@ -1,8 +1,8 @@
-import type { ComputedRef, Ref } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import type { PopularExercise } from '@/data/popularExercises'
 import type { Equipment, Muscle } from '@/types/exercises'
 
-import { computed, ref } from 'vue'
+import { computed, ref, toValue } from 'vue'
 import { useExercisesStore } from '@/stores/exercises'
 
 /**
@@ -63,13 +63,20 @@ function filterBySearchQuery(
   )
 }
 
-type UseExerciseSearchOptions = {
-  muscleFilter?: Ref<Muscle | 'all'>
-  equipmentFilter?: Ref<Equipment | 'all'>
+export type UseExerciseSearchOptions = {
+  /** Filter by muscle group; a ref or getter re-filters reactively. @default undefined */
+  muscleFilter?: MaybeRefOrGetter<Muscle | 'all'>
+  /** Filter by equipment type; a ref or getter re-filters reactively. @default undefined */
+  equipmentFilter?: MaybeRefOrGetter<Equipment | 'all'>
+  /**
+   * Fields to match the search query against.
+   * @default ['name']
+   */
   searchFields?: ReadonlyArray<SearchField>
 }
 
-type UseExerciseSearchReturn = {
+export type UseExerciseSearchReturn = {
+  /** Writable on purpose: bound via v-model to the search input. */
   searchQuery: Ref<string>
   filteredExercises: ComputedRef<Array<Exercise>>
   allExercises: ComputedRef<Array<Exercise>>
@@ -80,14 +87,13 @@ type UseExerciseSearchReturn = {
  * Exercises are loaded from the store (popular exercises are seeded on app init).
  * Returns all exercises sorted alphabetically when searchQuery is empty.
  *
- * @param options.muscleFilter - Optional ref to filter by muscle group
- * @param options.searchFields - Fields to search (default: ['name'])
+ * @param options
  */
-export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerciseSearchReturn {
+export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseExerciseSearchReturn {
   const exercisesStore = useExercisesStore()
   const searchQuery = ref('')
 
-  const searchFields = options?.searchFields ?? ['name']
+  const searchFields = options.searchFields ?? ['name']
 
   const allExercises = computed<Array<Exercise>>(() => {
     return [...exercisesStore.customExercises].toSorted((a, b) => a.name.localeCompare(b.name))
@@ -96,12 +102,12 @@ export function useExerciseSearch(options?: UseExerciseSearchOptions): UseExerci
   const filteredExercises = computed(() => {
     let result = allExercises.value
 
-    if (options?.muscleFilter) {
-      result = filterByMuscle(result, options.muscleFilter.value)
+    if (options.muscleFilter) {
+      result = filterByMuscle(result, toValue(options.muscleFilter))
     }
 
-    if (options?.equipmentFilter) {
-      result = filterByEquipment(result, options.equipmentFilter.value)
+    if (options.equipmentFilter) {
+      result = filterByEquipment(result, toValue(options.equipmentFilter))
     }
 
     result = filterBySearchQuery(result, searchQuery.value, searchFields)

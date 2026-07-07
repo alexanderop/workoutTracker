@@ -1,4 +1,19 @@
-import { computed, ref, type ComputedRef, type WritableComputedRef } from 'vue'
+import {
+  computed,
+  shallowReadonly,
+  shallowRef,
+  type ComputedRef,
+  type ShallowRef,
+  type WritableComputedRef,
+} from 'vue'
+
+export type UseDialogStateReturn<T extends string> = {
+  activeDialog: Readonly<ShallowRef<T | null>>
+  createDialogModel: (dialogName: T) => WritableComputedRef<boolean>
+  open: (dialogName: T) => void
+  close: () => void
+  isOpen: (dialogName: T) => ComputedRef<boolean>
+}
 
 /**
  * Manage single-dialog-at-a-time state with computed v-model bindings.
@@ -11,9 +26,9 @@ import { computed, ref, type ComputedRef, type WritableComputedRef } from 'vue'
  * // In template: v-model:open="editDialogOpen"
  * const editDialogOpen = createDialogModel('edit')
  */
-export function useDialogState<T extends string>() {
+export function useDialogState<T extends string>(): UseDialogStateReturn<T> {
   // State
-  const activeDialog = ref<T | null>(null)
+  const activeDialog = shallowRef<T | null>(null)
 
   // Methods
 
@@ -55,7 +70,7 @@ export function useDialogState<T extends string>() {
   }
 
   return {
-    activeDialog,
+    activeDialog: shallowReadonly(activeDialog),
     createDialogModel,
     open,
     close,

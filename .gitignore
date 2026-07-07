@@ -54,6 +54,7 @@ src/__tests__/integration/__screenshots__/
 src/__tests__/a11y/__screenshots__/
 src/__tests__/browser/__screenshots__/
 src/__tests__/db/__screenshots__/
+src/__tests__/composables/**/__screenshots__/
 src/__tests__/features/**/__screenshots__/
 
 # Exclude temporary visual regression outputs (keep only platform-specific baselines)

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { effectScope } from 'vue'
 import { useBaseTimer } from '@/composables/timers/useBaseTimer'
 
 describe('useBaseTimer', () => {
@@ -8,6 +9,10 @@ describe('useBaseTimer', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('should be defined', () => {
+    expect(useBaseTimer).toBeDefined()
   })
 
   describe('initial state', () => {
@@ -26,43 +31,45 @@ describe('useBaseTimer', () => {
     })
 
     it('has all status flags false except isIdle', () => {
-      const { isRunning, isPaused, isCompleted, isIdle } = useBaseTimer()
+      const { isRunning, isPaused, isCompleted, isIdle, isActive } = useBaseTimer()
 
       expect(isIdle.value).toBe(true)
       expect(isRunning.value).toBe(false)
       expect(isPaused.value).toBe(false)
       expect(isCompleted.value).toBe(false)
+      expect(isActive.value).toBe(false)
     })
   })
 
   describe('start()', () => {
     it('transitions from idle to running', () => {
-      const { start, status, isRunning } = useBaseTimer()
+      const { start, status, isRunning, isActive } = useBaseTimer()
 
       start()
 
       expect(status.value).toBe('running')
       expect(isRunning.value).toBe(true)
+      expect(isActive.value).toBe(true)
     })
 
-    it('updates elapsed time while running', () => {
+    it('updates elapsed time while running', async () => {
       const { start, elapsedMs, elapsedSeconds } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(2500)
+      await vi.advanceTimersByTimeAsync(2500)
 
       expect(elapsedMs.value).toBeGreaterThanOrEqual(2500)
       expect(elapsedSeconds.value).toBe(2)
     })
 
-    it('does not restart if already running', () => {
+    it('does not restart if already running', async () => {
       const { start, elapsedMs } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
 
       start() // Should have no effect
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
 
       // Should continue counting, not restart from 0
       // After 2 seconds total, elapsed should be ~2000ms, not ~1000ms
@@ -83,24 +90,25 @@ describe('useBaseTimer', () => {
 
   describe('pause()', () => {
     it('transitions from running to paused', () => {
-      const { start, pause, status, isPaused } = useBaseTimer()
+      const { start, pause, status, isPaused, isActive } = useBaseTimer()
 
       start()
       pause()
 
       expect(status.value).toBe('paused')
       expect(isPaused.value).toBe(true)
+      expect(isActive.value).toBe(false)
     })
 
-    it('stops elapsed time from incrementing', () => {
+    it('stops elapsed time from incrementing', async () => {
       const { start, pause, elapsedMs } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
       pause()
       const elapsedAtPause = elapsedMs.value
 
-      vi.advanceTimersByTime(5000)
+      await vi.advanceTimersByTimeAsync(5000)
 
       expect(elapsedMs.value).toBe(elapsedAtPause)
     })
@@ -124,8 +132,41 @@ describe('useBaseTimer', () => {
     })
   })
 
-  describe('resume from pause', () => {
-    it('transitions from paused to running on start()', () => {
+  describe('resume()', () => {
+    it('transitions from paused to running', () => {
+      const { start, pause, resume, status, isRunning } = useBaseTimer()
+
+      start()
+      pause()
+      resume()
+
+      expect(status.value).toBe('running')
+      expect(isRunning.value).toBe(true)
+    })
+
+    it('continues counting from paused elapsed time', async () => {
+      const { start, pause, resume, elapsedSeconds } = useBaseTimer()
+
+      start()
+      await vi.advanceTimersByTimeAsync(3000)
+      pause()
+      await vi.advanceTimersByTimeAsync(10_000) // Pause for 10 seconds
+      resume()
+      await vi.advanceTimersByTimeAsync(2000)
+
+      // Should be ~5 seconds (3 + 2), not 15
+      expect(elapsedSeconds.value).toBe(5)
+    })
+
+    it('does nothing when idle', () => {
+      const { resume, status } = useBaseTimer()
+
+      resume()
+
+      expect(status.value).toBe('idle')
+    })
+
+    it('is also reachable through start()', () => {
       const { start, pause, status, isRunning } = useBaseTimer()
 
       start()
@@ -134,20 +175,6 @@ describe('useBaseTimer', () => {
 
       expect(status.value).toBe('running')
       expect(isRunning.value).toBe(true)
-    })
-
-    it('continues counting from paused elapsed time', () => {
-      const { start, pause, elapsedSeconds } = useBaseTimer()
-
-      start()
-      vi.advanceTimersByTime(3000)
-      pause()
-      vi.advanceTimersByTime(10_000) // Pause for 10 seconds
-      start() // Resume
-      vi.advanceTimersByTime(2000)
-
-      // Should be ~5 seconds (3 + 2), not 15
-      expect(elapsedSeconds.value).toBe(5)
     })
   })
 
@@ -201,36 +228,36 @@ describe('useBaseTimer', () => {
       expect(isIdle.value).toBe(true)
     })
 
-    it('resets elapsed time to zero', () => {
+    it('resets elapsed time to zero', async () => {
       const { start, resetState, elapsedMs, elapsedSeconds } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(5000)
+      await vi.advanceTimersByTimeAsync(5000)
       resetState()
 
       expect(elapsedMs.value).toBe(0)
       expect(elapsedSeconds.value).toBe(0)
     })
 
-    it('stops the interval', () => {
+    it('stops the interval', async () => {
       const { start, resetState, elapsedMs } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
       resetState()
-      vi.advanceTimersByTime(5000)
+      await vi.advanceTimersByTimeAsync(5000)
 
       expect(elapsedMs.value).toBe(0)
     })
 
-    it('allows starting again after reset', () => {
+    it('allows starting again after reset', async () => {
       const { start, resetState, isRunning, elapsedSeconds } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(3000)
+      await vi.advanceTimersByTimeAsync(3000)
       resetState()
       start()
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
 
       expect(isRunning.value).toBe(true)
       expect(elapsedSeconds.value).toBe(1)
@@ -248,15 +275,15 @@ describe('useBaseTimer', () => {
       expect(isCompleted.value).toBe(true)
     })
 
-    it('stops the interval', () => {
+    it('stops the interval', async () => {
       const { start, complete, elapsedMs } = useBaseTimer()
 
       start()
-      vi.advanceTimersByTime(1000)
+      await vi.advanceTimersByTimeAsync(1000)
       complete()
       const elapsedAtComplete = elapsedMs.value
 
-      vi.advanceTimersByTime(5000)
+      await vi.advanceTimersByTimeAsync(5000)
 
       expect(elapsedMs.value).toBe(elapsedAtComplete)
     })
@@ -282,25 +309,25 @@ describe('useBaseTimer', () => {
   })
 
   describe('onTick callback', () => {
-    it('calls onTick on each interval tick', () => {
+    it('calls onTick on each interval tick', async () => {
       const onTick = vi.fn()
       const { start } = useBaseTimer({ onTick })
 
       start()
-      vi.advanceTimersByTime(300) // 3 ticks at 100ms interval
+      await vi.advanceTimersByTimeAsync(300) // 3 ticks at 100ms interval
 
       expect(onTick).toHaveBeenCalledTimes(3)
     })
 
-    it('does not call onTick when paused', () => {
+    it('does not call onTick when paused', async () => {
       const onTick = vi.fn()
       const { start, pause } = useBaseTimer({ onTick })
 
       start()
-      vi.advanceTimersByTime(100)
+      await vi.advanceTimersByTimeAsync(100)
       pause()
       onTick.mockClear()
-      vi.advanceTimersByTime(500)
+      await vi.advanceTimersByTimeAsync(500)
 
       expect(onTick).not.toHaveBeenCalled()
     })
@@ -331,14 +358,34 @@ describe('useBaseTimer', () => {
   })
 
   describe('custom tick interval', () => {
-    it('respects custom tickInterval', () => {
+    it('respects custom tickInterval', async () => {
       const onTick = vi.fn()
       const { start } = useBaseTimer({ onTick, tickInterval: 50 })
 
       start()
-      vi.advanceTimersByTime(200) // 4 ticks at 50ms interval
+      await vi.advanceTimersByTimeAsync(200) // 4 ticks at 50ms interval
 
       expect(onTick).toHaveBeenCalledTimes(4)
+    })
+  })
+
+  describe('scope cleanup', () => {
+    it('stops ticking when the owning effect scope is disposed', async () => {
+      const onTick = vi.fn()
+      const scope = effectScope()
+
+      scope.run(() => {
+        const { start } = useBaseTimer({ onTick })
+        start()
+      })
+      await vi.advanceTimersByTimeAsync(300)
+      expect(onTick).toHaveBeenCalledTimes(3)
+
+      scope.stop()
+      onTick.mockClear()
+      await vi.advanceTimersByTimeAsync(500)
+
+      expect(onTick).not.toHaveBeenCalled()
     })
   })
 })

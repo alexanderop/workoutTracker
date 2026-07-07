@@ -1,11 +1,16 @@
-import { computed, ref } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import { useToggle } from '@vueuse/core'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import { generateId } from '@/db/index'
 import type { BlockExercise } from '@/types/blocks'
 
+/**
+ * Exercise list management shared by the timed-block configure dialogs
+ * (EMOM/AMRAP/ForTime): add via the exercise picker, remove, and edit
+ * prescribed reps/load. `showExercisePicker` stays writable for v-model.
+ */
 export function useTimedBlockExercises() {
-  const exercises = ref<Array<BlockExercise>>([])
+  const exercises = shallowRef<Array<BlockExercise>>([])
   const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)
 
   const canConfirm = computed(() => exercises.value.length > 0)
@@ -44,7 +49,7 @@ export function useTimedBlockExercises() {
   }
 
   return {
-    exercises,
+    exercises: shallowReadonly(exercises),
     showExercisePicker,
     canConfirm,
     handleSelectExercise,

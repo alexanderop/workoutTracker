@@ -4,27 +4,48 @@
  * Manages work/rest phase transitions and round counting for Tabata intervals.
  */
 
-import { computed, ref, shallowRef } from 'vue'
+import type { ComputedRef, ShallowRef } from 'vue'
+import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
+import type { BlockTimerReturn } from './useBaseTimer'
 import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
-type TabataTimerConfig = Readonly<{
-  onPhaseChange?: (phase: 'work' | 'rest') => void
+type TabataPhase = 'work' | 'rest'
+
+export type UseTabataTimerOptions = Readonly<{
+  /** Called when the phase flips between work and rest. */
+  onPhaseChange?: (phase: TabataPhase) => void
+  /** Called when a new round begins (with the 1-based round number). */
   onRoundChange?: (round: number) => void
+  /** Called once when the timer completes (all rounds elapsed or completed manually). */
   onComplete?: () => void
 }>
 
-export function useTabataTimer(config: TabataTimerConfig = {}) {
+export type UseTabataTimerReturn = BlockTimerReturn<TabataBlock, TabataResult> & {
+  currentRound: Readonly<ShallowRef<number>>
+  currentPhase: Readonly<ShallowRef<TabataPhase>>
+  secondsInCurrentPhase: ComputedRef<number>
+  repsPerRound: Readonly<ShallowRef<Array<number>>>
+  recordReps: (reps: number) => void
+}
+
+/**
+ * Interval timer for a Tabata block that alternates work/rest phases, counts
+ * rounds, records reps per round, and completes when all rounds have elapsed.
+ *
+ * @param options
+ */
+export function useTabataTimer(options: UseTabataTimerOptions = {}): UseTabataTimerReturn {
   // Tabata-specific state
   const block = shallowRef<TabataBlock | null>(null)
-  const currentRound = ref(1)
-  const currentPhase = ref<'work' | 'rest'>('work')
-  const repsPerRound = ref<Array<number>>([])
+  const currentRound = shallowRef(1)
+  const currentPhase = shallowRef<TabataPhase>('work')
+  const repsPerRound = shallowRef<Array<number>>([])
 
   // Base timer with tick handler for phase/round transitions
   const baseTimer = useBaseTimer({
     onTick: handleTick,
-    onComplete: config.onComplete,
+    onComplete: options.onComplete,
   })
 
   function handleTick() {
@@ -44,18 +65,18 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     // Calculate current round and phase
     const currentInterval = Math.floor(seconds / intervalLength) + 1
     const secondsInInterval = seconds % intervalLength
-    const newPhase: 'work' | 'rest' = secondsInInterval < workSeconds ? 'work' : 'rest'
+    const newPhase: TabataPhase = secondsInInterval < workSeconds ? 'work' : 'rest'
 
     // Update round
     if (currentInterval !== currentRound.value && currentInterval <= rounds) {
       currentRound.value = currentInterval
-      config.onRoundChange?.(currentInterval)
+      options.onRoundChange?.(currentInterval)
     }
 
     // Update phase
     if (newPhase !== currentPhase.value) {
       currentPhase.value = newPhase
-      config.onPhaseChange?.(newPhase)
+      options.onPhaseChange?.(newPhase)
     }
   }
 
@@ -127,22 +148,24 @@ export function useTabataTimer(config: TabataTimerConfig = {}) {
     isPaused: baseTimer.isPaused,
     isCompleted: baseTimer.isCompleted,
     isIdle: baseTimer.isIdle,
+    isActive: baseTimer.isActive,
 
     // Tabata-specific state
-    block,
+    block: shallowReadonly(block),
     remainingSeconds,
     progress,
     formattedElapsed,
     formattedRemaining,
-    currentRound,
-    currentPhase,
+    currentRound: shallowReadonly(currentRound),
+    currentPhase: shallowReadonly(currentPhase),
     secondsInCurrentPhase,
-    repsPerRound,
+    repsPerRound: shallowReadonly(repsPerRound),
 
     // Methods
     initialize,
     start: baseTimer.start,
     pause: baseTimer.pause,
+    resume: baseTimer.resume,
     toggle: baseTimer.toggle,
     reset,
     complete,

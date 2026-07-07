@@ -61,6 +61,11 @@ async function setupPwaUpdate(options: SetupOptions = {}) {
 }
 
 describe('usePwaUpdate', () => {
+  it('should be defined', async () => {
+    const { usePwaUpdate } = await import('@/composables/usePwaUpdate')
+    expect(usePwaUpdate).toBeDefined()
+  })
+
   it('does NOT call updateServiceWorker when needRefresh is false', async () => {
     const { router, cleanup } = await setupPwaUpdate()
 
