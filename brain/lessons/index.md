@@ -16,3 +16,4 @@ timestamp: 2026-06-28T08:05:00Z
 - [claude_args quoting hangs the CLI silently](./claude-args-quoting-hang.md)
 - [QA agent turn economics and crash-safe reports](./qa-agent-turn-economics.md)
 - [Gotchas from fixing the 2026-07-04 UX review](./ux-review-fix-gotchas.md)
+- [Debounced auto-save resurrects deleted drafts after completion](./debounced-autosave-resurrection.md)
