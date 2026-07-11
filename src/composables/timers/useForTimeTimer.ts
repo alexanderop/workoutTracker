@@ -8,7 +8,7 @@ import type { ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
-import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 export type UseForTimeTimerOptions = Readonly<{
   /** Called once when the timer completes (time cap reached or finished manually). */
@@ -96,14 +96,7 @@ export function useForTimeTimer(options: UseForTimeTimerOptions = {}): UseForTim
   }
 
   return {
-    // State from base timer
-    elapsedMs: baseTimer.elapsedMs,
-    elapsedSeconds: baseTimer.elapsedSeconds,
-    isRunning: baseTimer.isRunning,
-    isPaused: baseTimer.isPaused,
-    isCompleted: baseTimer.isCompleted,
-    isIdle: baseTimer.isIdle,
-    isActive: baseTimer.isActive,
+    ...blockTimerBase(baseTimer),
 
     // ForTime-specific state
     block: shallowReadonly(block),
@@ -116,10 +109,6 @@ export function useForTimeTimer(options: UseForTimeTimerOptions = {}): UseForTim
 
     // Methods
     initialize,
-    start: baseTimer.start,
-    pause: baseTimer.pause,
-    resume: baseTimer.resume,
-    toggle: baseTimer.toggle,
     reset,
     complete,
     markExerciseComplete,

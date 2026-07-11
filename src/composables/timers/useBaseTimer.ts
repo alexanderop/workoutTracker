@@ -77,6 +77,27 @@ export type BlockTimerReturn<TBlock, TResult> = Pausable & {
 }
 
 /**
+ * The base-timer state and controls that every block timer re-exposes
+ * verbatim. Spread into a block timer's return object alongside its
+ * kind-specific state and methods.
+ */
+export function blockTimerBase(baseTimer: UseBaseTimerReturn) {
+  return {
+    elapsedMs: baseTimer.elapsedMs,
+    elapsedSeconds: baseTimer.elapsedSeconds,
+    isRunning: baseTimer.isRunning,
+    isPaused: baseTimer.isPaused,
+    isCompleted: baseTimer.isCompleted,
+    isIdle: baseTimer.isIdle,
+    isActive: baseTimer.isActive,
+    start: baseTimer.start,
+    pause: baseTimer.pause,
+    resume: baseTimer.resume,
+    toggle: baseTimer.toggle,
+  }
+}
+
+/**
  * Creates formatted time computed properties for timer displays.
  * Shared by AMRAP, EMOM, and Tabata timers to reduce duplication.
  */

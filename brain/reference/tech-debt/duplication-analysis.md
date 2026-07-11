@@ -8,10 +8,23 @@ timestamp: 2026-06-28T08:10:00Z
 ---
 ## Code Duplication Analysis
 
-Generated: 2025-12-21
+Generated: 2025-12-21 · Updated: 2026-07-11
 
 **Tool:** jscpd (`pnpm cpd`)
-**Current state:** 186 clones, 5.21% duplication
+**Current state:** 260 clones, 4.60% duplicated lines (was 295 / 5.19% before the 2026-07-11 pass)
+
+### 2026-07-11 dedup pass (what was extracted)
+
+- `src/components/ConfirmDialog.vue` — shared confirm-dialog shell (title/description/cancel/confirm props, `description` slot, `confirmVariant`, `showCloseButton`). `DeleteWorkoutDialog`, `WorkoutCancelDialog`, `ResumeWorkoutDialog`, and `SettingsDeleteAllDataDialog` are now thin wrappers. New confirm-style dialogs should wrap it too.
+- `src/components/blocks/ConfigureTimedBlockDialog.vue` — shared shell for multi-exercise timed-block config dialogs (owns `useTimedBlockExercises`, exercise list, picker, actions; takes `icon` + `translationPrefix`, config form goes in the default slot). Used by the AMRAP/EMOM/ForTime configure dialogs. Tabata (single exercise) and Cardio (no exercise list) intentionally stay separate.
+- `blockTimerBase()` in `src/composables/timers/useBaseTimer.ts` — the base-timer state/controls every block timer re-exposes; spread it into a block timer's return object instead of listing the eleven fields by hand.
+- `src/data/popularTemplates.ts` — repeated strength-block literals collapsed into a local `strengthBlock()` factory (data verified identical before/after).
+
+### Remaining hotspots (from the 2026-07-11 jscpd run, production code only)
+
+- View-level template clones: `CreateTemplateView` ↔ `TemplateDetailView` (~190 lines), `ActiveProgressionView` ↔ `ProgressionDetailView`/`CreateBenchmarkView`/`CreateProgressionView` (~100 lines each), `StandaloneTimerRunner` ↔ `WorkoutBuilderMode` (~160 lines). These are page shells; extract deliberately, not mechanically.
+- `src/db/implementations/dexie/database.ts` self-duplication (~76 lines) — version-upgrade blocks; risky to dedupe, likely leave as is.
+- Timer workout views (`WorkoutAmrapView` ↔ `WorkoutEmomView`/`WorkoutTabataView`/`WorkoutForTimeView`, ~65 lines/pair) — shared circular-timer layout, but each has real domain differences; template duplication accepted for readability.
 
 ---
 
@@ -187,7 +200,7 @@ Similar timer state (elapsed, isRunning, isPaused) and control logic (start, pau
 
 #### Option A: Extract Superclass (Composition) ✅ Done
 
-`useBaseTimer` is implemented at `src/composables/timers/useBaseTimer.ts`. The four timer composables (Amrap, Emom, Tabata, ForTime) all extend it. Existing duplication is resolved.
+`useBaseTimer` is implemented at `src/composables/timers/useBaseTimer.ts`. The four timer composables (Amrap, Emom, Tabata, ForTime) all extend it, and since 2026-07-11 they spread `blockTimerBase(baseTimer)` instead of re-listing the base state/controls in their return objects. Existing duplication is resolved.
 
 ```ts
 // src/composables/timers/useBaseTimer.ts (implemented)
@@ -340,6 +353,8 @@ function createRepository<T extends { id: string }>(table: Dexie.Table<T, string
 ---
 
 ## 5. Configure Block Dialogs (Low-Medium Impact - 11 clones)
+
+**Status:** Addressed 2026-07-11 — Option B implemented as `ConfigureTimedBlockDialog.vue` (AMRAP/EMOM/ForTime) plus `ConfirmDialog.vue` for the confirm-style dialogs. Tabata and Cardio stay bespoke on purpose.
 
 **Files:**
 

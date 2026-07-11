@@ -8,7 +8,7 @@ import type { ComputedRef, ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { TabataBlock, TabataResult } from '@/types/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
-import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 type TabataPhase = 'work' | 'rest'
 
@@ -141,14 +141,7 @@ export function useTabataTimer(options: UseTabataTimerOptions = {}): UseTabataTi
   }
 
   return {
-    // State from base timer
-    elapsedMs: baseTimer.elapsedMs,
-    elapsedSeconds: baseTimer.elapsedSeconds,
-    isRunning: baseTimer.isRunning,
-    isPaused: baseTimer.isPaused,
-    isCompleted: baseTimer.isCompleted,
-    isIdle: baseTimer.isIdle,
-    isActive: baseTimer.isActive,
+    ...blockTimerBase(baseTimer),
 
     // Tabata-specific state
     block: shallowReadonly(block),
@@ -163,10 +156,6 @@ export function useTabataTimer(options: UseTabataTimerOptions = {}): UseTabataTi
 
     // Methods
     initialize,
-    start: baseTimer.start,
-    pause: baseTimer.pause,
-    resume: baseTimer.resume,
-    toggle: baseTimer.toggle,
     reset,
     complete,
     recordReps,

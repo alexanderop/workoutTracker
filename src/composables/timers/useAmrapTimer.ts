@@ -8,7 +8,7 @@ import type { ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { AmrapBlock, AmrapResult } from '@/types/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
-import { createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 
 export type UseAmrapTimerOptions = Readonly<{
   /** Called once when the timer completes (duration reached or completed manually). */
@@ -90,14 +90,7 @@ export function useAmrapTimer(options: UseAmrapTimerOptions = {}): UseAmrapTimer
   }
 
   return {
-    // State from base timer
-    elapsedMs: baseTimer.elapsedMs,
-    elapsedSeconds: baseTimer.elapsedSeconds,
-    isRunning: baseTimer.isRunning,
-    isPaused: baseTimer.isPaused,
-    isCompleted: baseTimer.isCompleted,
-    isIdle: baseTimer.isIdle,
-    isActive: baseTimer.isActive,
+    ...blockTimerBase(baseTimer),
 
     // AMRAP-specific state
     block: shallowReadonly(block),
@@ -110,10 +103,6 @@ export function useAmrapTimer(options: UseAmrapTimerOptions = {}): UseAmrapTimer
 
     // Methods
     initialize,
-    start: baseTimer.start,
-    pause: baseTimer.pause,
-    resume: baseTimer.resume,
-    toggle: baseTimer.toggle,
     reset,
     complete,
     incrementRound,

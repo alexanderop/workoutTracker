@@ -1,20 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import DialogActions from '@/components/DialogActions.vue'
-import ExercisePicker from '@/components/ExercisePicker.vue'
-import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
 import type { BlockExercise, ForTimeConfig as ForTimeBlockConfig } from '@/types/blocks'
 import { BLOCK_ICONS } from '@/types/blocks'
+import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
 import ForTimeConfigComponent, { type ForTimeConfigModel } from './ForTimeConfig.vue'
-import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
-
-const { t } = useI18n()
 
 type Emits = {
   confirm: [config: ForTimeBlockConfig, exercises: ReadonlyArray<BlockExercise>]
@@ -25,90 +14,30 @@ const emit = defineEmits<Emits>()
 
 const config = ref<ForTimeConfigModel>({ hasCap: true, capMinutes: 15 })
 
-const {
-  exercises,
-  showExercisePicker,
-  canConfirm,
-  handleSelectExercise,
-  removeExercise,
-  updateExerciseReps,
-  updateExerciseLoad,
-  reset,
-} = useTimedBlockExercises()
-
 watch(open, (isOpen) => {
   if (!isOpen) {
-	return;
+    return
   }
 
   config.value = { hasCap: true, capMinutes: 15 }
-  reset()
 })
 
-function handleConfirm() {
+function handleConfirm(exercises: ReadonlyArray<BlockExercise>) {
   emit(
     'confirm',
     { timeCapSeconds: config.value.hasCap ? config.value.capMinutes * 60 : null },
-    exercises.value,
+    exercises,
   )
-  open.value = false
-}
-
-function handleClose() {
-  open.value = false
 }
 </script>
 
 <template>
-  <Dialog v-model:open="open">
-    <MobileDialogContent
-      class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
-    >
-      <DialogHeader>
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">{{ BLOCK_ICONS.fortime }}</span>
-          <DialogTitle>{{ t('dialogs.fortimeConfig.title') }}</DialogTitle>
-        </div>
-        <DialogDescription>{{ t('dialogs.fortimeConfig.description') }}</DialogDescription>
-      </DialogHeader>
-
-      <div class="flex-1 overflow-y-auto space-y-6 py-4">
-        <ForTimeConfigComponent v-model="config" />
-
-        <Separator />
-
-        <div class="space-y-3">
-          <Label>{{ t('dialogs.fortimeConfig.exercises') }}</Label>
-
-          <TimedBlockExerciseList
-            :exercises="exercises"
-            :empty-message="t('dialogs.fortimeConfig.noExercises')"
-            :add-button-text="t('dialogs.fortimeConfig.addExercise')"
-            :rep-placeholder="t('dialogs.fortimeConfig.repPlaceholder')"
-            :load-placeholder="t('dialogs.fortimeConfig.loadPlaceholder')"
-            @update:reps="updateExerciseReps"
-            @update:load="updateExerciseLoad"
-            @remove="removeExercise"
-            @add="showExercisePicker = true"
-          />
-        </div>
-      </div>
-
-      <ExercisePicker
-        v-model:open="showExercisePicker"
-        presentation="overlay"
-        mode="multi"
-        @select="handleSelectExercise"
-      />
-
-      <DialogActions variant="inline" class="pt-4" v-slot="{ buttonClass }">
-        <Button variant="outline" :class="buttonClass" @click="handleClose">
-          {{ t('common.buttons.cancel') }}
-        </Button>
-        <Button :class="buttonClass" :disabled="!canConfirm" @click="handleConfirm">
-          {{ t('dialogs.fortimeConfig.addBlock') }}
-        </Button>
-      </DialogActions>
-    </MobileDialogContent>
-  </Dialog>
+  <ConfigureTimedBlockDialog
+    v-model:open="open"
+    :icon="BLOCK_ICONS.fortime"
+    translation-prefix="dialogs.fortimeConfig"
+    @confirm="handleConfirm"
+  >
+    <ForTimeConfigComponent v-model="config" />
+  </ConfigureTimedBlockDialog>
 </template>
