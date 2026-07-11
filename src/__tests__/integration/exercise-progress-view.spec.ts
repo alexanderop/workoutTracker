@@ -60,10 +60,10 @@ describe('ExerciseProgressView', () => {
 
       // Create workout with 100kg x 5 reps (e1RM ~112.5kg via Brzycki, rounds to 113)
       const workout = databaseWorkoutBuilder()
-        .withExerciseAndSets(
-          [createDatabaseSet({ kg: '100', reps: '5', status: 'completed' })],
-          { exerciseDefinitionId: benchPress.id, name: 'Bench Press' },
-        )
+        .withExerciseAndSets([createDatabaseSet({ kg: '100', reps: '5', status: 'completed' })], {
+          exerciseDefinitionId: benchPress.id,
+          name: 'Bench Press',
+        })
         .build()
       await getWorkoutsRepository().add(workout)
 
@@ -99,6 +99,32 @@ describe('ExerciseProgressView', () => {
       // Volume 2400kg should display as "2.4t" in the PR card
       // Use first() since the value also appears in chart axis labels
       await expect.element(page.getByText('2.4t').first()).toBeVisible()
+
+      cleanup()
+    })
+
+    it('falls back to the name from workout history when the exercise is not in the library', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+
+      // A workout logged against an exercise id that no longer exists in the
+      // exercises table (e.g. deleted custom exercise) — the view should still
+      // resolve the display name from the workout history itself.
+      const workout = databaseWorkoutBuilder()
+        .withName('Legacy Session')
+        .withExerciseAndSets([createDatabaseSet({ kg: '60', reps: '12', status: 'completed' })], {
+          exerciseDefinitionId: 'legacy-exercise-id',
+          name: 'Zercher Squat',
+        })
+        .build()
+      await getWorkoutsRepository().add(workout)
+
+      await navigateTo({
+        name: RouteNames.ExerciseProgress,
+        params: { id: 'legacy-exercise-id' },
+      })
+
+      await expect.element(page.getByRole('heading', { name: 'Zercher Squat' })).toBeVisible()
+      await expect.element(page.getByText('60 kg')).toBeVisible()
 
       cleanup()
     })
