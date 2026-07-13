@@ -4,7 +4,7 @@ title: "Workout Tracker - Product Features"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/PRODUCT_FEATURES.md
 tags: [reference]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-13T00:00:00Z
 ---
 ## Workout Tracker - Product Features
 
@@ -126,9 +126,9 @@ flowchart TB
 - Filter by muscle group (Chest, Back, Legs, Shoulders, Arms, Core)
 - Create custom exercises with:
   - Name and icon
-  - Equipment type (9 options)
+  - Equipment type (11 options)
   - Primary muscle group
-  - Exercise type (compound, isolation, stability, cardio)
+  - Exercise type (compound, isolation, stability, cardio, isometric)
   - Measurement type (weight+reps, reps only, duration, etc.)
 
 **Equipment Types**:
@@ -143,6 +143,8 @@ flowchart TB
 | Band | Resistance bands |
 | EZ-Bar | Curved barbell |
 | Hex-Bar | Trap bar exercises |
+| Club | Club/mace exercises |
+| Battle Rope | Battle rope conditioning |
 
 ### 3. Templates
 
@@ -172,9 +174,7 @@ flowchart TB
 **Capabilities**:
 
 - Create benchmark workouts (e.g., "Cindy", "Fran", "Diane")
-- Two benchmark types:
-  - **For Time**: Complete exercises as fast as possible
-  - **Rounds**: Complete multiple rounds with fixed exercises
+- Single benchmark type — **For Time**: complete the prescribed rounds/reps as fast as possible. Fixed-round workouts (e.g., "3 rounds for time") and pyramid/ladder workouts (e.g., "40-30-20-10") are both modeled as a ForTime benchmark with one or more rounds; there is no separate "Rounds" type
 - Track personal best times
 - Compare split times to previous attempts
 - View complete attempt history

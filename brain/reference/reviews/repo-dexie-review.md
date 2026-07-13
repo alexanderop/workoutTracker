@@ -16,6 +16,12 @@ timestamp: 2026-06-28T08:10:00Z
 
 Reviewed **45+ changed files** introducing a database provider/interface pattern for Dexie access. Overall the refactoring demonstrates **excellent architecture** with clean separation of concerns. Found **2 critical issues**, **8 high-priority items**, and several medium/low improvements.
 
+> **Staleness pass (2026-07-13):** This review predates the swappable-persistence-layer
+> refactor (`bf1d7d3`, "feat(db): swappable persistence layer with live queries") and the
+> dialog/timer dedup pass (`b6f30e4`). Findings below were re-verified against current code;
+> resolved/superseded items are marked inline. The `shallowRef` recommendation for
+> `workoutState.ts`/`exercises.ts` is still open and unaffected by those changes.
+
 ---
 
 ## Critical Issues

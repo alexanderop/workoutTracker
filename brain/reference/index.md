@@ -4,7 +4,7 @@ title: Reference knowledge
 description: Index of long-form reference material migrated from the former root documentation tree.
 resource: brain/reference/index.md
 tags: [brain, reference, index]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-13T00:00:00Z
 ---
 
 ## Reference Knowledge
