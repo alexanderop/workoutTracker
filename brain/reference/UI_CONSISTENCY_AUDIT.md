@@ -209,17 +209,17 @@ those files are stale; not re-verified line-by-line for the rest.
 
 ### Phase 1: High Priority (Breaking Issues)
 
-- [ ] Add i18n to BenchmarkCompletionScreen (3 strings)
-- [ ] Replace `bg-slate-*` with `bg-muted` in exercises feature (4 locations)
-- [ ] Standardize dialog footer pattern (create DialogActions component)
+- [x] Add i18n to BenchmarkCompletionScreen (3 strings) ✅ Done — component removed, i18n full (see Cross-Cutting Issue #6)
+- [x] Replace `bg-slate-*` with `bg-muted` in exercises feature (4 locations) ✅ Done (see Cross-Cutting Issue #2)
+- [x] Standardize dialog footer pattern (create DialogActions component) ✅ Done — `DialogActions` exists and is used widely (see Cross-Cutting Issue #1)
 
 ### Phase 2: Medium Priority (Consistency)
 
 - [ ] Replace custom `<button>` with Button component in:
-  - [ ] SettingsDataSection (export/import)
-  - [ ] TemplateExerciseItem (increment/decrement)
-  - [ ] BenchmarkTypeCard (type selection)
-  - [ ] CreateCustomExercise (icon picker)
+  - [x] SettingsDataSection (export/import) ✅ Done
+  - [x] TemplateExerciseItem (increment/decrement) ✅ Done (component renamed `TemplateBlockItem.vue`)
+  - [x] BenchmarkTypeCard (type selection) ✅ Done
+  - [ ] CreateCustomExercise (icon picker) — component renamed `ExerciseFormView.vue`, not re-verified 2026-07-13
 - [ ] Standardize button sizing hierarchy
 - [ ] Replace custom empty states with Empty component
 - [ ] Remove redundant close buttons (use MobileDialogContent prop)

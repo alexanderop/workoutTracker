@@ -38,7 +38,7 @@ These files used to live under the root documentation tree. The root docs folder
 - [Product Research: High-ROI Features for Hybrid Bodybuilding + CrossFit Users](./product-research-2024-12.md)
 - [shadcn-vue & Theming](./shadcn-vue-theming.md)
 - [State Machine Pattern for Exclusive UI States](./state-machine-pattern.md)
-- [Test Factory Improvements Plan](./test-factory-improvements.md)
+- [Test Factory Improvements Plan (archived — implemented)](../_archive/test-factory-improvements.md)
 - [AI-Powered QA in GitHub Actions with Claude Code Action and Agent Browser](./tutorial-claude-qa-agent-browser-github-action.md)
 - [Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions (archived)](../_archive/tutorial-claude-qa-github-action.md)
 - [User Research: Fitness Tracking Apps for Hybrid Athletes](./user-research-findings.md)
