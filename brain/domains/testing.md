@@ -16,7 +16,7 @@ Use this map before writing or debugging tests.
 - [Agent testing guide](../reference/agent/testing.md)
 - [Vitest browser mode plan](../reference/vitest-browser-mode-plan.md)
 - [Vitest browser troubleshooting](../reference/vitest-browser-troubleshooting.md)
-- [Test factory improvements](../reference/test-factory-improvements.md)
+- [Test factory improvements (archived — implemented)](../_archive/test-factory-improvements.md)
 
 ## Source Areas
 
@@ -24,7 +24,11 @@ Use this map before writing or debugging tests.
 - `src/__tests__/helpers/`
 - `src/__tests__/factories/`
 - `src/__tests__/integration/`
-- Feature-local `__tests__/` folders.
+- `src/__tests__/features/` — tests mirror `src/features/*` here (not colocated
+  in feature folders); other mirrored subfolders include `components/`,
+  `composables/`, `stores/`, `lib/`, and `db/`.
+- `src/__tests__/a11y/`, `src/__tests__/visual/`, `src/__tests__/architecture/`
+  — separate Vitest projects (`test:a11y`, `test:visual`, `test:arch`).
 
 ## Gotchas
 

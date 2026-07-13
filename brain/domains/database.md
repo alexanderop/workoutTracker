@@ -25,12 +25,19 @@ schema compatibility work.
 - `src/db/interfaces.ts`
 - `src/db/converters.ts`
 - `src/db/index.ts`
+- `src/db/provider.ts` — swappable `RepositoryProvider` (get/set/reset); Dexie
+  is the current implementation, but call sites resolve repositories through
+  this indirection so a future non-Dexie backend can be swapped in.
 - `src/db/implementations/dexie/` — concrete repository implementations
+- `src/composables/useLiveQuery.ts` — bridges repository `LiveQuery<T>`
+  (`observeX()` methods) into Vue reactivity.
 - `src/features/settings/utils/validation/`
 
 ## Gotchas
 
-- All DB access goes through repositories.
+- All DB access goes through repositories, resolved via
+  `getRepositoryProvider()` in `src/db/provider.ts` — never import
+  `src/db/implementations/dexie/*` directly outside of provider setup/tests.
 - Schema changes require converter updates for backward compatibility.
 - Large DB-backed collections should avoid unnecessarily deep reactivity.
 - `TemplatesRepository.create()` always generates its own `id` — there is no

@@ -6,6 +6,7 @@ resource: brain/reference/test-factory-improvements.md
 tags: [reference]
 timestamp: 2026-06-28T08:10:00Z
 ---
+<!-- ARCHIVED (2026-07-13): Plan fully implemented and exceeded. faker.seed() is in src/__tests__/setup.ts, benchmark.factory.ts and timedBlock.factory.ts exist (with more coverage than planned — Amrap/Emom/Tabata/Cardio blocks, Complete<T> helper in src/__tests__/helpers/types.ts), benchmark-flows.spec.ts was split into focused specs (benchmark-management, benchmark-execution, etc.) that use the factories, and no manual `Date.now()+Math.random()` ID generation remains anywhere in src/__tests__/. -->
 ## Test Factory Improvements Plan
 
 > **Assignee:** Junior Developer

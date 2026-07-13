@@ -47,6 +47,29 @@ This approach makes invalid states unrepresentable. The modal can only be in one
 
 ## Implementation
 
+**For simple mutual-exclusion dialogs/modals, don't hand-roll this — use the shared
+`useDialogState()` composable** (`src/composables/useDialogState.ts`). It already
+implements the discriminated union internally (`activeDialog: T | null`) and exposes
+`createDialogModel()`, `open()`, `close()`, and `isOpen()`. Six call sites use it today
+(e.g. `src/views/ExerciseFormView.vue`, `src/views/ActiveWorkout.vue`,
+`src/composables/useWorkoutBlockDialogs.ts`). Example:
+
+```typescript
+type ModalKind = 'equipment' | 'muscle' | 'type' | 'metrics'
+const { open: openModal, createDialogModel } = useDialogState<ModalKind>()
+
+const showEquipmentModal = createDialogModel('equipment')
+```
+
+```vue
+<ExerciseSettingsItem label="Equipment" @click="openModal('equipment')" />
+<ExerciseEquipmentSelector v-model:open="showEquipmentModal" @select="handleEquipmentSelect" />
+```
+
+The hand-rolled version below is still the right approach when a state needs to carry
+per-variant data (see "Adding State Data") or custom transition logic beyond open/close
+— e.g. `CompleteSetResult` in `useWorkout.ts` or `InitState` in `useAppInitialization.ts`.
+
 ### 1. Define the State Type
 
 Use a discriminated union with a `kind` property:

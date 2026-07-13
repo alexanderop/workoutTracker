@@ -16,6 +16,12 @@ timestamp: 2026-06-28T08:10:00Z
 
 Reviewed **45+ changed files** introducing a database provider/interface pattern for Dexie access. Overall the refactoring demonstrates **excellent architecture** with clean separation of concerns. Found **2 critical issues**, **8 high-priority items**, and several medium/low improvements.
 
+> **Staleness pass (2026-07-13):** This review predates the swappable-persistence-layer
+> refactor (`bf1d7d3`, "feat(db): swappable persistence layer with live queries") and the
+> dialog/timer dedup pass (`b6f30e4`). Findings below were re-verified against current code;
+> resolved/superseded items are marked inline. The `shallowRef` recommendation for
+> `workoutState.ts`/`exercises.ts` is still open and unaffected by those changes.
+
 ---
 
 ## Critical Issues
@@ -49,17 +55,31 @@ All `@ts-expect-error` comments in non-test source code have been removed. The c
 
 ### Accessibility: Missing ARIA Labels on Interactive Cards
 
-**Location:** `src/views/TheWorkoutsView.vue:86-107, 126-145`
+**Status (2026-07-13):** Partially fixed. `TheWorkoutsView.vue` no longer
+inlines these cards — they were extracted into `TemplateListCard.vue` and
+`BenchmarkListCard.vue`. `BenchmarkListCard.vue:42-44` now has both
+`role="button"` and `:aria-label="cardAriaLabel"` — fixed. `TemplateListCard.vue:33`
+still has `role="button"` with no `aria-label` — still open.
+
+**Location:** `src/components/TemplateListCard.vue:33`
 
 Cards with `role="button"` lack `aria-label`. Screen readers announce "button" without context.
 
-**Fix:** Add `:aria-label="t('workouts.aria.openTemplate') + ' ' + template.name"`.
+**Fix:** Add `:aria-label="t('workouts.aria.openTemplate') + ' ' + template.name"` to `TemplateListCard.vue`, mirroring `BenchmarkListCard.vue`'s `cardAriaLabel` pattern.
 
 ### Accessibility: Touch Targets Too Small
 
-**Location:** `src/features/templates/components/TemplateExerciseItem.vue:79-103`
+**Status (2026-07-13):** `TemplateExerciseItem.vue` no longer exists (renamed/
+refactored away). The closest current equivalent is the set-count stepper in
+`src/features/templates/components/TemplateBlockItem.vue:197-241`, which uses
+the shared `Button` component's `icon-lg` size (`size-10` = 40px, see
+`src/components/ui/button/index.ts:29`) — still below the 44x44px PWA
+recommendation. Needs re-verification against the actual rendered component
+rather than assumed fixed.
 
-Set count controls are 40x40px, below 44x44px PWA recommendation.
+**Location:** `src/features/templates/components/TemplateBlockItem.vue:197-241`
+
+Set count controls use the `icon-lg` Button size (40x40px), below 44x44px PWA recommendation.
 
 ---
 
@@ -67,11 +87,11 @@ Set count controls are 40x40px, below 44x44px PWA recommendation.
 
 | Priority | Issue                             | Location                | Suggestion                                         |
 | -------- | --------------------------------- | ----------------------- | -------------------------------------------------- |
-| High     | Duplicated timed block conversion | `templates.ts:119-181`  | Extract `createTimedWorkoutBlock` helper           |
+| High     | Duplicated timed block conversion | `templates.ts:145-201` (still open, was `119-181`) | Extract `createTimedWorkoutBlock` helper           |
 | High     | Repetitive block converters       | `converters.ts:153-320` | Use converter registry pattern                     |
 | Medium   | Settings setter duplication       | `settings.ts:40-75`     | Factory function `createSettingSetter()`           |
-| Medium   | Trivial repository getters        | `db/index.ts:18-40`     | Consider direct property access `db.activeWorkout` |
-| Low      | Deprecated function               | `db/index.ts:57-59`     | Remove `deleteAllData()` wrapper                   |
+| ~~Medium~~ | ~~Trivial repository getters~~ ✅ Superseded | `db/index.ts:26-76` | The swappable-persistence-layer refactor (`bf1d7d3`) made these getters load-bearing: each is now `getRepositoryProvider().<repo>`, the single seam that lets the backend be swapped at bootstrap. Direct property access would defeat that design — no longer a recommended change. |
+| ~~Low~~  | ~~Deprecated function~~ ✅ Resolved | `db/index.ts:95-97`     | `deleteAllData()` now has a TSDoc explaining it is intentionally distinct from `DataManagementRepository.deleteAll()` (it forces `preserveOnboarding: false` for user-initiated wipes). Not a redundant wrapper to remove. |
 
 ---
 
@@ -130,7 +150,7 @@ The workout state singleton shared across features is **acceptable** because it 
 1. ✅ **[CRITICAL]** Implement Zod validation schemas for data import with `.strict()` mode — Done
 2. ✅ **[CRITICAL]** Add file size limits (10MB max) on import — Done
 3. **[HIGH]** Convert `workout` and `customExercises` refs to `shallowRef` — still open
-4. **[HIGH]** Add aria-labels to interactive cards in TheWorkoutsView — open
+4. **[HIGH]** Add aria-labels to interactive cards — partially done: `BenchmarkListCard.vue` fixed, `TemplateListCard.vue` still open (see Accessibility section)
 5. ✅ **[HIGH]** Replace `@ts-expect-error` comments with proper type guards — Done (0 remaining)
 
 ---

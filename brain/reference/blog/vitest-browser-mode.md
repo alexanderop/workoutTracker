@@ -118,73 +118,39 @@ The test runs against actual Web Audio. If Chrome's AudioContext behavior change
 
 ## The Vitest Configuration
 
-I run three test projects:
+**Update:** The setup below reflects an earlier snapshot. I've since gone all-in on browser mode — the `unit`/jsdom project is gone entirely. Every project in `vitest.config.ts` now runs in Playwright/Chromium, split by concern (`default`, `a11y`, `visual`) plus a Node-only `arch` project for filesystem-based architecture checks:
 
 ```typescript
-// vitest.config.ts
+// vitest.config.ts (current shape)
 export default defineConfig({
   test: {
     projects: [
-      // Fast composable tests in jsdom (timers, state logic)
-      {
-        test: {
-          name: 'unit',
-          include: ['src/__tests__/composables/**/*.spec.ts'],
-          environment: 'jsdom',
-        },
-      },
-      // Integration tests in real browser
-      {
-        test: {
-          name: 'integration-browser',
-          include: ['src/__tests__/integration/**/*.spec.ts'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium' }],
-            headless: true,
-          },
-        },
-      },
-      // Web API tests that require real browser
-      {
-        test: {
-          name: 'browser',
-          include: ['src/__tests__/browser/**/*.spec.ts'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium' }],
-            headless: true,
-          },
-        },
-      },
+      { test: { name: 'default', include: ['src/__tests__/**/*.spec.ts'], browser: { enabled: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } },
+      { test: { name: 'a11y', include: ['src/__tests__/a11y/**/*.spec.ts'], browser: { enabled: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } },
+      { test: { name: 'visual', include: ['src/__tests__/visual/**/*.spec.ts'], browser: { enabled: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } },
+      { test: { name: 'arch', include: ['src/__tests__/architecture/**/*.test.ts'] } }, // Node, no browser — filesystem analysis
     ],
   },
 })
 ```
 
-My npm scripts:
+My npm scripts today:
 
 ```json
 {
-  "test": "vitest run --project=unit",
-  "test:browser": "vitest run --project=integration-browser",
-  "test:browser:headed": "vitest --project=integration-browser --browser.headless=false",
-  "test:all": "vitest run"
+  "test": "vitest run --project=default",
+  "test:a11y": "vitest run --project=a11y",
+  "test:visual": "vitest run --project=visual",
+  "test:arch": "vitest run --project=arch",
+  "test:headed": "vitest --project=default --browser.headless=false"
 }
 ```
 
-During development, I run `pnpm test:browser` for fast feedback. CI runs `pnpm test:all` to validate both environments.
+`pnpm test` is the everyday command now — it already runs in Chromium. There's no separate jsdom-vs-browser split to think about anymore.
 
 ## When jsdom Still Makes Sense
 
-I keep some tests in jsdom:
-
-1. **Pure composable logic** that doesn't touch DOM APIs
-2. **Tests requiring specific mock behaviors** (simulating API failures, etc.)
-
-But for integration tests that render full components and simulate user flows? Browser mode wins.
+I used to keep a few pure-composable tests in jsdom for speed. In practice the project fully moved to browser mode — even architecture/lint-style checks that don't need a DOM run as a dedicated Node-only Vitest project (`arch`) rather than jsdom. `jsdom` remains a dependency (some tooling still touches it), but there's no active jsdom test project in `vitest.config.ts` today.
 
 ## Update: Timer Audio Tests Are Faster in Browser Mode Too
 
@@ -251,7 +217,7 @@ Real browsers are faster. Real APIs are more accurate. Less mocking means less m
 
 For my workout tracker, browser mode cut test time in half and eliminated 150+ lines of mock code. The tests catch real bugs because they run against real browser behavior.
 
-**For AI-assisted development, this matters even more.** When Claude Code generates a feature, I run `pnpm test:browser` and know within 8 seconds if it works. Fast feedback keeps the conversation flowing. I describe what I want, Claude implements it, tests verify it, and I move to the next feature.
+**For AI-assisted development, this matters even more.** When Claude Code generates a feature, I run `pnpm test` and know within seconds if it works. Fast feedback keeps the conversation flowing. I describe what I want, Claude implements it, tests verify it, and I move to the next feature.
 
 The testing strategy that seemed like overhead became the foundation that makes AI-assisted development practical. I stopped reviewing every line of code. I started trusting the test suite.
 

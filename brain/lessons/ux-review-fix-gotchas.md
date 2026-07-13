@@ -17,13 +17,16 @@ these caused a real, shipped bug or a real test failure.
 
 The import validation enums in `src/features/settings/utils/validation/`
 drifted from `src/types/exercises.ts` (missing `isometric`, `battle-rope`),
-which made the app's own export fail its own import. Fix pattern in
-`primitiveSchemas.ts`: `enumValuesFrom<Union>(record: Record<Union, true>)` —
-TS checks the record bidirectionally (missing or extra keys fail
-`type-check`), and a `for...in` loop over `Record<Union, true>` narrows keys
-to `Union` with no cast (`Object.keys()` would return `string[]`). Never
-hand-copy an enum list; there was a second hand-written copy in
-`blockConfigSchemas.ts` too.
+which made the app's own export fail its own import. Fix pattern (current
+form, `primitiveSchemas.ts`): `src/types/exercises.ts` exports `as const`
+value tuples (`EQUIPMENT_VALUES`, `MUSCLE_VALUES`, `EXERCISE_TYPE_VALUES`,
+`METRICS_VALUES`) and derives the union types *from* those tuples
+(`type Equipment = (typeof EQUIPMENT_VALUES)[number]`), so the tuple is the
+single source of truth; `primitiveSchemas.ts` builds each Zod schema directly
+off the tuple (`z.enum(EQUIPMENT_VALUES)`) with no separate reconciliation
+helper. Never hand-copy an enum list — `blockConfigSchemas.ts` now imports
+`equipmentSchema`/`exerciseRotationSchema` from `primitiveSchemas.ts` instead
+of the second hand-written copy that caused the original drift.
 
 ### reka-ui NumberField commits on blur/Enter only
 

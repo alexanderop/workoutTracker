@@ -4,7 +4,7 @@ title: "Product Roadmap & Improvement Analysis"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/PRODUCT_ROADMAP.md
 tags: [reference]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-13T00:00:00Z
 ---
 ## Product Roadmap & Improvement Analysis
 
@@ -17,6 +17,13 @@ timestamp: 2026-06-28T08:10:00Z
 ## Executive Summary
 
 This document outlines product improvement opportunities for the Workout Tracker PWA. The app has strong fundamentals (offline-first, CrossFit support, no-paywall model) but lacks engagement mechanics, goal-tracking, and social features that drive retention.
+
+> **Status note (audited 2026-07-13):** This is a Dec 2024 ideation document; most phases below are still unimplemented and remain valid as proposals. A few items have since shipped in a lighter form than described here:
+>
+> - **1.1 Welcome Flow** — a simplified onboarding carousel now exists (`src/features/onboarding/`: `WelcomeSlide`, `TemplatesSlide`, `BenchmarksSlide`, `ChecklistSlide`, `PwaInstallSlide`), but it does not ask about training experience/goals or personalize starter templates as proposed.
+> - **2.5 Calendar Heat Map** — a 7-day `WeekStrip.vue` + `WorkoutCalendarSheet.vue` now show on Home (see `brain/reference/BACKLOG.md`), but there is no GitHub-style contribution heatmap; that idea is still open (see `brain/reference/plans/streak-heatmap-ticket.md`).
+> - **10.3 PR Celebrations** — `WorkoutSummaryView.vue` already shows a confetti animation, but it fires on every workout completion, not specifically on a new PR.
+> - Everything else in this document (goals, suggestions/recommendations engine, adaptive rest, social/leaderboards, analytics dashboard, plate calculator, supersets, program planner, integrations, streaks/badges) is still unimplemented as of this audit.
 
 ---
 

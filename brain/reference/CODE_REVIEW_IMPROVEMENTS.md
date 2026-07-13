@@ -343,9 +343,12 @@ export function useAmrapTimer(config: AmrapTimerConfig = {}) {
 
 ---
 
-### 4. Replace Test Icon Class Checks with Semantic Queries
+### 4. Replace Test Icon Class Checks with Semantic Queries ✅ Done
 
-**Locations:**
+**Status (2026-07-13):** No `lucide-play`/`lucide-rotate-ccw` class queries remain in
+`src/__tests__` — resolved, likely as part of general test cleanup since this review.
+
+**Locations (historical):**
 
 - `src/__tests__/integration/workout-management.spec.ts:173-174`
 - `src/__tests__/integration/workout-management.spec.ts:220-221`
@@ -478,9 +481,12 @@ function determineNextAction(blockIndex: number, completedSet: Set): CompleteSet
 
 ---
 
-### 6. Implement Block Converter Strategy Pattern
+### 6. Implement Block Converter Strategy Pattern ✅ Done
 
-**Location:** `src/db/converters.ts:289-320`
+**Status (2026-07-13):** `src/db/converters.ts` now has a `BLOCK_CONVERTERS` registry dispatching
+`toDb`/`fromDb` by `block.kind`, matching the recommendation below.
+
+**Location (historical):** `src/db/converters.ts:289-320`
 **Problem:** Repeated switch statements on `block.kind` in multiple locations
 **Impact:** Adding new block types requires changes in 5+ locations
 
@@ -777,10 +783,15 @@ export const BLOCK_ICONS: Readonly<Record<BlockKind, Component>> = {
 
 ---
 
-### 12. Remove Speculative exerciseDefinitionId from Templates
+### 12. Remove Speculative exerciseDefinitionId from Templates — Superseded, not applicable
 
-**Location:** `src/db/implementations/dexie/templates.ts`
-**Problem:** `exerciseDefinitionId: null` is always null and never used
+**Status (2026-07-13):** The opposite happened — `exerciseDefinitionId` is now used extensively
+(exercise progress views, PR tracking, benchmark exercise matching, import/export validation
+schemas) across dozens of files, not just templates. This finding no longer applies; do not
+action it.
+
+**Location (historical):** `src/db/implementations/dexie/templates.ts`
+**Problem (historical):** `exerciseDefinitionId: null` is always null and never used
 
 **Current Code:**
 
@@ -800,7 +811,16 @@ exercises: block.exercises.map((ex) => ({
 
 ### 13. Centralize Timer Configuration Constants
 
-**Locations:**
+**Status (2026-07-13):** Still not centralized — still open, but locations have drifted since the
+persistence layer was rearchitected (`bf1d7d3`):
+
+- `src/composables/timers/useRestTimer.ts:10` - `MIN_COUNT_UP_CAP_SECONDS = 300` (renamed from
+  `MAX_REST_TIME_SECONDS`)
+- `src/composables/persistence/createPersistenceCore.ts:5` - `AUTO_SAVE_DEBOUNCE_MS = 1000`
+  (moved out of `useWorkoutPersistence.ts`, which still exists but no longer owns this constant)
+- Timer tick intervals (100ms) hardcoded in multiple files
+
+**Locations (historical, at time of review):**
 
 - `src/composables/timers/useRestTimer.ts:6` - `MAX_REST_TIME_SECONDS = 300`
 - `src/features/workout/composables/useWorkoutPersistence.ts:10` - `AUTO_SAVE_DEBOUNCE_MS = 1000`
@@ -922,27 +942,34 @@ export const EQUIPMENT_LABELS: Readonly<Record<Equipment, string>> = {
 ### Phase 1: Quick Wins (1-2 days)
 
 1. [x] Add `defineModel` to `ResumeWorkoutDialog.vue` ✅ Done
-2. [ ] Add `Readonly<>` to const lookup objects
-3. [ ] Replace icon class checks in tests with semantic queries
+2. [ ] Add `Readonly<>` to const lookup objects (`BLOCK_LABELS`/`BLOCK_ICONS` in
+   `src/types/blocks.ts` still plain `Record<...>`, still open as of 2026-07-13)
+3. [x] Replace icon class checks in tests with semantic queries ✅ Done (verified 2026-07-13, no
+   `lucide-play`/`lucide-rotate-ccw` queries remain)
 
 ### Phase 2: Composable Extraction (3-5 days)
 
 4. [x] Extract `useDialogState` composable ✅ Done (`src/composables/useDialogState.ts`)
 5. [x] Extract `useBaseTimer` composable ✅ Done (`src/composables/timers/useBaseTimer.ts`)
-6. [ ] Refactor `completeSet` into smaller functions
+6. [~] Refactor `completeSet` into smaller functions — partially done: `completeSet` in
+   `src/features/workout/composables/useWorkout.ts` now delegates to a `navigateAfterSetComplete`
+   helper, though not split exactly as sketched below
 
 ### Phase 3: Architecture Improvements (1 week)
 
-7. [ ] Implement Block Converter Strategy pattern
-8. [ ] Replace primitive Block IDs with branded type
-9. [ ] Add keyboard navigation tests
-10. [ ] Centralize timer configuration
+7. [x] Implement Block Converter Strategy pattern ✅ Done (`BLOCK_CONVERTERS` in
+   `src/db/converters.ts`)
+8. [ ] Replace primitive Block IDs with branded type (still open as of 2026-07-13)
+9. [ ] Add keyboard navigation tests (no `accessibility.spec.ts` or equivalent found as of
+   2026-07-13)
+10. [ ] Centralize timer configuration (still open, see item 13 above for updated locations)
 
 ### Phase 4: Polish (ongoing)
 
 11. [ ] Add semantic structure to exercise lists
 12. [ ] Move test helpers to Page Objects
-13. [ ] Remove unused `exerciseDefinitionId` from templates
+13. [x] ~~Remove unused `exerciseDefinitionId` from templates~~ N/A — field is now actively used
+    across the codebase (see item 12 above), not removed
 14. [ ] Standardize error handling approach
 
 ---
@@ -956,8 +983,12 @@ After implementing improvements:
 | Lines in ActiveWorkout.vue   | 310     | <150   |
 | Timer composable duplication | ~80 LOC | 0 (useBaseTimer ✅) |
 | `@ts-expect-error` comments  | 0       | 0 ✅   |
-| Test icon/class queries      | 5       | 0      |
-| Block type switch statements | 3       | 1      |
+| Test icon/class queries      | 0 ✅ (was 5) | 0      |
+| Block type switch statements | 1 ✅ (BLOCK_CONVERTERS, was 3) | 1      |
+
+> Note (2026-07-13): `useWorkout.ts` itself has grown to 607 lines (from ~584 at review time)
+> rather than shrinking — the plugin-based split proposed in ADR 001 to bring it under 200 lines
+> was never adopted. See `brain/reference/adr/001-plugin-based-workout-architecture.md`.
 
 ---
 

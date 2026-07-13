@@ -108,7 +108,7 @@ watch(
 
 Wiring:
 
-- `src/App.vue:14` calls `useTheme()` once at app root so the class is applied before first paint.
+- `src/App.vue:15` calls `useTheme()` once at app root so the class is applied before first paint.
 - `src/features/settings/components/SettingsAppearanceSection.vue` exposes the toggle: `<Switch v-model="isDark" />` bound to the `isDark` computed from `useTheme()`.
 - The dark variant in CSS uses `@custom-variant dark (&:is(.dark *))` (`src/style.css:4`) — Tailwind v4 syntax, not the v3 `darkMode: 'class'` config key.
 

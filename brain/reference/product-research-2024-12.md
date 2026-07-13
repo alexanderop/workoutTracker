@@ -148,16 +148,13 @@ _Why it matters:_ CrossFitters love benchmark WODs (Fran, Murph, etc.). Comparin
 
 ---
 
-#### 8. Templates with Timed Block Support
+#### 8. Templates with Timed Block Support ✅ Shipped
 
 **Complexity:** Low | **Impact:** Medium
 
-_Why it matters:_ Known gap documented in CLAUDE.md. Templates only support strength blocks currently.
-
-**Implement:**
-
-- Add AMRAP, EMOM, Tabata, ForTime blocks to template creation
-- Allow mixed templates (strength + conditioning in one workout)
+_Status update:_ This gap has since been closed — `src/features/templates/lib/templateBlock.ts` now has
+`createTemplateAmrapBlock`, `createTemplateEmomBlock`, `createTemplateTabataBlock`, and
+`createTemplateForTimeBlock`, and mixed strength + timed templates are supported.
 
 ---
 

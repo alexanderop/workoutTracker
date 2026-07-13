@@ -4,7 +4,7 @@ title: "Project Backlog"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/BACKLOG.md
 tags: [reference]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-13T00:00:00Z
 ---
 ## Project Backlog
 
@@ -35,9 +35,9 @@ Feature ideas and improvements to tackle next.
 ## Quick Wins
 
 - [ ] **Exercise history preview** - Show last used weight in exercise picker
-- [ ] **Last workout summary** - Display on home screen
+- [x] **Last workout summary** ✅ Done — `RecentWorkoutsSection.vue` on `TheHomeView.vue`
 - [ ] **PR badges** - Show on workout summary when PR is hit
 
 ---
 
-_Last updated: December 2024_
+_Last updated: December 2024. Audited against codebase 2026-07-13 (see git history / CHANGELOG.md for what has shipped since)._
