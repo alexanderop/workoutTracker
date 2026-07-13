@@ -81,11 +81,11 @@ Set count controls use the `icon-lg` Button size (40x40px), below 44x44px PWA re
 
 | Priority | Issue                             | Location                | Suggestion                                         |
 | -------- | --------------------------------- | ----------------------- | -------------------------------------------------- |
-| High     | Duplicated timed block conversion | `templates.ts:119-181`  | Extract `createTimedWorkoutBlock` helper           |
+| High     | Duplicated timed block conversion | `templates.ts:145-201` (still open, was `119-181`) | Extract `createTimedWorkoutBlock` helper           |
 | High     | Repetitive block converters       | `converters.ts:153-320` | Use converter registry pattern                     |
 | Medium   | Settings setter duplication       | `settings.ts:40-75`     | Factory function `createSettingSetter()`           |
-| Medium   | Trivial repository getters        | `db/index.ts:18-40`     | Consider direct property access `db.activeWorkout` |
-| Low      | Deprecated function               | `db/index.ts:57-59`     | Remove `deleteAllData()` wrapper                   |
+| ~~Medium~~ | ~~Trivial repository getters~~ ✅ Superseded | `db/index.ts:26-76` | The swappable-persistence-layer refactor (`bf1d7d3`) made these getters load-bearing: each is now `getRepositoryProvider().<repo>`, the single seam that lets the backend be swapped at bootstrap. Direct property access would defeat that design — no longer a recommended change. |
+| ~~Low~~  | ~~Deprecated function~~ ✅ Resolved | `db/index.ts:95-97`     | `deleteAllData()` now has a TSDoc explaining it is intentionally distinct from `DataManagementRepository.deleteAll()` (it forces `preserveOnboarding: false` for user-initiated wipes). Not a redundant wrapper to remove. |
 
 ---
 
@@ -144,7 +144,7 @@ The workout state singleton shared across features is **acceptable** because it 
 1. ✅ **[CRITICAL]** Implement Zod validation schemas for data import with `.strict()` mode — Done
 2. ✅ **[CRITICAL]** Add file size limits (10MB max) on import — Done
 3. **[HIGH]** Convert `workout` and `customExercises` refs to `shallowRef` — still open
-4. **[HIGH]** Add aria-labels to interactive cards in TheWorkoutsView — open
+4. **[HIGH]** Add aria-labels to interactive cards — partially done: `BenchmarkListCard.vue` fixed, `TemplateListCard.vue` still open (see Accessibility section)
 5. ✅ **[HIGH]** Replace `@ts-expect-error` comments with proper type guards — Done (0 remaining)
 
 ---

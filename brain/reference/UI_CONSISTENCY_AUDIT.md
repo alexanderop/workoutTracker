@@ -22,7 +22,13 @@ These issues appear across multiple features and should be prioritized.
 
 `DialogActions` component created at `src/components/DialogActions.vue`. Pattern A dialogs (ErrorDialog, ResumeWorkoutDialog, WorkoutFinishDialog, WorkoutCancelDialog) should now use it. Configure dialogs moved to `src/components/blocks/` (ConfigureAmrapDialog.vue, ConfigureEmomDialog.vue, ConfigureTabataDialog.vue, ConfigureForTimeDialog.vue, ConfigureCardioDialog.vue).
 
-**Remaining inconsistencies** — still use ad-hoc footer patterns:
+**Status (2026-07-13): resolved.** Verified against current code — `ConfigureAmrapDialog.vue` is
+now a thin wrapper around `ConfigureTimedBlockDialog.vue`, which uses `DialogActions`.
+`WorkoutSaveTemplateDialog.vue` now imports and uses `DialogActions` (`variant="inline"`) instead
+of a plain div. `BenchmarkRepsDialog.vue` no longer exists in the codebase (component was
+renamed/removed). The table below is left for historical reference only.
+
+**Remaining inconsistencies (historical, at time of audit):**
 
 | Pattern | Location                   | Classes                                          |
 | ------- | -------------------------- | ------------------------------------------------ |
