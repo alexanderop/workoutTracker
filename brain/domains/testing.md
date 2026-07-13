@@ -24,7 +24,11 @@ Use this map before writing or debugging tests.
 - `src/__tests__/helpers/`
 - `src/__tests__/factories/`
 - `src/__tests__/integration/`
-- Feature-local `__tests__/` folders.
+- `src/__tests__/features/` — tests mirror `src/features/*` here (not colocated
+  in feature folders); other mirrored subfolders include `components/`,
+  `composables/`, `stores/`, `lib/`, and `db/`.
+- `src/__tests__/a11y/`, `src/__tests__/visual/`, `src/__tests__/architecture/`
+  — separate Vitest projects (`test:a11y`, `test:visual`, `test:arch`).
 
 ## Gotchas
 

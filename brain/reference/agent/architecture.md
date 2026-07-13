@@ -79,7 +79,7 @@ graph LR
 | `features/` | Self-contained modules | Can only import shared, NOT other features |
 | `components/` | Reusable UI components | Cannot import features |
 | `composables/` | Shared reactive logic | Cannot import features |
-| `stores/` | VueUse createGlobalState singletons (exercises.ts, settings.ts) + plain-ref singleton (workoutState.ts) | Cannot import features |
+| `stores/` | VueUse createGlobalState singletons (exercises.ts, settings.ts, toast.ts) + plain-ref singleton (workoutState.ts) | Cannot import features |
 | `db/` | Dexie + repository pattern | Cannot import features |
 
 ## Directory Structure
@@ -106,6 +106,7 @@ src/
 ├── stores/             # VueUse createGlobalState singletons + plain-ref singleton
 │   ├── exercises.ts    # createGlobalState — exercise library state
 │   ├── settings.ts     # createGlobalState — app settings state
+│   ├── toast.ts        # createGlobalState — ephemeral toast/confirmation messages
 │   └── workoutState.ts # plain-ref singleton — active workout state
 ├── db/                 # Dexie IndexedDB + repository pattern
 │   └── implementations/dexie/   # Data access layer (concrete repository implementations)

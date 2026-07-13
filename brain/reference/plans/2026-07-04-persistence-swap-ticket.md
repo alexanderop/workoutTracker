@@ -1,7 +1,7 @@
 # Ticket: Swappable Persistence Layer (Phases 1–3)
 
 > **Parent plan:** `brain/reference/plans/persistence-swap-architecture-plan.html`
-> **Status:** Ready for development
+> **Status:** Shipped — merged in commit `bf1d7d3` / PR #151, "feat(db): swappable persistence layer with live queries (phases 1-3)" (v1.29.0, 2026-07-04). This doc is now a historical record; the Jazz spike (Phase 4) referenced below has not started — see the "Out of scope" section.
 > **Audience:** Junior developer — every slice is self-contained, tested, and committed before moving on.
 
 ## Context

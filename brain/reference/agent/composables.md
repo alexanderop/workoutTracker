@@ -14,6 +14,7 @@ src/composables/                    # Shared composables
 ├── useFormDraft.ts                 # Form draft persistence via IndexedDB
 ├── useGlobalWakeLock.ts            # App-wide wake lock state
 ├── useImageConversion.ts           # Image-to-WebP conversion with error state
+├── useLiveQuery.ts                 # Generic Vue bridge for db LiveQuery<T> (subscribe on mount)
 ├── useNumberLocale.ts              # Locale-aware number formatting
 ├── usePwaUpdate.ts                 # PWA service worker update handling
 ├── useRecentWorkouts.ts            # Recent completed workouts with formatted dates
@@ -21,8 +22,10 @@ src/composables/                    # Shared composables
 ├── useSwipeableDelete.ts           # Swipe-to-delete gesture state
 ├── useTimedBlockExercises.ts       # Timed block exercise management
 ├── useTouchDevice.ts               # Touch input detection via media query
+├── useUnsavedChangesGuard.ts       # Warn/guard navigation away from unsaved forms
 ├── useVersionCheck.ts              # App version polling and update detection
 ├── useWeightDisplay.ts             # Weight unit formatting
+├── useWorkoutBlockDialogs.ts       # Shared add/configure block dialog state + routing
 ├── useWorkoutCalendar.ts           # Workout calendar data (week/month views)
 ├── useWorkoutsList.ts              # Workout template list loading and formatting
 ├── persistence/
