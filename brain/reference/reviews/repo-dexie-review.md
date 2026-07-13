@@ -49,17 +49,31 @@ All `@ts-expect-error` comments in non-test source code have been removed. The c
 
 ### Accessibility: Missing ARIA Labels on Interactive Cards
 
-**Location:** `src/views/TheWorkoutsView.vue:86-107, 126-145`
+**Status (2026-07-13):** Partially fixed. `TheWorkoutsView.vue` no longer
+inlines these cards — they were extracted into `TemplateListCard.vue` and
+`BenchmarkListCard.vue`. `BenchmarkListCard.vue:42-44` now has both
+`role="button"` and `:aria-label="cardAriaLabel"` — fixed. `TemplateListCard.vue:33`
+still has `role="button"` with no `aria-label` — still open.
+
+**Location:** `src/components/TemplateListCard.vue:33`
 
 Cards with `role="button"` lack `aria-label`. Screen readers announce "button" without context.
 
-**Fix:** Add `:aria-label="t('workouts.aria.openTemplate') + ' ' + template.name"`.
+**Fix:** Add `:aria-label="t('workouts.aria.openTemplate') + ' ' + template.name"` to `TemplateListCard.vue`, mirroring `BenchmarkListCard.vue`'s `cardAriaLabel` pattern.
 
 ### Accessibility: Touch Targets Too Small
 
-**Location:** `src/features/templates/components/TemplateExerciseItem.vue:79-103`
+**Status (2026-07-13):** `TemplateExerciseItem.vue` no longer exists (renamed/
+refactored away). The closest current equivalent is the set-count stepper in
+`src/features/templates/components/TemplateBlockItem.vue:197-241`, which uses
+the shared `Button` component's `icon-lg` size (`size-10` = 40px, see
+`src/components/ui/button/index.ts:29`) — still below the 44x44px PWA
+recommendation. Needs re-verification against the actual rendered component
+rather than assumed fixed.
 
-Set count controls are 40x40px, below 44x44px PWA recommendation.
+**Location:** `src/features/templates/components/TemplateBlockItem.vue:197-241`
+
+Set count controls use the `icon-lg` Button size (40x40px), below 44x44px PWA recommendation.
 
 ---
 

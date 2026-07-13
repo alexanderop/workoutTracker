@@ -25,54 +25,16 @@ This document identifies manual implementations that can be replaced with VueUse
 | Drag & drop         | `useSortable`           | `src/features/templates/components/TemplateBlockList.vue`, `src/features/benchmarks/components/BenchmarkExerciseList.vue` |
 | Timeout             | `useTimeoutFn`          | `src/composables/useEnterAnimation.ts`                                                    |
 | Media query         | `useMediaQuery`         | `src/composables/useScreenWakeLock.ts`                                                    |
+| Event listener      | `useEventListener`      | `src/composables/useScreenWakeLock.ts`, `src/composables/useUnsavedChangesGuard.ts`       |
+| Boolean toggle      | `useToggle`             | `src/components/blocks/ConfigureTabataDialog.vue`, `src/composables/useTimedBlockExercises.ts`, `src/features/timers/components/TimerPresetSelector.vue`, `src/features/workout/components/WorkoutDetailExerciseCard.vue` |
 
 ---
 
 ## High Priority Changes
 
-### 1. Replace Manual Event Listeners with `useEventListener`
+### 1. ~~Replace Manual Event Listeners with `useEventListener`~~ ✅ Done
 
-**File:** `src/composables/useScreenWakeLock.ts` (lines 150-162)
-
-**Before:**
-
-```typescript
-watch(sentinel, (newSentinel, oldSentinel) => {
-  if (oldSentinel) {
-    oldSentinel.removeEventListener('release', handleForcedRelease)
-  }
-  if (newSentinel && !newSentinel.released) {
-    newSentinel.addEventListener('release', handleForcedRelease)
-  }
-})
-
-onScopeDispose(() => {
-  if (sentinel.value) {
-    sentinel.value.removeEventListener('release', handleForcedRelease)
-  }
-  releaseAll()
-})
-```
-
-**After:**
-
-```typescript
-import { useEventListener } from '@vueuse/core'
-
-// Automatic cleanup - no manual removeEventListener needed
-useEventListener(sentinel, 'release', handleForcedRelease)
-
-onScopeDispose(() => {
-  releaseAll()
-})
-```
-
-**Benefits:**
-
-- Automatic cleanup on component unmount
-- Handles dynamic elements/refs automatically
-- Reduces 17 lines to 1 line
-- Prevents memory leaks
+`src/composables/useScreenWakeLock.ts:161` now uses `useEventListener(sentinel, 'release', handleForcedRelease)` for the sentinel's forced-release event, with cleanup handled automatically. `src/composables/useUnsavedChangesGuard.ts` also uses it for the `beforeunload` listener.
 
 ---
 
@@ -90,34 +52,23 @@ onScopeDispose(() => {
 
 ## Medium Priority Changes
 
-### 4. Replace Manual Keyboard Handlers with `useMagicKeys`
+### 4. Replace Manual Keyboard Handlers with `useMagicKeys` / `onKeyStroke`
 
-**File:** `src/views/TheWorkoutsView.vue` (lines 39-51)
+**Status:** Still open, but the code has moved. `TheWorkoutsView.vue` no longer builds its own list markup — templates/benchmarks/progressions/history now render through dedicated card components, each with its own near-identical manual handler:
 
-**Before:**
+- `src/components/TemplateListCard.vue`
+- `src/components/WorkoutHistoryCard.vue`
+- `src/components/RecentWorkoutCard.vue`
+- `src/features/progressions/components/ProgressionCard.vue`
+- `src/features/benchmarks/components/BenchmarkListCard.vue`
 
-```typescript
-function handleWorkoutKeyDown(event: KeyboardEvent, workoutId: string): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    navigateToWorkoutDetail(workoutId)
-  }
-}
+Each defines its own `handleActivationKey(event: KeyboardEvent)` bound via `@keydown="handleActivationKey"`, checking for `Enter`/`Space` and calling `emit('click', ...)`. This is now duplicated five times, which strengthens the original case for extracting a shared composable (e.g. `useActivateOnKey` via `onKeyStroke`) rather than weakening it — but no such extraction has happened yet.
 
-function handleTemplateKeyDown(event: KeyboardEvent, templateId: string): void {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    navigateToTemplateDetail(templateId)
-  }
-}
-```
-
-**After:**
+**Sketch (unchanged from original suggestion):**
 
 ```typescript
 import { onKeyStroke } from '@vueuse/core'
 
-// Create a reusable composable
 function useActivateOnKey(elementRef: Ref<HTMLElement | null>, onActivate: () => void) {
   onKeyStroke(
     ['Enter', ' '],
@@ -135,7 +86,7 @@ function useActivateOnKey(elementRef: Ref<HTMLElement | null>, onActivate: () =>
 **Benefits:**
 
 - Removes boilerplate condition checking
-- Centralizes keyboard handling logic
+- Centralizes keyboard handling logic (currently duplicated across 5 files)
 - More readable and maintainable
 - Consistent patterns across app
 
@@ -145,8 +96,8 @@ function useActivateOnKey(elementRef: Ref<HTMLElement | null>, onActivate: () =>
 
 **Files:**
 
-- `src/features/workout/components/WorkoutQueueItem.vue` (lines 70-71)
-- `src/features/workout/components/WorkoutBlockPlaylistItem.vue` (lines 83-84)
+- `src/features/workout/components/WorkoutQueueItem.vue` (lines 84-85) — still uses `@keydown.enter` / `@keydown.space.prevent`
+- `src/components/blocks/WorkoutBlockPlaylistItem.vue` — no longer has keyboard handling at all; selection is `@click`-only now (moved from `src/features/workout/components/` to `src/components/blocks/`)
 
 **Current (Vue event modifiers - acceptable):**
 
@@ -177,7 +128,7 @@ watch(activate, (isPressed) => {
 
 ### 6. Replace Computed Filter with `useArrayFilter`
 
-**File:** `src/features/workout/components/WorkoutDetailExerciseCard.vue` (line 19)
+**Status:** Still open. **File:** `src/features/workout/components/WorkoutDetailExerciseCard.vue` (line 20)
 
 **Before:**
 
@@ -204,50 +155,25 @@ const completedSets = useArrayFilter(
 
 ---
 
-### 7. Replace Boolean Refs with `useToggle`
+### 7. ~~Replace Boolean Refs with `useToggle`~~ ✅ Done
 
-**Files:**
+All four originally-flagged sites now use `useToggle` from `@vueuse/core`:
 
-- `src/features/workout/components/WorkoutDetailExerciseCard.vue:17`
-- `src/features/workout/components/WorkoutConfigureTabataDialog.vue:27`
-- `src/features/timers/components/TimerPresetSelector.vue:97`
-- `src/features/workout/composables/useTimedBlockExercises.ts:7`
-
-**Before:**
-
-```typescript
-const isOpen = ref(false)
-// Toggle manually
-isOpen.value = !isOpen.value
-```
-
-**After:**
-
-```typescript
-import { useToggle } from '@vueuse/core'
-
-const [isOpen, toggleOpen] = useToggle(false)
-// Use explicit methods
-toggleOpen() // toggle
-toggleOpen(true) // set to true
-toggleOpen(false) // set to false
-```
-
-**Benefits:**
-
-- More expressive API
-- Explicit toggle/on/off methods
-- Cleaner code when toggling state
+- `src/features/workout/components/WorkoutDetailExerciseCard.vue:18` — `const [isOpen] = useToggle(false)`
+- `src/components/blocks/ConfigureTabataDialog.vue:31` — `const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)` (moved from `WorkoutConfigureTabataDialog.vue`)
+- `src/features/timers/components/TimerPresetSelector.vue:98` — `const [showCustom, toggleShowCustom] = useToggle(false)`
+- `src/composables/useTimedBlockExercises.ts:14` — `const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)`
 
 ---
 
 ## Implementation Checklist
 
-- [ ] `useScreenWakeLock.ts` - Replace addEventListener with `useEventListener`
+- [x] `useScreenWakeLock.ts` - Replace addEventListener with `useEventListener` ✅ Done
 - [x] `useEnterAnimation.ts` - Replace setTimeout with `useTimeoutFn` ✅ Done
 - [x] `useScreenWakeLock.ts` - Replace matchMedia with `useMediaQuery` ✅ Done
-- [ ] `TheWorkoutsView.vue` - Consider `onKeyStroke` for keyboard handling
-- [ ] Review toggle refs for potential `useToggle` conversion
+- [x] Toggle refs converted to `useToggle` ✅ Done (see #7)
+- [ ] Card components (`TemplateListCard.vue`, `WorkoutHistoryCard.vue`, `RecentWorkoutCard.vue`, `ProgressionCard.vue`, `BenchmarkListCard.vue`) - Consider `onKeyStroke` to de-duplicate the repeated `handleActivationKey` handler
+- [ ] `WorkoutDetailExerciseCard.vue` - Consider `useArrayFilter` for `completedSets`
 
 ---
 

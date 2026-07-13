@@ -14,7 +14,13 @@ This plan addresses performance, reactivity, and best practice improvements for 
 
 ### 1.1 Fix `exists()` Methods
 
-**Files**: `src/db/implementations/dexie/activeWorkout.ts:25-28`, `activeBenchmarkWorkout.ts:26-29`
+**Status (2026-07-13):** Still open. Both methods share a `get()`-based query
+(`queryCurrent()` in `activeWorkout.ts`) rather than a `count()` check — the
+swappable-persistence-layer refactor (commit `bf1d7d3`) reused this helper for
+`get()`/`observe()`/`exists()` alike, which is convenient but keeps the
+full-object fetch this section flags.
+
+**Files**: `src/db/implementations/dexie/activeWorkout.ts:33-36`, `activeBenchmarkWorkout.ts:26-29`
 
 Replace full object fetch with count check:
 
@@ -25,6 +31,10 @@ async exists(): Promise<boolean> {
 ```
 
 ### 1.2 Remove Unused Indexes
+
+**Status (2026-07-13):** Still open — `database.ts` still indexes
+`customExercises` on `muscle, equipment` and `benchmarks` on `name` in every
+schema version block (including the current one).
 
 **File**: `src/db/implementations/dexie/database.ts`
 
@@ -47,9 +57,11 @@ benchmarks: 'id, createdAt, lastUsedAt',
 **Files**:
 
 - `src/db/implementations/dexie/benchmarks.ts` (~line 77, `startFromBenchmark`)
-- `src/db/implementations/dexie/templates.ts` (~line 237, `startFromTemplate`)
+- `src/db/implementations/dexie/templates.ts` (~line 259, `startFromTemplate`)
 
 Wrap the `lastUsedAt` update in a transaction with the read operation.
+**Status (2026-07-13):** Still open — both methods still do a sequential
+`get()` then `update()` with no `database.transaction(...)` wrapper.
 
 ---
 
@@ -91,7 +103,14 @@ Create `src/composables/useLiveSettings.ts` for settings that should sync across
 
 ### 3.1 Fix Exercise Progress Full-Table Scans
 
-**File**: `src/db/implementations/dexie/exerciseProgress.ts:82-85`
+**Status (2026-07-13):** Partially addressed. `getExerciseHistory()` now takes
+`{ limit, offset, dateRange }` and slices the result, but it still does
+`database.workouts.orderBy('completedAt').reverse().toArray()` up front —
+the full table is still loaded into memory before pagination/filtering.
+Neither Option A (denormalized index table) nor the early-exit half of
+Option B has been implemented; only the "accept a limit param" surface exists.
+
+**File**: `src/db/implementations/dexie/exerciseProgress.ts:166-176`
 
 **Option A - Denormalized Index Table** (recommended for scale):
 
@@ -152,7 +171,12 @@ For substring matching (current behavior), add limit:
 
 ### 3.3 Optimize `templates.getAll()` Sorting
 
-**File**: `src/db/implementations/dexie/templates.ts:199-207`
+**Status (2026-07-13):** Still open, and now shared with `observeAll()` too.
+Both call a `queryAll()` helper that does `.toArray()` then `.toSorted()` in
+JS (added when live-query support landed in `bf1d7d3`) — the client-side sort
+this section flags now runs on every live-query emission, not just `getAll()`.
+
+**File**: `src/db/implementations/dexie/templates.ts:207-223` (`queryAll()`)
 
 Use database ordering instead of client-side sort.
 

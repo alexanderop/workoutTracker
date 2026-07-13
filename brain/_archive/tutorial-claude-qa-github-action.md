@@ -6,6 +6,7 @@ resource: brain/reference/tutorial-claude-qa-github-action.md
 tags: [reference]
 timestamp: 2026-06-28T08:10:00Z
 ---
+<!-- ARCHIVED: describes the `.github/workflows/claude-qa-cli.yml` pipeline using `@playwright/cli`/`playwright-cli`, which no longer exists in the repo. The QA pipeline fully migrated to `agent-browser`, documented in brain/reference/tutorial-claude-qa-agent-browser-github-action.md. -->
 ## Tutorial: Automated QA with Claude Code + Playwright CLI in GitHub Actions
 
 ## The Problem

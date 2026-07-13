@@ -12,12 +12,9 @@ Research report on how teams are using AI agents for automated QA testing, with 
 
 ## Our Approach
 
-Claude Code running as "Quinn" — a QA persona — in GitHub Actions with Playwright for browser automation. Two modes:
+Claude Code running as "Quinn" — a QA persona — in GitHub Actions with browser automation. This started as two modes (an MCP-based `claude-qa.yml` and a CLI-based `claude-qa-cli.yml` using `@playwright/cli`), but the pipeline has since consolidated onto `agent-browser` via Bash commands, in `.github/workflows/claude-qa-browser.yml` (full exploration/verification) and `.github/workflows/claude-qa-test.yml` (fast pipeline check). Neither `claude-qa.yml` nor `claude-qa-cli.yml` exist anymore — see `brain/reference/tutorial-claude-qa-agent-browser-github-action.md` for the current setup.
 
-- **MCP mode** (`claude-qa.yml`): Uses `@playwright/mcp` server for interactive browser control. ~114k tokens per task.
-- **CLI mode** (`claude-qa-cli.yml`): Uses `@playwright/cli` via Bash commands. ~27k tokens per task (4x cheaper).
-
-Both produce structured JSON output (`--json-schema`) for CI pass/fail gating and post QA reports as PR comments.
+Both workflows produce structured JSON output (`--json-schema`) for CI pass/fail gating and post QA reports as PR comments.
 
 ---
 
