@@ -8,6 +8,15 @@ timestamp: 2026-06-28T08:10:00Z
 ---
 ## ADR 001: Plugin-Based Workout Architecture
 
+> **Status update (2026-07-13):** This proposal was never adopted. `src/plugins/` does not
+> exist, there is no `registerPlugin`/`getPlugin` registry, and block-type logic still lives in
+> `src/features/workout/composables/useWorkout.ts` (607 lines — larger than the ~584 lines cited
+> below) dispatching on the `WorkoutBlock` discriminated union via switch statements. The codebase
+> did adopt a narrower recommendation in the same spirit — a converter registry
+> (`BLOCK_CONVERTERS` in `src/db/converters.ts`) for `toDb`/`fromDb` dispatch — but not the full
+> plugin/component-registry architecture described here. Left as historical record; do not treat
+> the "Core Design" section below as current architecture.
+
 **Status:** Proposed
 **Date:** 2025-12-08
 **Deciders:** Alex
