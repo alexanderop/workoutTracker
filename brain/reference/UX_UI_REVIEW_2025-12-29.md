@@ -24,7 +24,10 @@ vue-i18n is now fully implemented across 12 translation domains (English + Germa
 
 `ActiveWorkoutFab.vue` (`src/features/workout/components/ActiveWorkoutFab.vue`) now shows a persistent FAB with the active workout timer on all pages when a workout is in progress.
 
-### 3. Save Button Enabled on Empty State
+### 3. Save Button Enabled on Empty State ✅ Resolved
+
+**Status (2026-07-13):** `src/views/LogPastWorkoutView.vue` now binds `:disabled="!canSave ||
+isSaving"` on the save button, with a `canSave` computed guarding against an empty exercise list.
 
 - **Location:** `src/views/LogPastWorkoutView.vue` (likely)
 - **Problem:** "Workout speichern" button appears enabled with no exercises added
@@ -77,10 +80,12 @@ vue-i18n is now fully implemented across 12 translation domains (English + Germa
 - **Problem:** All timer types have equal visual weight
 - **Fix:** Highlight most-used or add "recently used" section
 
-### 10. Bottom Navigation Icon Clarity
+### 10. Bottom Navigation Icon Clarity — still open (verified 2026-07-13)
 
-- **Location:** Global navigation
-- **Problem:** "Übungen" icon not immediately recognizable as exercises
+- **Location:** `src/components/Layout.vue`
+- **Problem:** "Übungen" (Exercises) nav item still uses the `Activity` icon, not a dumbbell.
+  Notably `Dumbbell` is imported and used for the "Workouts" nav item instead — plausibly a
+  simple icon swap would fix both this and reinforce "Workouts" too.
 - **Fix:** Consider dumbbell icon
 
 ### 11. Set Logging Table Contrast
