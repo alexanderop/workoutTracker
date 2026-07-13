@@ -86,6 +86,15 @@ Implemented after this history was written:
 - Cardio block type (sixth block kind alongside strength/AMRAP/EMOM/Tabata/ForTime)
 - Architecture tests (ArchUnitTS, feature boundary enforcement)
 - Full i18n (English + German, 12 translation domains)
+- Swappable persistence layer with live queries (`bf1d7d3`, v1.29.0) — DB access abstracted
+  behind `src/db/interfaces.ts` so the Dexie implementation can be swapped (e.g. for a future
+  sync-capable backend) without touching feature code
+- Shared dialog shells and timer base extracted to cut duplication (`b6f30e4`) — see
+  `src/composables/useDialogState.ts` and `src/composables/timers/useBaseTimer.ts`
+
+This log was written after Phase 11 and has not been kept current phase-by-phase since; treat it
+as a snapshot of early history, not a live changelog. For what actually shipped recently, check
+`CHANGELOG.md` (auto-generated from Conventional Commits) or `git log`.
 
 ---
 

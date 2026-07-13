@@ -79,18 +79,22 @@ export type CardioResult = {
 
 ## Where Blocks Are Created
 
-All creation goes through `appendBlock` in the workout composable, with one factory per kind:
+All creation goes through `appendBlock` in the workout composable (`src/features/workout/composables/useWorkout.ts:351-381`), which delegates the actual object construction to factory functions in `src/lib/workoutBlockFactory.ts`:
 
 ```ts
-// src/features/workout/composables/useWorkout.ts:402-447
-function addAmrapBlock(config, exercises) { appendBlock({ kind: 'amrap', id: generateBlockId(), config, exercises: [...exercises], result: null }) }
-function addEmomBlock(...)   { appendBlock({ kind: 'emom', ... }) }
-function addTabataBlock(...) { appendBlock({ kind: 'tabata', ..., exercise }) }   // singular
-function addForTimeBlock(...) { appendBlock({ kind: 'fortime', ... }) }
-function addCardioBlock(...) { appendBlock({ kind: 'cardio', ..., result: null }) }
+// src/features/workout/composables/useWorkout.ts:351-381
+function addAmrapBlock(config, blockExercises) {
+  appendBlock(createAmrapWorkoutBlock(config, blockExercises, getNextWorkoutBlockId(workout.value.blocks)))
+}
+function addEmomBlock(...)   { appendBlock(createEmomWorkoutBlock(...)) }
+function addTabataBlock(...) { appendBlock(createTabataWorkoutBlock(config, exercise, ...)) }   // singular
+function addForTimeBlock(...) { appendBlock(createForTimeWorkoutBlock(...)) }
+function addCardioBlock(config) { appendBlock(createCardioWorkoutBlock(config, ...)) }
 ```
 
-Strength blocks are added by `addExercise()` in the same file (line ~382), which seeds `sets` from history.
+`src/lib/workoutBlockFactory.ts` also exposes `createWorkoutBlockFromTemplate` / `createWorkoutBlockFromHistory`, used when seeding a workout from a template or repeating a past workout — both switch on `kind` and must be updated for any new block kind alongside the cascade below.
+
+Strength blocks are added by `addExercise()` in the same file (`useWorkout.ts:320`), which seeds `sets` from history.
 
 Test factories live in `src/__tests__/factories/block.factory.ts` and `timedBlock.factory.ts` (e.g. `createStrengthBlock` at line 17). The corresponding DB-shape factories are in `dbBlock.factory.ts`.
 
@@ -136,7 +140,7 @@ Cascade order — type-check after each step:
 4. **Converters** — `src/db/converters.ts`: add `myBlockToDatabase` / `databaseToMyBlock` (+ result converters), register in `BLOCK_CONVERTERS`, **and** add a `case 'my'` to both switches in `blockToDatabase` / `databaseToBlock`. Use `?? null` / `?? defaults` for backward compatibility on optional fields.
 5. **Zod validation** — `src/features/settings/utils/validation/blockSchemas.ts`, `templateSchema.ts`, and `blockConfigSchemas.ts`: add discriminated-union members so import/export validation accepts the new kind for both completed workouts and templates.
 6. **Factories** — `src/__tests__/factories/block.factory.ts`, `timedBlock.factory.ts`, `dbBlock.factory.ts`, `template.factory.ts`: add `createMyBlock` and a DB-shape variant.
-7. **Composable** — `src/features/workout/composables/useWorkout.ts`: add `addMyBlock(config, ...)` calling `appendBlock`.
+7. **Composable** — add `createMyWorkoutBlock(...)` to `src/lib/workoutBlockFactory.ts` (and a case in `createWorkoutBlockFromTemplate`/`createWorkoutBlockFromHistory` if templates/history should support it), then add `addMyBlock(config, ...)` to `src/features/workout/composables/useWorkout.ts` calling `appendBlock(createMyWorkoutBlock(...))`.
 8. **UI** — handle `kind === 'my'` in:
    - `WorkoutBuilderMode.vue`, `WorkoutQueueItem.vue`, `WorkoutActiveModeFooter.vue`
    - `WorkoutDetailExerciseCard.vue`, `WorkoutTimedBlockCard.vue` / `TimedBlockCard.vue`
