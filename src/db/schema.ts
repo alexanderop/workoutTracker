@@ -1,7 +1,24 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import type { SetStatus } from '@/types/workout'
 import type { WorkoutMode } from '@/types/blocks'
 import type { BenchmarkType } from '@/types/benchmark'
+import type { DbSet, DbStrengthBlock } from '@/blocks/strength/types'
+import type { DbForTimeBlock } from '@/blocks/fortime/types'
+import type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
+
+// Block types moved to src/blocks/<kind>/ (ADR 002: Per-Kind Block Codecs);
+// re-exported here so existing import paths keep working.
+export type { DbSet, DbStrengthBlock, DbTemplateStrengthBlock } from '@/blocks/strength/types'
+export type { DbBlockExercise, DbTemplateBlockExercise } from '@/blocks/shared/types'
+export type { DbAmrapBlock, DbAmrapResult, DbTemplateAmrapBlock } from '@/blocks/amrap/types'
+export type { DbEmomBlock, DbEmomResult, DbTemplateEmomBlock } from '@/blocks/emom/types'
+export type { DbTabataBlock, DbTabataResult, DbTemplateTabataBlock } from '@/blocks/tabata/types'
+export type {
+  DbForTimeBlock,
+  DbForTimeResult,
+  DbTemplateForTimeBlock,
+} from '@/blocks/fortime/types'
+export type { DbCardioBlock, DbCardioResult, DbTemplateCardioBlock } from '@/blocks/cardio/types'
+export type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
 
 // ============================================
 // Database Types
@@ -24,19 +41,6 @@ export type DbCustomExercise = {
 }
 
 /**
- * A set within a workout exercise (embedded in DbWorkoutExercise).
- */
-export type DbSet = {
-  id: string
-  kg: string
-  reps: string
-  duration: string
-  rir: string
-  status: SetStatus
-  completedAt: number | null
-}
-
-/**
  * An exercise instance within a workout (embedded in workouts).
  * Contains snapshot of exercise data at time of workout.
  */
@@ -50,18 +54,6 @@ export type DbWorkoutExercise = {
   targetWeight: number | null
   sets: ReadonlyArray<DbSet>
   orderIndex: number
-  image: Blob | null
-}
-
-// ============================================
-// Block Exercise (for timed blocks)
-// ============================================
-
-export type DbBlockExercise = {
-  id: string
-  name: string
-  prescribedReps: number
-  load: string | null
   image: Blob | null
 }
 
@@ -107,143 +99,6 @@ export type DbBenchmark = {
   createdAt: number
   lastUsedAt: number | null
 }
-
-// ============================================
-// Block Configurations
-// ============================================
-
-type DatabaseEmomConfig = {
-  minutes: number
-  exerciseRotation: 'each-minute' | 'full-round'
-}
-
-type DatabaseAmrapConfig = {
-  durationSeconds: number
-}
-
-type DatabaseTabataConfig = {
-  rounds: number
-  workSeconds: number
-  restSeconds: number
-}
-
-type DatabaseForTimeConfig = {
-  timeCapSeconds: number | null
-}
-
-type DatabaseCardioActivity =
-  | 'running'
-  | 'cycling'
-  | 'rowing'
-  | 'elliptical'
-  | 'swimming'
-  | 'stairclimber'
-  | 'walking'
-
-type DatabaseCardioConfig = {
-  activity: DatabaseCardioActivity
-  targetDurationSeconds: number | null
-  targetDistanceMeters: number | null
-}
-
-// ============================================
-// Block Results
-// ============================================
-
-export type DbAmrapResult = {
-  rounds: number
-  partialReps: number
-  actualDuration: number
-}
-
-export type DbEmomResult = {
-  completedMinutes: number
-  missedMinutes: ReadonlyArray<number>
-}
-
-export type DbTabataResult = {
-  repsPerRound: ReadonlyArray<number>
-}
-
-export type DbForTimeResult = {
-  completionTime: number
-  completed: boolean
-  splitTimes?: ReadonlyArray<number>
-}
-
-export type DbCardioResult = {
-  actualDurationSeconds: number
-  distanceMeters: number | null
-  avgPaceSecondsPerKm: number | null
-  calories: number | null
-  notes: string | null
-}
-
-// ============================================
-// Block Types (Discriminated Union)
-// ============================================
-
-export type DbStrengthBlock = {
-  kind: 'strength'
-  id: string
-  exerciseDefinitionId: string | null
-  name: string
-  equipment: Equipment
-  targetReps: number
-  targetDuration: number | null
-  targetWeight: number | null
-  sets: ReadonlyArray<DbSet>
-  orderIndex: number
-  image: Blob | null
-}
-
-export type DbEmomBlock = {
-  kind: 'emom'
-  id: string
-  config: DatabaseEmomConfig
-  exercises: ReadonlyArray<DbBlockExercise>
-  result: DbEmomResult | null
-  orderIndex: number
-}
-
-export type DbAmrapBlock = {
-  kind: 'amrap'
-  id: string
-  config: DatabaseAmrapConfig
-  exercises: ReadonlyArray<DbBlockExercise>
-  result: DbAmrapResult | null
-  orderIndex: number
-}
-
-export type DbTabataBlock = {
-  kind: 'tabata'
-  id: string
-  config: DatabaseTabataConfig
-  exercise: DbBlockExercise
-  result: DbTabataResult | null
-  orderIndex: number
-}
-
-export type DbForTimeBlock = {
-  kind: 'fortime'
-  id: string
-  config: DatabaseForTimeConfig
-  exercises: ReadonlyArray<DbBlockExercise>
-  result: DbForTimeResult | null
-  orderIndex: number
-}
-
-export type DbCardioBlock = {
-  kind: 'cardio'
-  id: string
-  config: DatabaseCardioConfig
-  result: DbCardioResult | null
-  orderIndex: number
-}
-
-type DatabaseTimedBlock = DbEmomBlock | DbAmrapBlock | DbTabataBlock | DbForTimeBlock
-
-export type DbWorkoutBlock = DbStrengthBlock | DatabaseTimedBlock | DbCardioBlock
 
 // ============================================
 // Active Benchmark Workout
@@ -305,69 +160,8 @@ export type DbCompletedWorkout = {
 // ============================================
 // Template Types
 // ============================================
-
-/**
- * Template block exercise (for timed blocks in templates).
- */
-export type DbTemplateBlockExercise = {
-  exerciseDefinitionId: string | null
-  name: string
-  prescribedReps: number
-  load: string | null
-  image: Blob | null
-}
-
-/**
- * Template block types (discriminated union).
- */
-export type DbTemplateStrengthBlock = {
-  kind: 'strength'
-  exerciseDefinitionId: string | null
-  name: string
-  equipment: Equipment
-  targetReps: number
-  targetDuration: number | null
-  targetWeight: number | null
-  defaultSetCount: number
-  image: Blob | null
-}
-
-type DatabaseTemplateEmomBlock = {
-  kind: 'emom'
-  config: DatabaseEmomConfig
-  exercises: ReadonlyArray<DbTemplateBlockExercise>
-}
-
-type DatabaseTemplateAmrapBlock = {
-  kind: 'amrap'
-  config: DatabaseAmrapConfig
-  exercises: ReadonlyArray<DbTemplateBlockExercise>
-}
-
-type DatabaseTemplateTabataBlock = {
-  kind: 'tabata'
-  config: DatabaseTabataConfig
-  exercise: DbTemplateBlockExercise
-}
-
-type DatabaseTemplateForTimeBlock = {
-  kind: 'fortime'
-  config: DatabaseForTimeConfig
-  exercises: ReadonlyArray<DbTemplateBlockExercise>
-}
-
-type DatabaseTemplateCardioBlock = {
-  kind: 'cardio'
-  config: DatabaseCardioConfig
-}
-
-export type DbTemplateBlock =
-  | DbTemplateStrengthBlock
-  | DatabaseTemplateEmomBlock
-  | DatabaseTemplateAmrapBlock
-  | DatabaseTemplateTabataBlock
-  | DatabaseTemplateForTimeBlock
-  | DatabaseTemplateCardioBlock
+// Per-kind template block types live in src/blocks/<kind>/types.ts and are
+// re-exported above (ADR 002 stage 5).
 
 /**
  * Workout template for reusable workout structures.

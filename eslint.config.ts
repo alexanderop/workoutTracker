@@ -426,6 +426,7 @@ export default defineConfigWithVueTs(
             // Shared code cannot import from features or views
             {
               target: [
+                './src/blocks',
                 './src/components',
                 './src/composables',
                 './src/lib',

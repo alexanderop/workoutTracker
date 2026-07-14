@@ -77,9 +77,10 @@ export function calculateNextLevel(current: DbProgression): NextLevelResult {
  * - (maxReps - startReps) / repIncrement + 1 rep phases
  * - (maxMinutes - startMinutes) / minuteIncrement time phases
  */
-function calculateTotalSessions(progression: DbProgression): number {
+export function calculateTotalSessions(progression: DbProgression): number {
   const repSessions = (progression.maxReps - progression.startReps) / progression.repIncrement + 1
-  const timeSessions = (progression.maxMinutes - progression.startMinutes) / progression.minuteIncrement
+  const timeSessions =
+    (progression.maxMinutes - progression.startMinutes) / progression.minuteIncrement
   const sessionsPerKB = repSessions + timeSessions
   return sessionsPerKB * progression.availableWeights.length
 }
@@ -93,7 +94,7 @@ export function calculateProgress(progression: DbProgression): number {
   const total = calculateTotalSessions(progression)
   if (total === 0) return 0
 
-  return Math.round((progression.sessionsCompleted / total) * 100)
+  return Math.min(100, Math.round((progression.sessionsCompleted / total) * 100))
 }
 
 /**

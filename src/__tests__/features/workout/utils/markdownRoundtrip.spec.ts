@@ -15,11 +15,7 @@ import {
   createDbCardioBlock,
   createDbCardioResult,
 } from '@/__tests__/factories/timedBlock.factory'
-
-function assertSuccess<T>(result: { success: boolean; data?: T }): asserts result is { success: true; data: T } {
-  expect(result.success).toBe(true)
-  if (!result.success) throw new Error('Parse failed unexpectedly')
-}
+import { assertSuccess } from './assertParseSuccess'
 
 describe('markdown round-trip', () => {
   describe('strength block', () => {
@@ -67,6 +63,27 @@ describe('markdown round-trip', () => {
         expect(block.sets).toHaveLength(2)
         expect(block.sets[0]).toEqual({ kg: '100', reps: '5', rir: '2' })
         expect(block.sets[1]).toEqual({ kg: '110', reps: '4', rir: '1' })
+      }
+    })
+
+    it('exports an empty RIR as a dash and round-trips it back to an empty string', () => {
+      const workout = dbWorkoutBuilder()
+        .withName('Test')
+        .withExerciseAndSets([{ kg: '80', reps: '5', rir: '' }], { name: 'Bench Press' })
+        .build()
+
+      const markdown = exportWorkoutAsMarkdown(workout)
+
+      // Empty rir must render as '-' (an empty cell used to drop the row on import)
+      expect(markdown).toContain('| 1 | 80kg | 5 | - |')
+
+      const result = parseWorkoutMarkdown(markdown)
+
+      assertSuccess(result)
+      const block = result.data.blocks[0]
+      expect(block?.kind).toBe('strength')
+      if (block?.kind === 'strength') {
+        expect(block.sets).toEqual([{ kg: '80', reps: '5', rir: '' }])
       }
     })
 
@@ -120,6 +137,36 @@ describe('markdown round-trip', () => {
         expect(block.exercises[0]).toEqual({ name: 'Burpees', prescribedReps: 10, load: null })
         expect(block.exercises[1]).toEqual({ name: 'KB Swings', prescribedReps: 15, load: '24kg' })
         expect(block.result).toEqual({ rounds: 5, partialReps: 12, actualDuration: 600_000 })
+      }
+    })
+
+    it('round-trips an exercise name containing "@" without corrupting it', () => {
+      // Regression: '@' is the load delimiter; before escaping in
+      // formatExerciseLine, "Row @ 2k pace" re-imported as name "Row"
+      const workout = dbWorkoutBuilder()
+        .withName('Escape Test')
+        .withBlock(
+          createDbAmrapBlock({
+            exercises: [
+              createDbBlockExercise({ name: 'Row @ 2k pace', prescribedReps: 10, load: '24kg' }),
+            ],
+            result: null,
+          }),
+        )
+        .build()
+
+      const markdown = exportWorkoutAsMarkdown(workout)
+      const result = parseWorkoutMarkdown(markdown)
+
+      assertSuccess(result)
+      const block = result.data.blocks[0]
+      expect(block?.kind).toBe('amrap')
+      if (block?.kind === 'amrap') {
+        expect(block.exercises[0]).toEqual({
+          name: 'Row @ 2k pace',
+          prescribedReps: 10,
+          load: '24kg',
+        })
       }
     })
   })
@@ -218,7 +265,11 @@ describe('markdown round-trip', () => {
         .withName('Cardio Test')
         .withBlock(
           createDbCardioBlock({
-            config: { activity: 'running', targetDurationSeconds: null, targetDistanceMeters: null },
+            config: {
+              activity: 'running',
+              targetDurationSeconds: null,
+              targetDistanceMeters: null,
+            },
             result: createDbCardioResult({
               actualDurationSeconds: 1800,
               distanceMeters: 5200,

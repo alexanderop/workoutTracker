@@ -2,203 +2,41 @@ import { liveQuery } from 'dexie'
 import type { CreateTemplateData, LiveQuery, TemplatesRepository } from '@/db/interfaces'
 import type {
   DbActiveWorkout,
-  DbBlockExercise,
   DbCompletedWorkout,
-  DbSet,
-  DbStrengthBlock,
   DbTemplateBlock,
-  DbTemplateBlockExercise,
-  DbTemplateStrengthBlock,
   DbWorkoutBlock,
   DbWorkoutTemplate,
 } from '@/db/schema'
+import { BLOCK_CODECS } from '@/blocks'
+import type { BlockKind, DbBlockByKind, DbTemplateBlockByKind } from '@/blocks'
 import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
-/**
- * Transform template exercises to workout block exercises with generated IDs.
- */
-function templateExercisesToWorkoutExercises(
-  exercises: ReadonlyArray<Readonly<DbTemplateBlockExercise>>,
-): Array<DbBlockExercise> {
-  return exercises.map((ex) => ({
-    id: generateId(),
-    name: ex.name,
-    prescribedReps: ex.prescribedReps,
-    load: ex.load,
-    image: ex.image,
-  }))
-}
-
-/**
- * Convert a workout block exercise to a template block exercise.
- * Extracted to avoid duplication in workoutBlockToTemplateBlock.
- */
-function blockExerciseToTemplateExercise(ex: DbBlockExercise): DbTemplateBlockExercise {
-  return {
-    exerciseDefinitionId: null,
-    name: ex.name,
-    prescribedReps: ex.prescribedReps,
-    load: ex.load,
-    image: ex.image,
-  }
-}
+// Per-kind template conversion lives in the Block Codecs (ADR 002 stage 5);
+// this module dispatches through the registry and injects ID generation,
+// which src/blocks must not import from src/db.
 
 /**
  * Convert a workout block to a template block.
+ * Generic indexed-access dispatch keeps this cast-free (see `blockToDatabase`).
  */
-function workoutBlockToTemplateBlock(block: Readonly<DbWorkoutBlock>): DbTemplateBlock {
-  switch (block.kind) {
-    case 'strength': {
-      return {
-        kind: 'strength',
-        exerciseDefinitionId: block.exerciseDefinitionId,
-        name: block.name,
-        equipment: block.equipment,
-        targetReps: block.targetReps,
-        targetDuration: block.targetDuration ?? null,
-        targetWeight: block.targetWeight ?? null,
-        defaultSetCount: block.sets.length,
-        image: block.image,
-      } satisfies DbTemplateStrengthBlock
-    }
-    case 'emom': {
-      return {
-        kind: 'emom',
-        config: block.config,
-        exercises: block.exercises.map(blockExerciseToTemplateExercise),
-      }
-    }
-    case 'amrap': {
-      return {
-        kind: 'amrap',
-        config: block.config,
-        exercises: block.exercises.map(blockExerciseToTemplateExercise),
-      }
-    }
-    case 'tabata': {
-      return {
-        kind: 'tabata',
-        config: block.config,
-        exercise: blockExerciseToTemplateExercise(block.exercise),
-      }
-    }
-    case 'fortime': {
-      return {
-        kind: 'fortime',
-        config: block.config,
-        exercises: block.exercises.map(blockExerciseToTemplateExercise),
-      }
-    }
-    case 'cardio': {
-      return {
-        kind: 'cardio',
-        config: block.config,
-      }
-    }
-    default: {
-      // Exhaustive check - if this is reached, a new block kind was added
-      const exhaustiveCheck: never = block
-      throw new Error(`Unknown block kind: ${JSON.stringify(exhaustiveCheck)}`)
-    }
-  }
+function workoutBlockToTemplateBlock<K extends BlockKind>(
+  block: Readonly<DbBlockByKind[K]>,
+): DbTemplateBlock {
+  const kind: K = block.kind
+  return BLOCK_CODECS[kind].toTemplate(block)
 }
 
 /**
  * Convert a template block to a workout block for starting a workout.
  */
-function templateBlockToWorkoutBlock(
-  templateBlock: Readonly<DbTemplateBlock>,
+function templateBlockToWorkoutBlock<K extends BlockKind>(
+  templateBlock: Readonly<DbTemplateBlockByKind[K]>,
   orderIndex: number,
 ): DbWorkoutBlock {
-  if (templateBlock.kind === 'strength') {
-    const sets: ReadonlyArray<DbSet> = Array.from(
-      { length: templateBlock.defaultSetCount },
-      (_, setIndex) => ({
-        id: generateId(),
-        kg: '',
-        reps: '',
-        duration: '',
-        rir: '',
-        status: setIndex === 0 ? 'active' : 'planned',
-        completedAt: null,
-      }),
-    )
-
-    return {
-      kind: 'strength',
-      id: generateId(),
-      exerciseDefinitionId: templateBlock.exerciseDefinitionId,
-      name: templateBlock.name,
-      equipment: templateBlock.equipment,
-      targetReps: templateBlock.targetReps,
-      targetDuration: templateBlock.targetDuration ?? null,
-      targetWeight: templateBlock.targetWeight ?? null,
-      sets,
-      orderIndex,
-      image: templateBlock.image,
-    } satisfies DbStrengthBlock
-  }
-
-  // Handle timed blocks
-  switch (templateBlock.kind) {
-    case 'emom': {
-      return {
-        kind: 'emom',
-        id: generateId(),
-        config: templateBlock.config,
-        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
-        result: null,
-        orderIndex,
-      }
-    }
-    case 'amrap': {
-      return {
-        kind: 'amrap',
-        id: generateId(),
-        config: templateBlock.config,
-        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
-        result: null,
-        orderIndex,
-      }
-    }
-    case 'tabata': {
-      return {
-        kind: 'tabata',
-        id: generateId(),
-        config: templateBlock.config,
-        exercise: {
-          id: generateId(),
-          name: templateBlock.exercise.name,
-          prescribedReps: templateBlock.exercise.prescribedReps,
-          load: templateBlock.exercise.load,
-          image: templateBlock.exercise.image,
-        },
-        result: null,
-        orderIndex,
-      }
-    }
-    case 'fortime': {
-      return {
-        kind: 'fortime',
-        id: generateId(),
-        config: templateBlock.config,
-        exercises: templateExercisesToWorkoutExercises(templateBlock.exercises),
-        result: null,
-        orderIndex,
-      }
-    }
-    case 'cardio': {
-      return {
-        kind: 'cardio',
-        id: generateId(),
-        config: templateBlock.config,
-        result: null,
-        orderIndex,
-      }
-    }
-  }
+  const kind: K = templateBlock.kind
+  return BLOCK_CODECS[kind].fromTemplate(templateBlock, { orderIndex, generateId })
 }
 
 /**

@@ -145,6 +145,12 @@ const block = new BlockBuilder('amrap').withConfig(config).withExercises(exercis
 
 ## 2. Validation Schemas (Medium Impact - 5 clones)
 
+> **RESOLVED 2026-07-13** by ADR 002 (per-kind Block Codecs): `blockSchemas.ts`
+> and `blockConfigSchemas.ts` were deleted; each kind's zod schemas (config,
+> result, block, template block) live in `src/blocks/<kind>/codec.ts` and the
+> discriminated unions are assembled once in `src/blocks/registry.ts`.
+> `templateSchema.ts` keeps only the workout-level template schema.
+
 **Files:**
 
 - `src/features/settings/utils/validation/blockSchemas.ts`
@@ -424,6 +430,12 @@ Note: Some template duplication is acceptable in Vue - over-abstracting can hurt
 ---
 
 ## 6. Type Definitions (Original Concern)
+
+> **PARTLY RESOLVED 2026-07-13** by ADR 002: per-kind domain and Db types now
+> live side by side in `src/blocks/<kind>/types.ts` (with `src/types/blocks.ts`
+> and `src/db/schema.ts` as re-export barrels), so the pair is at least
+> co-located and changes in lockstep. The structural copies (`AmrapConfig` vs
+> `DbAmrapConfig`) still exist; aliasing them remains an open call.
 
 **Files:**
 

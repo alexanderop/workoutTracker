@@ -20,11 +20,15 @@ template/import/export behavior.
 
 ## Source Areas
 
-- `src/types/blocks.ts`
+- `src/blocks/<kind>/` — canonical home of per-kind types and Block Codecs
+  (ADR 002); `src/blocks/registry.ts` is the runtime dispatch
+- `src/types/blocks.ts` — compat barrel re-exporting from `src/blocks/`
 - `src/types/workout.ts`
 - `src/features/workout/composables/useWorkout.ts`
-- `src/db/schema.ts`
-- `src/db/converters.ts`
+- `src/db/schema.ts` — workout/template/exercise DB types; block DB types are
+  re-exported from `src/blocks/`
+- `src/db/converters.ts` — workout-level conversion only; per-kind conversion
+  lives in the codecs
 - `src/features/settings/utils/validation/`
 - `src/features/workout/utils/markdownExport.ts`
 - `src/features/workout/utils/markdownImport.ts`
@@ -36,7 +40,9 @@ template/import/export behavior.
   lives in `result !== null`.
 - Tabata uses `exercise`, not `exercises`.
 - Cardio has a result but is not a timed block.
-- Converter registries and runtime switches must stay in sync.
+- The Codec Registry (`src/blocks/registry.ts`) is the single dispatch; there
+  are no parallel per-kind switches anymore. Adding a kind = new folder +
+  registry entry; the mapped registry type fails compilation until complete.
 
 ## Verification
 

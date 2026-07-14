@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { dbWorkoutBlockSchema as databaseWorkoutBlockSchema } from './blockSchemas'
+import { dbWorkoutBlockSchema as databaseWorkoutBlockSchema } from '@/blocks'
 import { safeIdSchema, safeStringSchema, timestampSchema } from './primitiveSchemas'
 
 /**

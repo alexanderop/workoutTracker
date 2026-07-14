@@ -36,6 +36,7 @@ These files used to live under the root documentation tree. The root docs folder
 - [NumericInput Feature Roadmap](./feature-roadmap-numeric-input.md)
 - [Mutation Testing: Benchmarks Integration Tests](./mutation-testing-benchmarks.md)
 - [Product Research: High-ROI Features for Hybrid Bodybuilding + CrossFit Users](./product-research-2024-12.md)
+- [Property-Based Testing with fast-check](./property-based-testing.md)
 - [shadcn-vue & Theming](./shadcn-vue-theming.md)
 - [State Machine Pattern for Exclusive UI States](./state-machine-pattern.md)
 - [Test Factory Improvements Plan (archived — implemented)](../_archive/test-factory-improvements.md)
@@ -87,3 +88,4 @@ These files used to live under the root documentation tree. The root docs folder
 ## Tech-debt References
 
 - [Code Duplication Analysis](./tech-debt/duplication-analysis.md)
+- [Compat-Barrel Retirement (ADR 002 follow-up)](./tech-debt/compat-barrel-retirement.md)

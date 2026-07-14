@@ -1,15 +1,7 @@
 import type { WorkoutBlock, WorkoutMode } from './blocks'
+import type { Set } from '@/blocks'
 
-export type SetStatus = 'completed' | 'active' | 'planned'
-
-export type Set = {
-  id: number
-  kg: string
-  reps: string
-  duration: string
-  rir: string
-  status: SetStatus
-}
+export type { Set, SetStatus } from '@/blocks'
 
 /**
  * Fields that can be prefilled from a previous set.

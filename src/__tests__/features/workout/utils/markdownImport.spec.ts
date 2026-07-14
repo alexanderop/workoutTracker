@@ -123,6 +123,23 @@ describe('markdownImport', () => {
       }
     })
 
+    it('parses legacy rows with an empty RIR cell instead of dropping the set', () => {
+      // Older exporters wrote an empty cell for an unfilled RIR
+      const lines = [
+        '| Set | Weight | Reps | RIR |',
+        '|-----|--------|------|-----|',
+        '| 1 | 80kg | 5 |  |',
+      ]
+
+      const result = parseStrengthBlock('Bench Press', lines)
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.sets).toHaveLength(1)
+        expect(result.data.sets[0]).toEqual({ kg: '80', reps: '5', rir: '' })
+      }
+    })
+
     it('handles decimal weights', () => {
       const lines = [
         '| Set | Weight | Reps | RIR |',
@@ -207,11 +224,7 @@ describe('markdownImport', () => {
     })
 
     it('parses result', () => {
-      const lines = [
-        'Duration: 12 min',
-        '',
-        '**Result:** 10/12 minutes completed',
-      ]
+      const lines = ['Duration: 12 min', '', '**Result:** 10/12 minutes completed']
 
       const result = parseEmomBlock('EMOM', lines)
 

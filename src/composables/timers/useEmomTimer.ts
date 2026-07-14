@@ -9,6 +9,7 @@ import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { EmomBlock, EmomResult } from '@/types/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
 import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import * as emomMath from './emomMath'
 
 export type UseEmomTimerOptions = Readonly<{
   /** Called when a new minute begins (with the 1-based minute number). */
@@ -48,16 +49,15 @@ export function useEmomTimer(options: UseEmomTimerOptions = {}): UseEmomTimerRet
     if (!block.value) return
 
     const seconds = baseTimer.elapsedSeconds.value
-    const totalSeconds = block.value.config.minutes * 60
 
     // Check for completion
-    if (seconds >= totalSeconds) {
+    if (emomMath.emomRemainingSeconds(block.value.config.minutes, seconds) === 0) {
       complete()
       return
     }
 
     // Check for minute transition
-    const newMinute = Math.floor(seconds / 60) + 1
+    const newMinute = emomMath.minuteForElapsed(seconds)
     if (newMinute > currentMinute.value && newMinute <= block.value.config.minutes) {
       currentMinute.value = newMinute
 
@@ -73,17 +73,16 @@ export function useEmomTimer(options: UseEmomTimerOptions = {}): UseEmomTimerRet
   // EMOM-specific computed
   const remainingSeconds = computed(() => {
     if (!block.value) return 0
-    return Math.max(0, block.value.config.minutes * 60 - baseTimer.elapsedSeconds.value)
+    return emomMath.emomRemainingSeconds(block.value.config.minutes, baseTimer.elapsedSeconds.value)
   })
 
   const secondsRemainingInMinute = computed(() => {
-    return 60 - (baseTimer.elapsedSeconds.value % 60)
+    return emomMath.secondsRemainingInMinute(baseTimer.elapsedSeconds.value)
   })
 
   const progress = computed(() => {
     if (!block.value) return 0
-    const totalSeconds = block.value.config.minutes * 60
-    return Math.min(100, (baseTimer.elapsedSeconds.value / totalSeconds) * 100)
+    return emomMath.emomProgress(block.value.config.minutes, baseTimer.elapsedSeconds.value)
   })
 
   const { formattedElapsed, formattedRemaining } = createFormattedTimeComputeds(

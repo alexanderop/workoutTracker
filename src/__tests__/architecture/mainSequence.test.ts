@@ -21,7 +21,12 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { calculateMainSequenceMetrics, getModuleMetrics } from './metrics/mainSequenceAnalyzer'
 import { getModulesByCategory } from './metrics/moduleDefinitions'
-import { formatMetricsTable, formatSummary, formatViolations, generateAsciiPlot } from './metrics/reporter'
+import {
+  formatMetricsTable,
+  formatSummary,
+  formatViolations,
+  generateAsciiPlot,
+} from './metrics/reporter'
 import type { MetricsReport } from './metrics/types'
 
 const PROJECT_ROOT = path.resolve(__dirname, '../../..')
@@ -65,8 +70,17 @@ describe('main sequence fitness functions', () => {
       // Should be stable (few outgoing dependencies)
       expect(typesMetrics?.instability.instability).toBeLessThan(0.3)
 
-      // Should be on or near Main Sequence
-      expect(typesMetrics?.distance).toBeLessThan(0.25)
+      // Should be on or near Main Sequence. Since ADR 002 the block types
+      // live in src/blocks and src/types partly re-exports them; re-export
+      // statements count as neither abstract nor concrete, so the threshold
+      // carries a small buffer over the 0.25 core default (current: 0.271).
+      expect(typesMetrics?.distance).toBeLessThan(0.3)
+    })
+
+    it('blocks should be close to Main Sequence (D < 0.25)', () => {
+      const blocksMetrics = getModuleMetrics(getReport(), 'blocks')
+      expect(blocksMetrics).toBeDefined()
+      expect(blocksMetrics?.distance).toBeLessThan(0.25)
     })
   })
 
@@ -147,18 +161,34 @@ describe('main sequence fitness functions', () => {
   // =============================================================================
 
   describe('dependency direction', () => {
-    it('types module should not depend on any other internal modules', () => {
-      const typesMetrics = getModuleMetrics(getReport(), 'types')
-      expect(typesMetrics).toBeDefined()
-      // Types is foundational - should have no internal dependencies
-      expect(typesMetrics?.instability.dependsOn.length).toBe(0)
+    it('blocks module should not depend on any other internal modules except types', () => {
+      const blocksMetrics = getModuleMetrics(getReport(), 'blocks')
+      expect(blocksMetrics).toBeDefined()
+      // Blocks is the foundational block model (ADR 002) - it may reach the
+      // kind-neutral leaf types (Equipment) but nothing else
+      const allowedDependencies = ['types']
+      for (const dependency of blocksMetrics?.instability.dependsOn ?? []) {
+        expect(allowedDependencies).toContain(dependency)
+      }
     })
 
-    it('db module should only depend on types and lib', () => {
+    it('types module should only depend on blocks', () => {
+      const typesMetrics = getModuleMetrics(getReport(), 'types')
+      expect(typesMetrics).toBeDefined()
+      // Types re-exports the per-kind block types from src/blocks (ADR 002)
+      // but must not depend on anything else
+      const allowedDependencies = ['blocks']
+      for (const dependency of typesMetrics?.instability.dependsOn ?? []) {
+        expect(allowedDependencies).toContain(dependency)
+      }
+    })
+
+    it('db module should only depend on types, blocks, and lib', () => {
       const databaseMetrics = getModuleMetrics(getReport(), 'db')
       expect(databaseMetrics).toBeDefined()
-      // DB can depend on types and lib utilities, but nothing else
-      const allowedDependencies = ['types', 'lib']
+      // DB dispatches block conversion through the Codec Registry (ADR 002)
+      // and can use lib utilities, but nothing else
+      const allowedDependencies = ['types', 'blocks', 'lib']
       for (const dependency of databaseMetrics?.instability.dependsOn ?? []) {
         expect(allowedDependencies).toContain(dependency)
       }

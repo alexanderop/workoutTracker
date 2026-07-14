@@ -37,7 +37,15 @@ const FEATURES = [
   'log-past-workout',
 ] as const
 
-const SHARED_FOLDERS = ['components', 'composables', 'lib', 'db', 'types', 'stores'] as const
+const SHARED_FOLDERS = [
+  'blocks',
+  'components',
+  'composables',
+  'lib',
+  'db',
+  'types',
+  'stores',
+] as const
 
 // =============================================================================
 // CIRCULAR DEPENDENCIES
@@ -61,6 +69,11 @@ describe('circular dependencies', () => {
 
   it('database layer should be free of cycles', async () => {
     const rule = projectFiles().inFolder('src/db/**').should().haveNoCycles()
+    await expect(rule).toPassAsync()
+  })
+
+  it('block codecs should be free of cycles', async () => {
+    const rule = projectFiles().inFolder('src/blocks/**').should().haveNoCycles()
     await expect(rule).toPassAsync()
   })
 })

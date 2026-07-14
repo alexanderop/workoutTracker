@@ -95,6 +95,7 @@
     "eslint-plugin-unicorn": "catalog:lint",
     "eslint-plugin-vue": "catalog:lint",
     "fake-indexeddb": "catalog:testing",
+    "fast-check": "catalog:testing",
     "husky": "catalog:build",
     "jiti": "catalog:build",
     "jscpd": "catalog:lint",

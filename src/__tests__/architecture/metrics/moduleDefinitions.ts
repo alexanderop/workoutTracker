@@ -28,7 +28,13 @@ const CORE_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'types',
     path: 'src/types',
     category: 'core',
-    maxDistance: 0.25, // Current: 0.204 - tight margin, allow some buffer
+    maxDistance: 0.3, // Current: 0.271 - re-export barrel over src/blocks since ADR 002
+  },
+  {
+    name: 'blocks',
+    path: 'src/blocks',
+    category: 'core',
+    maxDistance: 0.25, // New home of per-kind block types and codecs (ADR 002)
   },
 ]
 

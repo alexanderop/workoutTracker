@@ -13,13 +13,15 @@ import { createDbTemplateCardioBlock as createDatabaseTemplateCardioBlock } from
 /**
  * Creates a valid export data structure for testing.
  */
-function createValidExportData(overrides: {
-  settings?: Array<unknown>
-  customExercises?: Array<unknown>
-  templates?: Array<unknown>
-  workouts?: Array<unknown>
-  benchmarks?: Array<unknown>
-} = {}) {
+function createValidExportData(
+  overrides: {
+    settings?: Array<unknown>
+    customExercises?: Array<unknown>
+    templates?: Array<unknown>
+    workouts?: Array<unknown>
+    benchmarks?: Array<unknown>
+  } = {},
+) {
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -141,6 +143,24 @@ describe('Export Data Validation', () => {
       })
 
       const result = exportDataSchema.safeParse(exportData)
+      expect(result.success).toBe(true)
+    })
+
+    it('accepts a completed benchmark workout whose fortime result includes splitTimes', () => {
+      const forTimeBlock = {
+        kind: 'fortime',
+        id: 'block-1',
+        config: { timeCapSeconds: null },
+        exercises: [{ id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, image: null }],
+        result: { completionTime: 46, completed: true, splitTimes: [8, 38] },
+        orderIndex: 0,
+      }
+      const exportData = createValidExportData({
+        workouts: [createValidWorkout({ blocks: [forTimeBlock] })],
+      })
+
+      const result = exportDataSchema.safeParse(exportData)
+
       expect(result.success).toBe(true)
     })
 
@@ -361,7 +381,7 @@ describe('Exercise Schema Validation', () => {
 
     it('rejects invalid equipment', () => {
       const result = dbCustomExerciseSchema.safeParse(
-        createValidExercise({ equipment: 'lightsaber' })
+        createValidExercise({ equipment: 'lightsaber' }),
       )
       expect(result.success).toBe(false)
     })
@@ -419,9 +439,7 @@ describe('Block Schema Validation', () => {
         kind: 'amrap',
         id: 'block-1',
         config: { durationSeconds: 600 },
-        exercises: [
-          { id: 'ex-1', name: 'Burpee', prescribedReps: 10, load: null, image: null },
-        ],
+        exercises: [{ id: 'ex-1', name: 'Burpee', prescribedReps: 10, load: null, image: null }],
         result: null,
         orderIndex: 0,
       }
@@ -462,9 +480,7 @@ describe('Block Schema Validation', () => {
         kind: 'fortime',
         id: 'block-1',
         config: { timeCapSeconds: 1200 },
-        exercises: [
-          { id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, image: null },
-        ],
+        exercises: [{ id: 'ex-1', name: 'Row', prescribedReps: 1000, load: null, image: null }],
         result: null,
         orderIndex: 0,
       }
@@ -571,7 +587,7 @@ describe('Workout Schema Validation', () => {
 
     it('rejects workout with duration exceeding max', () => {
       const result = dbCompletedWorkoutSchema.safeParse(
-        createValidWorkout({ durationSeconds: 86_401 })
+        createValidWorkout({ durationSeconds: 86_401 }),
       )
       expect(result.success).toBe(false)
     })
@@ -599,7 +615,7 @@ describe('Size Limits', () => {
 
   it('rejects exercises array exceeding max (500)', () => {
     const customExercises = Array.from({ length: 501 }, (_, index) =>
-      createValidExercise({ id: `exercise-${index}` })
+      createValidExercise({ id: `exercise-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ customExercises }))
     expect(result.success).toBe(false)
@@ -607,7 +623,7 @@ describe('Size Limits', () => {
 
   it('rejects templates array exceeding max (100)', () => {
     const templates = Array.from({ length: 101 }, (_, index) =>
-      createValidTemplate({ id: `template-${index}` })
+      createValidTemplate({ id: `template-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ templates }))
     expect(result.success).toBe(false)
@@ -615,7 +631,7 @@ describe('Size Limits', () => {
 
   it('rejects workouts array exceeding max (5000)', () => {
     const workouts = Array.from({ length: 5001 }, (_, index) =>
-      createValidWorkout({ id: `workout-${index}` })
+      createValidWorkout({ id: `workout-${index}` }),
     )
     const result = exportDataSchema.safeParse(createValidExportData({ workouts }))
     expect(result.success).toBe(false)
