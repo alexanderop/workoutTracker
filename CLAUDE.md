@@ -72,6 +72,19 @@ pnpm -s pr:comments --json | jq '.[] | select(.user == "coderabbitai[bot]")'
 
 The `-s` matters: without it pnpm prints a run banner to stdout that corrupts piped output.
 
+### Responding to review feedback
+
+After addressing (or deliberately skipping) a review finding, reply **in the thread**, not in a top-level PR comment — that's what links your action to the finding and lets CodeRabbit verify the fix on its incremental re-review:
+
+```bash
+# Reply to a thread (id = the root comment's id from pr:comments --json url, or the REST id)
+gh api -X POST repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies -f body='Fixed in <sha> — <what changed>.'
+
+# For skipped findings, state the reason in the reply instead.
+```
+
+Resolve a thread only when the finding is actually addressed. CodeRabbit auto-resolves threads it can verify as fixed after a push; for the rest, resolve via GraphQL `resolveReviewThread` using the thread id from the `reviewThreads` query.
+
 ## Further Reading
 
 **IMPORTANT:** Before reading scattered docs, start at `brain/index.md`. The
