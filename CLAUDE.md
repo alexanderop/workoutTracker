@@ -77,7 +77,7 @@ The `-s` matters: without it pnpm prints a run banner to stdout that corrupts pi
 After addressing (or deliberately skipping) a review finding, reply **in the thread**, not in a top-level PR comment — that's what links your action to the finding and lets CodeRabbit verify the fix on its incremental re-review:
 
 ```bash
-# Reply to a thread (id = the root comment's id from pr:comments --json url, or the REST id)
+# Reply to a thread (comment_id = the `commentId` field from pr:comments --json)
 gh api -X POST repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies -f body='Fixed in <sha> — <what changed>.'
 
 # For skipped findings, state the reason in the reply instead.

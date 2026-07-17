@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 5
     if: |
       github.event.pull_request.user.login == 'claude[bot]' ||
-      contains(github.event.pull_request.body, '🤖 Generated with')
+      contains(github.event.pull_request.body || '', '🤖 Generated with')
     permissions:
       pull-requests: write # apply the label via the API
     steps:

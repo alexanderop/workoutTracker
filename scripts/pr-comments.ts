@@ -19,7 +19,9 @@
 // filtered out. Pass --include-resolved to restore resolved threads.
 //
 // JSON mode emits one object per entry with fields:
-//   { when, user, tag, state?, suggestion?, location?, body, url?, resolved?, outdated? }
+//   { when, user, tag, state?, suggestion?, location?, commentId?, body, url?, resolved?, outdated? }
+// commentId is the REST id of line comments / replies — pass it to
+// `gh api .../pulls/{pr}/comments/{commentId}/replies` to answer a thread.
 // resolved/outdated come from GitHub's GraphQL reviewThreads and are only
 // present on line comments / replies whose thread state was successfully
 // fetched. They're omitted entirely on issue comments, review verdicts, and
@@ -343,6 +345,9 @@ type Entry = {
   state?: string
   suggestion?: boolean
   location?: string
+  // REST id of a line comment / reply — the handle for posting an in-thread
+  // reply via gh api .../pulls/{pr}/comments/{commentId}/replies.
+  commentId?: number
   body: string
   url?: string
   // Present only on line-level entries whose thread state we successfully
@@ -396,6 +401,7 @@ for (const c of reviewComments) {
     tag: c.in_reply_to_id ? 'reply' : 'line-comment',
     suggestion: suggestionRe.test(body) || undefined,
     location: loc,
+    commentId: c.id,
     body,
     url: c.html_url,
   }

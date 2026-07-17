@@ -22,7 +22,8 @@ jobs:
     timeout-minutes: 5
     if: github.event.label.name == 'slop' && github.repository == 'alexanderop/workoutTracker'
     permissions:
-      pull-requests: write # comment on and close the labeled PR via the API
+      pull-requests: write # close the labeled PR via the API
+      issues: write # createComment posts through the issues API
     steps:
       - name: Comment and close PR
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
