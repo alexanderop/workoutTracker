@@ -1,0 +1,45 @@
+name: Close AI Slop PRs
+
+# pull_request_target (not pull_request): the `labeled` event on a fork PR
+# needs a write-scoped token to comment and close. Safe here because the
+# workflow never checks out or executes PR code — it only calls the GitHub
+# API. zizmor's dangerous-triggers finding is acknowledged and accepted
+# for that reason (zizmor: ignore[dangerous-triggers]).
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [labeled]
+
+permissions: {}
+
+concurrency:
+  group: on-slop-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  on-slop:
+    name: Close and annotate slop PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.label.name == 'slop' && github.repository == 'alexanderop/workoutTracker'
+    permissions:
+      pull-requests: write # comment on and close the labeled PR via the API
+    steps:
+      - name: Comment and close PR
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: 'This PR has been closed because it was flagged as AI slop.\n\nMany AI-generated PRs are fine, but this one was identified as having one or more of the following issues:\n- Fails to verify the problem actually exists\n- Fails to test that the fix works\n- Makes incorrect assumptions about the codebase\n- Submits changes that are incomplete or misleading\n\nIf you believe this was done in error, please leave a comment explaining why.'
+            });
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title: 'ai slop',
+              body: 'This PR has been marked as AI slop and the description has been updated to avoid confusion or misleading reviewers.\n\nIf you think this PR is not AI slop, please leave a comment.',
+              state: 'closed'
+            });

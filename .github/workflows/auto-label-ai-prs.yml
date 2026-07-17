@@ -1,0 +1,32 @@
+name: Auto-label AI PRs
+
+# pull_request_target (not pull_request): labeling needs a write-scoped token
+# even on fork PRs. Safe here because the workflow never checks out or
+# executes PR code — it only calls the GitHub API.
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened]
+
+permissions: {}
+
+concurrency:
+  group: auto-label-ai-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  label:
+    name: Add ai label to AI-authored PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      github.event.pull_request.user.login == 'claude[bot]' ||
+      contains(github.event.pull_request.body, '🤖 Generated with')
+    permissions:
+      pull-requests: write # apply the label via the API
+    steps:
+      - name: Add ai label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --add-label "ai"
