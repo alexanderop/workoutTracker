@@ -1,8 +1,12 @@
 # Auto-diagnose and fix CI failures using Claude Code
 name: Claude Auto-Fix CI
 
+# workflow_run is required by design here: this workflow reacts to CI
+# completing in failure. The job-level `pull_requests[0]` guard restricts it
+# to same-repo branches — GitHub leaves that array empty for fork PRs — so
+# fork code never runs with this workflow's write token.
 on:
-  workflow_run:
+  workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: ['CI']
     types: [completed]
 
@@ -13,26 +17,29 @@ env:
 
 jobs:
   auto-fix:
+    name: Diagnose and fix CI failure
     if: |
       github.event.workflow_run.conclusion == 'failure' &&
       github.event.workflow_run.pull_requests[0] &&
       !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     concurrency:
       group: claude-ci-fix-${{ github.event.workflow_run.head_branch }}
       cancel-in-progress: true
 
     permissions:
-      contents: write
-      pull-requests: write
-      actions: read
-      issues: write
-      id-token: write
+      contents: write # push the fix commit back to the PR branch
+      pull-requests: write # comment on the PR about the pushed fix
+      actions: read # read the failed CI run's logs via gh
+      issues: write # createComment uses the issues API
+      id-token: write # OIDC for claude-code-action auth
 
     steps:
-      - name: Checkout PR branch
+      - name: Checkout PR branch # zizmor: ignore[artipacked]
+        # Credentials are intentionally persisted: the push-fix step below
+        # pushes Claude's commit back to the PR branch with this token.
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
@@ -75,9 +82,9 @@ jobs:
             - Run `pnpm type-check`, `pnpm lint`, and `pnpm test` to verify
             - Commit with conventional commit format: fix(scope): description
           claude_args: |
-            --max-turns 15
+            --max-turns 60
             --model ${{ env.CLAUDE_MODEL }}
-            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
+            --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
 
       - name: Push fix commit if any
         id: push-fix

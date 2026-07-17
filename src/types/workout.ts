@@ -1,7 +1,7 @@
 import type { WorkoutBlock, WorkoutMode } from './blocks'
 import type { Set } from '@/blocks'
 
-export type { Set, SetStatus } from '@/blocks'
+export type { Set } from '@/blocks'
 
 /**
  * Fields that can be prefilled from a previous set.

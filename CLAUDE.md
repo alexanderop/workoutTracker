@@ -54,6 +54,37 @@ src/components/ui/ # shadcn-vue / reka-ui primitives
 src/__tests__/     # Vitest + Playwright browser mode
 ```
 
+## Reading PR Feedback
+
+`gh pr view --comments` silently omits review summaries and line-level review comments. For the complete picture — especially when responding to a review — use `pnpm -s pr:comments`, which fetches issue comments, reviews, and line comments in one chronological, labelled listing.
+
+```bash
+pnpm -s pr:comments                    # current branch's PR — resolved threads hidden
+pnpm -s pr:comments 151                # by PR number; '#151' and full URLs also work
+pnpm -s pr:comments --include-resolved # also show threads already marked resolved
+
+# Machine-readable output for jq pipelines — one object per entry.
+# Resolved threads and bot noise (Claude/Vercel status comments, CodeRabbit
+# walkthroughs) are filtered out; CodeRabbit line comments are reduced to
+# their actionable AI-agent prompt.
+pnpm -s pr:comments --json | jq '.[] | select(.user == "coderabbitai[bot]")'
+```
+
+The `-s` matters: without it pnpm prints a run banner to stdout that corrupts piped output.
+
+### Responding to review feedback
+
+After addressing (or deliberately skipping) a review finding, reply **in the thread**, not in a top-level PR comment — that's what links your action to the finding and lets CodeRabbit verify the fix on its incremental re-review:
+
+```bash
+# Reply to a thread (comment_id = the `commentId` field from pr:comments --json)
+gh api -X POST repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies -f body='Fixed in <sha> — <what changed>.'
+
+# For skipped findings, state the reason in the reply instead.
+```
+
+Resolve a thread only when the finding is actually addressed. CodeRabbit auto-resolves threads it can verify as fixed after a push; for the rest, resolve via GraphQL `resolveReviewThread` using the thread id from the `reviewThreads` query.
+
 ## Further Reading
 
 **IMPORTANT:** Before reading scattered docs, start at `brain/index.md`. The

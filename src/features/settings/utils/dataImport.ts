@@ -30,7 +30,7 @@ export const IMPORT_ERROR_CODES = [
   'invalidJson',
 ] as const
 
-export type ImportErrorCode = (typeof IMPORT_ERROR_CODES)[number]
+type ImportErrorCode = (typeof IMPORT_ERROR_CODES)[number]
 
 /**
  * Result of parsing an export file.

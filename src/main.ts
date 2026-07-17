@@ -7,7 +7,7 @@ import { i18n } from './i18n'
 import { renderMountFailure } from './lib/mountRecovery'
 import { tryCatch } from './lib/tryCatch'
 import { reportWebVitals } from './lib/webVitals'
-import { router } from './router'
+import { router } from './appRouter'
 import './style.css'
 
 // Select the active persistence backend (single seam for swapping adapters)
