@@ -419,15 +419,23 @@ const coderabbitHasLineComments = entries.some(
 )
 
 const claudeWatermarkRe = /<!--\s*claude-/
+const qaReportRe = /^#{1,3} QA /m
 
 function isBotNoise(e: Entry): boolean {
   // Vercel's deployment status card — CI status, edited in place per push.
   if (e.user === 'vercel[bot]') return true
   // claude-code-action progress/status comments (the claude-pr-review sticky
-  // summary, QA verdicts): all carry a "[View job](...)" header line linking
-  // the workflow run, and duplicate the inline review comments which are
-  // line-level and kept.
-  if (e.user === 'claude[bot]' && !isLineLevel(e) && e.body.includes('[View job](')) return true
+  // summary, QA verdicts): normally carry a "[View job](...)" header line
+  // linking the workflow run, and duplicate the inline review comments which
+  // are line-level and kept. The comment is edited in place while the job
+  // runs, and in transient states the header is absent — so also match the
+  // QA report heading the qa workflows write.
+  if (
+    e.user === 'claude[bot]' &&
+    !isLineLevel(e) &&
+    (e.body.includes('[View job') || qaReportRe.test(e.body))
+  )
+    return true
   // Workflow-generated reports posted by github-actions[bot] carry a
   // `<!-- claude-... -->` watermark so the workflow can find them again.
   if (e.user === 'github-actions[bot]' && claudeWatermarkRe.test(e.body)) return true
