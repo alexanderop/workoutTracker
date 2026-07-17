@@ -445,7 +445,11 @@ const resolvedHidden = entries.reduce((n, e) => n + (e.resolved === true ? 1 : 0
 const visible = entries.filter((e) => !isBotNoise(e) && (includeResolved || e.resolved !== true))
 
 if (jsonMode) {
-  print(JSON.stringify(visible, null, 2))
+  // Clean bodies here too so JSON consumers get the same noise-free content
+  // as the XML output (AI-agent prompts extracted, watermarks stripped,
+  // giant reports truncated).
+  const cleaned = visible.map((entry) => ({ ...entry, body: cleanBody(entry.body) }))
+  print(JSON.stringify(cleaned, null, 2))
   process.exit(0)
 }
 

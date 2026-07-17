@@ -67,7 +67,7 @@ pnpm -s pr:comments --include-resolved # also show threads already marked resolv
 # Resolved threads and bot noise (Claude/Vercel status comments, CodeRabbit
 # walkthroughs) are filtered out; CodeRabbit line comments are reduced to
 # their actionable AI-agent prompt.
-pnpm -s pr:comments --json | jq '.[] | select(.resolved == false)'
+pnpm -s pr:comments --json | jq '.[] | select(.user == "coderabbitai[bot]")'
 ```
 
 The `-s` matters: without it pnpm prints a run banner to stdout that corrupts piped output.
