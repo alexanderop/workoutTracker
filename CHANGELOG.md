@@ -1,3 +1,12 @@
+# [1.32.0](https://github.com/alexanderop/workoutTracker/compare/v1.31.0...v1.32.0) (2026-07-17)
+
+
+### Features
+
+* **ci:** auto-fix reviewer-bot findings with Claude ([#160](https://github.com/alexanderop/workoutTracker/issues/160)) ([206f0ac](https://github.com/alexanderop/workoutTracker/commit/206f0ac38b39e656570dd7598fabeb8c722a4528)), closes [#159](https://github.com/alexanderop/workoutTracker/issues/159)
+
+
+
 # [1.31.0](https://github.com/alexanderop/workoutTracker/compare/v1.30.0...v1.31.0) (2026-07-17)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * **ci:** give browser QA realistic turn budget and crash-safe report ([#153](https://github.com/alexanderop/workoutTracker/issues/153)) ([0efa3b7](https://github.com/alexanderop/workoutTracker/commit/0efa3b77c66cb1bb85407a676b64a9c69fbdd664))
-
-
-
-## [1.28.7](https://github.com/alexanderop/workoutTracker/compare/v1.28.6...v1.28.7) (2026-07-04)
-
-
-### Bug Fixes
-
-* **ci:** unbreak Claude PR review and browser QA workflows ([#152](https://github.com/alexanderop/workoutTracker/issues/152)) ([c9d3b27](https://github.com/alexanderop/workoutTracker/commit/c9d3b27b69373d895d5f6dd0ca763ea62675f918))
 
 
 
