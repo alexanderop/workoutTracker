@@ -15,16 +15,10 @@ export type { AmrapBlock, AmrapConfig, AmrapResult } from '@/blocks/amrap/types'
 export type { EmomBlock, EmomConfig, EmomResult } from '@/blocks/emom/types'
 export type { TabataBlock, TabataConfig, TabataResult } from '@/blocks/tabata/types'
 export type { ForTimeBlock, ForTimeConfig, ForTimeResult } from '@/blocks/fortime/types'
-export type { CardioActivity, CardioBlock, CardioConfig, CardioResult } from '@/blocks/cardio/types'
-export type { TimedBlock, TimedBlockKind, TimedBlockResult, WorkoutBlock } from '@/blocks/types'
+export type { CardioActivity, CardioConfig } from '@/blocks/cardio/types'
+export type { TimedBlock, TimedBlockKind, WorkoutBlock } from '@/blocks/types'
 
-export {
-  isCardioBlock,
-  isStrengthBlock,
-  isTimedBlock,
-  isTimedBlockResult,
-  TimedBlockResultSchema,
-} from '@/blocks/guards'
+export { isCardioBlock, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/blocks/guards'
 
 export {
   BLOCK_COLORS,

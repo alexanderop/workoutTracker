@@ -1,14 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/main.ts", "src/**/*.vue", "eslint-local-rules/**/*.ts"],
+  "entry": ["src/**/*.vue", "src/blocks/index.ts", "eslint-local-rules/**/*.ts"],
   "project": ["src/**/*.ts", "src/**/*.vue", "eslint-local-rules/**/*.ts"],
-  "ignore": [
-    ".claude/**",
-    "env.d.ts",
-    "src/components/ui/**",
-    "src/i18n/messages/de/**"
-  ],
-  "ignoreBinaries": ["printf"],
+  "ignore": ["src/components/ui/**", "src/i18n/messages/de/**", "src/types/router.d.ts"],
   "ignoreDependencies": [
     "@antfu/eslint-config",
     "@prettier/plugin-oxc",

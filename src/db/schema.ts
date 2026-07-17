@@ -9,15 +9,11 @@ import type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
 // re-exported here so existing import paths keep working.
 export type { DbSet, DbStrengthBlock, DbTemplateStrengthBlock } from '@/blocks/strength/types'
 export type { DbBlockExercise, DbTemplateBlockExercise } from '@/blocks/shared/types'
-export type { DbAmrapBlock, DbAmrapResult, DbTemplateAmrapBlock } from '@/blocks/amrap/types'
-export type { DbEmomBlock, DbEmomResult, DbTemplateEmomBlock } from '@/blocks/emom/types'
-export type { DbTabataBlock, DbTabataResult, DbTemplateTabataBlock } from '@/blocks/tabata/types'
-export type {
-  DbForTimeBlock,
-  DbForTimeResult,
-  DbTemplateForTimeBlock,
-} from '@/blocks/fortime/types'
-export type { DbCardioBlock, DbCardioResult, DbTemplateCardioBlock } from '@/blocks/cardio/types'
+export type { DbAmrapBlock, DbAmrapResult } from '@/blocks/amrap/types'
+export type { DbEmomBlock, DbEmomResult } from '@/blocks/emom/types'
+export type { DbTabataBlock, DbTabataResult } from '@/blocks/tabata/types'
+export type { DbForTimeBlock, DbForTimeResult } from '@/blocks/fortime/types'
+export type { DbCardioBlock, DbCardioResult } from '@/blocks/cardio/types'
 export type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
 
 // ============================================

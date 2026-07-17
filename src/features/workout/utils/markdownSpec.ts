@@ -15,20 +15,8 @@ import type { ParsedBlock } from '@/blocks/types'
 // Re-exports from the Block Codecs
 // ============================================
 
-export type {
-  ParsedBlockExercise,
-  ParsedSet,
-  ParseSuccess,
-  ParseFailure,
-  ParseResult,
-} from '@/blocks/shared/markdown'
+export type { ParseResult } from '@/blocks/shared/markdown'
 export { parseSuccess, singleError } from '@/blocks/shared/markdown'
-export type { ParsedStrengthBlock } from '@/blocks/strength/types'
-export type { ParsedAmrapBlock } from '@/blocks/amrap/types'
-export type { ParsedEmomBlock } from '@/blocks/emom/types'
-export type { ParsedTabataBlock } from '@/blocks/tabata/types'
-export type { ParsedForTimeBlock } from '@/blocks/fortime/types'
-export type { ParsedCardioBlock } from '@/blocks/cardio/types'
 export type { ParsedBlock } from '@/blocks/types'
 
 // ============================================

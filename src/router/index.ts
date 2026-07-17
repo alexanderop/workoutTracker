@@ -1,7 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw, Router, RouterHistory } from 'vue-router'
-import { setupDocumentTitle } from './documentTitle'
-import { setupOnboardingGuard } from '@/features/onboarding/setupOnboardingGuard'
+import type { RouteRecordRaw } from 'vue-router'
 import ActiveWorkout from '@/views/ActiveWorkout.vue'
 import ActiveBenchmarkWorkout from '@/views/ActiveBenchmarkWorkout.vue'
 import BenchmarkDetailView from '@/views/BenchmarkDetailView.vue'
@@ -215,22 +212,3 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
     meta: { titleKey: 'notFound' },
   },
 ]
-
-/**
- * Build a fully wired app router: routes plus every router-level behavior
- * (per-route document titles, onboarding guard). Tests pass
- * `createMemoryHistory()` so integration suites exercise exactly the
- * production setup instead of re-assembling it hook by hook.
- */
-export function createAppRouter(
-  history: RouterHistory = createWebHistory(import.meta.env.BASE_URL),
-): Router {
-  const router = createRouter({ history, routes })
-  setupDocumentTitle(router)
-  setupOnboardingGuard(router)
-  return router
-}
-
-const router = createAppRouter()
-
-export { router }
