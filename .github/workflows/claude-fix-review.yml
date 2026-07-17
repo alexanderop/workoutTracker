@@ -1,0 +1,147 @@
+# Automatically address reviewer-bot findings (CodeRabbit, Copilot) with
+# Claude: judge each unresolved finding, fix the valid ones, reply in-thread
+# with the fix SHA or a skip reason, resolve fixed threads, and push.
+name: Claude Fix Review Findings
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions: {}
+
+env:
+  CLAUDE_MODEL: claude-sonnet-4-6
+
+jobs:
+  fix-review:
+    name: Address reviewer-bot findings
+    # Bots only — human reviews are conversations, not work queues. The
+    # same-repo guard keeps fork code away from this workflow's write token.
+    if: |
+      (github.event.review.user.login == 'coderabbitai[bot]' ||
+       github.event.review.user.login == 'copilot-pull-request-reviewer[bot]') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # One run per PR at a time; a review landing mid-run queues exactly one
+    # follow-up. Combined with the unresolved-threads gate below, this bounds
+    # the fix -> re-review -> fix loop: it only continues while unresolved
+    # findings actually exist.
+    concurrency:
+      group: claude-fix-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+
+    permissions:
+      contents: write # push the fix commit back to the PR branch
+      pull-requests: write # reply to review threads, resolve them
+      issues: write # createComment posts through the issues API
+      actions: read # inspect CI state if needed
+      id-token: write # OIDC for claude-code-action auth
+
+    steps:
+      - name: Gate on unresolved review threads
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          unresolved=$(gh api graphql \
+            -F owner="$REPO_OWNER" \
+            -F name="$REPO_NAME" \
+            -F number="$PR_NUMBER" \
+            -f query='query($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviewThreads(first: 100) { nodes { isResolved } }
+                }
+              }
+            }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')
+          echo "unresolved=$unresolved" >> "$GITHUB_OUTPUT"
+          echo "Unresolved review threads: $unresolved"
+
+      - name: Checkout PR branch # zizmor: ignore[artipacked]
+        # Credentials are intentionally persisted: the push step below pushes
+        # Claude's fix commit back to the PR branch with this token.
+        if: steps.gate.outputs.unresolved != '0'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup git identity
+        if: steps.gate.outputs.unresolved != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+claude[bot]@users.noreply.github.com"
+          git config user.name "claude[bot]"
+
+      - name: Setup dependencies
+        if: steps.gate.outputs.unresolved != '0'
+        uses: ./.github/actions/setup-node-deps
+        with:
+          node-version: '22'
+
+      - name: Run Claude to address findings
+        if: steps.gate.outputs.unresolved != '0'
+        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: coderabbitai,copilot-pull-request-reviewer
+          show_full_output: true
+          prompt: |
+            Reviewer bot ${{ github.event.review.user.login }} submitted a review
+            on PR #${{ github.event.pull_request.number }}. Address the unresolved
+            findings following the "Responding to review feedback" convention in
+            CLAUDE.md.
+
+            Steps:
+            1. Run `pnpm -s pr:comments ${{ github.event.pull_request.number }} --json`
+               to list all unresolved findings (resolved threads are already
+               filtered out). If nothing actionable remains, stop without changes.
+            2. Judge each finding against the current code. Fix the valid ones —
+               root cause, minimal diff. Skip findings that are invalid,
+               over-engineered, or conflict with repo conventions.
+            3. Verify: `pnpm type-check` and `pnpm lint` always; also `pnpm test`
+               when source code (not just docs/config) changed.
+            4. Commit with conventional format: fix(scope): description.
+            5. Reply in-thread to EVERY finding using its `commentId`:
+               gh api -X POST repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments/<commentId>/replies \
+                 -f body='Fixed in <sha> — <what changed>.'
+               For skipped findings, state the reason in the reply instead.
+            6. Resolve only the threads you actually fixed, via GraphQL
+               resolveReviewThread (thread ids from the reviewThreads query).
+
+            Important:
+            - Do not suppress errors, weaken checks, or blindly apply every
+              suggestion. You are the judge of validity, not a patch applier.
+            - Keep changes minimal; never refactor beyond the finding.
+          claude_args: |
+            --max-turns 60
+            --model ${{ env.CLAUDE_MODEL }}
+            --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Push fix commit if any
+        if: steps.gate.outputs.unresolved != '0'
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::warning::Working tree dirty after Claude run; nothing pushed."
+            git status --short
+            exit 0
+          fi
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
+          if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            echo "No new commits from Claude; nothing to push."
+            exit 0
+          fi
+          git push origin "HEAD:${HEAD_BRANCH}"
