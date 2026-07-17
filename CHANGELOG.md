@@ -1,3 +1,12 @@
+# [1.31.0](https://github.com/alexanderop/workoutTracker/compare/v1.30.0...v1.31.0) (2026-07-17)
+
+
+### Features
+
+* **ci:** adopt Bun-style AI review and PR feedback tooling ([#159](https://github.com/alexanderop/workoutTracker/issues/159)) ([c48ec40](https://github.com/alexanderop/workoutTracker/commit/c48ec40f5e7ded2fc228f78f1dbf056c197c527c))
+
+
+
 # [1.30.0](https://github.com/alexanderop/workoutTracker/compare/v1.29.0...v1.30.0) (2026-07-07)
 
 
@@ -36,16 +45,6 @@
 ### Bug Fixes
 
 * **ci:** unbreak Claude PR review and browser QA workflows ([#152](https://github.com/alexanderop/workoutTracker/issues/152)) ([c9d3b27](https://github.com/alexanderop/workoutTracker/commit/c9d3b27b69373d895d5f6dd0ca763ea62675f918))
-
-
-
-## [1.28.6](https://github.com/alexanderop/workoutTracker/compare/v1.28.5...v1.28.6) (2026-06-28)
-
-
-### Bug Fixes
-
-* **qa:** address agent browser findings ([dcdc8d2](https://github.com/alexanderop/workoutTracker/commit/dcdc8d25fc3864bdcb47bc2e5d80fc4ae1d5a23b))
-* **settings:** accept cardio template imports ([b7cdb31](https://github.com/alexanderop/workoutTracker/commit/b7cdb31d504aaaa0874c8d39fa9cc4b2f768acf7))
 
 
 
