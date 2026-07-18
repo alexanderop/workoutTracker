@@ -18,6 +18,8 @@ export function createDexieDataManagementRepository(
     database.weightEntries,
     database.drafts,
     database.onboarding,
+    database.habits,
+    database.habitEntries,
   ] as const
 
   // Every table in the schema, for a full wipe (Settings > Delete All Data).
@@ -34,24 +36,52 @@ export function createDexieDataManagementRepository(
 
   return {
     async exportAll(): Promise<ExportDataContents> {
-      const [settings, customExercises, templates, workouts, benchmarks, weightEntries] =
-        await Promise.all([
-          database.settings.toArray(),
-          database.customExercises.toArray(),
-          database.templates.toArray(),
-          database.workouts.toArray(),
-          database.benchmarks.toArray(),
-          database.weightEntries.toArray(),
-        ])
+      const [
+        settings,
+        customExercises,
+        templates,
+        workouts,
+        benchmarks,
+        weightEntries,
+        habits,
+        habitEntries,
+      ] = await Promise.all([
+        database.settings.toArray(),
+        database.customExercises.toArray(),
+        database.templates.toArray(),
+        database.workouts.toArray(),
+        database.benchmarks.toArray(),
+        database.weightEntries.toArray(),
+        database.habits.toArray(),
+        database.habitEntries.toArray(),
+      ])
 
-      return { settings, customExercises, templates, workouts, benchmarks, weightEntries }
+      return {
+        settings,
+        customExercises,
+        templates,
+        workouts,
+        benchmarks,
+        weightEntries,
+        habits,
+        habitEntries,
+      }
     },
 
     async importAll(data: ExportDataContents): Promise<void> {
       await database.transaction('rw', backupTables, async () => {
         await clearTables(backupTables)
 
-        const { settings, customExercises, templates, workouts, benchmarks, weightEntries } = data
+        const {
+          settings,
+          customExercises,
+          templates,
+          workouts,
+          benchmarks,
+          weightEntries,
+          habits,
+          habitEntries,
+        } = data
 
         await Promise.all([
           settings.length > 0 ? database.settings.bulkAdd([...settings]) : Promise.resolve(),
@@ -63,6 +93,10 @@ export function createDexieDataManagementRepository(
           benchmarks.length > 0 ? database.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
           weightEntries?.length > 0
             ? database.weightEntries.bulkAdd([...weightEntries])
+            : Promise.resolve(),
+          habits?.length > 0 ? database.habits.bulkAdd([...habits]) : Promise.resolve(),
+          habitEntries?.length > 0
+            ? database.habitEntries.bulkAdd([...habitEntries])
             : Promise.resolve(),
         ])
       })

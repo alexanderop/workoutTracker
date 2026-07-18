@@ -8,6 +8,7 @@ import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
 import WeekStrip from '@/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/components/WorkoutCalendarSheet.vue'
+import HabitsHomeCard from '@/features/habits/components/HabitsHomeCard.vue'
 import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
 
 const { t } = useI18n()
@@ -80,8 +81,12 @@ function openCalendarSheet() {
           >
             <Play class="w-4 h-4 sm:w-8 sm:h-8 text-primary ml-0.5" aria-hidden="true" />
           </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-2xl">{{ t('nav.homeView.startNewWorkout') }}</h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{ t('nav.homeView.trackDescription') }}</CardDescription>
+          <h2 class="leading-tight font-semibold text-xs sm:text-2xl">
+            {{ t('nav.homeView.startNewWorkout') }}
+          </h2>
+          <CardDescription class="text-xs mt-1 hidden sm:block">{{
+            t('nav.homeView.trackDescription')
+          }}</CardDescription>
         </CardHeader>
       </Card>
 
@@ -100,8 +105,12 @@ function openCalendarSheet() {
           >
             <ClipboardList class="w-4 h-4 sm:w-7 sm:h-7 text-emerald-500" aria-hidden="true" />
           </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-xl">{{ t('nav.homeView.logPastWorkout', 'Log Past Workout') }}</h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{ t('nav.homeView.logPastWorkoutDescription', 'Log a workout from earlier') }}</CardDescription>
+          <h2 class="leading-tight font-semibold text-xs sm:text-xl">
+            {{ t('nav.homeView.logPastWorkout', 'Log Past Workout') }}
+          </h2>
+          <CardDescription class="text-xs mt-1 hidden sm:block">{{
+            t('nav.homeView.logPastWorkoutDescription', 'Log a workout from earlier')
+          }}</CardDescription>
         </CardHeader>
       </Card>
 
@@ -120,11 +129,18 @@ function openCalendarSheet() {
           >
             <Timer class="w-4 h-4 sm:w-7 sm:h-7 text-orange-500" aria-hidden="true" />
           </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-xl">{{ t('nav.homeView.quickTimer') }}</h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{ t('nav.homeView.quickTimerDescription') }}</CardDescription>
+          <h2 class="leading-tight font-semibold text-xs sm:text-xl">
+            {{ t('nav.homeView.quickTimer') }}
+          </h2>
+          <CardDescription class="text-xs mt-1 hidden sm:block">{{
+            t('nav.homeView.quickTimerDescription')
+          }}</CardDescription>
         </CardHeader>
       </Card>
     </div>
+
+    <!-- Today's Habits -->
+    <HabitsHomeCard />
 
     <!-- Recent Workouts -->
     <RecentWorkoutsSection />

@@ -1,17 +1,8 @@
 import { liveQuery } from 'dexie'
 import type { LiveQuery, WeightRepository } from '@/db/interfaces'
 import type { DbWeightEntry } from '@/db/schema'
+import { getStartOfDay } from '@/lib/date'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
-
-/**
- * Get the start of day timestamp for a given date.
- * Used for one-entry-per-day deduplication.
- */
-function getStartOfDay(date: Date): number {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
 
 /**
  * Shared query logic for `getAll()` and `observeEntries()` so both read the

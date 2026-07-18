@@ -333,6 +333,52 @@ export type DbProgressionSession = {
 }
 
 // ============================================
+// Habit Tracking Types
+// ============================================
+
+/**
+ * How often a habit is expected to be done.
+ */
+export type HabitSchedule = { type: 'daily' } | { type: 'weekly'; targetDaysPerWeek: number } // 1-7
+
+/**
+ * What "done" means for a habit: a simple check-off, or hitting a quantity target.
+ */
+export type HabitKind = { type: 'binary' } | { type: 'quantity'; target: number; unit: string } // e.g. 2 'L' water
+
+/**
+ * A habit definition (e.g. "Drink water", "Stretch").
+ * Archived rather than deleted so history is preserved (see DbHabitEntry) --
+ * same convention as workouts/templates: nothing user-created disappears
+ * outright.
+ */
+export type DbHabit = {
+  id: string
+  name: string
+  icon: string | null // emoji
+  schedule: HabitSchedule
+  kind: HabitKind
+  autoLink: 'completed-workout' | null
+  archivedAt: number | null // archive, never delete history
+  orderIndex: number
+  createdAt: number
+}
+
+/**
+ * A single day's record for a habit.
+ * One entry per habit per day, deduped via the `[habitId+date]` compound
+ * index (see database.ts) -- same start-of-day timestamp convention as
+ * DbWeightEntry.date.
+ */
+export type DbHabitEntry = {
+  id: string
+  habitId: string
+  date: number // Start of day timestamp (for one-entry-per-habit-per-day deduplication)
+  value: number // 1 for binary; actual amount for quantity
+  recordedAt: number // When the entry was actually logged
+}
+
+// ============================================
 // Onboarding Types
 // ============================================
 

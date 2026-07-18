@@ -11,6 +11,8 @@ import type {
   DbUserSetting as DatabaseUserSetting,
   DbWeightEntry as DatabaseWeightEntry,
   DbWorkoutTemplate as DatabaseWorkoutTemplate,
+  DbHabit,
+  DbHabitEntry,
   DraftKey,
   ExerciseSession,
   ExerciseStats,
@@ -368,6 +370,8 @@ export type ExportDataContents = {
   workouts: ReadonlyArray<DatabaseCompletedWorkout>
   benchmarks: ReadonlyArray<DatabaseBenchmark>
   weightEntries: ReadonlyArray<DatabaseWeightEntry>
+  habits: ReadonlyArray<DbHabit>
+  habitEntries: ReadonlyArray<DbHabitEntry>
 }
 
 export type DataManagementRepository = {
@@ -557,6 +561,84 @@ export type WeightRepository = {
 }
 
 // ============================================
+// Habit Repository
+// ============================================
+
+/**
+ * Repository for habit definitions and their daily entries.
+ *
+ * Habits are archived, never deleted, so history (entries) always has a
+ * habit to point back to -- same convention as workouts/templates.
+ */
+export type HabitRepository = {
+  /**
+   * Retrieve active (non-archived) habits ordered by orderIndex.
+   */
+  getAllHabits(): Promise<ReadonlyArray<DbHabit>>
+  /**
+   * Retrieve archived habits, most recently archived first.
+   */
+  getArchivedHabits(): Promise<ReadonlyArray<DbHabit>>
+  /**
+   * Find a habit by ID (active or archived).
+   */
+  getHabitById(id: string): Promise<DbHabit | undefined>
+  /**
+   * Add a new habit to the database.
+   */
+  addHabit(habit: Readonly<DbHabit>): Promise<void>
+  /**
+   * Update an existing habit.
+   * @throws Error if habit with id not found
+   */
+  updateHabit(id: string, updates: Partial<Omit<DbHabit, 'id' | 'createdAt'>>): Promise<void>
+  /**
+   * Archive a habit (sets archivedAt). Entries are preserved.
+   * @throws Error if habit with id not found
+   */
+  archiveHabit(id: string): Promise<void>
+  /**
+   * Restore an archived habit (clears archivedAt).
+   * @throws Error if habit with id not found
+   */
+  unarchiveHabit(id: string): Promise<void>
+  /**
+   * Reassign orderIndex for the given habits to match array position.
+   * Unknown IDs are silently skipped (matches the codebase's `delete()` idiom
+   * of no-op on missing IDs).
+   */
+  reorderHabits(ids: ReadonlyArray<string>): Promise<void>
+  /**
+   * Record (or replace) a habit's entry for its day. One entry per
+   * habit per day: an existing entry for the same `[habitId, date]` is
+   * replaced, mirroring {@link WeightRepository.add}'s same-day dedup.
+   */
+  upsertEntry(entry: Readonly<DbHabitEntry>): Promise<void>
+  /**
+   * Delete a single entry by ID. Silently succeeds if ID doesn't exist.
+   */
+  deleteEntry(id: string): Promise<void>
+  /**
+   * Clear a habit's entry for a specific day, if one exists.
+   */
+  clearEntryForDay(habitId: string, date: number): Promise<void>
+  /**
+   * Retrieve all entries for a habit, oldest first.
+   */
+  getEntriesForHabit(habitId: string): Promise<ReadonlyArray<DbHabitEntry>>
+  /**
+   * Retrieve all habits' entries within a date range (inclusive), oldest first.
+   * `from`/`to` are start-of-day timestamps.
+   */
+  getEntriesInRange(from: number, to: number): Promise<ReadonlyArray<DbHabitEntry>>
+  /**
+   * Retrieve every habit's entry recorded for a specific day.
+   * `date` is a start-of-day timestamp.
+   */
+  getEntriesForDay(date: number): Promise<ReadonlyArray<DbHabitEntry>>
+}
+
+// ============================================
 // Drafts Repository
 // ============================================
 
@@ -696,4 +778,5 @@ export type RepositoryProvider = {
   drafts: DraftsRepository
   progressions: ProgressionsRepository
   onboarding: OnboardingRepository
+  habits: HabitRepository
 }

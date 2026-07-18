@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   dbCompletedWorkoutSchema,
   dbCustomExerciseSchema,
+  dbHabitEntrySchema,
+  dbHabitSchema,
   dbUserSettingSchema,
   dbWorkoutBlockSchema,
   dbWorkoutTemplateSchema,
@@ -635,6 +637,174 @@ describe('Size Limits', () => {
     )
     const result = exportDataSchema.safeParse(createValidExportData({ workouts }))
     expect(result.success).toBe(false)
+  })
+})
+
+describe('Habit Schema Validation', () => {
+  function createValidHabit(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'habit-1',
+      name: 'Drink water',
+      icon: '💧',
+      schedule: { type: 'daily' },
+      kind: { type: 'binary' },
+      autoLink: null,
+      archivedAt: null,
+      orderIndex: 0,
+      createdAt: Date.now(),
+      ...overrides,
+    }
+  }
+
+  function createValidHabitEntry(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'entry-1',
+      habitId: 'habit-1',
+      date: Date.now(),
+      value: 1,
+      recordedAt: Date.now(),
+      ...overrides,
+    }
+  }
+
+  describe('dbHabitSchema', () => {
+    it('accepts a valid daily binary habit', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit())
+      expect(result.success).toBe(true)
+    })
+
+    it('accepts a valid weekly quantity habit', () => {
+      const result = dbHabitSchema.safeParse(
+        createValidHabit({
+          schedule: { type: 'weekly', targetDaysPerWeek: 3 },
+          kind: { type: 'quantity', target: 2, unit: 'L' },
+        }),
+      )
+      expect(result.success).toBe(true)
+    })
+
+    it('accepts autoLink set to completed-workout and null', () => {
+      expect(
+        dbHabitSchema.safeParse(createValidHabit({ autoLink: 'completed-workout' })).success,
+      ).toBe(true)
+      expect(dbHabitSchema.safeParse(createValidHabit({ autoLink: null })).success).toBe(true)
+    })
+
+    it('accepts a null icon and a null archivedAt', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ icon: null, archivedAt: null }))
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects an unrecognized schedule type instead of defaulting it', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ schedule: { type: 'monthly' } }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects a weekly schedule with targetDaysPerWeek out of the 1-7 range', () => {
+      expect(
+        dbHabitSchema.safeParse(
+          createValidHabit({ schedule: { type: 'weekly', targetDaysPerWeek: 0 } }),
+        ).success,
+      ).toBe(false)
+      expect(
+        dbHabitSchema.safeParse(
+          createValidHabit({ schedule: { type: 'weekly', targetDaysPerWeek: 8 } }),
+        ).success,
+      ).toBe(false)
+    })
+
+    it('rejects an unrecognized kind type instead of defaulting it', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ kind: { type: 'timed' } }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects a quantity kind with a non-positive target', () => {
+      const result = dbHabitSchema.safeParse(
+        createValidHabit({ kind: { type: 'quantity', target: 0, unit: 'L' } }),
+      )
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects an invalid autoLink value', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ autoLink: 'started-workout' }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects an empty name', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ name: '' }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects extra properties (strict mode)', () => {
+      const result = dbHabitSchema.safeParse({ ...createValidHabit(), maliciousField: 'x' })
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects __proto__ as habit ID', () => {
+      const result = dbHabitSchema.safeParse(createValidHabit({ id: '__proto__' }))
+      expect(result.success).toBe(false)
+    })
+  })
+
+  describe('dbHabitEntrySchema', () => {
+    it('accepts a valid entry', () => {
+      const result = dbHabitEntrySchema.safeParse(createValidHabitEntry())
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects a negative value', () => {
+      const result = dbHabitEntrySchema.safeParse(createValidHabitEntry({ value: -1 }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects a negative timestamp', () => {
+      const result = dbHabitEntrySchema.safeParse(createValidHabitEntry({ date: -1 }))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects extra properties (strict mode)', () => {
+      const result = dbHabitEntrySchema.safeParse({
+        ...createValidHabitEntry(),
+        maliciousField: 'x',
+      })
+      expect(result.success).toBe(false)
+    })
+  })
+
+  describe('exportDataSchema with habits', () => {
+    it('accepts export data that includes habits and habitEntries', () => {
+      const exportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: {
+          settings: [],
+          customExercises: [],
+          templates: [],
+          workouts: [],
+          benchmarks: [],
+          habits: [createValidHabit()],
+          habitEntries: [createValidHabitEntry()],
+        },
+      }
+      const result = exportDataSchema.safeParse(exportData)
+      expect(result.success).toBe(true)
+    })
+
+    it('accepts export data omitting habits entirely (backward compat)', () => {
+      const exportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: {
+          settings: [],
+          customExercises: [],
+          templates: [],
+          workouts: [],
+          benchmarks: [],
+        },
+      }
+      const result = exportDataSchema.safeParse(exportData)
+      expect(result.success).toBe(true)
+    })
   })
 })
 

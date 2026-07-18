@@ -46,5 +46,13 @@ export {
 // Image factories
 export { createTestImageBlob, createTestImageFile } from './image'
 
+// Habit factories
+export {
+  createDbHabit,
+  createDbHabitEntry,
+  createDbHabitEntryForDate,
+  createDbHabitEntriesForDays,
+} from './dbHabit.factory'
+
 // Utility
 export { generateId } from '@/db'

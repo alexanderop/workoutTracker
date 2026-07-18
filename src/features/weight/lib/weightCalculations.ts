@@ -7,12 +7,12 @@
 /**
  * Get the start of day timestamp for a given date.
  * Used for one-entry-per-day deduplication.
+ *
+ * Re-exported from the shared `@/lib/date` helper (also used by the habits
+ * feature) so existing imports of `getStartOfDay` from this module keep
+ * working without every call site needing to know it moved.
  */
-export function getStartOfDay(date: Date = new Date()): number {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
+export { getStartOfDay } from '@/lib/date'
 
 /**
  * Get date N days ago from today.

@@ -113,6 +113,19 @@ exclude: [...sharedTestConfig.exclude, 'src/__tests__/a11y/**', 'src/__tests__/v
 Also give each browser project instance a unique `name` so coverage remapping
 can distinguish the default, a11y, and visual projects.
 
+## Coverage Text Table Silently Omits Files
+
+The `text` coverage reporter can drop rows for files that ARE covered — during
+the habits build (2026-07) 8 of 16 files with collected data (several at 100%)
+simply never appeared in the printed table, under both the `v8` and `istanbul`
+providers. Do not conclude a file is untested (or dead) from the table alone.
+To audit per-file coverage, add the `json` reporter and read
+`coverage/coverage-final.json` — count `s`/`f`/`b` hits per file; the
+`statementMap` start lines give exact uncovered lines. CLI overrides like
+`--coverage.include=...` are merged with (not substituted for) the config
+arrays, so scoping a coverage audit requires temporarily editing
+`vitest.config.ts`.
+
 ## Flaky Test Diagnosis
 
 Three causes account for almost every flake in this repo, in order:

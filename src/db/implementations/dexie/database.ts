@@ -7,6 +7,8 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
+  DbHabit,
+  DbHabitEntry,
   DbOnboarding,
   DbProgression,
   DbProgressionSession,
@@ -28,6 +30,8 @@ export class WorkoutTrackerDb extends Dexie {
   progressions!: Table<DbProgression, string>
   progressionSessions!: Table<DbProgressionSession, string>
   onboarding!: Table<DbOnboarding, 'onboarding'>
+  habits!: Table<DbHabit, string>
+  habitEntries!: Table<DbHabitEntry, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -107,6 +111,24 @@ export class WorkoutTrackerDb extends Dexie {
       progressions: 'id, createdAt, lastSessionAt',
       progressionSessions: 'id, progressionId, completedAt',
       onboarding: 'id',
+    })
+
+    // Version 7: Add habits and habitEntries tables for habit tracking
+    this.version(7).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
+      drafts: '&key',
+      progressions: 'id, createdAt, lastSessionAt',
+      progressionSessions: 'id, progressionId, completedAt',
+      onboarding: 'id',
+      habits: 'id, orderIndex, archivedAt',
+      habitEntries: 'id, habitId, date, [habitId+date]',
     })
   }
 }

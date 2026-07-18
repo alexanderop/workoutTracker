@@ -26,7 +26,10 @@ describe('Home Recent Workouts View All Link', () => {
     // Confirm we're looking at the empty state, not a loading flash
     await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
 
-    const viewAllLink = page.getByRole('button', { name: /view all/i })
+    // Exact match: the Habits home card added below Recent Workouts also has
+    // its own "View all" link (accessible name "View all habits"), so an
+    // unanchored /view all/i regex now matches two buttons on this page.
+    const viewAllLink = page.getByRole('button', { name: 'View all', exact: true })
     await expect.element(viewAllLink).toBeVisible()
 
     await userEvent.click(viewAllLink)
@@ -42,7 +45,10 @@ describe('Home Recent Workouts View All Link', () => {
     const { router, cleanup } = await createTestApp()
     await expect.element(page.getByText('Morning Workout')).toBeVisible()
 
-    const viewAllLink = page.getByRole('button', { name: /view all/i })
+    // Exact match: the Habits home card added below Recent Workouts also has
+    // its own "View all" link (accessible name "View all habits"), so an
+    // unanchored /view all/i regex now matches two buttons on this page.
+    const viewAllLink = page.getByRole('button', { name: 'View all', exact: true })
     await expect.element(viewAllLink).toBeVisible()
 
     await userEvent.click(viewAllLink)
