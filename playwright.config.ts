@@ -8,12 +8,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI
-    ? [
-        ['html', { open: 'never' }],
-        ['junit', { outputFile: 'test-report.e2e.junit.xml' }],
-      ]
-    : 'html',
+  reporter: process.env.CI ? [['html', { open: 'never' }]] : 'html',
   timeout: 60_000,
   outputDir: 'test-results/e2e',
   webServer: {
