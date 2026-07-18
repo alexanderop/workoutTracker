@@ -113,8 +113,6 @@ jobs:
           jq -r '.body' <<<"$COMMENT_JSON" > /tmp/untrusted-qa-report.md
           jq '{title, body, base: .base.ref, head: .head.ref, head_sha: .head.sha}' \
             <<<"$PR_JSON" > /tmp/untrusted-pr-context.json
-          echo 'No fixes were needed.' > /tmp/qa-followup-summary.md
-
           {
             echo "run=true"
             echo "pr_number=$PR_NUMBER"
@@ -140,29 +138,6 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$REPORT_HEAD_SHA"
-
-      - name: Setup git identity
-        if: steps.gate.outputs.run == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.email "41898282+claude[bot]@users.noreply.github.com"
-          git config user.name "claude[bot]"
-
-      - name: Setup dependencies
-        if: steps.gate.outputs.run == 'true'
-        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
-
-      - name: Setup Node.js
-        if: steps.gate.outputs.run == 'true'
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: '22'
-
-      - name: Install dependencies without lifecycle scripts
-        if: steps.gate.outputs.run == 'true'
-        shell: bash
-        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run Claude to triage the QA report
         if: steps.gate.outputs.run == 'true'
@@ -194,27 +169,24 @@ jobs:
                - SKIP: informational notes, false positives, recommendations
                  that need product judgment, or anything whose fix would
                  exceed the PR's scope. Record a one-line reason each.
-            3. CODE FIX bucket: work ONE FINDING AT A TIME, most severe first.
-               For each: fix with a minimal root-cause diff, verify with
-               `pnpm type-check` plus the affected test file, then commit as
-               fix(scope)/refactor(scope). Complete each cycle before starting
-               the next so a turn-limit cutoff never loses finished work.
-            4. After the last fix, run `pnpm lint` and (when source changed)
-               `pnpm test`; fix fallout in a follow-up commit.
-            5. Replace `/tmp/qa-followup-summary.md` with a concise summary of
-               fixes and skipped findings. Do not attempt to access GitHub or
-               edit PR metadata/comments; workflow-owned steps handle that.
+            3. CODE FIX bucket: edit only files under `src/`, one finding at a
+               time, with minimal root-cause changes. Do not edit workflows,
+               actions, package metadata, configuration, or generated files.
+            4. Do not run commands, tests, git, package scripts, or access the
+               environment. Workflow-owned read-only jobs commit and verify
+               your edits after this credential-bearing step has ended.
 
             Important:
-            - Keep changes minimal and inside this PR's scope; larger ideas
-              from the report belong in the summary comment, not in commits.
+            - Keep changes minimal and inside this PR's scope; do not implement
+              larger ideas from the report.
             - Do not weaken tests or checks to satisfy a finding.
-            - Use the Grep/Glob tools to search the codebase -- shell commands
-              other than git/pnpm/cat/ls are denied and waste a turn.
+            - Use only Read/Grep/Glob to inspect and Edit/Write to change code.
           claude_args: |
             --max-turns 80
             --model ${{ env.CLAUDE_MODEL }}
-            --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(cat:*),Bash(ls:*)"
+            --permission-mode dontAsk
+            --tools "Read,Glob,Grep,Edit,Write"
+            --allowedTools "Read(/src/**),Read(/brain/reference/**),Read(/CLAUDE.md),Read(//tmp/untrusted-qa-report.md),Read(//tmp/untrusted-pr-context.json),Edit(/src/**)"
 
       - name: Prepare reviewed patch artifact
         id: prepare
@@ -229,44 +201,82 @@ jobs:
           set -euo pipefail
           : > /tmp/qa-fixes.patch
           if [ -n "$(git status --porcelain)" ]; then
-            # A dirty tree means the run was cut off mid-fix; that half-done
-            # change was never verified, so drop it and keep only the
-            # completed, committed cycles.
-            echo "::warning::Working tree dirty after Claude run; discarding uncommitted changes."
-            git status --short
-            git checkout -- .
-            git clean -fd
+            while IFS= read -r change; do
+              path="${change:3}"
+              if [[ "$path" != src/* ]]; then
+                echo "::error::Claude changed disallowed path: $path"
+                exit 1
+              fi
+            done < <(git status --porcelain)
+            # Intent-to-add makes new src files visible to git diff without
+            # committing or running PR-controlled code in this secret job.
+            git add --intent-to-add -- src
           fi
-          LOCAL_SHA=$(git rev-parse HEAD)
-          if ! git merge-base --is-ancestor "$REPORT_HEAD_SHA" "$LOCAL_SHA"; then
-            echo "::error::Claude rewrote history outside the tested revision; refusing to publish."
-            exit 1
-          fi
-          if [ "$LOCAL_SHA" = "$REPORT_HEAD_SHA" ]; then
+          test "$(git rev-parse HEAD)" = "$REPORT_HEAD_SHA"
+          git diff --binary --no-ext-diff -- src > /tmp/qa-fixes.patch
+          if [ ! -s /tmp/qa-fixes.patch ]; then
             echo "has-fixes=false" >> "$GITHUB_OUTPUT"
           else
-            git format-patch --binary --stdout "${REPORT_HEAD_SHA}..${LOCAL_SHA}" > /tmp/qa-fixes.patch
             echo "has-fixes=true" >> "$GITHUB_OUTPUT"
           fi
-          if [ ! -f /tmp/qa-followup-summary.md ] || [ -L /tmp/qa-followup-summary.md ]; then
-            echo 'QA follow-up did not produce a safe summary.' > /tmp/qa-followup-summary.md
-          fi
 
-      - name: Upload patch and summary for trusted publisher
-        if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
+      - name: Upload candidate patch for isolated verification
+        if: ${{ !cancelled() && steps.prepare.outputs.has-fixes == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: qa-followup-${{ github.run_id }}
-          path: |
-            /tmp/qa-fixes.patch
-            /tmp/qa-followup-summary.md
+          name: qa-followup-candidate-${{ github.run_id }}
+          path: /tmp/qa-fixes.patch
           if-no-files-found: error
           retention-days: 1
 
+  verify:
+    name: Verify QA follow-up patch
+    needs: qa-followup
+    if: ${{ needs.qa-followup.outputs.has-fixes == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout exact tested revision
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.report_head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download candidate patch
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: qa-followup-candidate-${{ github.run_id }}
+          path: /tmp/qa-followup-candidate
+
+      - name: Apply candidate patch
+        run: git apply --index /tmp/qa-followup-candidate/qa-fixes.patch
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22'
+
+      - name: Install dependencies without lifecycle scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Verify candidate patch
+        run: |
+          pnpm type-check
+          pnpm lint
+          pnpm test
+          git diff --quiet
+
   publish:
     name: Publish QA follow-up safely
-    needs: qa-followup
-    if: ${{ always() && needs.qa-followup.outputs.run == 'true' }}
+    needs: [qa-followup, verify]
+    if: ${{ needs.verify.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -298,28 +308,30 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Download reviewed patch artifact
+      - name: Download immutable candidate patch
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: qa-followup-${{ github.run_id }}
+          name: qa-followup-candidate-${{ github.run_id }}
           path: /tmp/qa-followup-artifact
 
       - name: Apply and push fixes with an exact lease
         id: push-fix
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HAS_FIXES: ${{ needs.qa-followup.outputs.has-fixes }}
           HEAD_BRANCH: ${{ needs.qa-followup.outputs.head-ref }}
           REPORT_HEAD_SHA: ${{ inputs.report_head_sha }}
         run: |
           set -euo pipefail
-          if [ "$HAS_FIXES" != "true" ]; then
-            echo "pushed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           git config user.email "41898282+claude[bot]@users.noreply.github.com"
           git config user.name "claude[bot]"
-          git am /tmp/qa-followup-artifact/qa-fixes.patch
+          git apply --index /tmp/qa-followup-artifact/qa-fixes.patch
+          while IFS= read -r path; do
+            if [[ "$path" != src/* ]]; then
+              echo "::error::Verified patch contains disallowed path: $path"
+              exit 1
+            fi
+          done < <(git diff --cached --name-only)
+          git commit -m "fix(qa): address browser report findings"
           LOCAL_SHA=$(git rev-parse HEAD)
           gh auth setup-git
           git push \
@@ -340,20 +352,16 @@ jobs:
           HEAD_BRANCH: ${{ needs.qa-followup.outputs.head-ref }}
         run: gh workflow run ci.yml --ref "$HEAD_BRANCH"
 
-      - name: Publish QA follow-up summary
+      - name: Publish QA follow-up result
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           PR_NUMBER: ${{ needs.qa-followup.outputs.pr-number }}
           COMMITS: ${{ steps.push-fix.outputs.commits }}
-          PUSHED: ${{ steps.push-fix.outputs.pushed }}
         with:
           script: |
-            const fs = require('fs');
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const summary = fs.readFileSync('/tmp/qa-followup-artifact/qa-followup-summary.md', 'utf8').trim().slice(0, 4000);
-            if (process.env.PUSHED !== 'true' && summary === 'No fixes were needed.') return;
             const marker = process.env.FOLLOWUP_MARKER;
-            const body = `${marker}\n## Claude QA follow-up\n\n${summary}${process.env.PUSHED === 'true' ? `\n\n### Pushed commits\n\n${process.env.COMMITS}` : ''}\n\n[View run](${runUrl})`;
+            const body = `${marker}\n## Claude QA follow-up\n\nVerified and pushed these fixes:\n\n${process.env.COMMITS}\n\n[View run](${runUrl})`;
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: Number.parseInt(process.env.PR_NUMBER, 10), per_page: 100,
