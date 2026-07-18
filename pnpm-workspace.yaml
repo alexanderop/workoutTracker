@@ -69,6 +69,7 @@ catalogs:
     axe-core: ^4.12.1
     fake-indexeddb: ^6.2.5
     fast-check: ^4.9.0
+    istanbul-lib-coverage: ^3.2.2
     jsdom: ^29.1.1
     playwright: ^1.61.1
     vitest: ^4.1.9

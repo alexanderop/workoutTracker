@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import { playwright } from '@vitest/browser-playwright'
 import { configDefaults, defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
+import coverageThresholds from './coverage-thresholds.json'
 
 // Shared resolve config for path aliases
 const resolve = {
@@ -52,15 +53,12 @@ const sharedTestConfig = {
 
 const coverageConfig = {
   provider: 'v8' as const,
-  reporter: ['text'],
+  // Shard jobs write one Istanbul JSON map each. CI merges those maps and
+  // enforces the global thresholds once all shards are present.
+  reporter: process.env.VITEST_COVERAGE_SHARD ? ['json'] : ['text-summary'],
   include: ['src/**/*.{ts,vue}'],
   exclude: ['src/**/*.d.ts', 'src/__tests__/**', 'src/components/ui/**'],
-  thresholds: {
-    lines: 82,
-    functions: 80,
-    branches: 69,
-    statements: 80,
-  },
+  thresholds: process.env.VITEST_COVERAGE_SHARD ? undefined : coverageThresholds,
 }
 
 // Note: This file is excluded from tsconfig.vitest.json type checking due to plugin type conflicts

@@ -207,6 +207,9 @@ catalogs:
     fast-check:
       specifier: ^4.9.0
       version: 4.9.0
+    istanbul-lib-coverage:
+      specifier: ^3.2.2
+      version: 3.2.2
     jsdom:
       specifier: ^29.1.1
       version: 29.1.1
@@ -445,6 +448,9 @@ importers:
       husky:
         specifier: catalog:build
         version: 9.1.7
+      istanbul-lib-coverage:
+        specifier: catalog:testing
+        version: 3.2.2
       jiti:
         specifier: catalog:build
         version: 2.7.0

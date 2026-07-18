@@ -17,30 +17,20 @@ runs:
     - name: Get Playwright version
       id: playwright-version
       shell: bash
-      run: |
-        PLAYWRIGHT_VERSION=$(pnpm list @playwright/test --depth=0 --json | jq -r \
-          '.[0] | (.devDependencies["@playwright/test"].version // .dependencies["@playwright/test"].version)')
-        echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+      run: echo "version=$(pnpm exec playwright --version | awk '{ print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache Playwright browsers
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       id: playwright-cache
       with:
-        path: ~/.cache/ms-playwright
+        path: |
+          ~/.cache/ms-playwright
+          ~/Library/Caches/ms-playwright
         key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-        restore-keys: |
-          playwright-${{ runner.os }}-
 
     - name: Install Playwright browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
-        pnpm exec playwright install chromium --with-deps
-
-    - name: Install Playwright system dependencies
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        pnpm exec playwright install-deps chromium
+        pnpm exec playwright install chromium
