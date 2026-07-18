@@ -1,3 +1,12 @@
+## [1.36.2](https://github.com/alexanderop/workoutTracker/compare/v1.36.1...v1.36.2) (2026-07-18)
+
+
+### Performance Improvements
+
+* **ci:** reduce pipeline runtime ([#171](https://github.com/alexanderop/workoutTracker/issues/171)) ([88e1f70](https://github.com/alexanderop/workoutTracker/commit/88e1f7097c5f15d1159ca10e15b79dffe006d029))
+
+
+
 ## [1.36.1](https://github.com/alexanderop/workoutTracker/compare/v1.36.0...v1.36.1) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **ci:** triage browser QA reports with a Claude follow-up workflow ([#164](https://github.com/alexanderop/workoutTracker/issues/164)) ([27be864](https://github.com/alexanderop/workoutTracker/commit/27be864c0bdce7bde01e24083b405efa90d8add9))
-
-
-
-# [1.33.0](https://github.com/alexanderop/workoutTracker/compare/v1.32.1...v1.33.0) (2026-07-18)
-
-
-### Features
-
-* **habits:** add habit tracking with streaks, history grid, and workout auto-link ([#161](https://github.com/alexanderop/workoutTracker/issues/161)) ([d1b161c](https://github.com/alexanderop/workoutTracker/commit/d1b161ca950764b70c18474402b31a67f3a6a70d))
 
 
 
