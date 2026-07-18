@@ -29,8 +29,8 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 ## back
 
 - [x] Kettlebell Dead Clean — key `kettlebell-dead-clean`, component `KettlebellDeadCleanIcon`, pose `hinge`
-- [ ] Kettlebell Gorilla Row — key `kettlebell-gorilla-row`, component `KettlebellGorillaRowIcon`, pose `hinged-pull`
-- [ ] Kettlebell Row — key `kettlebell-row`, component `KettlebellRowIcon`, pose `hinged-pull`
+- [x] Kettlebell Gorilla Row — key `kettlebell-gorilla-row`, component `KettlebellGorillaRowIcon`, pose `hinged-pull`
+- [x] Kettlebell Row — key `kettlebell-row`, component `KettlebellRowIcon`, pose `hinged-pull`
 - [ ] Kettlebell Single Arm Swing — key `kettlebell-single-arm-swing`, component `KettlebellSingleArmSwingIcon`, pose `ballistic-hinge`
 - [ ] Lat Pulldown — key `cable-lat-pulldown`, component `CableLatPulldownIcon`, pose `seated-pulldown`
 - [ ] Straight Arm Pulldown — key `cable-straight-arm-pulldown`, component `CableStraightArmPulldownIcon`, pose `standing-pulldown`
@@ -94,8 +94,8 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 - [x] Barbell Calf Raises — key `barbell-calf-raise`, component `BarbellCalfRaiseIcon`, pose `standing-raise`
 - [x] Barbell Good Mornings — key `barbell-good-morning`, component `BarbellGoodMorningIcon`, pose `hinge`
-- [ ] Barbell Hip Thrust — key `barbell-hip-thrust`, component `BarbellHipThrustIcon`, pose `supine-bridge`
-- [ ] Barbell Lunges — key `barbell-lunge`, component `BarbellLungeIcon`, pose `lunge`
+- [x] Barbell Hip Thrust — key `barbell-hip-thrust`, component `BarbellHipThrustIcon`, pose `supine-bridge`
+- [x] Barbell Lunges — key `barbell-lunge`, component `BarbellLungeIcon`, pose `lunge`
 - [ ] Barbell Romanian Deadlift — key `barbell-romanian-deadlift`, component `BarbellRomanianDeadliftIcon`, pose `hinge`
 - [ ] Front Squat — key `barbell-front-squat`, component `BarbellFrontSquatIcon`, pose `squat`
 - [ ] Sumo Deadlift — key `barbell-sumo-deadlift`, component `BarbellSumoDeadliftIcon`, pose `hinge`
@@ -163,8 +163,8 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 - [x] Reverse Lunges — key `bodyweight-reverse-lunge`, component `BodyweightReverseLungeIcon`, pose `lunge`
 - [x] Single Leg Glute Bridge — key `bodyweight-single-leg-glute-bridge`, component `BodyweightSingleLegGluteBridgeIcon`, pose `supine-bridge`
 - [x] Sprawls — key `bodyweight-sprawl`, component `BodyweightSprawlIcon`, pose `prone-thrust`
-- [ ] Squat Thrusts — key `bodyweight-squat-thrust`, component `BodyweightSquatThrustIcon`, pose `prone-thrust`
-- [ ] Step-ups — key `bodyweight-step-up`, component `BodyweightStepUpIcon`, pose `step-up`
+- [x] Squat Thrusts — key `bodyweight-squat-thrust`, component `BodyweightSquatThrustIcon`, pose `prone-thrust`
+- [x] Step-ups — key `bodyweight-step-up`, component `BodyweightStepUpIcon`, pose `step-up`
 - [ ] Tuck Jumps — key `bodyweight-tuck-jump`, component `BodyweightTuckJumpIcon`, pose `jump`
 - [ ] Walking Lunges — key `bodyweight-walking-lunge`, component `BodyweightWalkingLungeIcon`, pose `lunge`
 - [ ] Wall Sit — key `bodyweight-wall-sit`, component `BodyweightWallSitIcon`, pose `wall-sit`
