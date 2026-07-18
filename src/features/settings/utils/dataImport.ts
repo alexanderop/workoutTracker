@@ -8,7 +8,7 @@ import { exportDataSchema } from './validation'
  * Maximum supported export version.
  * Import fails if file version exceeds this.
  */
-const MAX_SUPPORTED_VERSION = 1
+const MAX_SUPPORTED_VERSION = 2
 
 /**
  * Maximum file size for import (10MB).

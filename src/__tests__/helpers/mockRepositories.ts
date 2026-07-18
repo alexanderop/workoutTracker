@@ -258,6 +258,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getAllHabits: vi.fn().mockResolvedValue([]),
       getArchivedHabits: vi.fn().mockResolvedValue([]),
       getHabitById: vi.fn().mockResolvedValue(undefined),
+      observeAll: vi.fn().mockReturnValue({
+        get: vi.fn().mockResolvedValue({ habits: [], entries: [] }),
+        subscribe: vi.fn().mockReturnValue(() => {}),
+      }),
       addHabit: vi.fn().mockResolvedValue(undefined),
       updateHabit: vi.fn().mockResolvedValue(undefined),
       archiveHabit: vi.fn().mockResolvedValue(undefined),

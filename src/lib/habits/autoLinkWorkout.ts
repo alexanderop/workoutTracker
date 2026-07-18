@@ -8,8 +8,7 @@ import { getStartOfDay } from '@/lib/date'
  * For every active (non-archived) habit with `autoLink === 'completed-workout'`:
  * - binary habits are marked done (value 1) for the day -- idempotent, a
  *   second workout completed the same day leaves the entry at value 1.
- * - quantity habits increment by 1 per completed workout that day (a
- *   second workout the same day bumps the entry from 1 to 2).
+ * - quantity habits are ignored; workout completion cannot infer their unit.
  *
  * Archived habits and habits with `autoLink: null` are left untouched.
  *
@@ -33,25 +32,21 @@ export async function autoLinkWorkoutCompletion(
 ): Promise<void> {
   const date = getStartOfDay(new Date(completedAt))
 
-  const [habits, entriesForDay] = await Promise.all([
-    habitRepository.getAllHabits(),
-    habitRepository.getEntriesForDay(date),
-  ])
+  const habits = await habitRepository.getAllHabits()
 
-  const linkedHabits = habits.filter((habit) => habit.autoLink === 'completed-workout')
+  const linkedHabits = habits.filter(
+    (habit) => habit.kind.type === 'binary' && habit.autoLink === 'completed-workout',
+  )
   if (linkedHabits.length === 0) return
 
   const recordedAt = Date.now()
 
   for (const habit of linkedHabits) {
-    const existing = entriesForDay.find((entry) => entry.habitId === habit.id)
-    const value = habit.kind.type === 'binary' ? 1 : (existing?.value ?? 0) + 1
-
     await habitRepository.upsertEntry({
       id: generateId(),
       habitId: habit.id,
       date,
-      value,
+      value: 1,
       recordedAt,
     })
   }

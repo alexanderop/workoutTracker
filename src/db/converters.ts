@@ -1,14 +1,44 @@
 import type { Workout } from '@/types/workout'
 import type { CustomExercise } from '@/types/exercises'
 import type { BenchmarkWorkout } from '@/types/benchmark'
-import type { DbActiveBenchmarkWorkout, DbActiveWorkout, DbCustomExercise } from './schema'
+import {
+  DEFAULT_HABIT_ACCENT,
+  DEFAULT_HABIT_DESCRIPTION,
+  HABIT_ACCENTS,
+  type DbActiveBenchmarkWorkout,
+  type DbActiveWorkout,
+  type DbCustomExercise,
+  type DbHabit,
+  type HabitAccent,
+  type StoredDbHabit,
+} from './schema'
 import { BLOCK_CODECS, blockToDatabase, databaseToBlock } from '@/blocks'
-import { generateId } from './index'
+import { generateId } from './generateId'
 
 // Per-kind block conversion lives in the Block Codecs under src/blocks/<kind>/
 // and is dispatched through the Codec Registry (ADR 002). This module owns the
 // workout-level conversion: assembling blocks, ordering, and repairing
 // corrupted persisted state.
+
+// ============================================
+// Habit Converters
+// ============================================
+
+const HABIT_ACCENT_VALUES: ReadonlySet<unknown> = new Set(HABIT_ACCENTS)
+
+function isHabitAccent(value: unknown): value is HabitAccent {
+  return HABIT_ACCENT_VALUES.has(value)
+}
+
+/** Normalize legacy or malformed appearance fields at the repository boundary. */
+export function normalizeDbHabit(habit: Readonly<StoredDbHabit>): DbHabit {
+  return {
+    ...habit,
+    description:
+      typeof habit.description === 'string' ? habit.description : DEFAULT_HABIT_DESCRIPTION,
+    accent: isHabitAccent(habit.accent) ? habit.accent : DEFAULT_HABIT_ACCENT,
+  }
+}
 
 // ============================================
 // Workout Converters

@@ -6,16 +6,14 @@ import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { DbHabit } from '@/db/schema'
 import { useHabits } from '@/features/habits/composables/useHabits'
-import HabitTodayList from '@/features/habits/components/HabitTodayList.vue'
 import HabitForm from '@/features/habits/components/HabitForm.vue'
-import HabitListItem from '@/features/habits/components/HabitListItem.vue'
+import HabitDashboardCard from '@/features/habits/components/HabitDashboardCard.vue'
 import HabitArchivedList from '@/features/habits/components/HabitArchivedList.vue'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
 const { t } = useI18n()
 
 const {
-  habits,
   archivedHabits,
   hasHabits,
   todayItems,
@@ -90,36 +88,30 @@ const archiveDialogDescription = computed(() =>
     </div>
 
     <template v-if="!hasHabits && archivedHabits.length === 0">
-      <div role="status" class="py-12 text-center text-muted-foreground">
-        <p>{{ t('habits.emptyState') }}</p>
+      <div role="status" class="rounded-xl border border-dashed py-12 text-center">
+        <p class="font-semibold">{{ t('habits.emptyTitle') }}</p>
+        <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          {{ t('habits.emptyState') }}
+        </p>
+        <Button class="mt-5" @click="openCreateForm">
+          <Plus class="mr-1 size-4" />{{ t('habits.addFirstHabit') }}
+        </Button>
       </div>
     </template>
 
     <template v-else>
-      <section class="space-y-3">
-        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          {{ t('habits.todaySection') }}
-        </h2>
-        <HabitTodayList
-          :items="todayItems"
-          @toggle="toggleToday"
-          @log-quantity="logQuantityToday"
-        />
-      </section>
-
       <section v-if="hasHabits" class="space-y-3">
-        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          {{ t('habits.manageSection') }}
-        </h2>
-        <div class="space-y-2">
-          <HabitListItem
-            v-for="habit in habits"
-            :key="habit.id"
-            :habit="habit"
-            :entries="entriesFor(habit.id)"
+        <div class="space-y-3">
+          <HabitDashboardCard
+            v-for="item in todayItems"
+            :key="item.habit.id"
+            :habit="item.habit"
+            :entries="entriesFor(item.habit.id)"
+            @toggle="toggleToday"
+            @log-quantity="logQuantityToday"
             @edit="openEditForm"
             @archive="requestArchive"
-            @toggle-day="(h, date) => toggleDay(h, date)"
+            @toggle-day="(habit, date) => toggleDay(habit, date)"
           />
         </div>
       </section>

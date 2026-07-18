@@ -17,7 +17,14 @@ import {
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import type { DbHabit, HabitKind, HabitSchedule } from '@/db/schema'
+import {
+  DEFAULT_HABIT_ACCENT,
+  HABIT_ACCENTS,
+  type DbHabit,
+  type HabitAccent,
+  type HabitKind,
+  type HabitSchedule,
+} from '@/db/schema'
 import type { HabitFormData } from '../composables/useHabits'
 
 /** Small, low-effort emoji picker -- keeps icon selection to a tap, per the Phase 2 brief. */
@@ -42,9 +49,11 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const name = ref('')
+const description = ref('')
 // Input's v-model only accepts string | number, so empty string stands in
 // for "no icon" here and is normalized to null on save.
 const icon = ref('')
+const accent = ref<HabitAccent>(DEFAULT_HABIT_ACCENT)
 const scheduleType = ref<HabitSchedule['type']>('daily')
 const targetDaysPerWeek = ref(3)
 const kindType = ref<HabitKind['type']>('binary')
@@ -71,7 +80,9 @@ function seedKindFields(kind: HabitKind | undefined) {
 
 function resetForm() {
   name.value = habit?.name ?? ''
+  description.value = habit?.description ?? ''
   icon.value = habit?.icon ?? ''
+  accent.value = habit?.accent ?? DEFAULT_HABIT_ACCENT
   seedScheduleFields(habit?.schedule)
   seedKindFields(habit?.kind)
   autoLink.value = habit?.autoLink === 'completed-workout'
@@ -145,7 +156,9 @@ function handleSave() {
 
   emit('save', {
     name: name.value.trim(),
+    description: description.value.trim() || null,
     icon: icon.value.trim().length > 0 ? icon.value.trim() : null,
+    accent: accent.value,
     schedule,
     kind,
     autoLink: autoLink.value ? 'completed-workout' : null,
@@ -180,6 +193,16 @@ function handleSave() {
           <p v-if="nameError" role="alert" class="text-sm text-destructive">{{ nameError }}</p>
         </div>
 
+        <div class="space-y-1.5">
+          <Label for="habit-description">{{ t('habits.form.descriptionLabel') }}</Label>
+          <Input
+            id="habit-description"
+            v-model="description"
+            :placeholder="t('habits.form.descriptionPlaceholder')"
+            maxlength="120"
+          />
+        </div>
+
         <!-- Icon -->
         <div class="space-y-1.5">
           <Label for="habit-icon">{{ t('habits.form.iconLabel') }}</Label>
@@ -200,6 +223,25 @@ function handleSave() {
               @click="icon = preset"
             >
               {{ preset }}
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <Label>{{ t('habits.form.accentLabel') }}</Label>
+          <div class="flex flex-wrap gap-2" role="group" :aria-label="t('habits.form.accentLabel')">
+            <button
+              v-for="option in HABIT_ACCENTS"
+              :key="option"
+              type="button"
+              class="habit-accent-swatch flex size-10 items-center justify-center rounded-full border-2 transition-transform"
+              :class="accent === option ? 'border-foreground scale-110' : 'border-transparent'"
+              :data-habit-accent="option"
+              :aria-label="t(`habits.form.accents.${option}`)"
+              :aria-pressed="accent === option"
+              @click="accent = option"
+            >
+              <span v-if="accent === option" class="text-sm font-bold">✓</span>
             </button>
           </div>
         </div>
@@ -292,9 +334,12 @@ function handleSave() {
         </div>
 
         <!-- Auto-link -->
-        <div class="flex items-center justify-between">
+        <div v-if="kindType === 'binary'" class="flex items-center justify-between">
           <Label for="habit-autolink" class="cursor-pointer pr-4 text-base">
             {{ t('habits.form.autoLinkLabel') }}
+            <span class="mt-1 block text-xs font-normal text-muted-foreground">
+              {{ t('habits.form.autoLinkDescription') }}
+            </span>
           </Label>
           <Switch id="habit-autolink" v-model="autoLink" />
         </div>

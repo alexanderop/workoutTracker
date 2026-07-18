@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { DEFAULT_HABIT_ACCENT, DEFAULT_HABIT_DESCRIPTION, HABIT_ACCENTS } from '@/db/schema'
+
 import { safeIdSchema, safeStringSchema, timestampSchema } from './primitiveSchemas'
 
 /**
@@ -31,6 +33,16 @@ const habitKindSchema = z.discriminatedUnion('type', [
     .strict(),
 ])
 
+const habitDescriptionSchema = z.preprocess(
+  (value) => (typeof value === 'string' && value.length <= 120 ? value : DEFAULT_HABIT_DESCRIPTION),
+  safeStringSchema.max(120).nullable(),
+)
+
+const habitAccentSchema = z.preprocess(
+  (value) => HABIT_ACCENTS.find((accent) => accent === value) ?? DEFAULT_HABIT_ACCENT,
+  z.enum(HABIT_ACCENTS),
+)
+
 /**
  * Schema for DbHabit validation during import.
  * Matches src/db/schema.ts DbHabit type.
@@ -46,6 +58,8 @@ export const dbHabitSchema = z
     id: safeIdSchema,
     name: safeStringSchema.min(1).max(200),
     icon: safeStringSchema.max(16).nullable(),
+    description: habitDescriptionSchema,
+    accent: habitAccentSchema,
     schedule: habitScheduleSchema,
     kind: habitKindSchema,
     autoLink: z.literal('completed-workout').nullable(),

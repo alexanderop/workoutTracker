@@ -7,11 +7,11 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
-  DbHabit,
   DbHabitEntry,
   DbOnboarding,
   DbProgression,
   DbProgressionSession,
+  StoredDbHabit,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -30,7 +30,7 @@ export class WorkoutTrackerDb extends Dexie {
   progressions!: Table<DbProgression, string>
   progressionSessions!: Table<DbProgressionSession, string>
   onboarding!: Table<DbOnboarding, 'onboarding'>
-  habits!: Table<DbHabit, string>
+  habits!: Table<StoredDbHabit, string>
   habitEntries!: Table<DbHabitEntry, string>
 
   constructor() {

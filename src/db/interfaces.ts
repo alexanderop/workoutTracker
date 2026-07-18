@@ -583,6 +583,8 @@ export type HabitRepository = {
    * Find a habit by ID (active or archived).
    */
   getHabitById(id: string): Promise<DbHabit | undefined>
+  /** Reactive snapshot of all habits (active and archived) and all habit entries. */
+  observeAll(): LiveQuery<HabitSnapshot>
   /**
    * Add a new habit to the database.
    */
@@ -636,6 +638,11 @@ export type HabitRepository = {
    * `date` is a start-of-day timestamp.
    */
   getEntriesForDay(date: number): Promise<ReadonlyArray<DbHabitEntry>>
+}
+
+export type HabitSnapshot = {
+  habits: ReadonlyArray<DbHabit>
+  entries: ReadonlyArray<DbHabitEntry>
 }
 
 // ============================================

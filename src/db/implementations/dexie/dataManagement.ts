@@ -1,4 +1,5 @@
 import type { DataManagementRepository, ExportDataContents } from '@/db/interfaces'
+import { normalizeDbHabit } from '@/db/converters'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 export function createDexieDataManagementRepository(
@@ -43,7 +44,7 @@ export function createDexieDataManagementRepository(
         workouts,
         benchmarks,
         weightEntries,
-        habits,
+        storedHabits,
         habitEntries,
       ] = await Promise.all([
         database.settings.toArray(),
@@ -63,7 +64,7 @@ export function createDexieDataManagementRepository(
         workouts,
         benchmarks,
         weightEntries,
-        habits,
+        habits: storedHabits.map(normalizeDbHabit),
         habitEntries,
       }
     },
