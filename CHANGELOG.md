@@ -1,3 +1,12 @@
+# [1.37.0](https://github.com/alexanderop/workoutTracker/compare/v1.36.2...v1.37.0) (2026-07-18)
+
+
+### Features
+
+* **exercises:** stage manifest entries and progress log for missing exercise icons ([#172](https://github.com/alexanderop/workoutTracker/issues/172)) ([cef3dd1](https://github.com/alexanderop/workoutTracker/commit/cef3dd180c817a6e412b2ae4b59e56d746a7b299))
+
+
+
 ## [1.36.2](https://github.com/alexanderop/workoutTracker/compare/v1.36.1...v1.36.2) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **habits:** add grid-based habit dashboard ([#165](https://github.com/alexanderop/workoutTracker/issues/165)) ([d42fcd6](https://github.com/alexanderop/workoutTracker/commit/d42fcd642a56a621a3796f7e487f411fc62930a5)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
-
-
-
-# [1.34.0](https://github.com/alexanderop/workoutTracker/compare/v1.33.0...v1.34.0) (2026-07-18)
-
-
-### Features
-
-* **ci:** triage browser QA reports with a Claude follow-up workflow ([#164](https://github.com/alexanderop/workoutTracker/issues/164)) ([27be864](https://github.com/alexanderop/workoutTracker/commit/27be864c0bdce7bde01e24083b405efa90d8add9))
 
 
 
