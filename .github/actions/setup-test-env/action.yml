@@ -17,7 +17,10 @@ runs:
     - name: Get Playwright version
       id: playwright-version
       shell: bash
-      run: echo "version=$(pnpm list @playwright/test --depth=0 --json | jq -r '.[0].dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+      run: |
+        PLAYWRIGHT_VERSION=$(pnpm list @playwright/test --depth=0 --json | jq -r \
+          '.[0] | (.devDependencies["@playwright/test"].version // .dependencies["@playwright/test"].version)')
+        echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Cache Playwright browsers
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4

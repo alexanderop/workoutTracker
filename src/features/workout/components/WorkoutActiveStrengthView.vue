@@ -579,6 +579,7 @@ onUnmounted(() => {
               <Button
                 size="icon"
                 :aria-label="t('common.aria.markSetNumberComplete', { number: state.setNumber })"
+                :aria-pressed="state.isCompleted"
                 :class="state.completeButtonClass"
                 :disabled="!state.canToggleComplete"
                 @click="emit('toggle-complete', state.set)"

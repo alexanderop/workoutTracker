@@ -4,7 +4,7 @@ title: "Testing Guide"
 description: Migrated reference documentation from the former root documentation tree.
 resource: brain/reference/agent/testing.md
 tags: [reference, agent]
-timestamp: 2026-06-28T08:10:00Z
+timestamp: 2026-07-18T12:01:55Z
 ---
 ## Testing Guide
 
@@ -26,6 +26,8 @@ src/__tests__/
 ├── stores/              # Store tests
 ├── visual/              # Visual regression tests (vitest project=visual)
 └── setup.ts             # Global test setup (re-exports helpers for compat)
+
+test/e2e/                 # Playwright Test against the built Vite app
 ```
 
 ## Test Setup
@@ -197,7 +199,33 @@ pnpm test:coverage       # With coverage
 pnpm test:a11y           # Accessibility tests
 pnpm test:visual         # Visual regression tests
 pnpm test:arch           # Architecture tests
+pnpm test:e2e            # Build, serve with Vite preview, run Playwright E2E
+pnpm test:e2e:prebuilt   # Run E2E against an existing dist/ build
+pnpm test:e2e:ui         # Build and open Playwright UI
 ```
+
+## Playwright E2E Testing
+
+Vitest Browser Mode remains the default for components, composables, and
+feature integrations. Although it uses Playwright as its browser provider,
+those tests mount source modules inside Vitest and are not E2E.
+
+Use `test/e2e/` only for a small set of production-boundary journeys. These
+tests enter through a real URL served from `dist/`, use a fresh browser context
+per test, and do not import Vue components or application repositories.
+
+Current E2E coverage proves:
+
+- first-launch onboarding persists across a real reload;
+- an active strength workout and completed set survive reload through real
+  IndexedDB; and
+- a completed workout remains available in its summary and history after
+  reload.
+
+Configuration lives in `playwright.config.ts`. Shared fixtures in
+`test/e2e/test-utils.ts` provide `goto()` and fail tests on uncaught page
+errors. Prefer role, label, and exact visible-text locators. For debounced
+persistence, poll the actual IndexedDB boundary instead of sleeping.
 
 ## Component-Specific Testing Patterns
 
