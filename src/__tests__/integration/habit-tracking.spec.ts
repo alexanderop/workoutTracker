@@ -308,9 +308,11 @@ describe('Habit Tracking', () => {
 
       await expect.element(page.getByText('Read')).toBeVisible()
       await habits.expectIncomplete('Read')
+      const incompleteColor = habits.getTodayCompactGridColor('Read')
 
       await habits.toggleBinaryHabit('Read')
       await habits.expectComplete('Read')
+      await expect.poll(() => habits.getTodayCompactGridColor('Read')).not.toBe(incompleteColor)
 
       await habits.navigateToHabitsFromHomeCard()
 
