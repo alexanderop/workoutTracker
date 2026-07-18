@@ -32,7 +32,7 @@ jobs:
     permissions:
       contents: write # push the fix commit back to the PR branch
       pull-requests: write # comment on the PR about the pushed fix
-      actions: read # read the failed CI run's logs via gh
+      actions: write # read the failed CI run's logs; dispatch claude-fix-review
       issues: write # createComment uses the issues API
       id-token: write # OIDC for claude-code-action auth
 
@@ -125,3 +125,18 @@ jobs:
               issue_number: parseInt(process.env.PR_NUMBER, 10),
               body: `🤖 **Claude auto-fix pushed** \`${process.env.FIX_SHA.slice(0, 7)}\`\n\nCI was failing; Claude diagnosed the root cause and pushed a fix. [View run](${runUrl})\n\nPlease review the change before merging.`
             });
+
+      - name: Kick review-findings fixer
+        # This push was made with GITHUB_TOKEN, so it triggers no workflows —
+        # reviewer-bot findings already sitting on the PR (or landing on this
+        # commit) would go stale. Chain claude-fix-review explicitly via
+        # workflow_dispatch, the sanctioned way around the no-retrigger rule;
+        # its gate exits immediately when no unresolved threads exist.
+        if: steps.push-fix.outputs.pushed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          set -euo pipefail
+          gh workflow run claude-fix-review.yml -f pr_number="$PR_NUMBER"
