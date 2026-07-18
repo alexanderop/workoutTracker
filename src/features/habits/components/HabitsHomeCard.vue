@@ -2,10 +2,9 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ChevronRight, ListChecks } from '@lucide/vue'
+import { ChevronRight } from '@lucide/vue'
 import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { useHabits } from '../composables/useHabits'
 import HabitTodayList from './HabitTodayList.vue'
 
@@ -26,7 +25,7 @@ function navigateToHabits(): void {
 </script>
 
 <template>
-  <section class="w-full max-w-md" data-testid="habits-home-card">
+  <section v-if="hasHabits || isLoading" class="w-full max-w-md" data-testid="habits-home-card">
     <div class="mb-3 flex items-center justify-between">
       <h2 class="text-lg font-semibold">{{ t('habits.home.title') }}</h2>
       <Button
@@ -46,22 +45,10 @@ function navigateToHabits(): void {
     </div>
 
     <HabitTodayList
-      v-else-if="hasHabits"
+      v-else
       :items="visibleItems"
       @toggle="toggleToday"
       @log-quantity="logQuantityToday"
     />
-
-    <div v-else class="py-4">
-      <Empty>
-        <EmptyMedia>
-          <ListChecks class="h-8 w-8 text-muted-foreground" />
-        </EmptyMedia>
-        <EmptyHeader>
-          <EmptyTitle>{{ t('habits.home.emptyState') }}</EmptyTitle>
-          <EmptyDescription>{{ t('habits.emptyState') }}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    </div>
   </section>
 </template>
