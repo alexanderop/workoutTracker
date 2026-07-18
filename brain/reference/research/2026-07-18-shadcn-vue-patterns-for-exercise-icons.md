@@ -186,9 +186,11 @@ semantic inference from the filesystem.
 
 ## Implementation Status
 
-The pilot library now follows this structure under
-`src/components/exercise-icons`. Ten Bold Pose components cover the initial
-barbell, kettlebell, dumbbell, and bodyweight examples. `manifest.ts` is the
+The library now follows this structure under
+`src/components/exercise-icons`. The full set covers all 173 built-in popular
+exercises: the ten Bold Pose pilot components plus 163 further poses (one
+authored component per exercise, aliased by its exact catalog name), so every
+entry in `src/data/popularExercises.ts` resolves to bundled artwork. `manifest.ts` is the
 authored inventory; `pnpm generate:exercise-icons` validates it and rewrites
 only `generated/*`. `ExerciseAvatar.vue` resolves uploaded artwork first, then
 the bundled icon aliases, and finally initials, so existing consumers and

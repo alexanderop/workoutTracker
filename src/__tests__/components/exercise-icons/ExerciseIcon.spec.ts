@@ -11,12 +11,13 @@ import {
   setExerciseIconOverride,
 } from '@/components/exercise-icons'
 import { exerciseIconManifest } from '@/components/exercise-icons/manifest'
+import { popularExercises } from '@/data/popularExercises'
 
 const exerciseIconTestIdPattern = /^exercise-icon-/
 
 describe('exercise icon inventory', () => {
-  it('keeps the generated registry synchronized with the authored pilot manifest', () => {
-    expect(exerciseIconKeys).toHaveLength(10)
+  it('keeps the generated registry synchronized with the authored manifest', () => {
+    expect(exerciseIconKeys).toHaveLength(173)
     expect(exerciseIconKeys).toEqual(exerciseIconManifest.map(({ key }) => key))
 
     for (const entry of exerciseIconManifest) {
@@ -37,7 +38,7 @@ describe('exercise icon inventory', () => {
     expect(new Set(aliases).size).toBe(aliases.length)
   })
 
-  it('resolves every explicit pilot alias to its authored key', () => {
+  it('resolves every explicit alias to its authored key', () => {
     for (const entry of exerciseIconManifest) {
       for (const alias of entry.aliases) {
         expect(resolveExerciseIconKey(alias)).toBe(entry.key)
@@ -45,13 +46,20 @@ describe('exercise icon inventory', () => {
     }
   })
 
+  it('resolves every built-in popular exercise to a bundled icon', () => {
+    const unresolved = popularExercises
+      .map(({ name }) => name)
+      .filter((name) => resolveExerciseIconKey(name) === null)
+    expect(unresolved).toEqual([])
+  })
+
   it('returns null synchronously for an unknown exercise', () => {
     expect(resolveExerciseIconKey('Uncatalogued Moon Lift')).toBeNull()
     expect(getExerciseIcon('Uncatalogued Moon Lift')).toBeNull()
   })
 
-  it('contains the exact ten requested built-in pilot names', () => {
-    expect(exerciseIconManifest.map(({ title }) => title)).toEqual([
+  it('keeps the ten pilot poses first in the authored manifest', () => {
+    expect(exerciseIconManifest.slice(0, 10).map(({ title }) => title)).toEqual([
       'Bench Press',
       'Barbell Row',
       'Deadlift',
@@ -127,7 +135,7 @@ describe('ExerciseIcon', () => {
       .not.toHaveAttribute('data-icon-override')
   })
 
-  it('renders every pilot as a consistent 48 by 48 SVG', async () => {
+  it('renders every icon as a consistent 48 by 48 SVG', async () => {
     for (const key of exerciseIconKeys) {
       const { unmount } = render(ExerciseIcon, { props: { name: key } })
       const icon = page.getByTestId(`exercise-icon-${key}`)
