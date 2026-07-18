@@ -13,7 +13,7 @@ import {
   type StoredDbHabit,
 } from './schema'
 import { BLOCK_CODECS, blockToDatabase, databaseToBlock } from '@/blocks'
-import { generateId } from './index'
+import { generateId } from './generateId'
 
 // Per-kind block conversion lives in the Block Codecs under src/blocks/<kind>/
 // and is dispatched through the Codec Registry (ADR 002). This module owns the

@@ -4,9 +4,8 @@ import { startOfDay } from './habitStats'
 
 const WEEK_STARTS_ON = 1
 const DASHBOARD_WEEKS = 16
-const HOME_DAYS = 7
 
-export type HabitDayVisualState = 'future' | 'empty' | 'partial' | 'complete'
+type HabitDayVisualState = 'future' | 'empty' | 'partial' | 'complete'
 
 export type HabitGridDay = {
   date: number
@@ -98,20 +97,4 @@ export function buildCompactHabitGrid(
   referenceDay: number,
 ): ReadonlyArray<HabitGridWeek> {
   return buildHabitGrid(habit, entries, DASHBOARD_WEEKS, referenceDay)
-}
-
-export function buildHabitHomeStrip(
-  habit: Readonly<DbHabit>,
-  entries: ReadonlyArray<DbHabitEntry>,
-  referenceDay: number,
-): ReadonlyArray<HabitGridDay> {
-  const today = startOfDay(referenceDay)
-  const entryByDay = new Map(entries.map((entry) => [startOfDay(entry.date), entry]))
-  let date = startOfDay(addDays(new Date(today), -(HOME_DAYS - 1)).getTime())
-  const days: Array<HabitGridDay> = []
-  for (let index = 0; index < HOME_DAYS; index += 1) {
-    days.push(createDay(habit, entryByDay, date, today))
-    date = nextDay(date)
-  }
-  return days
 }
