@@ -6,8 +6,11 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
+const ADDED_TOAST_PATTERN = /^Added /
+const ESTIMATED_ONE_REP_MAX_PATTERN = /estimated 1rm/i
+
 async function waitForExerciseAddedToastToDismiss(): Promise<void> {
-  const toast = page.getByRole('status').getByText(/^Added /)
+  const toast = page.getByRole('status').getByText(ADDED_TOAST_PATTERN)
   await expect.element(toast).toBeVisible()
   await expect.element(toast, { timeout: 4000 }).not.toBeInTheDocument()
 }
@@ -149,7 +152,7 @@ describe('Visual Regression', () => {
       await expect.element(page.getByRole('heading', { name: 'Bench Press' })).toBeVisible()
 
       // Then wait for charts to render (loading -> success state)
-      await expect.element(page.getByText(/estimated 1rm/i)).toBeVisible()
+      await expect.element(page.getByText(ESTIMATED_ONE_REP_MAX_PATTERN)).toBeVisible()
 
       // Allow chart animations to settle
       await new Promise((r) => setTimeout(r, 300))
