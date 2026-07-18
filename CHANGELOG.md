@@ -1,3 +1,12 @@
+## [1.32.1](https://github.com/alexanderop/workoutTracker/compare/v1.32.0...v1.32.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* **ci:** durable review auto-fix + Sonnet 5 for review/QA agents ([#162](https://github.com/alexanderop/workoutTracker/issues/162)) ([ff0fbae](https://github.com/alexanderop/workoutTracker/commit/ff0fbae3cb23910158cfcd7cdb52fb7192c10dac)), closes [#161](https://github.com/alexanderop/workoutTracker/issues/161) [#161](https://github.com/alexanderop/workoutTracker/issues/161)
+
+
+
 # [1.32.0](https://github.com/alexanderop/workoutTracker/compare/v1.31.0...v1.32.0) (2026-07-17)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **db:** swappable persistence layer with live queries (phases 1-3) ([#151](https://github.com/alexanderop/workoutTracker/issues/151)) ([bf1d7d3](https://github.com/alexanderop/workoutTracker/commit/bf1d7d31046df9e685ed742cfced11fcdcc7447d))
-
-
-
-## [1.28.8](https://github.com/alexanderop/workoutTracker/compare/v1.28.7...v1.28.8) (2026-07-04)
-
-
-### Bug Fixes
-
-* **ci:** give browser QA realistic turn budget and crash-safe report ([#153](https://github.com/alexanderop/workoutTracker/issues/153)) ([0efa3b7](https://github.com/alexanderop/workoutTracker/commit/0efa3b77c66cb1bb85407a676b64a9c69fbdd664))
 
 
 
