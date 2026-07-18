@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "generate:exercise-icons": "node scripts/generate-exercise-icons.mjs",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test": "vitest run --project=default",
