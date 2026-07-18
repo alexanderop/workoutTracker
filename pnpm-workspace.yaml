@@ -7,7 +7,7 @@ catalogs:
     '@types/node': ^26.0.0
     '@types/sortablejs': ^1.15.9
     '@vite-pwa/assets-generator': ^1.0.2
-    '@vitejs/plugin-vue': ^6.0.7
+    '@vitejs/plugin-vue': ^6.0.8
     '@vue/tsconfig': ^0.9.1
     husky: ^9.1.7
     jiti: ^2.7.0
@@ -17,8 +17,8 @@ catalogs:
     typescript: ~6.0.3
     vite: ^8.0.16
     vite-plugin-pwa: ^1.3.0
-    vite-plugin-vue-devtools: ^8.1.3
-    vue-tsc: ^3.3.5
+    vite-plugin-vue-devtools: ^8.1.5
+    vue-tsc: ^3.3.7
     workbox-build: ^7.4.1
     workbox-window: ^7.4.1
   frontend:
@@ -27,7 +27,7 @@ catalogs:
     date-fns: ^4.4.0
     dexie: ^4.4.4
     sortablejs: ^1.15.7
-    vue: ^3.5.38
+    vue: ^3.5.40
     vue-i18n: ^11.4.6
     vue-router: ^5.1.0
     web-vitals: ^5.3.0
@@ -39,7 +39,7 @@ catalogs:
     '@intlify/eslint-plugin-vue-i18n': ^4.5.1
     '@prettier/plugin-oxc': ^0.1.4
     '@size-limit/file': ^12.1.0
-    '@vitest/eslint-plugin': ^1.6.20
+    '@vitest/eslint-plugin': ^1.6.23
     '@vue/eslint-config-prettier': ^10.2.0
     '@vue/eslint-config-typescript': ^14.8.0
     eslint: ^10.5.0
@@ -50,7 +50,7 @@ catalogs:
     eslint-plugin-regexp: ^3.1.1
     eslint-plugin-unicorn: ^68.0.0
     eslint-plugin-vue: ~10.9.2
-    jscpd: ^5.0.11
+    jscpd: ^5.0.12
     knip: ^6.17.1
     lint-staged: ^17.0.8
     markdownlint-cli2: ^0.22.1
@@ -59,31 +59,31 @@ catalogs:
     size-limit: ^12.1.0
   testing:
     '@faker-js/faker': ^10.5.0
-    '@vitest/browser': ^4.1.9
-    '@vitest/browser-playwright': ^4.1.9
-    '@vitest/coverage-v8': ^4.1.9
-    '@vitest/ui': ^4.1.9
+    '@vitest/browser': ^4.1.10
+    '@vitest/browser-playwright': ^4.1.10
+    '@vitest/coverage-v8': ^4.1.10
+    '@vitest/ui': ^4.1.10
     '@vue/test-utils': ^2.4.11
-    archunit: ^2.3.0
+    archunit: ^2.3.3
     axe-core: ^4.12.1
     fake-indexeddb: ^6.2.5
     fast-check: ^4.9.0
     jsdom: ^29.1.1
-    playwright: ^1.61.0
-    vitest: ^4.1.9
+    playwright: ^1.61.1
+    vitest: ^4.1.10
     vitest-browser-vue: ^2.1.0
   ui:
     '@internationalized/date': ^3.12.2
-    '@tailwindcss/vite': ^4.3.1
-    '@unovis/ts': ^1.6.6
-    '@unovis/vue': ^1.6.6
+    '@tailwindcss/vite': ^4.3.3
+    '@unovis/ts': ^1.6.7
+    '@unovis/vue': ^1.6.7
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     embla-carousel-vue: ^8.6.0
     '@lucide/vue': ^1.21.0
-    reka-ui: ^2.10.0
+    reka-ui: ^2.10.1
     tailwind-merge: ^3.6.0
-    tailwindcss: ^4.3.1
+    tailwindcss: ^4.3.3
     tw-animate-css: ^1.4.0
 
 onlyBuiltDependencies:
