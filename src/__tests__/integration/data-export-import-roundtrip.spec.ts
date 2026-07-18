@@ -14,6 +14,15 @@ import {
   seedSetting,
 } from '../helpers/dbAssertions'
 
+type ParseExportResult = Awaited<ReturnType<typeof parseExportFile>>
+
+function unwrapSuccessfulParse(result: ParseExportResult) {
+  if (!result.success) {
+    throw new Error(`Import validation failed: ${result.error}`)
+  }
+  return result.data
+}
+
 /**
  * Integration test for export/import round-trip.
  *
@@ -113,12 +122,11 @@ describe('Export/Import Round-Trip', () => {
 
     const result = await parseExportFile(file)
 
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.data.habits).toEqual([
+    const parsedData = unwrapSuccessfulParse(result)
+    expect(parsedData.data.habits).toEqual([
       { ...legacyHabit, description: null, accent: 'purple' },
     ])
-    expect(result.data.data.habitEntries).toEqual([entry])
+    expect(parsedData.data.habitEntries).toEqual([entry])
   })
 
   it('preserves all data types through export/import cycle', async () => {

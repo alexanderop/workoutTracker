@@ -184,6 +184,7 @@ export class HabitsPO {
 
   getTodayCompactGridColor(name: string): string {
     const row = this.getTodayRow(name).element()
+    // eslint-disable-next-line no-restricted-syntax -- Scoped lookup within the named habit row
     const todayCell = row.querySelector('.habit-today-ring')
     if (!todayCell) throw new Error(`Today's compact grid cell for "${name}" not found`)
     return globalThis.getComputedStyle(todayCell).backgroundColor

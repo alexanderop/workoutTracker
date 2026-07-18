@@ -78,11 +78,15 @@ function seedKindFields(kind: HabitKind | undefined) {
   quantityUnit.value = kind?.type === 'quantity' ? kind.unit : ''
 }
 
+function seedIdentityFields(source: DbHabit | undefined) {
+  name.value = source?.name ?? ''
+  description.value = source?.description ?? ''
+  icon.value = source?.icon ?? ''
+  accent.value = source?.accent ?? DEFAULT_HABIT_ACCENT
+}
+
 function resetForm() {
-  name.value = habit?.name ?? ''
-  description.value = habit?.description ?? ''
-  icon.value = habit?.icon ?? ''
-  accent.value = habit?.accent ?? DEFAULT_HABIT_ACCENT
+  seedIdentityFields(habit)
   seedScheduleFields(habit?.schedule)
   seedKindFields(habit?.kind)
   autoLink.value = habit?.autoLink === 'completed-workout'

@@ -26,7 +26,7 @@
     "lint:oxlint": "oxlint . --fix --ignore-path .gitignore",
     "lint:oxlint:check": "oxlint . --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
-    "lint:eslint:check": "eslint . --cache --max-warnings 1680",
+    "lint:eslint:check": "eslint . --cache --max-warnings 1676",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "lint:tokens": "node scripts/check-design-tokens.mjs",
     "lint": "run-s lint:oxlint lint:eslint lint:md lint:tokens",

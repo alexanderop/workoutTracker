@@ -8,7 +8,6 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
 
 const ADDED_TOAST_PATTERN = /^Added /
 const ESTIMATED_ONE_REP_MAX_PATTERN = /estimated 1rm/i
-
 async function waitForExerciseAddedToastToDismiss(): Promise<void> {
   const toast = page.getByRole('status').getByText(ADDED_TOAST_PATTERN)
   await expect.element(toast).toBeVisible()
