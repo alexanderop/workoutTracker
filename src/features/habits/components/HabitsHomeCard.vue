@@ -6,14 +6,14 @@ import { ChevronRight } from '@lucide/vue'
 import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { useHabits } from '../composables/useHabits'
-import HabitTodayList from './HabitTodayList.vue'
+import HabitHomeRow from './HabitHomeRow.vue'
 
 /** Home card only surfaces a quick glance -- the full list lives at /habits. */
 const HOME_CARD_LIMIT = 4
 
 const { t } = useI18n()
 const router = useRouter()
-const { todayItems, hasHabits, isLoading, load, toggleToday, logQuantityToday } = useHabits()
+const { todayItems, hasHabits, isLoading, load, toggleToday, entriesFor } = useHabits()
 
 onMounted(load)
 
@@ -40,15 +40,14 @@ function navigateToHabits(): void {
       </Button>
     </div>
 
-    <div v-if="isLoading" class="py-8 text-center text-sm text-muted-foreground">
-      {{ t('common.states.loading') }}
+    <div v-if="!isLoading" class="space-y-2">
+      <HabitHomeRow
+        v-for="item in visibleItems"
+        :key="item.habit.id"
+        :item="item"
+        :entries="entriesFor(item.habit.id)"
+        @toggle="toggleToday"
+      />
     </div>
-
-    <HabitTodayList
-      v-else
-      :items="visibleItems"
-      @toggle="toggleToday"
-      @log-quantity="logQuantityToday"
-    />
   </section>
 </template>

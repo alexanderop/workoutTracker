@@ -15,7 +15,7 @@ import { tryCatch } from '@/lib/tryCatch'
  * Current export format version.
  * Increment this when making breaking changes to the export format.
  */
-const EXPORT_VERSION = 1
+const EXPORT_VERSION = 2
 
 /**
  * Export data structure with versioning for future compatibility.

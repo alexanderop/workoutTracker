@@ -346,6 +346,13 @@ export type HabitSchedule = { type: 'daily' } | { type: 'weekly'; targetDaysPerW
  */
 export type HabitKind = { type: 'binary' } | { type: 'quantity'; target: number; unit: string } // e.g. 2 'L' water
 
+export const HABIT_ACCENTS = ['purple', 'blue', 'cyan', 'green', 'amber', 'rose', 'pink'] as const
+
+export type HabitAccent = (typeof HABIT_ACCENTS)[number]
+
+export const DEFAULT_HABIT_DESCRIPTION = null
+export const DEFAULT_HABIT_ACCENT: HabitAccent = 'purple'
+
 /**
  * A habit definition (e.g. "Drink water", "Stretch").
  * Archived rather than deleted so history is preserved (see DbHabitEntry) --
@@ -356,12 +363,20 @@ export type DbHabit = {
   id: string
   name: string
   icon: string | null // emoji
+  description: string | null
+  accent: HabitAccent
   schedule: HabitSchedule
   kind: HabitKind
   autoLink: 'completed-workout' | null
   archivedAt: number | null // archive, never delete history
   orderIndex: number
   createdAt: number
+}
+
+/** Raw habit shape accepted from IndexedDB before repository normalization. */
+export type StoredDbHabit = Omit<DbHabit, 'description' | 'accent'> & {
+  description?: unknown
+  accent?: unknown
 }
 
 /**

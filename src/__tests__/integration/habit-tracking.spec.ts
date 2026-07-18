@@ -64,6 +64,24 @@ describe('Habit Tracking', () => {
 
       cleanup()
     })
+
+    it("updates today's compact grid cell when the habit is marked complete", async () => {
+      const { navigateTo, habits, cleanup } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.createHabit({ name: 'Add weight' })
+
+      const incompleteColor = habits.getTodayCompactGridColor('Add weight')
+
+      await habits.toggleBinaryHabit('Add weight')
+      await habits.expectComplete('Add weight')
+
+      await expect
+        .poll(() => habits.getTodayCompactGridColor('Add weight'))
+        .not.toBe(incompleteColor)
+
+      cleanup()
+    })
   })
 
   describe('quantity habit', () => {

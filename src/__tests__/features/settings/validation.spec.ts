@@ -671,6 +671,18 @@ describe('Habit Schema Validation', () => {
     it('accepts a valid daily binary habit', () => {
       const result = dbHabitSchema.safeParse(createValidHabit())
       expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toMatchObject({ description: null, accent: 'purple' })
+    })
+
+    it('normalizes invalid legacy appearance fields', () => {
+      const result = dbHabitSchema.safeParse(
+        createValidHabit({ description: 42, accent: 'orange' }),
+      )
+
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toMatchObject({ description: null, accent: 'purple' })
     })
 
     it('accepts a valid weekly quantity habit', () => {

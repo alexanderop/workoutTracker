@@ -133,6 +133,13 @@
   --block-fortime: oklch(0.65 0.25 16);
   --block-cardio: oklch(0.71 0.14 215);
   --highlight: oklch(0.7 0.21 48);
+  --habit-purple: oklch(0.6 0.23 295);
+  --habit-blue: oklch(0.6 0.19 255);
+  --habit-cyan: oklch(0.68 0.14 205);
+  --habit-green: oklch(0.62 0.18 145);
+  --habit-amber: oklch(0.72 0.18 75);
+  --habit-rose: oklch(0.63 0.22 15);
+  --habit-pink: oklch(0.66 0.22 345);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.55 0.25 290);
@@ -186,6 +193,13 @@
   --block-fortime: oklch(0.71 0.19 13);
   --block-cardio: oklch(0.79 0.15 212);
   --highlight: oklch(0.75 0.18 56);
+  --habit-purple: oklch(0.75 0.18 295);
+  --habit-blue: oklch(0.74 0.15 255);
+  --habit-cyan: oklch(0.78 0.13 205);
+  --habit-green: oklch(0.75 0.16 145);
+  --habit-amber: oklch(0.8 0.15 75);
+  --habit-rose: oklch(0.74 0.18 15);
+  --habit-pink: oklch(0.76 0.18 345);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.75 0.2 290);
@@ -206,6 +220,47 @@
 }
 
 @layer components {
+  [data-habit-accent='purple'] {
+    --habit-accent: var(--habit-purple);
+  }
+  [data-habit-accent='blue'] {
+    --habit-accent: var(--habit-blue);
+  }
+  [data-habit-accent='cyan'] {
+    --habit-accent: var(--habit-cyan);
+  }
+  [data-habit-accent='green'] {
+    --habit-accent: var(--habit-green);
+  }
+  [data-habit-accent='amber'] {
+    --habit-accent: var(--habit-amber);
+  }
+  [data-habit-accent='rose'] {
+    --habit-accent: var(--habit-rose);
+  }
+  [data-habit-accent='pink'] {
+    --habit-accent: var(--habit-pink);
+  }
+
+  .habit-accent-swatch,
+  .habit-grid-complete,
+  .habit-today-complete {
+    background-color: var(--habit-accent);
+    color: oklch(0.99 0 0);
+  }
+  .habit-grid-partial {
+    background-color: oklch(from var(--habit-accent) l c h / 38%);
+  }
+  .habit-today-incomplete {
+    border-color: oklch(from var(--habit-accent) l c h / 55%);
+    color: var(--habit-accent);
+  }
+  .habit-today-ring {
+    box-shadow:
+      0 0 0 1px var(--card),
+      0 0 0 3px var(--habit-accent);
+  }
+
   /* Status color classes for completion/comparison states */
   .status-success {
     color: var(--success);

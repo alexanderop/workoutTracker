@@ -38,7 +38,7 @@ describe('Export/Import Round-Trip', () => {
 
     // Build export file structure (matching ExportData type)
     const exportFile = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       data: exportedData,
     }
@@ -70,6 +70,55 @@ describe('Export/Import Round-Trip', () => {
     expect(await getWorkoutCount()).toBe(1)
     const workouts = await getAllWorkouts()
     expect(workouts[0]?.name).toBe('Test Workout')
+  })
+
+  it('normalizes legacy habits from version 1 without changing their entries', async () => {
+    const legacyHabit = {
+      id: 'legacy-habit',
+      name: 'Stretch',
+      icon: null,
+      schedule: { type: 'daily' },
+      kind: { type: 'binary' },
+      autoLink: null,
+      archivedAt: null,
+      orderIndex: 0,
+      createdAt: 1,
+    }
+    const entry = {
+      id: 'legacy-entry',
+      habitId: legacyHabit.id,
+      date: 1,
+      value: 1,
+      recordedAt: 1,
+    }
+    const file = new File(
+      [
+        JSON.stringify({
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          data: {
+            settings: [],
+            customExercises: [],
+            templates: [],
+            workouts: [],
+            benchmarks: [],
+            habits: [legacyHabit],
+            habitEntries: [entry],
+          },
+        }),
+      ],
+      'legacy-backup.json',
+      { type: 'application/json' },
+    )
+
+    const result = await parseExportFile(file)
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.data.habits).toEqual([
+      { ...legacyHabit, description: null, accent: 'purple' },
+    ])
+    expect(result.data.data.habitEntries).toEqual([entry])
   })
 
   it('preserves all data types through export/import cycle', async () => {

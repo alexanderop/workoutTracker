@@ -10,6 +10,8 @@ export function createDbHabit(overrides: Partial<DbHabit> = {}): DbHabit {
     id: generateId(),
     name: 'Drink water',
     icon: null,
+    description: null,
+    accent: 'purple',
     schedule: DEFAULT_SCHEDULE,
     kind: DEFAULT_KIND,
     autoLink: null,

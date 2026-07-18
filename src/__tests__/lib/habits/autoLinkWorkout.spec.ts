@@ -45,7 +45,7 @@ describe('autoLinkWorkoutCompletion', () => {
     expect(entries[0]?.value).toBe(1)
   })
 
-  it('increments a quantity habit per completed workout the same day', async () => {
+  it('ignores quantity habits even when they have a legacy auto-link value', async () => {
     const repo = getHabitsRepository()
     const habit = createDbHabit({
       kind: { type: 'quantity', target: 3, unit: 'workouts' },
@@ -56,15 +56,8 @@ describe('autoLinkWorkoutCompletion', () => {
     const completedAt = Date.now()
     await autoLinkWorkoutCompletion(repo, completedAt)
 
-    const afterFirst = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
-    expect(afterFirst).toHaveLength(1)
-    expect(afterFirst[0]?.value).toBe(1)
-
-    await autoLinkWorkoutCompletion(repo, completedAt + 60_000)
-
-    const afterSecond = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
-    expect(afterSecond).toHaveLength(1)
-    expect(afterSecond[0]?.value).toBe(2)
+    const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
+    expect(entries).toEqual([])
   })
 
   it('does not touch archived habits', async () => {
@@ -113,9 +106,9 @@ describe('autoLinkWorkoutCompletion', () => {
     await autoLinkWorkoutCompletion(repo, completedAt)
 
     const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
-    expect(entries).toHaveLength(2)
+    expect(entries).toHaveLength(1)
     expect(entries.find((e) => e.habitId === binaryLinked.id)?.value).toBe(1)
-    expect(entries.find((e) => e.habitId === quantityLinked.id)?.value).toBe(1)
+    expect(entries.find((e) => e.habitId === quantityLinked.id)).toBeUndefined()
     expect(entries.find((e) => e.habitId === unlinked.id)).toBeUndefined()
   })
 })
