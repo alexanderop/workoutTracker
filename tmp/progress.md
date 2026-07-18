@@ -31,42 +31,42 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 - [x] Kettlebell Dead Clean — key `kettlebell-dead-clean`, component `KettlebellDeadCleanIcon`, pose `hinge`
 - [x] Kettlebell Gorilla Row — key `kettlebell-gorilla-row`, component `KettlebellGorillaRowIcon`, pose `hinged-pull`
 - [x] Kettlebell Row — key `kettlebell-row`, component `KettlebellRowIcon`, pose `hinged-pull`
-- [ ] Kettlebell Single Arm Swing — key `kettlebell-single-arm-swing`, component `KettlebellSingleArmSwingIcon`, pose `ballistic-hinge`
-- [ ] Lat Pulldown — key `cable-lat-pulldown`, component `CableLatPulldownIcon`, pose `seated-pulldown`
-- [ ] Straight Arm Pulldown — key `cable-straight-arm-pulldown`, component `CableStraightArmPulldownIcon`, pose `standing-pulldown`
-- [ ] Assisted Pull-up Machine — key `machine-assisted-pull-up`, component `MachineAssistedPullUpIcon`, pose `hang-pull`
-- [ ] Back Extension Machine — key `machine-back-extension`, component `MachineBackExtensionIcon`, pose `hinge`
-- [ ] Chest Supported Row — key `machine-chest-supported-row`, component `MachineChestSupportedRowIcon`, pose `supported-pull`
-- [ ] Reverse Hyper Machine — key `machine-reverse-hyper`, component `MachineReverseHyperIcon`, pose `prone-hinge`
-- [ ] Seated Row Machine — key `machine-seated-row`, component `MachineSeatedRowIcon`, pose `seated-pull`
-- [ ] T-Bar Row Machine — key `machine-t-bar-row`, component `MachineTBarRowIcon`, pose `hinged-pull`
-- [ ] Chin-ups — key `bodyweight-chin-up`, component `BodyweightChinUpIcon`, pose `hang-pull`
-- [ ] Dead Hang — key `bodyweight-dead-hang`, component `BodyweightDeadHangIcon`, pose `hang`
-- [ ] Inverted Rows — key `bodyweight-inverted-row`, component `BodyweightInvertedRowIcon`, pose `supine-pull`
-- [ ] Prone Y-Raises — key `bodyweight-prone-y-raise`, component `BodyweightProneYRaiseIcon`, pose `prone-raise`
-- [ ] Pull-ups — key `bodyweight-pull-up`, component `BodyweightPullUpIcon`, pose `hang-pull`
-- [ ] Club Pullover — key `club-pullover`, component `ClubPulloverIcon`, pose `overhead-arc`
+- [x] Kettlebell Single Arm Swing — key `kettlebell-single-arm-swing`, component `KettlebellSingleArmSwingIcon`, pose `ballistic-hinge`
+- [x] Lat Pulldown — key `cable-lat-pulldown`, component `CableLatPulldownIcon`, pose `seated-pulldown`
+- [x] Straight Arm Pulldown — key `cable-straight-arm-pulldown`, component `CableStraightArmPulldownIcon`, pose `standing-pulldown`
+- [x] Assisted Pull-up Machine — key `machine-assisted-pull-up`, component `MachineAssistedPullUpIcon`, pose `hang-pull`
+- [x] Back Extension Machine — key `machine-back-extension`, component `MachineBackExtensionIcon`, pose `hinge`
+- [x] Chest Supported Row — key `machine-chest-supported-row`, component `MachineChestSupportedRowIcon`, pose `supported-pull`
+- [x] Reverse Hyper Machine — key `machine-reverse-hyper`, component `MachineReverseHyperIcon`, pose `prone-hinge`
+- [x] Seated Row Machine — key `machine-seated-row`, component `MachineSeatedRowIcon`, pose `seated-pull`
+- [x] T-Bar Row Machine — key `machine-t-bar-row`, component `MachineTBarRowIcon`, pose `hinged-pull`
+- [x] Chin-ups — key `bodyweight-chin-up`, component `BodyweightChinUpIcon`, pose `hang-pull`
+- [x] Dead Hang — key `bodyweight-dead-hang`, component `BodyweightDeadHangIcon`, pose `hang`
+- [x] Inverted Rows — key `bodyweight-inverted-row`, component `BodyweightInvertedRowIcon`, pose `supine-pull`
+- [x] Prone Y-Raises — key `bodyweight-prone-y-raise`, component `BodyweightProneYRaiseIcon`, pose `prone-raise`
+- [x] Pull-ups — key `bodyweight-pull-up`, component `BodyweightPullUpIcon`, pose `hang-pull`
+- [x] Club Pullover — key `club-pullover`, component `ClubPulloverIcon`, pose `overhead-arc`
 
 ## shoulders
 
-- [ ] Lateral Raise — key `dumbbell-lateral-raise`, component `DumbbellLateralRaiseIcon`, pose `standing-raise`
-- [ ] Kettlebell Armbar — key `kettlebell-armbar`, component `KettlebellArmbarIcon`, pose `supine-hold`
-- [ ] Kettlebell Clean — key `kettlebell-clean`, component `KettlebellCleanIcon`, pose `rack-catch`
-- [ ] Kettlebell Clean and Press — key `kettlebell-clean-and-press`, component `KettlebellCleanAndPressIcon`, pose `vertical-press`
-- [ ] Kettlebell Halo — key `kettlebell-halo`, component `KettlebellHaloIcon`, pose `head-circle`
-- [ ] Kettlebell High Pull — key `kettlebell-high-pull`, component `KettlebellHighPullIcon`, pose `upright-pull`
-- [ ] Kettlebell Press — key `kettlebell-press`, component `KettlebellPressIcon`, pose `vertical-press`
-- [ ] Kettlebell Snatch — key `kettlebell-snatch`, component `KettlebellSnatchIcon`, pose `overhead-lockout`
-- [ ] Cable Face Pull — key `cable-face-pull`, component `CableFacePullIcon`, pose `standing-pull`
-- [ ] Cable Reverse Fly — key `cable-reverse-fly`, component `CableReverseFlyIcon`, pose `standing-fly`
-- [ ] Lateral Raise Machine — key `machine-lateral-raise`, component `MachineLateralRaiseIcon`, pose `seated-raise`
-- [ ] Rear Delt Machine — key `machine-rear-delt`, component `MachineRearDeltIcon`, pose `seated-fly`
-- [ ] Shoulder Press Machine — key `machine-shoulder-press`, component `MachineShoulderPressIcon`, pose `seated-press`
-- [ ] Smith Machine Shoulder Press — key `smith-machine-shoulder-press`, component `SmithMachineShoulderPressIcon`, pose `seated-press`
-- [ ] Handstand Push-ups — key `bodyweight-handstand-push-up`, component `BodyweightHandstandPushUpIcon`, pose `inverted-press`
-- [ ] Pike Hold — key `bodyweight-pike-hold`, component `BodyweightPikeHoldIcon`, pose `pike`
-- [ ] Pike Push-ups — key `bodyweight-pike-push-up`, component `BodyweightPikePushUpIcon`, pose `pike`
-- [ ] Shoulder Taps — key `bodyweight-shoulder-taps`, component `BodyweightShoulderTapsIcon`, pose `prone-brace`
+- [x] Lateral Raise — key `dumbbell-lateral-raise`, component `DumbbellLateralRaiseIcon`, pose `standing-raise`
+- [x] Kettlebell Armbar — key `kettlebell-armbar`, component `KettlebellArmbarIcon`, pose `supine-hold`
+- [x] Kettlebell Clean — key `kettlebell-clean`, component `KettlebellCleanIcon`, pose `rack-catch`
+- [x] Kettlebell Clean and Press — key `kettlebell-clean-and-press`, component `KettlebellCleanAndPressIcon`, pose `vertical-press`
+- [x] Kettlebell Halo — key `kettlebell-halo`, component `KettlebellHaloIcon`, pose `head-circle`
+- [x] Kettlebell High Pull — key `kettlebell-high-pull`, component `KettlebellHighPullIcon`, pose `upright-pull`
+- [x] Kettlebell Press — key `kettlebell-press`, component `KettlebellPressIcon`, pose `vertical-press`
+- [x] Kettlebell Snatch — key `kettlebell-snatch`, component `KettlebellSnatchIcon`, pose `overhead-lockout`
+- [x] Cable Face Pull — key `cable-face-pull`, component `CableFacePullIcon`, pose `standing-pull`
+- [x] Cable Reverse Fly — key `cable-reverse-fly`, component `CableReverseFlyIcon`, pose `standing-fly`
+- [x] Lateral Raise Machine — key `machine-lateral-raise`, component `MachineLateralRaiseIcon`, pose `seated-raise`
+- [x] Rear Delt Machine — key `machine-rear-delt`, component `MachineRearDeltIcon`, pose `seated-fly`
+- [x] Shoulder Press Machine — key `machine-shoulder-press`, component `MachineShoulderPressIcon`, pose `seated-press`
+- [x] Smith Machine Shoulder Press — key `smith-machine-shoulder-press`, component `SmithMachineShoulderPressIcon`, pose `seated-press`
+- [x] Handstand Push-ups — key `bodyweight-handstand-push-up`, component `BodyweightHandstandPushUpIcon`, pose `inverted-press`
+- [x] Pike Hold — key `bodyweight-pike-hold`, component `BodyweightPikeHoldIcon`, pose `pike`
+- [x] Pike Push-ups — key `bodyweight-pike-push-up`, component `BodyweightPikePushUpIcon`, pose `pike`
+- [x] Shoulder Taps — key `bodyweight-shoulder-taps`, component `BodyweightShoulderTapsIcon`, pose `prone-brace`
 
 ## clubs
 
@@ -96,52 +96,52 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 - [x] Barbell Good Mornings — key `barbell-good-morning`, component `BarbellGoodMorningIcon`, pose `hinge`
 - [x] Barbell Hip Thrust — key `barbell-hip-thrust`, component `BarbellHipThrustIcon`, pose `supine-bridge`
 - [x] Barbell Lunges — key `barbell-lunge`, component `BarbellLungeIcon`, pose `lunge`
-- [ ] Barbell Romanian Deadlift — key `barbell-romanian-deadlift`, component `BarbellRomanianDeadliftIcon`, pose `hinge`
-- [ ] Front Squat — key `barbell-front-squat`, component `BarbellFrontSquatIcon`, pose `squat`
-- [ ] Sumo Deadlift — key `barbell-sumo-deadlift`, component `BarbellSumoDeadliftIcon`, pose `hinge`
-- [ ] Dumbbell Bulgarian Split Squat — key `dumbbell-bulgarian-split-squat`, component `DumbbellBulgarianSplitSquatIcon`, pose `split-squat`
-- [ ] Dumbbell Calf Raises — key `dumbbell-calf-raise`, component `DumbbellCalfRaiseIcon`, pose `standing-raise`
-- [ ] Dumbbell Goblet Squat — key `dumbbell-goblet-squat`, component `DumbbellGobletSquatIcon`, pose `goblet-squat`
-- [ ] Dumbbell Hip Thrust — key `dumbbell-hip-thrust`, component `DumbbellHipThrustIcon`, pose `supine-bridge`
-- [ ] Dumbbell Lunges — key `dumbbell-lunge`, component `DumbbellLungeIcon`, pose `lunge`
-- [ ] Dumbbell Romanian Deadlift — key `dumbbell-romanian-deadlift`, component `DumbbellRomanianDeadliftIcon`, pose `hinge`
-- [ ] Dumbbell Single Leg Deadlift — key `dumbbell-single-leg-deadlift`, component `DumbbellSingleLegDeadliftIcon`, pose `single-leg-hinge`
-- [ ] Dumbbell Step-ups — key `dumbbell-step-up`, component `DumbbellStepUpIcon`, pose `step-up`
-- [ ] Dumbbell Sumo Squat — key `dumbbell-sumo-squat`, component `DumbbellSumoSquatIcon`, pose `squat`
-- [ ] Kettlebell Single Leg Deadlift — key `kettlebell-single-leg-deadlift`, component `KettlebellSingleLegDeadliftIcon`, pose `single-leg-hinge`
-- [ ] Kettlebell Thruster — key `kettlebell-thruster`, component `KettlebellThrusterIcon`, pose `squat-press`
-- [ ] Cable Kickbacks — key `cable-kickback`, component `CableKickbackIcon`, pose `standing-kickback`
-- [ ] Cable Pull-Through — key `cable-pull-through`, component `CablePullThroughIcon`, pose `hinge`
-- [ ] Cable Romanian Deadlift — key `cable-romanian-deadlift`, component `CableRomanianDeadliftIcon`, pose `hinge`
+- [x] Barbell Romanian Deadlift — key `barbell-romanian-deadlift`, component `BarbellRomanianDeadliftIcon`, pose `hinge`
+- [x] Front Squat — key `barbell-front-squat`, component `BarbellFrontSquatIcon`, pose `squat`
+- [x] Sumo Deadlift — key `barbell-sumo-deadlift`, component `BarbellSumoDeadliftIcon`, pose `hinge`
+- [x] Dumbbell Bulgarian Split Squat — key `dumbbell-bulgarian-split-squat`, component `DumbbellBulgarianSplitSquatIcon`, pose `split-squat`
+- [x] Dumbbell Calf Raises — key `dumbbell-calf-raise`, component `DumbbellCalfRaiseIcon`, pose `standing-raise`
+- [x] Dumbbell Goblet Squat — key `dumbbell-goblet-squat`, component `DumbbellGobletSquatIcon`, pose `goblet-squat`
+- [x] Dumbbell Hip Thrust — key `dumbbell-hip-thrust`, component `DumbbellHipThrustIcon`, pose `supine-bridge`
+- [x] Dumbbell Lunges — key `dumbbell-lunge`, component `DumbbellLungeIcon`, pose `lunge`
+- [x] Dumbbell Romanian Deadlift — key `dumbbell-romanian-deadlift`, component `DumbbellRomanianDeadliftIcon`, pose `hinge`
+- [x] Dumbbell Single Leg Deadlift — key `dumbbell-single-leg-deadlift`, component `DumbbellSingleLegDeadliftIcon`, pose `single-leg-hinge`
+- [x] Dumbbell Step-ups — key `dumbbell-step-up`, component `DumbbellStepUpIcon`, pose `step-up`
+- [x] Dumbbell Sumo Squat — key `dumbbell-sumo-squat`, component `DumbbellSumoSquatIcon`, pose `squat`
+- [x] Kettlebell Single Leg Deadlift — key `kettlebell-single-leg-deadlift`, component `KettlebellSingleLegDeadliftIcon`, pose `single-leg-hinge`
+- [x] Kettlebell Thruster — key `kettlebell-thruster`, component `KettlebellThrusterIcon`, pose `squat-press`
+- [x] Cable Kickbacks — key `cable-kickback`, component `CableKickbackIcon`, pose `standing-kickback`
+- [x] Cable Pull-Through — key `cable-pull-through`, component `CablePullThroughIcon`, pose `hinge`
+- [x] Cable Romanian Deadlift — key `cable-romanian-deadlift`, component `CableRomanianDeadliftIcon`, pose `hinge`
 
 ## legs-machine
 
-- [ ] Belt Squat Machine — key `machine-belt-squat`, component `MachineBeltSquatIcon`, pose `squat`
-- [ ] Donkey Calf Raise Machine — key `machine-donkey-calf-raise`, component `MachineDonkeyCalfRaiseIcon`, pose `hinged-raise`
-- [ ] Glute Drive Machine — key `machine-glute-drive`, component `MachineGluteDriveIcon`, pose `supine-bridge`
-- [ ] Glute Kickback Machine — key `machine-glute-kickback`, component `MachineGluteKickbackIcon`, pose `standing-kickback`
-- [ ] Hack Squat Machine — key `machine-hack-squat`, component `MachineHackSquatIcon`, pose `sled-squat`
-- [ ] Hip Abduction Machine — key `machine-hip-abduction`, component `MachineHipAbductionIcon`, pose `seated-legs-open`
-- [ ] Hip Adduction Machine — key `machine-hip-adduction`, component `MachineHipAdductionIcon`, pose `seated-legs-closed`
-- [ ] Hip Thrust Machine — key `machine-hip-thrust`, component `MachineHipThrustIcon`, pose `supine-bridge`
-- [ ] Leg Curl — key `machine-leg-curl`, component `MachineLegCurlIcon`, pose `seated-curl-leg`
-- [ ] Leg Extension — key `machine-leg-extension`, component `MachineLegExtensionIcon`, pose `seated-extension-leg`
-- [ ] Leg Press — key `machine-leg-press`, component `MachineLegPressIcon`, pose `seated-leg-press`
-- [ ] Leg Press Calf Raise — key `machine-leg-press-calf-raise`, component `MachineLegPressCalfRaiseIcon`, pose `seated-leg-press`
-- [ ] Lying Leg Curl — key `machine-lying-leg-curl`, component `MachineLyingLegCurlIcon`, pose `prone-curl-leg`
-- [ ] Nordic Curl Machine — key `machine-nordic-curl`, component `MachineNordicCurlIcon`, pose `kneeling-lower`
-- [ ] Pendulum Squat — key `machine-pendulum-squat`, component `MachinePendulumSquatIcon`, pose `sled-squat`
-- [ ] Reverse Hack Squat — key `machine-reverse-hack-squat`, component `MachineReverseHackSquatIcon`, pose `sled-squat`
-- [ ] Seated Calf Raise — key `machine-seated-calf-raise`, component `MachineSeatedCalfRaiseIcon`, pose `seated-raise`
-- [ ] Seated Leg Curl — key `machine-seated-leg-curl`, component `MachineSeatedLegCurlIcon`, pose `seated-curl-leg`
-- [ ] Sissy Squat Machine — key `machine-sissy-squat`, component `MachineSissySquatIcon`, pose `lean-back-squat`
-- [ ] Smith Machine Lunges — key `smith-machine-lunge`, component `SmithMachineLungeIcon`, pose `lunge`
-- [ ] Smith Machine Romanian Deadlift — key `smith-machine-romanian-deadlift`, component `SmithMachineRomanianDeadliftIcon`, pose `hinge`
-- [ ] Smith Machine Squat — key `smith-machine-squat`, component `SmithMachineSquatIcon`, pose `squat`
-- [ ] Standing Calf Raise Machine — key `machine-standing-calf-raise`, component `MachineStandingCalfRaiseIcon`, pose `standing-raise`
-- [ ] Standing Leg Curl — key `machine-standing-leg-curl`, component `MachineStandingLegCurlIcon`, pose `standing-curl-leg`
-- [ ] V-Squat Machine — key `machine-v-squat`, component `MachineVSquatIcon`, pose `sled-squat`
-- [ ] Vertical Leg Press — key `machine-vertical-leg-press`, component `MachineVerticalLegPressIcon`, pose `supine-leg-press`
+- [x] Belt Squat Machine — key `machine-belt-squat`, component `MachineBeltSquatIcon`, pose `squat`
+- [x] Donkey Calf Raise Machine — key `machine-donkey-calf-raise`, component `MachineDonkeyCalfRaiseIcon`, pose `hinged-raise`
+- [x] Glute Drive Machine — key `machine-glute-drive`, component `MachineGluteDriveIcon`, pose `supine-bridge`
+- [x] Glute Kickback Machine — key `machine-glute-kickback`, component `MachineGluteKickbackIcon`, pose `standing-kickback`
+- [x] Hack Squat Machine — key `machine-hack-squat`, component `MachineHackSquatIcon`, pose `sled-squat`
+- [x] Hip Abduction Machine — key `machine-hip-abduction`, component `MachineHipAbductionIcon`, pose `seated-legs-open`
+- [x] Hip Adduction Machine — key `machine-hip-adduction`, component `MachineHipAdductionIcon`, pose `seated-legs-closed`
+- [x] Hip Thrust Machine — key `machine-hip-thrust`, component `MachineHipThrustIcon`, pose `supine-bridge`
+- [x] Leg Curl — key `machine-leg-curl`, component `MachineLegCurlIcon`, pose `seated-curl-leg`
+- [x] Leg Extension — key `machine-leg-extension`, component `MachineLegExtensionIcon`, pose `seated-extension-leg`
+- [x] Leg Press — key `machine-leg-press`, component `MachineLegPressIcon`, pose `seated-leg-press`
+- [x] Leg Press Calf Raise — key `machine-leg-press-calf-raise`, component `MachineLegPressCalfRaiseIcon`, pose `seated-leg-press`
+- [x] Lying Leg Curl — key `machine-lying-leg-curl`, component `MachineLyingLegCurlIcon`, pose `prone-curl-leg`
+- [x] Nordic Curl Machine — key `machine-nordic-curl`, component `MachineNordicCurlIcon`, pose `kneeling-lower`
+- [x] Pendulum Squat — key `machine-pendulum-squat`, component `MachinePendulumSquatIcon`, pose `sled-squat`
+- [x] Reverse Hack Squat — key `machine-reverse-hack-squat`, component `MachineReverseHackSquatIcon`, pose `sled-squat`
+- [x] Seated Calf Raise — key `machine-seated-calf-raise`, component `MachineSeatedCalfRaiseIcon`, pose `seated-raise`
+- [x] Seated Leg Curl — key `machine-seated-leg-curl`, component `MachineSeatedLegCurlIcon`, pose `seated-curl-leg`
+- [x] Sissy Squat Machine — key `machine-sissy-squat`, component `MachineSissySquatIcon`, pose `lean-back-squat`
+- [x] Smith Machine Lunges — key `smith-machine-lunge`, component `SmithMachineLungeIcon`, pose `lunge`
+- [x] Smith Machine Romanian Deadlift — key `smith-machine-romanian-deadlift`, component `SmithMachineRomanianDeadliftIcon`, pose `hinge`
+- [x] Smith Machine Squat — key `smith-machine-squat`, component `SmithMachineSquatIcon`, pose `squat`
+- [x] Standing Calf Raise Machine — key `machine-standing-calf-raise`, component `MachineStandingCalfRaiseIcon`, pose `standing-raise`
+- [x] Standing Leg Curl — key `machine-standing-leg-curl`, component `MachineStandingLegCurlIcon`, pose `standing-curl-leg`
+- [x] V-Squat Machine — key `machine-v-squat`, component `MachineVSquatIcon`, pose `sled-squat`
+- [x] Vertical Leg Press — key `machine-vertical-leg-press`, component `MachineVerticalLegPressIcon`, pose `supine-leg-press`
 
 ## legs-bodyweight
 
@@ -165,38 +165,38 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 - [x] Sprawls — key `bodyweight-sprawl`, component `BodyweightSprawlIcon`, pose `prone-thrust`
 - [x] Squat Thrusts — key `bodyweight-squat-thrust`, component `BodyweightSquatThrustIcon`, pose `prone-thrust`
 - [x] Step-ups — key `bodyweight-step-up`, component `BodyweightStepUpIcon`, pose `step-up`
-- [ ] Tuck Jumps — key `bodyweight-tuck-jump`, component `BodyweightTuckJumpIcon`, pose `jump`
-- [ ] Walking Lunges — key `bodyweight-walking-lunge`, component `BodyweightWalkingLungeIcon`, pose `lunge`
-- [ ] Wall Sit — key `bodyweight-wall-sit`, component `BodyweightWallSitIcon`, pose `wall-sit`
+- [x] Tuck Jumps — key `bodyweight-tuck-jump`, component `BodyweightTuckJumpIcon`, pose `jump`
+- [x] Walking Lunges — key `bodyweight-walking-lunge`, component `BodyweightWalkingLungeIcon`, pose `lunge`
+- [x] Wall Sit — key `bodyweight-wall-sit`, component `BodyweightWallSitIcon`, pose `wall-sit`
 
 ## core
 
-- [ ] Kettlebell Figure 8 — key `kettlebell-figure-8`, component `KettlebellFigure8Icon`, pose `rotation`
-- [ ] Kettlebell Windmill — key `kettlebell-windmill`, component `KettlebellWindmillIcon`, pose `windmill`
-- [ ] Weighted Plank — key `dumbbell-weighted-plank`, component `DumbbellWeightedPlankIcon`, pose `prone-brace`
-- [ ] Cable Crunch — key `cable-crunch`, component `CableCrunchIcon`, pose `kneeling-crunch`
-- [ ] Cable Woodchop — key `cable-woodchop`, component `CableWoodchopIcon`, pose `rotation`
-- [ ] Bear Crawl — key `bodyweight-bear-crawl`, component `BodyweightBearCrawlIcon`, pose `quadruped`
-- [ ] Bicycle Crunches — key `bodyweight-bicycle-crunch`, component `BodyweightBicycleCrunchIcon`, pose `supine-crunch`
-- [ ] Bird Dog — key `bodyweight-bird-dog`, component `BodyweightBirdDogIcon`, pose `quadruped-reach`
-- [ ] Bodyweight Get-up — key `bodyweight-get-up`, component `BodyweightGetUpIcon`, pose `ground-to-standing`
-- [ ] Crunches — key `bodyweight-crunch`, component `BodyweightCrunchIcon`, pose `supine-crunch`
-- [ ] Dead Bug — key `bodyweight-dead-bug`, component `BodyweightDeadBugIcon`, pose `supine-reach`
-- [ ] Flutter Kicks — key `bodyweight-flutter-kicks`, component `BodyweightFlutterKicksIcon`, pose `supine-kick`
-- [ ] Hollow Body Hold — key `bodyweight-hollow-body-hold`, component `BodyweightHollowBodyHoldIcon`, pose `supine-hollow`
-- [ ] Inchworms — key `bodyweight-inchworm`, component `BodyweightInchwormIcon`, pose `pike-walk`
-- [ ] L-Sit — key `bodyweight-l-sit`, component `BodyweightLSitIcon`, pose `support-hold`
-- [ ] Leg Raises — key `bodyweight-leg-raise`, component `BodyweightLegRaiseIcon`, pose `supine-kick`
-- [ ] Mountain Climbers — key `bodyweight-mountain-climber`, component `BodyweightMountainClimberIcon`, pose `prone-drive`
-- [ ] Plank to Pike — key `bodyweight-plank-to-pike`, component `BodyweightPlankToPikeIcon`, pose `pike`
-- [ ] Reverse Crunches — key `bodyweight-reverse-crunch`, component `BodyweightReverseCrunchIcon`, pose `supine-crunch`
-- [ ] Russian Twists — key `bodyweight-russian-twist`, component `BodyweightRussianTwistIcon`, pose `seated-twist`
-- [ ] Side Plank — key `bodyweight-side-plank`, component `BodyweightSidePlankIcon`, pose `side-brace`
-- [ ] Sit-ups — key `bodyweight-sit-up`, component `BodyweightSitUpIcon`, pose `supine-crunch`
-- [ ] Superman — key `bodyweight-superman`, component `BodyweightSupermanIcon`, pose `prone-raise`
-- [ ] Toe Touches — key `bodyweight-toe-touch`, component `BodyweightToeTouchIcon`, pose `supine-reach`
-- [ ] V-ups — key `bodyweight-v-up`, component `BodyweightVUpIcon`, pose `supine-fold`
-- [ ] Club Pendulum — key `club-pendulum`, component `ClubPendulumIcon`, pose `club-swing`
+- [x] Kettlebell Figure 8 — key `kettlebell-figure-8`, component `KettlebellFigure8Icon`, pose `rotation`
+- [x] Kettlebell Windmill — key `kettlebell-windmill`, component `KettlebellWindmillIcon`, pose `windmill`
+- [x] Weighted Plank — key `dumbbell-weighted-plank`, component `DumbbellWeightedPlankIcon`, pose `prone-brace`
+- [x] Cable Crunch — key `cable-crunch`, component `CableCrunchIcon`, pose `kneeling-crunch`
+- [x] Cable Woodchop — key `cable-woodchop`, component `CableWoodchopIcon`, pose `rotation`
+- [x] Bear Crawl — key `bodyweight-bear-crawl`, component `BodyweightBearCrawlIcon`, pose `quadruped`
+- [x] Bicycle Crunches — key `bodyweight-bicycle-crunch`, component `BodyweightBicycleCrunchIcon`, pose `supine-crunch`
+- [x] Bird Dog — key `bodyweight-bird-dog`, component `BodyweightBirdDogIcon`, pose `quadruped-reach`
+- [x] Bodyweight Get-up — key `bodyweight-get-up`, component `BodyweightGetUpIcon`, pose `ground-to-standing`
+- [x] Crunches — key `bodyweight-crunch`, component `BodyweightCrunchIcon`, pose `supine-crunch`
+- [x] Dead Bug — key `bodyweight-dead-bug`, component `BodyweightDeadBugIcon`, pose `supine-reach`
+- [x] Flutter Kicks — key `bodyweight-flutter-kicks`, component `BodyweightFlutterKicksIcon`, pose `supine-kick`
+- [x] Hollow Body Hold — key `bodyweight-hollow-body-hold`, component `BodyweightHollowBodyHoldIcon`, pose `supine-hollow`
+- [x] Inchworms — key `bodyweight-inchworm`, component `BodyweightInchwormIcon`, pose `pike-walk`
+- [x] L-Sit — key `bodyweight-l-sit`, component `BodyweightLSitIcon`, pose `support-hold`
+- [x] Leg Raises — key `bodyweight-leg-raise`, component `BodyweightLegRaiseIcon`, pose `supine-kick`
+- [x] Mountain Climbers — key `bodyweight-mountain-climber`, component `BodyweightMountainClimberIcon`, pose `prone-drive`
+- [x] Plank to Pike — key `bodyweight-plank-to-pike`, component `BodyweightPlankToPikeIcon`, pose `pike`
+- [x] Reverse Crunches — key `bodyweight-reverse-crunch`, component `BodyweightReverseCrunchIcon`, pose `supine-crunch`
+- [x] Russian Twists — key `bodyweight-russian-twist`, component `BodyweightRussianTwistIcon`, pose `seated-twist`
+- [x] Side Plank — key `bodyweight-side-plank`, component `BodyweightSidePlankIcon`, pose `side-brace`
+- [x] Sit-ups — key `bodyweight-sit-up`, component `BodyweightSitUpIcon`, pose `supine-crunch`
+- [x] Superman — key `bodyweight-superman`, component `BodyweightSupermanIcon`, pose `prone-raise`
+- [x] Toe Touches — key `bodyweight-toe-touch`, component `BodyweightToeTouchIcon`, pose `supine-reach`
+- [x] V-ups — key `bodyweight-v-up`, component `BodyweightVUpIcon`, pose `supine-fold`
+- [x] Club Pendulum — key `club-pendulum`, component `ClubPendulumIcon`, pose `club-swing`
 
 ## Wrap-up checklist
 
