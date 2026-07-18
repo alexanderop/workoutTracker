@@ -69,6 +69,25 @@ real IndexedDB (which is shared across the page context).
 
 The `arch` project never touches IDB.
 
+## CI Browser and Coverage Setup
+
+The shared test action caches both Playwright browser locations because the
+default and accessibility suites run on Linux while visual tests run on macOS:
+
+- Linux: `~/.cache/ms-playwright`
+- macOS: `~/Library/Caches/ms-playwright`
+
+GitHub's hosted Ubuntu image already has the libraries needed by headless
+Chromium. Do not add `playwright install --with-deps` or `install-deps` to each
+test job: those commands repeatedly fetch large font packages and have made
+setup take more than 14 minutes. Install Chromium only on a browser-cache miss.
+
+Default-suite coverage is collected by the four existing test shards. Each
+shard uploads an Istanbul JSON map; `scripts/merge-coverage.mjs` requires the
+exact four-file set and applies the thresholds from `coverage-thresholds.json`.
+Keep that JSON file as the single threshold source for both local Vitest runs
+and CI.
+
 Common errors when this gets mixed up:
 
 - `InvalidStateError: A mutation operation was attempted on a database that did not allow mutations`

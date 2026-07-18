@@ -1,5 +1,5 @@
 name: Setup Node Dependencies
-description: Setup pnpm, Node.js, restore node_modules cache, and install dependencies when needed
+description: Setup pnpm and Node.js, restore the pnpm store, and install dependencies
 
 inputs:
   node-version:
@@ -20,16 +20,10 @@ runs:
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
         node-version: ${{ inputs.node-version }}
-
-    - name: Restore node_modules
-      id: cache-restore
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: node_modules
-        key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
 
     - name: Install dependencies
-      if: steps.cache-restore.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail

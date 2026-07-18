@@ -56,13 +56,13 @@ jobs:
           echo "Failed jobs: $FAILED_JOBS"
 
           # Deterministic tooling checks (see .github/workflows/ci.yml job
-          # ids) never flake -- a lint/type-check/knip/etc failure is always
+          # ids) never flake -- a quality/type-check/build/etc failure is always
           # a real bug, so classifying it would just spend a Haiku call to
           # reach the same "real bug" verdict every time. Skip straight to
           # dispatching claude-ci-fix instead. Names are matched as
-          # substrings because reusable-workflow jobs (lint, knip, i18n,
-          # composable-usage) render as "<id> / run" via the Actions API.
-          PATTERN='lint|type-check|knip|audit|i18n|composable-usage|osv|gitleaks|sbom|bundle-size'
+          # substrings because the reusable quality workflow renders as
+          # "quality / run" via the Actions API.
+          PATTERN='quality|type-check|build|osv|gitleaks|sbom'
           TOTAL=$(echo "$FAILED_JOBS" | jq 'length')
           NON_DETERMINISTIC=$(echo "$FAILED_JOBS" | jq --arg pat "$PATTERN" '[.[] | select(test($pat) | not)] | length')
 
