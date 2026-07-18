@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { getHabitsRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntry, createDbHabitEntryForDate } from '@/__tests__/factories'
+import { db } from '@/db/implementations/dexie/database'
+import type { DbHabitEntry, StoredDbHabit } from '@/db/schema'
 
 /**
  * Repository-level tests for habits and habit entries, mirroring the
@@ -14,6 +16,32 @@ describe('HabitRepository', () => {
   })
 
   describe('addHabit / getAllHabits / getHabitById', () => {
+    it('normalizes legacy stored habits on every read path', async () => {
+      const legacyHabit: StoredDbHabit = {
+        id: 'legacy-habit',
+        name: 'Legacy stretch',
+        icon: null,
+        schedule: { type: 'daily' },
+        kind: { type: 'binary' },
+        autoLink: null,
+        archivedAt: null,
+        orderIndex: 0,
+        createdAt: 1,
+      }
+      await db.habits.add(legacyHabit)
+
+      const repo = getHabitsRepository()
+
+      expect(await repo.getAllHabits()).toEqual([
+        { ...legacyHabit, description: null, accent: 'purple' },
+      ])
+      expect(await repo.getHabitById(legacyHabit.id)).toEqual({
+        ...legacyHabit,
+        description: null,
+        accent: 'purple',
+      })
+    })
+
     it('should return an added habit from getAllHabits and getHabitById', async () => {
       const repo = getHabitsRepository()
       const habit = createDbHabit({ name: 'Stretch' })
@@ -129,6 +157,27 @@ describe('HabitRepository', () => {
       const archived = await repo.getArchivedHabits()
       expect(archived.map((h) => h.name)).toEqual(['Newer', 'Older'])
     })
+
+    it('restores a habit after the maximum active order', async () => {
+      const repo = getHabitsRepository()
+      const first = createDbHabit({ name: 'First', orderIndex: 0 })
+      const last = createDbHabit({ name: 'Last', orderIndex: 4 })
+      const archived = createDbHabit({ name: 'Archived', orderIndex: 1 })
+      await repo.addHabit(first)
+      await repo.addHabit(last)
+      await repo.addHabit(archived)
+      await repo.archiveHabit(archived.id)
+
+      await repo.unarchiveHabit(archived.id)
+
+      expect(
+        (await repo.getAllHabits()).map(({ name, orderIndex }) => ({ name, orderIndex })),
+      ).toEqual([
+        { name: 'First', orderIndex: 0 },
+        { name: 'Last', orderIndex: 4 },
+        { name: 'Archived', orderIndex: 5 },
+      ])
+    })
   })
 
   describe('reorderHabits', () => {
@@ -195,6 +244,25 @@ describe('HabitRepository', () => {
       expect(await repo.getEntriesForHabit(habitA.id)).toHaveLength(1)
       expect(await repo.getEntriesForHabit(habitB.id)).toHaveLength(1)
       expect(await repo.getEntriesForDay(entryA.date)).toHaveLength(2)
+    })
+
+    it('preserves the original entry when its replacement cannot be stored', async () => {
+      const repo = getHabitsRepository()
+      const habit = createDbHabit()
+      await repo.addHabit(habit)
+      const original = createDbHabitEntryForDate(habit.id, new Date('2026-02-10'), {
+        id: 'original-entry',
+      })
+      await repo.upsertEntry(original)
+
+      const invalidReplacement: DbHabitEntry = {
+        ...original,
+        id: 'replacement-entry',
+      }
+      Object.defineProperty(invalidReplacement, 'value', { value: () => 2 })
+      await expect(repo.upsertEntry(invalidReplacement)).rejects.toThrow()
+
+      expect(await repo.getEntriesForHabit(habit.id)).toEqual([original])
     })
   })
 
@@ -275,6 +343,63 @@ describe('HabitRepository', () => {
 
       expect(forDay).toHaveLength(2)
       expect(forDay.map((e) => e.habitId).toSorted()).toEqual([habitA.id, habitB.id].toSorted())
+    })
+  })
+
+  describe('observeAll', () => {
+    it('returns one snapshot containing normalized active habits and their entries', async () => {
+      const repo = getHabitsRepository()
+      const habit = createDbHabit({ name: 'Walk' })
+      const entry = createDbHabitEntry({ habitId: habit.id })
+      await repo.addHabit(habit)
+      await repo.upsertEntry(entry)
+
+      expect(await repo.observeAll().get()).toEqual({ habits: [habit], entries: [entry] })
+    })
+
+    it('includes active and archived habits in deterministic order', async () => {
+      const repo = getHabitsRepository()
+      const archived: StoredDbHabit = {
+        id: 'legacy-archived',
+        name: 'Archived',
+        icon: null,
+        schedule: { type: 'daily' },
+        kind: { type: 'binary' },
+        autoLink: null,
+        archivedAt: 2,
+        orderIndex: 3,
+        createdAt: 1,
+      }
+      const active = createDbHabit({ name: 'Active', orderIndex: 1 })
+      await repo.addHabit(active)
+      await db.habits.add(archived)
+
+      const snapshot = await repo.observeAll().get()
+
+      expect(snapshot.habits).toEqual([
+        active,
+        { ...archived, description: null, accent: 'purple' },
+      ])
+    })
+
+    it('emits when habit entries change', async () => {
+      const repo = getHabitsRepository()
+      const habit = createDbHabit({ name: 'Walk' })
+      await repo.addHabit(habit)
+      const entry = createDbHabitEntry({ habitId: habit.id })
+      const observedEntry = new Promise<DbHabitEntry>((resolve) => {
+        const unsubscribe = repo.observeAll().subscribe((snapshot) => {
+          const current = snapshot.entries[0]
+          if (current) {
+            unsubscribe()
+            resolve(current)
+          }
+        })
+      })
+
+      await repo.upsertEntry(entry)
+
+      await expect(observedEntry).resolves.toEqual(entry)
     })
   })
 })

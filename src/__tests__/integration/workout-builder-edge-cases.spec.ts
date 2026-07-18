@@ -31,7 +31,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Verify all 3 blocks
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(3)
+      expect(playlistButtons).toHaveLength(3)
 
       // Start workout
       await builder.startWorkout()
@@ -56,7 +56,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Verify both blocks in builder mode
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
+      expect(playlistButtons).toHaveLength(2)
 
       // Start workout and verify we're on block 1 of 2
       await builder.startWorkout()
@@ -90,7 +90,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Verify first block is still there
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       cleanup()
     })
@@ -159,7 +159,7 @@ describe('Workout Builder Edge Cases', () => {
 
       // Verify both blocks in builder
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
+      expect(playlistButtons).toHaveLength(2)
 
       // Start workout with both blocks
       await builder.startWorkout()

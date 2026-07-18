@@ -48,7 +48,8 @@ export class HabitsPO {
   }
 
   async openEditForm(name: string): Promise<void> {
-    const row = page.getByTestId(`habit-item-${name}`)
+    await this.expandDetails(name)
+    const row = this.getManageRow(name)
     const editButtonName = new RegExp(`^Edit ${escapeRegExp(name)}$`, 'i')
     const editButton = row.getByRole('button', { name: editButtonName })
     await userEvent.click(editButton)
@@ -181,6 +182,13 @@ export class HabitsPO {
     await expect.element(page.getByRole('button', { name: buttonName })).toBeVisible()
   }
 
+  getTodayCompactGridColor(name: string): string {
+    const row = this.getTodayRow(name).element()
+    const todayCell = row.querySelector('.habit-today-ring')
+    if (!todayCell) throw new Error(`Today's compact grid cell for "${name}" not found`)
+    return globalThis.getComputedStyle(todayCell).backgroundColor
+  }
+
   getQuantityInput(name: string) {
     return page.getByRole('spinbutton', { name: new RegExp(`^Log ${escapeRegExp(name)}$`) })
   }
@@ -224,7 +232,7 @@ export class HabitsPO {
   // ============================================
 
   getManageRow(name: string) {
-    return page.getByTestId(`habit-item-${name}`)
+    return this.getTodayRow(name)
   }
 
   async expandDetails(name: string): Promise<void> {
@@ -232,6 +240,7 @@ export class HabitsPO {
   }
 
   async requestArchive(name: string): Promise<void> {
+    await this.expandDetails(name)
     const buttonName = new RegExp(`^Archive ${escapeRegExp(name)}$`, 'i')
     const archiveButton = this.getManageRow(name).getByRole('button', { name: buttonName })
     await userEvent.click(archiveButton)

@@ -56,7 +56,7 @@ describe('popularExercises data integrity', () => {
   it('has no duplicate exercise names', () => {
     const names = popularExercises.map((e) => e.name)
     const uniqueNames = new Set(names)
-    expect(names.length).toBe(uniqueNames.size)
+    expect(names).toHaveLength(uniqueNames.size)
   })
 
   it('all exercises have required fields', () => {

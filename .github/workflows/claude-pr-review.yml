@@ -2,7 +2,10 @@ name: Claude PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    # No `synchronize`: CodeRabbit and Copilot already re-review every push,
+    # so this standalone Claude review only needs to run once per PR (at
+    # open, or when a draft comes off hold) instead of on every commit.
+    types: [opened, ready_for_review]
     paths-ignore:
       - '*.md'
       - 'brain/reference/**'
@@ -56,7 +59,7 @@ jobs:
             Do NOT flag:
             - Style/formatting (ESLint handles that)
             - Missing brain/reference/comments on clear code
-            - Test coverage (separate CI job)
+            - Raw coverage percentage (the test-coverage CI job enforces thresholds)
 
             Use inline comments for specific issues. End with a summary comment.
           claude_args: '--max-turns 50 --model ${{ env.CLAUDE_MODEL }}'

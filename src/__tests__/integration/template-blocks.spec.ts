@@ -287,7 +287,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Verify all block types have drag handles for reordering
       // eslint-disable-next-line no-restricted-syntax -- Finding all block cards with drag handles
       const dragHandles = document.querySelectorAll('.drag-handle')
-      expect(dragHandles.length).toBe(3) // One per block
+      expect(dragHandles).toHaveLength(3) // One per block
 
       cleanup()
     })
@@ -324,7 +324,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Verify AMRAP block exists in workout
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       // The block should be an AMRAP (we can verify by checking the block type indicator)
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
@@ -359,7 +359,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // Verify both blocks exist
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
+      expect(playlistButtons).toHaveLength(2)
 
       cleanup()
     })

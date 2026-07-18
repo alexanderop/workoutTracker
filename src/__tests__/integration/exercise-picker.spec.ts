@@ -130,12 +130,12 @@ describe('ExercisePicker', () => {
         deadliftButtons.map(async (button) => {
           const element = await button.element()
           return element.textContent?.trim()
-        })
+        }),
       )
       const uniqueNames = new Set(exerciseNames)
 
       // All exercise names should be unique (no duplicates)
-      expect(exerciseNames.length).toBe(uniqueNames.size)
+      expect(exerciseNames).toHaveLength(uniqueNames.size)
 
       cleanup()
     })
@@ -154,8 +154,12 @@ describe('ExercisePicker', () => {
 
       // Should show equipment filter options (use exact match to avoid matching exercise names)
       await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Dumbbell', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('button', { name: 'Bodyweight', exact: true })).toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: 'Dumbbell', exact: true }))
+        .toBeVisible()
+      await expect
+        .element(page.getByRole('button', { name: 'Bodyweight', exact: true }))
+        .toBeVisible()
 
       cleanup()
     })

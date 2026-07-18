@@ -90,7 +90,7 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Assert: Each block should have a visible drag handle
       const cards = getBlockCards()
-      expect(cards.length).toBe(2)
+      expect(cards).toHaveLength(2)
 
       for (const card of cards) {
         const handle = getDragHandle(card)
@@ -151,7 +151,7 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Verify each block has a drag handle that SortableJS can target
       const cards = getBlockCards()
-      expect(cards.length).toBe(2)
+      expect(cards).toHaveLength(2)
 
       for (const card of cards) {
         const handle = getDragHandle(card)

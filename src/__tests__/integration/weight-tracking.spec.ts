@@ -252,13 +252,13 @@ describe('Weight Tracking', () => {
       await expect.element(weight.getOutlierConfirmBanner()).toBeVisible()
       await expect.element(page.getByText(/80 kg/)).toBeVisible()
       const repo = getWeightRepository()
-      expect((await repo.getAll()).length).toBe(1)
+      expect(await repo.getAll()).toHaveLength(1)
 
       // Confirming saves the outlier value. Both entries are for "today" so the
       // same-day dedup rule replaces the first row rather than adding a second.
       await weight.confirmOutlierSave()
       await expect.poll(async () => (await repo.getAll())[0]?.weight).toBe(500)
-      expect((await repo.getAll()).length).toBe(1)
+      expect(await repo.getAll()).toHaveLength(1)
       await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
 
       cleanup()
@@ -279,7 +279,7 @@ describe('Weight Tracking', () => {
 
       await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
       const repo = getWeightRepository()
-      expect((await repo.getAll()).length).toBe(1)
+      expect(await repo.getAll()).toHaveLength(1)
       expect((await repo.getAll())[0]?.weight).toBe(80)
 
       cleanup()

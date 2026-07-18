@@ -150,7 +150,7 @@ describe('Isometric Exercise Prefill', () => {
 
       // Verify workout is saved (should be in completed workouts)
       const savedWorkouts = await getAllWorkouts()
-      expect(savedWorkouts.length).toBe(1)
+      expect(savedWorkouts).toHaveLength(1)
 
       // Act: Start a NEW workout and add Wall Sit again
       // Navigate to home first (we're on summary page after completing workout)

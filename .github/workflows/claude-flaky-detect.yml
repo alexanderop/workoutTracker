@@ -1,5 +1,8 @@
-# Classify failed CI runs as flaky vs. real bug and auto-rerun the flaky ones.
-# Complements claude-ci-fix.yml, which tries to fix real failures.
+# Classify failed CI runs as flaky vs. real bug and auto-rerun the flaky
+# ones. Chains into claude-ci-fix.yml (via workflow_dispatch) for everything
+# else, instead of racing a second workflow_run trigger on CI against it:
+# whoever decided first used to win, which meant claude-ci-fix sometimes
+# started diagnosing a failure this workflow was about to auto-retry.
 name: Claude Flaky Detect
 
 on:
@@ -17,8 +20,7 @@ jobs:
     if: |
       github.event.workflow_run.conclusion == 'failure' &&
       github.event.workflow_run.pull_requests[0] &&
-      !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-') &&
-      github.event.workflow_run.run_attempt == 1
+      !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-')
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
@@ -33,7 +35,46 @@ jobs:
       id-token: write
 
     steps:
+      - name: Pre-filter deterministic tool failures
+        id: prefilter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          set -euo pipefail
+          if [ "$RUN_ATTEMPT" -gt 1 ]; then
+            echo "retry_failed=true" >> "$GITHUB_OUTPUT"
+            echo "deterministic=true" >> "$GITHUB_OUTPUT"
+            echo "The automatic flaky retry failed again; handing off to claude-ci-fix."
+            exit 0
+          fi
+          echo "retry_failed=false" >> "$GITHUB_OUTPUT"
+          FAILED_JOBS=$(gh run view "$RUN_ID" -R "$REPO" --json jobs \
+            --jq '[.jobs[] | select(.conclusion == "failure") | .name]')
+          echo "Failed jobs: $FAILED_JOBS"
+
+          # Deterministic tooling checks (see .github/workflows/ci.yml job
+          # ids) never flake -- a lint/type-check/knip/etc failure is always
+          # a real bug, so classifying it would just spend a Haiku call to
+          # reach the same "real bug" verdict every time. Skip straight to
+          # dispatching claude-ci-fix instead. Names are matched as
+          # substrings because reusable-workflow jobs (lint, knip, i18n,
+          # composable-usage) render as "<id> / run" via the Actions API.
+          PATTERN='lint|type-check|knip|audit|i18n|composable-usage|osv|gitleaks|sbom|bundle-size'
+          TOTAL=$(echo "$FAILED_JOBS" | jq 'length')
+          NON_DETERMINISTIC=$(echo "$FAILED_JOBS" | jq --arg pat "$PATTERN" '[.[] | select(test($pat) | not)] | length')
+
+          if [ "$TOTAL" -gt 0 ] && [ "$NON_DETERMINISTIC" -eq 0 ]; then
+            echo "deterministic=true" >> "$GITHUB_OUTPUT"
+            echo "All failed jobs are deterministic tooling checks; skipping the classifier."
+          else
+            echo "deterministic=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout repository
+        if: steps.prefilter.outputs.deterministic != 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
@@ -41,6 +82,7 @@ jobs:
 
       - name: Classify failure
         id: classify
+        if: steps.prefilter.outputs.deterministic != 'true'
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -79,26 +121,70 @@ jobs:
             --json-schema '{"type":"object","properties":{"is_flaky":{"type":"boolean"},"confidence":{"type":"number","minimum":0,"maximum":1},"summary":{"type":"string"}},"required":["is_flaky","confidence","summary"],"additionalProperties":false}'
 
       - name: Act on classification
+        if: always()
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.classify.outputs.structured_output }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          DETERMINISTIC: ${{ steps.prefilter.outputs.deterministic }}
+          RETRY_FAILED: ${{ steps.prefilter.outputs.retry_failed }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const raw = process.env.STRUCTURED_OUTPUT;
-            const prNumber = parseInt(process.env.PR_NUMBER, 10);
-            const runUrl = process.env.RUN_URL;
             const runId = parseInt(process.env.RUN_ID, 10);
+            const runUrl = process.env.RUN_URL;
+            const headBranch = process.env.HEAD_BRANCH;
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const deterministic = process.env.DETERMINISTIC === 'true';
+            const retryFailed = process.env.RETRY_FAILED === 'true';
 
             const summary = [];
             summary.push('# Claude Flaky Detect');
             summary.push('');
 
+            // claude-ci-fix.yml no longer has its own workflow_run trigger
+            // (see Fix 1 in ci/reduce-claude-workflow-cost): every non-flaky
+            // path here must chain into it explicitly via workflow_dispatch.
+            const dispatchCiFix = async (reason) => {
+              summary.push(`→ ${reason} Dispatching claude-ci-fix.`);
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'claude-ci-fix.yml',
+                ref: process.env.DEFAULT_BRANCH || 'main',
+                inputs: {
+                  run_id: String(runId),
+                  head_branch: headBranch,
+                  pr_number: String(prNumber),
+                },
+              });
+            };
+
+            if (retryFailed) {
+              summary.push('**Retry result**: the automatic flaky retry failed again.');
+              summary.push('');
+              await dispatchCiFix('Repeated failure after the automatic retry.');
+              await core.summary.addRaw(summary.join('\n')).write();
+              return;
+            }
+
+            if (deterministic) {
+              summary.push('**Pre-filter**: every failed job is a deterministic tooling check.');
+              summary.push('');
+              await dispatchCiFix('Classifier skipped by design (deterministic failure).');
+              await core.summary.addRaw(summary.join('\n')).write();
+              return;
+            }
+
+            const raw = process.env.STRUCTURED_OUTPUT;
             if (!raw || !raw.trim()) {
-              summary.push('_No structured output — skipping classification._');
+              summary.push('_No structured output from the classifier._');
+              // Fail open: a broken classifier must not silently disable auto-fix.
+              await dispatchCiFix('Fail-open (no classifier output).');
               await core.summary.addRaw(summary.join('\n')).write();
               return;
             }
@@ -108,6 +194,8 @@ jobs:
               data = JSON.parse(raw);
             } catch (err) {
               summary.push(`_Failed to parse classifier output: ${err.message}_`);
+              // Fail open: a broken classifier must not silently disable auto-fix.
+              await dispatchCiFix('Fail-open (unparseable classifier output).');
               await core.summary.addRaw(summary.join('\n')).write();
               return;
             }
@@ -138,16 +226,18 @@ jobs:
                   body: `🔄 **Flaky CI failure detected** (confidence ${data.confidence})\n\n> ${data.summary}\n\nAuto-retrying failed jobs. [Original run](${runUrl})`,
                 });
               }
-            } else if (data.is_flaky === true && prNumber) {
-              summary.push('→ Possibly flaky but confidence too low; not retrying.');
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: `⚠️ **Possible flaky CI failure** (confidence ${data.confidence} — below 0.7 threshold)\n\n> ${data.summary}\n\nNot retrying automatically. [Original run](${runUrl})`,
-              });
+            } else if (data.is_flaky === true) {
+              if (prNumber) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: `⚠️ **Possible flaky CI failure** (confidence ${data.confidence} — below 0.7 threshold)\n\n> ${data.summary}\n\nNot retrying automatically; handing off to claude-ci-fix. [Original run](${runUrl})`,
+                });
+              }
+              await dispatchCiFix('Possibly flaky but confidence below the 0.7 retry threshold.');
             } else {
-              summary.push('→ Classified as real bug; deferring to claude-ci-fix.');
+              await dispatchCiFix('Classified as a real bug.');
             }
 
             await core.summary.addRaw(summary.join('\n')).write();

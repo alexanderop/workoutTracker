@@ -57,10 +57,10 @@ describe('useBenchmarkPersistence completeBenchmark -> habit auto-link', () => {
     }
   }
 
-  it('increments a quantity auto-link habit when the benchmark completes', async () => {
+  it('marks a binary auto-link habit done when the benchmark completes', async () => {
     const habitsRepository = getHabitsRepository()
     const habit = createDbHabit({
-      kind: { type: 'quantity', target: 5, unit: 'sessions' },
+      kind: { type: 'binary' },
       autoLink: 'completed-workout',
     })
     await habitsRepository.addHabit(habit)

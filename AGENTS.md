@@ -9,9 +9,9 @@ When in doubt about a design call, ask: "does this make logging a set faster or 
 ## Local-first ideals (Ink & Switch) — design tie-breakers
 
 1. No spinners — instant input, never block on network
-2. Not trapped on one device — multi-device sync *(future)*
+2. Not trapped on one device — multi-device sync _(future)_
 3. Network optional — fully offline
-4. Seamless collaboration — CRDT-style *(future)*
+4. Seamless collaboration — CRDT-style _(future)_
 5. The Long Now — data readable after the app dies (export, schema stability)
 6. Security & privacy by default — on-device; E2E if sync ships
 7. Ownership & control — user owns data, no accounts, exportable
@@ -38,7 +38,9 @@ Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 
 - **State**: `createGlobalState()` from VueUse (NOT Pinia). One store per feature, no cross-feature imports.
 - **Two-way binding**: `const open = defineModel<boolean>('open')`.
-- **UI state**: discriminated unions over boolean flags (see state-machine doc).
+- **UI state**: use discriminated unions when multiple exclusive flags could
+  form invalid combinations; ordinary independent toggles may stay booleans
+  (see state-machine doc).
 - **DB**: all access via `src/db` repositories; schema changes require a converter update for backward compat.
 
 ## Structure

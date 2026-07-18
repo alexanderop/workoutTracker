@@ -215,7 +215,7 @@ describe('main sequence fitness functions', () => {
       if (report.violations.length > 0) {
         console.error('\n' + formatViolations(report))
       }
-      expect(report.violations.length).toBe(0)
+      expect(report.violations).toHaveLength(0)
     })
 
     it('majority of modules should pass (> 75%)', () => {

@@ -1,6 +1,12 @@
 name: CI
 
 on:
+  # Dispatched by claude-ci-fix.yml / claude-fix-review.yml /
+  # claude-qa-followup.yml after they push a bot commit: those pushes use
+  # GITHUB_TOKEN, which never re-triggers `push`/`pull_request`, so CI would
+  # otherwise never re-run against the fix. No inputs needed -- it just runs
+  # against whatever ref it's dispatched with.
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -8,11 +14,18 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - 'vite.config.*'
       - 'vitest.config.ts'
       - 'tsconfig*.json'
       - 'eslint.config.*'
+      - '.oxlintrc.json'
+      - '.markdownlint*.json*'
+      - '.yamllint.yml'
+      - 'knip.json'
       - 'lighthouserc.json'
+      - '.coderabbit.yaml'
+      - '.husky/**'
       - '.github/actions/**'
       - '.github/workflows/**'
   pull_request:
@@ -22,11 +35,18 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - 'vite.config.*'
       - 'vitest.config.ts'
       - 'tsconfig*.json'
       - 'eslint.config.*'
+      - '.oxlintrc.json'
+      - '.markdownlint*.json*'
+      - '.yamllint.yml'
+      - 'knip.json'
       - 'lighthouserc.json'
+      - '.coderabbit.yaml'
+      - '.husky/**'
       - '.github/actions/**'
       - '.github/workflows/**'
 
@@ -44,8 +64,47 @@ jobs:
   lint:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm lint
+      command: pnpm lint:check
       node-version: '22'
+
+  workflow-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install verified actionlint
+        shell: bash
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          set -euo pipefail
+          ACTIONLINT_DIR=$(mktemp -d)
+          ARCHIVE="$ACTIONLINT_DIR/actionlint.tar.gz"
+          curl -fsSL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            -o "$ARCHIVE"
+          echo "${ACTIONLINT_SHA256}  ${ARCHIVE}" | sha256sum --check
+          tar -xzf "$ARCHIVE" -C "$ACTIONLINT_DIR" actionlint
+          echo "ACTIONLINT_BIN=$ACTIONLINT_DIR/actionlint" >> "$GITHUB_ENV"
+
+      - name: Lint GitHub Actions and embedded shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v shellcheck >/dev/null
+          "$ACTIONLINT_BIN" -no-color
+
+      - name: Lint YAML
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/yamllint"
+          "$RUNNER_TEMP/yamllint/bin/pip" install --quiet yamllint==1.37.1
+          "$RUNNER_TEMP/yamllint/bin/yamllint" .coderabbit.yaml .github
 
   audit:
     uses: ./.github/workflows/reusable-node-command.yml
@@ -131,6 +190,13 @@ jobs:
           set -euo pipefail
           pnpm type-check
 
+  node-20-compat:
+    uses: ./.github/workflows/reusable-node-command.yml
+    with:
+      command: pnpm type-check && pnpm build-only
+      node-version: '20.19.0'
+      timeout-minutes: 10
+
   build:
     needs: type-check
     runs-on: ubuntu-latest
@@ -191,6 +257,14 @@ jobs:
         run: |
           set -euo pipefail
           pnpm vitest --project=default --shard=${{ matrix.shard }}/4
+
+  test-coverage:
+    uses: ./.github/workflows/reusable-node-command.yml
+    with:
+      command: pnpm test:coverage
+      node-version: '22'
+      timeout-minutes: 15
+      setup-profile: test
 
   test-arch:
     uses: ./.github/workflows/reusable-node-command.yml

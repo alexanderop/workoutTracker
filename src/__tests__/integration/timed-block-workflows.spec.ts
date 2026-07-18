@@ -3,21 +3,21 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
-
 describe('Timed Block Workflows', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
 
   describe('Configuration', () => {
     it('allows user to add timed blocks from the dialog and start workout', async () => {
-      const { builder, common, cleanup } =
-        await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
 
       // Verify exercises tab is default (check aria-selected attribute)
-      await expect.element(page.getByRole('tab', { name: /exercises/i })).toHaveAttribute('aria-selected', 'true')
+      await expect
+        .element(page.getByRole('tab', { name: /exercises/i }))
+        .toHaveAttribute('aria-selected', 'true')
 
       // Switch to timed blocks tab
       await builder.switchToTimedBlocksTab()
@@ -47,7 +47,7 @@ describe('Timed Block Workflows', () => {
 
       // Verify AMRAP block appears in builder
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       // Start workout and verify timer UI
       await builder.startWorkout()
@@ -62,8 +62,7 @@ describe('Timed Block Workflows', () => {
     })
 
     it('filters exercises when searching in add block dialog', async () => {
-      const { builder, common, cleanup } =
-        await createTestApp()
+      const { builder, common, cleanup } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -87,7 +86,7 @@ describe('Timed Block Workflows', () => {
 
       // Verify exercise was added to builder
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       cleanup()
     })
@@ -163,10 +162,15 @@ describe('Timed Block Workflows', () => {
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
-        const element = await viewDetailsButton.element()
-        return getComputedStyle(element).opacity
-      }, { timeout: 2000 }).toBe('1')
+      await expect
+        .poll(
+          async () => {
+            const element = await viewDetailsButton.element()
+            return getComputedStyle(element).opacity
+          },
+          { timeout: 2000 },
+        )
+        .toBe('1')
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
@@ -220,10 +224,12 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
-        const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
-        return plusButton instanceof HTMLButtonElement && !plusButton.disabled
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
+          return plusButton instanceof HTMLButtonElement && !plusButton.disabled
+        })
+        .toBe(true)
 
       // Increment rounds
       await page.getByRole('button', { name: /\+1/i }).click()
@@ -273,10 +279,12 @@ describe('Timed Block Workflows', () => {
       await page.getByRole('button', { name: /start/i }).click()
 
       // Wait for +1 button to be enabled (timer must be running)
-      await expect.poll(async () => {
-        const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
-        return plusButton instanceof HTMLButtonElement && !plusButton.disabled
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const plusButton = await page.getByRole('button', { name: /\+1/i }).element()
+          return plusButton instanceof HTMLButtonElement && !plusButton.disabled
+        })
+        .toBe(true)
 
       // Click +1 to record 3 rounds
       await page.getByRole('button', { name: /\+1/i }).click()

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { getDataManagementRepository, getHabitsRepository, getProgressionsRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
+import { db } from '@/db/implementations/dexie/database'
+import type { StoredDbHabit } from '@/db/schema'
 
 /**
  * deleteAll() must wipe every table in the schema (modulo onboarding). It
@@ -62,6 +64,28 @@ describe('DataManagementRepository habits export/import', () => {
 
     expect(await habits.getAllHabits()).toEqual([habit])
     expect(await habits.getEntriesForHabit(habit.id)).toEqual([entry])
+  })
+
+  it('normalizes legacy habits for export while preserving entries unchanged', async () => {
+    const legacyHabit: StoredDbHabit = {
+      id: 'legacy-habit',
+      name: 'Stretch',
+      icon: null,
+      schedule: { type: 'daily' },
+      kind: { type: 'binary' },
+      autoLink: null,
+      archivedAt: null,
+      orderIndex: 0,
+      createdAt: 1,
+    }
+    const entry = createDbHabitEntryForDate(legacyHabit.id, new Date('2026-01-01'))
+    await db.habits.add(legacyHabit)
+    await getHabitsRepository().upsertEntry(entry)
+
+    const exported = await getDataManagementRepository().exportAll()
+
+    expect(exported.habits).toEqual([{ ...legacyHabit, description: null, accent: 'purple' }])
+    expect(exported.habitEntries).toEqual([entry])
   })
 
   it('should remove habits and habitEntries when deleting all data', async () => {

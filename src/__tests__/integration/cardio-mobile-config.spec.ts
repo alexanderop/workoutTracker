@@ -49,7 +49,7 @@ describe('Cardio configuration on a touch device', () => {
     await common.waitForDialogClose()
 
     const playlistButtons = await builder.getPlaylistBlockButtons()
-    expect(playlistButtons.length).toBe(1)
+    expect(playlistButtons).toHaveLength(1)
 
     cleanup()
   })

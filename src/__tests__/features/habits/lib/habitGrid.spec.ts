@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildHabitGrid } from '@/features/habits/lib/habitGrid'
+import { buildCompactHabitGrid, buildHabitGrid } from '@/features/habits/lib/habitGrid'
 import type { HabitGridDay, HabitGridWeek } from '@/features/habits/lib/habitGrid'
 import { startOfDay } from '@/features/habits/lib/habitStats'
 import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
@@ -8,6 +8,20 @@ import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
 const TODAY = new Date('2026-07-15T12:00:00').getTime()
 
 describe('buildHabitGrid', () => {
+  it('builds the fixed 16-week dashboard window with explicit visual states', () => {
+    const habit = createDbHabit({ kind: { type: 'quantity', target: 8, unit: 'glasses' } })
+    const partial = createDbHabitEntryForDate(habit.id, new Date(TODAY), { value: 3 })
+
+    const grid = buildCompactHabitGrid(habit, [partial], TODAY)
+
+    expect(grid).toHaveLength(16)
+    expect(grid.flat()).toHaveLength(112)
+    expect(grid.flat().find((day) => day.isToday)).toMatchObject({ value: 3, state: 'partial' })
+    expect(grid.flat().find((day) => day.date > startOfDay(TODAY))).toMatchObject({
+      state: 'future',
+    })
+  })
+
   it('returns the requested number of weeks, each with 7 days', () => {
     const habit = createDbHabit()
     const grid = buildHabitGrid(habit, [], 12, TODAY)

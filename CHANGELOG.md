@@ -1,3 +1,12 @@
+# [1.35.0](https://github.com/alexanderop/workoutTracker/compare/v1.34.0...v1.35.0) (2026-07-18)
+
+
+### Features
+
+* **habits:** add grid-based habit dashboard ([#165](https://github.com/alexanderop/workoutTracker/issues/165)) ([d42fcd6](https://github.com/alexanderop/workoutTracker/commit/d42fcd642a56a621a3796f7e487f411fc62930a5)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
+
+
+
 # [1.34.0](https://github.com/alexanderop/workoutTracker/compare/v1.33.0...v1.34.0) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **ci:** auto-fix reviewer-bot findings with Claude ([#160](https://github.com/alexanderop/workoutTracker/issues/160)) ([206f0ac](https://github.com/alexanderop/workoutTracker/commit/206f0ac38b39e656570dd7598fabeb8c722a4528)), closes [#159](https://github.com/alexanderop/workoutTracker/issues/159)
-
-
-
-# [1.31.0](https://github.com/alexanderop/workoutTracker/compare/v1.30.0...v1.31.0) (2026-07-17)
-
-
-### Features
-
-* **ci:** adopt Bun-style AI review and PR feedback tooling ([#159](https://github.com/alexanderop/workoutTracker/issues/159)) ([c48ec40](https://github.com/alexanderop/workoutTracker/commit/c48ec40f5e7ded2fc228f78f1dbf056c197c527c))
 
 
 

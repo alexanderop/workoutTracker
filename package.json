@@ -1,7 +1,7 @@
 {
   "name": "workouttracker",
   "type": "module",
-  "version": "1.34.0",
+  "version": "1.35.0",
   "private": true,
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a",
   "engines": {
@@ -24,10 +24,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix --ignore-path .gitignore",
+    "lint:oxlint:check": "oxlint . --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
+    "lint:eslint:check": "eslint . --cache --max-warnings 1676",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "lint:tokens": "node scripts/check-design-tokens.mjs",
-    "lint": "run-s lint:*",
+    "lint": "run-s lint:oxlint lint:eslint lint:md lint:tokens",
+    "lint:check": "run-s lint:oxlint:check lint:eslint:check lint:md lint:tokens",
     "i18n:check": "pnpm dlx tsx scripts/check-i18n.ts",
     "pr:comments": "pnpm dlx tsx scripts/pr-comments.ts",
     "knip": "knip",

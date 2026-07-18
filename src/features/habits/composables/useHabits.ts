@@ -13,14 +13,17 @@
  */
 import { computed, ref } from 'vue'
 import { generateId, getHabitsRepository } from '@/db'
-import type { DbHabit, DbHabitEntry, HabitKind, HabitSchedule } from '@/db/schema'
+import type { DbHabit, DbHabitEntry, HabitAccent, HabitKind, HabitSchedule } from '@/db/schema'
+import { DEFAULT_HABIT_ACCENT } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { currentStreak, isEntryComplete, startOfDay, weeklyProgress } from '../lib/habitStats'
 import type { WeeklyProgress } from '../lib/habitStats'
 
 export type HabitFormData = {
   name: string
+  description?: string | null
   icon: string | null
+  accent?: HabitAccent
   schedule: HabitSchedule
   kind: HabitKind
   autoLink: 'completed-workout' | null
@@ -178,10 +181,12 @@ export function useHabits() {
     const habit: DbHabit = {
       id: generateId(),
       name: data.name,
+      description: data.description ?? null,
       icon: data.icon,
+      accent: data.accent ?? DEFAULT_HABIT_ACCENT,
       schedule: data.schedule,
       kind: data.kind,
-      autoLink: data.autoLink,
+      autoLink: data.kind.type === 'binary' ? data.autoLink : null,
       archivedAt: null,
       orderIndex: habits.value.length,
       createdAt: Date.now(),
@@ -198,12 +203,21 @@ export function useHabits() {
 
   async function editHabit(id: string, data: HabitFormData): Promise<boolean> {
     const repo = getHabitsRepository()
-    const [error] = await tryCatch(repo.updateHabit(id, data))
+    const current = habits.value.find((habit) => habit.id === id)
+    const normalizedData = {
+      ...data,
+      description: data.description ?? current?.description ?? null,
+      accent: data.accent ?? current?.accent ?? DEFAULT_HABIT_ACCENT,
+      autoLink: data.kind.type === 'binary' ? data.autoLink : null,
+    } as const
+    const [error] = await tryCatch(repo.updateHabit(id, normalizedData))
     if (error) {
       console.error('Failed to update habit:', error)
       return false
     }
-    habits.value = habits.value.map((habit) => (habit.id === id ? { ...habit, ...data } : habit))
+    habits.value = habits.value.map((habit) =>
+      habit.id === id ? { ...habit, ...normalizedData } : habit,
+    )
     return true
   }
 

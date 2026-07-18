@@ -7,17 +7,11 @@
 # re-triggers the QA workflow, so each QA run produces at most one follow-up.
 name: Claude QA Follow-up
 
-# workflow_run is required here: the QA report comment is posted with
-# GITHUB_TOKEN, which never fires issue_comment for other workflows. The
-# fork-code risk zizmor warns about is mitigated twice -- the job-level `if`
-# requires a same-repo head repository, and the gate step re-verifies the PR
-# is open and same-repo via the API before any write-token step runs.
-on: # zizmor: ignore[dangerous-triggers]
-  # NOTE: workflow_run only fires once this file is on the default branch.
-  workflow_run:
-    workflows: ['Claude QA (Browser)']
-    types: [completed]
-  # Manual escape hatch:
+# Browser QA dispatches this workflow explicitly with the originating PR
+# number. That preserves identity across the CI -> QA -> follow-up chain and
+# gives every branch-writing workflow the same PR-number concurrency key.
+on:
+  # Manual escape hatch (also used by claude-qa-browser.yml):
   #   gh workflow run claude-qa-followup.yml -f pr_number=<N>
   workflow_dispatch:
     inputs:
@@ -36,25 +30,23 @@ env:
 jobs:
   qa-followup:
     name: Triage QA report findings
-    # The QA workflow already refuses fork PRs, but re-check everything in the
-    # gate step below before any write-token step runs.
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
-    # One follow-up per PR at a time; a QA run finishing mid-run queues
-    # exactly one more.
+    # Shared writer lock: at most one of claude-ci-fix / claude-fix-review /
+    # claude-qa-followup pushes to a given PR branch at a time, so their
+    # commits stack via rebase instead of racing each other's pushes. Also
+    # bounds this workflow to one follow-up per PR at a time; a QA run
+    # finishing mid-run queues exactly one more.
     concurrency:
-      group: claude-qa-followup-${{ github.event.workflow_run.head_branch || inputs.pr_number }}
+      group: claude-writer-${{ inputs.pr_number }}
       cancel-in-progress: false
 
     permissions:
       contents: write # push fix commits back to the PR branch
       pull-requests: write # edit the PR body, post the summary comment
       issues: write # createComment posts through the issues API
-      actions: read # inspect the triggering QA run if needed
+      actions: write # dispatch ci.yml after pushing fixes
       id-token: write # OIDC for claude-code-action auth
 
     steps:
@@ -62,27 +54,14 @@ jobs:
         id: gate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EVENT_NAME: ${{ github.event_name }}
-          WR_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           REPO: ${{ github.repository }}
-          REPO_OWNER: ${{ github.repository_owner }}
           QA_MARKER: ${{ env.QA_MARKER }}
         run: |
           set -euo pipefail
           echo "run=false" >> "$GITHUB_OUTPUT"
 
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            PR_NUMBER="$INPUT_PR_NUMBER"
-          else
-            PR_NUMBER=$(gh api \
-              "repos/${REPO}/pulls?head=${REPO_OWNER}:${WR_HEAD_BRANCH}&state=open" \
-              --jq '.[0].number // empty')
-            if [ -z "$PR_NUMBER" ]; then
-              echo "No open PR for branch ${WR_HEAD_BRANCH}; skipping."
-              exit 0
-            fi
-          fi
+          PR_NUMBER="$INPUT_PR_NUMBER"
 
           # Only open, same-repo PRs may reach the write-token steps below.
           PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
@@ -92,10 +71,14 @@ jobs:
             exit 0
           fi
 
-          # The QA workflow maintains one sticky report comment per PR.
+          # The QA workflow maintains one sticky report comment per PR. Bind
+          # the marker to the real GitHub Actions bot so a commenter cannot
+          # forge agent instructions by posting a later lookalike report.
           COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
             --paginate \
-            --jq "[.[] | select(.body | contains(\"${QA_MARKER}\"))] | last | .id // empty")
+            --jq "[.[] |
+              select(.user.login == \"github-actions[bot]\" and .user.id == 41898282) |
+              select(.body | contains(\"${QA_MARKER}\"))] | last | .id // empty")
           if [ -z "$COMMENT_ID" ]; then
             echo "No QA report comment found on PR #${PR_NUMBER}; skipping."
             exit 0
@@ -115,6 +98,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ steps.gate.outputs.head_ref }}
+          # Kept at 0 (unlike the shallower fetch-depth: 50 used by the other
+          # two pushing workflows): the prompt below runs `git diff
+          # origin/main...HEAD`, which needs origin/main's full history
+          # reachable, not just this branch's.
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -137,7 +124,7 @@ jobs:
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # github-actions is the actor when workflow_run chains into this job.
+          # github-actions is the actor that dispatches this workflow.
           allowed_bots: github-actions
           show_full_output: true
           prompt: |
@@ -218,6 +205,16 @@ jobs:
             git checkout -- .
             git clean -fd
           fi
+          # Rebase onto the current branch tip first: the shared writer
+          # concurrency group above serializes claude-ci-fix / claude-fix-review
+          # / claude-qa-followup, but a human push between checkout and here is
+          # still possible. Recompute both SHAs AFTER the rebase so the
+          # "nothing to push" comparison below reflects the rebased state.
+          if ! git pull --rebase origin "${HEAD_BRANCH}"; then
+            git rebase --abort
+            echo "::error::git pull --rebase origin ${HEAD_BRANCH} failed; aborting rebase and not pushing. Resolve the conflict manually."
+            exit 1
+          fi
           LOCAL_SHA=$(git rev-parse HEAD)
           REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
           if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
@@ -227,6 +224,8 @@ jobs:
           fi
           git push origin "HEAD:${HEAD_BRANCH}"
           echo "pushed=true" >> "$GITHUB_OUTPUT"
+          # shellcheck disable=SC2016
+          # Backticks in the git format are Markdown, not shell substitutions.
           {
             echo "commits<<COMMITS_EOF"
             if [ -n "$REMOTE_SHA" ]; then
@@ -236,6 +235,17 @@ jobs:
             fi
             echo "COMMITS_EOF"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch CI on the pushed branch
+        # The push above used GITHUB_TOKEN, which never triggers CI itself.
+        if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
+        run: |
+          set -euo pipefail
+          gh workflow run ci.yml --ref "$HEAD_BRANCH"
 
       - name: Comment on PR with pushed commits
         if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}

@@ -50,12 +50,12 @@ async function addExerciseViaOverlay(
   // Find and click the exercise button (it's a button containing the exercise name)
   const buttons = await page.getByRole('button').all()
   const exerciseButton = await Promise.all(
-    buttons.map(async button => {
+    buttons.map(async (button) => {
       const element = await button.element()
       const text = element.textContent
       return text?.includes(exerciseName) ? button : null
-    })
-  ).then(results => results.find(Boolean))
+    }),
+  ).then((results) => results.find(Boolean))
   if (!exerciseButton) throw new Error(`Exercise button for ${exerciseName} not found`)
 
   await userEvent.click(exerciseButton)
@@ -138,7 +138,7 @@ describe('Timed Block Exercise List', () => {
       // Find exercise row (distinguished by bg-secondary/30 class)
       const dialog = ensureHTMLElement(await getByRole('dialog').element())
       const exerciseRows = getExerciseRows(dialog)
-      expect(exerciseRows.length).toBe(1)
+      expect(exerciseRows).toHaveLength(1)
 
       // Verify reps input exists within the exercise row
       const repsInput = getRepsInputInRow(exerciseRows[0]!)
@@ -155,7 +155,7 @@ describe('Timed Block Exercise List', () => {
   describe('editing exercise values', () => {
     it('allows setting reps value', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Push-ups')
@@ -163,7 +163,7 @@ describe('Timed Block Exercise List', () => {
       // Find the exercise row and its reps input
       const dialog = ensureHTMLElement(await getByRole('dialog').element())
       const exerciseRows = getExerciseRows(dialog)
-      expect(exerciseRows.length).toBe(1)
+      expect(exerciseRows).toHaveLength(1)
 
       const repInput = getRepsInputInRow(exerciseRows[0]!)
       if (!repInput) {
@@ -181,7 +181,7 @@ describe('Timed Block Exercise List', () => {
 
     it('allows setting load value', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
       await addExerciseViaOverlay(app, 'Kettlebell Swing')
@@ -189,7 +189,7 @@ describe('Timed Block Exercise List', () => {
       // Find the exercise row and its load input
       const dialog = ensureHTMLElement(await getByRole('dialog').element())
       const exerciseRows = getExerciseRows(dialog)
-      expect(exerciseRows.length).toBe(1)
+      expect(exerciseRows).toHaveLength(1)
 
       const loadInput = getLoadInputInRow(exerciseRows[0]!)
       if (!loadInput) {
@@ -209,7 +209,7 @@ describe('Timed Block Exercise List', () => {
   describe('removing exercises', () => {
     it('removes exercise when delete button clicked', async () => {
       const app = await createTestApp()
-      const {  getByRole } = app
+      const { getByRole } = app
 
       await openAmrapConfigDialog(app)
 
@@ -223,17 +223,21 @@ describe('Timed Block Exercise List', () => {
       expect(dialog.textContent).toContain('Pull-ups')
 
       // Find remove buttons using page locators
-      const removeButtonLocators = await page.getByRole('button', { name: /remove exercise/i }).all()
-      expect(removeButtonLocators.length).toBe(2)
+      const removeButtonLocators = await page
+        .getByRole('button', { name: /remove exercise/i })
+        .all()
+      expect(removeButtonLocators).toHaveLength(2)
 
       // Click first remove button
       await removeButtonLocators[0]!.click()
 
       // First exercise should be removed, second should remain
-      await expect.poll(async () => {
-        const updatedDialog = await getByRole('dialog').element()
-        return updatedDialog.textContent?.includes('Push-ups') ?? false
-      }).toBe(false)
+      await expect
+        .poll(async () => {
+          const updatedDialog = await getByRole('dialog').element()
+          return updatedDialog.textContent?.includes('Push-ups') ?? false
+        })
+        .toBe(false)
       const updatedDialog = await getByRole('dialog').element()
       expect(updatedDialog.textContent).toContain('Pull-ups')
 
@@ -244,7 +248,7 @@ describe('Timed Block Exercise List', () => {
   describe('add exercise button', () => {
     it('opens exercise picker when add button clicked', async () => {
       const app = await createTestApp()
-      const {  common } = app
+      const { common } = app
 
       await openAmrapConfigDialog(app)
 
