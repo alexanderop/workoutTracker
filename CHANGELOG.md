@@ -1,3 +1,12 @@
+# [1.36.0](https://github.com/alexanderop/workoutTracker/compare/v1.35.0...v1.36.0) (2026-07-18)
+
+
+### Features
+
+* **exercises:** add extensible exercise icon foundation ([#167](https://github.com/alexanderop/workoutTracker/issues/167)) ([40b29ec](https://github.com/alexanderop/workoutTracker/commit/40b29ec6541f7fd6a1664f0bbd7f4b0870ebaa98)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
+
+
+
 # [1.35.0](https://github.com/alexanderop/workoutTracker/compare/v1.34.0...v1.35.0) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** durable review auto-fix + Sonnet 5 for review/QA agents ([#162](https://github.com/alexanderop/workoutTracker/issues/162)) ([ff0fbae](https://github.com/alexanderop/workoutTracker/commit/ff0fbae3cb23910158cfcd7cdb52fb7192c10dac)), closes [#161](https://github.com/alexanderop/workoutTracker/issues/161) [#161](https://github.com/alexanderop/workoutTracker/issues/161)
-
-
-
-# [1.32.0](https://github.com/alexanderop/workoutTracker/compare/v1.31.0...v1.32.0) (2026-07-17)
-
-
-### Features
-
-* **ci:** auto-fix reviewer-bot findings with Claude ([#160](https://github.com/alexanderop/workoutTracker/issues/160)) ([206f0ac](https://github.com/alexanderop/workoutTracker/commit/206f0ac38b39e656570dd7598fabeb8c722a4528)), closes [#159](https://github.com/alexanderop/workoutTracker/issues/159)
 
 
 

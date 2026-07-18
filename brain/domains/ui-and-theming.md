@@ -23,6 +23,7 @@ and mobile workout flows.
 
 - `src/style.css`
 - `src/components/ui/`
+- `src/components/exercise-icons/`
 - `src/features/*/components/`
 - `src/views/`
 - `components.json`
@@ -34,6 +35,9 @@ and mobile workout flows.
 - Add semantic colors in light vars, dark vars, and `@theme inline`.
 - Avoid editing generated `src/components/ui/*` primitives directly unless the
   primitive itself is the bug.
+- Exercise icon artwork and `manifest.ts` are authored source. Do not edit
+  `src/components/exercise-icons/generated/*`; run
+  `pnpm generate:exercise-icons` after changing the manifest.
 
 ## Verification
 
