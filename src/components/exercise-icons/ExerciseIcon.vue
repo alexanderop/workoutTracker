@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SVGAttributes } from 'vue'
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
+import type { ExerciseIconClass } from './types'
 import { getExerciseIcon } from './registry'
 
 const {
@@ -13,7 +13,7 @@ const {
   name: string
   label?: string
   decorative?: boolean
-  class?: SVGAttributes['class']
+  class?: ExerciseIconClass
 }>()
 
 const resolvedIcon = computed(() => getExerciseIcon(name))
