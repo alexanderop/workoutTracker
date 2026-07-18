@@ -2,10 +2,11 @@ name: Claude PR Review
 
 on:
   pull_request:
-    # No `synchronize`: CodeRabbit and Copilot already re-review every push,
-    # so this standalone Claude review only needs to run once per PR (at
-    # open, or when a draft comes off hold) instead of on every commit.
-    types: [opened, ready_for_review]
+    # Synchronize runs only the cheap compatibility gate below. The Claude
+    # action still reviews once per PR (open or ready), while a PR that edits
+    # this workflow can replace its initial unavoidable OIDC failure with a
+    # successful skipped check on the next push.
+    types: [opened, ready_for_review, synchronize]
     paths-ignore:
       - '*.md'
       - 'brain/reference/**'
@@ -38,7 +39,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Claude workflow compatibility
+        id: workflow-compat
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$DEFAULT_BRANCH"
+          if git diff --quiet "origin/${DEFAULT_BRANCH}" -- \
+            .github/workflows/claude-pr-review.yml; then
+            echo "compatible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "compatible=false" >> "$GITHUB_OUTPUT"
+            echo "Claude review skipped: its workflow differs from the default branch, so OIDC validation would reject it."
+          fi
+
       - name: Run Claude PR Review
+        if: >-
+          steps.workflow-compat.outputs.compatible == 'true' &&
+          (github.event.action == 'ready_for_review' ||
+           (github.event.action == 'opened' && github.event.pull_request.draft == false))
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

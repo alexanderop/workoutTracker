@@ -21,17 +21,32 @@ inputs:
   github-token:
     description: Token with pull-requests:write scope.
     required: true
+  head-sha:
+    description: Exact head SHA tested by QA; defaults to the triggering event SHA.
+    required: false
+    default: ''
+
+outputs:
+  comment-id:
+    description: The exact issue-comment ID created or updated for this report.
+    value: ${{ steps.publish.outputs.comment-id }}
+  report-ready:
+    description: Whether a real report file was successfully published.
+    value: ${{ steps.publish.outputs.report-ready }}
 
 runs:
   using: composite
   steps:
     - name: Post or update sticky QA report
+      id: publish
       uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
       env:
         PR_NUMBER_INPUT: ${{ inputs.pr-number }}
         MARKER: ${{ inputs.marker }}
         HEADING: ${{ inputs.heading }}
         REPORT_PATH: ${{ inputs.report-path }}
+        REPORT_RUN_ID: ${{ github.run_id }}
+        REPORT_HEAD_SHA: ${{ inputs.head-sha || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         github-token: ${{ inputs.github-token }}
@@ -56,12 +71,18 @@ runs:
           try {
             report = fs.readFileSync(reportPath, 'utf8').trim();
           } catch {
-            report = `_No \`${reportPath}\` was produced by the QA run._`;
+            core.setFailed(`No ${reportPath} was produced by the QA run.`);
+            return;
+          }
+          if (!report) {
+            core.setFailed(`${reportPath} was empty.`);
+            return;
           }
 
-          const body = `${marker}\n${heading}\n\n${report}`;
+          const provenance = `<!-- qa-report-provenance run-id=${process.env.REPORT_RUN_ID} head-sha=${process.env.REPORT_HEAD_SHA} -->`;
+          const body = `${marker}\n${provenance}\n${heading}\n\n${report}`;
 
-          const { data: comments } = await github.rest.issues.listComments({
+          const comments = await github.paginate(github.rest.issues.listComments, {
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: prNumber,
@@ -83,13 +104,17 @@ runs:
               comment_id: existing.id,
               body,
             });
+            core.setOutput('comment-id', String(existing.id));
+            core.setOutput('report-ready', 'true');
             core.info(`Updated sticky QA report comment ${existing.id} on PR #${prNumber}.`);
           } else {
-            await github.rest.issues.createComment({
+            const { data: created } = await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
               body,
             });
+            core.setOutput('comment-id', String(created.id));
+            core.setOutput('report-ready', 'true');
             core.info(`Created sticky QA report comment on PR #${prNumber}.`);
           }

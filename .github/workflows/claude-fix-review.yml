@@ -81,22 +81,23 @@ jobs:
           fi
           # shellcheck disable=SC2016
           # GraphQL variables must remain literal for gh to bind with -F.
-          unresolved=$(gh api graphql \
+          unresolved=$(gh api graphql --paginate --slurp \
             -F owner="$REPO_OWNER" \
             -F name="$REPO_NAME" \
             -F number="$PR_NUMBER" \
-            -f query='query($owner: String!, $name: String!, $number: Int!) {
+            -f query='query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
               repository(owner: $owner, name: $name) {
                 pullRequest(number: $number) {
-                  reviewThreads(first: 100) {
+                  reviewThreads(first: 100, after: $endCursor) {
                     nodes {
                       isResolved
                       comments(first: 1) { nodes { author { login } } }
                     }
+                    pageInfo { hasNextPage endCursor }
                   }
                 }
               }
-            }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] |
+            }' | jq '[.[].data.repository.pullRequest.reviewThreads.nodes[] |
               select(.isResolved == false) |
               select(.comments.nodes[0].author.login == "coderabbitai" or
                      .comments.nodes[0].author.login == "copilot-pull-request-reviewer")] |
@@ -117,8 +118,25 @@ jobs:
           fetch-depth: 50
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup git identity
+      - name: Check Claude workflow compatibility
+        id: workflow-compat
         if: steps.gate.outputs.unresolved != '0'
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$DEFAULT_BRANCH"
+          if git diff --quiet FETCH_HEAD -- \
+            .github/workflows/claude-fix-review.yml; then
+            echo "compatible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "compatible=false" >> "$GITHUB_OUTPUT"
+            echo "Claude fixes skipped: this workflow differs from the default branch, so OIDC validation would reject it."
+          fi
+
+      - name: Setup git identity
+        if: steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -126,13 +144,13 @@ jobs:
           git config user.name "claude[bot]"
 
       - name: Setup dependencies
-        if: steps.gate.outputs.unresolved != '0'
+        if: steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true'
         uses: ./.github/actions/setup-node-deps
         with:
           node-version: '22'
 
       - name: Pre-fetch unresolved findings
-        if: steps.gate.outputs.unresolved != '0'
+        if: steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # pr-comments.ts shells out to gh, which reads this
@@ -142,9 +160,10 @@ jobs:
             jq 'map(select(.user == "coderabbitai[bot]" or
                            .user == "copilot-pull-request-reviewer[bot]"))' \
             > /tmp/pr-findings.json
+          echo '[]' > /tmp/fixed-findings.json
 
       - name: Run Claude to address findings
-        if: steps.gate.outputs.unresolved != '0'
+        if: steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true'
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -177,13 +196,16 @@ jobs:
                b. Verify: `pnpm type-check`; run the affected test file when
                   source code changed.
                c. Commit with conventional format: fix(scope): description.
-               d. Reply in-thread: gh api -X POST ... /comments/<commentId>/replies
-                  -f body='Fixed in <sha> — <what changed>.'
-               e. Resolve that thread via GraphQL resolveReviewThread (thread
-                  ids come from the reviewThreads query).
-               Never batch commits or replies for the end: if the turn limit
-               cuts you off, completed cycles must already be committed and
-               replied so the push step can salvage them.
+               d. Immediately update `/tmp/fixed-findings.json` with one object
+                  for the completed fix: `{"commentId": <integer>,
+                  "summary": "<brief description>"}`. Keep it a valid JSON
+                  array and include only findings you actually fixed and
+                  committed.
+               Do NOT reply to or resolve fixed findings yourself. The workflow
+               publishes those replies only after the rebase and push succeed,
+               using the final post-rebase SHA. If the turn limit cuts you off,
+               completed committed cycles and their manifest entries can still
+               be salvaged safely by the push step.
             5. After the last fix, run `pnpm lint` and (when source changed)
                `pnpm test`; fix fallout in a follow-up commit if needed.
 
@@ -201,9 +223,9 @@ jobs:
       - name: Push fix commits if any
         id: push-fix
         # `!cancelled()` on purpose: when the Claude step dies mid-run (e.g.
-        # max-turns), findings already fixed follow the commit-and-reply-per-
+        # max-turns), findings already fixed follow the commit-and-manifest-per-
         # finding cycle above, so pushing the finished commits salvages them.
-        if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' }}
+        if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true' }}
         shell: bash
         env:
           HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
@@ -211,7 +233,7 @@ jobs:
           set -euo pipefail
           if [ -n "$(git status --porcelain)" ]; then
             # A dirty tree means the run was cut off mid-fix; that half-done
-            # change was never verified or replied to, so drop it and keep
+            # change was never verified or recorded, so drop it and keep
             # only the completed, committed cycles.
             echo "::warning::Working tree dirty after Claude run; discarding uncommitted changes."
             git status --short
@@ -236,10 +258,11 @@ jobs:
             exit 0
           fi
           git push origin "HEAD:${HEAD_BRANCH}"
-          echo "pushed=true" >> "$GITHUB_OUTPUT"
           # shellcheck disable=SC2016
           # Backticks in the git format are Markdown, not shell substitutions.
           {
+            echo "pushed=true"
+            echo "sha=$LOCAL_SHA"
             echo "commits<<COMMITS_EOF"
             if [ -n "$REMOTE_SHA" ]; then
               git log --format='- `%h` %s' "${REMOTE_SHA}..${LOCAL_SHA}"
@@ -248,6 +271,120 @@ jobs:
             fi
             echo "COMMITS_EOF"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Publish fixed finding replies and resolve threads
+        if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ steps.gate.outputs.pr_number }}
+          PUSHED_SHA: ${{ steps.push-fix.outputs.sha }}
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = Number.parseInt(process.env.PR_NUMBER, 10);
+            const pushedSha = process.env.PUSHED_SHA;
+            const manifest = JSON.parse(fs.readFileSync('/tmp/fixed-findings.json', 'utf8'));
+
+            if (!Array.isArray(manifest)) {
+              throw new Error('fixed-findings.json must contain an array');
+            }
+
+            if (manifest.length === 0) {
+              throw new Error('Claude pushed commits but recorded no fixed findings; refusing to publish unauditable thread updates.');
+            }
+
+            const query = `query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviewThreads(first: 100, after: $cursor) {
+                    nodes {
+                      id
+                      isResolved
+                      comments(first: 100) {
+                        nodes { databaseId author { login } }
+                      }
+                    }
+                    pageInfo { hasNextPage endCursor }
+                  }
+                }
+              }
+            }`;
+            const threads = [];
+            let cursor = null;
+            do {
+              const result = await github.graphql(query, {
+                owner: context.repo.owner,
+                name: context.repo.repo,
+                number: prNumber,
+                cursor,
+              });
+              const connection = result.repository.pullRequest.reviewThreads;
+              threads.push(...connection.nodes);
+              cursor = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
+            } while (cursor);
+            const allComments = await github.paginate(github.rest.pulls.listReviewComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+            const commentsById = new Map(allComments.map((comment) => [comment.id, comment]));
+            const trustedAuthors = new Set([
+              'coderabbitai[bot]',
+              'copilot-pull-request-reviewer[bot]',
+            ]);
+            const authorizedThreads = new Map();
+            for (const thread of threads) {
+              const root = thread.comments.nodes[0];
+              if (!thread.isResolved && root &&
+                  (root.author?.login === 'coderabbitai' ||
+                   root.author?.login === 'copilot-pull-request-reviewer')) {
+                authorizedThreads.set(root.databaseId, thread);
+              }
+            }
+            const normalized = manifest.map((entry) => {
+              const comment = commentsById.get(entry?.commentId);
+              const thread = authorizedThreads.get(entry?.commentId);
+              if (!Number.isSafeInteger(entry?.commentId) ||
+                  !comment || !trustedAuthors.has(comment.user?.login) ||
+                  !thread || thread.isResolved) {
+                throw new Error(`Manifest contains an untrusted or resolved comment id: ${entry?.commentId}`);
+              }
+              if (typeof entry.summary !== 'string' || !entry.summary.trim()) {
+                throw new Error(`Manifest entry ${entry.commentId} has no summary`);
+              }
+              return { commentId: entry.commentId, summary: entry.summary.trim().slice(0, 500) };
+            });
+
+            const failures = [];
+            for (const entry of normalized) {
+              const marker = `<!-- claude-fix-review:${entry.commentId}:${pushedSha} -->`;
+              const thread = authorizedThreads.get(entry.commentId);
+
+              try {
+                if (!allComments.some((comment) => comment.body?.includes(marker))) {
+                  await github.rest.pulls.createReplyForReviewComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                    comment_id: entry.commentId,
+                    body: `${marker}\nFixed in ${pushedSha.slice(0, 12)} — ${entry.summary}`,
+                  });
+                }
+                if (!thread.isResolved) {
+                  await github.graphql(
+                    'mutation($threadId: ID!) { resolveReviewThread(input: {threadId: $threadId}) { thread { isResolved } } }',
+                    { threadId: thread.id },
+                  );
+                }
+              } catch (error) {
+                failures.push(`Comment ${entry.commentId}: ${error.message}`);
+              }
+            }
+
+            if (failures.length > 0) {
+              core.setFailed(`Published fixes, but could not update every review thread:\n${failures.join('\n')}`);
+            }
 
       - name: Dispatch CI on the pushed branch
         # The push above used GITHUB_TOKEN, which never triggers CI itself.
