@@ -1,3 +1,12 @@
+# [1.34.0](https://github.com/alexanderop/workoutTracker/compare/v1.33.0...v1.34.0) (2026-07-18)
+
+
+### Features
+
+* **ci:** triage browser QA reports with a Claude follow-up workflow ([#164](https://github.com/alexanderop/workoutTracker/issues/164)) ([27be864](https://github.com/alexanderop/workoutTracker/commit/27be864c0bdce7bde01e24083b405efa90d8add9))
+
+
+
 # [1.33.0](https://github.com/alexanderop/workoutTracker/compare/v1.32.1...v1.33.0) (2026-07-18)
 
 
@@ -31,20 +40,6 @@
 ### Features
 
 * **ci:** adopt Bun-style AI review and PR feedback tooling ([#159](https://github.com/alexanderop/workoutTracker/issues/159)) ([c48ec40](https://github.com/alexanderop/workoutTracker/commit/c48ec40f5e7ded2fc228f78f1dbf056c197c527c))
-
-
-
-# [1.30.0](https://github.com/alexanderop/workoutTracker/compare/v1.29.0...v1.30.0) (2026-07-07)
-
-
-### Bug Fixes
-
-* **workout:** stop auto-save from resurrecting finished workout drafts ([1378a71](https://github.com/alexanderop/workoutTracker/commit/1378a71ec65abb6d5fc22d1606d9803b0b19b78c))
-
-
-### Features
-
-* **app:** fix findings from the 2026-07-04 UX/UI review ([68d985d](https://github.com/alexanderop/workoutTracker/commit/68d985da9953387f6704c7204d7d87db20b63612))
 
 
 
