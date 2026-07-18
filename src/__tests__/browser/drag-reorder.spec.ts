@@ -65,7 +65,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation, not user-facing behavior
     const dragHandles = container.querySelectorAll('.drag-handle')
-    expect(dragHandles.length).toBe(3)
+    expect(dragHandles).toHaveLength(3)
   })
 
   it('drag handles have grab cursor class', () => {
@@ -118,7 +118,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // Drag handles still exist but should be hidden with opacity-0
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
     const dragHandles = container.querySelectorAll('.drag-handle')
-    expect(dragHandles.length).toBe(2)
+    expect(dragHandles).toHaveLength(2)
 
     for (const handle of dragHandles) {
       expect(handle.classList.contains('opacity-0')).toBe(true)
@@ -140,7 +140,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed attribute values requires DOM access
     const blockItems = container.querySelectorAll('button[aria-pressed]')
-    expect(blockItems.length).toBe(3)
+    expect(blockItems).toHaveLength(3)
     expect(blockItems[0]?.getAttribute('aria-pressed')).toBe('false')
     expect(blockItems[1]?.getAttribute('aria-pressed')).toBe('true')
     expect(blockItems[2]?.getAttribute('aria-pressed')).toBe('false')
@@ -199,7 +199,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // Query for block containers using aria-pressed buttons, then find their parent containers
     // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed + parent CSS classes requires DOM access
     const blockButtons = container.querySelectorAll('button[aria-pressed]')
-    expect(blockButtons.length).toBe(3)
+    expect(blockButtons).toHaveLength(3)
 
     // First block (index 0) should have opacity-60 (completed)
     expect(getBlockContainer(blockButtons[0]!)?.classList.contains('opacity-60')).toBe(true)
@@ -228,6 +228,6 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // Connectors use bg-border class and aria-hidden
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class + aria-hidden implementation
     const connectors = container.querySelectorAll('[aria-hidden="true"].bg-border')
-    expect(connectors.length).toBe(2)
+    expect(connectors).toHaveLength(2)
   })
 })

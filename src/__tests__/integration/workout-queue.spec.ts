@@ -57,7 +57,7 @@ describe('Workout Queue', () => {
 
       // Assert: All 3 blocks visible in the queue dialog
       const queueItems = queue.getItems()
-      expect(queueItems.length).toBe(3)
+      expect(queueItems).toHaveLength(3)
 
       // Assert: Block 2 (Deadlift) shows "(Active)" label
       const activeItem = queue.getActiveItem()
@@ -214,7 +214,7 @@ describe('Workout Queue', () => {
 
       // Assert: Shows both blocks, AMRAP block has type badge
       const queueItems = queue.getItems()
-      expect(queueItems.length).toBe(2)
+      expect(queueItems).toHaveLength(2)
 
       // Find the AMRAP item
       const amrapItem = queueItems.find((item) => item.textContent?.includes('AMRAP'))
@@ -246,7 +246,7 @@ describe('Workout Queue', () => {
 
       // Assert: Block removed, 2 blocks remain in queue
       const queueItems = queue.getItems()
-      expect(queueItems.length).toBe(2)
+      expect(queueItems).toHaveLength(2)
       expect(queueItems.find((item) => item.textContent?.includes('Deadlift'))).toBeFalsy()
 
       // Close queue and verify header shows updated count

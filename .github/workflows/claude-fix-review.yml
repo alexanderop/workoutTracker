@@ -37,19 +37,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
-    # One run per PR at a time; a review landing mid-run queues exactly one
-    # follow-up. Combined with the unresolved-threads gate below, this bounds
-    # the fix -> re-review -> fix loop: it only continues while unresolved
+    # Shared writer lock: at most one of claude-ci-fix / claude-fix-review /
+    # claude-qa-followup pushes to a given PR branch at a time, so their
+    # commits stack via rebase instead of racing each other's pushes.
+    # Combined with the unresolved-threads gate below, this also bounds the
+    # fix -> re-review -> fix loop: it only continues while unresolved
     # findings actually exist.
     concurrency:
-      group: claude-fix-review-${{ github.event.pull_request.number || inputs.pr_number }}
+      group: claude-writer-${{ github.event.pull_request.number || inputs.pr_number }}
       cancel-in-progress: false
 
     permissions:
       contents: write # push the fix commit back to the PR branch
       pull-requests: write # reply to review threads, resolve them
       issues: write # createComment posts through the issues API
-      actions: read # inspect CI state if needed
+      actions: write # dispatch ci.yml after pushing fixes
       id-token: write # OIDC for claude-code-action auth
 
     steps:
@@ -77,6 +79,8 @@ jobs:
             echo "PR #${PR_NUMBER} is closed or from a fork; skipping."
             exit 0
           fi
+          # shellcheck disable=SC2016
+          # GraphQL variables must remain literal for gh to bind with -F.
           unresolved=$(gh api graphql \
             -F owner="$REPO_OWNER" \
             -F name="$REPO_NAME" \
@@ -84,10 +88,19 @@ jobs:
             -f query='query($owner: String!, $name: String!, $number: Int!) {
               repository(owner: $owner, name: $name) {
                 pullRequest(number: $number) {
-                  reviewThreads(first: 100) { nodes { isResolved } }
+                  reviewThreads(first: 100) {
+                    nodes {
+                      isResolved
+                      comments(first: 1) { nodes { author { login } } }
+                    }
+                  }
                 }
               }
-            }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')
+            }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] |
+              select(.isResolved == false) |
+              select(.comments.nodes[0].author.login == "coderabbitai" or
+                     .comments.nodes[0].author.login == "copilot-pull-request-reviewer")] |
+              length')
           echo "unresolved=$unresolved" >> "$GITHUB_OUTPUT"
           echo "Unresolved review threads: $unresolved"
 
@@ -98,7 +111,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ steps.gate.outputs.head_ref }}
-          fetch-depth: 0
+          # This workflow's prompt never diffs against main (unlike
+          # claude-qa-followup's), so a shallow slice of head-branch history
+          # is enough for the commit-range log in the push step below.
+          fetch-depth: 50
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup git identity
@@ -115,6 +131,18 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Pre-fetch unresolved findings
+        if: steps.gate.outputs.unresolved != '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # pr-comments.ts shells out to gh, which reads this
+        run: |
+          set -euo pipefail
+          pnpm -s pr:comments ${{ steps.gate.outputs.pr_number }} --json |
+            jq 'map(select(.user == "coderabbitai[bot]" or
+                           .user == "copilot-pull-request-reviewer[bot]"))' \
+            > /tmp/pr-findings.json
+
       - name: Run Claude to address findings
         if: steps.gate.outputs.unresolved != '0'
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
@@ -130,9 +158,11 @@ jobs:
             "Responding to review feedback" convention in CLAUDE.md.
 
             Steps:
-            1. Run `pnpm -s pr:comments ${{ steps.gate.outputs.pr_number }} --json`
-               to list all unresolved findings (resolved threads are already
-               filtered out). If nothing actionable remains, stop without changes.
+            1. Read the unresolved findings from `/tmp/pr-findings.json`
+               (already fetched; resolved threads filtered out). If empty or
+               nothing actionable, stop without changes. If you need fresher
+               state after fixing something, re-run
+               `pnpm -s pr:comments ${{ steps.gate.outputs.pr_number }} --json`.
             2. Triage ALL findings up front: decide fix vs skip for each. Skip
                findings that are invalid, over-engineered, or conflict with
                repo conventions.
@@ -188,6 +218,16 @@ jobs:
             git checkout -- .
             git clean -fd
           fi
+          # Rebase onto the current branch tip first: the shared writer
+          # concurrency group above serializes claude-ci-fix / claude-fix-review
+          # / claude-qa-followup, but a human push between checkout and here is
+          # still possible. Recompute both SHAs AFTER the rebase so the
+          # "nothing to push" comparison below reflects the rebased state.
+          if ! git pull --rebase origin "${HEAD_BRANCH}"; then
+            git rebase --abort
+            echo "::error::git pull --rebase origin ${HEAD_BRANCH} failed; aborting rebase and not pushing. Resolve the conflict manually."
+            exit 1
+          fi
           LOCAL_SHA=$(git rev-parse HEAD)
           REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
           if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
@@ -197,6 +237,8 @@ jobs:
           fi
           git push origin "HEAD:${HEAD_BRANCH}"
           echo "pushed=true" >> "$GITHUB_OUTPUT"
+          # shellcheck disable=SC2016
+          # Backticks in the git format are Markdown, not shell substitutions.
           {
             echo "commits<<COMMITS_EOF"
             if [ -n "$REMOTE_SHA" ]; then
@@ -206,6 +248,17 @@ jobs:
             fi
             echo "COMMITS_EOF"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch CI on the pushed branch
+        # The push above used GITHUB_TOKEN, which never triggers CI itself.
+        if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
+        run: |
+          set -euo pipefail
+          gh workflow run ci.yml --ref "$HEAD_BRANCH"
 
       - name: Comment on PR with pushed commits
         if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}

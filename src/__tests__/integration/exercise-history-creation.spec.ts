@@ -6,7 +6,11 @@
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
-import { getWorkoutsRepository, getCustomExercisesRepository, getExerciseProgressRepository } from '@/db'
+import {
+  getWorkoutsRepository,
+  getCustomExercisesRepository,
+  getExerciseProgressRepository,
+} from '@/db'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
@@ -88,10 +92,10 @@ describe('Exercise History Creation', () => {
 
     // Now verify the database state directly
     const savedWorkouts = await getWorkoutsRepository().getHistory()
-    expect(savedWorkouts.length).toBe(1)
+    expect(savedWorkouts).toHaveLength(1)
 
     const savedWorkout = savedWorkouts[0]!
-    expect(savedWorkout.blocks.length).toBe(1)
+    expect(savedWorkout.blocks).toHaveLength(1)
 
     const savedBlock = savedWorkout.blocks[0]!
     expect(savedBlock.kind).toBe('strength')
@@ -102,12 +106,12 @@ describe('Exercise History Creation', () => {
 
       // Also verify sets are marked as completed
       const completedSets = savedBlock.sets.filter((s) => s.status === 'completed')
-      expect(completedSets.length).toBe(3)
+      expect(completedSets).toHaveLength(3)
     }
 
     // Now verify the history query works
     const history = await getExerciseProgressRepository().getExerciseHistory(benchPressId)
-    expect(history.length).toBe(1)
+    expect(history).toHaveLength(1)
     expect(history[0]!.maxWeight).toBe(100)
 
     cleanup()

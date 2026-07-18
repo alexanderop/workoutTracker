@@ -175,7 +175,7 @@ describe('Template Flow', () => {
 
       // Verify blocks match template - we should see 2 blocks in builder mode
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(2)
+      expect(playlistButtons).toHaveLength(2)
 
       // Verify template lastUsedAt was updated
       const updatedTemplate = await getTemplateById(template.id)
@@ -555,7 +555,7 @@ describe('Template Flow', () => {
 
       // Verify workout has the block
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       // Verify in DB that defaultSetCount was saved as 5
       const updatedTemplate = await getTemplateById(template.id)
