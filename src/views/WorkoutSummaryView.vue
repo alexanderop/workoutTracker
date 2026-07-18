@@ -110,7 +110,9 @@ function handleDone() {
         :class="showContent ? 'animate-slide-up-fade' : 'opacity-0'"
         :style="{ animationDelay: '200ms' }"
       >
-        <h1 class="text-3xl font-bold tracking-tight mb-2">{{ t('workouts.summary.title') }}</h1>
+        <h1 class="text-page-title font-bold tracking-tight mb-2">
+          {{ t('workouts.summary.title') }}
+        </h1>
         <p class="text-muted-foreground text-lg">
           {{ workoutName }}
         </p>

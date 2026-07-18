@@ -46,7 +46,7 @@ function handleExerciseSelect(exercise: Exercise) {
     <div class="sticky top-0 z-10 bg-background/95 backdrop-blur-sm px-5 pt-6 pb-4">
       <!-- Title & Count -->
       <div class="mb-5">
-        <h1 class="text-4xl font-semibold tracking-tight">{{ t('exercises.title') }}</h1>
+        <h1 class="text-page-title font-semibold tracking-tight">{{ t('exercises.title') }}</h1>
         <p class="text-sm text-muted-foreground mt-1">
           {{ t('exercises.count', { count: exerciseCount }) }}
         </p>

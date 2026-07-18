@@ -16,23 +16,26 @@ const onboarding = useOnboarding()
   <div class="flex h-full flex-col items-center justify-center px-6 text-center">
     <!-- App icon -->
     <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-primary/10">
-      <img
-        src="/pwa-192x192.png"
-        :alt="''"
-        class="h-16 w-16"
-        aria-hidden="true"
-      />
+      <img src="/pwa-192x192.png" :alt="''" class="h-16 w-16" aria-hidden="true" />
     </div>
 
     <!-- Title -->
-    <h1 class="text-3xl font-bold tracking-tight" tabindex="-1">
-      {{ onboarding.isReturningUser ? t('onboarding.welcomeBack.title') : t('onboarding.welcome.title') }}
+    <h1 class="text-page-title font-bold tracking-tight" tabindex="-1">
+      {{
+        onboarding.isReturningUser
+          ? t('onboarding.welcomeBack.title')
+          : t('onboarding.welcome.title')
+      }}
     </h1>
 
     <!-- CTAs -->
     <div class="mt-10 flex w-full max-w-xs flex-col gap-3">
       <Button size="lg" class="w-full" @click="emit('next')">
-        {{ onboarding.isReturningUser ? t('onboarding.welcomeBack.resumeTour') : t('onboarding.welcome.startTour') }}
+        {{
+          onboarding.isReturningUser
+            ? t('onboarding.welcomeBack.resumeTour')
+            : t('onboarding.welcome.startTour')
+        }}
       </Button>
       <Button variant="outline" size="lg" class="w-full" @click="emit('skip')">
         {{ t('onboarding.welcome.skipToApp') }}

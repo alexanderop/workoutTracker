@@ -53,8 +53,15 @@ const completedAt = ref<number | null>(null)
 const timerResult = ref<TimedBlockResult | null>(null)
 
 // Workout logger
-const { isLogged, isSaving, logAmrap, logEmom, logTabata, logForTime, reset: resetLogger } =
-  useTimerWorkoutLogger()
+const {
+  isLogged,
+  isSaving,
+  logAmrap,
+  logEmom,
+  logTabata,
+  logForTime,
+  reset: resetLogger,
+} = useTimerWorkoutLogger()
 
 // Test-only flag to show complete button for integration testing
 const isTestMode = import.meta.env.MODE === 'test'
@@ -132,7 +139,7 @@ async function logWorkoutByKind(
   timedBlock: TimedBlock,
   result: TimedBlockResult,
   start: number,
-  end: number
+  end: number,
 ): Promise<void> {
   if (timedBlock.kind === 'amrap' && isAmrapResult(result)) {
     await logAmrap(timedBlock, result, start, end)
@@ -232,7 +239,7 @@ async function handleLogWorkout() {
         <button
           v-if="isTestMode"
           data-testid="complete-timer-test"
-          class="text-xs px-1 py-0.5 bg-gray-200 rounded"
+          class="text-xs px-1 py-0.5 bg-muted rounded"
           @click="handleComplete"
         >
           Complete
@@ -247,7 +254,7 @@ async function handleLogWorkout() {
         <!-- Log Workout button -->
         <Button
           :disabled="isLogged || isSaving"
-          :class="isLogged ? 'bg-green-600 hover:bg-green-600' : ''"
+          :class="isLogged ? 'bg-success hover:bg-success' : ''"
           @click="handleLogWorkout"
         >
           <Check v-if="isLogged" class="w-4 h-4 mr-2" />

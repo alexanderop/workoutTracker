@@ -163,21 +163,21 @@ function handleOpenChange(value: boolean) {
 
             <!-- Cardio Block -->
             <button
-              class="w-full flex items-center gap-4 p-4 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors text-left border border-cyan-500/20"
+              class="w-full flex items-center gap-4 p-4 rounded-xl bg-block-cardio/10 hover:bg-block-cardio/20 transition-colors text-left border border-block-cardio/20"
               @click="handleSelectCardio"
             >
               <div
-                class="flex items-center justify-center w-12 h-12 rounded-lg bg-cyan-500/20 text-cyan-500"
+                class="flex items-center justify-center w-12 h-12 rounded-lg bg-block-cardio/20 text-block-cardio"
               >
                 <Activity class="size-6" />
               </div>
               <div class="flex-1">
-                <p class="font-semibold text-lg text-cyan-500">{{ BLOCK_LABELS.cardio }}</p>
+                <p class="font-semibold text-lg text-block-cardio">{{ BLOCK_LABELS.cardio }}</p>
                 <p class="text-sm text-muted-foreground">
                   {{ t('dialogs.addBlock.cardioDescription') }}
                 </p>
               </div>
-              <span class="text-cyan-500/50 text-xl">›</span>
+              <span class="text-block-cardio/50 text-xl">›</span>
             </button>
           </div>
 

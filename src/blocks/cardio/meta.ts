@@ -3,5 +3,5 @@ import type { BlockMeta } from '../types'
 export const cardioMeta: BlockMeta = {
   label: 'Cardio',
   icon: '',
-  color: { bg: 'bg-cyan-500/20', text: 'text-cyan-500', accent: 'bg-cyan-500' },
+  color: { bg: 'bg-block-cardio/20', text: 'text-block-cardio', accent: 'bg-block-cardio' },
 }

@@ -40,12 +40,25 @@ The `@theme inline { ... }` block (`src/style.css:6`) maps these raw vars to Tai
 
 Custom token families beyond shadcn defaults:
 
-- **Status**: `--success`, `--warning` (+ `-foreground`)
+- **Status**: `--success`, `--warning` (+ `-foreground`) — real statuses only (done/checkmarks/go, alerts/caution)
+- **Highlight**: `--highlight` — warm decorative accent for motivational iconography (streak flames, trophies, timer/history icons). Deliberately separate from `--warning` so restyling warnings never repaints streaks.
+- **Block kinds**: `--block-strength`, `--block-amrap`, `--block-emom`, `--block-tabata`, `--block-fortime`, `--block-cardio` — consumed via `src/blocks/<kind>/meta.ts` color fields (`bg-block-<kind>/20`, `text-block-<kind>`), same indirection pattern as muscle colors via `muscleMetadata.ts`
 - **Muscle groups**: `--muscle-chest`, `--muscle-back`, `--muscle-legs`, ...
 - **Sidebar**: full `--sidebar-*` set
-- **Sizing/spacing/typography**: `--size-icon-md`, `--size-touch-target`, `--font-size-page-title`, ...
+- **Sizing/spacing**: `--size-icon-md`, `--size-touch-target`, `--spacing-section` (view-root `space-y-section` rhythm)
+- **Typography**: `--text-page-title` (route-level h1), `--text-section-title` (in-page h2/h3). These use the `--text-*` namespace — `--font-size-*` is NOT a Tailwind v4 namespace and generates no utilities (the original tokens were dead for exactly this reason).
 
 When adding a new semantic color, add the raw var to **both** `:root` and `.dark`, then expose it in `@theme inline` as `--color-<name>: var(--<name>)`. Skipping the `@theme` mapping means `bg-<name>` won't compile.
+
+### Token rules (enforced by `pnpm lint` → `scripts/check-design-tokens.mjs`)
+
+1. **App code never uses raw palette-scale classes** (`bg-emerald-500`, `text-gray-200`, ...). Consume semantic tokens; if no token fits, add one (three places, see above) rather than reaching for the palette. Exception: real-world color conventions (Olympic plate colors in `BarbellPlateHint.vue`) — allowlist in the script or use a `design-tokens-ignore` line comment, with a reason.
+2. **App code never uses `dark:` variants.** Theming is token-based: `.dark` swaps CSS variables. Only scaffolded `src/components/ui/*` files are exempt.
+3. **Guard semantic meaning.** `--destructive` only for destructive actions, `--warning` only for warnings, `--primary` only for primary actions. Don't repurpose a status token because the hue looks right — that's what `--highlight` and the `--block-*`/`--muscle-*` families exist for.
+4. **New tokens earn their place at ~3 usages.** Below that, keep the decision local to the component.
+5. `vite.config.ts` `theme_color` is a hex mirror of `--primary` (manifests can't read CSS vars) — update it if the primary hue changes.
+
+Candidate not yet tokenized: the "eyebrow" heading pattern (`text-sm font-semibold text-muted-foreground uppercase tracking-wider`, ~8 uses) could become a `.section-label` component class.
 
 ## Adding a shadcn-vue component
 

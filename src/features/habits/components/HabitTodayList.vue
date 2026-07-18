@@ -78,7 +78,7 @@ function handleQuantityChange(item: HabitTodayItem, value: number) {
           </span>
         </span>
         <Badge v-if="item.streak >= STREAK_BADGE_THRESHOLD" variant="secondary">
-          <Flame class="h-3 w-3 text-orange-500" aria-hidden="true" />
+          <Flame class="h-3 w-3 text-highlight" aria-hidden="true" />
           {{ t('habits.streakLabel', { count: item.streak }) }}
         </Badge>
         <span
@@ -113,7 +113,7 @@ function handleQuantityChange(item: HabitTodayItem, value: number) {
             </span>
           </span>
           <Badge v-if="item.streak >= STREAK_BADGE_THRESHOLD" variant="secondary">
-            <Flame class="h-3 w-3 text-orange-500" aria-hidden="true" />
+            <Flame class="h-3 w-3 text-highlight" aria-hidden="true" />
             {{ t('habits.streakLabel', { count: item.streak }) }}
           </Badge>
         </div>

@@ -30,7 +30,7 @@ const prCards = computed<Array<PRCard>>(() => {
       label: t('exercises.progress.pr.maxWeight'),
       value: `${maxWeight.kg} kg`,
       subtitle: t('exercises.progress.pr.reps', { count: maxWeight.reps }),
-      accentClass: 'border-l-amber-500',
+      accentClass: 'border-l-highlight',
     })
   }
 
@@ -41,21 +41,22 @@ const prCards = computed<Array<PRCard>>(() => {
       label: t('exercises.progress.pr.estimated1RM'),
       value: `${Math.round(estimated1RM.kg)} kg`,
       subtitle: t('exercises.progress.pr.fromReps', { count: estimated1RM.fromReps }),
-      accentClass: 'border-l-emerald-500',
+      accentClass: 'border-l-success',
     })
   }
 
   if (maxVolume) {
-    const volumeKg = maxVolume.volume >= 1000
-      ? `${(maxVolume.volume / 1000).toFixed(1).replace(/\.0$/, '')}t`
-      : `${maxVolume.volume} kg`
+    const volumeKg =
+      maxVolume.volume >= 1000
+        ? `${(maxVolume.volume / 1000).toFixed(1).replace(/\.0$/, '')}t`
+        : `${maxVolume.volume} kg`
     cards.push({
       id: 'volume',
       icon: TrendingUp,
       label: t('exercises.progress.pr.maxVolume'),
       value: volumeKg,
       subtitle: t('exercises.progress.pr.perSession'),
-      accentClass: 'border-l-sky-500',
+      accentClass: 'border-l-primary',
     })
   }
 
@@ -64,9 +65,7 @@ const prCards = computed<Array<PRCard>>(() => {
 </script>
 
 <template>
-  <div
-    class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide"
-  >
+  <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
     <div
       v-for="card in prCards"
       :key="card.id"
@@ -91,13 +90,3 @@ const prCards = computed<Array<PRCard>>(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.scrollbar-hide {
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-</style>

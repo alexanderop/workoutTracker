@@ -3,7 +3,13 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ClipboardList, History, Plus } from '@lucide/vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { getTemplatesRepository, getWorkoutsRepository } from '@/db'
@@ -24,9 +30,7 @@ const recentWorkouts = ref<ReadonlyArray<DbCompletedWorkout>>([])
 
 onMounted(async () => {
   // Load templates and recent workouts for the dialogs
-  const [templatesError, templatesData] = await tryCatch(
-    getTemplatesRepository().getAll(),
-  )
+  const [templatesError, templatesData] = await tryCatch(getTemplatesRepository().getAll())
   if (!templatesError && templatesData) {
     templates.value = templatesData
   }
@@ -91,8 +95,12 @@ function formatDate(timestamp: number): string {
             <ClipboardList class="w-5 h-5 text-primary" />
           </div>
           <div class="flex-1">
-            <CardTitle class="text-base">{{ t('logPastWorkout.fromTemplate', 'From Template') }}</CardTitle>
-            <CardDescription class="text-xs">{{ t('logPastWorkout.fromTemplateDesc', 'Start from a saved template') }}</CardDescription>
+            <CardTitle class="text-base">{{
+              t('logPastWorkout.fromTemplate', 'From Template')
+            }}</CardTitle>
+            <CardDescription class="text-xs">{{
+              t('logPastWorkout.fromTemplateDesc', 'Start from a saved template')
+            }}</CardDescription>
           </div>
         </CardHeader>
       </Card>
@@ -107,12 +115,16 @@ function formatDate(timestamp: number): string {
         @keydown.space.prevent="handleFromHistory"
       >
         <CardHeader class="flex-row items-center gap-4 p-4">
-          <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-            <History class="w-5 h-5 text-orange-500" />
+          <div class="w-10 h-10 rounded-full bg-highlight/10 flex items-center justify-center">
+            <History class="w-5 h-5 text-highlight" />
           </div>
           <div class="flex-1">
-            <CardTitle class="text-base">{{ t('logPastWorkout.fromHistory', 'From History') }}</CardTitle>
-            <CardDescription class="text-xs">{{ t('logPastWorkout.fromHistoryDesc', 'Copy a previous workout') }}</CardDescription>
+            <CardTitle class="text-base">{{
+              t('logPastWorkout.fromHistory', 'From History')
+            }}</CardTitle>
+            <CardDescription class="text-xs">{{
+              t('logPastWorkout.fromHistoryDesc', 'Copy a previous workout')
+            }}</CardDescription>
           </div>
         </CardHeader>
       </Card>
@@ -127,12 +139,16 @@ function formatDate(timestamp: number): string {
         @keydown.space.prevent="handleBlank"
       >
         <CardHeader class="flex-row items-center gap-4 p-4">
-          <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-            <Plus class="w-5 h-5 text-emerald-500" />
+          <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+            <Plus class="w-5 h-5 text-success" />
           </div>
           <div class="flex-1">
-            <CardTitle class="text-base">{{ t('logPastWorkout.blankWorkout', 'Blank Workout') }}</CardTitle>
-            <CardDescription class="text-xs">{{ t('logPastWorkout.blankWorkoutDesc', 'Build from scratch') }}</CardDescription>
+            <CardTitle class="text-base">{{
+              t('logPastWorkout.blankWorkout', 'Blank Workout')
+            }}</CardTitle>
+            <CardDescription class="text-xs">{{
+              t('logPastWorkout.blankWorkoutDesc', 'Build from scratch')
+            }}</CardDescription>
           </div>
         </CardHeader>
       </Card>
@@ -192,7 +208,8 @@ function formatDate(timestamp: number): string {
               <div class="text-left">
                 <div class="font-medium">{{ workout.name }}</div>
                 <div class="text-xs text-muted-foreground">
-                  {{ formatDate(workout.completedAt) }} - {{ workout.blocks.length }} {{ t('common.blocks', 'blocks') }}
+                  {{ formatDate(workout.completedAt) }} - {{ workout.blocks.length }}
+                  {{ t('common.blocks', 'blocks') }}
                 </div>
               </div>
             </Button>

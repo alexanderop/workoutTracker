@@ -33,8 +33,8 @@ const trendIcon = computed(() => {
 })
 
 const trendClass = computed(() => {
-  if (stats.trend === 'up') return 'text-amber-500'
-  if (stats.trend === 'down') return 'text-green-500'
+  if (stats.trend === 'up') return 'text-warning'
+  if (stats.trend === 'down') return 'text-success'
   return 'text-muted-foreground'
 })
 

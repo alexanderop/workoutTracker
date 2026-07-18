@@ -68,15 +68,15 @@ async function handleDelete(id: string) {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-lg space-y-6 p-4">
-    <h1 class="text-2xl font-bold">{{ t('weight.title') }}</h1>
+  <div class="container mx-auto max-w-lg space-y-section p-4">
+    <h1 class="text-page-title font-bold">{{ t('weight.title') }}</h1>
 
     <WeightEntryForm :last-weight="lastWeightDisplay" @save="handleSave" />
 
     <div
       v-if="pendingWeightKg !== null"
       role="alert"
-      class="space-y-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+      class="space-y-3 rounded-lg border border-warning/50 bg-warning/10 p-3 text-sm"
     >
       <p>{{ pendingConfirmMessage }}</p>
       <div class="flex justify-end gap-2">

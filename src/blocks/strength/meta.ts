@@ -3,5 +3,5 @@ import type { BlockMeta } from '../types'
 export const strengthMeta: BlockMeta = {
   label: 'Strength',
   icon: '',
-  color: { bg: 'bg-blue-500/20', text: 'text-blue-500', accent: 'bg-blue-500' },
+  color: { bg: 'bg-block-strength/20', text: 'text-block-strength', accent: 'bg-block-strength' },
 }

@@ -74,17 +74,14 @@ function handleConfirm() {
               v-model.number="durationMinutes"
               type="number"
               min="0"
-              :class="{ 'border-orange-500 text-orange-600': isLongDuration }"
+              :class="{ 'border-warning text-warning': isLongDuration }"
               :aria-label="t('dialogs.finish.duration')"
             />
             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
               {{ t('common.units.minutes') }}
             </span>
           </div>
-          <p
-            v-if="isLongDuration"
-            class="flex items-center gap-1.5 text-sm text-orange-600"
-          >
+          <p v-if="isLongDuration" class="flex items-center gap-1.5 text-sm text-warning">
             <TriangleAlert class="size-4" />
             {{ t('dialogs.finish.durationWarning') }}
           </p>

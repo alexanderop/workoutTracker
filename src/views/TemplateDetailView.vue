@@ -120,7 +120,7 @@ function handleCancel(): void {
       <!-- Blocks section -->
       <div class="mb-6 flex flex-1 flex-col">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">{{ t('workouts.templates.blocks') }}</h2>
+          <h2 class="text-section-title font-semibold">{{ t('workouts.templates.blocks') }}</h2>
           <span class="text-sm text-muted-foreground">{{ blocks.length }}</span>
         </div>
 

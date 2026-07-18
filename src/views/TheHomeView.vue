@@ -101,9 +101,9 @@ function openCalendarSheet() {
       >
         <CardHeader class="flex-col items-center justify-center text-center p-2 sm:py-6 h-full">
           <div
-            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors"
+            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-success/10 flex items-center justify-center group-hover:bg-success/20 transition-colors"
           >
-            <ClipboardList class="w-4 h-4 sm:w-7 sm:h-7 text-emerald-500" aria-hidden="true" />
+            <ClipboardList class="w-4 h-4 sm:w-7 sm:h-7 text-success" aria-hidden="true" />
           </div>
           <h2 class="leading-tight font-semibold text-xs sm:text-xl">
             {{ t('nav.homeView.logPastWorkout', 'Log Past Workout') }}
@@ -125,9 +125,9 @@ function openCalendarSheet() {
       >
         <CardHeader class="flex-col items-center justify-center text-center p-2 sm:py-6 h-full">
           <div
-            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"
+            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-highlight/10 flex items-center justify-center group-hover:bg-highlight/20 transition-colors"
           >
-            <Timer class="w-4 h-4 sm:w-7 sm:h-7 text-orange-500" aria-hidden="true" />
+            <Timer class="w-4 h-4 sm:w-7 sm:h-7 text-highlight" aria-hidden="true" />
           </div>
           <h2 class="leading-tight font-semibold text-xs sm:text-xl">
             {{ t('nav.homeView.quickTimer') }}

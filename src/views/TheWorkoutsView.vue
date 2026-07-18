@@ -61,7 +61,7 @@ function navigateToProgressionDetail(progressionId: string): void {
   <div class="flex flex-1 flex-col p-4">
     <Card class="mb-6">
       <CardContent class="pt-6">
-        <h1 class="mb-2 text-3xl font-bold">{{ t('workouts.title') }}</h1>
+        <h1 class="mb-2 text-page-title font-bold">{{ t('workouts.title') }}</h1>
         <p class="text-muted-foreground">{{ t('workouts.subtitle') }}</p>
       </CardContent>
     </Card>

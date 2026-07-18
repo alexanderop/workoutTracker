@@ -68,13 +68,17 @@ async function handleCopyMarkdown() {
       <Button
         variant="ghost"
         size="icon"
-        :aria-label="isCopied ? t('workouts.detail.copy.success') : t('workouts.detail.copy.button')"
+        :aria-label="
+          isCopied ? t('workouts.detail.copy.success') : t('workouts.detail.copy.button')
+        "
         @click="handleCopyMarkdown"
       >
-        <Check v-if="isCopied" class="icon-sm text-green-500" />
+        <Check v-if="isCopied" class="icon-sm text-success" />
         <Copy v-else class="icon-sm" />
       </Button>
-      <span v-if="isCopied" class="text-sm text-green-500">{{ t('workouts.detail.copy.success') }}</span>
+      <span v-if="isCopied" class="text-sm text-success">{{
+        t('workouts.detail.copy.success')
+      }}</span>
     </template>
 
     <!-- Loading state -->
@@ -109,7 +113,8 @@ async function handleCopyMarkdown() {
           >
             <div class="font-semibold uppercase">{{ t('workouts.blocks.cardio') }}</div>
             <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
-              {{ Math.floor(block.result.actualDurationSeconds / 60) }} {{ t('workouts.detail.minutesCompleted') }}
+              {{ Math.floor(block.result.actualDurationSeconds / 60) }}
+              {{ t('workouts.detail.minutesCompleted') }}
             </div>
           </div>
           <TimedBlockCard
@@ -141,17 +146,13 @@ async function handleCopyMarkdown() {
       class="flex flex-col items-center justify-center py-16"
     >
       <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.error') }}</p>
-      <Button variant="outline" @click="router.push('/')">{{
-        t('workouts.detail.goBack')
-      }}</Button>
+      <Button variant="outline" @click="router.push('/')">{{ t('workouts.detail.goBack') }}</Button>
     </div>
 
     <!-- Not found state -->
     <div v-else class="flex flex-col items-center justify-center py-16">
       <p class="mb-4 text-muted-foreground">{{ t('workouts.detail.notFound') }}</p>
-      <Button variant="outline" @click="router.push('/')">{{
-        t('workouts.detail.goBack')
-      }}</Button>
+      <Button variant="outline" @click="router.push('/')">{{ t('workouts.detail.goBack') }}</Button>
     </div>
 
     <template v-if="state.status === 'success'" #footer>

@@ -31,10 +31,7 @@ const displayLabel = computed(() => durationLabel ?? t('workouts.summary.totalDu
 <template>
   <div class="flex-1 flex flex-col items-center justify-center p-6 gap-8">
     <!-- Trophy icon with bounce -->
-    <div
-      class="relative"
-      :class="isVisible ? 'animate-bounce-in' : 'opacity-0'"
-    >
+    <div class="relative" :class="isVisible ? 'animate-bounce-in' : 'opacity-0'">
       <div class="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
         <Trophy class="w-12 h-12 text-primary" aria-hidden="true" />
       </div>
@@ -47,7 +44,7 @@ const displayLabel = computed(() => durationLabel ?? t('workouts.summary.totalDu
       :class="isVisible ? 'animate-slide-up-fade' : 'opacity-0'"
       :style="{ animationDelay: '200ms' }"
     >
-      <h1 class="text-3xl font-bold tracking-tight mb-2">
+      <h1 class="text-page-title font-bold tracking-tight mb-2">
         {{ t('workouts.summary.title') }}
       </h1>
       <p class="text-muted-foreground text-lg">{{ name }}</p>

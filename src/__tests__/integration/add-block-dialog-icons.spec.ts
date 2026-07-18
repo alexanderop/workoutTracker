@@ -27,22 +27,22 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
       {
         name: 'AMRAP',
         iconClass: 'lucide-refresh-ccw',
-        colorClass: 'text-purple-500',
+        colorClass: 'text-block-amrap',
       },
       {
         name: 'EMOM',
         iconClass: 'lucide-clock',
-        colorClass: 'text-orange-500',
+        colorClass: 'text-block-emom',
       },
       {
         name: 'Tabata',
         iconClass: 'lucide-zap',
-        colorClass: 'text-emerald-500',
+        colorClass: 'text-block-tabata',
       },
       {
         name: 'For Time',
         iconClass: 'lucide-gauge',
-        colorClass: 'text-rose-500',
+        colorClass: 'text-block-fortime',
       },
     ]
 
@@ -84,8 +84,8 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
       expect(cardioIcon, 'Cardio should have lucide-activity icon').toBeTruthy()
 
       // eslint-disable-next-line no-restricted-syntax -- Testing color CSS class implementation
-      const cardioColor = cardioCard.querySelector('.text-cyan-500')
-      expect(cardioColor, 'Cardio should have text-cyan-500 styling').toBeTruthy()
+      const cardioColor = cardioCard.querySelector('.text-block-cardio')
+      expect(cardioColor, 'Cardio should have text-block-cardio styling').toBeTruthy()
     }
 
     cleanup()

@@ -80,9 +80,9 @@ const archiveDialogDescription = computed(() =>
 </script>
 
 <template>
-  <div class="container mx-auto max-w-lg space-y-6 p-4">
+  <div class="container mx-auto max-w-lg space-y-section p-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold">{{ t('habits.title') }}</h1>
+      <h1 class="text-page-title font-bold">{{ t('habits.title') }}</h1>
       <Button size="sm" @click="openCreateForm">
         <Plus class="mr-1 h-4 w-4" />
         {{ t('habits.addHabit') }}

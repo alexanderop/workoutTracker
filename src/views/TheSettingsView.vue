@@ -15,7 +15,7 @@ const { t } = useI18n()
   <div class="flex-1 p-4 pb-8">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">{{ t('settings.title') }}</h1>
+      <h1 class="text-page-title font-bold tracking-tight">{{ t('settings.title') }}</h1>
       <p class="text-muted-foreground mt-1">{{ t('settings.subtitle') }}</p>
     </div>
 

@@ -25,6 +25,7 @@
     "lint:oxlint": "oxlint . --fix --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "lint:tokens": "node scripts/check-design-tokens.mjs",
     "lint": "run-s lint:*",
     "i18n:check": "pnpm dlx tsx scripts/check-i18n.ts",
     "pr:comments": "pnpm dlx tsx scripts/pr-comments.ts",
