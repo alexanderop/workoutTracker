@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { seedPopularExercises } from '@/db/seedExercises'
-import { popularExercises } from '@/data/popularExercises'
+import { egymExercises, popularExercises } from '@/data/popularExercises'
+import { getCustomExercisesRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { getCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'
+
+const SEED_VERSION_KEY = 'exercises_seed_version'
 
 /**
  * Seed data integrity tests.
@@ -13,6 +16,7 @@ import { getCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'
 describe('seedPopularExercises', () => {
   beforeEach(async () => {
     await resetDatabase()
+    localStorage.removeItem(SEED_VERSION_KEY)
   })
 
   it('seeds exercises on first run', async () => {
@@ -43,6 +47,35 @@ describe('seedPopularExercises', () => {
     const secondCount = await getCustomExerciseCount()
 
     expect(secondCount).toBe(firstCount)
+  })
+
+  it('tops up the EGYM batch for databases seeded before versioning existed', async () => {
+    // Simulate a pre-versioning install: full seed, then strip the EGYM batch
+    // and the version marker so the database looks like an old v1 seed.
+    await seedPopularExercises()
+    const repo = getCustomExercisesRepository()
+    const egymNames = new Set(egymExercises.map((exercise) => exercise.name))
+    const seeded = await repo.getAll()
+    await Promise.all(seeded.filter((ex) => egymNames.has(ex.name)).map((ex) => repo.delete(ex.id)))
+    localStorage.removeItem(SEED_VERSION_KEY)
+
+    await seedPopularExercises()
+
+    const count = await getCustomExerciseCount()
+    expect(count).toBe(popularExercises.length)
+  })
+
+  it('does not resurrect user-deleted exercises once the version marker is current', async () => {
+    await seedPopularExercises()
+    const repo = getCustomExercisesRepository()
+    const seeded = await repo.getAll()
+    const deleted = seeded.find((ex) => ex.name === 'EGYM Chest Press')!
+    await repo.delete(deleted.id)
+
+    await seedPopularExercises()
+
+    const count = await getCustomExerciseCount()
+    expect(count).toBe(popularExercises.length - 1)
   })
 })
 

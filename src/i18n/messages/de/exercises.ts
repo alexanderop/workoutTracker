@@ -82,6 +82,7 @@ export default {
     'hex-bar': 'Trap Bar',
     club: 'Keule',
     'battle-rope': 'Battle Rope',
+    egym: 'EGYM',
   },
   muscle: {
     chest: 'Brust',
