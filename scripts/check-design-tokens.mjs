@@ -18,8 +18,9 @@
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = new URL('..', import.meta.url).pathname
+const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SRC = path.join(ROOT, 'src')
 
 /** Scaffolded shadcn-vue components manage their own classes. */
