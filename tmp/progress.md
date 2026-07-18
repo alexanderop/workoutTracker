@@ -10,8 +10,8 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 ## chest
 
-- [ ] Chest Fly — key `dumbbell-chest-fly`, component `DumbbellChestFlyIcon`, pose `supine-fly`
-- [ ] Cable Crossover — key `cable-crossover`, component `CableCrossoverIcon`, pose `standing-fly`
+- [x] Chest Fly — key `dumbbell-chest-fly`, component `DumbbellChestFlyIcon`, pose `supine-fly`
+- [x] Cable Crossover — key `cable-crossover`, component `CableCrossoverIcon`, pose `standing-fly`
 - [ ] Cable Fly — key `cable-fly`, component `CableFlyIcon`, pose `standing-fly`
 - [ ] Chest Press Machine — key `machine-chest-press`, component `MachineChestPressIcon`, pose `seated-press`
 - [ ] Incline Chest Press Machine — key `machine-incline-chest-press`, component `MachineInclineChestPressIcon`, pose `seated-press`
@@ -70,25 +70,25 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 ## clubs
 
-- [ ] Club Gama Cast — key `club-gama-cast`, component `ClubGamaCastIcon`, pose `club-swing`
-- [ ] Club Inside Circle — key `club-inside-circle`, component `ClubInsideCircleIcon`, pose `club-circle`
-- [ ] Club Mill — key `club-mill`, component `ClubMillIcon`, pose `club-mill`
-- [ ] Club Outside Circle — key `club-outside-circle`, component `ClubOutsideCircleIcon`, pose `club-circle`
-- [ ] Club Reverse Mill — key `club-reverse-mill`, component `ClubReverseMillIcon`, pose `club-mill`
-- [ ] Club Shield Cast — key `club-shield-cast`, component `ClubShieldCastIcon`, pose `club-swing`
-- [ ] Club Swipe — key `club-swipe`, component `ClubSwipeIcon`, pose `club-swing`
-- [ ] Battle Rope Waves — key `battle-rope-waves`, component `BattleRopeWavesIcon`, pose `rope-slam`
+- [x] Club Gama Cast — key `club-gama-cast`, component `ClubGamaCastIcon`, pose `club-swing`
+- [x] Club Inside Circle — key `club-inside-circle`, component `ClubInsideCircleIcon`, pose `club-circle`
+- [x] Club Mill — key `club-mill`, component `ClubMillIcon`, pose `club-mill`
+- [x] Club Outside Circle — key `club-outside-circle`, component `ClubOutsideCircleIcon`, pose `club-circle`
+- [x] Club Reverse Mill — key `club-reverse-mill`, component `ClubReverseMillIcon`, pose `club-mill`
+- [x] Club Shield Cast — key `club-shield-cast`, component `ClubShieldCastIcon`, pose `club-swing`
+- [x] Club Swipe — key `club-swipe`, component `ClubSwipeIcon`, pose `club-swing`
+- [x] Battle Rope Waves — key `battle-rope-waves`, component `BattleRopeWavesIcon`, pose `rope-slam`
 
 ## arms
 
-- [ ] Cable Bicep Curl — key `cable-bicep-curl`, component `CableBicepCurlIcon`, pose `standing-curl`
-- [ ] Cable Hammer Curl — key `cable-hammer-curl`, component `CableHammerCurlIcon`, pose `standing-curl`
-- [ ] Tricep Extension — key `cable-tricep-extension`, component `CableTricepExtensionIcon`, pose `standing-pushdown`
-- [ ] Bicep Curl Machine — key `machine-bicep-curl`, component `MachineBicepCurlIcon`, pose `seated-curl`
-- [ ] Preacher Curl Machine — key `machine-preacher-curl`, component `MachinePreacherCurlIcon`, pose `seated-curl`
-- [ ] Tricep Dip Machine — key `machine-tricep-dip`, component `MachineTricepDipIcon`, pose `seated-press`
-- [ ] Tricep Extension Machine — key `machine-tricep-extension`, component `MachineTricepExtensionIcon`, pose `seated-extension`
-- [ ] Bench Dips — key `bodyweight-bench-dips`, component `BodyweightBenchDipsIcon`, pose `support-press`
+- [x] Cable Bicep Curl — key `cable-bicep-curl`, component `CableBicepCurlIcon`, pose `standing-curl`
+- [x] Cable Hammer Curl — key `cable-hammer-curl`, component `CableHammerCurlIcon`, pose `standing-curl`
+- [x] Tricep Extension — key `cable-tricep-extension`, component `CableTricepExtensionIcon`, pose `standing-pushdown`
+- [x] Bicep Curl Machine — key `machine-bicep-curl`, component `MachineBicepCurlIcon`, pose `seated-curl`
+- [x] Preacher Curl Machine — key `machine-preacher-curl`, component `MachinePreacherCurlIcon`, pose `seated-curl`
+- [x] Tricep Dip Machine — key `machine-tricep-dip`, component `MachineTricepDipIcon`, pose `seated-press`
+- [x] Tricep Extension Machine — key `machine-tricep-extension`, component `MachineTricepExtensionIcon`, pose `seated-extension`
+- [x] Bench Dips — key `bodyweight-bench-dips`, component `BodyweightBenchDipsIcon`, pose `support-press`
 
 ## legs-free
 
