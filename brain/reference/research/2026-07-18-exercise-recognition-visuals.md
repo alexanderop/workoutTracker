@@ -137,6 +137,15 @@ press, barbell row, and cable fly.
 Evaluate recognition at the actual 48–56 px list size. If a variant difference
 cannot be read at that size, rely on the name instead of adding visual noise.
 
+## Implementation Lesson
+
+At the Exercise page's rendered avatar size, a barbell drawn as one thin shaft
+with square end blocks reads like brackets rather than loaded equipment. The
+barbell exercise poses now share `BarbellGlyph.vue`, which keeps the shaft,
+rounded plates, and inner collars consistent while allowing each pose to set
+the bar position and span. Reuse that glyph for future barbell poses instead of
+copying raw equipment paths.
+
 ## Sources
 
 - [Hevy exercise library](https://www.hevyapp.com/features/exercise-library/) - Exercise-specific animations plus equipment/muscle filtering.
