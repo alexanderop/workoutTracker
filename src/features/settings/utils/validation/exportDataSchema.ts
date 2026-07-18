@@ -2,9 +2,18 @@ import { z } from 'zod'
 
 import { dbBenchmarkSchema as databaseBenchmarkSchema, MAX_BENCHMARKS } from './benchmarkSchema'
 import { dbCustomExerciseSchema as databaseCustomExerciseSchema } from './exerciseSchema'
+import {
+  dbHabitEntrySchema as databaseHabitEntrySchema,
+  dbHabitSchema as databaseHabitSchema,
+  MAX_HABIT_ENTRIES,
+  MAX_HABITS,
+} from './habitSchema'
 import { dbUserSettingSchema as databaseUserSettingSchema } from './settingsSchema'
 import { dbWorkoutTemplateSchema as databaseWorkoutTemplateSchema } from './templateSchema'
-import { dbWeightEntrySchema as databaseWeightEntrySchema, MAX_WEIGHT_ENTRIES } from './weightEntrySchema'
+import {
+  dbWeightEntrySchema as databaseWeightEntrySchema,
+  MAX_WEIGHT_ENTRIES,
+} from './weightEntrySchema'
 import { dbCompletedWorkoutSchema as databaseCompletedWorkoutSchema } from './workoutSchema'
 
 /**
@@ -31,9 +40,18 @@ export const exportDataSchema = z
         templates: z.array(databaseWorkoutTemplateSchema).max(MAX_TEMPLATES).readonly(),
         workouts: z.array(databaseCompletedWorkoutSchema).max(MAX_WORKOUTS).readonly(),
         benchmarks: z.array(databaseBenchmarkSchema).max(MAX_BENCHMARKS).readonly(),
-        weightEntries: z.array(databaseWeightEntrySchema).max(MAX_WEIGHT_ENTRIES).readonly().optional(),
+        weightEntries: z
+          .array(databaseWeightEntrySchema)
+          .max(MAX_WEIGHT_ENTRIES)
+          .readonly()
+          .optional(),
+        habits: z.array(databaseHabitSchema).max(MAX_HABITS).readonly().optional(),
+        habitEntries: z
+          .array(databaseHabitEntrySchema)
+          .max(MAX_HABIT_ENTRIES)
+          .readonly()
+          .optional(),
       })
       .strict(),
   })
   .strict()
-

@@ -1,7 +1,8 @@
 import { type Ref } from 'vue'
-import { getActiveWorkoutRepository, getWorkoutsRepository } from '@/db'
+import { getActiveWorkoutRepository, getHabitsRepository, getWorkoutsRepository } from '@/db'
 import { dbToWorkout, workoutToDb } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
+import { autoLinkWorkoutCompletion } from '@/lib/habits/autoLinkWorkout'
 import { createPersistenceCore } from '@/composables/persistence/createPersistenceCore'
 import type { Workout } from './useWorkout'
 import type { DbCompletedWorkout } from '@/db/schema'
@@ -115,6 +116,17 @@ export function useWorkoutPersistence(workout: Ref<Workout>) {
     if (completeError) {
       core.setError(completeError)
       return null
+    }
+
+    // Auto-link workout-linked habits (see src/lib/habits/autoLinkWorkout.ts).
+    // Best-effort bookkeeping for a different feature -- a broken habits
+    // table must never block or fail workout completion, which is why this
+    // is isolated behind tryCatch and merely logged rather than propagated.
+    const [autoLinkError] = await tryCatch(
+      autoLinkWorkoutCompletion(getHabitsRepository(), completed.completedAt),
+    )
+    if (autoLinkError) {
+      console.error('[useWorkoutPersistence] Failed to auto-link habits:', autoLinkError)
     }
 
     currentWorkoutStartedAt = null

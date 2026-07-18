@@ -1,7 +1,8 @@
 import { type Ref } from 'vue'
-import { getActiveBenchmarkWorkoutRepository } from '@/db'
+import { getActiveBenchmarkWorkoutRepository, getHabitsRepository } from '@/db'
 import { benchmarkWorkoutToDb, dbToBenchmarkWorkout } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
+import { autoLinkWorkoutCompletion } from '@/lib/habits/autoLinkWorkout'
 import { createPersistenceCore } from '@/composables/persistence/createPersistenceCore'
 import type { BenchmarkWorkout } from '@/types/benchmark'
 import type { DbCompletedWorkout } from '@/db/schema'
@@ -69,6 +70,18 @@ export function useBenchmarkPersistence(benchmarkWorkout: Ref<BenchmarkWorkout>)
     if (completeError) {
       core.setError(completeError)
       return null
+    }
+
+    // Auto-link workout-linked habits (see src/lib/habits/autoLinkWorkout.ts).
+    // Best-effort bookkeeping for a different feature -- a broken habits
+    // table must never block or fail benchmark completion, which is why
+    // this is isolated behind tryCatch and merely logged rather than
+    // propagated.
+    const [autoLinkError] = await tryCatch(
+      autoLinkWorkoutCompletion(getHabitsRepository(), completed.completedAt),
+    )
+    if (autoLinkError) {
+      console.error('[useBenchmarkPersistence] Failed to auto-link habits:', autoLinkError)
     }
 
     core.markSaved()

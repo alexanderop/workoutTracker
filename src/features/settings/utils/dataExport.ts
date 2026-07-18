@@ -2,6 +2,8 @@ import type {
   DbBenchmark,
   DbCompletedWorkout,
   DbCustomExercise,
+  DbHabit,
+  DbHabitEntry,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -28,6 +30,8 @@ export type ExportData = {
     workouts: ReadonlyArray<DbCompletedWorkout>
     benchmarks: ReadonlyArray<DbBenchmark>
     weightEntries?: ReadonlyArray<DbWeightEntry>
+    habits?: ReadonlyArray<DbHabit>
+    habitEntries?: ReadonlyArray<DbHabitEntry>
   }
 }
 

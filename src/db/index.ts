@@ -9,6 +9,7 @@ import type {
   OnboardingRepository as OnboardingRepo,
   ProgressionsRepository as ProgressionsRepo,
   SettingsRepository as SettingsRepo,
+  HabitRepository,
   TemplatesRepository,
   WeightRepository,
   WorkoutsRepository,
@@ -73,6 +74,10 @@ export function getOnboardingRepository(): OnboardingRepo {
 
 export function getExerciseProgressRepository(): ExerciseProgressRepo {
   return getRepositoryProvider().exerciseProgress
+}
+
+export function getHabitsRepository(): HabitRepository {
+  return getRepositoryProvider().habits
 }
 
 // ============================================
