@@ -12,10 +12,10 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 - [x] Chest Fly — key `dumbbell-chest-fly`, component `DumbbellChestFlyIcon`, pose `supine-fly`
 - [x] Cable Crossover — key `cable-crossover`, component `CableCrossoverIcon`, pose `standing-fly`
-- [ ] Cable Fly — key `cable-fly`, component `CableFlyIcon`, pose `standing-fly`
-- [ ] Chest Press Machine — key `machine-chest-press`, component `MachineChestPressIcon`, pose `seated-press`
-- [ ] Incline Chest Press Machine — key `machine-incline-chest-press`, component `MachineInclineChestPressIcon`, pose `seated-press`
-- [ ] Pec Deck — key `machine-pec-deck`, component `MachinePecDeckIcon`, pose `seated-fly`
+- [x] Cable Fly — key `cable-fly`, component `CableFlyIcon`, pose `standing-fly`
+- [x] Chest Press Machine — key `machine-chest-press`, component `MachineChestPressIcon`, pose `seated-press`
+- [x] Incline Chest Press Machine — key `machine-incline-chest-press`, component `MachineInclineChestPressIcon`, pose `seated-press`
+- [x] Pec Deck — key `machine-pec-deck`, component `MachinePecDeckIcon`, pose `seated-fly`
 - [ ] Smith Machine Bench Press — key `smith-machine-bench-press`, component `SmithMachineBenchPressIcon`, pose `horizontal-press`
 - [ ] Smith Machine Incline Press — key `smith-machine-incline-press`, component `SmithMachineInclinePressIcon`, pose `incline-press`
 - [ ] Beast Push-up — key `bodyweight-beast-push-up`, component `BodyweightBeastPushUpIcon`, pose `quadruped`
