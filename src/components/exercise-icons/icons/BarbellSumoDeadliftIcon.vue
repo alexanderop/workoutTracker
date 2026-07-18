@@ -17,5 +17,6 @@ import ExerciseIconSvg from '../ExerciseIconSvg.vue'
       d="M7 31h34v3H7zM4 27h5v11H4zm35 0h5v11h-5z"
       fill="var(--exercise-icon-equipment, var(--primary))"
     />
+    <path d="M4 40h40v2H4z" fill="var(--exercise-icon-support, var(--muted-foreground))" />
   </ExerciseIconSvg>
 </template>
