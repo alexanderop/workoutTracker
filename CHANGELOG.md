@@ -1,3 +1,12 @@
+## [1.37.1](https://github.com/alexanderop/workoutTracker/compare/v1.37.0...v1.37.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* **exercises:** improve barbell icon clarity ([#173](https://github.com/alexanderop/workoutTracker/issues/173)) ([d75d86e](https://github.com/alexanderop/workoutTracker/commit/d75d86e2629c562cf3ff988e4a4f05bb8e9233af))
+
+
+
 # [1.37.0](https://github.com/alexanderop/workoutTracker/compare/v1.36.2...v1.37.0) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * **exercises:** add extensible exercise icon foundation ([#167](https://github.com/alexanderop/workoutTracker/issues/167)) ([40b29ec](https://github.com/alexanderop/workoutTracker/commit/40b29ec6541f7fd6a1664f0bbd7f4b0870ebaa98)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
-
-
-
-# [1.35.0](https://github.com/alexanderop/workoutTracker/compare/v1.34.0...v1.35.0) (2026-07-18)
-
-
-### Features
-
-* **habits:** add grid-based habit dashboard ([#165](https://github.com/alexanderop/workoutTracker/issues/165)) ([d42fcd6](https://github.com/alexanderop/workoutTracker/commit/d42fcd642a56a621a3796f7e487f411fc62930a5)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
 
 
 
