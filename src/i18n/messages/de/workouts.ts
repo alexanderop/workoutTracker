@@ -124,7 +124,7 @@ export default {
     rounds: 'Runden',
     completed: 'Abgeschlossen',
     capped: 'Zeitlimit erreicht',
-    minutesCompleted: 'Minuten abgeschlossen',
+    minutesCompleted: '{minutes} Minuten abgeschlossen',
     copy: {
       button: 'Als Markdown kopieren',
       success: 'Kopiert!',

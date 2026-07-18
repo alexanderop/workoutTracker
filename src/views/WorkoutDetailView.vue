@@ -113,8 +113,7 @@ async function handleCopyMarkdown() {
           >
             <div class="font-semibold uppercase">{{ t('workouts.blocks.cardio') }}</div>
             <div v-if="block.result" class="mt-1 text-sm text-muted-foreground">
-              {{ Math.floor(block.result.actualDurationSeconds / 60) }}
-              {{ t('workouts.detail.minutesCompleted') }}
+              {{ t('workouts.detail.minutesCompleted', { minutes: Math.floor(block.result.actualDurationSeconds / 60) }) }}
             </div>
           </div>
           <TimedBlockCard

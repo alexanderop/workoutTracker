@@ -124,7 +124,7 @@ export default {
     rounds: 'rounds',
     completed: 'Completed',
     capped: 'Capped',
-    minutesCompleted: 'minutes completed',
+    minutesCompleted: '{minutes} minutes completed',
     copy: {
       button: 'Copy as Markdown',
       success: 'Copied!',
