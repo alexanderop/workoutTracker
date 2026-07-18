@@ -47,9 +47,10 @@ describe('exercise icon inventory', () => {
   })
 
   it('resolves every built-in popular exercise to a bundled icon', () => {
-    for (const exercise of popularExercises) {
-      expect(resolveExerciseIconKey(exercise.name), exercise.name).not.toBeNull()
-    }
+    const unresolved = popularExercises
+      .map(({ name }) => name)
+      .filter((name) => resolveExerciseIconKey(name) === null)
+    expect(unresolved).toEqual([])
   })
 
   it('returns null synchronously for an unknown exercise', () => {

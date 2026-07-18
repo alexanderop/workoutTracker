@@ -7,7 +7,6 @@ component (`src/components/exercise-icons/icons/<Component>.vue`) + one manifest
 
 Status legend: [ ] pending · [x] icon component created + manifest entry added
 
-
 ## chest
 
 - [x] Chest Fly — key `dumbbell-chest-fly`, component `DumbbellChestFlyIcon`, pose `supine-fly`
@@ -200,9 +199,9 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 ## Wrap-up checklist
 
-- [ ] manifest.ts entries for all 163 (aliases unique, exact catalog names)
-- [ ] pnpm generate:exercise-icons (rewrites generated/iconKeys|iconAliases|iconRegistry)
-- [ ] update src/__tests__/components/exercise-icons/ExerciseIcon.spec.ts (10 -> 173, pilot-names test, add all-popular-exercises-resolve test)
-- [ ] update manifest.ts header comment (no longer pilot-only)
-- [ ] pnpm type-check && pnpm lint && pnpm test
-- [ ] commit + push claude/missing-icon-exercises-xjss75
+- [x] manifest.ts entries for all 163 (aliases unique, exact catalog names)
+- [x] pnpm generate:exercise-icons (rewrites generated/iconKeys|iconAliases|iconRegistry)
+- [x] update src/__tests__/components/exercise-icons/ExerciseIcon.spec.ts (10 -> 173, pilot-names test, add all-popular-exercises-resolve test)
+- [x] update manifest.ts header comment (no longer pilot-only)
+- [x] pnpm type-check && pnpm lint && pnpm test
+- [x] commit + push claude/missing-icon-exercises-xjss75
