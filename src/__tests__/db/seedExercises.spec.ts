@@ -3,7 +3,7 @@ import { seedPopularExercises } from '@/db/seedExercises'
 import { egymExercises, popularExercises } from '@/data/popularExercises'
 import { getCustomExercisesRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
-import { getCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'
+import { getCustomExerciseCount, expectCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'
 
 const SEED_VERSION_KEY = 'exercises_seed_version'
 
@@ -61,8 +61,7 @@ describe('seedPopularExercises', () => {
 
     await seedPopularExercises()
 
-    const count = await getCustomExerciseCount()
-    expect(count).toBe(popularExercises.length)
+    await expectCustomExerciseCount(popularExercises.length)
   })
 
   it('does not resurrect user-deleted exercises once the version marker is current', async () => {
@@ -74,8 +73,7 @@ describe('seedPopularExercises', () => {
 
     await seedPopularExercises()
 
-    const count = await getCustomExerciseCount()
-    expect(count).toBe(popularExercises.length - 1)
+    await expectCustomExerciseCount(popularExercises.length - 1)
   })
 })
 
