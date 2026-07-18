@@ -6,6 +6,12 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
+async function waitForExerciseAddedToastToDismiss(): Promise<void> {
+  const toast = page.getByRole('status').getByText(/^Added /)
+  await expect.element(toast).toBeVisible()
+  await expect.element(toast, { timeout: 4000 }).not.toBeInTheDocument()
+}
+
 describe('Visual Regression', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
@@ -27,8 +33,12 @@ describe('Visual Regression', () => {
     })
 
     it('matches screenshot with strength block added', async () => {
-      const { builder, cleanup } = await createTestApp()
-      await builder.addStrengthBlock('Squat')
+      const { builder, common, cleanup } = await createTestApp()
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Squat')
+      await common.waitForDialogClose()
+      await waitForExerciseAddedToastToDismiss()
       await expect(page.getByTestId('app')).toMatchScreenshot('builder-with-block')
       cleanup()
     })
@@ -36,9 +46,13 @@ describe('Visual Regression', () => {
 
   describe('Active Workout', () => {
     it('matches screenshot in active mode with strength block', async () => {
-      const { builder, cleanup } = await createTestApp()
-      await builder.addStrengthBlock('Bench Press')
+      const { builder, common, cleanup } = await createTestApp()
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await common.selectExercise('Bench Press')
+      await common.waitForDialogClose()
       await builder.startWorkout()
+      await waitForExerciseAddedToastToDismiss()
       await expect(page.getByTestId('app')).toMatchScreenshot('active-strength')
       cleanup()
     })
@@ -92,8 +106,10 @@ describe('Visual Regression', () => {
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
       const exerciseId = benchPress.id
 
-      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-      const today = Date.now()
+      // Fixed at midday UTC so date-axis labels never drift with the calendar
+      // or cross a local-timezone boundary in CI.
+      const today = Date.UTC(2025, 0, 15, 12)
+      const oneWeekAgo = today - 7 * 24 * 60 * 60 * 1000
 
       // First workout - one week ago, 60kg
       const workout1 = databaseWorkoutBuilder()

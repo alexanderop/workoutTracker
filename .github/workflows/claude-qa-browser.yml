@@ -57,6 +57,9 @@ jobs:
   qa-browser:
     outputs:
       pr-number: ${{ steps.pr-context.outputs.pr_number || steps.pr-metadata.outputs.number || github.event.pull_request.number || github.event.inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
+      report-comment-id: ${{ steps.post-report.outputs.comment-id }}
+      report-ready: ${{ steps.post-report.outputs.report-ready }}
+      tested-head-sha: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
@@ -97,25 +100,38 @@ jobs:
       APP_URL: http://localhost:5173
 
     steps:
-      - name: Get PR metadata for issue_comment
-        if: github.event_name == 'issue_comment'
+      - name: Get PR metadata for comment or dispatch
+        if: github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number != '')
         id: pr-metadata
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number }}
         with:
           script: |
+            const requestedNumber = context.eventName === 'workflow_dispatch'
+              ? Number.parseInt(process.env.INPUT_PR_NUMBER, 10)
+              : context.payload.issue.number;
+            if (!Number.isSafeInteger(requestedNumber) || requestedNumber <= 0) {
+              core.setFailed('A valid positive PR number is required.');
+              return;
+            }
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.issue.number
+              pull_number: requestedNumber
             });
+            if (pr.state !== 'open') {
+              core.setFailed(`PR #${requestedNumber} is not open.`);
+              return;
+            }
             core.setOutput('ref', pr.head.sha);
             core.setOutput('number', String(pr.number));
             core.setOutput('title', pr.title || '');
             core.setOutput('body', pr.body || '');
             core.setOutput('is_fork', String(pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`));
 
-      - name: Block fork PR QA on comment trigger
-        if: github.event_name == 'issue_comment' && steps.pr-metadata.outputs.is_fork == 'true'
+      - name: Block fork PR QA on comment or dispatch trigger
+        if: (github.event_name == 'issue_comment' || github.event_name == 'workflow_dispatch') && steps.pr-metadata.outputs.is_fork == 'true'
         shell: bash
         run: |
           echo "Refusing to run browser QA against fork PR code from a comment trigger."
@@ -745,12 +761,14 @@ jobs:
 
       - name: Post QA report as PR comment
         if: always() && (github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number)
+        id: post-report
         uses: ./.github/actions/post-qa-report
         with:
           pr-number: ${{ github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number }}
           heading: '## Claude QA (Browser) Report'
           marker: '<!-- claude-qa-browser-report -->'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          head-sha: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set commit status
         id: qa-status
@@ -1034,21 +1052,49 @@ jobs:
   dispatch-followup:
     name: Dispatch trusted QA follow-up
     needs: qa-browser
-    if: always() && needs.qa-browser.outputs.pr-number
+    if: always() && needs.qa-browser.outputs.pr-number && needs.qa-browser.outputs.report-comment-id && needs.qa-browser.outputs.report-ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions:
       actions: write
+      contents: read
 
     steps:
+      - name: Check follow-up workflow compatibility
+        id: compatibility
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REPORT_HEAD_SHA: ${{ needs.qa-browser.outputs.tested-head-sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          WORKFLOW_PATH='.github/workflows/claude-qa-followup.yml'
+          DEFAULT_BLOB=$(gh api "repos/${REPO}/contents/${WORKFLOW_PATH}?ref=${DEFAULT_BRANCH:-main}" --jq '.sha')
+          HEAD_BLOB=$(gh api "repos/${REPO}/contents/${WORKFLOW_PATH}?ref=${REPORT_HEAD_SHA}" --jq '.sha')
+          if [ "$DEFAULT_BLOB" = "$HEAD_BLOB" ]; then
+            echo "compatible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "compatible=false" >> "$GITHUB_OUTPUT"
+            echo "QA follow-up dispatch skipped until its input schema reaches the default branch."
+          fi
+
       - name: Dispatch QA follow-up for this PR
+        if: steps.compatibility.outputs.compatible == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ needs.qa-browser.outputs.pr-number }}
+          REPORT_COMMENT_ID: ${{ needs.qa-browser.outputs.report-comment-id }}
+          REPORT_RUN_ID: ${{ github.run_id }}
+          REPORT_HEAD_SHA: ${{ needs.qa-browser.outputs.tested-head-sha }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
           gh workflow run claude-qa-followup.yml \
             --ref "${DEFAULT_BRANCH:-main}" \
-            -f pr_number="$PR_NUMBER"
+            -f pr_number="$PR_NUMBER" \
+            -f report_comment_id="$REPORT_COMMENT_ID" \
+            -f report_run_id="$REPORT_RUN_ID" \
+            -f report_head_sha="$REPORT_HEAD_SHA"
