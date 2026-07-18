@@ -16,19 +16,19 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 - [x] Chest Press Machine — key `machine-chest-press`, component `MachineChestPressIcon`, pose `seated-press`
 - [x] Incline Chest Press Machine — key `machine-incline-chest-press`, component `MachineInclineChestPressIcon`, pose `seated-press`
 - [x] Pec Deck — key `machine-pec-deck`, component `MachinePecDeckIcon`, pose `seated-fly`
-- [ ] Smith Machine Bench Press — key `smith-machine-bench-press`, component `SmithMachineBenchPressIcon`, pose `horizontal-press`
-- [ ] Smith Machine Incline Press — key `smith-machine-incline-press`, component `SmithMachineInclinePressIcon`, pose `incline-press`
-- [ ] Beast Push-up — key `bodyweight-beast-push-up`, component `BodyweightBeastPushUpIcon`, pose `quadruped`
-- [ ] Clap Push-ups — key `bodyweight-clap-push-up`, component `BodyweightClapPushUpIcon`, pose `prone-press`
-- [ ] Decline Push-ups — key `bodyweight-decline-push-up`, component `BodyweightDeclinePushUpIcon`, pose `prone-press`
-- [ ] Diamond Push-ups — key `bodyweight-diamond-push-up`, component `BodyweightDiamondPushUpIcon`, pose `prone-press`
-- [ ] Dips — key `bodyweight-dips`, component `BodyweightDipsIcon`, pose `support-press`
-- [ ] Push-ups — key `bodyweight-push-up`, component `BodyweightPushUpIcon`, pose `prone-press`
-- [ ] Wide Push-ups — key `bodyweight-wide-push-up`, component `BodyweightWidePushUpIcon`, pose `prone-press`
+- [x] Smith Machine Bench Press — key `smith-machine-bench-press`, component `SmithMachineBenchPressIcon`, pose `horizontal-press`
+- [x] Smith Machine Incline Press — key `smith-machine-incline-press`, component `SmithMachineInclinePressIcon`, pose `incline-press`
+- [x] Beast Push-up — key `bodyweight-beast-push-up`, component `BodyweightBeastPushUpIcon`, pose `quadruped`
+- [x] Clap Push-ups — key `bodyweight-clap-push-up`, component `BodyweightClapPushUpIcon`, pose `prone-press`
+- [x] Decline Push-ups — key `bodyweight-decline-push-up`, component `BodyweightDeclinePushUpIcon`, pose `prone-press`
+- [x] Diamond Push-ups — key `bodyweight-diamond-push-up`, component `BodyweightDiamondPushUpIcon`, pose `prone-press`
+- [x] Dips — key `bodyweight-dips`, component `BodyweightDipsIcon`, pose `support-press`
+- [x] Push-ups — key `bodyweight-push-up`, component `BodyweightPushUpIcon`, pose `prone-press`
+- [x] Wide Push-ups — key `bodyweight-wide-push-up`, component `BodyweightWidePushUpIcon`, pose `prone-press`
 
 ## back
 
-- [ ] Kettlebell Dead Clean — key `kettlebell-dead-clean`, component `KettlebellDeadCleanIcon`, pose `hinge`
+- [x] Kettlebell Dead Clean — key `kettlebell-dead-clean`, component `KettlebellDeadCleanIcon`, pose `hinge`
 - [ ] Kettlebell Gorilla Row — key `kettlebell-gorilla-row`, component `KettlebellGorillaRowIcon`, pose `hinged-pull`
 - [ ] Kettlebell Row — key `kettlebell-row`, component `KettlebellRowIcon`, pose `hinged-pull`
 - [ ] Kettlebell Single Arm Swing — key `kettlebell-single-arm-swing`, component `KettlebellSingleArmSwingIcon`, pose `ballistic-hinge`
@@ -92,8 +92,8 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 ## legs-free
 
-- [ ] Barbell Calf Raises — key `barbell-calf-raise`, component `BarbellCalfRaiseIcon`, pose `standing-raise`
-- [ ] Barbell Good Mornings — key `barbell-good-morning`, component `BarbellGoodMorningIcon`, pose `hinge`
+- [x] Barbell Calf Raises — key `barbell-calf-raise`, component `BarbellCalfRaiseIcon`, pose `standing-raise`
+- [x] Barbell Good Mornings — key `barbell-good-morning`, component `BarbellGoodMorningIcon`, pose `hinge`
 - [ ] Barbell Hip Thrust — key `barbell-hip-thrust`, component `BarbellHipThrustIcon`, pose `supine-bridge`
 - [ ] Barbell Lunges — key `barbell-lunge`, component `BarbellLungeIcon`, pose `lunge`
 - [ ] Barbell Romanian Deadlift — key `barbell-romanian-deadlift`, component `BarbellRomanianDeadliftIcon`, pose `hinge`
@@ -145,24 +145,24 @@ Status legend: [ ] pending · [x] icon component created + manifest entry added
 
 ## legs-bodyweight
 
-- [ ] Bodyweight Squat — key `bodyweight-squat`, component `BodyweightSquatIcon`, pose `squat`
-- [ ] Bulgarian Split Squat — key `bodyweight-bulgarian-split-squat`, component `BodyweightBulgarianSplitSquatIcon`, pose `split-squat`
-- [ ] Burpees — key `bodyweight-burpee`, component `BodyweightBurpeeIcon`, pose `jump`
-- [ ] Butt Kicks — key `bodyweight-butt-kicks`, component `BodyweightButtKicksIcon`, pose `run`
-- [ ] Calf Raises — key `bodyweight-calf-raise`, component `BodyweightCalfRaiseIcon`, pose `standing-raise`
-- [ ] Donkey Kicks — key `bodyweight-donkey-kick`, component `BodyweightDonkeyKickIcon`, pose `quadruped-kick`
-- [ ] Glute Bridge Hold — key `bodyweight-glute-bridge-hold`, component `BodyweightGluteBridgeHoldIcon`, pose `supine-bridge`
-- [ ] Glute Bridges — key `bodyweight-glute-bridge`, component `BodyweightGluteBridgeIcon`, pose `supine-bridge`
-- [ ] High Knees — key `bodyweight-high-knees`, component `BodyweightHighKneesIcon`, pose `run`
-- [ ] Jump Lunges — key `bodyweight-jump-lunge`, component `BodyweightJumpLungeIcon`, pose `jump-lunge`
-- [ ] Jump Rope — key `bodyweight-jump-rope`, component `BodyweightJumpRopeIcon`, pose `jump-rope`
-- [ ] Jump Squats — key `bodyweight-jump-squat`, component `BodyweightJumpSquatIcon`, pose `jump`
-- [ ] Jumping Jacks — key `bodyweight-jumping-jacks`, component `BodyweightJumpingJacksIcon`, pose `star-jump`
-- [ ] Lunges — key `bodyweight-lunge`, component `BodyweightLungeIcon`, pose `lunge`
-- [ ] Pistol Squats — key `bodyweight-pistol-squat`, component `BodyweightPistolSquatIcon`, pose `single-leg-squat`
-- [ ] Reverse Lunges — key `bodyweight-reverse-lunge`, component `BodyweightReverseLungeIcon`, pose `lunge`
-- [ ] Single Leg Glute Bridge — key `bodyweight-single-leg-glute-bridge`, component `BodyweightSingleLegGluteBridgeIcon`, pose `supine-bridge`
-- [ ] Sprawls — key `bodyweight-sprawl`, component `BodyweightSprawlIcon`, pose `prone-thrust`
+- [x] Bodyweight Squat — key `bodyweight-squat`, component `BodyweightSquatIcon`, pose `squat`
+- [x] Bulgarian Split Squat — key `bodyweight-bulgarian-split-squat`, component `BodyweightBulgarianSplitSquatIcon`, pose `split-squat`
+- [x] Burpees — key `bodyweight-burpee`, component `BodyweightBurpeeIcon`, pose `jump`
+- [x] Butt Kicks — key `bodyweight-butt-kicks`, component `BodyweightButtKicksIcon`, pose `run`
+- [x] Calf Raises — key `bodyweight-calf-raise`, component `BodyweightCalfRaiseIcon`, pose `standing-raise`
+- [x] Donkey Kicks — key `bodyweight-donkey-kick`, component `BodyweightDonkeyKickIcon`, pose `quadruped-kick`
+- [x] Glute Bridge Hold — key `bodyweight-glute-bridge-hold`, component `BodyweightGluteBridgeHoldIcon`, pose `supine-bridge`
+- [x] Glute Bridges — key `bodyweight-glute-bridge`, component `BodyweightGluteBridgeIcon`, pose `supine-bridge`
+- [x] High Knees — key `bodyweight-high-knees`, component `BodyweightHighKneesIcon`, pose `run`
+- [x] Jump Lunges — key `bodyweight-jump-lunge`, component `BodyweightJumpLungeIcon`, pose `jump-lunge`
+- [x] Jump Rope — key `bodyweight-jump-rope`, component `BodyweightJumpRopeIcon`, pose `jump-rope`
+- [x] Jump Squats — key `bodyweight-jump-squat`, component `BodyweightJumpSquatIcon`, pose `jump`
+- [x] Jumping Jacks — key `bodyweight-jumping-jacks`, component `BodyweightJumpingJacksIcon`, pose `star-jump`
+- [x] Lunges — key `bodyweight-lunge`, component `BodyweightLungeIcon`, pose `lunge`
+- [x] Pistol Squats — key `bodyweight-pistol-squat`, component `BodyweightPistolSquatIcon`, pose `single-leg-squat`
+- [x] Reverse Lunges — key `bodyweight-reverse-lunge`, component `BodyweightReverseLungeIcon`, pose `lunge`
+- [x] Single Leg Glute Bridge — key `bodyweight-single-leg-glute-bridge`, component `BodyweightSingleLegGluteBridgeIcon`, pose `supine-bridge`
+- [x] Sprawls — key `bodyweight-sprawl`, component `BodyweightSprawlIcon`, pose `prone-thrust`
 - [ ] Squat Thrusts — key `bodyweight-squat-thrust`, component `BodyweightSquatThrustIcon`, pose `prone-thrust`
 - [ ] Step-ups — key `bodyweight-step-up`, component `BodyweightStepUpIcon`, pose `step-up`
 - [ ] Tuck Jumps — key `bodyweight-tuck-jump`, component `BodyweightTuckJumpIcon`, pose `jump`
