@@ -1,3 +1,12 @@
+# [1.33.0](https://github.com/alexanderop/workoutTracker/compare/v1.32.1...v1.33.0) (2026-07-18)
+
+
+### Features
+
+* **habits:** add habit tracking with streaks, history grid, and workout auto-link ([#161](https://github.com/alexanderop/workoutTracker/issues/161)) ([d1b161c](https://github.com/alexanderop/workoutTracker/commit/d1b161ca950764b70c18474402b31a67f3a6a70d))
+
+
+
 ## [1.32.1](https://github.com/alexanderop/workoutTracker/compare/v1.32.0...v1.32.1) (2026-07-18)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **app:** fix findings from the 2026-07-04 UX/UI review ([68d985d](https://github.com/alexanderop/workoutTracker/commit/68d985da9953387f6704c7204d7d87db20b63612))
-
-
-
-# [1.29.0](https://github.com/alexanderop/workoutTracker/compare/v1.28.8...v1.29.0) (2026-07-04)
-
-
-### Features
-
-* **db:** swappable persistence layer with live queries (phases 1-3) ([#151](https://github.com/alexanderop/workoutTracker/issues/151)) ([bf1d7d3](https://github.com/alexanderop/workoutTracker/commit/bf1d7d31046df9e685ed742cfced11fcdcc7447d))
 
 
 
