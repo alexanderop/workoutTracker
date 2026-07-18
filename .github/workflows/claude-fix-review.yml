@@ -22,7 +22,7 @@ jobs:
        github.event.review.user.login == 'copilot-pull-request-reviewer[bot]') &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     # One run per PR at a time; a review landing mid-run queues exactly one
     # follow-up. Combined with the unresolved-threads gate below, this bounds
@@ -104,44 +104,92 @@ jobs:
             1. Run `pnpm -s pr:comments ${{ github.event.pull_request.number }} --json`
                to list all unresolved findings (resolved threads are already
                filtered out). If nothing actionable remains, stop without changes.
-            2. Judge each finding against the current code. Fix the valid ones —
-               root cause, minimal diff. Skip findings that are invalid,
-               over-engineered, or conflict with repo conventions.
-            3. Verify: `pnpm type-check` and `pnpm lint` always; also `pnpm test`
-               when source code (not just docs/config) changed.
-            4. Commit with conventional format: fix(scope): description.
-            5. Reply in-thread to EVERY finding using its `commentId`:
+            2. Triage ALL findings up front: decide fix vs skip for each. Skip
+               findings that are invalid, over-engineered, or conflict with
+               repo conventions.
+            3. Immediately reply in-thread to every SKIPPED finding with the
+               reason, using its `commentId`:
                gh api -X POST repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments/<commentId>/replies \
-                 -f body='Fixed in <sha> — <what changed>.'
-               For skipped findings, state the reason in the reply instead.
-            6. Resolve only the threads you actually fixed, via GraphQL
-               resolveReviewThread (thread ids from the reviewThreads query).
+                 -f body='Skipping: <reason>.'
+            4. Then work through the fixes ONE FINDING AT A TIME, most important
+               first. For each finding, complete the full cycle before starting
+               the next:
+               a. Fix it — root cause, minimal diff.
+               b. Verify: `pnpm type-check`; run the affected test file when
+                  source code changed.
+               c. Commit with conventional format: fix(scope): description.
+               d. Reply in-thread: gh api -X POST ... /comments/<commentId>/replies
+                  -f body='Fixed in <sha> — <what changed>.'
+               e. Resolve that thread via GraphQL resolveReviewThread (thread
+                  ids come from the reviewThreads query).
+               Never batch commits or replies for the end: if the turn limit
+               cuts you off, completed cycles must already be committed and
+               replied so the push step can salvage them.
+            5. After the last fix, run `pnpm lint` and (when source changed)
+               `pnpm test`; fix fallout in a follow-up commit if needed.
 
             Important:
             - Do not suppress errors, weaken checks, or blindly apply every
               suggestion. You are the judge of validity, not a patch applier.
             - Keep changes minimal; never refactor beyond the finding.
+            - Use the Grep/Glob tools to search the codebase — shell commands
+              other than git/pnpm/gh/cat/ls are denied and waste a turn.
           claude_args: |
-            --max-turns 60
+            --max-turns 120
             --model ${{ env.CLAUDE_MODEL }}
             --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
 
-      - name: Push fix commit if any
-        if: steps.gate.outputs.unresolved != '0'
+      - name: Push fix commits if any
+        id: push-fix
+        # `!cancelled()` on purpose: when the Claude step dies mid-run (e.g.
+        # max-turns), findings already fixed follow the commit-and-reply-per-
+        # finding cycle above, so pushing the finished commits salvages them.
+        if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' }}
         shell: bash
         env:
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           if [ -n "$(git status --porcelain)" ]; then
-            echo "::warning::Working tree dirty after Claude run; nothing pushed."
+            # A dirty tree means the run was cut off mid-fix; that half-done
+            # change was never verified or replied to, so drop it and keep
+            # only the completed, committed cycles.
+            echo "::warning::Working tree dirty after Claude run; discarding uncommitted changes."
             git status --short
-            exit 0
+            git checkout -- .
+            git clean -fd
           fi
           LOCAL_SHA=$(git rev-parse HEAD)
           REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
           if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             echo "No new commits from Claude; nothing to push."
             exit 0
           fi
           git push origin "HEAD:${HEAD_BRANCH}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "commits<<COMMITS_EOF"
+            if [ -n "$REMOTE_SHA" ]; then
+              git log --format='- `%h` %s' "${REMOTE_SHA}..${LOCAL_SHA}"
+            else
+              git log --format='- `%h` %s' -1 "$LOCAL_SHA"
+            fi
+            echo "COMMITS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR with pushed commits
+        if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMITS: ${{ steps.push-fix.outputs.commits }}
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER, 10),
+              body: `🤖 **Claude addressed review findings** and pushed:\n\n${process.env.COMMITS}\n\nPer-finding details are in the replies on each review thread. [View run](${runUrl})\n\nPlease review the changes before merging.`
+            });
