@@ -1,0 +1,254 @@
+# After the browser QA workflow posts its report, have Claude read it and act
+# on anything improvable: fix real bugs it surfaced, fill missing PR contract
+# sections (Acceptance Criteria / QA Scope / Risk Areas), and judge a11y/UX
+# recommendations -- then push fixes and summarize in one sticky comment.
+#
+# Loop safety: pushes and comments made here use GITHUB_TOKEN, which never
+# re-triggers the QA workflow, so each QA run produces at most one follow-up.
+name: Claude QA Follow-up
+
+# workflow_run is required here: the QA report comment is posted with
+# GITHUB_TOKEN, which never fires issue_comment for other workflows. The
+# fork-code risk zizmor warns about is mitigated twice -- the job-level `if`
+# requires a same-repo head repository, and the gate step re-verifies the PR
+# is open and same-repo via the API before any write-token step runs.
+on: # zizmor: ignore[dangerous-triggers]
+  # NOTE: workflow_run only fires once this file is on the default branch.
+  workflow_run:
+    workflows: ['Claude QA (Browser)']
+    types: [completed]
+  # Manual escape hatch:
+  #   gh workflow run claude-qa-followup.yml -f pr_number=<N>
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number whose QA report should be triaged'
+        required: true
+        type: string
+
+permissions: {}
+
+env:
+  CLAUDE_MODEL: claude-sonnet-5
+  QA_MARKER: '<!-- claude-qa-browser-report -->'
+  FOLLOWUP_MARKER: '<!-- claude-qa-followup -->'
+
+jobs:
+  qa-followup:
+    name: Triage QA report findings
+    # The QA workflow already refuses fork PRs, but re-check everything in the
+    # gate step below before any write-token step runs.
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    # One follow-up per PR at a time; a QA run finishing mid-run queues
+    # exactly one more.
+    concurrency:
+      group: claude-qa-followup-${{ github.event.workflow_run.head_branch || inputs.pr_number }}
+      cancel-in-progress: false
+
+    permissions:
+      contents: write # push fix commits back to the PR branch
+      pull-requests: write # edit the PR body, post the summary comment
+      issues: write # createComment posts through the issues API
+      actions: read # inspect the triggering QA run if needed
+      id-token: write # OIDC for claude-code-action auth
+
+    steps:
+      - name: Locate PR and QA report
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          WR_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          QA_MARKER: ${{ env.QA_MARKER }}
+        run: |
+          set -euo pipefail
+          echo "run=false" >> "$GITHUB_OUTPUT"
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            PR_NUMBER="$INPUT_PR_NUMBER"
+          else
+            PR_NUMBER=$(gh api \
+              "repos/${REPO}/pulls?head=${REPO_OWNER}:${WR_HEAD_BRANCH}&state=open" \
+              --jq '.[0].number // empty')
+            if [ -z "$PR_NUMBER" ]; then
+              echo "No open PR for branch ${WR_HEAD_BRANCH}; skipping."
+              exit 0
+            fi
+          fi
+
+          # Only open, same-repo PRs may reach the write-token steps below.
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          if [ "$(jq -r '.state' <<<"$PR_JSON")" != "open" ] ||
+             [ "$(jq -r '.head.repo.full_name' <<<"$PR_JSON")" != "$REPO" ]; then
+            echo "PR #${PR_NUMBER} is closed or from a fork; skipping."
+            exit 0
+          fi
+
+          # The QA workflow maintains one sticky report comment per PR.
+          COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            --paginate \
+            --jq "[.[] | select(.body | contains(\"${QA_MARKER}\"))] | last | .id // empty")
+          if [ -z "$COMMENT_ID" ]; then
+            echo "No QA report comment found on PR #${PR_NUMBER}; skipping."
+            exit 0
+          fi
+
+          {
+            echo "run=true"
+            echo "pr_number=$PR_NUMBER"
+            echo "head_ref=$(jq -r '.head.ref' <<<"$PR_JSON")"
+            echo "report_comment_id=$COMMENT_ID"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR branch # zizmor: ignore[artipacked]
+        # Credentials are intentionally persisted: the push step below pushes
+        # Claude's fix commits back to the PR branch with this token.
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.gate.outputs.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup git identity
+        if: steps.gate.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+claude[bot]@users.noreply.github.com"
+          git config user.name "claude[bot]"
+
+      - name: Setup dependencies
+        if: steps.gate.outputs.run == 'true'
+        uses: ./.github/actions/setup-node-deps
+        with:
+          node-version: '22'
+
+      - name: Run Claude to triage the QA report
+        if: steps.gate.outputs.run == 'true'
+        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # github-actions is the actor when workflow_run chains into this job.
+          allowed_bots: github-actions
+          show_full_output: true
+          prompt: |
+            The browser QA workflow finished for PR
+            #${{ steps.gate.outputs.pr_number }} and posted a report. Read it,
+            judge every finding, and improve what deserves improving. You are
+            the judge of validity -- a HEALTHY verdict can still carry
+            actionable observations, and a listed bug can still be a
+            false positive.
+
+            Steps:
+            1. Fetch the report:
+               gh api repos/${{ github.repository }}/issues/comments/${{ steps.gate.outputs.report_comment_id }} --jq .body
+               Also fetch the PR contract:
+               gh pr view ${{ steps.gate.outputs.pr_number }} --json title,body
+            2. Triage EVERYTHING in the report (bugs, observations,
+               accessibility findings, confidence caveats, contract status)
+               into three buckets:
+               - CODE FIX: real product bugs or small, clearly-correct
+                 improvements (e.g. an a11y finding with an obvious fix).
+               - PR CONTRACT: the report flags missing Acceptance Criteria,
+                 QA Scope, or Risk Areas sections in the PR body.
+               - SKIP: informational notes, false positives, recommendations
+                 that need product judgment, or anything whose fix would
+                 exceed the PR's scope. Record a one-line reason each.
+            3. PR CONTRACT bucket: derive the missing sections from the PR's
+               actual diff (git diff origin/main...HEAD) and existing body,
+               then append them with:
+               gh pr edit ${{ steps.gate.outputs.pr_number }} --body-file <file>
+               Keep the existing body text intact; only add what is missing.
+               Write criteria that are honest and checkable -- never invent
+               behavior the diff does not contain.
+            4. CODE FIX bucket: work ONE FINDING AT A TIME, most severe first.
+               For each: fix with a minimal root-cause diff, verify with
+               `pnpm type-check` plus the affected test file, then commit as
+               fix(scope)/refactor(scope). Complete each cycle before starting
+               the next so a turn-limit cutoff never loses finished work.
+            5. After the last fix, run `pnpm lint` and (when source changed)
+               `pnpm test`; fix fallout in a follow-up commit.
+            6. Maintain ONE sticky summary comment. Search for a comment
+               containing the marker ${{ env.FOLLOWUP_MARKER }} on the PR:
+               - if none exists and you took no action at all, do NOT
+                 comment -- silence beats noise;
+               - otherwise create or update it (PATCH the existing comment id
+                 via gh api) with: the marker on the first line, actions
+                 taken, contract sections added, and skipped items with
+                 reasons.
+
+            Important:
+            - Keep changes minimal and inside this PR's scope; larger ideas
+              from the report belong in the summary comment, not in commits.
+            - Do not weaken tests or checks to satisfy a finding.
+            - Never edit the QA report comment itself.
+            - Use the Grep/Glob tools to search the codebase -- shell commands
+              other than git/pnpm/gh/cat/ls are denied and waste a turn.
+          claude_args: |
+            --max-turns 80
+            --model ${{ env.CLAUDE_MODEL }}
+            --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
+
+      - name: Push fix commits if any
+        id: push-fix
+        # `!cancelled()` on purpose: when the Claude step dies mid-run (e.g.
+        # max-turns), findings already fixed follow the commit-per-finding
+        # cycle above, so pushing the finished commits salvages them.
+        if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            # A dirty tree means the run was cut off mid-fix; that half-done
+            # change was never verified, so drop it and keep only the
+            # completed, committed cycles.
+            echo "::warning::Working tree dirty after Claude run; discarding uncommitted changes."
+            git status --short
+            git checkout -- .
+            git clean -fd
+          fi
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
+          if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "No new commits from Claude; nothing to push."
+            exit 0
+          fi
+          git push origin "HEAD:${HEAD_BRANCH}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "commits<<COMMITS_EOF"
+            if [ -n "$REMOTE_SHA" ]; then
+              git log --format='- `%h` %s' "${REMOTE_SHA}..${LOCAL_SHA}"
+            else
+              git log --format='- `%h` %s' -1 "$LOCAL_SHA"
+            fi
+            echo "COMMITS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR with pushed commits
+        if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ steps.gate.outputs.pr_number }}
+          COMMITS: ${{ steps.push-fix.outputs.commits }}
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER, 10),
+              body: `🤖 **Claude acted on the QA report** and pushed:\n\n${process.env.COMMITS}\n\nTriage details are in the QA follow-up summary comment. [View run](${runUrl})\n\nPlease review the changes before merging.`
+            });
