@@ -1,14 +1,30 @@
 # Auto-diagnose and fix CI failures using Claude Code
 name: Claude Auto-Fix CI
 
-# workflow_run is required by design here: this workflow reacts to CI
-# completing in failure. The job-level `pull_requests[0]` guard restricts it
-# to same-repo branches — GitHub leaves that array empty for fork PRs — so
-# fork code never runs with this workflow's write token.
+# Dispatched by claude-flaky-detect.yml once it classifies a CI failure as a
+# real bug, as low-confidence-flaky, or fails open on a broken classifier --
+# racing a second `workflow_run` trigger here against the classifier wasted a
+# model call on every failure, so flaky-detect now decides first and chains
+# into this workflow explicitly. workflow_dispatch loses the implicit
+# same-repo guarantee the old workflow_run `pull_requests[0]` guard gave, so
+# the gate step below re-verifies the PR is open, same-repo, and on the
+# claimed head branch before any write-token step runs. Manual escape hatch:
+#   gh workflow run claude-ci-fix.yml -f run_id=<run> -f head_branch=<branch> -f pr_number=<N>
 on:
-  workflow_run: # zizmor: ignore[dangerous-triggers]
-    workflows: ['CI']
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Failed CI run id to diagnose'
+        required: true
+        type: string
+      head_branch:
+        description: 'PR head branch to check out and push fixes to'
+        required: true
+        type: string
+      pr_number:
+        description: 'PR number to gate against and comment on'
+        required: true
+        type: string
 
 permissions: {}
 
@@ -18,35 +34,72 @@ env:
 jobs:
   auto-fix:
     name: Diagnose and fix CI failure
-    if: |
-      github.event.workflow_run.conclusion == 'failure' &&
-      github.event.workflow_run.pull_requests[0] &&
-      !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-')
+    if: ${{ !startsWith(inputs.head_branch, 'claude-auto-fix-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # Shared writer lock: at most one of claude-ci-fix / claude-fix-review /
+    # claude-qa-followup pushes to a given PR branch at a time, so their
+    # commits stack via rebase instead of racing each other's pushes.
     concurrency:
-      group: claude-ci-fix-${{ github.event.workflow_run.head_branch }}
-      cancel-in-progress: true
+      group: claude-writer-${{ inputs.pr_number }}
+      cancel-in-progress: false
 
     permissions:
       contents: write # push the fix commit back to the PR branch
-      pull-requests: write # comment on the PR about the pushed fix
-      actions: write # read the failed CI run's logs; dispatch claude-fix-review
+      pull-requests: read # gate step verifies the PR before checkout
+      actions: write # dispatch ci.yml and claude-fix-review after pushing
       issues: write # createComment uses the issues API
       id-token: write # OIDC for claude-code-action auth
 
     steps:
+      - name: Gate on open, same-repo PR
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          set -euo pipefail
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          RUN_JSON=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}")
+          RUN_SHA=$(jq -r '.head_sha' <<<"$RUN_JSON")
+          RUN_PRS=$(gh api "repos/${REPO}/commits/${RUN_SHA}/pulls")
+          # workflow_dispatch has no event-level same-repo guarantee (unlike
+          # the workflow_run `pull_requests[0]` guard this replaced), so
+          # re-verify here before any write-token step runs: the PR must be
+          # open, from this repo (not a fork), and on the branch the
+          # dispatcher claimed.
+          if [ "$(jq -r '.state' <<<"$PR_JSON")" != "open" ] ||
+             [ "$(jq -r '.head.repo.full_name' <<<"$PR_JSON")" != "$REPO" ] ||
+             [ "$(jq -r '.head.ref' <<<"$PR_JSON")" != "$HEAD_BRANCH" ] ||
+             [ "$(jq -r '.name' <<<"$RUN_JSON")" != "CI" ] ||
+             [ "$(jq -r '.conclusion' <<<"$RUN_JSON")" != "failure" ] ||
+             [ "$(jq -r '.head_repository.full_name' <<<"$RUN_JSON")" != "$REPO" ] ||
+             [ "$(jq -r '.head_branch' <<<"$RUN_JSON")" != "$HEAD_BRANCH" ] ||
+             [ "$RUN_SHA" != "$(jq -r '.head.sha' <<<"$PR_JSON")" ] ||
+             ! jq -e --argjson number "$PR_NUMBER" 'any(.number == $number)' \
+               >/dev/null <<<"$RUN_PRS"; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "PR #${PR_NUMBER} or CI run ${RUN_ID} failed identity checks; skipping."
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
       - name: Checkout PR branch # zizmor: ignore[artipacked]
         # Credentials are intentionally persisted: the push-fix step below
         # pushes Claude's commit back to the PR branch with this token.
+        if: steps.gate.outputs.ok == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
-          fetch-depth: 0
+          ref: ${{ inputs.head_branch }}
+          fetch-depth: 50
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup git identity
+        if: steps.gate.outputs.ok == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -54,11 +107,27 @@ jobs:
           git config user.name "claude[bot]"
 
       - name: Setup dependencies
+        if: steps.gate.outputs.ok == 'true'
         uses: ./.github/actions/setup-node-deps
         with:
           node-version: '22'
 
+      - name: Fetch failed CI logs
+        if: steps.gate.outputs.ok == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ inputs.run_id }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Written to /tmp, not the repo root, so it never risks getting
+          # committed/pushed and needs no cleanup step before the push.
+          gh run view "$RUN_ID" -R "$REPO" --log-failed \
+            | tail -2000 > /tmp/ci-failure.log
+
       - name: Run Claude Auto-Fix
+        if: steps.gate.outputs.ok == 'true'
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -67,10 +136,11 @@ jobs:
           prompt: |
             The CI pipeline failed on this branch. Diagnose and fix the root cause.
 
-            Failed workflow run: ${{ github.event.workflow_run.html_url }}
+            Failed workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ inputs.run_id }}
 
             Steps:
-            1. Check the CI failure logs using gh CLI
+            1. The failed CI logs are already saved in `/tmp/ci-failure.log` —
+               read that file first instead of re-fetching them.
             2. Identify the failing job(s): lint, type-check, test, build, knip, audit
             3. Reproduce the failure locally (run the failing command)
             4. Fix the root cause in the source code
@@ -88,9 +158,10 @@ jobs:
 
       - name: Push fix commit if any
         id: push-fix
+        if: steps.gate.outputs.ok == 'true'
         shell: bash
         env:
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
         run: |
           set -euo pipefail
           if [ -n "$(git status --porcelain)" ]; then
@@ -98,6 +169,16 @@ jobs:
             echo "::warning::Working tree dirty after Claude run; nothing committed."
             git status --short
             exit 0
+          fi
+          # Rebase onto the current branch tip first: the shared writer
+          # concurrency group above serializes claude-ci-fix / claude-fix-review
+          # / claude-qa-followup, but a human push between checkout and here is
+          # still possible. Recompute both SHAs AFTER the rebase so the
+          # "nothing to push" comparison below reflects the rebased state.
+          if ! git pull --rebase origin "${HEAD_BRANCH}"; then
+            git rebase --abort
+            echo "::error::git pull --rebase origin ${HEAD_BRANCH} failed; aborting rebase and not pushing. Resolve the conflict manually."
+            exit 1
           fi
           LOCAL_SHA=$(git rev-parse HEAD)
           REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
@@ -110,11 +191,24 @@ jobs:
           echo "pushed=true" >> "$GITHUB_OUTPUT"
           echo "sha=$LOCAL_SHA" >> "$GITHUB_OUTPUT"
 
+      - name: Dispatch CI on the pushed branch
+        # The push above used GITHUB_TOKEN, which never triggers CI itself,
+        # so kick it explicitly -- the same sanctioned workaround used below
+        # to chain claude-fix-review.
+        if: steps.push-fix.outputs.pushed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+        run: |
+          set -euo pipefail
+          gh workflow run ci.yml --ref "$HEAD_BRANCH"
+
       - name: Comment on PR
         if: steps.push-fix.outputs.pushed == 'true'
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
-          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
           FIX_SHA: ${{ steps.push-fix.outputs.sha }}
         with:
           script: |
@@ -136,7 +230,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
           gh workflow run claude-fix-review.yml -f pr_number="$PR_NUMBER"

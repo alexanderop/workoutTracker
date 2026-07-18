@@ -122,7 +122,7 @@ describe('useScreenWakeLock - browser mode', () => {
 
       // eslint-disable-next-line no-restricted-syntax -- Testing composable that creates raw DOM elements
       const videos = document.querySelectorAll('video')
-      expect(videos.length).toBe(1)
+      expect(videos).toHaveLength(1)
     })
 
     it('video has playsinline attribute for mobile compatibility', () => {

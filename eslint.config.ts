@@ -262,9 +262,14 @@ export default defineConfigWithVueTs(
 
   {
     ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    files: ['src/**/__tests__/**/*.{test,spec}.ts'],
     rules: {
       ...pluginVitest.configs.recommended.rules,
+      // These rules were previously scoped to a non-recursive glob and the
+      // existing suite has a sizeable baseline. Surface the debt without
+      // blocking unrelated work; tighten each rule after its baseline is paid.
+      'vitest/expect-expect': 'warn',
+      'vitest/no-conditional-expect': 'warn',
       // Consistency
       'vitest/consistent-test-it': ['error', { fn: 'it' }],
       'vitest/prefer-hooks-on-top': 'error',
@@ -273,11 +278,11 @@ export default defineConfigWithVueTs(
       'vitest/require-top-level-describe': 'error',
 
       // Limit nesting depth (Kent C. Dodds' principle)
-      'vitest/max-nested-describe': ['error', { max: 2 }],
+      'vitest/max-nested-describe': ['warn', { max: 2 }],
 
       // Cleaner assertions (auto-fixable)
       'vitest/prefer-to-be': 'error',
-      'vitest/prefer-to-have-length': 'error',
+      'vitest/prefer-to-have-length': 'warn',
       'vitest/prefer-to-contain': 'error',
       'vitest/prefer-mock-promise-shorthand': 'error',
 

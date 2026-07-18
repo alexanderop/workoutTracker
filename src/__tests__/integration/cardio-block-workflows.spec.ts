@@ -68,7 +68,7 @@ describe('Cardio Block Workflows', () => {
 
       // Verify block was added
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       cleanup()
     })
@@ -100,7 +100,7 @@ describe('Cardio Block Workflows', () => {
 
       // Verify block appears in playlist
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(1)
+      expect(playlistButtons).toHaveLength(1)
 
       cleanup()
     })
@@ -209,7 +209,7 @@ describe('Cardio Block Workflows', () => {
 
       // Verify all 3 blocks in playlist
       const playlistButtons = await builder.getPlaylistBlockButtons()
-      expect(playlistButtons.length).toBe(3)
+      expect(playlistButtons).toHaveLength(3)
 
       // Start workout
       await builder.startWorkout()
@@ -244,10 +244,15 @@ describe('Cardio Block Workflows', () => {
       // Wait for View Details button to be visible and clickable
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
-      await expect.poll(async () => {
-        const element = await viewDetailsButton.element()
-        return getComputedStyle(element).opacity
-      }, { timeout: 2000 }).toBe('1')
+      await expect
+        .poll(
+          async () => {
+            const element = await viewDetailsButton.element()
+            return getComputedStyle(element).opacity
+          },
+          { timeout: 2000 },
+        )
+        .toBe('1')
 
       // Navigate to summary
       await viewDetailsButton.click()

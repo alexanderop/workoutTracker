@@ -81,6 +81,7 @@ These files used to live under the root documentation tree. The root docs folder
 ## Research References
 
 - [AI-Powered QA Testing Landscape (April 2026)](./research/ai-qa-testing-landscape-2026.md)
+- [CodeRabbit and Project Review Improvements](./research/2026-07-18-coderabbit-and-project-review-improvements.md)
 
 ## Reviews References
 

@@ -91,10 +91,12 @@ describe('Edit Exercise Dialog', () => {
     await expect.element(page.getByRole('table')).toBeVisible()
 
     // Verify table has 5 sets
-    await expect.poll(async () => {
-      const rows = await page.getByRole('table').getByRole('row').all()
-      return rows.length
-    }).toBe(6) // 1 header + 5 data rows
+    await expect
+      .poll(async () => {
+        const rows = await page.getByRole('table').getByRole('row').all()
+        return rows.length
+      })
+      .toBe(6) // 1 header + 5 data rows
 
     cleanup()
   })
@@ -126,7 +128,7 @@ describe('Edit Exercise Dialog', () => {
     await expect.element(page.getByRole('table')).toBeVisible()
 
     const rows = await page.getByRole('table').getByRole('row').all()
-    expect(rows.length).toBe(4) // 1 header + 3 data rows (unchanged)
+    expect(rows).toHaveLength(4) // 1 header + 3 data rows (unchanged)
 
     cleanup()
   })
@@ -144,11 +146,11 @@ describe('Edit Exercise Dialog', () => {
     // Verify no text inputs exist (only spinbuttons for numbers)
     const dialog = page.getByRole('dialog')
     const textInputs = await dialog.getByRole('textbox').all()
-    expect(textInputs.length).toBe(0)
+    expect(textInputs).toHaveLength(0)
 
     // Verify spinbuttons exist for number inputs
     const spinbuttons = await dialog.getByRole('spinbutton').all()
-    expect(spinbuttons.length).toBe(2) // target reps and set count
+    expect(spinbuttons).toHaveLength(2) // target reps and set count
 
     cleanup()
   })

@@ -1,3 +1,17 @@
+# Trigger chain: the expensive path (green CI) -> browser QA -> QA follow-up
+# used to be two independently-triggered workflows racing each other (this
+# one ran straight off `pull_request`, so it could -- and often did -- spend
+# 20 minutes QAing a branch whose CI hadn't even passed yet). Now:
+#   - `workflow_run` on CI success is the normal path for every PR push;
+#     `pull_request` only remains for the `qa-verify` label escalation lever.
+#   - `issue_comment` (@claude verify/test) and `workflow_dispatch` are
+#     unchanged manual escape hatches.
+# CI's own `paths:` filter already narrows `pull_request`/`push` to relevant
+# file changes, so chaining off CI success inherits that filter for free --
+# except CI also runs for non-UI changes (scripts/, workflows/), so the
+# "Check for UI-relevant changes" step below adds a second, cheaper filter
+# before any of the expensive steps (fixtures, dev server, agent-browser,
+# Claude) run.
 name: Claude QA (Browser)
 
 on:
@@ -20,11 +34,20 @@ on:
         required: false
         type: string
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled]
+    # Only the `qa-verify` label escalation remains here; the normal PR path
+    # moved to `workflow_run` below so QA only runs once CI is green.
+    types: [labeled]
     paths-ignore:
       - '*.md'
       - 'brain/reference/**'
       - '.github/workflows/release.yml'
+  # Both the associated PR and its head repository are checked below. This is
+  # a privileged workflow_run path, so never check out fork-controlled code.
+  # NOTE: workflow_run only fires once this file is on the default branch,
+  # same caveat as claude-qa-followup.yml.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: ['CI']
+    types: [completed]
   issue_comment:
     types: [created]
 
@@ -32,11 +55,18 @@ permissions: {}
 
 jobs:
   qa-browser:
+    outputs:
+      pr-number: ${{ steps.pr-context.outputs.pr_number || steps.pr-metadata.outputs.number || github.event.pull_request.number || github.event.inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
-       (github.event.action != 'labeled' || github.event.label.name == 'qa-verify')) ||
+       github.event.label.name == 'qa-verify') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.pull_requests[0] &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-')) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
@@ -46,7 +76,7 @@ jobs:
     timeout-minutes: 60
 
     concurrency:
-      group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+      group: claude-qa-browser-${{ github.event.pull_request.number || github.event.issue.number || github.event.workflow_run.pull_requests[0].number || github.ref }}
       cancel-in-progress: true
 
     permissions:
@@ -60,6 +90,10 @@ jobs:
     env:
       NODE_VERSION: '22'
       CLAUDE_MODEL: claude-sonnet-5
+      # This is only for the "trivial prompt" scaffolding smoke test below,
+      # which just checks the action wires up correctly -- not for the main
+      # QA or retry steps, which stay on CLAUDE_MODEL.
+      CLAUDE_SMOKE_MODEL: claude-haiku-4-5-20251001
       APP_URL: http://localhost:5173
 
     steps:
@@ -90,15 +124,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup test environment
         uses: ./.github/actions/setup-test-env
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup agent-browser
-        uses: ./.github/actions/setup-agent-browser
 
       - name: Determine QA mode
         id: qa-mode
@@ -112,7 +143,9 @@ jobs:
         run: |
           set -euo pipefail
           FOCUS="$FOCUS_INPUT"
-          if [[ "$EVENT_NAME" == "pull_request" && "$EVENT_ACTION" != "labeled" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            # Chained off a green CI run: same lightweight pass the old
+            # `pull_request` (opened/synchronize) path used.
             FOCUS="fast"
           elif [[ "$LABEL_NAME" == "qa-verify" ]]; then
             FOCUS="verify"
@@ -136,6 +169,7 @@ jobs:
           PR_NUMBER_COMMENT: ${{ steps.pr-metadata.outputs.number }}
           PR_TITLE_COMMENT: ${{ steps.pr-metadata.outputs.title }}
           PR_BODY_COMMENT: ${{ steps.pr-metadata.outputs.body }}
+          PR_NUMBER_WORKFLOW_RUN: ${{ github.event.workflow_run.pull_requests[0].number }}
         with:
           script: |
             let prNumber, prBody, prTitle;
@@ -184,6 +218,15 @@ jobs:
               prNumber = parseInt(process.env.PR_NUMBER_COMMENT, 10);
               prBody = process.env.PR_BODY_COMMENT || '';
               prTitle = process.env.PR_TITLE_COMMENT || '';
+            } else if (context.eventName === 'workflow_run') {
+              prNumber = parseInt(process.env.PR_NUMBER_WORKFLOW_RUN, 10);
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              prBody = pr.body || '';
+              prTitle = pr.title;
             } else if (process.env.PR_NUMBER_INPUT) {
               prNumber = parseInt(process.env.PR_NUMBER_INPUT, 10);
               const { data: pr } = await github.rest.pulls.get({
@@ -237,10 +280,42 @@ jobs:
             core.setOutput('contract_valid', String(missingSections.length === 0));
             core.setOutput('missing_sections', missingSections.join(', ') || 'None');
 
+      - name: Check for UI-relevant changes
+        # Only meaningful once we have a PR number (verify/fast focus); the
+        # explore-mode dispatch inputs (general/test/navigation/forms/
+        # workout-flow) intentionally have no PR to diff against, so this
+        # step is skipped and downstream steps treat the unset output as
+        # "not false" -- i.e. proceed. CI's own paths: filter already keeps
+        # totally unrelated PRs (docs-only, etc.) out of the workflow_run
+        # chain, but CI also runs for scripts/ and workflow changes that
+        # never touch the UI, so this is a second, cheaper filter before any
+        # of the expensive steps below run.
+        id: ui-changed
+        if: steps.pr-context.outputs.pr_number != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr-context.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          CHANGED=$(gh pr diff "$PR_NUMBER" --name-only)
+          if echo "$CHANGED" | grep -qE '^(src/|index\.html|vite\.config|package\.json|pnpm-lock\.yaml)'; then
+            echo "ui_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ui_changed=false" >> "$GITHUB_OUTPUT"
+            echo "No UI-relevant files changed; browser QA will be skipped."
+          fi
+
+      - name: Setup agent-browser
+        if: steps.ui-changed.outputs.ui_changed != 'false'
+        uses: ./.github/actions/setup-agent-browser
+
       - name: Create QA fixtures
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         uses: ./.github/actions/create-qa-fixtures
 
       - name: Start development server
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         uses: ./.github/actions/start-dev-server
         with:
           url: ${{ env.APP_URL }}
@@ -338,6 +413,7 @@ jobs:
         run: rm -f qa-report.md qa-structured-output.json
 
       - name: Dev server health check
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         shell: bash
         run: |
           set -euo pipefail
@@ -351,6 +427,7 @@ jobs:
           echo "Dev server is reachable."
 
       - name: Warm-up smoke check (agent-browser + onboarding)
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         shell: bash
         run: |
           set -euo pipefail
@@ -377,8 +454,21 @@ jobs:
         shell: bash
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          UI_CHANGED: ${{ steps.ui-changed.outputs.ui_changed }}
         run: |
           set -euo pipefail
+          # Reuse the same can_run/reason gate the workflow-file-mismatch
+          # check below relies on, so the "Check report exists" step below
+          # produces its normal QA_SKIPPED report without extra plumbing.
+          if [ "$UI_CHANGED" = "false" ]; then
+            {
+              echo "can_run=false"
+              echo "reason=No changed file under src/, index.html, vite.config, package.json, or pnpm-lock.yaml — skipping browser QA."
+            } >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Claude action because the PR has no UI-relevant changes."
+            exit 0
+          fi
+
           git fetch --no-tags --depth=1 origin "$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
 
           if git diff --quiet "origin/$DEFAULT_BRANCH" -- .github/workflows/claude-qa-browser.yml; then
@@ -405,7 +495,7 @@ jobs:
           claude_args: |
             --allowedTools "Write"
             --max-turns 3
-            --model ${{ env.CLAUDE_MODEL }}
+            --model ${{ env.CLAUDE_SMOKE_MODEL }}
 
       - name: Verify claude-code-action smoke output
         if: steps.claude-action-guard.outputs.can_run == 'true'
@@ -427,7 +517,14 @@ jobs:
       - name: Start claude tool-call tailer
         if: steps.claude-action-guard.outputs.can_run == 'true'
         shell: bash
-        run: |
+        # TAILER_OUT/TAILER_PID are a fixed /tmp path and this shell's own
+        # background-job PID -- neither is attacker-controlled, and both are
+        # only ever read back via plain shell ($TAILER_OUT/$TAILER_PID), never
+        # spliced into a `${{ }}` expression, so the write can't be abused for
+        # code injection. This only became reachable by the github-env audit
+        # once claude-qa-browser.yml gained a workflow_run trigger (see the
+        # `on:` block above).
+        run: | # zizmor: ignore[github-env]
           OUT=/tmp/claude-tailer.log
           : > "$OUT"
           echo "TAILER_OUT=$OUT" >> "$GITHUB_ENV"
@@ -647,10 +744,10 @@ jobs:
           fi
 
       - name: Post QA report as PR comment
-        if: always() && (github.event.pull_request.number || steps.pr-metadata.outputs.number || github.event.inputs.pr_number)
+        if: always() && (github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number)
         uses: ./.github/actions/post-qa-report
         with:
-          pr-number: ${{ github.event.pull_request.number || steps.pr-metadata.outputs.number || github.event.inputs.pr_number }}
+          pr-number: ${{ github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number }}
           heading: '## Claude QA (Browser) Report'
           marker: '<!-- claude-qa-browser-report -->'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -663,6 +760,8 @@ jobs:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
           CONTRACT_VALID: ${{ steps.pr-context.outputs.contract_valid || 'true' }}
           MISSING_SECTIONS: ${{ steps.pr-context.outputs.missing_sections || 'None' }}
+          COMMENT_PR_SHA: ${{ steps.pr-metadata.outputs.ref }}
+          WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         with:
           script: |
             const fs = require('fs');
@@ -720,8 +819,10 @@ jobs:
               }
             }
 
-            // Use PR head sha for issue_comment, otherwise use context.sha
-            const sha = '${{ steps.pr-metadata.outputs.ref }}' || context.sha;
+            // Use PR head sha for issue_comment/workflow_run (context.sha
+            // for a workflow_run-triggered run is the default branch's sha,
+            // not the PR's), otherwise use context.sha.
+            const sha = process.env.COMMENT_PR_SHA || process.env.WORKFLOW_RUN_HEAD_SHA || context.sha;
 
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -929,3 +1030,25 @@ jobs:
           set -euo pipefail
           echo "❌ QA found critical issues - failing the pipeline"
           exit 1
+
+  dispatch-followup:
+    name: Dispatch trusted QA follow-up
+    needs: qa-browser
+    if: always() && needs.qa-browser.outputs.pr-number
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      actions: write
+
+    steps:
+      - name: Dispatch QA follow-up for this PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.qa-browser.outputs.pr-number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          gh workflow run claude-qa-followup.yml \
+            --ref "${DEFAULT_BRANCH:-main}" \
+            -f pr_number="$PR_NUMBER"

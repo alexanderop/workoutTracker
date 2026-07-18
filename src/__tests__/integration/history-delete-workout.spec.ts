@@ -225,7 +225,7 @@ describe('History Delete Workout', () => {
 
       // First delete button should be visible
       const deleteButtons = await page.getByRole('button', { name: /delete/i }).all()
-      expect(deleteButtons.length).toBe(1)
+      expect(deleteButtons).toHaveLength(1)
 
       // Swipe second card
       const card2 = await page.getByText('Workout Two').element()
@@ -234,7 +234,7 @@ describe('History Delete Workout', () => {
 
       // Only second delete button should be visible now
       const visibleDeleteButtons = await page.getByRole('button', { name: /delete/i }).all()
-      expect(visibleDeleteButtons.length).toBe(1)
+      expect(visibleDeleteButtons).toHaveLength(1)
 
       cleanup()
     })

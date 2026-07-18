@@ -225,7 +225,7 @@ describe('Log Past Workout', () => {
 
       // Verify duration is valid (not NaN)
       const workouts = await getAllWorkouts()
-      expect(workouts.length).toBe(1)
+      expect(workouts).toHaveLength(1)
       expect(workouts[0]?.durationSeconds).toBe(45 * 60)
       expect(Number.isNaN(workouts[0]?.durationSeconds)).toBe(false)
 
@@ -812,7 +812,7 @@ describe('Log Past Workout', () => {
 
       // Verify workout was saved to DB
       const workouts = await getAllWorkouts()
-      expect(workouts.length).toBe(1)
+      expect(workouts).toHaveLength(1)
       expect(workouts[0]?.name).toBe('My Test Workout')
       expect(workouts[0]?.durationSeconds).toBe(30 * 60)
 
@@ -853,7 +853,7 @@ describe('Log Past Workout', () => {
 
       // Verify workout was saved with template name
       const workouts = await getAllWorkouts()
-      expect(workouts.length).toBe(1)
+      expect(workouts).toHaveLength(1)
       expect(workouts[0]?.name).toBe('Complete Workflow Template')
       expect(workouts[0]?.blocks.length).toBe(2)
 

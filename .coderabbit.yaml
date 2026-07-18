@@ -1,10 +1,16 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
 language: en-US
 
 reviews:
-  profile: assertive
+  profile: chill
   request_changes_workflow: false
-  high_level_summary: false
+  high_level_summary: true
   high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: |
+    Summarize the user-visible behavior first. Then call out persistence or
+    schema compatibility, offline/PWA behavior, risky state transitions, and
+    the tests or manual QA that provide evidence for the change.
   review_status: false
   commit_status: false
   fail_commit_status: false
@@ -22,9 +28,52 @@ reviews:
   abort_on_close: true
 
   path_filters:
-    - '!brain/reference/'
-    - '!**/__screenshots__/'
-    - '!pnpm-lock.yaml'
+    - '!brain/reference/**'
+    - '!**/__screenshots__/**'
+
+  path_instructions:
+    - path: 'src/db/**'
+      instructions: |
+        Review persisted-data changes for long-term backward compatibility.
+        Flag feature code that bypasses repository interfaces, changed DB
+        shapes without matching converters/defaults, import/export validation
+        drift, unsafe transaction boundaries, and unhandled IndexedDB errors.
+        When old rows could be affected, require a test that loads the legacy
+        shape. Do not recommend a backend or network dependency.
+    - path: 'src/features/**'
+      instructions: |
+        Enforce feature isolation: a feature must not import another feature.
+        Shared behavior belongs in neutral shared modules. Shared state uses
+        VueUse createGlobalState, never Pinia. Review changes for offline use,
+        instant mid-workout interactions, and preservation of cached content.
+        Use discriminated unions only for exclusive states whose independent
+        flags could form invalid combinations; ordinary independent booleans
+        do not need a state machine.
+    - path: '**/*.vue'
+      instructions: |
+        Apply Vue 3.5 conventions, including defineModel for two-way binding.
+        Check mobile touch targets, keyboard/focus behavior, accessible names,
+        lifecycle cleanup, and unnecessary reactive work on set-logging paths.
+        Ignore formatting and import ordering already enforced by lint.
+    - path: 'src/__tests__/**'
+      instructions: |
+        Tests use Vitest Browser Mode and Page Objects, not Jest or jsdom-only
+        patterns. Prefer role-based user interactions and user-observable
+        outcomes. Check IndexedDB and createGlobalState cleanup, async polling,
+        error paths, persistence/reload coverage, and deterministic time data.
+    - path: 'src/{composables,features/timers,features/workout}/**'
+      instructions: |
+        For timers, wake locks, and persisted active workouts, check cleanup,
+        pause/resume, visibility and background transitions, reload recovery,
+        and offline behavior. A best-effort side effect must not block logging
+        or workout completion.
+    - path: 'src/{types,db,lib,features/workout,features/settings}/**'
+      instructions: |
+        When a workout block kind or persisted block field changes, verify the
+        full cascade: domain type, DB schema, bidirectional converters with old
+        data defaults, runtime validation/import-export, factories, UI
+        dispatch, markdown handling where applicable, and a create-persist-
+        reload-render integration test. Remember Tabata uses singular exercise.
 
   auto_review:
     enabled: true
@@ -42,8 +91,31 @@ reviews:
       mode: off
     title:
       mode: warning
+      requirements: >-
+        Use Conventional Commit format with a scope, for example
+        feat(workout): add rest timer or fix(db): preserve legacy workout data.
     description:
       mode: warning
+    issue_assessment:
+      mode: warning
+    custom_checks:
+      - name: Persisted shape compatibility
+        mode: warning
+        instructions: >-
+          Pass unless the PR changes a persisted IndexedDB or import/export
+          shape. For a persisted-shape change, fail when database-to-domain
+          conversion does not provide backward-compatible defaults for legacy
+          rows, import/export validation is left inconsistent, or no test loads
+          a representative legacy shape. Ignore refactors that preserve the
+          stored representation.
+      - name: User behavior evidence
+        mode: warning
+        instructions: >-
+          When the PR changes user-visible behavior, pass if it adds or updates
+          a relevant Vitest Browser Mode test, or if the PR description gives a
+          concrete reason automated coverage is not practical plus executable
+          manual QA. Fail only when both forms of evidence are absent. Ignore
+          documentation-only, tooling-only, and pure internal refactors.
 
   tools:
     eslint:
@@ -62,15 +134,14 @@ reviews:
       enabled: true
     github-checks:
       enabled: true
-      timeout_ms: 90000
+      timeout_ms: 600000
 
 chat:
   auto_reply: true
 
 knowledge_base:
   opt_out: false
+  learnings:
+    scope: local
   code_guidelines:
     enabled: true
-    filePatterns:
-      - '**/CLAUDE.md'
-      - '**/AGENTS.md'

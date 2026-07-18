@@ -131,7 +131,7 @@ describe('Log Past Workout — timed & cardio blocks', () => {
 
     // Both the original and the re-logged copy exist
     const workouts = await getAllWorkouts()
-    expect(workouts.length).toBe(2)
+    expect(workouts).toHaveLength(2)
 
     const copy = workouts.find((workout) => workout.name === 'Conditioning Day (Copy)')
     expect(copy).toBeDefined()
@@ -175,7 +175,7 @@ describe('Log Past Workout — timed & cardio blocks', () => {
     await common.waitForRoute(/^\/history/)
 
     const workouts = await getAllWorkouts()
-    expect(workouts.length).toBe(1)
+    expect(workouts).toHaveLength(1)
     expect(workouts[0]?.name).toBe('WOD Template')
     expect(workouts[0]?.blocks.map((block) => block.kind)).toEqual([
       'amrap',
@@ -230,7 +230,7 @@ describe('Log Past Workout — timed & cardio blocks', () => {
     await common.waitForRoute(/^\/history/)
 
     const workouts = await getAllWorkouts()
-    expect(workouts.length).toBe(1)
+    expect(workouts).toHaveLength(1)
     expect(workouts[0]?.blocks.map((block) => block.kind)).toEqual(['amrap', 'cardio'])
 
     cleanup()

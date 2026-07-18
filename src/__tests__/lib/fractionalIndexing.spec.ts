@@ -1,17 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import {
-  BASE_62_DIGITS,
-  generateKeyBetween,
-  generateNKeysBetween,
-} from '@/lib/fractionalIndexing'
+import { BASE_62_DIGITS, generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'
 
 describe('fractionalIndexing', () => {
   describe('BASE_62_DIGITS', () => {
     it('contains 62 characters in ascending order', () => {
-      expect(BASE_62_DIGITS).toBe(
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-      )
-      expect(BASE_62_DIGITS.length).toBe(62)
+      expect(BASE_62_DIGITS).toBe('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
+      expect(BASE_62_DIGITS).toHaveLength(62)
     })
   })
 
@@ -144,7 +138,7 @@ describe('fractionalIndexing', () => {
       it('returns n keys in sorted order', () => {
         const keys = generateNKeysBetween(null, null, 5)
 
-        expect(keys.length).toBe(5)
+        expect(keys).toHaveLength(5)
         // Verify sorted order using toSorted comparison
         const sorted = [...keys].toSorted()
         expect(keys).toEqual(sorted)
@@ -153,7 +147,7 @@ describe('fractionalIndexing', () => {
       it('generates keys after a bound (b=null)', () => {
         const keys = generateNKeysBetween('a0', null, 3)
 
-        expect(keys.length).toBe(3)
+        expect(keys).toHaveLength(3)
         expect(keys.at(0)! > 'a0').toBe(true)
         // Verify sorted order
         const sorted = [...keys].toSorted()
@@ -163,7 +157,7 @@ describe('fractionalIndexing', () => {
       it('generates keys before a bound (a=null)', () => {
         const keys = generateNKeysBetween(null, 'a0', 3)
 
-        expect(keys.length).toBe(3)
+        expect(keys).toHaveLength(3)
         expect(keys.at(-1)! < 'a0').toBe(true)
         // Verify sorted order
         const sorted = [...keys].toSorted()
@@ -173,7 +167,7 @@ describe('fractionalIndexing', () => {
       it('generates keys between two bounds', () => {
         const keys = generateNKeysBetween('a0', 'a2', 3)
 
-        expect(keys.length).toBe(3)
+        expect(keys).toHaveLength(3)
         expect(keys.at(0)! > 'a0').toBe(true)
         expect(keys.at(-1)! < 'a2').toBe(true)
         // Verify sorted order

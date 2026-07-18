@@ -4,7 +4,7 @@ Vue 3 PWA workout tracker with **Bulletproof feature-based architecture**.
 
 ## Stack & Commands
 
-**Stack**: Vue 3.5+, TypeScript (strict), Vite, Pinia, Dexie (IndexedDB), Vitest + Playwright browser mode, shadcn-vue (reka-ui), Tailwind
+**Stack**: Vue 3.5+, TypeScript (strict), Vite, VueUse `createGlobalState`, Dexie (IndexedDB), Vitest + Playwright browser mode, shadcn-vue (reka-ui), Tailwind
 
 ```bash
 pnpm dev          # Development server
@@ -39,32 +39,43 @@ src/
 ## Key Patterns
 
 ### Block-Based Workout Model
+
 Workouts are sequences of **blocks** using discriminated unions via `kind`:
+
 ```ts
-type WorkoutBlock = StrengthBlock | TimedBlock  // kind: 'strength' | 'amrap' | 'emom' | ...
+type WorkoutBlock = StrengthBlock | TimedBlock // kind: 'strength' | 'amrap' | 'emom' | ...
 ```
+
 See [src/types/blocks.ts](src/types/blocks.ts) for all block types.
 
 ### Singleton State in Features
+
 `useWorkout()` returns a shared singleton ref—all components see the same state:
+
 ```ts
-const { workout, selectBlock } = useWorkout()  // Shared across components
+const { workout, selectBlock } = useWorkout() // Shared across components
 ```
 
 ### Repository Pattern for Database
+
 Import repos via getters, use converters between `Db*` types and domain types:
+
 ```ts
 import { getWorkoutsRepository } from '@/db'
 import { convertWorkoutToDb } from '@/db/converters'
 
 await getWorkoutsRepository().create(convertWorkoutToDb(workout))
 ```
-Database types use `null` (not `undefined`). See [src/db/CLAUDE.md](src/db/CLAUDE.md).
+
+Database types use `null` (not `undefined`). See
+[the database guide](../brain/reference/agent/database.md).
 
 ### Two-Way Binding
+
 Use `defineModel` for v-model props: `const open = defineModel<boolean>('open')`
 
 ### shadcn-vue Uses reka-ui
+
 Check [reka-ui.com](https://reka-ui.com) for component APIs (NOT Radix).
 
 ## Testing
@@ -74,15 +85,17 @@ Check [reka-ui.com](https://reka-ui.com) for component APIs (NOT Radix).
 ```ts
 import { page } from 'vitest/browser'
 import { createTestApp } from '@/__tests__/helpers/createTestApp'
-import { resetDatabase } from '@/__tests__/setup'
+import { resetDatabase } from '@/__tests__/helpers/resetDatabase'
 
-beforeEach(async () => { await resetDatabase() })
+beforeEach(async () => {
+  await resetDatabase()
+})
 
 it('navigates workout flow', async () => {
   const app = await createTestApp({ initialRoute: '/' })
   await page.getByRole('button', { name: /start/i }).click()
   await expect.element(page.getByText(/block/i)).toBeVisible()
-  app.cleanup()  // REQUIRED
+  app.cleanup() // REQUIRED
 })
 ```
 
@@ -95,7 +108,8 @@ it('navigates workout flow', async () => {
 - **No `any`** — use `unknown` + guards
 - **No `enum`** — use literal unions or `as const`
 - **No type assertions** — use `@ts-expect-error` with comment if needed
-- **Discriminated unions** over optional properties for state
+- Use **discriminated unions** when exclusive states could otherwise form
+  invalid combinations; ordinary independent toggles may remain booleans
 - Use `Array<T>` syntax, not `T[]`
 - Named exports only, no defaults
 
