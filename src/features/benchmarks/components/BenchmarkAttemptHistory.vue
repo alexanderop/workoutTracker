@@ -13,7 +13,7 @@ const { t } = useI18n()
 <template>
   <!-- Attempt History Section -->
   <div v-if="attempts.length > 0" class="border-t bg-muted/20 px-4 py-6">
-    <h2 class="mb-4 text-lg font-semibold">
+    <h2 class="mb-4 text-section-title font-semibold">
       {{ t('workouts.benchmarks.attemptHistory') }}
     </h2>
 
@@ -30,12 +30,15 @@ const { t } = useI18n()
         </div>
 
         <!-- Time -->
-        <div class="text-lg font-semibold">
+        <div class="text-section-title font-semibold">
           {{ formatDuration(attempt.completionTime) }}
         </div>
 
         <!-- Comparison -->
-        <div v-if="attempt.isPersonalBest" class="flex items-center gap-1 text-sm font-semibold text-primary">
+        <div
+          v-if="attempt.isPersonalBest"
+          class="flex items-center gap-1 text-sm font-semibold text-primary"
+        >
           {{ t('workouts.benchmarks.pbBadge') }}
         </div>
         <div v-else class="text-sm text-muted-foreground">

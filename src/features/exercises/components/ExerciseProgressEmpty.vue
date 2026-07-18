@@ -17,7 +17,7 @@ const { exerciseName } = defineProps<{
     </div>
 
     <!-- Title -->
-    <h3 class="text-lg font-semibold mb-2">
+    <h3 class="text-section-title font-semibold mb-2">
       {{ t('exercises.progress.empty.title') }}
     </h3>
 

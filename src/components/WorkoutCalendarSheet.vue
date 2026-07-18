@@ -184,7 +184,7 @@ function handleNextMonth() {
                 <!-- Workout indicator dot -->
                 <span
                   v-if="hasWorkoutOnDate(weekDate.toDate(getLocalTimeZone()))"
-                  class="absolute bottom-0 w-1.5 h-1.5 rounded-full bg-green-500"
+                  class="absolute bottom-0 w-1.5 h-1.5 rounded-full bg-success"
                 />
               </CalendarCell>
             </CalendarGridRow>

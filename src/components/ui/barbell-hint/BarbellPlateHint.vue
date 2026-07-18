@@ -80,19 +80,13 @@ const ariaLabel = computed(() => {
   if (displayPlates.value.length === 0) {
     return `Empty barbell, ${barWeight.value}${props.unit} bar`
   }
-  const plateDesc = plateResult.value.plates
-    .map((p) => `${p}${props.unit}`)
-    .join(', ')
+  const plateDesc = plateResult.value.plates.map((p) => `${p}${props.unit}`).join(', ')
   return `Barbell with ${plateDesc} plates on each side`
 })
 </script>
 
 <template>
-  <div
-    class="flex items-center"
-    role="img"
-    :aria-label="ariaLabel"
-  >
+  <div class="flex items-center" role="img" :aria-label="ariaLabel">
     <!-- Bar end (sleeve) -->
     <div class="h-3 w-6 rounded-l-sm bg-gray-400" />
 
@@ -115,7 +109,7 @@ const ariaLabel = computed(() => {
     <!-- Bar weight indicator (when empty or few plates) -->
     <div
       v-if="displayPlates.length === 0"
-      class="ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-[10px] font-bold text-gray-700"
+      class="ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground"
     >
       {{ barWeight }}
     </div>

@@ -51,6 +51,18 @@
   --color-muscle-arms: var(--muscle-arms);
   --color-muscle-core: var(--muscle-core);
 
+  /* Block kind accent tokens - one per workout block kind (see src/blocks/<kind>/meta.ts) */
+  --color-block-strength: var(--block-strength);
+  --color-block-amrap: var(--block-amrap);
+  --color-block-emom: var(--block-emom);
+  --color-block-tabata: var(--block-tabata);
+  --color-block-fortime: var(--block-fortime);
+  --color-block-cardio: var(--block-cardio);
+
+  /* Warm decorative accent - motivational iconography (streaks, trophies, timers, history).
+     Deliberately separate from --warning: restyling warnings must not repaint streak flames. */
+  --color-highlight: var(--highlight);
+
   /* Sidebar color tokens */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -61,9 +73,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Spacing tokens */
-  --spacing-dialog-gap: 0.75rem;
-  --spacing-section: 1rem;
+  /* Spacing tokens - --spacing-* generates gap-*, space-y-*, p-*, etc. utilities */
+  --spacing-section: 1.5rem; /* vertical rhythm between page sections (space-y-section) */
 
   /* Sizing tokens */
   --size-icon-sm: 1rem;
@@ -71,10 +82,11 @@
   --size-icon-lg: 1.5rem;
   --size-touch-target: 2.75rem;
 
-  /* Typography tokens */
-  --font-size-page-title: 2.25rem;
-  --font-size-section-title: 1.875rem;
-  --font-size-card-title: 1.125rem;
+  /* Typography tokens - --text-* generates text-* font-size utilities */
+  --text-page-title: 1.875rem; /* route-level h1 (text-page-title) */
+  --text-page-title--line-height: 1.2;
+  --text-section-title: 1.125rem; /* in-page h2/h3 section headings (text-section-title) */
+  --text-section-title--line-height: 1.5;
 }
 
 :root {
@@ -113,6 +125,14 @@
   --muscle-shoulders: oklch(0.7 0.18 70);
   --muscle-arms: oklch(0.6 0.2 300);
   --muscle-core: oklch(0.75 0.18 85);
+  /* Block kind accents */
+  --block-strength: oklch(0.62 0.21 260);
+  --block-amrap: oklch(0.63 0.27 304);
+  --block-emom: oklch(0.7 0.21 48);
+  --block-tabata: oklch(0.7 0.15 163);
+  --block-fortime: oklch(0.65 0.25 16);
+  --block-cardio: oklch(0.71 0.14 215);
+  --highlight: oklch(0.7 0.21 48);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.55 0.25 290);
@@ -158,6 +178,14 @@
   --muscle-shoulders: oklch(0.75 0.18 70);
   --muscle-arms: oklch(0.65 0.2 300);
   --muscle-core: oklch(0.8 0.18 85);
+  /* Block kind accents - lifted for contrast on dark surfaces */
+  --block-strength: oklch(0.71 0.17 255);
+  --block-amrap: oklch(0.71 0.2 306);
+  --block-emom: oklch(0.75 0.18 56);
+  --block-tabata: oklch(0.77 0.18 163);
+  --block-fortime: oklch(0.71 0.19 13);
+  --block-cardio: oklch(0.79 0.15 212);
+  --highlight: oklch(0.75 0.18 56);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.75 0.2 290);
@@ -381,33 +409,20 @@
   }
 }
 
-/* Pulsing ring animation for active workout button */
+/* Pulsing ring animation for active workout button.
+   Derived from --primary so it tracks theme changes (incl. dark mode) automatically. */
 @keyframes pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 oklch(0.55 0.25 290 / 0.4);
+    box-shadow: 0 0 0 0 oklch(from var(--primary) l c h / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px oklch(0.55 0.25 290 / 0);
+    box-shadow: 0 0 0 8px oklch(from var(--primary) l c h / 0);
   }
 }
 
 .animate-pulse-ring {
   animation: pulse-ring 2s ease-in-out infinite;
-}
-
-.dark .animate-pulse-ring {
-  animation-name: pulse-ring-dark;
-}
-
-@keyframes pulse-ring-dark {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 oklch(0.75 0.2 290 / 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px oklch(0.75 0.2 290 / 0);
-  }
 }
 
 /* Brief shake to signal a NumberField value is about to be clamped to its max

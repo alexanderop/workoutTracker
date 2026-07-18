@@ -29,6 +29,8 @@ export default defineConfig({
         name: 'Workout Tracker',
         short_name: 'Workouts',
         description: 'Track your workouts with ease',
+        // Hex mirror of --primary in src/style.css (manifests can't use CSS
+        // variables) -- update this if the primary token's hue ever changes.
         theme_color: '#7c3aed',
         background_color: '#ffffff',
         display: 'standalone',
@@ -36,7 +38,12 @@ export default defineConfig({
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {

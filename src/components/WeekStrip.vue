@@ -77,7 +77,7 @@ function handleClick() {
         <div class="h-1.5 flex items-center justify-center">
           <div
             v-if="day.hasWorkout"
-            class="w-1.5 h-1.5 rounded-full bg-green-500"
+            class="w-1.5 h-1.5 rounded-full bg-success"
             :aria-label="t('calendar.workoutCompleted')"
           />
         </div>

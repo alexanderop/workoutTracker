@@ -3,5 +3,5 @@ import type { BlockMeta } from '../types'
 export const fortimeMeta: BlockMeta = {
   label: 'For Time',
   icon: '',
-  color: { bg: 'bg-rose-500/20', text: 'text-rose-500', accent: 'bg-rose-500' },
+  color: { bg: 'bg-block-fortime/20', text: 'text-block-fortime', accent: 'bg-block-fortime' },
 }

@@ -66,19 +66,19 @@ const isPlaceholderExercise = computed(() => currentExercise.value?.id === 'stan
 
 const isUrgent = computed(() => timer.secondsInCurrentPhase.value <= 3)
 
-// Industrial gym colors - high contrast, saturated
+// Phase colors: work = success ("go"), rest = warning ("hold")
 const phaseColors = computed(() => {
   if (timer.currentPhase.value === 'work') {
     return {
-      text: 'text-emerald-400',
-      bg: 'bg-emerald-500/30',
-      border: 'border-emerald-500/50',
+      text: 'text-success',
+      bg: 'bg-success/30',
+      border: 'border-success/50',
     }
   }
   return {
-    text: 'text-amber-400',
-    bg: 'bg-amber-500/30',
-    border: 'border-amber-500/50',
+    text: 'text-warning',
+    bg: 'bg-warning/30',
+    border: 'border-warning/50',
   }
 })
 

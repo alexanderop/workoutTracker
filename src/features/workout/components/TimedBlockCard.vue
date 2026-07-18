@@ -26,7 +26,7 @@ const { t } = useI18n()
         }}
       </template>
       <template v-else-if="block.kind === 'emom'">
-        {{ block.result.completedMinutes }} {{ t('workouts.detail.minutesCompleted') }}
+        {{ t('workouts.detail.minutesCompleted', { minutes: block.result.completedMinutes }) }}
       </template>
     </div>
   </div>

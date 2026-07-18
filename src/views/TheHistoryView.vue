@@ -125,7 +125,7 @@ onMounted(() => {
     </div>
 
     <!-- Workouts grouped by month -->
-    <div v-else-if="workouts.length > 0" class="space-y-6 p-4">
+    <div v-else-if="workouts.length > 0" class="space-y-section p-4">
       <section v-for="group in groupedByMonth" :key="group.monthKey">
         <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {{ group.label }}

@@ -212,7 +212,7 @@ describe('Template Block Card Contents & Accessibility', () => {
 
     it('should have no structural a11y violations on a template detail page with multiple block kinds', async () => {
       // Color contrast is excluded here: the block-kind badge
-      // (`bg-purple-500/20` + `text-purple-500`) has a pre-existing contrast
+      // (`bg-block-amrap/20` + `text-block-amrap`) has a pre-existing contrast
       // issue unrelated to Findings M6/M7 (group roles, contextual labels,
       // inline exercise names) that this suite targets.
       const { navigateTo, container, cleanup } = await createTestApp()

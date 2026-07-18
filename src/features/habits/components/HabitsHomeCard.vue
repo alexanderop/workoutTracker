@@ -27,7 +27,7 @@ function navigateToHabits(): void {
 <template>
   <section v-if="hasHabits || isLoading" class="w-full max-w-md" data-testid="habits-home-card">
     <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-lg font-semibold">{{ t('habits.home.title') }}</h2>
+      <h2 class="text-section-title font-semibold">{{ t('habits.home.title') }}</h2>
       <Button
         variant="link"
         size="sm"

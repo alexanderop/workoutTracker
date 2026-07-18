@@ -57,7 +57,7 @@ const canConfirm = computed(() => {
 
 watch(open, (isOpen) => {
   if (!isOpen) {
-	return;
+    return
   }
 
   selectedActivity.value = 'running'
@@ -110,7 +110,7 @@ function handleClose() {
                 cn(
                   'flex flex-col items-center justify-center p-3 rounded-lg border text-sm transition-colors',
                   selectedActivity === activity.value
-                    ? 'border-cyan-500 bg-cyan-500/10 text-cyan-500'
+                    ? 'border-block-cardio bg-block-cardio/10 text-block-cardio'
                     : 'border-border hover:border-muted-foreground/50',
                 )
               "
@@ -174,7 +174,11 @@ function handleClose() {
               {{ distanceValue || '0' }}
             </Button>
             <span class="text-sm text-muted-foreground">
-              {{ selectedActivityInfo?.distanceUnit === 'laps' ? t('common.units.laps') : t('common.units.km') }}
+              {{
+                selectedActivityInfo?.distanceUnit === 'laps'
+                  ? t('common.units.laps')
+                  : t('common.units.km')
+              }}
             </span>
           </div>
         </div>
@@ -191,7 +195,11 @@ function handleClose() {
         v-model="distanceValue"
         v-model:open="distanceModalOpen"
         type="distance"
-        :unit="selectedActivityInfo?.distanceUnit === 'laps' ? t('common.units.laps') : t('common.units.km')"
+        :unit="
+          selectedActivityInfo?.distanceUnit === 'laps'
+            ? t('common.units.laps')
+            : t('common.units.km')
+        "
       />
 
       <DialogActions variant="inline" class="pt-4" v-slot="{ buttonClass }">

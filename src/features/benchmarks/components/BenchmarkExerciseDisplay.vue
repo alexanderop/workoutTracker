@@ -98,19 +98,19 @@ const comparisonDisplay = computed<ComparisonDisplayState>(() => {
           <component
             :is="comparisonDisplay.icon"
             class="size-6"
-            :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
+            :class="comparisonDisplay.isFaster ? 'text-success' : 'text-destructive'"
             aria-hidden="true"
           />
           <span
             class="text-3xl font-bold tabular-nums"
-            :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
+            :class="comparisonDisplay.isFaster ? 'text-success' : 'text-destructive'"
           >
             {{ comparisonDisplay.isFaster ? '-' : '+' }}{{ comparisonDisplay.time }}
           </span>
         </div>
         <span
           class="text-sm font-medium"
-          :class="comparisonDisplay.isFaster ? 'text-green-500' : 'text-destructive'"
+          :class="comparisonDisplay.isFaster ? 'text-success' : 'text-destructive'"
         >
           {{ comparisonDisplay.message }}
         </span>
