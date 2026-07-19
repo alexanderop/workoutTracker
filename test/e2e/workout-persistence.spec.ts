@@ -1,6 +1,56 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
 
+type FirstSetField = 'weight' | 'reps' | 'rir'
+
+const firstSetFieldLabels: Record<FirstSetField, RegExp> = {
+  weight: /weight for set 1/i,
+  reps: /^reps for set 1/i,
+  rir: /reps in reserve for set 1/i,
+}
+
+async function enterFirstSetValue(page: Page, field: FirstSetField, value: number): Promise<void> {
+  const name = firstSetFieldLabels[field]
+  const usesNumericInputModal = await page.evaluate(
+    () => globalThis.matchMedia('(pointer: coarse)').matches,
+  )
+
+  if (!usesNumericInputModal) {
+    await page.getByRole('spinbutton', { name }).fill(String(value))
+    return
+  }
+
+  await page.getByRole('button', { name }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+
+  for (const digit of String(value)) {
+    if (digit === '.') {
+      await dialog.getByRole('button', { name: /add decimal point/i }).click()
+      continue
+    }
+    await dialog.getByRole('button', { name: digit, exact: true }).click()
+  }
+
+  await dialog.getByRole('button', { name: /confirm value/i }).click()
+  await expect(dialog).toBeHidden()
+}
+
+async function expectFirstSetValue(page: Page, field: FirstSetField, value: number): Promise<void> {
+  const name = firstSetFieldLabels[field]
+  const usesNumericInputModal = await page.evaluate(
+    () => globalThis.matchMedia('(pointer: coarse)').matches,
+  )
+  const expectedValue = String(value)
+
+  if (usesNumericInputModal) {
+    await expect(page.getByRole('button', { name })).toHaveText(expectedValue)
+    return
+  }
+
+  await expect(page.getByRole('spinbutton', { name })).toHaveValue(expectedValue)
+}
+
 async function enterApp(page: Page): Promise<void> {
   const skipOnboarding = page.getByRole('button', { name: 'Skip to App', exact: true })
   await expect(skipOnboarding).toBeVisible()
@@ -26,9 +76,9 @@ async function startBenchPressWorkout(page: Page): Promise<void> {
 }
 
 async function completeFirstSet(page: Page): Promise<void> {
-  await page.getByRole('spinbutton', { name: /weight for set 1/i }).fill('80')
-  await page.getByRole('spinbutton', { name: /^reps for set 1/i }).fill('10')
-  await page.getByRole('spinbutton', { name: /reps in reserve for set 1/i }).fill('2')
+  await enterFirstSetValue(page, 'weight', 80)
+  await enterFirstSetValue(page, 'reps', 10)
+  await enterFirstSetValue(page, 'rir', 2)
   const completeButton = page.getByRole('button', { name: /mark set 1 complete/i })
   await completeButton.click()
   await expect(completeButton).toHaveAttribute('aria-pressed', 'true')
@@ -102,11 +152,9 @@ test.describe('Workout persistence', () => {
       'aria-pressed',
       'true',
     )
-    await expect(page.getByRole('spinbutton', { name: /weight for set 1/i })).toHaveValue('80')
-    await expect(page.getByRole('spinbutton', { name: /^reps for set 1/i })).toHaveValue('10')
-    await expect(page.getByRole('spinbutton', { name: /reps in reserve for set 1/i })).toHaveValue(
-      '2',
-    )
+    await expectFirstSetValue(page, 'weight', 80)
+    await expectFirstSetValue(page, 'reps', 10)
+    await expectFirstSetValue(page, 'rir', 2)
   })
 
   test('a completed workout remains available in history after reload', async ({ page, goto }) => {
