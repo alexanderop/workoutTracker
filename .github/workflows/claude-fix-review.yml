@@ -220,6 +220,44 @@ jobs:
             --model ${{ env.CLAUDE_MODEL }}
             --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
 
+      - name: Verify candidate fixes before push
+        if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true' }}
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$HEAD_BRANCH"
+          if git diff --quiet "origin/${HEAD_BRANCH}..HEAD"; then
+            echo "No candidate commits from Claude; verification skipped."
+            exit 0
+          fi
+
+          jq -e '
+            type == "array" and length > 0 and
+            all(.[];
+              (.commentId | type == "number") and
+              (.summary | type == "string" and length > 0)
+            )
+          ' /tmp/fixed-findings.json > /dev/null
+          jq -e --slurpfile findings /tmp/pr-findings.json '
+            all(.[] as $fix;
+              any($findings[0][]; .commentId == $fix.commentId)
+            )
+          ' /tmp/fixed-findings.json > /dev/null
+
+          pnpm type-check
+          pnpm lint
+          pnpm knip
+          pnpm test
+          pnpm test:a11y
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Verification changed the working tree; refusing to push uncommitted fixes."
+            git status --short
+            exit 1
+          fi
+
       - name: Push fix commits if any
         id: push-fix
         # `!cancelled()` on purpose: when the Claude step dies mid-run (e.g.
