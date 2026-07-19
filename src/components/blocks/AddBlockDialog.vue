@@ -28,13 +28,22 @@ const emit = defineEmits<{
 const router = useRouter()
 const toastStore = useToastStore()
 const activeTab = ref('exercises')
+// While the user is actively searching, the sheet's chrome (header, tabs)
+// collapses on mobile so the on-screen keyboard leaves room for results.
+const pickerCondensed = ref(false)
 const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
 
-// Reset state when dialog opens
+// Reset state on open/close. The close branch lives here (not in an
+// update:open handler) so it covers every close path, including handlers
+// that assign `open.value = false` directly.
 watch(open, (isOpen) => {
   if (isOpen) {
     pickerContent.value?.reset()
+    return
   }
+  activeTab.value = 'exercises'
+  // The picker unmounts with the dialog, so it can't sync this back itself.
+  pickerCondensed.value = false
 })
 
 const timedBlockTypes: ReadonlyArray<{
@@ -91,35 +100,34 @@ function handleCreateNew() {
   open.value = false
   router.push({ name: RouteNames.ExerciseForm })
 }
-
-function handleOpenChange(value: boolean) {
-  open.value = value
-  if (!value) {
-    activeTab.value = 'exercises'
-  }
-}
 </script>
 
 <template>
-  <Dialog v-model:open="open" @update:open="handleOpenChange">
+  <Dialog v-model:open="open">
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
-      <DialogHeader>
+      <!-- sr-only (not hidden) while condensed: the dialog's aria wiring keeps
+           pointing at a title/description that still exists for screen readers. -->
+      <DialogHeader :class="pickerCondensed && 'max-sm:sr-only'">
         <DialogTitle>{{ t('dialogs.addBlock.title') }}</DialogTitle>
         <DialogDescription> {{ t('dialogs.addBlock.description') }} </DialogDescription>
       </DialogHeader>
 
       <Tabs v-model="activeTab" class="flex-1 flex flex-col min-h-0">
-        <TabsList class="grid w-full grid-cols-2">
+        <TabsList :class="['grid w-full grid-cols-2', pickerCondensed && 'max-sm:hidden']">
           <TabsTrigger value="exercises">{{ t('dialogs.addBlock.exercisesTab') }}</TabsTrigger>
           <TabsTrigger value="timed">{{ t('dialogs.addBlock.timedBlocksTab') }}</TabsTrigger>
         </TabsList>
 
         <!-- Exercises Tab -->
-        <TabsContent value="exercises" class="flex-1 flex flex-col min-h-0 mt-4">
+        <TabsContent
+          value="exercises"
+          :class="['flex-1 flex flex-col min-h-0 mt-4', pickerCondensed && 'max-sm:mt-0']"
+        >
           <ExercisePickerContent
             ref="pickerContent"
+            v-model:condensed="pickerCondensed"
             show-create
             search-placeholder="dialogs.addBlock.searchPlaceholder"
             empty-message="dialogs.addBlock.noResults"

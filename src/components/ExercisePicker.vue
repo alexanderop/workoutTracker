@@ -4,7 +4,7 @@ import type { Equipment, Muscle } from '@/types/exercises'
 
 import { Search, X } from '@lucide/vue'
 import { DialogClose } from '@/components/ui/dialog'
-import { ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
@@ -15,7 +15,10 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { useCondensedSearch } from '@/composables/useCondensedSearch'
 import { useExerciseSearch } from '@/composables/useExerciseSearch'
+import { useTouchDevice } from '@/composables/useTouchDevice'
+import { cn } from '@/lib/utils'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -47,6 +50,10 @@ const emit = defineEmits<Emits>()
 // Template ref for the content component (dialog mode)
 const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
 
+// While the user is actively searching, chrome collapses on mobile so the
+// on-screen keyboard leaves room for results (dialog mode).
+const pickerCondensed = ref(false)
+
 // State for overlay mode (has different structure, so managed separately)
 const muscleFilter = ref<Muscle | 'all'>('all')
 const equipmentFilter = ref<Equipment | 'all'>('all')
@@ -55,14 +62,33 @@ const { searchQuery, filteredExercises } = useExerciseSearch({
   equipmentFilter,
 })
 
+// Condensed-search state for overlay mode's own search input
+const {
+  isCondensed: overlayCondensed,
+  handleSearchFocus: handleOverlaySearchFocus,
+  handleSearchBlur: handleOverlaySearchBlur,
+} = useCondensedSearch(searchQuery)
+
+const overlayMuscleRowClass = computed(() =>
+  cn('mt-3', overlayCondensed.value && muscleFilter.value === 'all' && 'max-sm:hidden'),
+)
+const overlayEquipmentRowClass = computed(() =>
+  cn('mt-2', overlayCondensed.value && equipmentFilter.value === 'all' && 'max-sm:hidden'),
+)
+
+// Same keyboard-reflow race as ExercisePickerContent: autofocus on touch
+// devices pops the keyboard mid-open and swallows the first tap.
+const { isTouchDevice } = useTouchDevice()
+
 // Reset state when picker opens
 watch(open, (isOpen) => {
   if (!isOpen) {
-	return;
+    return
   }
 
   // Reset dialog mode content
   pickerContent.value?.reset()
+  pickerCondensed.value = false
   // Reset overlay mode state
   searchQuery.value = ''
   muscleFilter.value = 'all'
@@ -96,13 +122,23 @@ function handleClose() {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[80vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
+      <!-- sr-only while condensed: keeps the dialog's aria wiring valid but
+           frees the header rows for search results under the on-screen
+           keyboard. The close button hides with it — with a zero-height
+           header it would float over the search input — and returns as soon
+           as the search ends. -->
       <DialogHeader class="relative">
-        <DialogTitle>{{ t('dialogs.addExercise.title') }}</DialogTitle>
-        <DialogDescription>
+        <DialogTitle :class="pickerCondensed && 'max-sm:sr-only'">
+          {{ t('dialogs.addExercise.title') }}
+        </DialogTitle>
+        <DialogDescription :class="pickerCondensed && 'max-sm:sr-only'">
           {{ t('dialogs.addExercise.description') }}
         </DialogDescription>
         <DialogClose
-          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
+          :class="[
+            'absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors',
+            pickerCondensed && 'max-sm:hidden',
+          ]"
         >
           <X class="icon-md text-muted-foreground" />
           <span class="sr-only">{{ t('common.buttons.close') }}</span>
@@ -111,6 +147,7 @@ function handleClose() {
 
       <ExercisePickerContent
         ref="pickerContent"
+        v-model:condensed="pickerCondensed"
         :show-create="showCreate"
         search-placeholder="dialogs.addExercise.searchPlaceholder"
         @select="handleSelectExercise"
@@ -124,7 +161,9 @@ function handleClose() {
     <div class="p-4 border-b">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold">
-          {{ mode === 'single' ? t('exercises.picker.selectTitle') : t('exercises.picker.addTitle') }}
+          {{
+            mode === 'single' ? t('exercises.picker.selectTitle') : t('exercises.picker.addTitle')
+          }}
         </h3>
         <Button variant="ghost" size="icon-sm" @click="handleClose">
           <X class="icon-sm" />
@@ -140,7 +179,9 @@ function handleClose() {
           v-model="searchQuery"
           :placeholder="t('exercises.picker.searchPlaceholder')"
           class="pl-10"
-          autofocus
+          :autofocus="!isTouchDevice"
+          @focus="handleOverlaySearchFocus"
+          @blur="handleOverlaySearchBlur"
         />
       </div>
 
@@ -148,8 +189,8 @@ function handleClose() {
       <ExerciseFilters
         v-model:muscle="muscleFilter"
         v-model:equipment="equipmentFilter"
-        muscle-class="mt-3"
-        equipment-class="mt-2"
+        :muscle-class="overlayMuscleRowClass"
+        :equipment-class="overlayEquipmentRowClass"
       />
     </div>
 
