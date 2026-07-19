@@ -36,7 +36,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 APP_URL="http://localhost:5173"
-MODEL="claude-opus-4-6"
+MODEL="claude-sonnet-5"
 TODAY="$(date +%Y-%m-%d)"
 
 case "$FOCUS" in

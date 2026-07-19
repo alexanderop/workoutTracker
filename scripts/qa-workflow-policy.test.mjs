@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
@@ -174,4 +174,23 @@ test('agent-browser executable is integrity-pinned', async () => {
   assert.match(packageJson, /"agent-browser": "catalog:"/)
   assert.match(workspace, /agent-browser: 0\.27\.0/)
   assert.match(lockfile, /agent-browser@0\.27\.0:[\s\S]*?integrity: sha512-/)
+})
+
+test('every Claude automation uses Sonnet 5', async () => {
+  const workflowNames = (await readdir('.github/workflows')).filter(
+    (name) => name.startsWith('claude') && name.endsWith('.yml'),
+  )
+  const sources = await Promise.all([
+    ...workflowNames.map((name) => readFile(`.github/workflows/${name}`, 'utf8')),
+    readFile('scripts/test-claude-qa-local.sh', 'utf8'),
+  ])
+  const configuredModels = new Set(
+    sources.flatMap((source) =>
+      source
+        .matchAll(/claude-(?:sonnet|haiku|opus)-[A-Za-z0-9._-]+/g)
+        .map((match) => match[0])
+        .toArray(),
+    ),
+  )
+  assert.deepEqual([...configuredModels], ['claude-sonnet-5'])
 })

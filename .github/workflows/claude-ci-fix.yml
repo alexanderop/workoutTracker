@@ -24,7 +24,7 @@ on:
 permissions: {}
 
 env:
-  CLAUDE_MODEL: claude-sonnet-4-6
+  CLAUDE_MODEL: claude-sonnet-5
   MAX_AUTO_FIX_ATTEMPTS: 3
 
 concurrency:

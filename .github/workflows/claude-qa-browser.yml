@@ -261,10 +261,6 @@ jobs:
     env:
       NODE_VERSION: '22'
       CLAUDE_MODEL: claude-sonnet-5
-      # This is only for the "trivial prompt" scaffolding smoke test below,
-      # which just checks the action wires up correctly -- not for the main
-      # QA or retry steps, which stay on CLAUDE_MODEL.
-      CLAUDE_SMOKE_MODEL: claude-haiku-4-5-20251001
       APP_URL: http://localhost:5173
 
     steps:
@@ -643,7 +639,7 @@ jobs:
           claude_args: |
             --allowedTools "Write"
             --max-turns 3
-            --model ${{ env.CLAUDE_SMOKE_MODEL }}
+            --model ${{ env.CLAUDE_MODEL }}
 
       - name: Verify claude-code-action smoke output
         if: steps.claude-action-guard.outputs.can_run == 'true'

@@ -18,7 +18,7 @@ on:
 permissions: {}
 
 env:
-  CLAUDE_MODEL: claude-sonnet-4-6
+  CLAUDE_MODEL: claude-sonnet-5
 
 concurrency:
   group: claude-writer-${{ github.event.pull_request.number || inputs.pr_number }}
