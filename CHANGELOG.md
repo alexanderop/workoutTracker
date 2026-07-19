@@ -1,3 +1,12 @@
+## [1.39.1](https://github.com/alexanderop/workoutTracker/compare/v1.39.0...v1.39.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **ci:** relay Claude review decisions to CodeRabbit ([#182](https://github.com/alexanderop/workoutTracker/issues/182)) ([4715851](https://github.com/alexanderop/workoutTracker/commit/4715851423e52495dd67fa246cf67fe60498e0ad))
+
+
+
 # [1.39.0](https://github.com/alexanderop/workoutTracker/compare/v1.38.0...v1.39.0) (2026-07-19)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **exercises:** stage manifest entries and progress log for missing exercise icons ([#172](https://github.com/alexanderop/workoutTracker/issues/172)) ([cef3dd1](https://github.com/alexanderop/workoutTracker/commit/cef3dd180c817a6e412b2ae4b59e56d746a7b299))
-
-
-
-## [1.36.2](https://github.com/alexanderop/workoutTracker/compare/v1.36.1...v1.36.2) (2026-07-18)
-
-
-### Performance Improvements
-
-* **ci:** reduce pipeline runtime ([#171](https://github.com/alexanderop/workoutTracker/issues/171)) ([88e1f70](https://github.com/alexanderop/workoutTracker/commit/88e1f7097c5f15d1159ca10e15b79dffe006d029))
 
 
 
