@@ -18,7 +18,12 @@ describe('Benchmark UI', () => {
     it('displays benchmarks tab with empty state', async () => {
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
-      await expect.poll(() => { app.benchmarks.assertEmptyState(); return true }).toBe(true)
+      await expect
+        .poll(() => {
+          app.benchmarks.assertEmptyState()
+          return true
+        })
+        .toBe(true)
       app.cleanup()
     })
 
@@ -49,7 +54,9 @@ describe('Benchmark UI', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.waitForLoad('Fran')
 
-      await expect.poll(async () => (await page.getByText(/\d+:\d{2}/).all()).length).toBeGreaterThanOrEqual(3)
+      await expect
+        .poll(async () => (await page.getByText(/\d+:\d{2}/).all()).length)
+        .toBeGreaterThanOrEqual(3)
 
       app.cleanup()
     })
@@ -58,7 +65,7 @@ describe('Benchmark UI', () => {
       const app = await createTestApp()
       await app.benchmarkDetail.navigateToDetail('invalid-id')
 
-      await expect.poll(() => { app.benchmarkDetail.assertNotFoundState(); return true }).toBe(true)
+      await app.benchmarkDetail.assertNotFoundState()
       await app.benchmarkDetail.clickGoBack()
       expect(app.router.currentRoute.value.path).toBe('/workouts')
 
@@ -123,10 +130,14 @@ describe('Benchmark UI', () => {
 
       await startBenchmarkWorkout(app, benchmark.id)
       await expect.element(page.getByText('NEXT', { exact: true })).toBeVisible()
-      await expect.poll(async () => (await page.getByText(/pull-ups/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/pull-ups/i).all()).length)
+        .toBeGreaterThan(0)
 
       await completeExercise()
-      await expect.poll(async () => (await page.getByText(/box jumps/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/box jumps/i).all()).length)
+        .toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -184,7 +195,11 @@ describe('Benchmark UI', () => {
       await startBenchmarkWorkout(app, benchmark.id)
       await completeExercise()
 
-      await expect.poll(async () => await page.getByText(/you're.*ahead/i).query() !== null, { timeout: 3000 }).toBe(true)
+      await expect
+        .poll(async () => (await page.getByText(/you're.*ahead/i).query()) !== null, {
+          timeout: 3000,
+        })
+        .toBe(true)
 
       app.cleanup()
     })
@@ -201,10 +216,14 @@ describe('Benchmark UI', () => {
       const app = await createTestApp()
       await startBenchmarkWorkout(app, benchmark.id)
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
       await completeExercise()
 
-      await expect.poll(async () => await page.getByText(/push.*behind/i).query() !== null, { timeout: 3000 }).toBe(true)
+      await expect
+        .poll(async () => (await page.getByText(/push.*behind/i).query()) !== null, {
+          timeout: 3000,
+        })
+        .toBe(true)
 
       app.cleanup()
     })

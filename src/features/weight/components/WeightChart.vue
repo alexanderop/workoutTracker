@@ -83,12 +83,15 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
       </div>
     </CardHeader>
     <CardContent class="p-0 pb-4 px-2">
-      <div v-if="displayData.length === 0" class="flex h-[200px] items-center justify-center">
+      <div
+        v-if="displayData.length === 0"
+        class="flex h-[150px] items-center justify-center sm:h-[200px]"
+      >
         <p class="text-muted-foreground">{{ t('weight.noData') }}</p>
       </div>
       <div
         v-else-if="displayData.length === 1 && singleEntry"
-        class="flex h-[200px] flex-col items-center justify-center gap-2 text-center"
+        class="flex h-[150px] flex-col items-center justify-center gap-2 text-center sm:h-[200px]"
       >
         <p class="text-3xl font-semibold">{{ formatWithUnit(singleEntry.weight) }}</p>
         <p class="text-sm text-muted-foreground">
@@ -99,7 +102,7 @@ const timeRanges: Array<TimeRange> = ['7D', '30D', '90D', 'All']
       <ChartContainer
         v-else
         :config="chartConfig"
-        class="h-[200px] w-full"
+        class="h-[150px] w-full sm:h-[200px]"
         :cursor="true"
         role="img"
         :aria-label="t('weight.chartLabel', { count: displayData.length })"

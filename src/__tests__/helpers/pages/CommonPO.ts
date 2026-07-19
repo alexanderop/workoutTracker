@@ -1,6 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { TestContext } from '../types'
 
 /**
@@ -13,9 +13,9 @@ export class CommonPO {
   /**
    * Waits for a dialog element to appear in the DOM.
    */
-  async waitForDialog(): Promise<void> {
+  waitForDialog = vi.defineHelper(async (): Promise<void> => {
     await expect.element(page.getByRole('dialog')).toBeVisible()
-  }
+  })
 
   /**
    * Waits for a dialog to fully close, including overlay and animations.
@@ -64,12 +64,12 @@ export class CommonPO {
    * Types the exercise name into the search input and clicks the matching result.
    * @param exerciseName - The name of the exercise to search for and select
    */
-  async selectExercise(exerciseName: string): Promise<void> {
+  selectExercise = vi.defineHelper(async (exerciseName: string): Promise<void> => {
     const searchInput = page.getByRole('textbox')
     await userEvent.fill(searchInput, exerciseName)
     await expect.poll(() => this.getExactDialogButton(exerciseName)).toBeTruthy()
     await userEvent.click(this.getExactDialogButton(exerciseName))
-  }
+  })
 
   /**
    * Finds a button inside the currently open dialog by exact text match.
@@ -183,7 +183,11 @@ export class CommonPO {
       globalThis.HTMLInputElement.prototype,
       'value',
     )?.set
-    const setterFunction = nativeInputValueSetter ?? ((v: string) => { input.value = v })
+    const setterFunction =
+      nativeInputValueSetter ??
+      ((v: string) => {
+        input.value = v
+      })
     setterFunction.call(input, value)
     // Dispatch input and change events to trigger Vue reactivity
     input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }))

@@ -34,7 +34,7 @@ export class NumericInputModalPO {
    */
   async getCurrentValue(): Promise<number> {
     const valueDisplay = page.getByRole('status', { name: /current value/i })
-    const element = await valueDisplay.element()
+    const element = await valueDisplay.findElement()
     const text = element.textContent ?? '0'
     // Remove any unit suffix (e.g., "100 kg" -> "100")
     const numericPart = text.trim().split(/\s/, 1)[0] ?? ''
@@ -77,7 +77,7 @@ export class NumericInputModalPO {
    */
   async getDecimalSeparator(): Promise<string> {
     const button = this.getDecimalButton()
-    const element = await button.element()
+    const element = await button.findElement()
     return element.textContent?.trim() ?? ''
   }
 
@@ -127,7 +127,7 @@ export class NumericInputModalPO {
    */
   async getTitle(): Promise<string> {
     const title = page.getByRole('heading', { level: 2 })
-    const element = await title.element()
+    const element = await title.findElement()
     return element.textContent?.trim() ?? ''
   }
 

@@ -1,10 +1,11 @@
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
-import { seedTemplate } from '../helpers/dbAssertions'
+import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
+import { ensureHTMLElement } from '../helpers/domHelpers'
 
 /**
  * Gets all block cards in their current DOM order.
@@ -51,20 +52,6 @@ function getBlockNames(): Array<string> {
     return nameElement?.textContent?.trim() ?? ''
   })
 }
-
-/**
- * Note: Unlike workouts (which use a global singleton), templates create
- * a new composable instance per view. We can't easily access the view's
- * internal reorderBlocks function from tests.
- *
- * The reorder tests below verify the wiring is correct by checking:
- * 1. The drag handle exists and has correct styling
- * 2. The arrow buttons are removed
- * 3. The SortableJS integration is set up (handle class, container ref)
- *
- * Actual drag-and-drop behavior should be verified manually or through
- * E2E tests that can simulate real drag events.
- */
 
 describe('Template Drag-and-Drop Reordering', () => {
   beforeEach(setupIntegrationTest)
@@ -127,8 +114,48 @@ describe('Template Drag-and-Drop Reordering', () => {
   })
 
   describe('reordering blocks via drag', () => {
-    // Note: These tests verify the SortableJS integration is wired up correctly.
-    // Actual drag behavior can't be tested with synthetic events - use manual/E2E testing.
+    it('reorders three blocks with a real drag and persists the new order', async () => {
+      const { navigateTo, cleanup } = await createTestApp()
+
+      const template = await seedTemplate({
+        name: 'Persisted Drag Order',
+        blocks: [
+          createDatabaseTemplateStrengthBlock({ name: 'First Exercise', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Second Exercise', equipment: 'barbell' }),
+          createDatabaseTemplateStrengthBlock({ name: 'Third Exercise', equipment: 'barbell' }),
+        ],
+      })
+
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
+      await expect.element(page.getByText('First Exercise')).toBeVisible()
+
+      const firstBlock = page.getByRole('group', { name: 'First Exercise' })
+      const thirdBlock = page.getByRole('group', { name: 'Third Exercise' })
+      const firstHandle = getDragHandle(ensureHTMLElement(await firstBlock.findElement()))
+
+      await userEvent.dragAndDrop(firstHandle, thirdBlock)
+
+      await expect
+        .poll(getBlockNames)
+        .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
+
+      await page.getByRole('button', { name: /save changes/i }).click()
+      await expect
+        .poll(async () =>
+          (await getTemplateById(template.id))?.blocks.map((block) =>
+            block.kind === 'strength' ? block.name : block.kind,
+          ),
+        )
+        .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
+
+      await navigateTo({ name: RouteNames.Workouts })
+      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
+      await expect
+        .poll(getBlockNames)
+        .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
+
+      cleanup()
+    })
 
     it('has sortable container with correct structure', async () => {
       const { navigateTo, cleanup } = await createTestApp()

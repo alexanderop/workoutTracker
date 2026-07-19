@@ -29,13 +29,12 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     // Switch to Timed Blocks tab
     await userEvent.click(getByRole('tab', { name: /timed/i }))
 
-    // BUG VERIFICATION: Assert all block options are visible (not just in DOM)
-    // toBeVisible() checks actual visibility in viewport - catches clipping
-    await expect.element(page.getByText('AMRAP')).toBeVisible()
-    await expect.element(page.getByText('EMOM')).toBeVisible()
-    await expect.element(page.getByText('Tabata')).toBeVisible()
-    await expect.element(page.getByText('For Time')).toBeVisible()
-    await expect.element(page.getByText('Cardio')).toBeVisible()
+    // Every option must be fully inside the viewport, not merely rendered in the DOM.
+    await expect.element(page.getByText('AMRAP')).toBeInViewport({ ratio: 1 })
+    await expect.element(page.getByText('EMOM')).toBeInViewport({ ratio: 1 })
+    await expect.element(page.getByText('Tabata')).toBeInViewport({ ratio: 1 })
+    await expect.element(page.getByText('For Time')).toBeInViewport({ ratio: 1 })
+    await expect.element(page.getByText('Cardio')).toBeInViewport({ ratio: 1 })
 
     // Verify "For Time" is clickable (would timeout if outside viewport)
     await userEvent.click(page.getByText('For Time'))
@@ -70,14 +69,27 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     await common.waitForDialog()
     await userEvent.click(getByRole('tab', { name: /timed/i }))
 
-    // The last items (For Time, Cardio) should still be accessible
-    // Either by being visible or by scrolling within the dialog
-    const forTimeButton = page.getByText('For Time')
-    const cardioButton = page.getByText('Cardio')
+    // The last items must remain reachable through the dialog's own scrolling.
+    const forTimeButton = page.getByRole('button', { name: /for time/i })
+    const cardioButton = page.getByRole('button', { name: /cardio/i })
 
-    // These should be visible - if they're not, the dialog needs scrolling
-    await expect.element(forTimeButton).toBeVisible()
-    await expect.element(cardioButton).toBeVisible()
+    await userEvent.wheel(page.getByRole('dialog'), { direction: 'down', times: 5 })
+    await expect.element(cardioButton).toBeInViewport({ ratio: 1 })
+    await userEvent.click(cardioButton)
+    await expect.element(page.getByRole('heading', { name: /configure cardio/i })).toBeInViewport()
+
+    // Reopen and prove the neighboring option is independently actionable.
+    await userEvent.click(page.getByRole('button', { name: /close/i }))
+    await common.waitForDialogClose()
+    await userEvent.click(getByRole('button', { name: /add/i }))
+    await common.waitForDialog()
+    await userEvent.click(getByRole('tab', { name: /timed/i }))
+    await userEvent.wheel(page.getByRole('dialog'), { direction: 'down', times: 5 })
+    await expect.element(forTimeButton).toBeInViewport({ ratio: 1 })
+    await userEvent.click(forTimeButton)
+    await expect
+      .element(page.getByRole('heading', { name: /configure for time/i }))
+      .toBeInViewport()
 
     cleanup()
   })
