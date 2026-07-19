@@ -53,7 +53,8 @@ describe('Nutrition barcode scan', () => {
     vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(createFakeCameraStream())
     const realFetch = globalThis.fetch.bind(globalThis)
     vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
-      if (String(input).includes('openfoodfacts.org')) {
+      const url = new URL(String(input), globalThis.location.href)
+      if (url.hostname === 'world.openfoodfacts.org') {
         return Promise.resolve(Response.json(OPEN_FOOD_FACTS_RESPONSE))
       }
       return realFetch(input, init)
