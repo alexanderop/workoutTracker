@@ -153,7 +153,10 @@ jobs:
       - name: Reject agent-readable links
         run: |
           set -euo pipefail
-          test -z "$(git ls-files -s src | awk '$1 == "120000" || $1 == "160000"')"
+          while read -r mode _; do
+            test "$mode" != 120000
+            test "$mode" != 160000
+          done < <(git ls-files -s src)
           test -z "$(find src -type l -print -quit)"
           test -f /tmp/ci-failure.log
           test ! -L /tmp/ci-failure.log
@@ -257,7 +260,8 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git status --porcelain | wc -l | tr -d ' ')" = 1
-          test "$(git status --porcelain | awk '{print $2}')" = pnpm-lock.yaml
+          status=$(git status --porcelain)
+          test "${status:3}" = pnpm-lock.yaml
           git config user.email "41898282+claude[bot]@users.noreply.github.com"
           git config user.name "claude[bot]"
           git add -- pnpm-lock.yaml
@@ -313,9 +317,24 @@ jobs:
         with:
           node-version: '22'
           cache: pnpm
+      - name: Install dependencies without lifecycle scripts
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          version=$(pnpm exec playwright --version)
+          echo "version=${version#Version }" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
       - name: Verify candidate
         run: |
-          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
           pnpm type-check
           pnpm lint
           pnpm test

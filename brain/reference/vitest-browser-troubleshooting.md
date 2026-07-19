@@ -82,6 +82,12 @@ Chromium. Do not add `playwright install --with-deps` or `install-deps` to each
 test job: those commands repeatedly fetch large font packages and have made
 setup take more than 14 minutes. Install Chromium only on a browser-cache miss.
 
+Any standalone workflow that runs `pnpm install --ignore-scripts` and then
+invokes a browser-mode test must restore the Playwright cache and run
+`pnpm exec playwright install chromium` on a cache miss. The install command
+does not download a browser when dependency lifecycle scripts are disabled;
+without this explicit setup, Vitest fails with a missing Chromium executable.
+
 Default-suite coverage is collected by the four existing test shards. Each
 shard uploads an Istanbul JSON map; `scripts/merge-coverage.mjs` requires the
 exact four-file set and applies the thresholds from `coverage-thresholds.json`.
