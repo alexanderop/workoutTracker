@@ -156,14 +156,14 @@ function formatDate(timestamp: number): string {
 
     <!-- Template Selection Dialog -->
     <Dialog v-model:open="templateDialogOpen">
-      <DialogContent class="max-h-[80vh]">
+      <DialogContent class="max-h-[80dvh]">
         <DialogHeader>
           <DialogTitle>{{ t('logPastWorkout.selectTemplate', 'Select Template') }}</DialogTitle>
           <DialogDescription class="sr-only">
             {{ t('logPastWorkout.selectTemplateDesc', 'Choose a template to start your workout') }}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea class="max-h-[60vh]">
+        <ScrollArea class="max-h-[60dvh]">
           <div class="space-y-2 pr-4">
             <Button
               v-for="template in templates"
@@ -189,14 +189,14 @@ function formatDate(timestamp: number): string {
 
     <!-- History Selection Dialog -->
     <Dialog v-model:open="historyDialogOpen">
-      <DialogContent class="max-h-[80vh]">
+      <DialogContent class="max-h-[80dvh]">
         <DialogHeader>
           <DialogTitle>{{ t('logPastWorkout.selectWorkout', 'Select Workout') }}</DialogTitle>
           <DialogDescription class="sr-only">
             {{ t('logPastWorkout.selectWorkoutDesc', 'Choose a previous workout to copy') }}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea class="max-h-[60vh]">
+        <ScrollArea class="max-h-[60dvh]">
           <div class="space-y-2 pr-4">
             <Button
               v-for="workout in recentWorkouts"

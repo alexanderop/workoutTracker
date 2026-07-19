@@ -31,7 +31,10 @@ function handleSelect(value: T) {
       </DialogHeader>
 
       <!-- Grid layout (for Equipment) -->
-      <div v-if="layout === 'grid'" class="grid grid-cols-3 gap-3">
+      <div
+        v-if="layout === 'grid'"
+        class="grid min-h-0 grid-cols-3 gap-3 overflow-y-auto overscroll-contain"
+      >
         <button
           v-for="option in options"
           :key="option.value"
@@ -49,7 +52,7 @@ function handleSelect(value: T) {
       </div>
 
       <!-- List layout -->
-      <div v-else class="space-y-2">
+      <div v-else class="min-h-0 space-y-2 overflow-y-auto overscroll-contain">
         <!-- With icon (Muscle style) -->
         <template v-if="options[0]?.icon && !options[0]?.description">
           <button

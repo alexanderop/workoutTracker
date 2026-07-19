@@ -111,7 +111,7 @@ function handleNextMonth() {
 
 <template>
   <Sheet :open="open" @update:open="handleOpenChange">
-    <SheetContent side="bottom" class="max-h-[85vh] overflow-y-auto px-4 pb-8">
+    <SheetContent side="bottom" class="max-h-[85dvh] overflow-y-auto px-4 pb-8">
       <SheetHeader class="pb-2">
         <SheetTitle class="text-center">{{ currentMonthYear }}</SheetTitle>
         <SheetDescription class="sr-only">

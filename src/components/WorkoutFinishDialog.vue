@@ -55,7 +55,7 @@ function handleConfirm() {
         </DialogDescription>
       </DialogHeader>
 
-      <div class="space-y-4">
+      <div class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
         <div class="space-y-2">
           <Label :for="nameInputId">{{ t('dialogs.finish.workoutName') }}</Label>
           <Input
