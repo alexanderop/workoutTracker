@@ -152,7 +152,7 @@ jobs:
       sha: ${{ steps.candidate.outputs.sha }}
     steps:
       - name: Checkout exact tested revision without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           fetch-depth: 50
@@ -182,7 +182,7 @@ jobs:
           test -f /tmp/qa-report/qa-report.md
           test ! -L /tmp/qa-report/qa-report.md
       - name: Run Claude on QA findings
-        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -263,7 +263,7 @@ jobs:
       sha: ${{ steps.seal.outputs.sha }}
     steps:
       - name: Checkout exact tested revision without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
@@ -281,9 +281,9 @@ jobs:
           test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
           git checkout --detach "$EXPECTED_SHA"
       - name: Setup pnpm
-        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: pnpm
@@ -327,7 +327,7 @@ jobs:
         run: test '${{ needs.agent.result }}' = success
       - name: Checkout original head without credentials
         if: needs.agent.outputs.candidate == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
@@ -395,7 +395,7 @@ jobs:
       - name: Publish follow-up comment
         if: steps.push.outcome == 'success'
         continue-on-error: true
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           FIX_SHA: ${{ steps.push.outputs.sha }}
           PR_NUMBER: ${{ needs.gate.outputs.pr-number }}
