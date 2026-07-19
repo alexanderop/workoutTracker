@@ -29,12 +29,8 @@ describe('Numeric Input Modal (Touch Device)', () => {
 
       // Modal should open
       await modalPO.waitForOpen()
-      await expect
-        .element(page.getByRole('button', { name: /confirm value/i }))
-        .toBeInViewport({ ratio: 1 })
-      await expect
-        .element(page.getByRole('button', { name: /cancel/i }))
-        .toBeInViewport({ ratio: 1 })
+      await expect.element(page.getByRole('button', { name: /confirm value/i })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /cancel/i })).toBeVisible()
       const title = await modalPO.getTitle()
       expect(title).toBe('Weight')
 

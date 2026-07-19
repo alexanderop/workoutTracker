@@ -18,7 +18,7 @@ concurrency:
 jobs:
   on-slop:
     name: Close and annotate slop PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     if: github.event.label.name == 'slop' && github.repository == 'alexanderop/workoutTracker'
     permissions:
@@ -26,7 +26,7 @@ jobs:
       issues: write # createComment posts through the issues API
     steps:
       - name: Comment and close PR
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             await github.rest.issues.createComment({

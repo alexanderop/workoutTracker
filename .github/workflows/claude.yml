@@ -19,20 +19,22 @@ jobs:
   claude:
     if: |
       (github.event_name == 'issue_comment' &&
-       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+       github.event.comment.author_association == 'OWNER' &&
        contains(github.event.comment.body, '@claude') &&
        !contains(github.event.comment.body, '@claude test') &&
        !contains(github.event.comment.body, '@claude verify')) ||
       (github.event_name == 'pull_request_review_comment' &&
-       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+       github.event.comment.author_association == 'OWNER' &&
        contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' &&
-       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.review.author_association) &&
+       github.event.review.author_association == 'OWNER' &&
        contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' &&
-       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association) &&
+       github.event.issue.author_association == 'OWNER' &&
+       (github.event.action == 'opened' ||
+        (github.event.action == 'assigned' && github.actor == github.repository_owner)) &&
        (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     concurrency:
@@ -51,12 +53,14 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           show_full_output: true
           track_progress: true
           additional_permissions: |

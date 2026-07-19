@@ -16,7 +16,7 @@ concurrency:
 jobs:
   label:
     name: Add ai label to AI-authored PRs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     if: |
       github.event.pull_request.user.login == 'claude[bot]' ||

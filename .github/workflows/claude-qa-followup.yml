@@ -39,7 +39,7 @@ concurrency:
 jobs:
   gate:
     name: Validate QA report provenance
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: read
@@ -140,7 +140,7 @@ jobs:
     name: Produce QA fix commit
     needs: gate
     if: needs.gate.outputs.ok == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       actions: read
@@ -253,7 +253,7 @@ jobs:
     name: Verify QA fix without secrets
     needs: [gate, agent]
     if: needs.agent.outputs.candidate == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       actions: read
@@ -314,7 +314,7 @@ jobs:
     name: Publish verified QA fix
     needs: [gate, agent, verify]
     if: ${{ always() && needs.gate.outputs.ok == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       actions: write

@@ -9,61 +9,15 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'test/e2e/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'vite.config.*'
-      - 'vitest.config.ts'
-      - 'playwright.config.ts'
-      - 'coverage-thresholds.json'
-      - 'tsconfig*.json'
-      - 'eslint.config.*'
-      - '.oxlintrc.json'
-      - '.markdownlint*.json*'
-      - '.yamllint.yml'
-      - 'knip.json'
-      - 'lighthouserc.json'
-      - '.coderabbit.yaml'
-      - '.gitleaksignore'
-      - '.husky/**'
-      - '.github/actions/**'
-      - '.github/workflows/**'
   pull_request:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'test/e2e/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'vite.config.*'
-      - 'vitest.config.ts'
-      - 'playwright.config.ts'
-      - 'coverage-thresholds.json'
-      - 'tsconfig*.json'
-      - 'eslint.config.*'
-      - '.oxlintrc.json'
-      - '.markdownlint*.json*'
-      - '.yamllint.yml'
-      - 'knip.json'
-      - 'lighthouserc.json'
-      - '.coderabbit.yaml'
-      - '.gitleaksignore'
-      - '.husky/**'
-      - '.github/actions/**'
-      - '.github/workflows/**'
 
 env:
   NODE_VERSION: '22'
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -72,16 +26,17 @@ jobs:
   quality:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm exec run-p lint:check audit:prod knip i18n:check check:composables test:arch test:workflows
-      node-version: '22'
+      profile: quality
 
   workflow-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Install verified actionlint
         shell: bash
@@ -114,13 +69,25 @@ jobs:
           "$RUNNER_TEMP/yamllint/bin/pip" install --quiet yamllint==1.37.1
           "$RUNNER_TEMP/yamllint/bin/yamllint" .coderabbit.yaml .github
 
+      - name: Audit GitHub Actions security
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        with:
+          advanced-security: false
+          annotations: true
+          min-confidence: high
+          min-severity: high
+          online-audits: true
+          version: 1.25.2
+
   osv:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Run OSV Scanner
         uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
@@ -129,7 +96,7 @@ jobs:
             --lockfile=pnpm-lock.yaml
 
   gitleaks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
@@ -137,6 +104,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
@@ -145,12 +113,14 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: 'false'
 
   type-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup dependencies
         uses: ./.github/actions/setup-node-deps
@@ -166,17 +136,17 @@ jobs:
   node-20-compat:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm type-check && pnpm build-only
-      node-version: '20.19.0'
-      timeout-minutes: 10
+      profile: node-20-compat
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup dependencies
         uses: ./.github/actions/setup-node-deps
@@ -203,7 +173,7 @@ jobs:
           retention-days: 7
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -255,12 +225,14 @@ jobs:
 
   test-coverage:
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup dependencies
         uses: ./.github/actions/setup-node-deps
@@ -283,23 +255,16 @@ jobs:
   test-a11y:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm test:a11y
-      node-version: '22'
-      timeout-minutes: 10
-      setup-profile: test
+      profile: test-a11y
 
   test-visual:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm test:visual
-      node-version: '22'
-      runner: macos-latest
-      timeout-minutes: 10
-      setup-profile: test
+      profile: test-visual
 
   test-e2e:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -332,12 +297,14 @@ jobs:
 
   performance-budget:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup dependencies
         uses: ./.github/actions/setup-node-deps
@@ -357,12 +324,14 @@ jobs:
           pnpm lhci autorun
 
   sbom:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
@@ -372,3 +341,131 @@ jobs:
           artifact-name: sbom.cdx.json
           upload-artifact-retention: 14
           upload-release-assets: false
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - javascript-typescript
+    steps:
+      - name: Checkout repository without credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - name: Analyze repository
+        uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
+        with:
+          category: /language:${{ matrix.language }}
+
+  required:
+    name: Required CI
+    if: ${{ always() }}
+    needs:
+      - quality
+      - workflow-lint
+      - osv
+      - gitleaks
+      - type-check
+      - node-20-compat
+      - build
+      - test
+      - test-coverage
+      - test-a11y
+      - test-visual
+      - test-e2e
+      - performance-budget
+      - sbom
+      - codeql
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Require every CI job to pass
+        env:
+          RESULTS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          jq -e 'all(.[]; .result == "success")' <<<"$RESULTS_JSON"
+
+  release:
+    name: Release verified main commit
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.required.result == 'success'
+    needs: required
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout verified main commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Ensure releases remain in commit order
+        id: order
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          LATEST_TAG=$(git tag --list 'v*' --sort=-version:refname | head -n 1)
+          if [ -n "$LATEST_TAG" ] && ! git merge-base --is-ancestor "$LATEST_TAG" "$EXPECTED_SHA"; then
+            echo 'release=false' >> "$GITHUB_OUTPUT"
+            echo "Skipping $EXPECTED_SHA because $LATEST_TAG is not its ancestor."
+          else
+            echo 'release=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create conventional release
+        id: changelog
+        if: steps.order.outputs.release == 'true'
+        uses: TriPSs/conventional-changelog-action@91be4f3188da74fe85de9caffcebc80b26d43b5b # v6
+        with:
+          create-summary: 'true'
+          git-push: 'false'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: 'false'
+          skip-commit: 'true'
+          skip-git-pull: 'true'
+          skip-version-file: 'true'
+          tag-prefix: 'v'
+      - name: Publish tag for the verified commit
+        if: |
+          steps.order.outputs.release == 'true' &&
+          steps.changelog.outputs.skipped == 'false'
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Refusing invalid release tag: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          TAG_SHA=$(git rev-list -n 1 "$RELEASE_TAG")
+          if [ "$TAG_SHA" != "$EXPECTED_SHA" ]; then
+            echo "Tag $RELEASE_TAG points to $TAG_SHA, expected $EXPECTED_SHA." >&2
+            exit 1
+          fi
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
