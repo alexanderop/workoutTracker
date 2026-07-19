@@ -15,7 +15,7 @@ export type MacroPercents = {
   fat: number
 }
 
-export const MACRO_KCAL_PER_GRAM = {
+const MACRO_KCAL_PER_GRAM = {
   protein: 4,
   carbohydrate: 4,
   fat: 9,
