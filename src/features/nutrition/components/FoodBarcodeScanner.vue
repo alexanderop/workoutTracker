@@ -13,6 +13,7 @@ const emit = defineEmits<{ detected: [barcode: string]; cancel: [] }>()
 const { t } = useI18n()
 
 const videoRef = useTemplateRef('video')
+const cancelButtonRef = useTemplateRef<{ $el?: HTMLElement }>('cancelButton')
 const cameraFailed = ref(false)
 
 let stream: MediaStream | null = null
@@ -48,6 +49,9 @@ async function detectOnce(detector: BarcodeDetectorLike) {
 }
 
 onMounted(async () => {
+  // Entering the scanner removes the button that opened it, which would
+  // drop keyboard focus onto <body>. Land it on Cancel instead.
+  cancelButtonRef.value?.$el?.focus()
   const DetectorConstructor = getBarcodeDetectorConstructor()
   const mediaDevices = globalThis.navigator.mediaDevices
   if (!DetectorConstructor || mediaDevices === undefined) {
@@ -98,7 +102,13 @@ onBeforeUnmount(() => {
       {{ t('nutrition.food.scanCameraFailed') }}
     </p>
     <p v-else class="text-sm text-muted-foreground">{{ t('nutrition.food.scanHint') }}</p>
-    <Button type="button" variant="outline" class="w-full" @click="emit('cancel')">
+    <Button
+      ref="cancelButton"
+      type="button"
+      variant="outline"
+      class="w-full"
+      @click="emit('cancel')"
+    >
       {{ t('common.buttons.cancel') }}
     </Button>
   </div>

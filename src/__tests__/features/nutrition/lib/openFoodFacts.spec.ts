@@ -115,6 +115,9 @@ describe('parseBarcodeLookup', () => {
 
   it('reports an error for a malformed response', () => {
     expect(parseBarcodeLookup('nonsense')).toEqual({ status: 'error' })
+    expect(parseBarcodeLookup({ status: 2, product: { product_name: 'Oats' } })).toEqual({
+      status: 'error',
+    })
     expect(
       parseBarcodeLookup({ product: { nutriments: { 'energy-kcal_100g': 'not a number' } } }),
     ).toEqual({ status: 'error' })

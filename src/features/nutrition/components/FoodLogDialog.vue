@@ -95,6 +95,13 @@ function applyScannedFood(food: ScannedFood) {
 async function handleBarcodeDetected(barcode: string) {
   scanState.value = 'looking-up'
   const result = await lookup(barcode)
+  // The dialog was reset (closed/reopened) while the lookup was in flight.
+  if (scanState.value !== 'looking-up') return
+  // The user switched to an existing food mid-lookup; discard the result.
+  if (!isNewFood.value) {
+    scanState.value = 'idle'
+    return
+  }
   if (result.status !== 'found') {
     scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
     return

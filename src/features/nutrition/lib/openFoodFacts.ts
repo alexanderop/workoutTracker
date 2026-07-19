@@ -38,7 +38,7 @@ const productSchema = z.object({
  * an HTTP 404 instead of a body).
  */
 const productResponseSchema = z.object({
-  status: z.number().optional(),
+  status: z.union([z.literal(0), z.literal(1)]).optional(),
   product: productSchema.optional(),
 })
 
