@@ -1,3 +1,12 @@
+## [1.40.1](https://github.com/alexanderop/workoutTracker/compare/v1.40.0...v1.40.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **ui:** keep mobile dialogs above the on-screen keyboard ([#180](https://github.com/alexanderop/workoutTracker/issues/180)) ([ace6620](https://github.com/alexanderop/workoutTracker/commit/ace6620a233a2eb18833c36ac7885c7ec29b5cd4))
+
+
+
 # [1.40.0](https://github.com/alexanderop/workoutTracker/compare/v1.39.1...v1.40.0) (2026-07-19)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **exercises:** add EGYM Smart Strength machine catalog ([#174](https://github.com/alexanderop/workoutTracker/issues/174)) ([cd33e82](https://github.com/alexanderop/workoutTracker/commit/cd33e8222405f41572a06c26b609894e708e3696))
-
-
-
-## [1.37.1](https://github.com/alexanderop/workoutTracker/compare/v1.37.0...v1.37.1) (2026-07-18)
-
-
-### Bug Fixes
-
-* **exercises:** improve barbell icon clarity ([#173](https://github.com/alexanderop/workoutTracker/issues/173)) ([d75d86e](https://github.com/alexanderop/workoutTracker/commit/d75d86e2629c562cf3ff988e4a4f05bb8e9233af))
 
 
 
