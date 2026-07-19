@@ -69,6 +69,10 @@ catalogs:
     workbox-window:
       specifier: ^7.4.1
       version: 7.4.1
+  default:
+    agent-browser:
+      specifier: 0.27.0
+      version: 0.27.0
   frontend:
     '@vueuse/core':
       specifier: ^14.3.0
@@ -410,6 +414,9 @@ importers:
       '@vue/tsconfig':
         specifier: catalog:build
         version: 0.9.1(typescript@6.0.3)(vue@3.5.38(typescript@6.0.3))
+      agent-browser:
+        specifier: 'catalog:'
+        version: 0.27.0
       archunit:
         specifier: catalog:testing
         version: 2.3.3
@@ -3478,6 +3485,10 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  agent-browser@0.27.0:
+    resolution: {integrity: sha512-mmHzVsYFVA6nshNNGJzg83aVMgKpf4h98ytY3pvtJB1Cot0ZyA2bfnkbSngGD56Azkj+GlhVH6qx9DfKOVE0yg==}
+    hasBin: true
 
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
@@ -10825,6 +10836,8 @@ snapshots:
   acorn@8.17.0: {}
 
   agent-base@7.1.4: {}
+
+  agent-browser@0.27.0: {}
 
   ajv@6.15.0:
     dependencies:

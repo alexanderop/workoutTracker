@@ -72,7 +72,7 @@ jobs:
   quality:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
-      command: pnpm exec run-p lint:check audit:prod knip i18n:check check:composables test:arch
+      command: pnpm exec run-p lint:check audit:prod knip i18n:check check:composables test:arch test:workflows
       node-version: '22'
 
   workflow-lint:

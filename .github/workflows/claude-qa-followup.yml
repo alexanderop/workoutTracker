@@ -83,7 +83,6 @@ jobs:
              [ "$(jq -r '.repository.full_name' <<<"$RUN_JSON")" != "$REPO" ] ||
              [ "$(jq -r '.path' <<<"$RUN_JSON")" != '.github/workflows/claude-qa-browser.yml' ] ||
              { [ "$RUN_CONCLUSION" != success ] && [ "$RUN_CONCLUSION" != failure ]; } ||
-             [ "$(jq -r '.head_sha' <<<"$RUN_JSON")" != "$REPORT_HEAD_SHA" ] ||
              ! jq -e --arg name "qa-browser-artifacts-${REPORT_RUN_ID}" \
                'any(.artifacts[]; .name == $name and (.expired | not))' >/dev/null <<<"$ARTIFACTS" ||
              [ "$(jq -r '.user.login' <<<"$COMMENT_JSON")" != 'github-actions[bot]' ] ||
@@ -91,6 +90,24 @@ jobs:
              ! jq -e --arg marker "$QA_MARKER" \
                --arg provenance "<!-- qa-report-provenance run-id=${REPORT_RUN_ID} head-sha=${REPORT_HEAD_SHA} -->" \
                '.body | contains($marker) and contains($provenance)' >/dev/null <<<"$COMMENT_JSON"; then
+            exit 0
+          fi
+          PROVENANCE_DIR=$(mktemp -d)
+          gh run download "$REPORT_RUN_ID" --repo "$REPO" \
+            --name "qa-browser-artifacts-${REPORT_RUN_ID}" --dir "$PROVENANCE_DIR"
+          if ! jq -e --arg pr "$PR_NUMBER" --arg sha "$REPORT_HEAD_SHA" \
+            '.pr_number == $pr and .tested_head_sha == $sha and
+             (.report_sha256 | test("^[0-9a-f]{64}$"))' \
+            "$PROVENANCE_DIR/qa-provenance.json" >/dev/null; then
+            exit 0
+          fi
+          REPORT_FILE="$PROVENANCE_DIR/qa-report.md"
+          test -s "$REPORT_FILE" || exit 0
+          test "$(sha256sum "$REPORT_FILE" | cut -d' ' -f1)" = \
+            "$(jq -r '.report_sha256' "$PROVENANCE_DIR/qa-provenance.json")" || exit 0
+          grep -Eqi 'Verdict:(\*\*)?[[:space:]]*(HEALTHY|MINOR_ISSUES|CRITICAL_BUGS)' \
+            "$REPORT_FILE" || exit 0
+          if grep -Eqi '\b(TBD|Pending|Testing in progress)\b' "$REPORT_FILE"; then
             exit 0
           fi
           SIGNATURE=$(printf '%s' "${REPORT_RUN_ID}:${REPORT_HEAD_SHA}" | sha256sum | cut -c1-12)

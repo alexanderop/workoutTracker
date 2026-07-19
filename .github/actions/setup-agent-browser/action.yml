@@ -4,14 +4,11 @@ description: Install the agent-browser CLI and browser runtime
 runs:
   using: composite
   steps:
-    - name: Install agent-browser
-      shell: bash
-      run: |
-        set -euo pipefail
-        npm install -g agent-browser
-
     - name: Install browser runtime
       shell: bash
       run: |
         set -euo pipefail
-        agent-browser install
+        # agent-browser is exact-pinned in package.json and pnpm-lock.yaml;
+        # dependency installation happens before this action is called.
+        pnpm exec agent-browser install
+        echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"

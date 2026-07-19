@@ -7,10 +7,11 @@
 #   - `issue_comment` (@claude verify/test) and `workflow_dispatch` are
 #     unchanged manual escape hatches.
 # CI's own `paths:` filter already narrows `pull_request`/`push` to relevant
-# file changes, so chaining off CI success inherits that filter for free. The
-# `qa-admission` job below then scores the PR through the GitHub API before
-# checkout, dependency installation, browser setup, or Claude. Manual QA
-# triggers remain an explicit override.
+# file changes, so chaining off CI success inherits that filter for free --
+# except CI also runs for non-UI changes (scripts/, workflows/), so the
+# "Check for UI-relevant changes" step below adds a second, cheaper filter
+# before any of the expensive steps (fixtures, dev server, agent-browser,
+# Claude) run.
 name: Claude QA (Browser)
 
 on:
@@ -38,7 +39,7 @@ on:
     types: [labeled]
     paths-ignore:
       - '*.md'
-      - 'brain/**'
+      - 'brain/reference/**'
       - '.github/workflows/release.yml'
   # Both the associated PR and its head repository are checked below. This is
   # a privileged workflow_run path, so never check out fork-controlled code.
@@ -75,226 +76,174 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      should-run: ${{ steps.admission.outputs.should_run }}
       decision: ${{ steps.admission.outputs.decision }}
-      score: ${{ steps.admission.outputs.score }}
-      reason: ${{ steps.admission.outputs.reason }}
-
+      should-run: ${{ steps.admission.outputs.should_run }}
     steps:
       - name: Score browser QA value
         id: admission
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
-          INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
             const eventName = context.eventName;
-            const manualOverride =
-              eventName === 'workflow_dispatch' ||
-              eventName === 'issue_comment' ||
-              (eventName === 'pull_request' && context.payload.label?.name === 'qa-verify');
-
-            let prNumber = null;
-            if (eventName === 'pull_request') {
-              prNumber = context.payload.pull_request.number;
-            } else if (eventName === 'workflow_run') {
-              prNumber = context.payload.workflow_run.pull_requests?.[0]?.number;
-            } else if (eventName === 'issue_comment') {
-              prNumber = context.payload.issue.number;
-            } else if (process.env.INPUT_PR_NUMBER) {
-              prNumber = Number.parseInt(process.env.INPUT_PR_NUMBER, 10);
-            }
-
-            const finish = ({ decision, score, reasons, fileCount = 0 }) => {
-              const shouldRun = decision !== 'skip';
-              const reason = reasons.join('; ');
-              core.setOutput('should_run', String(shouldRun));
+            const manual = eventName === 'workflow_dispatch' ||
+              eventName === 'issue_comment' || eventName === 'pull_request';
+            const prNumber = context.payload.pull_request?.number ||
+              context.payload.workflow_run?.pull_requests?.[0]?.number ||
+              context.payload.issue?.number ||
+              Number.parseInt(process.env.INPUT_PR_NUMBER || '', 10) || null;
+            const finish = (decision, reason) => {
               core.setOutput('decision', decision);
-              core.setOutput('score', String(score));
-              core.setOutput('reason', reason);
-              core.notice(`Browser QA admission: ${decision} (score ${score}) — ${reason}`);
-
-              core.summary
-                .addHeading('Browser QA admission')
-                .addTable([
-                  [{ data: 'Decision', header: true }, decision],
-                  [{ data: 'Risk score', header: true }, String(score)],
-                  [{ data: 'Changed files', header: true }, String(fileCount)],
-                ])
-                .addHeading('Reasons', 2)
-                .addList(reasons);
-              return core.summary.write();
+              core.setOutput('should_run', String(decision !== 'skip'));
+              core.notice(`Browser QA admission: ${decision} — ${reason}`);
             };
-
-            if (manualOverride && !prNumber) {
-              await finish({
-                decision: 'required',
-                score: 0,
-                reasons: ['Manual workflow dispatch without a PR diff'],
-              });
-              return;
-            }
-
             if (!prNumber) {
-              await finish({
-                decision: 'skip',
-                score: 0,
-                reasons: ['No pull request was available to evaluate'],
-              });
+              finish(manual ? 'required' : 'skip', 'No PR diff is available');
               return;
             }
-
             const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner: context.repo.owner, repo: context.repo.repo,
               pull_number: prNumber,
             });
-
             if (pr.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
-              await finish({
-                decision: 'skip',
-                score: 0,
-                reasons: ['Fork PRs cannot run the privileged browser QA workflow'],
-              });
+              finish('skip', 'Fork PRs cannot run privileged browser QA');
               return;
             }
-
-            if (
-              eventName === 'workflow_run' &&
-              pr.head.sha !== context.payload.workflow_run.head_sha
-            ) {
-              await finish({
-                decision: 'skip',
-                score: 0,
-                reasons: ['The PR advanced after this CI run; the newer CI completion will be evaluated'],
-              });
+            if (eventName === 'workflow_run' &&
+                pr.head.sha !== context.payload.workflow_run.head_sha) {
+              finish('skip', 'PR advanced after this CI run');
               return;
             }
-
-            if (manualOverride) {
-              await finish({
-                decision: 'required',
-                score: 0,
-                reasons: ['Manual QA trigger overrides automatic admission'],
-              });
+            if (manual) {
+              finish('required', 'Manual trigger overrides automatic admission');
               return;
             }
-
-            const changedFiles = await github.paginate(github.rest.pulls.listFiles, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              per_page: 100,
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner, repo: context.repo.repo,
+              pull_number: prNumber, per_page: 100,
             });
-            const paths = changedFiles.map(file => file.filename);
-            const totalChanges = changedFiles.reduce(
-              (sum, file) => sum + file.additions + file.deletions,
-              0,
+            const paths = files.map(file => file.filename);
+            const runtime = paths.filter(path =>
+              !/(^|\/)(__tests__|test|tests|fixtures|__snapshots__)(\/|$)/.test(path) &&
+              !/\.(spec|test)\.[cm]?[jt]sx?$/.test(path) &&
+              !/(^|\/)brain\//.test(path) && !/\.md$/.test(path) &&
+              !/^(scripts\/|\.github\/|\.husky\/)/.test(path) &&
+              !/^src\/types\//.test(path) && !/\.d\.ts$/.test(path),
             );
-            const isTest = path =>
-              /(^|\/)(__tests__|test|tests|fixtures|__snapshots__)(\/|$)/.test(path) ||
-              /\.(spec|test)\.[cm]?[jt]sx?$/.test(path);
-            const isDocsOrTooling = path =>
-              /(^|\/)brain\//.test(path) ||
-              /\.md$/.test(path) ||
-              /^(scripts\/|\.github\/|\.husky\/)/.test(path) ||
-              /^(coverage-thresholds\.json|tsconfig.*\.json|eslint\.config\.|\.oxlintrc)/.test(path);
-            const isTypeOnly = path =>
-              /^src\/types\//.test(path) ||
-              /\/(types|models)\.ts$/.test(path) ||
-              /\.d\.ts$/.test(path);
-
-            const runtimePaths = paths.filter(
-              path => !isTest(path) && !isDocsOrTooling(path) && !isTypeOnly(path),
-            );
-            const reasons = [];
-            let score = 0;
-
-            const addRisk = (points, reason) => {
-              score += points;
-              reasons.push(`${reason} (+${points})`);
-            };
-
-            if (runtimePaths.length === 0) {
-              await finish({
-                decision: 'skip',
-                score: 0,
-                reasons: ['Only tests, documentation, tooling, or type-only files changed'],
-                fileCount: paths.length,
-              });
+            if (runtime.length === 0) {
+              finish('skip', 'Only tests, docs, tooling, or type-only files changed');
               return;
             }
-
-            const persistenceOrCriticalFlow = runtimePaths.some(path =>
-              /^src\/(db|stores)\//.test(path) ||
+            const highRisk = runtime.some(path =>
+              /^src\/(db|stores|views)\//.test(path) ||
               /^src\/features\/(workout|timers|onboarding)\//.test(path) ||
-              /(schema|migration|repository|wake-?lock|rest-?timer)/i.test(path),
-            );
-            const flowSurface = runtimePaths.some(path =>
-              /^src\/views\//.test(path) ||
-              /(^|\/)(router|routes)(\/|\.|$)/.test(path) ||
-              /(Form|Dialog|Drawer|Sheet|Wizard)\.vue$/.test(path),
-            );
-            const sharedStateOrComposable = runtimePaths.some(path =>
-              /^src\/(composables|stores)\//.test(path),
-            );
-            const uiSurface = runtimePaths.some(path =>
-              /\.vue$/.test(path) || /\.(css|scss)$/.test(path),
-            );
-            const dependencySurface = runtimePaths.some(path =>
+              /(schema|migration|repository|router|route|wake-?lock|rest-?timer)/i.test(path) ||
               /^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)/.test(path),
             );
-            const buildOrEntryPoint = runtimePaths.some(path =>
-              /^vite\.config\./.test(path) || /^(index\.html|public\/)/.test(path),
-            );
-            const featureNames = new Set(
-              runtimePaths
-                .map(path => path.match(/^src\/features\/([^/]+)\//)?.[1])
-                .filter(Boolean),
-            );
+            const visible = runtime.some(path => /\.vue$/.test(path) || /\.(css|scss)$/.test(path));
+            finish(highRisk ? 'full' : visible ? 'verify' : 'fast',
+              highRisk ? 'Critical flow or dependency changed' :
+                visible ? 'User-visible UI changed' : 'Runtime code changed');
 
-            if (persistenceOrCriticalFlow) {
-              addRisk(8, 'Persistence, shared state, or a critical workout flow changed');
-            } else if (flowSurface) {
-              addRisk(5, 'A view, route, form, or dialog flow changed');
-            } else if (uiSurface) {
-              addRisk(3, 'A user-visible component or style changed');
-            }
-
-            if (sharedStateOrComposable && !persistenceOrCriticalFlow) {
-              addRisk(5, 'Shared state or composable behavior changed');
-            }
-            if (dependencySurface) {
-              addRisk(8, 'Application dependencies changed');
-            }
-            if (buildOrEntryPoint) {
-              addRisk(3, 'Build configuration, entry point, or public asset changed');
-            }
-            if (featureNames.size > 1) {
-              addRisk(2, `${featureNames.size} feature areas changed`);
-            }
-            if (paths.some(isTest) && score > 0) {
-              score -= 1;
-              reasons.push('Automated tests changed with the implementation (-1)');
-            }
-            if (paths.length >= 20 || totalChanges >= 800) {
-              addRisk(2, 'The change set is large');
-            }
-            if (score === 0) {
-              addRisk(1, 'Runtime code changed with limited direct browser exposure');
-            }
-
-            const decision = score >= 7 ? 'full' : score >= 4 ? 'verify' : 'fast';
-            await finish({ decision, score, reasons, fileCount: paths.length });
+  prepare-app:
+    name: Build untrusted PR app without secrets
+    needs: qa-admission
+    if: needs.qa-admission.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head-sha: ${{ steps.context.outputs.head_sha }}
+      pr-number: ${{ steps.context.outputs.pr_number }}
+      ui-changed: ${{ steps.context.outputs.ui_changed }}
+    steps:
+      - name: Resolve exact PR revision
+        id: context
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || github.event.workflow_run.pull_requests[0].number }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER="${EVENT_PR_NUMBER:-$INPUT_PR_NUMBER}"
+          HEAD_SHA="$EVENT_SHA"
+          UI_CHANGED=true
+          if [ -n "$PR_NUMBER" ]; then
+            [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+            PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+            test "$(jq -r '.state' <<<"$PR_JSON")" = open
+            test "$(jq -r '.head.repo.full_name' <<<"$PR_JSON")" = "$REPO"
+            LIVE_HEAD_SHA=$(jq -r '.head.sha' <<<"$PR_JSON")
+            if [ "$EVENT_NAME" = workflow_run ]; then
+              test "$LIVE_HEAD_SHA" = "$HEAD_SHA"
+            else
+              HEAD_SHA="$LIVE_HEAD_SHA"
+            fi
+            CHANGED=$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files?per_page=100" --jq '.[].filename')
+            if ! grep -qE '^(src/|index\.html|vite\.config|package\.json|pnpm-lock\.yaml)' <<<"$CHANGED"; then
+              UI_CHANGED=false
+            fi
+          fi
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          {
+            echo "head_sha=$HEAD_SHA"
+            echo "pr_number=$PR_NUMBER"
+            echo "ui_changed=$UI_CHANGED"
+          } >> "$GITHUB_OUTPUT"
+      - name: Checkout exact PR revision without credentials
+        if: steps.context.outputs.ui_changed == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.context.outputs.head_sha }}
+          persist-credentials: false
+      - name: Setup pnpm
+        if: steps.context.outputs.ui_changed == 'true'
+        uses: pnpm/action-setup@41ff726559202e3e2d34b593b79612b1fdd16f56 # v4
+      - name: Setup Node
+        if: steps.context.outputs.ui_changed == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install without lifecycle scripts and build
+        if: steps.context.outputs.ui_changed == 'true'
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm build-only
+      - name: Upload static app
+        if: steps.context.outputs.ui_changed == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qa-static-app-${{ github.run_id }}
+          path: dist
+          if-no-files-found: error
 
   qa-browser:
-    needs: qa-admission
+    needs: [qa-admission, prepare-app]
     outputs:
       pr-number: ${{ steps.pr-context.outputs.pr_number || steps.pr-metadata.outputs.number || github.event.pull_request.number || github.event.inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
-      report-comment-id: ${{ steps.post-report.outputs.comment-id }}
-      report-ready: ${{ steps.post-report.outputs.report-ready }}
-      tested-head-sha: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
-    if: needs.qa-admission.outputs.should-run == 'true'
+      report-ready: ${{ steps.final-report.outputs.ready }}
+      tested-head-sha: ${{ needs.prepare-app.outputs.head-sha }}
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.label.name == 'qa-verify') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.pull_requests[0] &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       !startsWith(github.event.workflow_run.head_branch, 'claude-auto-fix-')) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+       (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
 
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -305,11 +254,9 @@ jobs:
 
     permissions:
       contents: read
-      pull-requests: write
-      issues: write
       id-token: write
-      statuses: write
       actions: read
+      pull-requests: read
 
     env:
       NODE_VERSION: '22'
@@ -358,10 +305,11 @@ jobs:
           echo "Refusing to run browser QA against fork PR code from a comment trigger."
           exit 1
 
-      - name: Checkout repository
+      - name: Checkout trusted default-branch orchestration
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
 
       - name: Setup test environment
         uses: ./.github/actions/setup-test-env
@@ -382,7 +330,6 @@ jobs:
           set -euo pipefail
           FOCUS="$FOCUS_INPUT"
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
-            # The admission job sizes automatic QA from the changed-file risk.
             FOCUS="$ADMISSION_DECISION"
           elif [[ "$LABEL_NAME" == "qa-verify" ]]; then
             FOCUS="verify"
@@ -398,7 +345,7 @@ jobs:
           echo "QA focus: $FOCUS"
 
       - name: Get PR context
-        if: steps.qa-mode.outputs.focus == 'full' || steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
+        if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
         id: pr-context
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
@@ -409,43 +356,17 @@ jobs:
           PR_NUMBER_WORKFLOW_RUN: ${{ github.event.workflow_run.pull_requests[0].number }}
         with:
           script: |
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const policyUrl = pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'scripts/qa-workflow-policy.mjs',
+            )).href;
+            const {
+              extractMarkdownSection,
+              hasMeaningfulTemplateContent,
+            } = await import(policyUrl);
             let prNumber, prBody, prTitle;
-            const extractSection = (body, heading) => {
-              if (!body) return '';
-              const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const regex = new RegExp(`##\\s+${escapedHeading}\\s*\\n([\\s\\S]*?)(?=\\n##\\s+|\\n#\\s+|$)`, 'i');
-              const match = body.match(regex);
-              return match ? match[1].trim() : '';
-            };
-            const hasMeaningfulContent = (section) => {
-              if (!section) return false;
-              const normalized = section
-                .replace(/[`*_>-]/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .toLowerCase();
-
-              if (!normalized) return false;
-
-              const placeholderPatterns = [
-                'user can ...',
-                'existing flow still ...',
-                'affected users:',
-                'behavior change:',
-                'changed flow to verify:',
-                'one adjacent regression path to verify:',
-                'scenario:',
-                'given:',
-                'when:',
-                'then:',
-                'forms / validation',
-                'navigation / routing',
-                'persistence / saved state',
-                'mobile layout / touch interactions',
-              ];
-
-              return !placeholderPatterns.some(pattern => normalized.includes(pattern));
-            };
 
             if (context.eventName === 'pull_request') {
               prNumber = context.payload.pull_request.number;
@@ -492,17 +413,17 @@ jobs:
               }
             }
 
-            const summary = extractSection(prBody, 'Summary');
-            const userImpact = extractSection(prBody, 'User Impact');
-            const acceptanceCriteria = extractSection(prBody, 'Acceptance Criteria');
-            const qaScope = extractSection(prBody, 'QA Scope');
-            const riskAreas = extractSection(prBody, 'Risk Areas');
-            const manualTestScenarios = extractSection(prBody, 'Manual Test Scenarios');
+            const summary = extractMarkdownSection(prBody, 'Summary');
+            const userImpact = extractMarkdownSection(prBody, 'User Impact');
+            const acceptanceCriteria = extractMarkdownSection(prBody, 'Acceptance Criteria');
+            const qaScope = extractMarkdownSection(prBody, 'QA Scope');
+            const riskAreas = extractMarkdownSection(prBody, 'Risk Areas');
+            const manualTestScenarios = extractMarkdownSection(prBody, 'Manual Test Scenarios');
 
             const missingSections = [];
-            if (!hasMeaningfulContent(acceptanceCriteria)) missingSections.push('Acceptance Criteria');
-            if (!hasMeaningfulContent(qaScope)) missingSections.push('QA Scope');
-            if (!hasMeaningfulContent(riskAreas)) missingSections.push('Risk Areas');
+            if (!hasMeaningfulTemplateContent(acceptanceCriteria)) missingSections.push('Acceptance Criteria');
+            if (!hasMeaningfulTemplateContent(qaScope)) missingSections.push('QA Scope');
+            if (!hasMeaningfulTemplateContent(riskAreas)) missingSections.push('Risk Areas');
 
             core.setOutput('pr_number', prNumber || '');
             core.setOutput('pr_title', prTitle || '');
@@ -517,16 +438,43 @@ jobs:
             core.setOutput('contract_valid', String(missingSections.length === 0));
             core.setOutput('missing_sections', missingSections.join(', ') || 'None');
 
+      - name: Check for UI-relevant changes
+        # Only meaningful once we have a PR number (verify/fast focus); the
+        # explore-mode dispatch inputs (general/test/navigation/forms/
+        # workout-flow) intentionally have no PR to diff against, so this
+        # step is skipped and downstream steps treat the unset output as
+        # "not false" -- i.e. proceed. CI's own paths: filter already keeps
+        # totally unrelated PRs (docs-only, etc.) out of the workflow_run
+        # chain, but CI also runs for scripts/ and workflow changes that
+        # never touch the UI, so this is a second, cheaper filter before any
+        # of the expensive steps below run.
+        id: ui-changed
+        if: steps.pr-context.outputs.pr_number != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr-context.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          echo "ui_changed=${{ needs.prepare-app.outputs.ui-changed }}" >> "$GITHUB_OUTPUT"
+
       - name: Setup agent-browser
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         uses: ./.github/actions/setup-agent-browser
 
-      - name: Create QA fixtures
-        uses: ./.github/actions/create-qa-fixtures
-
-      - name: Start development server
-        uses: ./.github/actions/start-dev-server
+      - name: Download isolated static PR app
+        if: steps.ui-changed.outputs.ui_changed != 'false'
+        uses: actions/download-artifact@2023535fe3f7419a3952f8371dbcf0d180386e90 # v8.0.0
         with:
-          url: ${{ env.APP_URL }}
+          name: qa-static-app-${{ github.run_id }}
+          path: dist
+
+      - name: Start static server
+        if: steps.ui-changed.outputs.ui_changed != 'false'
+        shell: bash
+        run: |
+          python3 -m http.server 5173 --directory dist > /tmp/dev-server.log 2>&1 &
+          echo "DEV_PID=$!" >> "$GITHUB_ENV"
 
       # NOTE: the QA system prompt is injected into the file-based `prompt`
       # input instead of `--append-system-prompt` in claude_args. The file
@@ -563,9 +511,6 @@ jobs:
           elif [ "$FOCUS" = "verify" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
             echo "max_turns=60" >> "$GITHUB_OUTPUT"
-          elif [ "$FOCUS" = "full" ]; then
-            PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=100" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
             echo "max_turns=80" >> "$GITHUB_OUTPUT"
@@ -584,7 +529,7 @@ jobs:
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
 
             # For PR-aware modes, inject structured PR context
-            if [ "$FOCUS" = "full" ] || [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "fast" ]; then
+            if [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "fast" ]; then
               TASK="${TASK//\{\{PR_NUMBER\}\}/$PR_NUMBER_VALUE}"
               TASK="${TASK//\{\{PR_TITLE\}\}/$PR_TITLE_VALUE}"
               TASK="${TASK//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
@@ -624,6 +569,7 @@ jobs:
         run: rm -f qa-report.md qa-structured-output.json
 
       - name: Dev server health check
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         shell: bash
         run: |
           set -euo pipefail
@@ -637,6 +583,7 @@ jobs:
           echo "Dev server is reachable."
 
       - name: Warm-up smoke check (agent-browser + onboarding)
+        if: steps.ui-changed.outputs.ui_changed != 'false'
         shell: bash
         run: |
           set -euo pipefail
@@ -663,20 +610,25 @@ jobs:
         shell: bash
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          UI_CHANGED: ${{ steps.ui-changed.outputs.ui_changed }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 origin "$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
+          # Reuse the same can_run/reason gate the workflow-file-mismatch
+          # check below relies on, so the "Check report exists" step below
+          # produces its normal QA_SKIPPED report without extra plumbing.
+          cp scripts/qa-workflow-policy.mjs /tmp/qa-workflow-policy.mjs
 
-          if git diff --quiet "origin/$DEFAULT_BRANCH" -- .github/workflows/claude-qa-browser.yml; then
-            echo "can_run=true" >> "$GITHUB_OUTPUT"
-            echo "reason=" >> "$GITHUB_OUTPUT"
-          else
+          if [ "$UI_CHANGED" = "false" ]; then
             {
               echo "can_run=false"
-              echo "reason=Claude action requires this workflow file to match the default branch before it can exchange the OIDC token."
+              echo "reason=No changed file under src/, index.html, vite.config, package.json, or pnpm-lock.yaml — skipping browser QA."
             } >> "$GITHUB_OUTPUT"
-            echo "::warning::Skipping Claude action because .github/workflows/claude-qa-browser.yml differs from origin/$DEFAULT_BRANCH."
+            echo "::notice::Skipping Claude action because the PR has no UI-relevant changes."
+            exit 0
           fi
+
+          echo "can_run=true" >> "$GITHUB_OUTPUT"
+          echo "reason=" >> "$GITHUB_OUTPUT"
 
       - name: Smoke-test claude-code-action (trivial prompt)
         if: steps.claude-action-guard.outputs.can_run == 'true'
@@ -767,7 +719,8 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --allowedTools "Bash,Write,Read,Glob,Grep"
+            --allowedTools "Bash(agent-browser:*),Edit(qa-report.md),Write(qa-report.md)"
+            --disallowedTools "Skill,Read,Glob,Grep"
             --max-turns ${{ steps.load-prompt.outputs.max_turns || '60' }}
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -818,7 +771,11 @@ jobs:
             } > qa-report.md
             echo "exists=true" >> "$GITHUB_OUTPUT"
           elif [ -f "qa-report.md" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+            if node /tmp/qa-workflow-policy.mjs qa-report.md; then
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+            fi
           elif [ -n "${STRUCTURED_OUTPUT:-}" ]; then
           node <<'NODE'
           const fs = require('fs');
@@ -869,7 +826,11 @@ jobs:
           report.push('_Generated from Claude structured_output because qa-report.md was missing._');
           fs.writeFileSync('qa-report.md', `${report.join('\n')}\n`);
           NODE
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+            if node /tmp/qa-workflow-policy.mjs qa-report.md; then
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -922,7 +883,8 @@ jobs:
           track_progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
           prompt: ${{ steps.load-retry-prompt.outputs.prompt }}
           claude_args: |
-            --allowedTools "Bash,Write,Read,Glob,Grep"
+            --allowedTools "Bash(agent-browser:*),Edit(qa-report.md),Write(qa-report.md)"
+            --disallowedTools "Skill,Read,Glob,Grep"
             --max-turns 40
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
@@ -931,108 +893,20 @@ jobs:
         id: check-report-retry
         if: steps.check-report.outputs.exists == 'false'
         shell: bash
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa-retry.outputs.structured_output }}
         run: |
           set -euo pipefail
-          if [ -f "qa-report.md" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+          node /tmp/qa-workflow-policy.mjs qa-report.md
 
-      - name: Post QA report as PR comment
-        if: always() && (github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number)
-        id: post-report
-        uses: ./.github/actions/post-qa-report
-        with:
-          pr-number: ${{ github.event.pull_request.number || steps.pr-metadata.outputs.number || steps.pr-context.outputs.pr_number || github.event.inputs.pr_number }}
-          heading: '## Claude QA (Browser) Report'
-          marker: '<!-- claude-qa-browser-report -->'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          head-sha: ${{ steps.pr-metadata.outputs.ref || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
-
-      - name: Set commit status
-        id: qa-status
+      - name: Validate final QA report
+        id: final-report
         if: always()
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
-          STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
-          CONTRACT_VALID: ${{ steps.pr-context.outputs.contract_valid || 'true' }}
-          MISSING_SECTIONS: ${{ steps.pr-context.outputs.missing_sections || 'None' }}
-          COMMENT_PR_SHA: ${{ steps.pr-metadata.outputs.ref }}
-          WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        with:
-          script: |
-            const fs = require('fs');
-            let state = 'success';
-            let description = 'QA passed';
-
-            const structuredOutput = process.env.STRUCTURED_OUTPUT;
-            if (structuredOutput && structuredOutput.trim()) {
-              try {
-                const data = JSON.parse(structuredOutput);
-                const metrics = data.metrics || {};
-
-                if (data.verdict === 'QA_SKIPPED') {
-                  state = 'success';
-                  description = 'QA skipped by compatibility guard';
-                } else if (data.verdict === 'CRITICAL_BUGS' || metrics.critical_bugs > 0) {
-                  state = 'failure';
-                  description = `QA found ${metrics.critical_bugs} critical bug(s)`;
-                } else if (process.env.CONTRACT_VALID === 'false') {
-                  state = 'pending';
-                  description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
-                } else if (data.verdict === 'MINOR_ISSUES' || metrics.major_bugs > 0) {
-                  state = 'pending';
-                  const issueCount = (metrics.minor_bugs || 0) + (metrics.major_bugs || 0);
-                  description = `QA found ${issueCount} issue(s) to review`;
-                } else {
-                  state = 'success';
-                  description = `QA passed (${metrics.passed ?? 0}/${metrics.total_tests ?? 0} tests)`;
-                }
-
-                core.setOutput('metrics', JSON.stringify(metrics));
-                core.setOutput('verdict', data.verdict);
-              } catch (parseErr) {
-                core.warning(`Failed to parse structured output: ${parseErr.message}`);
-              }
-            } else {
-              try {
-                const report = fs.readFileSync('qa-report.md', 'utf8');
-                if (/QA_SKIPPED/i.test(report)) {
-                  state = 'success';
-                  description = 'QA skipped by compatibility guard';
-                } else if (/CRITICAL/i.test(report)) {
-                  state = 'failure';
-                  description = 'QA found critical issues';
-                } else if (process.env.CONTRACT_VALID === 'false') {
-                  state = 'pending';
-                  description = `QA limited: missing ${process.env.MISSING_SECTIONS}`;
-                } else if (/MINOR/i.test(report) || report.includes('WARNING')) {
-                  state = 'pending';
-                  description = 'QA found minor issues';
-                }
-              } catch (e) {
-                state = 'error';
-                description = 'QA report not generated';
-              }
-            }
-
-            // Use PR head sha for issue_comment/workflow_run (context.sha
-            // for a workflow_run-triggered run is the default branch's sha,
-            // not the PR's), otherwise use context.sha.
-            const sha = process.env.COMMENT_PR_SHA || process.env.WORKFLOW_RUN_HEAD_SHA || context.sha;
-
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: sha,
-              state: state,
-              context: 'Claude QA (Browser)',
-              description: description,
-              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            });
-
-            core.setOutput('qa_state', state);
+          STRUCTURED_OUTPUT: ${{ steps.claude-qa-retry.outputs.structured_output || steps.claude-qa.outputs.structured_output }}
+        run: |
+          set -euo pipefail
+          node /tmp/qa-workflow-policy.mjs qa-report.md || true
 
       - name: Write structured output to file
         if: always()
@@ -1182,6 +1056,18 @@ jobs:
           find /tmp /home/runner/work/_temp -maxdepth 2 -name "claude*" 2>/dev/null | tee qa-debug/claude-file-locations.txt || true
           ls -la qa-debug/ || true
 
+      - name: Write immutable QA provenance
+        if: always()
+        env:
+          PR_NUMBER: ${{ steps.pr-context.outputs.pr_number || steps.pr-metadata.outputs.number || github.event.pull_request.number || github.event.inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
+          TESTED_HEAD_SHA: ${{ needs.prepare-app.outputs.head-sha }}
+        run: |
+          REPORT_SHA256=$(sha256sum qa-report.md | cut -d' ' -f1)
+          jq -n --arg pr "$PR_NUMBER" --arg sha "$TESTED_HEAD_SHA" \
+            --arg report_sha256 "$REPORT_SHA256" \
+            '{pr_number: $pr, tested_head_sha: $sha, report_sha256: $report_sha256}' \
+            > qa-provenance.json
+
       - name: Upload QA artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -1190,28 +1076,9 @@ jobs:
           path: |
             qa-report.md
             qa-structured-output.json
+            qa-provenance.json
             qa-debug/
           if-no-files-found: ignore
-
-      - name: Remove trigger label
-        if: |
-          github.event_name == 'pull_request' &&
-          github.event.label.name == 'qa-verify'
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
-        env:
-          LABEL_NAME: ${{ github.event.label.name }}
-        with:
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                name: process.env.LABEL_NAME
-              });
-            } catch (e) {
-              if (e.status !== 404) core.warning(`Failed to remove label: ${e.message}`);
-            }
 
       - name: Cleanup
         if: always()
@@ -1221,18 +1088,90 @@ jobs:
           kill "${DEV_PID:-}" 2>/dev/null || true
           agent-browser close 2>/dev/null || true
 
-      - name: Fail job if QA found issues
-        if: steps.qa-status.outputs.qa_state == 'failure'
-        shell: bash
+  publish-report:
+    name: Publish immutable QA report
+    needs: [prepare-app, qa-browser]
+    if: always() && needs.qa-browser.result != 'skipped' && needs.prepare-app.outputs.pr-number
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    outputs:
+      comment-id: ${{ steps.post-report.outputs.comment-id }}
+      report-ready: ${{ steps.validate.outputs.ready }}
+    steps:
+      - name: Checkout trusted default-branch publisher
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Download immutable QA artifact
+        uses: actions/download-artifact@2023535fe3f7419a3952f8371dbcf0d180386e90 # v8.0.0
+        with:
+          name: qa-browser-artifacts-${{ github.run_id }}
+          path: /tmp/qa-report
+      - name: Revalidate report, digest, and current PR head
+        id: validate
+        env:
+          EXPECTED_PR: ${{ needs.prepare-app.outputs.pr-number }}
+          EXPECTED_SHA: ${{ needs.prepare-app.outputs.head-sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          echo "❌ QA found critical issues - failing the pipeline"
-          exit 1
+          echo 'ready=false' >> "$GITHUB_OUTPUT"
+          test "$(gh api "repos/${REPO}/pulls/${EXPECTED_PR}" --jq '.head.sha')" = "$EXPECTED_SHA"
+          jq -e --arg pr "$EXPECTED_PR" --arg sha "$EXPECTED_SHA" \
+            '.pr_number == $pr and .tested_head_sha == $sha and
+             (.report_sha256 | test("^[0-9a-f]{64}$"))' \
+            /tmp/qa-report/qa-provenance.json >/dev/null
+          test "$(sha256sum /tmp/qa-report/qa-report.md | cut -d' ' -f1)" = \
+            "$(jq -r '.report_sha256' /tmp/qa-report/qa-provenance.json)"
+          node scripts/qa-workflow-policy.mjs /tmp/qa-report/qa-report.md
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+      - name: Post QA report as PR comment
+        id: post-report
+        if: steps.validate.outputs.ready == 'true'
+        uses: ./.github/actions/post-qa-report
+        with:
+          pr-number: ${{ needs.prepare-app.outputs.pr-number }}
+          heading: '## Claude QA (Browser) Report'
+          marker: '<!-- claude-qa-browser-report -->'
+          report-path: /tmp/qa-report/qa-report.md
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          head-sha: ${{ needs.prepare-app.outputs.head-sha }}
+      - name: Set commit status
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ needs.prepare-app.outputs.head-sha }}
+          READY: ${{ steps.validate.outputs.ready }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$READY" != true ]; then STATE=error; DESCRIPTION='QA report missing, stale, or incomplete';
+          elif grep -Eqi 'Verdict:(\*\*)?[[:space:]]*CRITICAL_BUGS' /tmp/qa-report/qa-report.md; then
+            STATE=failure; DESCRIPTION='QA found critical issues';
+          elif grep -Eqi 'Verdict:(\*\*)?[[:space:]]*MINOR_ISSUES' /tmp/qa-report/qa-report.md; then
+            STATE=pending; DESCRIPTION='QA found issues to review';
+          else STATE=success; DESCRIPTION='QA passed'; fi
+          gh api -X POST "repos/${REPO}/statuses/${HEAD_SHA}" -f state="$STATE" \
+            -f context='Claude QA (Browser)' -f description="$DESCRIPTION" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Remove trigger label
+        if: github.event_name == 'pull_request' && github.event.label.name == 'qa-verify'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.prepare-app.outputs.pr-number }}
+          REPO: ${{ github.repository }}
+        run: gh api -X DELETE "repos/${REPO}/issues/${PR_NUMBER}/labels/qa-verify" || true
 
   dispatch-followup:
     name: Dispatch trusted QA follow-up
-    needs: qa-browser
-    if: always() && needs.qa-browser.outputs.pr-number && needs.qa-browser.outputs.report-comment-id && needs.qa-browser.outputs.report-ready == 'true'
+    needs: [prepare-app, qa-browser, publish-report]
+    if: always() && needs.publish-report.outputs.comment-id && needs.publish-report.outputs.report-ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions:
@@ -1246,7 +1185,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          REPORT_HEAD_SHA: ${{ needs.qa-browser.outputs.tested-head-sha }}
+          REPORT_HEAD_SHA: ${{ needs.prepare-app.outputs.head-sha }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -1265,10 +1204,10 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ needs.qa-browser.outputs.pr-number }}
-          REPORT_COMMENT_ID: ${{ needs.qa-browser.outputs.report-comment-id }}
+          PR_NUMBER: ${{ needs.prepare-app.outputs.pr-number }}
+          REPORT_COMMENT_ID: ${{ needs.publish-report.outputs.comment-id }}
           REPORT_RUN_ID: ${{ github.run_id }}
-          REPORT_HEAD_SHA: ${{ needs.qa-browser.outputs.tested-head-sha }}
+          REPORT_HEAD_SHA: ${{ needs.prepare-app.outputs.head-sha }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           REPO: ${{ github.repository }}
         run: |
