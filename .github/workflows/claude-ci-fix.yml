@@ -134,7 +134,7 @@ jobs:
       sha: ${{ steps.candidate.outputs.sha }}
     steps:
       - name: Checkout exact failed revision without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           fetch-depth: 50
@@ -163,7 +163,7 @@ jobs:
       - name: Run Claude Auto-Fix
         id: claude-fix
         if: needs.gate.outputs.lockfile-repair != 'true'
-        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -240,14 +240,14 @@ jobs:
       sha: ${{ steps.candidate.outputs.sha }}
     steps:
       - name: Checkout exact failed revision without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
       - name: Setup pnpm
-        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: pnpm
@@ -292,7 +292,7 @@ jobs:
       sha: ${{ steps.verify-bundle.outputs.sha }}
     steps:
       - name: Checkout exact failed revision without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
@@ -311,9 +311,9 @@ jobs:
           test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
           git checkout --detach "$EXPECTED_SHA"
       - name: Setup pnpm
-        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: pnpm
@@ -326,7 +326,7 @@ jobs:
           echo "version=${version#Version }" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}
@@ -375,7 +375,7 @@ jobs:
       - name: Require successful isolated verification
         run: test '${{ needs.verify.result }}' = success
       - name: Checkout original head without credentials
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
@@ -443,7 +443,7 @@ jobs:
           exit 1
       - name: Comment on PR
         continue-on-error: true
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           FIX_SHA: ${{ steps.push.outputs.sha }}
           PR_NUMBER: ${{ inputs.pr_number }}
