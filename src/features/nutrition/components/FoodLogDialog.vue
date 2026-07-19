@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ScanBarcode } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
@@ -11,6 +12,8 @@ import { generateId, getNutritionRepository } from '@/db'
 import type { DbFood, DbFoodNutrients, DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { nutrientsPer100Grams } from '../lib/nutritionCalculations'
+import { lookupBarcode } from '../lib/openFoodFacts'
+import FoodBarcodeScanner from './FoodBarcodeScanner.vue'
 
 const { foods, localDate, initialMeal } = defineProps<{
   foods: ReadonlyArray<DbFood>
@@ -28,8 +31,14 @@ const calories = ref<number | string>('')
 const protein = ref<number | string>('')
 const carbohydrates = ref<number | string>('')
 const fat = ref<number | string>('')
+const brand = ref<string | null>(null)
 const saving = ref(false)
 const saveFailed = ref(false)
+
+type ScanState = 'idle' | 'scanning' | 'looking-up' | 'not-found' | 'failed'
+const scanSupported =
+  'BarcodeDetector' in globalThis && globalThis.navigator.mediaDevices !== undefined
+const scanState = ref<ScanState>('idle')
 
 const selectedFood = computed(() => foods.find((food) => food.id === selectedFoodId.value))
 const isNewFood = computed(() => selectedFood.value === undefined)
@@ -55,13 +64,38 @@ watch(open, (isOpen) => {
   protein.value = ''
   carbohydrates.value = ''
   fat.value = ''
+  brand.value = null
   saveFailed.value = false
+  scanState.value = 'idle'
 })
 
 watch(selectedFood, (food) => {
   if (!food) return
   grams.value = food.defaultServingGrams ?? 100
 })
+
+function roundNutrient(value: number): number {
+  return Math.round(value * 10) / 10
+}
+
+async function handleBarcodeDetected(barcode: string) {
+  scanState.value = 'looking-up'
+  const result = await lookupBarcode(barcode)
+  if (result.status !== 'found') {
+    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
+    return
+  }
+  const { food } = result
+  name.value = food.name
+  brand.value = food.brand
+  // Open Food Facts reports nutrients per 100 g, so prefill a 100 g serving.
+  grams.value = 100
+  calories.value = Math.round(food.nutrientsPer100Grams.calories)
+  protein.value = roundNutrient(food.nutrientsPer100Grams.proteinGrams)
+  carbohydrates.value = roundNutrient(food.nutrientsPer100Grams.carbohydrateGrams)
+  fat.value = roundNutrient(food.nutrientsPer100Grams.fatGrams)
+  scanState.value = 'idle'
+}
 
 async function save() {
   if (!isValid.value || saving.value) return
@@ -99,7 +133,7 @@ async function save() {
     const food: DbFood = {
       id: generateId(),
       name: name.value.trim(),
-      brand: null,
+      brand: brand.value,
       nutrientsPer100Grams: nutrientsPer100Grams(servingNutrients, servingGrams),
       defaultServingName: t('nutrition.food.serving'),
       defaultServingGrams: servingGrams,
@@ -146,13 +180,42 @@ async function save() {
         <DialogDescription>{{ t('nutrition.food.description') }}</DialogDescription>
       </DialogHeader>
       <form class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
-        <div class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
+        <div
+          v-if="scanState === 'scanning'"
+          class="min-h-0 overflow-y-auto overscroll-contain scroll-py-2"
+        >
+          <FoodBarcodeScanner @detected="handleBarcodeDetected" @cancel="scanState = 'idle'" />
+        </div>
+        <div v-else class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
           <div v-if="foods.length > 0" class="space-y-1.5">
             <Label for="nutrition-existing-food">{{ t('nutrition.food.choose') }}</Label>
             <NativeSelect id="nutrition-existing-food" v-model="selectedFoodId" class="w-full">
               <option value="">{{ t('nutrition.food.createNew') }}</option>
               <option v-for="food in foods" :key="food.id" :value="food.id">{{ food.name }}</option>
             </NativeSelect>
+          </div>
+
+          <div v-if="isNewFood && scanSupported" class="space-y-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              class="w-full"
+              :disabled="scanState === 'looking-up'"
+              @click="scanState = 'scanning'"
+            >
+              <ScanBarcode />
+              {{
+                scanState === 'looking-up'
+                  ? t('nutrition.food.scanLookingUp')
+                  : t('nutrition.food.scan')
+              }}
+            </Button>
+            <p v-if="scanState === 'not-found'" role="alert" class="text-sm text-destructive">
+              {{ t('nutrition.food.scanNotFound') }}
+            </p>
+            <p v-if="scanState === 'failed'" role="alert" class="text-sm text-destructive">
+              {{ t('nutrition.food.scanFailed') }}
+            </p>
           </div>
 
           <div v-if="isNewFood" class="space-y-1.5">
@@ -241,7 +304,12 @@ async function save() {
         <p v-if="saveFailed" role="alert" class="text-sm text-destructive">
           {{ t('nutrition.errors.saveFailed') }}
         </p>
-        <Button type="submit" class="w-full" :disabled="!isValid || saving">
+        <Button
+          v-if="scanState !== 'scanning'"
+          type="submit"
+          class="w-full"
+          :disabled="!isValid || saving"
+        >
           {{ saving ? t('common.states.saving') : t('nutrition.food.add') }}
         </Button>
       </form>

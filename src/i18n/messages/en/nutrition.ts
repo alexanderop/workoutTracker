@@ -46,6 +46,12 @@ export default {
     servingGrams: 'Serving (g)',
     nutrientsForServing: 'Nutrition for this serving',
     add: 'Add to diary',
+    scan: 'Scan barcode',
+    scanHint: 'Point the camera at the product barcode.',
+    scanLookingUp: 'Looking up product…',
+    scanNotFound: 'Product not found. Enter the values manually.',
+    scanFailed: 'Lookup failed. Check your connection and try again.',
+    scanCameraFailed: 'Camera unavailable. Check the camera permission.',
   },
   errors: {
     saveFailed: 'Could not save. Please try again.',

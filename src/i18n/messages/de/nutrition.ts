@@ -46,6 +46,12 @@ export default {
     servingGrams: 'Portion (g)',
     nutrientsForServing: 'Nährwerte für diese Portion',
     add: 'Zum Tagebuch hinzufügen',
+    scan: 'Barcode scannen',
+    scanHint: 'Richte die Kamera auf den Barcode des Produkts.',
+    scanLookingUp: 'Produkt wird gesucht…',
+    scanNotFound: 'Produkt nicht gefunden. Trage die Werte manuell ein.',
+    scanFailed: 'Suche fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.',
+    scanCameraFailed: 'Kamera nicht verfügbar. Prüfe die Kamera-Berechtigung.',
   },
   errors: {
     saveFailed: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',
