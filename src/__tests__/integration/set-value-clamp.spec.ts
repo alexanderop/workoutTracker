@@ -1,7 +1,6 @@
 import { userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 /**
  * Regression coverage for UX review Low finding: "Weight/reps clamp silently at
@@ -12,11 +11,10 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
  * users hit.
  */
 describe('Set Value Clamp Signal', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should show a clamp signal on the weight input when a value exceeding the max is typed', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should show a clamp signal on the weight input when a value exceeding the max is typed', async ({
+    createTestApp,
+  }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -24,12 +22,12 @@ describe('Set Value Clamp Signal', () => {
     await userEvent.fill(row.kg, '1500')
 
     expect(row.kg.classList.contains('animate-shake-clamp')).toBe(true)
-
-    cleanup()
   })
 
-  it('should not show a clamp signal when the typed value is within range', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should not show a clamp signal when the typed value is within range', async ({
+    createTestApp,
+  }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -37,12 +35,10 @@ describe('Set Value Clamp Signal', () => {
     await userEvent.fill(row.kg, '100')
 
     expect(row.kg.classList.contains('animate-shake-clamp')).toBe(false)
-
-    cleanup()
   })
 
-  it('should clear the clamp signal once the value commits on blur', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should clear the clamp signal once the value commits on blur', async ({ createTestApp }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -52,7 +48,5 @@ describe('Set Value Clamp Signal', () => {
 
     row.kg.blur()
     await expect.poll(() => row.kg.classList.contains('animate-shake-clamp')).toBe(false)
-
-    cleanup()
   })
 })

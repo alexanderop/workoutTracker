@@ -1,15 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Workout Block Skip Completion', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Premature Workout Complete Dialog', () => {
-    it('should NOT show finish dialog when completing last block while middle block is untouched', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('should NOT show finish dialog when completing last block while middle block is untouched', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Setup workout with 3 exercises (blocks 0, 1, 2)
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift', 'Barbell Row'])
@@ -39,12 +37,12 @@ describe('Workout Block Skip Completion', () => {
 
       // Verify the skipped block (Deadlift) has no completed sets
       await expect.poll(() => workout.getCompletedSetCount()).toBe(0)
-
-      cleanup()
     })
 
-    it('should show finish dialog only after ALL blocks are completed', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('should show finish dialog only after ALL blocks are completed', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Setup workout with 3 exercises
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift', 'Barbell Row'])
@@ -63,8 +61,6 @@ describe('Workout Block Skip Completion', () => {
       // After completing ALL blocks, finish dialog should appear
       await common.waitForDialog()
       await expect.element(page.getByRole('heading', { name: /finish workout/i })).toBeVisible()
-
-      cleanup()
     })
   })
 })

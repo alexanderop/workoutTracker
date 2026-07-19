@@ -15,21 +15,19 @@
  * - Navigating away from a form with no changes is never interrupted.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getCustomExercisesRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 
 describe('Unsaved Changes Guard', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Template detail editor', () => {
-    it('shows a confirm dialog on back navigation with unsaved changes; cancel keeps edits, confirm discards and navigates', async () => {
-      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+    it('shows a confirm dialog on back navigation with unsaved changes; cancel keeps edits, confirm discards and navigates', async ({
+      createTestApp,
+    }) => {
+      const { getByRole, common, router, navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Original Name',
@@ -64,12 +62,12 @@ describe('Unsaved Changes Guard', () => {
 
       const unchanged = await getTemplateById(template.id)
       expect(unchanged?.name).toBe('Original Name')
-
-      cleanup()
     })
 
-    it('navigates back without a dialog when there are no unsaved changes', async () => {
-      const { common, router, navigateTo, cleanup } = await createTestApp()
+    it('navigates back without a dialog when there are no unsaved changes', async ({
+      createTestApp,
+    }) => {
+      const { common, router, navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Clean Template',
@@ -84,14 +82,14 @@ describe('Unsaved Changes Guard', () => {
 
       expect(common.isDialogOpen()).toBe(false)
       expect(router.currentRoute.value.path).toBe('/workouts')
-
-      cleanup()
     })
   })
 
   describe('Exercise edit form', () => {
-    it('shows a confirm dialog on back navigation after a rename; confirming discards it', async () => {
-      const { common, router, navigateTo, cleanup } = await createTestApp()
+    it('shows a confirm dialog on back navigation after a rename; confirming discards it', async ({
+      createTestApp,
+    }) => {
+      const { common, router, navigateTo } = await createTestApp()
 
       const exercises = await getCustomExercisesRepository().getAll()
       const benchPress = exercises.find((e) => e.name === 'Bench Press')
@@ -123,12 +121,10 @@ describe('Unsaved Changes Guard', () => {
       const unchanged = await getCustomExercisesRepository().getById(benchPress.id)
       expect(unchanged?.name).toBe('Bench Press')
       expect(router.currentRoute.value.path).toBe(`/exercises/${benchPress.id}`)
-
-      cleanup()
     })
 
-    it('navigates back without a dialog when the form is unchanged', async () => {
-      const { common, navigateTo, cleanup } = await createTestApp()
+    it('navigates back without a dialog when the form is unchanged', async ({ createTestApp }) => {
+      const { common, navigateTo } = await createTestApp()
 
       const exercises = await getCustomExercisesRepository().getAll()
       const benchPress = exercises.find((e) => e.name === 'Bench Press')
@@ -141,8 +137,6 @@ describe('Unsaved Changes Guard', () => {
       await common.waitForRoute(/^\/$/)
 
       expect(common.isDialogOpen()).toBe(false)
-
-      cleanup()
     })
   })
 })

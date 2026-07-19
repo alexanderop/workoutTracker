@@ -1,16 +1,12 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { expectSettingValue } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Set Completion', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Set Completion Flow', () => {
-    it('completes a set and prefills the next set with all values', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('completes a set and prefills the next set with all values', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -24,12 +20,10 @@ describe('Workout Set Completion', () => {
           return await activeSet.getValues()
         })
         .toEqual({ weight: '100', reps: '8', rir: '2' })
-
-      cleanup()
     })
 
-    it('can complete multiple sets in sequence', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('can complete multiple sets in sequence', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       // Setup workout with 2 blocks (so completing first block doesn't end workout)
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
@@ -45,12 +39,10 @@ describe('Workout Set Completion', () => {
       // After completing all sets in block 1, app auto-advances to block 2
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
       await expect.element(page.getByText('Deadlift')).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('can end workout and see completion screen', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('can end workout and see completion screen', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -71,12 +63,12 @@ describe('Workout Set Completion', () => {
       await userEvent.click(common.getDialogButton('Finish Workout'))
 
       await expect.element(page.getByText(/workout complete/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('completes consecutive sets with zero weight and zero RIR boundaries', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('completes consecutive sets with zero weight and zero RIR boundaries', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '0', reps: '10', rir: '2' })
@@ -86,12 +78,10 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '0' })
 
       await expect.poll(() => workout.isSetCompleted(1)).toBe(true)
-
-      cleanup()
     })
 
-    it('does not auto-advance until ALL sets in block are complete', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('does not auto-advance until ALL sets in block are complete', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
@@ -101,14 +91,12 @@ describe('Workout Set Completion', () => {
 
       // Should still be on block 1 (not auto-advanced to block 2)
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Set Validation', () => {
-    it('does not complete set with missing reps', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('does not complete set with missing reps', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -127,8 +115,6 @@ describe('Workout Set Completion', () => {
 
       // Set should NOT be completed (validation should reject it)
       await expect.poll(() => workout.isSetCompleted(0)).toBe(false)
-
-      cleanup()
     })
   })
 
@@ -138,8 +124,10 @@ describe('Workout Set Completion', () => {
   // commits) the previous one, but the LAST field filled (rir) is left focused and
   // therefore uncommitted -- exactly the "first-set completion" repro from the review.
   describe('Focus/Blur Commit Timing (Finding 6)', () => {
-    it('enables one-tap completion while focused and persists the typed values', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('enables one-tap completion while focused and persists the typed values', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -161,8 +149,6 @@ describe('Workout Set Completion', () => {
       // The commit-on-tap fix must not mark the set complete while leaving stale/empty
       // data behind -- the actual typed values must be the ones that get persisted.
       expect(await row.getValues()).toEqual({ weight: '60', reps: '10', rir: '2' })
-
-      cleanup()
     })
   })
 
@@ -171,8 +157,8 @@ describe('Workout Set Completion', () => {
   // DOWN toward a configurable target (90s default), is tap-to-dismiss, and
   // never blocks logging the next set (no modal).
   describe('Rest Timer Integration', () => {
-    it('shows rest timer in footer after completing a set', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('shows rest timer in footer after completing a set', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -188,12 +174,12 @@ describe('Workout Set Completion', () => {
           { timeout: 2000 },
         )
         .toBe(true)
-
-      cleanup()
     })
 
-    it('counts down toward the configured rest target instead of counting up', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('counts down toward the configured rest target instead of counting up', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -212,12 +198,12 @@ describe('Workout Set Completion', () => {
           return minutes * 60 + seconds
         })
         .toBeLessThanOrEqual(90)
-
-      cleanup()
     })
 
-    it('adjusts and persists the rest target by 15s when tapping +/- on the timer itself', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('adjusts and persists the rest target by 15s when tapping +/- on the timer itself', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -232,12 +218,12 @@ describe('Workout Set Completion', () => {
       // Two +15s taps on top of the 90s default -- persisted immediately so
       // it sticks for the next set/session (see `useSettingsStore.setDefaultRestTimer`).
       await expectSettingValue('defaultRestTimer', 120)
-
-      cleanup()
     })
 
-    it('dismisses the rest timer when tapped, without opening a dialog', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('dismisses the rest timer when tapped, without opening a dialog', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -249,12 +235,12 @@ describe('Workout Set Completion', () => {
 
       await expect.element(timerButton).not.toBeInTheDocument()
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('never blocks logging the next set while a rest is in progress', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('never blocks logging the next set while a rest is in progress', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -268,14 +254,12 @@ describe('Workout Set Completion', () => {
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       await expect.poll(() => workout.getCompletedSetCount()).toBe(2)
-
-      cleanup()
     })
   })
 
   describe('Data Persistence', () => {
-    it('completed set values persist after navigating away and back', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('completed set values persist after navigating away and back', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -290,12 +274,10 @@ describe('Workout Set Completion', () => {
 
       // Verify completed set is still visible
       await expect.poll(() => workout.getCompletedSetCount()).toBeGreaterThan(0)
-
-      cleanup()
     })
 
-    it('workout state survives returning to builder and resuming', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('workout state survives returning to builder and resuming', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -312,8 +294,6 @@ describe('Workout Set Completion', () => {
       await expect.element(page.getByRole('timer')).toBeVisible()
       await expect.element(page.getByRole('table')).toBeVisible()
       await expect.poll(() => workout.getCompletedSetCount()).toBeGreaterThan(0)
-
-      cleanup()
     })
   })
 })

@@ -274,6 +274,11 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/**/*.{test,spec}.ts'],
+    settings: {
+      vitest: {
+        vitestImports: [/integrationTest$/],
+      },
+    },
     rules: {
       ...pluginVitest.configs.recommended.rules,
       // These rules were previously scoped to a non-recursive glob and the
@@ -363,7 +368,9 @@ export default defineConfigWithVueTs(
   {
     name: 'app/enforce-integration-tests',
     files: ['src/**/__tests__/**/*.{ts,spec.ts}'],
-    ignores: ['src/__tests__/helpers/**'],
+    // Focused component contracts may render their subject directly. Broader
+    // feature and workflow specs still have to exercise the routed app shell.
+    ignores: ['src/__tests__/helpers/**', 'src/__tests__/components/**/*.spec.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

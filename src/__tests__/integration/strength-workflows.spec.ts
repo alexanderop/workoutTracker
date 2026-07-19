@@ -1,16 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Strength Workflows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Set Completion', () => {
-    it('builds a strength block, prefills later sets, and completes the block', async () => {
-      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } =
-        await createTestApp()
+    it('builds a strength block, prefills later sets, and completes the block', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common, getByRole, getByText } = await createTestApp()
 
       // Click "Start New Workout" on home page to start a new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -27,8 +24,8 @@ describe('Strength Workflows', () => {
 
       // Wait for table to render
       await expect.element(page.getByRole('table')).toBeVisible()
-      expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
-      expect(queryByText('Strength')).toBeTruthy()
+      await expect.element(getByRole('heading', { name: /bench press/i })).toBeVisible()
+      await expect.element(getByText('Strength')).toBeVisible()
 
       // Fill and complete the first set
       await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
@@ -56,8 +53,6 @@ describe('Strength Workflows', () => {
 
       // Verify completion dialog appears (table is hidden behind dialog)
       await common.waitForDialog()
-
-      cleanup()
     })
   })
 })

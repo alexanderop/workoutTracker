@@ -1,9 +1,8 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   createDbWeightEntriesForDays as createDatabaseWeightEntriesForDays,
   createDbWeightEntryForDate as createDatabaseWeightEntryForDate,
@@ -20,11 +19,10 @@ function daysAgo(days: number): Date {
 }
 
 describe('Weight Stats Flows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('stats summary after a week of tracking', () => {
-    it('shows current weight, positive 7-day change and upward trend after logging a gain', async () => {
+    it('shows current weight, positive 7-day change and upward trend after logging a gain', async ({
+      createTestApp,
+    }) => {
       // A user has weighed in daily for the past week, gaining steadily.
       const repo = getWeightRepository()
       const history = createDatabaseWeightEntriesForDays(
@@ -35,7 +33,7 @@ describe('Weight Stats Flows', () => {
         await repo.add(entry)
       }
 
-      const { navigateTo, weight, cleanup } = await createTestApp()
+      const { navigateTo, weight } = await createTestApp()
       await navigateTo({ name: RouteNames.Weight })
 
       // Today's weigh-in continues the upward trend.
@@ -51,11 +49,11 @@ describe('Weight Stats Flows', () => {
 
       // Rising average over the last entries reads as "trending up".
       await expect.element(page.getByText(/trending up/i)).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('shows negative 7-day change and downward trend after a week of losses', async () => {
+    it('shows negative 7-day change and downward trend after a week of losses', async ({
+      createTestApp,
+    }) => {
       // A user on a cut opens the weight page to review progress.
       const repo = getWeightRepository()
       const history = createDatabaseWeightEntriesForDays(
@@ -66,7 +64,7 @@ describe('Weight Stats Flows', () => {
         await repo.add(entry)
       }
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Weight })
 
       // Current weight (today's entry) is shown.
@@ -77,11 +75,9 @@ describe('Weight Stats Flows', () => {
 
       // Falling average reads as "trending down".
       await expect.element(page.getByText(/trending down/i)).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('shows a stable trend when weight barely moves', async () => {
+    it('shows a stable trend when weight barely moves', async ({ createTestApp }) => {
       // A user maintaining their weight sees a stable trend, not up/down noise.
       const repo = getWeightRepository()
       const history = createDatabaseWeightEntriesForDays(
@@ -92,7 +88,7 @@ describe('Weight Stats Flows', () => {
         await repo.add(entry)
       }
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Weight })
 
       // Current weight is today's 75 kg entry (rendered with one decimal).
@@ -103,13 +99,13 @@ describe('Weight Stats Flows', () => {
 
       // ...but the trend is announced as stable.
       await expect.element(page.getByText(/stable/i)).toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('stats summary with a short history', () => {
-    it('hides the 7-day change while history is too short to compare', async () => {
+    it('hides the 7-day change while history is too short to compare', async ({
+      createTestApp,
+    }) => {
       // A user who started tracking four days ago has no week-old entry to
       // compare against, and not enough data for a trend yet.
       const repo = getWeightRepository()
@@ -118,7 +114,7 @@ describe('Weight Stats Flows', () => {
         await repo.add(entry)
       }
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Weight })
 
       // Current weight still shows...
@@ -126,13 +122,11 @@ describe('Weight Stats Flows', () => {
 
       // ...but the 7-day change section stays hidden.
       await expect.element(page.getByText(/7-day change/i)).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('chart time ranges', () => {
-    it('filters the chart data when switching time ranges', async () => {
+    it('filters the chart data when switching time ranges', async ({ createTestApp }) => {
       // A long-time user has sparse entries spread over the last ~45 days.
       const repo = getWeightRepository()
       const seededEntries = [
@@ -146,7 +140,7 @@ describe('Weight Stats Flows', () => {
         await repo.add(entry)
       }
 
-      const { navigateTo, weight, cleanup } = await createTestApp()
+      const { navigateTo, weight } = await createTestApp()
       await navigateTo({ name: RouteNames.Weight })
 
       // Default range is 30D: only the three recent entries are charted.
@@ -163,8 +157,6 @@ describe('Weight Stats Flows', () => {
       // 90D also covers every seeded entry.
       await weight.selectTimeRange('90D')
       await expect.element(page.getByRole('img', { name: /5 data points/i })).toBeVisible()
-
-      cleanup()
     })
   })
 })

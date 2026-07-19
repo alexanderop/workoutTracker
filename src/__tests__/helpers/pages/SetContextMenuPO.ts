@@ -2,9 +2,10 @@ import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 
 const LONG_PRESS_DELAY = 500
-const EVENT_PROCESSING_DELAY = 50
 
 function delay(ms: number): Promise<void> {
+  // A real elapsed hold is the behavior under test: the production long-press
+  // recognizer uses native pointer timing and must not open on a short press.
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -31,9 +32,8 @@ async function simulateLongPress(element: Element, duration = LONG_PRESS_DELAY):
   const clientY = rect.top + rect.height / 2
 
   element.dispatchEvent(createPointerEvent('pointerdown', clientX, clientY))
-  await delay(duration + EVENT_PROCESSING_DELAY)
+  await delay(duration)
   element.dispatchEvent(createPointerEvent('pointerup', clientX, clientY))
-  await delay(EVENT_PROCESSING_DELAY)
 }
 
 /**

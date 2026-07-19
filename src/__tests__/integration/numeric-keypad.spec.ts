@@ -1,25 +1,24 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('NumericKeypad (Touch Device)', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
-  afterEach(async () => {
-    await cleanupIntegrationTest()
+  afterEach(() => {
     restoreMatchMedia()
   })
 
   const modalPO = new NumericInputModalPO()
 
   describe('Fresh start behavior (calculator-style)', () => {
-    it('replaces first input, appends later digits, edits with backspace, and starts decimals at zero', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('replaces first input, appends later digits, edits with backspace, and starts decimals at zero', async ({
+      createTestApp,
+    }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -81,14 +80,14 @@ describe('NumericKeypad (Touch Device)', () => {
 
       const decimalValue = await modalPO.getCurrentValue()
       expect(decimalValue).toBe(0.5) // Started fresh with decimal
-
-      cleanup()
     })
   })
 
   describe('Keypad digit buttons', () => {
-    it('builds single- and multi-digit values and removes the last digit', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('builds single- and multi-digit values and removes the last digit', async ({
+      createTestApp,
+    }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -141,12 +140,10 @@ describe('NumericKeypad (Touch Device)', () => {
 
       // Verify it's now 12
       expect(await modalPO.getCurrentValue()).toBe(12)
-
-      cleanup()
     })
 
-    it('keypad value persists after confirm', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('keypad value persists after confirm', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -166,8 +163,6 @@ describe('NumericKeypad (Touch Device)', () => {
       const set = await workout.getSet(0)
       const values = await set.getValues()
       expect(values.weight).toBe('85')
-
-      cleanup()
     })
   })
 })

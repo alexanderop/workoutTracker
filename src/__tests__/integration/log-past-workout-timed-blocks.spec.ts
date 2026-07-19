@@ -1,11 +1,10 @@
 /* eslint-disable vitest/no-conditional-in-test -- Timed-block controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import type { DbBlockExercise, DbTemplateBlock, DbWorkoutBlock } from '@/db/schema'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { getAllWorkouts, seedCompletedWorkout, seedTemplate } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 /**
@@ -106,17 +105,16 @@ function mixedTemplateBlocks(): Array<DbTemplateBlock> {
 }
 
 describe('Log Past Workout — timed & cardio blocks', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('re-logs a conditioning workout from history and saves all block kinds', async () => {
+  it('re-logs a conditioning workout from history and saves all block kinds', async ({
+    createTestApp,
+  }) => {
     const source = databaseWorkoutBuilder().withName('Conditioning Day')
     for (const block of mixedHistoryBlocks()) {
       source.withBlock(block)
     }
     await seedCompletedWorkout(source.build())
 
-    const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    const { logPastWorkout, navigateTo, common } = await createTestApp()
 
     await navigateTo({ name: RouteNames.LogPastWorkout })
     await logPastWorkout.selectSource('history')
@@ -155,14 +153,14 @@ describe('Log Past Workout — timed & cardio blocks', () => {
     if (cardio?.kind !== 'cardio') throw new Error('Expected a cardio block on the saved copy')
     expect(cardio.config.activity).toBe('running')
     expect(cardio.config.targetDurationSeconds).toBe(1200)
-
-    cleanup()
   })
 
-  it('logs a past workout from a template containing timed and cardio blocks', async () => {
+  it('logs a past workout from a template containing timed and cardio blocks', async ({
+    createTestApp,
+  }) => {
     await seedTemplate({ name: 'WOD Template', blocks: mixedTemplateBlocks() })
 
-    const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    const { logPastWorkout, navigateTo, common } = await createTestApp()
 
     await navigateTo({ name: RouteNames.LogPastWorkout })
     await logPastWorkout.selectSource('template')
@@ -191,12 +189,12 @@ describe('Log Past Workout — timed & cardio blocks', () => {
     expect(emom.config.minutes).toBe(12)
     expect(emom.config.exerciseRotation).toBe('full-round')
     expect(emom.exercises.map((exercise) => exercise.name)).toEqual(['Push-ups', 'Sit-ups'])
-
-    cleanup()
   })
 
-  it('adds an AMRAP and a cardio block to a blank past workout via the add-block dialog', async () => {
-    const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+  it('adds an AMRAP and a cardio block to a blank past workout via the add-block dialog', async ({
+    createTestApp,
+  }) => {
+    const { logPastWorkout, navigateTo, common } = await createTestApp()
 
     await navigateTo({ name: RouteNames.LogPastWorkout })
     await logPastWorkout.selectSource('blank')
@@ -233,7 +231,5 @@ describe('Log Past Workout — timed & cardio blocks', () => {
     const workouts = await getAllWorkouts()
     expect(workouts).toHaveLength(1)
     expect(workouts[0]?.blocks.map((block) => block.kind)).toEqual(['amrap', 'cardio'])
-
-    cleanup()
   })
 })

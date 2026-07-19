@@ -5,23 +5,17 @@
  * both reads as two features when there's only one (UX review finding).
  */
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Create Exercise image picker', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should expose exactly one control that opens the image picker', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should expose exactly one control that opens the image picker', async ({ createTestApp }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
 
     const imagePickerControls = await page.getByRole('button', { name: /add image/i }).all()
     expect(imagePickerControls).toHaveLength(1)
-
-    cleanup()
   })
 })

@@ -1,18 +1,14 @@
 import { flushPromises } from '@vue/test-utils'
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Decimal Weight Input', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
     await flushPromises()
-    await cleanupIntegrationTest()
   })
 
-  it('allows entering decimal weight values like 12.5', async () => {
+  it('allows entering decimal weight values like 12.5', async ({ createTestApp }) => {
     const app = await createTestApp()
     const { builder, workout } = app
 
@@ -29,11 +25,9 @@ describe('Decimal Weight Input', () => {
 
     // Assert the value is 12.5, not 12 (which would mean decimals were rejected)
     expect(setRow.kg).toHaveValue('12.5')
-
-    app.cleanup()
   })
 
-  it('allows entering weight with 2 decimal places like 12.25', async () => {
+  it('allows entering weight with 2 decimal places like 12.25', async ({ createTestApp }) => {
     const app = await createTestApp()
     const { builder, workout } = app
 
@@ -47,11 +41,9 @@ describe('Decimal Weight Input', () => {
     await userEvent.fill(setRow.kg, '12.25')
 
     expect(setRow.kg).toHaveValue('12.25')
-
-    app.cleanup()
   })
 
-  it('preserves decimal weight after completing set', async () => {
+  it('preserves decimal weight after completing set', async ({ createTestApp }) => {
     const app = await createTestApp()
     const { builder, workout } = app
 
@@ -75,7 +67,5 @@ describe('Decimal Weight Input', () => {
     // Verify the weight value is preserved with decimal
     const completedRow = await workout.getSetRow(0)
     expect(completedRow.kg).toHaveValue('12.5')
-
-    app.cleanup()
   })
 })

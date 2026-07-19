@@ -1,14 +1,10 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Edit Exercise Dialog', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('opens edit dialog from builder mode edit button', async () => {
-    const { builder, common, getByRole, cleanup } = await createTestApp()
+  it('opens edit dialog from builder mode edit button', async ({ createTestApp }) => {
+    const { builder, common, getByRole } = await createTestApp()
 
     // Add a strength block (stay in builder mode, don't start workout)
     await builder.addStrengthBlock('Bench Press')
@@ -21,12 +17,10 @@ describe('Edit Exercise Dialog', () => {
     await common.waitForDialog()
     const heading = await page.getByRole('heading', { name: /edit sets & reps/i }).query()
     expect(heading).toBeTruthy()
-
-    cleanup()
   })
 
-  it('changes target reps using number stepper', async () => {
-    const { builder, common, getByRole, cleanup } = await createTestApp()
+  it('changes target reps using number stepper', async ({ createTestApp }) => {
+    const { builder, common, getByRole } = await createTestApp()
 
     await builder.addStrengthBlock('Bench Press')
 
@@ -58,12 +52,10 @@ describe('Edit Exercise Dialog', () => {
 
     const spinbuttons = await page.getByRole('dialog').getByRole('spinbutton').all()
     await expect.element(spinbuttons[0]!).toHaveValue('11') // targetReps changed from 8 to 11
-
-    cleanup()
   })
 
-  it('changes number of sets and verifies update', async () => {
-    const { builder, common, getByRole, cleanup } = await createTestApp()
+  it('changes number of sets and verifies update', async ({ createTestApp }) => {
+    const { builder, common, getByRole } = await createTestApp()
 
     await builder.addStrengthBlock('Barbell Row')
 
@@ -97,12 +89,10 @@ describe('Edit Exercise Dialog', () => {
         return rows.length
       })
       .toBe(6) // 1 header + 5 data rows
-
-    cleanup()
   })
 
-  it('cancel button closes dialog without saving changes', async () => {
-    const { builder, common, getByRole, cleanup } = await createTestApp()
+  it('cancel button closes dialog without saving changes', async ({ createTestApp }) => {
+    const { builder, common, getByRole } = await createTestApp()
 
     await builder.addStrengthBlock('Bench Press')
 
@@ -129,12 +119,10 @@ describe('Edit Exercise Dialog', () => {
 
     const rows = await page.getByRole('table').getByRole('row').all()
     expect(rows).toHaveLength(4) // 1 header + 3 data rows (unchanged)
-
-    cleanup()
   })
 
-  it('dialog is keyboard-free (no text inputs)', async () => {
-    const { builder, common, getByRole, cleanup } = await createTestApp()
+  it('dialog is keyboard-free (no text inputs)', async ({ createTestApp }) => {
+    const { builder, common, getByRole } = await createTestApp()
 
     await builder.addStrengthBlock('Bench Press')
 
@@ -151,13 +139,13 @@ describe('Edit Exercise Dialog', () => {
     // Verify spinbuttons exist for number inputs
     const spinbuttons = await dialog.getByRole('spinbutton').all()
     expect(spinbuttons).toHaveLength(2) // target reps and set count
-
-    cleanup()
   })
 
   describe('Isometric exercises', () => {
-    it('shows target duration instead of target reps for isometric exercise', async () => {
-      const { builder, common, getByRole, cleanup } = await createTestApp()
+    it('shows target duration instead of target reps for isometric exercise', async ({
+      createTestApp,
+    }) => {
+      const { builder, common, getByRole } = await createTestApp()
 
       // Add an isometric exercise (Plank)
       await builder.addStrengthBlock('Plank')
@@ -179,12 +167,10 @@ describe('Edit Exercise Dialog', () => {
       // Expect: Set count is still visible
       const setCountLabel = dialog.getByLabelText(/number of sets/i)
       await expect.element(setCountLabel).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows optional weight field for weighted isometric exercise', async () => {
-      const { builder, common, getByRole, cleanup } = await createTestApp()
+    it('shows optional weight field for weighted isometric exercise', async ({ createTestApp }) => {
+      const { builder, common, getByRole } = await createTestApp()
 
       // Add weighted isometric exercise
       await builder.addStrengthBlock('Weighted Plank')
@@ -198,8 +184,6 @@ describe('Edit Exercise Dialog', () => {
       const dialog = page.getByRole('dialog')
       const weightInput = dialog.getByLabelText(/target weight/i)
       await expect.element(weightInput).toBeVisible()
-
-      cleanup()
     })
   })
 })

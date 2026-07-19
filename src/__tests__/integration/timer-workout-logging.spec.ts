@@ -1,12 +1,10 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Timer workout controls vary by current timer state. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 import { expectWorkoutCount, getAllWorkouts, getWorkoutCount } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import type { DbAmrapBlock } from '@/db/schema'
-
-type TestApp = Awaited<ReturnType<typeof createTestApp>>
 
 /**
  * Helper to navigate to timers page from home
@@ -52,11 +50,8 @@ function isAmrapBlock(block: { kind: string }): block is DbAmrapBlock {
 }
 
 describe('Timer Workout Logging', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Log Workout button on completion', () => {
-    it('shows Log Workout button when timer completes', async () => {
+    it('shows Log Workout button when timer completes', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -68,11 +63,9 @@ describe('Timer Workout Logging', () => {
       // Also verify existing buttons are still there
       await expect.element(page.getByRole('button', { name: /again/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /done/i })).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('changes button to "Logged ✓" after clicking Log Workout', async () => {
+    it('changes button to "Logged ✓" after clicking Log Workout', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -85,11 +78,9 @@ describe('Timer Workout Logging', () => {
       // Button should change to "Logged ✓" and be disabled
       await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /logged/i })).toBeDisabled()
-
-      app.cleanup()
     })
 
-    it('saves workout to database when Log Workout is clicked', async () => {
+    it('saves workout to database when Log Workout is clicked', async ({ createTestApp }) => {
       const app = await createTestApp()
 
       // Verify database is empty before
@@ -115,11 +106,9 @@ describe('Timer Workout Logging', () => {
       expect(savedWorkout.blocks[0]?.kind).toBe('amrap')
       // In test mode, timer completes instantly so duration can be 0
       expect(savedWorkout.durationSeconds).toBeGreaterThanOrEqual(0)
-
-      app.cleanup()
     })
 
-    it('allows logging workout and then running another timer', async () => {
+    it('allows logging workout and then running another timer', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -135,11 +124,11 @@ describe('Timer Workout Logging', () => {
       // Should be back in timer running state (not completion)
       await expect.element(page.getByRole('button', { name: /start timer/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /logged/i })).not.toBeInTheDocument()
-
-      app.cleanup()
     })
 
-    it('resets logged state when clicking Done and starting new timer', async () => {
+    it('resets logged state when clicking Done and starting new timer', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -161,13 +150,11 @@ describe('Timer Workout Logging', () => {
 
       // Log Workout button should be available again (not "Logged ✓")
       await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Logged workout data', () => {
-    it('creates workout with correct AMRAP block structure', async () => {
+    it('creates workout with correct AMRAP block structure', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -193,11 +180,9 @@ describe('Timer Workout Logging', () => {
         expect(block.result).toBeDefined()
         expect(block.result?.rounds).toBeGreaterThanOrEqual(0)
       }
-
-      app.cleanup()
     })
 
-    it('generates auto-name for logged workout', async () => {
+    it('generates auto-name for logged workout', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -213,11 +198,9 @@ describe('Timer Workout Logging', () => {
 
       // Name should include timer type and/or duration
       expect(workout.name).toMatch(/5.*min.*amrap|amrap.*5.*min/i)
-
-      app.cleanup()
     })
 
-    it('uses timer timestamps for workout startedAt and completedAt', async () => {
+    it('uses timer timestamps for workout startedAt and completedAt', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -239,8 +222,6 @@ describe('Timer Workout Logging', () => {
       expect(workout.completedAt).toBeLessThanOrEqual(afterComplete + 1000)
       // In test mode, completion is instant so timestamps can be equal
       expect(workout.completedAt).toBeGreaterThanOrEqual(workout.startedAt)
-
-      app.cleanup()
     })
   })
 })

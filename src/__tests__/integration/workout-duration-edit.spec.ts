@@ -1,17 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getWorkoutRef } from '@/stores/workoutState'
-import { createTestApp } from '../helpers/createTestApp'
 import { getAllWorkouts } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Duration Editing', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Duration Display in Finish Dialog', () => {
-    it('shows elapsed duration in finish dialog', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('shows elapsed duration in finish dialog', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -39,14 +35,12 @@ describe('Workout Duration Editing', () => {
           return null
         })
         .toBeCloseTo(45, -1) // ~45 minutes
-
-      cleanup()
     })
   })
 
   describe('Duration Editing', () => {
-    it('allows editing duration before finishing', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('allows editing duration before finishing', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -93,12 +87,10 @@ describe('Workout Duration Editing', () => {
           return saved.completedAt - saved.startedAt
         })
         .toBe(45 * 60 * 1000)
-
-      cleanup()
     })
 
-    it('saves workout with default duration when not edited', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('saves workout with default duration when not edited', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -124,14 +116,12 @@ describe('Workout Duration Editing', () => {
       const duration = workouts[0]?.durationSeconds ?? 0
       expect(duration).toBeGreaterThanOrEqual(1790)
       expect(duration).toBeLessThanOrEqual(1810)
-
-      cleanup()
     })
   })
 
   describe('Duration Warning', () => {
-    it('shows warning when duration exceeds 3 hours', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('shows warning when duration exceeds 3 hours', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -147,12 +137,10 @@ describe('Workout Duration Editing', () => {
 
       // Verify warning is visible
       await expect.element(page.getByText(/seems longer than usual/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('does not show warning for normal durations', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('does not show warning for normal durations', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -168,12 +156,10 @@ describe('Workout Duration Editing', () => {
 
       // Verify warning is NOT visible
       await expect.element(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('hides warning when user edits duration below threshold', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('hides warning when user edits duration below threshold', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
@@ -197,8 +183,6 @@ describe('Workout Duration Editing', () => {
 
       // Warning should disappear
       await expect.element(page.getByText(/seems longer than usual/i)).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 })

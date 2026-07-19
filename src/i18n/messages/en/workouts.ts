@@ -243,6 +243,7 @@ export default {
     noPbYet: 'No PB yet',
     pbLabel: 'PB',
     firstAttempt: 'First attempt - set your PB!',
+    elapsedTime: 'Elapsed time',
     tapToAdvance: 'Tap to advance to next exercise',
     detail: {
       title: 'Benchmark',

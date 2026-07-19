@@ -50,6 +50,11 @@
 
 `agent-browser` is a CLI — call it via the **Bash tool**, not MCP/Skills/ToolSearch. The dev server is already running at {{APP_URL}}. See the system prompt for the command list, known gotchas, and verdict rubric.
 
+The browser is initialized with **iPhone 14 device emulation**. Run all
+user-facing verification there unless a criterion explicitly targets desktop
+behavior. Reload after switching, then restore `set device "iPhone 14"` and
+reload again before continuing.
+
 ## Your Mission
 
 This is a deeper QA pass for a pull request. Your job is to:
@@ -57,7 +62,7 @@ This is a deeper QA pass for a pull request. Your job is to:
 1. **Verify** every stated acceptance criterion through the UI
 2. **Follow** the provided manual scenarios when they are useful
 3. **Check** adjacent regressions based on the listed risk areas
-4. **Probe** a few high-value edge cases, including mobile viewport
+4. **Probe** a few high-value edge cases in the default mobile viewport
 5. **Report** concrete findings, skips, and confidence limits
 
 ## Turn Budget: 100 turns
@@ -69,7 +74,7 @@ This is a deeper QA pass for a pull request. Your job is to:
 | ------------------ | ------ | ------------------------------------------------------ |
 | Parse Contract     | 1-5    | Read ACs, QA scope, risks, scenarios                   |
 | Verify ACs         | 6-45   | Verify each requirement through the UI                 |
-| Regression + Edges | 46-70  | Related flow plus up to 3 edge cases, including mobile |
+| Regression + Edges | 46-70  | Related flow plus up to 3 mobile-first edge cases      |
 | Report             | 71-100 | Write qa-report.md and return JSON                     |
 
 ### Mid-run checkpoint (turn 35)
@@ -77,7 +82,7 @@ This is a deeper QA pass for a pull request. Your job is to:
 At turn ~35, pause and self-assess:
 
 - Have I verified **at least 50%** of the acceptance criteria?
-- If NO: cut the regression + edge-case phase to zero. Go straight to the remaining ACs. Skip mobile viewport unless the PR is explicitly mobile-facing.
+- If NO: cut the regression + edge-case phase to zero. Go straight to the remaining ACs and keep using the default mobile viewport.
 - If YES: proceed with regression + 1-2 targeted edges as planned.
 
 This checkpoint exists because past runs have over-invested in setup (template creation, fixture prep) and reached the hard stop with ACs still unverified.
@@ -131,7 +136,7 @@ Pick the most valuable checks after the acceptance criteria pass:
 
 - 1 regression path from the listed risk areas
 - Up to 3 targeted edge cases
-- 1 mobile viewport check at 375x667 if the feature is user-facing
+- Keep user-facing checks in iPhone 14 emulation; add desktop coverage only when the PR contract requires it
 
 | Attack        | How                              |
 | ------------- | -------------------------------- |

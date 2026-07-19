@@ -13,17 +13,15 @@
  * filtered view. Equipment stays optional but is now labeled "(optional)".
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getCustomExercisesRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise Muscle Group Requirement', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should keep save disabled when a name is entered but no muscle group is selected', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should keep save disabled when a name is entered but no muscle group is selected', async ({
+    createTestApp,
+  }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
@@ -31,24 +29,22 @@ describe('Exercise Muscle Group Requirement', () => {
 
     const saveButton = page.getByRole('button', { name: /save/i })
     await expect.element(saveButton).toBeDisabled()
-
-    cleanup()
   })
 
-  it('should show an inline hint explaining why save is blocked when no muscle group is selected', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should show an inline hint explaining why save is blocked when no muscle group is selected', async ({
+    createTestApp,
+  }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
     await exercises.fillName('Muscle-less Curl')
 
     await expect.element(page.getByText(/select a muscle group/i)).toBeVisible()
-
-    cleanup()
   })
 
-  it('should enable save once a muscle group is selected', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should enable save once a muscle group is selected', async ({ createTestApp }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
@@ -60,12 +56,12 @@ describe('Exercise Muscle Group Requirement', () => {
     await exercises.selectMuscle('Arms')
 
     await expect.element(saveButton).not.toBeDisabled()
-
-    cleanup()
   })
 
-  it('should persist the selected muscle group so the exercise is discoverable by filter', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should persist the selected muscle group so the exercise is discoverable by filter', async ({
+    createTestApp,
+  }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
@@ -78,18 +74,14 @@ describe('Exercise Muscle Group Requirement', () => {
     const all = await getCustomExercisesRepository().getAll()
     const created = all.find((e) => e.name === 'Filterable Curl')
     expect(created?.muscle).toBe('arms')
-
-    cleanup()
   })
 
-  it('should label the equipment selector as optional', async () => {
-    const { exercises, cleanup } = await createTestApp()
+  it('should label the equipment selector as optional', async ({ createTestApp }) => {
+    const { exercises } = await createTestApp()
 
     await exercises.navigateTo()
     await exercises.clickCreateCustomExercise()
 
     await expect.element(page.getByRole('button', { name: /equipment.*optional/i })).toBeVisible()
-
-    cleanup()
   })
 })

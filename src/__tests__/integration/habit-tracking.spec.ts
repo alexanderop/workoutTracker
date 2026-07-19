@@ -1,11 +1,10 @@
 /* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { generateId, getHabitsRepository } from '@/db'
 import { getStartOfDay } from '@/lib/date'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbHabit, createDbHabitEntriesForDays, createDbHabitEntryForDate } from '../factories'
 
 /** Returns a Date N days before today, at midnight-agnostic local time. */
@@ -16,12 +15,11 @@ function daysAgo(days: number): Date {
 }
 
 describe('Habit Tracking', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('creating and checking off a binary habit', () => {
-    it('creates a binary daily habit via the form and shows it in the Today list', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('creates a binary daily habit via the form and shows it in the Today list', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({ name: 'Drink water' })
@@ -33,12 +31,12 @@ describe('Habit Tracking', () => {
       expect(all).toHaveLength(1)
       expect(all[0]?.schedule).toEqual({ type: 'daily' })
       expect(all[0]?.kind).toEqual({ type: 'binary' })
-
-      cleanup()
     })
 
-    it('toggles complete/incomplete and persists across navigation away and back', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('toggles complete/incomplete and persists across navigation away and back', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({ name: 'Stretch' })
@@ -62,12 +60,12 @@ describe('Habit Tracking', () => {
       await habits.toggleBinaryHabit('Stretch')
       await habits.expectIncomplete('Stretch')
       await expect.poll(async () => (await repo.getEntriesForHabit(habit.id)).length).toBe(0)
-
-      cleanup()
     })
 
-    it("updates today's compact grid cell when the habit is marked complete", async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it("updates today's compact grid cell when the habit is marked complete", async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({ name: 'Add weight' })
@@ -80,14 +78,14 @@ describe('Habit Tracking', () => {
       await expect
         .poll(() => habits.getTodayCompactGridColor('Add weight'))
         .not.toBe(incompleteColor)
-
-      cleanup()
     })
   })
 
   describe('quantity habit', () => {
-    it('logs progress via +1, shows partial progress, then reaches target', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('logs progress via +1, shows partial progress, then reaches target', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({
@@ -113,12 +111,12 @@ describe('Habit Tracking', () => {
         .element(habits.getTodayRow('Drink water').getByText('3 / 3 glasses'))
         .toBeVisible()
       await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
-
-      cleanup()
     })
 
-    it('shows weekly progress alongside the quantity progress for a weekly quantity habit', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('shows weekly progress alongside the quantity progress for a weekly quantity habit', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({
@@ -132,11 +130,11 @@ describe('Habit Tracking', () => {
       await habits.clickIncrementQuantity('Push-ups', 20)
       await expect.element(habits.getTodayRow('Push-ups').getByText('20 / 20 reps')).toBeVisible()
       await habits.expectWeekProgress('Push-ups', 1, 3)
-
-      cleanup()
     })
 
-    it('tolerates a corrupted zero quantity target without crashing (progress reads 0)', async () => {
+    it('tolerates a corrupted zero quantity target without crashing (progress reads 0)', async ({
+      createTestApp,
+    }) => {
       // Not reachable via the form (min target is 1) -- seeded directly to
       // model a habit whose local data got corrupted after the fact.
       const habit = createDbHabit({
@@ -146,20 +144,20 @@ describe('Habit Tracking', () => {
       })
       await getHabitsRepository().addHabit(habit)
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
       await expect.element(habits.getTodayRow('Broken').getByText('0 / 0 x')).toBeVisible()
       const progress = habits.getTodayRow('Broken').getByRole('progressbar')
       await expect.element(progress).toHaveAttribute('aria-valuenow', '0')
-
-      cleanup()
     })
   })
 
   describe('weekly habit', () => {
-    it('shows completed/target progress for the current week after checking off today', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('shows completed/target progress for the current week after checking off today', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({
@@ -172,13 +170,11 @@ describe('Habit Tracking', () => {
       await habits.toggleBinaryHabit('Gym session')
 
       await habits.expectWeekProgress('Gym session', 1, 3)
-
-      cleanup()
     })
   })
 
   describe('streaks', () => {
-    it('shows a streak badge once a multi-day streak is seeded', async () => {
+    it('shows a streak badge once a multi-day streak is seeded', async ({ createTestApp }) => {
       // Seed a 3-day streak ending yesterday (today deliberately left blank --
       // habitStats.currentStreak grants a grace day for "today not done yet").
       const habit = createDbHabit({ name: 'Journal', orderIndex: 0 })
@@ -187,29 +183,25 @@ describe('Habit Tracking', () => {
       const entries = createDbHabitEntriesForDays(habit.id, daysAgo(3), [1, 1, 1])
       for (const entry of entries) await repo.upsertEntry(entry)
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
       await habits.expectStreakBadge('Journal', 3)
-
-      cleanup()
     })
 
-    it('does not show a streak badge for a single completed day', async () => {
+    it('does not show a streak badge for a single completed day', async ({ createTestApp }) => {
       const habit = createDbHabit({ name: 'Journal', orderIndex: 0 })
       const repo = getHabitsRepository()
       await repo.addHabit(habit)
       await repo.upsertEntry(createDbHabitEntryForDate(habit.id, new Date()))
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
       await habits.expectNoStreakBadge('Journal')
-
-      cleanup()
     })
 
-    it('shows a streak badge on a quantity habit row too', async () => {
+    it('shows a streak badge on a quantity habit row too', async ({ createTestApp }) => {
       const habit = createDbHabit({
         name: 'Push-ups',
         orderIndex: 0,
@@ -220,18 +212,18 @@ describe('Habit Tracking', () => {
       const entries = createDbHabitEntriesForDays(habit.id, daysAgo(3), [20, 20, 20])
       for (const entry of entries) await repo.upsertEntry(entry)
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
       await habits.expectStreakBadge('Push-ups', 3)
-
-      cleanup()
     })
   })
 
   describe('editing and archiving', () => {
-    it('edits a habit, archives it out of the Today list, and restores it with history preserved', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('edits a habit, archives it out of the Today list, and restores it with history preserved', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({ name: 'Meditate' })
@@ -266,13 +258,13 @@ describe('Habit Tracking', () => {
       await expect.element(habits.getTodayRow('Meditate daily')).toBeVisible()
       await habits.expectComplete('Meditate daily')
       expect(await repo.getEntriesForHabit(habit.id)).toHaveLength(1)
-
-      cleanup()
     })
   })
 
   describe('history grid', () => {
-    it('renders a seeded day as complete and retro-toggles a past day', async () => {
+    it('renders a seeded day as complete and retro-toggles a past day', async ({
+      createTestApp,
+    }) => {
       const habit = createDbHabit({ name: 'Walk', orderIndex: 0 })
       const repo = getHabitsRepository()
       await repo.addHabit(habit)
@@ -281,7 +273,7 @@ describe('Habit Tracking', () => {
         createDbHabitEntryForDate(habit.id, new Date(twoDaysAgo), { id: generateId() }),
       )
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
       await habits.expandDetails('Walk')
@@ -295,17 +287,17 @@ describe('Habit Tracking', () => {
       await expect.poll(() => habits.countCompleteHistoryDays('Walk')).toBe(2)
       const entries = await repo.getEntriesForHabit(habit.id)
       expect(entries.some((entry) => entry.date === yesterday)).toBe(true)
-
-      cleanup()
     })
   })
 
   describe('home card', () => {
-    it('shows habits, supports quick check-off, and links to /habits', async () => {
+    it('shows habits, supports quick check-off, and links to /habits', async ({
+      createTestApp,
+    }) => {
       const habit = createDbHabit({ name: 'Read', orderIndex: 0 })
       await getHabitsRepository().addHabit(habit)
 
-      const { habits, cleanup } = await createTestApp()
+      const { habits } = await createTestApp()
 
       await expect.element(page.getByText('Read')).toBeVisible()
       await habits.expectIncomplete('Read')
@@ -316,14 +308,12 @@ describe('Habit Tracking', () => {
       await expect.poll(() => habits.getTodayCompactGridColor('Read')).not.toBe(incompleteColor)
 
       await habits.navigateToHabitsFromHomeCard()
-
-      cleanup()
     })
   })
 
   describe('form validation', () => {
-    it('rejects an empty name', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('rejects an empty name', async ({ createTestApp }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -333,12 +323,10 @@ describe('Habit Tracking', () => {
 
       await habits.fillName('Read')
       expect(habits.isSaveDisabled()).toBe(false)
-
-      cleanup()
     })
 
-    it('constrains the weekly target field to 1-7', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('constrains the weekly target field to 1-7', async ({ createTestApp }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -349,12 +337,10 @@ describe('Habit Tracking', () => {
         .getByRole('spinbutton', { name: /target days per week/i })
       await expect.element(input).toHaveAttribute('aria-valuemin', '1')
       await expect.element(input).toHaveAttribute('aria-valuemax', '7')
-
-      cleanup()
     })
 
-    it('constrains the quantity target field to 1-9999', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('constrains the quantity target field to 1-9999', async ({ createTestApp }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -363,11 +349,11 @@ describe('Habit Tracking', () => {
       const input = page.getByRole('dialog').getByRole('spinbutton', { name: /^target$/i })
       await expect.element(input).toHaveAttribute('aria-valuemin', '1')
       await expect.element(input).toHaveAttribute('aria-valuemax', '9999')
-
-      cleanup()
     })
 
-    it('flags an out-of-range weekly target and disables save (corrupted local data)', async () => {
+    it('flags an out-of-range weekly target and disables save (corrupted local data)', async ({
+      createTestApp,
+    }) => {
       // Not reachable via the form (NumberField clamps to 1-7) -- seeded
       // directly to model a habit whose local data got corrupted after the
       // fact, then opened for editing.
@@ -378,7 +364,7 @@ describe('Habit Tracking', () => {
       })
       await getHabitsRepository().addHabit(habit)
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
       await habits.openEditForm('Gym session')
 
@@ -386,11 +372,11 @@ describe('Habit Tracking', () => {
         .element(page.getByRole('dialog').getByText('Must be between 1 and 7'))
         .toBeVisible()
       expect(habits.isSaveDisabled()).toBe(true)
-
-      cleanup()
     })
 
-    it('flags an out-of-range quantity target and disables save (corrupted local data)', async () => {
+    it('flags an out-of-range quantity target and disables save (corrupted local data)', async ({
+      createTestApp,
+    }) => {
       const habit = createDbHabit({
         name: 'Broken',
         orderIndex: 0,
@@ -398,7 +384,7 @@ describe('Habit Tracking', () => {
       })
       await getHabitsRepository().addHabit(habit)
 
-      const { navigateTo, habits, cleanup } = await createTestApp()
+      const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
       await habits.openEditForm('Broken')
 
@@ -406,14 +392,12 @@ describe('Habit Tracking', () => {
         .element(page.getByRole('dialog').getByText('Must be between 1 and 9999'))
         .toBeVisible()
       expect(habits.isSaveDisabled()).toBe(true)
-
-      cleanup()
     })
   })
 
   describe('form interactions', () => {
-    it('discards changes when the form is cancelled', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('discards changes when the form is cancelled', async ({ createTestApp }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -423,12 +407,10 @@ describe('Habit Tracking', () => {
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       const repo = getHabitsRepository()
       expect(await repo.getAllHabits()).toEqual([])
-
-      cleanup()
     })
 
-    it('discards changes when the form is closed via Escape', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('discards changes when the form is closed via Escape', async ({ createTestApp }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -438,12 +420,12 @@ describe('Habit Tracking', () => {
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       const repo = getHabitsRepository()
       expect(await repo.getAllHabits()).toEqual([])
-
-      cleanup()
     })
 
-    it('sets a custom icon via a preset button or by typing it directly', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('sets a custom icon via a preset button or by typing it directly', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -461,12 +443,12 @@ describe('Habit Tracking', () => {
 
       const withTypedIcon = (await repo.getAllHabits())[0]!
       expect(withTypedIcon.icon).toBe('🎯')
-
-      cleanup()
     })
 
-    it('creates a habit that auto-links to completed workouts when the switch is toggled', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('creates a habit that auto-links to completed workouts when the switch is toggled', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.createHabit({ name: 'Train', autoLink: true })
@@ -474,12 +456,12 @@ describe('Habit Tracking', () => {
       const repo = getHabitsRepository()
       const habit = (await repo.getAllHabits())[0]!
       expect(habit.autoLink).toBe('completed-workout')
-
-      cleanup()
     })
 
-    it('ignores an attempt to deselect the schedule/kind toggle groups (single-select, one must stay chosen)', async () => {
-      const { navigateTo, habits, cleanup } = await createTestApp()
+    it('ignores an attempt to deselect the schedule/kind toggle groups (single-select, one must stay chosen)', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
@@ -499,8 +481,6 @@ describe('Habit Tracking', () => {
       const habit = (await repo.getAllHabits())[0]!
       expect(habit.schedule).toEqual({ type: 'daily' })
       expect(habit.kind).toEqual({ type: 'binary' })
-
-      cleanup()
     })
   })
 })

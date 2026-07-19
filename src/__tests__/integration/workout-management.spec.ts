@@ -1,18 +1,16 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getActiveWorkoutRepository } from '@/db'
 import { resetWorkout } from '@/features/workout/composables/useWorkout'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Workout Management', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Hybrid Workouts', () => {
-    it('creates a workout with strength and timed blocks, executes it, and finishes', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+    it('creates a workout with strength and timed blocks, executes it, and finishes', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common, router } = await createTestApp()
 
       // Start new workout from home page
       await builder.navigateTo()
@@ -80,19 +78,16 @@ describe('Workout Management', () => {
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
       await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
   })
 
   describe('Navigation', () => {
-    it('navigates back and forth between blocks in active mode', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('navigates back and forth between blocks in active mode', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       // Setup workout with two strength blocks and start
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
@@ -109,14 +104,12 @@ describe('Workout Management', () => {
 
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
       await expect.element(page.getByText('Bench Press')).toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Resume', () => {
-    it('shows "Start Workout" with Play icon for fresh workout', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('shows "Start Workout" with Play icon for fresh workout', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
@@ -130,12 +123,12 @@ describe('Workout Management', () => {
 
       // Verify no pulsing animation class (indicates fresh workout, not resuming)
       await expect.element(startButton).not.toHaveClass('animate-pulse-ring')
-
-      cleanup()
     })
 
-    it('shows "Resume Workout" with RotateCcw icon after completing a set', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('shows "Resume Workout" with RotateCcw icon after completing a set', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
@@ -159,12 +152,10 @@ describe('Workout Management', () => {
 
       // Verify pulsing animation class indicates workout in progress
       await expect.element(resumeButton).toHaveClass('animate-pulse-ring')
-
-      cleanup()
     })
 
-    it('allows resuming workout from Continue button', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('allows resuming workout from Continue button', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
@@ -186,12 +177,12 @@ describe('Workout Management', () => {
       // Verify we're back in active mode by checking for timer badge
       await expect.element(page.getByRole('timer')).toBeVisible()
       await expect.element(page.getByRole('table')).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows duration badge with timer icon and pulsing indicator in active mode', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('shows duration badge with timer icon and pulsing indicator in active mode', async ({
+      createTestApp,
+    }) => {
+      const { builder, common } = await createTestApp()
 
       // Navigate to workout builder and add an exercise block
       await builder.navigateTo()
@@ -222,14 +213,14 @@ describe('Workout Management', () => {
           return pulsingDot !== null
         })
         .toBe(true)
-
-      cleanup()
     })
   })
 
   describe('Reload Persistence', () => {
-    it('should keep a completed set marked complete after reloading and resuming the workout', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('should keep a completed set marked complete after reloading and resuming the workout', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Start a workout and complete its first set
       await builder.navigateTo()
@@ -255,7 +246,6 @@ describe('Workout Management', () => {
       // module state (the workout singleton + app init state), but leave
       // IndexedDB untouched -- that's what actually happens on a browser
       // reload, unlike `cleanupIntegrationTest` which also wipes the DB.
-      cleanup()
       resetWorkout()
       resetInitState()
 
@@ -273,12 +263,12 @@ describe('Workout Management', () => {
       // (b) Completing another set after resume must still work
       await fresh.workout.fillCardSetAndComplete({ weight: '85', reps: '8', rir: '1' })
       expect(await fresh.workout.isSetCompleted(1)).toBe(true)
-
-      fresh.cleanup()
     })
 
-    it('should keep the "Complete Set" CTA usable after reloading a workout that was interrupted from the builder screen', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('should keep the "Complete Set" CTA usable after reloading a workout that was interrupted from the builder screen', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Start a workout and complete its first set
       await builder.navigateTo()
@@ -305,7 +295,6 @@ describe('Workout Management', () => {
 
       // Simulate a full page reload (see helper comment above for why DB is
       // left untouched while in-memory module state resets).
-      cleanup()
       resetWorkout()
       resetInitState()
 
@@ -332,14 +321,12 @@ describe('Workout Management', () => {
       await expect.element(completeSetButton).toBeEnabled()
       await userEvent.click(completeSetButton)
       expect(await fresh.workout.isSetCompleted(1)).toBe(true)
-
-      fresh.cleanup()
     })
   })
 
   describe('Cancel', () => {
-    it('can cancel a workout and return to home', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+    it('can cancel a workout and return to home', async ({ createTestApp }) => {
+      const { builder, workout, common, router } = await createTestApp()
 
       // Navigate to builder, add a block, and start workout
       await builder.navigateTo()
@@ -365,8 +352,6 @@ describe('Workout Management', () => {
       // Verify we're back at home
       await common.waitForRoute(/^\/$/)
       expect(router.currentRoute.value.path).toBe('/')
-
-      cleanup()
     })
   })
 })

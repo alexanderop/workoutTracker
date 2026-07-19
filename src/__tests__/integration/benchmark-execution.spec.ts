@@ -1,7 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import {
   createForTimeBenchmark,
   createRoundsBenchmark,
@@ -10,11 +9,8 @@ import {
 } from './helpers/benchmarkHelpers'
 
 describe('Benchmark Execution', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Navigation', () => {
-    it('starts workout from detail page', async () => {
+    it('starts workout from detail page', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark()
       const app = await createTestApp()
 
@@ -24,11 +20,9 @@ describe('Benchmark Execution', () => {
       expect(app.router.currentRoute.value.path).toBe('/benchmark/active')
       await expect.element(page.getByRole('button', { name: /tap to advance/i })).toBeVisible()
       await expect.element(page.getByText('Thrusters')).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('advances to next exercise with tap-to-advance', async () => {
+    it('advances to next exercise with tap-to-advance', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark()
       const app = await createTestApp()
 
@@ -36,16 +30,14 @@ describe('Benchmark Execution', () => {
       await expect.element(page.getByText('Thrusters')).toBeVisible()
       await completeExercise()
       await expect.element(page.getByText('Pull-ups')).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('focus mode has no back button (intentional design)', async () => {
+    it('focus mode has no back button (intentional design)', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-        ]
+        ],
       })
       const app = await createTestApp()
 
@@ -56,46 +48,47 @@ describe('Benchmark Execution', () => {
 
       const backButtons = await page.getByRole('button', { name: /go back|^back$/i }).all()
       const footerBackButtons = await Promise.all(
-        backButtons.map(async button => {
+        backButtons.map(async (button) => {
           const text = (await button.element()).textContent?.trim()
           return text === 'Go back' || text === 'Back' ? button : null
-        })
-      ).then(results => results.filter(Boolean))
+        }),
+      ).then((results) => results.filter(Boolean))
       expect(footerBackButtons).toHaveLength(0)
-
-      app.cleanup()
     })
 
-    it('advances from last exercise in round to next round', async () => {
+    it('advances from last exercise in round to next round', async ({ createTestApp }) => {
       const benchmark = await createRoundsBenchmark({
         name: 'Multi-Round',
         rounds: 3,
         exercises: [
           { name: 'Exercise 1', reps: 5 },
           { name: 'Exercise 2', reps: 5 },
-        ]
+        ],
       })
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
-      await expect.poll(async () => (await page.getByText(/exercise 1/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/exercise 1/i).all()).length)
+        .toBeGreaterThan(0)
 
       await completeExercise()
-      await expect.poll(async () => (await page.getByText(/exercise 2/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/exercise 2/i).all()).length)
+        .toBeGreaterThan(0)
 
       await completeExercise()
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      app.cleanup()
+      await expect.element(page.getByRole('heading', { name: 'Exercise 1' })).toBeVisible()
+      await expect.element(page.getByText(/round 2\/3/i)).toBeVisible()
     })
 
-    it('exercises appear in defined order', async () => {
+    it('exercises appear in defined order', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({
         exercises: [
           { name: 'Alpha Exercise', reps: 10 },
           { name: 'Beta Exercise', reps: 10 },
           { name: 'Gamma Exercise', reps: 10 },
-        ]
+        ],
       })
 
       const app = await createTestApp()
@@ -113,55 +106,63 @@ describe('Benchmark Execution', () => {
 
       // Third should be Gamma
       await expect.element(page.getByRole('heading', { name: 'Gamma Exercise' })).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Timer', () => {
-    it('shows timer running during exercise transitions', async () => {
+    it('shows timer running during exercise transitions', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark()
       const app = await createTestApp()
 
       await startBenchmarkWorkout(app, benchmark.id)
 
       const captured: { beforeTransition: string | undefined } = { beforeTransition: undefined }
-      await expect.poll(
-        async () => {
-          const timerElements = await page.getByText(/\d+:\d{2}/).all()
-          const timerText = timerElements[0] ? (await timerElements[0].element()).textContent : null
-          if (timerText && !timerText.includes('0:00')) {
-            captured.beforeTransition = timerText
-            return true
-          }
-          return false
-        },
-        { timeout: 3000 }
-      ).toBe(true)
+      await expect
+        .poll(
+          async () => {
+            const timerElements = await page.getByText(/\d+:\d{2}/).all()
+            const timerText = timerElements[0]
+              ? (await timerElements[0].element()).textContent
+              : null
+            if (timerText && !timerText.includes('0:00')) {
+              captured.beforeTransition = timerText
+              return true
+            }
+            return false
+          },
+          { timeout: 3000 },
+        )
+        .toBe(true)
 
       await completeExercise()
 
-      await expect.poll(
-        async () => {
-          const timerElements = await page.getByText(/\d+:\d{2}/).all()
-          const afterTransition = timerElements[0] ? (await timerElements[0].element()).textContent : null
-          return afterTransition && !afterTransition.includes('0:00') && afterTransition !== captured.beforeTransition
-        },
-        { timeout: 3000 }
-      ).toBe(true)
-
-      app.cleanup()
+      await expect
+        .poll(
+          async () => {
+            const timerElements = await page.getByText(/\d+:\d{2}/).all()
+            const afterTransition = timerElements[0]
+              ? (await timerElements[0].element()).textContent
+              : null
+            return (
+              afterTransition &&
+              !afterTransition.includes('0:00') &&
+              afterTransition !== captured.beforeTransition
+            )
+          },
+          { timeout: 3000 },
+        )
+        .toBe(true)
     })
   })
 
   describe('Exercise Queue', () => {
-    it('displays exercise queue drawer with status updates', async () => {
+    it('displays exercise queue drawer with status updates', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
           { name: 'Exercise 3', reps: 10 },
-        ]
+        ],
       })
       const app = await createTestApp()
 
@@ -178,8 +179,9 @@ describe('Benchmark Execution', () => {
 
       // Close and advance
       await userEvent.keyboard('{Escape}')
-      await expect.element(page.getByRole('heading', { name: /exercise queue/i })).not.toBeInTheDocument()
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await expect
+        .element(page.getByRole('heading', { name: /exercise queue/i }))
+        .not.toBeInTheDocument()
 
       await completeExercise()
 
@@ -187,8 +189,6 @@ describe('Benchmark Execution', () => {
       await userEvent.click(page.getByRole('button', { name: /workout options/i }))
       await userEvent.click(page.getByRole('menuitem', { name: /view exercises/i }))
       expect((await page.getByText(/completed|active/i).all()).length).toBeGreaterThan(0)
-
-      app.cleanup()
     })
   })
 })

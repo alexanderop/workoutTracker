@@ -1,9 +1,8 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { createDbWeightEntry as createDatabaseWeightEntry } from '../factories/dbWeightEntry.factory'
@@ -11,22 +10,22 @@ import { createDbWeightEntry as createDatabaseWeightEntry } from '../factories/d
 describe('Weight Tracking (Mobile)', () => {
   beforeEach(async () => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
     restoreMatchMedia()
   })
 
   const modalPO = new NumericInputModalPO()
 
   describe('preset centering', () => {
-    it('centers presets around last saved weight when opening modal (pre-seeded)', async () => {
+    it('centers presets around last saved weight when opening modal (pre-seeded)', async ({
+      createTestApp,
+    }) => {
       // Seed DB with a weight entry of 65kg BEFORE navigating
       const repo = getWeightRepository()
       await repo.add(createDatabaseWeightEntry({ weight: 65 }))
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
 
       // Navigate to weight page
       await navigateTo({ name: RouteNames.Weight })
@@ -54,11 +53,10 @@ describe('Weight Tracking (Mobile)', () => {
       await expect.element(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
-    it('centers presets around newly saved weight after first entry', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('centers presets around newly saved weight after first entry', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Navigate to weight page (no existing entries - defaults to 80)
       await navigateTo({ name: RouteNames.Weight })
@@ -78,10 +76,12 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
-        const entries = await getWeightRepository().getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       // Now the button should show 65
       const updatedButton = page.getByRole('button', { name: '65 kg' })
@@ -104,16 +104,15 @@ describe('Weight Tracking (Mobile)', () => {
       await expect.element(page.getByRole('option', { name: /^67\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
-    it('syncs presets when value changes while modal is closed', async () => {
+    it('syncs presets when value changes while modal is closed', async ({ createTestApp }) => {
       // This tests the specific bug where:
       // 1. Modal mounts with default value (80)
       // 2. Entries load asynchronously, value changes to saved weight
       // 3. Modal should show presets centered around saved weight, not 80
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
 
       // Navigate to weight page (starts with default 80)
       await navigateTo({ name: RouteNames.Weight })
@@ -149,11 +148,12 @@ describe('Weight Tracking (Mobile)', () => {
       expect(selectedText).toContain('100')
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
-    it('centers presets around last saved weight after navigating away and back', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('centers presets around last saved weight after navigating away and back', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       // Navigate to weight page (no existing entries - defaults to 80)
       await navigateTo({ name: RouteNames.Weight })
@@ -173,10 +173,12 @@ describe('Weight Tracking (Mobile)', () => {
       await saveButton.click()
 
       // Wait for save to complete
-      await expect.poll(async () => {
-        const entries = await getWeightRepository().getAll()
-        return entries.length
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
 
       // Navigate away to settings (simulating "next day")
       await navigateTo({ name: RouteNames.Settings })
@@ -205,7 +207,6 @@ describe('Weight Tracking (Mobile)', () => {
       await expect.element(page.getByRole('option', { name: /^102\.5/ })).toBeVisible()
 
       await modalPO.clickCancel()
-      cleanup()
     })
   })
 })

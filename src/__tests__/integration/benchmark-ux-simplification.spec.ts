@@ -9,9 +9,8 @@
  * See specs/benchmark-ux-simplification.md for full requirements.
  */
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import {
   createForTimeBenchmarkWithRounds,
@@ -24,11 +23,8 @@ import {
  * The feature removes the type selector and adds tabbed navigation to view mode.
  */
 describe('Benchmark UX Simplification', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Simplified Creation (No Type Selector)', () => {
-    it('does not show type selector cards on create page', async () => {
+    it('does not show type selector cards on create page', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -41,11 +37,11 @@ describe('Benchmark UX Simplification', () => {
 
       // Name input should be visible
       await expect.element(page.getByLabelText(/workout name/i)).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('creates benchmark without type selection, defaults to ForTime', async () => {
+    it('creates benchmark without type selection, defaults to ForTime', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -58,11 +54,9 @@ describe('Benchmark UX Simplification', () => {
       expect(benchmarks).toHaveLength(1)
       expect(benchmarks[0]?.type).toBe('fortime')
       expect(benchmarks[0]?.name).toBe('Simple Benchmark')
-
-      app.cleanup()
     })
 
-    it('shows round tab even with single round', async () => {
+    it('shows round tab even with single round', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -70,13 +64,11 @@ describe('Benchmark UX Simplification', () => {
       const tab = page.getByRole('tab', { name: '1', exact: true })
       await expect.element(tab).toBeVisible()
       await expect.element(tab).toHaveAttribute('aria-selected', 'true')
-
-      app.cleanup()
     })
   })
 
   describe('Tabbed Navigation in View Mode', () => {
-    it('displays round tabs for multi-round benchmark', async () => {
+    it('displays round tabs for multi-round benchmark', async ({ createTestApp }) => {
       // Create 4-round benchmark
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Pyramid 40-30-20-10',
@@ -102,11 +94,9 @@ describe('Benchmark UX Simplification', () => {
 
       // Round heading should show "Round 1/4"
       await app.benchmarkDetail.assertRoundHeading(1, 4)
-
-      app.cleanup()
     })
 
-    it('switches rounds when clicking tabs in view mode', async () => {
+    it('switches rounds when clicking tabs in view mode', async ({ createTestApp }) => {
       // Create 4-round benchmark with different exercises per round
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Multi-Exercise Pyramid',
@@ -134,11 +124,9 @@ describe('Benchmark UX Simplification', () => {
 
       // Burpees from Round 1 should not be in the document (only active round is shown)
       await expect.element(page.getByText('Burpees')).not.toBeInTheDocument()
-
-      app.cleanup()
     })
 
-    it('shows tab and heading for single-round benchmark', async () => {
+    it('shows tab and heading for single-round benchmark', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({
         name: 'Single Round',
         exercises: [{ name: 'Burpees', reps: 20 }],
@@ -155,13 +143,11 @@ describe('Benchmark UX Simplification', () => {
 
       // Round heading should show "Round 1/1"
       await app.benchmarkDetail.assertRoundHeading(1, 1)
-
-      app.cleanup()
     })
   })
 
   describe('Tabbed Navigation in Edit Mode', () => {
-    it('shows tabs in edit mode even with single round', async () => {
+    it('shows tabs in edit mode even with single round', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -175,11 +161,9 @@ describe('Benchmark UX Simplification', () => {
 
       // Tab should still be visible
       await expect.element(tab).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('auto-selects new tab after copying round', async () => {
+    it('auto-selects new tab after copying round', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -202,11 +186,9 @@ describe('Benchmark UX Simplification', () => {
       // Note: The new round should be auto-selected after copy
       // This is verified by the navigateToRound(1) being unnecessary
       // to see the copied round's content
-
-      app.cleanup()
     })
 
-    it('selects previous round after deleting current round', async () => {
+    it('selects previous round after deleting current round', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Delete Test',
@@ -235,11 +217,9 @@ describe('Benchmark UX Simplification', () => {
       // Should be on previous round (Round 1, index 0)
       // Verified by the heading "Round 1/2"
       await expect.element(page.getByText(/round 1\/2/i)).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('tabs update correctly when rounds are added and removed', async () => {
+    it('tabs update correctly when rounds are added and removed', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -249,7 +229,9 @@ describe('Benchmark UX Simplification', () => {
       // Initially 1 round, 1 tab
       expect(await app.benchmarkForm.getRoundCount()).toBe(1)
       await expect.element(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '2', exact: true })).not.toBeInTheDocument()
+      await expect
+        .element(page.getByRole('tab', { name: '2', exact: true }))
+        .not.toBeInTheDocument()
 
       // Copy to add Round 2
       await app.benchmarkForm.copyRound(0)
@@ -269,9 +251,9 @@ describe('Benchmark UX Simplification', () => {
       expect(await app.benchmarkForm.getRoundCount()).toBe(2)
       await expect.element(page.getByRole('tab', { name: '1', exact: true })).toBeVisible()
       await expect.element(page.getByRole('tab', { name: '2', exact: true })).toBeVisible()
-      await expect.element(page.getByRole('tab', { name: '3', exact: true })).not.toBeInTheDocument()
-
-      app.cleanup()
+      await expect
+        .element(page.getByRole('tab', { name: '3', exact: true }))
+        .not.toBeInTheDocument()
     })
   })
 })

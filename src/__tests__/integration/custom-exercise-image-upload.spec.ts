@@ -1,17 +1,13 @@
 /* eslint-disable vitest/no-conditional-in-test -- Image upload availability differs by browser capability. */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { page, userEvent } from 'vitest/browser'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createTestImageFile } from '../factories/image'
 import { getCustomExercisesRepository } from '@/db'
 
 describe('Custom Exercise Image Upload', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('uploads an image when creating a custom exercise', async () => {
-    const { common, exercises, cleanup } = await createTestApp()
+  it('uploads an image when creating a custom exercise', async ({ createTestApp }) => {
+    const { common, exercises } = await createTestApp()
 
     // Navigate to exercises view
     await common.navigateToExercises()
@@ -64,7 +60,5 @@ describe('Custom Exercise Image Upload', () => {
     expect(exerciseWithImage?.image).toBeInstanceOf(Blob)
     expect(exerciseWithImage?.image?.type).toBe('image/webp')
     expect(exerciseWithImage?.image?.size).toBeGreaterThan(0)
-
-    cleanup()
   })
 })

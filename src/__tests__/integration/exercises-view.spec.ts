@@ -5,18 +5,16 @@
  * Tests verify equipment filter functionality matching the exercise picker dialogs.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('ExercisesView', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Exercise progress navigation', () => {
-    it('shows exercise name in header when viewing progress for pre-populated exercise', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows exercise name in header when viewing progress for pre-populated exercise', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click on a pre-populated exercise (Bench Press)
@@ -27,14 +25,12 @@ describe('ExercisesView', () => {
 
       // Should NOT show "Unknown Exercise"
       await expect.element(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Equipment filter', () => {
-    it('shows equipment filter pills below muscle filter', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows equipment filter pills below muscle filter', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Should show muscle filter
@@ -48,12 +44,10 @@ describe('ExercisesView', () => {
       await expect
         .element(page.getByRole('button', { name: 'Bodyweight', exact: true }))
         .toBeVisible()
-
-      cleanup()
     })
 
-    it('filters exercises by equipment type', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('filters exercises by equipment type', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click bodyweight filter
@@ -64,12 +58,10 @@ describe('ExercisesView', () => {
 
       // Should NOT show barbell exercises
       await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('combines muscle and equipment filters with AND logic', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('combines muscle and equipment filters with AND logic', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Filter by Chest muscle
@@ -83,24 +75,20 @@ describe('ExercisesView', () => {
 
       // Should NOT show Push-ups (chest + bodyweight, not barbell)
       await expect.element(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
-
-      cleanup()
     })
 
     // QA finding on PR #174: the chip list was hardcoded, so exercises with
     // newer equipment types (egym, battle-rope) were unreachable via filtering.
-    it('shows a filter chip for every equipment type', async () => {
-      const { navigateTo, exercises, cleanup } = await createTestApp()
+    it('shows a filter chip for every equipment type', async ({ createTestApp }) => {
+      const { navigateTo, exercises } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       await exercises.assertEquipmentFilterVisible('EGYM')
       await exercises.assertEquipmentFilterVisible('Battle Rope')
-
-      cleanup()
     })
 
-    it('filters exercises by EGYM equipment type', async () => {
-      const { navigateTo, exercises, cleanup } = await createTestApp()
+    it('filters exercises by EGYM equipment type', async ({ createTestApp }) => {
+      const { navigateTo, exercises } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       await exercises.clickEquipmentFilter('EGYM')
@@ -111,12 +99,10 @@ describe('ExercisesView', () => {
 
       // Should NOT show non-EGYM exercises
       await exercises.assertExerciseNotVisible('Bench Press')
-
-      cleanup()
     })
 
-    it('resets to all when clicking All button', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('resets to all when clicking All button', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click bodyweight filter
@@ -132,14 +118,14 @@ describe('ExercisesView', () => {
       // Should show all exercises again
       await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
       await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Search input', () => {
-    it('should keep the search placeholder short enough and truncated to avoid clipping on narrow screens', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should keep the search placeholder short enough and truncated to avoid clipping on narrow screens', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       const search = page.getByRole('textbox', { name: /search exercises/i })
@@ -151,8 +137,6 @@ describe('ExercisesView', () => {
       // Defense in depth: even if the copy grows again, `truncate` ensures
       // any overflow ends in an ellipsis rather than an abrupt cutoff.
       expect(input.className).toContain('truncate')
-
-      cleanup()
     })
   })
 })

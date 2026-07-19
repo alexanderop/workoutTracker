@@ -1,9 +1,8 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 const NUTELLA_BARCODE = '3017620422003'
 
@@ -48,7 +47,6 @@ function restoreDetector() {
 
 describe('Nutrition barcode scan', () => {
   beforeEach(async () => {
-    await setupIntegrationTest()
     Reflect.set(globalThis, 'BarcodeDetector', FakeBarcodeDetector)
     vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(createFakeCameraStream())
     const realFetch = globalThis.fetch.bind(globalThis)
@@ -64,11 +62,12 @@ describe('Nutrition barcode scan', () => {
   afterEach(async () => {
     vi.restoreAllMocks()
     restoreDetector()
-    await cleanupIntegrationTest()
   })
 
-  it('scans a barcode, prefills the serving from the product, and saves the brand', async () => {
-    const { nutrition, cleanup } = await createTestApp()
+  it('scans a barcode, prefills the serving from the product, and saves the brand', async ({
+    createTestApp,
+  }) => {
+    const { nutrition } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
@@ -91,7 +90,5 @@ describe('Nutrition barcode scan', () => {
         foods: [{ name: 'Nutella', brand: 'Ferrero', defaultServingGrams: 15 }],
         diaryEntries: [{ meal: 'snack', grams: 15 }],
       })
-
-    cleanup()
   })
 })

@@ -1,18 +1,14 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbWeightEntriesForDays as createDatabaseWeightEntriesForDays } from '../factories/dbWeightEntry.factory'
 
 describe('Weight Tracking', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('adding weight entries', () => {
-    it('saves entry and displays in history list', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('saves entry and displays in history list', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -27,12 +23,10 @@ describe('Weight Tracking', () => {
 
       // Verify weight is displayed on page (stats and history)
       await expect.element(page.getByText('75.5 kg').first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('preserves entered weight as default after first entry', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('preserves entered weight as default after first entry', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -44,12 +38,10 @@ describe('Weight Tracking', () => {
       // NOT 80 (the hardcoded default)
       const input = page.getByRole('spinbutton', { name: /weight/i })
       await expect.element(input).toHaveValue('100')
-
-      cleanup()
     })
 
-    it('shows last saved weight after navigating away and back', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('shows last saved weight after navigating away and back', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -65,12 +57,10 @@ describe('Weight Tracking', () => {
       // Form should show 100 (from database), NOT 80 (default)
       const input = page.getByRole('spinbutton', { name: /weight/i })
       await expect.element(input).toHaveValue('100')
-
-      cleanup()
     })
 
-    it('replaces same-day entry with newest value', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('replaces same-day entry with newest value', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -99,12 +89,10 @@ describe('Weight Tracking', () => {
 
       const entries = await repo.getAll()
       expect(entries[0]?.weight).toBe(76)
-
-      cleanup()
     })
 
-    it('respects weight unit setting (lbs)', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('respects weight unit setting (lbs)', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       // Set preference to lbs first
       await navigateTo({ name: RouteNames.Settings })
@@ -127,8 +115,6 @@ describe('Weight Tracking', () => {
 
       const entries = await repo.getAll()
       expect(entries[0]?.weight).toBeCloseTo(99.79, 1)
-
-      cleanup()
     })
   })
 
@@ -185,8 +171,8 @@ describe('Weight Tracking', () => {
   })
 
   describe('chart visualization', () => {
-    it('shows time range tabs when entries exist', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('shows time range tabs when entries exist', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       // Add an entry first via UI
       await navigateTo({ name: RouteNames.Weight })
@@ -197,12 +183,10 @@ describe('Weight Tracking', () => {
       await expect.element(page.getByRole('tab', { name: '30D' })).toBeVisible()
       await expect.element(page.getByRole('tab', { name: '90D' })).toBeVisible()
       await expect.element(page.getByRole('tab', { name: 'All' })).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows the unit alongside the weight for a single data point', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('shows the unit alongside the weight for a single data point', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
       await weight.addEntry('80')
@@ -217,14 +201,14 @@ describe('Weight Tracking', () => {
           return chartValue?.textContent?.trim()
         })
         .toBe('80 kg')
-
-      cleanup()
     })
   })
 
   describe('outlier confirmation', () => {
-    it('saves the first entry immediately without asking for confirmation', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('saves the first entry immediately without asking for confirmation', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -233,12 +217,12 @@ describe('Weight Tracking', () => {
 
       await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
       await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('asks for confirmation when a new entry deviates wildly from the last one', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('asks for confirmation when a new entry deviates wildly from the last one', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -260,12 +244,10 @@ describe('Weight Tracking', () => {
       await expect.poll(async () => (await repo.getAll())[0]?.weight).toBe(500)
       expect(await repo.getAll()).toHaveLength(1)
       await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('does not save when the outlier confirmation is cancelled', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('does not save when the outlier confirmation is cancelled', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -281,12 +263,10 @@ describe('Weight Tracking', () => {
       const repo = getWeightRepository()
       expect(await repo.getAll()).toHaveLength(1)
       expect((await repo.getAll())[0]?.weight).toBe(80)
-
-      cleanup()
     })
 
-    it('does not ask for confirmation when the change is small', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('does not ask for confirmation when the change is small', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -298,14 +278,12 @@ describe('Weight Tracking', () => {
 
       await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
       await expect.element(weight.getOutlierConfirmBanner()).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('deleting entries', () => {
-    it('removes entry after confirmation', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('removes entry after confirmation', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -325,12 +303,10 @@ describe('Weight Tracking', () => {
 
       // Verify empty state is shown
       await expect.element(weight.getEmptyState()).toBeVisible()
-
-      cleanup()
     })
 
-    it('keeps entry when delete is cancelled', async () => {
-      const { navigateTo, weight, cleanup } = await createTestApp()
+    it('keeps entry when delete is cancelled', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
@@ -347,8 +323,6 @@ describe('Weight Tracking', () => {
 
       // Verify database still has entry
       await expect.poll(async () => (await repo.getAll()).length).toBe(1)
-
-      cleanup()
     })
   })
 })

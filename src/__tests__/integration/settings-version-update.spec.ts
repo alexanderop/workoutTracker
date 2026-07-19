@@ -1,7 +1,6 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 /**
  * The "update available" banner in settings. The app polls /version.json and
@@ -16,14 +15,11 @@ function requestUrl(input: RequestInfo | URL): string {
 }
 
 describe('Settings — app update notice', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
-    await cleanupIntegrationTest()
     vi.restoreAllMocks()
   })
 
-  it('shows the update banner when a newer version is deployed', async () => {
+  it('shows the update banner when a newer version is deployed', async ({ createTestApp }) => {
     const originalFetch = globalThis.fetch.bind(globalThis)
     vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       if (requestUrl(input).includes('/version.json')) {
@@ -40,13 +36,11 @@ describe('Settings — app update notice', () => {
       return originalFetch(input, init)
     })
 
-    const { common, cleanup } = await createTestApp()
+    const { common } = await createTestApp()
     await common.navigateToSettings()
 
     await expect.element(page.getByText(/update available/i)).toBeVisible()
     await expect.element(page.getByText(/refresh to get the latest version/i)).toBeVisible()
     await expect.element(page.getByRole('button', { name: /refresh/i })).toBeVisible()
-
-    cleanup()
   })
 })

@@ -1,10 +1,9 @@
 /* eslint-disable vitest/no-conditional-in-test -- Settings controls are conditionally rendered by preference values. */
 
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getSettingsRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   expectSettingValue,
   getTemplateById,
@@ -21,15 +20,15 @@ const VUEUSE_COLOR_SCHEME_KEY = 'vueuse-color-scheme'
  * and language switching edge cases.
  */
 describe('Settings Preferences', () => {
-  beforeEach(async () => {
-    await setupIntegrationTest()
+  beforeEach(() => {
     localStorage.removeItem(VUEUSE_COLOR_SCHEME_KEY)
   })
-  afterEach(cleanupIntegrationTest)
 
   describe('Dark Mode Toggle', () => {
-    it('toggles the document theme, persists it, and survives navigation', async () => {
-      const { common, router, cleanup } = await createTestApp()
+    it('toggles the document theme, persists it, and survives navigation', async ({
+      createTestApp,
+    }) => {
+      const { common, router } = await createTestApp()
       await common.navigateToSettings()
 
       // Find and verify the theme toggle
@@ -85,14 +84,14 @@ describe('Settings Preferences', () => {
           return element instanceof HTMLButtonElement ? element.dataset.state : null
         })
         .toBe(stateAfterToggle)
-
-      cleanup()
     })
   })
 
   describe('Language Selection', () => {
-    it('changes the UI and document language and persists the selection', async () => {
-      const { common, getByRole, findByText, cleanup } = await createTestApp()
+    it('changes the UI and document language and persists the selection', async ({
+      createTestApp,
+    }) => {
+      const { common, getByRole, getByText } = await createTestApp()
       await common.navigateToSettings()
 
       // Verify initial English text - wait for page to fully load
@@ -104,7 +103,7 @@ describe('Settings Preferences', () => {
       await userEvent.click(languageSelect)
 
       // Select German
-      const germanOption = await findByText('Deutsch')
+      const germanOption = getByText('Deutsch')
       await userEvent.click(germanOption)
 
       // Verify UI updated to German (the heading changes)
@@ -116,14 +115,12 @@ describe('Settings Preferences', () => {
 
       // Verify persisted to database
       await expectSettingValue('language', 'de')
-
-      cleanup()
     })
   })
 
   describe('Delete All Data Dialog', () => {
-    it('cancelling delete dialog preserves all data', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('cancelling delete dialog preserves all data', async ({ createTestApp }) => {
+      const { common, getByRole } = await createTestApp()
 
       // Add some data to verify it persists
       const seededTemplate = await seedTemplate({ name: 'Test Template For Delete Cancel' })
@@ -151,12 +148,10 @@ describe('Settings Preferences', () => {
       // Specifically verify our test template still exists
       const testTemplate = await getTemplateById(seededTemplate.id)
       expect(testTemplate).toBeTruthy()
-
-      cleanup()
     })
 
-    it('pressing Escape in delete dialog preserves data', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('pressing Escape in delete dialog preserves data', async ({ createTestApp }) => {
+      const { common, getByRole } = await createTestApp()
 
       // Add test data
       const seededTemplate = await seedTemplate({ name: 'Test Template For Escape Close' })
@@ -179,14 +174,14 @@ describe('Settings Preferences', () => {
       // Specifically verify our test template still exists
       const testTemplate = await getTemplateById(seededTemplate.id)
       expect(testTemplate).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('Timer Sounds Setting', () => {
-    it('toggles sounds, controls slider visibility, and persists volume', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('toggles sounds, controls slider visibility, and persists volume', async ({
+      createTestApp,
+    }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       // Find timer sounds toggle
@@ -240,14 +235,14 @@ describe('Settings Preferences', () => {
       }
 
       await expectSettingValue('timerSoundVolume', 0.7)
-
-      cleanup()
     })
   })
 
   describe('Live Updates', () => {
-    it('reflects a setting changed through the repository without a manual reload', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('reflects a setting changed through the repository without a manual reload', async ({
+      createTestApp,
+    }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       const timerSoundsToggle = page.getByRole('switch', { name: /timer sounds/i })
@@ -272,14 +267,14 @@ describe('Settings Preferences', () => {
           return element instanceof HTMLButtonElement ? element.dataset.state : null
         })
         .toBe('unchecked')
-
-      cleanup()
     })
   })
 
   describe('Weight Unit Setting', () => {
-    it('switches both ways, persists, and retains pounds across navigation', async () => {
-      const { common, router, getByRole, cleanup } = await createTestApp()
+    it('switches both ways, persists, and retains pounds across navigation', async ({
+      createTestApp,
+    }) => {
+      const { common, router, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
       // Find the lbs button in the weight toggle group (uses role="button" with aria-label)
@@ -310,14 +305,14 @@ describe('Settings Preferences', () => {
       const kgButton = getByRole('button', { name: /kilograms/i })
       await userEvent.click(kgButton)
       await expectSettingValue('weightUnit', 'kg')
-
-      cleanup()
     })
   })
 
   describe('Height Unit Setting', () => {
-    it('switches from cm to ft/in and back, persisting both transitions', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('switches from cm to ft/in and back, persisting both transitions', async ({
+      createTestApp,
+    }) => {
+      const { common, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
       // Find the ft/in button in the height toggle group
@@ -334,14 +329,14 @@ describe('Settings Preferences', () => {
 
       // Verify persisted to database
       await expectSettingValue('heightUnit', 'cm')
-
-      cleanup()
     })
   })
 
   describe('Screen Wake Lock Setting', () => {
-    it('is visible and enabled by default, then persists off and on transitions', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('is visible and enabled by default, then persists off and on transitions', async ({
+      createTestApp,
+    }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       const wakeLockToggle = page.getByRole('switch', { name: /keep screen on/i })
@@ -379,14 +374,14 @@ describe('Settings Preferences', () => {
 
       // Verify database shows enabled
       await expectSettingValue('screenWakeLock', true)
-
-      cleanup()
     })
   })
 
   describe('Rest Timer Setting', () => {
-    it('defaults to 90, persists 120 across navigation, and can be disabled', async () => {
-      const { common, router, cleanup } = await createTestApp()
+    it('defaults to 90, persists 120 across navigation, and can be disabled', async ({
+      createTestApp,
+    }) => {
+      const { common, router } = await createTestApp()
       await common.navigateToSettings()
 
       const preset = page.getByRole('button', { name: /90 second rest timer target/i })
@@ -419,14 +414,12 @@ describe('Settings Preferences', () => {
       const offPreset = page.getByRole('button', { name: /no rest timer target/i })
       await userEvent.click(offPreset)
       await expectSettingValue('defaultRestTimer', 0)
-
-      cleanup()
     })
   })
 
   describe('Advanced Diagnostics Section', () => {
-    it('expands and collapses advanced diagnostics section', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('expands and collapses advanced diagnostics section', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       // Find the advanced diagnostics trigger
@@ -447,8 +440,6 @@ describe('Settings Preferences', () => {
 
       // Content should be hidden
       await expect.element(page.getByText(/wake lock api/i)).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 })

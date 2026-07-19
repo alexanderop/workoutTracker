@@ -1,9 +1,8 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout, seedCompletedWorkouts } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
 /**
@@ -11,24 +10,19 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
  * Tests empty states, loading behavior, and error scenarios.
  */
 describe('History Edge Cases', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Empty State', () => {
-    it('displays empty state when no workout history exists', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays empty state when no workout history exists', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Navigate to history with no workouts
       await navigateTo({ name: RouteNames.History })
 
       // Verify empty state is displayed
       await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('empty state disappears when workout is added', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('empty state disappears when workout is added', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Start with empty state
       await navigateTo({ name: RouteNames.History })
@@ -45,14 +39,12 @@ describe('History Edge Cases', () => {
       // Empty state should be gone, workout should be visible
       await expect.element(page.getByText(/no workouts yet/i)).not.toBeInTheDocument()
       await expect.element(page.getByText('New Workout')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Month Grouping', () => {
-    it('groups workouts by month correctly', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('groups workouts by month correctly', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const now = Date.now()
       const oneMonthAgo = now - 31 * 24 * 60 * 60 * 1000
@@ -88,12 +80,10 @@ describe('History Edge Cases', () => {
       // eslint-disable-next-line no-restricted-syntax -- Counting section headers
       const monthHeaders = document.querySelectorAll('h2.text-sm.uppercase')
       expect(monthHeaders.length).toBeGreaterThanOrEqual(2)
-
-      cleanup()
     })
 
-    it('displays most recent workouts first within a month', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays most recent workouts first within a month', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const now = Date.now()
       const yesterday = now - 24 * 60 * 60 * 1000
@@ -126,14 +116,12 @@ describe('History Edge Cases', () => {
       expect(
         todayCard.compareDocumentPosition(yesterdayCard) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('Workout Detail Navigation', () => {
-    it('handles navigating to non-existent workout gracefully', async () => {
-      const { navigateTo, router, cleanup } = await createTestApp()
+    it('handles navigating to non-existent workout gracefully', async ({ createTestApp }) => {
+      const { navigateTo, router } = await createTestApp()
 
       // Navigate directly to a non-existent workout
       await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: 'non-existent-id' } })
@@ -144,12 +132,10 @@ describe('History Edge Cases', () => {
 
       // Verify no crash - page should render something
       await expect.element(page.getByRole('main')).toBeVisible()
-
-      cleanup()
     })
 
-    it('navigates back from workout detail to history', async () => {
-      const { navigateTo, router, cleanup } = await createTestApp()
+    it('navigates back from workout detail to history', async ({ createTestApp }) => {
+      const { navigateTo, router } = await createTestApp()
 
       // Add a workout
       const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
@@ -169,14 +155,12 @@ describe('History Edge Cases', () => {
 
       // Should navigate back to home (or history)
       await expect.poll(() => router.currentRoute.value.path).toBe('/')
-
-      cleanup()
     })
   })
 
   describe('Workout Detail Display', () => {
-    it('displays strength block details correctly', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays strength block details correctly', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const workout = databaseWorkoutBuilder()
         .withName('Strength Session')
@@ -198,12 +182,10 @@ describe('History Edge Cases', () => {
 
       // Verify exercise name displayed
       await expect.element(page.getByText('Barbell Squat')).toBeVisible()
-
-      cleanup()
     })
 
-    it('displays multiple exercises in workout detail', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays multiple exercises in workout detail', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const workout = databaseWorkoutBuilder()
         .withName('Full Body Session')
@@ -226,14 +208,12 @@ describe('History Edge Cases', () => {
       // Verify both exercises displayed
       await expect.element(page.getByText('Bench Press')).toBeVisible()
       await expect.element(page.getByText('Squat')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Redo Workout', () => {
-    it('shows redo button on completed workout detail', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows redo button on completed workout detail', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const workout = databaseWorkoutBuilder()
         .withName('Completed Workout')
@@ -245,8 +225,6 @@ describe('History Edge Cases', () => {
 
       // Verify redo button is visible
       await expect.element(page.getByRole('button', { name: /redo/i })).toBeVisible()
-
-      cleanup()
     })
   })
 })

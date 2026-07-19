@@ -1,19 +1,17 @@
 /* eslint-disable vitest/no-conditional-in-test -- Prefill controls are conditionally rendered. */
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { getCustomExercisesRepository } from '@/db'
 
 describe('Exercise Pre-fill from Previous Workout', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('pre-fills first set with last set values from previous workout', async () => {
+  it('pre-fills first set with last set values from previous workout', async ({
+    createTestApp,
+  }) => {
     // First create the app to ensure exercises are seeded
-    const { builder, workout, common, cleanup } = await createTestApp()
+    const { builder, workout, common } = await createTestApp()
 
     // Get the actual Bench Press exercise ID from seeded exercises
     const exercises = await getCustomExercisesRepository().getAll()
@@ -55,12 +53,10 @@ describe('Exercise Pre-fill from Previous Workout', () => {
         return await activeSet.getValues()
       })
       .toEqual({ weight: '90', reps: '6', rir: '1' })
-
-    cleanup()
   })
 
-  it('leaves first set empty when exercise has no history', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('leaves first set empty when exercise has no history', async ({ createTestApp }) => {
+    const { builder, workout } = await createTestApp()
 
     // Act: Start workout with exercise that has no history
     await builder.setupStrengthWorkoutAndStart(['Deadlift'])
@@ -73,7 +69,5 @@ describe('Exercise Pre-fill from Previous Workout', () => {
     expect(values.weight).toBe('')
     expect(values.reps).toBe('')
     expect(values.rir).toBe('')
-
-    cleanup()
   })
 })

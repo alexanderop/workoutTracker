@@ -1,11 +1,10 @@
 /* eslint-disable vitest/no-conditional-in-test -- Tests intentionally branch around optional browser file APIs. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   expectWorkoutCount,
   getAllWorkouts,
@@ -24,10 +23,7 @@ const isBrowserMode = (() => {
 })()
 
 describe('Data Management', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
-    await cleanupIntegrationTest()
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
@@ -51,12 +47,12 @@ describe('Data Management', () => {
       })
     })
 
-    it('exports data when clicking Export Data button', async () => {
+    it('exports data when clicking Export Data button', async ({ createTestApp }) => {
       // Arrange: Add test data to DB
       const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
       await seedCompletedWorkout(workout)
 
-      const { common, getByRole, cleanup } = await createTestApp()
+      const { common, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click export button
@@ -65,11 +61,9 @@ describe('Data Management', () => {
       // Assert: Blob was created and cleaned up
       await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
       expect(URL.revokeObjectURL).toHaveBeenCalled()
-
-      cleanup()
     })
 
-    it('imports data from a valid backup file', async () => {
+    it('imports data from a valid backup file', async ({ createTestApp }) => {
       // Arrange: Verify DB is empty
       expect(await getWorkoutCount()).toBe(0)
 
@@ -91,7 +85,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { common, cleanup } = await createTestApp()
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -114,14 +108,12 @@ describe('Data Management', () => {
       await expectWorkoutCount(1)
       const workouts = await getAllWorkouts()
       expect(workouts[0]?.name).toBe('Imported Workout')
-
-      cleanup()
     })
 
-    it('shows error dialog when importing invalid JSON', async () => {
+    it('shows error dialog when importing invalid JSON', async ({ createTestApp }) => {
       const file = new File(['not valid json'], 'bad.json', { type: 'application/json' })
 
-      const { common, cleanup } = await createTestApp()
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload invalid file
@@ -140,16 +132,14 @@ describe('Data Management', () => {
       // Dismiss dialog
       await userEvent.click(common.getDialogButton('OK'))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('deletes all data when confirmed', async () => {
+    it('deletes all data when confirmed', async ({ createTestApp }) => {
       // Arrange: Add data to database
       await seedCompletedWorkout(databaseWorkoutBuilder().withStrengthBlock().build())
       expect(await getWorkoutCount()).toBe(1)
 
-      const { getByRole, common, cleanup } = await createTestApp()
+      const { getByRole, common } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
@@ -165,8 +155,6 @@ describe('Data Management', () => {
 
       // Assert: Data was actually deleted from DB
       await expectWorkoutCount(0)
-
-      cleanup()
     })
   })
 
@@ -174,7 +162,9 @@ describe('Data Management', () => {
   // never reaches the success path that calls `location.reload()`, so it's
   // safe to run in a real browser too.
   describe('Import validation errors', () => {
-    it('shows a translated message and validation details when importing a file that fails schema validation', async () => {
+    it('shows a translated message and validation details when importing a file that fails schema validation', async ({
+      createTestApp,
+    }) => {
       // A structurally valid export that fails Zod's `.strict()` check because
       // of an unrecognized property under `data` — this is the failure mode
       // `dataImport.ts` reports as the `validationFailed` error code.
@@ -194,7 +184,7 @@ describe('Data Management', () => {
         type: 'application/json',
       })
 
-      const { common, cleanup } = await createTestApp()
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       // eslint-disable-next-line no-restricted-syntax -- Hidden file input has no accessible alternative
@@ -216,13 +206,13 @@ describe('Data Management', () => {
 
       await userEvent.click(common.getDialogButton('OK'))
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('History', () => {
-    it('navigates to detail view when clicking a completed workout and displays exercise and set information', async () => {
+    it('navigates to detail view when clicking a completed workout and displays exercise and set information', async ({
+      createTestApp,
+    }) => {
       // Arrange: Create a completed workout in the database
       const completedWorkout = databaseWorkoutBuilder()
         .withName('Push Day')
@@ -238,11 +228,11 @@ describe('Data Management', () => {
       await seedCompletedWorkout(completedWorkout)
 
       // Act: Start at home and navigate to history page
-      const { router, findByText, cleanup } = await createTestApp()
+      const { router, getByText } = await createTestApp()
       await router.push({ name: RouteNames.History })
 
       // Find the workout card and click it
-      const workoutCard = await findByText('Push Day')
+      const workoutCard = getByText('Push Day')
       await userEvent.click(workoutCard)
 
       // Assert: Verify navigation to detail view
@@ -255,14 +245,12 @@ describe('Data Management', () => {
       await expect.element(page.getByText('Bench Press')).toBeVisible()
 
       // Expand the exercise card to see set details
-      const exerciseCard = await findByText('Bench Press')
+      const exerciseCard = getByText('Bench Press')
       await userEvent.click(exerciseCard)
 
       // Verify set data is displayed (weight shown as "100kg", reps as "10")
       await expect.element(page.getByText('100kg')).toBeVisible()
       await expect.element(page.getByText('10', { exact: true })).toBeVisible() // reps value
-
-      cleanup()
     })
   })
 })

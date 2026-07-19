@@ -1,22 +1,20 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('AddBlockDialog - Desktop Viewport Clipping', () => {
   beforeEach(async () => {
-    await setupIntegrationTest()
     // Set viewport to desktop size that triggers the clipping bug
     // At 720px height with sm:max-h-[85vh], dialog max-height is ~612px
     // which isn't enough for all 5 block buttons (4 timed + cardio)
     await page.viewport(1280, 720)
   })
 
-  afterEach(cleanupIntegrationTest)
-
-  it('all timed block options are visible and clickable at 1280x720 viewport', async () => {
-    const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+  it('all timed block options are visible and clickable at 1280x720 viewport', async ({
+    createTestApp,
+  }) => {
+    const { getByRole, common, navigateTo } = await createTestApp()
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
@@ -52,12 +50,12 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     // Verify "Cardio" is also clickable
     await userEvent.click(page.getByText('Cardio'))
     await common.waitForDialog() // Cardio config dialog opens
-
-    cleanup()
   })
 
-  it('scrolls to reveal hidden block options when they are outside viewport', async () => {
-    const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+  it('scrolls to reveal hidden block options when they are outside viewport', async ({
+    createTestApp,
+  }) => {
+    const { getByRole, common, navigateTo } = await createTestApp()
 
     // Use an even smaller viewport to definitely trigger clipping
     await page.viewport(1024, 600)
@@ -90,7 +88,5 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     await expect
       .element(page.getByRole('heading', { name: /configure for time/i }))
       .toBeInViewport()
-
-    cleanup()
   })
 })

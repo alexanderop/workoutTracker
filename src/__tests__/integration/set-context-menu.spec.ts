@@ -1,9 +1,8 @@
 /* eslint-disable vitest/expect-expect -- The exercised menu helper asserts its final UI state. */
 import { flushPromises } from '@vue/test-utils'
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { SetContextMenuPO } from '../helpers/pages/SetContextMenuPO'
 import { ensureHTMLElement } from '../helpers/domHelpers'
 
@@ -19,15 +18,12 @@ function getRowFromInputs(setRow: { kg: HTMLInputElement }): HTMLElement {
 }
 
 describe('Set Context Menu', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
     await flushPromises()
-    await cleanupIntegrationTest()
   })
 
   describe('Opening the menu', () => {
-    it('opens context menu on long press', async () => {
+    it('opens context menu on long press', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -47,13 +43,11 @@ describe('Set Context Menu', () => {
       // Verify menu options are present
       await expect.element(contextMenu.getDeleteOption()).toBeVisible()
       await expect.element(contextMenu.getDuplicateOption()).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Delete action', () => {
-    it('removes the set when delete is clicked', async () => {
+    it('removes the set when delete is clicked', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -83,11 +77,9 @@ describe('Set Context Menu', () => {
           return rows.length - 1
         })
         .toBe(initialSetCount - 1)
-
-      app.cleanup()
     })
 
-    it('disables delete when only one set remains', async () => {
+    it('disables delete when only one set remains', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -124,13 +116,11 @@ describe('Set Context Menu', () => {
       // Delete option should be disabled
       const deleteOption = contextMenu.getDeleteOption()
       await expect.element(deleteOption).toHaveAttribute('aria-disabled', 'true')
-
-      app.cleanup()
     })
   })
 
   describe('Duplicate action', () => {
-    it('duplicates a set with same values', async () => {
+    it('duplicates a set with same values', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -160,11 +150,9 @@ describe('Set Context Menu', () => {
       expect(values.weight).toBe('100')
       expect(values.reps).toBe('8')
       expect(values.rir).toBe('2')
-
-      app.cleanup()
     })
 
-    it('duplicated set is in planned state', async () => {
+    it('duplicated set is in planned state', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -193,13 +181,11 @@ describe('Set Context Menu', () => {
 
       expect(isCompleted).toBe(false)
       expect(isActive).toBe(false)
-
-      app.cleanup()
     })
   })
 
   describe('Closing the menu', () => {
-    it('closes menu when clicking outside', async () => {
+    it('closes menu when clicking outside', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -219,11 +205,9 @@ describe('Set Context Menu', () => {
 
       // Menu should close
       await contextMenu.waitForClose()
-
-      app.cleanup()
     })
 
-    it('closes menu after selecting an action', async () => {
+    it('closes menu after selecting an action', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -243,8 +227,6 @@ describe('Set Context Menu', () => {
       // Menu should be closed
       await contextMenu.waitForClose()
       expect(contextMenu.isVisible()).toBe(false)
-
-      app.cleanup()
     })
   })
 })

@@ -1,22 +1,20 @@
 /* eslint-disable vitest/no-conditional-in-test -- Prefill controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getAllWorkouts, seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { getCustomExercisesRepository } from '@/db'
 import { RouteNames } from '@/router'
 
 describe('Isometric Exercise Prefill', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Wall Sit with weight and duration', () => {
-    it('prefills next set with weight and duration from completed set within same workout', async () => {
+    it('prefills next set with weight and duration from completed set within same workout', async ({
+      createTestApp,
+    }) => {
       // Arrange: Start a new workout with Wall Sit
-      const { builder, common, workout, cleanup } = await createTestApp()
+      const { builder, common, workout } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -58,13 +56,13 @@ describe('Isometric Exercise Prefill', () => {
           return element instanceof HTMLInputElement ? element.value : null
         })
         .toBe('20')
-
-      cleanup()
     })
 
-    it('prefills first set from last workout when starting fresh workout', async () => {
+    it('prefills first set from last workout when starting fresh workout', async ({
+      createTestApp,
+    }) => {
       // First create the app to ensure exercises are seeded
-      const { builder, common, cleanup } = await createTestApp()
+      const { builder, common } = await createTestApp()
 
       // Get the actual Wall Sit exercise ID from seeded exercises
       const exercises = await getCustomExercisesRepository().getAll()
@@ -114,13 +112,13 @@ describe('Isometric Exercise Prefill', () => {
           return element instanceof HTMLInputElement ? element.value : null
         })
         .toBe('20')
-
-      cleanup()
     })
 
-    it('completes full workflow: workout -> save -> new workout with prefill', async () => {
+    it('completes full workflow: workout -> save -> new workout with prefill', async ({
+      createTestApp,
+    }) => {
       // Arrange: Start a fresh workout
-      const { builder, common, workout, navigateTo, cleanup } = await createTestApp()
+      const { builder, common, workout, navigateTo } = await createTestApp()
 
       // Get the Wall Sit exercise ID
       const exercises = await getCustomExercisesRepository().getAll()
@@ -181,8 +179,6 @@ describe('Isometric Exercise Prefill', () => {
           return element instanceof HTMLInputElement ? element.value : null
         })
         .toBe('20')
-
-      cleanup()
     })
   })
 })

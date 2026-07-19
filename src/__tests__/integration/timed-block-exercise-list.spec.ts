@@ -9,13 +9,13 @@
  */
 import { flushPromises } from '@vue/test-utils'
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 import { ensureHTMLElement } from '../helpers/domHelpers'
 
 // Helper to open AMRAP config dialog
-async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestApp>>) {
+async function openAmrapConfigDialog(app: TestApp) {
   const { builder, common } = app
 
   await builder.navigateTo()
@@ -28,10 +28,7 @@ async function openAmrapConfigDialog(app: Awaited<ReturnType<typeof createTestAp
 }
 
 // Helper to add exercise via the overlay picker (not dialog mode)
-async function addExerciseViaOverlay(
-  app: Awaited<ReturnType<typeof createTestApp>>,
-  exerciseName: string,
-) {
+async function addExerciseViaOverlay(app: TestApp, exerciseName: string) {
   const { common } = app
 
   // Click Add Exercise button in the config dialog
@@ -91,28 +88,23 @@ function getLoadInputInRow(row: Element): HTMLInputElement | null {
 }
 
 describe('Timed Block Exercise List', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
     await flushPromises()
-    await cleanupIntegrationTest()
   })
 
   describe('empty state', () => {
-    it('shows empty message when no exercises added', async () => {
+    it('shows empty message when no exercises added', async ({ createTestApp }) => {
       const app = await createTestApp()
       await openAmrapConfigDialog(app)
 
       // Verify empty state message is shown
       const emptyMessage = await page.getByText(/no exercises added/i).query()
       expect(emptyMessage).toBeTruthy()
-
-      app.cleanup()
     })
   })
 
   describe('adding exercises', () => {
-    it('displays exercise name after adding', async () => {
+    it('displays exercise name after adding', async ({ createTestApp }) => {
       const app = await createTestApp()
 
       await openAmrapConfigDialog(app)
@@ -125,11 +117,9 @@ describe('Timed Block Exercise List', () => {
       // Empty message should be gone
       const emptyMessage2 = await page.getByText(/no exercises added/i).query()
       expect(emptyMessage2).toBeFalsy()
-
-      app.cleanup()
     })
 
-    it('shows reps and load inputs for added exercise', async () => {
+    it('shows reps and load inputs for added exercise', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { getByRole } = app
 
@@ -148,13 +138,11 @@ describe('Timed Block Exercise List', () => {
       // Verify load input exists within the exercise row
       const loadInput = getLoadInputInRow(exerciseRows[0]!)
       expect(loadInput).not.toBeNull()
-
-      app.cleanup()
     })
   })
 
   describe('editing exercise values', () => {
-    it('allows setting reps value', async () => {
+    it('allows setting reps value', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { getByRole } = app
 
@@ -176,11 +164,9 @@ describe('Timed Block Exercise List', () => {
 
       // Verify value was set
       expect(repInput.value).toBe('15')
-
-      app.cleanup()
     })
 
-    it('allows setting load value', async () => {
+    it('allows setting load value', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { getByRole } = app
 
@@ -202,13 +188,11 @@ describe('Timed Block Exercise List', () => {
 
       // Verify value was set
       expect(loadInput.value).toBe('24kg')
-
-      app.cleanup()
     })
   })
 
   describe('removing exercises', () => {
-    it('removes exercise when delete button clicked', async () => {
+    it('removes exercise when delete button clicked', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { getByRole } = app
 
@@ -241,13 +225,11 @@ describe('Timed Block Exercise List', () => {
         .toBe(false)
       const updatedDialog = await getByRole('dialog').element()
       expect(updatedDialog.textContent).toContain('Pull-ups')
-
-      app.cleanup()
     })
   })
 
   describe('add exercise button', () => {
-    it('opens exercise picker when add button clicked', async () => {
+    it('opens exercise picker when add button clicked', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { common } = app
 
@@ -258,8 +240,6 @@ describe('Timed Block Exercise List', () => {
 
       // Exercise picker overlay should open (has a search input and exercise list)
       await expect.element(page.getByText('Push-ups', { exact: true })).toBeVisible()
-
-      app.cleanup()
     })
   })
 })

@@ -1,9 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { addDays, subMonths, addMonths, format, startOfWeek } from 'date-fns'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 // Helper to get week strip button by current month
@@ -13,12 +12,9 @@ function getWeekStripButton() {
 }
 
 describe('Workout Calendar', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Week Strip', () => {
-    it('displays current week with correct dates', async () => {
-      const { cleanup } = await createTestApp()
+    it('displays current week with correct dates', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Week strip should be visible on home page (shows month/year)
       const weekStrip = getWeekStripButton()
@@ -31,11 +27,9 @@ describe('Workout Calendar', () => {
       // Find the today indicator (primary background)
       // Use .first() because todayDate (e.g. "20") also matches in "December 2025"
       await expect.element(page.getByText(todayDate, { exact: true }).first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows green dot on days with completed workouts', async () => {
+    it('shows green dot on days with completed workouts', async ({ createTestApp }) => {
       // Seed a workout completed today
       const today = new Date()
       const workout = databaseWorkoutBuilder()
@@ -46,18 +40,16 @@ describe('Workout Calendar', () => {
 
       await seedCompletedWorkout(workout)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       // Wait for the week strip to load
       await expect.element(getWeekStripButton()).toBeVisible()
 
       // The green dot has aria-label "Workout completed"
       await expect.element(page.getByLabelText(/workout completed/i).first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows multiple green dots for multiple workout days', async () => {
+    it('shows multiple green dots for multiple workout days', async ({ createTestApp }) => {
       // Use dates guaranteed to be in the same week (Mon-Sun with weekStartsOn: 1)
       // Start from Monday of current week to avoid week boundary issues
       const today = new Date()
@@ -81,7 +73,7 @@ describe('Workout Calendar', () => {
       await seedCompletedWorkout(workoutTuesday)
       await seedCompletedWorkout(workoutWednesday)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       // Wait for week strip to load
       await expect.element(getWeekStripButton()).toBeVisible()
@@ -97,11 +89,9 @@ describe('Workout Calendar', () => {
           { timeout: 5000 },
         )
         .toBeGreaterThanOrEqual(2)
-
-      cleanup()
     })
 
-    it('displays total weekly workout duration', async () => {
+    it('displays total weekly workout duration', async ({ createTestApp }) => {
       // Use dates guaranteed to be in the same week to avoid week boundary issues
       const today = new Date()
       const weekStart = startOfWeek(today, { weekStartsOn: 1 }) // Monday
@@ -126,28 +116,24 @@ describe('Workout Calendar', () => {
       await seedCompletedWorkout(workout1)
       await seedCompletedWorkout(workout2)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       // Wait for week strip to load and show the total duration
       // Use longer timeout to handle async data loading
       await expect.element(page.getByText('2h 15m'), { timeout: 5000 }).toBeVisible()
-
-      cleanup()
     })
 
-    it('displays 0m when no workouts this week', async () => {
-      const { cleanup } = await createTestApp()
+    it('displays 0m when no workouts this week', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Week strip should show 0m when no workouts
       await expect.element(page.getByText('0m')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Calendar Sheet', () => {
-    it('opens calendar sheet when clicking week strip', async () => {
-      const { cleanup } = await createTestApp()
+    it('opens calendar sheet when clicking week strip', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Click the week strip
       const weekStrip = getWeekStripButton()
@@ -161,12 +147,10 @@ describe('Workout Calendar', () => {
       await expect
         .element(page.getByRole('heading', { name: currentMonth, exact: true }))
         .toBeVisible()
-
-      cleanup()
     })
 
-    it('allows navigating to previous and next months', async () => {
-      const { cleanup } = await createTestApp()
+    it('allows navigating to previous and next months', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -200,11 +184,11 @@ describe('Workout Calendar', () => {
       await expect
         .element(page.getByRole('heading', { name: nextMonth, exact: true }))
         .toBeVisible()
-
-      cleanup()
     })
 
-    it('updates calendar grid when navigating months (not just heading)', async () => {
+    it('updates calendar grid when navigating months (not just heading)', async ({
+      createTestApp,
+    }) => {
       // Seed a workout for a specific date in previous month
       const today = new Date()
       // Same day-of-month one month back (date-fns clamps overflow), so the
@@ -221,7 +205,7 @@ describe('Workout Calendar', () => {
 
       await seedCompletedWorkout(workout)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -260,12 +244,10 @@ describe('Workout Calendar', () => {
       // If the grid updated correctly, clicking this day should show the workout
       // Use .first() since the name appears in both the card and the calendar tooltip
       await expect.element(page.getByText('Previous Month Workout').first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows prompt to select a day when calendar opens', async () => {
-      const { cleanup } = await createTestApp()
+    it('shows prompt to select a day when calendar opens', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -275,12 +257,10 @@ describe('Workout Calendar', () => {
 
       // Should show the select day prompt initially
       await expect.element(page.getByText(/select a day/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('displays calendar with correct structure', async () => {
-      const { cleanup } = await createTestApp()
+    it('displays calendar with correct structure', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -294,12 +274,12 @@ describe('Workout Calendar', () => {
 
       // Should have weekday headers (at least one - use first to avoid strict mode)
       await expect.element(page.getByText('Mon').first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('should start the week on Monday to match the home week strip', async () => {
-      const { cleanup } = await createTestApp()
+    it('should start the week on Monday to match the home week strip', async ({
+      createTestApp,
+    }) => {
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -315,11 +295,9 @@ describe('Workout Calendar', () => {
       const dialog = page.getByRole('dialog')
       const firstHeader = dialog.getByText(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/).first()
       await expect.element(firstHeader).toHaveTextContent('Mon')
-
-      cleanup()
     })
 
-    it('shows green dots on calendar for workout days', async () => {
+    it('shows green dots on calendar for workout days', async ({ createTestApp }) => {
       // Seed a workout for today
       const today = new Date()
       const workout = databaseWorkoutBuilder()
@@ -331,7 +309,7 @@ describe('Workout Calendar', () => {
 
       await seedCompletedWorkout(workout)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       // Open calendar sheet
       const weekStrip = getWeekStripButton()
@@ -348,8 +326,6 @@ describe('Workout Calendar', () => {
           return dots.length
         })
         .toBeGreaterThanOrEqual(1)
-
-      cleanup()
     })
   })
 })

@@ -1,16 +1,11 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Unit Display', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('displays weight in lbs when user changes unit preference', async () => {
-    const { navigateTo, common, builder, cleanup } =
-      await createTestApp()
+  it('displays weight in lbs when user changes unit preference', async ({ createTestApp }) => {
+    const { navigateTo, common, builder } = await createTestApp()
 
     // Start a workout and add a strength block
     await page.getByRole('button', { name: /start new workout/i }).click()
@@ -42,13 +37,10 @@ describe('Unit Display', () => {
 
     // Verify weight unit now shows 'LBS' (in table header)
     await expect.element(page.getByText('LBS')).toBeInTheDocument()
-
-    cleanup()
   })
 
-  it('converts and displays weight correctly when switching units', async () => {
-    const { navigateTo, common, builder, workout, cleanup } =
-      await createTestApp()
+  it('converts and displays weight correctly when switching units', async ({ createTestApp }) => {
+    const { navigateTo, common, builder, workout } = await createTestApp()
 
     // Navigate to settings first and switch to lbs
     await navigateTo({ name: RouteNames.Settings })
@@ -78,7 +70,5 @@ describe('Unit Display', () => {
 
     // Verify set was completed using Page Object method
     await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-    cleanup()
   })
 })

@@ -1,5 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import {
   deleteAllData,
   getDataManagementRepository,
@@ -8,34 +9,29 @@ import {
 } from '@/db'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbCompletedWorkout as createDatabaseCompletedWorkout } from '../factories'
 
 describe('Onboarding Flow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('First-Time User Redirect', () => {
-    it('redirects to onboarding when navigating to home with fresh database', async () => {
+    it('redirects to onboarding when navigating to home with fresh database', async ({
+      createTestApp,
+    }) => {
       // Arrange: Reset onboarding to simulate fresh user
       // (setupIntegrationTest marks onboarding complete by default)
       const onboarding = useOnboarding()
       onboarding.$reset()
 
       // Act: Create app starting at home route (default behavior)
-      const { router, cleanup } = await createTestApp()
+      const { router } = await createTestApp()
 
       // Assert: Should have been redirected to onboarding
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
-
-      cleanup()
     })
   })
 
   describe('Onboarding State', () => {
-    it('composable state reflects database state', async () => {
-      const { cleanup } = await createTestApp()
+    it('composable state reflects database state', async ({ createTestApp }) => {
+      await createTestApp()
 
       // Reset composable state and verify it's clean
       const onboarding = useOnboarding()
@@ -50,12 +46,10 @@ describe('Onboarding Flow', () => {
       // Database should reflect this
       const state = await getOnboardingRepository().get()
       expect(state.completed).toBe(true)
-
-      cleanup()
     })
 
-    it('step changes persist to database', async () => {
-      const { cleanup } = await createTestApp()
+    it('step changes persist to database', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -73,12 +67,10 @@ describe('Onboarding Flow', () => {
       // Note: Due to fail-open, database errors result in step=0
       // Just verify the composable works correctly
       expect(typeof onboarding.currentStep.value).toBe('number')
-
-      cleanup()
     })
 
-    it('detects seeded templates as existing data', async () => {
-      const { cleanup } = await createTestApp()
+    it('detects seeded templates as existing data', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -89,75 +81,65 @@ describe('Onboarding Flow', () => {
 
       // Seeded templates are detected
       expect(hasData).toBe(true)
-
-      cleanup()
     })
 
-    it('detects existing workout data', async () => {
+    it('detects existing workout data', async ({ createTestApp }) => {
       // Seed existing workout data
       const workout = createDatabaseCompletedWorkout({ name: 'Previous Workout' })
       await getWorkoutsRepository().add(workout)
 
-      const { cleanup } = await createTestApp()
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
       const hasData = await onboarding.checkExistingData()
 
       expect(hasData).toBe(true)
-
-      cleanup()
     })
 
-    it('reports correct total slides based on PWA status', async () => {
-      const { cleanup } = await createTestApp()
+    it('reports correct total slides based on PWA status', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
 
       // In test environment (not PWA), should have 6 slides
       expect(onboarding.totalSlides.value).toBe(6)
-
-      cleanup()
     })
   })
 
   describe('Onboarding Route', () => {
-    it('navigates to onboarding route', async () => {
+    it('navigates to onboarding route', async ({ createTestApp }) => {
       // Reset onboarding so we can navigate to it
       useOnboarding().$reset()
 
-      const { router, navigateTo, cleanup } = await createTestApp()
+      const { router, navigateTo } = await createTestApp()
 
       await navigateTo('/onboarding')
 
       // Route should be onboarding
       expect(router.currentRoute.value.name).toBe(RouteNames.Onboarding)
-
-      cleanup()
     })
 
-    it('onboarding view renders content', async () => {
+    it('onboarding view renders content', async ({ createTestApp }) => {
       // Reset onboarding so we can navigate to it
       useOnboarding().$reset()
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
 
       await navigateTo('/onboarding')
 
       // Check that the onboarding view renders with carousel content
       const skipButton = page.getByRole('button', { name: /skip to app/i })
       await expect.element(skipButton).toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Skip Flow', () => {
-    it('skip button marks onboarding complete and navigates home', async () => {
+    it('skip button marks onboarding complete and navigates home', async ({ createTestApp }) => {
       // Reset onboarding so we can test the skip flow
       useOnboarding().$reset()
 
-      const { router, navigateTo, cleanup } = await createTestApp()
+      const { router, navigateTo } = await createTestApp()
 
       await navigateTo('/onboarding')
 
@@ -172,14 +154,12 @@ describe('Onboarding Flow', () => {
       // Onboarding should be marked complete
       const state = await getOnboardingRepository().get()
       expect(state.completed).toBe(true)
-
-      cleanup()
     })
   })
 
   describe('Resume Flow', () => {
-    it('composable remembers step after setStep', async () => {
-      const { cleanup } = await createTestApp()
+    it('composable remembers step after setStep', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -190,17 +170,15 @@ describe('Onboarding Flow', () => {
 
       // Step should persist in composable state
       expect(onboarding.currentStep.value).toBe(3)
-
-      cleanup()
     })
   })
 
   describe('Checklist Navigation', () => {
-    it('navigate helper sets complete and returns correct route', async () => {
+    it('navigate helper sets complete and returns correct route', async ({ createTestApp }) => {
       // Reset onboarding so we can navigate to it
       useOnboarding().$reset()
 
-      const { router, navigateTo, cleanup } = await createTestApp()
+      const { router, navigateTo } = await createTestApp()
 
       await navigateTo('/onboarding')
 
@@ -211,16 +189,14 @@ describe('Onboarding Flow', () => {
       await router.push({ name: RouteNames.CreateTemplate })
 
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.CreateTemplate)
-
-      cleanup()
     })
   })
 
   describe('Progress Indicator', () => {
-    it('updates progress when navigating to next slide', async () => {
+    it('updates progress when navigating to next slide', async ({ createTestApp }) => {
       useOnboarding().$reset()
 
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
       await navigateTo('/onboarding')
 
       // Get progress indicator
@@ -241,14 +217,12 @@ describe('Onboarding Flow', () => {
           return element?.getAttribute('aria-valuenow')
         })
         .toBe('20')
-
-      cleanup()
     })
   })
 
   describe('Navigation Controls', () => {
-    it('composable tracks PWA state and slide count', async () => {
-      const { cleanup } = await createTestApp()
+    it('composable tracks PWA state and slide count', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -258,12 +232,10 @@ describe('Onboarding Flow', () => {
 
       // PWA detection should work
       expect(typeof onboarding.isPWA.value).toBe('boolean')
-
-      cleanup()
     })
 
-    it('composable step navigation works correctly', async () => {
-      const { cleanup } = await createTestApp()
+    it('composable step navigation works correctly', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -277,12 +249,10 @@ describe('Onboarding Flow', () => {
 
       await onboarding.setStep(5)
       expect(onboarding.currentStep.value).toBe(5)
-
-      cleanup()
     })
 
-    it('composable initialization state is tracked', async () => {
-      const { cleanup } = await createTestApp()
+    it('composable initialization state is tracked', async ({ createTestApp }) => {
+      await createTestApp()
 
       const onboarding = useOnboarding()
       onboarding.$reset()
@@ -293,13 +263,11 @@ describe('Onboarding Flow', () => {
       // After initialize, should be initialized
       await onboarding.initialize()
       expect(onboarding.isInitialized.value).toBe(true)
-
-      cleanup()
     })
   })
 
   describe('Data Deletion', () => {
-    it('preserves onboarding state when user deletes all data', async () => {
+    it('preserves onboarding state when user deletes all data', async ({ createTestApp }) => {
       // 1. Complete onboarding
       const onboarding = useOnboarding()
       await onboarding.markComplete()
@@ -308,7 +276,7 @@ describe('Onboarding Flow', () => {
       expect(onboarding.completed.value).toBe(true)
 
       // 2. Create app and add some workout data
-      const { router, cleanup } = await createTestApp()
+      const { router } = await createTestApp()
       const workout = createDatabaseCompletedWorkout({ name: 'Test Workout' })
       await getWorkoutsRepository().add(workout)
 
@@ -326,18 +294,18 @@ describe('Onboarding Flow', () => {
       // 6. Assert: User should NOT be redirected to onboarding
       await router.push({ name: RouteNames.Home })
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Home)
-
-      cleanup()
     })
 
-    it('resets onboarding state so Settings "Delete All Data" produces a true first run', async () => {
+    it('resets onboarding state so Settings "Delete All Data" produces a true first run', async ({
+      createTestApp,
+    }) => {
       // 1. Complete onboarding, simulating an existing user
       const onboarding = useOnboarding()
       await onboarding.markComplete()
       expect(onboarding.completed.value).toBe(true)
 
       // 2. Add workout data
-      const { router, cleanup } = await createTestApp()
+      const { router } = await createTestApp()
       const workout = createDatabaseCompletedWorkout({ name: 'Test Workout' })
       await getWorkoutsRepository().add(workout)
 
@@ -362,8 +330,6 @@ describe('Onboarding Flow', () => {
       // that never re-runs the guard.
       await router.push({ name: RouteNames.Settings })
       await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.Onboarding)
-
-      cleanup()
     })
   })
 })

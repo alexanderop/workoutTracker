@@ -1,17 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Isometric Exercise Workflow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Given an isometric exercise (Plank)', () => {
-    it('tracks duration instead of reps for a completed set', async () => {
+    it('tracks duration instead of reps for a completed set', async ({ createTestApp }) => {
       // Arrange: Start a new workout
-      const { builder, common, workout, cleanup } = await createTestApp()
+      const { builder, common, workout } = await createTestApp()
 
       // Act: Add an isometric exercise
       await builder.navigateTo()
@@ -44,13 +40,11 @@ describe('Isometric Exercise Workflow', () => {
 
       // Assert: First set shows completed state
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
     })
 
-    it('shows weighted plank with both weight and duration inputs', async () => {
+    it('shows weighted plank with both weight and duration inputs', async ({ createTestApp }) => {
       // Arrange: Start a new workout
-      const { builder, common, workout, cleanup } = await createTestApp()
+      const { builder, common, workout } = await createTestApp()
 
       // Act: Add weighted plank (has weight + duration)
       await builder.navigateTo()
@@ -78,8 +72,6 @@ describe('Isometric Exercise Workflow', () => {
 
       // Assert: First set shows completed state
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
     })
   })
 })

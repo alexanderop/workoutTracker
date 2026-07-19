@@ -32,18 +32,16 @@
  *      guard the underlying add-to-workout mechanism going forward.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 import { ensureHTMLElement } from '../helpers/domHelpers'
 
 describe('AddBlockDialog - exercise selection reliability', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should show an "Added <exercise>" confirmation toast when an exercise is selected from the unfiltered list', async () => {
-    const { builder, common, cleanup } = await createTestApp()
+  it('should show an "Added <exercise>" confirmation toast when an exercise is selected from the unfiltered list', async ({
+    createTestApp,
+  }) => {
+    const { builder, common } = await createTestApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -56,14 +54,14 @@ describe('AddBlockDialog - exercise selection reliability', () => {
     // Never-silent guarantee: a confirmation toast must appear regardless of
     // whether the tap landed correctly, so the user always gets feedback.
     await expect.element(page.getByRole('status').getByText(/added bench press/i)).toBeVisible()
-
-    cleanup()
   })
 
-  it('should add the exercise to the workout when tapping it directly in the unfiltered list at a mobile viewport', async () => {
+  it('should add the exercise to the workout when tapping it directly in the unfiltered list at a mobile viewport', async ({
+    createTestApp,
+  }) => {
     await page.viewport(390, 844)
 
-    const { builder, common, cleanup } = await createTestApp()
+    const { builder, common } = await createTestApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -86,16 +84,16 @@ describe('AddBlockDialog - exercise selection reliability', () => {
     // show the sets table (which only renders once at least one block exists).
     await builder.startWorkout()
     await expect.element(page.getByRole('table')).toBeVisible()
-
-    cleanup()
   })
 
   describe('on touch devices', () => {
     beforeEach(mockTouchDevice)
     afterEach(restoreMatchMedia)
 
-    it('should not autofocus the exercise search input, avoiding the on-screen-keyboard reflow race that swallows the first tap', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('should not autofocus the exercise search input, avoiding the on-screen-keyboard reflow race that swallows the first tap', async ({
+      createTestApp,
+    }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -103,8 +101,6 @@ describe('AddBlockDialog - exercise selection reliability', () => {
       const searchInput = await page.getByRole('textbox').element()
 
       expect(document.activeElement).not.toBe(searchInput)
-
-      cleanup()
     })
   })
 })

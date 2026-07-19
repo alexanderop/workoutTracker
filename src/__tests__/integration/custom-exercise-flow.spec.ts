@@ -1,15 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Custom Exercise Flow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('creates a custom exercise and displays it in the exercises view', async () => {
-    const { common, exercises, getByRole, cleanup } = await createTestApp()
+  it('creates a custom exercise and displays it in the exercises view', async ({
+    createTestApp,
+  }) => {
+    const { common, exercises, getByRole } = await createTestApp()
 
     // Step 1: Navigate to exercises view
     await common.navigateToExercises()
@@ -33,12 +31,12 @@ describe('Custom Exercise Flow', () => {
 
     // Step 6: Assert custom exercise appears in the list
     await expect.element(page.getByText('My Awesome Lift')).toBeVisible()
-
-    cleanup()
   })
 
-  it('creates a custom exercise and shows it in the add exercise dialog', async () => {
-    const { common, exercises, router, getByRole, cleanup } = await createTestApp()
+  it('creates a custom exercise and shows it in the add exercise dialog', async ({
+    createTestApp,
+  }) => {
+    const { common, exercises, router, getByRole } = await createTestApp()
 
     // Create custom exercise via UI
     await common.navigateToExercises()
@@ -65,12 +63,10 @@ describe('Custom Exercise Flow', () => {
 
     // Assert: Custom exercise appears in the dialog
     await expect.element(page.getByText('Custom Compound Move')).toBeVisible()
-
-    cleanup()
   })
 
-  it('finds created custom exercise via search', async () => {
-    const { common, exercises, getByRole, cleanup } = await createTestApp()
+  it('finds created custom exercise via search', async ({ createTestApp }) => {
+    const { common, exercises, getByRole } = await createTestApp()
 
     // Create custom exercise with unique name
     await common.navigateToExercises()
@@ -93,13 +89,11 @@ describe('Custom Exercise Flow', () => {
 
     // Assert: Custom exercise found via search
     await expect.element(page.getByText('Zyzz Special Curl')).toBeVisible()
-
-    cleanup()
   })
 
   describe('Form Validation', () => {
-    it('disables save button when exercise name is empty', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('disables save button when exercise name is empty', async ({ createTestApp }) => {
+      const { common, getByRole } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
@@ -110,12 +104,10 @@ describe('Custom Exercise Flow', () => {
       // Assert save button is disabled when name is empty
       const saveButton = getByRole('button', { name: /save/i })
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
 
-    it('disables save button when name contains only whitespace', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('disables save button when name contains only whitespace', async ({ createTestApp }) => {
+      const { common, getByRole } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
@@ -130,12 +122,12 @@ describe('Custom Exercise Flow', () => {
       // Assert save button remains disabled
       const saveButton = getByRole('button', { name: /save/i })
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
 
-    it('keeps save disabled with only a name -- a muscle group is also required (Finding M5)', async () => {
-      const { common, getByRole, cleanup } = await createTestApp()
+    it('keeps save disabled with only a name -- a muscle group is also required (Finding M5)', async ({
+      createTestApp,
+    }) => {
+      const { common, getByRole } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
@@ -154,12 +146,12 @@ describe('Custom Exercise Flow', () => {
       // Name alone is not enough -- a muscle-less exercise is invisible in
       // every filtered library view, so save stays disabled.
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
 
-    it('enables save button when a valid name and muscle group are entered', async () => {
-      const { common, exercises, getByRole, cleanup } = await createTestApp()
+    it('enables save button when a valid name and muscle group are entered', async ({
+      createTestApp,
+    }) => {
+      const { common, exercises, getByRole } = await createTestApp()
 
       // Navigate to create exercise page
       await common.navigateToExercises()
@@ -178,15 +170,12 @@ describe('Custom Exercise Flow', () => {
       await exercises.selectMuscle('Legs')
 
       await expect.element(saveButton).not.toBeDisabled()
-
-      cleanup()
     })
   })
 
   describe('Full User Journey', () => {
-    it('creates custom exercise and uses it to complete a workout', async () => {
-      const { builder, common, exercises, workout, router, getByRole, cleanup } =
-        await createTestApp()
+    it('creates custom exercise and uses it to complete a workout', async ({ createTestApp }) => {
+      const { builder, common, exercises, workout, router, getByRole } = await createTestApp()
 
       // ========================================
       // PHASE 1: Create custom exercise
@@ -257,8 +246,6 @@ describe('Custom Exercise Flow', () => {
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
       await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()
 
       // ========================================
@@ -266,8 +253,6 @@ describe('Custom Exercise Flow', () => {
       // ========================================
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
   })
 })

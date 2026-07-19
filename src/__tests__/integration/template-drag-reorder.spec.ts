@@ -1,8 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 import { ensureHTMLElement } from '../helpers/domHelpers'
@@ -54,12 +53,11 @@ function getBlockNames(): Array<string> {
 }
 
 describe('Template Drag-and-Drop Reordering', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('drag handle visibility', () => {
-    it('renders the sortable blocks in order with handles and no legacy arrow controls', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('renders the sortable blocks in order with handles and no legacy arrow controls', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 2 exercises
       const template = await seedTemplate({
@@ -93,14 +91,14 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       await expect.element(page.getByRole('list')).toBeVisible()
       expect(getBlockNames()).toEqual(['Exercise A', 'Exercise B'])
-
-      cleanup()
     })
   })
 
   describe('reordering blocks via drag', () => {
-    it('reorders three blocks with a real drag and persists the new order', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('reorders three blocks with a real drag and persists the new order', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Persisted Drag Order',
@@ -138,8 +136,6 @@ describe('Template Drag-and-Drop Reordering', () => {
       await expect
         .poll(getBlockNames)
         .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
-
-      cleanup()
     })
   })
 })

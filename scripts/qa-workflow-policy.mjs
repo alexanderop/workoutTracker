@@ -38,11 +38,7 @@ export function hasMeaningfulTemplateContent(section) {
 // safe as both git paths and URL segments: flat (no directories), lowercase
 // kebab/snake, .png only.
 export function isValidScreenshotFilename(name) {
-  return (
-    typeof name === 'string' &&
-    name.length <= 100 &&
-    /^[a-z0-9][a-z0-9_-]*\.png$/.test(name)
-  )
+  return typeof name === 'string' && name.length <= 100 && /^[a-z0-9][a-z0-9_-]*\.png$/.test(name)
 }
 
 // Replace relative `qa-screenshots/<file>` image references in the markdown

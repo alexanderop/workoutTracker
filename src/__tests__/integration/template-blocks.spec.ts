@@ -1,9 +1,8 @@
 /* eslint-disable vitest/no-conditional-in-test -- Block controls are conditionally rendered by kind. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock,
   createDbTemplateAmrapBlock as createDatabaseTemplateAmrapBlock,
@@ -14,12 +13,9 @@ import {
 import { getAllTemplates, getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 
 describe('Template Blocks - Timed and Cardio Support', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Create template with timed blocks', () => {
-    it('creates a template with an AMRAP block', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('creates a template with an AMRAP block', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -76,12 +72,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       expect(template).toBeDefined()
       expect(template?.blocks).toHaveLength(1)
       expect(template?.blocks[0]?.kind).toBe('amrap')
-
-      cleanup()
     })
 
-    it('creates a template with a cardio block', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('creates a template with a cardio block', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -122,12 +116,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const template = templates.find((t) => t.name === 'Cardio Day')
       expect(template).toBeDefined()
       expect(template?.blocks[0]?.kind).toBe('cardio')
-
-      cleanup()
     })
 
-    it('creates a template with mixed blocks (strength + EMOM)', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('creates a template with mixed blocks (strength + EMOM)', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template page
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -173,14 +165,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       expect(template?.blocks).toHaveLength(2)
       expect(template?.blocks[0]?.kind).toBe('strength')
       expect(template?.blocks[1]?.kind).toBe('emom')
-
-      cleanup()
     })
   })
 
   describe('Edit template with timed blocks', () => {
-    it('adds an AMRAP block to an existing template', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('adds an AMRAP block to an existing template', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Seed template with strength block
       const template = await seedTemplate({
@@ -226,12 +216,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       const updated = await getTemplateById(template.id)
       expect(updated?.blocks[0]?.kind).toBe('strength')
       expect(updated?.blocks[1]?.kind).toBe('amrap')
-
-      cleanup()
     })
 
-    it('displays existing timed blocks when editing template', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays existing timed blocks when editing template', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with AMRAP block
       const template = await seedTemplate({
@@ -253,15 +241,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
       // Should show duration info
       await expect.element(page.getByText(/10 min/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Reorder mixed block types', () => {
-    it('displays mixed block types with drag handles for reordering', async () => {
+    it('displays mixed block types with drag handles for reordering', async ({ createTestApp }) => {
       // Note: Drag-and-drop reordering is tested in template-drag-reorder.spec.ts
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
 
       // Seed template with mixed blocks: Strength, AMRAP, Cardio
       const template = await seedTemplate({
@@ -289,14 +275,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // eslint-disable-next-line no-restricted-syntax -- Finding all block cards with drag handles
       const dragHandles = document.querySelectorAll('.drag-handle')
       expect(dragHandles).toHaveLength(3) // One per block
-
-      cleanup()
     })
   })
 
   describe('Start workout from template with timed blocks', () => {
-    it('starts a workout from a template with AMRAP block', async () => {
-      const { builder, getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+    it('starts a workout from a template with AMRAP block', async ({ createTestApp }) => {
+      const { builder, getByRole, common, router, navigateTo } = await createTestApp()
 
       // Seed template with AMRAP block
       const template = await seedTemplate({
@@ -329,12 +313,10 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       // The block should be an AMRAP (we can verify by checking the block type indicator)
       await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('starts a workout from a template with mixed blocks', async () => {
-      const { builder, getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('starts a workout from a template with mixed blocks', async ({ createTestApp }) => {
+      const { builder, getByRole, common, navigateTo } = await createTestApp()
 
       // Seed template with strength + EMOM
       const template = await seedTemplate({
@@ -361,14 +343,12 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       // Verify both blocks exist
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(2)
-
-      cleanup()
     })
   })
 
   describe('Remove timed blocks from template', () => {
-    it('removes an AMRAP block from template', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('removes an AMRAP block from template', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Seed template with strength + AMRAP
       const template = await seedTemplate({
@@ -413,8 +393,6 @@ describe('Template Blocks - Timed and Cardio Support', () => {
 
       const updated = await getTemplateById(template.id)
       expect(updated?.blocks[0]?.kind).toBe('strength')
-
-      cleanup()
     })
   })
 })

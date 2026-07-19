@@ -1,8 +1,7 @@
 /* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import {
   createForTimeBenchmark,
@@ -15,11 +14,10 @@ import {
 } from './helpers/benchmarkHelpers'
 
 describe('Benchmark Management', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Complete Lifecycle', () => {
-    it('completes full benchmark lifecycle from creation to deletion', async () => {
+    it('completes full benchmark lifecycle from creation to deletion', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
 
       // Create benchmark via API (form tested separately)
@@ -69,8 +67,6 @@ describe('Benchmark Management', () => {
 
       const deleted = await getBenchmarksRepo().getById(benchmark.id)
       expect(deleted).toBeFalsy()
-
-      app.cleanup()
     })
   })
 
@@ -103,31 +99,27 @@ describe('Benchmark Management', () => {
       expect(benchmarks[0]?.rounds[0]?.exercises).toHaveLength(3)
     })
 
-    it('validates form: cannot save without exercises', async () => {
+    it('validates form: cannot save without exercises', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
       await app.benchmarkForm.fillName('Test Benchmark')
       // No type selection needed - all benchmarks are ForTime
       app.benchmarkForm.assertSaveDisabled()
-
-      app.cleanup()
     })
 
-    it('explains what a benchmark is on the create screen', async () => {
+    it('explains what a benchmark is on the create screen', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
       await expect
         .element(page.getByText(/a workout you repeat over time to measure progress/i))
         .toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Editing', () => {
-    it('edits existing benchmark and saves changes', async () => {
+    it('edits existing benchmark and saves changes', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({ name: 'Original Name' })
       const app = await createTestApp()
 
@@ -140,13 +132,11 @@ describe('Benchmark Management', () => {
       await expect.element(page.getByText('Updated Name')).toBeVisible()
       const updated = await getBenchmarksRepo().getById(benchmark.id)
       expect(updated?.name).toBe('Updated Name')
-
-      app.cleanup()
     })
   })
 
   describe('Deletion', () => {
-    it('deletes benchmark with confirmation dialog', async () => {
+    it('deletes benchmark with confirmation dialog', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({ name: 'To Delete' })
       const app = await createTestApp()
 
@@ -165,8 +155,6 @@ describe('Benchmark Management', () => {
       await userEvent.click(page.getByRole('button', { name: /^delete$/i }))
       await expect.poll(() => app.router.currentRoute.value.path).toBe('/workouts')
       expect(await getBenchmarksRepo().getById(benchmark.id)).toBeFalsy()
-
-      app.cleanup()
     })
   })
 })

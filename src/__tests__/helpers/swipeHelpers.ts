@@ -54,9 +54,6 @@ export async function simulateSwipeLeft(element: Element, distance = 100): Promi
       ],
     }),
   )
-
-  // Wait for state update
-  await new Promise((resolve) => setTimeout(resolve, 50))
 }
 
 /**

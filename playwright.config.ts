@@ -27,5 +27,10 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'mobile-webkit-critical',
+      grep: /first-time user can enter|active workout and completed set survive/,
+      use: { ...devices['iPhone 13'] },
+    },
   ],
 })

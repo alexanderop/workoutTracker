@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
@@ -41,8 +42,12 @@ const sharedTestConfig = {
   exclude: [...configDefaults.exclude, 'e2e/**'],
   // Run test files in parallel - resetDatabase() resets all singleton state
   fileParallelism: true,
-  // Stop test execution after first failure
-  bail: 1,
+  // Keep local feedback quick, but let CI report every failure in each shard.
+  bail: process.env.CI ? 0 : 1,
+  // Prevent mocks and stubbed platform state leaking into later tests.
+  restoreMocks: true,
+  unstubEnvs: true,
+  unstubGlobals: true,
   // Required for ArchUnitTS custom matchers
   globals: true,
   setupFiles: ['./src/__tests__/setup.ts'],
@@ -59,7 +64,7 @@ const coverageConfig = {
   provider: 'v8' as const,
   // Shard jobs write one Istanbul JSON map each. CI merges those maps and
   // enforces the global thresholds once all shards are present.
-  reporter: process.env.VITEST_COVERAGE_SHARD ? ['json'] : ['text-summary'],
+  reporter: process.env.VITEST_COVERAGE_SHARD ? ['json'] : ['text-summary', 'html', 'lcov'],
   include: ['src/**/*.{ts,vue}'],
   exclude: ['src/**/*.d.ts', 'src/__tests__/**', 'src/components/ui/**'],
   thresholds: process.env.VITEST_COVERAGE_SHARD ? undefined : coverageThresholds,
@@ -75,6 +80,9 @@ export default defineConfig({
     coverage: coverageConfig,
 
     // Project-based configuration for running different test suites
+    // Pure lib/property specs intentionally stay in the browser project.
+    // Splitting them would violate the one-runtime convention and require a
+    // second coverage/sharding path; the lib suite also contains DOM/IDB specs.
     projects: [
       // Project 1: Default (main tests)
       {
@@ -137,6 +145,9 @@ export default defineConfig({
         test: {
           name: 'arch',
           globals: true,
+          restoreMocks: true,
+          unstubEnvs: true,
+          unstubGlobals: true,
           include: ['src/__tests__/architecture/**/*.test.ts'],
           // No browser config - runs in Node for filesystem access
         },
