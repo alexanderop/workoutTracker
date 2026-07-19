@@ -76,7 +76,7 @@ jobs:
           annotations: true
           min-confidence: high
           min-severity: high
-          online-audits: false
+          online-audits: true
           version: 1.25.2
 
   osv:

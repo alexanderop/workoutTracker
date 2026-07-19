@@ -173,7 +173,7 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(ci, /skip-commit: 'true'/)
   assert.match(ci, /git-push: 'false'/)
   assert.match(ci, /zizmorcore\/zizmor-action@[0-9a-f]{40}/)
-  assert.match(ci, /online-audits: false/)
+  assert.match(ci, /online-audits: true/)
   assert.match(triage, /head_repository\.full_name == github\.repository/)
   assert.match(triage, /pull\.head\.sha !== expectedSha/)
   assert.match(triage, /filter\(name => name !== 'Required CI'\)/)
@@ -181,6 +181,50 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
+})
+
+test('Playwright system packages are installed independently of the browser cache', async () => {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-ci-fix.yml', 'utf8'))
+  const steps = workflow.jobs.verify.steps
+  const cache = steps.find((step) => step.name === 'Cache Playwright browsers')
+  const dependencies = steps.find(
+    (step) => step.name === 'Install Playwright system dependencies',
+  )
+  const browser = steps.find((step) => step.name === 'Install Playwright browser')
+
+  assert.match(cache.with.key, /\$\{\{ runner\.arch \}\}/)
+  assert.equal(dependencies.if, "runner.os == 'Linux'")
+  assert.equal(dependencies.run, 'pnpm exec playwright install-deps chromium')
+  assert.equal(browser.if, "steps.playwright-cache.outputs.cache-hit != 'true'")
+  assert.equal(browser.run, 'pnpm exec playwright install chromium')
+})
+
+test('issue assignment authorizes the triggering repository owner', async () => {
+  const workflow = parseYaml(await readFile('.github/workflows/claude.yml', 'utf8'))
+  const admission = workflow.jobs.claude.if
+
+  assert.match(admission, /github\.event\.action == 'opened'/)
+  assert.match(admission, /github\.event\.action == 'assigned'/)
+  assert.match(admission, /github\.actor == github\.repository_owner/)
+  assert.match(admission, /github\.event\.issue\.author_association == 'OWNER'/)
+})
+
+test('download-artifact uses the repository-verified action pin everywhere', async () => {
+  const workflowNames = (await readdir('.github/workflows')).filter((name) => name.endsWith('.yml'))
+  const sources = await Promise.all(
+    workflowNames.map((name) => readFile(`.github/workflows/${name}`, 'utf8')),
+  )
+  const pins = sources.flatMap((source) =>
+    source
+      .matchAll(/actions\/download-artifact@([0-9a-f]{40})/g)
+      .map((match) => match[1])
+      .toArray(),
+  )
+
+  assert.ok(pins.length > 0)
+  assert.deepEqual(new Set(pins).values().toArray(), [
+    '3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c',
+  ])
 })
 
 test('Required CI gates every verification job and the exact release commit', async () => {

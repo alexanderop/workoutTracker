@@ -31,6 +31,8 @@ jobs:
        contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' &&
        github.event.issue.author_association == 'OWNER' &&
+       (github.event.action == 'opened' ||
+        (github.event.action == 'assigned' && github.actor == github.repository_owner)) &&
        (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
