@@ -1,6 +1,6 @@
 # Workout Tracker
 
-The domain language for a local-first workout tracking PWA. Everything revolves around composing, executing, and persisting workouts made of typed blocks. Deep model docs live in `brain/reference/workout-block-model.md`; this file is the vocabulary.
+The domain language for a local-first workout tracking PWA. Everything revolves around composing, executing, and persisting workouts made of typed blocks. Block types and the registry in `src/blocks/` are authoritative; this file is the vocabulary.
 
 ## Language
 
@@ -64,6 +64,7 @@ _Avoid_: converter registry, switch
 
 ## Flagged ambiguities
 
-- "workout type" (used throughout ADR-001) meant what we now call **Kind** — a property of a **Block**, not of a **Workout**. Resolved: say **Kind**.
+- "workout type" historically meant what we now call **Kind** — a property of
+  a **Block**, not of a **Workout**. Resolved: say **Kind**.
 - "exercise" is overloaded: an exercise _definition_ (the catalog entry in `src/features/exercises/`) vs a **Block Exercise** (an entry inside a timed Block). Say which one.
 - "converter" historically meant the hand-written `src/db/converters.ts` functions; these are becoming the `toDb`/`fromDb` half of a **Block Codec**.

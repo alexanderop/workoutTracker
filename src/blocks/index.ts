@@ -5,8 +5,7 @@
  * modules are internal. The transitional compat barrels
  * (`src/types/blocks.ts`, parts of `src/db/schema.ts`,
  * `src/lib/workoutBlockFactory.ts`, `markdownSpec.ts`) keep their deep
- * imports until they are retired (see
- * `brain/reference/tech-debt/compat-barrel-retirement.md`).
+ * imports until they are retired.
  */
 
 // ============================================

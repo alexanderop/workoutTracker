@@ -2,7 +2,7 @@
  * Imperative shell for habit tracking: owns fetching from HabitRepository
  * and every mutation (create/edit/archive/reorder/log). `HabitRepository`
  * has no `observe*`/LiveQuery method (unlike WeightRepository/
- * TemplatesRepository) -- see the Phase 2 report for that gap. Reactivity
+ * TemplatesRepository). Reactivity
  * here is done the same way `stores/exercises.ts` handles
  * CustomExercisesRepository (which also has no LiveQuery): mutate the DB,
  * then patch the local `ref` state to match, rather than re-querying.

@@ -38,7 +38,7 @@ on:
     types: [labeled]
     paths-ignore:
       - '*.md'
-      - 'brain/reference/**'
+      - 'brain/**'
       - '.github/workflows/release.yml'
   # Both the associated PR and its head repository are checked below. This is
   # a privileged workflow_run path, so never check out fork-controlled code.

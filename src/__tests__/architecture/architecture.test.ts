@@ -7,9 +7,9 @@
  *
  * Run with: pnpm test:arch
  *
- * Test Categories (41 tests):
- * 1. Circular Dependencies (4) - features, composables, stores, db
- * 2. Feature Isolation (8) - no cross-feature dependencies
+ * Test Categories:
+ * 1. Circular Dependencies - features, composables, stores, db
+ * 2. Feature Isolation - no cross-feature dependencies
  * 3. Layer Dependencies (8) - shared code doesn't depend on features/views
  * 4. UI Component Isolation (5) - shadcn-vue stays pure (no business logic)
  * 5. Router Simplicity (4) - router only imports views
@@ -23,19 +23,23 @@
  * with the current TypeScript/Vitest setup. Consider revisiting when archunit
  * releases updates.
  */
+import { readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { projectFiles } from 'archunit'
 
-const FEATURES = [
-  'workout',
-  'exercises',
-  'templates',
-  'benchmarks',
-  'settings',
-  'timers',
-  'weight',
-  'log-past-workout',
-] as const
+const FEATURES_ROOT = new URL('../../features/', import.meta.url)
+const FEATURES = readdirSync(FEATURES_ROOT, { withFileTypes: true })
+  .filter(
+    (entry) =>
+      entry.isDirectory() &&
+      readdirSync(new URL(`${entry.name}/`, FEATURES_ROOT), { recursive: true }).some((file) =>
+        String(file).endsWith('.ts'),
+      ),
+  )
+  .map((entry) => entry.name)
+
+// ArchUnit analyzes TypeScript imports only. ESLint's generated boundary zones
+// cover Vue-only feature folders as well.
 
 const SHARED_FOLDERS = [
   'blocks',

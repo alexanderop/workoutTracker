@@ -67,8 +67,7 @@ import { convertWorkoutToDb } from '@/db/converters'
 await getWorkoutsRepository().create(convertWorkoutToDb(workout))
 ```
 
-Database types use `null` (not `undefined`). See
-[the database guide](../brain/reference/agent/database.md).
+Database types use `null` rather than `undefined`.
 
 ### Two-Way Binding
 
