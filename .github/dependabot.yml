@@ -7,6 +7,10 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     groups:
+      security-updates:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
       dev-dependencies:
         dependency-type: "development"
         update-types:
@@ -23,3 +27,7 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 3
+    groups:
+      actions-updates:
+        patterns:
+          - "*"

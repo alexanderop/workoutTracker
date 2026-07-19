@@ -3,104 +3,60 @@ name: Reusable Node Command
 on:
   workflow_call:
     inputs:
-      command:
-        description: Command to execute
+      profile:
+        description: Allowlisted project command profile
         required: true
         type: string
-      runner:
-        description: GitHub-hosted runner label
-        required: false
-        default: ubuntu-latest
-        type: string
-      node-version:
-        description: Node.js version
-        required: false
-        default: '22'
-        type: string
-      timeout-minutes:
-        description: Job timeout in minutes
-        required: false
-        default: 5
-        type: number
-      setup-profile:
-        description: Setup profile to use
-        required: false
-        default: deps
-        type: string
-      cache-paths:
-        description: Optional extra cache paths
-        required: false
-        default: ''
-        type: string
-      cache-key:
-        description: Optional extra cache key
-        required: false
-        default: ''
-        type: string
-      cache-restore-keys:
-        description: Optional extra restore keys
-        required: false
-        default: ''
-        type: string
-      upload-artifact-name:
-        description: Optional artifact name
-        required: false
-        default: ''
-        type: string
-      upload-artifact-path:
-        description: Optional artifact path
-        required: false
-        default: ''
-        type: string
-      upload-artifact-retention-days:
-        description: Artifact retention in days
-        required: false
-        default: 7
-        type: number
 
 permissions:
   contents: read
 
 jobs:
   run:
-    runs-on: ${{ inputs.runner }}
-    timeout-minutes: ${{ inputs.timeout-minutes }}
+    runs-on: ${{ inputs.profile == 'test-visual' && 'macos-15' || 'ubuntu-24.04' }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup dependencies
-        if: inputs.setup-profile == 'deps'
+        if: inputs.profile != 'test-a11y' && inputs.profile != 'test-visual'
         uses: ./.github/actions/setup-node-deps
         with:
-          node-version: ${{ inputs.node-version }}
+          node-version: ${{ inputs.profile == 'node-20-compat' && '20.19.0' || '22' }}
 
       - name: Setup test environment
-        if: inputs.setup-profile == 'test'
+        if: inputs.profile == 'test-a11y' || inputs.profile == 'test-visual'
         uses: ./.github/actions/setup-test-env
         with:
-          node-version: ${{ inputs.node-version }}
+          node-version: '22'
 
-      - name: Restore extra cache
-        if: inputs.cache-key != ''
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        continue-on-error: true
-        with:
-          path: ${{ inputs.cache-paths }}
-          key: ${{ inputs.cache-key }}
-          restore-keys: ${{ inputs.cache-restore-keys }}
-
-      - name: Run command
+      - name: Run allowlisted command
         shell: bash
+        env:
+          PROFILE: ${{ inputs.profile }}
         run: |
           set -euo pipefail
-          ${{ inputs.command }}
-
-      - name: Upload artifact
-        if: inputs.upload-artifact-name != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ${{ inputs.upload-artifact-name }}
-          path: ${{ inputs.upload-artifact-path }}
-          retention-days: ${{ inputs.upload-artifact-retention-days }}
+          case "$PROFILE" in
+            quality)
+              pnpm exec run-p lint:check audit:prod knip i18n:check \
+                check:composables test:arch test:workflows
+              ;;
+            node-20-compat)
+              pnpm type-check
+              pnpm build-only
+              ;;
+            test-a11y)
+              pnpm test:a11y
+              ;;
+            test-visual)
+              pnpm test:visual
+              ;;
+            *)
+              echo "Unknown command profile: $PROFILE" >&2
+              exit 2
+              ;;
+          esac

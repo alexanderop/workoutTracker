@@ -35,7 +35,7 @@ jobs:
   gate:
     name: Validate repair request
     if: ${{ !startsWith(inputs.head_branch, 'claude-auto-fix-') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: read
@@ -122,7 +122,7 @@ jobs:
     name: Produce repair commit
     needs: gate
     if: needs.gate.outputs.ok == 'true' && needs.gate.outputs.lockfile-repair != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     permissions:
       actions: read
@@ -231,7 +231,7 @@ jobs:
     name: Regenerate stale lockfile without secrets
     needs: gate
     if: needs.gate.outputs.ok == 'true' && needs.gate.outputs.lockfile-repair == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       actions: read
@@ -282,7 +282,7 @@ jobs:
     name: Verify repair without secrets
     needs: [gate, agent, lockfile]
     if: ${{ always() && needs.gate.outputs.ok == 'true' && (needs.agent.result == 'success' || needs.lockfile.result == 'success') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       actions: read
@@ -332,7 +332,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
       - name: Install Playwright browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Verify candidate
         run: |
           pnpm type-check
@@ -360,7 +360,7 @@ jobs:
     name: Publish verified repair
     needs: [gate, agent, lockfile, verify]
     if: ${{ always() && needs.gate.outputs.ok == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       actions: write

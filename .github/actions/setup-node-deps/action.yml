@@ -5,10 +5,6 @@ inputs:
   node-version:
     description: Node.js version
     required: true
-  install-command:
-    description: Command used to install dependencies when the cache is missing
-    required: false
-    default: pnpm install --frozen-lockfile --prefer-offline
 
 runs:
   using: composite
@@ -27,4 +23,4 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        ${{ inputs.install-command }}
+        pnpm install --frozen-lockfile --prefer-offline

@@ -21,7 +21,7 @@ permissions: {}
 jobs:
   dispatch:
     name: Dispatch checks for published repair
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     concurrency:
       group: claude-healing-handoff-${{ inputs.published_sha }}

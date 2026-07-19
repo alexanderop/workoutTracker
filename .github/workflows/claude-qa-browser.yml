@@ -6,10 +6,8 @@
 #     `pull_request` only remains for the `qa-verify` label escalation lever.
 #   - `issue_comment` (@claude verify/test) and `workflow_dispatch` are
 #     unchanged manual escape hatches.
-# CI's own `paths:` filter already narrows `pull_request`/`push` to relevant
-# file changes, so chaining off CI success inherits that filter for free --
-# except CI also runs for non-UI changes (scripts/, workflows/), so the
-# "Check for UI-relevant changes" step below adds a second, cheaper filter
+# CI deliberately runs for every PR so its required check is always present.
+# The "Check for UI-relevant changes" step below adds a cheaper admission filter
 # before any of the expensive steps (fixtures, dev server, agent-browser,
 # Claude) run.
 name: Claude QA (Browser)
@@ -70,7 +68,7 @@ jobs:
        github.event.issue.pull_request &&
        contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions:
       contents: read
@@ -150,7 +148,7 @@ jobs:
     name: Build untrusted PR app without secrets
     needs: qa-admission
     if: needs.qa-admission.outputs.should-run == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -204,10 +202,10 @@ jobs:
           persist-credentials: false
       - name: Setup pnpm
         if: steps.context.outputs.ui_changed == 'true'
-        uses: pnpm/action-setup@41ff726559202e3e2d34b593b79612b1fdd16f56 # v4
+        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
       - name: Setup Node
         if: steps.context.outputs.ui_changed == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: '22'
           cache: pnpm
@@ -245,7 +243,7 @@ jobs:
        contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        (contains(github.event.comment.body, '@claude verify') || contains(github.event.comment.body, '@claude test')))
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
 
     concurrency:
@@ -439,11 +437,9 @@ jobs:
         # explore-mode dispatch inputs (general/test/navigation/forms/
         # workout-flow) intentionally have no PR to diff against, so this
         # step is skipped and downstream steps treat the unset output as
-        # "not false" -- i.e. proceed. CI's own paths: filter already keeps
-        # totally unrelated PRs (docs-only, etc.) out of the workflow_run
-        # chain, but CI also runs for scripts/ and workflow changes that
-        # never touch the UI, so this is a second, cheaper filter before any
-        # of the expensive steps below run.
+        # "not false" -- i.e. proceed. CI runs for every PR so its required
+        # check is stable; this is the admission filter that keeps docs-only,
+        # scripts-only, and workflow-only changes out of expensive browser QA.
         id: ui-changed
         if: steps.pr-context.outputs.pr_number != ''
         shell: bash
@@ -1088,7 +1084,7 @@ jobs:
     name: Publish immutable QA report
     needs: [prepare-app, qa-browser]
     if: always() && needs.qa-browser.result != 'skipped' && needs.prepare-app.outputs.pr-number
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: read
@@ -1168,7 +1164,7 @@ jobs:
     name: Dispatch trusted QA follow-up
     needs: [prepare-app, qa-browser, publish-report]
     if: always() && needs.publish-report.outputs.comment-id && needs.publish-report.outputs.report-ready == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions:
       actions: write

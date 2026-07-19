@@ -32,7 +32,7 @@ jobs:
       ((github.event.review.user.login == 'coderabbitai[bot]' ||
         github.event.review.user.login == 'copilot-pull-request-reviewer[bot]') &&
        github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: write
@@ -132,7 +132,7 @@ jobs:
     name: Produce source-only candidate
     needs: gate
     if: needs.gate.outputs.ok == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       actions: read
@@ -246,7 +246,7 @@ jobs:
     name: Verify candidate without secrets
     needs: [gate, agent]
     if: needs.agent.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       actions: read
@@ -288,10 +288,10 @@ jobs:
           echo "sha=$CANDIDATE_SHA" >> "$GITHUB_OUTPUT"
       - name: Setup pnpm
         if: steps.verify.outputs.candidate == 'true'
-        uses: pnpm/action-setup@41ff726559202e3e2d34b593b79612b1fdd16f56 # v4
+        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
       - name: Setup Node
         if: steps.verify.outputs.candidate == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: '22'
           cache: pnpm
@@ -300,7 +300,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Install browser runtime
         if: steps.verify.outputs.candidate == 'true'
-        run: pnpm exec playwright install chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Run verification suite
         if: steps.verify.outputs.candidate == 'true'
         run: |
@@ -313,7 +313,7 @@ jobs:
     name: Publish verified decisions
     needs: [gate, agent, verify]
     if: always() && needs.gate.outputs.ok == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       actions: write
