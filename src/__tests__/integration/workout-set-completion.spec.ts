@@ -9,22 +9,13 @@ describe('Workout Set Completion', () => {
   afterEach(cleanupIntegrationTest)
 
   describe('Set Completion Flow', () => {
-    it('completes set and shows completed badge', async () => {
+    it('completes a set and prefills the next set with all values', async () => {
       const { builder, workout, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
-    })
-
-    it('pre-fills next set with values from completed set', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
 
       await expect
         .poll(async () => {
@@ -42,6 +33,7 @@ describe('Workout Set Completion', () => {
 
       // Setup workout with 2 blocks (so completing first block doesn't end workout)
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
+      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
 
       // Complete first two sets and verify
       await workout.completeMultipleSets(2, { weight: '100', reps: '8', rir: '2' })
@@ -51,21 +43,6 @@ describe('Workout Set Completion', () => {
       await page.getByRole('button', { name: /mark set 3 complete/i }).click()
 
       // After completing all sets in block 1, app auto-advances to block 2
-      await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
-
-      cleanup()
-    })
-
-    it('auto-advances to next block when all sets are complete', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Deadlift'])
-      await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-
-      // Complete all 3 sets in first block
-      await workout.completeMultipleSets(3, { weight: '80', reps: '10', rir: '2' })
-
-      // Verify we auto-advanced to block 2 of 2
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
       await expect.element(page.getByText('Deadlift')).toBeInTheDocument()
 
@@ -98,7 +75,7 @@ describe('Workout Set Completion', () => {
       cleanup()
     })
 
-    it('completes set with 0 weight for bodyweight exercises', async () => {
+    it('completes consecutive sets with zero weight and zero RIR boundaries', async () => {
       const { builder, workout, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -106,16 +83,9 @@ describe('Workout Set Completion', () => {
 
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
 
-      cleanup()
-    })
-
-    it('completes set with RIR of 0 (training to failure)', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
       await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '0' })
 
-      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+      await expect.poll(() => workout.isSetCompleted(1)).toBe(true)
 
       cleanup()
     })
@@ -168,7 +138,7 @@ describe('Workout Set Completion', () => {
   // commits) the previous one, but the LAST field filled (rir) is left focused and
   // therefore uncommitted -- exactly the "first-set completion" repro from the review.
   describe('Focus/Blur Commit Timing (Finding 6)', () => {
-    it('should enable the complete-set footer CTA once weight, reps, and rir are entered even while the last input still has focus', async () => {
+    it('enables one-tap completion while focused and persists the typed values', async () => {
       const { builder, workout, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -184,32 +154,7 @@ describe('Workout Set Completion', () => {
         })
         .toBe(false)
 
-      cleanup()
-    })
-
-    it('should complete the set with a single tap on the row checkmark while an input still has focus', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      const row = workout.getSet(0)
-      await row.enterValues({ kg: 60, reps: 10, rir: 2 })
-
       // Single tap -- should both commit the pending rir value and complete the set.
-      await row.complete()
-
-      await expect.poll(() => row.isCompleted()).toBe(true)
-
-      cleanup()
-    })
-
-    it('should persist the typed values (not blank data) when completed via a single tap while focused', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      const row = workout.getSet(0)
-      await row.enterValues({ kg: 60, reps: 10, rir: 2 })
       await row.complete()
 
       await expect.poll(() => row.isCompleted()).toBe(true)
