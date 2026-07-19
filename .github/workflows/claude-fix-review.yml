@@ -221,28 +221,58 @@ jobs:
             --allowedTools "Edit,Write,Read,Glob,Grep,Skill,Bash(git:*),Bash(pnpm:*),Bash(gh:*),Bash(cat:*),Bash(ls:*)"
 
       - name: Verify candidate fixes before push
+        id: verify-fixes
         if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true' }}
         shell: bash
         env:
           HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
         run: |
           set -euo pipefail
-          git fetch origin "$HEAD_BRANCH"
-          if git diff --quiet "origin/${HEAD_BRANCH}..HEAD"; then
+          if [ -n "$(git status --porcelain)" ]; then
+            # Preserve only Claude's completed commit-and-manifest cycles. A
+            # dirty tree is an interrupted, unverified partial fix.
+            echo "::warning::Discarding uncommitted changes before verification."
+            git status --short
+            git checkout -- .
+            git clean -fd
+          fi
+          # Incorporate any human push before verification. A later remote
+          # change is rejected by the normal, non-forced push below.
+          if ! git pull --rebase origin "$HEAD_BRANCH"; then
+            git rebase --abort || true
+            echo "::error::Could not rebase candidate fixes onto ${HEAD_BRANCH}; refusing to verify or push."
+            exit 1
+          fi
+          LOCAL_SHA=$(git rev-parse HEAD)
+          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}")
+          if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            echo "candidate=false" >> "$GITHUB_OUTPUT"
             echo "No candidate commits from Claude; verification skipped."
             exit 0
           fi
+          echo "candidate=true" >> "$GITHUB_OUTPUT"
 
           jq -e '
+            def js_trim: gsub("^[\\s\\uFEFF]+|[\\s\\uFEFF]+$"; "");
             type == "array" and length > 0 and
             all(.[];
-              (.commentId | type == "number") and
-              (.summary | type == "string" and length > 0)
-            )
+              type == "object" and
+              (.commentId |
+                type == "number" and floor == . and
+                . >= -9007199254740991 and . <= 9007199254740991) and
+              ((.summary | type == "string") and
+                ((.summary | js_trim | length) > 0))
+            ) and
+            (([.[].commentId] | length) ==
+              ([.[].commentId] | unique | length))
           ' /tmp/fixed-findings.json > /dev/null
           jq -e --slurpfile findings /tmp/pr-findings.json '
-            all(.[] as $fix;
-              any($findings[0][]; .commentId == $fix.commentId)
+            all(.[];
+              . as $fix |
+              any($findings[0][];
+                .commentId == $fix.commentId and
+                .tag == "line-comment" and
+                .resolved == false)
             )
           ' /tmp/fixed-findings.json > /dev/null
 
@@ -257,45 +287,36 @@ jobs:
             git status --short
             exit 1
           fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Push fix commits if any
         id: push-fix
-        # `!cancelled()` on purpose: when the Claude step dies mid-run (e.g.
-        # max-turns), findings already fixed follow the commit-and-manifest-per-
-        # finding cycle above, so pushing the finished commits salvages them.
-        if: ${{ !cancelled() && steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true' }}
+        # Verification uses `!cancelled()` to salvage completed cycles after a
+        # Claude timeout. Push only when that verification itself succeeded.
+        if: ${{ steps.verify-fixes.outcome == 'success' && steps.verify-fixes.outputs.candidate == 'true' }}
         shell: bash
         env:
           HEAD_BRANCH: ${{ steps.gate.outputs.head_ref }}
+          VERIFIED_SHA: ${{ steps.verify-fixes.outputs.sha }}
         run: |
           set -euo pipefail
-          if [ -n "$(git status --porcelain)" ]; then
-            # A dirty tree means the run was cut off mid-fix; that half-done
-            # change was never verified or recorded, so drop it and keep
-            # only the completed, committed cycles.
-            echo "::warning::Working tree dirty after Claude run; discarding uncommitted changes."
-            git status --short
-            git checkout -- .
-            git clean -fd
-          fi
-          # Rebase onto the current branch tip first: the shared writer
-          # concurrency group above serializes claude-ci-fix / claude-fix-review
-          # / claude-qa-followup, but a human push between checkout and here is
-          # still possible. Recompute both SHAs AFTER the rebase so the
-          # "nothing to push" comparison below reflects the rebased state.
-          if ! git pull --rebase origin "${HEAD_BRANCH}"; then
-            git rebase --abort
-            echo "::error::git pull --rebase origin ${HEAD_BRANCH} failed; aborting rebase and not pushing. Resolve the conflict manually."
+          LOCAL_SHA=$(git rev-parse HEAD)
+          if [ "$LOCAL_SHA" != "$VERIFIED_SHA" ]; then
+            echo "::error::HEAD changed after verification; refusing to push."
             exit 1
           fi
-          LOCAL_SHA=$(git rev-parse HEAD)
-          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}" 2>/dev/null || echo "")
+          git fetch origin "$HEAD_BRANCH"
+          REMOTE_SHA=$(git rev-parse "origin/${HEAD_BRANCH}")
           if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
             echo "pushed=false" >> "$GITHUB_OUTPUT"
             echo "No new commits from Claude; nothing to push."
             exit 0
           fi
-          git push origin "HEAD:${HEAD_BRANCH}"
+          if ! git merge-base --is-ancestor "$REMOTE_SHA" "$VERIFIED_SHA"; then
+            echo "::error::${HEAD_BRANCH} changed after verification; refusing to push an unverified merge."
+            exit 1
+          fi
+          git push origin "$VERIFIED_SHA:refs/heads/${HEAD_BRANCH}"
           # shellcheck disable=SC2016
           # Backticks in the git format are Markdown, not shell substitutions.
           {
