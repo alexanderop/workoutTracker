@@ -67,7 +67,7 @@ function openCalendarSheet() {
       </div>
     </header>
 
-    <div class="mx-auto flex max-w-md flex-col gap-4 p-4">
+    <main class="mx-auto flex max-w-md flex-col gap-4 p-4">
       <!-- Week Strip -->
       <WeekStrip class="w-full rounded-2xl border bg-card shadow-sm" @click="openCalendarSheet" />
 
@@ -149,6 +149,6 @@ function openCalendarSheet() {
 
       <!-- Recent Workouts -->
       <RecentWorkoutsSection />
-    </div>
+    </main>
   </div>
 </template>
