@@ -1,3 +1,17 @@
+# [1.39.0](https://github.com/alexanderop/workoutTracker/compare/v1.38.0...v1.39.0) (2026-07-19)
+
+
+### Bug Fixes
+
+* **ci:** secure Claude self-healing handoff ([#175](https://github.com/alexanderop/workoutTracker/issues/175)) ([113e71a](https://github.com/alexanderop/workoutTracker/commit/113e71acfde2ddb768f262b306dfbb9839e665a6))
+
+
+### Features
+
+* **nutrition:** add health dashboard nutrition MVP ([#176](https://github.com/alexanderop/workoutTracker/issues/176)) ([bff71b6](https://github.com/alexanderop/workoutTracker/commit/bff71b659ecfa6a5c6dcd75881d1e7d8e921be74))
+
+
+
 # [1.38.0](https://github.com/alexanderop/workoutTracker/compare/v1.37.1...v1.38.0) (2026-07-19)
 
 
@@ -31,15 +45,6 @@
 ### Performance Improvements
 
 * **ci:** reduce pipeline runtime ([#171](https://github.com/alexanderop/workoutTracker/issues/171)) ([88e1f70](https://github.com/alexanderop/workoutTracker/commit/88e1f7097c5f15d1159ca10e15b79dffe006d029))
-
-
-
-## [1.36.1](https://github.com/alexanderop/workoutTracker/compare/v1.36.0...v1.36.1) (2026-07-18)
-
-
-### Bug Fixes
-
-* **ci:** repair review automation and visual checks ([#168](https://github.com/alexanderop/workoutTracker/issues/168)) ([0a75fe8](https://github.com/alexanderop/workoutTracker/commit/0a75fe840a781ee5c6972f6bca190a872e69b7ef))
 
 
 
