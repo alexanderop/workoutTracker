@@ -1,0 +1,65 @@
+name: Claude Healing Handoff
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR whose verified bot commit was published'
+        required: true
+        type: string
+      head_branch:
+        description: 'Expected PR head branch'
+        required: true
+        type: string
+      published_sha:
+        description: 'Exact published commit that needs downstream checks'
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  dispatch:
+    name: Dispatch checks for published repair
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: claude-healing-handoff-${{ inputs.published_sha }}
+      cancel-in-progress: false
+    permissions:
+      actions: write
+      pull-requests: read
+    steps:
+      - name: Validate published PR head
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          PUBLISHED_SHA: ${{ inputs.published_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          [[ "$PUBLISHED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_BRANCH" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]{0,100}$ ]]
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          test "$(jq -r '.state' <<<"$PR_JSON")" = open
+          test "$(jq -r '.head.repo.full_name' <<<"$PR_JSON")" = "$REPO"
+          test "$(jq -r '.head.ref' <<<"$PR_JSON")" = "$HEAD_BRANCH"
+          test "$(jq -r '.head.sha' <<<"$PR_JSON")" = "$PUBLISHED_SHA"
+      - name: Dispatch CI and review repair
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          dispatch() {
+            for attempt in 1 2 3; do
+              if gh workflow run "$@"; then return 0; fi
+              sleep $((attempt * 2))
+            done
+            return 1
+          }
+          dispatch ci.yml --ref "$HEAD_BRANCH"
+          dispatch claude-fix-review.yml -f pr_number="$PR_NUMBER"
