@@ -37,6 +37,6 @@ export async function resetDatabase(): Promise<void> {
   useBenchmarkGlobalTimer().reset()
 
   // Re-install the provider under test (forces fresh repository instances,
-  // and is the single seam every integration spec runs through — see AC8).
+  // and is the single seam every integration spec runs through.
   installProviderUnderTest()
 }

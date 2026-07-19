@@ -9,7 +9,7 @@ on:
     types: [opened, ready_for_review, synchronize]
     paths-ignore:
       - '*.md'
-      - 'brain/reference/**'
+      - 'brain/**'
       - '.github/workflows/release.yml'
 
 permissions: {}
@@ -79,7 +79,7 @@ jobs:
 
             Do NOT flag:
             - Style/formatting (ESLint handles that)
-            - Missing brain/reference/comments on clear code
+            - Missing documentation comments on clear code
             - Raw coverage percentage (the merged test-coverage CI job enforces thresholds)
 
             Use inline comments for specific issues. End with a summary comment.

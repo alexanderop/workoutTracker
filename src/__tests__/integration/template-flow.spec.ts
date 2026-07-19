@@ -569,8 +569,7 @@ describe('Template Flow', () => {
 
   describe('Test 7: Discard changes flow', () => {
     it('discards unsaved changes when the user confirms leaving a dirty form', async () => {
-      // See brain/reference/reviews/ux-ui-review-2026-07-04.md Finding 5: navigating
-      // away from a dirty form must go through a confirm-discard dialog rather than
+      // Navigating away from a dirty form must go through a confirm-discard dialog rather than
       // silently discarding the change.
       const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
 

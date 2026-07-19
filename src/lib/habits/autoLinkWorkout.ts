@@ -17,7 +17,7 @@ import { getStartOfDay } from '@/lib/date'
  * in the `workout` feature) and the benchmark-completion path
  * (`useBenchmarkPersistence`, in the `benchmarks` feature), which persist
  * through separate repository methods. Features may not import from each
- * other (see `brain/reference/VUE_STYLE_GUIDE.md` "Feature Isolation"), so
+ * other, so
  * this couldn't live under `src/features/habits` without both call sites
  * violating that boundary -- `src/lib` is importable from any feature.
  *

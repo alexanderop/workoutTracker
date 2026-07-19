@@ -1,96 +1,38 @@
 ---
 name: research
-description: Deep research on a technical problem using parallel subagents for web docs, Stack Overflow, and codebase exploration, saving a markdown report to brain/reference/research/. Use when the user says "research X", "investigate X", "find out how X works", or needs evidence-based recommendations before implementing.
+description: Deep research on a technical problem using parallel agents for official documentation and codebase exploration. Keep reports temporary unless the user requests a tracked artifact; add brain notes only for durable decisions or non-obvious project gotchas.
 allowed-tools: Task, WebSearch, WebFetch, Grep, Glob, Read, Write, Bash
 ---
 
 # Research: $ARGUMENTS
 
-Research the following problem or question:
+Research the requested problem like a senior developer.
 
-> **$ARGUMENTS**
+## Gather evidence
 
-## Instructions
+Launch parallel agents for:
 
-Conduct thorough research like a senior developer. Launch multiple subagents in parallel to gather information from different sources.
+1. Official documentation and primary sources.
+2. Relevant issue discussions or community evidence.
+3. Existing codebase patterns and constraints.
 
-### Step 1: Launch Parallel Research Agents
+Prefer primary sources, flag version-specific or conflicting information, and
+separate sourced facts from inference.
 
-Use the Task tool to spawn these subagents **in parallel** (all in a single message):
+## Report
 
-1. **Web Documentation Agent** (subagent_type: general-purpose)
-   - Search official documentation for the topic
-   - Find best practices and recommended patterns
-   - Locate relevant GitHub issues or discussions
+Return a concise answer with:
 
-2. **Stack Overflow Agent** (subagent_type: general-purpose)
-   - Search Stack Overflow for similar problems and solutions
-   - Find highly-voted and accepted answers
-   - Note common pitfalls and gotchas
+- problem statement;
+- key findings;
+- codebase implications;
+- recommended approach and tradeoffs; and
+- source links.
 
-3. **Codebase Explorer Agent** (subagent_type: Explore)
-   - Search the codebase for related patterns
-   - Find existing solutions to similar problems
-   - Identify relevant files, functions, or components
+Do not add a tracked research report by default. If working notes are useful,
+write them under `tmp/research/`, which is disposable. Create a tracked artifact
+only when the user requests one and use the path they specify.
 
-### Step 2: Create Research Document
-
-After all agents complete, create a markdown file at `brain/reference/research/<topic-slug>.md`.
-
-Generate the filename from the research topic:
-- Convert to lowercase
-- Replace spaces with hyphens
-- Remove special characters
-- Add today's date as prefix: `YYYY-MM-DD-<topic-slug>.md`
-
-Example: "Vue 3 Suspense" → `brain/reference/research/2024-12-06-vue-3-suspense.md`
-
-First, create the research folder if it doesn't exist:
-```bash
-mkdir -p brain/reference/research
-```
-
-### Step 3: Write the Research Document
-
-Structure the document with these sections:
-
-```markdown
-# Research: <Topic>
-
-**Date:** <YYYY-MM-DD>
-**Status:** Complete
-
-## Problem Statement
-
-<Describe the problem and why it matters>
-
-## Key Findings
-
-<Summarize the most relevant solutions and approaches>
-
-## Codebase Patterns
-
-<Document how the current codebase handles similar cases>
-
-## Recommended Approach
-
-<Provide your recommendation based on all research>
-
-## Sources
-
-- [Source Title](URL) - Brief description
-- [Source Title](URL) - Brief description
-```
-
-### Guidelines
-
-- Prioritize official documentation over blog posts
-- Prefer solutions that match existing codebase patterns
-- Note version-specific considerations (Vue 3, TypeScript, etc.)
-- Flag conflicting information across sources
-- Write concise, actionable content
-- Use active voice throughout the document
-
-### Step 4: Confirm Completion
-
-After writing the file, output the file path so the user can find it later.
+Add or update a `brain/` note only when the result meets `brain/index.md`:
+a durable architectural decision or a project-specific failure mode that
+cannot be encoded more reliably in code or tests.

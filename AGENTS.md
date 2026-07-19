@@ -36,46 +36,33 @@ Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 
 ## Critical Conventions
 
-- **State**: `createGlobalState()` from VueUse (NOT Pinia). One store per feature, no cross-feature imports.
+- **State**: prefer VueUse `createGlobalState()` for shared feature stores (NOT
+  Pinia). Module-scoped refs may hold non-persistent app-wide state. Features
+  never import from other features.
 - **Two-way binding**: `const open = defineModel<boolean>('open')`.
 - **UI state**: use discriminated unions when multiple exclusive flags could
-  form invalid combinations; ordinary independent toggles may stay booleans
-  (see state-machine doc).
+  form invalid combinations; ordinary independent toggles may stay booleans.
 - **DB**: all access via `src/db` repositories; schema changes require a converter update for backward compat.
 
 ## Structure
 
 ```
-src/features/      # workout, exercises, templates, benchmarks, timers,
-                   # settings, onboarding, progressions, weight, log-past-workout
+src/features/      # Feature-owned UI, state, composables, and domain logic
+src/blocks/        # Feature-neutral workout block types and codecs
 src/db/            # Dexie schema, converters, repository implementations
-src/stores/        # createGlobalState singletons
+src/stores/        # Shared app-wide singleton state
 src/composables/   # Shared reactive logic
 src/views/         # Route-level pages
 src/components/ui/ # shadcn-vue / reka-ui primitives
 src/__tests__/     # Vitest + Playwright browser mode
 ```
 
-## Further Reading
+## Project Brain
 
-**IMPORTANT:** Before reading scattered docs, start at `brain/index.md`. The
-brain is the agent memory router: it uses OKF-style markdown frontmatter,
-domain maps, principles, and lessons to point you to the current canonical
-brain references.
+Start at `brain/index.md` only when a task needs architectural rationale or a
+known project-specific gotcha. Implementation details, commands, structure,
+and current capabilities belong in the code and tests, not in brain notes.
 
-**IMPORTANT:** Before starting any task, identify which docs below are relevant and read them first.
-
-**IMPORTANT:** After finishing a task, if you learned something non-obvious and worth keeping (a gotcha, a convention, a cascade you had to discover), update the matching doc — or create a new one if none fits. Treat `brain/reference/` as your persistent knowledge graph: the next session only knows what's written there.
-
-- `brain/reference/VUE_STYLE_GUIDE.md` — state, immutability, `tryCatch()`, no cross-feature imports
-- `brain/reference/state-machine-pattern.md` — discriminated unions for exclusive UI state
-- `brain/reference/REFACTORING_PATTERNS.md` — long component / thin composable / data store patterns
-- `brain/reference/workout-block-model.md` — discriminated-union block kinds, result shapes, cascade for new kinds
-- `brain/reference/TIL-adding-fields-to-block-types.md` — cascade checklist when changing block types
-- `brain/reference/VUEUSE_OPPORTUNITIES.md` — prefer VueUse over manual listeners/timeouts
-- `brain/reference/vitest-browser-mode-plan.md` — Vitest + Playwright projects, setup, headless
-- `brain/reference/vitest-browser-troubleshooting.md` — flaky tests, singleton leakage, fake-indexeddb, console filtering
-- `brain/reference/shadcn-vue-theming.md` — Tailwind v4 OKLCH tokens, reka-ui (not radix-vue), dark mode via `useTheme()`
-- `brain/reference/plans/dexie-improvements.md` — liveQuery, transactions, index hygiene
-- `brain/reference/reviews/repo-dexie-review.md` — `shallowRef` for large DB structures, validation
-- `brain/reference/tech-debt/duplication-analysis.md` — known duplication hotspots to avoid growing
+After a task, add a brain note only for a durable lesson that cannot be encoded
+more reliably as a test, type, lint rule, or focused code comment. Keep notes
+short and delete them when the code becomes authoritative.

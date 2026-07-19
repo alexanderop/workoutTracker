@@ -8,8 +8,8 @@
  * without adding anything and with no feedback. Searching first and then
  * tapping the same item always worked.
  *
- * Root cause (see brain/reference/reviews for the full writeup): the exercise
- * search input in the sheet used the native `autofocus` attribute
+ * Root cause: the exercise search input in the sheet used the native
+ * `autofocus` attribute
  * unconditionally. On a touch device this pops the on-screen keyboard the
  * instant the sheet opens, resizing the viewport while the very first tap
  * (before the user has interacted with anything else) is in flight -- the

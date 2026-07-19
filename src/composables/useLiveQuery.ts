@@ -21,7 +21,7 @@ export type UseLiveQueryReturn<T> = {
  *
  * `shallowRef` is deliberate: live query snapshots are replaced wholesale on
  * every emission, so deep reactivity tracking on nested fields is unnecessary
- * overhead (see brain/reference/reviews/repo-dexie-review.md).
+ * overhead.
  *
  * @param make Factory creating the `LiveQuery`; re-invoked whenever its reactive dependencies change
  */

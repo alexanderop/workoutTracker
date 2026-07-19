@@ -82,7 +82,7 @@ Evidence:
 Fix:
 
 - `src/components/WorkoutFinishDialog.vue` now allows the transient empty-string state produced by clearing a `v-model.number` input, then normalizes to numeric seconds on confirm.
-- Documented the pattern in `brain/reference/VUE_STYLE_GUIDE.md`.
+- The component comment now documents the normalization behavior at the call site.
 
 ## Test Cases
 
@@ -104,7 +104,7 @@ Fix:
 ## Observations
 
 - `agent-browser --profile` was ignored while a daemon was already running; closing all sessions and reopening without the stale custom profile fixed the blank-page symptom.
-- Custom `--profile` paths also reproduced empty `#app` mounts in this project while plain `--session` mode worked. This is documented in `brain/reference/TIL-agent-browser-qa-gotchas.md`.
+- Custom `--profile` paths also reproduced empty `#app` mounts in this project while plain `--session` mode worked.
 - `agent-browser click @ref` was unreliable inside long scrollable picker/card surfaces. DOM `click()` from page context successfully added `QA Sled Push` to the workout, while `agent-browser click @e138` closed the dialog without adding. I treated this as a CLI/ref caveat because the same product handler worked via DOM click and direct composable state showed the block added.
 - The global resume-workout dialog correctly appeared after an active workout existed and could be resumed/discarded.
 

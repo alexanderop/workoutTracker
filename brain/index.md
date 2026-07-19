@@ -1,45 +1,24 @@
----
-type: Brain Index
-title: Workout Tracker Brain
-description: Entry point for durable agent memory in the workout tracker repo.
-resource: brain/index.md
-tags: [brain, agents, workout-tracker]
-timestamp: 2026-06-28T08:05:00Z
----
+# Project brain
 
-## Workout Tracker Brain
+Keep this directory deliberately small. The code, tests, Git history, and
+[`AGENTS.md`](../AGENTS.md) are authoritative for implementation details,
+commands, project structure, and current capabilities.
 
-This directory is the first stop for agent memory. It uses the Brainmaxxing
-idea of a small markdown vault, upgraded with Open Knowledge Format-style
-frontmatter so files are easy to search, index, and move between tools.
+A brain note belongs here only when it records:
 
-## Read Order
+- why a durable architectural decision was made; or
+- a project-specific failure mode that is difficult to infer from the code.
 
-1. [Format](./format.md) - how to add and update brain notes.
-2. [Principles](./principles.md) - durable engineering judgment for this repo.
-3. [Domains](./domains/index.md) - maps from task area to canonical brain references.
-4. [Lessons](./lessons/index.md) - specific gotchas learned from past work.
-5. [Sources](./sources/brainmaxxing-and-okf.md) - why this brain is shaped this way.
-6. [Reference](./reference/index.md) - long-form knowledge migrated from the old docs tree.
-7. [Plans](./plans/index.md) - active or historical multi-step work plans.
+Do not store inventories, backlogs, completed plans, audits, tutorials, or
+implementation status here. Use the issue tracker for future work and Git
+history for past work. Delete a note once a test, type, lint rule, or code
+comment makes it redundant.
 
-## Current Shape
+## Read only when relevant
 
-- One concept per file.
-- Index files route; they do not duplicate the whole subtree.
-- Use normal markdown links, not tool-specific links.
-- Prefer short notes with links to authoritative source files.
-- Update [log](./log.md) when a brain structure change matters.
-
-## What Belongs Here
-
-Put knowledge here when it helps the next agent decide faster:
-
-- Project-specific conventions that are not obvious from code.
-- Gotchas that caused failures or repeated rework.
-- Maps that tell agents which existing docs to read for a task.
-- Principles that change how work should be designed or verified.
-
-Do not use this as a dumping ground for every meeting note or stale plan. If a
-note stops changing agent behavior, delete it or archive it under
-`brain/reference/` only when the long-form content still has value.
+- [Per-kind block codecs](./decisions/002-per-kind-block-codecs.md) — changing the
+  block architecture or codec responsibilities.
+- [Local-data gotchas](./lessons/local-data-gotchas.md) — changing persistence,
+  autosave, timers, dates, import/export, or destructive data operations.
+- [Testing gotchas](./lessons/testing-gotchas.md) — diagnosing browser-mode,
+  IndexedDB, singleton-state, or coverage failures.
