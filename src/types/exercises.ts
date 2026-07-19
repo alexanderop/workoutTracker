@@ -20,6 +20,7 @@ export const EQUIPMENT_VALUES = [
   'hex-bar',
   'club',
   'battle-rope',
+  'egym',
 ] as const
 
 export type Equipment = (typeof EQUIPMENT_VALUES)[number]

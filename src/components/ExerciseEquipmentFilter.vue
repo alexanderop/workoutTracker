@@ -4,25 +4,25 @@ import type { Component } from 'vue'
 
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { EQUIPMENT_VALUES } from '@/types/exercises'
 import { EQUIPMENT_ICONS } from '@/lib/exercises/equipmentMetadata'
 import ScrollFadeContainer from '@/components/ScrollFadeContainer.vue'
 
 const modelValue = defineModel<Equipment | 'all'>({ required: true })
 const { t } = useI18n()
 
-const filters = computed<Array<{ value: Equipment | 'all'; label: string; icon: Component }>>(() => [
-  { value: 'all', label: t('exercises.filters.all'), icon: EQUIPMENT_ICONS.all },
-  { value: 'barbell', label: t('exercises.equipment.barbell'), icon: EQUIPMENT_ICONS.barbell },
-  { value: 'dumbbell', label: t('exercises.equipment.dumbbell'), icon: EQUIPMENT_ICONS.dumbbell },
-  { value: 'machine', label: t('exercises.equipment.machine'), icon: EQUIPMENT_ICONS.machine },
-  { value: 'cable', label: t('exercises.equipment.cable'), icon: EQUIPMENT_ICONS.cable },
-  { value: 'bodyweight', label: t('exercises.equipment.bodyweight'), icon: EQUIPMENT_ICONS.bodyweight },
-  { value: 'kettlebell', label: t('exercises.equipment.kettlebell'), icon: EQUIPMENT_ICONS.kettlebell },
-  { value: 'band', label: t('exercises.equipment.band'), icon: EQUIPMENT_ICONS.band },
-  { value: 'ez-bar', label: t('exercises.equipment.ez-bar'), icon: EQUIPMENT_ICONS['ez-bar'] },
-  { value: 'hex-bar', label: t('exercises.equipment.hex-bar'), icon: EQUIPMENT_ICONS['hex-bar'] },
-  { value: 'club', label: t('exercises.equipment.club'), icon: EQUIPMENT_ICONS.club },
-])
+// Derived from EQUIPMENT_VALUES so every equipment type gets a filter chip —
+// a hardcoded list here silently hid new types (battle-rope, egym) from filtering.
+const filters = computed<Array<{ value: Equipment | 'all'; label: string; icon: Component }>>(
+  () => [
+    { value: 'all', label: t('exercises.filters.all'), icon: EQUIPMENT_ICONS.all },
+    ...EQUIPMENT_VALUES.map((value) => ({
+      value,
+      label: t(`exercises.equipment.${value}`),
+      icon: EQUIPMENT_ICONS[value],
+    })),
+  ],
+)
 </script>
 
 <template>

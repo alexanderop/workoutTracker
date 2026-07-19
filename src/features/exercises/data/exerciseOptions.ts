@@ -17,6 +17,7 @@ export const EQUIPMENT_OPTIONS: ReadonlyArray<SelectorOption<Equipment>> = [
   { value: 'band', label: 'Band', icon: '〰️' },
   { value: 'ez-bar', label: 'EZ Bar', icon: '↪️' },
   { value: 'hex-bar', label: 'Hex Bar', icon: '⬡' },
+  { value: 'egym', label: 'EGYM', icon: '🤖' },
 ]
 
 export const MUSCLE_OPTIONS: ReadonlyArray<SelectorOption<Muscle>> = [

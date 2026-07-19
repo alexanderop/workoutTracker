@@ -22,6 +22,7 @@ These files used to live under the root documentation tree. The root docs folder
 - [Vue Design Patterns for Component Refactoring](./REFACTORING_PATTERNS.md)
 - [Using the /refactor-component Slash Command (archived)](../_archive/REFACTOR_COMMAND_USAGE.md)
 - [Vue PWA Starter Template - Extraction Plan](./TEMPLATE_PLAN.md)
+- [TIL: Adding Exercises to the Built-in Catalog (Seed Batches)](./TIL-adding-exercises-to-catalog.md)
 - [TIL: Adding Fields to Block Types (Discriminated Unions)](./TIL-adding-fields-to-block-types.md)
 - [TIL: Agent Browser QA Gotchas](./TIL-agent-browser-qa-gotchas.md)
 - [TIL: How Claude Code Executes Tools in Parallel](./TIL-claude-parallel-tools.md)

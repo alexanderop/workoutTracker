@@ -30,4 +30,5 @@ export const EQUIPMENT_ICONS: Record<Equipment | 'all', Component> = {
   'hex-bar': Hexagon,
   club: CircleDot,
   'battle-rope': Waves,
+  egym: Cog,
 }

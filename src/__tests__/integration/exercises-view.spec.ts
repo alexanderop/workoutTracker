@@ -86,6 +86,34 @@ describe('ExercisesView', () => {
       cleanup()
     })
 
+    // QA finding on PR #174: the chip list was hardcoded, so exercises with
+    // newer equipment types (egym, battle-rope) were unreachable via filtering.
+    it('shows a filter chip for every equipment type', async () => {
+      const { navigateTo, exercises, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.Exercises })
+
+      await exercises.assertEquipmentFilterVisible('EGYM')
+      await exercises.assertEquipmentFilterVisible('Battle Rope')
+
+      cleanup()
+    })
+
+    it('filters exercises by EGYM equipment type', async () => {
+      const { navigateTo, exercises, cleanup } = await createTestApp()
+      await navigateTo({ name: RouteNames.Exercises })
+
+      await exercises.clickEquipmentFilter('EGYM')
+
+      // Should show EGYM machine exercises
+      await exercises.assertExerciseVisible('EGYM Leg Press')
+      await exercises.assertExerciseVisible('EGYM Chest Press')
+
+      // Should NOT show non-EGYM exercises
+      await exercises.assertExerciseNotVisible('Bench Press')
+
+      cleanup()
+    })
+
     it('resets to all when clicking All button', async () => {
       const { navigateTo, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
