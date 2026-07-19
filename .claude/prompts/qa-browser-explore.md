@@ -48,7 +48,11 @@ state, so this appears every run. Dismiss it before testing anything.
 2. Check console for JS errors
 3. Navigate to 3-4 different pages via the navigation
 4. Take a snapshot on each page to verify content loads
-5. Write `qa-report.md` with findings
+5. Capture evidence once the app is proven working:
+   `agent-browser screenshot qa-screenshots/smoke-home.png` (1 turn, don't read it back);
+   also screenshot any bug you find (`qa-screenshots/bug-<N>-<slug>.png`)
+6. Write `qa-report.md` with findings, embedding screenshots as
+   `![...](qa-screenshots/<name>.png)`
 
 ## FAIL if
 

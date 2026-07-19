@@ -5,8 +5,8 @@ import BarbellPlateHint from '@/components/ui/barbell-hint/BarbellPlateHint.vue'
 
 describe('BarbellPlateHint', () => {
   describe('empty bar state', () => {
-    it('shows bar weight indicator when weight equals bar weight (kg)', async () => {
-      render(BarbellPlateHint, {
+    it('shows the unit-specific empty bar at, below, and near an unachievable weight', async () => {
+      const { rerender } = render(BarbellPlateHint, {
         props: {
           weight: 20,
           unit: 'kg',
@@ -15,36 +15,27 @@ describe('BarbellPlateHint', () => {
 
       // Should show "20" for bar weight
       await expect.element(page.getByText('20')).toBeVisible()
-    })
 
-    it('shows bar weight indicator when weight equals bar weight (lbs)', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 45,
-          unit: 'lbs',
-        },
-      })
+      await rerender({ weight: 45, unit: 'lbs' })
 
       // Should show "45" for bar weight
       await expect.element(page.getByText('45')).toBeVisible()
-    })
 
-    it('shows bar weight indicator when weight is less than bar weight', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 10,
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 10, unit: 'kg' })
 
       // Should show "20" for bar weight (empty bar state)
+      await expect.element(page.getByText('20')).toBeVisible()
+
+      await rerender({ weight: 21, unit: 'kg' })
+
+      // An impossible load should also fall back to the empty bar.
       await expect.element(page.getByText('20')).toBeVisible()
     })
   })
 
   describe('plate visualization', () => {
-    it('renders correct number of plates for 60kg (one 20kg plate)', async () => {
-      render(BarbellPlateHint, {
+    it('renders representative kg and lb plate loads, including small labeled plates', async () => {
+      const { rerender } = render(BarbellPlateHint, {
         props: {
           weight: 60,
           unit: 'kg',
@@ -53,72 +44,51 @@ describe('BarbellPlateHint', () => {
 
       // Should show "20" on a plate (20kg plate per side)
       await expect.element(page.getByText('20')).toBeVisible()
-    })
 
-    it('renders correct number of plates for 100kg (two 20kg plates)', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 100,
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 100, unit: 'kg' })
 
       // Should show two "20" plates (20kg prioritized over 25kg)
       const plates = page.getByText('20')
       await expect.element(plates.first()).toBeVisible()
-    })
+      await expect
+        .element(
+          page.getByRole('img', {
+            name: /barbell with 20kg, 20kg plates on each side/i,
+          }),
+        )
+        .toBeVisible()
 
-    it('renders plates for 135lb (one 45lb plate)', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 135,
-          unit: 'lbs',
-        },
-      })
+      await rerender({ weight: 135, unit: 'lbs' })
 
       // Should show "45" on a plate
       await expect.element(page.getByText('45')).toBeVisible()
-    })
 
-    it('renders plates for 225lb (two 45lb plates)', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 225,
-          unit: 'lbs',
-        },
-      })
+      await rerender({ weight: 225, unit: 'lbs' })
 
       // Should show two "45" plates
-      const plates = page.getByText('45')
-      await expect.element(plates.first()).toBeVisible()
-    })
+      const poundPlates = page.getByText('45')
+      await expect.element(poundPlates.first()).toBeVisible()
+      await expect
+        .element(
+          page.getByRole('img', {
+            name: /barbell with 45lbs, 45lbs plates on each side/i,
+          }),
+        )
+        .toBeVisible()
 
-    it('shows number on 2.5kg plate', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 25, // 25kg = 20kg bar + 2.5kg per side
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 25, unit: 'kg' })
 
       await expect.element(page.getByText('2.5')).toBeVisible()
-    })
 
-    it('shows number on 5kg white plate', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 30, // 30kg = 20kg bar + 5kg per side
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 30, unit: 'kg' })
 
       await expect.element(page.getByText('5')).toBeVisible()
     })
   })
 
   describe('accessibility', () => {
-    it('has accessible label for empty bar', async () => {
-      render(BarbellPlateHint, {
+    it('announces empty, single-plate, and multiple-plate barbell states', async () => {
+      const { rerender } = render(BarbellPlateHint, {
         props: {
           weight: 20,
           unit: 'kg',
@@ -128,47 +98,19 @@ describe('BarbellPlateHint', () => {
       await expect
         .element(page.getByRole('img', { name: /empty barbell.*20kg bar/i }))
         .toBeVisible()
-    })
 
-    it('has accessible label with plate description', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 60,
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 60, unit: 'kg' })
 
       await expect
         .element(page.getByRole('img', { name: /barbell with 20kg plates/i }))
         .toBeVisible()
-    })
 
-    it('lists multiple plates in accessible label', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 100,
-          unit: 'kg',
-        },
-      })
+      await rerender({ weight: 100, unit: 'kg' })
 
       // 100kg = 40kg per side = 20 + 20 (two 20kg plates)
       await expect
         .element(page.getByRole('img', { name: /barbell with 20kg.*20kg plates/i }))
         .toBeVisible()
-    })
-  })
-
-  describe('unachievable weights', () => {
-    it('shows empty bar for impossible weights (21kg)', async () => {
-      render(BarbellPlateHint, {
-        props: {
-          weight: 21,
-          unit: 'kg',
-        },
-      })
-
-      // Should show bar weight indicator (empty bar)
-      await expect.element(page.getByText('20')).toBeVisible()
     })
   })
 })

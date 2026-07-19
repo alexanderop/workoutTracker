@@ -84,6 +84,11 @@ need a follow-up `snapshot` — so one UI action costs ~2 turns. Budget accordin
 
 - Prefer `snapshot -i` and direct ref-based interaction.
 - Verify visible outcomes only; do not assume implementation details.
+- After each AC passes (or fails), spend 1 turn on evidence:
+  `agent-browser screenshot qa-screenshots/ac<N>-<slug>.png` — capture-only,
+  never read the PNG back. Same for each bug (`bug-<N>-<slug>.png`). Reference
+  them in `qa-report.md` as `![...](qa-screenshots/<name>.png)` and in the JSON
+  `screenshot` fields. See "Screenshot evidence" in the system prompt.
 - If `agent-browser fill` appears out of sync with Vue state, retry once after reload, then record it as a tool-sync limitation and move on.
 - Check console once during the run for JS errors.
 

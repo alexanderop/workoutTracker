@@ -79,7 +79,7 @@ jobs:
     steps:
       - name: Score browser QA value
         id: admission
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
         with:
@@ -196,16 +196,16 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Checkout exact PR revision without credentials
         if: steps.context.outputs.ui_changed == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ steps.context.outputs.head_sha }}
           persist-credentials: false
       - name: Setup pnpm
         if: steps.context.outputs.ui_changed == 'true'
-        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
         if: steps.context.outputs.ui_changed == 'true'
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: pnpm
@@ -265,7 +265,7 @@ jobs:
       - name: Get PR metadata for comment or dispatch
         if: github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number != '')
         id: pr-metadata
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number }}
         with:
@@ -300,7 +300,7 @@ jobs:
           exit 1
 
       - name: Checkout trusted default-branch orchestration
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
@@ -341,7 +341,7 @@ jobs:
       - name: Get PR context
         if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
         id: pr-context
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
           PR_NUMBER_COMMENT: ${{ steps.pr-metadata.outputs.number }}
@@ -558,7 +558,10 @@ jobs:
 
       - name: Remove stale fixture outputs
         shell: bash
-        run: rm -f qa-report.md qa-structured-output.json
+        run: |
+          rm -f qa-report.md qa-structured-output.json
+          rm -rf qa-screenshots
+          mkdir -p qa-screenshots
 
       - name: Dev server health check
         if: steps.ui-changed.outputs.ui_changed != 'false'
@@ -626,7 +629,7 @@ jobs:
         if: steps.claude-action-guard.outputs.can_run == 'true'
         id: claude-smoke
         timeout-minutes: 3
-        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: false
@@ -700,7 +703,7 @@ jobs:
         id: claude-qa
         timeout-minutes: 20
         continue-on-error: true
-        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
@@ -866,7 +869,7 @@ jobs:
         id: claude-qa-retry
         if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
         timeout-minutes: 8
-        uses: anthropics/claude-code-action@76c083468952ef555951bbe4d9e21a3929ae2637 # v1.0.93
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
@@ -913,7 +916,7 @@ jobs:
 
       - name: Render QA summary to step summary
         if: always()
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa.outputs.structured_output || steps.claude-qa-retry.outputs.structured_output }}
           QA_FOCUS: ${{ steps.qa-mode.outputs.focus }}
@@ -985,7 +988,8 @@ jobs:
               for (const bug of sorted) {
                 const icon = sevIcon[bug.severity] || '•';
                 const title = (bug.title || '').replace(/\|/g, '\\|');
-                const desc = (bug.description || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 200);
+                const shot = bug.screenshot ? ` 📸 \`${bug.screenshot}\`` : '';
+                const desc = (bug.description || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 200) + shot;
                 lines.push(`| ${bug.id ?? ''} | ${icon} ${bug.severity || ''} | ${title} | ${desc} |`);
               }
               lines.push('');
@@ -1001,7 +1005,8 @@ jobs:
               tests.forEach((t, i) => {
                 const icon = resultIcon[t.result] || '•';
                 const name = (t.name || '').replace(/\|/g, '\\|');
-                const details = (t.details || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 160);
+                const shot = t.screenshot ? ` 📸 \`${t.screenshot}\`` : '';
+                const details = (t.details || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').slice(0, 160) + shot;
                 lines.push(`| ${i + 1} | ${t.area || ''} | ${icon} | ${name} | ${details} |`);
               });
               lines.push('');
@@ -1048,6 +1053,58 @@ jobs:
           find /tmp /home/runner/work/_temp -maxdepth 2 -name "claude*" 2>/dev/null | tee qa-debug/claude-file-locations.txt || true
           ls -la qa-debug/ || true
 
+      # Screenshots are written by the unprivileged Claude run via
+      # `agent-browser screenshot qa-screenshots/<name>.png`. Before they enter
+      # the provenance chain, enforce the contract: flat directory, kebab-case
+      # .png names, real PNG bytes, bounded size and count. Everything else is
+      # dropped with a log line so a misbehaving run degrades to "no image",
+      # never to publishing an arbitrary file.
+      - name: Sanitize QA screenshots
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-screenshots
+          # Flatten one accidental nesting level (e.g. a screenshot-dir joined
+          # with an already-prefixed relative path), then drop directories.
+          find qa-screenshots -mindepth 2 -type f -name '*.png' -exec mv -n {} qa-screenshots/ \;
+          find qa-screenshots -mindepth 1 -type d -exec rm -rf {} +
+          node --input-type=module - <<'NODE'
+          import { readdir, readFile, stat, unlink } from 'node:fs/promises'
+          import path from 'node:path'
+          import { pathToFileURL } from 'node:url'
+          // The trusted default-branch checkout provides the policy module; the
+          // inline fallback keeps the bootstrap PR (policy not yet on the
+          // default branch) working with identical rules.
+          let policy = {}
+          try {
+            policy = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE, 'scripts/qa-workflow-policy.mjs',
+            )).href)
+          } catch {}
+          const isValid = policy.isValidScreenshotFilename ?? ((name) =>
+            typeof name === 'string' && name.length <= 100 && /^[a-z0-9][a-z0-9_-]*\.png$/.test(name))
+          const MAX_FILES = 25
+          const MAX_BYTES = 3 * 1024 * 1024
+          const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+          const kept = []
+          for (const name of (await readdir('qa-screenshots')).sort()) {
+            const file = path.join('qa-screenshots', name)
+            const drop = async (reason) => {
+              console.warn(`Dropping ${name}: ${reason}`)
+              await unlink(file)
+            }
+            if (!isValid(name)) { await drop('invalid filename'); continue }
+            const { size } = await stat(file)
+            if (size > MAX_BYTES) { await drop(`too large (${size} bytes)`); continue }
+            const head = (await readFile(file)).subarray(0, PNG_MAGIC.length)
+            if (!head.equals(PNG_MAGIC)) { await drop('not a PNG'); continue }
+            if (kept.length >= MAX_FILES) { await drop('over file limit'); continue }
+            kept.push(name)
+          }
+          console.info(`Kept ${kept.length} screenshot(s): ${kept.join(', ') || '(none)'}`)
+          NODE
+
       - name: Write immutable QA provenance
         if: always()
         env:
@@ -1055,9 +1112,14 @@ jobs:
           TESTED_HEAD_SHA: ${{ needs.prepare-app.outputs.head-sha }}
         run: |
           REPORT_SHA256=$(sha256sum qa-report.md | cut -d' ' -f1)
+          SCREENSHOTS=$( { sha256sum qa-screenshots/*.png 2>/dev/null || true; } | jq -Rn \
+            '[inputs | select(length > 0)
+              | capture("^(?<sha256>[0-9a-f]{64}) [ *](?<file>qa-screenshots/.+)$")
+              | {file: (.file | sub("^qa-screenshots/"; "")), sha256}]' )
           jq -n --arg pr "$PR_NUMBER" --arg sha "$TESTED_HEAD_SHA" \
             --arg report_sha256 "$REPORT_SHA256" \
-            '{pr_number: $pr, tested_head_sha: $sha, report_sha256: $report_sha256}' \
+            --argjson screenshots "$SCREENSHOTS" \
+            '{pr_number: $pr, tested_head_sha: $sha, report_sha256: $report_sha256, screenshots: $screenshots}' \
             > qa-provenance.json
 
       - name: Upload QA artifacts
@@ -1069,6 +1131,7 @@ jobs:
             qa-report.md
             qa-structured-output.json
             qa-provenance.json
+            qa-screenshots/
             qa-debug/
           if-no-files-found: ignore
 
@@ -1088,6 +1151,10 @@ jobs:
     timeout-minutes: 5
     permissions:
       actions: read
+      # contents: write is only used to append validated screenshot PNGs to the
+      # orphan `qa-screenshots` branch so they can render inline in the report
+      # comment; the job never touches code branches.
+      contents: write
       issues: write
       pull-requests: write
       statuses: write
@@ -1096,7 +1163,7 @@ jobs:
       report-ready: ${{ steps.validate.outputs.ready }}
     steps:
       - name: Checkout trusted default-branch publisher
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
@@ -1122,8 +1189,134 @@ jobs:
             /tmp/qa-report/qa-provenance.json >/dev/null
           test "$(sha256sum /tmp/qa-report/qa-report.md | cut -d' ' -f1)" = \
             "$(jq -r '.report_sha256' /tmp/qa-report/qa-provenance.json)"
+          # Screenshots ride the same immutable provenance chain as the report:
+          # any file that is missing, renamed, or altered since the QA job
+          # hashed it fails the whole validation.
+          while IFS= read -r entry; do
+            FILE=$(jq -r '.file' <<<"$entry")
+            SHA=$(jq -r '.sha256' <<<"$entry")
+            [[ "$FILE" =~ ^[a-z0-9][a-z0-9_-]*\.png$ ]]
+            [[ "$SHA" =~ ^[0-9a-f]{64}$ ]]
+            test "$(sha256sum "/tmp/qa-report/qa-screenshots/$FILE" | cut -d' ' -f1)" = "$SHA"
+          done < <(jq -c '.screenshots[]?' /tmp/qa-report/qa-provenance.json)
           node scripts/qa-workflow-policy.mjs /tmp/qa-report/qa-report.md
           echo 'ready=true' >> "$GITHUB_OUTPUT"
+      # PR comments cannot embed images from artifacts or local paths, so the
+      # hash-validated screenshots are committed to an orphan `qa-screenshots`
+      # branch and referenced by commit-SHA raw URLs (immutable even if the
+      # branch is later rewritten). continue-on-error: a screenshot-hosting
+      # failure must never block the report itself.
+      - name: Publish screenshots to qa-screenshots branch
+        id: publish-screenshots
+        if: steps.validate.outputs.ready == 'true'
+        continue-on-error: true
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ needs.prepare-app.outputs.pr-number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const MAP_PATH = '/tmp/qa-report/screenshot-urls.json';
+            fs.writeFileSync(MAP_PATH, '{}');
+            const provenance = JSON.parse(fs.readFileSync('/tmp/qa-report/qa-provenance.json', 'utf8'));
+            const shots = Array.isArray(provenance.screenshots) ? provenance.screenshots : [];
+            if (shots.length === 0) {
+              core.info('No screenshots to publish.');
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const BRANCH = 'qa-screenshots';
+            if (!/^[1-9][0-9]*$/.test(process.env.PR_NUMBER || '')) {
+              core.warning('No valid PR number — skipping screenshot publish.');
+              return;
+            }
+            const prefix = `pr-${process.env.PR_NUMBER}/${context.runId}`;
+            const tree = [];
+            for (const { file } of shots) {
+              // Names were validated against provenance hashes already; this is
+              // a last-line guard before they become git paths.
+              if (!/^[a-z0-9][a-z0-9_-]*\.png$/.test(file)) continue;
+              const content = fs.readFileSync(path.join('/tmp/qa-report/qa-screenshots', file));
+              const { data: blob } = await github.rest.git.createBlob({
+                owner, repo, content: content.toString('base64'), encoding: 'base64',
+              });
+              tree.push({ path: `${prefix}/${file}`, mode: '100644', type: 'blob', sha: blob.sha });
+            }
+            if (tree.length === 0) {
+              core.info('No publishable screenshots after validation.');
+              return;
+            }
+            // Append a commit to the orphan branch; create it (parentless) on
+            // first use. One refetch-retry absorbs a concurrent QA run racing
+            // the ref update.
+            let commit;
+            for (let attempt = 0; attempt < 2; attempt++) {
+              let parentSha = null;
+              let baseTree;
+              try {
+                const { data: ref } = await github.rest.git.getRef({ owner, repo, ref: `heads/${BRANCH}` });
+                parentSha = ref.object.sha;
+                const { data: parentCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: parentSha });
+                baseTree = parentCommit.tree.sha;
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+              const { data: newTree } = await github.rest.git.createTree({
+                owner, repo, tree, ...(baseTree ? { base_tree: baseTree } : {}),
+              });
+              const { data: newCommit } = await github.rest.git.createCommit({
+                owner, repo,
+                message: `qa: screenshots for PR #${process.env.PR_NUMBER} (run ${context.runId})`,
+                tree: newTree.sha,
+                parents: parentSha ? [parentSha] : [],
+              });
+              try {
+                if (parentSha) {
+                  await github.rest.git.updateRef({ owner, repo, ref: `heads/${BRANCH}`, sha: newCommit.sha });
+                } else {
+                  await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${BRANCH}`, sha: newCommit.sha });
+                }
+                commit = newCommit;
+                break;
+              } catch (error) {
+                if (attempt === 1) throw error;
+                core.warning(`Ref update conflict, retrying: ${error.message}`);
+              }
+            }
+            const urls = {};
+            for (const entry of tree) {
+              const file = entry.path.split('/').pop();
+              urls[file] = `https://raw.githubusercontent.com/${owner}/${repo}/${commit.sha}/${entry.path}`;
+            }
+            fs.writeFileSync(MAP_PATH, JSON.stringify(urls, null, 2));
+            core.info(`Published ${tree.length} screenshot(s) to ${BRANCH} @ ${commit.sha}.`);
+
+      - name: Inline hosted screenshot links into report
+        if: steps.validate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import { readFile, writeFile } from 'node:fs/promises'
+          import path from 'node:path'
+          import { pathToFileURL } from 'node:url'
+          let policy = {}
+          try {
+            policy = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE, 'scripts/qa-workflow-policy.mjs',
+            )).href)
+          } catch {}
+          const rewrite = policy.rewriteScreenshotLinks ?? ((report, urlMap) =>
+            report.replaceAll(/qa-screenshots\/([a-z0-9][a-z0-9_-]*\.png)/g,
+              (match, file) => urlMap[file] ?? match))
+          const report = await readFile('/tmp/qa-report/qa-report.md', 'utf8')
+          const urls = JSON.parse(
+            await readFile('/tmp/qa-report/screenshot-urls.json', 'utf8').catch(() => '{}'),
+          )
+          await writeFile('/tmp/qa-report/qa-report-published.md', rewrite(report, urls))
+          NODE
+
       - name: Post QA report as PR comment
         id: post-report
         if: steps.validate.outputs.ready == 'true'
@@ -1132,7 +1325,7 @@ jobs:
           pr-number: ${{ needs.prepare-app.outputs.pr-number }}
           heading: '## Claude QA (Browser) Report'
           marker: '<!-- claude-qa-browser-report -->'
-          report-path: /tmp/qa-report/qa-report.md
+          report-path: /tmp/qa-report/qa-report-published.md
           github-token: ${{ secrets.GITHUB_TOKEN }}
           head-sha: ${{ needs.prepare-app.outputs.head-sha }}
       - name: Set commit status

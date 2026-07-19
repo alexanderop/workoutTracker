@@ -35,6 +35,10 @@
           "details": {
             "type": "string",
             "description": "What you observed — be specific about what you saw on screen"
+          },
+          "screenshot": {
+            "type": "string",
+            "description": "Optional evidence screenshot filename saved under qa-screenshots/, e.g. ac1-weight-saved.png (lowercase kebab-case, .png only)"
           }
         },
         "required": ["name", "area", "result", "details"],
@@ -62,7 +66,11 @@
             "description": "Numbered steps a developer can follow to reproduce"
           },
           "expected": { "type": "string", "description": "What should have happened" },
-          "actual": { "type": "string", "description": "What actually happened" }
+          "actual": { "type": "string", "description": "What actually happened" },
+          "screenshot": {
+            "type": "string",
+            "description": "Optional screenshot filename under qa-screenshots/ showing the broken state, e.g. bug-1-nav-overflow.png"
+          }
         },
         "required": [
           "id",

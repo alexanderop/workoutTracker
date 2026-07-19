@@ -5,10 +5,10 @@ import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('Numeric Input Modal (Touch Device)', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     mockTouchDevice()
   })
-  afterEach(async () => {
+  afterEach(() => {
     restoreMatchMedia()
   })
 
@@ -30,6 +30,41 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await expect.element(page.getByRole('button', { name: /cancel/i })).toBeVisible()
       const title = await modalPO.getTitle()
       expect(title).toBe('Weight')
+    })
+
+    it('shows correct unit label in weight modal', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
+
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Check for unit label in the selected preset (inside the dialog)
+      await expect.element(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
+
+      await modalPO.clickCancel()
+    })
+
+    it('shows barbell plate hint with correct plate description', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
+
+      // Bench Press is a barbell exercise
+      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
+
+      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      await weightTrigger.click()
+      await modalPO.waitForOpen()
+
+      // Enter 60kg (= 20kg bar + 2x20kg plates)
+      await modalPO.enterValue(60)
+
+      // Barbell plate hint should show correct plate configuration
+      const barbellHint = page.getByRole('img', { name: /barbell with 20kg/i })
+      await expect.element(barbellHint).toBeVisible()
+
+      await modalPO.clickCancel()
     })
 
     it('can complete a set using modal input', async ({ createTestApp }) => {
@@ -92,43 +127,6 @@ describe('Numeric Input Modal (Touch Device)', () => {
       expect(values.weight).toBe('100')
     })
 
-    it('shows correct unit label in weight modal', async ({ createTestApp }) => {
-      const { builder } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Open weight modal
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-
-      // Check for unit label in the selected preset (inside the dialog)
-      await expect.element(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
-
-      await modalPO.clickCancel()
-    })
-
-    it('shows barbell plate hint with correct plate description', async ({ createTestApp }) => {
-      const { builder } = await createTestApp()
-
-      // Bench Press is a barbell exercise
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Open weight modal
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-
-      // Enter 60kg (= 20kg bar + 2x20kg plates)
-      await modalPO.enterValue(60)
-
-      // Barbell plate hint should show correct plate configuration
-      const barbellHint = page.getByRole('img', { name: /barbell with 20kg/i })
-      await expect.element(barbellHint).toBeVisible()
-
-      await modalPO.clickCancel()
-    })
-
     it('does not show barbell plate hint for non-barbell exercises', async ({ createTestApp }) => {
       const { builder } = await createTestApp()
 
@@ -149,32 +147,21 @@ describe('Numeric Input Modal (Touch Device)', () => {
   })
 
   describe('SetRowPO Integration', () => {
-    it('SetRowPO.enterValues() works in modal mode', async ({ createTestApp }) => {
+    it('SetRowPO enters values and completes the set in modal mode', async ({ createTestApp }) => {
       const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
-      // Use the page object to fill values (should use modal internally)
+      // fillAndComplete delegates to enterValues, so one journey exercises both
+      // page-object contracts through all three touch modals.
       const set = await workout.getSet(0)
-      await set.enterValues({ kg: 100, reps: 8, rir: 2 })
+      await set.fillAndComplete({ weight: '100', reps: '8', rir: '2' })
 
-      // Verify values are set
+      // Verify values are set and the row is completed.
       const values = await set.getValues()
       expect(values.weight).toBe('100')
       expect(values.reps).toBe('8')
       expect(values.rir).toBe('2')
-    })
-
-    it('SetRowPO.fillAndComplete() works in modal mode', async ({ createTestApp }) => {
-      const { builder, workout } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Use the page object to fill and complete
-      const set = await workout.getSet(0)
-      await set.fillAndComplete({ weight: '100', reps: '8', rir: '2' })
-
-      // Verify set is completed
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
     })
   })

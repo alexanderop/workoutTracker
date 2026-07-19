@@ -1,5 +1,5 @@
 /* eslint-disable vitest/no-conditional-in-test -- Settings controls are conditionally rendered by preference values. */
-/* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
+
 import { page, userEvent } from 'vitest/browser'
 import { beforeEach, describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
@@ -20,13 +20,15 @@ const VUEUSE_COLOR_SCHEME_KEY = 'vueuse-color-scheme'
  * and language switching edge cases.
  */
 describe('Settings Preferences', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     localStorage.removeItem(VUEUSE_COLOR_SCHEME_KEY)
   })
 
   describe('Dark Mode Toggle', () => {
-    it('toggles dark mode and persists preference', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
+    it('toggles the document theme, persists it, and survives navigation', async ({
+      createTestApp,
+    }) => {
+      const { common, router } = await createTestApp()
       await common.navigateToSettings()
 
       // Find and verify the theme toggle
@@ -39,6 +41,7 @@ describe('Settings Preferences', () => {
         themeToggleElement instanceof HTMLButtonElement
           ? themeToggleElement.dataset.state === 'checked'
           : false
+      const initialIsDark = document.documentElement.classList.contains('dark')
 
       // Toggle theme
       await userEvent.click(themeToggle)
@@ -57,29 +60,10 @@ describe('Settings Preferences', () => {
           return localStorage.getItem('vueuse-color-scheme')
         })
         .toBeTruthy()
-    })
-
-    it('adds dark class to html element when dark mode enabled', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const themeToggle = page.getByTestId('theme-toggle')
-      const initialIsDark = document.documentElement.classList.contains('dark')
-
-      await userEvent.click(themeToggle)
 
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(!initialIsDark)
-    })
-
-    it('dark mode preference survives page navigation', async ({ createTestApp }) => {
-      const { common, router } = await createTestApp()
-      await common.navigateToSettings()
-
-      // Toggle to ensure a known state (toggle once to change from default)
-      const themeToggle = page.getByTestId('theme-toggle')
-      await userEvent.click(themeToggle)
 
       const toggleElement = await themeToggle.element()
       const stateAfterToggle =
@@ -104,7 +88,9 @@ describe('Settings Preferences', () => {
   })
 
   describe('Language Selection', () => {
-    it('changes language and updates UI text', async ({ createTestApp }) => {
+    it('changes the UI and document language and persists the selection', async ({
+      createTestApp,
+    }) => {
       const { common, getByRole, getByText } = await createTestApp()
       await common.navigateToSettings()
 
@@ -124,38 +110,8 @@ describe('Settings Preferences', () => {
       await expect
         .element(page.getByRole('heading', { level: 1 }), { timeout: 3000 })
         .toHaveTextContent('Einstellungen')
-    })
-
-    it('sets html lang attribute when language changes', async ({ createTestApp }) => {
-      const { common, getByRole, getByText } = await createTestApp()
-      await common.navigateToSettings()
-
-      await expect
-        .element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 })
-        .toBeVisible()
-
-      const languageSelect = getByRole('combobox', { name: /language/i })
-      await userEvent.click(languageSelect)
-      const germanOption = getByText('Deutsch')
-      await userEvent.click(germanOption)
 
       await expect.poll(() => document.documentElement.lang).toBe('de')
-    })
-
-    it('language preference persists to database', async ({ createTestApp }) => {
-      const { common, getByRole, getByText } = await createTestApp()
-      await common.navigateToSettings()
-
-      // Wait for settings page to load
-      await expect
-        .element(page.getByRole('heading', { name: 'Settings' }), { timeout: 3000 })
-        .toBeVisible()
-
-      // Open language select and change to German
-      const languageSelect = getByRole('combobox', { name: /language/i })
-      await userEvent.click(languageSelect)
-      const germanOption = getByText('Deutsch')
-      await userEvent.click(germanOption)
 
       // Verify persisted to database
       await expectSettingValue('language', 'de')
@@ -194,7 +150,7 @@ describe('Settings Preferences', () => {
       expect(testTemplate).toBeTruthy()
     })
 
-    it('clicking outside delete dialog preserves data', async ({ createTestApp }) => {
+    it('pressing Escape in delete dialog preserves data', async ({ createTestApp }) => {
       const { common, getByRole } = await createTestApp()
 
       // Add test data
@@ -222,7 +178,9 @@ describe('Settings Preferences', () => {
   })
 
   describe('Timer Sounds Setting', () => {
-    it('timer sounds can be toggled off and persists', async ({ createTestApp }) => {
+    it('toggles sounds, controls slider visibility, and persists volume', async ({
+      createTestApp,
+    }) => {
       const { common } = await createTestApp()
       await common.navigateToSettings()
 
@@ -251,22 +209,10 @@ describe('Settings Preferences', () => {
 
       // Verify persisted (stored as 'timerSoundEnabled' - singular)
       await expectSettingValue('timerSoundEnabled', false)
-    })
 
-    it('timer sounds can be toggled back on after being disabled', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const timerSoundsToggle = page.getByRole('switch', { name: /timer sounds/i })
-
-      // Toggle off first
-      await userEvent.click(timerSoundsToggle)
-      await expect
-        .poll(async () => {
-          const element = await timerSoundsToggle.element()
-          return element instanceof HTMLButtonElement ? element.dataset.state : null
-        })
-        .toBe('unchecked')
+      // Volume slider is hidden while sounds are disabled.
+      const volumeSlider = page.getByTestId('timer-sound-volume-slider')
+      await expect.element(volumeSlider).not.toBeInTheDocument()
 
       // Toggle back on
       await userEvent.click(timerSoundsToggle)
@@ -279,13 +225,6 @@ describe('Settings Preferences', () => {
 
       // Verify database shows enabled
       await expectSettingValue('timerSoundEnabled', true)
-    })
-
-    it('volume slider persists value when changed', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const volumeSlider = page.getByTestId('timer-sound-volume-slider')
       await expect.element(volumeSlider).toBeVisible()
 
       // Simulate slider change to 70% (slider uses @change event, not @input)
@@ -296,22 +235,6 @@ describe('Settings Preferences', () => {
       }
 
       await expectSettingValue('timerSoundVolume', 0.7)
-    })
-
-    it('shows volume slider only when timer sounds are enabled', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      // Volume slider should be visible when sounds are enabled (default)
-      const volumeSlider = page.getByTestId('timer-sound-volume-slider')
-      await expect.element(volumeSlider).toBeVisible()
-
-      // Disable timer sounds
-      const timerSoundsToggle = page.getByRole('switch', { name: /timer sounds/i })
-      await userEvent.click(timerSoundsToggle)
-
-      // Volume slider should be hidden
-      await expect.element(volumeSlider).not.toBeInTheDocument()
     })
   })
 
@@ -348,8 +271,10 @@ describe('Settings Preferences', () => {
   })
 
   describe('Weight Unit Setting', () => {
-    it('switches from kg to lbs and persists', async ({ createTestApp }) => {
-      const { common, getByRole } = await createTestApp()
+    it('switches both ways, persists, and retains pounds across navigation', async ({
+      createTestApp,
+    }) => {
+      const { common, router, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
       // Find the lbs button in the weight toggle group (uses role="button" with aria-label)
@@ -359,31 +284,6 @@ describe('Settings Preferences', () => {
 
       // Verify persisted to database
       await expectSettingValue('weightUnit', 'lbs')
-    })
-
-    it('switches from lbs back to kg', async ({ createTestApp }) => {
-      const { common, getByRole } = await createTestApp()
-      await common.navigateToSettings()
-
-      // First switch to lbs
-      const lbsButton = getByRole('button', { name: /pounds/i })
-      await userEvent.click(lbsButton)
-
-      // Then switch back to kg
-      const kgButton = getByRole('button', { name: /kilograms/i })
-      await userEvent.click(kgButton)
-
-      // Verify persisted to database
-      await expectSettingValue('weightUnit', 'kg')
-    })
-
-    it('weight unit preference survives page navigation', async ({ createTestApp }) => {
-      const { common, router, getByRole } = await createTestApp()
-      await common.navigateToSettings()
-
-      // Switch to lbs
-      const lbsButton = getByRole('button', { name: /pounds/i })
-      await userEvent.click(lbsButton)
 
       // Navigate away
       await router.push('/')
@@ -400,11 +300,18 @@ describe('Settings Preferences', () => {
           return element.dataset.state
         })
         .toBe('on')
+
+      // Then switch back to kg and verify the reverse transition persists.
+      const kgButton = getByRole('button', { name: /kilograms/i })
+      await userEvent.click(kgButton)
+      await expectSettingValue('weightUnit', 'kg')
     })
   })
 
   describe('Height Unit Setting', () => {
-    it('switches from cm to ft/in and persists', async ({ createTestApp }) => {
+    it('switches from cm to ft/in and back, persisting both transitions', async ({
+      createTestApp,
+    }) => {
       const { common, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
@@ -415,15 +322,6 @@ describe('Settings Preferences', () => {
 
       // Verify persisted to database
       await expectSettingValue('heightUnit', 'ft-in')
-    })
-
-    it('switches from ft/in back to cm', async ({ createTestApp }) => {
-      const { common, getByRole } = await createTestApp()
-      await common.navigateToSettings()
-
-      // First switch to ft/in
-      const ftInButton = getByRole('button', { name: /feet and inches/i })
-      await userEvent.click(ftInButton)
 
       // Then switch back to cm
       const cmButton = getByRole('button', { name: /centimeters/i })
@@ -435,7 +333,9 @@ describe('Settings Preferences', () => {
   })
 
   describe('Screen Wake Lock Setting', () => {
-    it('screen wake lock toggle is visible and defaults to enabled', async ({ createTestApp }) => {
+    it('is visible and enabled by default, then persists off and on transitions', async ({
+      createTestApp,
+    }) => {
       const { common } = await createTestApp()
       await common.navigateToSettings()
 
@@ -449,13 +349,7 @@ describe('Settings Preferences', () => {
           return element instanceof HTMLButtonElement ? element.dataset.state : null
         })
         .toBe('checked')
-    })
 
-    it('screen wake lock can be toggled off and persists', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const wakeLockToggle = page.getByRole('switch', { name: /keep screen on/i })
       await userEvent.click(wakeLockToggle)
 
       // Verify toggled off
@@ -468,22 +362,6 @@ describe('Settings Preferences', () => {
 
       // Verify persisted
       await expectSettingValue('screenWakeLock', false)
-    })
-
-    it('screen wake lock can be toggled back on', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const wakeLockToggle = page.getByRole('switch', { name: /keep screen on/i })
-
-      // Toggle off first
-      await userEvent.click(wakeLockToggle)
-      await expect
-        .poll(async () => {
-          const element = await wakeLockToggle.element()
-          return element instanceof HTMLButtonElement ? element.dataset.state : null
-        })
-        .toBe('unchecked')
 
       // Toggle back on
       await userEvent.click(wakeLockToggle)
@@ -500,8 +378,10 @@ describe('Settings Preferences', () => {
   })
 
   describe('Rest Timer Setting', () => {
-    it('defaults to 90 seconds', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
+    it('defaults to 90, persists 120 across navigation, and can be disabled', async ({
+      createTestApp,
+    }) => {
+      const { common, router } = await createTestApp()
       await common.navigateToSettings()
 
       const preset = page.getByRole('button', { name: /90 second rest timer target/i })
@@ -512,36 +392,11 @@ describe('Settings Preferences', () => {
           return element.dataset.state
         })
         .toBe('on')
-    })
-
-    it('selecting a preset persists the new default rest timer', async ({ createTestApp }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
 
       const twoMinutePreset = page.getByRole('button', { name: /120 second rest timer target/i })
       await userEvent.click(twoMinutePreset)
 
       await expectSettingValue('defaultRestTimer', 120)
-    })
-
-    it('selecting "Off" disables the rest timer target and persists 0', async ({
-      createTestApp,
-    }) => {
-      const { common } = await createTestApp()
-      await common.navigateToSettings()
-
-      const offPreset = page.getByRole('button', { name: /no rest timer target/i })
-      await userEvent.click(offPreset)
-
-      await expectSettingValue('defaultRestTimer', 0)
-    })
-
-    it('rest timer preference survives page navigation', async ({ createTestApp }) => {
-      const { common, router } = await createTestApp()
-      await common.navigateToSettings()
-
-      const twoMinutePreset = page.getByRole('button', { name: /120 second rest timer target/i })
-      await userEvent.click(twoMinutePreset)
 
       await router.push('/')
       await expect.poll(() => router.currentRoute.value.path).toBe('/')
@@ -555,6 +410,10 @@ describe('Settings Preferences', () => {
           return element.dataset.state
         })
         .toBe('on')
+
+      const offPreset = page.getByRole('button', { name: /no rest timer target/i })
+      await userEvent.click(offPreset)
+      await expectSettingValue('defaultRestTimer', 0)
     })
   })
 

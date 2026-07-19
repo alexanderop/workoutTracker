@@ -10,6 +10,8 @@ import { load as parseYaml } from 'js-yaml'
 import {
   extractMarkdownSection,
   hasMeaningfulTemplateContent,
+  isValidScreenshotFilename,
+  rewriteScreenshotLinks,
   validateQaReport,
 } from './qa-workflow-policy.mjs'
 
@@ -31,6 +33,39 @@ test('unfilled PR template fields are rejected', () => {
   assert.equal(hasMeaningfulTemplateContent('- Changed flow to verify: ...'), false)
   assert.equal(hasMeaningfulTemplateContent('- Forms / validation: TBD'), false)
   assert.equal(hasMeaningfulTemplateContent('- User can ...'), false)
+})
+
+test('screenshot filenames must be flat kebab-case .png', () => {
+  assert.equal(isValidScreenshotFilename('ac1-weight-saved.png'), true)
+  assert.equal(isValidScreenshotFilename('bug-2_nav-overflow.png'), true)
+  assert.equal(isValidScreenshotFilename('../escape.png'), false)
+  assert.equal(isValidScreenshotFilename('sub/dir.png'), false)
+  assert.equal(isValidScreenshotFilename('UPPER.png'), false)
+  assert.equal(isValidScreenshotFilename('shot.jpeg'), false)
+  assert.equal(isValidScreenshotFilename('.hidden.png'), false)
+  assert.equal(isValidScreenshotFilename(`${'a'.repeat(100)}.png`), false)
+  assert.equal(isValidScreenshotFilename(''), false)
+  assert.equal(isValidScreenshotFilename(undefined), false)
+})
+
+test('published screenshot links are rewritten, unknown ones left alone', () => {
+  const report = [
+    '![Weight saved](qa-screenshots/ac1-weight-saved.png)',
+    '![Missing](qa-screenshots/never-published.png)',
+    'Plain mention of qa-screenshots/ac1-weight-saved.png in text.',
+  ].join('\n')
+  const rewritten = rewriteScreenshotLinks(report, {
+    'ac1-weight-saved.png': 'https://example.test/abc/ac1-weight-saved.png',
+  })
+  assert.equal(
+    rewritten,
+    [
+      '![Weight saved](https://example.test/abc/ac1-weight-saved.png)',
+      '![Missing](qa-screenshots/never-published.png)',
+      'Plain mention of https://example.test/abc/ac1-weight-saved.png in text.',
+    ].join('\n'),
+  )
+  assert.equal(rewriteScreenshotLinks('', {}), '')
 })
 
 test('an explicit QA skip is a final report', () => {
@@ -187,9 +222,7 @@ test('Playwright system packages are installed independently of the browser cach
   const workflow = parseYaml(await readFile('.github/workflows/claude-ci-fix.yml', 'utf8'))
   const steps = workflow.jobs.verify.steps
   const cache = steps.find((step) => step.name === 'Cache Playwright browsers')
-  const dependencies = steps.find(
-    (step) => step.name === 'Install Playwright system dependencies',
-  )
+  const dependencies = steps.find((step) => step.name === 'Install Playwright system dependencies')
   const browser = steps.find((step) => step.name === 'Install Playwright browser')
 
   assert.match(cache.with.key, /\$\{\{ runner\.arch \}\}/)
@@ -222,9 +255,7 @@ test('download-artifact uses the repository-verified action pin everywhere', asy
   )
 
   assert.ok(pins.length > 0)
-  assert.deepEqual(new Set(pins).values().toArray(), [
-    '3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c',
-  ])
+  assert.deepEqual(new Set(pins).values().toArray(), ['3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c'])
 })
 
 test('Required CI gates every verification job and the exact release commit', async () => {
@@ -236,7 +267,9 @@ test('Required CI gates every verification job and the exact release commit', as
   assert.match(ci.jobs.release.if, /github\.event_name == 'push'/)
   assert.match(ci.jobs.release.if, /github\.ref == 'refs\/heads\/main'/)
 
-  const checkout = ci.jobs.release.steps.find((step) => step.name === 'Checkout verified main commit')
+  const checkout = ci.jobs.release.steps.find(
+    (step) => step.name === 'Checkout verified main commit',
+  )
   assert.equal(checkout.with.ref, '${{ github.sha }}')
   assert.equal(checkout.with['persist-credentials'], false)
 
