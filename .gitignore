@@ -35,6 +35,7 @@ coverage
 
 # Vitest attachments (temporary test artifacts)
 .vitest-attachments/
+.vitest/traces/
 
 test-results/
 playwright-report/

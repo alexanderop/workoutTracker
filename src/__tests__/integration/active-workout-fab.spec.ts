@@ -45,7 +45,7 @@ describe('Active Workout FAB', () => {
       await navigateTo({ name: RouteNames.Exercises })
 
       // FAB should be visible on exercises page
-      await expect.element(getActiveFab()).toBeVisible()
+      await expect.element(getActiveFab()).toBeInViewport({ ratio: 1 })
 
       // Check FAB on Settings page
       await navigateTo({ name: RouteNames.Settings })

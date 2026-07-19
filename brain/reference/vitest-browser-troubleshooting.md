@@ -38,8 +38,12 @@ when copy-pasting from other Vue projects or generic Vitest docs.
 ```bash
 pnpm test           # correct: runs default project once
 pnpm test:watch     # watch mode
-pnpm test -- src/__tests__/integration/foo.spec.ts   # single file
+pnpm exec vitest run --project=default src/__tests__/integration/foo.spec.ts # single file
 ```
+
+Do not insert a literal `--` before the file path. With this repository's pnpm
+script, Vitest receives that separator and can run the entire default project
+instead of applying the intended file filter.
 
 If you see `ERR_PNPM_NO_SCRIPT  Missing script: "test:unit"`, use `pnpm test`.
 
@@ -59,6 +63,27 @@ Use `test:headed` when:
 
 Use `test:ui` for picking a single test to step through, inspecting the DOM
 snapshot, and re-running on save without restarting the suite.
+
+## Failed-Test Traces
+
+Browser projects retain Playwright traces for failed tests under
+`.vitest/traces/`; the Node-only `arch` project does not enable tracing. Vitest
+also keeps failure screenshots and related attachments in `.vitest-attachments/`.
+
+Each failed default-suite CI shard uploads both directories in a
+`vitest-debug-shard-<number>` artifact. Open the failed GitHub Actions run,
+download the artifact for the failing shard, unzip it, and inspect a trace with:
+
+```bash
+pnpm exec playwright show-trace <trace.zip>
+```
+
+Normal locator actions and `expect.element()` assertions already appear as
+source-linked groups in the trace. Add `page.mark()` around a multi-step flow,
+or `locator.mark()` at a significant element state, only when the automatic
+action groups do not explain the failure. Shared helpers wrapped with
+`vi.defineHelper()` keep those trace and stack locations focused on the calling
+test.
 
 ## `fake-indexeddb` vs Real IndexedDB
 
@@ -179,7 +204,7 @@ Three causes account for almost every flake in this repo, in order:
 in isolation before assuming it's environmental:
 
 ```bash
-pnpm test -- src/__tests__/integration/the-flaky-one.spec.ts
+pnpm exec vitest run --project=default src/__tests__/integration/the-flaky-one.spec.ts
 pnpm test:headed -- src/__tests__/integration/the-flaky-one.spec.ts
 ```
 

@@ -24,6 +24,10 @@ function browserConfig(name: string) {
     provider: playwright(),
     instances: [{ browser: 'chromium' as const, name }],
     headless: true,
+    trace: {
+      mode: 'retain-on-failure' as const,
+      tracesDir: '.vitest/traces',
+    },
   }
 }
 

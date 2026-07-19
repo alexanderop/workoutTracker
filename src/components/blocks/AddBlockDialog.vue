@@ -130,7 +130,7 @@ function handleOpenChange(value: boolean) {
         </TabsContent>
 
         <!-- Timed Blocks Tab -->
-        <TabsContent value="timed" class="flex-1 flex flex-col min-h-0 mt-4">
+        <TabsContent value="timed" class="flex-1 flex flex-col min-h-0 mt-4 overflow-y-auto">
           <div class="space-y-3">
             <button
               v-for="blockType in timedBlockTypes"

@@ -29,7 +29,7 @@ export class ActiveWorkoutPO {
     rowLocator: ReturnType<typeof page.getByRole>,
     name: RegExp,
   ): Promise<HTMLInputElement> {
-    const input = await rowLocator.getByRole('spinbutton', { name }).element()
+    const input = await rowLocator.getByRole('spinbutton', { name }).findElement()
     if (!(input instanceof HTMLInputElement)) {
       throw new TypeError(`Input matching ${name} is not an HTMLInputElement`)
     }
@@ -45,7 +45,7 @@ export class ActiveWorkoutPO {
     rowLocator: ReturnType<typeof page.getByRole>,
   ): Promise<HTMLElement> {
     return ensureHTMLElement(
-      await rowLocator.getByRole('button', { name: /mark set.*(complete|done)/i }).element(),
+      await rowLocator.getByRole('button', { name: /mark set.*(complete|done)/i }).findElement(),
     )
   }
 
