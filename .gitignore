@@ -43,6 +43,10 @@ playwright-report/
 # QA sandbox (test fixtures for Claude QA)
 .qa-sandbox/
 
+# QA screenshot evidence from the current run (archived copies under
+# qa-archive/ stay committable)
+/qa-screenshots/
+
 # Performance budget artifacts
 stats.html
 .lighthouseci/

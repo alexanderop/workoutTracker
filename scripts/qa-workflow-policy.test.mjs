@@ -10,6 +10,8 @@ import { load as parseYaml } from 'js-yaml'
 import {
   extractMarkdownSection,
   hasMeaningfulTemplateContent,
+  isValidScreenshotFilename,
+  rewriteScreenshotLinks,
   validateQaReport,
 } from './qa-workflow-policy.mjs'
 
@@ -31,6 +33,39 @@ test('unfilled PR template fields are rejected', () => {
   assert.equal(hasMeaningfulTemplateContent('- Changed flow to verify: ...'), false)
   assert.equal(hasMeaningfulTemplateContent('- Forms / validation: TBD'), false)
   assert.equal(hasMeaningfulTemplateContent('- User can ...'), false)
+})
+
+test('screenshot filenames must be flat kebab-case .png', () => {
+  assert.equal(isValidScreenshotFilename('ac1-weight-saved.png'), true)
+  assert.equal(isValidScreenshotFilename('bug-2_nav-overflow.png'), true)
+  assert.equal(isValidScreenshotFilename('../escape.png'), false)
+  assert.equal(isValidScreenshotFilename('sub/dir.png'), false)
+  assert.equal(isValidScreenshotFilename('UPPER.png'), false)
+  assert.equal(isValidScreenshotFilename('shot.jpeg'), false)
+  assert.equal(isValidScreenshotFilename('.hidden.png'), false)
+  assert.equal(isValidScreenshotFilename(`${'a'.repeat(100)}.png`), false)
+  assert.equal(isValidScreenshotFilename(''), false)
+  assert.equal(isValidScreenshotFilename(undefined), false)
+})
+
+test('published screenshot links are rewritten, unknown ones left alone', () => {
+  const report = [
+    '![Weight saved](qa-screenshots/ac1-weight-saved.png)',
+    '![Missing](qa-screenshots/never-published.png)',
+    'Plain mention of qa-screenshots/ac1-weight-saved.png in text.',
+  ].join('\n')
+  const rewritten = rewriteScreenshotLinks(report, {
+    'ac1-weight-saved.png': 'https://example.test/abc/ac1-weight-saved.png',
+  })
+  assert.equal(
+    rewritten,
+    [
+      '![Weight saved](https://example.test/abc/ac1-weight-saved.png)',
+      '![Missing](qa-screenshots/never-published.png)',
+      'Plain mention of https://example.test/abc/ac1-weight-saved.png in text.',
+    ].join('\n'),
+  )
+  assert.equal(rewriteScreenshotLinks('', {}), '')
 })
 
 test('an explicit QA skip is a final report', () => {
