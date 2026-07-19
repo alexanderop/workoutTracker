@@ -89,29 +89,27 @@ describe('ExercisesView', () => {
     // QA finding on PR #174: the chip list was hardcoded, so exercises with
     // newer equipment types (egym, battle-rope) were unreachable via filtering.
     it('shows a filter chip for every equipment type', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo, exercises, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
-      await expect.element(page.getByRole('button', { name: 'EGYM', exact: true })).toBeVisible()
-      await expect
-        .element(page.getByRole('button', { name: 'Battle Rope', exact: true }))
-        .toBeVisible()
+      await exercises.assertEquipmentFilterVisible('EGYM')
+      await exercises.assertEquipmentFilterVisible('Battle Rope')
 
       cleanup()
     })
 
     it('filters exercises by EGYM equipment type', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo, exercises, cleanup } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
-      await userEvent.click(page.getByRole('button', { name: 'EGYM', exact: true }))
+      await exercises.clickEquipmentFilter('EGYM')
 
       // Should show EGYM machine exercises
-      await expect.element(page.getByText('EGYM Leg Press', { exact: true })).toBeVisible()
-      await expect.element(page.getByText('EGYM Chest Press', { exact: true })).toBeVisible()
+      await exercises.assertExerciseVisible('EGYM Leg Press')
+      await exercises.assertExerciseVisible('EGYM Chest Press')
 
       // Should NOT show non-EGYM exercises
-      await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
+      await exercises.assertExerciseNotVisible('Bench Press')
 
       cleanup()
     })

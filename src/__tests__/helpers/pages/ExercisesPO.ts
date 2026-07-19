@@ -101,4 +101,36 @@ export class ExercisesPO {
 
     await this.save()
   }
+
+  /**
+   * Asserts that an equipment filter chip button is visible on the exercises page.
+   * @param name - The exact label of the equipment filter chip (e.g. "EGYM", "Battle Rope")
+   */
+  async assertEquipmentFilterVisible(name: string): Promise<void> {
+    await expect.element(page.getByRole('button', { name, exact: true })).toBeVisible()
+  }
+
+  /**
+   * Clicks an equipment filter chip button.
+   * @param name - The exact label of the equipment chip (e.g. "EGYM", "Barbell")
+   */
+  async clickEquipmentFilter(name: string): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name, exact: true }))
+  }
+
+  /**
+   * Asserts that an exercise name is visible in the exercise list.
+   * @param name - The exact exercise name
+   */
+  async assertExerciseVisible(name: string): Promise<void> {
+    await expect.element(page.getByText(name, { exact: true })).toBeVisible()
+  }
+
+  /**
+   * Asserts that an exercise name is not present in the exercise list.
+   * @param name - The exact exercise name
+   */
+  async assertExerciseNotVisible(name: string): Promise<void> {
+    await expect.element(page.getByText(name, { exact: true })).not.toBeInTheDocument()
+  }
 }
