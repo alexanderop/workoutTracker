@@ -33,11 +33,17 @@ const activeTab = ref('exercises')
 const pickerCondensed = ref(false)
 const pickerContent = useTemplateRef<InstanceType<typeof ExercisePickerContent>>('pickerContent')
 
-// Reset state when dialog opens
+// Reset state on open/close. The close branch lives here (not in an
+// update:open handler) so it covers every close path, including handlers
+// that assign `open.value = false` directly.
 watch(open, (isOpen) => {
   if (isOpen) {
     pickerContent.value?.reset()
+    return
   }
+  activeTab.value = 'exercises'
+  // The picker unmounts with the dialog, so it can't sync this back itself.
+  pickerCondensed.value = false
 })
 
 const timedBlockTypes: ReadonlyArray<{
@@ -94,19 +100,10 @@ function handleCreateNew() {
   open.value = false
   router.push({ name: RouteNames.ExerciseForm })
 }
-
-function handleOpenChange(value: boolean) {
-  open.value = value
-  if (!value) {
-    activeTab.value = 'exercises'
-    // The picker unmounts with the dialog, so it can't sync this back itself.
-    pickerCondensed.value = false
-  }
-}
 </script>
 
 <template>
-  <Dialog v-model:open="open" @update:open="handleOpenChange">
+  <Dialog v-model:open="open">
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col rounded-t-none sm:rounded-lg"
     >

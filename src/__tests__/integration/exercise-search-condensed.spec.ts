@@ -30,16 +30,34 @@ function waitForExpandDelay() {
   return new Promise((resolve) => setTimeout(resolve, EXPAND_DELAY_MS + 200))
 }
 
+/**
+ * Failure-safe app teardown: tests may end with the sheet still open
+ * (teleported dialog content), and unmounting that lazily from the NEXT
+ * test's automatic cleanup crashes Vue's unmount. Register the handle here
+ * so cleanup runs in afterEach even when an assertion fails mid-test.
+ */
+let cleanupApp: (() => void) | undefined
+
+async function createApp() {
+  const app = await createTestApp()
+  cleanupApp = app.cleanup
+  return app
+}
+
 describe('AddBlockDialog - condensed search mode on mobile', () => {
   beforeEach(async () => {
     await setupIntegrationTest()
     await page.viewport(390, 844)
   })
 
-  afterEach(cleanupIntegrationTest)
+  afterEach(async () => {
+    cleanupApp?.()
+    cleanupApp = undefined
+    await cleanupIntegrationTest()
+  })
 
   it('collapses chrome while searching, stays collapsed while a query remains, and restores after clearing', async () => {
-    const { builder, cleanup } = await createTestApp()
+    const { builder } = await createApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -79,18 +97,22 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
     expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
 
-    // End the search for real: clear the query and blur. Chrome returns
-    // (after the tap-protection delay, covered by expect.element's auto-retry).
+    // End the search for real: clear the query and blur. The chrome must
+    // still be collapsed immediately — expanding right away would shift an
+    // in-flight tap's target...
     await userEvent.fill(searchInput, '')
     ;(await searchInput.element()).blur()
+    expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
+    expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
+
+    // ...and returns only once the tap-protection delay has elapsed.
+    await waitForExpandDelay()
     await expect.element(page.getByRole('tab', { name: /timed blocks/i })).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
-
-    cleanup()
   })
 
   it('adds the exercise when a result is tapped while condensed', async () => {
-    const { builder, common, cleanup } = await createTestApp()
+    const { builder, common } = await createApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -103,12 +125,10 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     await userEvent.click(common.getDialogButton('Bench Press'))
     await common.waitForDialogClose()
     await expect.element(page.getByRole('status').getByText(/added bench press/i)).toBeVisible()
-
-    cleanup()
   })
 
   it('keeps an active filter row visible while condensed so narrowing stays transparent', async () => {
-    const { builder, cleanup } = await createTestApp()
+    const { builder } = await createApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -126,12 +146,10 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     await expect
       .poll(() => page.getByRole('button', { name: 'Barbell', exact: true }).query())
       .toBeNull()
-
-    cleanup()
   })
 
   it('offers Create Custom Exercise inline when a condensed search has no results', async () => {
-    const { builder, cleanup } = await createTestApp()
+    const { builder } = await createApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -144,8 +162,6 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     const createButtons = await page.getByRole('button', { name: /create custom exercise/i }).all()
     expect(createButtons).toHaveLength(1)
     await expect.element(createButtons[0]).toBeVisible()
-
-    cleanup()
   })
 })
 
@@ -155,10 +171,14 @@ describe('AddBlockDialog - condensed search mode does not apply on desktop', () 
     await page.viewport(1280, 720)
   })
 
-  afterEach(cleanupIntegrationTest)
+  afterEach(async () => {
+    cleanupApp?.()
+    cleanupApp = undefined
+    await cleanupIntegrationTest()
+  })
 
   it('keeps tabs, filters, and the create footer visible while searching at desktop width', async () => {
-    const { builder, cleanup } = await createTestApp()
+    const { builder } = await createApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -176,7 +196,5 @@ describe('AddBlockDialog - condensed search mode does not apply on desktop', () 
     await expect
       .element(page.getByRole('button', { name: /create custom exercise/i }))
       .toBeVisible()
-
-    cleanup()
   })
 })
