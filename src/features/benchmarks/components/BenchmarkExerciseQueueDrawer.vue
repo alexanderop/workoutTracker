@@ -99,7 +99,7 @@ const exerciseList = computed<ReadonlyArray<ExerciseListItem>>(() => {
 
 <template>
   <Dialog v-model:open="open">
-    <MobileDialogContent class="max-h-[80vh] flex flex-col">
+    <MobileDialogContent class="max-h-[80dvh] flex flex-col">
       <DialogHeader>
         <DialogTitle>{{ t('workouts.benchmarks.queue.title') }}</DialogTitle>
         <DialogDescription class="sr-only">

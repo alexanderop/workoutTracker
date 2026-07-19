@@ -140,98 +140,100 @@ async function save() {
 
 <template>
   <Dialog v-model:open="open">
-    <MobileDialogContent class="max-h-[90vh] overflow-y-auto">
+    <MobileDialogContent>
       <DialogHeader>
         <DialogTitle>{{ t('nutrition.food.title') }}</DialogTitle>
         <DialogDescription>{{ t('nutrition.food.description') }}</DialogDescription>
       </DialogHeader>
-      <form class="space-y-4" @submit.prevent="save">
-        <div v-if="foods.length > 0" class="space-y-1.5">
-          <Label for="nutrition-existing-food">{{ t('nutrition.food.choose') }}</Label>
-          <NativeSelect id="nutrition-existing-food" v-model="selectedFoodId" class="w-full">
-            <option value="">{{ t('nutrition.food.createNew') }}</option>
-            <option v-for="food in foods" :key="food.id" :value="food.id">{{ food.name }}</option>
-          </NativeSelect>
-        </div>
-
-        <div v-if="isNewFood" class="space-y-1.5">
-          <Label for="nutrition-food-name">{{ t('nutrition.food.name') }}</Label>
-          <Input
-            id="nutrition-food-name"
-            v-model="name"
-            :placeholder="t('nutrition.food.namePlaceholder')"
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <Label for="nutrition-food-meal">{{ t('nutrition.food.meal') }}</Label>
-            <NativeSelect id="nutrition-food-meal" v-model="meal" class="w-full">
-              <option value="breakfast">{{ t('nutrition.meals.breakfast') }}</option>
-              <option value="lunch">{{ t('nutrition.meals.lunch') }}</option>
-              <option value="dinner">{{ t('nutrition.meals.dinner') }}</option>
-              <option value="snack">{{ t('nutrition.meals.snack') }}</option>
+      <form class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
+        <div class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
+          <div v-if="foods.length > 0" class="space-y-1.5">
+            <Label for="nutrition-existing-food">{{ t('nutrition.food.choose') }}</Label>
+            <NativeSelect id="nutrition-existing-food" v-model="selectedFoodId" class="w-full">
+              <option value="">{{ t('nutrition.food.createNew') }}</option>
+              <option v-for="food in foods" :key="food.id" :value="food.id">{{ food.name }}</option>
             </NativeSelect>
           </div>
-          <div class="space-y-1.5">
-            <Label for="nutrition-food-grams">{{ t('nutrition.food.servingGrams') }}</Label>
+
+          <div v-if="isNewFood" class="space-y-1.5">
+            <Label for="nutrition-food-name">{{ t('nutrition.food.name') }}</Label>
             <Input
-              id="nutrition-food-grams"
-              v-model="grams"
-              type="number"
-              min="1"
-              step="1"
-              inputmode="decimal"
+              id="nutrition-food-name"
+              v-model="name"
+              :placeholder="t('nutrition.food.namePlaceholder')"
+              autocomplete="off"
             />
           </div>
-        </div>
 
-        <div v-if="isNewFood">
-          <p class="mb-2 text-sm font-medium">{{ t('nutrition.food.nutrientsForServing') }}</p>
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1.5">
-              <Label for="nutrition-food-calories">{{ t('nutrition.fields.calories') }}</Label>
+              <Label for="nutrition-food-meal">{{ t('nutrition.food.meal') }}</Label>
+              <NativeSelect id="nutrition-food-meal" v-model="meal" class="w-full">
+                <option value="breakfast">{{ t('nutrition.meals.breakfast') }}</option>
+                <option value="lunch">{{ t('nutrition.meals.lunch') }}</option>
+                <option value="dinner">{{ t('nutrition.meals.dinner') }}</option>
+                <option value="snack">{{ t('nutrition.meals.snack') }}</option>
+              </NativeSelect>
+            </div>
+            <div class="space-y-1.5">
+              <Label for="nutrition-food-grams">{{ t('nutrition.food.servingGrams') }}</Label>
               <Input
-                id="nutrition-food-calories"
-                v-model="calories"
+                id="nutrition-food-grams"
+                v-model="grams"
                 type="number"
-                min="0"
+                min="1"
+                step="1"
                 inputmode="decimal"
               />
             </div>
-            <div class="space-y-1.5">
-              <Label for="nutrition-food-protein">{{ t('nutrition.fields.protein') }}</Label>
-              <Input
-                id="nutrition-food-protein"
-                v-model="protein"
-                type="number"
-                min="0"
-                step="0.1"
-                inputmode="decimal"
-              />
-            </div>
-            <div class="space-y-1.5">
-              <Label for="nutrition-food-carbs">{{ t('nutrition.fields.carbs') }}</Label>
-              <Input
-                id="nutrition-food-carbs"
-                v-model="carbohydrates"
-                type="number"
-                min="0"
-                step="0.1"
-                inputmode="decimal"
-              />
-            </div>
-            <div class="space-y-1.5">
-              <Label for="nutrition-food-fat">{{ t('nutrition.fields.fat') }}</Label>
-              <Input
-                id="nutrition-food-fat"
-                v-model="fat"
-                type="number"
-                min="0"
-                step="0.1"
-                inputmode="decimal"
-              />
+          </div>
+
+          <div v-if="isNewFood">
+            <p class="mb-2 text-sm font-medium">{{ t('nutrition.food.nutrientsForServing') }}</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1.5">
+                <Label for="nutrition-food-calories">{{ t('nutrition.fields.calories') }}</Label>
+                <Input
+                  id="nutrition-food-calories"
+                  v-model="calories"
+                  type="number"
+                  min="0"
+                  inputmode="decimal"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <Label for="nutrition-food-protein">{{ t('nutrition.fields.protein') }}</Label>
+                <Input
+                  id="nutrition-food-protein"
+                  v-model="protein"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  inputmode="decimal"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <Label for="nutrition-food-carbs">{{ t('nutrition.fields.carbs') }}</Label>
+                <Input
+                  id="nutrition-food-carbs"
+                  v-model="carbohydrates"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  inputmode="decimal"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <Label for="nutrition-food-fat">{{ t('nutrition.fields.fat') }}</Label>
+                <Input
+                  id="nutrition-food-fat"
+                  v-model="fat"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  inputmode="decimal"
+                />
+              </div>
             </div>
           </div>
         </div>

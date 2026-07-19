@@ -71,47 +71,49 @@ async function save() {
         <DialogTitle>{{ t('nutrition.goals.title') }}</DialogTitle>
         <DialogDescription>{{ t('nutrition.goals.description') }}</DialogDescription>
       </DialogHeader>
-      <form class="space-y-4" @submit.prevent="save">
-        <div class="space-y-1.5">
-          <Label for="nutrition-goal-calories">{{ t('nutrition.fields.calories') }}</Label>
-          <Input
-            id="nutrition-goal-calories"
-            v-model="calories"
-            type="number"
-            min="1"
-            inputmode="numeric"
-          />
-        </div>
-        <div class="grid grid-cols-3 gap-3">
+      <form class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
+        <div class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
           <div class="space-y-1.5">
-            <Label for="nutrition-goal-protein">{{ t('nutrition.fields.protein') }}</Label>
+            <Label for="nutrition-goal-calories">{{ t('nutrition.fields.calories') }}</Label>
             <Input
-              id="nutrition-goal-protein"
-              v-model="protein"
+              id="nutrition-goal-calories"
+              v-model="calories"
               type="number"
-              min="0"
-              inputmode="decimal"
+              min="1"
+              inputmode="numeric"
             />
           </div>
-          <div class="space-y-1.5">
-            <Label for="nutrition-goal-carbs">{{ t('nutrition.fields.carbs') }}</Label>
-            <Input
-              id="nutrition-goal-carbs"
-              v-model="carbohydrates"
-              type="number"
-              min="0"
-              inputmode="decimal"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <Label for="nutrition-goal-fat">{{ t('nutrition.fields.fat') }}</Label>
-            <Input
-              id="nutrition-goal-fat"
-              v-model="fat"
-              type="number"
-              min="0"
-              inputmode="decimal"
-            />
+          <div class="grid grid-cols-3 gap-3">
+            <div class="space-y-1.5">
+              <Label for="nutrition-goal-protein">{{ t('nutrition.fields.protein') }}</Label>
+              <Input
+                id="nutrition-goal-protein"
+                v-model="protein"
+                type="number"
+                min="0"
+                inputmode="decimal"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <Label for="nutrition-goal-carbs">{{ t('nutrition.fields.carbs') }}</Label>
+              <Input
+                id="nutrition-goal-carbs"
+                v-model="carbohydrates"
+                type="number"
+                min="0"
+                inputmode="decimal"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <Label for="nutrition-goal-fat">{{ t('nutrition.fields.fat') }}</Label>
+              <Input
+                id="nutrition-goal-fat"
+                v-model="fat"
+                type="number"
+                min="0"
+                inputmode="decimal"
+              />
+            </div>
           </div>
         </div>
         <p v-if="saveFailed" role="alert" class="text-sm text-destructive">
