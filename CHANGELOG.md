@@ -1,3 +1,12 @@
+## [1.40.2](https://github.com/alexanderop/workoutTracker/compare/v1.40.1...v1.40.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* **ci:** harden AI QA automation ([#186](https://github.com/alexanderop/workoutTracker/issues/186)) ([427426f](https://github.com/alexanderop/workoutTracker/commit/427426f53f048d5cf126817fe8913e9b8e6403aa))
+
+
+
 ## [1.40.1](https://github.com/alexanderop/workoutTracker/compare/v1.40.0...v1.40.1) (2026-07-19)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **nutrition:** add health dashboard nutrition MVP ([#176](https://github.com/alexanderop/workoutTracker/issues/176)) ([bff71b6](https://github.com/alexanderop/workoutTracker/commit/bff71b659ecfa6a5c6dcd75881d1e7d8e921be74))
-
-
-
-# [1.38.0](https://github.com/alexanderop/workoutTracker/compare/v1.37.1...v1.38.0) (2026-07-19)
-
-
-### Features
-
-* **exercises:** add EGYM Smart Strength machine catalog ([#174](https://github.com/alexanderop/workoutTracker/issues/174)) ([cd33e82](https://github.com/alexanderop/workoutTracker/commit/cd33e8222405f41572a06c26b609894e708e3696))
 
 
 
