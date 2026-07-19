@@ -122,15 +122,23 @@ function handleClose() {
     <MobileDialogContent
       class="max-w-md h-[100dvh] sm:h-auto sm:max-h-[80vh] flex flex-col rounded-t-none sm:rounded-lg"
     >
+      <!-- sr-only while condensed: keeps the dialog's aria wiring valid but
+           frees the header rows for search results under the on-screen
+           keyboard. The close button hides with it — with a zero-height
+           header it would float over the search input — and returns as soon
+           as the search ends. -->
       <DialogHeader class="relative">
-        <DialogTitle>{{ t('dialogs.addExercise.title') }}</DialogTitle>
-        <!-- sr-only while condensed: keeps aria-describedby valid but frees a
-             text row for search results under the on-screen keyboard. -->
+        <DialogTitle :class="pickerCondensed && 'max-sm:sr-only'">
+          {{ t('dialogs.addExercise.title') }}
+        </DialogTitle>
         <DialogDescription :class="pickerCondensed && 'max-sm:sr-only'">
           {{ t('dialogs.addExercise.description') }}
         </DialogDescription>
         <DialogClose
-          class="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
+          :class="[
+            'absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors',
+            pickerCondensed && 'max-sm:hidden',
+          ]"
         >
           <X class="icon-md text-muted-foreground" />
           <span class="sr-only">{{ t('common.buttons.close') }}</span>

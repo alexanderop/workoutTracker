@@ -11,12 +11,24 @@
  * or a query typed), the chrome collapses at mobile widths so the result list
  * gets the space. Active filter rows stay visible so the user can always see
  * why results are narrowed. When the search ends, the chrome returns (after a
- * short delay that protects in-flight taps from layout shift).
+ * short delay that protects in-flight taps from layout shift). Desktop
+ * widths are unaffected.
  */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+
+/**
+ * The un-condense after a search is deliberately delayed (~300ms) to protect
+ * in-flight taps. To assert chrome is STILL collapsed (not merely not-yet
+ * restored), wait the delay out before checking.
+ */
+const EXPAND_DELAY_MS = 300
+
+function waitForExpandDelay() {
+  return new Promise((resolve) => setTimeout(resolve, EXPAND_DELAY_MS + 200))
+}
 
 describe('AddBlockDialog - condensed search mode on mobile', () => {
   beforeEach(async () => {
@@ -26,7 +38,7 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
 
   afterEach(cleanupIntegrationTest)
 
-  it('collapses tabs, header, and inactive filter rows while searching, and restores them after', async () => {
+  it('collapses chrome while searching, stays collapsed while a query remains, and restores after clearing', async () => {
     const { builder, cleanup } = await createTestApp()
 
     await builder.navigateTo()
@@ -50,7 +62,7 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
       .poll(() => page.getByRole('button', { name: 'Barbell', exact: true }).query())
       .toBeNull()
 
-    // Results are still shown and selectable while condensed.
+    // Results are still shown while condensed.
     await userEvent.fill(searchInput, 'Bench Press')
     await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
 
@@ -59,12 +71,38 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
       .poll(() => page.getByRole('button', { name: /create custom exercise/i }).query())
       .toBeNull()
 
-    // End the search: clear the query and blur. Chrome returns (after the
-    // tap-protection delay, covered by expect.element's auto-retry).
+    // Blur with the query still entered (e.g. keyboard dismissed): the
+    // results are still narrowed, so the chrome must STAY collapsed — even
+    // after the tap-protection delay has fully elapsed.
+    ;(await searchInput.element()).blur()
+    await waitForExpandDelay()
+    expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
+    expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
+
+    // End the search for real: clear the query and blur. Chrome returns
+    // (after the tap-protection delay, covered by expect.element's auto-retry).
     await userEvent.fill(searchInput, '')
     ;(await searchInput.element()).blur()
     await expect.element(page.getByRole('tab', { name: /timed blocks/i })).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
+
+    cleanup()
+  })
+
+  it('adds the exercise when a result is tapped while condensed', async () => {
+    const { builder, common, cleanup } = await createTestApp()
+
+    await builder.navigateTo()
+    await builder.openAddBlockDialog()
+
+    await userEvent.fill(page.getByRole('textbox'), 'Bench Press')
+    await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+
+    // Selecting the condensed result must complete the real flow: the sheet
+    // closes and the never-silent confirmation toast appears.
+    await userEvent.click(common.getDialogButton('Bench Press'))
+    await common.waitForDialogClose()
+    await expect.element(page.getByRole('status').getByText(/added bench press/i)).toBeVisible()
 
     cleanup()
   })
@@ -75,11 +113,15 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     await builder.navigateTo()
     await builder.openAddBlockDialog()
 
-    // Activate a muscle filter, then start searching.
+    // Activate the Chest muscle filter and prove it took effect: chest
+    // exercises remain while back exercises drop out of the list.
     await userEvent.click(page.getByRole('button', { name: 'Chest', exact: true }))
-    await userEvent.click(page.getByRole('textbox'))
+    await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+    await expect.poll(() => page.getByText('Deadlift', { exact: true }).query()).toBeNull()
 
-    // The active muscle row stays; the inactive equipment row collapses.
+    // Start searching: the active muscle row stays; the inactive equipment
+    // row collapses.
+    await userEvent.click(page.getByRole('textbox'))
     await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
     await expect
       .poll(() => page.getByRole('button', { name: 'Barbell', exact: true }).query())
@@ -101,7 +143,39 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     // one (the hidden footer drops out of the tree entirely).
     const createButtons = await page.getByRole('button', { name: /create custom exercise/i }).all()
     expect(createButtons).toHaveLength(1)
-    expect((await createButtons[0].element()).checkVisibility()).toBe(true)
+    await expect.element(createButtons[0]).toBeVisible()
+
+    cleanup()
+  })
+})
+
+describe('AddBlockDialog - condensed search mode does not apply on desktop', () => {
+  beforeEach(async () => {
+    await setupIntegrationTest()
+    await page.viewport(1280, 720)
+  })
+
+  afterEach(cleanupIntegrationTest)
+
+  it('keeps tabs, filters, and the create footer visible while searching at desktop width', async () => {
+    const { builder, cleanup } = await createTestApp()
+
+    await builder.navigateTo()
+    await builder.openAddBlockDialog()
+
+    // Search actively — focus and a non-empty query — and verify the chrome
+    // stays fully visible: collapsing is gated to mobile widths only.
+    const searchInput = page.getByRole('textbox')
+    await userEvent.click(searchInput)
+    await userEvent.fill(searchInput, 'Bench Press')
+    await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
+
+    await expect.element(page.getByRole('tab', { name: /timed blocks/i })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Barbell', exact: true })).toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: /create custom exercise/i }))
+      .toBeVisible()
 
     cleanup()
   })
