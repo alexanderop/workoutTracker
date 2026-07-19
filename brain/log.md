@@ -9,6 +9,13 @@ timestamp: 2026-06-28T08:05:00Z
 
 ## Brain Maintenance Log
 
+## 2026-07-19
+
+- Recorded the credential-isolated publish handoff required by self-healing
+  workflows after the July 18 Actions audit: Claude owns diagnosis, verification,
+  and the final commit, while a workflow gate verifies and fast-forwards that
+  exact commit before explicitly dispatching downstream workflows.
+
 ## 2026-07-04
 
 - Diagnosed and fixed the two chronically failing Claude CI checks (PR #151;
