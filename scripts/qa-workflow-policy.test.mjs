@@ -173,6 +173,7 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(ci, /skip-commit: 'true'/)
   assert.match(ci, /git-push: 'false'/)
   assert.match(ci, /zizmorcore\/zizmor-action@[0-9a-f]{40}/)
+  assert.match(ci, /online-audits: false/)
   assert.match(triage, /head_repository\.full_name == github\.repository/)
   assert.match(triage, /pull\.head\.sha !== expectedSha/)
   assert.match(triage, /filter\(name => name !== 'Required CI'\)/)
