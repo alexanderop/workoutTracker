@@ -161,6 +161,7 @@ jobs:
                            .user == "copilot-pull-request-reviewer[bot]"))' \
             > /tmp/pr-findings.json
           echo '[]' > /tmp/fixed-findings.json
+          echo '[]' > /tmp/skipped-findings.json
 
       - name: Run Claude to address findings
         if: steps.gate.outputs.unresolved != '0' && steps.workflow-compat.outputs.compatible == 'true'
@@ -185,10 +186,12 @@ jobs:
             2. Triage ALL findings up front: decide fix vs skip for each. Skip
                findings that are invalid, over-engineered, or conflict with
                repo conventions.
-            3. Immediately reply in-thread to every SKIPPED finding with the
-               reason, using its `commentId`:
-               gh api -X POST repos/${{ github.repository }}/pulls/${{ steps.gate.outputs.pr_number }}/comments/<commentId>/replies \
-                 -f body='Skipping: <reason>.'
+            3. Record every SKIPPED finding in `/tmp/skipped-findings.json` as
+               `{"commentId": <integer>, "reason": "<concise reason>"}`.
+               Keep it a valid JSON array. Do NOT post the reply yourself:
+               CodeRabbit ignores comments authored by `claude[bot]`. The
+               workflow will relay the rationale through GitHub Actions with
+               an explicit `@coderabbitai` mention so CodeRabbit evaluates it.
             4. Then work through the fixes ONE FINDING AT A TIME, most important
                first. For each finding, complete the full cycle before starting
                the next:
@@ -330,6 +333,125 @@ jobs:
             fi
             echo "COMMITS_EOF"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Relay skipped findings to CodeRabbit
+        # CodeRabbit deliberately ignores claude[bot] chat replies. Its
+        # documented bot integration supports top-level GitHub Actions PR
+        # comments that explicitly mention @coderabbitai. Relay only after any
+        # candidate fixes are verified and pushed so CodeRabbit sees fresh code.
+        if: ${{ !cancelled() && steps.verify-fixes.outcome == 'success' && (steps.verify-fixes.outputs.candidate != 'true' || steps.push-fix.outputs.pushed == 'true') }}
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        env:
+          PR_NUMBER: ${{ steps.gate.outputs.pr_number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const manifestPath = '/tmp/skipped-findings.json';
+            if (!fs.existsSync(manifestPath)) {
+              core.info('No skipped-finding manifest was produced.');
+              return;
+            }
+
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            if (!Array.isArray(manifest)) {
+              throw new Error('skipped-findings.json must contain an array');
+            }
+            if (manifest.length > 100) {
+              throw new Error('skipped-findings.json exceeds the 100-entry safety limit');
+            }
+            if (manifest.length === 0) {
+              core.info('Claude recorded no skipped findings.');
+              return;
+            }
+
+            const prNumber = Number.parseInt(process.env.PR_NUMBER, 10);
+            const query = `query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviewThreads(first: 100, after: $cursor) {
+                    nodes {
+                      isResolved
+                      comments(first: 1) {
+                        nodes { databaseId author { login } }
+                      }
+                    }
+                    pageInfo { hasNextPage endCursor }
+                  }
+                }
+              }
+            }`;
+            const authorizedRootIds = new Set();
+            let cursor = null;
+            do {
+              const result = await github.graphql(query, {
+                owner: context.repo.owner,
+                name: context.repo.repo,
+                number: prNumber,
+                cursor,
+              });
+              const connection = result.repository.pullRequest.reviewThreads;
+              for (const thread of connection.nodes) {
+                const root = thread.comments.nodes[0];
+                if (!thread.isResolved && root &&
+                    (root.author?.login === 'coderabbitai' ||
+                     root.author?.login === 'copilot-pull-request-reviewer')) {
+                  authorizedRootIds.add(root.databaseId);
+                }
+              }
+              cursor = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
+            } while (cursor);
+
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+            const commentsById = new Map(reviewComments.map((comment) => [comment.id, comment]));
+            const trustedAuthors = new Set([
+              'coderabbitai[bot]',
+              'copilot-pull-request-reviewer[bot]',
+            ]);
+            const issueComments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const seenIds = new Set();
+            for (const entry of manifest) {
+              const commentId = entry?.commentId;
+              const source = commentsById.get(commentId);
+              const reason = typeof entry?.reason === 'string'
+                ? entry.reason
+                    .replace(/<!--[\s\S]*?-->/g, '')
+                    .replace(/@/g, '@\u200b')
+                    .trim()
+                    .slice(0, 1500)
+                : '';
+              if (!Number.isSafeInteger(commentId) || seenIds.has(commentId) ||
+                  !source || !trustedAuthors.has(source.user?.login) ||
+                  !authorizedRootIds.has(commentId) || !reason) {
+                throw new Error(`Invalid skipped finding entry: ${JSON.stringify(entry)}`);
+              }
+              seenIds.add(commentId);
+
+              const marker = `<!-- claude-fix-review-skip:${commentId} -->`;
+              if (issueComments.some((comment) =>
+                comment.user?.login === 'github-actions[bot]' &&
+                comment.body?.includes(marker))) {
+                core.info(`Skip rationale for comment ${commentId} was already relayed.`);
+                continue;
+              }
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `${marker}\n@coderabbitai Claude Code assessed [this review finding](${source.html_url}) and recommends skipping it:\n\n${reason}\n\nPlease evaluate this reasoning against the current code. If it is sound, confirm that the finding can be skipped; otherwise explain what remains actionable.`,
+              });
+            }
 
       - name: Publish fixed finding replies and resolve threads
         if: ${{ !cancelled() && steps.push-fix.outputs.pushed == 'true' }}

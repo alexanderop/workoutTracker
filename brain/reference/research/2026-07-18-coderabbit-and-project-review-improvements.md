@@ -4,7 +4,7 @@ title: CodeRabbit and project review improvements
 description: Evidence-based recommendations for improving CodeRabbit signal, review policy, and CI coverage in workoutTracker.
 resource: brain/reference/research/2026-07-18-coderabbit-and-project-review-improvements.md
 tags: [research, coderabbit, code-review, ci, testing]
-timestamp: 2026-07-18T10:09:00Z
+timestamp: 2026-07-19T10:37:00Z
 ---
 
 ## Problem Statement
@@ -161,6 +161,21 @@ adding more AI review features:
    and 22+, while CI only exercises Node 22. Add a small Node 20 compatibility
    check or narrow the declared engine.
 
+### Bot-to-bot review replies need a GitHub Actions relay
+
+CodeRabbit's PR chat intentionally skips replies authored by other GitHub Apps,
+including `claude[bot]`, even when `chat.auto_reply` is enabled. The current
+configuration schema exposes no trusted-bot allowlist for chat; `auto_reply`
+only controls whether an ordinary participant must mention CodeRabbit.
+
+When Claude judges a CodeRabbit finding invalid, it should record the comment ID
+and rationale instead of replying directly. After any candidate fixes are
+verified and pushed, a trusted workflow step can post the rationale as a
+top-level `github-actions[bot]` PR comment with an explicit `@coderabbitai`
+mention and a link to the original finding. CodeRabbit's official custom-report
+guidance documents that this specific kind of bot comment can trigger it. Use
+an idempotency marker so repeated workflow runs do not create duplicate relays.
+
 ## Recommended Approach
 
 ### Phase 1: improve signal and repair deterministic gaps
@@ -208,6 +223,7 @@ is acceptably low. Keep human approval and CI as the authoritative merge gates.
 - [Learnings](https://docs.coderabbit.ai/knowledge-base/learnings)
 - [Built-in pre-merge checks](https://docs.coderabbit.ai/pr-reviews/pre-merge-checks)
 - [Custom checks and limitations](https://docs.coderabbit.ai/pr-reviews/custom-checks)
+- [Custom reports and GitHub Actions bot triggers](https://docs.coderabbit.ai/guides/custom-reports)
 - [Change Stack announcement](https://www.coderabbit.ai/blog/introducing-change-stack-the-first-ai-native-code-review-interface)
 - [Context engineering for AI code review](https://www.coderabbit.ai/blog/context-engineering-ai-code-reviews)
 - [Policy as code](https://www.coderabbit.ai/blog/policy-as-code-the-missing-layer-in-ai-assisted-development)
