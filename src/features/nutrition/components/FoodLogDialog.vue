@@ -11,8 +11,8 @@ import { NativeSelect } from '@/components/ui/native-select'
 import { generateId, getNutritionRepository } from '@/db'
 import type { DbFood, DbFoodNutrients, DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import { nutrientsPer100Grams } from '../lib/nutritionCalculations'
-import { lookupBarcode } from '../lib/openFoodFacts'
+import { useFoodLookup } from '../composables/useFoodLookup'
+import { nutrientsPer100Grams, scaleNutrients } from '../lib/nutritionCalculations'
 import FoodBarcodeScanner from './FoodBarcodeScanner.vue'
 
 const { foods, localDate, initialMeal } = defineProps<{
@@ -39,6 +39,7 @@ type ScanState = 'idle' | 'scanning' | 'looking-up' | 'not-found' | 'failed'
 const scanSupported =
   'BarcodeDetector' in globalThis && globalThis.navigator.mediaDevices !== undefined
 const scanState = ref<ScanState>('idle')
+const { lookup } = useFoodLookup()
 
 const selectedFood = computed(() => foods.find((food) => food.id === selectedFoodId.value))
 const isNewFood = computed(() => selectedFood.value === undefined)
@@ -80,7 +81,7 @@ function roundNutrient(value: number): number {
 
 async function handleBarcodeDetected(barcode: string) {
   scanState.value = 'looking-up'
-  const result = await lookupBarcode(barcode)
+  const result = await lookup(barcode)
   if (result.status !== 'found') {
     scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
     return
@@ -88,12 +89,13 @@ async function handleBarcodeDetected(barcode: string) {
   const { food } = result
   name.value = food.name
   brand.value = food.brand
-  // Open Food Facts reports nutrients per 100 g, so prefill a 100 g serving.
-  grams.value = 100
-  calories.value = Math.round(food.nutrientsPer100Grams.calories)
-  protein.value = roundNutrient(food.nutrientsPer100Grams.proteinGrams)
-  carbohydrates.value = roundNutrient(food.nutrientsPer100Grams.carbohydrateGrams)
-  fat.value = roundNutrient(food.nutrientsPer100Grams.fatGrams)
+  const servingGrams = food.servingGrams ?? 100
+  grams.value = servingGrams
+  const serving = scaleNutrients(food.nutrientsPer100Grams, servingGrams)
+  calories.value = Math.round(serving.calories)
+  protein.value = roundNutrient(serving.proteinGrams)
+  carbohydrates.value = roundNutrient(serving.carbohydrateGrams)
+  fat.value = roundNutrient(serving.fatGrams)
   scanState.value = 'idle'
 }
 
