@@ -1,17 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect, onTestFinished, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getDraft } from '../helpers/dbAssertions'
 
 describe('Form Draft Persistence', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Template Creation Draft', () => {
-    it('restores draft when returning to create template page', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('restores draft when returning to create template page', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -56,12 +52,10 @@ describe('Form Draft Persistence', () => {
 
       // Verify block was also restored
       await expect.element(page.getByText('Bench Press')).toBeVisible()
-
-      cleanup()
     })
 
-    it('clears draft when template is successfully saved', async () => {
-      const { getByRole, common, navigateTo, router, cleanup } = await createTestApp()
+    it('clears draft when template is successfully saved', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo, router } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -91,12 +85,10 @@ describe('Form Draft Persistence', () => {
       // Verify draft was cleared
       const draft = await getDraft('template-create')
       expect(draft).toBeUndefined()
-
-      cleanup()
     })
 
-    it('shows discard button when draft exists and clears on click', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('shows discard button when draft exists and clears on click', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -123,7 +115,6 @@ describe('Form Draft Persistence', () => {
       // Wait for discard button to be visible
       await expect.element(page.getByRole('button', { name: /discard/i })).toBeVisible()
 
-      // Click discard
       await userEvent.click(getByRole('button', { name: /discard/i }))
 
       // Verify form is reset
@@ -144,12 +135,12 @@ describe('Form Draft Persistence', () => {
 
       // Discard button should be hidden
       await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('discard button stays hidden after discarding (regression test)', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('discard button stays hidden after discarding (regression test)', async ({
+      createTestApp,
+    }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate and fill form to create draft
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -168,14 +159,18 @@ describe('Form Draft Persistence', () => {
         { timeout: 1000 },
       )
 
-      // Click discard
+      // Install the clock before discard mutates the form and schedules its
+      // debounced watcher; failure-safe cleanup prevents timer leakage.
+      vi.useFakeTimers()
+      onTestFinished(() => {
+        vi.useRealTimers()
+      })
       await userEvent.click(getByRole('button', { name: /discard/i }))
+      await vi.advanceTimersByTimeAsync(200)
+      vi.useRealTimers()
 
       // Verify discard button is hidden immediately
       await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
-
-      // Wait longer than debounce period (test uses 50ms, wait 200ms to be safe)
-      await new Promise((resolve) => setTimeout(resolve, 200))
 
       // BUG: Discard button should STILL be hidden, but without the fix it reappears
       await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
@@ -183,14 +178,12 @@ describe('Form Draft Persistence', () => {
       // Verify no draft exists in database
       const draft = await getDraft('template-create')
       expect(draft).toBeUndefined()
-
-      cleanup()
     })
   })
 
   describe('Benchmark Creation Draft', () => {
-    it('restores draft when returning to create benchmark page', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('restores draft when returning to create benchmark page', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Navigate to Create Benchmark
       await navigateTo({ name: RouteNames.CreateBenchmark })
@@ -224,12 +217,10 @@ describe('Form Draft Persistence', () => {
           return element instanceof HTMLInputElement ? element.value : null
         })
         .toBe('My Draft Benchmark')
-
-      cleanup()
     })
 
-    it('clears draft when benchmark is successfully saved', async () => {
-      const { getByRole, common, navigateTo, router, cleanup } = await createTestApp()
+    it('clears draft when benchmark is successfully saved', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo, router } = await createTestApp()
 
       // Navigate to Create Benchmark
       await navigateTo({ name: RouteNames.CreateBenchmark })
@@ -262,12 +253,10 @@ describe('Form Draft Persistence', () => {
       // Verify draft was cleared
       const draft = await getDraft('benchmark-create')
       expect(draft).toBeUndefined()
-
-      cleanup()
     })
 
-    it('shows discard button when draft exists and clears on click', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('shows discard button when draft exists and clears on click', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Navigate to Create Benchmark
       await navigateTo({ name: RouteNames.CreateBenchmark })
@@ -308,14 +297,12 @@ describe('Form Draft Persistence', () => {
 
       // Discard button should be hidden
       await expect.element(page.getByRole('button', { name: /discard/i })).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Draft Isolation', () => {
-    it('template and benchmark drafts are independent', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('template and benchmark drafts are independent', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Create template draft
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -367,8 +354,6 @@ describe('Form Draft Persistence', () => {
 
       const templateDraftAfter = await getDraft('template-create')
       expect(templateDraftAfter?.data).toMatchObject({ name: 'Template Draft' })
-
-      cleanup()
     })
   })
 })

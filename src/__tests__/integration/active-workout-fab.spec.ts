@@ -1,18 +1,14 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 const getActiveFab = () => page.getByRole('button', { name: /return to active workout/i })
 
 describe('Active Workout FAB', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Visibility', () => {
-    it('hides FAB on ActiveWorkout page', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('hides FAB on ActiveWorkout page', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -26,12 +22,10 @@ describe('Active Workout FAB', () => {
 
       // Verify FAB is NOT visible on active workout page
       await expect.element(getActiveFab()).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('shows FAB on multiple pages when workout is active', async () => {
-      const { builder, common, navigateTo, cleanup } = await createTestApp()
+    it('shows FAB on multiple pages when workout is active', async ({ createTestApp }) => {
+      const { builder, common, navigateTo } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -54,14 +48,12 @@ describe('Active Workout FAB', () => {
       // Check FAB on Workouts (history) page
       await navigateTo({ name: RouteNames.Workouts })
       await expect.element(getActiveFab()).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Timer Display', () => {
-    it('displays elapsed time in correct format', async () => {
-      const { builder, common, navigateTo, cleanup } = await createTestApp()
+    it('displays elapsed time in correct format', async ({ createTestApp }) => {
+      const { builder, common, navigateTo } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -87,14 +79,12 @@ describe('Active Workout FAB', () => {
           return timerText?.match(/^\d+:\d{2}$/) !== null
         })
         .toBe(true)
-
-      cleanup()
     })
   })
 
   describe('Navigation', () => {
-    it('navigates back to active workout when clicked', async () => {
-      const { builder, common, navigateTo, router, cleanup } = await createTestApp()
+    it('navigates back to active workout when clicked', async ({ createTestApp }) => {
+      const { builder, common, navigateTo, router } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -116,14 +106,12 @@ describe('Active Workout FAB', () => {
 
       // Should be in active mode (table visible)
       await expect.element(page.getByRole('table')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Workout Lifecycle', () => {
-    it('disappears when workout is cancelled', async () => {
-      const { builder, workout, common, navigateTo, cleanup } = await createTestApp()
+    it('disappears when workout is cancelled', async ({ createTestApp }) => {
+      const { builder, workout, common, navigateTo } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -154,12 +142,10 @@ describe('Active Workout FAB', () => {
       // Should be at home, FAB should be gone
       await common.waitForRoute(/^\/$/)
       await expect.element(getActiveFab()).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('disappears when workout is completed', async () => {
-      const { builder, workout, common, navigateTo, cleanup } = await createTestApp()
+    it('disappears when workout is completed', async ({ createTestApp }) => {
+      const { builder, workout, common, navigateTo } = await createTestApp()
 
       // Start a workout
       await builder.navigateTo()
@@ -181,8 +167,6 @@ describe('Active Workout FAB', () => {
 
       // FAB should be gone after workout is completed
       await expect.element(getActiveFab()).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 })

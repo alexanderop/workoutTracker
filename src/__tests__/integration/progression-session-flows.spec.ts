@@ -1,7 +1,6 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getProgressionsRepository } from '@/db'
 
 /**
@@ -18,10 +17,9 @@ import { getProgressionsRepository } from '@/db'
 const TWO_SECOND_SESSION = 1 / 30
 
 describe('Progression Session Flows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('runs a session to the end and advances the level after confirming success', async () => {
+  it('runs a session to the end and advances the level after confirming success', async ({
+    createTestApp,
+  }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -65,11 +63,9 @@ describe('Progression Session Flows', () => {
     const history = await repo.getSessionHistory(progression.id)
     expect(history).toHaveLength(1)
     expect(history[0]?.completed).toBe(true)
-
-    app.cleanup()
   }, 20_000)
 
-  it('records a failed session without advancing the level', async () => {
+  it('records a failed session without advancing the level', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -103,11 +99,11 @@ describe('Progression Session Flows', () => {
 
     const history = await repo.getSessionHistory(progression.id)
     expect(history[0]?.completed).toBe(false)
-
-    app.cleanup()
   }, 20_000)
 
-  it('abandons an active session with the back button without recording anything', async () => {
+  it('abandons an active session with the back button without recording anything', async ({
+    createTestApp,
+  }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -138,11 +134,9 @@ describe('Progression Session Flows', () => {
     // Back again from the detail page returns to the progressions list
     await page.getByRole('button', { name: /go back/i }).click()
     await expect.poll(() => app.router.currentRoute.value.path).toBe('/progressions')
-
-    app.cleanup()
   })
 
-  it('leaves the ready session screen without starting the timer', async () => {
+  it('leaves the ready session screen without starting the timer', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -161,11 +155,11 @@ describe('Progression Session Flows', () => {
       .toBe(`/progressions/${progression.id}`)
 
     expect(await repo.getSessionHistory(progression.id)).toHaveLength(0)
-
-    app.cleanup()
   })
 
-  it('shows an error for a stale session link and recovers via back navigation', async () => {
+  it('shows an error for a stale session link and recovers via back navigation', async ({
+    createTestApp,
+  }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -181,11 +175,11 @@ describe('Progression Session Flows', () => {
     // The detail page for the same stale id reports the progression is gone
     await app.navigateTo('/progressions/does-not-exist')
     await expect.element(page.getByText(/progression not found/i)).toBeVisible()
-
-    app.cleanup()
   })
 
-  it('refuses to start a session for an already finished progression', async () => {
+  it('refuses to start a session for an already finished progression', async ({
+    createTestApp,
+  }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -201,11 +195,9 @@ describe('Progression Session Flows', () => {
     // No timer is offered, only the error state
     await expect.element(page.getByText(/error/i)).toBeVisible()
     await expect.element(page.getByText(/tap to start/i)).not.toBeInTheDocument()
-
-    app.cleanup()
   })
 
-  it('keeps the progression when deletion is cancelled', async () => {
+  it('keeps the progression when deletion is cancelled', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
 
@@ -226,7 +218,5 @@ describe('Progression Session Flows', () => {
     // Progression is still there, in the UI and in the database
     await expect.element(page.getByText('Keep Me')).toBeVisible()
     expect(await repo.getById(progression.id)).toBeDefined()
-
-    app.cleanup()
   })
 })

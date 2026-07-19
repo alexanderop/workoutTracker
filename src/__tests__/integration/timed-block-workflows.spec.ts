@@ -1,15 +1,13 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Timed Block Workflows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Configuration', () => {
-    it('allows user to add timed blocks from the dialog and start workout', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('allows user to add timed blocks from the dialog and start workout', async ({
+      createTestApp,
+    }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -57,12 +55,10 @@ describe('Timed Block Workflows', () => {
 
       // Timer should display (verify Start button appears)
       await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('filters exercises when searching in add block dialog', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('filters exercises when searching in add block dialog', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -87,14 +83,12 @@ describe('Timed Block Workflows', () => {
       // Verify exercise was added to builder
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(1)
-
-      cleanup()
     })
   })
 
   describe('Execution', () => {
-    it('creates AMRAP block and shows timer UI', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('creates AMRAP block and shows timer UI', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('AMRAP')
@@ -108,12 +102,10 @@ describe('Timed Block Workflows', () => {
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
 
-    it('creates EMOM block and shows minute display', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('creates EMOM block and shows minute display', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('EMOM')
@@ -123,12 +115,10 @@ describe('Timed Block Workflows', () => {
       await expect.element(page.getByText(/min/i)).toBeVisible()
       await expect.element(page.getByRole('button', { name: /start/i })).toBeVisible()
       await expect.element(page.getByText('Push-ups')).toBeVisible()
-
-      cleanup()
     })
 
-    it('creates Tabata block and shows round/phase info', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('creates Tabata block and shows round/phase info', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('Tabata')
@@ -137,12 +127,10 @@ describe('Timed Block Workflows', () => {
       // Verify Tabata view shows phase badge and start button
       await expect.element(page.getByText('WORK', { exact: true })).toBeInTheDocument()
       await expect.element(page.getByRole('button', { name: /start/i })).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('creates For Time block and completes with Done button', async () => {
-      const { builder, common, router, cleanup } = await createTestApp()
+    it('creates For Time block and completes with Done button', async ({ createTestApp }) => {
+      const { builder, common, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('For Time')
@@ -175,12 +163,12 @@ describe('Timed Block Workflows', () => {
 
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
 
-    it('navigates between strength and timed blocks in hybrid workout', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('navigates between strength and timed blocks in hybrid workout', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Add strength block first, then AMRAP block
       await builder.navigateTo()
@@ -204,12 +192,10 @@ describe('Timed Block Workflows', () => {
       await userEvent.click(await workout.getFooterButton('prev'))
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
       await expect.element(page.getByRole('button', { name: /complete set/i })).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('AMRAP block allows incrementing rounds with +1 button', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('AMRAP block allows incrementing rounds with +1 button', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('AMRAP')
@@ -237,12 +223,10 @@ describe('Timed Block Workflows', () => {
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
 
-    it('timer button changes to Pause when running', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('timer button changes to Pause when running', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('EMOM')
@@ -258,14 +242,12 @@ describe('Timed Block Workflows', () => {
       // Verify button changed to Pause
       await expect.element(page.getByRole('button', { name: /pause/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /start/i })).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Complete Journeys', () => {
-    it('completes AMRAP workout with rounds recorded', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('completes AMRAP workout with rounds recorded', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('AMRAP')
@@ -296,12 +278,10 @@ describe('Timed Block Workflows', () => {
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
       await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it('runs EMOM workout and completes full journey', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('runs EMOM workout and completes full journey', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addTimedBlock('EMOM')
@@ -315,8 +295,6 @@ describe('Timed Block Workflows', () => {
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
       await expect.element(page.getByRole('heading', { name: /workout complete/i })).toBeVisible()
-
-      cleanup()
     })
   })
 })

@@ -1,16 +1,14 @@
 /* eslint-disable vitest/no-conditional-in-test -- Queue controls are conditionally rendered for adjacent blocks. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Workout Queue', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('opening the queue drawer', () => {
-    it('user can open queue from header button during active workout', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('user can open queue from header button during active workout', async ({
+      createTestApp,
+    }) => {
+      const { builder, common } = await createTestApp()
 
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
@@ -29,12 +27,12 @@ describe('Workout Queue', () => {
       await expect
         .element(page.getByRole('heading', { name: /workout queue/i }))
         .toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('user sees all blocks listed with current block marked as active', async () => {
-      const { builder, workout, queue, common, cleanup } = await createTestApp()
+    it('user sees all blocks listed with current block marked as active', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, queue, common } = await createTestApp()
 
       // Setup: Start workout with 3 blocks, navigate to block 2
       await builder.addStrengthBlock('Bench Press')
@@ -64,14 +62,12 @@ describe('Workout Queue', () => {
       const activeItem = queue.getActiveItem()
       expect(activeItem).toBeTruthy()
       expect(activeItem?.textContent).toContain('Deadlift')
-
-      cleanup()
     })
   })
 
   describe('switching blocks', () => {
-    it('user can tap a block to switch to it immediately', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('user can tap a block to switch to it immediately', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       // Setup: Start workout with 3 blocks on block 1
       await builder.addStrengthBlock('Bench Press')
@@ -98,12 +94,10 @@ describe('Workout Queue', () => {
       // Assert: Dialog closes, block 3 is now active view
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       await expect.element(page.getByText(/block 3 of 3/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('user sees completed blocks marked with checkmark', async () => {
-      const { builder, workout, queue, common, cleanup } = await createTestApp()
+    it('user sees completed blocks marked with checkmark', async ({ createTestApp }) => {
+      const { builder, workout, queue, common } = await createTestApp()
 
       // Setup: Start workout with 2 blocks
       await builder.addStrengthBlock('Bench Press')
@@ -142,14 +136,12 @@ describe('Workout Queue', () => {
       const completedIndicator = benchItem.querySelector('[role="img"][aria-label]')
       expect(completedIndicator).toBeTruthy()
       expect(completedIndicator?.getAttribute('aria-label')).toContain('completed')
-
-      cleanup()
     })
   })
 
   describe('adding blocks', () => {
-    it('user can add new exercise from queue drawer', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('user can add new exercise from queue drawer', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       // Setup: Start workout with 1 block
       await builder.addStrengthBlock('Bench Press')
@@ -180,14 +172,12 @@ describe('Workout Queue', () => {
 
       // Verify 2 blocks now (check the header text)
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('timed block display', () => {
-    it('user sees timed blocks with type badge in queue', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('user sees timed blocks with type badge in queue', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       // Setup: Add a strength block and then an AMRAP block
       await builder.addStrengthBlock('Bench Press')
@@ -220,14 +210,12 @@ describe('Workout Queue', () => {
       // Find the AMRAP item
       const amrapItem = queueItems.find((item) => item.textContent?.includes('AMRAP'))
       expect(amrapItem).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('removing blocks', () => {
-    it('user can remove a block from queue drawer', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('user can remove a block from queue drawer', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       // Setup: Start workout with 3 blocks
       await builder.addStrengthBlock('Bench Press')
@@ -253,12 +241,10 @@ describe('Workout Queue', () => {
       // Close queue and verify header shows updated count
       await queue.close()
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('user can remove current block via header menu', async () => {
-      const { builder, workout, common, cleanup } = await createTestApp()
+    it('user can remove current block via header menu', async ({ createTestApp }) => {
+      const { builder, workout, common } = await createTestApp()
 
       // Setup: Start workout with 2 blocks on block 1
       await builder.addStrengthBlock('Bench Press')
@@ -275,12 +261,10 @@ describe('Workout Queue', () => {
       // Assert: Block removed, now viewing Deadlift (which was block 2, now block 1)
       await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
       await expect.element(page.getByText(/deadlift/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('removing last block returns to builder mode', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('removing last block returns to builder mode', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       // Setup: Start workout with 1 block
       await builder.addStrengthBlock('Bench Press')
@@ -294,14 +278,12 @@ describe('Workout Queue', () => {
       // Assert: Returns to builder mode (empty workout state)
       await expect.poll(() => router.currentRoute.value.path).toBe('/workout/active')
       await expect.element(page.getByText(/add first block/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('reordering blocks', () => {
-    it('reordering blocks updates queue display', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('reordering blocks updates queue display', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       // Setup: Start workout with 3 blocks
       await builder.addStrengthBlock('Bench Press')
@@ -328,8 +310,6 @@ describe('Workout Queue', () => {
       await expect
         .poll(() => queue.getBlockNames())
         .toEqual(['Bodyweight Squat', 'Bench Press', 'Deadlift'])
-
-      cleanup()
     })
   })
 
@@ -340,8 +320,8 @@ describe('Workout Queue', () => {
   // which calls `reorderBlocks` directly). These per-item up/down buttons are the
   // keyboard/screen-reader-accessible, UI-drivable way to reorder.
   describe('reordering via move up/down buttons', () => {
-    it('reorders blocks when the move-down button is clicked', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('reorders blocks when the move-down button is clicked', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
@@ -363,12 +343,10 @@ describe('Workout Queue', () => {
       await expect
         .poll(() => queue.getBlockNames())
         .toEqual(['Deadlift', 'Bench Press', 'Bodyweight Squat'])
-
-      cleanup()
     })
 
-    it('reorders blocks when the move-up button is clicked', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('reorders blocks when the move-up button is clicked', async ({ createTestApp }) => {
+      const { builder, queue, common } = await createTestApp()
 
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
@@ -389,12 +367,12 @@ describe('Workout Queue', () => {
       await expect
         .poll(() => queue.getBlockNames())
         .toEqual(['Bench Press', 'Bodyweight Squat', 'Deadlift'])
-
-      cleanup()
     })
 
-    it('disables the move-up button for the first item and the move-down button for the last item', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('disables the move-up button for the first item and the move-down button for the last item', async ({
+      createTestApp,
+    }) => {
+      const { builder, queue, common } = await createTestApp()
 
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
@@ -417,12 +395,12 @@ describe('Workout Queue', () => {
       const lastMoveUp = queue.getMoveUpButton(1)
       expect(firstMoveDown instanceof HTMLButtonElement && firstMoveDown.disabled).toBe(false)
       expect(lastMoveUp instanceof HTMLButtonElement && lastMoveUp.disabled).toBe(false)
-
-      cleanup()
     })
 
-    it('exposes a distinguishable accessible name that includes the exercise name', async () => {
-      const { builder, queue, common, cleanup } = await createTestApp()
+    it('exposes a distinguishable accessible name that includes the exercise name', async ({
+      createTestApp,
+    }) => {
+      const { builder, queue, common } = await createTestApp()
 
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
@@ -439,12 +417,12 @@ describe('Workout Queue', () => {
 
       const moveUpButton = queue.getMoveUpButton(1)
       expect(moveUpButton?.getAttribute('aria-label')).toMatch(/deadlift/i)
-
-      cleanup()
     })
 
-    it('keeps the active block marked active after it moves position', async () => {
-      const { builder, workout, queue, common, cleanup } = await createTestApp()
+    it('keeps the active block marked active after it moves position', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, queue, common } = await createTestApp()
 
       await builder.addStrengthBlock('Bench Press')
       await builder.openAddBlockDialog()
@@ -470,8 +448,6 @@ describe('Workout Queue', () => {
       await expect.poll(() => queue.getBlockNames()).toEqual(['Deadlift', 'Bench Press'])
       const activeItemAfter = queue.getActiveItem()
       expect(activeItemAfter?.textContent).toContain('Deadlift')
-
-      cleanup()
     })
   })
 })

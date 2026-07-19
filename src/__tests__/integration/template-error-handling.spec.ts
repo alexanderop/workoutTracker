@@ -1,9 +1,8 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Error controls are conditionally rendered by the template form. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 
@@ -12,12 +11,9 @@ import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
  * Tests validation errors, edge cases, and unusual user interactions.
  */
 describe('Template Error Handling', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Form Validation', () => {
-    it('shows disabled save when template name is only whitespace', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('shows disabled save when template name is only whitespace', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
       await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
@@ -35,12 +31,10 @@ describe('Template Error Handling', () => {
       // Save button should be disabled
       const saveButton = getByRole('button', { name: /save template/i })
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
 
-    it('modifying template name and saving persists changes', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('modifying template name and saving persists changes', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Create a template
       const template = await seedTemplate({
@@ -69,12 +63,10 @@ describe('Template Error Handling', () => {
           return updated?.name
         })
         .toBe('New Template Name')
-
-      cleanup()
     })
 
-    it('disables start workout after removing all exercises', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('disables start workout after removing all exercises', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Create template with one exercise
       const template = await seedTemplate({
@@ -101,17 +93,17 @@ describe('Template Error Handling', () => {
 
       // Start Workout button should be disabled (can't start workout with no exercises)
       await expect.element(startButton).toBeDisabled()
-
-      cleanup()
     })
   })
 
   describe('Navigation with Unsaved Changes', () => {
-    it('does not persist changes when the user confirms discarding on navigate away', async () => {
+    it('does not persist changes when the user confirms discarding on navigate away', async ({
+      createTestApp,
+    }) => {
       // The unsaved-changes guard (Finding 5, ux-ui-review-2026-07-04.md) intercepts
       // this navigation with a confirm dialog; don't await the push directly since
       // it won't resolve until the dialog is answered.
-      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+      const { getByRole, common, router, navigateTo } = await createTestApp()
 
       // Create initial template
       const template = await seedTemplate({
@@ -135,14 +127,12 @@ describe('Template Error Handling', () => {
       // Verify database was not modified
       const unchanged = await getTemplateById(template.id)
       expect(unchanged?.name).toBe('Original Template')
-
-      cleanup()
     })
   })
 
   describe('Template Not Found', () => {
-    it('redirects to workouts when template not found', async () => {
-      const { navigateTo, router, cleanup } = await createTestApp()
+    it('redirects to workouts when template not found', async ({ createTestApp }) => {
+      const { navigateTo, router } = await createTestApp()
 
       // Navigate to a non-existent template
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: 'non-existent-template' } })
@@ -152,14 +142,12 @@ describe('Template Error Handling', () => {
 
       // Page should render successfully
       await expect.element(page.getByRole('main')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Delete Template Confirmation', () => {
-    it('cancelling delete preserves template', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('cancelling delete preserves template', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Template to Keep',
@@ -181,12 +169,10 @@ describe('Template Error Handling', () => {
       const preserved = await getTemplateById(template.id)
       expect(preserved).toBeDefined()
       expect(preserved?.name).toBe('Template to Keep')
-
-      cleanup()
     })
 
-    it('pressing escape closes delete dialog without deleting', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('pressing escape closes delete dialog without deleting', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Escape Test Template',
@@ -206,14 +192,12 @@ describe('Template Error Handling', () => {
       // Template preserved
       const preserved = await getTemplateById(template.id)
       expect(preserved).toBeDefined()
-
-      cleanup()
     })
   })
 
   describe('Exercise Reordering Edge Cases', () => {
-    it('cannot move first exercise up', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('cannot move first exercise up', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Create template with 2 exercises
       const template = await seedTemplate({
@@ -240,12 +224,10 @@ describe('Template Error Handling', () => {
         expect(moveUpButton.disabled).toBe(true)
       }
       // If button doesn't exist, that's also acceptable behavior
-
-      cleanup()
     })
 
-    it('cannot move last exercise down', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('cannot move last exercise down', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Reorder Last Test',
@@ -269,14 +251,12 @@ describe('Template Error Handling', () => {
       if (moveDownButton instanceof HTMLButtonElement) {
         expect(moveDownButton.disabled).toBe(true)
       }
-
-      cleanup()
     })
   })
 
   describe('Set Count Edge Cases', () => {
-    it('cannot decrease set count below 1', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('cannot decrease set count below 1', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Set Count Min Test',
@@ -305,8 +285,6 @@ describe('Template Error Handling', () => {
       if (setCountInput instanceof HTMLInputElement) {
         expect(setCountInput.value).toBe('1')
       }
-
-      cleanup()
     })
   })
 })

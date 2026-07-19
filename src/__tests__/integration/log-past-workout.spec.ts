@@ -1,21 +1,17 @@
 /* eslint-disable vitest/no-disabled-tests -- Deferred cases document unfinished log-past-workout flows. */
 /* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { getAllWorkouts, seedCompletedWorkout, seedTemplate } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 describe('Log Past Workout', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Entry Flow', () => {
-    it('navigates from home to log past workout view', async () => {
-      const { getByRole, router, cleanup } = await createTestApp()
+    it('navigates from home to log past workout view', async ({ createTestApp }) => {
+      const { getByRole, router } = await createTestApp()
 
       // Find and click the "Log Past Workout" button on home screen
       await expect.element(page.getByRole('button', { name: /log past workout/i })).toBeVisible()
@@ -23,23 +19,19 @@ describe('Log Past Workout', () => {
 
       // Verify navigation to log past workout route
       await expect.poll(() => router.currentRoute.value.path).toBe('/log-past-workout')
-
-      cleanup()
     })
 
-    it('shows source selection: template, history, blank', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('shows source selection: template, history, blank', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
       // Verify all three source options are visible
       await logPastWorkout.assertSourceSelectionVisible()
-
-      cleanup()
     })
 
-    it('loads template exercises when starting from template', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('loads template exercises when starting from template', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed a template
       await seedTemplate({
@@ -68,12 +60,10 @@ describe('Log Past Workout', () => {
       // Verify block count
       const blockCount = await logPastWorkout.getBlockCount()
       expect(blockCount).toBe(2)
-
-      cleanup()
     })
 
-    it('loads previous workout data when starting from history', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('loads previous workout data when starting from history', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed a completed workout
       const workout = databaseWorkoutBuilder()
@@ -101,12 +91,10 @@ describe('Log Past Workout', () => {
 
       // Verify exercise is loaded with previous values
       await expect.element(page.getByText('Squat')).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows empty builder when starting blank', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('shows empty builder when starting blank', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
@@ -124,14 +112,14 @@ describe('Log Past Workout', () => {
       // Verify no blocks exist
       const blockCount = await logPastWorkout.getBlockCount()
       expect(blockCount).toBe(0)
-
-      cleanup()
     })
   })
 
   describe('Date & Duration Selection', () => {
-    it('displays duration options with actual numbers (not just "min")', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('displays duration options with actual numbers (not just "min")', async ({
+      createTestApp,
+    }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -142,12 +130,10 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByText('30 min')).toBeVisible()
       await expect.element(page.getByText('45 min')).toBeVisible()
       await expect.element(page.getByText('60 min')).toBeVisible()
-
-      cleanup()
     })
 
-    it('defaults to today with common duration options', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('defaults to today with common duration options', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -159,12 +145,10 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /45\s*min/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /60\s*min/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it.skip('allows selecting past date from calendar', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it.skip('allows selecting past date from calendar', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -180,12 +164,10 @@ describe('Log Past Workout', () => {
         day: 'numeric',
       })
       await expect.element(page.getByText(new RegExp(formattedYesterday, 'i'))).toBeVisible()
-
-      cleanup()
     })
 
-    it('allows custom duration entry', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('allows custom duration entry', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -196,12 +178,12 @@ describe('Log Past Workout', () => {
       // Verify the duration is selected (button should be highlighted/selected)
       const durationButton = page.getByRole('button', { name: /90\s*min/i })
       await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
-
-      cleanup()
     })
 
-    it('clicking already-selected duration keeps it selected (prevents NaN)', async () => {
-      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    it('clicking already-selected duration keeps it selected (prevents NaN)', async ({
+      createTestApp,
+    }) => {
+      const { logPastWorkout, navigateTo, common } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -230,16 +212,14 @@ describe('Log Past Workout', () => {
       expect(workouts).toHaveLength(1)
       expect(workouts[0]?.durationSeconds).toBe(45 * 60)
       expect(Number.isNaN(workouts[0]?.durationSeconds)).toBe(false)
-
-      cleanup()
     })
   })
 
   describe.skip('Strength Block Grid Entry', () => {
     // These tests require inline set editing which is not available in the new playlist UI
     // TODO: Re-enable when inline set editing is implemented
-    it('displays all sets in grid view', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('displays all sets in grid view', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed template with 4 sets
       await seedTemplate({
@@ -255,12 +235,10 @@ describe('Log Past Workout', () => {
       // Verify all 4 sets are visible in grid
       const setCount = await logPastWorkout.getSetCount(0)
       expect(setCount).toBe(4)
-
-      cleanup()
     })
 
-    it('pre-fills values from template', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('pre-fills values from template', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Template with target values
       await seedTemplate({
@@ -277,12 +255,10 @@ describe('Log Past Workout', () => {
       const block = page.getByTestId('strength-block-0')
       const repsInput = block.getByRole('spinbutton', { name: /reps/i }).first()
       await expect.element(repsInput).toHaveValue(8)
-
-      cleanup()
     })
 
-    it('allows editing weight/reps/rir for each set', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('allows editing weight/reps/rir for each set', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await seedTemplate({
         name: 'Edit Test',
@@ -311,12 +287,10 @@ describe('Log Past Workout', () => {
       await expect
         .element(secondRow.getByRole('spinbutton', { name: /weight|kg/i }))
         .toHaveValue(150)
-
-      cleanup()
     })
 
-    it('allows adding new sets', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('allows adding new sets', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await seedTemplate({
         name: 'Add Set Test',
@@ -338,12 +312,10 @@ describe('Log Past Workout', () => {
       // Verify set count increased
       const updatedSetCount = await logPastWorkout.getSetCount(0)
       expect(updatedSetCount).toBe(3)
-
-      cleanup()
     })
 
-    it('allows removing sets', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('allows removing sets', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await seedTemplate({
         name: 'Remove Set Test',
@@ -365,14 +337,12 @@ describe('Log Past Workout', () => {
       // Verify set count decreased
       const updatedSetCount = await logPastWorkout.getSetCount(0)
       expect(updatedSetCount).toBe(3)
-
-      cleanup()
     })
   })
 
   describe.skip('Timed Block Results Entry', () => {
-    it('shows AMRAP result input (rounds + reps)', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('shows AMRAP result input (rounds + reps)', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -391,12 +361,10 @@ describe('Log Past Workout', () => {
 
       // Verify values
       await expect.element(page.getByRole('spinbutton', { name: /rounds/i })).toHaveValue('5')
-
-      cleanup()
     })
 
-    it('shows ForTime result input (mm:ss)', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('shows ForTime result input (mm:ss)', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -411,12 +379,10 @@ describe('Log Past Workout', () => {
       // Verify values
       await expect.element(page.getByRole('spinbutton', { name: /minutes/i })).toHaveValue('12')
       await expect.element(page.getByRole('spinbutton', { name: /seconds/i })).toHaveValue('34')
-
-      cleanup()
     })
 
-    it('allows marking as DNF', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('allows marking as DNF', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -430,14 +396,12 @@ describe('Log Past Workout', () => {
 
       // Verify checkbox is checked
       await expect.element(dnfCheckbox).toBeChecked()
-
-      cleanup()
     })
   })
 
   describe.skip('Cardio Block Entry', () => {
-    it('shows duration, distance, calories inputs', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('shows duration, distance, calories inputs', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -458,14 +422,12 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByRole('spinbutton', { name: /duration/i })).toHaveValue('30')
       await expect.element(page.getByRole('spinbutton', { name: /distance/i })).toHaveValue('5.5')
       await expect.element(page.getByRole('spinbutton', { name: /calories/i })).toHaveValue('350')
-
-      cleanup()
     })
   })
 
   describe.skip('Save & History', () => {
-    it('saves workout with backdated timestamp', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('saves workout with backdated timestamp', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await seedTemplate({
         name: 'Save Test',
@@ -508,12 +470,10 @@ describe('Log Past Workout', () => {
       const startDate = new Date(savedWorkout!.startedAt)
       const expectedDate = threeDaysAgo
       expect(startDate.toDateString()).toBe(expectedDate.toDateString())
-
-      cleanup()
     })
 
-    it('appears in history sorted by workout date', async () => {
-      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    it('appears in history sorted by workout date', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo, common } = await createTestApp()
 
       // Seed an existing workout from today
       const todayWorkout = databaseWorkoutBuilder()
@@ -555,14 +515,12 @@ describe('Log Past Workout', () => {
       expect(
         todayElement.compareDocumentPosition(yesterdayElement) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('Validation', () => {
-    it('disables save button when workout name is empty', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('disables save button when workout name is empty', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed a template to get a block
       await seedTemplate({
@@ -585,12 +543,10 @@ describe('Log Past Workout', () => {
       // Save button should be disabled
       const isDisabled = await logPastWorkout.isSaveButtonDisabled()
       expect(isDisabled).toBe(true)
-
-      cleanup()
     })
 
-    it('disables save button when no blocks exist', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('disables save button when no blocks exist', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -606,12 +562,10 @@ describe('Log Past Workout', () => {
       // Save button should be disabled
       const isDisabled = await logPastWorkout.isSaveButtonDisabled()
       expect(isDisabled).toBe(true)
-
-      cleanup()
     })
 
-    it('enables save button when name and blocks are provided', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('enables save button when name and blocks are provided', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed a template
       await seedTemplate({
@@ -631,14 +585,12 @@ describe('Log Past Workout', () => {
       // Save button should be enabled
       const isDisabled = await logPastWorkout.isSaveButtonDisabled()
       expect(isDisabled).toBe(false)
-
-      cleanup()
     })
   })
 
   describe('Wizard Navigation', () => {
-    it('navigates back from builder to date-duration step', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('navigates back from builder to date-duration step', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -652,12 +604,10 @@ describe('Log Past Workout', () => {
 
       // We should be on the date-duration step (duration buttons visible)
       await expect.element(page.getByRole('button', { name: /30\s*min/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it('navigates back from date-duration to source selection step', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('navigates back from date-duration to source selection step', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -670,12 +620,10 @@ describe('Log Past Workout', () => {
 
       // We should be back on source selection
       await logPastWorkout.assertSourceSelectionVisible()
-
-      cleanup()
     })
 
-    it('persists duration selection when navigating back and forth', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('persists duration selection when navigating back and forth', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -693,14 +641,12 @@ describe('Log Past Workout', () => {
 
       // 90 min should still be selected
       await expect.element(durationButton).toHaveAttribute('aria-pressed', 'true')
-
-      cleanup()
     })
   })
 
   describe('Block Management', () => {
-    it('adds exercise block to blank workout', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('adds exercise block to blank workout', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -719,12 +665,10 @@ describe('Log Past Workout', () => {
 
       // Verify exercise name is shown
       await expect.element(page.getByText('Barbell Row')).toBeVisible()
-
-      cleanup()
     })
 
-    it('removes block from workout', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('removes block from workout', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       // Seed a template with 2 blocks
       await seedTemplate({
@@ -754,12 +698,10 @@ describe('Log Past Workout', () => {
       // Only Dumbbell Fly should remain
       await expect.element(page.getByText('Dumbbell Fly')).toBeVisible()
       await expect.element(page.getByText('Bench Press')).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('adds multiple blocks to blank workout', async () => {
-      const { logPastWorkout, navigateTo, cleanup } = await createTestApp()
+    it('adds multiple blocks to blank workout', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
       await logPastWorkout.selectSource('blank')
@@ -778,14 +720,14 @@ describe('Log Past Workout', () => {
       // Verify both exercises are shown
       await expect.element(page.getByText('Barbell Row')).toBeVisible()
       await expect.element(page.getByText('Bench Press')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Complete Workflow', () => {
-    it('completes full blank workout flow: add blocks, name, and save', async () => {
-      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    it('completes full blank workout flow: add blocks, name, and save', async ({
+      createTestApp,
+    }) => {
+      const { logPastWorkout, navigateTo, common } = await createTestApp()
 
       await navigateTo({ name: RouteNames.LogPastWorkout })
 
@@ -817,12 +759,10 @@ describe('Log Past Workout', () => {
       expect(workouts).toHaveLength(1)
       expect(workouts[0]?.name).toBe('My Test Workout')
       expect(workouts[0]?.durationSeconds).toBe(30 * 60)
-
-      cleanup()
     })
 
-    it('completes template-based workflow with save', async () => {
-      const { logPastWorkout, navigateTo, common, cleanup } = await createTestApp()
+    it('completes template-based workflow with save', async ({ createTestApp }) => {
+      const { logPastWorkout, navigateTo, common } = await createTestApp()
 
       // Seed a template
       await seedTemplate({
@@ -858,8 +798,6 @@ describe('Log Past Workout', () => {
       expect(workouts).toHaveLength(1)
       expect(workouts[0]?.name).toBe('Complete Workflow Template')
       expect(workouts[0]?.blocks.length).toBe(2)
-
-      cleanup()
     })
   })
 })

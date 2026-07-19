@@ -1,16 +1,12 @@
 /* eslint-disable vitest/no-conditional-in-test -- Localized text may be conditionally present during navigation. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { i18n } from '@/i18n'
 import { RouteNames } from '@/router'
 import { useSettingsStore } from '@/stores/settings'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Localization', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Message Preloading', () => {
     it('preloads English messages synchronously at import time', () => {
       // The i18n module should have English messages available immediately
@@ -37,8 +33,10 @@ describe('Localization', () => {
   })
 
   describe('Language Switching', () => {
-    it('displays English translations when switching from German to English via UI', async () => {
-      const { navigateTo, queryByText, getByRole, findByText, cleanup } = await createTestApp()
+    it('displays English translations when switching from German to English via UI', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, getByText, getByRole } = await createTestApp()
 
       // Set German as the starting language
       const settingsStore = useSettingsStore()
@@ -53,14 +51,14 @@ describe('Localization', () => {
       await expect.element(heading).toHaveTextContent('Einstellungen')
 
       // Verify German labels display
-      expect(queryByText(/gewicht/i)).toBeTruthy() // "Gewicht" = Weight in German
+      await expect.element(getByText(/gewicht/i).first()).toBeVisible() // "Gewicht" = Weight in German
 
       // Open the language select dropdown (aria-label is "Sprache" in German)
       const languageSelect = getByRole('combobox', { name: /sprache/i })
       await userEvent.click(languageSelect)
 
       // Select English from the dropdown options
-      const englishOption = await findByText('English')
+      const englishOption = getByText('English')
       await userEvent.click(englishOption)
 
       // Wait for UI to update to English
@@ -72,10 +70,7 @@ describe('Localization', () => {
       const settingsHeading = await getByRole('heading', { level: 1 }).element()
       expect(settingsHeading.textContent).toBe('Settings')
 
-      const weightLabel = queryByText(/^weight$/i)
-      expect(weightLabel).toBeTruthy()
-
-      cleanup()
+      await expect.element(getByText(/^weight$/i).first()).toBeVisible()
     })
   })
 })

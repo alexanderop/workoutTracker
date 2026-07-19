@@ -1,7 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
@@ -14,17 +13,17 @@ import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 describe('Cardio configuration on a touch device', () => {
   beforeEach(async () => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
     restoreMatchMedia()
   })
 
   const modalPO = new NumericInputModalPO()
 
-  it('sets duration and distance through the numeric keypad and adds the block', async () => {
-    const { builder, common, cleanup } = await createTestApp()
+  it('sets duration and distance through the numeric keypad and adds the block', async ({
+    createTestApp,
+  }) => {
+    const { builder, common } = await createTestApp()
 
     await builder.navigateTo()
     await builder.openAddBlockDialog()
@@ -50,7 +49,5 @@ describe('Cardio configuration on a touch device', () => {
 
     const playlistButtons = await builder.getPlaylistBlockButtons()
     expect(playlistButtons).toHaveLength(1)
-
-    cleanup()
   })
 })

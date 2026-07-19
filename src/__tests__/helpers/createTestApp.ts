@@ -25,11 +25,11 @@ import {
   NutritionDashboardPO,
 } from './pages'
 
-type CreateTestAppOptions = {
+export type CreateTestAppOptions = {
   initialRoute?: string
 }
 
-type TestApp = {
+export type TestApp = {
   router: Router
   container: Element
   // Page Objects
@@ -50,10 +50,6 @@ type TestApp = {
   getByRole: typeof page.getByRole
   getByText: typeof page.getByText
   getByTestId: typeof page.getByTestId
-  queryByRole: typeof page.getByRole
-  queryByText: typeof page.getByText
-  findByRole: typeof page.getByRole
-  findByText: typeof page.getByText
   // Helpers
   navigateTo: (to: RouteLocationRaw) => Promise<void>
   cleanup: () => void
@@ -142,10 +138,6 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     getByRole: page.getByRole.bind(page),
     getByText: page.getByText.bind(page),
     getByTestId: page.getByTestId.bind(page),
-    queryByRole: page.getByRole.bind(page),
-    queryByText: page.getByText.bind(page),
-    findByRole: page.getByRole.bind(page),
-    findByText: page.getByText.bind(page),
     // Helpers
     navigateTo,
     cleanup,

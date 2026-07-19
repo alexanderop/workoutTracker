@@ -252,6 +252,31 @@ jobs:
           set -euo pipefail
           pnpm test:coverage:merge
 
+  test-order:
+    name: Test order (seed 731946)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run tests in deterministic shuffled order
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm vitest run \
+            --project=default \
+            --sequence.shuffle \
+            --sequence.seed=731946
+
   test-a11y:
     uses: ./.github/workflows/reusable-node-command.yml
     with:
@@ -277,6 +302,7 @@ jobs:
         uses: ./.github/actions/setup-test-env
         with:
           node-version: ${{ env.NODE_VERSION }}
+          playwright-browsers: 'chromium webkit'
 
       - name: Download production build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -384,6 +410,7 @@ jobs:
       - build
       - test
       - test-coverage
+      - test-order
       - test-a11y
       - test-visual
       - test-e2e

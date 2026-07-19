@@ -1,16 +1,14 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Tests inspect optional icon elements after visibility checks. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('AddBlockDialog - Time Block Icons and Colors', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('displays distinctive icons and colors for each timed block type', async () => {
-    const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+  it('displays distinctive icons and colors for each timed block type', async ({
+    createTestApp,
+  }) => {
+    const { getByRole, common, navigateTo } = await createTestApp()
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
@@ -88,12 +86,12 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
       const cardioColor = cardioCard.querySelector('.text-block-cardio')
       expect(cardioColor, 'Cardio should have text-block-cardio styling').toBeTruthy()
     }
-
-    cleanup()
   })
 
-  it('each timed block card is clickable and opens configuration dialog', async () => {
-    const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+  it('each timed block card is clickable and opens configuration dialog', async ({
+    createTestApp,
+  }) => {
+    const { getByRole, common, navigateTo } = await createTestApp()
 
     // Navigate to Create Template page
     await navigateTo({ name: RouteNames.CreateTemplate })
@@ -111,7 +109,5 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
 
     // Verify AMRAP configuration dialog opens (has "Add Block" button)
     await expect.element(page.getByRole('button', { name: /add block/i })).toBeVisible()
-
-    cleanup()
   })
 })

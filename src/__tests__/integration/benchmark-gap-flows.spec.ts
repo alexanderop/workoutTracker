@@ -1,7 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getActiveBenchmarkWorkoutRepository } from '@/db'
 import type { DbBenchmarkRound } from '@/db/schema'
@@ -31,11 +30,10 @@ function sortRounds(rounds: ReadonlyArray<DbBenchmarkRound>): ReadonlyArray<DbBe
  * app restart, and the multi-round exercise queue.
  */
 describe('Benchmark Gap Flows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Draft Discard', () => {
-    it('discards an unsaved multi-round draft and returns to a clean form', async () => {
+    it('discards an unsaved multi-round draft and returns to a clean form', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -59,13 +57,13 @@ describe('Benchmark Gap Flows', () => {
       expect(await app.benchmarkForm.getRoundCount()).toBe(1)
       await expect.element(page.getByTestId('benchmark-exercise-item')).not.toBeInTheDocument()
       await app.benchmarkForm.assertSaveDisabled()
-
-      app.cleanup()
     })
   })
 
   describe('Creation with Corrections', () => {
-    it('creates a descending ladder benchmark, undoing an extra round and a mistaken exercise', async () => {
+    it('creates a descending ladder benchmark, undoing an extra round and a mistaken exercise', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -108,13 +106,11 @@ describe('Benchmark Gap Flows', () => {
       expect(rounds.every((round) => round.exercises.every((ex) => ex.name === 'Burpees'))).toBe(
         true,
       )
-
-      app.cleanup()
     })
   })
 
   describe('Exercise Editing', () => {
-    it('swaps an exercise while editing an existing benchmark', async () => {
+    it('swaps an exercise while editing an existing benchmark', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({
         name: 'Pull-up Test',
         exercises: [{ name: 'Pull-ups', reps: 5 }],
@@ -141,13 +137,11 @@ describe('Benchmark Gap Flows', () => {
       expect(exercises).toHaveLength(1)
       expect(exercises[0]?.name).toBe('Bodyweight Squat')
       expect(exercises[0]?.prescribedReps).toBe(15)
-
-      app.cleanup()
     })
   })
 
   describe('Abandoning a Run', () => {
-    it('cancels a benchmark mid-workout without saving anything', async () => {
+    it('cancels a benchmark mid-workout without saving anything', async ({ createTestApp }) => {
       const benchmark = await createForTimeBenchmark({ name: 'Fran' })
       const app = await createTestApp()
 
@@ -171,13 +165,13 @@ describe('Benchmark Gap Flows', () => {
       expect(history).toHaveLength(0)
       const active = await getActiveBenchmarkWorkoutRepository().load()
       expect(active).toBeFalsy()
-
-      app.cleanup()
     })
   })
 
   describe('Finishing Early', () => {
-    it('ends a benchmark early and saves the partial attempt under a custom name', async () => {
+    it('ends a benchmark early and saves the partial attempt under a custom name', async ({
+      createTestApp,
+    }) => {
       const benchmark = await createForTimeBenchmark({
         name: 'Fran',
         exercises: [
@@ -213,13 +207,13 @@ describe('Benchmark Gap Flows', () => {
       // The active benchmark was cleaned up
       const active = await getActiveBenchmarkWorkoutRepository().load()
       expect(active).toBeFalsy()
-
-      app.cleanup()
     })
   })
 
   describe('Resuming After Restart', () => {
-    it('restores an interrupted benchmark from the database after an app restart', async () => {
+    it('restores an interrupted benchmark from the database after an app restart', async ({
+      createTestApp,
+    }) => {
       const benchmark = await createForTimeBenchmark({
         name: 'Fran',
         exercises: [
@@ -237,7 +231,6 @@ describe('Benchmark Gap Flows', () => {
       expect(saved?.benchmarkId).toBe(benchmark.id)
 
       // Simulate an app restart: unmount and clear all in-memory state
-      app.cleanup()
       resetBenchmarkWorkout()
       useBenchmarkGlobalTimer().reset()
 
@@ -259,13 +252,11 @@ describe('Benchmark Gap Flows', () => {
       await completeExercise()
       await completeExercise()
       await waitForCompletionScreen()
-
-      restartedApp.cleanup()
     })
   })
 
   describe('Multi-Round Exercise Queue', () => {
-    it('groups the exercise queue by round with per-exercise status', async () => {
+    it('groups the exercise queue by round with per-exercise status', async ({ createTestApp }) => {
       const benchmark = await createRoundsBenchmark({
         name: 'Half Cindy',
         rounds: 2,
@@ -306,8 +297,6 @@ describe('Benchmark Gap Flows', () => {
       await expect
         .element(page.getByLabelText('Round 2, Exercise 2, Push-ups, 10 reps, Upcoming'))
         .toBeVisible()
-
-      app.cleanup()
     })
   })
 })

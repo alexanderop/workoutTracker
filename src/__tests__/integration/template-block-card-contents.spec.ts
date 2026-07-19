@@ -14,10 +14,9 @@
  * in the block. Fix: show the contained exercise names inline.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { assertNoViolationsWithoutContrast } from '../helpers/a11y'
 import {
   createDbTemplateStrengthBlock,
@@ -31,12 +30,11 @@ import {
 import { seedTemplate } from '../helpers/dbAssertions'
 
 describe('Template Block Card Contents & Accessibility', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Finding M7: exercise names shown inline', () => {
-    it('should show the contained exercise names on an AMRAP block card', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should show the contained exercise names on an AMRAP block card', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'AMRAP Names Template',
@@ -54,12 +52,12 @@ describe('Template Block Card Contents & Accessibility', () => {
 
       await expect.element(page.getByText('Burpees')).toBeVisible()
       await expect.element(page.getByText('Air Squats')).toBeVisible()
-
-      cleanup()
     })
 
-    it('should show the contained exercise name on an EMOM block card', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should show the contained exercise name on an EMOM block card', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'EMOM Names Template',
@@ -73,12 +71,12 @@ describe('Template Block Card Contents & Accessibility', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       await expect.element(page.getByText('Push-ups')).toBeVisible()
-
-      cleanup()
     })
 
-    it('should show the contained exercise name on a Tabata block card', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should show the contained exercise name on a Tabata block card', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Tabata Names Template',
@@ -92,12 +90,12 @@ describe('Template Block Card Contents & Accessibility', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       await expect.element(page.getByText('Mountain Climbers')).toBeVisible()
-
-      cleanup()
     })
 
-    it('should show the contained exercise names on a ForTime block card', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should show the contained exercise names on a ForTime block card', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'ForTime Names Template',
@@ -115,12 +113,12 @@ describe('Template Block Card Contents & Accessibility', () => {
 
       await expect.element(page.getByText('Wall Balls')).toBeVisible()
       await expect.element(page.getByText('Box Jumps')).toBeVisible()
-
-      cleanup()
     })
 
-    it('should not render an exercise list on a cardio block card (no exercises to show)', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should not render an exercise list on a cardio block card (no exercises to show)', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Cardio Template',
@@ -130,14 +128,14 @@ describe('Template Block Card Contents & Accessibility', () => {
       await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
 
       await expect.element(page.getByText(/cardio/i).first()).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Finding M6: distinguishable per-block controls', () => {
-    it('should give decrease/increase set-count controls distinct accessible names per exercise', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should give decrease/increase set-count controls distinct accessible names per exercise', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Multi Strength Template',
@@ -163,12 +161,12 @@ describe('Template Block Card Contents & Accessibility', () => {
       await expect
         .element(page.getByRole('button', { name: /increase set count.*bench press/i }))
         .toBeVisible()
-
-      cleanup()
     })
 
-    it('should wrap each block card in a labelled group naming its exercise or block type', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should wrap each block card in a labelled group naming its exercise or block type', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Grouped Template',
@@ -184,12 +182,12 @@ describe('Template Block Card Contents & Accessibility', () => {
 
       await expect.element(page.getByRole('group', { name: /deadlift/i })).toBeVisible()
       await expect.element(page.getByRole('group', { name: /amrap/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it('should use the same initials-avatar icon treatment as strength blocks instead of an emoji square (block-icon harmonization)', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should use the same initials-avatar icon treatment as strength blocks instead of an emoji square (block-icon harmonization)', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Icon Harmonization Template',
@@ -206,16 +204,16 @@ describe('Template Block Card Contents & Accessibility', () => {
       // "AMRAP" -> initials "AM", the same ExerciseAvatar treatment strength
       // blocks already use, instead of the previous colored emoji square.
       await expect.element(amrapCard.getByText('AM', { exact: true })).toBeVisible()
-
-      cleanup()
     })
 
-    it('should have no structural a11y violations on a template detail page with multiple block kinds', async () => {
+    it('should have no structural a11y violations on a template detail page with multiple block kinds', async ({
+      createTestApp,
+    }) => {
       // Color contrast is excluded here: the block-kind badge
       // (`bg-block-amrap/20` + `text-block-amrap`) has a pre-existing contrast
       // issue unrelated to Findings M6/M7 (group roles, contextual labels,
       // inline exercise names) that this suite targets.
-      const { navigateTo, container, cleanup } = await createTestApp()
+      const { navigateTo, container } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'A11y Template',
@@ -231,14 +229,14 @@ describe('Template Block Card Contents & Accessibility', () => {
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       await assertNoViolationsWithoutContrast(container)
-
-      cleanup()
     })
   })
 
   describe('Regression: existing remove-block affordance still works', () => {
-    it('should still expose a remove control with "remove" in its accessible name', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('should still expose a remove control with "remove" in its accessible name', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Removable Template',
@@ -252,8 +250,6 @@ describe('Template Block Card Contents & Accessibility', () => {
       await userEvent.click(removeButton)
 
       await expect.element(page.getByText('Squat')).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 })

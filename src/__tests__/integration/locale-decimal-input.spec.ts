@@ -1,18 +1,15 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { i18n } from '@/i18n'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('Locale-Aware Decimal Input', () => {
   beforeEach(async () => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
     restoreMatchMedia()
   })
 
@@ -23,8 +20,8 @@ describe('Locale-Aware Decimal Input', () => {
     // When: Opening weight input modal on touch device
     // Then: Keypad shows comma as decimal button
 
-    it('shows comma as decimal separator on keypad', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows comma as decimal separator on keypad', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Set German locale after app is created
       i18n.global.locale.value = 'de'
@@ -41,15 +38,14 @@ describe('Locale-Aware Decimal Input', () => {
       expect(decimalSeparator).toBe(',')
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
     // Given: German locale with comma separator
     // When: User enters weight "70.5" via keypad (internally uses .)
     // Then: Weight is stored correctly as 70.5
 
-    it('can enter decimal weight using keypad', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('can enter decimal weight using keypad', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Set German locale after app is created
       i18n.global.locale.value = 'de'
@@ -68,16 +64,14 @@ describe('Locale-Aware Decimal Input', () => {
       // Verify the weight was set (displayed as "70,5" in German locale)
       // The trigger button should now show the value
       await expect.element(weightTrigger).toHaveTextContent('70,5')
-
-      cleanup()
     })
 
     // Given: German locale
     // When: Viewing a weight value of 70.5
     // Then: Display shows "70,5" (with comma)
 
-    it('displays existing decimal weights with comma', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('displays existing decimal weights with comma', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Set German locale after app is created
       i18n.global.locale.value = 'de'
@@ -100,7 +94,6 @@ describe('Locale-Aware Decimal Input', () => {
       await expect.element(valueDisplay).toHaveTextContent(/70,5/)
 
       await modalPO.clickCancel()
-      cleanup()
     })
   })
 
@@ -109,8 +102,8 @@ describe('Locale-Aware Decimal Input', () => {
     // When: Opening weight input modal
     // Then: Keypad shows period as decimal button
 
-    it('shows period as decimal separator on keypad', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows period as decimal separator on keypad', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Set English locale (default, but explicit for clarity)
       i18n.global.locale.value = 'en'
@@ -127,15 +120,14 @@ describe('Locale-Aware Decimal Input', () => {
       expect(decimalSeparator).toBe('.')
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
     // Given: English locale with period separator
     // When: User enters weight "70.5" via keypad
     // Then: Weight is stored correctly
 
-    it('can enter decimal weight using period', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('can enter decimal weight using period', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Set English locale
       i18n.global.locale.value = 'en'
@@ -153,8 +145,6 @@ describe('Locale-Aware Decimal Input', () => {
 
       // Verify the weight was set (displayed as "70.5" in English locale)
       await expect.element(weightTrigger).toHaveTextContent('70.5')
-
-      cleanup()
     })
   })
 
@@ -163,8 +153,8 @@ describe('Locale-Aware Decimal Input', () => {
     // When: Opening reps modal
     // Then: No decimal button is shown
 
-    it('does not show decimal button for reps', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('does not show decimal button for reps', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -178,15 +168,14 @@ describe('Locale-Aware Decimal Input', () => {
       expect(hasDecimal).toBe(false)
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
     // Given: RIR input (allowDecimal: false)
     // When: Opening RIR modal
     // Then: No decimal button is shown
 
-    it('does not show decimal button for RIR', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('does not show decimal button for RIR', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -200,7 +189,6 @@ describe('Locale-Aware Decimal Input', () => {
       expect(hasDecimal).toBe(false)
 
       await modalPO.clickCancel()
-      cleanup()
     })
   })
 })

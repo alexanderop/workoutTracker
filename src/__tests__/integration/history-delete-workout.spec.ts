@@ -1,13 +1,12 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import {
   expectWorkoutCount,
   seedCompletedWorkout,
   seedCompletedWorkouts,
 } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getSwipeableContainer, simulateSwipeLeft } from '../helpers/swipeHelpers'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
@@ -16,12 +15,9 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
  * Tests the swipe-to-reveal-delete functionality.
  */
 describe('History Delete Workout', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Swipe to Reveal Delete', () => {
-    it('reveals delete button when swiping left on history workout', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('reveals delete button when swiping left on history workout', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed a workout
       const workout = databaseWorkoutBuilder()
@@ -43,12 +39,10 @@ describe('History Delete Workout', () => {
 
       // Delete button should be visible
       await expect.element(page.getByRole('button', { name: /delete/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it('shows confirmation dialog when delete button is tapped', async () => {
-      const { navigateTo, common, cleanup } = await createTestApp()
+    it('shows confirmation dialog when delete button is tapped', async ({ createTestApp }) => {
+      const { navigateTo, common } = await createTestApp()
 
       // Seed a workout
       const workout = databaseWorkoutBuilder()
@@ -74,12 +68,10 @@ describe('History Delete Workout', () => {
       await expect.element(page.getByRole('heading', { name: /delete workout/i })).toBeVisible()
       // Check dialog description contains the workout name
       await expect.element(page.getByText(/are you sure you want to delete/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('removes workout from list after confirming delete', async () => {
-      const { navigateTo, common, cleanup } = await createTestApp()
+    it('removes workout from list after confirming delete', async ({ createTestApp }) => {
+      const { navigateTo, common } = await createTestApp()
 
       // Seed a workout
       const workout = databaseWorkoutBuilder().withName('Leg Day').withStrengthBlock().build()
@@ -104,12 +96,10 @@ describe('History Delete Workout', () => {
 
       // Verify it's deleted from database
       await expectWorkoutCount(0)
-
-      cleanup()
     })
 
-    it('keeps workout in list when cancel is clicked', async () => {
-      const { navigateTo, common, cleanup } = await createTestApp()
+    it('keeps workout in list when cancel is clicked', async ({ createTestApp }) => {
+      const { navigateTo, common } = await createTestApp()
 
       // Seed a workout
       const workout = databaseWorkoutBuilder().withName('Push Day').withStrengthBlock().build()
@@ -134,12 +124,10 @@ describe('History Delete Workout', () => {
 
       // Verify it's still in database
       await expectWorkoutCount(1)
-
-      cleanup()
     })
 
-    it('shows empty state after deleting last workout in history', async () => {
-      const { navigateTo, common, cleanup } = await createTestApp()
+    it('shows empty state after deleting last workout in history', async ({ createTestApp }) => {
+      const { navigateTo, common } = await createTestApp()
 
       // Seed a single workout
       const workout = databaseWorkoutBuilder().withName('Only Workout').withStrengthBlock().build()
@@ -161,12 +149,10 @@ describe('History Delete Workout', () => {
 
       // Empty state should now be visible
       await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('updates month grouping when workout is deleted', async () => {
-      const { navigateTo, common, cleanup } = await createTestApp()
+    it('updates month grouping when workout is deleted', async ({ createTestApp }) => {
+      const { navigateTo, common } = await createTestApp()
 
       const now = Date.now()
       const oneMonthAgo = now - 31 * 24 * 60 * 60 * 1000
@@ -201,12 +187,10 @@ describe('History Delete Workout', () => {
       // Recent workout should be gone, old one should remain
       await expect.element(page.getByText('Recent Workout')).not.toBeInTheDocument()
       await expect.element(page.getByText('Old Workout')).toBeVisible()
-
-      cleanup()
     })
 
-    it('closes previously swiped card when swiping another', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('closes previously swiped card when swiping another', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed multiple workouts
       const workout1 = databaseWorkoutBuilder().withName('Workout One').withStrengthBlock().build()
@@ -235,8 +219,6 @@ describe('History Delete Workout', () => {
       // Only second delete button should be visible now
       const visibleDeleteButtons = await page.getByRole('button', { name: /delete/i }).all()
       expect(visibleDeleteButtons).toHaveLength(1)
-
-      cleanup()
     })
   })
 })

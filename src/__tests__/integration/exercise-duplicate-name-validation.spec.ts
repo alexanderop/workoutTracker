@@ -15,18 +15,16 @@
  *   count as a duplicate.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getCustomExercisesRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise Duplicate Name Validation', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should block saving a new exercise whose name matches an existing one, case-insensitive and trimmed', async () => {
-    const { common, exercises, router, cleanup } = await createTestApp()
+  it('should block saving a new exercise whose name matches an existing one, case-insensitive and trimmed', async ({
+    createTestApp,
+  }) => {
+    const { common, exercises, router } = await createTestApp()
 
     // Create the first exercise
     await exercises.navigateTo()
@@ -54,12 +52,12 @@ describe('Exercise Duplicate Name Validation', () => {
     const allExercises = await getCustomExercisesRepository().getAll()
     const matches = allExercises.filter((e) => e.name.trim().toLowerCase() === 'test curl qa')
     expect(matches).toHaveLength(1)
-
-    cleanup()
   })
 
-  it('should allow saving an edited exercise when the name is left unchanged', async () => {
-    const { router, navigateTo, cleanup } = await createTestApp()
+  it('should allow saving an edited exercise when the name is left unchanged', async ({
+    createTestApp,
+  }) => {
+    const { router, navigateTo } = await createTestApp()
 
     const allExercises = await getCustomExercisesRepository().getAll()
     const benchPress = allExercises.find((e) => e.name === 'Bench Press')
@@ -83,12 +81,12 @@ describe('Exercise Duplicate Name Validation', () => {
     // The exercise's own name is unchanged in the database (update succeeded, no corruption)
     const updated = await getCustomExercisesRepository().getById(benchPress.id)
     expect(updated?.name).toBe('Bench Press')
-
-    cleanup()
   })
 
-  it('should block saving when editing an exercise into a name that collides with another exercise', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('should block saving when editing an exercise into a name that collides with another exercise', async ({
+    createTestApp,
+  }) => {
+    const { navigateTo } = await createTestApp()
 
     const allExercises = await getCustomExercisesRepository().getAll()
     const benchPress = allExercises.find((e) => e.name === 'Bench Press')
@@ -105,7 +103,5 @@ describe('Exercise Duplicate Name Validation', () => {
 
     const saveButton = page.getByRole('button', { name: /save/i })
     await expect.element(saveButton).toBeDisabled()
-
-    cleanup()
   })
 })

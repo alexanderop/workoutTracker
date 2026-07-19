@@ -7,21 +7,17 @@
  * - Navigation from exercises list
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getWorkoutsRepository, getCustomExercisesRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
 
 describe('ExerciseProgressView', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('with workout history', () => {
-    it('displays PR cards with max weight when history exists', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays PR cards with max weight when history exists', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Get the ID of a seeded exercise (Bench Press)
       const exercises = await getCustomExercisesRepository().getAll()
@@ -48,12 +44,10 @@ describe('ExerciseProgressView', () => {
 
       // Should display max weight PR card
       await expect.element(page.getByText('100 kg')).toBeVisible()
-
-      cleanup()
     })
 
-    it('displays estimated 1RM in PR cards', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays estimated 1RM in PR cards', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const exercises = await getCustomExercisesRepository().getAll()
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
@@ -71,12 +65,10 @@ describe('ExerciseProgressView', () => {
 
       // Should show estimated 1RM (Brzycki: 100 * 36 / (37 - 5) = 112.5, rounded to 113)
       await expect.element(page.getByText('113 kg')).toBeVisible()
-
-      cleanup()
     })
 
-    it('displays max volume PR with tonnage format', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays max volume PR with tonnage format', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const exercises = await getCustomExercisesRepository().getAll()
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
@@ -99,12 +91,12 @@ describe('ExerciseProgressView', () => {
       // Volume 2400kg should display as "2.4t" in the PR card
       // Use first() since the value also appears in chart axis labels
       await expect.element(page.getByText('2.4t').first()).toBeVisible()
-
-      cleanup()
     })
 
-    it('falls back to the name from workout history when the exercise is not in the library', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('falls back to the name from workout history when the exercise is not in the library', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       // A workout logged against an exercise id that no longer exists in the
       // exercises table (e.g. deleted custom exercise) — the view should still
@@ -125,14 +117,12 @@ describe('ExerciseProgressView', () => {
 
       await expect.element(page.getByRole('heading', { name: 'Zercher Squat' })).toBeVisible()
       await expect.element(page.getByText('60 kg')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('empty state', () => {
-    it('shows empty state when no workout history exists', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows empty state when no workout history exists', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       const exercises = await getCustomExercisesRepository().getAll()
       const benchPress = exercises.find((e) => e.name === 'Bench Press')!
@@ -145,14 +135,12 @@ describe('ExerciseProgressView', () => {
 
       // Should show empty state message
       await expect.element(page.getByText(/no history yet/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('navigation', () => {
-    it('navigates from exercises list to progress view', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('navigates from exercises list to progress view', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.Exercises })
 
       // Click on Bench Press in the list
@@ -163,8 +151,6 @@ describe('ExerciseProgressView', () => {
 
       // Should NOT show "Unknown Exercise"
       await expect.element(page.getByText('Unknown Exercise')).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 })

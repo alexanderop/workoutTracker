@@ -1,9 +1,8 @@
 /* eslint-disable vitest/no-conditional-in-test -- File-import controls depend on browser API availability. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { afterEach, describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { getWorkoutCount, seedCompletedWorkout } from '../helpers/dbAssertions'
 
 /**
@@ -48,22 +47,19 @@ function selectImportFile(file: File): void {
 }
 
 describe('Settings Export/Import (browser)', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
-    await cleanupIntegrationTest()
     vi.restoreAllMocks()
   })
 
   describe('Export', () => {
-    it('downloads a backup containing the user data', async () => {
+    it('downloads a backup containing the user data', async ({ createTestApp }) => {
       const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-export')
       const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
 
       const workout = databaseWorkoutBuilder().withName('Heavy Leg Day').withStrengthBlock().build()
       await seedCompletedWorkout(workout)
 
-      const { common, getByRole, cleanup } = await createTestApp()
+      const { common, getByRole } = await createTestApp()
       await common.navigateToSettings()
 
       await userEvent.click(getByRole('button', { name: /^export data$/i }))
@@ -78,19 +74,19 @@ describe('Settings Export/Import (browser)', () => {
       expect(parsed.version).toBe(3)
       expect(parsed.data.workouts).toHaveLength(1)
       expect(parsed.data.workouts[0].name).toBe('Heavy Leg Day')
-
-      cleanup()
     })
   })
 
   describe('Import confirmation dialog', () => {
-    it('shows what is about to be imported and cancel keeps existing data untouched', async () => {
+    it('shows what is about to be imported and cancel keeps existing data untouched', async ({
+      createTestApp,
+    }) => {
       const workouts = [
         databaseWorkoutBuilder().withName('Imported A').withStrengthBlock().build(),
         databaseWorkoutBuilder().withName('Imported B').withStrengthBlock().build(),
       ]
 
-      const { common, cleanup } = await createTestApp()
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       selectImportFile(buildExportFile({ workouts }))
@@ -106,14 +102,14 @@ describe('Settings Export/Import (browser)', () => {
 
       // Cancelling must not import anything
       expect(await getWorkoutCount()).toBe(0)
-
-      cleanup()
     })
 
-    it('uses singular labels when the backup contains exactly one workout', async () => {
+    it('uses singular labels when the backup contains exactly one workout', async ({
+      createTestApp,
+    }) => {
       const workouts = [databaseWorkoutBuilder().withName('Solo').withStrengthBlock().build()]
 
-      const { common, cleanup } = await createTestApp()
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       selectImportFile(buildExportFile({ workouts }))
@@ -122,13 +118,12 @@ describe('Settings Export/Import (browser)', () => {
 
       await userEvent.click(common.getDialogButton('Cancel'))
       await common.waitForDialogClose()
-      cleanup()
     })
   })
 
   describe('Import error dialogs', () => {
-    it('rejects a file that is not valid JSON', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('rejects a file that is not valid JSON', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       selectImportFile(
@@ -140,11 +135,10 @@ describe('Settings Export/Import (browser)', () => {
 
       await userEvent.click(common.getDialogButton('OK'))
       await common.waitForDialogClose()
-      cleanup()
     })
 
-    it('rejects a JSON file that is not a workout tracker backup', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('rejects a JSON file that is not a workout tracker backup', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       selectImportFile(
@@ -157,11 +151,10 @@ describe('Settings Export/Import (browser)', () => {
 
       await userEvent.click(common.getDialogButton('OK'))
       await common.waitForDialogClose()
-      cleanup()
     })
 
-    it('rejects a backup from a newer app version', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('rejects a backup from a newer app version', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       selectImportFile(buildExportFile({ version: 4 }))
@@ -172,11 +165,10 @@ describe('Settings Export/Import (browser)', () => {
 
       await userEvent.click(common.getDialogButton('OK'))
       await common.waitForDialogClose()
-      cleanup()
     })
 
-    it('rejects files larger than 10MB', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('rejects files larger than 10MB', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
       await common.navigateToSettings()
 
       const oversized = new File([new ArrayBuffer(10 * 1024 * 1024 + 1)], 'backup.json', {
@@ -188,7 +180,6 @@ describe('Settings Export/Import (browser)', () => {
 
       await userEvent.click(common.getDialogButton('OK'))
       await common.waitForDialogClose()
-      cleanup()
     })
   })
 })

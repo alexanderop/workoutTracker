@@ -1,25 +1,22 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('Numeric Input Modal (Touch Device)', () => {
   beforeEach(async () => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
     restoreMatchMedia()
   })
 
   const modalPO = new NumericInputModalPO()
 
   describe('Modal Input Flow', () => {
-    it('opens modal when tapping weight input on touch device', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('opens modal when tapping weight input on touch device', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -33,12 +30,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await expect.element(page.getByRole('button', { name: /cancel/i })).toBeVisible()
       const title = await modalPO.getTitle()
       expect(title).toBe('Weight')
-
-      cleanup()
     })
 
-    it('can complete a set using modal input', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('can complete a set using modal input', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -68,12 +63,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
 
       // Verify set is completed
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
     })
 
-    it('canceling modal preserves original value', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('canceling modal preserves original value', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -97,12 +90,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       const set = await workout.getSet(0)
       const values = await set.getValues()
       expect(values.weight).toBe('100')
-
-      cleanup()
     })
 
-    it('shows correct unit label in weight modal', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows correct unit label in weight modal', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -115,11 +106,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await expect.element(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
-    it('shows barbell plate hint with correct plate description', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows barbell plate hint with correct plate description', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Bench Press is a barbell exercise
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -137,11 +127,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await expect.element(barbellHint).toBeVisible()
 
       await modalPO.clickCancel()
-      cleanup()
     })
 
-    it('does not show barbell plate hint for non-barbell exercises', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('does not show barbell plate hint for non-barbell exercises', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       // Dumbbell Curl is a dumbbell exercise (not barbell)
       await builder.setupStrengthWorkoutAndStart(['Dumbbell Curl'])
@@ -156,13 +145,12 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await expect.element(barbellHint).not.toBeInTheDocument()
 
       await modalPO.clickCancel()
-      cleanup()
     })
   })
 
   describe('SetRowPO Integration', () => {
-    it('SetRowPO.enterValues() works in modal mode', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('SetRowPO.enterValues() works in modal mode', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -175,12 +163,10 @@ describe('Numeric Input Modal (Touch Device)', () => {
       expect(values.weight).toBe('100')
       expect(values.reps).toBe('8')
       expect(values.rir).toBe('2')
-
-      cleanup()
     })
 
-    it('SetRowPO.fillAndComplete() works in modal mode', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('SetRowPO.fillAndComplete() works in modal mode', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -190,8 +176,6 @@ describe('Numeric Input Modal (Touch Device)', () => {
 
       // Verify set is completed
       await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
     })
   })
 })

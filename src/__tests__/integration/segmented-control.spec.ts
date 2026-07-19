@@ -1,16 +1,12 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 
 describe('SegmentedControl', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('EMOM Configuration', () => {
-    it('displays rotation options as tabs instead of dropdown', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('displays rotation options as tabs instead of dropdown', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -30,12 +26,10 @@ describe('SegmentedControl', () => {
       // Verify Full Round is selected by default
       await expect.element(fullRoundTab).toHaveAttribute('aria-selected', 'true')
       await expect.element(onePerMinuteTab).toHaveAttribute('aria-selected', 'false')
-
-      cleanup()
     })
 
-    it('allows switching between rotation modes', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('allows switching between rotation modes', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -61,14 +55,12 @@ describe('SegmentedControl', () => {
       // Verify Full Round is selected again
       await expect.element(fullRoundTab).toHaveAttribute('aria-selected', 'true')
       await expect.element(onePerMinuteTab).toHaveAttribute('aria-selected', 'false')
-
-      cleanup()
     })
   })
 
   describe('Workouts Page', () => {
-    it('displays templates and benchmarks as tabs', async () => {
-      const { router, cleanup } = await createTestApp()
+    it('displays templates and benchmarks as tabs', async ({ createTestApp }) => {
+      const { router } = await createTestApp()
 
       // Navigate to workouts page
       router.push({ name: RouteNames.Workouts })
@@ -83,12 +75,10 @@ describe('SegmentedControl', () => {
 
       // Verify Templates tab is selected by default
       await expect.element(templatesTab).toHaveAttribute('aria-selected', 'true')
-
-      cleanup()
     })
 
-    it('switches between templates and benchmarks tabs', async () => {
-      const { router, cleanup } = await createTestApp()
+    it('switches between templates and benchmarks tabs', async ({ createTestApp }) => {
+      const { router } = await createTestApp()
 
       // Navigate to workouts page
       router.push({ name: RouteNames.Workouts })
@@ -116,8 +106,6 @@ describe('SegmentedControl', () => {
       // Verify Templates is selected and content visible
       await expect.element(templatesTab).toHaveAttribute('aria-selected', 'true')
       await expect.element(page.getByRole('button', { name: /create template/i })).toBeVisible()
-
-      cleanup()
     })
   })
 })

@@ -1,11 +1,11 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Imported data is narrowed by its discriminated result shape. */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getDataManagementRepository } from '@/db'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { parseExportFile, importAllData } from '@/features/settings/utils/dataImport'
 import { exportDataSchema } from '@/features/settings/utils/validation'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import {
   getAllWorkouts,
   getRawSettings,
@@ -32,9 +32,6 @@ function unwrapSuccessfulParse(result: ParseExportResult) {
  * but the import validation schema uses `.strict()` and doesn't expect it.
  */
 describe('Export/Import Round-Trip', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   it('successfully imports data that was just exported', async () => {
     // Arrange: Create test data in the database
     const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()

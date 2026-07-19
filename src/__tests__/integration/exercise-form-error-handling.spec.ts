@@ -10,19 +10,15 @@
  * - User can dismiss error and retry
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { useExercisesStore } from '@/stores/exercises'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise Form Error Handling', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Create exercise', () => {
-    it('shows error dialog when addExercise fails', async () => {
-      const { common, exercises, router, cleanup } = await createTestApp()
+    it('shows error dialog when addExercise fails', async ({ createTestApp }) => {
+      const { common, exercises, router } = await createTestApp()
 
       // Navigate to create form
       await exercises.navigateTo()
@@ -46,12 +42,10 @@ describe('Exercise Form Error Handling', () => {
 
       // Assert: Still on create page (didn't navigate)
       expect(router.currentRoute.value.path).toBe('/create-exercise')
-
-      cleanup()
     })
 
-    it('allows dismissing error and retrying save successfully', async () => {
-      const { common, exercises, cleanup } = await createTestApp()
+    it('allows dismissing error and retrying save successfully', async ({ createTestApp }) => {
+      const { common, exercises } = await createTestApp()
 
       await exercises.navigateTo()
       await exercises.clickCreateCustomExercise()
@@ -76,14 +70,12 @@ describe('Exercise Form Error Handling', () => {
 
       // Should navigate back to exercises list
       await common.waitForRoute(/^\/exercises$/)
-
-      cleanup()
     })
   })
 
   describe('Edit exercise', () => {
-    it('shows error dialog when updateExercise fails', async () => {
-      const { common, navigateTo, router, cleanup } = await createTestApp()
+    it('shows error dialog when updateExercise fails', async ({ createTestApp }) => {
+      const { common, navigateTo, router } = await createTestApp()
 
       // Get existing exercise from store
       const store = useExercisesStore()
@@ -109,14 +101,12 @@ describe('Exercise Form Error Handling', () => {
 
       // Assert: Still on edit page
       expect(router.currentRoute.value.path).toBe(`/exercises/${exercise.id}/edit`)
-
-      cleanup()
     })
   })
 
   describe('Button state during save', () => {
-    it('disables save button and shows saving text during operation', async () => {
-      const { exercises, cleanup } = await createTestApp()
+    it('disables save button and shows saving text during operation', async ({ createTestApp }) => {
+      const { exercises } = await createTestApp()
 
       await exercises.navigateTo()
       await exercises.clickCreateCustomExercise()
@@ -143,8 +133,6 @@ describe('Exercise Form Error Handling', () => {
 
       // Resolve the promise to complete the test
       deferred.resolve?.(null)
-
-      cleanup()
     })
   })
 })

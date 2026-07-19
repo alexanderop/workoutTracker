@@ -1,9 +1,8 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- The flow exercises conditionally rendered template controls. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import {
   clearAllTemplates,
@@ -22,13 +21,9 @@ async function getExerciseCard(exerciseName: string): Promise<HTMLElement> {
 }
 
 describe('Template Flow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Test 1a: Create template from finished workout', () => {
-    it('saves a completed workout as a template', async () => {
-      const { builder, workout, getByRole, queryByRole, common, router, cleanup } =
-        await createTestApp()
+    it('saves a completed workout as a template', async ({ createTestApp }) => {
+      const { builder, workout, getByRole, common, router } = await createTestApp()
 
       // Start new workout from home page
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -61,7 +56,7 @@ describe('Template Flow', () => {
       await userEvent.click(getByRole('menuitem', { name: /end workout/i }))
 
       await common.waitForDialog()
-      expect(queryByRole('heading', { name: /finish workout/i })).toBeTruthy()
+      await expect.element(getByRole('heading', { name: /finish workout/i })).toBeVisible()
 
       const nameInput = getByRole('textbox', { name: /workout name/i })
       await userEvent.clear(nameInput)
@@ -87,8 +82,6 @@ describe('Template Flow', () => {
       const viewDetailsButton = page.getByRole('button', { name: /view details/i })
       await expect.element(viewDetailsButton, { timeout: 2000 }).toBeVisible()
       await expect.element(viewDetailsButton).not.toHaveClass('opacity-0')
-      // Wait for animation to complete (100ms enter delay + 600ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 700))
       await viewDetailsButton.click()
 
       await common.waitForRoute(/^\/workout\/summary\//)
@@ -105,13 +98,11 @@ describe('Template Flow', () => {
           return !button?.parentElement?.classList.contains('opacity-0')
         })
         .toBe(true)
-      // Wait for animation to complete (100ms enter delay + 1000ms animation delay + 500ms animation)
-      await new Promise((resolve) => setTimeout(resolve, 800))
       await saveTemplateButton.click()
       await common.waitForDialog()
 
       // Verify dialog opened and template name is pre-filled
-      expect(queryByRole('heading', { name: /save as template/i })).toBeTruthy()
+      await expect.element(getByRole('heading', { name: /save as template/i })).toBeVisible()
 
       // Confirm save
       await userEvent.click(common.getDialogButton('Save Template'))
@@ -128,14 +119,12 @@ describe('Template Flow', () => {
       // Navigate to workouts page and verify template appears
       await common.navigateToWorkoutsAndClickTab('templates')
       await expect.element(page.getByText('Push Day')).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Test 1b: Start workout from template', () => {
-    it('starts a new workout from an existing template', async () => {
-      const { builder, getByRole, getByText, common, router, cleanup } = await createTestApp()
+    it('starts a new workout from an existing template', async ({ createTestApp }) => {
+      const { builder, getByRole, getByText, common, router } = await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
       const template = await seedTemplate({
@@ -181,14 +170,12 @@ describe('Template Flow', () => {
       // Verify template lastUsedAt was updated
       const updatedTemplate = await getTemplateById(template.id)
       expect(updatedTemplate?.lastUsedAt).not.toBeNull()
-
-      cleanup()
     })
   })
 
   describe('Test 1c: Edit and delete template', () => {
-    it('edits a template name and adds an exercise', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('edits a template name and adds an exercise', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
       const template = await seedTemplate({
@@ -225,12 +212,10 @@ describe('Template Flow', () => {
         .toBe('Updated Name')
       const updatedBlocks = await getTemplateById(template.id)
       expect(updatedBlocks?.blocks).toHaveLength(2)
-
-      cleanup()
     })
 
-    it('deletes a template', async () => {
-      const { getByRole, queryByRole, common, router, navigateTo, cleanup } = await createTestApp()
+    it('deletes a template', async ({ createTestApp }) => {
+      const { getByRole, common, router, navigateTo } = await createTestApp()
 
       // Pre-seed DB with a template (after app creation to ensure DB is ready)
       const template = await seedTemplate({
@@ -249,7 +234,7 @@ describe('Template Flow', () => {
       await common.waitForDialog()
 
       // Confirm deletion
-      expect(queryByRole('heading', { name: /delete template/i })).toBeTruthy()
+      await expect.element(getByRole('heading', { name: /delete template/i })).toBeVisible()
       await userEvent.click(common.getDialogButton('Delete'))
 
       // Verify redirect to /workouts
@@ -259,14 +244,12 @@ describe('Template Flow', () => {
       // Verify template removed from DB
       const deleted = await getTemplateById(template.id)
       expect(deleted).toBeUndefined()
-
-      cleanup()
     })
   })
 
   describe('Test 2: Create template from scratch', () => {
-    it('creates a new template with name and exercises', async () => {
-      const { getByRole, common, router, cleanup } = await createTestApp()
+    it('creates a new template with name and exercises', async ({ createTestApp }) => {
+      const { getByRole, common, router } = await createTestApp()
 
       // Navigate to Workouts page and click Templates tab
       await common.navigateToWorkoutsAndClickTab('templates')
@@ -310,14 +293,12 @@ describe('Template Flow', () => {
       const upperBodyTemplate = templates.find((t) => t.name === 'Upper Body')
       expect(upperBodyTemplate).toBeDefined()
       expect(upperBodyTemplate?.blocks).toHaveLength(2)
-
-      cleanup()
     })
   })
 
   describe('Test 3: Browse templates list', () => {
-    it('displays templates sorted by lastUsedAt (most recent first)', async () => {
-      const { getByText, common, cleanup } = await createTestApp()
+    it('displays templates sorted by lastUsedAt (most recent first)', async ({ createTestApp }) => {
+      const { getByText, common } = await createTestApp()
 
       const now = Date.now()
       const yesterday = now - 24 * 60 * 60 * 1000
@@ -356,12 +337,10 @@ describe('Template Flow', () => {
       expect(
         yesterdayCard.compareDocumentPosition(neverUsedCard) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
-
-      cleanup()
     })
 
-    it('shows empty state when no templates exist', async () => {
-      const { common, cleanup } = await createTestApp()
+    it('shows empty state when no templates exist', async ({ createTestApp }) => {
+      const { common } = await createTestApp()
 
       // Clear any seeded templates to test empty state
       await clearAllTemplates()
@@ -374,14 +353,12 @@ describe('Template Flow', () => {
 
       // Verify Create Template button is still accessible
       await expect.element(page.getByRole('button', { name: /create template/i })).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Test 4: Edit template exercises', () => {
-    it('removes an exercise from template', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('removes an exercise from template', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Seed template with 3 exercises
       const template = await seedTemplate({
@@ -432,14 +409,12 @@ describe('Template Flow', () => {
       expect(exerciseNames).toContain('Bench Press')
       expect(exerciseNames).toContain('Deadlift')
       expect(exerciseNames).not.toContain('Squat')
-
-      cleanup()
     })
 
-    it('displays exercises with drag handles for reordering', async () => {
+    it('displays exercises with drag handles for reordering', async ({ createTestApp }) => {
       // Note: Drag-and-drop reordering is tested in template-drag-reorder.spec.ts
       // This test verifies the drag handle is present for reordering
-      const { navigateTo, cleanup } = await createTestApp()
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 3 exercises
       const template = await seedTemplate({
@@ -460,14 +435,12 @@ describe('Template Flow', () => {
       // eslint-disable-next-line no-restricted-syntax -- Finding drag handle within card scope
       const dragHandle = exerciseACard.querySelector('.drag-handle')
       expect(dragHandle).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('Test 5: Form validation', () => {
-    it('prevents saving template without name', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('prevents saving template without name', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -482,12 +455,10 @@ describe('Template Flow', () => {
       // Leave name empty - verify save button is disabled
       const saveButton = getByRole('button', { name: /save template/i })
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
 
-    it('prevents saving template without exercises', async () => {
-      const { getByRole, navigateTo, cleanup } = await createTestApp()
+    it('prevents saving template without exercises', async ({ createTestApp }) => {
+      const { getByRole, navigateTo } = await createTestApp()
 
       // Navigate to Create Template
       await navigateTo({ name: RouteNames.CreateTemplate })
@@ -499,14 +470,12 @@ describe('Template Flow', () => {
       // Don't add any exercises - verify save button is disabled
       const saveButton = getByRole('button', { name: /save template/i })
       await expect.element(saveButton).toBeDisabled()
-
-      cleanup()
     })
   })
 
   describe('Test 6: Set count modification', () => {
-    it('modifies default set count and reflects in started workout', async () => {
-      const { builder, getByRole, navigateTo, router, cleanup } = await createTestApp()
+    it('modifies default set count and reflects in started workout', async ({ createTestApp }) => {
+      const { builder, getByRole, navigateTo, router } = await createTestApp()
 
       // Seed template with default 3 sets
       const template = await seedTemplate({
@@ -562,16 +531,16 @@ describe('Template Flow', () => {
       const updatedTemplate = await getTemplateById(template.id)
       const firstBlock = updatedTemplate?.blocks[0]
       expect(firstBlock?.kind === 'strength' ? firstBlock.defaultSetCount : undefined).toBe(5)
-
-      cleanup()
     })
   })
 
   describe('Test 7: Discard changes flow', () => {
-    it('discards unsaved changes when the user confirms leaving a dirty form', async () => {
+    it('discards unsaved changes when the user confirms leaving a dirty form', async ({
+      createTestApp,
+    }) => {
       // Navigating away from a dirty form must go through a confirm-discard dialog rather than
       // silently discarding the change.
-      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+      const { getByRole, common, router, navigateTo } = await createTestApp()
 
       // Seed template with original name
       const template = await seedTemplate({
@@ -622,12 +591,12 @@ describe('Template Flow', () => {
       // Verify DB was never modified
       const databaseTemplate = await getTemplateById(template.id)
       expect(databaseTemplate?.name).toBe('Original Name')
-
-      cleanup()
     })
 
-    it('keeps unsaved changes when the user cancels leaving a dirty form', async () => {
-      const { getByRole, common, router, navigateTo, cleanup } = await createTestApp()
+    it('keeps unsaved changes when the user cancels leaving a dirty form', async ({
+      createTestApp,
+    }) => {
+      const { getByRole, common, router, navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Original Name',
@@ -651,14 +620,12 @@ describe('Template Flow', () => {
       await expect
         .element(getByRole('textbox', { name: /template name/i }))
         .toHaveValue('Modified Name')
-
-      cleanup()
     })
   })
 
   describe('Test 8: Template name normalization', () => {
-    it('trims whitespace from template name when saving', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('trims whitespace from template name when saving', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
 
@@ -681,14 +648,12 @@ describe('Template Flow', () => {
           return templates.find((t) => t.name === 'My Template')
         })
         .toBeDefined()
-
-      cleanup()
     })
   })
 
   describe('Test 9: Default values for new blocks', () => {
-    it('creates strength block with correct defaults', async () => {
-      const { getByRole, common, navigateTo, cleanup } = await createTestApp()
+    it('creates strength block with correct defaults', async ({ createTestApp }) => {
+      const { getByRole, common, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Defaults Test')
@@ -720,14 +685,12 @@ describe('Template Flow', () => {
         expect(block.targetReps).toBe(0)
         expect(block.equipment).toBe('bodyweight')
       }
-
-      cleanup()
     })
   })
 
   describe('Test 10: AMRAP block data persistence', () => {
-    it('saves AMRAP exercises and duration config correctly', async () => {
-      const { getByRole, getByText, common, navigateTo, cleanup } = await createTestApp()
+    it('saves AMRAP exercises and duration config correctly', async ({ createTestApp }) => {
+      const { getByRole, getByText, common, navigateTo } = await createTestApp()
 
       await navigateTo({ name: RouteNames.CreateTemplate })
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'AMRAP Data Test')
@@ -769,8 +732,6 @@ describe('Template Flow', () => {
         expect(block.exercises[0]?.name).toBe('Burpees')
         expect(block.config.durationSeconds).toBeGreaterThan(0)
       }
-
-      cleanup()
     })
   })
 })

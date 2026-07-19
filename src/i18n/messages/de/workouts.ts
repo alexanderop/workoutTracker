@@ -244,6 +244,7 @@ export default {
     noPbYet: 'Noch kein PB',
     pbLabel: 'PB',
     firstAttempt: 'Erster Versuch - Setze deine PB!',
+    elapsedTime: 'Verstrichene Zeit',
     tapToAdvance: 'Tippen um zur nächsten Übung zu wechseln',
     detail: {
       title: 'Benchmark',

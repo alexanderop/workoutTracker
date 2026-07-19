@@ -112,7 +112,11 @@ function handleTap() {
         <!-- Timer - Large and prominent -->
         <div class="flex items-center justify-center gap-2">
           <Timer class="size-5 text-muted-foreground" aria-hidden="true" />
-          <span class="text-4xl font-mono font-bold tabular-nums text-foreground tracking-tight">
+          <span
+            role="timer"
+            :aria-label="$t('workouts.benchmarks.elapsedTime')"
+            class="text-4xl font-mono font-bold tabular-nums text-foreground tracking-tight"
+          >
             {{ elapsedTime }}
           </span>
         </div>

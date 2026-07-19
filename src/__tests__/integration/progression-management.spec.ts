@@ -1,7 +1,6 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getProgressionsRepository } from '@/db'
 import type { ProgressionsRepository } from '@/db/interfaces'
 import { calculateNextLevel } from '@/features/progressions/lib/progressionLogic'
@@ -25,11 +24,8 @@ async function recordSessionWithAdvancement(
 }
 
 describe('Progression Management', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Creation', () => {
-    it('creates a progression with multiple kettlebells', async () => {
+    it('creates a progression with multiple kettlebells', async ({ createTestApp }) => {
       const app = await createTestApp()
 
       // Navigate to progressions tab
@@ -60,11 +56,9 @@ describe('Progression Management', () => {
       expect(progressions).toHaveLength(1)
       expect(progressions[0]?.name).toBe('KB Swing Challenge')
       expect(progressions[0]?.availableWeights).toEqual([16, 20, 24])
-
-      app.cleanup()
     })
 
-    it('creates progression with custom starting weight', async () => {
+    it('creates progression with custom starting weight', async ({ createTestApp }) => {
       const app = await createTestApp()
 
       await app.progressions.navigateToTab()
@@ -87,13 +81,11 @@ describe('Progression Management', () => {
 
       const progressions = await getProgressionsRepository().getAll()
       expect(progressions[0]?.currentWeightIndex).toBe(1)
-
-      app.cleanup()
     })
   })
 
   describe('Session Completion', () => {
-    it('advances progression when session is completed successfully', async () => {
+    it('advances progression when session is completed successfully', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -123,11 +115,9 @@ describe('Progression Management', () => {
       // Should have advanced to 12 reps
       await app.progressions.assertCurrentLevel(16, 12, 10)
       await app.progressions.assertSessionsCompleted(1)
-
-      app.cleanup()
     })
 
-    it('stays at same level when session is failed', async () => {
+    it('stays at same level when session is failed', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -149,8 +139,6 @@ describe('Progression Management', () => {
 
       // Verify session history shows failed
       await expect.element(page.getByText(/incomplete/i)).toBeVisible()
-
-      app.cleanup()
     })
   })
 
@@ -228,7 +216,7 @@ describe('Progression Management', () => {
       expect(updated?.isComplete).toBe(true)
     })
 
-    it('shows complete badge in UI after finishing all kettlebells', async () => {
+    it('shows complete badge in UI after finishing all kettlebells', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -253,13 +241,11 @@ describe('Progression Management', () => {
       await expect
         .element(page.getByRole('button', { name: /start session/i }))
         .not.toBeInTheDocument()
-
-      app.cleanup()
     })
   })
 
   describe('Deletion', () => {
-    it('deletes progression and navigates back to list', async () => {
+    it('deletes progression and navigates back to list', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -282,13 +268,11 @@ describe('Progression Management', () => {
       // Verify deleted from database
       const deleted = await repo.getById(progression.id)
       expect(deleted).toBeUndefined()
-
-      app.cleanup()
     })
   })
 
   describe('Session History', () => {
-    it('displays session history with correct status badges', async () => {
+    it('displays session history with correct status badges', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -312,13 +296,11 @@ describe('Progression Management', () => {
       // Verify session history shows both completed and incomplete badges
       await expect.element(page.getByText('Completed').first()).toBeVisible()
       await expect.element(page.getByText('Incomplete').first()).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('List View', () => {
-    it('shows progressions in list with current level info', async () => {
+    it('shows progressions in list with current level info', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
@@ -349,13 +331,13 @@ describe('Progression Management', () => {
 
       // Should show advanced level
       await app.progressions.assertCurrentLevel(20, 12, 10)
-
-      app.cleanup()
     })
   })
 
   describe('Scope Copy', () => {
-    it('scopes the page to kettlebell EMOM without assuming a specific exercise', async () => {
+    it('scopes the page to kettlebell EMOM without assuming a specific exercise', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
 
       // resetDatabase()/deleteAll() clears the progressions table (see
@@ -371,8 +353,6 @@ describe('Progression Management', () => {
       await app.progressions.assertEmptyState()
       await expect.element(page.getByText(/kettlebell emom progression plan/i)).toBeVisible()
       await expect.element(page.getByText(/kettlebell swing/i)).not.toBeInTheDocument()
-
-      app.cleanup()
     })
   })
 })

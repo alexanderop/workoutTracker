@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { effectScope, shallowRef } from 'vue'
+import { effectScope, nextTick, shallowRef } from 'vue'
 import type { LiveQuery } from '@/db'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 
@@ -117,7 +117,7 @@ describe('useLiveQuery', () => {
 
     result.stop()
     source.value = 2
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await nextTick()
 
     expect(make).toHaveBeenCalledTimes(1)
     expect(second.query.subscribe).not.toHaveBeenCalled()

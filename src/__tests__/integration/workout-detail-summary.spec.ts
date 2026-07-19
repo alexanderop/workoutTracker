@@ -1,16 +1,14 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getWorkoutsRepository } from '@/db'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbCompletedWorkout, createDbStrengthBlockWithSets } from '../factories'
 
 describe('Workout detail exercise summary', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should not claim every set used the top weight when sets are uneven', async () => {
+  it('should not claim every set used the top weight when sets are uneven', async ({
+    createTestApp,
+  }) => {
     // 80/80/999 -- the old "3 sets × 999.0 kg" wording implied all three sets
     // were done at 999 kg, which is misleading (UX review finding).
     const block = createDbStrengthBlockWithSets([{ kg: '80' }, { kg: '80' }, { kg: '999' }])
@@ -26,7 +24,5 @@ describe('Workout detail exercise summary', () => {
 
     // ...replaced by "top set" wording that doesn't claim uniformity.
     await expect.element(page.getByText('3 sets · top 999 kg')).toBeVisible()
-
-    app.cleanup()
   })
 })

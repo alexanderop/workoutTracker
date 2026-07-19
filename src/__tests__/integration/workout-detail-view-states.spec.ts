@@ -1,10 +1,9 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import type { DbWorkoutBlock } from '@/db/schema'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'
 
 /**
@@ -44,10 +43,9 @@ function amrapBlockWithResult(): DbWorkoutBlock {
 }
 
 describe('Workout Detail — states and non-strength blocks', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('shows cardio and AMRAP blocks with results and the workout notes', async () => {
+  it('shows cardio and AMRAP blocks with results and the workout notes', async ({
+    createTestApp,
+  }) => {
     const workout = databaseWorkoutBuilder().withName('Morning Conditioning').build()
     const conditioningWorkout = {
       ...workout,
@@ -56,7 +54,7 @@ describe('Workout Detail — states and non-strength blocks', () => {
     }
     await seedCompletedWorkout(conditioningWorkout)
 
-    const { navigateTo, cleanup } = await createTestApp()
+    const { navigateTo } = await createTestApp()
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: conditioningWorkout.id } })
 
     await expect.element(page.getByRole('heading', { name: 'Morning Conditioning' })).toBeVisible()
@@ -69,23 +67,21 @@ describe('Workout Detail — states and non-strength blocks', () => {
 
     // Notes section is displayed
     await expect.element(page.getByText('Felt strong, easy pace.')).toBeVisible()
-
-    cleanup()
   })
 
-  it('shows a not-found message for a stale link and navigates back home', async () => {
-    const { router, cleanup } = await createTestApp()
+  it('shows a not-found message for a stale link and navigates back home', async ({
+    createTestApp,
+  }) => {
+    const { router } = await createTestApp()
     await router.push({ name: RouteNames.WorkoutDetail, params: { id: 'does-not-exist' } })
 
     await expect.element(page.getByText(/workout not found/i)).toBeVisible()
 
     await userEvent.click(page.getByRole('button', { name: 'Go Back', exact: true }))
     await expect.poll(() => router.currentRoute.value.path).toBe('/')
-
-    cleanup()
   })
 
-  it('redoes a past workout and lands in a fresh active workout', async () => {
+  it('redoes a past workout and lands in a fresh active workout', async ({ createTestApp }) => {
     const workout = databaseWorkoutBuilder()
       .withName('Push Day')
       .withExerciseAndSets([{ kg: '80', reps: '8', rir: '2', status: 'completed' }], {
@@ -95,7 +91,7 @@ describe('Workout Detail — states and non-strength blocks', () => {
       .build()
     await seedCompletedWorkout(workout)
 
-    const { navigateTo, common, cleanup } = await createTestApp()
+    const { navigateTo, common } = await createTestApp()
     await navigateTo({ name: RouteNames.WorkoutDetail, params: { id: workout.id } })
 
     await userEvent.click(page.getByRole('button', { name: /redo workout/i }))
@@ -103,7 +99,5 @@ describe('Workout Detail — states and non-strength blocks', () => {
     // Redo starts a new active workout from the completed one
     await common.waitForRoute(/^\/workout/)
     await expect.element(page.getByText('Bench Press')).toBeVisible()
-
-    cleanup()
   })
 })

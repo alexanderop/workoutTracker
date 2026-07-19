@@ -1,17 +1,14 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { NumericInputModalPO } from '../helpers/pages/NumericInputModalPO'
 import { mockTouchDevice, restoreMatchMedia } from '../helpers/mockTouchDevice'
 
 describe('RIR Zero Value on Mobile', () => {
   beforeEach(async () => {
     mockTouchDevice()
-    await setupIntegrationTest()
   })
   afterEach(async () => {
-    await cleanupIntegrationTest()
     restoreMatchMedia()
   })
 
@@ -26,8 +23,8 @@ describe('RIR Zero Value on Mobile', () => {
    *
    * This test verifies that RIR 0 is correctly entered, saved, and displayed.
    */
-  it('allows entering and saving RIR of 0 on touch devices', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('allows entering and saving RIR of 0 on touch devices', async ({ createTestApp }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -57,7 +54,5 @@ describe('RIR Zero Value on Mobile', () => {
     const set = await workout.getSet(0)
     const values = await set.getValues()
     expect(values.rir).toBe('0')
-
-    cleanup()
   })
 })

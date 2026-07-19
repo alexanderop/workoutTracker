@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 /**
  * Regression coverage for UX review Low finding: "Row checkmarks look enabled on
@@ -11,22 +10,21 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
  * and stays disabled while any required field is missing.
  */
 describe('Set Row Checkmark Disabled State', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should disable the row checkmark when the set has no values entered', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should disable the row checkmark when the set has no values entered', async ({
+    createTestApp,
+  }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
     const row = workout.getSet(0)
     expect(await row.isCompleteButtonDisabled()).toBe(true)
-
-    cleanup()
   })
 
-  it('should enable the row checkmark once weight, reps, and rir are typed even while the last input still has focus', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should enable the row checkmark once weight, reps, and rir are typed even while the last input still has focus', async ({
+    createTestApp,
+  }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -35,12 +33,10 @@ describe('Set Row Checkmark Disabled State', () => {
     await row.enterValues({ kg: 60, reps: 10, rir: 2 })
 
     expect(await row.isCompleteButtonDisabled()).toBe(false)
-
-    cleanup()
   })
 
-  it('should keep the row checkmark disabled while reps is missing', async () => {
-    const { builder, workout, cleanup } = await createTestApp()
+  it('should keep the row checkmark disabled while reps is missing', async ({ createTestApp }) => {
+    const { builder, workout } = await createTestApp()
 
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -48,7 +44,5 @@ describe('Set Row Checkmark Disabled State', () => {
     await row.enterValues({ kg: 60, rir: 2 })
 
     expect(await row.isCompleteButtonDisabled()).toBe(true)
-
-    cleanup()
   })
 })

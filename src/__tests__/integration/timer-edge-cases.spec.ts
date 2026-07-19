@@ -1,18 +1,18 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Timer state is conditionally rendered across timer phases. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 
 // Helper to navigate to timers page from home
-async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
+async function goToTimersPage(testApp: TestApp) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
   await userEvent.click(quickTimerCard)
   await expect.element(page.getByText(/AMRAP/)).toBeVisible()
 }
 
 // Helper to start an AMRAP timer
-async function startAmrapTimer(testApp: Awaited<ReturnType<typeof createTestApp>>) {
+async function startAmrapTimer(testApp: TestApp) {
   await goToTimersPage(testApp)
   await userEvent.click(page.getByRole('button', { name: /amrap/i }))
   await expect.element(page.getByText('5 min', { exact: true })).toBeVisible()
@@ -23,7 +23,7 @@ async function startAmrapTimer(testApp: Awaited<ReturnType<typeof createTestApp>
 // Helper to start a custom Tabata timer with short work/rest intervals so
 // phase transitions can be observed quickly in tests.
 async function startShortCustomTabata(
-  testApp: Awaited<ReturnType<typeof createTestApp>>,
+  testApp: TestApp,
   options: { rounds: string; workSeconds: string; restSeconds: string },
 ) {
   await goToTimersPage(testApp)
@@ -56,11 +56,8 @@ async function startShortCustomTabata(
  * Tests exit behavior, pause/resume, and navigation scenarios.
  */
 describe('Timer Edge Cases', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Exit Timer Early', () => {
-    it('exit button closes timer screen', async () => {
+    it('exit button closes timer screen', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startAmrapTimer(testApp)
 
@@ -75,11 +72,9 @@ describe('Timer Edge Cases', () => {
 
       // Should show either preset selection or timer type selection
       await expect.element(page.getByRole('main')).toBeVisible()
-
-      testApp.cleanup()
     })
 
-    it('exiting running timer stops the timer', async () => {
+    it('exiting running timer stops the timer', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startAmrapTimer(testApp)
 
@@ -96,13 +91,11 @@ describe('Timer Edge Cases', () => {
       await expect
         .element(page.getByRole('button', { name: /exit timer/i }))
         .not.toBeInTheDocument()
-
-      testApp.cleanup()
     })
   })
 
   describe('Pause and Resume', () => {
-    it('can pause and resume timer multiple times', async () => {
+    it('can pause and resume timer multiple times', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startAmrapTimer(testApp)
 
@@ -125,11 +118,9 @@ describe('Timer Edge Cases', () => {
       const pauseButton2 = await testApp.workout.getTimerPlayPauseButton()
       await userEvent.click(pauseButton2)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
-
-      testApp.cleanup()
     })
 
-    it('paused timer does not show as running', async () => {
+    it('paused timer does not show as running', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startAmrapTimer(testApp)
 
@@ -145,16 +136,21 @@ describe('Timer Edge Cases', () => {
       await userEvent.click(pauseButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
 
-      // Verify still paused after short delay
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      expect(testApp.workout.isTimerRunning()).toBe(false)
+      const timerDisplay = page.getByText(/\d+:\d{2}/).first()
+      const pausedTime = (await timerDisplay.element()).textContent
 
-      testApp.cleanup()
+      // The timer interval was created by the rendered component, so observe
+      // one full display-second on the real clock and verify the UI stays frozen.
+      await new Promise((resolve) => setTimeout(resolve, 1100))
+      await expect.element(timerDisplay).toHaveTextContent(pausedTime ?? '')
+      await expect.element(page.getByRole('button', { name: /start timer/i })).toBeVisible()
     })
   })
 
   describe('Navigation Edge Cases', () => {
-    it('back button from preset selection returns to timer type selection', async () => {
+    it('back button from preset selection returns to timer type selection', async ({
+      createTestApp,
+    }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -169,11 +165,9 @@ describe('Timer Edge Cases', () => {
       // Should return to timer type selection
       await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
       await expect.element(page.getByText(/Every Minute On the Minute/)).toBeVisible()
-
-      testApp.cleanup()
     })
 
-    it('can start different timer type after returning from preset', async () => {
+    it('can start different timer type after returning from preset', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -191,23 +185,34 @@ describe('Timer Edge Cases', () => {
       // Verify Tabata presets shown
       await expect.element(page.getByText(/Classic/)).toBeVisible()
       await expect.element(page.getByText(/8×20\/10/)).toBeVisible()
-
-      testApp.cleanup()
     })
   })
 
   describe('Timer Reset', () => {
-    it('reset button restarts timer from beginning', async () => {
+    it('reset button restarts timer from beginning', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startAmrapTimer(testApp)
 
-      // Start the timer and wait a moment
+      // Start the timer and observe the rendered countdown advance.
       const playPauseButton = await testApp.workout.getTimerPlayPauseButton()
+      const initialTimer = await page
+        .getByText(/\d+:\d{2}/)
+        .first()
+        .element()
+      const initialTime = initialTimer.textContent
       await userEvent.click(playPauseButton)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
-
-      // Wait a short time so timer advances
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await expect
+        .poll(
+          async () =>
+            (
+              await page
+                .getByText(/\d+:\d{2}/)
+                .first()
+                .element()
+            ).textContent,
+        )
+        .not.toBe(initialTime)
 
       // Click reset button
       const resetButton = await testApp.workout.getTimerControlButton('reset')
@@ -217,13 +222,11 @@ describe('Timer Edge Cases', () => {
         // Timer should be paused after reset
         await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
       }
-
-      testApp.cleanup()
     })
   })
 
   describe('Tabata Edge Cases', () => {
-    it('displays work and rest phases correctly', async () => {
+    it('displays work and rest phases correctly', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -239,14 +242,12 @@ describe('Timer Edge Cases', () => {
       // The placeholder exercise sub-label also reads "WORK", so match the first
       // occurrence (the phase badge).
       await expect.element(page.getByText('WORK', { exact: true }).first()).toBeVisible()
-
-      testApp.cleanup()
     })
 
     it(
       'updates exercise sub-label to REST when phase changes from work, matching the phase badge',
       { timeout: 10_000 },
-      async () => {
+      async ({ createTestApp }) => {
         const testApp = await createTestApp()
         await startShortCustomTabata(testApp, { rounds: '2', workSeconds: '1', restSeconds: '3' })
 
@@ -262,14 +263,12 @@ describe('Timer Edge Cases', () => {
             timeout: 5000,
           })
           .toBe(2)
-
-        testApp.cleanup()
       },
     )
   })
 
   describe('EMOM Edge Cases', () => {
-    it('displays minute counter correctly', async () => {
+    it('displays minute counter correctly', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -282,13 +281,11 @@ describe('Timer Edge Cases', () => {
 
       // Should show minute counter (e.g., "1 / 10 MIN")
       await expect.element(page.getByText(/min/i)).toBeVisible()
-
-      testApp.cleanup()
     })
   })
 
   describe('For Time Edge Cases', () => {
-    it('can select no cap option', async () => {
+    it('can select no cap option', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -297,11 +294,9 @@ describe('Timer Edge Cases', () => {
 
       // Verify No Cap option is available
       await expect.element(page.getByText(/no cap/i)).toBeVisible()
-
-      testApp.cleanup()
     })
 
-    it('done button is visible for For Time timer', async () => {
+    it('done button is visible for For Time timer', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -318,8 +313,6 @@ describe('Timer Edge Cases', () => {
 
       // Done button should be visible (For Time specific)
       await expect.element(page.getByRole('button', { name: /done|complete/i })).toBeVisible()
-
-      testApp.cleanup()
     })
   })
 })

@@ -1,10 +1,9 @@
 /* eslint-disable vitest/no-conditional-in-test -- Timed template controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import type { DbTemplateBlock } from '@/db/schema'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedTemplate } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 function createExercise(name: string) {
   return { exerciseDefinitionId: null, name, prescribedReps: 10, load: null, image: null }
@@ -39,11 +38,10 @@ function conditioningTemplateBlocks(): Array<DbTemplateBlock> {
 }
 
 describe('Start workout from conditioning template', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('converts all timed and cardio template blocks into a live workout', async () => {
-    const { getByRole, common, cleanup } = await createTestApp()
+  it('converts all timed and cardio template blocks into a live workout', async ({
+    createTestApp,
+  }) => {
+    const { getByRole, common } = await createTestApp()
 
     const template = await seedTemplate({
       name: 'Metcon Monday',
@@ -67,7 +65,5 @@ describe('Start workout from conditioning template', () => {
     // The live workout starts on the first (AMRAP) block
     await common.waitForRoute(/^\/workout\/active/)
     await expect.element(page.getByText(/amrap/i).first()).toBeVisible()
-
-    cleanup()
   })
 })

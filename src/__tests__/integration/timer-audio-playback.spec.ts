@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 import {
   clearAudioMocksUnified,
   getAudioMocksUnified,
@@ -17,7 +17,7 @@ async function goToTimersPage() {
 }
 
 // Helper to start a Tabata timer with short intervals for testing
-async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp>>) {
+async function startShortTabata(testApp: TestApp) {
   await goToTimersPage()
 
   // Select Tabata
@@ -57,7 +57,7 @@ async function startShortTabata(testApp: Awaited<ReturnType<typeof createTestApp
 }
 
 // Helper to start an EMOM timer with short duration for testing
-async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>) {
+async function startShortEmom(testApp: TestApp) {
   await goToTimersPage()
 
   // Select EMOM
@@ -88,7 +88,6 @@ async function startShortEmom(testApp: Awaited<ReturnType<typeof createTestApp>>
 
 describe('Timer Audio Playback', () => {
   beforeEach(async () => {
-    await setupIntegrationTest()
     if (isBrowserMode()) {
       setupAudioSpies()
     }
@@ -99,68 +98,72 @@ describe('Timer Audio Playback', () => {
     if (isBrowserMode()) {
       restoreAudioSpies()
     }
-    await cleanupIntegrationTest()
   })
 
   describe('Tabata Timer', () => {
-    it('plays work beep when timer starts', async () => {
+    it('plays work beep when timer starts', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
       // Wait for async audio playback (AudioContext.resume() is async)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        // The timer should play work beep immediately on start (880Hz)
-        const oscillator = mocks.createOscillator?.mock.results[0]?.value
-        return oscillator?.frequency.value
-      }, { timeout: 3000 }).toBe(880)
-
-      testApp.cleanup()
+      await expect
+        .poll(
+          () => {
+            const mocks = getAudioMocksUnified()
+            // The timer should play work beep immediately on start (880Hz)
+            const oscillator = mocks.createOscillator?.mock.results[0]?.value
+            return oscillator?.frequency.value
+          },
+          { timeout: 3000 },
+        )
+        .toBe(880)
     })
 
-    it('plays rest beep when transitioning to rest phase', async () => {
+    it('plays rest beep when transitioning to rest phase', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
       clearAudioMocksUnified()
 
-      // Wait for work phase to end and rest phase to begin (2 seconds + buffer)
-      await new Promise((resolve) => setTimeout(resolve, 2500))
-
-      // Verify rest beep played (440Hz)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        const restBeep = mocks.createOscillator?.mock.results.find(
-          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
+      // This intentionally follows the real browser clock: Web Audio playback
+      // on the native Tabata phase transition is the behavior under it.
+      await expect
+        .poll(
+          () => {
+            const mocks = getAudioMocksUnified()
+            const restBeep = mocks.createOscillator?.mock.results.find(
+              (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 440,
+            )
+            return restBeep
+          },
+          { timeout: 5000 },
         )
-        return restBeep
-      }).toBeDefined()
-
-      testApp.cleanup()
+        .toBeDefined()
     })
 
-    it('plays round beep on round transition', { timeout: 10_000 }, async () => {
+    it('plays round beep on round transition', { timeout: 10_000 }, async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 
       clearAudioMocksUnified()
 
-      // Wait for first round to complete (work + rest = 4 seconds)
-      await new Promise((resolve) => setTimeout(resolve, 4500))
-
-      // Verify round beep played (660Hz)
-      await expect.poll(() => {
-        const mocks = getAudioMocksUnified()
-        const roundBeep = mocks.createOscillator?.mock.results.find(
-          (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
+      // Keep the real clock here as well: the oscillator must be created by
+      // the native work/rest boundary, not by manually invoking audio code.
+      await expect
+        .poll(
+          () => {
+            const mocks = getAudioMocksUnified()
+            const roundBeep = mocks.createOscillator?.mock.results.find(
+              (r: { value?: { frequency: { value: number } } }) => r.value?.frequency.value === 660,
+            )
+            return roundBeep
+          },
+          { timeout: 7000 },
         )
-        return roundBeep
-      }).toBeDefined()
-
-      testApp.cleanup()
+        .toBeDefined()
     })
 
-    it('does not play audio when timer sounds are disabled', async () => {
+    it('does not play audio when timer sounds are disabled', async ({ createTestApp }) => {
       const testApp = await createTestApp()
 
       // First disable timer sounds
@@ -178,34 +181,24 @@ describe('Timer Audio Playback', () => {
 
       await startShortTabata(testApp)
 
-      // Wait a bit to ensure timer is running
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // No audio should have played
+      // An enabled timer beeps synchronously on start, so reaching the running
+      // state is the observable boundary needed for this negative assertion.
+      await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
       const mocks = getAudioMocksUnified()
       expect(mocks.createOscillator).not.toHaveBeenCalled()
-
-      testApp.cleanup()
     })
   })
 
   describe('EMOM Timer', () => {
-    it('plays round beep on minute transition', async () => {
+    it('plays round beep on minute transition', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startShortEmom(testApp)
 
       clearAudioMocksUnified()
 
-      // Wait for first minute to complete (60 seconds is too long, so we test the setup)
-      // In real scenario this would wait 60s, but for now we verify the wiring works
-      // by checking the timer started without errors
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Timer should be running - we'll verify the wiring is in place
-      // Full minute transition test would require mocked timers
-      expect(testApp.workout.getTimerControlButton('exit')).toBeTruthy()
-
-      testApp.cleanup()
+      // This case verifies setup only; the Tabata cases above cover phase audio.
+      await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
+      await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
     })
   })
 })

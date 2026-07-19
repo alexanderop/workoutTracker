@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { effectScope, ref } from 'vue'
 import { useFormDraft } from '@/composables/useFormDraft'
 import { getDraftsRepository } from '@/db'
@@ -6,6 +6,17 @@ import { resetDatabase } from '@/__tests__/setup'
 
 // The composable uses a 50ms debounce in test mode (see DEFAULT_DEBOUNCE_MS)
 const TEST_DEBOUNCE_MS = 50
+
+async function flushDraftDebounce(): Promise<void> {
+  await vi.advanceTimersByTimeAsync(TEST_DEBOUNCE_MS)
+}
+
+function installTestClock(): void {
+  vi.useFakeTimers()
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
+}
 
 describe('useFormDraft', () => {
   beforeEach(async () => {
@@ -64,6 +75,7 @@ describe('useFormDraft', () => {
   })
 
   it('skips saving when the form is empty per the isEmpty option', async () => {
+    installTestClock()
     const formState = ref({ name: '' })
 
     const scope = effectScope()
@@ -74,7 +86,7 @@ describe('useFormDraft', () => {
     formState.value.name = 'not empty'
     formState.value.name = ''
 
-    await new Promise((resolve) => setTimeout(resolve, TEST_DEBOUNCE_MS * 3))
+    await flushDraftDebounce()
 
     const draft = await getDraftsRepository().get('template-create')
     expect(draft).toBeUndefined()
@@ -83,6 +95,7 @@ describe('useFormDraft', () => {
   })
 
   it('does not write a draft when the scope is disposed before the debounce fires', async () => {
+    installTestClock()
     const formState = ref({ name: '' })
 
     const scope = effectScope()
@@ -91,13 +104,14 @@ describe('useFormDraft', () => {
     formState.value.name = 'about to unmount'
     scope.stop()
 
-    await new Promise((resolve) => setTimeout(resolve, TEST_DEBOUNCE_MS * 3))
+    await flushDraftDebounce()
 
     const draft = await getDraftsRepository().get('template-create')
     expect(draft).toBeUndefined()
   })
 
   it('clearDraft removes the stored draft', async () => {
+    installTestClock()
     await getDraftsRepository().save('template-create', { name: 'Saved Draft' })
     const formState = ref({ name: '' })
 
@@ -107,7 +121,7 @@ describe('useFormDraft', () => {
 
     // Restoring mutated the form state, which schedules a debounced auto-save;
     // let it land first so clearDraft() is the last write.
-    await new Promise((resolve) => setTimeout(resolve, TEST_DEBOUNCE_MS * 3))
+    await flushDraftDebounce()
 
     await result.clearDraft()
 

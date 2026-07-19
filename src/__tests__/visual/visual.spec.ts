@@ -152,9 +152,13 @@ describe('Visual Regression', () => {
 
       // Then wait for charts to render (loading -> success state)
       await expect.element(page.getByText(ESTIMATED_ONE_REP_MAX_PATTERN)).toBeVisible()
-
-      // Allow chart animations to settle
-      await new Promise((r) => setTimeout(r, 300))
+      await expect
+        .poll(
+          () =>
+            document.getAnimations().filter((animation) => animation.playState === 'running')
+              .length,
+        )
+        .toBe(0)
 
       await expect(page.getByTestId('app')).toMatchScreenshot('exercise-progress-charts')
       cleanup()

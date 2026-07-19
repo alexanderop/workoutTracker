@@ -1,19 +1,15 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 /**
  * Integration tests for workout builder edge cases.
  * Tests mixed block types, builder state, and unusual workflows.
  */
 describe('Workout Builder Edge Cases', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Mixed Block Types', () => {
-    it('allows mixing strength and timed blocks in any order', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('allows mixing strength and timed blocks in any order', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
 
@@ -36,12 +32,10 @@ describe('Workout Builder Edge Cases', () => {
       // Start workout
       await builder.startWorkout()
       await expect.element(page.getByText(/block 1 of 3/i)).toBeVisible()
-
-      cleanup()
     })
 
-    it('can add the same exercise in multiple blocks', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('can add the same exercise in multiple blocks', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
 
@@ -61,14 +55,12 @@ describe('Workout Builder Edge Cases', () => {
       // Start workout and verify we're on block 1 of 2
       await builder.startWorkout()
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Builder State', () => {
-    it('preserves blocks when returning from exercise search', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('preserves blocks when returning from exercise search', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
 
@@ -91,12 +83,10 @@ describe('Workout Builder Edge Cases', () => {
       // Verify first block is still there
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(1)
-
-      cleanup()
     })
 
-    it('clears builder state when workout is completed', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('clears builder state when workout is completed', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
@@ -111,14 +101,12 @@ describe('Workout Builder Edge Cases', () => {
       // Start new workout - should see empty builder
       await page.getByRole('button', { name: /start new workout/i }).click()
       await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Playlist Reordering', () => {
-    it('can navigate between blocks using footer buttons', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('can navigate between blocks using footer buttons', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Squat', 'Deadlift'])
 
@@ -136,14 +124,12 @@ describe('Workout Builder Edge Cases', () => {
       // Go back
       await userEvent.click(await workout.getFooterButton('prev'))
       await expect.element(page.getByText(/block 2 of 3/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Add Block in Builder Mode', () => {
-    it('can add multiple blocks in builder before starting', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('can add multiple blocks in builder before starting', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
 
@@ -164,14 +150,12 @@ describe('Workout Builder Edge Cases', () => {
       // Start workout with both blocks
       await builder.startWorkout()
       await expect.element(page.getByText(/block 1 of 2/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Remove Block During Workout', () => {
-    it('removing all blocks returns to builder mode', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('removing all blocks returns to builder mode', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       // Start with single block
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -182,12 +166,10 @@ describe('Workout Builder Edge Cases', () => {
 
       // Should show empty state again
       await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
-
-      cleanup()
     })
 
-    it('removing current block navigates to adjacent block', async () => {
-      const { builder, workout, cleanup } = await createTestApp()
+    it('removing current block navigates to adjacent block', async ({ createTestApp }) => {
+      const { builder, workout } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press', 'Squat', 'Deadlift'])
 
@@ -200,28 +182,24 @@ describe('Workout Builder Edge Cases', () => {
 
       // Should now have 2 blocks
       await expect.element(page.getByText(/of 2/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Block During Workout', () => {
-    it('shows current block information header', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows current block information header', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       // Verify block header shows exercise name and set info
       await expect.element(page.getByText('Bench Press')).toBeVisible()
       await expect.element(page.getByText(/block 1 of 1/i)).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Cancel Workflow', () => {
-    it('can cancel adding a block mid-dialog', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('can cancel adding a block mid-dialog', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -242,28 +220,24 @@ describe('Workout Builder Edge Cases', () => {
 
       // No blocks should be added
       await expect.element(page.getByRole('button', { name: /add first block/i })).toBeVisible()
-
-      cleanup()
     })
   })
 
   describe('Workout Without Sets Completed', () => {
-    it('can finish workout without completing any sets', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('can finish workout without completing any sets', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       // Don't complete any sets, just finish
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
   })
 
   describe('Tab Switching in Add Block Dialog', () => {
-    it('remembers last used tab in add block dialog', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('remembers last used tab in add block dialog', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -283,8 +257,6 @@ describe('Workout Builder Edge Cases', () => {
       // Can still switch between tabs
       await page.getByRole('tab', { name: /exercises/i }).click()
       await expect.element(page.getByPlaceholder(/search/i)).toBeVisible()
-
-      cleanup()
     })
   })
 })

@@ -1,9 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
 /**
@@ -17,11 +16,8 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
  * from Home regardless of whether any workouts exist yet.
  */
 describe('Home Recent Workouts View All Link', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('links to history even when there are no recent workouts', async () => {
-    const { router, cleanup } = await createTestApp()
+  it('links to history even when there are no recent workouts', async ({ createTestApp }) => {
+    const { router } = await createTestApp()
 
     // Confirm we're looking at the empty state, not a loading flash
     await expect.element(page.getByText(/no workouts yet/i)).toBeVisible()
@@ -34,15 +30,13 @@ describe('Home Recent Workouts View All Link', () => {
 
     await userEvent.click(viewAllLink)
     await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.History)
-
-    cleanup()
   })
 
-  it('links to history when recent workouts exist', async () => {
+  it('links to history when recent workouts exist', async ({ createTestApp }) => {
     const workout = databaseWorkoutBuilder().withName('Morning Workout').withStrengthBlock().build()
     await seedCompletedWorkout(workout)
 
-    const { router, cleanup } = await createTestApp()
+    const { router } = await createTestApp()
     await expect.element(page.getByText('Morning Workout')).toBeVisible()
 
     // Exact match: the Habits home card added below Recent Workouts also has
@@ -53,7 +47,5 @@ describe('Home Recent Workouts View All Link', () => {
 
     await userEvent.click(viewAllLink)
     await expect.poll(() => router.currentRoute.value.name).toBe(RouteNames.History)
-
-    cleanup()
   })
 })

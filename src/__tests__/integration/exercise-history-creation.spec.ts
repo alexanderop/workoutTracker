@@ -5,24 +5,22 @@
  * Tests verify that completing a workout creates exercise history.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import {
   getWorkoutsRepository,
   getCustomExercisesRepository,
   getExerciseProgressRepository,
 } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise History Creation', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('creates exercise history when finishing workout early (sets not manually completed)', async () => {
+  it('creates exercise history when finishing workout early (sets not manually completed)', async ({
+    createTestApp,
+  }) => {
     // This test verifies the REAL user scenario: finishing a workout before completing all sets
     // The bug: when user finishes early, sets with entered data aren't being auto-completed
-    const { builder, workout, common, navigateTo, cleanup } = await createTestApp()
+    const { builder, workout, common, navigateTo } = await createTestApp()
 
     // Step 1: Navigate to exercises and verify no history for Bench Press
     await navigateTo({ name: RouteNames.Exercises })
@@ -66,12 +64,12 @@ describe('Exercise History Creation', () => {
     // Verify history now exists - should show PR cards, NOT empty state
     await expect.element(page.getByText(/no history yet/i)).not.toBeInTheDocument()
     await expect.element(page.getByText('80 kg')).toBeVisible()
-
-    cleanup()
   })
 
-  it('saves workout with correct exerciseDefinitionId and history query matches', async () => {
-    const { builder, workout, common, navigateTo, cleanup } = await createTestApp()
+  it('saves workout with correct exerciseDefinitionId and history query matches', async ({
+    createTestApp,
+  }) => {
+    const { builder, workout, common, navigateTo } = await createTestApp()
 
     // Get the actual Bench Press exercise ID from the database
     const exercises = await getCustomExercisesRepository().getAll()
@@ -114,7 +112,5 @@ describe('Exercise History Creation', () => {
     const history = await getExerciseProgressRepository().getExerciseHistory(benchPressId)
     expect(history).toHaveLength(1)
     expect(history[0]!.maxWeight).toBe(100)
-
-    cleanup()
   })
 })

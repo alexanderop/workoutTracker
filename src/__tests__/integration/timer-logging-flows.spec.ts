@@ -1,12 +1,10 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Timer logging controls vary by current timer state. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 import { expectWorkoutCount, getAllWorkouts, getWorkoutCount } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import type { DbAmrapBlock, DbForTimeBlock } from '@/db/schema'
-
-type TestApp = Awaited<ReturnType<typeof createTestApp>>
 
 /**
  * Helper to navigate to timers page from home.
@@ -83,11 +81,10 @@ function isForTimeBlock(block: { kind: string }): block is DbForTimeBlock {
  * completion screen and do not assert on the (currently broken) save.
  */
 describe('Timer Logging Flows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Custom AMRAP timer', () => {
-    it('configures a custom duration, completes the timer, and logs it', async () => {
+    it('configures a custom duration, completes the timer, and logs it', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/amrap/i)
@@ -116,13 +113,11 @@ describe('Timer Logging Flows', () => {
         expect(block.exercises).toEqual([])
         expect(block.result).toBeDefined()
       }
-
-      app.cleanup()
     })
   })
 
   describe('Custom For Time timer', () => {
-    it('configures a time cap, completes the timer, and logs it', async () => {
+    it('configures a time cap, completes the timer, and logs it', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/for time/i)
@@ -151,11 +146,11 @@ describe('Timer Logging Flows', () => {
         expect(block.exercises).toEqual([])
         expect(block.result).toBeDefined()
       }
-
-      app.cleanup()
     })
 
-    it('disables the time cap, completes the timer, and logs an uncapped workout', async () => {
+    it('disables the time cap, completes the timer, and logs an uncapped workout', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/for time/i)
@@ -185,13 +180,13 @@ describe('Timer Logging Flows', () => {
       if (isForTimeBlock(block)) {
         expect(block.config.timeCapSeconds).toBeNull()
       }
-
-      app.cleanup()
     })
   })
 
   describe('Custom EMOM timer', () => {
-    it('configures a custom duration and runs to the completion screen', async () => {
+    it('configures a custom duration and runs to the completion screen', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/emom/i)
@@ -211,13 +206,13 @@ describe('Timer Logging Flows', () => {
       await expect.element(page.getByRole('button', { name: /log workout/i })).toBeEnabled()
       await expect.element(page.getByRole('button', { name: /again/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /^done$/i })).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Custom Tabata timer', () => {
-    it('configures rounds/work/rest and runs to the completion screen', async () => {
+    it('configures rounds/work/rest and runs to the completion screen', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/tabata/i)
@@ -239,13 +234,11 @@ describe('Timer Logging Flows', () => {
       // The completion screen offers logging plus restart/exit
       await expect.element(page.getByRole('button', { name: /log workout/i })).toBeEnabled()
       await expect.element(page.getByRole('button', { name: /again/i })).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Custom form navigation', () => {
-    it('returns from the custom form to the preset list via Back', async () => {
+    it('returns from the custom form to the preset list via Back', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await openCustomForm(/emom/i)
@@ -257,13 +250,13 @@ describe('Timer Logging Flows', () => {
       await userEvent.click(page.getByRole('button', { name: /^back$/i }))
       await expect.element(page.getByText('10 min', { exact: true })).toBeVisible()
       await expect.element(page.getByText(/quick session/i)).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Declining to log', () => {
-    it('completing a timer and pressing Done without logging saves nothing', async () => {
+    it('completing a timer and pressing Done without logging saves nothing', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
 
@@ -281,8 +274,6 @@ describe('Timer Logging Flows', () => {
       // Back at timer type selection, nothing was saved
       await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
       expect(await getWorkoutCount()).toBe(0)
-
-      app.cleanup()
     })
   })
 })

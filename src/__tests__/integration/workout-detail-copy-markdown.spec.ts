@@ -1,9 +1,8 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, vi } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import { createDbAmrapBlock as createDatabaseAmrapBlock } from '../factories/timedBlock.factory'
 import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
@@ -13,11 +12,8 @@ import { createDbSet as createDatabaseSet } from '../factories/dbSet.factory'
  * Tests the copy-to-clipboard export functionality.
  */
 describe('Workout Detail Copy Markdown', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('shows copy button in workout detail header', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('shows copy button in workout detail header', async ({ createTestApp }) => {
+    const { navigateTo } = await createTestApp()
 
     // Seed a completed workout
     const workout = databaseWorkoutBuilder()
@@ -34,12 +30,10 @@ describe('Workout Detail Copy Markdown', () => {
 
     // Copy button should be visible in header
     await expect.element(page.getByRole('button', { name: /copy|share|export/i })).toBeVisible()
-
-    cleanup()
   })
 
-  it('copies markdown to clipboard when copy button is clicked', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('copies markdown to clipboard when copy button is clicked', async ({ createTestApp }) => {
+    const { navigateTo } = await createTestApp()
 
     // Spy on clipboard API
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
@@ -77,11 +71,10 @@ describe('Workout Detail Copy Markdown', () => {
     expect(copiedText).toContain('85kg')
 
     writeTextSpy.mockRestore()
-    cleanup()
   })
 
-  it('shows success feedback after copying', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('shows success feedback after copying', async ({ createTestApp }) => {
+    const { navigateTo } = await createTestApp()
 
     // Spy on clipboard API
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
@@ -101,11 +94,10 @@ describe('Workout Detail Copy Markdown', () => {
     await expect.element(page.getByText(/copied/i)).toBeVisible()
 
     writeTextSpy.mockRestore()
-    cleanup()
   })
 
-  it('exports all block types correctly', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('exports all block types correctly', async ({ createTestApp }) => {
+    const { navigateTo } = await createTestApp()
 
     // Spy on clipboard API
     const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
@@ -133,6 +125,5 @@ describe('Workout Detail Copy Markdown', () => {
     expect(copiedText).toContain('(AMRAP)')
 
     writeTextSpy.mockRestore()
-    cleanup()
   })
 })

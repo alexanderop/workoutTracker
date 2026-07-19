@@ -1,16 +1,14 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getCustomExercisesRepository } from '@/db'
 import { createDbCustomExercise } from '@/db/converters'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Timed Block Exercise Picker', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Custom exercises', () => {
-    it('shows custom exercises from IndexedDB when adding to EMOM block', async () => {
+    it('shows custom exercises from IndexedDB when adding to EMOM block', async ({
+      createTestApp,
+    }) => {
       // Given: a custom exercise exists in the database (name starts with 'A' to ensure it's in first 10 alphabetically)
       const customExercise = createDbCustomExercise({
         name: 'AAA Custom Lift',
@@ -20,7 +18,7 @@ describe('Timed Block Exercise Picker', () => {
       await getCustomExercisesRepository().add(customExercise)
 
       // When: I navigate to workout builder and add an EMOM block
-      const { builder, common, cleanup } = await createTestApp()
+      const { builder, common } = await createTestApp()
       await builder.navigateTo()
       await builder.openAddBlockDialog()
       await builder.switchToTimedBlocksTab()
@@ -32,8 +30,6 @@ describe('Timed Block Exercise Picker', () => {
 
       // Then: I should see my custom exercise in the picker (it's first alphabetically)
       await expect.element(page.getByText('AAA Custom Lift')).toBeVisible()
-
-      cleanup()
     })
   })
 })

@@ -1,8 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { createDbTemplateStrengthBlock as createDatabaseTemplateStrengthBlock } from '../factories'
 import { getTemplateById, seedTemplate } from '../helpers/dbAssertions'
 import { ensureHTMLElement } from '../helpers/domHelpers'
@@ -54,12 +53,9 @@ function getBlockNames(): Array<string> {
 }
 
 describe('Template Drag-and-Drop Reordering', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('drag handle visibility', () => {
-    it('shows drag handle on each block for reordering', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows drag handle on each block for reordering', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 2 exercises
       const template = await seedTemplate({
@@ -85,12 +81,10 @@ describe('Template Drag-and-Drop Reordering', () => {
         // Drag handle should have cursor-grab styling
         expect(handle.classList.contains('cursor-grab')).toBe(true)
       }
-
-      cleanup()
     })
 
-    it('does not show move up/down arrow buttons (replaced by drag)', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('does not show move up/down arrow buttons (replaced by drag)', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 2 exercises
       const template = await seedTemplate({
@@ -108,14 +102,14 @@ describe('Template Drag-and-Drop Reordering', () => {
       // Assert: Move up/down buttons should NOT exist
       await expect.element(page.getByRole('button', { name: /move up/i })).not.toBeInTheDocument()
       await expect.element(page.getByRole('button', { name: /move down/i })).not.toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('reordering blocks via drag', () => {
-    it('reorders three blocks with a real drag and persists the new order', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('reorders three blocks with a real drag and persists the new order', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo } = await createTestApp()
 
       const template = await seedTemplate({
         name: 'Persisted Drag Order',
@@ -153,12 +147,10 @@ describe('Template Drag-and-Drop Reordering', () => {
       await expect
         .poll(getBlockNames)
         .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
-
-      cleanup()
     })
 
-    it('has sortable container with correct structure', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('has sortable container with correct structure', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 2 exercises
       const template = await seedTemplate({
@@ -185,12 +177,10 @@ describe('Template Drag-and-Drop Reordering', () => {
         // The handle should have the .drag-handle class that SortableJS targets
         expect(handle.classList.contains('drag-handle')).toBe(true)
       }
-
-      cleanup()
     })
 
-    it('displays blocks in correct initial order', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('displays blocks in correct initial order', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
 
       // Seed template with 3 exercises in specific order
       const template = await seedTemplate({
@@ -208,8 +198,6 @@ describe('Template Drag-and-Drop Reordering', () => {
 
       // Verify blocks are displayed in correct order
       expect(getBlockNames()).toEqual(['First Exercise', 'Second Exercise', 'Third Exercise'])
-
-      cleanup()
     })
   })
 })

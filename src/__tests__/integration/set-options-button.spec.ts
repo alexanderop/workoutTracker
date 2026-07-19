@@ -1,8 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { afterEach, describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { SetContextMenuPO } from '../helpers/pages/SetContextMenuPO'
 import { ensureHTMLElement } from '../helpers/domHelpers'
 
@@ -15,15 +14,14 @@ import { ensureHTMLElement } from '../helpers/domHelpers'
  * covered by set-context-menu.spec.ts and must keep passing unchanged.
  */
 describe('Set Options Button', () => {
-  beforeEach(setupIntegrationTest)
-
   afterEach(async () => {
     await flushPromises()
-    await cleanupIntegrationTest()
   })
 
   describe('Discoverability', () => {
-    it('should expose a distinctly named options button for each set row', async () => {
+    it('should expose a distinctly named options button for each set row', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       const { builder, workout } = app
 
@@ -34,11 +32,9 @@ describe('Set Options Button', () => {
       await expect.element(workout.getSetOptionsButton(0)).toBeVisible()
       await expect.element(workout.getSetOptionsButton(1)).toBeVisible()
       await expect.element(workout.getSetOptionsButton(2)).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('should have a 44px or larger touch target', async () => {
+    it('should have a 44px or larger touch target', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
 
@@ -51,13 +47,13 @@ describe('Set Options Button', () => {
 
       expect(rect.width).toBeGreaterThanOrEqual(44)
       expect(rect.height).toBeGreaterThanOrEqual(44)
-
-      app.cleanup()
     })
   })
 
   describe('Opening the menu', () => {
-    it('should open the set actions menu when the options button is clicked', async () => {
+    it('should open the set actions menu when the options button is clicked', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -71,11 +67,9 @@ describe('Set Options Button', () => {
 
       await expect.element(contextMenu.getDeleteOption()).toBeVisible()
       await expect.element(contextMenu.getDuplicateOption()).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('should be reachable by keyboard and open the menu on Enter', async () => {
+    it('should be reachable by keyboard and open the menu on Enter', async ({ createTestApp }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -92,13 +86,13 @@ describe('Set Options Button', () => {
       await contextMenu.waitForOpen()
 
       await expect.element(contextMenu.getDeleteOption()).toBeVisible()
-
-      app.cleanup()
     })
   })
 
   describe('Delete via options button', () => {
-    it('should remove the set when delete is chosen from the options button menu', async () => {
+    it('should remove the set when delete is chosen from the options button menu', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -121,13 +115,13 @@ describe('Set Options Button', () => {
           return rows.length - 1
         })
         .toBe(initialSetCount - 1)
-
-      app.cleanup()
     })
   })
 
   describe('Duplicate via options button', () => {
-    it('should duplicate the set with the same values when duplicate is chosen', async () => {
+    it('should duplicate the set with the same values when duplicate is chosen', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       const { builder, workout } = app
       const contextMenu = new SetContextMenuPO()
@@ -150,8 +144,6 @@ describe('Set Options Button', () => {
       expect(values.weight).toBe('100')
       expect(values.reps).toBe('8')
       expect(values.rir).toBe('2')
-
-      app.cleanup()
     })
   })
 })

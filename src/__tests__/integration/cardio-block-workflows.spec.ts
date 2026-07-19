@@ -1,16 +1,12 @@
 /* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 
 describe('Cardio Block Workflows', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Configuration', () => {
-    it('shows cardio option in timed blocks tab', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('shows cardio option in timed blocks tab', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -20,12 +16,10 @@ describe('Cardio Block Workflows', () => {
       await expect.element(page.getByText('AMRAP')).toBeInTheDocument()
       await expect.element(page.getByText('EMOM')).toBeInTheDocument()
       await expect.element(page.getByText('Cardio')).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('opens configure dialog when cardio is selected', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('opens configure dialog when cardio is selected', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -45,12 +39,10 @@ describe('Cardio Block Workflows', () => {
 
       // Verify duration input exists
       await expect.element(page.getByLabelText(/target duration/i)).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('allows selecting different cardio activities', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('allows selecting different cardio activities', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -70,12 +62,10 @@ describe('Cardio Block Workflows', () => {
       // Verify block was added
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(1)
-
-      cleanup()
     })
 
-    it('shows distance field for activities that support it', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('shows distance field for activities that support it', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.openAddBlockDialog()
@@ -87,14 +77,12 @@ describe('Cardio Block Workflows', () => {
 
       // Running is selected by default and supports distance
       await expect.element(page.getByLabelText(/target distance/i)).toBeInTheDocument()
-
-      cleanup()
     })
   })
 
   describe('Builder Display', () => {
-    it('adds cardio block to workout playlist', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('adds cardio block to workout playlist', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addCardioBlock('Running')
@@ -102,14 +90,12 @@ describe('Cardio Block Workflows', () => {
       // Verify block appears in playlist
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(1)
-
-      cleanup()
     })
   })
 
   describe('Execution', () => {
-    it('starts workout with cardio block and shows cardio UI', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('starts workout with cardio block and shows cardio UI', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addCardioBlock('Running')
@@ -117,12 +103,10 @@ describe('Cardio Block Workflows', () => {
 
       // Verify cardio block shows Done button (primary action)
       await expect.element(page.getByRole('button', { name: /done/i })).toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('clicking Done on cardio block advances to next block', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('clicking Done on cardio block advances to next block', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addCardioBlock('Running')
@@ -144,12 +128,10 @@ describe('Cardio Block Workflows', () => {
       // Should advance to block 2 of 2 (strength block)
       await expect.element(page.getByText(/block 2 of 2/i)).toBeVisible()
       await expect.element(page.getByRole('table')).toBeVisible()
-
-      cleanup()
     })
 
-    it('can complete cardio block and finish workout', async () => {
-      const { builder, workout, router, cleanup } = await createTestApp()
+    it('can complete cardio block and finish workout', async ({ createTestApp }) => {
+      const { builder, workout, router } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addCardioBlock('Cycling')
@@ -157,14 +139,12 @@ describe('Cardio Block Workflows', () => {
 
       await workout.endWorkoutAndNavigateToSummary()
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
   })
 
   describe('Hybrid Workflows', () => {
-    it('supports strength + cardio blocks in same workout', async () => {
-      const { builder, common, cleanup } = await createTestApp()
+    it('supports strength + cardio blocks in same workout', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
 
       await builder.navigateTo()
 
@@ -176,23 +156,21 @@ describe('Cardio Block Workflows', () => {
       // Add cardio block
       await builder.addCardioBlock('Running')
       await builder.startWorkoutAndVerifyBlocks(2)
-
-      cleanup()
     })
 
-    it('supports cardio + timed block in same workout', async () => {
-      const { builder, cleanup } = await createTestApp()
+    it('supports cardio + timed block in same workout', async ({ createTestApp }) => {
+      const { builder } = await createTestApp()
 
       await builder.navigateTo()
       await builder.addCardioBlock('Rowing')
       await builder.addTimedBlock('AMRAP')
       await builder.startWorkoutAndVerifyBlocks(2)
-
-      cleanup()
     })
 
-    it('completes full hybrid workout with strength, timed, and cardio blocks', async () => {
-      const { builder, workout, common, router, cleanup } = await createTestApp()
+    it('completes full hybrid workout with strength, timed, and cardio blocks', async ({
+      createTestApp,
+    }) => {
+      const { builder, workout, common, router } = await createTestApp()
 
       // Navigate to builder
       await page.getByRole('button', { name: /start new workout/i }).click()
@@ -259,8 +237,6 @@ describe('Cardio Block Workflows', () => {
       await viewDetailsButton.click()
       await common.waitForRoute(/^\/workout\/summary\//)
       expect(router.currentRoute.value.path).toMatch(/^\/workout\/summary\//)
-
-      cleanup()
     })
   })
 })

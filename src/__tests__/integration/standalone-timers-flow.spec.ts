@@ -1,21 +1,18 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
+import type { TestApp } from '../helpers/createTestApp'
 
 // Helper to navigate to timers page from home
-async function goToTimersPage(testApp: Awaited<ReturnType<typeof createTestApp>>) {
+async function goToTimersPage(testApp: TestApp) {
   const quickTimerCard = testApp.getByText(/quick timer/i)
   await userEvent.click(quickTimerCard)
   await expect.element(page.getByText(/AMRAP/)).toBeVisible()
 }
 
 describe('Standalone Timers Flow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('navigates from home to timers page via Quick Timer card', async () => {
-    const { router, cleanup } = await createTestApp()
+  it('navigates from home to timers page via Quick Timer card', async ({ createTestApp }) => {
+    const { router } = await createTestApp()
 
     // Find and click the Quick Timer card on home page
     const quickTimerCard = page.getByText(/quick timer/i)
@@ -31,11 +28,9 @@ describe('Standalone Timers Flow', () => {
     await expect.element(page.getByText(/EMOM/)).toBeVisible()
     await expect.element(page.getByText(/Tabata/)).toBeVisible()
     await expect.element(page.getByText(/For Time/)).toBeVisible()
-
-    cleanup()
   })
 
-  it('displays all four timer type options on timers page', async () => {
+  it('displays all four timer type options on timers page', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -50,11 +45,9 @@ describe('Standalone Timers Flow', () => {
 
     await expect.element(page.getByText(/For Time/)).toBeVisible()
     await expect.element(page.getByText(/Race Against the Clock/)).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('shows AMRAP presets when selecting AMRAP timer', async () => {
+  it('shows AMRAP presets when selecting AMRAP timer', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -67,11 +60,9 @@ describe('Standalone Timers Flow', () => {
     await expect.element(page.getByText('15 min')).toBeVisible()
     await expect.element(page.getByText('20 min')).toBeVisible()
     await expect.element(page.getByText(/Custom/)).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('shows Tabata presets including Nordic protocol', async () => {
+  it('shows Tabata presets including Nordic protocol', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -85,11 +76,11 @@ describe('Standalone Timers Flow', () => {
     await expect.element(page.getByText(/Short/)).toBeVisible()
     await expect.element(page.getByText(/Nordic/)).toBeVisible()
     await expect.element(page.getByText(/4×4min\/3min/)).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('starts AMRAP timer from preset and shows timer UI with controls', async () => {
+  it('starts AMRAP timer from preset and shows timer UI with controls', async ({
+    createTestApp,
+  }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -109,11 +100,11 @@ describe('Standalone Timers Flow', () => {
     // Verify exit and reset buttons exist using semantic queries
     await expect.element(page.getByRole('button', { name: /exit timer/i })).toBeVisible()
     await expect.element(page.getByRole('button', { name: /reset timer/i })).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('allows navigating back from preset selection to timer selection', async () => {
+  it('allows navigating back from preset selection to timer selection', async ({
+    createTestApp,
+  }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -128,11 +119,9 @@ describe('Standalone Timers Flow', () => {
 
     // Should be back at timer selection
     await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('shows custom configuration form for Tabata', async () => {
+  it('shows custom configuration form for Tabata', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -150,11 +139,9 @@ describe('Standalone Timers Flow', () => {
 
     // Verify Start button in form
     await expect.element(page.getByRole('button', { name: /Start/ })).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('shows For Time presets including No cap option', async () => {
+  it('shows For Time presets including No cap option', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -166,11 +153,9 @@ describe('Standalone Timers Flow', () => {
     await expect.element(page.getByText('15 min cap')).toBeVisible()
     await expect.element(page.getByText('20 min cap')).toBeVisible()
     await expect.element(page.getByText('No cap')).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('exits timer and returns to timer selection', async () => {
+  it('exits timer and returns to timer selection', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -187,11 +172,9 @@ describe('Standalone Timers Flow', () => {
 
     // Should return to timer selection
     await expect.element(page.getByText(/As Many Rounds As Possible/)).toBeVisible()
-
-    testApp.cleanup()
   })
 
-  it('starts EMOM timer and shows minute display', async () => {
+  it('starts EMOM timer and shows minute display', async ({ createTestApp }) => {
     const testApp = await createTestApp()
     await goToTimersPage(testApp)
 
@@ -204,12 +187,10 @@ describe('Standalone Timers Flow', () => {
 
     // Verify timer UI is shown with minute counter (format: "1 / 10 MIN")
     await expect.element(page.getByText(/min/i)).toBeVisible()
-
-    testApp.cleanup()
   })
 
   describe('Play/Pause button toggle', () => {
-    it('toggles from play to pause icon when timer is started', async () => {
+    it('toggles from play to pause icon when timer is started', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -230,11 +211,9 @@ describe('Standalone Timers Flow', () => {
 
       // Should now show pause icon (timer running)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
-
-      testApp.cleanup()
     })
 
-    it('toggles from pause to play icon when timer is paused', async () => {
+    it('toggles from pause to play icon when timer is paused', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -259,13 +238,13 @@ describe('Standalone Timers Flow', () => {
 
       // Should now show play icon (timer paused)
       await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
-
-      testApp.cleanup()
     })
   })
 
   describe('PageLayout header visibility', () => {
-    it('shows page header with timer type on preset selection screen', async () => {
+    it('shows page header with timer type on preset selection screen', async ({
+      createTestApp,
+    }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -278,11 +257,9 @@ describe('Standalone Timers Flow', () => {
       // Verify PageLayout header shows timer type as a heading
       // PageLayout renders title as an h1 heading element
       await expect.element(page.getByRole('heading', { name: /amrap/i, level: 1 })).toBeVisible()
-
-      testApp.cleanup()
     })
 
-    it('shows page header with timer type on running timer screen', async () => {
+    it('shows page header with timer type on running timer screen', async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -296,11 +273,11 @@ describe('Standalone Timers Flow', () => {
 
       // Verify PageLayout header shows timer type as a heading
       await expect.element(page.getByRole('heading', { name: /amrap/i, level: 1 })).toBeVisible()
-
-      testApp.cleanup()
     })
 
-    it('shows page header with timer type on running EMOM timer screen', async () => {
+    it('shows page header with timer type on running EMOM timer screen', async ({
+      createTestApp,
+    }) => {
       const testApp = await createTestApp()
       await goToTimersPage(testApp)
 
@@ -314,8 +291,6 @@ describe('Standalone Timers Flow', () => {
 
       // Verify PageLayout header shows timer type as a heading
       await expect.element(page.getByRole('heading', { name: /emom/i, level: 1 })).toBeVisible()
-
-      testApp.cleanup()
     })
   })
 })

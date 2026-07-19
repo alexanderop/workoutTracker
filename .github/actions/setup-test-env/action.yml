@@ -5,6 +5,10 @@ inputs:
   node-version:
     description: 'Node.js version'
     required: true
+  playwright-browsers:
+    description: 'Space-separated Playwright browsers to install'
+    required: false
+    default: 'chromium'
 
 runs:
   using: 'composite'
@@ -26,18 +30,24 @@ runs:
         path: |
           ~/.cache/ms-playwright
           ~/Library/Caches/ms-playwright
-        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}
+        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}-${{ inputs.playwright-browsers }}
 
     - name: Install Playwright system dependencies
       if: runner.os == 'Linux'
       shell: bash
+      env:
+        PLAYWRIGHT_BROWSERS: ${{ inputs.playwright-browsers }}
       run: |
         set -euo pipefail
-        pnpm exec playwright install-deps chromium
+        read -r -a browsers <<< "$PLAYWRIGHT_BROWSERS"
+        pnpm exec playwright install-deps "${browsers[@]}"
 
     - name: Install Playwright browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
+      env:
+        PLAYWRIGHT_BROWSERS: ${{ inputs.playwright-browsers }}
       run: |
         set -euo pipefail
-        pnpm exec playwright install chromium
+        read -r -a browsers <<< "$PLAYWRIGHT_BROWSERS"
+        pnpm exec playwright install "${browsers[@]}"

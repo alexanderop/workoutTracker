@@ -11,18 +11,14 @@
  * - Selection behavior (single vs multi mode)
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('ExercisePicker', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   describe('Dialog presentation mode (template views)', () => {
-    it('opens dialog and shows exercise search', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('opens dialog and shows exercise search', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Click to add a block (now uses AddBlockDialog which contains exercise picker)
@@ -33,12 +29,10 @@ describe('ExercisePicker', () => {
       // Dialog should open with search input (Exercises tab is active by default)
       await expect.element(page.getByRole('dialog')).toBeVisible()
       await expect.element(page.getByRole('textbox')).toBeVisible()
-
-      cleanup()
     })
 
-    it('filters exercises by search query', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('filters exercises by search query', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -53,12 +47,10 @@ describe('ExercisePicker', () => {
 
       // Should show matching exercises (use exact match to avoid matching "Smith Machine Bench Press")
       await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
-
-      cleanup()
     })
 
-    it('closes dialog after selecting exercise', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('closes dialog after selecting exercise', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -80,12 +72,10 @@ describe('ExercisePicker', () => {
 
       // Dialog should close
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('shows Create Custom Exercise button', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows Create Custom Exercise button', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -97,14 +87,12 @@ describe('ExercisePicker', () => {
       // Should show create button
       const createButton = await page.getByRole('button', { name: /create.*exercise/i }).query()
       expect(createButton).toBeTruthy()
-
-      cleanup()
     })
   })
 
   describe('Exercise list integrity', () => {
-    it('shows each exercise only once (no duplicates)', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows each exercise only once (no duplicates)', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Open the add block dialog (contains exercise picker in Exercises tab)
@@ -136,14 +124,12 @@ describe('ExercisePicker', () => {
 
       // All exercise names should be unique (no duplicates)
       expect(exerciseNames).toHaveLength(uniqueNames.size)
-
-      cleanup()
     })
   })
 
   describe('Equipment filter', () => {
-    it('shows equipment filter pills below muscle filter', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('shows equipment filter pills below muscle filter', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // Open add block dialog
@@ -160,12 +146,10 @@ describe('ExercisePicker', () => {
       await expect
         .element(page.getByRole('button', { name: 'Bodyweight', exact: true }))
         .toBeVisible()
-
-      cleanup()
     })
 
-    it('filters exercises by equipment type', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('filters exercises by equipment type', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -181,12 +165,10 @@ describe('ExercisePicker', () => {
 
       // Should NOT show barbell exercises like Bench Press
       await expect.element(page.getByText('Bench Press', { exact: true })).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('combines muscle and equipment filters with AND logic', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('combines muscle and equipment filters with AND logic', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       await expect.element(page.getByRole('button', { name: /\+ add block/i })).toBeVisible()
@@ -205,12 +187,10 @@ describe('ExercisePicker', () => {
 
       // Should NOT show Push-ups (chest + bodyweight, not barbell)
       await expect.element(page.getByText('Push-ups', { exact: true })).not.toBeInTheDocument()
-
-      cleanup()
     })
 
-    it('resets equipment filter when dialog reopens', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
+    it('resets equipment filter when dialog reopens', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
       await navigateTo({ name: RouteNames.CreateTemplate })
 
       // First open - select equipment filter
@@ -237,8 +217,6 @@ describe('ExercisePicker', () => {
 
       // Should show Bench Press again (filter reset to 'All')
       await expect.element(page.getByText('Bench Press', { exact: true })).toBeVisible()
-
-      cleanup()
     })
   })
 

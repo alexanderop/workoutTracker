@@ -1,7 +1,6 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { getAllCustomExercises } from '../helpers/dbAssertions'
 
 /**
@@ -11,11 +10,10 @@ import { getAllCustomExercises } from '../helpers/dbAssertions'
  * yet they are exactly how a user creates e.g. a Plank (isometric, duration).
  */
 describe('Custom exercise with type and metrics selection', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('creates an isometric duration-based exercise via the selector dialogs', async () => {
-    const { common, exercises, getByRole, cleanup } = await createTestApp()
+  it('creates an isometric duration-based exercise via the selector dialogs', async ({
+    createTestApp,
+  }) => {
+    const { common, exercises, getByRole } = await createTestApp()
 
     await common.navigateToExercises()
     await userEvent.click(getByRole('button', { name: /create.*custom/i }))
@@ -45,7 +43,5 @@ describe('Custom exercise with type and metrics selection', () => {
     const plank = saved.find((exercise) => exercise.name === 'Weighted Plank Hold')
     expect(plank?.type).toBe('isometric')
     expect(plank?.metrics).toBe('duration')
-
-    cleanup()
   })
 })

@@ -1,8 +1,7 @@
 import { page } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 
 /**
@@ -12,11 +11,10 @@ import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
  * without any explicit reload call or navigation.
  */
 describe('Home Recent Workouts Live Update', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('should show a newly completed workout without reloading when it is added while home page stays mounted', async () => {
-    const { cleanup } = await createTestApp()
+  it('should show a newly completed workout without reloading when it is added while home page stays mounted', async ({
+    createTestApp,
+  }) => {
+    await createTestApp()
 
     // Home page starts empty
     await expect.element(page.getByText(/no workouts yet|empty/i)).toBeVisible()
@@ -33,7 +31,5 @@ describe('Home Recent Workouts Live Update', () => {
     // The live query subscription should push the new snapshot through
     // without any manual reload call.
     await expect.element(page.getByText('Cross-Tab Workout')).toBeVisible()
-
-    cleanup()
   })
 })

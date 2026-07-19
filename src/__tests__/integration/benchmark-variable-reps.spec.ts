@@ -10,9 +10,8 @@
  * See specs/variable-reps-benchmark.md for full requirements.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import {
   createForTimeBenchmarkWithRounds,
@@ -80,14 +79,13 @@ function assertBenchmarkWithRounds(benchmark: unknown): asserts benchmark is Ben
 }
 
 describe('Variable Reps Benchmark', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
   // ===========================================================================
   // Test Suite: Benchmark Creation
   // ===========================================================================
   describe('Benchmark Creation', () => {
-    it('creates ForTime benchmark with variable reps across 4 rounds', async () => {
+    it('creates ForTime benchmark with variable reps across 4 rounds', async ({
+      createTestApp,
+    }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -134,8 +132,6 @@ describe('Variable Reps Benchmark', () => {
       assertBenchmarkWithRounds(benchmark)
       // With new schema, rounds will be an array
       expect(benchmark.rounds).toHaveLength(4)
-
-      app.cleanup()
     })
   })
 
@@ -143,7 +139,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Copy Round
   // ===========================================================================
   describe('Copy Round', () => {
-    it('copied round has identical exercises and reps', async () => {
+    it('copied round has identical exercises and reps', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -161,11 +157,9 @@ describe('Variable Reps Benchmark', () => {
       // Round 2 should show Burpees with 40 reps (same as Round 1)
       await expect.element(page.getByText('Burpees')).toBeVisible()
       await expect.element(page.getByText('40')).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('copied round is independent from source', async () => {
+    it('copied round is independent from source', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -194,11 +188,9 @@ describe('Variable Reps Benchmark', () => {
 
       expect(round1?.exercises[0]?.prescribedReps).toBe(40)
       expect(round2?.exercises[0]?.prescribedReps).toBe(30)
-
-      app.cleanup()
     })
 
-    it('copied round preserves exerciseDefinitionId', async () => {
+    it('copied round preserves exerciseDefinitionId', async ({ createTestApp }) => {
       // Create benchmark with exercise linked to a definition
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Definition Preservation',
@@ -223,8 +215,6 @@ describe('Variable Reps Benchmark', () => {
       const round2Exercise = updated.rounds[1]?.exercises[0]
 
       expect(round2Exercise?.exerciseDefinitionId).toBe('burpees-123')
-
-      app.cleanup()
     })
   })
 
@@ -232,7 +222,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Round Management
   // ===========================================================================
   describe('Round Management', () => {
-    it.skip('reorders rounds via drag-and-drop', async () => {
+    it.skip('reorders rounds via drag-and-drop', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds (40, 30, 20 reps)
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Reorder',
@@ -265,11 +255,9 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(20)
       expect(updated.rounds[1]?.exercises[0]?.prescribedReps).toBe(40)
       expect(updated.rounds[2]?.exercises[0]?.prescribedReps).toBe(30)
-
-      app.cleanup()
     })
 
-    it('deletes middle round', async () => {
+    it('deletes middle round', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Delete Middle',
@@ -296,11 +284,9 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds).toHaveLength(2)
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(40)
       expect(updated.rounds[1]?.exercises[0]?.prescribedReps).toBe(20)
-
-      app.cleanup()
     })
 
-    it('cannot delete last remaining round', async () => {
+    it('cannot delete last remaining round', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
@@ -310,8 +296,6 @@ describe('Variable Reps Benchmark', () => {
 
       // Verify Delete Round is disabled
       await app.benchmarkForm.assertDeleteRoundDisabled(0)
-
-      app.cleanup()
     })
   })
 
@@ -319,7 +303,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Per-Round Exercise Management
   // ===========================================================================
   describe('Per-Round Exercise Management', () => {
-    it('adds exercise to current round only', async () => {
+    it('adds exercise to current round only', async ({ createTestApp }) => {
       // Create benchmark with 2 rounds, each with Burpees
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Add Exercise',
@@ -346,11 +330,9 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Burpees')
       expect(updated.rounds[1]?.exercises).toHaveLength(2)
       expect(updated.rounds[1]?.exercises[1]?.name).toBe('Pull-ups')
-
-      app.cleanup()
     })
 
-    it('deletes exercise from current round only', async () => {
+    it('deletes exercise from current round only', async ({ createTestApp }) => {
       // Create benchmark with 2 rounds, each with Burpees and Squats
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Delete Exercise',
@@ -386,11 +368,9 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds[0]?.exercises).toHaveLength(1)
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Burpees')
       expect(updated.rounds[1]?.exercises).toHaveLength(2)
-
-      app.cleanup()
     })
 
-    it.skip('reorders exercises within a round', async () => {
+    it.skip('reorders exercises within a round', async ({ createTestApp }) => {
       // Create benchmark with Round 1 containing Burpees, Squats, Pull-ups
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Reorder Exercises',
@@ -425,8 +405,6 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds[0]?.exercises[0]?.name).toBe('Pull-ups')
       expect(updated.rounds[0]?.exercises[1]?.name).toBe('Burpees')
       expect(updated.rounds[0]?.exercises[2]?.name).toBe('Squats')
-
-      app.cleanup()
     })
   })
 
@@ -434,7 +412,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Validation
   // ===========================================================================
   describe('Validation', () => {
-    it('cannot save benchmark with empty round', async () => {
+    it('cannot save benchmark with empty round', async ({ createTestApp }) => {
       // Create benchmark with 2 rounds
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Empty Round',
@@ -459,8 +437,6 @@ describe('Variable Reps Benchmark', () => {
       const current = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(current)
       expect(current.rounds[1]?.exercises).toHaveLength(1) // Original still has exercise
-
-      app.cleanup()
     })
   })
 
@@ -468,7 +444,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Summary View
   // ===========================================================================
   describe('Summary View', () => {
-    it('summary shows per-round grouping via tabbed navigation', async () => {
+    it('summary shows per-round grouping via tabbed navigation', async ({ createTestApp }) => {
       // Create benchmark with distinct exercises per round to avoid ambiguous selectors
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Pyramid',
@@ -506,8 +482,6 @@ describe('Variable Reps Benchmark', () => {
       await expect.element(page.getByText(/25/)).toBeVisible()
       await expect.element(page.getByText(/pull-ups/i)).toBeVisible()
       await expect.element(page.getByText(/20/)).toBeVisible()
-
-      app.cleanup()
     })
   })
 
@@ -515,7 +489,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Workout Execution
   // ===========================================================================
   describe('Workout Execution', () => {
-    it('starts workout with correct reps per round', async () => {
+    it('starts workout with correct reps per round', async ({ createTestApp }) => {
       // Create pyramid benchmark with 4 rounds - use different exercise names
       // so the completeExercise helper can detect when we've moved to the next round
       const benchmark = await createForTimeBenchmarkWithRounds({
@@ -549,8 +523,6 @@ describe('Variable Reps Benchmark', () => {
       await completeExercise()
       await expect.element(page.getByText(/push-ups/i)).toBeVisible()
       await expect.element(page.getByText('10')).toBeVisible()
-
-      app.cleanup()
     })
   })
 
@@ -558,7 +530,9 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Result Comparison
   // ===========================================================================
   describe('Result Comparison', () => {
-    it.skip('shows warning when structure changes on benchmark with results', async () => {
+    it.skip('shows warning when structure changes on benchmark with results', async ({
+      createTestApp,
+    }) => {
       // Create benchmark and complete a workout
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Warning',
@@ -585,11 +559,9 @@ describe('Variable Reps Benchmark', () => {
       const current = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(current)
       expect(current.rounds[0]?.exercises[0]?.prescribedReps).toBe(40)
-
-      app.cleanup()
     })
 
-    it('no warning when structure unchanged', async () => {
+    it('no warning when structure unchanged', async ({ createTestApp }) => {
       // Create benchmark with completed workout
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Original Name',
@@ -608,11 +580,9 @@ describe('Variable Reps Benchmark', () => {
       // No warning dialog should appear
       await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
       await expect.element(page.getByText('Updated Name')).toBeVisible()
-
-      app.cleanup()
     })
 
-    it('no warning when benchmark has no results', async () => {
+    it('no warning when benchmark has no results', async ({ createTestApp }) => {
       // Create benchmark without any completed workouts
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test No Warning',
@@ -635,8 +605,6 @@ describe('Variable Reps Benchmark', () => {
       const updated = await getBenchmarksRepo().getById(benchmark.id)
       assertBenchmarkWithRounds(updated)
       expect(updated.rounds[0]?.exercises[0]?.prescribedReps).toBe(30)
-
-      app.cleanup()
     })
   })
 
@@ -644,7 +612,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Import/Export
   // ===========================================================================
   describe('Import/Export', () => {
-    it.skip('exports and reimports benchmark with rounds', async () => {
+    it.skip('exports and reimports benchmark with rounds', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds and variable reps
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Export Test',
@@ -684,11 +652,9 @@ describe('Variable Reps Benchmark', () => {
       expect(importedBenchmark.rounds[0]?.exercises[0]?.prescribedReps).toBe(40)
       expect(importedBenchmark.rounds[1]?.exercises[0]?.prescribedReps).toBe(30)
       expect(importedBenchmark.rounds[2]?.exercises[0]?.prescribedReps).toBe(20)
-
-      app.cleanup()
     })
 
-    it.skip('import legacy format fails with error', async () => {
+    it.skip('import legacy format fails with error', async ({ createTestApp }) => {
       const app = await createTestApp()
 
       // Navigate to settings
@@ -708,8 +674,6 @@ describe('Variable Reps Benchmark', () => {
       // Verify no legacy benchmark was imported
       const benchmarks = await getBenchmarksRepo().getAll()
       expect(benchmarks.find((b) => b.id === 'legacy-123')).toBeFalsy()
-
-      app.cleanup()
     })
   })
 })

@@ -6,18 +6,14 @@
  * - Form validation prevents saving with invalid data
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getCustomExercisesRepository } from '@/db'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Exercise Edit Flow', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('allows editing exercise from progress view and saves changes', async () => {
-    const { navigateTo, common, cleanup } = await createTestApp()
+  it('allows editing exercise from progress view and saves changes', async ({ createTestApp }) => {
+    const { navigateTo, common } = await createTestApp()
 
     // Get a seeded exercise
     const exercises = await getCustomExercisesRepository().getAll()
@@ -51,12 +47,10 @@ describe('Exercise Edit Flow', () => {
     // Verify changes persisted in database
     const updatedExercise = await getCustomExercisesRepository().getById(benchPress.id)
     expect(updatedExercise?.name).toBe('Incline Bench Press')
-
-    cleanup()
   })
 
-  it('keeps save button disabled when name is cleared', async () => {
-    const { navigateTo, cleanup } = await createTestApp()
+  it('keeps save button disabled when name is cleared', async ({ createTestApp }) => {
+    const { navigateTo } = await createTestApp()
 
     const exercises = await getCustomExercisesRepository().getAll()
     const benchPress = exercises.find((e) => e.name === 'Bench Press')!
@@ -73,7 +67,5 @@ describe('Exercise Edit Flow', () => {
     // Save button should be disabled
     const saveButton = page.getByRole('button', { name: /save/i })
     await expect.element(saveButton).toBeDisabled()
-
-    cleanup()
   })
 })

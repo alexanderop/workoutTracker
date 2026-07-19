@@ -15,19 +15,13 @@ import de from '@/i18n/messages/de/settings'
  * drift apart again.
  */
 describe('dataImport error code translations', () => {
-  it.each(IMPORT_ERROR_CODES)(
-    'should have an English string translation for error code "%s"',
-    (code) => {
-      const message = Reflect.get(en.errors, code)
-      expect(message, `en settings.errors.${code}`).toBeTypeOf('string')
-    },
-  )
-
-  it.each(IMPORT_ERROR_CODES)(
-    'should have a German string translation for error code "%s"',
-    (code) => {
-      const message = Reflect.get(de.errors, code)
-      expect(message, `de settings.errors.${code}`).toBeTypeOf('string')
-    },
-  )
+  it.for([
+    { locale: 'en', errors: en.errors },
+    { locale: 'de', errors: de.errors },
+  ])('has translations for every import error in $locale', ({ locale, errors }) => {
+    for (const code of IMPORT_ERROR_CODES) {
+      const message = Reflect.get(errors, code)
+      expect(message, `${locale} settings.errors.${code}`).toBeTypeOf('string')
+    }
+  })
 })

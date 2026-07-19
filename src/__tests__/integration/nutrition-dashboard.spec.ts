@@ -1,16 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect } from 'vitest'
+import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
-import { createTestApp } from '../helpers/createTestApp'
-import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
 describe('Nutrition dashboard', () => {
-  beforeEach(setupIntegrationTest)
-  afterEach(cleanupIntegrationTest)
-
-  it('logs a reusable food, updates daily totals, and persists across navigation', async () => {
-    const { navigateTo, nutrition, cleanup } = await createTestApp()
+  it('logs a reusable food, updates daily totals, and persists across navigation', async ({
+    createTestApp,
+  }) => {
+    const { navigateTo, nutrition } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Breakfast')
@@ -34,7 +32,5 @@ describe('Nutrition dashboard', () => {
     await navigateTo({ name: RouteNames.Settings })
     await navigateTo({ name: RouteNames.Home })
     await nutrition.expectFood('Greek yogurt')
-
-    cleanup()
   })
 })
