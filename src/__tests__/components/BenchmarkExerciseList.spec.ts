@@ -12,7 +12,7 @@ describe('BenchmarkExerciseList', () => {
   i18n.global.setLocaleMessage('en', en)
   i18n.global.locale.value = 'en'
 
-  it('updates the list when new exercises are added', async () => {
+  it('reactively appends second and third exercises with their prescribed reps', async () => {
     // Start with one exercise
     const exercises = ref<Array<BenchmarkFormExercise>>([
       {
@@ -61,39 +61,6 @@ describe('BenchmarkExerciseList', () => {
     // Verify both exercises show their rep counts
     await expect.element(page.getByText(/15 reps/i)).toBeVisible()
     await expect.element(page.getByText(/21 reps/i)).toBeVisible()
-  })
-
-  it('updates when third exercise is added', async () => {
-    // Start with two exercises
-    const exercises = ref<Array<BenchmarkFormExercise>>([
-      {
-        orderKey: 'a0',
-        exerciseDefinitionId: '1',
-        name: 'Thrusters',
-        prescribedReps: 21,
-        image: null,
-      },
-      {
-        orderKey: 'a1',
-        exerciseDefinitionId: '2',
-        name: 'Pull-ups',
-        prescribedReps: 21,
-        image: null,
-      },
-    ])
-
-    const { rerender } = render(BenchmarkExerciseList, {
-      props: {
-        exercises: exercises.value,
-      },
-      global: {
-        plugins: [i18n],
-      },
-    })
-
-    // Verify first two exercises
-    await expect.element(page.getByText('Thrusters')).toBeVisible()
-    await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
     // Add a third exercise
     exercises.value.push({
@@ -111,7 +78,7 @@ describe('BenchmarkExerciseList', () => {
     await nextTick()
 
     // All three should be visible
-    await expect.element(page.getByText('Thrusters')).toBeVisible()
+    await expect.element(page.getByText('Bodyweight Get-up')).toBeVisible()
     await expect.element(page.getByText('Pull-ups')).toBeVisible()
     await expect.element(page.getByText('Burpees')).toBeVisible()
 

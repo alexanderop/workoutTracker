@@ -18,7 +18,7 @@ describe('NumericKeypad (Touch Device)', () => {
   const modalPO = new NumericInputModalPO()
 
   describe('Fresh start behavior (calculator-style)', () => {
-    it('first digit replaces existing value instead of appending', async () => {
+    it('replaces first input, appends later digits, edits with backspace, and starts decimals at zero', async () => {
       const { builder, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -45,42 +45,15 @@ describe('NumericKeypad (Touch Device)', () => {
       const newValue = await modalPO.getCurrentValue()
       expect(newValue).toBe(8) // Not 708!
 
-      cleanup()
-    })
-
-    it('subsequent digits append after first digit replaces', async () => {
-      const { builder, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Set initial value via keypad
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-      await modalPO.enterValueAndConfirm(70)
-      await modalPO.waitForClose()
-
-      // Reopen
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-
-      // Type "8" (replaces), then "5" (appends)
-      await userEvent.click(page.getByRole('button', { name: /^8$/ }))
+      // The next digit appends after the first digit replaced the old value.
       await userEvent.click(page.getByRole('button', { name: /^5$/ }))
 
-      const value = await modalPO.getCurrentValue()
-      expect(value).toBe(85) // First replaced, second appended
+      const appendedValue = await modalPO.getCurrentValue()
+      expect(appendedValue).toBe(85) // First replaced, second appended
 
-      cleanup()
-    })
-
-    it('backspace edits existing value instead of replacing', async () => {
-      const { builder, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Set initial value to 75 via keypad
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
+      // Cancel keeps 70, then establish 75 as the next committed starting value.
+      await modalPO.clickCancel()
+      await modalPO.waitForClose()
       await weightTrigger.click()
       await modalPO.waitForOpen()
       await modalPO.enterValueAndConfirm(75)
@@ -93,25 +66,12 @@ describe('NumericKeypad (Touch Device)', () => {
       // Backspace should delete last digit of 75, leaving 7
       await userEvent.click(page.getByRole('button', { name: /backspace/i }))
 
-      const value = await modalPO.getCurrentValue()
-      expect(value).toBe(7) // Edited from 75, not fresh start
+      const backspacedValue = await modalPO.getCurrentValue()
+      expect(backspacedValue).toBe(7) // Edited from 75, not fresh start
 
-      cleanup()
-    })
-
-    it('decimal as first input starts with "0."', async () => {
-      const { builder, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Set initial value via keypad
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-      await modalPO.enterValueAndConfirm(70)
+      // Cancel keeps 75 so reopening still starts from an existing value.
+      await modalPO.clickCancel()
       await modalPO.waitForClose()
-
-      // Reopen
       await weightTrigger.click()
       await modalPO.waitForOpen()
 
@@ -119,15 +79,15 @@ describe('NumericKeypad (Touch Device)', () => {
       await modalPO.clickDecimal()
       await userEvent.click(page.getByRole('button', { name: /^5$/ }))
 
-      const value = await modalPO.getCurrentValue()
-      expect(value).toBe(0.5) // Started fresh with decimal
+      const decimalValue = await modalPO.getCurrentValue()
+      expect(decimalValue).toBe(0.5) // Started fresh with decimal
 
       cleanup()
     })
   })
 
   describe('Keypad digit buttons', () => {
-    it('updates value when tapping digit button', async () => {
+    it('builds single- and multi-digit values and removes the last digit', async () => {
       const { builder, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
@@ -151,21 +111,7 @@ describe('NumericKeypad (Touch Device)', () => {
       const currentValue = await modalPO.getCurrentValue()
       expect(currentValue).toBe(5)
 
-      cleanup()
-    })
-
-    it('appends digits to build multi-digit numbers', async () => {
-      const { builder, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Open the weight modal
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
-
-      // Clear any existing value
-      const backspaceButton = page.getByRole('button', { name: /backspace/i })
+      // Clear again, then build a multi-digit value.
       for (const _ of Array.from({ length: 5 })) {
         await userEvent.click(backspaceButton)
       }
@@ -176,24 +122,9 @@ describe('NumericKeypad (Touch Device)', () => {
       await userEvent.click(page.getByRole('button', { name: /^0$/ }))
 
       // Verify value display shows 100
-      const currentValue = await modalPO.getCurrentValue()
-      expect(currentValue).toBe(100)
-
-      cleanup()
-    })
-
-    it('backspace removes last digit', async () => {
-      const { builder, cleanup } = await createTestApp()
-
-      await builder.setupStrengthWorkoutAndStart(['Bench Press'])
-
-      // Open the weight modal
-      const weightTrigger = page.getByRole('button', { name: /weight for set 1/i })
-      await weightTrigger.click()
-      await modalPO.waitForOpen()
+      expect(await modalPO.getCurrentValue()).toBe(100)
 
       // Clear and enter 123
-      const backspaceButton = page.getByRole('button', { name: /backspace/i })
       for (const _ of Array.from({ length: 5 })) {
         await userEvent.click(backspaceButton)
       }

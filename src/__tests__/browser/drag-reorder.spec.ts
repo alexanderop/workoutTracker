@@ -50,7 +50,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     context.cleanup = null
   })
 
-  it('renders drag handles for each block', () => {
+  it('renders an enabled sortable playlist with handles, connectors, and add action', () => {
     const blocks = [
       createStrengthBlock({ id: 1, name: 'Squat' }),
       createStrengthBlock({ id: 2, name: 'Bench Press' }),
@@ -66,43 +66,29 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation, not user-facing behavior
     const dragHandles = container.querySelectorAll('.drag-handle')
     expect(dragHandles).toHaveLength(3)
-  })
-
-  it('drag handles have grab cursor class', () => {
-    const blocks = [createStrengthBlock({ id: 1, name: 'Squat' })]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 0,
-    })
-    context.cleanup = unmount
-
-    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class implementation
-    const dragHandle = container.querySelector('.drag-handle')
-    expect(dragHandle).toBeTruthy()
-    expect(dragHandle?.classList.contains('cursor-grab')).toBe(true)
-  })
-
-  it('shows sortable container with ref', () => {
-    const blocks = [
-      createStrengthBlock({ id: 1, name: 'Squat' }),
-      createStrengthBlock({ id: 2, name: 'Bench Press' }),
-    ]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 0,
-    })
-    context.cleanup = unmount
+    for (const handle of dragHandles) {
+      expect(handle.classList.contains('cursor-grab')).toBe(true)
+    }
 
     // Container should have children for sortable
     // eslint-disable-next-line no-restricted-syntax -- Testing CSS layout class implementation
     const sortableContainer = container.querySelector('.flex.flex-col')
     expect(sortableContainer).toBeTruthy()
     expect(sortableContainer?.children.length).toBeGreaterThan(0)
+
+    // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
+    const addButton = [...container.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Add Block'),
+    )
+    expect(addButton).toBeTruthy()
+
+    // Two connectors join the three blocks.
+    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class + aria-hidden implementation
+    const connectors = container.querySelectorAll('[aria-hidden="true"].bg-border')
+    expect(connectors).toHaveLength(2)
   })
 
-  it('hides drag handles with opacity-0 when disabled', () => {
+  it('keeps disabled drag handles in layout but hides them and the add action', () => {
     const blocks = [
       createStrengthBlock({ id: 1, name: 'Squat' }),
       createStrengthBlock({ id: 2, name: 'Bench Press' }),
@@ -123,56 +109,6 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     for (const handle of dragHandles) {
       expect(handle.classList.contains('opacity-0')).toBe(true)
     }
-  })
-
-  it('shows selected block with aria-pressed', () => {
-    const blocks = [
-      createStrengthBlock({ id: 1, name: 'Squat' }),
-      createStrengthBlock({ id: 2, name: 'Bench Press' }),
-      createStrengthBlock({ id: 3, name: 'Deadlift' }),
-    ]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 1,
-    })
-    context.cleanup = unmount
-
-    // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed attribute values requires DOM access
-    const blockItems = container.querySelectorAll('button[aria-pressed]')
-    expect(blockItems).toHaveLength(3)
-    expect(blockItems[0]?.getAttribute('aria-pressed')).toBe('false')
-    expect(blockItems[1]?.getAttribute('aria-pressed')).toBe('true')
-    expect(blockItems[2]?.getAttribute('aria-pressed')).toBe('false')
-  })
-
-  it('shows add block button when not disabled', () => {
-    const blocks = [createStrengthBlock({ id: 1, name: 'Squat' })]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 0,
-      disabled: false,
-    })
-    context.cleanup = unmount
-
-    // Find button with "Add Block" text
-    // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
-    const addButton = [...container.querySelectorAll('button')].find((button) =>
-      button.textContent?.includes('Add Block'),
-    )
-    expect(addButton).toBeTruthy()
-  })
-
-  it('hides add block button when disabled', () => {
-    const blocks = [createStrengthBlock({ id: 1, name: 'Squat' })]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 0,
-      disabled: true,
-    })
-    context.cleanup = unmount
 
     // Should not find add block button when disabled
     // eslint-disable-next-line no-restricted-syntax -- Custom render uses raw DOM, not page locators
@@ -182,7 +118,7 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     expect(addButton).toBeFalsy()
   })
 
-  it('shows completed blocks with opacity-60', () => {
+  it('exposes selection and completed-block state independently', () => {
     const blocks = [
       createStrengthBlock({ id: 1, name: 'Squat' }),
       createStrengthBlock({ id: 2, name: 'Bench Press' }),
@@ -200,6 +136,9 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
     // eslint-disable-next-line no-restricted-syntax -- Testing aria-pressed + parent CSS classes requires DOM access
     const blockButtons = container.querySelectorAll('button[aria-pressed]')
     expect(blockButtons).toHaveLength(3)
+    expect(blockButtons[0]?.getAttribute('aria-pressed')).toBe('false')
+    expect(blockButtons[1]?.getAttribute('aria-pressed')).toBe('true')
+    expect(blockButtons[2]?.getAttribute('aria-pressed')).toBe('false')
 
     // First block (index 0) should have opacity-60 (completed)
     expect(getBlockContainer(blockButtons[0]!)?.classList.contains('opacity-60')).toBe(true)
@@ -209,25 +148,5 @@ describe('WorkoutBlockPlaylist - drag and drop', () => {
 
     // Third block (index 2) should have opacity-60 (completed)
     expect(getBlockContainer(blockButtons[2]!)?.classList.contains('opacity-60')).toBe(true)
-  })
-
-  it('renders connectors between blocks', () => {
-    const blocks = [
-      createStrengthBlock({ id: 1, name: 'Squat' }),
-      createStrengthBlock({ id: 2, name: 'Bench Press' }),
-      createStrengthBlock({ id: 3, name: 'Deadlift' }),
-    ]
-
-    const { unmount, container } = renderComponent(WorkoutBlockPlaylist, {
-      blocks,
-      selectedIndex: 0,
-    })
-    context.cleanup = unmount
-
-    // Should have 2 connectors for 3 blocks (between first-second, second-third)
-    // Connectors use bg-border class and aria-hidden
-    // eslint-disable-next-line no-restricted-syntax -- Testing CSS class + aria-hidden implementation
-    const connectors = container.querySelectorAll('[aria-hidden="true"].bg-border')
-    expect(connectors).toHaveLength(2)
   })
 })

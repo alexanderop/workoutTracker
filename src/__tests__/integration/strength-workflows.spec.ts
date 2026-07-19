@@ -8,8 +8,9 @@ describe('Strength Workflows', () => {
   afterEach(cleanupIntegrationTest)
 
   describe('Set Completion', () => {
-    it('advances to the next set after completing a set', async () => {
-      const { builder, workout, common, getByRole, cleanup } = await createTestApp()
+    it('builds a strength block, prefills later sets, and completes the block', async () => {
+      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } =
+        await createTestApp()
 
       // Click "Start New Workout" on home page to start a new workout
       await userEvent.click(getByRole('button', { name: /start new workout/i }))
@@ -26,30 +27,23 @@ describe('Strength Workflows', () => {
 
       // Wait for table to render
       await expect.element(page.getByRole('table')).toBeVisible()
-
-      // Fill and complete the first set
-      await workout.fillCardSetAndComplete({ weight: '100', reps: '8', rir: '2' })
-
-      // Verify the first set shows completed state (inputs disabled)
-      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
-
-      cleanup()
-    })
-
-    it('displays strength block UI and allows completing all sets', async () => {
-      const { builder, workout, common, queryByRole, queryByText, getByRole, cleanup } = await createTestApp()
-
-      // Setup: add strength block and start workout
-      await builder.addStrengthBlock('Bench Press')
-      await builder.startWorkout()
-
-      // Verify initial UI state (table renders)
-      await expect.element(page.getByRole('table')).toBeVisible()
       expect(queryByRole('heading', { name: /bench press/i })).toBeTruthy()
       expect(queryByText('Strength')).toBeTruthy()
 
       // Fill and complete the first set
-      await workout.fillCardSetAndComplete({ weight: '80', reps: '10', rir: '2' })
+      await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
+
+      // Verify the first set shows completed state (inputs disabled)
+      await expect.poll(() => workout.isSetCompleted(0)).toBe(true)
+
+      // The next set is prefilled from the completed set.
+      await expect
+        .poll(async () => (await workout.getActiveSet())?.getValues())
+        .toEqual({
+          weight: '100',
+          reps: '5',
+          rir: '1',
+        })
 
       // Complete set 2 (values should be pre-filled from set 1)
       await userEvent.click(getByRole('button', { name: /mark set 2 complete/i }))
@@ -62,35 +56,6 @@ describe('Strength Workflows', () => {
 
       // Verify completion dialog appears (table is hidden behind dialog)
       await common.waitForDialog()
-
-      cleanup()
-    })
-  })
-
-  describe('Value Prefilling', () => {
-    it('prefills values from previous set when advancing', async () => {
-      const { builder, workout, queryByRole, cleanup } = await createTestApp()
-
-      await builder.addStrengthBlock('Squat')
-      await builder.startWorkout()
-
-      // Wait for table to render
-      await expect.element(page.getByRole('table')).toBeVisible()
-      expect(queryByRole('heading', { name: /squat/i })).toBeTruthy()
-
-      // Fill and complete first set with specific values
-      await workout.fillCardSetAndComplete({ weight: '100', reps: '5', rir: '1' })
-
-      // Verify prefilled values in next set using SetRowPO
-      await expect.poll(async () => {
-        const activeSet = await workout.getActiveSet()
-        if (!activeSet) return null
-        const values = await activeSet.getValues()
-        return values.weight
-      }).toBe('100')
-      const activeSet = await workout.getActiveSet()
-      const values = await activeSet!.getValues()
-      expect(values.reps).toBe('5')
 
       cleanup()
     })

@@ -26,72 +26,41 @@ describe('NumericInputModal', () => {
     vi.useFakeTimers()
   })
 
-  it('renders as fullscreen dialog when open', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-    })
-
-    await expect.element(page.getByRole('dialog')).toBeVisible()
-  })
-
-  it('does not render when closed', async () => {
-    renderModal({
+  it('renders only when open with type-specific title, unit, presets, value, and keypad', async () => {
+    const { rerender } = renderModal({
       open: false,
       modelValue: 20,
       type: 'weight',
+      unit: 'kg',
     })
 
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
-  })
 
-  it('shows cancel button and confirm button', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-    })
+    await rerender({ open: true })
 
-    await expect
-      .element(page.getByRole('button', { name: /cancel/i }))
-      .toBeVisible()
-    await expect
-      .element(page.getByRole('button', { name: /confirm value/i }))
-      .toBeVisible()
-  })
-
-  it('shows title based on type', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-    })
+    await expect.element(page.getByRole('dialog')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /cancel/i })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /confirm value/i })).toBeVisible()
 
     await expect.element(page.getByText(/weight/i)).toBeVisible()
-  })
-
-  it('contains preset list, value display, and keypad', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-    })
 
     // Preset list (check for a preset button)
-    await expect
-      .element(page.getByRole('option', { selected: true }))
-      .toBeVisible()
+    await expect.element(page.getByRole('option', { selected: true })).toBeVisible()
 
     // Value display (uses role="status" with aria-label)
-    await expect
-      .element(page.getByRole('status', { name: /current value/i }))
-      .toBeVisible()
+    await expect.element(page.getByRole('status', { name: /current value/i })).toBeVisible()
 
     // Keypad (digit buttons)
-    await expect
-      .element(page.getByRole('button', { name: '5', exact: true }))
-      .toBeVisible()
+    await expect.element(page.getByRole('button', { name: '5', exact: true })).toBeVisible()
+
+    await expect.element(page.getByRole('option', { name: /22\.5/ })).toBeInTheDocument()
+    await expect.element(page.getByRole('option', { selected: true }).getByText('kg')).toBeVisible()
+
+    await rerender({ modelValue: 10, type: 'reps' })
+    await expect.element(page.getByRole('option', { name: /^11\b/ })).toBeInTheDocument()
+
+    await rerender({ modelValue: 5, type: 'rir' })
+    await expect.element(page.getByRole('option', { name: /^10\b/ })).toBeInTheDocument()
   })
 
   it('syncs value between preset selection and keypad', async () => {
@@ -180,53 +149,6 @@ describe('NumericInputModal', () => {
 
     expect(onUpdate).not.toHaveBeenCalled()
     expect(onOpenChange).toHaveBeenCalledWith(false)
-  })
-
-  it('uses smart presets for weight type', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-    })
-
-    // Weight preset should show decimal values
-    await expect.element(page.getByRole('option', { name: /22\.5/ })).toBeInTheDocument()
-  })
-
-  it('uses smart presets for reps type', async () => {
-    renderModal({
-      open: true,
-      modelValue: 10,
-      type: 'reps',
-    })
-
-    // Reps preset should show integer values only
-    await expect.element(page.getByRole('option', { name: /^11\b/ })).toBeInTheDocument()
-  })
-
-  it('uses smart presets for rir type', async () => {
-    renderModal({
-      open: true,
-      modelValue: 5,
-      type: 'rir',
-    })
-
-    // RIR max is 10
-    await expect.element(page.getByRole('option', { name: /^10\b/ })).toBeInTheDocument()
-  })
-
-  it('shows unit label for weight', async () => {
-    renderModal({
-      open: true,
-      modelValue: 20,
-      type: 'weight',
-      unit: 'kg',
-    })
-
-    // Check that the selected preset shows the unit
-    await expect
-      .element(page.getByRole('option', { selected: true }).getByText('kg'))
-      .toBeVisible()
   })
 
   it('closes on Escape key', async () => {

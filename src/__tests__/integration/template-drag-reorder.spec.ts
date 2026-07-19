@@ -58,7 +58,7 @@ describe('Template Drag-and-Drop Reordering', () => {
   afterEach(cleanupIntegrationTest)
 
   describe('drag handle visibility', () => {
-    it('shows drag handle on each block for reordering', async () => {
+    it('renders the sortable blocks in order with handles and no legacy arrow controls', async () => {
       const { navigateTo, cleanup } = await createTestApp()
 
       // Seed template with 2 exercises
@@ -84,30 +84,15 @@ describe('Template Drag-and-Drop Reordering', () => {
         expect(handle).toBeTruthy()
         // Drag handle should have cursor-grab styling
         expect(handle.classList.contains('cursor-grab')).toBe(true)
+        expect(handle.classList.contains('drag-handle')).toBe(true)
       }
-
-      cleanup()
-    })
-
-    it('does not show move up/down arrow buttons (replaced by drag)', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
-
-      // Seed template with 2 exercises
-      const template = await seedTemplate({
-        name: 'No Arrows Test',
-        blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
-        ],
-      })
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
 
       // Assert: Move up/down buttons should NOT exist
       await expect.element(page.getByRole('button', { name: /move up/i })).not.toBeInTheDocument()
       await expect.element(page.getByRole('button', { name: /move down/i })).not.toBeInTheDocument()
+
+      await expect.element(page.getByRole('list')).toBeVisible()
+      expect(getBlockNames()).toEqual(['Exercise A', 'Exercise B'])
 
       cleanup()
     })
@@ -153,61 +138,6 @@ describe('Template Drag-and-Drop Reordering', () => {
       await expect
         .poll(getBlockNames)
         .toEqual(['Second Exercise', 'Third Exercise', 'First Exercise'])
-
-      cleanup()
-    })
-
-    it('has sortable container with correct structure', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
-
-      // Seed template with 2 exercises
-      const template = await seedTemplate({
-        name: 'Sortable Structure Test',
-        blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise A', equipment: 'barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Exercise B', equipment: 'barbell' }),
-        ],
-      })
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
-      await expect.element(page.getByText('Exercise A')).toBeVisible()
-
-      // Verify the list container has the role="list" (used as sortable container)
-      await expect.element(page.getByRole('list')).toBeVisible()
-
-      // Verify each block has a drag handle that SortableJS can target
-      const cards = getBlockCards()
-      expect(cards).toHaveLength(2)
-
-      for (const card of cards) {
-        const handle = getDragHandle(card)
-        // The handle should have the .drag-handle class that SortableJS targets
-        expect(handle.classList.contains('drag-handle')).toBe(true)
-      }
-
-      cleanup()
-    })
-
-    it('displays blocks in correct initial order', async () => {
-      const { navigateTo, cleanup } = await createTestApp()
-
-      // Seed template with 3 exercises in specific order
-      const template = await seedTemplate({
-        name: 'Order Test',
-        blocks: [
-          createDatabaseTemplateStrengthBlock({ name: 'First Exercise', equipment: 'barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Second Exercise', equipment: 'barbell' }),
-          createDatabaseTemplateStrengthBlock({ name: 'Third Exercise', equipment: 'barbell' }),
-        ],
-      })
-
-      // Navigate to template detail
-      await navigateTo({ name: RouteNames.TemplateDetail, params: { id: template.id } })
-      await expect.element(page.getByText('First Exercise')).toBeVisible()
-
-      // Verify blocks are displayed in correct order
-      expect(getBlockNames()).toEqual(['First Exercise', 'Second Exercise', 'Third Exercise'])
 
       cleanup()
     })
