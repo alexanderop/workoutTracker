@@ -1,3 +1,12 @@
+# [1.40.0](https://github.com/alexanderop/workoutTracker/compare/v1.39.1...v1.40.0) (2026-07-19)
+
+
+### Features
+
+* **ci:** gate browser QA by change risk ([#183](https://github.com/alexanderop/workoutTracker/issues/183)) ([c611f3b](https://github.com/alexanderop/workoutTracker/commit/c611f3b6de4ef11e2078e44af255b2c8e43d45fe))
+
+
+
 ## [1.39.1](https://github.com/alexanderop/workoutTracker/compare/v1.39.0...v1.39.1) (2026-07-19)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * **exercises:** improve barbell icon clarity ([#173](https://github.com/alexanderop/workoutTracker/issues/173)) ([d75d86e](https://github.com/alexanderop/workoutTracker/commit/d75d86e2629c562cf3ff988e4a4f05bb8e9233af))
-
-
-
-# [1.37.0](https://github.com/alexanderop/workoutTracker/compare/v1.36.2...v1.37.0) (2026-07-18)
-
-
-### Features
-
-* **exercises:** stage manifest entries and progress log for missing exercise icons ([#172](https://github.com/alexanderop/workoutTracker/issues/172)) ([cef3dd1](https://github.com/alexanderop/workoutTracker/commit/cef3dd180c817a6e412b2ae4b59e56d746a7b299))
 
 
 
