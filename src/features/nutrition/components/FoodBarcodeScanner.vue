@@ -3,11 +3,8 @@ import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { tryCatch } from '@/lib/tryCatch'
-
-// The BarcodeDetector API is not in TypeScript's DOM lib yet.
-type DetectedBarcode = { rawValue: string }
-type BarcodeDetectorLike = { detect(source: HTMLVideoElement): Promise<Array<DetectedBarcode>> }
-type BarcodeDetectorConstructor = new (options?: { formats?: Array<string> }) => BarcodeDetectorLike
+import type { BarcodeDetectorLike } from '../lib/barcodeDetector'
+import { getBarcodeDetectorConstructor } from '../lib/barcodeDetector'
 
 /** Retail food packaging uses the EAN/UPC family of barcodes. */
 const FOOD_BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e']
@@ -22,15 +19,6 @@ let stream: MediaStream | null = null
 let pollId: ReturnType<typeof globalThis.setInterval> | undefined
 let stopped = false
 let detecting = false
-
-function isDetectorConstructor(value: unknown): value is BarcodeDetectorConstructor {
-  return typeof value === 'function'
-}
-
-function getDetectorConstructor(): BarcodeDetectorConstructor | undefined {
-  const candidate: unknown = Reflect.get(globalThis, 'BarcodeDetector')
-  return isDetectorConstructor(candidate) ? candidate : undefined
-}
 
 function stopTracks(mediaStream: MediaStream) {
   for (const track of mediaStream.getTracks()) track.stop()
@@ -60,7 +48,7 @@ async function detectOnce(detector: BarcodeDetectorLike) {
 }
 
 onMounted(async () => {
-  const DetectorConstructor = getDetectorConstructor()
+  const DetectorConstructor = getBarcodeDetectorConstructor()
   const mediaDevices = globalThis.navigator.mediaDevices
   if (!DetectorConstructor || mediaDevices === undefined) {
     cameraFailed.value = true
@@ -80,7 +68,12 @@ onMounted(async () => {
   }
   stream = mediaStream
   videoRef.value.srcObject = mediaStream
-  await tryCatch(videoRef.value.play())
+  const [playError] = await tryCatch(videoRef.value.play())
+  if (playError) {
+    stopCamera()
+    cameraFailed.value = true
+    return
+  }
   pollId = globalThis.setInterval(() => {
     void detectOnce(detector)
   }, 300)

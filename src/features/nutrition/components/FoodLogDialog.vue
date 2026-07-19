@@ -12,6 +12,8 @@ import { generateId, getNutritionRepository } from '@/db'
 import type { DbFood, DbFoodNutrients, DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { useFoodLookup } from '../composables/useFoodLookup'
+import { isBarcodeScanSupported } from '../lib/barcodeDetector'
+import type { ScannedFood } from '../lib/foodData'
 import { nutrientsPer100Grams, scaleNutrients } from '../lib/nutritionCalculations'
 import FoodBarcodeScanner from './FoodBarcodeScanner.vue'
 
@@ -31,13 +33,12 @@ const calories = ref<number | string>('')
 const protein = ref<number | string>('')
 const carbohydrates = ref<number | string>('')
 const fat = ref<number | string>('')
-const brand = ref<string | null>(null)
+const brand = ref('')
 const saving = ref(false)
 const saveFailed = ref(false)
 
 type ScanState = 'idle' | 'scanning' | 'looking-up' | 'not-found' | 'failed'
-const scanSupported =
-  'BarcodeDetector' in globalThis && globalThis.navigator.mediaDevices !== undefined
+const scanSupported = isBarcodeScanSupported()
 const scanState = ref<ScanState>('idle')
 const { lookup } = useFoodLookup()
 
@@ -65,7 +66,7 @@ watch(open, (isOpen) => {
   protein.value = ''
   carbohydrates.value = ''
   fat.value = ''
-  brand.value = null
+  brand.value = ''
   saveFailed.value = false
   scanState.value = 'idle'
 })
@@ -79,16 +80,9 @@ function roundNutrient(value: number): number {
   return Math.round(value * 10) / 10
 }
 
-async function handleBarcodeDetected(barcode: string) {
-  scanState.value = 'looking-up'
-  const result = await lookup(barcode)
-  if (result.status !== 'found') {
-    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
-    return
-  }
-  const { food } = result
+function applyScannedFood(food: ScannedFood) {
   name.value = food.name
-  brand.value = food.brand
+  brand.value = food.brand ?? ''
   const servingGrams = food.servingGrams ?? 100
   grams.value = servingGrams
   const serving = scaleNutrients(food.nutrientsPer100Grams, servingGrams)
@@ -96,6 +90,16 @@ async function handleBarcodeDetected(barcode: string) {
   protein.value = roundNutrient(serving.proteinGrams)
   carbohydrates.value = roundNutrient(serving.carbohydrateGrams)
   fat.value = roundNutrient(serving.fatGrams)
+}
+
+async function handleBarcodeDetected(barcode: string) {
+  scanState.value = 'looking-up'
+  const result = await lookup(barcode)
+  if (result.status !== 'found') {
+    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
+    return
+  }
+  applyScannedFood(result.food)
   scanState.value = 'idle'
 }
 
@@ -132,10 +136,11 @@ async function save() {
       carbohydrateGrams: Number(carbohydrates.value),
       fatGrams: Number(fat.value),
     }
+    const trimmedBrand = brand.value.trim()
     const food: DbFood = {
       id: generateId(),
       name: name.value.trim(),
-      brand: brand.value,
+      brand: trimmedBrand.length > 0 ? trimmedBrand : null,
       nutrientsPer100Grams: nutrientsPer100Grams(servingNutrients, servingGrams),
       defaultServingName: t('nutrition.food.serving'),
       defaultServingGrams: servingGrams,
@@ -226,6 +231,16 @@ async function save() {
               id="nutrition-food-name"
               v-model="name"
               :placeholder="t('nutrition.food.namePlaceholder')"
+              autocomplete="off"
+            />
+          </div>
+
+          <div v-if="isNewFood" class="space-y-1.5">
+            <Label for="nutrition-food-brand">{{ t('nutrition.food.brand') }}</Label>
+            <Input
+              id="nutrition-food-brand"
+              v-model="brand"
+              :placeholder="t('nutrition.food.brandPlaceholder')"
               autocomplete="off"
             />
           </div>

@@ -41,6 +41,8 @@ export default {
     createNew: 'Neues Lebensmittel erstellen',
     name: 'Lebensmittel',
     namePlaceholder: 'z. B. Griechischer Joghurt',
+    brand: 'Marke (optional)',
+    brandPlaceholder: 'z. B. Arla',
     meal: 'Mahlzeit',
     serving: 'Portion',
     servingGrams: 'Portion (g)',

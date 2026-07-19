@@ -41,6 +41,8 @@ export default {
     createNew: 'Create a new food',
     name: 'Food name',
     namePlaceholder: 'e.g. Greek yogurt',
+    brand: 'Brand (optional)',
+    brandPlaceholder: 'e.g. Arla',
     meal: 'Meal',
     serving: 'serving',
     servingGrams: 'Serving (g)',
