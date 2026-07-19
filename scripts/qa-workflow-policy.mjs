@@ -33,6 +33,30 @@ export function hasMeaningfulTemplateContent(section) {
   })
 }
 
+// Screenshot filenames are produced by an unprivileged Claude run but later
+// committed to a repo branch by the privileged publish job, so they must be
+// safe as both git paths and URL segments: flat (no directories), lowercase
+// kebab/snake, .png only.
+export function isValidScreenshotFilename(name) {
+  return (
+    typeof name === 'string' &&
+    name.length <= 100 &&
+    /^[a-z0-9][a-z0-9_-]*\.png$/.test(name)
+  )
+}
+
+// Replace relative `qa-screenshots/<file>` image references in the markdown
+// report with hosted URLs. Only filenames present in urlMap (i.e. actually
+// published) are rewritten; everything else is left untouched so a dangling
+// reference stays visibly broken instead of pointing at a guessed URL.
+export function rewriteScreenshotLinks(report, urlMap) {
+  if (!report) return report
+  return report.replaceAll(
+    /qa-screenshots\/([a-z0-9][a-z0-9_-]*\.png)/g,
+    (match, file) => urlMap[file] ?? match,
+  )
+}
+
 export function validateQaReport(report, structuredOutput = '') {
   if (structuredOutput.trim()) {
     try {

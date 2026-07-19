@@ -127,6 +127,8 @@ SYSTEM_PROMPT="$(cat .claude/prompts/qa-system-prompt.md)"
 SCHEMA="$(jq -c . .github/schemas/qa-report-schema.json)"
 
 rm -f qa-report.md qa-structured-output.json qa-stream.ndjson
+rm -rf qa-screenshots
+mkdir -p qa-screenshots
 
 echo "── Running Claude QA locally ────────────────────────────"
 echo "Focus:      $FOCUS"
@@ -194,6 +196,9 @@ mkdir -p "$ARCHIVE_DIR"
 for f in qa-stream.ndjson qa-structured-output.json qa-report.md; do
   [[ -f "$f" ]] && cp "$f" "$ARCHIVE_DIR/"
 done
+if compgen -G "qa-screenshots/*.png" > /dev/null; then
+  cp -r qa-screenshots "$ARCHIVE_DIR/"
+fi
 [[ -n "$PR_FIXTURE" ]] && cp "$PR_FIXTURE" "$ARCHIVE_DIR/pr-fixture.md"
 
 echo

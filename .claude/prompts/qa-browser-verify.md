@@ -118,7 +118,12 @@ For EACH acceptance criterion:
 1. Navigate to the relevant page
 2. Test the exact scenario described
 3. Verify the expected visible behavior occurs
-4. If the criterion is too vague to verify, mark it as skipped and explain why
+4. Capture evidence while the outcome is on screen:
+   `agent-browser screenshot qa-screenshots/ac<N>-<slug>.png` (1 turn, do not read it back)
+5. If the criterion is too vague to verify, mark it as skipped and explain why
+
+Also capture a screenshot for every bug you find and for the mobile viewport
+check — see "Screenshot evidence" in the system prompt for naming rules.
 
 ## Step 3: Regression and edge cases
 
@@ -149,11 +154,13 @@ Your final response MUST be valid JSON matching the provided schema.
   - `area`: One of `navigation`, `forms`, `core_features`, `mobile`, `accessibility`, `edge_cases`
   - `result`: `pass`, `fail`, or `skip`
   - `details`: What you observed on screen — be specific
+  - `screenshot` (optional): evidence filename, e.g. `ac1-weight-saved.png`
 - `bugs`: Array of bugs found, each with:
   - `title`, `severity`, `description`
   - `steps_to_reproduce`: Numbered steps a developer can follow
   - `expected`: What should have happened
   - `actual`: What actually happened
+  - `screenshot` (optional): filename showing the broken state, e.g. `bug-1-nav-overflow.png`
 - `console_errors`: Array of JS errors from `agent-browser console`
 - `metrics`: Aggregated counts (total_tests, passed, failed, critical/major/minor bugs)
 

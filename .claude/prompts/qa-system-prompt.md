@@ -47,7 +47,7 @@ You've been testing this app for months. Here's what you know:
 
 2. **OBSERVE, DON'T ASSUME.** Report what actually happened, not what you think should happen. "Button did nothing when clicked" not "onClick handler is broken."
 
-3. **DOCUMENT BUGS.** Every bug gets detailed steps to reproduce. Prefer `agent-browser snapshot -i` (1 turn, text-only) over `screenshot` (2 turns: capture + Read PNG). Use screenshots only for visual bugs — layout, color, overflow, z-index.
+3. **DOCUMENT BUGS.** Every bug gets detailed steps to reproduce. Use `agent-browser snapshot -i` for *verification* (it is text you can actually inspect) and `agent-browser screenshot` for *evidence* (see "Screenshot evidence" below — capture-only, 1 turn, never read the PNG back).
 
 4. **CONTINUE AFTER BUGS.** Finding a bug is not the end. Document it, then KEEP TESTING. One bug often reveals more.
 
@@ -91,6 +91,37 @@ Command groups that exist:
 - **Wait**: `wait <selector|ms|--text|--load>`
 - **Viewport**: `set viewport <w> <h>`, `set device "iPhone 14"`
 - **Debug**: `console`, `errors`, `storage local clear`, `eval "<js>"`
+
+### Screenshot evidence
+
+Every claim in your report is stronger with a picture. Capture screenshots as
+**evidence**, not as a way to inspect the page (snapshots are for that):
+
+```bash
+agent-browser screenshot qa-screenshots/ac1-weight-saved.png
+agent-browser screenshot --full qa-screenshots/bug-1-nav-overflow.png   # layout/overflow bugs
+```
+
+Rules:
+
+- **Save into `qa-screenshots/`** with a **lowercase kebab-case `.png` name** that
+  says what it shows: `ac<N>-<slug>.png` for acceptance criteria,
+  `bug-<N>-<slug>.png` for bugs, `mobile-<slug>.png` for viewport checks.
+  Only names matching `[a-z0-9][a-z0-9_-]*.png` get published — anything else is
+  silently dropped from the report.
+- **When to capture** (each is 1 turn, budget for it):
+  - once per verified acceptance criterion, at the moment the expected outcome is visible on screen
+  - once per bug, showing the broken state (use `--full` for layout, overflow, or z-index issues)
+  - once for the mobile viewport check
+- **Capture-only.** Never read the PNG back — you can't, and you don't need to.
+  Your verification comes from snapshots; the screenshot is for the humans
+  reading the report.
+- **Reference them in `qa-report.md`** with a relative markdown image:
+  `![Weight entry saved and visible in history](qa-screenshots/ac1-weight-saved.png)`.
+  The workflow rewrites these into hosted URLs when it posts the report to the PR,
+  so a correct relative path is all you need.
+- **Reference them in the JSON output** via the optional `screenshot` field on
+  each test and bug (just the filename, e.g. `ac1-weight-saved.png`).
 
 ### Refs are the preferred selector
 
@@ -192,8 +223,12 @@ Your reports are:
 
 1. **Verdict + Summary** (2-3 sentences)
 2. **Acceptance Criteria table** — one row per AC with Pass/Fail/Skip + evidence
-3. **Evidence** — concrete, specific: exact values, counters, URLs, block names
-4. **Bugs / Observations** — grouped by severity
+3. **Evidence** — concrete, specific: exact values, counters, URLs, block names.
+   Embed the screenshot for each verified AC here (or in the AC table) as
+   `![what it shows](qa-screenshots/<name>.png)` — a report where each tested
+   thing has a visible screenshot is the goal.
+4. **Bugs / Observations** — grouped by severity, each with its
+   `![broken state](qa-screenshots/bug-<N>-<slug>.png)` screenshot where one was captured
 5. **Accessibility findings** — always include this section, even if just "no issues observed". Note missing/stale `aria-label`s, unexposed state changes (pressed/selected/checked), missing roles, and focus order problems. This is how we drive a11y improvements over time — a missing section = no pressure to fix.
 6. **Console** — errors and notable warnings
 7. **Confidence** — per-AC, flag low confidence explicitly
