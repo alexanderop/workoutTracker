@@ -119,14 +119,12 @@ export function createTemplateCardioBlock(config: CardioConfig): DbTemplateBlock
 
 /**
  * Returns the exercise names contained in a template block, for display on
- * block cards (see brain/reference/reviews/ux-ui-review-2026-07-04.md
- * Finding M7 -- timed-block cards previously showed only a summary line
+ * block cards. Timed-block cards previously showed only a summary line
  * like "12 min · 1 exercise" with no indication of which exercises).
  *
  * Strength blocks track their own exercise via `name` (shown separately by
  * the card), and cardio blocks have no exercises, so both return an empty
- * list. Tabata is singular (`exercise`, not `exercises`) -- see
- * brain/reference/workout-block-model.md.
+ * list. Tabata is singular (`exercise`, not `exercises`).
  */
 export function getTemplateBlockExerciseNames(block: DbTemplateBlock): ReadonlyArray<string> {
   switch (block.kind) {

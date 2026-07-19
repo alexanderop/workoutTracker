@@ -6,7 +6,7 @@
  * text-gray-200, ...) or `dark:` variants instead of the semantic tokens defined
  * in src/style.css (bg-success, text-block-cardio, text-highlight, ...).
  *
- * Rules (see brain/reference/shadcn-vue-theming.md):
+ * Rules:
  * - Components consume semantic tokens only; raw palette scales are reserved
  *   for the token definitions themselves.
  * - Theming is token-based: `.dark` swaps CSS variables, so app components
@@ -80,8 +80,8 @@ if (violations.length > 0) {
   console.error(
     `\n${violations.length} violation(s). Use semantic tokens from src/style.css instead` +
       ' (bg-success, text-warning, text-highlight, bg-block-<kind>, bg-muted, ...).' +
-      ' See brain/reference/shadcn-vue-theming.md. For intentional real-world colors,' +
-      " add a 'design-tokens-ignore' comment on the line or allowlist the file in" +
+      ' For intentional real-world colors, add a design-tokens-ignore comment on' +
+      ' the line or allowlist the file in' +
       ' scripts/check-design-tokens.mjs with a reason.',
   )
   process.exit(1)

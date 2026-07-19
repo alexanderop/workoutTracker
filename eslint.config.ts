@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs'
 import e18e from '@e18e/eslint-plugin'
 import pluginEslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
@@ -12,6 +13,16 @@ import pluginUnicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
 import { globalIgnores } from 'eslint/config'
 import localRules from './eslint-local-rules'
+
+const FEATURE_BOUNDARY_ZONES = readdirSync(new URL('src/features/', import.meta.url), {
+  withFileTypes: true,
+})
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => ({
+    target: `./src/features/${entry.name}`,
+    from: './src/features',
+    except: [`./${entry.name}`],
+  }))
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -415,21 +426,7 @@ export default defineConfigWithVueTs(
           zones: [
             // === CROSS-FEATURE ISOLATION ===
             // Features cannot import from other features (strict Bulletproof compliance)
-            { target: './src/features/workout', from: './src/features', except: ['./workout'] },
-            { target: './src/features/exercises', from: './src/features', except: ['./exercises'] },
-            { target: './src/features/settings', from: './src/features', except: ['./settings'] },
-            { target: './src/features/timers', from: './src/features', except: ['./timers'] },
-            { target: './src/features/templates', from: './src/features', except: ['./templates'] },
-            {
-              target: './src/features/benchmarks',
-              from: './src/features',
-              except: ['./benchmarks'],
-            },
-            {
-              target: './src/features/log-past-workout',
-              from: './src/features',
-              except: ['./log-past-workout'],
-            },
+            ...FEATURE_BOUNDARY_ZONES,
 
             // === UNIDIRECTIONAL FLOW ===
             // Shared code cannot import from features or views

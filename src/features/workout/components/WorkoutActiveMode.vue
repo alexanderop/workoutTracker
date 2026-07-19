@@ -120,7 +120,6 @@ const canSkipBlock = computed(() => currentBlockIndex.value < totalBlocks.value 
 // to the domain `Set` on blur/Enter, so readiness must not lag one blur behind: a
 // `disabled` footer CTA can't receive the click that would otherwise flush the
 // pending edit). The child owns the readiness rule; this just mirrors its verdict.
-// See Finding 6, July 2026 UX review (`brain/reference/reviews/`).
 const activeSetReady = ref(false)
 
 const canCompleteSet = computed(() => !!activeSet.value && activeSetReady.value)
@@ -227,8 +226,8 @@ function handleUpdateSet(
 
 function handleToggleComplete(set: Set) {
   commitFocusedInput()
-  // Re-fetch by id rather than trusting `set` -- updates are applied immutably
-  // (see VUE_STYLE_GUIDE), so the object captured at click time may already be
+  // Re-fetch by id rather than trusting `set` -- updates are applied immutably,
+  // so the object captured at click time may already be
   // stale once `commitFocusedInput()` has committed a pending edit above.
   const freshSet =
     currentBlock.value && isStrengthBlock(currentBlock.value)

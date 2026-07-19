@@ -1,6 +1,6 @@
 <script lang="ts">
 // +/-15s taps on the rest timer adjust the persisted default rest target
-// in-place (see Finding 8, July 2026 UX review -- `brain/reference/reviews/`).
+// in-place.
 // Also used by the parent as the floor a running countdown may be lowered to,
 // and interpolated into the +/- buttons' aria labels.
 export const REST_ADJUST_STEP_SECONDS = 15

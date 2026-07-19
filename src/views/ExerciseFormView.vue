@@ -56,13 +56,13 @@ const {
   markSaved,
 } = useExerciseForm(() => exercisesStore.customExercises)
 
-// Equipment stays optional; the label makes that explicit (Finding M5).
+// Equipment stays optional; the label makes that explicit.
 const equipmentLabel = computed(
   () => `${t('exercises.labels.equipment')} (${t('common.labels.optional')})`,
 )
 
 // Warn before discarding unsaved changes on back navigation, browser back,
-// or tab close (see brain/reference/reviews/ux-ui-review-2026-07-04.md Finding 5).
+// or tab close.
 const {
   showDialog: showUnsavedChangesDialog,
   confirmDiscard,

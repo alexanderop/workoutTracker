@@ -9,11 +9,13 @@ import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
+import { useKeyboardInset } from '@/composables/useKeyboardInset'
 import { useLanguage } from '@/features/settings/composables/useLanguage'
 import { usePwaUpdate } from '@/composables/usePwaUpdate'
 
 useTheme()
 useGlobalWakeLock()
+useKeyboardInset()
 useLanguage()
 usePwaUpdate()
 

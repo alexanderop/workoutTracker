@@ -151,7 +151,7 @@ function handleMoveDown(index: number) {
       side="bottom"
       :class="
         cn(
-          'max-h-[80vh] flex flex-col',
+          'max-h-[80dvh] flex flex-col',
           // Mobile: bottom sheet
           'bg-background fixed bottom-0 left-0 right-0 z-50 w-full',
           'gap-4 rounded-t-2xl border pt-2 px-4 pb-6 shadow-lg safe-area-bottom',

@@ -19,9 +19,8 @@ import type {
 /**
  * Repository-backed seed and assertion helpers for integration tests.
  *
- * These exist so specs never need the raw Dexie database instance directly
- * (see `brain/reference/plans/2026-07-04-persistence-swap-ticket.md` Slice 6 /
- * AC7). Every helper here reads and writes exclusively through the repository
+ * These exist so specs never need the raw Dexie database instance directly.
+ * Every helper here reads and writes exclusively through the repository
  * getters, so the same specs stay valid against any future adapter.
  */
 

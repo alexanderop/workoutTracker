@@ -80,9 +80,15 @@ function handleCancel() {
         <DialogDescription> {{ t('dialogs.editExercise.description') }} </DialogDescription>
       </DialogHeader>
 
-      <div class="grid gap-4 py-4">
+      <div class="grid min-h-0 gap-4 overflow-y-auto overscroll-contain scroll-py-2 py-4">
         <!-- Duration field for isometric exercises -->
-        <NumberField v-if="isDurationBased" id="target-duration" v-model="targetDuration" :min="1" :max="600">
+        <NumberField
+          v-if="isDurationBased"
+          id="target-duration"
+          v-model="targetDuration"
+          :min="1"
+          :max="600"
+        >
           <Label for="target-duration">{{ t('dialogs.editExercise.targetDuration') }}</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />
@@ -102,7 +108,13 @@ function handleCancel() {
         </NumberField>
 
         <!-- Optional weight field for isometric exercises -->
-        <NumberField v-if="isDurationBased" id="target-weight" v-model="targetWeight" :min="0" :max="500">
+        <NumberField
+          v-if="isDurationBased"
+          id="target-weight"
+          v-model="targetWeight"
+          :min="0"
+          :max="500"
+        >
           <Label for="target-weight">{{ t('dialogs.editExercise.targetWeight') }}</Label>
           <NumberFieldContent>
             <NumberFieldDecrement />

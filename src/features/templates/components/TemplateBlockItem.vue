@@ -55,8 +55,8 @@ const avatarName = computed(() => {
 })
 
 // Exercise names contained in the block, shown inline on the card and used
-// to build distinguishable accessible names (Findings M6 & M7, UX review
-// 2026-07-04). Empty for strength (name already shown via blockTitle) and
+// to build distinguishable accessible names. Empty for strength (name already
+// shown via blockTitle) and
 // cardio (no exercises).
 const exerciseNames = computed(() => getTemplateBlockExerciseNames(block))
 
@@ -174,8 +174,8 @@ function decrementSetCount(): void {
           </span>
         </div>
         <p class="text-sm text-muted-foreground mt-0.5">{{ blockSubtitle }}</p>
-        <!-- Contained exercise names (Finding M7): timed-block cards used to
-             hide which exercises they held behind a summary like "12 min ·
+        <!-- Timed-block cards used to hide which exercises they held behind
+             a summary like "12 min ·
              1 exercise". Strength cards already show the name via blockTitle
              above, and cardio has no exercises, so both are excluded. -->
         <p v-if="exerciseNames.length > 0" class="text-sm text-muted-foreground mt-0.5">

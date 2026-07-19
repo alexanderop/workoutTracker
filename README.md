@@ -200,8 +200,6 @@ src/
 - **Integration**: Use `createTestApp()` for full app testing with routing
 - **Factories**: Use builders like `workoutBuilder()` and `dbWorkoutBuilder()` for test data
 
-See `brain/reference/agent/testing.md` for detailed testing patterns.
-
 ## IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)

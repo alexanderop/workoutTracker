@@ -28,7 +28,7 @@ reviews:
   abort_on_close: true
 
   path_filters:
-    - '!brain/reference/**'
+    - '!brain/**'
     - '!**/__screenshots__/**'
 
   path_instructions:

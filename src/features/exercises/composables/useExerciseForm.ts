@@ -75,8 +75,7 @@ export function useExerciseForm(
   // A muscle group is required (not just equipment) because the exercise
   // library's muscle filter uses strict equality against a concrete value --
   // an exercise with `muscle: undefined` is invisible in every filtered tab
-  // except "All" (see brain/reference/reviews/ux-ui-review-2026-07-04.md
-  // Finding M5). Equipment has the same filter risk but is left optional.
+  // except "All". Equipment has the same filter risk but is left optional.
   const isMuscleValid = computed(() => form.value.muscle !== undefined)
   const isSaveDisabled = computed(
     () =>

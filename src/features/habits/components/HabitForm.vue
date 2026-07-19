@@ -184,7 +184,7 @@ function handleSave() {
         </DialogDescription>
       </DialogHeader>
 
-      <div class="space-y-4">
+      <div class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
         <!-- Name -->
         <div class="space-y-1.5">
           <Label for="habit-name">{{ t('habits.form.nameLabel') }}</Label>
