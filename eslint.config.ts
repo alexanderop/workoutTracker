@@ -270,6 +270,10 @@ export default defineConfigWithVueTs(
       // blocking unrelated work; tighten each rule after its baseline is paid.
       'vitest/expect-expect': 'warn',
       'vitest/no-conditional-expect': 'warn',
+      // Vitest accepts a message as expect's second argument and options as
+      // expect.poll's second argument. Keep validating calls without rejecting
+      // those supported APIs after @vitest/eslint-plugin 1.6.23.
+      'vitest/valid-expect': ['error', { maxArgs: 2 }],
       // Consistency
       'vitest/consistent-test-it': ['error', { fn: 'it' }],
       'vitest/prefer-hooks-on-top': 'error',

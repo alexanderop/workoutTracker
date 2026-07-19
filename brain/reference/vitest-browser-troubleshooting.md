@@ -214,3 +214,16 @@ If Vite hangs on first run after a dependency change, delete
 `node_modules/.vite` — `optimizeDeps.include: ['workbox-window']` is the only
 forced pre-bundle and stale caches occasionally confuse the PWA plugin in
 browser mode.
+
+## Missing Vue Runtime Initializer After Dependency Updates
+
+If every browser test fails while importing `setup.ts` with an error such as
+`init_runtime_dom_esm_bundler is not defined` inside an optimized `vue-i18n`
+chunk, or `init_shared_esm_bundler is not defined` inside an optimized
+`vitest-browser-vue` / `@vue/test-utils` chunk, first clear
+`node_modules/.vite`. If a fresh optimizer cache reproduces the failure, check
+whether the lockfile upgraded Vue's runtime packages to 3.5.40. Keeping the
+Vue catalog and runtime graph on 3.5.38 while accepting the other dependency
+updates restored valid optimizer output. Excluding `vue-i18n` alone is not
+enough because Vitest deep-includes `vitest-browser-vue` and
+`@vue/test-utils` in its optimizer graph.
