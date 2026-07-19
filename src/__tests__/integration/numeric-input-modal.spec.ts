@@ -159,7 +159,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
   })
 
   describe('SetRowPO Integration', () => {
-    it('SetRowPO.fill() works in modal mode', async () => {
+    it('SetRowPO.enterValues() works in modal mode', async () => {
       const { builder, workout, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])

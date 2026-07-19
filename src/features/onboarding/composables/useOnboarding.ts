@@ -8,6 +8,10 @@ import {
 } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 
+/**
+ * Check if user has existing data (workouts, templates, or benchmarks).
+ * Used to show "Welcome back" variant.
+ */
 async function checkExistingData(): Promise<boolean> {
   const [error, counts] = await tryCatch(
     Promise.all([
@@ -77,10 +81,6 @@ export const useOnboarding = createGlobalState(() => {
     isInitialized.value = true
   }
 
-  /**
-   * Check if user has existing data (workouts, templates, or benchmarks).
-   * Used to show "Welcome back" variant.
-   */
   /**
    * Update and persist the current step.
    */
