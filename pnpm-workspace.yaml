@@ -27,7 +27,7 @@ catalogs:
     date-fns: ^4.4.0
     dexie: ^4.4.4
     sortablejs: ^1.15.7
-    vue: 3.5.38
+    vue: 3.5.40
     vue-i18n: ^11.4.6
     vue-router: ^5.1.0
     web-vitals: ^5.3.0
