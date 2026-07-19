@@ -47,12 +47,28 @@ still reported nothing.
 
 ### Current settings (claude-qa-browser.yml)
 
-| Mode | max_turns | step timeout |
-|------|-----------|--------------|
-| fast | 100 | 20 min |
-| verify | 60 | 20 min |
-| test/explore | 80 | 20 min |
-| retry | 40 | 8 min |
+| Mode         | max_turns | step timeout |
+| ------------ | --------- | ------------ |
+| fast         | 100       | 20 min       |
+| verify       | 60        | 20 min       |
+| full         | 100       | 20 min       |
+| test/explore | 80        | 20 min       |
+| retry        | 40        | 8 min        |
+
+### Admit browser QA before paying its setup cost
+
+The workflow has a separate `qa-admission` job before checkout, dependency
+installation, browser setup, fixtures, the dev server, and Claude. It uses the
+GitHub API to classify a PR as `skip`, `fast`, `verify`, or `full` from changed
+paths, change-set size, feature spread, and whether implementation tests also
+changed. Explicit dispatches, `@claude verify/test`, and the `qa-verify` label
+produce `required` and bypass automatic admission.
+
+Keep this gate deterministic. Starting a second AI agent merely to decide
+whether the QA agent is worth starting defeats the cost-saving purpose. Treat
+PR prose as useful QA context, not as permission to suppress QA. Also keep the
+gate in its own job: putting it after `setup-test-env` saves Claude turns but
+still pays the dependency and Playwright setup cost on every skipped PR.
 
 ### PR contract quality gates QA quality
 
