@@ -46,6 +46,11 @@
 
 `agent-browser` is a CLI — call it via the **Bash tool**. The dev server is already running at {{APP_URL}}. See the system prompt for the command list, known gotchas, verdict rubric, and the onboarding-dismissal requirement.
 
+The browser is initialized with **iPhone 14 device emulation**. Keep the entire
+pass mobile-first. Use a desktop viewport only when a criterion explicitly
+requires desktop behavior. Reload after switching, then restore
+`set device "iPhone 14"` and reload again before continuing.
+
 ## Mission
 
 You are doing a **fast, pragmatic QA pass** for this PR.

@@ -17,6 +17,18 @@ import {
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
 
+function assertMobileStartup(commands) {
+  const open = commands.indexOf('agent-browser open')
+  const device = commands.indexOf('agent-browser set device "iPhone 14"')
+  const reload = commands.indexOf('agent-browser reload')
+  const firstSnapshot = commands.indexOf('agent-browser snapshot')
+
+  assert.ok(open !== -1, 'mobile startup must open the app')
+  assert.ok(device > open, 'device emulation must follow opening the app')
+  assert.ok(reload > device, 'the app must reload after enabling device emulation')
+  assert.ok(firstSnapshot > reload, 'device emulation must precede the first snapshot')
+}
+
 test('filled PR template fields are meaningful', () => {
   const body = `## QA Scope
 
@@ -182,6 +194,7 @@ test('workflow definitions retain hardening invariants', async () => {
   ])
   assert.match(browser, /qa-workflow-policy\.mjs/)
   assert.match(browser, /Bash\(agent-browser:\*\)/)
+  assert.match(browser, /agent-browser set device "iPhone 14"/)
   assert.doesNotMatch(browser, /--allowedTools "Bash,/)
   assert.match(fix, /name: Verify candidate without secrets/)
   assert.match(fix, /persist-credentials: false/)
@@ -216,6 +229,60 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
+})
+
+test('browser QA starts and stays mobile-first by default', async () => {
+  const [
+    workflowSource,
+    systemPrompt,
+    fastPrompt,
+    verifyPrompt,
+    explorePrompt,
+    pipelinePrompt,
+    mobileInitScript,
+    localRunner,
+  ] = await Promise.all([
+    readFile('.github/workflows/claude-qa-browser.yml', 'utf8'),
+    readFile('.claude/prompts/qa-system-prompt.md', 'utf8'),
+    readFile('.claude/prompts/qa-browser-fast.md', 'utf8'),
+    readFile('.claude/prompts/qa-browser-verify.md', 'utf8'),
+    readFile('.claude/prompts/qa-browser-explore.md', 'utf8'),
+    readFile('.claude/prompts/qa-browser-test.md', 'utf8'),
+    readFile('.claude/scripts/qa-mobile-emulation.js', 'utf8'),
+    readFile('scripts/test-claude-qa-local.sh', 'utf8'),
+  ])
+
+  const workflow = parseYaml(workflowSource)
+  const warmup = workflow.jobs['qa-browser'].steps.find(
+    (step) => step.name === 'Warm-up smoke check (agent-browser + onboarding)',
+  )
+  const retryPrompt = workflow.jobs['qa-browser'].steps.find(
+    (step) => step.name === 'Load retry prompt',
+  )
+
+  assert.ok(warmup, 'browser QA warm-up step must exist')
+  assert.ok(retryPrompt, 'browser QA retry prompt must exist')
+  assert.equal(
+    workflow.jobs['qa-browser'].env.AGENT_BROWSER_INIT_SCRIPTS,
+    '.claude/scripts/qa-mobile-emulation.js',
+  )
+  assertMobileStartup(warmup.run)
+  assert.match(warmup.run, /MOBILE_READY=.*pointer: coarse.*maxTouchPoints/)
+  assert.match(retryPrompt.run, /set device "iPhone 14".*reload.*pointer: coarse/s)
+  assert.match(systemPrompt, /MOBILE FIRST/)
+  assert.match(systemPrompt, /restore\s+iPhone 14 emulation plus reload/)
+  assert.match(fastPrompt, /initialized with \*\*iPhone 14 device emulation\*\*/)
+  assert.match(fastPrompt, /restore\s+`set device "iPhone 14"` and reload/)
+  assert.match(verifyPrompt, /initialized with \*\*iPhone 14 device emulation\*\*/)
+  assert.match(verifyPrompt, /restore `set device "iPhone 14"` and\s+reload/)
+  assert.doesNotMatch(verifyPrompt, /skip mobile viewport/i)
+  const exploreStartup = explorePrompt.match(/```bash\n([\s\S]*?)```/)?.[1]
+  assert.ok(exploreStartup, 'explore prompt must contain a startup command block')
+  assertMobileStartup(exploreStartup)
+  assertMobileStartup(pipelinePrompt.slice(pipelinePrompt.indexOf('## Steps')))
+  assert.match(mobileInitScript, /coarsePointerQuery/)
+  assert.match(mobileInitScript, /maxTouchPoints/)
+  assert.match(localRunner, /AGENT_BROWSER_INIT_SCRIPTS/)
 })
 
 test('Playwright system packages are installed independently of the browser cache', async () => {

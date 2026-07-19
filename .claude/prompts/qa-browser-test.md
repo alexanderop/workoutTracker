@@ -17,15 +17,17 @@ Just call Bash directly with the command.
 
 See the system prompt for the full command reference.
 
-## Steps (5 turns max)
+## Steps (8 turns max)
 
 1. Open the app — run in Bash: `agent-browser open {{APP_URL}}`
-2. Dismiss onboarding — snapshot, find "Skip" button, click it
-3. Take a snapshot — run in Bash: `agent-browser snapshot`
-4. Verify the page rendered (snapshot is not empty)
-5. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
-6. Take another snapshot to confirm the new page loaded
-7. Return your JSON result
+2. Enable touch-capable mobile emulation — run in Bash: `agent-browser set device "iPhone 14"`
+3. Reload the app — run in Bash: `agent-browser reload`
+4. Dismiss onboarding — snapshot, find "Skip" button, click it
+5. Take a snapshot — run in Bash: `agent-browser snapshot`
+6. Verify the page rendered (snapshot is not empty)
+7. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
+8. Take another snapshot to confirm the new page loaded
+9. Return your JSON result
 
 ## IMPORTANT: Structured Output
 

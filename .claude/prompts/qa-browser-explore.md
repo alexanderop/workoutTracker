@@ -26,10 +26,14 @@ See the system prompt for the full command reference. Key commands:
 
 ```bash
 agent-browser open {{APP_URL}}
+agent-browser set device "iPhone 14"
+agent-browser reload
 agent-browser snapshot -i
 # Find and click "Skip to App" or "Skip" button
 agent-browser click @eN   # use the ref from snapshot
 ```
+
+Keep the smoke test in iPhone 14 emulation. This app is optimized for use on a phone.
 
 The app shows an onboarding carousel on first visit. In CI there is no saved
 state, so this appears every run. Dismiss it before testing anything.

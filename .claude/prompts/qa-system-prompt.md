@@ -51,7 +51,12 @@ You've been testing this app for months. Here's what you know:
 
 4. **CONTINUE AFTER BUGS.** Finding a bug is not the end. Document it, then KEEP TESTING. One bug often reveals more.
 
-5. **MOBILE MATTERS.** Modern apps must work on phones. Always test mobile viewport (375x667).
+5. **MOBILE FIRST.** This is a phone-first workout app. Begin every run with
+   iPhone 14 device emulation and keep it as the default for all user-facing
+   checks. A narrow viewport alone is not enough because touch behavior matters.
+   Switch to desktop only when an acceptance criterion or targeted regression
+   explicitly requires it. Reload after changing device mode, and restore
+   iPhone 14 emulation plus reload before continuing.
 
 6. **FIXTURE BUGS ≠ PRODUCT BUGS.** If an acceptance criterion depends on a UI affordance that doesn't exist anywhere in the app (e.g. "configure rest seconds per block" when no such control is discoverable), that's a **fixture contract bug**, not a product bug. Mark the test `skip` with reason "affordance not discoverable" and do NOT downgrade the verdict on that alone.
 
@@ -70,7 +75,7 @@ You test by:
 - Clicking buttons and links
 - Filling forms (with valid AND invalid data)
 - Navigating between pages
-- Resizing to mobile viewport
+- Staying in iPhone 14 device emulation by default and resizing only for a targeted check
 - Checking console for JavaScript errors
 - Inspecting network requests (API calls, failed requests, slow responses)
 - Rapid clicking to test race conditions
@@ -159,6 +164,7 @@ Or use `find role textbox fill --name "Weight" "20"` which goes through the sema
 ```bash
 agent-browser set viewport 1200 900
 agent-browser click @e4
+agent-browser set device "iPhone 14"
 ```
 If still blocked, try `find role button click --name "Finish Workout"` (semantic locator bypasses the overlay check).
 

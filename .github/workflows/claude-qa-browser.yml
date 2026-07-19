@@ -260,6 +260,7 @@ jobs:
       NODE_VERSION: '22'
       CLAUDE_MODEL: claude-sonnet-5
       APP_URL: http://localhost:5173
+      AGENT_BROWSER_INIT_SCRIPTS: .claude/scripts/qa-mobile-emulation.js
 
     steps:
       - name: Get PR metadata for comment or dispatch
@@ -584,9 +585,17 @@ jobs:
           set -euo pipefail
           echo "--- agent-browser open ---"
           agent-browser open "${{ env.APP_URL }}"
+          echo "--- enabling mobile-first QA device (iPhone 14) ---"
+          agent-browser set device "iPhone 14"
           echo "--- clearing storage to force fresh onboarding state ---"
           agent-browser storage local clear || true
           agent-browser reload || true
+          echo "--- verifying mobile touch profile ---"
+          MOBILE_READY=$(agent-browser eval "matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0 && 'ontouchstart' in window" | tr -d '[:space:]')
+          if [ "$MOBILE_READY" != "true" ]; then
+            echo "::error::Mobile touch profile was not established before browser QA"
+            exit 1
+          fi
           echo "--- initial snapshot ---"
           SNAPSHOT=$(agent-browser snapshot -i -c)
           echo "$SNAPSHOT"
@@ -854,9 +863,10 @@ jobs:
             echo 'Do a quick navigation smoke test with qa-report.md written FIRST:'
             echo '1. FIRST ACTION: Write qa-report.md as a skeleton (verdict UNKNOWN, empty sections) so a report exists even if this run dies'
             echo "2. Open ${APP_URL} with agent-browser"
-            echo '3. Dismiss onboarding if a "Skip to App" button is in the snapshot'
-            echo '4. Check 3-4 main pages load correctly, updating qa-report.md after each page'
-            echo '5. Finalize qa-report.md no later than 30 turns spent (hard limit is 40)'
+            echo '3. Run agent-browser set device "iPhone 14", reload, and verify matchMedia("(pointer: coarse)").matches before the first snapshot'
+            echo '4. Dismiss onboarding if a "Skip to App" button is in the snapshot'
+            echo '5. Check 3-4 main pages load correctly, updating qa-report.md after each page'
+            echo '6. Finalize qa-report.md no later than 30 turns spent (hard limit is 40)'
             echo ''
             echo 'qa-report.md must contain:'
             echo '- Summary of pages tested'
