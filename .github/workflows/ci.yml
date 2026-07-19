@@ -76,7 +76,7 @@ jobs:
           annotations: true
           min-confidence: high
           min-severity: high
-          version: 1.27.0
+          version: 1.25.2
 
   osv:
     runs-on: ubuntu-24.04
