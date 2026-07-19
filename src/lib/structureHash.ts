@@ -1,5 +1,7 @@
 import type { DbBenchmarkRound } from '@/db/schema'
 
+const orderKeyCollator = new Intl.Collator()
+
 /**
  * Structure item used for hash generation.
  * Includes only fields that affect workout structure (excludes images, orderKeys).
@@ -47,13 +49,13 @@ function hashString(string_: string): string {
 export function generateStructureHash(rounds: ReadonlyArray<DbBenchmarkRound>): string {
   // Sort rounds by orderKey to ensure consistent ordering
   const sortedRounds = [...rounds].toSorted((a, b) =>
-    a.orderKey.localeCompare(b.orderKey),
+    orderKeyCollator.compare(a.orderKey, b.orderKey),
   )
 
   // Build structure for hashing (excludes images and orderKeys)
   const structure: Array<StructureRound> = sortedRounds.map((round) => ({
     exercises: [...round.exercises]
-      .toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+      .toSorted((a, b) => orderKeyCollator.compare(a.orderKey, b.orderKey))
       .map((ex) => ({
         exerciseDefinitionId: ex.exerciseDefinitionId,
         name: ex.name,

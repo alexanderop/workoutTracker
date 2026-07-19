@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Image upload availability differs by browser capability. */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { createTestApp } from '../helpers/createTestApp'

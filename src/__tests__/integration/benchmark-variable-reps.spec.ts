@@ -1,3 +1,5 @@
+/* eslint-disable vitest/no-disabled-tests -- Deferred cases document unsupported variable-rep benchmark flows. */
+/* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 /**
  * Integration tests for Variable Reps Benchmark feature.
  *
@@ -48,7 +50,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function isValidRound(round: unknown): boolean {
   if (!isRecord(round)) return false
   if (typeof round.orderKey !== 'string') return false
-  return !!Array.isArray(round.exercises);
+  return !!Array.isArray(round.exercises)
 }
 
 /**
@@ -71,7 +73,8 @@ function assertBenchmarkWithRounds(benchmark: unknown): asserts benchmark is Ben
   if (!isBenchmarkWithRounds(benchmark)) {
     throw new Error(
       'Benchmark does not have rounds-based schema. ' +
-      'Expected rounds array, got: ' + JSON.stringify(benchmark),
+        'Expected rounds array, got: ' +
+        JSON.stringify(benchmark),
     )
   }
 }
@@ -201,9 +204,7 @@ describe('Variable Reps Benchmark', () => {
         name: 'Test Definition Preservation',
         rounds: [
           {
-            exercises: [
-              { name: 'Burpees', reps: 40, exerciseDefinitionId: 'burpees-123' },
-            ],
+            exercises: [{ name: 'Burpees', reps: 40, exerciseDefinitionId: 'burpees-123' }],
           },
         ],
       })
@@ -354,8 +355,18 @@ describe('Variable Reps Benchmark', () => {
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Delete Exercise',
         rounds: [
-          { exercises: [{ name: 'Burpees', reps: 40 }, { name: 'Squats', reps: 30 }] },
-          { exercises: [{ name: 'Burpees', reps: 30 }, { name: 'Squats', reps: 20 }] },
+          {
+            exercises: [
+              { name: 'Burpees', reps: 40 },
+              { name: 'Squats', reps: 30 },
+            ],
+          },
+          {
+            exercises: [
+              { name: 'Burpees', reps: 30 },
+              { name: 'Squats', reps: 20 },
+            ],
+          },
         ],
       })
 
@@ -462,8 +473,18 @@ describe('Variable Reps Benchmark', () => {
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Pyramid',
         rounds: [
-          { exercises: [{ name: 'Burpees', reps: 40 }, { name: 'Squats', reps: 35 }] },
-          { exercises: [{ name: 'Lunges', reps: 25 }, { name: 'Pull-ups', reps: 20 }] },
+          {
+            exercises: [
+              { name: 'Burpees', reps: 40 },
+              { name: 'Squats', reps: 35 },
+            ],
+          },
+          {
+            exercises: [
+              { name: 'Lunges', reps: 25 },
+              { name: 'Pull-ups', reps: 20 },
+            ],
+          },
         ],
       })
 
@@ -541,9 +562,7 @@ describe('Variable Reps Benchmark', () => {
       // Create benchmark and complete a workout
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test Warning',
-        rounds: [
-          { exercises: [{ name: 'Burpees', reps: 40 }] },
-        ],
+        rounds: [{ exercises: [{ name: 'Burpees', reps: 40 }] }],
       })
       await createCompletedAttempt(benchmark.id, 120)
 
@@ -557,9 +576,9 @@ describe('Variable Reps Benchmark', () => {
 
       // Warning dialog should appear
       await expect.element(page.getByRole('dialog')).toBeVisible()
-      await expect.element(
-        page.getByText(/changing.*structure.*break comparison.*previous results/i),
-      ).toBeVisible()
+      await expect
+        .element(page.getByText(/changing.*structure.*break comparison.*previous results/i))
+        .toBeVisible()
 
       // Cancel and verify not saved
       await userEvent.click(page.getByRole('button', { name: /cancel/i }))
@@ -574,9 +593,7 @@ describe('Variable Reps Benchmark', () => {
       // Create benchmark with completed workout
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Original Name',
-        rounds: [
-          { exercises: [{ name: 'Burpees', reps: 40 }] },
-        ],
+        rounds: [{ exercises: [{ name: 'Burpees', reps: 40 }] }],
       })
       await createCompletedAttempt(benchmark.id, 120)
 
@@ -599,9 +616,7 @@ describe('Variable Reps Benchmark', () => {
       // Create benchmark without any completed workouts
       const benchmark = await createForTimeBenchmarkWithRounds({
         name: 'Test No Warning',
-        rounds: [
-          { exercises: [{ name: 'Burpees', reps: 40 }] },
-        ],
+        rounds: [{ exercises: [{ name: 'Burpees', reps: 40 }] }],
       })
 
       const app = await createTestApp()
@@ -662,7 +677,7 @@ describe('Variable Reps Benchmark', () => {
 
       // After import, verify the benchmark exists with correct structure
       const imported = await getBenchmarksRepo().getAll()
-      const importedBenchmark = imported.find(b => b.name === 'Export Test')
+      const importedBenchmark = imported.find((b) => b.name === 'Export Test')
       assertBenchmarkWithRounds(importedBenchmark)
 
       expect(importedBenchmark.rounds).toHaveLength(3)
@@ -688,13 +703,11 @@ describe('Variable Reps Benchmark', () => {
       // (exact flow depends on implementation)
 
       // After attempting to import legacy format:
-      await expect.element(
-        page.getByText(/benchmark format is no longer supported/i),
-      ).toBeVisible()
+      await expect.element(page.getByText(/benchmark format is no longer supported/i)).toBeVisible()
 
       // Verify no legacy benchmark was imported
       const benchmarks = await getBenchmarksRepo().getAll()
-      expect(benchmarks.find(b => b.id === 'legacy-123')).toBeFalsy()
+      expect(benchmarks.find((b) => b.id === 'legacy-123')).toBeFalsy()
 
       app.cleanup()
     })

@@ -9,6 +9,8 @@ import { usePersonalBestDisplay } from '../composables/usePersonalBestDisplay'
 import { useBenchmarkAttemptHistory } from '../composables/useBenchmarkAttemptHistory'
 import type { DbBenchmark } from '@/db/schema'
 
+const orderKeyCollator = new Intl.Collator()
+
 const { benchmark, personalBest, showContent } = defineProps<{
   benchmark: DbBenchmark
   personalBest: number | null
@@ -27,14 +29,14 @@ const activeRoundIndex = ref(0)
 
 // Sort rounds and exercises by orderKey
 const sortedRounds = computed(() => {
-  return [...benchmark.rounds].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+  return [...benchmark.rounds].toSorted((a, b) => orderKeyCollator.compare(a.orderKey, b.orderKey))
 })
 
 // Get the currently active round
 const activeRound = computed(() => sortedRounds.value[activeRoundIndex.value])
 
 function sortedExercises(round: (typeof sortedRounds.value)[number]) {
-  return [...round.exercises].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+  return [...round.exercises].toSorted((a, b) => orderKeyCollator.compare(a.orderKey, b.orderKey))
 }
 </script>
 
@@ -92,7 +94,12 @@ function sortedExercises(round: (typeof sortedRounds.value)[number]) {
       :style="{ animationDelay: '200ms' }"
       class="text-sm font-semibold uppercase tracking-wide text-muted-foreground"
     >
-      {{ t('workouts.benchmarks.round', { current: activeRoundIndex + 1, total: sortedRounds.length }) }}
+      {{
+        t('workouts.benchmarks.round', {
+          current: activeRoundIndex + 1,
+          total: sortedRounds.length,
+        })
+      }}
     </div>
 
     <!-- Exercises for active round -->

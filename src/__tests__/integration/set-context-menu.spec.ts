@@ -1,3 +1,4 @@
+/* eslint-disable vitest/expect-expect -- The exercised menu helper asserts its final UI state. */
 import { flushPromises } from '@vue/test-utils'
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -76,10 +77,12 @@ describe('Set Context Menu', () => {
       await contextMenu.waitForClose()
 
       // Verify set count decreased
-      await expect.poll(async () => {
-        const rows = await page.getByRole('table').getByRole('row').all()
-        return rows.length - 1
-      }).toBe(initialSetCount - 1)
+      await expect
+        .poll(async () => {
+          const rows = await page.getByRole('table').getByRole('row').all()
+          return rows.length - 1
+        })
+        .toBe(initialSetCount - 1)
 
       app.cleanup()
     })
@@ -105,10 +108,12 @@ describe('Set Context Menu', () => {
       }
 
       // Verify only 1 set remains
-      await expect.poll(async () => {
-        const rows = await page.getByRole('table').getByRole('row').all()
-        return rows.length - 1
-      }).toBe(1)
+      await expect
+        .poll(async () => {
+          const rows = await page.getByRole('table').getByRole('row').all()
+          return rows.length - 1
+        })
+        .toBe(1)
 
       // Long press on the only remaining set
       const setRow = await workout.getSetRow(0)
@@ -136,7 +141,7 @@ describe('Set Context Menu', () => {
 
       // Fill first set with specific values
       const firstSet = workout.getSet(0)
-      await firstSet.fill({ kg: 100, reps: 8, rir: 2 })
+      await firstSet.enterValues({ kg: 100, reps: 8, rir: 2 })
 
       // Long press on first set
       const setRow = await workout.getSetRow(0)

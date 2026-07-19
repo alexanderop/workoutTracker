@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Localized text may be conditionally present during navigation. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { i18n } from '@/i18n'
@@ -37,8 +38,7 @@ describe('Localization', () => {
 
   describe('Language Switching', () => {
     it('displays English translations when switching from German to English via UI', async () => {
-      const { navigateTo, queryByText, getByRole, findByText, cleanup } =
-        await createTestApp()
+      const { navigateTo, queryByText, getByRole, findByText, cleanup } = await createTestApp()
 
       // Set German as the starting language
       const settingsStore = useSettingsStore()
@@ -64,7 +64,9 @@ describe('Localization', () => {
       await userEvent.click(englishOption)
 
       // Wait for UI to update to English
-      await expect.element(page.getByRole('heading', { level: 1 }), { timeout: 3000 }).toHaveTextContent('Settings')
+      await expect
+        .element(page.getByRole('heading', { level: 1 }), { timeout: 3000 })
+        .toHaveTextContent('Settings')
 
       // Verify English labels display correctly
       const settingsHeading = await getByRole('heading', { level: 1 }).element()

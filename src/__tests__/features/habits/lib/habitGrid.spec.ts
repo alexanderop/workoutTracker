@@ -7,6 +7,10 @@ import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
 // A fixed Wednesday so week-boundary math is deterministic across runs.
 const TODAY = new Date('2026-07-15T12:00:00').getTime()
 
+function dayCell(weeks: ReadonlyArray<HabitGridWeek>, date: number): HabitGridDay | undefined {
+  return weeks.flat().find((day) => day.date === date)
+}
+
 describe('buildHabitGrid', () => {
   it('builds the fixed 16-week dashboard window with explicit visual states', () => {
     const habit = createDbHabit({ kind: { type: 'quantity', target: 8, unit: 'glasses' } })
@@ -109,10 +113,6 @@ describe('buildHabitGrid', () => {
  * day)`) -- exactly like production data would be recorded.
  */
 describe('buildHabitGrid DST transitions (Europe/Berlin, host timezone)', () => {
-  function dayCell(weeks: ReadonlyArray<HabitGridWeek>, date: number): HabitGridDay | undefined {
-    return weeks.flat().find((day) => day.date === date)
-  }
-
   // Spring forward: Sun Mar 29 2026 02:00 -> 03:00 CEST. That local day is
   // only 23h long. Week Mon Mar 23 - Sun Mar 29 contains it.
   describe('spring-forward day (Sun Mar 29 2026)', () => {

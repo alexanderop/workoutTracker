@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Queue controls are conditionally rendered for adjacent blocks. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'

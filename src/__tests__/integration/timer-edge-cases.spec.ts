@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Timer state is conditionally rendered across timer phases. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'

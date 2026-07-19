@@ -94,13 +94,8 @@ describe('emomMath (property-based)', () => {
           const progress = emomProgress(totalMinutes, elapsed)
           expect(progress).toBeGreaterThanOrEqual(0)
           expect(progress).toBeLessThanOrEqual(100)
-          if (elapsed >= totalSeconds) {
-            expect(remaining).toBe(0)
-            expect(progress).toBe(100)
-            return
-          }
-          expect(remaining).toBeGreaterThan(0)
-          expect(progress).toBeLessThan(100)
+          expect(remaining === 0).toBe(elapsed >= totalSeconds)
+          expect(progress === 100).toBe(elapsed >= totalSeconds)
         }),
       )
     })

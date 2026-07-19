@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { tryCatch, createDatabaseError, DatabaseError } from '@/lib/tryCatch'
+import { assert } from '@/__tests__/helpers/assert'
 
 describe('tryCatch', () => {
   describe('async operations', () => {
@@ -60,7 +61,6 @@ describe('tryCatch', () => {
 
     it('normalizes non-Error throws to Error', () => {
       const [error, data] = tryCatch(() => {
-         
         throw 'string throw'
       })
 
@@ -90,24 +90,16 @@ describe('tryCatch', () => {
     it('narrows data type after error check', async () => {
       const [error, data] = await tryCatch<string>(Promise.resolve('test'))
 
-      if (error) {
-        // TypeScript knows: data is null here
-        expect(data).toBeNull()
-        return
-      }
-
-      // TypeScript knows: data is string here
+      assert(error === null, 'Expected tryCatch to resolve')
       expect(data.toUpperCase()).toBe('TEST')
     })
 
     it('narrows error type after success check', async () => {
       const [error, data] = await tryCatch(Promise.resolve({ id: 1, name: 'test' }))
 
-      if (!error) {
-        // TypeScript knows: data is the object type
-        expect(data.id).toBe(1)
-        expect(data.name).toBe('test')
-      }
+      assert(error === null, 'Expected tryCatch to resolve')
+      expect(data.id).toBe(1)
+      expect(data.name).toBe('test')
     })
   })
 
@@ -140,10 +132,9 @@ describe('tryCatch', () => {
       const [error] = await tryCatch<void>(Promise.reject(databaseError))
 
       expect(error).toBeInstanceOf(DatabaseError)
-      if (error instanceof DatabaseError) {
-        expect(error.code).toBe('SAVE_FAILED')
-        expect(error.operation).toBe('save workout')
-      }
+      assert(error instanceof DatabaseError)
+      expect(error.code).toBe('SAVE_FAILED')
+      expect(error.operation).toBe('save workout')
     })
   })
 })

@@ -5,6 +5,8 @@ import { getBenchmarksRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import { generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'
 
+const orderKeyCollator = new Intl.Collator()
+
 /**
  * Exercise within a benchmark round form state.
  */
@@ -71,14 +73,14 @@ function createInitialState(): BenchmarkFormState {
  * Sorts rounds by orderKey for display.
  */
 function sortedRounds(rounds: Array<RoundFormState>): Array<RoundFormState> {
-  return [...rounds].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+  return [...rounds].toSorted((a, b) => orderKeyCollator.compare(a.orderKey, b.orderKey))
 }
 
 /**
  * Sorts exercises by orderKey for display.
  */
 function sortedExercises(exercises: Array<ExerciseFormState>): Array<ExerciseFormState> {
-  return [...exercises].toSorted((a, b) => a.orderKey.localeCompare(b.orderKey))
+  return [...exercises].toSorted((a, b) => orderKeyCollator.compare(a.orderKey, b.orderKey))
 }
 
 /**
@@ -104,8 +106,8 @@ type ReorderKeyParameters = {
 function calculateReorderKey({ sorted, fromIndex, toIndex }: ReorderKeyParameters): string {
   const isMovingDown = fromIndex < toIndex
   const targetKey = sorted[toIndex]?.orderKey ?? null
-  const afterKey = toIndex < sorted.length - 1 ? sorted[toIndex + 1]?.orderKey ?? null : null
-  const beforeKey = toIndex > 0 ? sorted[toIndex - 1]?.orderKey ?? null : null
+  const afterKey = toIndex < sorted.length - 1 ? (sorted[toIndex + 1]?.orderKey ?? null) : null
+  const beforeKey = toIndex > 0 ? (sorted[toIndex - 1]?.orderKey ?? null) : null
 
   return isMovingDown
     ? generateKeyBetween(targetKey, afterKey)
@@ -248,9 +250,7 @@ export function useBenchmarkForm() {
     const exercise = sorted[index]
     if (!exercise) return
 
-    const originalExercise = roundInForm.exercises.find(
-      (e) => e.orderKey === exercise.orderKey,
-    )
+    const originalExercise = roundInForm.exercises.find((e) => e.orderKey === exercise.orderKey)
     if (originalExercise) {
       originalExercise.prescribedReps = reps
     }
@@ -318,9 +318,7 @@ export function useBenchmarkForm() {
     const roundToDelete = sorted[roundIndex]
     if (!roundToDelete) return false
 
-    const originalIndex = form.value.rounds.findIndex(
-      (r) => r.orderKey === roundToDelete.orderKey,
-    )
+    const originalIndex = form.value.rounds.findIndex((r) => r.orderKey === roundToDelete.orderKey)
     if (originalIndex === -1) return true
 
     form.value.rounds.splice(originalIndex, 1)
@@ -331,7 +329,12 @@ export function useBenchmarkForm() {
     // - If deleting after current: no change needed
     const isDeletingCurrent = roundIndex === currentRoundIndex.value
     const isDeletingBefore = roundIndex < currentRoundIndex.value
-    const adjustment = calculateDeletionAdjustment(isDeletingCurrent, isDeletingBefore, roundIndex, currentRoundIndex.value)
+    const adjustment = calculateDeletionAdjustment(
+      isDeletingCurrent,
+      isDeletingBefore,
+      roundIndex,
+      currentRoundIndex.value,
+    )
     currentRoundIndex.value += adjustment
 
     return true

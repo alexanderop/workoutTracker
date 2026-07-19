@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- The exercise list has intentional empty-state branches. */
 /**
  * Integration tests for timed block exercise list behavior.
  *

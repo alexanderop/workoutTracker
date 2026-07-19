@@ -32,7 +32,7 @@ describe('Set Row Checkmark Disabled State', () => {
 
     const row = workout.getSet(0)
     // Leaves focus in the rir input without blurring it (mirrors Finding 6 coverage).
-    await row.fill({ kg: 60, reps: 10, rir: 2 })
+    await row.enterValues({ kg: 60, reps: 10, rir: 2 })
 
     expect(await row.isCompleteButtonDisabled()).toBe(false)
 
@@ -45,7 +45,7 @@ describe('Set Row Checkmark Disabled State', () => {
     await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
     const row = workout.getSet(0)
-    await row.fill({ kg: 60, rir: 2 })
+    await row.enterValues({ kg: 60, rir: 2 })
 
     expect(await row.isCompleteButtonDisabled()).toBe(true)
 

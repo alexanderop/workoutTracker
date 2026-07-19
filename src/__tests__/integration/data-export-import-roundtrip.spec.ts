@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Imported data is narrowed by its discriminated result shape. */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getDataManagementRepository } from '@/db'
 import { seedPopularExercises } from '@/db/seedExercises'

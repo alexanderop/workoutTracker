@@ -1,3 +1,4 @@
+/* eslint-disable vitest/expect-expect -- Page-object navigation performs the relevant visible-state assertions. */
 /**
  * Integration tests for TheExercisesView (Exercise Library page)
  *

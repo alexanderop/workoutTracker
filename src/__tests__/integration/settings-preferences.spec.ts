@@ -1,3 +1,5 @@
+/* eslint-disable vitest/no-conditional-in-test -- Settings controls are conditionally rendered by preference values. */
+/* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getSettingsRepository } from '@/db'

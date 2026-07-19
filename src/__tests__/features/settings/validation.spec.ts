@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Zod result unions require branch-based error assertions. */
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -34,6 +35,32 @@ function createValidExportData(
       workouts: overrides.workouts ?? [],
       benchmarks: overrides.benchmarks ?? [],
     },
+  }
+}
+
+function createValidHabit(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'habit-1',
+    name: 'Drink water',
+    icon: '💧',
+    schedule: { type: 'daily' },
+    kind: { type: 'binary' },
+    autoLink: null,
+    archivedAt: null,
+    orderIndex: 0,
+    createdAt: Date.now(),
+    ...overrides,
+  }
+}
+
+function createValidHabitEntry(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'entry-1',
+    habitId: 'habit-1',
+    date: Date.now(),
+    value: 1,
+    recordedAt: Date.now(),
+    ...overrides,
   }
 }
 
@@ -641,32 +668,6 @@ describe('Size Limits', () => {
 })
 
 describe('Habit Schema Validation', () => {
-  function createValidHabit(overrides: Record<string, unknown> = {}) {
-    return {
-      id: 'habit-1',
-      name: 'Drink water',
-      icon: '💧',
-      schedule: { type: 'daily' },
-      kind: { type: 'binary' },
-      autoLink: null,
-      archivedAt: null,
-      orderIndex: 0,
-      createdAt: Date.now(),
-      ...overrides,
-    }
-  }
-
-  function createValidHabitEntry(overrides: Record<string, unknown> = {}) {
-    return {
-      id: 'entry-1',
-      habitId: 'habit-1',
-      date: Date.now(),
-      value: 1,
-      recordedAt: Date.now(),
-      ...overrides,
-    }
-  }
-
   describe('dbHabitSchema', () => {
     it('accepts a valid daily binary habit', () => {
       const habit = dbHabitSchema.parse(createValidHabit())
@@ -674,9 +675,7 @@ describe('Habit Schema Validation', () => {
     })
 
     it('normalizes invalid legacy appearance fields', () => {
-      const habit = dbHabitSchema.parse(
-        createValidHabit({ description: 42, accent: 'orange' }),
-      )
+      const habit = dbHabitSchema.parse(createValidHabit({ description: 42, accent: 'orange' }))
 
       expect(habit).toMatchObject({ description: null, accent: 'purple' })
     })

@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { Dumbbell, Gauge, TrendingUp } from '@lucide/vue'
 import type { PersonalRecords } from '@/db/schema'
 
+const TRAILING_ZERO_PATTERN = /\.0$/
+
 const { t } = useI18n()
 
 const { personalRecords } = defineProps<{
@@ -48,7 +50,7 @@ const prCards = computed<Array<PRCard>>(() => {
   if (maxVolume) {
     const volumeKg =
       maxVolume.volume >= 1000
-        ? `${(maxVolume.volume / 1000).toFixed(1).replace(/\.0$/, '')}t`
+        ? `${(maxVolume.volume / 1000).toFixed(1).replace(TRAILING_ZERO_PATTERN, '')}t`
         : `${maxVolume.volume} kg`
     cards.push({
       id: 'volume',

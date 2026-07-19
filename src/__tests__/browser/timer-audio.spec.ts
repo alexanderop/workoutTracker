@@ -3,6 +3,14 @@ import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
 
+function setupWithSoundDisabled() {
+  return withSetup(() => {
+    const settings = useSettingsStore()
+    settings.timerSoundEnabled = false
+    return useTimerAudio()
+  })
+}
+
 /**
  * Browser tests for useTimerAudio with real Web Audio API.
  * These tests verify AudioContext behavior that cannot be simulated in jsdom.
@@ -75,12 +83,10 @@ describe('useTimerAudio - browser mode', () => {
       result.playComplete()
 
       // Wait for all 3 oscillators (with delays: 0ms, 150ms, 300ms)
-      await expect
-        .poll(() => createOscillatorSpy.mock.calls.length, { timeout: 1000 })
-        .toBe(3)
+      await expect.poll(() => createOscillatorSpy.mock.calls.length, { timeout: 1000 }).toBe(3)
 
       const frequencies = createOscillatorSpy.mock.results.map(
-        (result) => result.value?.frequency.value,
+        (oscillatorResult) => oscillatorResult.value?.frequency.value,
       )
       expect(frequencies).toEqual([440, 660, 880])
 
@@ -116,14 +122,6 @@ describe('useTimerAudio - browser mode', () => {
   })
 
   describe('respects timerSoundEnabled setting', () => {
-    function setupWithSoundDisabled() {
-      return withSetup(() => {
-        const settings = useSettingsStore()
-        settings.timerSoundEnabled = false
-        return useTimerAudio()
-      })
-    }
-
     it('does not create AudioContext when sounds are disabled', () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 

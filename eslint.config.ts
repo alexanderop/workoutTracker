@@ -570,6 +570,19 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Browser-test locators intentionally build regexes inline so each assertion
+  // describes the UI it is matching. These performance heuristics add noise to
+  // one-shot tests and helpers, while application code remains covered above.
+  {
+    name: 'test/e18e-performance-overrides',
+    files: ['src/__tests__/**/*.{ts,tsx,vue}'],
+    rules: {
+      'e18e/no-spread-in-reduce': 'off',
+      'e18e/prefer-static-collator': 'off',
+      'e18e/prefer-static-regex': 'off',
+    },
+  },
+
   skipFormatting,
   {
     ignores: ['.agents/**', '.claude/**', '.codex/**'],

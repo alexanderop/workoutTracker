@@ -8,6 +8,41 @@ import { getStartOfDay } from '@/lib/date'
 import type { DbActiveBenchmarkWorkout } from '@/db/schema'
 import type { BenchmarkWorkout } from '@/types/benchmark'
 
+function seedActiveBenchmark(
+  overrides: Partial<DbActiveBenchmarkWorkout> = {},
+): Promise<DbActiveBenchmarkWorkout> {
+  const benchmark: DbActiveBenchmarkWorkout = {
+    id: 'current-benchmark',
+    name: 'Test Benchmark',
+    benchmarkId: generateId(),
+    blocks: [createDbForTimeBlock()],
+    selectedBlockIndex: 0,
+    activeExerciseIndex: 0,
+    startedAt: Date.now() - 60_000,
+    lastModifiedAt: Date.now(),
+    globalTimerStartedAt: Date.now() - 60_000,
+    mode: 'active',
+    ...overrides,
+  }
+  return getActiveBenchmarkWorkoutRepository()
+    .save(benchmark)
+    .then(() => benchmark)
+}
+
+function createBenchmarkWorkoutRef(): BenchmarkWorkout {
+  return {
+    id: 'current-benchmark',
+    name: 'Test Benchmark',
+    benchmarkId: generateId(),
+    blocks: [],
+    selectedBlockIndex: 0,
+    activeExerciseIndex: 0,
+    startedAt: Date.now() - 60_000,
+    globalTimerStartedAt: Date.now() - 60_000,
+    mode: 'active',
+  }
+}
+
 /**
  * Benchmark completion persists through a separate repository method
  * (`ActiveBenchmarkWorkoutRepository.complete()`) than the regular workout
@@ -21,41 +56,6 @@ describe('useBenchmarkPersistence completeBenchmark -> habit auto-link', () => {
   beforeEach(async () => {
     await resetDatabase()
   })
-
-  function seedActiveBenchmark(
-    overrides: Partial<DbActiveBenchmarkWorkout> = {},
-  ): Promise<DbActiveBenchmarkWorkout> {
-    const benchmark: DbActiveBenchmarkWorkout = {
-      id: 'current-benchmark',
-      name: 'Test Benchmark',
-      benchmarkId: generateId(),
-      blocks: [createDbForTimeBlock()],
-      selectedBlockIndex: 0,
-      activeExerciseIndex: 0,
-      startedAt: Date.now() - 60_000,
-      lastModifiedAt: Date.now(),
-      globalTimerStartedAt: Date.now() - 60_000,
-      mode: 'active',
-      ...overrides,
-    }
-    return getActiveBenchmarkWorkoutRepository()
-      .save(benchmark)
-      .then(() => benchmark)
-  }
-
-  function createBenchmarkWorkoutRef(): BenchmarkWorkout {
-    return {
-      id: 'current-benchmark',
-      name: 'Test Benchmark',
-      benchmarkId: generateId(),
-      blocks: [],
-      selectedBlockIndex: 0,
-      activeExerciseIndex: 0,
-      startedAt: Date.now() - 60_000,
-      globalTimerStartedAt: Date.now() - 60_000,
-      mode: 'active',
-    }
-  }
 
   it('marks a binary auto-link habit done when the benchmark completes', async () => {
     const habitsRepository = getHabitsRepository()

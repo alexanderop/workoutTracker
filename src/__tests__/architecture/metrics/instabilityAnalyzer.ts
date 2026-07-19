@@ -16,7 +16,7 @@
  */
 
 import fs from 'node:fs'
-import path from 'node:path'
+import nodePath from 'node:path'
 import type { Project, SourceFile } from 'ts-morph'
 import { MODULE_DEFINITIONS } from './moduleDefinitions'
 import type { InstabilityMetrics, ModuleDefinition } from './types'
@@ -27,8 +27,8 @@ import type { InstabilityMetrics, ModuleDefinition } from './types'
 const PATH_TO_MODULE = new Map<string, string>()
 
 // Build path mapping on module load
-for (const module_ of MODULE_DEFINITIONS) {
-  PATH_TO_MODULE.set(module_.path, module_.name)
+for (const moduleDefinition of MODULE_DEFINITIONS) {
+  PATH_TO_MODULE.set(moduleDefinition.path, moduleDefinition.name)
 }
 
 /**
@@ -46,14 +46,14 @@ function resolveImportToModule(
 
   // Handle @ alias imports
   if (importSpecifier.startsWith('@/')) {
-    const path = importSpecifier.slice(2) // Remove '@/'
+    const importPath = importSpecifier.slice(2) // Remove '@/'
 
     // Try to match against module paths
     for (const [modulePath, moduleName] of PATH_TO_MODULE) {
       const moduleDir = modulePath.replace('src/', '')
 
       // Check if import path starts with this module's directory
-      if (path.startsWith(moduleDir + '/') || path === moduleDir) {
+      if (importPath.startsWith(moduleDir + '/') || importPath === moduleDir) {
         // Don't count self-references
         if (moduleName === currentModuleName) return undefined
         return moduleName
@@ -100,13 +100,13 @@ function buildDependencyGraph(
   const graph = new Map<string, Set<string>>()
 
   // Initialize all modules with empty dependency sets
-  for (const module_ of modules) {
-    graph.set(module_.name, new Set())
+  for (const moduleDefinition of modules) {
+    graph.set(moduleDefinition.name, new Set())
   }
 
   // Analyze each module's files
-  for (const module_ of modules) {
-    const fullPath = `${projectRoot}/${module_.path}`
+  for (const moduleDefinition of modules) {
+    const fullPath = `${projectRoot}/${moduleDefinition.path}`
     const sourceFiles = project.getSourceFiles(`${fullPath}/**/*.ts`)
 
     for (const file of sourceFiles) {
@@ -115,8 +115,8 @@ function buildDependencyGraph(
       // Skip test files
       if (filePath.includes('.test.') || filePath.includes('.spec.')) continue
 
-      const dependencies = extractDependencies(file, module_.name)
-      const moduleDependencies = graph.get(module_.name)
+      const dependencies = extractDependencies(file, moduleDefinition.name)
+      const moduleDependencies = graph.get(moduleDefinition.name)
 
       for (const dependency of dependencies) {
         moduleDependencies?.add(dependency)
@@ -124,8 +124,8 @@ function buildDependencyGraph(
     }
 
     // Also check Vue files for imports (via simple regex - ts-morph can't parse .vue)
-    const vueDependencies = extractVueDependencies(fullPath, module_.name)
-    const moduleDependencies = graph.get(module_.name)
+    const vueDependencies = extractVueDependencies(fullPath, moduleDefinition.name)
+    const moduleDependencies = graph.get(moduleDefinition.name)
 
     for (const dependency of vueDependencies) {
       moduleDependencies?.add(dependency)
@@ -148,7 +148,7 @@ function extractVueDependencies(modulePath: string, moduleName: string): Readonl
     const entries = fs.readdirSync(dir, { withFileTypes: true })
 
     for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name)
+      const fullPath = nodePath.join(dir, entry.name)
 
       if (entry.isDirectory()) {
         walkDir(fullPath)
@@ -163,7 +163,6 @@ function extractVueDependencies(modulePath: string, moduleName: string): Readonl
       const importRegex = /import\s+[\s\w*,{}]+\s+from\s+["'](@\/[^"']+|\.\.?\/[^"']+)["']/g
       let match: RegExpExecArray | null
 
-       
       while ((match = importRegex.exec(content)) !== null) {
         const specifier = match[1]
 
@@ -196,8 +195,8 @@ export function analyzeInstability(
   // Calculate fan-in for each module (who depends on this module)
   const fanInMap = new Map<string, Array<string>>()
 
-  for (const module_ of modules) {
-    fanInMap.set(module_.name, [])
+  for (const moduleDefinition of modules) {
+    fanInMap.set(moduleDefinition.name, [])
   }
 
   for (const [moduleName, dependencies] of dependencyGraph) {
@@ -207,9 +206,9 @@ export function analyzeInstability(
   }
 
   // Build results for each module
-  for (const module_ of modules) {
-    const dependsOn = [...(dependencyGraph.get(module_.name) ?? [])]
-    const dependedOnBy = fanInMap.get(module_.name) ?? []
+  for (const moduleDefinition of modules) {
+    const dependsOn = [...(dependencyGraph.get(moduleDefinition.name) ?? [])]
+    const dependedOnBy = fanInMap.get(moduleDefinition.name) ?? []
 
     const fanOut = dependsOn.length
     const fanIn = dependedOnBy.length
@@ -217,7 +216,7 @@ export function analyzeInstability(
     const total = fanIn + fanOut
     const instability = total > 0 ? fanOut / total : 0
 
-    results.set(module_.name, {
+    results.set(moduleDefinition.name, {
       fanIn,
       fanOut,
       instability,

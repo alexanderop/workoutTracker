@@ -174,6 +174,20 @@ function getTypedResultUpdate(
   }
 }
 
+/**
+ * Apply prefill values from source set to target set.
+ * Uses "keep if exists, else use prefill" logic.
+ * TypeScript's `satisfies` ensures all prefillable fields are handled.
+ */
+function applyPrefillToSet(target: Readonly<Set>, source: Readonly<Set>): PrefillableSetFields {
+  return {
+    kg: target.kg || source.kg,
+    reps: target.reps || source.reps,
+    duration: target.duration || source.duration,
+    rir: target.rir || source.rir,
+  } satisfies PrefillableSetFields
+}
+
 export function useWorkout() {
   const selectedBlock = computed(() => {
     if (workout.value.selectedBlockIndex < 0) return
@@ -204,20 +218,6 @@ export function useWorkout() {
     if (index !== -1) {
       updateWorkout({ selectedBlockIndex: index })
     }
-  }
-
-  /**
-   * Apply prefill values from source set to target set.
-   * Uses "keep if exists, else use prefill" logic.
-   * TypeScript's `satisfies` ensures all prefillable fields are handled.
-   */
-  function applyPrefillToSet(target: Readonly<Set>, source: Readonly<Set>): PrefillableSetFields {
-    return {
-      kg: target.kg || source.kg,
-      reps: target.reps || source.reps,
-      duration: target.duration || source.duration,
-      rir: target.rir || source.rir,
-    } satisfies PrefillableSetFields
   }
 
   // Helper: Activate the next set in current block, pre-filling from completed set

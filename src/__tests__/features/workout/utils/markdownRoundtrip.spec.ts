@@ -15,6 +15,7 @@ import {
   createDbCardioBlock,
   createDbCardioResult,
 } from '@/__tests__/factories/timedBlock.factory'
+import { assert } from '@/__tests__/helpers/assert'
 import { assertSuccess } from './assertParseSuccess'
 
 describe('markdown round-trip', () => {
@@ -33,10 +34,8 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('strength')
 
       const block = result.data.blocks[0]
-      expect(block?.kind).toBe('strength')
-      if (block?.kind === 'strength') {
-        expect(block.name).toBe('Barbell Squat')
-      }
+      assert(block?.kind === 'strength')
+      expect(block.name).toBe('Barbell Squat')
     })
 
     it('preserves set data', () => {
@@ -59,11 +58,10 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('strength')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'strength') {
-        expect(block.sets).toHaveLength(2)
-        expect(block.sets[0]).toEqual({ kg: '100', reps: '5', rir: '2' })
-        expect(block.sets[1]).toEqual({ kg: '110', reps: '4', rir: '1' })
-      }
+      assert(block?.kind === 'strength')
+      expect(block.sets).toHaveLength(2)
+      expect(block.sets[0]).toEqual({ kg: '100', reps: '5', rir: '2' })
+      expect(block.sets[1]).toEqual({ kg: '110', reps: '4', rir: '1' })
     })
 
     it('exports an empty RIR as a dash and round-trips it back to an empty string', () => {
@@ -81,10 +79,8 @@ describe('markdown round-trip', () => {
 
       assertSuccess(result)
       const block = result.data.blocks[0]
-      expect(block?.kind).toBe('strength')
-      if (block?.kind === 'strength') {
-        expect(block.sets).toEqual([{ kg: '80', reps: '5', rir: '' }])
-      }
+      assert(block?.kind === 'strength')
+      expect(block.sets).toEqual([{ kg: '80', reps: '5', rir: '' }])
     })
 
     it('preserves equipment', () => {
@@ -101,9 +97,8 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('strength')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'strength') {
-        expect(block.equipment).toBe('dumbbell')
-      }
+      assert(block?.kind === 'strength')
+      expect(block.equipment).toBe('dumbbell')
     })
   })
 
@@ -131,13 +126,12 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('amrap')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'amrap') {
-        expect(block.durationSeconds).toBe(600)
-        expect(block.exercises).toHaveLength(2)
-        expect(block.exercises[0]).toEqual({ name: 'Burpees', prescribedReps: 10, load: null })
-        expect(block.exercises[1]).toEqual({ name: 'KB Swings', prescribedReps: 15, load: '24kg' })
-        expect(block.result).toEqual({ rounds: 5, partialReps: 12, actualDuration: 600_000 })
-      }
+      assert(block?.kind === 'amrap')
+      expect(block.durationSeconds).toBe(600)
+      expect(block.exercises).toHaveLength(2)
+      expect(block.exercises[0]).toEqual({ name: 'Burpees', prescribedReps: 10, load: null })
+      expect(block.exercises[1]).toEqual({ name: 'KB Swings', prescribedReps: 15, load: '24kg' })
+      expect(block.result).toEqual({ rounds: 5, partialReps: 12, actualDuration: 600_000 })
     })
 
     it('round-trips an exercise name containing "@" without corrupting it', () => {
@@ -160,14 +154,12 @@ describe('markdown round-trip', () => {
 
       assertSuccess(result)
       const block = result.data.blocks[0]
-      expect(block?.kind).toBe('amrap')
-      if (block?.kind === 'amrap') {
-        expect(block.exercises[0]).toEqual({
-          name: 'Row @ 2k pace',
-          prescribedReps: 10,
-          load: '24kg',
-        })
-      }
+      assert(block?.kind === 'amrap')
+      expect(block.exercises[0]).toEqual({
+        name: 'Row @ 2k pace',
+        prescribedReps: 10,
+        load: '24kg',
+      })
     })
   })
 
@@ -192,11 +184,10 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('emom')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'emom') {
-        expect(block.minutes).toBe(12)
-        expect(block.rotation).toBe('full-round')
-        expect(block.result?.completedMinutes).toBe(10)
-      }
+      assert(block?.kind === 'emom')
+      expect(block.minutes).toBe(12)
+      expect(block.rotation).toBe('full-round')
+      expect(block.result?.completedMinutes).toBe(10)
     })
   })
 
@@ -221,12 +212,11 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('tabata')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'tabata') {
-        expect(block.rounds).toBe(8)
-        expect(block.workSeconds).toBe(20)
-        expect(block.restSeconds).toBe(10)
-        expect(block.result?.repsPerRound).toEqual([15, 14, 13, 12, 11, 10, 9, 8])
-      }
+      assert(block?.kind === 'tabata')
+      expect(block.rounds).toBe(8)
+      expect(block.workSeconds).toBe(20)
+      expect(block.restSeconds).toBe(10)
+      expect(block.result?.repsPerRound).toEqual([15, 14, 13, 12, 11, 10, 9, 8])
     })
   })
 
@@ -251,11 +241,10 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('fortime')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'fortime') {
-        expect(block.timeCapSeconds).toBe(900)
-        expect(block.result?.completionTime).toBe(512_000)
-        expect(block.result?.completed).toBe(true)
-      }
+      assert(block?.kind === 'fortime')
+      expect(block.timeCapSeconds).toBe(900)
+      expect(block.result?.completionTime).toBe(512_000)
+      expect(block.result?.completed).toBe(true)
     })
   })
 
@@ -289,13 +278,12 @@ describe('markdown round-trip', () => {
       expect(result.data.blocks[0]?.kind).toBe('cardio')
 
       const block = result.data.blocks[0]
-      if (block?.kind === 'cardio') {
-        expect(block.activity).toBe('running')
-        expect(block.result?.actualDurationSeconds).toBe(1800)
-        expect(block.result?.distanceMeters).toBe(5200)
-        expect(block.result?.avgPaceSecondsPerKm).toBe(346)
-        expect(block.result?.calories).toBe(420)
-      }
+      assert(block?.kind === 'cardio')
+      expect(block.activity).toBe('running')
+      expect(block.result?.actualDurationSeconds).toBe(1800)
+      expect(block.result?.distanceMeters).toBe(5200)
+      expect(block.result?.avgPaceSecondsPerKm).toBe(346)
+      expect(block.result?.calories).toBe(420)
     })
   })
 

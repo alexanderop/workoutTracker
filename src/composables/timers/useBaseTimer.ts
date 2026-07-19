@@ -20,8 +20,7 @@ const TRANSITIONS = {
   idle: { start: 'running' },
   running: { pause: 'paused', complete: 'completed' },
   paused: { resume: 'running' },
-  completed: {},
-} as const satisfies Record<TimerStatus, Partial<Record<TimerAction, TimerStatus>>>
+} as const satisfies Partial<Record<TimerStatus, Partial<Record<TimerAction, TimerStatus>>>>
 
 export type UseBaseTimerOptions = Readonly<{
   /** Called on every interval tick while running. */

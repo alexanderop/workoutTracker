@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Navigation guard rendering is conditional by design. */
 /**
  * Integration tests for the reusable unsaved-changes navigation guard.
  *

@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Prefill controls are conditionally rendered. */
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'

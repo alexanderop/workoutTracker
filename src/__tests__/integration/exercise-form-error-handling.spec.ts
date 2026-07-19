@@ -1,3 +1,5 @@
+/* eslint-disable vitest/no-conditional-in-test -- Error controls are conditionally rendered by the form. */
+/* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 /**
  * Integration tests for Exercise Form Error Handling
  *

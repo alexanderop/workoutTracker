@@ -16,6 +16,10 @@ const { confirmVariant = 'destructive', showCloseButton = true } = defineProps<{
 
 const open = defineModel<boolean>('open', { required: true })
 
+defineSlots<{
+  description?: () => unknown
+}>()
+
 const emit = defineEmits<{
   confirm: []
   cancel: []

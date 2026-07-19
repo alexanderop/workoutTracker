@@ -28,6 +28,9 @@ import type {
   ParsedAmrapBlock,
 } from './types'
 
+const DURATION_PATTERN = /^duration:\s*(\d+)\s*min/i
+const RESULT_PATTERN = /\*\*result:\*\*\s*(\d+)\s*rounds?\s*\+\s*(\d+)\s*reps?\s*\(([^)]+)\)/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -188,7 +191,7 @@ function parseAmrapBlock(
 
   for (const line of lines) {
     // Duration
-    const durationMatch = line.match(/^duration:\s*(\d+)\s*min/i)
+    const durationMatch = line.match(DURATION_PATTERN)
     if (durationMatch?.[1]) {
       durationSeconds = Number.parseInt(durationMatch[1], 10) * 60
       continue
@@ -202,9 +205,7 @@ function parseAmrapBlock(
     }
 
     // Result
-    const resultMatch = line.match(
-      /\*\*result:\*\*\s*(\d+)\s*rounds?\s*\+\s*(\d+)\s*reps?\s*\(([^)]+)\)/i,
-    )
+    const resultMatch = line.match(RESULT_PATTERN)
     if (resultMatch?.[1] && resultMatch[2] && resultMatch[3]) {
       result = {
         rounds: Number.parseInt(resultMatch[1], 10),

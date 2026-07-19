@@ -27,6 +27,10 @@ import type {
   ParsedEmomBlock,
 } from './types'
 
+const DURATION_PATTERN = /^duration:\s*(\d+)\s*min/i
+const ROTATION_PATTERN = /^rotation:\s*(each-minute|full-round)/i
+const RESULT_PATTERN = /\*\*result:\*\*\s*(\d+)\/(\d+)\s*minutes/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -189,7 +193,7 @@ interface EmomBlockState {
 }
 
 const parseEmomDuration: FieldParser<EmomBlockState> = (line, state) => {
-  const match = line.match(/^duration:\s*(\d+)\s*min/i)
+  const match = line.match(DURATION_PATTERN)
   if (match?.[1]) {
     state.minutes = Number.parseInt(match[1], 10)
     return true
@@ -198,7 +202,7 @@ const parseEmomDuration: FieldParser<EmomBlockState> = (line, state) => {
 }
 
 const parseEmomRotation: FieldParser<EmomBlockState> = (line, state) => {
-  const match = line.match(/^rotation:\s*(each-minute|full-round)/i)
+  const match = line.match(ROTATION_PATTERN)
   if (match?.[1]) {
     const normalized = match[1].toLowerCase()
     if (normalized === 'each-minute' || normalized === 'full-round') {
@@ -219,7 +223,7 @@ const parseEmomExercise: FieldParser<EmomBlockState> = (line, state) => {
 }
 
 const parseEmomResult: FieldParser<EmomBlockState> = (line, state) => {
-  const match = line.match(/\*\*result:\*\*\s*(\d+)\/(\d+)\s*minutes/i)
+  const match = line.match(RESULT_PATTERN)
   if (match?.[1]) {
     state.result = {
       completedMinutes: Number.parseInt(match[1], 10),

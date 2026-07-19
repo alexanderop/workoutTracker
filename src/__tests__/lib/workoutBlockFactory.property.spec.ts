@@ -31,6 +31,27 @@ import {
 
 const blockIdArb = fc.integer({ min: 1, max: 100 })
 
+function exerciseListCaseArb<C>(
+  configArb: fc.Arbitrary<C>,
+  createTemplate: (config: C, exercises: ReadonlyArray<BlockExercise>) => DbTemplateBlock,
+) {
+  return fc
+    .tuple(configArb, fc.array(blockExerciseArb, { maxLength: 4 }))
+    .map(([config, exercises]) => ({
+      config,
+      exercises,
+      template: createTemplate(config, exercises),
+    }))
+}
+
+function historyCaseArb<K extends string, C>(kind: K, configArb: fc.Arbitrary<C>) {
+  return fc.record({
+    kind: fc.constant(kind),
+    config: configArb,
+    exercises: fc.array(blockExerciseArb, { maxLength: 4 }),
+  })
+}
+
 /** The data fields of an exercise that must survive the template boundary. */
 function exerciseData(exercise: {
   name: string
@@ -152,19 +173,6 @@ describe('workoutBlockFactory (property-based)', () => {
   })
 
   it('round-trips exercise data through template creation and instantiation', () => {
-    function exerciseListCaseArb<C>(
-      configArb: fc.Arbitrary<C>,
-      createTemplate: (config: C, exercises: ReadonlyArray<BlockExercise>) => DbTemplateBlock,
-    ) {
-      return fc
-        .tuple(configArb, fc.array(blockExerciseArb, { maxLength: 4 }))
-        .map(([config, exercises]) => ({
-          config,
-          exercises,
-          template: createTemplate(config, exercises),
-        }))
-    }
-
     const casesArb = fc.oneof(
       exerciseListCaseArb(amrapConfigArb, createTemplateAmrapBlock),
       exerciseListCaseArb(emomConfigArb, createTemplateEmomBlock),
@@ -197,14 +205,6 @@ describe('workoutBlockFactory (property-based)', () => {
       reps: fc.string({ maxLength: 10 }),
       rir: fc.string({ maxLength: 10 }),
     })
-
-    function historyCaseArb<K extends string, C>(kind: K, configArb: fc.Arbitrary<C>) {
-      return fc.record({
-        kind: fc.constant(kind),
-        config: configArb,
-        exercises: fc.array(blockExerciseArb, { maxLength: 4 }),
-      })
-    }
 
     const historyBlockArb = fc.oneof(
       historyCaseArb('amrap' as const, amrapConfigArb),

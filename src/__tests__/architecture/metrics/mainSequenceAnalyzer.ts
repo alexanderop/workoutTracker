@@ -91,8 +91,8 @@ export function calculateMainSequenceMetrics(projectRoot: string): MetricsReport
   })
 
   // Add all module source files
-  for (const module_ of MODULE_DEFINITIONS) {
-    addModuleToProject(project, module_.path, projectRoot)
+  for (const moduleDefinition of MODULE_DEFINITIONS) {
+    addModuleToProject(project, moduleDefinition.path, projectRoot)
   }
 
   // Calculate instability for all modules
@@ -102,15 +102,15 @@ export function calculateMainSequenceMetrics(projectRoot: string): MetricsReport
   const modules: Array<ModuleMetrics> = []
   const violations: Array<MetricViolation> = []
 
-  for (const module_ of MODULE_DEFINITIONS) {
+  for (const moduleDefinition of MODULE_DEFINITIONS) {
     // Calculate abstractness
-    const abstractnessMetrics = analyzeAbstractness(project, module_.path, projectRoot)
+    const abstractnessMetrics = analyzeAbstractness(project, moduleDefinition.path, projectRoot)
 
     // Get instability metrics
-    const instabilityMetrics = instabilityResults.get(module_.name)
+    const instabilityMetrics = instabilityResults.get(moduleDefinition.name)
 
     if (!instabilityMetrics) {
-      throw new Error(`Missing instability metrics for module: ${module_.name}`)
+      throw new Error(`Missing instability metrics for module: ${moduleDefinition.name}`)
     }
 
     // Calculate distance from Main Sequence
@@ -118,28 +118,28 @@ export function calculateMainSequenceMetrics(projectRoot: string): MetricsReport
     const I = instabilityMetrics.instability
     const D = Math.abs(A + I - 1)
 
-    const isPasses = D <= module_.maxDistance
+    const passes = D <= moduleDefinition.maxDistance
 
     const moduleMetrics: ModuleMetrics = {
-      module: module_,
+      module: moduleDefinition,
       abstractness: abstractnessMetrics,
       instability: instabilityMetrics,
       distance: D,
-      passes: isPasses,
+      passes,
     }
 
     modules.push(moduleMetrics)
 
     // Record violations
-    if (!isPasses) {
+    if (!passes) {
       const { zone, suggestion } = diagnoseZone(A, I, D)
 
       violations.push({
-        module: module_.name,
+        module: moduleDefinition.name,
         metric: 'distance',
         actual: D,
-        threshold: module_.maxDistance,
-        message: `Module '${module_.name}' is ${D.toFixed(3)} from Main Sequence (threshold: ${module_.maxDistance}). Zone: ${zone}`,
+        threshold: moduleDefinition.maxDistance,
+        message: `Module '${moduleDefinition.name}' is ${D.toFixed(3)} from Main Sequence (threshold: ${moduleDefinition.maxDistance}). Zone: ${zone}`,
         suggestion,
       })
     }

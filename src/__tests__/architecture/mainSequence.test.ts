@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Logs diagnostics only when this architecture assertion fails. */
 /**
  * Main Sequence Fitness Function Tests
  *
@@ -91,11 +92,11 @@ describe('main sequence fitness functions', () => {
   describe('shared modules', () => {
     const sharedModules = getModulesByCategory('shared')
 
-    for (const module_ of sharedModules) {
-      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), module_.name)
+    for (const moduleDefinition of sharedModules) {
+      it(`${moduleDefinition.name} should be within acceptable distance (D < ${moduleDefinition.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), moduleDefinition.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
+        expect(metrics?.distance).toBeLessThan(moduleDefinition.maxDistance)
       })
     }
   })
@@ -107,17 +108,17 @@ describe('main sequence fitness functions', () => {
   describe('feature modules', () => {
     const featureModules = getModulesByCategory('feature')
 
-    for (const module_ of featureModules) {
-      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), module_.name)
+    for (const moduleDefinition of featureModules) {
+      it(`${moduleDefinition.name} should be within acceptable distance (D < ${moduleDefinition.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), moduleDefinition.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
+        expect(metrics?.distance).toBeLessThan(moduleDefinition.maxDistance)
       })
     }
 
     it('features should have moderate abstractness (mostly concrete)', () => {
-      for (const module_ of featureModules) {
-        const metrics = getModuleMetrics(getReport(), module_.name)
+      for (const moduleDefinition of featureModules) {
+        const metrics = getModuleMetrics(getReport(), moduleDefinition.name)
         // Features can have some types/interfaces but should be mostly concrete
         // templates has higher abstractness due to type definitions
         expect(metrics?.abstractness.abstractness).toBeLessThan(0.7)
@@ -125,8 +126,8 @@ describe('main sequence fitness functions', () => {
     })
 
     it('features should have high instability (dependent on stable modules)', () => {
-      for (const module_ of featureModules) {
-        const metrics = getModuleMetrics(getReport(), module_.name)
+      for (const moduleDefinition of featureModules) {
+        const metrics = getModuleMetrics(getReport(), moduleDefinition.name)
         // Features are expected to depend on core modules
         expect(metrics?.instability.instability).toBeGreaterThan(0.4)
       }
@@ -140,11 +141,11 @@ describe('main sequence fitness functions', () => {
   describe('ui modules', () => {
     const uiModules = getModulesByCategory('ui')
 
-    for (const module_ of uiModules) {
-      it(`${module_.name} should be within acceptable distance (D < ${module_.maxDistance})`, () => {
-        const metrics = getModuleMetrics(getReport(), module_.name)
+    for (const moduleDefinition of uiModules) {
+      it(`${moduleDefinition.name} should be within acceptable distance (D < ${moduleDefinition.maxDistance})`, () => {
+        const metrics = getModuleMetrics(getReport(), moduleDefinition.name)
         expect(metrics).toBeDefined()
-        expect(metrics?.distance).toBeLessThan(module_.maxDistance)
+        expect(metrics?.distance).toBeLessThan(moduleDefinition.maxDistance)
       })
     }
 

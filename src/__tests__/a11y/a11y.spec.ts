@@ -1,3 +1,4 @@
+/* eslint-disable vitest/expect-expect -- assertNoViolations performs the test assertion through axe. */
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { assertNoViolations } from '../helpers/a11y'

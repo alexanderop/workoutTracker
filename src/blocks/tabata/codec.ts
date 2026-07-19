@@ -21,6 +21,10 @@ import type {
   TabataResult,
 } from './types'
 
+const ROUNDS_PATTERN = /^rounds:\s*(\d+)/i
+const WORK_REST_PATTERN = /^work\/rest:\s*(\d+)s\/(\d+)s/i
+const RESULT_PATTERN = /\*\*result:\*\*\s*([\d\s,]+)\s*reps?/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -178,14 +182,14 @@ function parseTabataBlock(
 
   for (const line of lines) {
     // Rounds
-    const roundsMatch = line.match(/^rounds:\s*(\d+)/i)
+    const roundsMatch = line.match(ROUNDS_PATTERN)
     if (roundsMatch?.[1]) {
       rounds = Number.parseInt(roundsMatch[1], 10)
       continue
     }
 
     // Work/Rest
-    const timingMatch = line.match(/^work\/rest:\s*(\d+)s\/(\d+)s/i)
+    const timingMatch = line.match(WORK_REST_PATTERN)
     if (timingMatch?.[1] && timingMatch[2]) {
       workSeconds = Number.parseInt(timingMatch[1], 10)
       restSeconds = Number.parseInt(timingMatch[2], 10)
@@ -200,7 +204,7 @@ function parseTabataBlock(
     }
 
     // Result
-    const resultMatch = line.match(/\*\*result:\*\*\s*([\d\s,]+)\s*reps?/i)
+    const resultMatch = line.match(RESULT_PATTERN)
     if (resultMatch?.[1]) {
       const repsPerRound = resultMatch[1]
         .split(',')

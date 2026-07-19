@@ -1,9 +1,14 @@
+/* eslint-disable vitest/no-conditional-in-test -- Timed template controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { DbTemplateBlock } from '@/db/schema'
 import { createTestApp } from '../helpers/createTestApp'
 import { seedTemplate } from '../helpers/dbAssertions'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+
+function createExercise(name: string) {
+  return { exerciseDefinitionId: null, name, prescribedReps: 10, load: null, image: null }
+}
 
 /**
  * Starting a live workout from a template that contains timed and cardio
@@ -13,27 +18,19 @@ import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integra
  */
 
 function conditioningTemplateBlocks(): Array<DbTemplateBlock> {
-  const exercise = (name: string) => ({
-    exerciseDefinitionId: null,
-    name,
-    prescribedReps: 10,
-    load: null,
-    image: null,
-  })
-
   return [
-    { kind: 'amrap', config: { durationSeconds: 300 }, exercises: [exercise('Air Squats')] },
+    { kind: 'amrap', config: { durationSeconds: 300 }, exercises: [createExercise('Air Squats')] },
     {
       kind: 'emom',
       config: { minutes: 8, exerciseRotation: 'each-minute' },
-      exercises: [exercise('Push-ups')],
+      exercises: [createExercise('Push-ups')],
     },
     {
       kind: 'tabata',
       config: { rounds: 8, workSeconds: 20, restSeconds: 10 },
-      exercise: exercise('Jumping Jacks'),
+      exercise: createExercise('Jumping Jacks'),
     },
-    { kind: 'fortime', config: { timeCapSeconds: 600 }, exercises: [exercise('Thrusters')] },
+    { kind: 'fortime', config: { timeCapSeconds: 600 }, exercises: [createExercise('Thrusters')] },
     {
       kind: 'cardio',
       config: { activity: 'rowing', targetDurationSeconds: 900, targetDistanceMeters: null },

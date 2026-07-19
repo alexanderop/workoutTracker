@@ -5,7 +5,11 @@ import { generateStructureHash } from '@/lib/structureHash'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'
 
-export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase): BenchmarksRepository {
+const orderKeyCollator = new Intl.Collator()
+
+export function createDexieBenchmarksRepository(
+  database: WorkoutTrackerDatabase,
+): BenchmarksRepository {
   return {
     async getAll(): Promise<ReadonlyArray<DbBenchmark>> {
       return database.benchmarks.orderBy('createdAt').reverse().toArray()
@@ -84,7 +88,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
 
       // Sort rounds by orderKey
       const sortedRounds = [...benchmark.rounds].toSorted((a, b) =>
-        a.orderKey.localeCompare(b.orderKey),
+        orderKeyCollator.compare(a.orderKey, b.orderKey),
       )
 
       // Create one ForTime block per round with exercises from that round
@@ -92,7 +96,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
         (round, index): DbForTimeBlock => {
           // Sort exercises within round by orderKey
           const sortedExercises = [...round.exercises].toSorted((a, b) =>
-            a.orderKey.localeCompare(b.orderKey),
+            orderKeyCollator.compare(a.orderKey, b.orderKey),
           )
 
           return {
@@ -148,7 +152,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
       for (const workout of workouts) {
         for (const block of workout.blocks) {
           if (!(block.kind === 'fortime' && block.result?.completed)) {
-	continue;
+            continue
           }
 
           const time = block.result.completionTime
@@ -170,10 +174,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
       }
 
       // Single query: Get all workouts for all benchmark IDs
-      const workouts = await database.workouts
-        .where('benchmarkId')
-        .anyOf(benchmarkIds)
-        .toArray()
+      const workouts = await database.workouts.where('benchmarkId').anyOf(benchmarkIds).toArray()
 
       // Build map of benchmark ID -> best time
       const bestTimes = new Map<string, number>()
@@ -184,7 +185,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
 
         for (const block of workout.blocks) {
           if (!(block.kind === 'fortime' && block.result?.completed)) {
-	continue;
+            continue
           }
 
           const time = block.result.completionTime
@@ -213,7 +214,7 @@ export function createDexieBenchmarksRepository(database: WorkoutTrackerDatabase
       for (const workout of workouts) {
         for (const block of workout.blocks) {
           if (!(block.kind === 'fortime' && block.result?.completed)) {
-	continue;
+            continue
           }
 
           attempts.push({

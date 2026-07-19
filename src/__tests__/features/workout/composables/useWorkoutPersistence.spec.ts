@@ -7,6 +7,26 @@ import { createDbHabit, createDbStrengthBlock, createWorkout } from '@/__tests__
 import { getStartOfDay } from '@/lib/date'
 import type { DbActiveWorkout } from '@/db/schema'
 
+function seedActiveWorkout(overrides: Partial<DbActiveWorkout> = {}): Promise<DbActiveWorkout> {
+  const workout: DbActiveWorkout = {
+    id: 'current',
+    name: 'Test Workout',
+    blocks: [createDbStrengthBlock()],
+    selectedBlockIndex: 0,
+    startedAt: Date.now() - 60_000,
+    lastModifiedAt: Date.now(),
+    mode: 'active',
+    activeSetIndex: null,
+    activeExerciseIndex: null,
+    benchmarkId: null,
+    globalTimerStartedAt: null,
+    ...overrides,
+  }
+  return getActiveWorkoutRepository()
+    .save(workout)
+    .then(() => workout)
+}
+
 /**
  * Integration coverage for the habit auto-link hook wired into
  * `completeWorkout()` (src/features/workout/composables/useWorkoutPersistence.ts).
@@ -19,26 +39,6 @@ describe('useWorkoutPersistence completeWorkout -> habit auto-link', () => {
   beforeEach(async () => {
     await resetDatabase()
   })
-
-  function seedActiveWorkout(overrides: Partial<DbActiveWorkout> = {}): Promise<DbActiveWorkout> {
-    const workout: DbActiveWorkout = {
-      id: 'current',
-      name: 'Test Workout',
-      blocks: [createDbStrengthBlock()],
-      selectedBlockIndex: 0,
-      startedAt: Date.now() - 60_000,
-      lastModifiedAt: Date.now(),
-      mode: 'active',
-      activeSetIndex: null,
-      activeExerciseIndex: null,
-      benchmarkId: null,
-      globalTimerStartedAt: null,
-      ...overrides,
-    }
-    return getActiveWorkoutRepository()
-      .save(workout)
-      .then(() => workout)
-  }
 
   it('marks a binary auto-link habit done when the workout completes', async () => {
     const habitsRepository = getHabitsRepository()

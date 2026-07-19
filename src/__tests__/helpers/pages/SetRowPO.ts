@@ -4,6 +4,11 @@ import type { SetValues } from '../types'
 import { ensureHTMLElement } from '../domHelpers'
 import { NumericInputModalPO } from './NumericInputModalPO'
 
+async function fillInput(getInput: () => Promise<HTMLInputElement>, value?: number): Promise<void> {
+  if (value === undefined) return
+  await userEvent.fill(await getInput(), String(value))
+}
+
 /**
  * Parses button text content to extract the display value.
  * Used in modal mode to read values from trigger buttons.
@@ -157,25 +162,18 @@ export class SetRowPO {
     await this.fillInline(values)
   }
 
+  /** Fills set values; named to distinguish this page-object action from Array.fill. */
+  async enterValues(values: SetValues): Promise<void> {
+    await this.fill(values)
+  }
+
   /**
    * Fills values using inline NumberField inputs (desktop mode).
    */
   private async fillInline(values: SetValues): Promise<void> {
-    const fillValue = async (
-      getInput: () => Promise<HTMLInputElement>,
-      value?: number,
-    ): Promise<void> => {
-      if (value === undefined) {
-        return
-      }
-
-      const element = await getInput()
-      await userEvent.fill(element, String(value))
-    }
-
-    await fillValue(() => this.getWeightInput(), values.kg)
-    await fillValue(() => this.getRepsInput(), values.reps)
-    await fillValue(() => this.getRirInput(), values.rir)
+    await fillInput(() => this.getWeightInput(), values.kg)
+    await fillInput(() => this.getRepsInput(), values.reps)
+    await fillInput(() => this.getRirInput(), values.rir)
     await flushPromises()
   }
 
@@ -234,7 +232,7 @@ export class SetRowPO {
    * @param values - Object with weight, reps, rir as strings
    */
   async fillAndComplete(values: { weight: string; reps: string; rir: string }): Promise<void> {
-    await this.fill({
+    await this.enterValues({
       kg: Number(values.weight),
       reps: Number(values.reps),
       rir: Number(values.rir),

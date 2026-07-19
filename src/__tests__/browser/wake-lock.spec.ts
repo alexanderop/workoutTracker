@@ -39,9 +39,7 @@ describe('useScreenWakeLock - browser mode', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
       context.cleanup = () => app.unmount()
 
-      if (!result.isSupported.value) {
-        return
-      }
+      expect(result.isSupported.value).toBe(true)
 
       // In headless mode, may fail due to permissions
       const [error] = await tryCatch(result.acquireNative())
@@ -54,9 +52,7 @@ describe('useScreenWakeLock - browser mode', () => {
       const [result, app] = withSetup(() => useScreenWakeLock())
       context.cleanup = () => app.unmount()
 
-      if (!result.isSupported.value) {
-        return
-      }
+      expect(result.isSupported.value).toBe(true)
 
       // Try to acquire, but may fail in headless mode (expected behavior)
       await tryCatch(result.acquireNative())

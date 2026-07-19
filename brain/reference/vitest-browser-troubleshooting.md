@@ -177,6 +177,14 @@ pnpm test -- src/__tests__/integration/the-flaky-one.spec.ts
 pnpm test:headed -- src/__tests__/integration/the-flaky-one.spec.ts
 ```
 
+## Oxlint and Page Object `fill()` Methods
+
+Oxlint's `unicorn/no-array-fill-with-reference-type` can flag a Page Object
+method call such as `row.fill({ kg: 60, reps: 10 })` even when `row` is not an
+array. Prefer a domain-specific method name such as `enterValues()` for Page
+Objects that accept structured form data. This avoids the false positive and
+makes the test action clearer without disabling the rule globally.
+
 ## Debugging Cheatsheet
 
 ```bash

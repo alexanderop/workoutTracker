@@ -6,6 +6,16 @@ import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntry } from '@/__tests__/factories'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
+function formDataFor(habit: ReturnType<typeof createDbHabit>): HabitFormData {
+  return {
+    name: habit.name,
+    icon: habit.icon,
+    schedule: habit.schedule,
+    kind: habit.kind,
+    autoLink: habit.autoLink,
+  }
+}
+
 /**
  * Direct composable-level tests for `useHabits`, covering paths the UI
  * integration suite (habit-tracking.spec.ts) can't reach: repository error
@@ -18,16 +28,6 @@ describe('useHabits', () => {
   beforeEach(async () => {
     await resetDatabase()
   })
-
-  function formDataFor(habit: ReturnType<typeof createDbHabit>): HabitFormData {
-    return {
-      name: habit.name,
-      icon: habit.icon,
-      schedule: habit.schedule,
-      kind: habit.kind,
-      autoLink: habit.autoLink,
-    }
-  }
 
   describe('createHabit', () => {
     it('returns undefined and leaves local state untouched when the repository throws', async () => {
