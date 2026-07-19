@@ -1,3 +1,12 @@
+# [1.38.0](https://github.com/alexanderop/workoutTracker/compare/v1.37.1...v1.38.0) (2026-07-19)
+
+
+### Features
+
+* **exercises:** add EGYM Smart Strength machine catalog ([#174](https://github.com/alexanderop/workoutTracker/issues/174)) ([cd33e82](https://github.com/alexanderop/workoutTracker/commit/cd33e8222405f41572a06c26b609894e708e3696))
+
+
+
 ## [1.37.1](https://github.com/alexanderop/workoutTracker/compare/v1.37.0...v1.37.1) (2026-07-18)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **ci:** repair review automation and visual checks ([#168](https://github.com/alexanderop/workoutTracker/issues/168)) ([0a75fe8](https://github.com/alexanderop/workoutTracker/commit/0a75fe840a781ee5c6972f6bca190a872e69b7ef))
-
-
-
-# [1.36.0](https://github.com/alexanderop/workoutTracker/compare/v1.35.0...v1.36.0) (2026-07-18)
-
-
-### Features
-
-* **exercises:** add extensible exercise icon foundation ([#167](https://github.com/alexanderop/workoutTracker/issues/167)) ([40b29ec](https://github.com/alexanderop/workoutTracker/commit/40b29ec6541f7fd6a1664f0bbd7f4b0870ebaa98)), closes [#163](https://github.com/alexanderop/workoutTracker/issues/163)
 
 
 
