@@ -35,6 +35,7 @@ These files used to live under the root documentation tree. The root docs folder
 - [Workout Tracker - Complete Component & Page Reference (archived)](../_archive/components-and-pages.md)
 - [Dependency Update Notes](./dependency-updates.md)
 - [NumericInput Feature Roadmap](./feature-roadmap-numeric-input.md)
+- [Nutrition Tracking Model](./nutrition-tracking-model.md)
 - [Habit Tracking Model](./habit-tracking-model.md)
 - [Mutation Testing: Benchmarks Integration Tests](./mutation-testing-benchmarks.md)
 - [Product Research: High-ROI Features for Hybrid Bodybuilding + CrossFit Users](./product-research-2024-12.md)

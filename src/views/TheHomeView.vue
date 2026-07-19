@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Play, Timer, ClipboardList } from '@lucide/vue'
+import { computed, ref } from 'vue'
+import { CalendarDays, Play, Timer, ClipboardList } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
 import WeekStrip from '@/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/components/WorkoutCalendarSheet.vue'
 import HabitsHomeCard from '@/features/habits/components/HabitsHomeCard.vue'
+import NutritionDashboardCard from '@/features/nutrition/components/NutritionDashboardCard.vue'
+import HomeWeightSummaryCard from '@/features/weight/components/HomeWeightSummaryCard.vue'
 import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
+const todayLabel = computed(() =>
+  new Intl.DateTimeFormat(locale.value, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date()),
+)
 
 // Calendar state
 const calendarSheetOpen = ref(false)
@@ -47,102 +55,100 @@ function openCalendarSheet() {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col items-center gap-3 p-3 sm:gap-6 sm:p-4">
-    <!-- Week Strip -->
-    <WeekStrip class="w-full max-w-md" @click="openCalendarSheet" />
+  <div class="min-h-full flex-1 bg-muted/30 pb-8">
+    <header class="border-b bg-background px-4 pb-5 pt-6">
+      <div class="mx-auto max-w-md">
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarDays class="size-4" aria-hidden="true" />
+          {{ todayLabel }}
+        </div>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight">{{ t('nav.homeView.today') }}</h1>
+        <p class="mt-1 text-sm text-muted-foreground">{{ t('nav.homeView.healthSummary') }}</p>
+      </div>
+    </header>
 
-    <!-- Calendar Sheet -->
-    <WorkoutCalendarSheet
-      v-model:open="calendarSheetOpen"
-      :month-days="monthDays"
-      :selected-month="selectedMonth"
-      :selected-date="selectedDate"
-      :selected-day-workouts="selectedDayWorkouts"
-      :selected-date-formatted="selectedDateFormatted"
-      @select-date="(date) => selectDate(date)"
-      @previous-month="goToPreviousMonth"
-      @next-month="goToNextMonth"
-    />
+    <main class="mx-auto flex max-w-md flex-col gap-4 p-4">
+      <!-- Week Strip -->
+      <WeekStrip class="w-full rounded-2xl border bg-card shadow-sm" @click="openCalendarSheet" />
 
-    <!-- Action cards row -->
-    <div class="w-full max-w-md grid grid-cols-3 gap-2 sm:grid-cols-1 sm:gap-4">
-      <!-- Main action card -->
-      <Card
-        role="button"
-        tabindex="0"
-        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full"
-        @click="startWorkout"
-        @keydown.enter="startWorkout"
-        @keydown.space.prevent="startWorkout"
-      >
-        <CardHeader class="flex-col items-center justify-center text-center p-2 sm:py-6 h-full">
-          <div
-            class="mb-1 sm:mb-4 w-9 h-9 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
-          >
-            <Play class="w-4 h-4 sm:w-8 sm:h-8 text-primary ml-0.5" aria-hidden="true" />
-          </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-2xl">
-            {{ t('nav.homeView.startNewWorkout') }}
+      <!-- Calendar Sheet -->
+      <WorkoutCalendarSheet
+        v-model:open="calendarSheetOpen"
+        :month-days="monthDays"
+        :selected-month="selectedMonth"
+        :selected-date="selectedDate"
+        :selected-day-workouts="selectedDayWorkouts"
+        :selected-date-formatted="selectedDateFormatted"
+        @select-date="(date) => selectDate(date)"
+        @previous-month="goToPreviousMonth"
+        @next-month="goToNextMonth"
+      />
+
+      <NutritionDashboardCard />
+
+      <section aria-labelledby="workout-actions-heading">
+        <div class="mb-3 flex items-center justify-between px-1">
+          <h2 id="workout-actions-heading" class="font-semibold">
+            {{ t('nav.homeView.workout') }}
           </h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{
-            t('nav.homeView.trackDescription')
-          }}</CardDescription>
-        </CardHeader>
-      </Card>
-
-      <!-- Log Past Workout card -->
-      <Card
-        role="button"
-        tabindex="0"
-        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full"
-        @click="logPastWorkout"
-        @keydown.enter="logPastWorkout"
-        @keydown.space.prevent="logPastWorkout"
-      >
-        <CardHeader class="flex-col items-center justify-center text-center p-2 sm:py-6 h-full">
-          <div
-            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-success/10 flex items-center justify-center group-hover:bg-success/20 transition-colors"
+          <span class="text-xs text-muted-foreground">{{ t('nav.homeView.quickActions') }}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            role="button"
+            class="group flex min-h-24 flex-col items-center justify-center rounded-2xl border bg-card p-2 text-center shadow-sm transition-colors hover:bg-accent/40"
+            @click="startWorkout"
           >
-            <ClipboardList class="w-4 h-4 sm:w-7 sm:h-7 text-success" aria-hidden="true" />
-          </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-xl">
-            {{ t('nav.homeView.logPastWorkout', 'Log Past Workout') }}
-          </h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{
-            t('nav.homeView.logPastWorkoutDescription', 'Log a workout from earlier')
-          }}</CardDescription>
-        </CardHeader>
-      </Card>
+            <span
+              class="flex size-10 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20"
+            >
+              <Play class="ml-0.5 size-5 text-primary" aria-hidden="true" />
+            </span>
+            <span class="mt-2 text-xs font-semibold">
+              {{ t('nav.homeView.startNewWorkout') }}
+            </span>
+          </button>
 
-      <!-- Quick Timer card -->
-      <Card
-        role="button"
-        tabindex="0"
-        class="cursor-pointer group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full"
-        @click="goToTimers"
-        @keydown.enter="goToTimers"
-        @keydown.space.prevent="goToTimers"
-      >
-        <CardHeader class="flex-col items-center justify-center text-center p-2 sm:py-6 h-full">
-          <div
-            class="mb-1 sm:mb-4 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-highlight/10 flex items-center justify-center group-hover:bg-highlight/20 transition-colors"
+          <button
+            type="button"
+            class="group flex min-h-24 flex-col items-center justify-center rounded-2xl border bg-card p-2 text-center shadow-sm transition-colors hover:bg-accent/40"
+            @click="logPastWorkout"
           >
-            <Timer class="w-4 h-4 sm:w-7 sm:h-7 text-highlight" aria-hidden="true" />
-          </div>
-          <h2 class="leading-tight font-semibold text-xs sm:text-xl">
-            {{ t('nav.homeView.quickTimer') }}
-          </h2>
-          <CardDescription class="text-xs mt-1 hidden sm:block">{{
-            t('nav.homeView.quickTimerDescription')
-          }}</CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
+            <span
+              class="flex size-10 items-center justify-center rounded-full bg-success/10 group-hover:bg-success/20"
+            >
+              <ClipboardList class="size-5 text-success" aria-hidden="true" />
+            </span>
+            <span class="mt-2 text-xs font-semibold">
+              {{ t('nav.homeView.logPastWorkout', 'Log Past Workout') }}
+            </span>
+          </button>
 
-    <!-- Today's Habits -->
-    <HabitsHomeCard />
+          <button
+            type="button"
+            class="group flex min-h-24 flex-col items-center justify-center rounded-2xl border bg-card p-2 text-center shadow-sm transition-colors hover:bg-accent/40"
+            @click="goToTimers"
+          >
+            <span
+              class="flex size-10 items-center justify-center rounded-full bg-highlight/10 group-hover:bg-highlight/20"
+            >
+              <Timer class="size-5 text-highlight" aria-hidden="true" />
+            </span>
+            <span class="mt-2 text-xs font-semibold">
+              {{ t('nav.homeView.quickTimer') }}
+            </span>
+          </button>
+        </div>
+      </section>
 
-    <!-- Recent Workouts -->
-    <RecentWorkoutsSection />
+      <HomeWeightSummaryCard />
+
+      <!-- Today's Habits -->
+      <HabitsHomeCard />
+
+      <!-- Recent Workouts -->
+      <RecentWorkoutsSection />
+    </main>
   </div>
 </template>

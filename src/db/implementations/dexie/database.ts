@@ -8,6 +8,9 @@ import type {
   DbCustomExercise,
   DbFormDraft,
   DbHabitEntry,
+  DbFood,
+  DbNutritionDiaryEntry,
+  DbNutritionGoal,
   DbOnboarding,
   DbProgression,
   DbProgressionSession,
@@ -32,6 +35,9 @@ export class WorkoutTrackerDb extends Dexie {
   onboarding!: Table<DbOnboarding, 'onboarding'>
   habits!: Table<StoredDbHabit, string>
   habitEntries!: Table<DbHabitEntry, string>
+  nutritionGoals!: Table<DbNutritionGoal, 'current'>
+  foods!: Table<DbFood, string>
+  nutritionDiaryEntries!: Table<DbNutritionDiaryEntry, string>
 
   constructor() {
     super('WorkoutTrackerDb')
@@ -129,6 +135,27 @@ export class WorkoutTrackerDb extends Dexie {
       onboarding: 'id',
       habits: 'id, orderIndex, archivedAt',
       habitEntries: 'id, habitId, date, [habitId+date]',
+    })
+
+    // Version 8: Add local-first nutrition goals, foods, and daily diary entries
+    this.version(8).stores({
+      customExercises: 'id, name, muscle, equipment, createdAt',
+      workouts: 'id, startedAt, completedAt, benchmarkId',
+      activeWorkout: 'id',
+      activeBenchmark: 'id',
+      templates: 'id, name, createdAt, lastUsedAt',
+      settings: 'key',
+      benchmarks: 'id, name, createdAt, lastUsedAt',
+      weightEntries: 'id, date, recordedAt',
+      drafts: '&key',
+      progressions: 'id, createdAt, lastSessionAt',
+      progressionSessions: 'id, progressionId, completedAt',
+      onboarding: 'id',
+      habits: 'id, orderIndex, archivedAt',
+      habitEntries: 'id, habitId, date, [habitId+date]',
+      nutritionGoals: 'id',
+      foods: 'id, name, favorite, archivedAt, lastUsedAt',
+      nutritionDiaryEntries: 'id, localDate, meal, [localDate+meal], foodId, loggedAt',
     })
   }
 }

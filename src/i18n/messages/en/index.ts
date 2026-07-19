@@ -11,6 +11,7 @@ import weight from './weight'
 import progressions from './progressions'
 import onboarding from './onboarding'
 import habits from './habits'
+import nutrition from './nutrition'
 
 export default {
   calendar,
@@ -26,4 +27,5 @@ export default {
   progressions,
   onboarding,
   habits,
+  nutrition,
 } as const

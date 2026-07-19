@@ -9,6 +9,14 @@ import {
   MAX_HABITS,
 } from './habitSchema'
 import { dbUserSettingSchema as databaseUserSettingSchema } from './settingsSchema'
+import {
+  dbFoodSchema as databaseFoodSchema,
+  dbNutritionDiaryEntrySchema as databaseNutritionDiaryEntrySchema,
+  dbNutritionGoalSchema as databaseNutritionGoalSchema,
+  MAX_FOODS,
+  MAX_NUTRITION_DIARY_ENTRIES,
+  MAX_NUTRITION_GOALS,
+} from './nutritionSchema'
 import { dbWorkoutTemplateSchema as databaseWorkoutTemplateSchema } from './templateSchema'
 import {
   dbWeightEntrySchema as databaseWeightEntrySchema,
@@ -49,6 +57,17 @@ export const exportDataSchema = z
         habitEntries: z
           .array(databaseHabitEntrySchema)
           .max(MAX_HABIT_ENTRIES)
+          .readonly()
+          .optional(),
+        nutritionGoals: z
+          .array(databaseNutritionGoalSchema)
+          .max(MAX_NUTRITION_GOALS)
+          .readonly()
+          .optional(),
+        foods: z.array(databaseFoodSchema).max(MAX_FOODS).readonly().optional(),
+        nutritionDiaryEntries: z
+          .array(databaseNutritionDiaryEntrySchema)
+          .max(MAX_NUTRITION_DIARY_ENTRIES)
           .readonly()
           .optional(),
       })

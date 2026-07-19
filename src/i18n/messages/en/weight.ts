@@ -11,6 +11,7 @@ export default {
   noData: 'No data for this period',
   noEntries: 'No weight entries yet',
   emptyState: 'Start tracking your weight by adding your first entry above.',
+  viewProgress: 'View progress',
   delete: 'Delete',
   deleteTitle: 'Delete Entry',
   deleteConfirm: 'Are you sure you want to delete this weight entry?',
