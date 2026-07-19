@@ -48,19 +48,17 @@ describe('splitComparison (property-based)', () => {
         (pbSplits, index, current) => {
           const comparison = getComparison(pbSplits, index, current)
           const hasPbSplit = pbSplits !== null && index < pbSplits.length
-          if (comparison === null) {
-            expect(hasPbSplit).toBe(false)
-            return
-          }
-          expect(hasPbSplit).toBe(true)
-          const pbSplit = pbSplits?.[index]
-          if (pbSplit === undefined) {
-            throw new Error('unreachable: comparison exists without a PB split')
-          }
-          expect(comparison.currentSplit).toBe(current)
-          expect(comparison.pbSplit).toBe(pbSplit)
-          expect(comparison.delta).toBe(current - pbSplit)
-          expect(comparison.isFaster).toBe(comparison.delta < 0)
+          const pbSplit = pbSplits?.[index] ?? 0
+          expect(comparison).toEqual(
+            hasPbSplit
+              ? {
+                  currentSplit: current,
+                  pbSplit,
+                  delta: current - pbSplit,
+                  isFaster: current < pbSplit,
+                }
+              : null,
+          )
         },
       ),
     )
@@ -183,12 +181,13 @@ describe('attemptStats (property-based)', () => {
       fc.property(attemptsArb, (attempts) => {
         const fastest = Math.min(...attempts.map((attempt: RawAttempt) => attempt.completionTime))
         for (const output of transformAttempts(attempts)) {
-          if (output.isPersonalBest) {
-            expect(output.comparison.delta).toBeNull()
-            continue
-          }
-          expect(output.comparison.delta).toBe(output.completionTime - fastest)
-          expect(output.comparison.delta).toBeGreaterThanOrEqual(0)
+          expect(output.comparison.delta).toBe(
+            output.isPersonalBest ? null : output.completionTime - fastest,
+          )
+          expect(
+            output.isPersonalBest ||
+              (output.comparison.delta !== null && output.comparison.delta >= 0),
+          ).toBe(true)
         }
       }),
     )

@@ -20,6 +20,13 @@ import type {
 } from './types'
 import { CARDIO_ACTIVITY_VALUES } from './types'
 
+const ACTIVITY_PATTERN = /^activity:\s*(\w+)/i
+const DURATION_PATTERN = /-\s*duration:\s*(.+)/i
+const DISTANCE_PATTERN = /-\s*distance:\s*([\d.]+)\s*km/i
+const PACE_PATTERN = /-\s*pace:\s*(\d+):(\d+)\s*\/km/i
+const CALORIES_PATTERN = /-\s*calories:\s*(\d+)/i
+const NOTES_PATTERN = /^notes:\s*(.+)/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -197,7 +204,7 @@ interface CardioBlockState {
 }
 
 const parseCardioActivity: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/^activity:\s*(\w+)/i)
+  const match = line.match(ACTIVITY_PATTERN)
   if (match?.[1]) {
     state.activity = match[1].toLowerCase()
     return true
@@ -206,7 +213,7 @@ const parseCardioActivity: FieldParser<CardioBlockState> = (line, state) => {
 }
 
 const parseCardioDuration: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/-\s*duration:\s*(.+)/i)
+  const match = line.match(DURATION_PATTERN)
   if (match?.[1]) {
     state.resultData.actualDurationSeconds = parseDurationString(match[1].trim()) ?? 0
     state.hasResult = true
@@ -216,7 +223,7 @@ const parseCardioDuration: FieldParser<CardioBlockState> = (line, state) => {
 }
 
 const parseCardioDistance: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/-\s*distance:\s*([\d.]+)\s*km/i)
+  const match = line.match(DISTANCE_PATTERN)
   if (match?.[1]) {
     state.resultData.distanceMeters = Number.parseFloat(match[1]) * 1000
     state.hasResult = true
@@ -226,7 +233,7 @@ const parseCardioDistance: FieldParser<CardioBlockState> = (line, state) => {
 }
 
 const parseCardioPace: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/-\s*pace:\s*(\d+):(\d+)\s*\/km/i)
+  const match = line.match(PACE_PATTERN)
   if (match?.[1] && match[2]) {
     state.resultData.avgPaceSecondsPerKm =
       Number.parseInt(match[1], 10) * 60 + Number.parseInt(match[2], 10)
@@ -237,7 +244,7 @@ const parseCardioPace: FieldParser<CardioBlockState> = (line, state) => {
 }
 
 const parseCardioCalories: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/-\s*calories:\s*(\d+)/i)
+  const match = line.match(CALORIES_PATTERN)
   if (match?.[1]) {
     state.resultData.calories = Number.parseInt(match[1], 10)
     state.hasResult = true
@@ -247,7 +254,7 @@ const parseCardioCalories: FieldParser<CardioBlockState> = (line, state) => {
 }
 
 const parseCardioNotes: FieldParser<CardioBlockState> = (line, state) => {
-  const match = line.match(/^notes:\s*(.+)/i)
+  const match = line.match(NOTES_PATTERN)
   if (match?.[1]) {
     state.resultData.notes = match[1].trim()
     state.hasResult = true

@@ -1,3 +1,4 @@
+/* eslint-disable vitest/expect-expect -- Repository helpers throw on unsuccessful seed operations. */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { egymExercises, popularExercises } from '@/data/popularExercises'

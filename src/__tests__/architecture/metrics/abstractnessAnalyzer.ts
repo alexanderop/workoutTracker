@@ -57,20 +57,20 @@ function isComplexType(typeNode: TypeNode | undefined): boolean {
 /**
  * Check if a function is a type guard (returns `x is Type`)
  */
-function isTypeGuard(function_: FunctionDeclaration): boolean {
-  const returnType = function_.getReturnTypeNode()
+function isTypeGuard(functionDeclaration: FunctionDeclaration): boolean {
+  const returnType = functionDeclaration.getReturnTypeNode()
   return returnType?.getKind() === SyntaxKind.TypePredicate
 }
 
 /**
  * Check if a function is a factory function (named create* and returns an interface/type)
  */
-function isFactoryFunction(function_: FunctionDeclaration): boolean {
-  const name = function_.getName()
+function isFactoryFunction(functionDeclaration: FunctionDeclaration): boolean {
+  const name = functionDeclaration.getName()
   if (!name?.startsWith('create')) return false
 
   // Check if return type is a type reference (likely an interface)
-  const returnType = function_.getReturnTypeNode()
+  const returnType = functionDeclaration.getReturnTypeNode()
   return returnType?.getKind() === SyntaxKind.TypeReference
 }
 
@@ -98,10 +98,10 @@ function countExportedFunctions(sourceFile: SourceFile): { abstract: number; con
   let abstract = 0
   let concrete = 0
 
-  for (const function_ of sourceFile.getFunctions()) {
-    if (!function_.isExported()) continue
+  for (const functionDeclaration of sourceFile.getFunctions()) {
+    if (!functionDeclaration.isExported()) continue
 
-    const isAbstract = isTypeGuard(function_) || isFactoryFunction(function_)
+    const isAbstract = isTypeGuard(functionDeclaration) || isFactoryFunction(functionDeclaration)
     abstract += isAbstract ? 1 : 0
     concrete += isAbstract ? 0 : 1
   }

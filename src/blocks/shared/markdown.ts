@@ -6,6 +6,11 @@
 
 import type { DbBlockExercise } from './types'
 
+const EXERCISE_LINE_PATTERN = /^-\s*(\d+)\s*[x×]\s*((?:\\@|[^@])+?)(?:\s*(?<!\\)@\s*(.+))?$/i
+const MINUTES_PATTERN = /^(\d+)\s*min/
+const TIME_PATTERN = /^(\d+):(\d+)(?::(\d+))?$/
+const DURATION_PATTERN = /^(\d+):(\d+)$/
+
 // ============================================
 // Parsed Intermediates (kind-neutral)
 // ============================================
@@ -129,7 +134,7 @@ export function parseExerciseLine(line: string): ParsedBlockExercise | null {
   // formatExerciseLine); only an unescaped '@' starts the load. Unescaped
   // '@' in the name (pre-escaping exports) still splits at the first '@',
   // matching the old behavior.
-  const match = line.match(/^-\s*(\d+)\s*[x×]\s*((?:\\@|[^@])+?)(?:\s*(?<!\\)@\s*(.+))?$/i)
+  const match = line.match(EXERCISE_LINE_PATTERN)
   if (!match?.[1] || !match[2]) return null
 
   return {
@@ -140,7 +145,7 @@ export function parseExerciseLine(line: string): ParsedBlockExercise | null {
 }
 
 function parseMinutesFormat(string_: string): number | null {
-  const match = string_.match(/^(\d+)\s*min/)
+  const match = string_.match(MINUTES_PATTERN)
   return match?.[1] ? Number.parseInt(match[1], 10) * 60 : null
 }
 
@@ -153,7 +158,7 @@ function parseHhMmSsFormat(parts: Array<number>): number {
 }
 
 function parseTimeFormat(string_: string): number | null {
-  const match = string_.match(/^(\d+):(\d+)(?::(\d+))?$/)
+  const match = string_.match(TIME_PATTERN)
   if (!match?.[1] || !match[2]) return null
 
   const parts = [match[1], match[2], match[3]].filter(Boolean).map(Number)
@@ -167,7 +172,7 @@ export function parseDurationString(string_: string): number | null {
 
 export function parseDurationToMs(string_: string): number {
   // "10:32" -> ms
-  const match = string_.match(/^(\d+):(\d+)$/)
+  const match = string_.match(DURATION_PATTERN)
   if (match?.[1] && match[2]) {
     const mins = Number.parseInt(match[1], 10)
     const secs = Number.parseInt(match[2], 10)

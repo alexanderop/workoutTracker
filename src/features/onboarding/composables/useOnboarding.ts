@@ -1,7 +1,37 @@
 import { createGlobalState, useMediaQuery } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { getOnboardingRepository, getWorkoutsRepository, getTemplatesRepository, getBenchmarksRepository } from '@/db'
+import {
+  getOnboardingRepository,
+  getWorkoutsRepository,
+  getTemplatesRepository,
+  getBenchmarksRepository,
+} from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
+
+/**
+ * Check if user has existing data (workouts, templates, or benchmarks).
+ * Used to show "Welcome back" variant.
+ */
+async function checkExistingData(): Promise<boolean> {
+  const [error, counts] = await tryCatch(
+    Promise.all([
+      getWorkoutsRepository().count(),
+      getTemplatesRepository()
+        .getAll()
+        .then((templates) => templates.length),
+      getBenchmarksRepository()
+        .getAll()
+        .then((benchmarks) => benchmarks.length),
+    ]),
+  )
+
+  if (error) {
+    return false
+  }
+
+  const [workoutCount, templateCount, benchmarkCount] = counts
+  return workoutCount > 0 || templateCount > 0 || benchmarkCount > 0
+}
 
 /**
  * Global state for onboarding flow.
@@ -49,27 +79,6 @@ export const useOnboarding = createGlobalState(() => {
     currentStep.value = state.currentStep
     isLoading.value = false
     isInitialized.value = true
-  }
-
-  /**
-   * Check if user has existing data (workouts, templates, or benchmarks).
-   * Used to show "Welcome back" variant.
-   */
-  async function checkExistingData(): Promise<boolean> {
-    const [error, counts] = await tryCatch(
-      Promise.all([
-        getWorkoutsRepository().count(),
-        getTemplatesRepository().getAll().then((t) => t.length),
-        getBenchmarksRepository().getAll().then((b) => b.length),
-      ]),
-    )
-
-    if (error) {
-      return false
-    }
-
-    const [workoutCount, templateCount, benchmarkCount] = counts
-    return workoutCount > 0 || templateCount > 0 || benchmarkCount > 0
   }
 
   /**

@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Prefill controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
 import { flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'

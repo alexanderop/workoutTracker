@@ -34,12 +34,13 @@ describe('db converters (property-based)', () => {
       fc.property(dbActiveWorkoutArb, (databaseWorkout) => {
         const workout = dbToWorkout(databaseWorkout)
 
-        if (workout.blocks.length === 0) {
-          expect(workout.selectedBlockIndex).toBe(-1)
-          return
-        }
-        expect(workout.selectedBlockIndex).toBeGreaterThanOrEqual(0)
-        expect(workout.selectedBlockIndex).toBeLessThan(workout.blocks.length)
+        expect(workout.selectedBlockIndex).toBe(
+          workout.blocks.length === 0 ? -1 : workout.selectedBlockIndex,
+        )
+        expect(workout.blocks.length === 0 || workout.selectedBlockIndex >= 0).toBe(true)
+        expect(
+          workout.blocks.length === 0 || workout.selectedBlockIndex < workout.blocks.length,
+        ).toBe(true)
       }),
     )
   })
@@ -49,11 +50,7 @@ describe('db converters (property-based)', () => {
       fc.property(dbActiveWorkoutArb, (databaseWorkout) => {
         const workout = dbToWorkout(databaseWorkout)
 
-        if (workout.blocks.length === 0) {
-          expect(workout.mode).toBe('builder')
-          return
-        }
-        expect(workout.mode).toBe(databaseWorkout.mode)
+        expect(workout.mode).toBe(workout.blocks.length === 0 ? 'builder' : databaseWorkout.mode)
       }),
     )
   })

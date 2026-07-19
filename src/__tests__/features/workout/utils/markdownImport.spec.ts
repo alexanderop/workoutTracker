@@ -11,6 +11,7 @@ import {
   parseCardioBlock,
 } from '@/features/workout/utils/markdownImport'
 import { MARKDOWN_SPEC_FORMAT, MARKDOWN_SPEC_VERSION } from '@/features/workout/utils/markdownSpec'
+import { assertSuccess } from './assertParseSuccess'
 
 describe('markdownImport', () => {
   describe('parseFrontmatter', () => {
@@ -25,12 +26,10 @@ describe('markdownImport', () => {
 
       const result = parseFrontmatter(lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.format).toBe(MARKDOWN_SPEC_FORMAT)
-        expect(result.data.version).toBe(MARKDOWN_SPEC_VERSION)
-        expect(result.data.exported).toBe('2026-01-01T12:00:00Z')
-      }
+      assertSuccess(result)
+      expect(result.data.format).toBe(MARKDOWN_SPEC_FORMAT)
+      expect(result.data.version).toBe(MARKDOWN_SPEC_VERSION)
+      expect(result.data.exported).toBe('2026-01-01T12:00:00Z')
     })
 
     it('rejects missing frontmatter delimiter', () => {
@@ -38,10 +37,10 @@ describe('markdownImport', () => {
 
       const result = parseFrontmatter(lines)
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.errors[0]?.message).toContain('Missing YAML frontmatter')
-      }
+      expect(result).toMatchObject({ success: false })
+      expect(result.success ? undefined : result.errors[0]?.message).toContain(
+        'Missing YAML frontmatter',
+      )
     })
 
     it('rejects invalid format', () => {
@@ -49,10 +48,8 @@ describe('markdownImport', () => {
 
       const result = parseFrontmatter(lines)
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.errors[0]?.message).toContain('Invalid format')
-      }
+      expect(result).toMatchObject({ success: false })
+      expect(result.success ? undefined : result.errors[0]?.message).toContain('Invalid format')
     })
   })
 
@@ -62,10 +59,8 @@ describe('markdownImport', () => {
 
       const result = parseMetadata(lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.name).toBe('Push Day')
-      }
+      assertSuccess(result)
+      expect(result.data.name).toBe('Push Day')
     })
 
     it('parses duration in minutes', () => {
@@ -73,10 +68,8 @@ describe('markdownImport', () => {
 
       const result = parseMetadata(lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.durationSeconds).toBe(2700)
-      }
+      assertSuccess(result)
+      expect(result.data.durationSeconds).toBe(2700)
     })
 
     it('parses notes', () => {
@@ -84,10 +77,8 @@ describe('markdownImport', () => {
 
       const result = parseMetadata(lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.notes).toBe('Great session!')
-      }
+      assertSuccess(result)
+      expect(result.data.notes).toBe('Great session!')
     })
   })
 
@@ -97,10 +88,8 @@ describe('markdownImport', () => {
 
       const result = parseStrengthBlock('Bench Press', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.equipment).toBe('barbell')
-      }
+      assertSuccess(result)
+      expect(result.data.equipment).toBe('barbell')
     })
 
     it('parses markdown table into sets', () => {
@@ -115,12 +104,10 @@ describe('markdownImport', () => {
 
       const result = parseStrengthBlock('Bench Press', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.sets).toHaveLength(2)
-        expect(result.data.sets[0]).toEqual({ kg: '80', reps: '5', rir: '2' })
-        expect(result.data.sets[1]).toEqual({ kg: '90', reps: '5', rir: '1' })
-      }
+      assertSuccess(result)
+      expect(result.data.sets).toHaveLength(2)
+      expect(result.data.sets[0]).toEqual({ kg: '80', reps: '5', rir: '2' })
+      expect(result.data.sets[1]).toEqual({ kg: '90', reps: '5', rir: '1' })
     })
 
     it('parses legacy rows with an empty RIR cell instead of dropping the set', () => {
@@ -133,11 +120,9 @@ describe('markdownImport', () => {
 
       const result = parseStrengthBlock('Bench Press', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.sets).toHaveLength(1)
-        expect(result.data.sets[0]).toEqual({ kg: '80', reps: '5', rir: '' })
-      }
+      assertSuccess(result)
+      expect(result.data.sets).toHaveLength(1)
+      expect(result.data.sets[0]).toEqual({ kg: '80', reps: '5', rir: '' })
     })
 
     it('handles decimal weights', () => {
@@ -149,10 +134,8 @@ describe('markdownImport', () => {
 
       const result = parseStrengthBlock('Dumbbell Curl', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.sets[0]?.kg).toBe('12.5')
-      }
+      assertSuccess(result)
+      expect(result.data.sets[0]?.kg).toBe('12.5')
     })
   })
 
@@ -162,10 +145,8 @@ describe('markdownImport', () => {
 
       const result = parseAmrapBlock('AMRAP', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.durationSeconds).toBe(600)
-      }
+      assertSuccess(result)
+      expect(result.data.durationSeconds).toBe(600)
     })
 
     it('parses exercises with reps and load', () => {
@@ -173,20 +154,18 @@ describe('markdownImport', () => {
 
       const result = parseAmrapBlock('Finisher', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.exercises).toHaveLength(2)
-        expect(result.data.exercises[0]).toEqual({
-          name: 'Kettlebell Swings',
-          prescribedReps: 15,
-          load: '24kg',
-        })
-        expect(result.data.exercises[1]).toEqual({
-          name: 'Push-ups',
-          prescribedReps: 10,
-          load: null,
-        })
-      }
+      assertSuccess(result)
+      expect(result.data.exercises).toHaveLength(2)
+      expect(result.data.exercises[0]).toEqual({
+        name: 'Kettlebell Swings',
+        prescribedReps: 15,
+        load: '24kg',
+      })
+      expect(result.data.exercises[1]).toEqual({
+        name: 'Push-ups',
+        prescribedReps: 10,
+        load: null,
+      })
     })
 
     it('parses result', () => {
@@ -199,14 +178,12 @@ describe('markdownImport', () => {
 
       const result = parseAmrapBlock('AMRAP', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.result).toEqual({
-          rounds: 5,
-          partialReps: 12,
-          actualDuration: 600_000,
-        })
-      }
+      assertSuccess(result)
+      expect(result.data.result).toEqual({
+        rounds: 5,
+        partialReps: 12,
+        actualDuration: 600_000,
+      })
     })
   })
 
@@ -216,11 +193,9 @@ describe('markdownImport', () => {
 
       const result = parseEmomBlock('EMOM', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.minutes).toBe(12)
-        expect(result.data.rotation).toBe('full-round')
-      }
+      assertSuccess(result)
+      expect(result.data.minutes).toBe(12)
+      expect(result.data.rotation).toBe('full-round')
     })
 
     it('parses result', () => {
@@ -228,10 +203,8 @@ describe('markdownImport', () => {
 
       const result = parseEmomBlock('EMOM', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.result?.completedMinutes).toBe(10)
-      }
+      assertSuccess(result)
+      expect(result.data.result?.completedMinutes).toBe(10)
     })
   })
 
@@ -241,12 +214,10 @@ describe('markdownImport', () => {
 
       const result = parseTabataBlock('Squats', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.rounds).toBe(8)
-        expect(result.data.workSeconds).toBe(20)
-        expect(result.data.restSeconds).toBe(10)
-      }
+      assertSuccess(result)
+      expect(result.data.rounds).toBe(8)
+      expect(result.data.workSeconds).toBe(20)
+      expect(result.data.restSeconds).toBe(10)
     })
 
     it('parses result as comma-separated reps', () => {
@@ -254,10 +225,8 @@ describe('markdownImport', () => {
 
       const result = parseTabataBlock('Squats', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.result?.repsPerRound).toEqual([15, 14, 13, 12])
-      }
+      assertSuccess(result)
+      expect(result.data.result?.repsPerRound).toEqual([15, 14, 13, 12])
     })
   })
 
@@ -267,10 +236,8 @@ describe('markdownImport', () => {
 
       const result = parseForTimeBlock('Fran', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.timeCapSeconds).toBe(900)
-      }
+      assertSuccess(result)
+      expect(result.data.timeCapSeconds).toBe(900)
     })
 
     it('parses result with checkmark', () => {
@@ -278,11 +245,9 @@ describe('markdownImport', () => {
 
       const result = parseForTimeBlock('Fran', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.result?.completionTime).toBe(512_000)
-        expect(result.data.result?.completed).toBe(true)
-      }
+      assertSuccess(result)
+      expect(result.data.result?.completionTime).toBe(512_000)
+      expect(result.data.result?.completed).toBe(true)
     })
   })
 
@@ -292,10 +257,8 @@ describe('markdownImport', () => {
 
       const result = parseCardioBlock('Morning Ride', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.activity).toBe('cycling')
-      }
+      assertSuccess(result)
+      expect(result.data.activity).toBe('cycling')
     })
 
     it('parses all result metrics', () => {
@@ -311,13 +274,11 @@ describe('markdownImport', () => {
 
       const result = parseCardioBlock('Run', lines)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.result?.actualDurationSeconds).toBe(1800)
-        expect(result.data.result?.distanceMeters).toBe(5200)
-        expect(result.data.result?.avgPaceSecondsPerKm).toBe(346)
-        expect(result.data.result?.calories).toBe(420)
-      }
+      assertSuccess(result)
+      expect(result.data.result?.actualDurationSeconds).toBe(1800)
+      expect(result.data.result?.distanceMeters).toBe(5200)
+      expect(result.data.result?.avgPaceSecondsPerKm).toBe(346)
+      expect(result.data.result?.calories).toBe(420)
     })
   })
 
@@ -354,14 +315,12 @@ Duration: 8 min
 
       const result = parseWorkoutMarkdown(markdown)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.metadata.name).toBe('Push Day')
-        expect(result.data.metadata.notes).toBe('Great session!')
-        expect(result.data.blocks).toHaveLength(2)
-        expect(result.data.blocks[0]?.kind).toBe('strength')
-        expect(result.data.blocks[1]?.kind).toBe('amrap')
-      }
+      assertSuccess(result)
+      expect(result.data.metadata.name).toBe('Push Day')
+      expect(result.data.metadata.notes).toBe('Great session!')
+      expect(result.data.blocks).toHaveLength(2)
+      expect(result.data.blocks[0]?.kind).toBe('strength')
+      expect(result.data.blocks[1]?.kind).toBe('amrap')
     })
 
     it('rejects invalid markdown without frontmatter', () => {

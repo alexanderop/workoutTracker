@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Validation feedback is conditionally rendered. */
 /**
  * Integration tests for exercise duplicate-name validation.
  *

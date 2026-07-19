@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Tests cover optional selection controls. */
 /**
  * Regression coverage for a Critical UX finding:
  *

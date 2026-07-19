@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Error controls are conditionally rendered by the template form. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'

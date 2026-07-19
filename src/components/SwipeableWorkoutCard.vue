@@ -61,8 +61,8 @@ const { lengthX, isSwiping, direction } = useSwipe(containerRef, {
 // Watch for external close (when another card opens)
 watch(
   () => isOpen,
-  (isOpen) => {
-    if (!isOpen && offset.value !== 0) {
+  (open) => {
+    if (!open && offset.value !== 0) {
       offset.value = 0
     }
   },

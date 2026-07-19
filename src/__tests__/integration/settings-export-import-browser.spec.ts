@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- File-import controls depend on browser API availability. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
@@ -36,6 +37,7 @@ function buildExportFile(overrides: { version?: number; workouts?: ReadonlyArray
  * when the user picks a file from the OS file dialog.
  */
 function selectImportFile(file: File): void {
+  // eslint-disable-next-line no-restricted-syntax -- The app intentionally hides this unlabeled native file input behind its accessible import button.
   const input = document.querySelector<HTMLInputElement>('input[type="file"]')
   if (!input) throw new Error('Import file input not found on settings page')
 

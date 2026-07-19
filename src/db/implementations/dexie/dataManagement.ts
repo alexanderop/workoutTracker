@@ -2,6 +2,17 @@ import type { DataManagementRepository, ExportDataContents } from '@/db/interfac
 import { normalizeDbHabit } from '@/db/converters'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
+async function clearTables(tables: ReadonlyArray<{ clear(): Promise<void> }>): Promise<void> {
+  await Promise.all(tables.map((table) => table.clear()))
+}
+
+function bulkAddIfPresent<T>(
+  values: ReadonlyArray<T> | undefined,
+  bulkAdd: (items: Array<T>) => Promise<unknown>,
+): Promise<unknown> {
+  return values && values.length > 0 ? bulkAdd([...values]) : Promise.resolve()
+}
+
 export function createDexieDataManagementRepository(
   database: WorkoutTrackerDatabase,
 ): DataManagementRepository {
@@ -32,11 +43,6 @@ export function createDexieDataManagementRepository(
   // progressions/progressionSessions (added in schema version 5), silently
   // leaving progression data behind after "delete all data" (UX review).
   const allTables = database.tables
-
-  // Shared helper to clear a given set of tables
-  async function clearTables(tables: ReadonlyArray<{ clear(): Promise<void> }>): Promise<void> {
-    await Promise.all(tables.map((table) => table.clear()))
-  }
 
   return {
     async exportAll(): Promise<ExportDataContents> {
@@ -100,27 +106,19 @@ export function createDexieDataManagementRepository(
         } = data
 
         await Promise.all([
-          settings.length > 0 ? database.settings.bulkAdd([...settings]) : Promise.resolve(),
-          customExercises.length > 0
-            ? database.customExercises.bulkAdd([...customExercises])
-            : Promise.resolve(),
-          templates.length > 0 ? database.templates.bulkAdd([...templates]) : Promise.resolve(),
-          workouts.length > 0 ? database.workouts.bulkAdd([...workouts]) : Promise.resolve(),
-          benchmarks.length > 0 ? database.benchmarks.bulkAdd([...benchmarks]) : Promise.resolve(),
-          weightEntries?.length > 0
-            ? database.weightEntries.bulkAdd([...weightEntries])
-            : Promise.resolve(),
-          habits?.length > 0 ? database.habits.bulkAdd([...habits]) : Promise.resolve(),
-          habitEntries?.length > 0
-            ? database.habitEntries.bulkAdd([...habitEntries])
-            : Promise.resolve(),
-          nutritionGoals?.length > 0
-            ? database.nutritionGoals.bulkAdd([...nutritionGoals])
-            : Promise.resolve(),
-          foods?.length > 0 ? database.foods.bulkAdd([...foods]) : Promise.resolve(),
-          nutritionDiaryEntries?.length > 0
-            ? database.nutritionDiaryEntries.bulkAdd([...nutritionDiaryEntries])
-            : Promise.resolve(),
+          bulkAddIfPresent(settings, (items) => database.settings.bulkAdd(items)),
+          bulkAddIfPresent(customExercises, (items) => database.customExercises.bulkAdd(items)),
+          bulkAddIfPresent(templates, (items) => database.templates.bulkAdd(items)),
+          bulkAddIfPresent(workouts, (items) => database.workouts.bulkAdd(items)),
+          bulkAddIfPresent(benchmarks, (items) => database.benchmarks.bulkAdd(items)),
+          bulkAddIfPresent(weightEntries, (items) => database.weightEntries.bulkAdd(items)),
+          bulkAddIfPresent(habits, (items) => database.habits.bulkAdd(items)),
+          bulkAddIfPresent(habitEntries, (items) => database.habitEntries.bulkAdd(items)),
+          bulkAddIfPresent(nutritionGoals, (items) => database.nutritionGoals.bulkAdd(items)),
+          bulkAddIfPresent(foods, (items) => database.foods.bulkAdd(items)),
+          bulkAddIfPresent(nutritionDiaryEntries, (items) =>
+            database.nutritionDiaryEntries.bulkAdd(items),
+          ),
         ])
       })
     },

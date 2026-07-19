@@ -1,3 +1,4 @@
+/* eslint-disable vitest/expect-expect -- fast-check callbacks contain the property assertions. */
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
 import { generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'

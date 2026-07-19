@@ -33,6 +33,6 @@ export class NutritionDashboardPO {
   }
 
   async expectFood(name: string): Promise<void> {
-    await expect.element(this.dashboard.getByText(name)).toBeVisible()
+    await expect.element(this.dashboard.getByText(name, { exact: true })).toBeVisible()
   }
 }

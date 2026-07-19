@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- History rows are narrowed after optional rendering. */
 /**
  * Integration tests for Exercise History Creation
  *
@@ -37,7 +38,7 @@ describe('Exercise History Creation', () => {
     // Fill in ONLY the first set's data BUT DON'T click complete
     // This simulates the real user scenario where they enter data but finish early
     const setRow = workout.getSet(0)
-    await setRow.fill({ kg: 80, reps: 10, rir: 2 })
+    await setRow.enterValues({ kg: 80, reps: 10, rir: 2 })
 
     // Step 3: Finish workout early via menu (without completing any sets)
     await workout.openMenu()

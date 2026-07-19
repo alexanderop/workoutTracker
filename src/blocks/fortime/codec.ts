@@ -28,6 +28,9 @@ import type {
   ParsedForTimeBlock,
 } from './types'
 
+const TIME_CAP_PATTERN = /^time cap:\s*(\d+)\s*min/i
+const RESULT_PATTERN = /\*\*result:\*\*\s*(\d+:\d+)\s*(\u2713)?/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -194,7 +197,7 @@ function parseForTimeBlock(
 
   for (const line of lines) {
     // Time cap
-    const capMatch = line.match(/^time cap:\s*(\d+)\s*min/i)
+    const capMatch = line.match(TIME_CAP_PATTERN)
     if (capMatch?.[1]) {
       timeCapSeconds = Number.parseInt(capMatch[1], 10) * 60
       continue
@@ -208,7 +211,7 @@ function parseForTimeBlock(
     }
 
     // Result
-    const resultMatch = line.match(/\*\*result:\*\*\s*(\d+:\d+)\s*(\u2713)?/i)
+    const resultMatch = line.match(RESULT_PATTERN)
     if (resultMatch?.[1]) {
       result = {
         completionTime: parseDurationToMs(resultMatch[1]),

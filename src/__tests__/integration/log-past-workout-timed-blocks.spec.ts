@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Timed-block controls are conditionally rendered. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { DbBlockExercise, DbTemplateBlock, DbWorkoutBlock } from '@/db/schema'

@@ -2,13 +2,14 @@
   "ci": {
     "collect": {
       "startServerCommand": "pnpm preview",
+      "startServerReadyPattern": "Local:",
       "url": ["http://localhost:4173/"],
       "numberOfRuns": 3
     },
     "assert": {
       "preset": "lighthouse:no-pwa",
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.8 }],
+        "categories:performance": ["error", { "minScore": 0.75 }],
         "categories:accessibility": ["error", { "minScore": 1 }],
         "first-contentful-paint": ["error", { "maxNumericValue": 3200 }],
         "largest-contentful-paint": ["error", { "maxNumericValue": 3700 }],

@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- Block controls are conditionally rendered by kind. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'

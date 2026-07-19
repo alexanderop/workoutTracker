@@ -4,11 +4,11 @@ import { RouteNames } from '@/router'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
 
+const getActiveFab = () => page.getByRole('button', { name: /return to active workout/i })
+
 describe('Active Workout FAB', () => {
   beforeEach(setupIntegrationTest)
   afterEach(cleanupIntegrationTest)
-
-  const getActiveFab = () => page.getByRole('button', { name: /return to active workout/i })
 
   describe('Visibility', () => {
     it('hides FAB on ActiveWorkout page', async () => {
@@ -79,12 +79,14 @@ describe('Active Workout FAB', () => {
       await expect.element(fab).toBeVisible()
 
       // Check timer format (should be like "0:XX" at start)
-      await expect.poll(async () => {
-        const fabElement = await fab.element()
-        const timerText = fabElement.textContent?.trim()
-        // Timer format: m:ss or mm:ss (e.g., "0:05", "1:30", "12:45")
-        return timerText?.match(/^\d+:\d{2}$/) !== null
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const fabElement = await fab.element()
+          const timerText = fabElement.textContent?.trim()
+          // Timer format: m:ss or mm:ss (e.g., "0:05", "1:30", "12:45")
+          return timerText?.match(/^\d+:\d{2}$/) !== null
+        })
+        .toBe(true)
 
       cleanup()
     })

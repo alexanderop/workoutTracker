@@ -161,11 +161,7 @@ function createForTimeBlock(timeCapSeconds: number | null): ForTimeBlock {
   }
 }
 
-function handlePresetSelect(preset: {
-  label: string
-  description: string
-  [key: string]: unknown
-}) {
+function handlePresetSelect(preset: Record<string, unknown>) {
   switch (timerType) {
     case 'amrap': {
       emit('start', createAmrapBlock(Number(preset.durationSeconds)))

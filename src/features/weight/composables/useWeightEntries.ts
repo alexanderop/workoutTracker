@@ -52,6 +52,39 @@ function transformToChartData(entries: ReadonlyArray<DbWeightEntry>): Array<Weig
   }))
 }
 
+async function addEntry(weight: number): Promise<boolean> {
+  const now = Date.now()
+  const entry: DbWeightEntry = {
+    id: generateId(),
+    weight,
+    date: getStartOfDay(new Date()),
+    recordedAt: now,
+  }
+
+  const [error] = await tryCatch(getWeightRepository().add(entry))
+  if (error) {
+    console.error('Failed to add weight entry:', error)
+    return false
+  }
+
+  return true
+}
+
+async function deleteEntry(id: string): Promise<boolean> {
+  const [error] = await tryCatch(getWeightRepository().delete(id))
+  if (error) {
+    console.error('Failed to delete weight entry:', error)
+    return false
+  }
+
+  return true
+}
+
+async function getEntryForToday(): Promise<DbWeightEntry | undefined> {
+  const [error, entry] = await tryCatch(getWeightRepository().getByDate(new Date()))
+  return error ? undefined : entry
+}
+
 // ============================================
 // Composable (Imperative Shell)
 // ============================================
@@ -91,53 +124,11 @@ export function useWeightEntries() {
   const isLoading = computed(() => entriesData.value === undefined)
 
   // Methods
-  async function addEntry(weight: number): Promise<boolean> {
-    const repo = getWeightRepository()
-    const now = Date.now()
-
-    const entry: DbWeightEntry = {
-      id: generateId(),
-      weight,
-      date: getStartOfDay(new Date()),
-      recordedAt: now,
-    }
-
-    const [error] = await tryCatch(repo.add(entry))
-
-    if (error) {
-      console.error('Failed to add weight entry:', error)
-      return false
-    }
-
-    return true
-  }
-
-  async function deleteEntry(id: string): Promise<boolean> {
-    const repo = getWeightRepository()
-    const [error] = await tryCatch(repo.delete(id))
-
-    if (error) {
-      console.error('Failed to delete weight entry:', error)
-      return false
-    }
-
-    return true
-  }
-
   function setTimeRange(range: TimeRange) {
     selectedRange.value = range
   }
 
   // Check if entry exists for today
-  async function getEntryForToday(): Promise<DbWeightEntry | undefined> {
-    const repo = getWeightRepository()
-    const [error, entry] = await tryCatch(repo.getByDate(new Date()))
-    if (error) {
-      return undefined
-    }
-    return entry
-  }
-
   return {
     entries,
     filteredEntries,

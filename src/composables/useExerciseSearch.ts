@@ -22,6 +22,8 @@ export type Exercise = {
 
 type SearchField = 'name' | 'muscle' | 'equipment'
 
+const exerciseNameCollator = new Intl.Collator()
+
 /**
  * Filters exercises by muscle group.
  * Returns all exercises when muscle is 'all'.
@@ -96,7 +98,9 @@ export function useExerciseSearch(options: UseExerciseSearchOptions = {}): UseEx
   const searchFields = options.searchFields ?? ['name']
 
   const allExercises = computed<Array<Exercise>>(() => {
-    return [...exercisesStore.customExercises].toSorted((a, b) => a.name.localeCompare(b.name))
+    return [...exercisesStore.customExercises].toSorted((a, b) =>
+      exerciseNameCollator.compare(a.name, b.name),
+    )
   })
 
   const filteredExercises = computed(() => {

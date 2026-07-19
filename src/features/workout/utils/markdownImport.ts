@@ -14,6 +14,13 @@ import type {
 } from './markdownSpec'
 import { parseSuccess, singleError, MARKDOWN_SPEC_FORMAT } from './markdownSpec'
 
+const FRONTMATTER_LINE_PATTERN = /^(\w+):\s*(.+)$/
+const H1_NAME_PATTERN = /^#\s+(.+)$/
+const DATE_PATTERN = /\*\*Date:\*\*\s*(.+)/
+const DURATION_PATTERN = /\*\*Duration:\*\*\s*(.+)/
+const NOTES_PATTERN = /\*\*Notes:\*\*\s*(.+)/
+const BLOCK_HEADER_PATTERN = /^##\s+(\S(?:.*\S)?)\s+\((\w+)\)$/
+
 // ============================================
 // Frontmatter Helpers
 // ============================================
@@ -28,7 +35,7 @@ function findFrontmatterEndIndex(lines: ReadonlyArray<string>): number {
 function parseFrontmatterLines(lines: ReadonlyArray<string>): Record<string, string> {
   const frontmatter: Record<string, string> = {}
   for (const line of lines) {
-    const match = line.match(/^(\w+):\s*(.+)$/)
+    const match = line.match(FRONTMATTER_LINE_PATTERN)
     if (match?.[1] && match[2]) {
       frontmatter[match[1]] = match[2]
     }
@@ -116,7 +123,7 @@ interface MetadataState {
 }
 
 const parseH1Name: FieldParser<MetadataState> = (line, state) => {
-  const match = line.match(/^#\s+(.+)$/)
+  const match = line.match(H1_NAME_PATTERN)
   if (match?.[1]) {
     state.name = match[1].trim()
     return true
@@ -125,7 +132,7 @@ const parseH1Name: FieldParser<MetadataState> = (line, state) => {
 }
 
 const parseMetadataDate: FieldParser<MetadataState> = (line, state) => {
-  const match = line.match(/\*\*Date:\*\*\s*(.+)/)
+  const match = line.match(DATE_PATTERN)
   if (match?.[1]) {
     const parsed = new Date(match[1].trim())
     if (!Number.isNaN(parsed.getTime())) {
@@ -137,7 +144,7 @@ const parseMetadataDate: FieldParser<MetadataState> = (line, state) => {
 }
 
 const parseMetadataDuration: FieldParser<MetadataState> = (line, state) => {
-  const match = line.match(/\*\*Duration:\*\*\s*(.+)/)
+  const match = line.match(DURATION_PATTERN)
   if (match?.[1]) {
     state.durationSeconds = parseDurationString(match[1].trim())
     return true
@@ -146,7 +153,7 @@ const parseMetadataDuration: FieldParser<MetadataState> = (line, state) => {
 }
 
 const parseMetadataNotes: FieldParser<MetadataState> = (line, state) => {
-  const match = line.match(/\*\*Notes:\*\*\s*(.+)/)
+  const match = line.match(NOTES_PATTERN)
   if (match?.[1]) {
     state.notes = match[1].trim()
     return true
@@ -238,7 +245,7 @@ function parseBlock(lines: ReadonlyArray<string>): ParseResult<ParsedBlock> {
   const header = lines[0]
   if (!header) return singleError('Empty block section')
 
-  const headerMatch = header.match(/^##\s+(.+)\s+\((\w+)\)$/)
+  const headerMatch = header.match(BLOCK_HEADER_PATTERN)
   if (!headerMatch?.[1] || !headerMatch[2]) {
     return singleError(`Invalid block header format: ${header}`)
   }

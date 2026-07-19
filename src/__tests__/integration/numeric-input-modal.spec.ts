@@ -110,9 +110,7 @@ describe('Numeric Input Modal (Touch Device)', () => {
       await modalPO.waitForOpen()
 
       // Check for unit label in the selected preset (inside the dialog)
-      await expect
-        .element(page.getByTestId('preset-selected').getByText('kg'))
-        .toBeVisible()
+      await expect.element(page.getByTestId('preset-selected').getByText('kg')).toBeVisible()
 
       await modalPO.clickCancel()
       cleanup()
@@ -161,14 +159,14 @@ describe('Numeric Input Modal (Touch Device)', () => {
   })
 
   describe('SetRowPO Integration', () => {
-    it('SetRowPO.fill() works in modal mode', async () => {
+    it('SetRowPO.enterValues() works in modal mode', async () => {
       const { builder, workout, cleanup } = await createTestApp()
 
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       // Use the page object to fill values (should use modal internally)
       const set = await workout.getSet(0)
-      await set.fill({ kg: 100, reps: 8, rir: 2 })
+      await set.enterValues({ kg: 100, reps: 8, rir: 2 })
 
       // Verify values are set
       const values = await set.getValues()

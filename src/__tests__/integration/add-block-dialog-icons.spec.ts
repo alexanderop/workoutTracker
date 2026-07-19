@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Tests inspect optional icon elements after visibility checks. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'

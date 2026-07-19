@@ -316,7 +316,7 @@ export type DbFood = {
   lastUsedAt: number | null
 }
 
-export type DbFoodSnapshot = Pick<DbFood, 'name' | 'brand' | 'nutrientsPer100Grams'>
+type DbFoodSnapshot = Pick<DbFood, 'name' | 'brand' | 'nutrientsPer100Grams'>
 
 /**
  * A food logged to a meal. The food snapshot makes historical diary totals

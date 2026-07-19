@@ -82,6 +82,12 @@ Chromium. Do not add `playwright install --with-deps` or `install-deps` to each
 test job: those commands repeatedly fetch large font packages and have made
 setup take more than 14 minutes. Install Chromium only on a browser-cache miss.
 
+Any standalone workflow that runs `pnpm install --ignore-scripts` and then
+invokes a browser-mode test must restore the Playwright cache and run
+`pnpm exec playwright install chromium` on a cache miss. The install command
+does not download a browser when dependency lifecycle scripts are disabled;
+without this explicit setup, Vitest fails with a missing Chromium executable.
+
 Default-suite coverage is collected by the four existing test shards. Each
 shard uploads an Istanbul JSON map; `scripts/merge-coverage.mjs` requires the
 exact four-file set and applies the thresholds from `coverage-thresholds.json`.
@@ -176,6 +182,14 @@ in isolation before assuming it's environmental:
 pnpm test -- src/__tests__/integration/the-flaky-one.spec.ts
 pnpm test:headed -- src/__tests__/integration/the-flaky-one.spec.ts
 ```
+
+## Oxlint and Page Object `fill()` Methods
+
+Oxlint's `unicorn/no-array-fill-with-reference-type` can flag a Page Object
+method call such as `row.fill({ kg: 60, reps: 10 })` even when `row` is not an
+array. Prefer a domain-specific method name such as `enterValues()` for Page
+Objects that accept structured form data. This avoids the false positive and
+makes the test action clearer without disabling the rule globally.
 
 ## Debugging Cheatsheet
 

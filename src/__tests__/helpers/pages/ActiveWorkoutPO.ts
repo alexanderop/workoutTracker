@@ -6,6 +6,12 @@ import type { CommonPO } from './CommonPO'
 import { ensureHTMLElement } from '../domHelpers'
 import { SetRowPO } from './SetRowPO'
 
+async function fillValue(element: HTMLInputElement, value?: number): Promise<void> {
+  if (value !== undefined) {
+    await userEvent.fill(element, String(value))
+  }
+}
+
 /**
  * Page Object for the active workout view.
  * Provides methods to interact with sets, navigate between blocks, and control timers.
@@ -111,12 +117,6 @@ export class ActiveWorkoutPO {
    */
   async fillSet(setIndex: number, values: SetValues): Promise<void> {
     const inputs = await this.getSetRow(setIndex)
-
-    const fillValue = async (element: HTMLInputElement, value?: number): Promise<void> => {
-      if (value !== undefined) {
-        await userEvent.fill(element, String(value))
-      }
-    }
 
     await fillValue(inputs.kg, values.kg)
     await fillValue(inputs.reps, values.reps)

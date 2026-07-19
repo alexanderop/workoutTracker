@@ -1,3 +1,5 @@
+/* eslint-disable vitest/no-disabled-tests -- Deferred cases document unfinished log-past-workout flows. */
+/* eslint-disable vitest/expect-expect -- Page-object actions include their own visible-state assertions. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RouteNames } from '@/router'

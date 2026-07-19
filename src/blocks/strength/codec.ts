@@ -18,6 +18,11 @@ import type {
   StrengthBlock,
 } from './types'
 
+const EQUIPMENT_PATTERN = /^equipment:\s*(.+)$/i
+const TARGET_PATTERN = /^target:\s*(\d+)\s*reps?$/i
+const TABLE_DIVIDER_PATTERN = /^\|[\s|-]+\|$/
+const WEIGHT_PATTERN = /(\d+(?:\.\d+)?)\s*kg/i
+
 // ============================================
 // Import-Validation Schemas
 // ============================================
@@ -249,7 +254,7 @@ interface StrengthBlockState {
 }
 
 const parseStrengthEquipment: FieldParser<StrengthBlockState> = (line, state) => {
-  const match = line.match(/^equipment:\s*(.+)$/i)
+  const match = line.match(EQUIPMENT_PATTERN)
   if (match?.[1]) {
     state.equipment = match[1].trim().toLowerCase()
     return true
@@ -258,7 +263,7 @@ const parseStrengthEquipment: FieldParser<StrengthBlockState> = (line, state) =>
 }
 
 const parseStrengthTarget: FieldParser<StrengthBlockState> = (line, state) => {
-  const match = line.match(/^target:\s*(\d+)\s*reps?$/i)
+  const match = line.match(TARGET_PATTERN)
   if (match?.[1]) {
     state.targetReps = Number.parseInt(match[1], 10)
     return true
@@ -275,7 +280,7 @@ const parseStrengthTableHeader: FieldParser<StrengthBlockState> = (line, state) 
 }
 
 const parseStrengthTableRow: FieldParser<StrengthBlockState> = (line, state) => {
-  if (/^\|[\s|-]+\|$/.test(line)) return true
+  if (TABLE_DIVIDER_PATTERN.test(line)) return true
   if (state.inTable && line.startsWith('|')) {
     const set = parseSetRow(line)
     if (set) state.sets.push(set)
@@ -335,7 +340,7 @@ function parseSetRow(line: string): ParsedSet | null {
   const rirCell = cells[3] ?? ''
 
   // Extract kg from weight cell
-  const kgMatch = weightCell.match(/(\d+(?:\.\d+)?)\s*kg/i)
+  const kgMatch = weightCell.match(WEIGHT_PATTERN)
   const kg = kgMatch?.[1] ?? ''
 
   // Clean up reps and rir

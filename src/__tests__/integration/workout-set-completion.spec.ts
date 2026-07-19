@@ -175,7 +175,7 @@ describe('Workout Set Completion', () => {
 
       const row = workout.getSet(0)
       // Leaves focus in the rir input without blurring it.
-      await row.fill({ kg: 60, reps: 10, rir: 2 })
+      await row.enterValues({ kg: 60, reps: 10, rir: 2 })
 
       await expect
         .poll(() => {
@@ -193,7 +193,7 @@ describe('Workout Set Completion', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       const row = workout.getSet(0)
-      await row.fill({ kg: 60, reps: 10, rir: 2 })
+      await row.enterValues({ kg: 60, reps: 10, rir: 2 })
 
       // Single tap -- should both commit the pending rir value and complete the set.
       await row.complete()
@@ -209,7 +209,7 @@ describe('Workout Set Completion', () => {
       await builder.setupStrengthWorkoutAndStart(['Bench Press'])
 
       const row = workout.getSet(0)
-      await row.fill({ kg: 60, reps: 10, rir: 2 })
+      await row.enterValues({ kg: 60, reps: 10, rir: 2 })
       await row.complete()
 
       await expect.poll(() => row.isCompleted()).toBe(true)

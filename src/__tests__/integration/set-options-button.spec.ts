@@ -137,7 +137,7 @@ describe('Set Options Button', () => {
       await workout.waitForTableVisible()
 
       const firstSet = workout.getSet(0)
-      await firstSet.fill({ kg: 100, reps: 8, rir: 2 })
+      await firstSet.enterValues({ kg: 100, reps: 8, rir: 2 })
 
       await workout.getSetOptionsButton(0).click()
       await contextMenu.waitForOpen()

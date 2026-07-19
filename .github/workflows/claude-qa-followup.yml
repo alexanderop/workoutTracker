@@ -157,7 +157,10 @@ jobs:
       - name: Reject agent-readable links
         run: |
           set -euo pipefail
-          test -z "$(git ls-files -s src | awk '$1 == "120000" || $1 == "160000"')"
+          while read -r mode _; do
+            test "$mode" != 120000
+            test "$mode" != 160000
+          done < <(git ls-files -s src)
           test -z "$(find src -type l -print -quit)"
           test -f /tmp/qa-report/qa-report.md
           test ! -L /tmp/qa-report/qa-report.md

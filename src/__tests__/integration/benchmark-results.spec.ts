@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- A result card is intentionally optional before it is created. */
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
@@ -39,19 +40,23 @@ describe('Benchmark Results', () => {
       await completeAllExercises(2)
 
       const captured: { completionTime: string | null } = { completionTime: null }
-      await expect.poll(async () => {
-        const element = await page.getByText(/\d+:\d{2}/).element()
-        if (element.classList.contains('text-6xl')) {
-          captured.completionTime = element.textContent
-          return captured.completionTime
-        }
-        return null
-      }).toBeTruthy()
+      await expect
+        .poll(async () => {
+          const element = await page.getByText(/\d+:\d{2}/).element()
+          if (element.classList.contains('text-6xl')) {
+            captured.completionTime = element.textContent
+            return captured.completionTime
+          }
+          return null
+        })
+        .toBeTruthy()
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const currentElement = await page.getByText(/\d+:\d{2}/).element()
-      const currentTime = currentElement.classList.contains('text-6xl') ? currentElement.textContent : null
+      const currentTime = currentElement.classList.contains('text-6xl')
+        ? currentElement.textContent
+        : null
       expect(currentTime).toBe(captured.completionTime)
 
       app.cleanup()
@@ -94,7 +99,9 @@ describe('Benchmark Results', () => {
 
       await app.benchmarks.clickBenchmarkCard('Fran')
       await app.benchmarkDetail.waitForLoad('Fran')
-      await expect.poll(async () => (await page.getByText(/personal best/i).all()).length).toBeGreaterThan(0)
+      await expect
+        .poll(async () => (await page.getByText(/personal best/i).all()).length)
+        .toBeGreaterThan(0)
 
       app.cleanup()
     })
@@ -130,7 +137,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Thrusters', reps: 21 },
           { name: 'Pull-ups', reps: 21 },
-        ]
+        ],
       })
       await createCompletedAttempt(benchmark.id, 180, 5, [90])
 
@@ -140,12 +147,14 @@ describe('Benchmark Results', () => {
       await completeExercise()
       await expect.element(page.getByText('Pull-ups')).toBeVisible()
 
-      await expect.poll(async () => {
-        const hasSplit = await page.getByText(/split/i).query() !== null
-        const hasComparison = await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query() !== null
-        const hasPace = await page.getByText(/ahead|behind|on pace/i).query() !== null
-        return hasSplit || hasComparison || hasPace
-      }).toBe(true)
+      await expect
+        .poll(async () => {
+          const hasSplit = (await page.getByText(/split/i).query()) !== null
+          const hasComparison = (await page.getByText(/[+-]\d+:\d{2}|[+-]\d+s/i).query()) !== null
+          const hasPace = (await page.getByText(/ahead|behind|on pace/i).query()) !== null
+          return hasSplit || hasComparison || hasPace
+        })
+        .toBe(true)
 
       app.cleanup()
     })
@@ -187,7 +196,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-        ]
+        ],
       })
       // PB with 60s first split
       await createCompletedAttempt(benchmark.id, 120, 5, [60, 60])
@@ -209,7 +218,7 @@ describe('Benchmark Results', () => {
         exercises: [
           { name: 'Exercise 1', reps: 10 },
           { name: 'Exercise 2', reps: 10 },
-        ]
+        ],
       })
       // PB with splits for both exercises
       await createCompletedAttempt(benchmark.id, 120, 5, [60, 60])
