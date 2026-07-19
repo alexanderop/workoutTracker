@@ -13,6 +13,9 @@ import type {
   DbWorkoutTemplate as DatabaseWorkoutTemplate,
   DbHabit,
   DbHabitEntry,
+  DbFood,
+  DbNutritionDiaryEntry,
+  DbNutritionGoal,
   DraftKey,
   ExerciseSession,
   ExerciseStats,
@@ -372,6 +375,9 @@ export type ExportDataContents = {
   weightEntries: ReadonlyArray<DatabaseWeightEntry>
   habits: ReadonlyArray<DbHabit>
   habitEntries: ReadonlyArray<DbHabitEntry>
+  nutritionGoals: ReadonlyArray<DbNutritionGoal>
+  foods: ReadonlyArray<DbFood>
+  nutritionDiaryEntries: ReadonlyArray<DbNutritionDiaryEntry>
 }
 
 export type DataManagementRepository = {
@@ -558,6 +564,30 @@ export type WeightRepository = {
    * Delete a weight entry by ID.
    */
   delete(id: string): Promise<void>
+}
+
+// ============================================
+// Nutrition Repository
+// ============================================
+
+export type NutritionSnapshot = {
+  goal: DbNutritionGoal | undefined
+  foods: ReadonlyArray<DbFood>
+  diaryEntries: ReadonlyArray<DbNutritionDiaryEntry>
+}
+
+export type NutritionRepository = {
+  /** Reactive snapshot for one local calendar day. */
+  observeDay(localDate: string): LiveQuery<NutritionSnapshot>
+  saveGoal(goal: Readonly<DbNutritionGoal>): Promise<void>
+  addFood(food: Readonly<DbFood>): Promise<void>
+  addFoodAndDiaryEntry(
+    food: Readonly<DbFood>,
+    entry: Readonly<DbNutritionDiaryEntry>,
+  ): Promise<void>
+  updateFood(id: string, updates: Partial<Omit<DbFood, 'id' | 'createdAt'>>): Promise<void>
+  addDiaryEntry(entry: Readonly<DbNutritionDiaryEntry>): Promise<void>
+  deleteDiaryEntry(id: string): Promise<void>
 }
 
 // ============================================
@@ -786,4 +816,5 @@ export type RepositoryProvider = {
   progressions: ProgressionsRepository
   onboarding: OnboardingRepository
   habits: HabitRepository
+  nutrition: NutritionRepository
 }

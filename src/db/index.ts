@@ -10,6 +10,7 @@ import type {
   ProgressionsRepository as ProgressionsRepo,
   SettingsRepository as SettingsRepo,
   HabitRepository,
+  NutritionRepository,
   TemplatesRepository,
   WeightRepository,
   WorkoutsRepository,
@@ -78,6 +79,10 @@ export function getExerciseProgressRepository(): ExerciseProgressRepo {
 
 export function getHabitsRepository(): HabitRepository {
   return getRepositoryProvider().habits
+}
+
+export function getNutritionRepository(): NutritionRepository {
+  return getRepositoryProvider().nutrition
 }
 
 // ============================================

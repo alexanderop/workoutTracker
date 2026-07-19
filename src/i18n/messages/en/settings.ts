@@ -47,6 +47,9 @@ export default {
     buildTime: 'Built',
     updateAvailable: 'Update available',
     refreshToUpdate: 'Refresh to get the latest version',
+    healthPrototypes: 'Health prototypes',
+    healthPrototypesDescription: 'Compare interactive concepts for the future health journal',
+    openHealthPrototypes: 'Open prototypes',
   },
   languages: {
     en: 'English',

@@ -12,6 +12,7 @@ export default {
   noEntries: 'Noch keine Gewichtseinträge',
   emptyState:
     'Starte das Tracking deines Gewichts, indem du oben deinen ersten Eintrag hinzufügst.',
+  viewProgress: 'Fortschritt ansehen',
   delete: 'Löschen',
   deleteTitle: 'Eintrag löschen',
   deleteConfirm: 'Bist du sicher, dass du diesen Gewichtseintrag löschen möchtest?',

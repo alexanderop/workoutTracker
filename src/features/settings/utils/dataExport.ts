@@ -4,6 +4,9 @@ import type {
   DbCustomExercise,
   DbHabit,
   DbHabitEntry,
+  DbFood,
+  DbNutritionDiaryEntry,
+  DbNutritionGoal,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -15,7 +18,7 @@ import { tryCatch } from '@/lib/tryCatch'
  * Current export format version.
  * Increment this when making breaking changes to the export format.
  */
-const EXPORT_VERSION = 2
+const EXPORT_VERSION = 3
 
 /**
  * Export data structure with versioning for future compatibility.
@@ -32,6 +35,9 @@ export type ExportData = {
     weightEntries?: ReadonlyArray<DbWeightEntry>
     habits?: ReadonlyArray<DbHabit>
     habitEntries?: ReadonlyArray<DbHabitEntry>
+    nutritionGoals?: ReadonlyArray<DbNutritionGoal>
+    foods?: ReadonlyArray<DbFood>
+    nutritionDiaryEntries?: ReadonlyArray<DbNutritionDiaryEntry>
   }
 }
 

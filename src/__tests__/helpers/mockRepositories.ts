@@ -144,6 +144,9 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         weightEntries: [],
         habits: [],
         habitEntries: [],
+        nutritionGoals: [],
+        foods: [],
+        nutritionDiaryEntries: [],
       }),
       importAll: vi.fn().mockResolvedValue(undefined),
       deleteAll: vi.fn().mockResolvedValue(undefined),
@@ -273,6 +276,18 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getEntriesForHabit: vi.fn().mockResolvedValue([]),
       getEntriesInRange: vi.fn().mockResolvedValue([]),
       getEntriesForDay: vi.fn().mockResolvedValue([]),
+    },
+    nutrition: {
+      observeDay: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue({ goal: undefined, foods: [], diaryEntries: [] }),
+        subscribe: vi.fn(() => vi.fn()),
+      })),
+      saveGoal: vi.fn().mockResolvedValue(undefined),
+      addFood: vi.fn().mockResolvedValue(undefined),
+      addFoodAndDiaryEntry: vi.fn().mockResolvedValue(undefined),
+      updateFood: vi.fn().mockResolvedValue(undefined),
+      addDiaryEntry: vi.fn().mockResolvedValue(undefined),
+      deleteDiaryEntry: vi.fn().mockResolvedValue(undefined),
     },
   }
 }

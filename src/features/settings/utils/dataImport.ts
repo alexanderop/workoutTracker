@@ -8,7 +8,7 @@ import { exportDataSchema } from './validation'
  * Maximum supported export version.
  * Import fails if file version exceeds this.
  */
-const MAX_SUPPORTED_VERSION = 2
+const MAX_SUPPORTED_VERSION = 3
 
 /**
  * Maximum file size for import (10MB).
@@ -113,6 +113,9 @@ export async function importAllData(exportData: ExportData): Promise<boolean> {
       weightEntries: rawData.weightEntries ?? [],
       habits: rawData.habits ?? [],
       habitEntries: rawData.habitEntries ?? [],
+      nutritionGoals: rawData.nutritionGoals ?? [],
+      foods: rawData.foods ?? [],
+      nutritionDiaryEntries: rawData.nutritionDiaryEntries ?? [],
     }),
   )
 

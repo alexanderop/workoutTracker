@@ -73,7 +73,7 @@ describe('Settings Export/Import (browser)', () => {
       const blob = createObjectUrl.mock.calls[0]?.[0]
       if (!(blob instanceof Blob)) throw new Error('Expected a Blob to be downloaded')
       const parsed = JSON.parse(await blob.text())
-      expect(parsed.version).toBe(2)
+      expect(parsed.version).toBe(3)
       expect(parsed.data.workouts).toHaveLength(1)
       expect(parsed.data.workouts[0].name).toBe('Heavy Leg Day')
 
@@ -162,7 +162,7 @@ describe('Settings Export/Import (browser)', () => {
       const { common, cleanup } = await createTestApp()
       await common.navigateToSettings()
 
-      selectImportFile(buildExportFile({ version: 3 }))
+      selectImportFile(buildExportFile({ version: 4 }))
 
       await expect
         .element(page.getByText(/from a newer version and cannot be imported/i))

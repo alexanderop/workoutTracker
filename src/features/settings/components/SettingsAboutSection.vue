@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Info, RefreshCw } from '@lucide/vue'
+import { Info, Palette, RefreshCw } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useVersionCheck } from '@/composables/useVersionCheck'
+import { RouteNames } from '@/router'
 
 const { t } = useI18n()
+const router = useRouter()
 const { currentVersion, isNewVersion } = useVersionCheck()
 
 const formattedBuildTime = computed(() => {
@@ -36,15 +39,30 @@ function handleRefresh() {
           <p class="font-medium">{{ t('settings.labels.version') }}</p>
           <p class="text-sm text-muted-foreground">
             {{ currentVersion.version }}
-            <template v-if="currentVersion.tag">
-              ({{ currentVersion.tag }})
-            </template>
+            <template v-if="currentVersion.tag"> ({{ currentVersion.tag }}) </template>
           </p>
           <div class="text-xs text-muted-foreground mt-1 space-y-0.5">
             <p>{{ t('settings.labels.commit') }}: {{ currentVersion.commit }}</p>
             <p>{{ t('settings.labels.buildTime') }}: {{ formattedBuildTime }}</p>
           </div>
         </div>
+      </div>
+
+      <div class="flex items-center gap-3 rounded-lg border p-3">
+        <Palette class="icon-md shrink-0 text-primary" />
+        <div class="min-w-0 flex-1">
+          <p class="font-medium">{{ t('settings.labels.healthPrototypes') }}</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('settings.labels.healthPrototypesDescription') }}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          @click="router.push({ name: RouteNames.HealthPrototypes })"
+        >
+          {{ t('settings.labels.openHealthPrototypes') }}
+        </Button>
       </div>
 
       <!-- Update Available -->

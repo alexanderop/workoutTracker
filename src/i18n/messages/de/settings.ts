@@ -47,6 +47,10 @@ export default {
     buildTime: 'Erstellt',
     updateAvailable: 'Update verfügbar',
     refreshToUpdate: 'Aktualisieren Sie, um die neueste Version zu erhalten',
+    healthPrototypes: 'Gesundheitsprototypen',
+    healthPrototypesDescription:
+      'Interaktive Konzepte für das zukünftige Gesundheitstagebuch vergleichen',
+    openHealthPrototypes: 'Prototypen öffnen',
   },
   languages: {
     en: 'English',

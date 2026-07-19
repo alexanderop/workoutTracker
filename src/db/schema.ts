@@ -276,6 +276,64 @@ export type DbWeightEntry = {
 }
 
 // ============================================
+// Nutrition Tracking Types
+// ============================================
+
+export type MealKind = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+export type DbNutritionTargets = {
+  calories: number
+  proteinGrams: number
+  carbohydrateGrams: number
+  fatGrams: number
+}
+
+/** Singleton nutrition targets used to calculate the daily dashboard. */
+export type DbNutritionGoal = DbNutritionTargets & {
+  id: 'current'
+  updatedAt: number
+}
+
+export type DbFoodNutrients = {
+  calories: number
+  proteinGrams: number
+  carbohydrateGrams: number
+  fatGrams: number
+}
+
+/** A food in the user's local, reusable food library. */
+export type DbFood = {
+  id: string
+  name: string
+  brand: string | null
+  nutrientsPer100Grams: DbFoodNutrients
+  defaultServingName: string | null
+  defaultServingGrams: number | null
+  favorite: boolean
+  archivedAt: number | null
+  createdAt: number
+  updatedAt: number
+  lastUsedAt: number | null
+}
+
+export type DbFoodSnapshot = Pick<DbFood, 'name' | 'brand' | 'nutrientsPer100Grams'>
+
+/**
+ * A food logged to a meal. The food snapshot makes historical diary totals
+ * stable if the reusable food is edited later.
+ */
+export type DbNutritionDiaryEntry = {
+  id: string
+  localDate: string // YYYY-MM-DD in the user's local timezone
+  meal: MealKind
+  foodId: string | null
+  grams: number
+  foodSnapshot: DbFoodSnapshot
+  loggedAt: number
+  updatedAt: number
+}
+
+// ============================================
 // Form Draft Types
 // ============================================
 

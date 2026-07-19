@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { getDataManagementRepository, getHabitsRepository, getProgressionsRepository } from '@/db'
+import {
+  getDataManagementRepository,
+  getHabitsRepository,
+  getNutritionRepository,
+  getProgressionsRepository,
+} from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
 import { db } from '@/db/implementations/dexie/database'
@@ -98,5 +103,67 @@ describe('DataManagementRepository habits export/import', () => {
 
     expect(await habits.getAllHabits()).toHaveLength(0)
     expect(await habits.getEntriesForHabit(habit.id)).toHaveLength(0)
+  })
+})
+
+describe('DataManagementRepository nutrition export/import', () => {
+  beforeEach(async () => {
+    await resetDatabase()
+  })
+
+  it('round-trips nutrition goals, foods, and diary entries', async () => {
+    const nutrition = getNutritionRepository()
+    const now = Date.now()
+    const food = {
+      id: 'food-1',
+      name: 'Oats',
+      brand: null,
+      nutrientsPer100Grams: {
+        calories: 370,
+        proteinGrams: 13,
+        carbohydrateGrams: 60,
+        fatGrams: 7,
+      },
+      defaultServingName: 'serving',
+      defaultServingGrams: 80,
+      favorite: false,
+      archivedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      lastUsedAt: now,
+    } as const
+    const diaryEntry = {
+      id: 'diary-1',
+      localDate: '2026-07-19',
+      meal: 'breakfast',
+      foodId: food.id,
+      grams: 80,
+      foodSnapshot: {
+        name: food.name,
+        brand: food.brand,
+        nutrientsPer100Grams: food.nutrientsPer100Grams,
+      },
+      loggedAt: now,
+      updatedAt: now,
+    } as const
+    await nutrition.saveGoal({
+      id: 'current',
+      calories: 2200,
+      proteinGrams: 160,
+      carbohydrateGrams: 240,
+      fatGrams: 70,
+      updatedAt: now,
+    })
+    await nutrition.addFoodAndDiaryEntry(food, diaryEntry)
+
+    const exported = await getDataManagementRepository().exportAll()
+    await getDataManagementRepository().deleteAll()
+    await getDataManagementRepository().importAll(exported)
+
+    expect(await nutrition.observeDay('2026-07-19').get()).toEqual({
+      goal: exported.nutritionGoals[0],
+      foods: [food],
+      diaryEntries: [diaryEntry],
+    })
   })
 })

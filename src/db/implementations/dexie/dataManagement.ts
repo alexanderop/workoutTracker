@@ -21,6 +21,9 @@ export function createDexieDataManagementRepository(
     database.onboarding,
     database.habits,
     database.habitEntries,
+    database.nutritionGoals,
+    database.foods,
+    database.nutritionDiaryEntries,
   ] as const
 
   // Every table in the schema, for a full wipe (Settings > Delete All Data).
@@ -46,6 +49,9 @@ export function createDexieDataManagementRepository(
         weightEntries,
         storedHabits,
         habitEntries,
+        nutritionGoals,
+        foods,
+        nutritionDiaryEntries,
       ] = await Promise.all([
         database.settings.toArray(),
         database.customExercises.toArray(),
@@ -55,6 +61,9 @@ export function createDexieDataManagementRepository(
         database.weightEntries.toArray(),
         database.habits.toArray(),
         database.habitEntries.toArray(),
+        database.nutritionGoals.toArray(),
+        database.foods.toArray(),
+        database.nutritionDiaryEntries.toArray(),
       ])
 
       return {
@@ -66,6 +75,9 @@ export function createDexieDataManagementRepository(
         weightEntries,
         habits: storedHabits.map(normalizeDbHabit),
         habitEntries,
+        nutritionGoals,
+        foods,
+        nutritionDiaryEntries,
       }
     },
 
@@ -82,6 +94,9 @@ export function createDexieDataManagementRepository(
           weightEntries,
           habits,
           habitEntries,
+          nutritionGoals,
+          foods,
+          nutritionDiaryEntries,
         } = data
 
         await Promise.all([
@@ -98,6 +113,13 @@ export function createDexieDataManagementRepository(
           habits?.length > 0 ? database.habits.bulkAdd([...habits]) : Promise.resolve(),
           habitEntries?.length > 0
             ? database.habitEntries.bulkAdd([...habitEntries])
+            : Promise.resolve(),
+          nutritionGoals?.length > 0
+            ? database.nutritionGoals.bulkAdd([...nutritionGoals])
+            : Promise.resolve(),
+          foods?.length > 0 ? database.foods.bulkAdd([...foods]) : Promise.resolve(),
+          nutritionDiaryEntries?.length > 0
+            ? database.nutritionDiaryEntries.bulkAdd([...nutritionDiaryEntries])
             : Promise.resolve(),
         ])
       })

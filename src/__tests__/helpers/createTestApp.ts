@@ -22,6 +22,7 @@ import {
   WeightPO,
   ProgressionsPO,
   HabitsPO,
+  NutritionDashboardPO,
 } from './pages'
 
 type CreateTestAppOptions = {
@@ -44,6 +45,7 @@ type TestApp = {
   weight: WeightPO
   progressions: ProgressionsPO
   habits: HabitsPO
+  nutrition: NutritionDashboardPO
   // Raw query methods (use page.getBy* for new code)
   getByRole: typeof page.getByRole
   getByText: typeof page.getByText
@@ -105,6 +107,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   const weight = new WeightPO(common)
   const progressions = new ProgressionsPO(common)
   const habits = new HabitsPO(common)
+  const nutrition = new NutritionDashboardPO(common)
 
   // Navigation helper with flush to ensure route renders
   async function navigateTo(to: RouteLocationRaw) {
@@ -134,6 +137,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     weight,
     progressions,
     habits,
+    nutrition,
     // Raw query methods - use page locators (return Locators, not HTMLElements)
     getByRole: page.getByRole.bind(page),
     getByText: page.getByText.bind(page),
