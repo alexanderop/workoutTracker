@@ -168,4 +168,38 @@ describe('Nutrition barcode scan', () => {
     await torchButton.click()
     await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
   })
+
+  it('ignores a torch toggle that resolves after the scanner was cancelled', async ({
+    createTestApp,
+  }) => {
+    Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
+    const pendingConstraints = Promise.withResolvers<void>()
+    const applyConstraints = vi.fn(() => pendingConstraints.promise)
+    const stream = createFakeCameraStreamWithTorch(applyConstraints)
+    vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
+    const { nutrition } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Scan barcode' }).click()
+
+    const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
+    await expect.element(torchButton).toBeVisible()
+    // Fires toggleTorch(); applyConstraints stays pending until resolved below.
+    await torchButton.click()
+
+    await page.getByRole('button', { name: 'Cancel' }).click()
+    await expect.element(page.getByRole('button', { name: 'Scan barcode' })).toBeVisible()
+
+    // Resolving after cancellation must not resurrect the toggle or throw.
+    pendingConstraints.resolve()
+    await expect
+      .element(page.getByRole('button', { name: 'Toggle flashlight' }))
+      .not.toBeInTheDocument()
+
+    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await expect
+      .element(page.getByRole('button', { name: 'Toggle flashlight' }))
+      .toHaveAttribute('aria-pressed', 'false')
+  })
 })
