@@ -788,34 +788,86 @@ jobs:
 
           try {
             const data = JSON.parse(raw);
+            // Emit every section scripts/qa-workflow-policy.mjs requires, so a
+            // fallback-generated report passes the same validation as an
+            // agent-written one (the publish job re-validates this file).
             report.push(`## Verdict: ${data.verdict || 'UNKNOWN'}`);
             report.push('');
             report.push(data.summary || 'Claude returned structured QA output but did not write qa-report.md.');
 
+            const tests = Array.isArray(data.tests) ? data.tests : [];
+            report.push('');
+            report.push('## Acceptance Criteria');
+            report.push('');
+            if (tests.length > 0) {
+              for (const test of tests) {
+                report.push(`- ${test.result === 'pass' ? '✅' : test.result === 'fail' ? '❌' : '⏭️'} ${test.name || 'unnamed test'}`);
+              }
+            } else {
+              report.push('No individual test results were captured in the structured output.');
+            }
+
+            report.push('');
+            report.push('## Evidence');
+            report.push('');
+            // Track whether any evidence line was emitted so the section is
+            // never left empty (an empty section fails policy validation),
+            // regardless of which optional fields the payload happens to carry.
+            const evidenceStart = report.length;
+            if (tests.length > 0) {
+              for (const test of tests) {
+                if (test.details) report.push(`- **${test.name || 'unnamed test'}**: ${test.details}`);
+              }
+            }
             if (data.metrics) {
-              report.push('');
-              report.push('## Metrics');
-              report.push('');
-              report.push(`- Total tests: ${data.metrics.total_tests ?? 0}`);
-              report.push(`- Passed: ${data.metrics.passed ?? 0}`);
-              report.push(`- Failed: ${data.metrics.failed ?? 0}`);
-              report.push(`- Critical bugs: ${data.metrics.critical_bugs ?? 0}`);
-              report.push(`- Major bugs: ${data.metrics.major_bugs ?? 0}`);
-              report.push(`- Minor bugs: ${data.metrics.minor_bugs ?? 0}`);
+              report.push(`- Metrics: ${data.metrics.total_tests ?? 0} tests, ${data.metrics.passed ?? 0} passed, ${data.metrics.failed ?? 0} failed, ${data.metrics.critical_bugs ?? 0} critical / ${data.metrics.major_bugs ?? 0} major / ${data.metrics.minor_bugs ?? 0} minor bugs.`);
+            }
+            if (report.length === evidenceStart) {
+              report.push('No evidence details were captured in the structured output.');
             }
 
             const bugs = Array.isArray(data.bugs) ? data.bugs : [];
+            report.push('');
+            report.push('## Bugs / Observations');
+            report.push('');
             if (bugs.length > 0) {
-              report.push('');
-              report.push('## Bugs');
               for (const bug of bugs) {
-                report.push('');
                 report.push(`### ${bug.title || bug.id || 'Bug'}`);
                 report.push(`- Severity: ${bug.severity || 'unknown'}`);
                 if (bug.description) report.push(`- Description: ${bug.description}`);
-                if (bug.reproduction) report.push(`- Reproduction: ${bug.reproduction}`);
+                // Schema fields (additionalProperties: false): steps_to_reproduce
+                // is an array; expected/actual are strings. There is no
+                // `reproduction` field.
+                if (Array.isArray(bug.steps_to_reproduce) && bug.steps_to_reproduce.length > 0) {
+                  report.push(`- Steps to reproduce: ${bug.steps_to_reproduce.join('; ')}`);
+                }
+                if (bug.expected) report.push(`- Expected: ${bug.expected}`);
+                if (bug.actual) report.push(`- Actual: ${bug.actual}`);
+                report.push('');
               }
+            } else {
+              report.push('None reported in the structured output.');
             }
+
+            report.push('');
+            report.push('## Accessibility Findings');
+            report.push('');
+            report.push('Not separately assessed - this report was auto-generated from structured output.');
+
+            const consoleErrors = Array.isArray(data.console_errors) ? data.console_errors : [];
+            report.push('');
+            report.push('## Console');
+            report.push('');
+            if (consoleErrors.length > 0) {
+              for (const err of consoleErrors.slice(0, 20)) report.push(`- ${String(err)}`);
+            } else {
+              report.push('No console errors reported in the structured output.');
+            }
+
+            report.push('');
+            report.push('## Confidence');
+            report.push('');
+            report.push('Reduced - qa-report.md was reconstructed from structured output rather than written during testing.');
           } catch (error) {
             report.push('## Verdict: UNKNOWN');
             report.push('');
@@ -868,10 +920,20 @@ jobs:
             echo '5. Check 3-4 main pages load correctly, updating qa-report.md after each page'
             echo '6. Finalize qa-report.md no later than 30 turns spent (hard limit is 40)'
             echo ''
-            echo 'qa-report.md must contain:'
-            echo '- Summary of pages tested'
-            echo '- Any errors found'
-            echo '- Verdict: HEALTHY / MINOR_ISSUES / CRITICAL_BUGS'
+            echo 'The report is machine-validated: it is REJECTED unless it has a final'
+            echo '"## Verdict: HEALTHY|MINOR_ISSUES|CRITICAL_BUGS" line AND all six of these'
+            echo 'exact "## " sections, each with real content (never empty, "TBD", or "N/A"):'
+            echo ''
+            echo '## Acceptance Criteria'
+            echo '## Evidence'
+            echo '## Bugs / Observations'
+            echo '## Accessibility Findings'
+            echo '## Console'
+            echo '## Confidence'
+            echo ''
+            echo 'Keep each section brief for this smoke test - one or two sentences is fine'
+            echo '(e.g. Bugs / Observations: "None found."), but every section must be present'
+            echo 'and non-empty in the final report.'
             echo 'RETRY_PROMPT_EOF'
           } >> "$GITHUB_OUTPUT"
 
