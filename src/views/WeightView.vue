@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWeightEntries } from '@/features/weight/composables/useWeightEntries'
+import { useWeightOutlierConfirm } from '@/features/weight/composables/useWeightOutlierConfirm'
 import { useWeightStats } from '@/features/weight/composables/useWeightStats'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
-import { isOutlier } from '@/features/weight/lib/weightCalculations'
+import { useToastStore } from '@/stores/toast'
 import { Button } from '@/components/ui/button'
 import WeightEntryForm from '@/features/weight/components/WeightEntryForm.vue'
 import WeightStatsSummary from '@/features/weight/components/WeightStatsSummary.vue'
@@ -12,6 +13,7 @@ import WeightChart from '@/features/weight/components/WeightChart.vue'
 import WeightHistoryList from '@/features/weight/components/WeightHistoryList.vue'
 
 const { t } = useI18n()
+const { showToast } = useToastStore()
 
 const { entries, chartData, selectedRange, hasEntries, addEntry, deleteEntry, setTimeRange } =
   useWeightEntries()
@@ -19,7 +21,7 @@ const { entries, chartData, selectedRange, hasEntries, addEntry, deleteEntry, se
 const { stats } = useWeightStats(() => entries.value)
 
 // Get last recorded weight in display units for preset centering
-const { toDisplayValue, formatWithUnit } = useWeightDisplay()
+const { toDisplayValue } = useWeightDisplay()
 const lastWeightDisplay = computed(() => {
   const latestEntry = entries.value[0]
   if (!latestEntry) return
@@ -27,40 +29,22 @@ const lastWeightDisplay = computed(() => {
   return toDisplayValue(latestEntry.weight)
 })
 
-// Weight (in kg) awaiting confirmation because it deviates wildly from the
-// previous entry. `null` means no confirmation is pending.
-const pendingWeightKg = ref<number | null>(null)
+async function saveEntry(weightKg: number) {
+  const saved = await addEntry(weightKg)
+  // Success is visible in the stats/history below; only failures need a toast.
+  if (!saved) showToast(t('weight.saveError'))
+}
 
-const pendingConfirmMessage = computed(() => {
-  const previousEntry = entries.value[0]
-  if (!previousEntry) return ''
-  return t('weight.outlierConfirm.message', {
-    weight: formatWithUnit(previousEntry.weight, 1),
-  })
+const {
+  pendingWeightKg,
+  pendingConfirmMessage,
+  requestSave,
+  confirmPendingSave,
+  cancelPendingSave,
+} = useWeightOutlierConfirm({
+  entries: () => entries.value,
+  save: saveEntry,
 })
-
-async function handleSave(weightKg: number) {
-  const previousEntry = entries.value[0]
-
-  // Non-blocking for the first entry - there's nothing to compare against.
-  if (previousEntry && isOutlier(previousEntry.weight, weightKg)) {
-    pendingWeightKg.value = weightKg
-    return
-  }
-
-  await addEntry(weightKg)
-}
-
-async function confirmPendingSave() {
-  if (pendingWeightKg.value === null) return
-  const weightKg = pendingWeightKg.value
-  pendingWeightKg.value = null
-  await addEntry(weightKg)
-}
-
-function cancelPendingSave() {
-  pendingWeightKg.value = null
-}
 
 async function handleDelete(id: string) {
   await deleteEntry(id)
@@ -71,7 +55,7 @@ async function handleDelete(id: string) {
   <div class="container mx-auto max-w-lg space-y-section p-4">
     <h1 class="text-page-title font-bold">{{ t('weight.title') }}</h1>
 
-    <WeightEntryForm :last-weight="lastWeightDisplay" @save="handleSave" />
+    <WeightEntryForm :last-weight="lastWeightDisplay" @save="requestSave" />
 
     <div
       v-if="pendingWeightKg !== null"

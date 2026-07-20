@@ -34,4 +34,5 @@ export default {
     title: 'Log Weight',
     saved: 'Weight saved',
   },
+  saveError: 'Could not save weight entry. Please try again.',
 } as const

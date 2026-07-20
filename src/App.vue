@@ -1,14 +1,20 @@
 <script setup lang="ts">
 // QA smoke test: verify browser QA pipeline works end-to-end
-import { computed, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
-import QuickAddSheet from '@/components/QuickAddSheet.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
 import ToastViewport from '@/components/ToastViewport.vue'
 import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue'
-import WeightQuickLogDialog from '@/features/weight/components/WeightQuickLogDialog.vue'
 import { useQuickAddStore } from '@/stores/quickAdd'
+
+// Loaded on first use so the quick-add machinery (and the weight dialog's
+// live query) stays off the startup path — the app has a Lighthouse
+// performance budget on first paint.
+const QuickAddSheet = defineAsyncComponent(() => import('@/components/QuickAddSheet.vue'))
+const WeightQuickLogDialog = defineAsyncComponent(
+  () => import('@/features/weight/components/WeightQuickLogDialog.vue'),
+)
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
@@ -26,8 +32,12 @@ const { initState, initialize, resumeWorkout, discardWorkout } = useAppInitializ
 
 const quickAdd = useQuickAddStore()
 const weightQuickLogOpen = ref(false)
+// Stays true after the first request so the dialog (and its exit animation)
+// survives closing; it just never mounts before it's needed.
+const weightQuickLogRequested = ref(false)
 
 function handleQuickLogWeight() {
+  weightQuickLogRequested.value = true
   weightQuickLogOpen.value = true
 }
 
@@ -55,8 +65,12 @@ onMounted(() => {
 
     <ActiveWorkoutFab />
 
-    <QuickAddSheet v-model:open="quickAdd.isOpen" @log-weight="handleQuickLogWeight" />
-    <WeightQuickLogDialog v-model:open="weightQuickLogOpen" />
+    <QuickAddSheet
+      v-if="quickAdd.hasOpened"
+      v-model:open="quickAdd.isOpen"
+      @log-weight="handleQuickLogWeight"
+    />
+    <WeightQuickLogDialog v-if="weightQuickLogRequested" v-model:open="weightQuickLogOpen" />
 
     <!-- Resume workout dialog -->
     <ResumeWorkoutDialog

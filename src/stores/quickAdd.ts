@@ -9,9 +9,14 @@ import { reactive, ref } from 'vue'
  */
 export const useQuickAddStore = createGlobalState(() => {
   const isOpen = ref(false)
+  // Stays true after the first open so App.vue can defer mounting the sheet
+  // (and its dialog machinery) until it's actually needed, keeping app
+  // startup lean for the performance budget.
+  const hasOpened = ref(false)
 
   function open(): void {
     isOpen.value = true
+    hasOpened.value = true
   }
 
   function close(): void {
@@ -20,10 +25,12 @@ export const useQuickAddStore = createGlobalState(() => {
 
   function $reset(): void {
     isOpen.value = false
+    hasOpened.value = false
   }
 
   return reactive({
     isOpen,
+    hasOpened,
     open,
     close,
     $reset,
