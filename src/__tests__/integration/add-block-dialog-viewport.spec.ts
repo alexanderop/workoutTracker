@@ -21,7 +21,7 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Click add block button to open dialog
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
 
     // Switch to Timed Blocks tab
@@ -43,7 +43,7 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     await common.waitForDialogClose()
 
     // Re-open AddBlockDialog to test Cardio
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
     await userEvent.click(getByRole('tab', { name: /timed/i }))
 
@@ -63,7 +63,7 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     await navigateTo({ name: RouteNames.CreateTemplate })
     await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
     await userEvent.click(getByRole('tab', { name: /timed/i }))
 
@@ -79,7 +79,7 @@ describe('AddBlockDialog - Desktop Viewport Clipping', () => {
     // Reopen and prove the neighboring option is independently actionable.
     await userEvent.click(page.getByRole('button', { name: /close/i }))
     await common.waitForDialogClose()
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
     await userEvent.click(getByRole('tab', { name: /timed/i }))
     await userEvent.wheel(page.getByRole('dialog'), { direction: 'down', times: 5 })

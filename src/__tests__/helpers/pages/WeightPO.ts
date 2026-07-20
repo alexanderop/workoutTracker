@@ -10,11 +10,17 @@ export class WeightPO {
   constructor(private common: CommonPO) {}
 
   /**
-   * Navigates to the weight view.
+   * Navigates to the weight view through the quick-add sheet (the Weight
+   * nav tab moved there when the center "+" button arrived).
    */
   async navigateTo(): Promise<void> {
-    await page.getByRole('button', { name: /weight/i }).click()
+    await this.common.openQuickAddSheet()
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /weight history/i })
+      .click()
     await this.common.waitForRoute(/^\/weight$/)
+    await this.common.waitForDialogClose()
   }
 
   /**

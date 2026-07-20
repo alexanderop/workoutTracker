@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { Plus } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -43,6 +44,22 @@ function openEditForm(habit: DbHabit): void {
   editingHabit.value = habit
   formOpen.value = true
 }
+
+// The quick-add sheet deep-links here with ?create=1 to open the create
+// form immediately; the flag is consumed (removed from the URL) so
+// back/refresh doesn't reopen the dialog.
+const route = useRoute()
+const router = useRouter()
+
+watch(
+  () => route.query.create,
+  (create) => {
+    if (create !== '1') return
+    openCreateForm()
+    router.replace({ query: { ...route.query, create: undefined } })
+  },
+  { immediate: true },
+)
 
 async function handleFormSave(data: HabitFormData): Promise<void> {
   if (editingHabit.value) {

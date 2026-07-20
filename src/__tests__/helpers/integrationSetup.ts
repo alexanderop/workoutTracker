@@ -4,6 +4,7 @@ import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkStat
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
+import { useQuickAddStore } from '@/stores/quickAdd'
 import { resetDatabase } from './resetDatabase'
 
 function resetThemeState(): void {
@@ -20,6 +21,7 @@ export async function cleanupIntegrationTest(): Promise<void> {
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
+  useQuickAddStore().$reset()
   await resetDatabase()
   resetThemeState()
   document.body.style.cssText = ''
@@ -37,6 +39,7 @@ export async function setupIntegrationTest(): Promise<void> {
   resetBenchmarkWorkout()
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
+  useQuickAddStore().$reset()
   await resetDatabase()
   resetThemeState()
 

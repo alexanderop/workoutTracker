@@ -1,11 +1,14 @@
 <script setup lang="ts">
 // QA smoke test: verify browser QA pipeline works end-to-end
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
+import QuickAddSheet from '@/components/QuickAddSheet.vue'
 import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
 import ToastViewport from '@/components/ToastViewport.vue'
 import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue'
+import WeightQuickLogDialog from '@/features/weight/components/WeightQuickLogDialog.vue'
+import { useQuickAddStore } from '@/stores/quickAdd'
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
@@ -20,6 +23,13 @@ useLanguage()
 usePwaUpdate()
 
 const { initState, initialize, resumeWorkout, discardWorkout } = useAppInitialization()
+
+const quickAdd = useQuickAddStore()
+const weightQuickLogOpen = ref(false)
+
+function handleQuickLogWeight() {
+  weightQuickLogOpen.value = true
+}
 
 const showResumeDialog = computed(() => initState.value.status === 'prompt-resume')
 const resumeDialogData = computed(() => {
@@ -44,6 +54,9 @@ onMounted(() => {
     </Layout>
 
     <ActiveWorkoutFab />
+
+    <QuickAddSheet v-model:open="quickAdd.isOpen" @log-weight="handleQuickLogWeight" />
+    <WeightQuickLogDialog v-model:open="weightQuickLogOpen" />
 
     <!-- Resume workout dialog -->
     <ResumeWorkoutDialog

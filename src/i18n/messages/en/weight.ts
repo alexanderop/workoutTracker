@@ -30,4 +30,8 @@ export default {
     confirm: 'Save anyway',
     cancel: 'Cancel',
   },
+  quickLog: {
+    title: 'Log Weight',
+    saved: 'Weight saved',
+  },
 } as const

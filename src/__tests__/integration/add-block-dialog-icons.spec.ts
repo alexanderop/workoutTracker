@@ -15,7 +15,7 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
     await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Open add block dialog
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
 
     // Switch to Timed Blocks tab (Zeitblöcke)
@@ -98,7 +98,7 @@ describe('AddBlockDialog - Time Block Icons and Colors', () => {
     await expect.element(page.getByRole('textbox', { name: /template name/i })).toBeVisible()
 
     // Open add block dialog
-    await userEvent.click(getByRole('button', { name: /add/i }))
+    await userEvent.click(getByRole('button', { name: /add block/i }))
     await common.waitForDialog()
 
     // Switch to Timed Blocks tab
