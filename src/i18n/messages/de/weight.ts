@@ -32,4 +32,9 @@ export default {
     confirm: 'Trotzdem speichern',
     cancel: 'Abbrechen',
   },
+  quickLog: {
+    title: 'Gewicht eintragen',
+    saved: 'Gewicht gespeichert',
+  },
+  saveError: 'Gewichtseintrag konnte nicht gespeichert werden. Bitte erneut versuchen.',
 } as const

@@ -25,7 +25,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Full Body Circuit')
 
       // Click add block button
-      await userEvent.click(getByRole('button', { name: /add/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
 
       // Switch to Timed Blocks tab
@@ -85,7 +85,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Cardio Day')
 
       // Click add block button
-      await userEvent.click(getByRole('button', { name: /add/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
 
       // Switch to Timed Blocks tab
@@ -129,13 +129,13 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await userEvent.fill(getByRole('textbox', { name: /template name/i }), 'Mixed Workout')
 
       // Add a strength block first
-      await userEvent.click(getByRole('button', { name: /add/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(common.getDialogButton('Bench Press'))
       await common.waitForDialogClose()
 
       // Add an EMOM block
-      await userEvent.click(getByRole('button', { name: /add/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(getByRole('tab', { name: /timed/i }))
       await userEvent.click(page.getByText('EMOM'))
@@ -183,7 +183,7 @@ describe('Template Blocks - Timed and Cardio Support', () => {
       await expect.element(page.getByText('Squat')).toBeVisible()
 
       // Add AMRAP block
-      await userEvent.click(getByRole('button', { name: /add/i }))
+      await userEvent.click(getByRole('button', { name: /add block/i }))
       await common.waitForDialog()
       await userEvent.click(getByRole('tab', { name: /timed/i }))
       await userEvent.click(page.getByText('AMRAP'))

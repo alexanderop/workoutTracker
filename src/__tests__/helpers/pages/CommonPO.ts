@@ -130,12 +130,26 @@ export class CommonPO {
   }
 
   /**
-   * Navigates to the exercises page by clicking the exercises nav button.
+   * Opens the quick-add sheet via the nav's center "+" button.
+   */
+  async openQuickAddSheet(): Promise<void> {
+    await page.getByRole('button', { name: /^quick add$/i }).click()
+    await this.waitForDialog()
+  }
+
+  /**
+   * Navigates to the exercises page through the quick-add sheet (the
+   * Exercises nav tab moved there when the center "+" button arrived).
    * Waits for the route to update before returning.
    */
   async navigateToExercises(): Promise<void> {
-    await page.getByRole('button', { name: /^exercises$/i }).click()
+    await this.openQuickAddSheet()
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^exercises$/i })
+      .click()
     await this.waitForRoute(/^\/exercises$/)
+    await this.waitForDialogClose()
   }
 
   /**

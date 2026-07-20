@@ -70,7 +70,11 @@ describe('Localization', () => {
       const settingsHeading = await getByRole('heading', { level: 1 }).element()
       expect(settingsHeading.textContent).toBe('Settings')
 
-      await expect.element(getByText(/^weight$/i).first()).toBeVisible()
+      // Unanchored: the settings "Weight" label renders with surrounding
+      // whitespace, which Playwright's regex matching does not normalize.
+      // (The old anchored form matched the Weight nav tab, which moved into
+      // the quick-add sheet.)
+      await expect.element(getByText(/weight/i).first()).toBeVisible()
     })
   })
 })

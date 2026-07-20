@@ -12,6 +12,7 @@ import progressions from './progressions'
 import onboarding from './onboarding'
 import habits from './habits'
 import nutrition from './nutrition'
+import quickAdd from './quickAdd'
 
 export default {
   calendar,
@@ -28,4 +29,5 @@ export default {
   onboarding,
   habits,
   nutrition,
+  quickAdd,
 } as const
