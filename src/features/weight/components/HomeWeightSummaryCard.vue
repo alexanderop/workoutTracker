@@ -3,9 +3,12 @@ import { computed } from 'vue'
 import { Scale } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { SparklineChart } from '@/components/ui/chart'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { RouteNames } from '@/router'
 import { useWeightEntries } from '../composables/useWeightEntries'
+
+const RECENT_ENTRY_COUNT = 7
 
 const { t } = useI18n()
 const router = useRouter()
@@ -22,6 +25,12 @@ const change = computed(() => {
   const sign = latest.weight > previous.weight ? '+' : '−'
   return `${sign}${display.toFixed(1)} ${unitLabel.value}`
 })
+const trend = computed(() =>
+  entries.value
+    .slice(0, RECENT_ENTRY_COUNT)
+    .toReversed()
+    .map((entry) => entry.weight),
+)
 </script>
 
 <template>
@@ -38,6 +47,14 @@ const change = computed(() => {
     </div>
     <p class="mt-4 text-sm text-muted-foreground">{{ t('weight.title') }}</p>
     <p class="text-2xl font-bold">{{ current }}</p>
+    <SparklineChart
+      v-if="trend.length > 1"
+      :data="trend"
+      color="var(--primary)"
+      :height="32"
+      class="mt-2"
+      :aria-label="t('weight.trend')"
+    />
     <span class="mt-2 block text-xs font-semibold text-primary">{{
       t('weight.viewProgress')
     }}</span>
