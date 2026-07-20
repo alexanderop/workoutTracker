@@ -149,11 +149,25 @@ Full inventory (2026-07-19): 21 `MobileDialogContent` consumers, 2
    `max-h-[calc(100dvh-var(--keyboard-inset,0px))]`, `overflow-hidden`, and
    `@open-auto-focus` prevented on touch devices (container focused
    instead). Desktop (`sm:`) behavior unchanged.
-4. **Dialog bodies**: input-heavy dialogs use header / `flex-1 min-h-0
-   overflow-y-auto overscroll-contain` body / pinned footer CTA.
-5. **Inputs ≥16px on mobile**: `text-base sm:text-sm` on Input/NativeSelect/
-   Textarea to kill iOS zoom-on-focus.
-6. Normalize remaining `vh` caps in sheets to `dvh`.
+4. **Dialog bodies**: header / `flex-1 min-h-0 overflow-y-auto
+   overscroll-contain` body / pinned footer CTA — shipped for
+   FoodLogDialog, WorkoutEditExerciseDialog, NutritionGoalsDialog,
+   HabitForm, WorkoutFinishDialog, and ExerciseSelectorDialog (benchmarks
+   feature, not in the original inventory above). `WorkoutSaveTemplateDialog`
+   was left untouched (still a plain `space-y-2 py-4` block, no scroll
+   region). `WorkoutCalendarSheet` and `SourceSelector` only got the `dvh`
+   normalization in item 6 below, not the body restructure — `SourceSelector`
+   still uses plain `DialogContent` with a nested `ScrollArea`, and
+   `WorkoutCalendarSheet`'s `SheetContent` is still one scrolling block.
+5. **Inputs ≥16px on mobile**: `text-base md:text-sm` on `NativeSelect` and
+   `NumberFieldInput` to kill iOS zoom-on-focus. `Input` already shipped
+   `text-base md:text-sm` before this work (untouched by it). There is no
+   `Textarea` component in this codebase.
+6. Normalize remaining `vh` caps in sheets to `dvh` (done for
+   `WorkoutCalendarSheet` and `SourceSelector`; the `sm:max-h-[…vh]`
+   desktop-only breakpoints in ExercisePicker/AddBlockDialog/Configure*
+   dialogs are the pre-existing "good pattern" from Codebase Patterns above,
+   not stray leftovers).
 
 Pitfalls deliberately avoided: no `maximum-scale=1`; no
 `env(keyboard-inset-height)` (Chromium-only, conflicts with
