@@ -187,6 +187,7 @@ describe('Nutrition barcode scan', () => {
     await expect.element(torchButton).toBeVisible()
     // Fires toggleTorch(); applyConstraints stays pending until resolved below.
     await torchButton.click()
+    await expect.poll(() => applyConstraints.mock.calls.length).toBe(1)
 
     await page.getByRole('button', { name: 'Cancel' }).click()
     await expect.element(page.getByRole('button', { name: 'Scan barcode' })).toBeVisible()
