@@ -810,6 +810,10 @@ jobs:
             report.push('');
             report.push('## Evidence');
             report.push('');
+            // Track whether any evidence line was emitted so the section is
+            // never left empty (an empty section fails policy validation),
+            // regardless of which optional fields the payload happens to carry.
+            const evidenceStart = report.length;
             if (tests.length > 0) {
               for (const test of tests) {
                 if (test.details) report.push(`- **${test.name || 'unnamed test'}**: ${test.details}`);
@@ -817,7 +821,8 @@ jobs:
             }
             if (data.metrics) {
               report.push(`- Metrics: ${data.metrics.total_tests ?? 0} tests, ${data.metrics.passed ?? 0} passed, ${data.metrics.failed ?? 0} failed, ${data.metrics.critical_bugs ?? 0} critical / ${data.metrics.major_bugs ?? 0} major / ${data.metrics.minor_bugs ?? 0} minor bugs.`);
-            } else if (tests.length === 0) {
+            }
+            if (report.length === evidenceStart) {
               report.push('No evidence details were captured in the structured output.');
             }
 
@@ -830,7 +835,14 @@ jobs:
                 report.push(`### ${bug.title || bug.id || 'Bug'}`);
                 report.push(`- Severity: ${bug.severity || 'unknown'}`);
                 if (bug.description) report.push(`- Description: ${bug.description}`);
-                if (bug.reproduction) report.push(`- Reproduction: ${bug.reproduction}`);
+                // Schema fields (additionalProperties: false): steps_to_reproduce
+                // is an array; expected/actual are strings. There is no
+                // `reproduction` field.
+                if (Array.isArray(bug.steps_to_reproduce) && bug.steps_to_reproduce.length > 0) {
+                  report.push(`- Steps to reproduce: ${bug.steps_to_reproduce.join('; ')}`);
+                }
+                if (bug.expected) report.push(`- Expected: ${bug.expected}`);
+                if (bug.actual) report.push(`- Actual: ${bug.actual}`);
                 report.push('');
               }
             } else {
