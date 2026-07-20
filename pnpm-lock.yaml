@@ -271,6 +271,7 @@ overrides:
   js-yaml: 4.3.0
   markdown-it: 14.2.0
   qs: '>=6.14.1'
+  shell-quote: 1.9.0
   tmp: 0.2.7
   uuid: 11.1.1
 
@@ -10996,10 +10997,10 @@ packages:
       }
     engines: { node: '>=8' }
 
-  shell-quote@1.8.4:
+  shell-quote@1.9.0:
     resolution:
       {
-        integrity: sha512-VsC6n6vz1ihYYyZZwX7YZSF5l5x36ca17OC+a69h94YqB7X6XLwf+5MOgynYir2SLFUbl8gIYvBo8K8RoNQ6bQ==,
+        integrity: sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==,
       }
     engines: { node: '>= 0.4' }
 
@@ -18876,7 +18877,7 @@ snapshots:
       picomatch: 4.0.4
       pidtree: 1.0.0
       read-package-json-fast: 6.0.0
-      shell-quote: 1.8.4
+      shell-quote: 1.9.0
       which: 7.0.0
 
   nth-check@2.1.1:
@@ -19682,7 +19683,7 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  shell-quote@1.8.4: {}
+  shell-quote@1.9.0: {}
 
   side-channel-list@1.0.1:
     dependencies:
