@@ -81,13 +81,11 @@ describe('nutrition calculations', () => {
     expect(percents).toEqual({ protein: 29, carbohydrate: 43, fat: 28 })
   })
 
-  it('round-trips grams through percentages within rounding error', () => {
+  it('round-trips grams through percentages exactly', () => {
     const grams = { proteinGrams: 325, carbohydrateGrams: 195, fatGrams: 58 }
     const percents = macroPercentsFromGrams(grams)
     const roundTripped = macroGramsFromPercents(caloriesFromMacros(grams), percents)
-    expect(roundTripped.proteinGrams).toBeCloseTo(grams.proteinGrams, -1)
-    expect(roundTripped.carbohydrateGrams).toBeCloseTo(grams.carbohydrateGrams, -1)
-    expect(roundTripped.fatGrams).toBeCloseTo(grams.fatGrams, -1)
+    expect(roundTripped).toEqual(grams)
   })
 
   it('falls back to a default split when all macros are zero', () => {

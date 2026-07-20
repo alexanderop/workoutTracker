@@ -286,6 +286,7 @@ async function save() {
             </div>
             <p
               class="text-sm"
+              aria-live="polite"
               :class="percentTotalComplete ? 'text-muted-foreground' : 'text-destructive'"
             >
               {{ t('nutrition.goals.percentTotal', { total: percentTotalDisplay }) }}
