@@ -75,6 +75,10 @@ const percentTotal = computed(
 
 const percentGrams = computed(() => macroGramsFromPercents(Number(calories.value), percents.value))
 
+// Tolerate float noise from decimal splits (33.3 + 33.3 + 33.4), not real gaps.
+const percentTotalComplete = computed(() => Math.abs(percentTotal.value - 100) < 0.001)
+const percentTotalDisplay = computed(() => Math.round(percentTotal.value * 10) / 10)
+
 const gramsModeValid = computed(
   () =>
     macroCalories.value > 0 &&
@@ -89,7 +93,7 @@ const percentModeValid = computed(
     percents.value.protein >= 0 &&
     percents.value.carbohydrate >= 0 &&
     percents.value.fat >= 0 &&
-    percentTotal.value === 100,
+    percentTotalComplete.value,
 )
 
 const isValid = computed(() =>
@@ -282,10 +286,10 @@ async function save() {
             </div>
             <p
               class="text-sm"
-              :class="percentTotal === 100 ? 'text-muted-foreground' : 'text-destructive'"
+              :class="percentTotalComplete ? 'text-muted-foreground' : 'text-destructive'"
             >
-              {{ t('nutrition.goals.percentTotal', { total: percentTotal }) }}
-              <template v-if="percentTotal !== 100">
+              {{ t('nutrition.goals.percentTotal', { total: percentTotalDisplay }) }}
+              <template v-if="!percentTotalComplete">
                 · {{ t('nutrition.goals.percentTotalError') }}
               </template>
             </p>
