@@ -21,7 +21,10 @@ export default defineConfig({
     vue(),
     versionPlugin(),
     tailwindcss(),
-    vueDevTools(),
+    // The floating DevTools panel overlays the bottom of small viewports and
+    // silently swallows taps/clicks there (e.g. the nav's center "+" button),
+    // producing false-positive bugs in browser-driven QA on CI runners.
+    ...(process.env.CI ? [] : [vueDevTools()]),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
