@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { Flashlight, FlashlightOff } from '@lucide/vue'
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { tryCatch } from '@/lib/tryCatch'
 import type { BarcodeDetectorLike } from '../lib/barcodeDetector'
 import { getBarcodeDetectorConstructor } from '../lib/barcodeDetector'
+import { setTrackTorch, trackSupportsTorch } from '../lib/torch'
 
 /** Retail food packaging uses the EAN/UPC family of barcodes. */
 const FOOD_BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e']
@@ -15,8 +17,11 @@ const { t } = useI18n()
 const videoRef = useTemplateRef('video')
 const cancelButtonRef = useTemplateRef<{ $el?: HTMLElement }>('cancelButton')
 const cameraFailed = ref(false)
+const torchSupported = ref(false)
+const torchOn = ref(false)
 
 let stream: MediaStream | null = null
+let videoTrack: MediaStreamTrack | null = null
 let pollId: ReturnType<typeof globalThis.setInterval> | undefined
 let stopped = false
 let detecting = false
@@ -30,7 +35,23 @@ function stopCamera() {
   pollId = undefined
   if (stream) stopTracks(stream)
   stream = null
+  videoTrack = null
+  torchSupported.value = false
+  torchOn.value = false
   if (videoRef.value) videoRef.value.srcObject = null
+}
+
+async function toggleTorch() {
+  if (!videoTrack) return
+  const next = !torchOn.value
+  const [error] = await tryCatch(setTrackTorch(videoTrack, next))
+  if (error) return
+  torchOn.value = next
+}
+
+function detectTorchSupport(mediaStream: MediaStream) {
+  videoTrack = mediaStream.getVideoTracks()[0] ?? null
+  torchSupported.value = videoTrack !== null && trackSupportsTorch(videoTrack)
 }
 
 async function detectOnce(detector: BarcodeDetectorLike) {
@@ -78,6 +99,7 @@ onMounted(async () => {
     cameraFailed.value = true
     return
   }
+  detectTorchSupport(mediaStream)
   pollId = globalThis.setInterval(() => {
     void detectOnce(detector)
   }, 300)
@@ -91,13 +113,27 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="space-y-3">
-    <video
-      ref="video"
-      class="aspect-[4/3] w-full rounded-md bg-muted object-cover"
-      autoplay
-      muted
-      playsinline
-    />
+    <div class="relative">
+      <video
+        ref="video"
+        class="aspect-[4/3] w-full rounded-md bg-muted object-cover"
+        autoplay
+        muted
+        playsinline
+      />
+      <Button
+        v-if="torchSupported"
+        type="button"
+        variant="secondary"
+        size="icon"
+        class="absolute right-2 top-2"
+        :aria-pressed="torchOn"
+        :aria-label="t('nutrition.food.scanFlashlight')"
+        @click="toggleTorch"
+      >
+        <component :is="torchOn ? FlashlightOff : Flashlight" />
+      </Button>
+    </div>
     <p v-if="cameraFailed" role="alert" class="text-sm text-destructive">
       {{ t('nutrition.food.scanCameraFailed') }}
     </p>
