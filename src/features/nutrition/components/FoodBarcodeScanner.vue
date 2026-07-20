@@ -45,7 +45,7 @@ async function toggleTorch() {
   if (!videoTrack) return
   const next = !torchOn.value
   const [error] = await tryCatch(setTrackTorch(videoTrack, next))
-  if (error) return
+  if (error || stopped) return
   torchOn.value = next
 }
 

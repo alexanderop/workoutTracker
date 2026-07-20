@@ -3,7 +3,7 @@
  * does not type — it's a non-standard capability/constraint exposed by
  * Chromium-based browsers on `MediaStreamTrack`.
  */
-type MediaTrackCapabilitiesWithTorch = MediaTrackCapabilities & { torch?: boolean }
+export type MediaTrackCapabilitiesWithTorch = MediaTrackCapabilities & { torch?: boolean }
 type MediaTrackConstraintSetWithTorch = MediaTrackConstraintSet & { torch?: boolean }
 
 export function trackSupportsTorch(track: MediaStreamTrack): boolean {

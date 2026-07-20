@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
+import type { MediaTrackCapabilitiesWithTorch } from '@/features/nutrition/lib/torch'
 
 const NUTELLA_BARCODE = '3017620422003'
 
@@ -27,12 +28,29 @@ class FakeBarcodeDetector {
   }
 }
 
+/** Never reports a barcode, so the scanner stays open for torch interaction. */
+class SilentBarcodeDetector {
+  detect(): Promise<Array<{ rawValue: string }>> {
+    return Promise.resolve([])
+  }
+}
+
 function createFakeCameraStream(): MediaStream {
   const canvas = document.createElement('canvas')
   canvas.width = 320
   canvas.height = 240
   canvas.getContext('2d')?.fillRect(0, 0, canvas.width, canvas.height)
   return canvas.captureStream(10)
+}
+
+function createFakeCameraStreamWithTorch(applyConstraints: MediaStreamTrack['applyConstraints']) {
+  const stream = createFakeCameraStream()
+  const track = stream.getVideoTracks()[0]
+  if (!track) throw new Error('expected canvas.captureStream to produce a video track')
+  const capabilities: MediaTrackCapabilitiesWithTorch = { torch: true }
+  vi.spyOn(track, 'getCapabilities').mockReturnValue(capabilities)
+  vi.spyOn(track, 'applyConstraints').mockImplementation(applyConstraints)
+  return stream
 }
 
 const ORIGINAL_DETECTOR: unknown = Reflect.get(globalThis, 'BarcodeDetector')
@@ -90,5 +108,64 @@ describe('Nutrition barcode scan', () => {
         foods: [{ name: 'Nutella', brand: 'Ferrero', defaultServingGrams: 15 }],
         diaryEntries: [{ meal: 'snack', grams: 15 }],
       })
+  })
+
+  it('does not show a flashlight toggle when the camera has no torch support', async ({
+    createTestApp,
+  }) => {
+    Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
+    const { nutrition } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Scan barcode' }).click()
+
+    await expect.element(page.getByText('Point the camera')).toBeVisible()
+    await expect
+      .element(page.getByRole('button', { name: 'Toggle flashlight' }))
+      .not.toBeInTheDocument()
+  })
+
+  it('toggles the flashlight on and off when applying the constraint succeeds', async ({
+    createTestApp,
+  }) => {
+    Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
+    const applyConstraints = vi.fn().mockResolvedValue(undefined)
+    const stream = createFakeCameraStreamWithTorch(applyConstraints)
+    vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
+    const { nutrition } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Scan barcode' }).click()
+
+    const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
+    await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
+
+    await torchButton.click()
+    await expect.element(torchButton).toHaveAttribute('aria-pressed', 'true')
+
+    await torchButton.click()
+    await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('keeps the flashlight state unchanged when the browser rejects the torch constraint', async ({
+    createTestApp,
+  }) => {
+    Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
+    const applyConstraints = vi.fn().mockRejectedValue(new Error('torch unsupported'))
+    const stream = createFakeCameraStreamWithTorch(applyConstraints)
+    vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
+    const { nutrition } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Scan barcode' }).click()
+
+    const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
+    await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
+
+    await torchButton.click()
+    await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
   })
 })
