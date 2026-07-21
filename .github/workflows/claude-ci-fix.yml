@@ -287,6 +287,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      pull-requests: read
     outputs:
       digest: ${{ steps.verify-bundle.outputs.digest }}
       sha: ${{ steps.verify-bundle.outputs.sha }}
@@ -310,6 +311,27 @@ jobs:
           git fetch "$RUNNER_TEMP/candidate/repair.bundle" HEAD
           test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
           git checkout --detach "$EXPECTED_SHA"
+      # Cheap staleness recheck before the ~25-minute verification: if the PR
+      # head moved past the failed SHA (a human or another workflow already
+      # repaired it) or the PR closed, the publish gate would reject this
+      # repair anyway — abort now instead of burning the full verify suite.
+      # The token is step-scoped and no repository code runs in this step, so
+      # the job's secretless-verification property still holds where it
+      # matters (install/test below run without any token in the env).
+      - name: Abort early if the repair is already superseded
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_SHA: ${{ needs.gate.outputs.initial-sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          if [ "$(jq -r '.state' <<<"$PR_JSON")" != open ] ||
+             [ "$(jq -r '.head.sha' <<<"$PR_JSON")" != "$INITIAL_SHA" ]; then
+            echo "::error::PR #${PR_NUMBER} closed or its head moved past ${INITIAL_SHA}; this repair is superseded. Aborting before expensive verification."
+            exit 1
+          fi
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node.js

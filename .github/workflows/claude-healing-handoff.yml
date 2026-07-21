@@ -50,6 +50,10 @@ jobs:
       - name: Dispatch CI and review repair
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # `gh workflow run` resolves the target repo from a local git remote,
+          # but this job never checks out — without GH_REPO every dispatch dies
+          # with "fatal: not a git repository".
+          GH_REPO: ${{ github.repository }}
           HEAD_BRANCH: ${{ inputs.head_branch }}
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
