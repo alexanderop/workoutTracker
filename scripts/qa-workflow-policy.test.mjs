@@ -449,8 +449,17 @@ test('agent-browser executable is integrity-pinned', async () => {
   assert.doesNotMatch(action, /npm install -g agent-browser/)
   assert.match(action, /pnpm exec agent-browser install/)
   assert.match(packageJson, /"agent-browser": "catalog:"/)
-  assert.match(workspace, /agent-browser: 0\.27\.0/)
-  assert.match(lockfile, /agent-browser@0\.27\.0:[\s\S]*?integrity: sha512-/)
+  const pinned = workspace.match(/^ {2}agent-browser: (?<version>\S+)$/m)?.groups?.version
+  assert.match(
+    pinned ?? '',
+    /^\d+\.\d+\.\d+$/,
+    'pnpm-workspace.yaml must pin agent-browser to an exact version',
+  )
+  const escaped = pinned.replaceAll('.', String.raw`\.`)
+  assert.match(
+    lockfile,
+    new RegExp(String.raw`agent-browser@${escaped}:[\s\S]*?integrity: sha512-`),
+  )
 })
 
 test('every Claude automation uses Sonnet 5', async () => {

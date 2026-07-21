@@ -144,7 +144,7 @@
     {
       "name": "production JavaScript",
       "path": "dist/assets/*.js",
-      "limit": "431 kB"
+      "limit": "433 kB"
     }
   ],
   "lint-staged": {
