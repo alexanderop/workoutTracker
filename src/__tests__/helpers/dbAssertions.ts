@@ -176,7 +176,7 @@ export async function expectWorkoutSaved(expectedCount = 1): Promise<void> {
  * Waits for and asserts that the expected number of completed workouts exist.
  */
 export async function expectWorkoutCount(expectedCount: number): Promise<void> {
-  await expect.poll(async () => getWorkoutsRepository().count()).toBe(expectedCount)
+  await expect.poll(async () => getWorkoutsRepository().count()).toHaveRepositoryCount(expectedCount)
 }
 
 /**
@@ -218,7 +218,7 @@ export async function expectCustomExerciseCount(expectedCount: number): Promise<
       const exercises = await getAllCustomExercises()
       return exercises.length
     })
-    .toBe(expectedCount)
+    .toHaveRepositoryCount(expectedCount)
 }
 
 // ============================================
@@ -260,7 +260,7 @@ export async function expectSettingsCount(expectedCount: number): Promise<void> 
       const settings = await getRawSettings()
       return settings.length
     })
-    .toBe(expectedCount)
+    .toHaveRepositoryCount(expectedCount)
 }
 
 /**
@@ -270,12 +270,7 @@ export async function expectSettingValue(
   key: DbUserSetting['key'],
   expected: DbUserSetting['value'],
 ): Promise<void> {
-  await expect
-    .poll(async () => {
-      const settings = await getRawSettings()
-      return settings.find((s) => s.key === key)?.value
-    })
-    .toBe(expected)
+  await expect.poll(getRawSettings).toContainStoredSetting(key, expected)
 }
 
 // ============================================

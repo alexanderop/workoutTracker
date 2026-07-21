@@ -5,6 +5,5 @@ export function assertSuccess<T>(result: {
   success: boolean
   data?: T
 }): asserts result is { success: true; data: T } {
-  expect(result.success).toBe(true)
-  if (!result.success) throw new Error('Parse failed unexpectedly')
+  expect(result).toBeParseSuccess()
 }

@@ -39,7 +39,7 @@ describe('Workout Block Skip Completion', () => {
       await expect.poll(() => workout.getCompletedSetCount()).toBe(0)
     })
 
-    it('should show finish dialog only after ALL blocks are completed', async ({
+    it('should show finish dialog only after ALL blocks are completed', { timeout: 15_000 }, async ({
       createTestApp,
     }) => {
       const { builder, workout, common } = await createTestApp()

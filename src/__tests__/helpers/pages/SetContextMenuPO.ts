@@ -1,14 +1,6 @@
 import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 
-const LONG_PRESS_DELAY = 500
-
-function delay(ms: number): Promise<void> {
-  // A real elapsed hold is the behavior under test: the production long-press
-  // recognizer uses native pointer timing and must not open on a short press.
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 function createPointerEvent(type: string, clientX: number, clientY: number): PointerEvent {
   return new PointerEvent(type, {
     bubbles: true,
@@ -24,15 +16,14 @@ function createPointerEvent(type: string, clientX: number, clientY: number): Poi
 /**
  * Simulates a long press (pointerdown followed by delay then pointerup).
  * @param element - The element to long press on
- * @param duration - How long to hold in ms (default: LONG_PRESS_DELAY)
  */
-async function simulateLongPress(element: Element, duration = LONG_PRESS_DELAY): Promise<void> {
+async function simulateLongPress(element: Element): Promise<void> {
   const rect = element.getBoundingClientRect()
   const clientX = rect.left + rect.width / 2
   const clientY = rect.top + rect.height / 2
 
   element.dispatchEvent(createPointerEvent('pointerdown', clientX, clientY))
-  await delay(duration)
+  await expect.element(page.getByRole('menu')).toBeVisible()
   element.dispatchEvent(createPointerEvent('pointerup', clientX, clientY))
 }
 

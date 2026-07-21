@@ -1,6 +1,6 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Timer state is conditionally rendered across timer phases. */
 import { page, userEvent } from 'vitest/browser'
-import { describe, expect } from 'vitest'
+import { describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import type { TestApp } from '../helpers/createTestApp'
 
@@ -127,23 +127,27 @@ describe('Timer Edge Cases', () => {
       // Timer should start paused
       expect(testApp.workout.isTimerRunning()).toBe(false)
 
-      // Start and then pause
-      const startButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(startButton)
-      await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
+      vi.useFakeTimers()
+      try {
+        // Start and then pause. The interval is app-owned, so advancing fake
+        // time proves a paused display stays frozen without a wall-clock wait.
+        const startButton = await testApp.workout.getTimerPlayPauseButton()
+        await userEvent.click(startButton)
+        expect(testApp.workout.isTimerRunning()).toBe(true)
 
-      const pauseButton = await testApp.workout.getTimerPlayPauseButton()
-      await userEvent.click(pauseButton)
-      await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
+        const pauseButton = await testApp.workout.getTimerPlayPauseButton()
+        await userEvent.click(pauseButton)
+        expect(testApp.workout.isTimerRunning()).toBe(false)
 
-      const timerDisplay = page.getByText(/\d+:\d{2}/).first()
-      const pausedTime = (await timerDisplay.element()).textContent
+        const timerDisplay = page.getByText(/\d+:\d{2}/).first()
+        const pausedTime = (await timerDisplay.element()).textContent
 
-      // The timer interval was created by the rendered component, so observe
-      // one full display-second on the real clock and verify the UI stays frozen.
-      await new Promise((resolve) => setTimeout(resolve, 1100))
-      await expect.element(timerDisplay).toHaveTextContent(pausedTime ?? '')
-      await expect.element(page.getByRole('button', { name: /start timer/i })).toBeVisible()
+        await vi.advanceTimersByTimeAsync(1100)
+        await expect.element(timerDisplay).toHaveTextContent(pausedTime ?? '')
+        await expect.element(page.getByRole('button', { name: /start timer/i })).toBeVisible()
+      } finally {
+        vi.useRealTimers()
+      }
     })
   })
 
@@ -246,7 +250,6 @@ describe('Timer Edge Cases', () => {
 
     it(
       'updates exercise sub-label to REST when phase changes from work, matching the phase badge',
-      { timeout: 10_000 },
       async ({ createTestApp }) => {
         const testApp = await createTestApp()
         await startShortCustomTabata(testApp, { rounds: '2', workSeconds: '1', restSeconds: '3' })

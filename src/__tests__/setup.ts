@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import 'fake-indexeddb/auto'
 import '@/style.css'
 import 'vitest-browser-vue'
+import './helpers/customMatchers'
 
 // Seed faker for reproducible randomization across test runs
 faker.seed(12_345)

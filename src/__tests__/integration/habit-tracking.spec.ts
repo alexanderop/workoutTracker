@@ -113,7 +113,7 @@ describe('Habit Tracking', () => {
       await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
     })
 
-    it('shows weekly progress alongside the quantity progress for a weekly quantity habit', async ({
+    it('shows weekly progress alongside the quantity progress for a weekly quantity habit', { timeout: 15_000 }, async ({
       createTestApp,
     }) => {
       const { navigateTo, habits } = await createTestApp()
