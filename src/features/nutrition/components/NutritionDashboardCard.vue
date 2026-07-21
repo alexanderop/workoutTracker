@@ -7,8 +7,6 @@ import { Progress } from '@/components/ui/progress'
 import { getNutritionRepository } from '@/db'
 import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import FoodLogDialog from './FoodLogDialog.vue'
-import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
 import { useNutritionDay } from '../composables/useNutritionDay'
 import { useNutritionTrend } from '../composables/useNutritionTrend'
 import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
@@ -19,6 +17,12 @@ const SparklineChart = defineAsyncComponent(
   () => import('@/components/ui/chart/SparklineChart.vue'),
 )
 
+// Same reasoning as the sheet/dialog pair in App.vue: the barcode scanner
+// and its supporting lookups have no business being on the startup path —
+// the app has a Lighthouse performance budget on first paint.
+const FoodLogDialog = defineAsyncComponent(() => import('./FoodLogDialog.vue'))
+const NutritionGoalsDialog = defineAsyncComponent(() => import('./NutritionGoalsDialog.vue'))
+
 const { t } = useI18n()
 const localDate = getLocalDateKey()
 const { goal, foods, diaryEntries, totals, remainingCalories, calorieProgress } =
@@ -27,6 +31,10 @@ const { caloriesTrend } = useNutritionTrend(7)
 
 const goalsOpen = ref(false)
 const foodLogOpen = ref(false)
+// Stay true after the first request so each dialog (and its exit animation)
+// survives closing; it just never mounts before it's needed.
+const goalsRequested = ref(false)
+const foodLogRequested = ref(false)
 const selectedMeal = ref<MealKind>('breakfast')
 const meals: ReadonlyArray<MealKind> = ['breakfast', 'lunch', 'dinner', 'snack']
 
@@ -56,8 +64,14 @@ function mealSummary(meal: MealKind): string {
   return names.length > 0 ? names.join(', ') : t('nutrition.emptyMeal')
 }
 
+function openGoals() {
+  goalsRequested.value = true
+  goalsOpen.value = true
+}
+
 function openFoodLog(meal: MealKind) {
   selectedMeal.value = meal
+  foodLogRequested.value = true
   foodLogOpen.value = true
 }
 
@@ -87,7 +101,7 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
             </h2>
           </div>
         </div>
-        <Button variant="ghost" size="sm" @click="goalsOpen = true">
+        <Button variant="ghost" size="sm" @click="openGoals">
           <Target class="mr-1 size-4" aria-hidden="true" />
           {{ t('nutrition.editGoals') }}
         </Button>
@@ -221,8 +235,9 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
       </ul>
     </div>
 
-    <NutritionGoalsDialog v-model:open="goalsOpen" :goal="goal" />
+    <NutritionGoalsDialog v-if="goalsRequested" v-model:open="goalsOpen" :goal="goal" />
     <FoodLogDialog
+      v-if="foodLogRequested"
       v-model:open="foodLogOpen"
       :foods="foods"
       :local-date="localDate"
