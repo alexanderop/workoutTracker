@@ -58,6 +58,7 @@ export default {
     scanNotFound: 'Produkt nicht gefunden. Trage die Werte manuell ein.',
     scanFailed: 'Suche fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.',
     scanCameraFailed: 'Kamera nicht verfügbar. Prüfe die Kamera-Berechtigung.',
+    scanFlashlight: 'Taschenlampe umschalten',
   },
   errors: {
     saveFailed: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',

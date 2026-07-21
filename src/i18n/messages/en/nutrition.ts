@@ -58,6 +58,7 @@ export default {
     scanNotFound: 'Product not found. Enter the values manually.',
     scanFailed: 'Lookup failed. Check your connection and try again.',
     scanCameraFailed: 'Camera unavailable. Check the camera permission.',
+    scanFlashlight: 'Toggle flashlight',
   },
   errors: {
     saveFailed: 'Could not save. Please try again.',
