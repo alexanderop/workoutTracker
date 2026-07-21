@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { Apple, ChevronRight, Plus, Target, Trash2, Utensils } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import { SparklineChart } from '@/components/ui/chart'
 import { Progress } from '@/components/ui/progress'
 import { getNutritionRepository } from '@/db'
 import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
@@ -13,6 +12,12 @@ import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
 import { useNutritionDay } from '../composables/useNutritionDay'
 import { useNutritionTrend } from '../composables/useNutritionTrend'
 import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
+
+// Loaded on first use so the unovis charting engine stays off the startup
+// path — the app has a Lighthouse performance budget on first paint.
+const SparklineChart = defineAsyncComponent(
+  () => import('@/components/ui/chart/SparklineChart.vue'),
+)
 
 const { t } = useI18n()
 const localDate = getLocalDateKey()

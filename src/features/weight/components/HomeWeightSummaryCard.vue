@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { Scale } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { SparklineChart } from '@/components/ui/chart'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { RouteNames } from '@/router'
 import { useWeightEntries } from '../composables/useWeightEntries'
+
+// Loaded on first use so the unovis charting engine stays off the startup
+// path — the app has a Lighthouse performance budget on first paint.
+const SparklineChart = defineAsyncComponent(
+  () => import('@/components/ui/chart/SparklineChart.vue'),
+)
 
 const RECENT_ENTRY_COUNT = 7
 
