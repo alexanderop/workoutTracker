@@ -1,7 +1,7 @@
 ---
 name: pr
 description: Generate or update a structured pull request with summary, user impact, acceptance criteria, QA scope, risk areas, and executable test scenarios, then open it with GitHub CLI.
-allowed-tools: Bash(git status) Bash(git diff:*) Bash(git log:*) Bash(git rev-parse:*) Bash(git remote:*) Bash(git push:*) Bash(gh pr:*) Bash(gh api:*)
+allowed-tools: Bash(git status) Bash(git diff:*) Bash(git log:*) Bash(git rev-parse:*) Bash(git remote:*) Bash(git push:*) Bash(gh pr:*) Bash(gh api:*) Bash(node scripts/check-pr-template.mjs:*)
 ---
 
 # Structured Pull Request
@@ -89,13 +89,19 @@ Create or update a pull request from the current branch using the repo's QA-orie
 - Prefer exact flows, labels, values, validation messages, and visible outcomes.
 - If database or local state matters, say so in the scenario prerequisites.
 
-### 5. Create or update the PR
+### 5. Validate the body against the template
+
+- Before creating or updating the PR, run the deterministic template gate on the body you generated:
+  `node scripts/check-pr-template.mjs --file <body-file>` (or pipe the body: `... | node scripts/check-pr-template.mjs`).
+- This is the same check CI enforces (`.github/workflows/pr-template.yml`). If it exits non-zero, fix the reported sections and re-run — do not open the PR with a body that fails the gate.
+
+### 6. Create or update the PR
 
 - If a PR already exists for the branch, update its title/body instead of creating a duplicate.
 - Otherwise create a new PR against the default branch.
 - Use `gh pr create` or `gh pr edit` with a heredoc-style body to preserve formatting.
 
-### 6. Show the result
+### 7. Show the result
 
 - Return the PR number, title, and URL.
 - If you had to make assumptions, list them briefly so the user can correct them before QA runs.

@@ -1,0 +1,38 @@
+name: PR Template
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: pr-template-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  template-shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    env:
+      # Passed via env (never interpolated into the shell) so the untrusted
+      # PR body cannot inject commands; the script reads it from process.env.
+      PR_BODY: ${{ github.event.pull_request.body }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22'
+
+      - name: Validate PR body against template
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/check-pr-template.mjs
