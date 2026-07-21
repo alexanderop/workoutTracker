@@ -43,6 +43,24 @@ export function createDexieNutritionRepository(
       }
     },
 
+    observeRange(
+      startLocalDate: string,
+      endLocalDate: string,
+    ): LiveQuery<ReadonlyArray<DbNutritionDiaryEntry>> {
+      const run = () =>
+        database.nutritionDiaryEntries
+          .where('localDate')
+          .between(startLocalDate, endLocalDate, true, true)
+          .toArray()
+      return {
+        get: run,
+        subscribe(onChange: (entries: ReadonlyArray<DbNutritionDiaryEntry>) => void) {
+          const subscription = liveQuery(run).subscribe({ next: onChange })
+          return () => subscription.unsubscribe()
+        },
+      }
+    },
+
     async saveGoal(goal: Readonly<DbNutritionGoal>): Promise<void> {
       await database.nutritionGoals.put(goal)
     },
