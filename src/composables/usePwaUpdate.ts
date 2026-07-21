@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useEventListener, useIntervalFn } from '@vueuse/core'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { RouteNames } from '@/router'
+import { tryCatch } from '@/lib/tryCatch'
 import type { RouteRecordNameGeneric } from 'vue-router'
 
 const UNSAFE_ROUTES: ReadonlySet<RouteRecordNameGeneric> = new Set([
@@ -42,7 +43,9 @@ export function usePwaUpdate() {
     const registration = swRegistration.value
     if (!registration || registration.installing) return
     if (!navigator.onLine) return
-    await registration.update()
+    // Best-effort: a failed check (e.g. transient network error) just means we
+    // retry on the next interval or visibility change.
+    await tryCatch(registration.update())
   }
 
   // Background timers are throttled/frozen on mobile, so the interval alone

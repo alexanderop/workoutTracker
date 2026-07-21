@@ -9,6 +9,23 @@ interface VersionInfo {
   buildTime: string
 }
 
+function hasStringVersion(value: unknown): value is { version: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'version' in value &&
+    typeof value.version === 'string'
+  )
+}
+
+function readPackageVersion(): string {
+  const parsed: unknown = JSON.parse(readFileSync('package.json', 'utf8'))
+  if (!hasStringVersion(parsed)) {
+    throw new Error('versionPlugin: package.json "version" is missing or not a string')
+  }
+  return parsed.version
+}
+
 function getGitInfo(): { tag: string | null; commit: string } {
   try {
     const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
@@ -32,11 +49,10 @@ export function versionPlugin(): Plugin {
     name: 'version-plugin',
 
     config() {
-      const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
       const gitInfo = getGitInfo()
 
       const versionInfo: VersionInfo = {
-        version: packageJson.version,
+        version: readPackageVersion(),
         tag: gitInfo.tag,
         commit: gitInfo.commit,
         buildTime: new Date().toISOString(),

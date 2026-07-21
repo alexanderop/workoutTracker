@@ -268,6 +268,7 @@ catalogs:
       version: 1.4.0
 
 overrides:
+  body-parser: 1.20.6
   js-yaml: 4.3.0
   markdown-it: 14.2.0
   qs: '>=6.14.1'
@@ -5631,10 +5632,10 @@ packages:
         integrity: sha512-LShSxJP0KTmd101b6DRyGBj57LZxSDYWKitQNW/mi8GRMvZb078Uf9+pveax1DrVL89vm7mWe+TovdI/UDOuPw==,
       }
 
-  body-parser@1.20.5:
+  body-parser@1.20.6:
     resolution:
       {
-        integrity: sha512-3grm+/2tUOvu2cjJkvsIxrv/wVpfXQW4PsQHYm7yk4vfpu7Ekl6nEsYBoJUL6qDwZUx8wUhQ8tR2qz+ad9c9OA==,
+        integrity: sha512-p5tAzS57i5MV9fZFDj9LeIiTZEufbSe2eDozP+ElheSUq1m74CRq1jI4mYNDdVs9vQztXFLuk/Gd6BWTdwRJ5g==,
       }
     engines: { node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16 }
 
@@ -16041,7 +16042,7 @@ snapshots:
 
   birpc@4.0.0: {}
 
-  body-parser@1.20.5:
+  body-parser@1.20.6:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
@@ -17259,7 +17260,7 @@ snapshots:
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.5
+      body-parser: 1.20.6
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookie: 0.7.2
