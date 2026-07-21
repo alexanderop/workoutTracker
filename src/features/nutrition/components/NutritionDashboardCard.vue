@@ -7,7 +7,6 @@ import { Progress } from '@/components/ui/progress'
 import { getNutritionRepository } from '@/db'
 import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import FoodLogDialog from './FoodLogDialog.vue'
 import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
 import { useNutritionDay } from '../composables/useNutritionDay'
 import { useNutritionTrend } from '../composables/useNutritionTrend'
@@ -18,6 +17,10 @@ import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
 const SparklineChart = defineAsyncComponent(
   () => import('@/components/ui/chart/SparklineChart.vue'),
 )
+// Loaded on first use so the barcode/camera/torch scanning code stays off
+// the startup path — the app has a Lighthouse performance budget on first
+// paint.
+const FoodLogDialog = defineAsyncComponent(() => import('./FoodLogDialog.vue'))
 
 const { t } = useI18n()
 const localDate = getLocalDateKey()
@@ -27,6 +30,9 @@ const { caloriesTrend } = useNutritionTrend(7)
 
 const goalsOpen = ref(false)
 const foodLogOpen = ref(false)
+// Stays true after the first request so the dialog (and its exit animation)
+// survives closing; it just never mounts before it's needed.
+const foodLogRequested = ref(false)
 const selectedMeal = ref<MealKind>('breakfast')
 const meals: ReadonlyArray<MealKind> = ['breakfast', 'lunch', 'dinner', 'snack']
 
@@ -58,6 +64,7 @@ function mealSummary(meal: MealKind): string {
 
 function openFoodLog(meal: MealKind) {
   selectedMeal.value = meal
+  foodLogRequested.value = true
   foodLogOpen.value = true
 }
 
@@ -223,6 +230,7 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
 
     <NutritionGoalsDialog v-model:open="goalsOpen" :goal="goal" />
     <FoodLogDialog
+      v-if="foodLogRequested"
       v-model:open="foodLogOpen"
       :foods="foods"
       :local-date="localDate"
