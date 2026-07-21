@@ -282,6 +282,10 @@ export function createMockRepositoryProvider(): RepositoryProvider {
         get: vi.fn().mockResolvedValue({ goal: undefined, foods: [], diaryEntries: [] }),
         subscribe: vi.fn(() => vi.fn()),
       })),
+      observeRange: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue([]),
+        subscribe: vi.fn(() => vi.fn()),
+      })),
       saveGoal: vi.fn().mockResolvedValue(undefined),
       addFood: vi.fn().mockResolvedValue(undefined),
       addFoodAndDiaryEntry: vi.fn().mockResolvedValue(undefined),

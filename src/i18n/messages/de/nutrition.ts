@@ -12,6 +12,10 @@ export default {
   addFood: 'Essen hinzufügen',
   deleteFood: '{name} entfernen',
   noGoalHint: 'Starter-Ziele sind aktiv. Passe sie an deinen Plan an.',
+  trend: {
+    title: 'Letzte 7 Tage',
+    chartLabel: 'Kalorienaufnahme der letzten 7 Tage',
+  },
   fields: {
     calories: 'Kalorien',
     protein: 'Protein (g)',

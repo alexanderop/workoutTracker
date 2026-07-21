@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { Scale } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { RouteNames } from '@/router'
 import { useWeightEntries } from '../composables/useWeightEntries'
+
+// Loaded on first use so the unovis charting engine stays off the startup
+// path — the app has a Lighthouse performance budget on first paint.
+const SparklineChart = defineAsyncComponent(
+  () => import('@/components/ui/chart/SparklineChart.vue'),
+)
+
+const RECENT_ENTRY_COUNT = 7
 
 const { t } = useI18n()
 const router = useRouter()
@@ -22,6 +30,12 @@ const change = computed(() => {
   const sign = latest.weight > previous.weight ? '+' : '−'
   return `${sign}${display.toFixed(1)} ${unitLabel.value}`
 })
+const trend = computed(() =>
+  entries.value
+    .slice(0, RECENT_ENTRY_COUNT)
+    .toReversed()
+    .map((entry) => entry.weight),
+)
 </script>
 
 <template>
@@ -38,6 +52,14 @@ const change = computed(() => {
     </div>
     <p class="mt-4 text-sm text-muted-foreground">{{ t('weight.title') }}</p>
     <p class="text-2xl font-bold">{{ current }}</p>
+    <SparklineChart
+      v-if="trend.length > 1"
+      :data="trend"
+      color="var(--primary)"
+      :height="32"
+      class="mt-2"
+      :aria-label="t('weight.trend')"
+    />
     <span class="mt-2 block text-xs font-semibold text-primary">{{
       t('weight.viewProgress')
     }}</span>
