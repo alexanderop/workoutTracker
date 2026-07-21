@@ -103,6 +103,6 @@ overrides:
   tmp: 0.2.7
   uuid: 11.1.1
 catalog:
-  agent-browser: 0.27.0
+  agent-browser: 0.32.3
   js-yaml: 4.3.0
   tsx: 4.23.1
