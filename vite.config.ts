@@ -51,7 +51,6 @@ export default defineConfig({
       },
       workbox: {
         globIgnores: ['**/stats.html'],
-        navigateFallbackDenylist: [/^\/version\.json$/],
         runtimeCaching: [
           {
             urlPattern: ({ request }) =>

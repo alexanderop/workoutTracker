@@ -22,7 +22,6 @@ export default {
     createBenchmark: 'Benchmark erstellen',
     getStarted: 'Loslegen',
     addExercise: '+ Übung hinzufügen',
-    refresh: 'Aktualisieren',
     duplicate: 'Duplizieren',
   },
   aria: {
