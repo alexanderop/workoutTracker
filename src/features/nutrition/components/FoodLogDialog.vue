@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ScanBarcode } from '@lucide/vue'
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,10 @@ import { useFoodLookup } from '../composables/useFoodLookup'
 import { isBarcodeScanSupported } from '../lib/barcodeDetector'
 import type { ScannedFood } from '../lib/foodData'
 import { nutrientsPer100Grams, scaleNutrients } from '../lib/nutritionCalculations'
-import FoodBarcodeScanner from './FoodBarcodeScanner.vue'
+
+// Loaded on first scan so the camera/torch machinery stays off the startup
+// path — the app has a Lighthouse performance budget on first paint.
+const FoodBarcodeScanner = defineAsyncComponent(() => import('./FoodBarcodeScanner.vue'))
 
 const { foods, localDate, initialMeal } = defineProps<{
   foods: ReadonlyArray<DbFood>
