@@ -45,8 +45,6 @@ export default {
     version: 'Version',
     commit: 'Commit',
     buildTime: 'Erstellt',
-    updateAvailable: 'Update verfügbar',
-    refreshToUpdate: 'Aktualisieren Sie, um die neueste Version zu erhalten',
     healthPrototypes: 'Gesundheitsprototypen',
     healthPrototypesDescription:
       'Interaktive Konzepte für das zukünftige Gesundheitstagebuch vergleichen',

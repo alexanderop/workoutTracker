@@ -23,7 +23,6 @@ export default {
     createBenchmark: 'Create Benchmark',
     getStarted: 'Get Started',
     addExercise: '+ Add Exercise',
-    refresh: 'Refresh',
   },
   aria: {
     dismiss: 'Dismiss',

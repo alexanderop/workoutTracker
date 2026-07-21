@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, it, expect, vi } from 'vitest'
 import type { App } from 'vue'
@@ -66,51 +66,67 @@ describe('usePwaUpdate', () => {
     expect(usePwaUpdate).toBeDefined()
   })
 
-  it('does NOT call updateServiceWorker when needRefresh is false', async () => {
+  it('does NOT apply an update while needRefresh is false', async () => {
     const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = false
     await router.push({ name: RouteNames.Settings })
+    await nextTick()
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
     cleanup()
   })
 
-  it('calls updateServiceWorker on route change when needRefresh is true', async () => {
-    const { router, cleanup } = await setupPwaUpdate()
+  it('auto-applies a pending update while on a safe route without needing navigation', async () => {
+    const { cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = true
-    await router.push({ name: RouteNames.Settings })
+    await nextTick()
 
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
     cleanup()
   })
 
-  it('does NOT call updateServiceWorker when navigating TO ActiveWorkout', async () => {
+  it('applies a pending update when navigating between safe routes', async () => {
     const { router, cleanup } = await setupPwaUpdate()
 
     mockNeedRefresh.value = true
-    await router.push({ name: RouteNames.ActiveWorkout })
+    await router.push({ name: RouteNames.Settings })
+    await nextTick()
+
+    expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
+    cleanup()
+  })
+
+  it('does NOT apply a pending update while on ActiveWorkout', async () => {
+    const { cleanup } = await setupPwaUpdate({ startRoute: RouteNames.ActiveWorkout })
+
+    mockNeedRefresh.value = true
+    await nextTick()
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
     cleanup()
   })
 
-  it('does NOT call updateServiceWorker when navigating TO ActiveBenchmark', async () => {
-    const { router, cleanup } = await setupPwaUpdate()
+  it('does NOT apply a pending update while on ActiveBenchmark', async () => {
+    const { cleanup } = await setupPwaUpdate({ startRoute: RouteNames.ActiveBenchmark })
 
     mockNeedRefresh.value = true
-    await router.push({ name: RouteNames.ActiveBenchmark })
+    await nextTick()
 
     expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
     cleanup()
   })
 
-  it('calls updateServiceWorker when navigating AWAY from ActiveWorkout', async () => {
+  it('applies the pending update when navigating away from ActiveWorkout', async () => {
     const { router, cleanup } = await setupPwaUpdate({ startRoute: RouteNames.ActiveWorkout })
 
     mockNeedRefresh.value = true
+    await nextTick()
+    expect(mockUpdateServiceWorker).not.toHaveBeenCalled()
+
     await router.push({ name: RouteNames.Home })
+    await nextTick()
 
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
     cleanup()

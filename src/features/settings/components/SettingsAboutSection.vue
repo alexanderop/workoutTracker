@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Info, Palette, RefreshCw } from '@lucide/vue'
+import { Info, Palette } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { useVersionCheck } from '@/composables/useVersionCheck'
+import { currentVersion } from '@/lib/appVersion'
 import { RouteNames } from '@/router'
 
 const { t } = useI18n()
 const router = useRouter()
-const { currentVersion, isNewVersion } = useVersionCheck()
 
 const formattedBuildTime = computed(() => {
   if (!currentVersion.buildTime) return '-'
@@ -20,10 +19,6 @@ const formattedBuildTime = computed(() => {
     timeStyle: 'short',
   }).format(date)
 })
-
-function handleRefresh() {
-  globalThis.location.reload()
-}
 </script>
 
 <template>
@@ -62,21 +57,6 @@ function handleRefresh() {
           @click="router.push({ name: RouteNames.HealthPrototypes })"
         >
           {{ t('settings.labels.openHealthPrototypes') }}
-        </Button>
-      </div>
-
-      <!-- Update Available -->
-      <div
-        v-if="isNewVersion"
-        class="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/20"
-      >
-        <div>
-          <p class="font-medium text-primary">{{ t('settings.labels.updateAvailable') }}</p>
-          <p class="text-sm text-muted-foreground">{{ t('settings.labels.refreshToUpdate') }}</p>
-        </div>
-        <Button size="sm" @click="handleRefresh">
-          <RefreshCw class="icon-sm mr-1" />
-          {{ t('common.buttons.refresh') }}
         </Button>
       </div>
     </div>

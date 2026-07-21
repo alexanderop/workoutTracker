@@ -1,6 +1,5 @@
 import { execSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import type { Plugin } from 'vite'
 
 interface VersionInfo {
@@ -29,27 +28,24 @@ function getGitInfo(): { tag: string | null; commit: string } {
 }
 
 export function versionPlugin(): Plugin {
-  let versionInfo: VersionInfo
-  let outDir = 'dist'
-
   return {
     name: 'version-plugin',
 
-    config(config) {
-      // Store outDir for later use
-      outDir = config.build?.outDir ?? 'dist'
-
+    config() {
       const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
       const gitInfo = getGitInfo()
 
-      versionInfo = {
+      const versionInfo: VersionInfo = {
         version: packageJson.version,
         tag: gitInfo.tag,
         commit: gitInfo.commit,
         buildTime: new Date().toISOString(),
       }
 
-      // Inject env variables for runtime access
+      // Inject env variables for runtime access. This build-time metadata is
+      // what the app displays in Settings; new deploys are detected and applied
+      // automatically by the service worker (see usePwaUpdate), not by fetching
+      // a version file, so no version.json is emitted or served.
       return {
         define: {
           'import.meta.env.APP_VERSION': JSON.stringify(versionInfo.version),
@@ -58,20 +54,6 @@ export function versionPlugin(): Plugin {
           'import.meta.env.APP_BUILD_TIME': JSON.stringify(versionInfo.buildTime),
         },
       }
-    },
-
-    // Serve version.json in dev mode
-    configureServer(server) {
-      server.middlewares.use('/version.json', (_request, res) => {
-        res.setHeader('Content-Type', 'application/json')
-        res.setHeader('Cache-Control', 'no-cache')
-        res.end(JSON.stringify(versionInfo))
-      })
-    },
-
-    // Emit version.json during build
-    closeBundle() {
-      writeFileSync(resolve(outDir, 'version.json'), JSON.stringify(versionInfo, null, 2))
     },
   }
 }
