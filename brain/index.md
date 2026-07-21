@@ -18,6 +18,8 @@ comment makes it redundant.
 
 - [Per-kind block codecs](./decisions/002-per-kind-block-codecs.md) — changing the
   block architecture or codec responsibilities.
+- [PR description format](./decisions/003-pr-description-format.md) — opening or
+  updating a pull request; the required body sections and QA-oriented contract.
 - [Local-data gotchas](./lessons/local-data-gotchas.md) — changing persistence,
   autosave, timers, dates, import/export, or destructive data operations.
 - [Testing gotchas](./lessons/testing-gotchas.md) — diagnosing browser-mode,

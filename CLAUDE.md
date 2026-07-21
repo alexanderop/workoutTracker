@@ -57,6 +57,22 @@ src/components/ui/ # shadcn-vue / reka-ui primitives
 src/__tests__/     # Vitest + Playwright browser mode
 ```
 
+## Writing a PR description
+
+Every PR body follows one fixed, QA-oriented contract so a browser QA pass can
+run straight from the description without reading the diff. Fill every section,
+omit no header. Title is Conventional Commits with scope
+(`feat(workout): add rest timer`). Required sections, in order: **Summary**,
+**User Impact**, **Acceptance Criteria** (3-5 checkbox "User can ..." bullets),
+**QA Scope**, **Risk Areas**, **Manual Test Scenarios** (numbered Given / When /
+Then with exact UI labels), **CI Checks** (`pnpm type-check`, `pnpm lint`,
+`pnpm test`). Ban vague phrasing like "works correctly" — prefer exact flows,
+labels, values, and validation messages.
+
+Generate PRs with the `pr` skill; the authoritative body shape is
+`.claude/skills/pr/references/template.md`. Rationale and the full section
+checklist live in [`brain/decisions/003-pr-description-format.md`](brain/decisions/003-pr-description-format.md).
+
 ## Reading PR Feedback
 
 `gh pr view --comments` silently omits review summaries and line-level review comments. For the complete picture — especially when responding to a review — use `pnpm -s pr:comments`, which fetches issue comments, reviews, and line comments in one chronological, labelled listing.
