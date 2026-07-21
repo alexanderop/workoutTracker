@@ -579,6 +579,11 @@ export type NutritionSnapshot = {
 export type NutritionRepository = {
   /** Reactive snapshot for one local calendar day. */
   observeDay(localDate: string): LiveQuery<NutritionSnapshot>
+  /** Reactive diary entries across an inclusive local-date range, for multi-day trends. */
+  observeRange(
+    startLocalDate: string,
+    endLocalDate: string,
+  ): LiveQuery<ReadonlyArray<DbNutritionDiaryEntry>>
   saveGoal(goal: Readonly<DbNutritionGoal>): Promise<void>
   addFood(food: Readonly<DbFood>): Promise<void>
   addFoodAndDiaryEntry(

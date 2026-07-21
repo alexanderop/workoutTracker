@@ -41,6 +41,33 @@ export function totalDiaryNutrients(
   )
 }
 
+/**
+ * Local-date keys for the last `days` calendar days, oldest first.
+ */
+export function lastNLocalDateKeys(days: number, from = new Date()): Array<string> {
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(from)
+    date.setDate(date.getDate() - (days - 1 - index))
+    return getLocalDateKey(date)
+  })
+}
+
+/**
+ * Total calories per day across `dateKeys`, aligned oldest-first, for a
+ * trend sparkline. Days with no entries are `0`.
+ */
+export function caloriesByLocalDate(
+  entries: ReadonlyArray<DbNutritionDiaryEntry>,
+  dateKeys: ReadonlyArray<string>,
+): Array<number> {
+  const caloriesByDate = new Map<string, number>()
+  for (const entry of entries) {
+    const { calories } = scaleNutrients(entry.foodSnapshot.nutrientsPer100Grams, entry.grams)
+    caloriesByDate.set(entry.localDate, (caloriesByDate.get(entry.localDate) ?? 0) + calories)
+  }
+  return dateKeys.map((key) => Math.round(caloriesByDate.get(key) ?? 0))
+}
+
 export function nutrientsPer100Grams(
   nutrientsForServing: DbFoodNutrients,
   servingGrams: number,

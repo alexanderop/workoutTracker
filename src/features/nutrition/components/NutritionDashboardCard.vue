@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { Apple, ChevronRight, Plus, Target, Trash2, Utensils } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -10,12 +10,20 @@ import { tryCatch } from '@/lib/tryCatch'
 import FoodLogDialog from './FoodLogDialog.vue'
 import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
 import { useNutritionDay } from '../composables/useNutritionDay'
+import { useNutritionTrend } from '../composables/useNutritionTrend'
 import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
+
+// Loaded on first use so the unovis charting engine stays off the startup
+// path — the app has a Lighthouse performance budget on first paint.
+const SparklineChart = defineAsyncComponent(
+  () => import('@/components/ui/chart/SparklineChart.vue'),
+)
 
 const { t } = useI18n()
 const localDate = getLocalDateKey()
 const { goal, foods, diaryEntries, totals, remainingCalories, calorieProgress } =
   useNutritionDay(localDate)
+const { caloriesTrend } = useNutritionTrend(7)
 
 const goalsOpen = ref(false)
 const foodLogOpen = ref(false)
@@ -141,6 +149,17 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
             {{ t('nutrition.macroLabels.fat', { target: goal.fatGrams }) }}
           </p>
         </div>
+      </div>
+
+      <div v-if="caloriesTrend.filter((value) => value > 0).length > 1" class="mt-4">
+        <p class="text-xs text-muted-foreground">{{ t('nutrition.trend.title') }}</p>
+        <SparklineChart
+          :data="caloriesTrend"
+          color="var(--primary)"
+          :height="32"
+          class="mt-1"
+          :aria-label="t('nutrition.trend.chartLabel')"
+        />
       </div>
     </div>
 
