@@ -51,7 +51,7 @@ catalogs:
     eslint-plugin-unicorn: ^68.0.0
     eslint-plugin-vue: ~10.9.2
     jscpd: ^5.0.12
-    knip: ^6.17.1
+    knip: ^6.27.0
     lint-staged: ^17.0.8
     markdownlint-cli2: ^0.22.1
     oxlint: ~1.70.0
