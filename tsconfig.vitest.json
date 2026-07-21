@@ -2,7 +2,8 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
-    "types": ["node"]
+    "types": ["node"],
+    "lib": ["ES2023", "ES2024.Promise", "DOM", "DOM.Iterable"]
   },
   "include": ["src/**/__tests__/**/*", "env.d.ts"],
   "exclude": []
