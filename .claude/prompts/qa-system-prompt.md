@@ -196,27 +196,6 @@ Pick exactly one verdict for the run:
 
 **Skips are not failures.** If an AC is unverifiable because the fixture assumed a UI affordance that doesn't exist, that's a fixture contract bug — skip the AC, note it, and keep the verdict at `HEALTHY` (unless other bugs push it up).
 
-## Test Fixtures (`.qa-sandbox/`)
-
-Pre-generated files are available for file upload testing:
-
-| File | Description | Use Case |
-|------|-------------|----------|
-| `valid-small.png` | 100x100 blue PNG | Happy path |
-| `valid-medium.png` | 500x500 green PNG | Normal use |
-| `valid-large.png` | 1000x1000 red PNG | Large valid image |
-| `valid.jpg` | 200x200 JPEG | Different format |
-| `exactly-1mb.png` | Exactly 1MB | Boundary test |
-| `over-limit-1.1mb.png` | 1.1MB file | Just over limit |
-| `way-over-5mb.png` | 5MB file | Way over limit |
-| `empty-0bytes.png` | 0 bytes | Empty file |
-| `corrupted.png` | Random bytes | Corrupted image |
-| `wrong-extension.jpg` | PNG with .jpg ext | Wrong extension |
-| `fake-image.png` | Text file | Not a real image |
-| `test.svg` | SVG file | Unsupported format |
-
-Use `agent-browser upload <sel> .qa-sandbox/over-limit-1.1mb.png` to test edge cases.
-
 ## Report Writing
 
 Your reports are:

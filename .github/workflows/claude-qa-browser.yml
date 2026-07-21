@@ -46,6 +46,11 @@ on:
   workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: ['CI']
     types: [completed]
+    # Main-branch CI completions can never carry a PR, so they were always
+    # rejected by the admission job — filtering them here removes the
+    # skipped-run noise from the Actions list without changing behavior.
+    branches-ignore:
+      - main
   issue_comment:
     types: [created]
 
@@ -133,6 +138,16 @@ jobs:
               finish('skip', 'Only tests, docs, tooling, or type-only files changed');
               return;
             }
+            // Mirror prepare-app's served-app filter: runtime files that can't
+            // reach the built bundle (e.g. root-level lint/config files) would
+            // otherwise spin up all three QA jobs just to emit QA_SKIPPED.
+            const uiRelevant = runtime.some(path =>
+              /^(src\/|public\/|index\.html|vite\.config|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)/.test(path),
+            );
+            if (!uiRelevant) {
+              finish('skip', 'Runtime-adjacent files changed, but none reach the served app bundle');
+              return;
+            }
             const highRisk = runtime.some(path =>
               /^src\/(db|stores|views)\//.test(path) ||
               /^src\/features\/(workout|timers|onboarding)\//.test(path) ||
@@ -184,7 +199,9 @@ jobs:
               HEAD_SHA="$LIVE_HEAD_SHA"
             fi
             CHANGED=$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files?per_page=100" --jq '.[].filename')
-            if ! grep -qE '^(src/|index\.html|vite\.config|package\.json|pnpm-lock\.yaml)' <<<"$CHANGED"; then
+            # Keep this pattern in sync with the `uiRelevant` filter in the
+            # qa-admission job above.
+            if ! grep -qE '^(src/|public/|index\.html|vite\.config|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)' <<<"$CHANGED"; then
               UI_CHANGED=false
             fi
           fi
@@ -340,7 +357,7 @@ jobs:
           echo "QA focus: $FOCUS"
 
       - name: Get PR context
-        if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast'
+        if: steps.qa-mode.outputs.focus == 'verify' || steps.qa-mode.outputs.focus == 'fast' || steps.qa-mode.outputs.focus == 'full'
         id: pr-context
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
@@ -465,8 +482,29 @@ jobs:
       - name: Start static server
         if: steps.ui-changed.outputs.ui_changed != 'false'
         shell: bash
+        # The router uses HTML5 history mode, so a plain static server 404s on
+        # any reload of a non-root route (/workouts, /settings, ...) — and the
+        # QA prompts explicitly tell the agent to reload mid-flow. Serve
+        # index.html for unknown paths like a real SPA host would.
         run: |
-          python3 -m http.server 5173 --directory dist > /tmp/dev-server.log 2>&1 &
+          cat > /tmp/spa-server.py <<'PY'
+          import functools
+          import http.server
+          import os
+
+          class SpaHandler(http.server.SimpleHTTPRequestHandler):
+              def send_head(self):
+                  path = self.translate_path(self.path)
+                  if not os.path.exists(path):
+                      self.path = '/index.html'
+                  return super().send_head()
+
+          http.server.ThreadingHTTPServer(
+              ('127.0.0.1', 5173),
+              functools.partial(SpaHandler, directory='dist'),
+          ).serve_forever()
+          PY
+          python3 /tmp/spa-server.py > /tmp/dev-server.log 2>&1 &
           echo "DEV_PID=$!" >> "$GITHUB_ENV"
 
       # NOTE: the QA system prompt is injected into the file-based `prompt`
@@ -501,16 +539,27 @@ jobs:
           elif [ "$FOCUS" = "test" ]; then
             PROMPT_FILE=".claude/prompts/qa-browser-test.md"
             echo "max_turns=80" >> "$GITHUB_OUTPUT"
-          elif [ "$FOCUS" = "verify" ]; then
+          elif [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "full" ]; then
+            # `full` is the highest-risk admission decision (db/stores/workout/
+            # deps changed); it deliberately shares the deep PR-aware verify
+            # prompt — previously it fell through to the generic smoke-test
+            # prompt with no PR context at all. The verify prompt's own phase
+            # plan budgets 100 turns, so the CLI cap must match.
             PROMPT_FILE=".claude/prompts/qa-browser-verify.md"
-            echo "max_turns=60" >> "$GITHUB_OUTPUT"
+            echo "max_turns=100" >> "$GITHUB_OUTPUT"
           else
             PROMPT_FILE=".claude/prompts/qa-browser-explore.md"
             echo "max_turns=80" >> "$GITHUB_OUTPUT"
           fi
 
+          # A static heredoc delimiter would let attacker-influenced prompt
+          # content (PR bodies, linked-issue bodies) terminate the heredoc
+          # early and inject arbitrary step outputs (e.g. a fake max_turns
+          # spliced into claude_args). A per-run random delimiter makes the
+          # terminator unguessable.
+          DELIM="PROMPT_EOF_$(openssl rand -hex 16)"
           {
-            echo 'prompt<<PROMPT_EOF'
+            echo "prompt<<${DELIM}"
 
             cat .claude/prompts/qa-system-prompt.md
             echo ''
@@ -522,7 +571,7 @@ jobs:
             TASK="${TASK//\{\{DATE\}\}/$TODAY}"
 
             # For PR-aware modes, inject structured PR context
-            if [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "fast" ]; then
+            if [ "$FOCUS" = "verify" ] || [ "$FOCUS" = "fast" ] || [ "$FOCUS" = "full" ]; then
               TASK="${TASK//\{\{PR_NUMBER\}\}/$PR_NUMBER_VALUE}"
               TASK="${TASK//\{\{PR_TITLE\}\}/$PR_TITLE_VALUE}"
               TASK="${TASK//\{\{PR_BODY\}\}/$PR_BODY_RAW}"
@@ -539,8 +588,21 @@ jobs:
 
             echo "$TASK"
 
-            echo 'PROMPT_EOF'
+            echo "$DELIM"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Validate prompt-derived outputs
+        shell: bash
+        env:
+          MAX_TURNS: ${{ steps.load-prompt.outputs.max_turns }}
+        run: |
+          set -euo pipefail
+          # Defense in depth for the claude_args splice below: max_turns must
+          # be a plain integer no matter what ended up in step outputs.
+          [[ "$MAX_TURNS" =~ ^[0-9]{1,3}$ ]] || {
+            echo "::error::max_turns is not a plain integer: $MAX_TURNS"
+            exit 1
+          }
 
       - name: Load QA schema
         id: load-schema
@@ -641,6 +703,10 @@ jobs:
         uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # workflow_run QA is triggered by whoever pushed the PR branch;
+          # without this, dependabot PRs burn the full setup (~11 min) and then
+          # hard-fail with "Workflow initiated by non-human actor".
+          allowed_bots: dependabot,github-actions
           track_progress: false
           prompt: |
             Write the exact text `claude-smoke-ok` to a file named `claude-smoke.txt` using the Write tool, then stop. Do nothing else.
@@ -715,6 +781,7 @@ jobs:
         uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: dependabot,github-actions
           show_full_output: true
           display_report: true
           use_sticky_comment: true
@@ -944,6 +1011,7 @@ jobs:
         uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: dependabot,github-actions
           show_full_output: true
           display_report: true
           use_sticky_comment: true
@@ -1218,7 +1286,10 @@ jobs:
   publish-report:
     name: Publish immutable QA report
     needs: [prepare-app, qa-browser]
-    if: always() && needs.qa-browser.result != 'skipped' && needs.prepare-app.outputs.pr-number
+    # `cancelled` is excluded so a superseding push (concurrency cancel) does
+    # not leave a red-X publish job that posts an `error` status on the stale
+    # SHA it can no longer validate.
+    if: always() && needs.qa-browser.result != 'skipped' && needs.qa-browser.result != 'cancelled' && needs.prepare-app.outputs.pr-number
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -1412,7 +1483,10 @@ jobs:
           elif grep -Eqi 'Verdict:(\*\*)?[[:space:]]*CRITICAL_BUGS' /tmp/qa-report/qa-report.md; then
             STATE=failure; DESCRIPTION='QA found critical issues';
           elif grep -Eqi 'Verdict:(\*\*)?[[:space:]]*MINOR_ISSUES' /tmp/qa-report/qa-report.md; then
-            STATE=pending; DESCRIPTION='QA found issues to review';
+            # `pending` means "still running" to GitHub and never resolves — it
+            # would leave a permanent yellow status (and block merge if this
+            # context ever becomes required). Minor issues are advisory.
+            STATE=success; DESCRIPTION='QA passed with minor issues — see report';
           else STATE=success; DESCRIPTION='QA passed'; fi
           gh api -X POST "repos/${REPO}/statuses/${HEAD_SHA}" -f state="$STATE" \
             -f context='Claude QA (Browser)' -f description="$DESCRIPTION" \
