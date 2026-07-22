@@ -15,20 +15,9 @@
  * widths are unaffected.
  */
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
-
-/**
- * The un-condense after a search is deliberately delayed (~300ms) to protect
- * in-flight taps. To assert chrome is STILL collapsed (not merely not-yet
- * restored), wait the delay out before checking.
- */
-const EXPAND_DELAY_MS = 300
-
-function waitForExpandDelay() {
-  return new Promise((resolve) => setTimeout(resolve, EXPAND_DELAY_MS + 200))
-}
 
 /**
  * Failure-safe app teardown: tests may end with the sheet still open
@@ -92,10 +81,15 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     // Blur with the query still entered (e.g. keyboard dismissed): the
     // results are still narrowed, so the chrome must STAY collapsed — even
     // after the tap-protection delay has fully elapsed.
-    ;(await searchInput.element()).blur()
-    await waitForExpandDelay()
-    expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
-    expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
+    vi.useFakeTimers()
+    try {
+      ;(await searchInput.element()).blur()
+      await vi.advanceTimersByTimeAsync(500)
+      expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
+      expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
 
     // End the search for real: clear the query and blur. The chrome must
     // still be collapsed immediately — expanding right away would shift an
@@ -105,8 +99,8 @@ describe('AddBlockDialog - condensed search mode on mobile', () => {
     expect(page.getByRole('tab', { name: /timed blocks/i }).query()).toBeNull()
     expect(page.getByRole('button', { name: 'Chest', exact: true }).query()).toBeNull()
 
-    // ...and returns only once the tap-protection delay has elapsed.
-    await waitForExpandDelay()
+    // ...and returns once the tap-protection delay has elapsed. Browser
+    // locators retry against the actual expanded DOM state.
     await expect.element(page.getByRole('tab', { name: /timed blocks/i })).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Chest', exact: true })).toBeVisible()
   })

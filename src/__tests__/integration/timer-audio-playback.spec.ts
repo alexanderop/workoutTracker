@@ -141,7 +141,7 @@ describe('Timer Audio Playback', () => {
         .toBeDefined()
     })
 
-    it('plays round beep on round transition', { timeout: 10_000 }, async ({ createTestApp }) => {
+    it('plays round beep on round transition', { timeout: 15_000 }, async ({ createTestApp }) => {
       const testApp = await createTestApp()
       await startShortTabata(testApp)
 

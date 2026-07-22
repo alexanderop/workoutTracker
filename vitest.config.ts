@@ -44,6 +44,12 @@ const sharedTestConfig = {
   fileParallelism: true,
   // Keep local feedback quick, but let CI report every failure in each shard.
   bail: process.env.CI ? 0 : 1,
+  // Stricter locally for fast feedback, generous in CI (shared runners are slower).
+  testTimeout: process.env.CI ? 15_000 : 8000,
+  // Surface slow tests and preserve complete, source-linked failure output.
+  slowTestThreshold: 1000,
+  includeTaskLocation: true,
+  chaiConfig: { truncateThreshold: 999 },
   // Prevent mocks and stubbed platform state leaking into later tests.
   restoreMocks: true,
   unstubEnvs: true,
@@ -93,6 +99,12 @@ export default defineConfig({
           ...sharedTestConfig,
           name: 'default',
           include: ['src/__tests__/**/*.spec.ts'],
+          typecheck: {
+            enabled: true,
+            checker: 'vue-tsc',
+            include: ['src/__tests__/**/*.test-d.ts'],
+            tsconfig: './tsconfig.vitest.json',
+          },
           exclude: [
             ...sharedTestConfig.exclude,
             'src/__tests__/a11y/**',

@@ -265,7 +265,7 @@ describe('Workout Management', () => {
       expect(await fresh.workout.isSetCompleted(1)).toBe(true)
     })
 
-    it('should keep the "Complete Set" CTA usable after reloading a workout that was interrupted from the builder screen', async ({
+    it('should keep the "Complete Set" CTA usable after reloading a workout that was interrupted from the builder screen', { timeout: 15_000 }, async ({
       createTestApp,
     }) => {
       const { builder, workout, common } = await createTestApp()

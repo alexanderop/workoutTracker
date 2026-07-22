@@ -147,6 +147,7 @@ describe('Log Past Workout', () => {
       await expect.element(page.getByRole('button', { name: /60\s*min/i })).toBeVisible()
     })
 
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/211
     it.skip('allows selecting past date from calendar', async ({ createTestApp }) => {
       const { logPastWorkout, navigateTo } = await createTestApp()
 
@@ -215,6 +216,7 @@ describe('Log Past Workout', () => {
     })
   })
 
+  // Blocked by https://github.com/alexanderop/workoutTracker/issues/211
   describe.skip('Strength Block Grid Entry', () => {
     // These tests require inline set editing which is not available in the new playlist UI
     // TODO: Re-enable when inline set editing is implemented
@@ -340,6 +342,7 @@ describe('Log Past Workout', () => {
     })
   })
 
+  // Blocked by https://github.com/alexanderop/workoutTracker/issues/211
   describe.skip('Timed Block Results Entry', () => {
     it('shows AMRAP result input (rounds + reps)', async ({ createTestApp }) => {
       const { logPastWorkout, navigateTo } = await createTestApp()
@@ -399,6 +402,7 @@ describe('Log Past Workout', () => {
     })
   })
 
+  // Blocked by https://github.com/alexanderop/workoutTracker/issues/211
   describe.skip('Cardio Block Entry', () => {
     it('shows duration, distance, calories inputs', async ({ createTestApp }) => {
       const { logPastWorkout, navigateTo } = await createTestApp()
@@ -425,6 +429,7 @@ describe('Log Past Workout', () => {
     })
   })
 
+  // Blocked by https://github.com/alexanderop/workoutTracker/issues/211
   describe.skip('Save & History', () => {
     it('saves workout with backdated timestamp', async ({ createTestApp }) => {
       const { logPastWorkout, navigateTo } = await createTestApp()

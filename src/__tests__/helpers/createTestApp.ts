@@ -1,7 +1,7 @@
 import type { RouteLocationRaw, Router } from 'vue-router'
 import { render } from 'vitest-browser-vue'
 import { page } from 'vitest/browser'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createMemoryHistory } from 'vue-router'
 import App from '@/App.vue'
@@ -9,6 +9,7 @@ import { createAppRouter } from '@/appRouter'
 import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
+import { reloadPageKey } from '@/lib/reloadPage'
 import {
   CommonPO,
   BuilderPO,
@@ -32,6 +33,7 @@ export type CreateTestAppOptions = {
 export type TestApp = {
   router: Router
   container: Element
+  reloadPage: () => void
   // Page Objects
   common: CommonPO
   builder: BuilderPO
@@ -70,9 +72,12 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   i18n.global.setLocaleMessage('en', en)
   i18n.global.locale.value = 'en'
 
+  const reloadPage = vi.fn()
+
   const screen = render(App, {
     global: {
       plugins: [router, i18n],
+      provide: { [reloadPageKey]: reloadPage },
     },
   })
 
@@ -120,6 +125,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   return {
     router,
     container: screen.container,
+    reloadPage,
     // Page Objects
     common,
     builder,

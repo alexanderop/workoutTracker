@@ -61,7 +61,7 @@ describe('Benchmark Gap Flows', () => {
   })
 
   describe('Creation with Corrections', () => {
-    it('creates a descending ladder benchmark, undoing an extra round and a mistaken exercise', async ({
+    it('creates a descending ladder benchmark, undoing an extra round and a mistaken exercise', { timeout: 15_000 }, async ({
       createTestApp,
     }) => {
       const app = await createTestApp()

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { exportAllData, type ExportData } from '@/features/settings/utils/dataExport'
 import { importAllData, parseExportFile } from '@/features/settings/utils/dataImport'
 import { tryCatch } from '@/lib/tryCatch'
+import { useReloadPage } from '@/lib/reloadPage'
 
 interface DataExportImportReturn {
   isExporting: Readonly<Ref<boolean>>
@@ -19,6 +20,7 @@ interface DataExportImportReturn {
 
 export function useDataExportImport(): DataExportImportReturn {
   const { t } = useI18n()
+  const reloadPage = useReloadPage()
 
   const isExporting = ref(false)
   const isImporting = ref(false)
@@ -64,7 +66,7 @@ export function useDataExportImport(): DataExportImportReturn {
       return
     }
 
-    globalThis.location.reload()
+    reloadPage()
   }
 
   return {

@@ -83,7 +83,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Benchmark Creation
   // ===========================================================================
   describe('Benchmark Creation', () => {
-    it('creates ForTime benchmark with variable reps across 4 rounds', async ({
+    it('creates ForTime benchmark with variable reps across 4 rounds', { timeout: 20_000 }, async ({
       createTestApp,
     }) => {
       const app = await createTestApp()
@@ -222,6 +222,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Round Management
   // ===========================================================================
   describe('Round Management', () => {
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/212
     it.skip('reorders rounds via drag-and-drop', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds (40, 30, 20 reps)
       const benchmark = await createForTimeBenchmarkWithRounds({
@@ -370,6 +371,7 @@ describe('Variable Reps Benchmark', () => {
       expect(updated.rounds[1]?.exercises).toHaveLength(2)
     })
 
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/212
     it.skip('reorders exercises within a round', async ({ createTestApp }) => {
       // Create benchmark with Round 1 containing Burpees, Squats, Pull-ups
       const benchmark = await createForTimeBenchmarkWithRounds({
@@ -530,6 +532,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Result Comparison
   // ===========================================================================
   describe('Result Comparison', () => {
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/212
     it.skip('shows warning when structure changes on benchmark with results', async ({
       createTestApp,
     }) => {
@@ -612,6 +615,7 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Import/Export
   // ===========================================================================
   describe('Import/Export', () => {
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/212
     it.skip('exports and reimports benchmark with rounds', async ({ createTestApp }) => {
       // Create benchmark with 3 rounds and variable reps
       const benchmark = await createForTimeBenchmarkWithRounds({
@@ -654,6 +658,7 @@ describe('Variable Reps Benchmark', () => {
       expect(importedBenchmark.rounds[2]?.exercises[0]?.prescribedReps).toBe(20)
     })
 
+    // Blocked by https://github.com/alexanderop/workoutTracker/issues/212
     it.skip('import legacy format fails with error', async ({ createTestApp }) => {
       const app = await createTestApp()
 

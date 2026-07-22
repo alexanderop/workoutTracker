@@ -1,8 +1,7 @@
-/* eslint-disable vitest/no-conditional-in-test -- Tests intentionally branch around optional browser file APIs. */
+/* eslint-disable vitest/no-conditional-in-test -- Browser file controls and repository results require runtime narrowing. */
 import { page, userEvent } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
-import { tryCatch } from '@/lib/tryCatch'
 import { RouteNames } from '@/router'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories'
 import {
@@ -12,39 +11,17 @@ import {
   seedCompletedWorkout,
 } from '../helpers/dbAssertions'
 
-// Detect browser mode - location.reload is read-only in real browsers
-const isBrowserMode = (() => {
-  const [error] = tryCatch(() => {
-    const original = globalThis.location.reload
-    globalThis.location.reload = vi.fn()
-    globalThis.location.reload = original
-  })
-  return Boolean(error)
-})()
-
 describe('Data Management', () => {
   afterEach(async () => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
 
-  // Skip Import/Export tests in browser mode - they require mocking window.location
-  // which is read-only in real browsers
-  describe.skipIf(isBrowserMode)('Import/Export', () => {
+  describe('Import/Export', () => {
     beforeEach(() => {
-      // Mock URL methods that don't exist in JSDOM
-      vi.stubGlobal('URL', {
-        ...URL,
-        createObjectURL: vi.fn(() => 'blob:test'),
-        revokeObjectURL: vi.fn(),
-      })
-
-      // Mock window.location.reload to prevent navigation errors (jsdom only)
-      Object.defineProperty(globalThis, 'location', {
-        value: { ...globalThis.location, reload: vi.fn() },
-        writable: true,
-        configurable: true,
-      })
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     })
 
     it('exports data when clicking Export Data button', async ({ createTestApp }) => {
@@ -58,8 +35,21 @@ describe('Data Management', () => {
       // Act: Click export button
       await userEvent.click(getByRole('button', { name: /^export data$/i }))
 
-      // Assert: Blob was created and cleaned up
+      // Assert the actual backup payload, not only that a download was attempted.
       await expect.poll(() => vi.mocked(URL.createObjectURL).mock.calls.length).toBeGreaterThan(0)
+      const blob = vi.mocked(URL.createObjectURL).mock.calls[0]?.[0]
+      if (!(blob instanceof Blob)) {
+        throw new TypeError('Expected export to create a Blob')
+      }
+      const payload: unknown = JSON.parse(await blob.text())
+      const expectedWorkout = expect.objectContaining({ name: 'Test Workout' })
+      const expectedWorkouts = expect.arrayContaining([expectedWorkout])
+      const expectedData = expect.objectContaining({ workouts: expectedWorkouts })
+      expect(payload).toEqual(
+        expect.objectContaining({
+          data: expectedData,
+        }),
+      )
       expect(URL.revokeObjectURL).toHaveBeenCalled()
     })
 
@@ -79,13 +69,14 @@ describe('Data Management', () => {
           customExercises: [],
           templates: [],
           workouts: [importedWorkout],
+          benchmarks: [],
         },
       }
       const file = new File([JSON.stringify(importData)], 'backup.json', {
         type: 'application/json',
       })
 
-      const { common } = await createTestApp()
+      const { common, reloadPage } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Upload file via hidden input
@@ -108,6 +99,7 @@ describe('Data Management', () => {
       await expectWorkoutCount(1)
       const workouts = await getAllWorkouts()
       expect(workouts[0]?.name).toBe('Imported Workout')
+      expect(reloadPage).toHaveBeenCalledOnce()
     })
 
     it('shows error dialog when importing invalid JSON', async ({ createTestApp }) => {
@@ -139,7 +131,7 @@ describe('Data Management', () => {
       await seedCompletedWorkout(databaseWorkoutBuilder().withStrengthBlock().build())
       expect(await getWorkoutCount()).toBe(1)
 
-      const { getByRole, common } = await createTestApp()
+      const { getByRole, common, reloadPage } = await createTestApp()
       await common.navigateToSettings()
 
       // Act: Click delete all data button (use exact match to avoid matching dialog button)
@@ -155,12 +147,9 @@ describe('Data Management', () => {
 
       // Assert: Data was actually deleted from DB
       await expectWorkoutCount(0)
+      expect(reloadPage).toHaveBeenCalledOnce()
     })
   })
-
-  // Not gated by isBrowserMode: unlike the Import/Export suite above, this
-  // never reaches the success path that calls `location.reload()`, so it's
-  // safe to run in a real browser too.
   describe('Import validation errors', () => {
     it('shows a translated message and validation details when importing a file that fails schema validation', async ({
       createTestApp,
