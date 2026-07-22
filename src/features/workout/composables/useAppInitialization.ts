@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
 import { getActiveWorkoutRepository, type LiveQuery } from '@/db'
 import type { DbActiveWorkout } from '@/db/schema'
+import { seedFreeleticsBenchmarks } from '@/db/seedBenchmarks'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { seedPopularTemplates } from '@/db/seedTemplates'
 import { useExercisesStore } from '@/stores/exercises'
@@ -85,9 +86,10 @@ export function useAppInitialization() {
 
     const [error] = await tryCatch(
       (async () => {
-        // Seed popular exercises and templates first (idempotent)
+        // Seed popular exercises, templates, and benchmarks first (idempotent)
         await seedPopularExercises()
         await seedPopularTemplates()
+        await seedFreeleticsBenchmarks()
 
         // Load settings and custom exercises from DB in parallel
         await Promise.all([settingsStore.loadFromDb(), exercisesStore.loadFromDb()])

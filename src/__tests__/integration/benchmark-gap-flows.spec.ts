@@ -61,52 +61,55 @@ describe('Benchmark Gap Flows', () => {
   })
 
   describe('Creation with Corrections', () => {
-    it('creates a descending ladder benchmark, undoing an extra round and a mistaken exercise', { timeout: 15_000 }, async ({
-      createTestApp,
-    }) => {
-      const app = await createTestApp()
-      await app.navigateTo({ name: RouteNames.CreateBenchmark })
+    it(
+      'creates a descending ladder benchmark, undoing an extra round and a mistaken exercise',
+      { timeout: 15_000 },
+      async ({ createTestApp }) => {
+        const app = await createTestApp()
+        await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
-      // Build a 15-10-5 Burpee ladder
-      await app.benchmarkForm.fillName('Burpee Ladder')
-      await app.benchmarkForm.addExerciseWithReps('Burpees', 15)
+        // Build a 15-10-5 Burpee ladder
+        await app.benchmarkForm.fillName('Burpee Ladder')
+        await app.benchmarkForm.addExerciseWithReps('Burpees', 15)
 
-      await app.benchmarkForm.copyRound(0)
-      await app.benchmarkForm.navigateToRound(1)
-      await app.benchmarkForm.editExerciseReps(0, 10)
+        await app.benchmarkForm.copyRound(0)
+        await app.benchmarkForm.navigateToRound(1)
+        await app.benchmarkForm.editExerciseReps(0, 10)
 
-      await app.benchmarkForm.copyRound(1)
-      await app.benchmarkForm.navigateToRound(2)
-      await app.benchmarkForm.editExerciseReps(0, 5)
+        await app.benchmarkForm.copyRound(1)
+        await app.benchmarkForm.navigateToRound(2)
+        await app.benchmarkForm.editExerciseReps(0, 5)
 
-      // User over-copies a 4th round, then deletes it again
-      await app.benchmarkForm.copyRound(2)
-      expect(await app.benchmarkForm.getRoundCount()).toBe(4)
-      await app.benchmarkForm.deleteRound(3)
-      expect(await app.benchmarkForm.getRoundCount()).toBe(3)
+        // User over-copies a 4th round, then deletes it again
+        await app.benchmarkForm.copyRound(2)
+        expect(await app.benchmarkForm.getRoundCount()).toBe(4)
+        await app.benchmarkForm.deleteRound(3)
+        expect(await app.benchmarkForm.getRoundCount()).toBe(3)
 
-      // User adds a squat to the last round by mistake and removes it
-      await app.benchmarkForm.navigateToRound(2)
-      await app.benchmarkForm.addExerciseWithReps('Bodyweight Squat', 10)
-      await app.benchmarkForm.removeExercise(1)
+        // User adds a squat to the last round by mistake and removes it
+        await app.benchmarkForm.navigateToRound(2)
+        await app.benchmarkForm.addExerciseWithReps('Bodyweight Squat', 10)
+        await app.benchmarkForm.removeExercise(1)
 
-      // Save and land on the detail page
-      await app.benchmarkForm.clickSave()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
+        // Save and land on the detail page
+        await app.benchmarkForm.clickSave()
+        await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
-      // The stored benchmark matches what the user built
-      const benchmarks = await getBenchmarksRepository().getAll()
-      expect(benchmarks).toHaveLength(1)
-      const rounds = sortRounds(benchmarks[0]?.rounds ?? [])
-      expect(rounds).toHaveLength(3)
-      const repsPerRound = rounds.map((round) =>
-        round.exercises.map((exercise) => exercise.prescribedReps),
-      )
-      expect(repsPerRound).toEqual([[15], [10], [5]])
-      expect(rounds.every((round) => round.exercises.every((ex) => ex.name === 'Burpees'))).toBe(
-        true,
-      )
-    })
+        // The stored benchmark matches what the user built (list also contains seeded benchmarks)
+        const benchmarks = await getBenchmarksRepository().getAll()
+        const ladder = benchmarks.find((b) => b.name === 'Burpee Ladder')
+        expect(ladder).toBeDefined()
+        const rounds = sortRounds(ladder?.rounds ?? [])
+        expect(rounds).toHaveLength(3)
+        const repsPerRound = rounds.map((round) =>
+          round.exercises.map((exercise) => exercise.prescribedReps),
+        )
+        expect(repsPerRound).toEqual([[15], [10], [5]])
+        expect(rounds.every((round) => round.exercises.every((ex) => ex.name === 'Burpees'))).toBe(
+          true,
+        )
+      },
+    )
   })
 
   describe('Exercise Editing', () => {

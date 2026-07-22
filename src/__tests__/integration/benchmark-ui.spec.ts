@@ -12,10 +12,11 @@ import {
 describe('Benchmark UI', () => {
   describe('Attempt History', () => {
     // eslint-disable-next-line vitest/expect-expect -- Assertions live in the Benchmarks page object.
-    it('displays benchmarks tab with empty state', async ({ createTestApp }) => {
+    it('displays seeded Freeletics benchmarks on first run', async ({ createTestApp }) => {
       const app = await createTestApp()
       await app.benchmarks.navigateToTab()
-      await app.benchmarks.assertEmptyState()
+      await app.benchmarks.assertBenchmarkExists('Aphrodite')
+      await app.benchmarks.assertBenchmarkExists('Zeus')
     })
 
     it('navigates from list to detail page', async ({ createTestApp }) => {

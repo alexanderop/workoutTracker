@@ -83,56 +83,57 @@ describe('Variable Reps Benchmark', () => {
   // Test Suite: Benchmark Creation
   // ===========================================================================
   describe('Benchmark Creation', () => {
-    it('creates ForTime benchmark with variable reps across 4 rounds', { timeout: 20_000 }, async ({
-      createTestApp,
-    }) => {
-      const app = await createTestApp()
-      await app.navigateTo({ name: RouteNames.CreateBenchmark })
+    it(
+      'creates ForTime benchmark with variable reps across 4 rounds',
+      { timeout: 20_000 },
+      async ({ createTestApp }) => {
+        const app = await createTestApp()
+        await app.navigateTo({ name: RouteNames.CreateBenchmark })
 
-      // Fill benchmark name (type selector removed - all benchmarks are ForTime)
-      await app.benchmarkForm.fillName('Pyramid 40-30-20-10')
+        // Fill benchmark name (type selector removed - all benchmarks are ForTime)
+        await app.benchmarkForm.fillName('Pyramid 40-30-20-10')
 
-      // Round 1: Add exercises with 40 and 30 reps
-      await app.benchmarkForm.addExerciseWithReps('Burpees', 40)
-      await app.benchmarkForm.addExerciseWithReps('Bodyweight Squat', 30)
+        // Round 1: Add exercises with 40 and 30 reps
+        await app.benchmarkForm.addExerciseWithReps('Burpees', 40)
+        await app.benchmarkForm.addExerciseWithReps('Bodyweight Squat', 30)
 
-      // Verify initial round count
-      expect(await app.benchmarkForm.getRoundCount()).toBe(1)
+        // Verify initial round count
+        expect(await app.benchmarkForm.getRoundCount()).toBe(1)
 
-      // Copy Round 1 → Round 2, edit to 30 and 20 reps
-      await app.benchmarkForm.copyRound(0)
-      expect(await app.benchmarkForm.getRoundCount()).toBe(2)
-      await app.benchmarkForm.navigateToRound(1)
-      await app.benchmarkForm.editExerciseReps(0, 30)
-      await app.benchmarkForm.editExerciseReps(1, 20)
+        // Copy Round 1 → Round 2, edit to 30 and 20 reps
+        await app.benchmarkForm.copyRound(0)
+        expect(await app.benchmarkForm.getRoundCount()).toBe(2)
+        await app.benchmarkForm.navigateToRound(1)
+        await app.benchmarkForm.editExerciseReps(0, 30)
+        await app.benchmarkForm.editExerciseReps(1, 20)
 
-      // Copy Round 2 → Round 3, edit to 20 and 15 reps
-      await app.benchmarkForm.copyRound(1)
-      expect(await app.benchmarkForm.getRoundCount()).toBe(3)
-      await app.benchmarkForm.navigateToRound(2)
-      await app.benchmarkForm.editExerciseReps(0, 20)
-      await app.benchmarkForm.editExerciseReps(1, 15)
+        // Copy Round 2 → Round 3, edit to 20 and 15 reps
+        await app.benchmarkForm.copyRound(1)
+        expect(await app.benchmarkForm.getRoundCount()).toBe(3)
+        await app.benchmarkForm.navigateToRound(2)
+        await app.benchmarkForm.editExerciseReps(0, 20)
+        await app.benchmarkForm.editExerciseReps(1, 15)
 
-      // Copy Round 3 → Round 4, edit to 10 and 10 reps
-      await app.benchmarkForm.copyRound(2)
-      expect(await app.benchmarkForm.getRoundCount()).toBe(4)
-      await app.benchmarkForm.navigateToRound(3)
-      await app.benchmarkForm.editExerciseReps(0, 10)
-      await app.benchmarkForm.editExerciseReps(1, 10)
+        // Copy Round 3 → Round 4, edit to 10 and 10 reps
+        await app.benchmarkForm.copyRound(2)
+        expect(await app.benchmarkForm.getRoundCount()).toBe(4)
+        await app.benchmarkForm.navigateToRound(3)
+        await app.benchmarkForm.editExerciseReps(0, 10)
+        await app.benchmarkForm.editExerciseReps(1, 10)
 
-      // Save and verify
-      await app.benchmarkForm.clickSave()
-      await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
+        // Save and verify
+        await app.benchmarkForm.clickSave()
+        await expect.poll(() => app.router.currentRoute.value.name).toBe('BenchmarkDetail')
 
-      // Verify saved benchmark structure
-      const benchmarks = await getBenchmarksRepo().getAll()
-      expect(benchmarks).toHaveLength(1)
-
-      const benchmark = benchmarks[0]
-      assertBenchmarkWithRounds(benchmark)
-      // With new schema, rounds will be an array
-      expect(benchmark.rounds).toHaveLength(4)
-    })
+        // Verify saved benchmark structure (list also contains seeded benchmarks)
+        const benchmarks = await getBenchmarksRepo().getAll()
+        const benchmark = benchmarks.find((b) => b.name === 'Pyramid 40-30-20-10')
+        expect(benchmark).toBeDefined()
+        assertBenchmarkWithRounds(benchmark)
+        // With new schema, rounds will be an array
+        expect(benchmark.rounds).toHaveLength(4)
+      },
+    )
   })
 
   // ===========================================================================
@@ -180,7 +181,7 @@ describe('Variable Reps Benchmark', () => {
 
       // Verify Round 1 still has 40 reps, Round 2 has 30 reps
       const benchmarks = await getBenchmarksRepo().getAll()
-      const benchmark = benchmarks[0]
+      const benchmark = benchmarks.find((b) => b.name === 'Test Independence')
       assertBenchmarkWithRounds(benchmark)
 
       const round1 = benchmark.rounds[0]

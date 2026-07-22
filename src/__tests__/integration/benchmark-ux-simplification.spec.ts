@@ -49,11 +49,11 @@ describe('Benchmark UX Simplification', () => {
       await app.benchmarkForm.addExerciseWithReps('Burpees', 20)
       await app.benchmarkForm.clickSave()
 
-      // Verify benchmark was saved with type 'fortime'
+      // Verify benchmark was saved with type 'fortime' (list also contains seeded benchmarks)
       const benchmarks = await getBenchmarksRepo().getAll()
-      expect(benchmarks).toHaveLength(1)
-      expect(benchmarks[0]?.type).toBe('fortime')
-      expect(benchmarks[0]?.name).toBe('Simple Benchmark')
+      const created = benchmarks.find((b) => b.name === 'Simple Benchmark')
+      expect(created).toBeDefined()
+      expect(created?.type).toBe('fortime')
     })
 
     it('shows round tab even with single round', async ({ createTestApp }) => {
