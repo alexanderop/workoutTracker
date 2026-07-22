@@ -12,6 +12,26 @@ export default {
   addFood: 'Add food',
   deleteFood: 'Remove {name}',
   noGoalHint: 'Using starter goals. Adjust them to fit your plan.',
+  foodLog: {
+    title: 'Food Log',
+    openPage: 'Open food log',
+    today: 'Today',
+    previousDay: 'Previous day',
+    nextDay: 'Next day',
+    goToToday: 'Go to today',
+    weekStrip: 'Week overview',
+    dayWithCalories: '{date} – {calories} kcal logged',
+    addAtHour: 'Add food at {hour}',
+    emptyDay: 'Nothing logged this day yet. Tap + at an hour to add food.',
+    proteinShort: 'P',
+    fatShort: 'F',
+    carbsShort: 'C',
+    totals: {
+      protein: 'Protein',
+      fat: 'Fat',
+      carbs: 'Carbs',
+    },
+  },
   trend: {
     title: 'Last 7 days',
     chartLabel: 'Calories consumed over the last 7 days',
@@ -62,5 +82,6 @@ export default {
   },
   errors: {
     saveFailed: 'Could not save. Please try again.',
+    deleteFailed: 'Could not delete. Please try again.',
   },
 } as const
