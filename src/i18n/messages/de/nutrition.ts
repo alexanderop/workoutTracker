@@ -82,5 +82,6 @@ export default {
   },
   errors: {
     saveFailed: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',
+    deleteFailed: 'Löschen fehlgeschlagen. Bitte versuche es erneut.',
   },
 } as const

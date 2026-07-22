@@ -8,6 +8,7 @@ import { getNutritionRepository } from '@/db'
 import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { getCurrentLocale, getDateLocale } from '@/lib/dateLocale'
 import { tryCatch } from '@/lib/tryCatch'
+import { useToastStore } from '@/stores/toast'
 import FoodLogTimeline from '../components/FoodLogTimeline.vue'
 import FoodLogWeekStrip from '../components/FoodLogWeekStrip.vue'
 import { useFoodLogDay } from '../composables/useFoodLogDay'
@@ -19,7 +20,8 @@ import { mealForHour } from '../lib/foodLogTimeline'
 const FoodLogDialog = defineAsyncComponent(() => import('../components/FoodLogDialog.vue'))
 
 const { t } = useI18n()
-const dateLocale = getDateLocale(getCurrentLocale())
+const { showToast } = useToastStore()
+const dateLocale = computed(() => getDateLocale(getCurrentLocale()))
 
 const {
   selectedDateKey,
@@ -38,7 +40,7 @@ const {
 const dayTitle = computed(() =>
   isToday.value
     ? t('nutrition.foodLog.today')
-    : format(selectedDate.value, 'EEE, d MMM', { locale: dateLocale }),
+    : format(selectedDate.value, 'EEE, d MMM', { locale: dateLocale.value }),
 )
 
 const foodLogOpen = ref(false)
@@ -58,7 +60,9 @@ function openFoodLogForNow() {
 }
 
 async function removeEntry(entry: DbNutritionDiaryEntry) {
-  await tryCatch(getNutritionRepository().deleteDiaryEntry(entry.id))
+  const [error] = await tryCatch(getNutritionRepository().deleteDiaryEntry(entry.id))
+  // Success is visible in the timeline itself; only failures need a toast.
+  if (error) showToast(t('nutrition.errors.deleteFailed'))
 }
 
 function rounded(value: number): number {
@@ -83,7 +87,7 @@ function rounded(value: number): number {
           </Button>
           <button
             type="button"
-            class="rounded-lg px-3 py-1 text-lg font-semibold transition-colors hover:bg-muted"
+            class="rounded-lg px-3 py-2 text-lg font-semibold transition-colors hover:bg-muted"
             :aria-label="t('nutrition.foodLog.goToToday')"
             @click="goToToday"
           >

@@ -32,6 +32,21 @@ describe('Food log page', () => {
       })
   })
 
+  it('reaches the food log from the quick-add sheet and the nutrition card', async ({
+    createTestApp,
+  }) => {
+    const { navigateTo, foodLog, common } = await createTestApp()
+
+    await page.getByRole('button', { name: 'Quick add' }).click()
+    await common.waitForDialog()
+    await page.getByRole('button', { name: 'Food Log' }).click()
+    await expect.element(foodLog.timeline).toBeVisible()
+
+    await navigateTo({ name: RouteNames.Home })
+    await page.getByRole('button', { name: 'Open food log' }).click()
+    await expect.element(foodLog.timeline).toBeVisible()
+  })
+
   it('navigates between days and keeps entries scoped to their day', async ({ createTestApp }) => {
     const { navigateTo, foodLog } = await createTestApp()
 

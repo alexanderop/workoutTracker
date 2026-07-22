@@ -82,5 +82,6 @@ export default {
   },
   errors: {
     saveFailed: 'Could not save. Please try again.',
+    deleteFailed: 'Could not delete. Please try again.',
   },
 } as const
