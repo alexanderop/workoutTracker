@@ -7,4 +7,5 @@ export default {
   addHabit: 'Add Habit',
   logPastWorkout: 'Past Workout',
   weightHistory: 'Weight History',
+  foodLog: 'Food Log',
 } as const

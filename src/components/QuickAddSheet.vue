@@ -2,6 +2,7 @@
 import type { Component } from 'vue'
 import {
   Activity,
+  Apple,
   ChevronRight,
   ClipboardList,
   ListChecks,
@@ -71,6 +72,12 @@ const quickActions = computed<ReadonlyArray<SheetAction>>(() => [
 ])
 
 const browseItems = computed<ReadonlyArray<SheetAction>>(() => [
+  {
+    key: 'food-log',
+    icon: Apple,
+    label: t('quickAdd.foodLog'),
+    onSelect: () => navigateTo(RouteNames.FoodLog),
+  },
   {
     key: 'exercises',
     icon: Activity,

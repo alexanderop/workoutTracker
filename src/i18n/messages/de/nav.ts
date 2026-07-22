@@ -21,6 +21,7 @@ export default {
     timers: 'Timer',
     weight: 'Gewicht',
     habits: 'Gewohnheiten',
+    foodLog: 'Ernährungstagebuch',
     activeWorkout: 'Aktives Workout',
     activeBenchmark: 'Aktiver Benchmark',
     createExercise: 'Neue Übung',

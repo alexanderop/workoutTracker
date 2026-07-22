@@ -27,6 +27,7 @@ export const RouteNames = {
   Timers: 'Timers',
   Weight: 'Weight',
   Habits: 'Habits',
+  FoodLog: 'FoodLog',
   ActiveWorkout: 'ActiveWorkout',
   ActiveBenchmark: 'ActiveBenchmark',
   ExerciseForm: 'ExerciseForm',
@@ -111,6 +112,12 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
     name: RouteNames.Habits,
     component: () => import('@/views/HabitsView.vue'),
     meta: { titleKey: 'habits' },
+  },
+  {
+    path: '/food-log',
+    name: RouteNames.FoodLog,
+    component: () => import('@/features/nutrition/views/FoodLogView.vue'),
+    meta: { titleKey: 'foodLog' },
   },
   {
     path: '/workout/active',

@@ -2,9 +2,11 @@
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { Apple, ChevronRight, Plus, Target, Trash2, Utensils } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { getNutritionRepository } from '@/db'
+import { RouteNames } from '@/router'
 import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
@@ -23,6 +25,7 @@ const SparklineChart = defineAsyncComponent(
 const FoodLogDialog = defineAsyncComponent(() => import('./FoodLogDialog.vue'))
 
 const { t } = useI18n()
+const router = useRouter()
 const localDate = getLocalDateKey()
 const { goal, foods, diaryEntries, totals, remainingCalories, calorieProgress } =
   useNutritionDay(localDate)
@@ -81,7 +84,12 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
   >
     <div class="p-4 sm:p-5">
       <div class="flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="flex items-center gap-3 text-left"
+          :aria-label="t('nutrition.foodLog.openPage')"
+          @click="router.push({ name: RouteNames.FoodLog })"
+        >
           <span class="flex size-11 items-center justify-center rounded-xl bg-primary/10">
             <Apple class="size-5 text-primary" aria-hidden="true" />
           </span>
@@ -89,11 +97,12 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
             <p class="text-xs font-semibold uppercase tracking-wider text-primary">
               {{ t('nutrition.title') }}
             </p>
-            <h2 id="nutrition-heading" class="text-lg font-semibold">
+            <h2 id="nutrition-heading" class="flex items-center gap-1 text-lg font-semibold">
               {{ t('nutrition.dailyEnergy') }}
+              <ChevronRight class="size-4 text-muted-foreground" aria-hidden="true" />
             </h2>
           </div>
-        </div>
+        </button>
         <Button variant="ghost" size="sm" @click="goalsOpen = true">
           <Target class="mr-1 size-4" aria-hidden="true" />
           {{ t('nutrition.editGoals') }}
