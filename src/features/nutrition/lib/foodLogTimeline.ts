@@ -14,8 +14,8 @@ const MEAL_FALLBACK_HOUR: Record<MealKind, number> = {
 }
 
 /** First/last hour the timeline always renders, even with no entries. */
-export const TIMELINE_START_HOUR = 7
-export const TIMELINE_END_HOUR = 21
+const TIMELINE_START_HOUR = 7
+const TIMELINE_END_HOUR = 21
 
 /** True when the entry was logged live on its own diary day. */
 export function isLoggedOnDiaryDay(entry: DbNutritionDiaryEntry): boolean {
