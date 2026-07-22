@@ -1,112 +1,103 @@
 ---
 name: review-coderabbit
 description: Fetch CodeRabbit review comments on the current PR, validate each against project conventions, implement valid fixes, and reply to resolve each conversation. Use proactively when CodeRabbit leaves review comments, or when the user says "review coderabbit", "address coderabbit feedback", or "fix coderabbit comments".
-allowed-tools: Bash(gh pr view:*), Bash(gh api:*), Bash(git rev-parse:*), Bash(git status), Bash(pnpm type-check), Bash(pnpm lint), Task, Read, Edit, Glob, Grep, TodoWrite
+allowed-tools: Bash(gh pr view:*), Bash(gh api:*), Bash(git rev-parse:*), Bash(git status), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(pnpm -s pr:comments:*), Bash(pnpm type-check), Bash(pnpm lint), Bash(pnpm test:*), Bash(command -v gh:*), Task, Read, Edit, Glob, Grep, TodoWrite, AskUserQuestion
 ---
 
 # Review CodeRabbit Comments
-
-I have gathered information about the current PR. Here are the results:
 
 <current_branch>
 !`git rev-parse --abbrev-ref HEAD`
 </current_branch>
 
-<pr_info>
-!`gh pr view --json number,title,url 2>/dev/null || echo "No PR found for current branch"`
-</pr_info>
-
-<coderabbit_review>
-!`gh pr view --json reviews --jq '.reviews[] | select(.author.login == "coderabbitai") | .body' 2>/dev/null | head -500`
-</coderabbit_review>
-
-<coderabbit_comments>
-!`gh api repos/{owner}/{repo}/pulls/$(gh pr view --json number -q .number)/comments --jq '.[] | select(.user.login == "coderabbitai") | {id: .id, path: .path, line: .line, body: (.body | split("\n")[0:3] | join("\n"))}' 2>/dev/null`
-</coderabbit_comments>
+<gh_cli>
+!`command -v gh >/dev/null 2>&1 && echo "available" || echo "NOT available - use the GitHub MCP tools (mcp__github__*) instead"`
+</gh_cli>
 
 ## Instructions
 
-### Step 1: Parse CodeRabbit Feedback
+The loop that terminates: fix → push → reply **in the thread** → CodeRabbit's
+incremental re-review verifies and auto-resolves. The PR is done only when
+zero review threads remain unresolved (the "Unresolved review threads" check
+goes green).
 
-1. **Extract actionable comments** from the CodeRabbit review above
-2. **Categorize** them into:
-   - Code quality issues (type assertions, unclear code)
-   - Accessibility issues (missing aria-labels, decorative icons)
-   - Design system issues (inconsistent classes, hardcoded values)
-   - Bug risks (type safety, null checks)
+### Step 1: Fetch unresolved findings
 
-### Step 2: Validate Each Comment
+**If `gh` is available:**
 
-For each substantive comment, **spawn a subagent** to analyze it in isolation:
-
-```
-Use Task tool with subagent_type="general-purpose" for each comment:
-- Read the actual file and relevant context
-- Check if the suggestion aligns with project conventions (CLAUDE.md)
-- Determine verdict: VALID, INVALID, or PARTIALLY VALID
-- If partially valid, note what's correct and what's not
-```
-
-Launch multiple agents in parallel for efficiency.
-
-### Step 3: Summarize Findings
-
-Create a summary table:
-
-| Comment | File | Verdict | Recommendation |
-|---------|------|---------|----------------|
-| ... | ... | ... | ... |
-
-Categorize into:
-- **Should fix** - Valid suggestions aligned with project guidelines
-- **Skip** - Invalid or overly defensive suggestions
-- **Needs decision** - Valid but requires user input on approach
-
-### Step 4: Ask for Confirmation
-
-Before implementing, ask the user:
-> "I found X valid fixes to implement. Would you like me to proceed?"
-
-### Step 5: Implement Valid Fixes
-
-1. Create a todo list with all fixes
-2. Read each file before editing
-3. Make the edits
-4. Run verification:
-   ```bash
-   pnpm type-check && pnpm lint
-   ```
-
-### Step 6: Resolve CodeRabbit Conversations
-
-After implementing fixes, reply to each CodeRabbit comment to resolve the conversation:
-
-**For FIXED comments** - Reply indicating the fix was applied:
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -f body="Fixed: [brief description of what was done]"
+pnpm -s pr:comments --json | jq '[.[] | select(.user == "coderabbitai[bot]")]'
 ```
 
-**For INVALID comments** - Reply explaining why it was already correct or not applicable:
+This hides resolved threads and reduces CodeRabbit line comments to their
+actionable AI-agent prompt. Note each entry's `commentId` — you need it for
+the in-thread reply.
+
+**If `gh` is NOT available (remote/web sessions):** use the GitHub MCP tools
+(load via ToolSearch): `mcp__github__pull_request_read` with method
+`get_review_comments` returns threads with `is_resolved` flags and comment
+IDs. Work only on unresolved threads whose first comment is by
+`coderabbitai`.
+
+### Step 2: Triage critically — you may reject findings
+
+Evaluate each finding against the actual code and project conventions
+(CLAUDE.md, existing patterns). CodeRabbit embeds a "Prompt for AI Agents"
+block per comment — treat it as the fix specification *only after* you agree
+the finding is valid. Do not blindly comply.
+
+For each finding decide:
+
+- **Fix** — valid and aligned with conventions. Prefer the repo's own idioms
+  over CodeRabbit's generic suggestion (e.g. `tryCatch()` from
+  `@/lib/tryCatch` instead of a bare try/catch).
+- **Skip** — invalid, over-defensive, or conflicting with a deliberate
+  decision. You must reply with the reason. If the same false positive keeps
+  recurring, include `@coderabbitai` plus the convention in your reply so it
+  records a learning and stops re-raising it.
+- **Ask** — genuinely ambiguous or architecturally significant: use
+  AskUserQuestion before acting.
+
+For large finding sets, spawn parallel subagents (Task tool) to validate
+findings in isolation.
+
+### Step 3: Implement and verify
+
+1. Make the fixes.
+2. Run `pnpm type-check && pnpm lint` plus the tests covering the touched
+   code.
+3. Commit (Conventional Commits with scope) and push to the PR branch.
+
+### Step 4: Reply in every thread — never top-level
+
+Reply to each finding **in its thread** so CodeRabbit links your action to
+the finding and can verify it on re-review. `comment_id` is the thread's
+first comment ID from Step 1.
+
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -f body="Already implemented: [explanation] / Not applicable: [reason]"
+gh api -X POST repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies \
+  -f body='Fixed in <sha> — <what changed, and anything done differently than suggested>.'
 ```
 
-**For SKIPPED comments** - Reply explaining why it was intentionally skipped:
-```bash
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -f body="Skipped: [reason - e.g., inconsistent with codebase patterns, over-defensive, etc.]"
-```
+Without `gh`, use `mcp__github__add_reply_to_pull_request_comment`.
 
-Use the comment IDs from the `<coderabbit_comments>` section above.
+- **Fixed** → `Fixed in <sha> — <what changed>.`
+- **Skipped** → the concrete reason (convention, deliberate trade-off, out of
+  scope plus where it is tracked).
 
-### Project Guidelines Reference
+### Step 5: Resolve threads correctly
 
-Key rules from CLAUDE.md to check against:
-- NO `any`, `enum`, or type assertions (`as T`)
-- Use `tryCatch()` from `@/lib/tryCatch` (not native try/catch)
-- Use `RouteNames` from `@/router` (not string literals)
-- Features cannot import other features
-- shadcn-vue components in `src/components/ui/` must NOT be modified
-- Vue 3.5+ APIs required (defineProps destructuring, defineModel, useTemplateRef)
+- **Fixed threads: do not resolve them yourself.** CodeRabbit auto-resolves
+  threads it verifies as fixed after your push — that verification is the
+  point of the loop. Only resolve manually if it confirmed the fix in a reply
+  but left the thread open.
+- **Skipped threads: resolve after replying**, via GraphQL
+  `resolveReviewThread` (thread id from the `reviewThreads` query) or
+  `mcp__github__resolve_review_thread`.
+
+### Step 6: Confirm the gate is green
+
+Re-fetch unresolved threads (Step 1). The task is complete only when none
+remain and the "Unresolved review threads" check on the PR passes. If
+CodeRabbit's re-review raises follow-up findings, loop from Step 2 — do not
+stop mid-loop.

@@ -1,38 +1,42 @@
 ---
 name: fix-pipeline
 description: Inspect GitHub Actions / CI status for the current branch and plan fixes when checks fail. Use proactively after pushing, or when the user mentions "CI", "pipeline", "GitHub Actions", "failing checks", "build failing", or asks "why is CI red".
-allowed-tools: Bash(gh pr checks:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh api:*), Bash(git rev-parse:*), Bash(git branch:*), EnterPlanMode
+allowed-tools: Bash(gh pr checks:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh api:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(command -v gh:*), EnterPlanMode
 ---
 
 # Check Pipeline Status
-
-I have gathered information about your pipeline. Here are the results:
 
 <current_branch>
 !`git rev-parse --abbrev-ref HEAD`
 </current_branch>
 
-<check_runs>
-!`gh run list --branch $(git rev-parse --abbrev-ref HEAD) --limit 5`
-</check_runs>
-
-<latest_run_details>
-!`gh run view --branch $(git rev-parse --abbrev-ref HEAD) --log-failed 2>/dev/null || echo "No failed logs available"`
-</latest_run_details>
+<gh_cli>
+!`command -v gh >/dev/null 2>&1 && echo "available" || echo "NOT available - use the GitHub MCP tools (mcp__github__*) instead"`
+</gh_cli>
 
 ## Instructions
 
-### Step 1: Analyze Pipeline Status
+### Step 1: Fetch Pipeline Status
 
-1. **Check the run status** from the `<check_runs>` section above.
-2. If all checks are passing, inform the user and stop.
-3. If any checks are failing, proceed to Step 2.
+Use whichever GitHub access method `<gh_cli>` says is available:
 
-### Step 2: Gather Failure Details
+**If `gh` is available:**
 
-1. **Examine the failed logs** in `<latest_run_details>`.
-2. If more details are needed, use `gh run view <run-id> --log-failed` to get specific failure information.
-3. Identify the root cause of the failure (test failures, lint errors, type errors, build issues, etc.).
+```bash
+gh run list --branch <current_branch> --limit 5
+gh run view <run-id> --log-failed   # for failing runs
+```
+
+**If `gh` is NOT available (e.g. remote/web sessions), use the GitHub MCP tools** (load them via ToolSearch if needed):
+
+1. `mcp__github__actions_list` with `method: "list_workflow_runs"` and the current branch to get recent runs.
+2. For a failing run, `mcp__github__actions_list` with `method: "list_workflow_jobs"` to find the failed job(s).
+3. `mcp__github__get_job_logs` with `failed_only: true` (or a specific `job_id`) to pull the failure logs.
+
+### Step 2: Analyze
+
+1. If all checks are passing, inform the user and stop.
+2. If checks are failing, examine the failed logs and identify the root cause (test failures, lint errors, type errors, build issues, etc.).
 
 ### Step 3: Enter Plan Mode
 
