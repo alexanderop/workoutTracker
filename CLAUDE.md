@@ -88,6 +88,10 @@ gh api -X POST repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies -f 
 
 Resolve a thread only when the finding is actually addressed. CodeRabbit auto-resolves threads it can verify as fixed after a push; for the rest, resolve via GraphQL `resolveReviewThread` using the thread id from the `reviewThreads` query.
 
+Unresolved review threads block the merge: the "Unresolved review threads" check (`review-threads-gate.yml`) fails while any thread is open, and CodeRabbit submits Request Changes until its findings are handled, then auto-approves. Never merge around a red gate — finish the loop instead.
+
+In remote/web sessions without the `gh` CLI, `pr:comments` is unavailable — use the GitHub MCP tools instead (`pull_request_read` with `get_review_comments`, `add_reply_to_pull_request_comment`, `resolve_review_thread`).
+
 ## Project Brain
 
 Start at `brain/index.md` only when a task needs architectural rationale or a

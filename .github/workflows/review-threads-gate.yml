@@ -1,0 +1,76 @@
+# Fails while any review thread on the PR is unresolved, and re-runs the
+# moment a thread is resolved or unresolved. This is the merge gate that keeps
+# reviewer-bot findings (CodeRabbit, Copilot, humans alike) from silently
+# merging unaddressed: statuses posted by other automation stick to the commit
+# they ran against, but review threads belong to the PR — this check re-anchors
+# that state to every new head.
+#
+# To make it actually block merges, mark the "Unresolved review threads" check
+# as required in branch protection (Settings -> Branches -> main), ideally
+# together with "Require conversation resolution before merging".
+name: Review Threads Gate
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+  pull_request_review_thread:
+    types: [resolved, unresolved]
+
+permissions: {}
+
+concurrency:
+  group: review-threads-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Unresolved review threads
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Fail while review threads are unresolved
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const number = context.payload.pull_request.number;
+            const query = `query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+              repository(owner: $owner, name: $name) { pullRequest(number: $number) {
+                reviewThreads(first: 100, after: $cursor) {
+                  pageInfo { hasNextPage endCursor }
+                  nodes {
+                    isResolved isOutdated path line
+                    comments(first: 1) { nodes { author { login } url } }
+                  }
+                }
+              } }
+            }`;
+            const unresolved = [];
+            let cursor = null;
+            do {
+              const page = await github.graphql(query, {
+                owner: context.repo.owner, name: context.repo.repo, number, cursor,
+              });
+              const threads = page.repository.pullRequest.reviewThreads;
+              unresolved.push(...threads.nodes.filter(thread => !thread.isResolved));
+              cursor = threads.pageInfo.hasNextPage ? threads.pageInfo.endCursor : null;
+            } while (cursor);
+            if (unresolved.length === 0) {
+              core.summary.addRaw('All review threads are resolved.').write();
+              return;
+            }
+            const rows = unresolved.map(thread => {
+              const root = thread.comments.nodes[0];
+              const location = `${thread.path ?? '(file removed)'}:${thread.line ?? '?'}`;
+              const outdated = thread.isOutdated ? ' (outdated — collapsed in the UI)' : '';
+              return `- [${location}](${root?.url ?? ''}) by ${root?.author?.login ?? 'unknown'}${outdated}`;
+            });
+            core.summary
+              .addHeading(`${unresolved.length} unresolved review thread(s)`, 2)
+              .addRaw(rows.join('\n'))
+              .addRaw('\n\nAddress each finding (or reply in-thread with a skip reason and resolve it). CodeRabbit auto-resolves threads it can verify as fixed after a push. Locally: `pnpm -s pr:comments`, or run the review-coderabbit skill.')
+              .write();
+            core.setFailed(`${unresolved.length} unresolved review thread(s) — see the job summary.`);
