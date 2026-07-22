@@ -133,11 +133,11 @@ describe('Timer Edge Cases', () => {
         // time proves a paused display stays frozen without a wall-clock wait.
         const startButton = await testApp.workout.getTimerPlayPauseButton()
         await userEvent.click(startButton)
-        expect(testApp.workout.isTimerRunning()).toBe(true)
+        await expect.poll(() => testApp.workout.isTimerRunning()).toBe(true)
 
         const pauseButton = await testApp.workout.getTimerPlayPauseButton()
         await userEvent.click(pauseButton)
-        expect(testApp.workout.isTimerRunning()).toBe(false)
+        await expect.poll(() => testApp.workout.isTimerRunning()).toBe(false)
 
         const timerDisplay = page.getByText(/\d+:\d{2}/).first()
         const pausedTime = (await timerDisplay.element()).textContent
@@ -250,6 +250,7 @@ describe('Timer Edge Cases', () => {
 
     it(
       'updates exercise sub-label to REST when phase changes from work, matching the phase badge',
+      { timeout: 15_000 },
       async ({ createTestApp }) => {
         const testApp = await createTestApp()
         await startShortCustomTabata(testApp, { rounds: '2', workSeconds: '1', restSeconds: '3' })

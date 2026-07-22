@@ -12,6 +12,7 @@
   "vitest": {
     "entry": [
       "src/__tests__/**/*.spec.ts",
+      "src/__tests__/**/*.test-d.ts",
       "src/db/__tests__/**/*.spec.ts",
       "src/__tests__/helpers/*.ts",
       "src/__tests__/factories/*.ts"

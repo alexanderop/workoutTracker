@@ -176,7 +176,9 @@ export async function expectWorkoutSaved(expectedCount = 1): Promise<void> {
  * Waits for and asserts that the expected number of completed workouts exist.
  */
 export async function expectWorkoutCount(expectedCount: number): Promise<void> {
-  await expect.poll(async () => getWorkoutsRepository().count()).toHaveRepositoryCount(expectedCount)
+  await expect
+    .poll(async () => getWorkoutsRepository().count())
+    .toHaveRepositoryCount(expectedCount)
 }
 
 /**
@@ -266,9 +268,9 @@ export async function expectSettingsCount(expectedCount: number): Promise<void> 
 /**
  * Waits for and asserts a single raw setting row's stored value.
  */
-export async function expectSettingValue(
-  key: DbUserSetting['key'],
-  expected: DbUserSetting['value'],
+export async function expectSettingValue<K extends DbUserSetting['key']>(
+  key: K,
+  expected: Extract<DbUserSetting, { key: K }>['value'],
 ): Promise<void> {
   await expect.poll(getRawSettings).toContainStoredSetting(key, expected)
 }

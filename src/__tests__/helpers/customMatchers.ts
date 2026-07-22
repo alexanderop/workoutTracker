@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-explicit-any -- Vitest's matcher augmentation requires its public generic default. */
 import { expect } from 'vitest'
 import type { DbUserSetting } from '@/db/schema'
 
@@ -8,14 +7,10 @@ type ParseResultLike = {
   errors?: unknown
 }
 
-interface CustomMatchers<R = unknown> {
-  toBeParseSuccess: () => R
-  toHaveRepositoryCount: (expected: number) => R
-  toContainStoredSetting: (
-    key: DbUserSetting['key'],
-    value: DbUserSetting['value'],
-  ) => R
-}
+type StoredSettingValue<K extends DbUserSetting['key']> = Extract<
+  DbUserSetting,
+  { key: K }
+>['value']
 
 expect.extend({
   toBeParseSuccess(received: ParseResultLike) {
@@ -51,8 +46,14 @@ expect.extend({
 })
 
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Assertion<T = any> extends CustomMatchers<T> {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface AsymmetricMatchersContaining extends CustomMatchers {}
+  // Vitest's own declaration supplies the type-parameter default; `Matchers`
+  // flows into `Assertion`, `expect.poll`, and static asymmetric matchers.
+  interface Matchers<T> {
+    toBeParseSuccess: () => T
+    toHaveRepositoryCount: (expected: number) => T
+    toContainStoredSetting: <K extends DbUserSetting['key']>(
+      key: K,
+      value: StoredSettingValue<K>,
+    ) => T
+  }
 }
