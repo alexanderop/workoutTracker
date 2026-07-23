@@ -1,6 +1,15 @@
 import { computed } from 'vue'
-import { findNextIncompleteSet, useWorkout } from './useWorkout'
-import { hasWorkoutBlockProgress, isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
+import { useWorkout } from './useWorkout'
+import {
+  advanceToNextIncompleteBlock,
+  enterWorkoutCompletion,
+  goToPreviousWorkoutBlock,
+  hasWorkoutStarted,
+  returnToWorkoutBuilder,
+  selectActiveWorkoutSet,
+  startWorkout as startWorkoutTransition,
+} from '../lib/workoutModeTransitions'
+import { isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/types/blocks'
 
 /**
@@ -8,7 +17,7 @@ import { isStrengthBlock } from '@/types/blocks'
  * Handles switching between builder and active modes.
  */
 export function useWorkoutMode() {
-  const { workout, selectBlock, activateSet } = useWorkout()
+  const { workout } = useWorkout()
 
   const mode = computed(() => workout.value.mode)
   const isBuilderMode = computed(() => mode.value === 'builder')
@@ -42,56 +51,15 @@ export function useWorkoutMode() {
    * Used to determine whether to show "Continue Workout" vs "Start Workout".
    */
   const hasStarted = computed(() => {
-    return workout.value.blocks.some(hasWorkoutBlockProgress)
+    return hasWorkoutStarted(workout.value)
   })
-
-  function initializeTimestamps() {
-    if (hasStarted.value) return
-
-    workout.value.startedAt = Date.now()
-  }
-
-  /**
-   * Activate the first *incomplete* set of a strength block (not necessarily
-   * index 0 -- a block re-entered after resuming a workout may already have
-   * its earlier sets completed). No-ops if the block has no incomplete sets
-   * left, leaving `activeSetIndex` as-is rather than pointing at a
-   * completed set.
-   */
-  function activateFirstSet(blockIndex: number) {
-    const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block)) return
-
-    const nextSet = findNextIncompleteSet(block)
-    if (!nextSet) return
-
-    const setIndex = block.sets.findIndex((s) => s.id === nextSet.id)
-    if (setIndex === -1) return
-
-    activateSet(blockIndex, setIndex)
-  }
-
-  function initializeFirstBlock() {
-    const firstBlock = workout.value.blocks[0]
-    if (!firstBlock || !isStrengthBlock(firstBlock)) return
-
-    activateFirstSet(0)
-  }
 
   /**
    * Start the workout - transition from builder to active mode.
    * Selects the first block and activates its first set if strength.
    */
   function startWorkout() {
-    if (!hasBlocks.value) return
-
-    initializeTimestamps()
-
-    workout.value.mode = 'active'
-    workout.value.selectedBlockIndex = 0
-    workout.value.activeSetIndex = null
-
-    initializeFirstBlock()
+    workout.value = startWorkoutTransition(workout.value, Date.now())
   }
 
   /**
@@ -99,8 +67,7 @@ export function useWorkoutMode() {
    * Preserves workout progress but exits the immersive view.
    */
   function returnToBuilder() {
-    workout.value.mode = 'builder'
-    workout.value.activeSetIndex = null
+    workout.value = returnToWorkoutBuilder(workout.value)
   }
 
   /**
@@ -108,7 +75,7 @@ export function useWorkoutMode() {
    * Used when the user finishes all blocks before persisting to database.
    */
   function enterCompletionMode() {
-    workout.value.mode = 'completed'
+    workout.value = enterWorkoutCompletion(workout.value)
   }
 
   /**
@@ -117,34 +84,9 @@ export function useWorkoutMode() {
    * Returns true if advanced, false if no incomplete blocks remain.
    */
   function advanceToNextBlock(): boolean {
-    // Find next incomplete block (skip completed ones)
-    let nextIndex: number | null = null
-    for (
-      let index = workout.value.selectedBlockIndex + 1;
-      index < workout.value.blocks.length;
-      index++
-    ) {
-      const block = workout.value.blocks[index]
-      if (block && !isWorkoutBlockComplete(block)) {
-        nextIndex = index
-        break
-      }
-    }
-
-    if (nextIndex === null) {
-      return false // All remaining blocks complete
-    }
-
-    selectBlock(nextIndex)
-    workout.value.activeSetIndex = null
-
-    // Initialize next block if it's a strength block
-    const nextBlock = workout.value.blocks[nextIndex]
-    if (nextBlock && isStrengthBlock(nextBlock)) {
-      activateFirstSet(nextIndex)
-    }
-
-    return true
+    const transition = advanceToNextIncompleteBlock(workout.value)
+    workout.value = transition.workout
+    return transition.moved
   }
 
   /**
@@ -152,36 +94,16 @@ export function useWorkoutMode() {
    * Returns true if moved back, false if already at first block.
    */
   function goToPreviousBlock(): boolean {
-    const previousIndex = workout.value.selectedBlockIndex - 1
-    if (previousIndex < 0) {
-      return false
-    }
-
-    selectBlock(previousIndex)
-    workout.value.activeSetIndex = null
-
-    // Initialize block if it's a strength block
-    const previousBlock = workout.value.blocks[previousIndex]
-    if (previousBlock && isStrengthBlock(previousBlock)) {
-      // Find the last incomplete set or default to first
-      const incompleteSetIndex = previousBlock.sets.findIndex(
-        (s) => s.status === 'planned' || s.status === 'active',
-      )
-      workout.value.activeSetIndex = Math.max(incompleteSetIndex, 0)
-    }
-
-    return true
+    const transition = goToPreviousWorkoutBlock(workout.value)
+    workout.value = transition.workout
+    return transition.moved
   }
 
   /**
    * Set the active set index for strength blocks.
    */
   function setActiveSet(setIndex: number) {
-    const block = currentBlock.value
-    if (!block || !isStrengthBlock(block)) return
-    if (setIndex < 0 || setIndex >= block.sets.length) return
-
-    workout.value.activeSetIndex = setIndex
+    workout.value = selectActiveWorkoutSet(workout.value, setIndex)
   }
 
   /**
