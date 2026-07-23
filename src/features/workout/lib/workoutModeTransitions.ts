@@ -20,8 +20,8 @@ export function hasWorkoutStarted(workout: Workout): boolean {
 // A resumed workout re-enters where the user left off; a fresh one starts at
 // block 0. If the block the user left is already complete, fall back to the
 // first incomplete block so resume never lands on finished work.
-function resolveStartBlockIndex(workout: Workout): number {
-  if (!hasWorkoutStarted(workout)) return 0
+function resolveStartBlockIndex(workout: Workout, started: boolean): number {
+  if (!started) return 0
 
   const currentBlock = workout.blocks[workout.selectedBlockIndex]
   if (currentBlock && !isWorkoutBlockComplete(currentBlock)) return workout.selectedBlockIndex
@@ -35,14 +35,15 @@ function resolveStartBlockIndex(workout: Workout): number {
 export function startWorkout(workout: Workout, startedAt: number): Workout {
   if (workout.blocks.length === 0) return workout
 
-  const startBlockIndex = resolveStartBlockIndex(workout)
+  const started = hasWorkoutStarted(workout)
+  const startBlockIndex = resolveStartBlockIndex(workout, started)
   const startBlock = workout.blocks[startBlockIndex]
 
   const activeWorkout = updateWorkout(workout, {
     mode: 'active',
     selectedBlockIndex: startBlockIndex,
     activeSetIndex: null,
-    ...(!hasWorkoutStarted(workout) && { startedAt }),
+    ...(!started && { startedAt }),
   })
 
   if (!startBlock || !isStrengthBlock(startBlock)) return activeWorkout
