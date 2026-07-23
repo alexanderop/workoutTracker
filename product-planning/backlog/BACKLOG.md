@@ -21,6 +21,9 @@ Create, save, and reuse workout templates.
 ### E4: Exercise Library
 Comprehensive exercise database with custom exercise support.
 
+### E5: Nutrition Tracking
+Log foods and macros alongside workouts: food library, diary, barcode scan, and fast search/quick-log flows.
+
 ---
 
 ## Backlog Items
@@ -31,6 +34,7 @@ Comprehensive exercise database with custom exercise support.
 |----|------|-------|--------------|--------|
 | US-001 | Story | Example: As a user, I want to... | 3 | Refinement |
 | US-002 | Story | Import workout from markdown file | 5 | Ready |
+| US-003 | Story | Food search with favorites, time picks & quick add | 5 | Ready |
 
 ### Medium Priority
 
