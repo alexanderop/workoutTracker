@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
+import { startCreateFood } from '../helpers/pages/foodDialog'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
 import type { MediaTrackCapabilitiesWithTorch } from '@/features/nutrition/lib/torch'
@@ -89,7 +90,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Create a new food' }).click()
+    await startCreateFood()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     // The fake detector reports the barcode on the first poll; the mocked
@@ -119,7 +120,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Create a new food' }).click()
+    await startCreateFood()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     await expect.element(page.getByText('Point the camera')).toBeVisible()
@@ -139,7 +140,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Create a new food' }).click()
+    await startCreateFood()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
@@ -163,7 +164,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Create a new food' }).click()
+    await startCreateFood()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
@@ -185,7 +186,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Create a new food' }).click()
+    await startCreateFood()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })

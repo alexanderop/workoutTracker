@@ -43,7 +43,11 @@ const { foods, localDate, initialMeal } = defineProps<{
 const open = defineModel<boolean>('open', { required: true })
 const { t } = useI18n()
 
-type DialogMode = { kind: 'search' } | { kind: 'portion'; food: DbFood } | { kind: 'create' }
+type ScanState = 'idle' | 'scanning' | 'looking-up' | 'not-found' | 'failed'
+type DialogMode =
+  | { kind: 'search' }
+  | { kind: 'portion'; food: DbFood }
+  | { kind: 'create'; scan: ScanState }
 
 // Shallow on purpose: the mode object is replaced wholesale, and a deep ref
 // would proxy the carried DbFood — IndexedDB's structured clone rejects
@@ -54,7 +58,7 @@ const mode = shallowRef<DialogMode>({ kind: 'search' })
 // explicitly: onto the back button entering a form, back onto the search
 // input when returning.
 const backButton = useTemplateRef<{ $el: HTMLElement }>('backButton')
-const searchPanel = useTemplateRef<{ focusInput: () => void }>('searchPanel')
+const searchPanel = useTemplateRef<InstanceType<typeof FoodSearchPanel>>('searchPanel')
 
 /** Name of the food most recently one-tap logged, announced via role=status. */
 const lastLoggedName = ref('')
@@ -70,19 +74,24 @@ const brand = ref('')
 const saving = ref(false)
 const saveFailed = ref(false)
 
-type ScanState = 'idle' | 'scanning' | 'looking-up' | 'not-found' | 'failed'
 const scanSupported = isBarcodeScanSupported()
-const scanState = ref<ScanState>('idle')
 const { lookup } = useFoodLookup()
+
+/** Update the create-mode scan state; leaving create mode discards it. */
+function setScan(scan: ScanState) {
+  if (mode.value.kind !== 'create') return
+  mode.value = { kind: 'create', scan }
+}
+
+// Refreshed on each open (in the watch below) so the 90-day window tracks the
+// current day in a long-lived PWA session, without resubscribing on close or
+// on same-day reopens.
+const todayKey = ref(getLocalDateKey())
 
 // Suggestions rank over recent history across all days, not just the diary
 // day being edited.
 const { data: historyEntries } = useLiveQuery(() => {
-  // `open` is a reactive dependency on purpose: the dialog stays mounted for
-  // its exit animation, so without it the 90-day window would freeze at first
-  // mount and drift once a long-lived PWA session crosses midnight.
-  void open.value
-  const today = getLocalDateKey()
+  const today = todayKey.value
   return getNutritionRepository().observeRange(
     shiftLocalDateKey(today, -(SUGGESTION_HISTORY_DAYS - 1)),
     today,
@@ -117,35 +126,31 @@ watch(open, (isOpen) => {
   brand.value = ''
   saveFailed.value = false
   lastLoggedName.value = ''
-  scanState.value = 'idle'
+  todayKey.value = getLocalDateKey()
 })
 
 function backToSearch() {
   mode.value = { kind: 'search' }
   saveFailed.value = false
-  scanState.value = 'idle'
   void nextTick(() => searchPanel.value?.focusInput())
 }
 
-function focusBackButton() {
+/** Shared portion/create entry: mode swap, form resets, and the focus move. */
+function enterForm(next: DialogMode, formGrams: number) {
+  mode.value = next
+  meal.value = initialMeal
+  grams.value = formGrams
+  saveFailed.value = false
   void nextTick(() => backButton.value?.$el.focus())
 }
 
 function selectFood(food: DbFood) {
-  mode.value = { kind: 'portion', food }
-  meal.value = initialMeal
-  grams.value = quickAddGrams(food, history.value)
-  saveFailed.value = false
-  focusBackButton()
+  enterForm({ kind: 'portion', food }, quickAddGrams(food, history.value))
 }
 
 function startCreate(initialName: string) {
-  mode.value = { kind: 'create' }
   name.value = initialName
-  meal.value = initialMeal
-  grams.value = 100
-  saveFailed.value = false
-  focusBackButton()
+  enterForm({ kind: 'create', scan: 'idle' }, 100)
 }
 
 function roundNutrient(value: number): number {
@@ -165,21 +170,16 @@ function applyScannedFood(food: ScannedFood) {
 }
 
 async function handleBarcodeDetected(barcode: string) {
-  scanState.value = 'looking-up'
+  setScan('looking-up')
   const result = await lookup(barcode)
-  // The dialog was reset (closed/reopened) while the lookup was in flight.
-  if (scanState.value !== 'looking-up') return
-  // The user left the create form mid-lookup; discard the result.
-  if (mode.value.kind !== 'create') {
-    scanState.value = 'idle'
-    return
-  }
+  // The user left the create form (or the dialog was reset) mid-lookup.
+  if (mode.value.kind !== 'create' || mode.value.scan !== 'looking-up') return
   if (result.status !== 'found') {
-    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
+    setScan(result.status === 'not-found' ? 'not-found' : 'failed')
     return
   }
   applyScannedFood(result.food)
-  scanState.value = 'idle'
+  setScan('idle')
 }
 
 function diaryEntryFor(
@@ -322,10 +322,10 @@ async function save() {
         </Button>
 
         <div
-          v-if="scanState === 'scanning'"
+          v-if="mode.kind === 'create' && mode.scan === 'scanning'"
           class="min-h-0 overflow-y-auto overscroll-contain scroll-py-2"
         >
-          <FoodBarcodeScanner @detected="handleBarcodeDetected" @cancel="scanState = 'idle'" />
+          <FoodBarcodeScanner @detected="handleBarcodeDetected" @cancel="setScan('idle')" />
         </div>
         <div v-else class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
           <p v-if="mode.kind === 'portion'" class="px-1 font-medium">
@@ -340,20 +340,20 @@ async function save() {
               type="button"
               variant="outline"
               class="w-full"
-              :disabled="scanState === 'looking-up'"
-              @click="scanState = 'scanning'"
+              :disabled="mode.scan === 'looking-up'"
+              @click="setScan('scanning')"
             >
               <ScanBarcode />
               {{
-                scanState === 'looking-up'
+                mode.scan === 'looking-up'
                   ? t('nutrition.food.scanLookingUp')
                   : t('nutrition.food.scan')
               }}
             </Button>
-            <p v-if="scanState === 'not-found'" role="alert" class="text-sm text-destructive">
+            <p v-if="mode.scan === 'not-found'" role="alert" class="text-sm text-destructive">
               {{ t('nutrition.food.scanNotFound') }}
             </p>
-            <p v-if="scanState === 'failed'" role="alert" class="text-sm text-destructive">
+            <p v-if="mode.scan === 'failed'" role="alert" class="text-sm text-destructive">
               {{ t('nutrition.food.scanFailed') }}
             </p>
           </div>
@@ -455,7 +455,7 @@ async function save() {
           {{ t('nutrition.errors.saveFailed') }}
         </p>
         <Button
-          v-if="scanState !== 'scanning'"
+          v-if="mode.kind !== 'create' || mode.scan !== 'scanning'"
           type="submit"
           class="w-full"
           :disabled="!isValid || saving"

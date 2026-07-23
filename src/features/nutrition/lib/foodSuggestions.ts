@@ -83,14 +83,31 @@ export function latestFoods(
   return picked
 }
 
+/** Grams of each food's most recent diary entry, in one pass over `entries`. */
+export function latestGramsByFoodId(
+  entries: ReadonlyArray<DbNutritionDiaryEntry>,
+): ReadonlyMap<string, number> {
+  const latest = new Map<string, { loggedAt: number; grams: number }>()
+  for (const entry of entries) {
+    if (entry.foodId === null) continue
+    const current = latest.get(entry.foodId)
+    if (current === undefined || entry.loggedAt > current.loggedAt) {
+      latest.set(entry.foodId, { loggedAt: entry.loggedAt, grams: entry.grams })
+    }
+  }
+  return new Map([...latest].map(([foodId, { grams }]) => [foodId, grams]))
+}
+
 /**
  * Grams a one-tap quick add should log for `food`: defaultServingGrams, else
- * the grams of the most recent diary entry for this food, else 100.
+ * the grams of the food's most recent diary entry, else 100. Callers ranking
+ * many foods should build {@link latestGramsByFoodId} once and use this.
  */
+export function quickAddGramsFrom(food: DbFood, latestGrams: ReadonlyMap<string, number>): number {
+  return food.defaultServingGrams ?? latestGrams.get(food.id) ?? 100
+}
+
+/** Single-food convenience over {@link quickAddGramsFrom}. */
 export function quickAddGrams(food: DbFood, entries: ReadonlyArray<DbNutritionDiaryEntry>): number {
-  if (food.defaultServingGrams !== null) return food.defaultServingGrams
-  const latest = entries
-    .filter((entry) => entry.foodId === food.id)
-    .toSorted((a, b) => b.loggedAt - a.loggedAt)[0]
-  return latest?.grams ?? 100
+  return quickAddGramsFrom(food, latestGramsByFoodId(entries))
 }

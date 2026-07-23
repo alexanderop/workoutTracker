@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Plus, Trash2, Utensils } from '@lucide/vue'
-import { format } from 'date-fns'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { DbFoodNutrients, DbNutritionDiaryEntry, MealKind } from '@/db/schema'
-import { getCurrentLocale, getDateLocale } from '@/lib/dateLocale'
+import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
+import { useNutritionFormats } from '../composables/useNutritionFormats'
 import {
   groupEntriesByHour,
   isLoggedOnDiaryDay,
@@ -23,7 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const dateLocale = computed(() => getDateLocale(getCurrentLocale()))
+const { timeLabel, hourLabel, macroSummary } = useNutritionFormats()
 
 const groups = computed(() => groupEntriesByHour(entries))
 const groupsByHour = computed(() => new Map(groups.value.map((group) => [group.hour, group])))
@@ -31,24 +30,10 @@ const hourRows = computed(() =>
   timelineHours(groups.value).map((hour) => ({ hour, group: groupsByHour.value.get(hour) })),
 )
 
-function hourLabel(hour: number): string {
-  return format(new Date(2000, 0, 1, hour), 'p', { locale: dateLocale.value })
-}
-
 function entryTimeLabel(entry: DbNutritionDiaryEntry): string {
   return isLoggedOnDiaryDay(entry)
-    ? format(new Date(entry.loggedAt), 'p', { locale: dateLocale.value })
+    ? timeLabel(new Date(entry.loggedAt))
     : t(`nutrition.meals.${entry.meal}`)
-}
-
-function macroSummary(nutrients: DbFoodNutrients): string {
-  const round = Math.round
-  return [
-    `${round(nutrients.calories)} ${t('nutrition.caloriesUnit')}`,
-    `${round(nutrients.proteinGrams)}${t('nutrition.foodLog.proteinShort')}`,
-    `${round(nutrients.fatGrams)}${t('nutrition.foodLog.fatShort')}`,
-    `${round(nutrients.carbohydrateGrams)}${t('nutrition.foodLog.carbsShort')}`,
-  ].join(' · ')
 }
 
 function entrySummary(entry: DbNutritionDiaryEntry): string {

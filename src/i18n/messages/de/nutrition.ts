@@ -61,7 +61,6 @@ export default {
   food: {
     title: 'Essen eintragen',
     description: 'Speichere ein Lebensmittel einmal und verwende es lokal wieder.',
-    choose: 'Letztes Lebensmittel',
     createNew: 'Neues Lebensmittel erstellen',
     searchPlaceholder: 'Lebensmittel suchen',
     noResults: 'Keine Treffer für deine Suche.',

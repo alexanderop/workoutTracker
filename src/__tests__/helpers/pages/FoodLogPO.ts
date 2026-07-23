@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser'
 import { expect } from 'vitest'
 import type { CommonPO } from './CommonPO'
+import { logNewFood, type NewFoodInput } from './foodDialog'
 
 export class FoodLogPO {
   constructor(private common: CommonPO) {}
@@ -18,23 +19,8 @@ export class FoodLogPO {
     await this.common.waitForDialog()
   }
 
-  async logNewFood(input: {
-    name: string
-    grams: string
-    calories: string
-    protein: string
-    carbs: string
-    fat: string
-  }): Promise<void> {
-    await page.getByRole('button', { name: 'Create a new food' }).click()
-    await page.getByLabelText('Food name').fill(input.name)
-    await page.getByLabelText('Serving (g)').fill(input.grams)
-    await page.getByLabelText('Calories').fill(input.calories)
-    await page.getByLabelText('Protein (g)').fill(input.protein)
-    await page.getByLabelText('Carbs (g)').fill(input.carbs)
-    await page.getByLabelText('Fat (g)').fill(input.fat)
-    await page.getByRole('button', { name: 'Add to diary' }).click()
-    await this.common.waitForDialogClose()
+  async logNewFood(input: NewFoodInput): Promise<void> {
+    await logNewFood(this.common, input)
   }
 
   async expectEntry(name: string): Promise<void> {

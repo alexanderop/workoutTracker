@@ -3,6 +3,7 @@ import { Plus, Star } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DbFood } from '@/db/schema'
+import { useNutritionFormats } from '../composables/useNutritionFormats'
 import { scaleNutrients } from '../lib/nutritionCalculations'
 
 const { food, grams } = defineProps<{
@@ -18,17 +19,9 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { macroSummary } = useNutritionFormats()
 
-const macroLine = computed(() => {
-  const serving = scaleNutrients(food.nutrientsPer100Grams, grams)
-  const round = Math.round
-  return [
-    `${round(serving.calories)} ${t('nutrition.caloriesUnit')}`,
-    `${round(serving.proteinGrams)}${t('nutrition.foodLog.proteinShort')}`,
-    `${round(serving.fatGrams)}${t('nutrition.foodLog.fatShort')}`,
-    `${round(serving.carbohydrateGrams)}${t('nutrition.foodLog.carbsShort')}`,
-  ].join(' · ')
-})
+const macroLine = computed(() => macroSummary(scaleNutrients(food.nutrientsPer100Grams, grams)))
 
 const servingLabel = computed(() =>
   food.defaultServingName !== null && food.defaultServingGrams === grams

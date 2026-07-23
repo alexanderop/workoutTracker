@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { Search } from '@lucide/vue'
-import { format } from 'date-fns'
 import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { DbFood, DbNutritionDiaryEntry } from '@/db/schema'
-import { getCurrentLocale, getDateLocale } from '@/lib/dateLocale'
-import { filterFoods, latestFoods, quickAddGrams, timePickFoods } from '../lib/foodSuggestions'
+import { useNutritionFormats } from '../composables/useNutritionFormats'
+import {
+  filterFoods,
+  latestFoods,
+  latestGramsByFoodId,
+  quickAddGramsFrom,
+  timePickFoods,
+} from '../lib/foodSuggestions'
 import FoodSearchRow from './FoodSearchRow.vue'
 
 const { foods, history } = defineProps<{
@@ -25,6 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { hourLabel } = useNutritionFormats()
 
 const query = ref('')
 const trimmedQuery = computed(() => query.value.trim())
@@ -35,37 +41,41 @@ const searching = computed(() => trimmedQuery.value.length > 0)
 // clock as closely as the surface's lifetime allows.
 const openedAt = new Date()
 
-const results = computed(() => filterFoods(foods, trimmedQuery.value))
 const favorites = computed(() => foods.filter((food) => food.favorite))
 const picks = computed(() => timePickFoods(foods, history, openedAt))
 const latest = computed(() => latestFoods(foods, history))
 
-const picksTime = computed(() => {
-  const locale = getDateLocale(getCurrentLocale())
-  return format(new Date(2000, 0, 1, openedAt.getHours()), 'p', { locale })
-})
+type FoodSection = {
+  key: string
+  /** Section heading; null for search results, which render without one. */
+  title: string | null
+  foods: ReadonlyArray<DbFood>
+}
 
-const sections = computed(() => {
-  const definitions = [
+// Search results are one more section (headingless), so the row-list markup
+// exists exactly once in the template.
+const sections = computed<ReadonlyArray<FoodSection>>(() => {
+  if (searching.value) {
+    const results = filterFoods(foods, query.value)
+    return results.length > 0 ? [{ key: 'results', title: null, foods: results }] : []
+  }
+  return [
     { key: 'favorites', title: t('nutrition.food.favorites'), foods: favorites.value },
     {
       key: 'picks',
-      title: t('nutrition.food.picksTitle', { time: picksTime.value }),
+      title: t('nutrition.food.picksTitle', { time: hourLabel(openedAt.getHours()) }),
       foods: picks.value,
     },
     { key: 'latest', title: t('nutrition.food.latest'), foods: latest.value },
-  ]
-  return definitions.filter((section) => section.foods.length > 0)
+  ].filter((section) => section.foods.length > 0)
 })
 
-// One pass per foods/history change instead of per row per keystroke: rows
-// look their quick-add serving up in O(1) while typing filters the list.
-const quickGramsByFoodId = computed(
-  () => new Map(foods.map((food) => [food.id, quickAddGrams(food, history)])),
-)
+// One pass per history change instead of per row per keystroke: rows look
+// their quick-add serving up in O(1) while typing filters the list.
+const latestGrams = computed(() => latestGramsByFoodId(history))
 
 function gramsFor(food: DbFood): number {
-  return quickGramsByFoodId.value.get(food.id) ?? 100
+  return quickAddGramsFrom(food, latestGrams.value)
 }
 
 const searchInput = useTemplateRef<{ $el: HTMLInputElement }>('searchInput')
@@ -97,10 +107,26 @@ defineExpose({ focusInput })
     </div>
 
     <div class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
-      <template v-if="searching">
-        <ul v-if="results.length > 0" class="space-y-1" role="list">
+      <section
+        v-for="section in sections"
+        :key="section.key"
+        class="space-y-1"
+        :data-testid="`food-section-${section.key}`"
+      >
+        <h3
+          v-if="section.title"
+          :id="`food-section-heading-${section.key}`"
+          class="px-2 text-sm font-semibold"
+        >
+          {{ section.title }}
+        </h3>
+        <ul
+          class="space-y-1"
+          role="list"
+          :aria-labelledby="section.title ? `food-section-heading-${section.key}` : undefined"
+        >
           <FoodSearchRow
-            v-for="food in results"
+            v-for="food in section.foods"
             :key="food.id"
             :food="food"
             :grams="gramsFor(food)"
@@ -109,43 +135,16 @@ defineExpose({ focusInput })
             @toggle-favorite="emit('toggle-favorite', $event)"
           />
         </ul>
-        <div v-else class="space-y-3 py-4 text-center">
-          <p role="status" class="text-sm text-muted-foreground">
-            {{ t('nutrition.food.noResults') }}
-          </p>
-          <Button type="button" variant="outline" @click="emit('create', trimmedQuery)">
-            {{ t('nutrition.food.createNamed', { query: trimmedQuery }) }}
-          </Button>
-        </div>
-      </template>
+      </section>
 
-      <template v-else>
-        <section
-          v-for="section in sections"
-          :key="section.key"
-          class="space-y-1"
-          :data-testid="`food-section-${section.key}`"
-        >
-          <h3 :id="`food-section-heading-${section.key}`" class="px-2 text-sm font-semibold">
-            {{ section.title }}
-          </h3>
-          <ul
-            class="space-y-1"
-            role="list"
-            :aria-labelledby="`food-section-heading-${section.key}`"
-          >
-            <FoodSearchRow
-              v-for="food in section.foods"
-              :key="food.id"
-              :food="food"
-              :grams="gramsFor(food)"
-              @select="emit('select', $event)"
-              @quick-add="emit('quick-add', $event)"
-              @toggle-favorite="emit('toggle-favorite', $event)"
-            />
-          </ul>
-        </section>
-      </template>
+      <div v-if="searching && sections.length === 0" class="space-y-3 py-4 text-center">
+        <p role="status" class="text-sm text-muted-foreground">
+          {{ t('nutrition.food.noResults') }}
+        </p>
+        <Button type="button" variant="outline" @click="emit('create', trimmedQuery)">
+          {{ t('nutrition.food.createNamed', { query: trimmedQuery }) }}
+        </Button>
+      </div>
     </div>
 
     <Button

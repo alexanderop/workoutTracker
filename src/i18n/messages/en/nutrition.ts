@@ -61,7 +61,6 @@ export default {
   food: {
     title: 'Log food',
     description: 'Save a food once, then reuse it from your local library.',
-    choose: 'Recent food',
     createNew: 'Create a new food',
     searchPlaceholder: 'Search for a food',
     noResults: 'No foods match your search.',
