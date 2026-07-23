@@ -1,4 +1,14 @@
 import { computed } from 'vue'
+import {
+  activateWorkoutSet,
+  addSetToBlock,
+  duplicateSetInBlock,
+  removeSetFromBlock,
+  setBlockSetCount,
+  updateBlockAtIndex as updateWorkoutBlockAtIndex,
+  updateSetInBlock as updateWorkoutSetInBlock,
+  updateWorkout as applyWorkoutUpdate,
+} from '../lib/workoutMutations'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import {
@@ -69,7 +79,7 @@ export function isSetReadyForDuration(set: Readonly<Set>): boolean {
  * Immutably update the workout object properties.
  */
 function updateWorkout(updates: Partial<Workout>): void {
-  workout.value = { ...workout.value, ...updates }
+  workout.value = applyWorkoutUpdate(workout.value, updates)
 }
 
 /**
@@ -87,26 +97,14 @@ function updateBlockAtIndex(
   blockIndex: number,
   updater: (block: WorkoutBlock) => WorkoutBlock,
 ): void {
-  const block = workout.value.blocks[blockIndex]
-  if (!block) return
-  const updatedBlock = updater(block)
-  workout.value = {
-    ...workout.value,
-    blocks: workout.value.blocks.map((b, index) => (index === blockIndex ? updatedBlock : b)),
-  }
+  workout.value = updateWorkoutBlockAtIndex(workout.value, blockIndex, updater)
 }
 
 /**
  * Immutably update a set within a strength block.
  */
 function updateSetInBlock(blockIndex: number, setId: number, updater: (set: Set) => Set): void {
-  updateBlockAtIndex(blockIndex, (block) => {
-    if (!isStrengthBlock(block)) return block
-    return {
-      ...block,
-      sets: block.sets.map((s) => (s.id === setId ? updater(s) : s)),
-    }
-  })
+  workout.value = updateWorkoutSetInBlock(workout.value, blockIndex, setId, updater)
 }
 
 /**
@@ -422,107 +420,23 @@ export function useWorkout() {
   }
 
   function addSet(blockIndex: number) {
-    const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block)) return
-
-    updateBlockAtIndex(blockIndex, (b) => {
-      if (!isStrengthBlock(b)) return b
-      const setIds = b.sets.map((s) => s.id)
-      const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
-      return {
-        ...b,
-        sets: [
-          ...b.sets,
-          { id: newId, kg: '', reps: '', duration: '', rir: '', status: 'planned' as const },
-        ],
-      }
-    })
+    workout.value = addSetToBlock(workout.value, blockIndex)
   }
 
   function removeSet(blockIndex: number, setId: number) {
-    const block = workout.value.blocks[blockIndex]
-    const isCannotRemoveSet = !block || !isStrengthBlock(block) || block.sets.length <= 1
-    if (isCannotRemoveSet) return
-
-    updateBlockAtIndex(blockIndex, (b) => {
-      if (!isStrengthBlock(b)) return b
-      return { ...b, sets: b.sets.filter((s) => s.id !== setId) }
-    })
+    workout.value = removeSetFromBlock(workout.value, blockIndex, setId)
   }
 
   function duplicateSet(blockIndex: number, setId: number) {
-    const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block)) return
-
-    const setIndex = block.sets.findIndex((s) => s.id === setId)
-    const originalSet = block.sets[setIndex]
-    if (setIndex === -1 || !originalSet) return
-
-    // Adjust activeSetIndex if needed - only when duplicating in the currently selected block
-    const activeSetIndex = workout.value.activeSetIndex
-    const isSelectedBlock = blockIndex === workout.value.selectedBlockIndex
-    const shouldShiftActiveIndex =
-      isSelectedBlock && activeSetIndex !== null && activeSetIndex > setIndex
-    if (shouldShiftActiveIndex) {
-      updateWorkout({ activeSetIndex: activeSetIndex + 1 })
-    }
-
-    updateBlockAtIndex(blockIndex, (b) => {
-      if (!isStrengthBlock(b)) return b
-      const setIds = b.sets.map((s) => s.id)
-      const newId = setIds.length > 0 ? Math.max(...setIds) + 1 : 1
-      const newSet: Set = {
-        id: newId,
-        kg: originalSet.kg,
-        reps: originalSet.reps,
-        duration: originalSet.duration,
-        rir: originalSet.rir,
-        status: 'planned' as const,
-      }
-      // Insert after the original set
-      const newSets = [...b.sets]
-      newSets.splice(setIndex + 1, 0, newSet)
-      return { ...b, sets: newSets }
-    })
+    workout.value = duplicateSetInBlock(workout.value, blockIndex, setId)
   }
 
   function activateSet(blockIndex: number, setIndex: number) {
-    const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block)) return
-
-    const set = block.sets[setIndex]
-    // Reject only completed sets - a set can be (re)activated whether it's
-    // still 'planned' or already 'active' (e.g. re-entering active mode
-    // after resuming a workout whose current set was activated in a prior
-    // session). Rejecting 'active' too would make activation a one-shot
-    // no-op the moment a set stops being freshly 'planned', which is exactly
-    // what left `activeSetIndex` stuck at null after resume.
-    if (!set || set.status === 'completed') return
-
-    updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'active' }))
-    updateWorkout({ activeSetIndex: setIndex })
+    workout.value = activateWorkoutSet(workout.value, blockIndex, setIndex)
   }
 
   function setSetCount(blockIndex: number, count: number) {
-    const block = workout.value.blocks[blockIndex]
-    if (!block || !isStrengthBlock(block)) return
-
-    const targetCount = Math.max(1, count)
-    const currentCount = block.sets.length
-
-    if (targetCount > currentCount) {
-      for (let index = 0; index < targetCount - currentCount; index++) {
-        addSet(blockIndex)
-      }
-      return
-    }
-
-    if (targetCount < currentCount) {
-      updateBlockAtIndex(blockIndex, (b) => {
-        if (!isStrengthBlock(b)) return b
-        return { ...b, sets: b.sets.slice(0, targetCount) }
-      })
-    }
+    workout.value = setBlockSetCount(workout.value, blockIndex, count)
   }
 
   function updateSetValue(
