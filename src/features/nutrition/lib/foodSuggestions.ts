@@ -60,7 +60,7 @@ export function timePickFoods(
   return [...stats]
     .toSorted(([, a], [, b]) => b.count - a.count || b.latestLoggedAt - a.latestLoggedAt)
     .slice(0, limit)
-    .map(([foodId]) => foodsById.get(foodId)!)
+    .flatMap(([foodId]) => foodsById.get(foodId) ?? [])
 }
 
 /** Most recently logged distinct foods, newest first, at most `limit`. Entries with null/unknown foodId are skipped. */

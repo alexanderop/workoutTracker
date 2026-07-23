@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ArrowLeft, ScanBarcode } from '@lucide/vue'
-import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  ref,
+  shallowRef,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
@@ -42,6 +50,15 @@ type DialogMode = { kind: 'search' } | { kind: 'portion'; food: DbFood } | { kin
 // proxies when the food snapshot is persisted.
 const mode = shallowRef<DialogMode>({ kind: 'search' })
 
+// Mode switches replace the focused control's subtree, so focus is moved
+// explicitly: onto the back button entering a form, back onto the search
+// input when returning.
+const backButton = useTemplateRef<{ $el: HTMLElement }>('backButton')
+const searchPanel = useTemplateRef<{ focusInput: () => void }>('searchPanel')
+
+/** Name of the food most recently one-tap logged, announced via role=status. */
+const lastLoggedName = ref('')
+
 const name = ref('')
 const meal = ref<MealKind>(initialMeal)
 const grams = ref<number | string>(100)
@@ -61,6 +78,10 @@ const { lookup } = useFoodLookup()
 // Suggestions rank over recent history across all days, not just the diary
 // day being edited.
 const { data: historyEntries } = useLiveQuery(() => {
+  // `open` is a reactive dependency on purpose: the dialog stays mounted for
+  // its exit animation, so without it the 90-day window would freeze at first
+  // mount and drift once a long-lived PWA session crosses midnight.
+  void open.value
   const today = getLocalDateKey()
   return getNutritionRepository().observeRange(
     shiftLocalDateKey(today, -(SUGGESTION_HISTORY_DAYS - 1)),
@@ -70,7 +91,9 @@ const { data: historyEntries } = useLiveQuery(() => {
 const history = computed(() => historyEntries.value ?? [])
 
 const isValid = computed(() => {
-  if (Number(grams.value) <= 0) return false
+  // Explicit NaN check: `<= 0` alone would let NaN grams through to Dexie.
+  const gramsNumber = Number(grams.value)
+  if (Number.isNaN(gramsNumber) || gramsNumber <= 0) return false
   if (mode.value.kind === 'portion') return true
   return (
     name.value.trim().length > 0 &&
@@ -93,6 +116,7 @@ watch(open, (isOpen) => {
   fat.value = ''
   brand.value = ''
   saveFailed.value = false
+  lastLoggedName.value = ''
   scanState.value = 'idle'
 })
 
@@ -100,6 +124,11 @@ function backToSearch() {
   mode.value = { kind: 'search' }
   saveFailed.value = false
   scanState.value = 'idle'
+  void nextTick(() => searchPanel.value?.focusInput())
+}
+
+function focusBackButton() {
+  void nextTick(() => backButton.value?.$el.focus())
 }
 
 function selectFood(food: DbFood) {
@@ -107,6 +136,7 @@ function selectFood(food: DbFood) {
   meal.value = initialMeal
   grams.value = quickAddGrams(food, history.value)
   saveFailed.value = false
+  focusBackButton()
 }
 
 function startCreate(initialName: string) {
@@ -115,6 +145,7 @@ function startCreate(initialName: string) {
   meal.value = initialMeal
   grams.value = 100
   saveFailed.value = false
+  focusBackButton()
 }
 
 function roundNutrient(value: number): number {
@@ -177,14 +208,22 @@ async function quickAdd(food: DbFood) {
   if (saving.value) return
   saving.value = true
   saveFailed.value = false
+  lastLoggedName.value = ''
   const entry = diaryEntryFor(food, quickAddGrams(food, history.value), initialMeal, Date.now())
   const [error] = await tryCatch(getNutritionRepository().addDiaryEntry(entry))
   saving.value = false
-  if (error) saveFailed.value = true
-  // Stays open on success so more foods can be logged in one visit.
+  if (error) {
+    saveFailed.value = true
+    return
+  }
+  // Stays open on success so more foods can be logged in one visit; the
+  // status line is the only confirmation a screen-reader user gets.
+  lastLoggedName.value = food.name
 }
 
 async function toggleFavorite(food: DbFood) {
+  if (saving.value) return
+  saving.value = true
   saveFailed.value = false
   const [error] = await tryCatch(
     getNutritionRepository().updateFood(food.id, {
@@ -192,6 +231,7 @@ async function toggleFavorite(food: DbFood) {
       updatedAt: Date.now(),
     }),
   )
+  saving.value = false
   if (error) saveFailed.value = true
 }
 
@@ -252,6 +292,7 @@ async function save() {
 
       <template v-if="mode.kind === 'search'">
         <FoodSearchPanel
+          ref="searchPanel"
           :foods="foods"
           :history="history"
           @select="selectFood"
@@ -259,13 +300,23 @@ async function save() {
           @toggle-favorite="toggleFavorite"
           @create="startCreate"
         />
+        <p v-if="lastLoggedName" role="status" class="text-sm text-muted-foreground">
+          {{ t('nutrition.food.logged', { name: lastLoggedName }) }}
+        </p>
         <p v-if="saveFailed" role="alert" class="text-sm text-destructive">
           {{ t('nutrition.errors.saveFailed') }}
         </p>
       </template>
 
       <form v-else class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
-        <Button type="button" variant="ghost" size="sm" class="w-fit -ml-2" @click="backToSearch">
+        <Button
+          ref="backButton"
+          type="button"
+          variant="ghost"
+          size="sm"
+          class="w-fit -ml-2"
+          @click="backToSearch"
+        >
           <ArrowLeft class="size-4" aria-hidden="true" />
           {{ t('nutrition.food.backToSearch') }}
         </Button>

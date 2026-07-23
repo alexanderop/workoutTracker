@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Search } from '@lucide/vue'
 import { format } from 'date-fns'
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,14 +30,19 @@ const query = ref('')
 const trimmedQuery = computed(() => query.value.trim())
 const searching = computed(() => trimmedQuery.value.length > 0)
 
+// Captured once per mount — the dialog remounts this panel on every open, so
+// the picks ranking and its "{time} Picks" title always agree and track the
+// clock as closely as the surface's lifetime allows.
+const openedAt = new Date()
+
 const results = computed(() => filterFoods(foods, trimmedQuery.value))
 const favorites = computed(() => foods.filter((food) => food.favorite))
-const picks = computed(() => timePickFoods(foods, history, new Date()))
+const picks = computed(() => timePickFoods(foods, history, openedAt))
 const latest = computed(() => latestFoods(foods, history))
 
 const picksTime = computed(() => {
   const locale = getDateLocale(getCurrentLocale())
-  return format(new Date(2000, 0, 1, new Date().getHours()), 'p', { locale })
+  return format(new Date(2000, 0, 1, openedAt.getHours()), 'p', { locale })
 })
 
 const sections = computed(() => {
@@ -53,9 +58,23 @@ const sections = computed(() => {
   return definitions.filter((section) => section.foods.length > 0)
 })
 
+// One pass per foods/history change instead of per row per keystroke: rows
+// look their quick-add serving up in O(1) while typing filters the list.
+const quickGramsByFoodId = computed(
+  () => new Map(foods.map((food) => [food.id, quickAddGrams(food, history)])),
+)
+
 function gramsFor(food: DbFood): number {
-  return quickAddGrams(food, history)
+  return quickGramsByFoodId.value.get(food.id) ?? 100
 }
+
+const searchInput = useTemplateRef<{ $el: HTMLInputElement }>('searchInput')
+
+function focusInput(): void {
+  searchInput.value?.$el.focus()
+}
+
+defineExpose({ focusInput })
 </script>
 
 <template>
@@ -66,6 +85,7 @@ function gramsFor(food: DbFood): number {
         aria-hidden="true"
       />
       <Input
+        ref="searchInput"
         v-model="query"
         type="search"
         class="pl-9"
@@ -90,7 +110,9 @@ function gramsFor(food: DbFood): number {
           />
         </ul>
         <div v-else class="space-y-3 py-4 text-center">
-          <p class="text-sm text-muted-foreground">{{ t('nutrition.food.noResults') }}</p>
+          <p role="status" class="text-sm text-muted-foreground">
+            {{ t('nutrition.food.noResults') }}
+          </p>
           <Button type="button" variant="outline" @click="emit('create', trimmedQuery)">
             {{ t('nutrition.food.createNamed', { query: trimmedQuery }) }}
           </Button>
@@ -104,8 +126,14 @@ function gramsFor(food: DbFood): number {
           class="space-y-1"
           :data-testid="`food-section-${section.key}`"
         >
-          <h3 class="px-2 text-sm font-semibold">{{ section.title }}</h3>
-          <ul class="space-y-1" role="list">
+          <h3 :id="`food-section-heading-${section.key}`" class="px-2 text-sm font-semibold">
+            {{ section.title }}
+          </h3>
+          <ul
+            class="space-y-1"
+            role="list"
+            :aria-labelledby="`food-section-heading-${section.key}`"
+          >
             <FoodSearchRow
               v-for="food in section.foods"
               :key="food.id"

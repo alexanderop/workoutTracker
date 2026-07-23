@@ -54,12 +54,8 @@ const servingLabel = computed(() =>
     </button>
     <button
       type="button"
-      class="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      :aria-label="
-        t(food.favorite ? 'nutrition.food.favoriteOff' : 'nutrition.food.favoriteOn', {
-          name: food.name,
-        })
-      "
+      class="flex size-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      :aria-label="t('nutrition.food.favorite', { name: food.name })"
       :aria-pressed="food.favorite"
       @click="emit('toggle-favorite', food)"
     >
@@ -71,7 +67,7 @@ const servingLabel = computed(() =>
     </button>
     <button
       type="button"
-      class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       :aria-label="t('nutrition.food.quickAdd', { name: food.name })"
       @click="emit('quick-add', food)"
     >

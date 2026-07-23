@@ -82,11 +82,15 @@ describe('Food search and quick add', () => {
     await expect.element(latest.getByText('Feta', { exact: true })).toBeVisible()
     await expect.element(page.getByTestId('food-section-favorites')).not.toBeInTheDocument()
 
+    // The star keeps a constant accessible name; aria-pressed carries state.
     await latest.getByRole('button', { name: 'Favorite Feta' }).click()
     const favorites = page.getByTestId('food-section-favorites')
     await expect.element(favorites.getByText('Feta', { exact: true })).toBeVisible()
+    await expect
+      .element(favorites.getByRole('button', { name: 'Favorite Feta' }))
+      .toHaveAttribute('aria-pressed', 'true')
 
-    await favorites.getByRole('button', { name: 'Unfavorite Feta' }).click()
+    await favorites.getByRole('button', { name: 'Favorite Feta' }).click()
     await expect.element(page.getByTestId('food-section-favorites')).not.toBeInTheDocument()
   })
 
