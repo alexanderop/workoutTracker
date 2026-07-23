@@ -35,4 +35,40 @@ export class NutritionDashboardPO {
   async expectFood(name: string): Promise<void> {
     await expect.element(this.dashboard.getByText(name, { exact: true })).toBeVisible()
   }
+
+  async openGoals(): Promise<void> {
+    await this.dashboard.getByRole('button', { name: 'Edit goals' }).click()
+    await this.common.waitForDialog()
+  }
+
+  async switchGoalsMode(mode: 'Grams' | '%'): Promise<void> {
+    await page.getByRole('dialog').getByRole('button', { name: mode, exact: true }).click()
+  }
+
+  async setGoalMacroGrams(input: { protein: string; carbs: string; fat: string }): Promise<void> {
+    await page.getByLabelText('Protein (g)').fill(input.protein)
+    await page.getByLabelText('Carbs (g)').fill(input.carbs)
+    await page.getByLabelText('Fat (g)').fill(input.fat)
+  }
+
+  async setGoalPercents(input: {
+    calories: string
+    protein: string
+    carbs: string
+    fat: string
+  }): Promise<void> {
+    await page.getByLabelText('Calories').fill(input.calories)
+    await page.getByLabelText('Protein (%)').fill(input.protein)
+    await page.getByLabelText('Carbs (%)').fill(input.carbs)
+    await page.getByLabelText('Fat (%)').fill(input.fat)
+  }
+
+  async expectGoalCalories(value: number): Promise<void> {
+    await expect.element(page.getByLabelText('Calories')).toHaveValue(value)
+  }
+
+  async saveGoals(): Promise<void> {
+    await page.getByRole('button', { name: 'Save goals' }).click()
+    await this.common.waitForDialogClose()
+  }
 }
