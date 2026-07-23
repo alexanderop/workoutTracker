@@ -4,7 +4,7 @@ import type { StrengthBlock } from '@/types/blocks'
 import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
 import { updateSetInBlock, updateWorkout } from './workoutMutations'
 
-export type CompleteSetResult =
+type CompleteSetResult =
   | { kind: 'completed'; nextAction: 'next-set'; blockIndex: number; setId: number }
   | { kind: 'completed'; nextAction: 'next-block'; blockIndex: number }
   | { kind: 'completed'; nextAction: 'workout-complete' }

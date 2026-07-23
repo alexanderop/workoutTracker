@@ -7,7 +7,7 @@ import { seedPopularExercises } from '@/db/seedExercises'
 import { seedPopularTemplates } from '@/db/seedTemplates'
 import { useExercisesStore } from '@/stores/exercises'
 import { useSettingsStore } from '@/stores/settings'
-import { getWorkoutRef, restoreWorkout } from '@/features/workout/composables/useWorkout'
+import { getWorkoutRef, restoreWorkout } from '@/stores/workoutState'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
 import { tryCatch } from '@/lib/tryCatch'
 

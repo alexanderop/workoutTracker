@@ -1,4 +1,4 @@
-import type { Set } from '@/features/workout/composables/useWorkout'
+import type { Set } from '@/types/workout'
 import { faker } from '@faker-js/faker'
 
 const DEFAULTS: Readonly<Set> = {

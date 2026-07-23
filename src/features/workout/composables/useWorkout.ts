@@ -10,6 +10,7 @@ import {
   updateWorkout as applyWorkoutUpdate,
 } from '../lib/workoutMutations'
 import { completeWorkoutSet } from '../lib/workoutSetCompletion'
+import { isSetReady, isSetReadyForDuration } from '../lib/workoutSetValidation'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import {
@@ -45,30 +46,8 @@ import type {
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
 import type { Set, Workout } from '@/types/workout'
 
-// Re-export from shared locations for backward compatibility
-export type { Set, Workout } from '@/types/workout'
-export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
-export { findNextIncompleteSet } from '../lib/workoutSetCompletion'
-
 // Get reference to shared workout singleton
 const workout = getWorkoutRef()
-
-export function isSetReady(set: Readonly<Set>): boolean {
-  const kg = Number(set.kg)
-  const reps = Number(set.reps)
-  const rir = Number(set.rir)
-  // Allow 0 weight for bodyweight exercises, but require reps > 0
-  return set.kg !== '' && kg >= 0 && reps > 0 && rir >= 0 && set.rir !== ''
-}
-
-/**
- * Check if an isometric/duration-based set is ready to be marked complete.
- * Requires duration > 0 (weight and RIR are optional for isometric exercises).
- */
-export function isSetReadyForDuration(set: Readonly<Set>): boolean {
-  const duration = Number(set.duration)
-  return set.duration !== '' && duration > 0
-}
 
 /**
  * Immutably update the workout object properties.

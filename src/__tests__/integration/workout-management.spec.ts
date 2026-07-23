@@ -2,7 +2,7 @@ import { page, userEvent } from 'vitest/browser'
 import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { getActiveWorkoutRepository } from '@/db'
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { resetWorkout } from '@/stores/workoutState'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 
 describe('Workout Management', () => {
