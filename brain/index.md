@@ -1,24 +1,16 @@
-# Project brain
+# Brain
 
-Keep this directory deliberately small. The code, tests, Git history, and
-[`AGENTS.md`](../AGENTS.md) are authoritative for implementation details,
-commands, project structure, and current capabilities.
+## Decisions
+- [[decisions/002-per-kind-block-codecs]] — Status: accepted. Supersedes the unimplemented full plugin architecture.
 
-A brain note belongs here only when it records:
+## Lessons
+- [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.
+- [[lessons/testing-gotchas]] — Most test configuration and commands are authoritative in `package.json`,
 
-- why a durable architectural decision was made; or
-- a project-specific failure mode that is difficult to infer from the code.
+## Reference
+- [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---
 
-Do not store inventories, backlogs, completed plans, audits, tutorials, or
-implementation status here. Use the issue tracker for future work and Git
-history for past work. Delete a note once a test, type, lint rule, or code
-comment makes it redundant.
-
-## Read only when relevant
-
-- [Per-kind block codecs](./decisions/002-per-kind-block-codecs.md) — changing the
-  block architecture or codec responsibilities.
-- [Local-data gotchas](./lessons/local-data-gotchas.md) — changing persistence,
-  autosave, timers, dates, import/export, or destructive data operations.
-- [Testing gotchas](./lessons/testing-gotchas.md) — diagnosing browser-mode,
-  IndexedDB, singleton-state, or coverage failures.
+## Other
+- [[codebase]] — Durable as-is maps of the project structure, authored by `map-codebase`. One area per file in `code…
+- [[context]] — Project domain glossary. Grown by `grill` as terms are resolved. One term per definition; split lar…
+- [[principles]] — Project engineering and design principles. One topic per file in `principles/`, linked here as `[[p…

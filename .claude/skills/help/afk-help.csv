@@ -1,0 +1,20 @@
+skill,display-name,menu-code,description,phase,preceded-by,followed-by,required,output-location,outputs
+help,AFK Help,H,Orient the user in the AFK flow and recommend the next skill.,anytime,,,false,,
+ship,Ship,P,Run the AFK loop to evidence with planning when needed implementation cleanup QA and a final ship verdict.,0-4-flow,,qa,false,conversation,phase route plus ship/no-ship verdict
+write-good-goal,Write Good Goal,O,Turn a vague objective into a concrete /goal condition with verification and bounds.,0-goal,,grill,false,conversation,recommended /goal text
+prototype,Prototype,T,Build a throwaway logic TUI or UI variant route to answer design uncertainty before planning or implementation.,1-explore,write-good-goal,grill,false,working tree + brain/prototypes,throwaway prototype plus captured verdict
+grill,Grill,G,Interview and stress-test a non-trivial idea using repo context plus fetched docs or blogs when relevant.,1-plan,,implement,true,brain/plans,brain/plans/<slug>.md
+implement,Implement,I,Read the code, fix architecture and contracts, then delegate independent TDD slices and review every diff.,2-build,grill,simplify,true,working tree,code changes and passing local verification
+batch,Batch,B,Fan an independently-mergeable plan out into many parallel worktree workers that each implement simplify test and open a PR.,2-build,grill,simplify,false,branches/PRs,one PR per unit plus a status table
+simplify,Simplify,S,Run a focused cleanup pass over the implementation diff for reuse simplification efficiency and altitude issues.,3-cleanup,implement,qa,false,working tree,simplification fixes or a no-change report
+qa,QA,Q,Route by project shape: dogfood-style browser QA for frontends and contract-level service QA for backends.,4-verify,simplify,,false,qa,QA report plus screenshots or request-response evidence
+brain,Brain,M,Read or write the persistent brain/ memory vault of principles and codebase knowledge.,memory,,,false,brain/,brain notes and updated indexes
+map-codebase,Map Codebase,C,Map how an existing area of the codebase works as-is into a reusable commit-pinned brain note.,memory,,,false,brain/codebase,brain/codebase/<area>.md
+init-brain,Init Brain,N,Scaffold the brain/ vault and index in a project for first use.,memory,,,false,brain/,brain/ folder and index.md
+reflect,Reflect,R,Persist learnings from the session into the brain after a run.,memory,,,false,brain/,brain notes plus a reflect summary
+ruminate,Ruminate,U,Mine past Claude Code conversations for uncaptured brain-worthy knowledge.,memory,,,false,brain/,table of findings plus approved brain updates
+meditate,Meditate,D,Audit and prune the brain vault and distill cross-cutting principles.,memory,,,false,brain/,pruned notes plus new principles and a meditate summary
+plan,Plan,L,Break a medium-to-large task into phased principle-grounded plans in brain/plans/.,memory,,,false,brain/plans,brain/plans/<slug> overview and phase files
+review,Review,V,Principle-grounded review of code or plans with numbered findings and a verdict.,memory,,,false,conversation,numbered findings plus accept or revise verdict
+write-evals,Write Evals,E,Generate failing behavioral evals for a skill agent or feature and scaffold a Bun eval harness when the repo has none.,anytime,,,false,evals,eval spec cases plus a scaffolded runner when missing
+research,Research,W,Turn an open question into a structured external-grounding digest of prior art and landscape then pin durable sources into the brain.,1-plan,,grill,false,brain/sources or conversation,external-grounding digest plus optional brain/sources pointer

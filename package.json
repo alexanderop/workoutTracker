@@ -149,7 +149,7 @@
   ],
   "lint-staged": {
     "*.{ts,mts,tsx,vue}": [
-      "oxlint --fix --ignore-path .gitignore",
+      "oxlint --fix --ignore-path .gitignore --no-error-on-unmatched-pattern",
       "eslint --fix --cache",
       "prettier --write"
     ],
