@@ -9,6 +9,7 @@ import {
   updateSetInBlock as updateWorkoutSetInBlock,
   updateWorkout as applyWorkoutUpdate,
 } from '../lib/workoutMutations'
+import { completeWorkoutSet } from '../lib/workoutSetCompletion'
 import { getExerciseProgressRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 import {
@@ -24,7 +25,6 @@ import {
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
 } from '@/lib/workoutBlockList'
-import { findFirstIncompleteWorkoutBlockIndex } from '@/lib/workoutBlockStatus'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {
@@ -43,20 +43,15 @@ import type {
   WorkoutBlock,
 } from '@/types/blocks'
 import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
-import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
+import type { Set, Workout } from '@/types/workout'
 
 // Re-export from shared locations for backward compatibility
 export type { Set, Workout } from '@/types/workout'
 export { getWorkoutRef, resetWorkout, restoreWorkout } from '@/stores/workoutState'
+export { findNextIncompleteSet } from '../lib/workoutSetCompletion'
 
 // Get reference to shared workout singleton
 const workout = getWorkoutRef()
-
-type CompleteSetResult =
-  | { kind: 'completed'; nextAction: 'next-set'; blockIndex: number; setId: number }
-  | { kind: 'completed'; nextAction: 'next-block'; blockIndex: number }
-  | { kind: 'completed'; nextAction: 'workout-complete' }
-  | { kind: 'uncompleted' }
 
 export function isSetReady(set: Readonly<Set>): boolean {
   const kg = Number(set.kg)
@@ -105,16 +100,6 @@ function updateBlockAtIndex(
  */
 function updateSetInBlock(blockIndex: number, setId: number, updater: (set: Set) => Set): void {
   workout.value = updateWorkoutSetInBlock(workout.value, blockIndex, setId, updater)
-}
-
-/**
- * Find the first incomplete set in a strength block.
- * Exported so `useWorkoutMode` can locate the correct set to (re)activate
- * when entering/resuming active mode, instead of assuming index 0 is always
- * the right one (see `activateSet` for why that assumption is unsafe).
- */
-export function findNextIncompleteSet(block: StrengthBlock): Set | undefined {
-  return block.sets.find((s) => s.status === 'planned' || s.status === 'active')
 }
 
 /**
@@ -172,20 +157,6 @@ function getTypedResultUpdate(
   }
 }
 
-/**
- * Apply prefill values from source set to target set.
- * Uses "keep if exists, else use prefill" logic.
- * TypeScript's `satisfies` ensures all prefillable fields are handled.
- */
-function applyPrefillToSet(target: Readonly<Set>, source: Readonly<Set>): PrefillableSetFields {
-  return {
-    kg: target.kg || source.kg,
-    reps: target.reps || source.reps,
-    duration: target.duration || source.duration,
-    rir: target.rir || source.rir,
-  } satisfies PrefillableSetFields
-}
-
 export function useWorkout() {
   const selectedBlock = computed(() => {
     if (workout.value.selectedBlockIndex < 0) return
@@ -218,101 +189,13 @@ export function useWorkout() {
     }
   }
 
-  // Helper: Activate the next set in current block, pre-filling from completed set
-  function activateNextSetInBlock(
-    blockIndex: number,
-    block: StrengthBlock,
-    completedSet: Set,
-  ): CompleteSetResult | null {
-    const nextSet = findNextIncompleteSet(block)
-    if (!nextSet) return null
-
-    updateSetInBlock(blockIndex, nextSet.id, (s) => ({
-      ...s,
-      ...applyPrefillToSet(s, completedSet),
-      status: 'active',
-    }))
-
-    const nextSetIndex = block.sets.findIndex((s) => s.id === nextSet.id)
-    if (nextSetIndex !== -1) {
-      updateWorkout({ activeSetIndex: nextSetIndex })
-    }
-
-    return {
-      kind: 'completed',
-      nextAction: 'next-set',
-      blockIndex,
-      setId: nextSet.id,
-    }
-  }
-
-  // Helper: Advance to next block and activate its first set if strength
-  function advanceToNextBlock(nextBlockIndex: number): CompleteSetResult | null {
-    if (nextBlockIndex >= workout.value.blocks.length) return null
-
-    updateWorkout({ selectedBlockIndex: nextBlockIndex })
-    const nextBlock = workout.value.blocks[nextBlockIndex]
-
-    if (nextBlock && isStrengthBlock(nextBlock)) {
-      const firstSet = findNextIncompleteSet(nextBlock)
-      if (firstSet) {
-        updateSetInBlock(nextBlockIndex, firstSet.id, (s) => ({ ...s, status: 'active' }))
-        updateWorkout({ activeSetIndex: 0 })
-      }
-    }
-
-    return { kind: 'completed', nextAction: 'next-block', blockIndex: nextBlockIndex }
-  }
-
-  // Helper: Navigate to next workout item after completing a set
-  function navigateAfterSetComplete(
-    blockIndex: number,
-    block: StrengthBlock,
-    completedSet: Set,
-  ): CompleteSetResult {
-    // Try: next set in current block
-    const nextSetResult = activateNextSetInBlock(blockIndex, block, completedSet)
-    if (nextSetResult) return nextSetResult
-
-    // Try: next block
-    const nextBlockResult = advanceToNextBlock(blockIndex + 1)
-    if (nextBlockResult) return nextBlockResult
-
-    // Try: first incomplete block (user may have skipped earlier blocks)
-    const firstIncompleteIndex = findFirstIncompleteWorkoutBlockIndex(workout.value.blocks)
-    if (firstIncompleteIndex !== -1) {
-      const incompleteBlockResult = advanceToNextBlock(firstIncompleteIndex)
-      if (incompleteBlockResult) return incompleteBlockResult
-    }
-
-    return { kind: 'completed', nextAction: 'workout-complete' }
-  }
-
-  function completeSet(set: Set): CompleteSetResult {
-    const blockIndex = workout.value.selectedBlockIndex
-    const currentBlock = workout.value.blocks[blockIndex]
-
-    // Guard: Toggle completed set back to active
-    if (set.status === 'completed') {
-      updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'active' }))
-      return { kind: 'uncompleted' }
-    }
-
-    // Guard: Reject invalid sets (use appropriate check based on exercise metrics)
+  function completeSet(set: Set) {
+    const currentBlock = workout.value.blocks[workout.value.selectedBlockIndex]
     const isDurationBased = currentBlock ? shouldUseDurationValidation(currentBlock) : false
     const isReady = isDurationBased ? isSetReadyForDuration(set) : isSetReady(set)
-    if (!isReady) return { kind: 'uncompleted' }
-
-    // Mark as completed
-    updateSetInBlock(blockIndex, set.id, (s) => ({ ...s, status: 'completed' }))
-
-    // Get current block (re-fetch after update) and navigate
-    const updatedBlock = workout.value.blocks[blockIndex]
-    if (!updatedBlock || !isStrengthBlock(updatedBlock)) {
-      return { kind: 'completed', nextAction: 'workout-complete' }
-    }
-
-    return navigateAfterSetComplete(blockIndex, updatedBlock, set)
+    const transition = completeWorkoutSet(workout.value, set, isReady)
+    workout.value = transition.workout
+    return transition.result
   }
 
   async function addExercise(exerciseId: string, name: string) {
