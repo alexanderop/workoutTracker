@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ScanBarcode } from '@lucide/vue'
-import { computed, defineAsyncComponent, ref, watch } from 'vue'
+import { ArrowLeft, ScanBarcode } from '@lucide/vue'
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
@@ -8,17 +8,24 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
+import { useLiveQuery } from '@/composables/useLiveQuery'
 import { generateId, getNutritionRepository } from '@/db'
 import type { DbFood, DbFoodNutrients, DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { useFoodLookup } from '../composables/useFoodLookup'
 import { isBarcodeScanSupported } from '../lib/barcodeDetector'
 import type { ScannedFood } from '../lib/foodData'
-import { nutrientsPer100Grams, scaleNutrients } from '../lib/nutritionCalculations'
+import { shiftLocalDateKey } from '../lib/foodLogTimeline'
+import { quickAddGrams } from '../lib/foodSuggestions'
+import { getLocalDateKey, nutrientsPer100Grams, scaleNutrients } from '../lib/nutritionCalculations'
+import FoodSearchPanel from './FoodSearchPanel.vue'
 
 // Loaded on first scan so the camera/torch machinery stays off the startup
 // path — the app has a Lighthouse performance budget on first paint.
 const FoodBarcodeScanner = defineAsyncComponent(() => import('./FoodBarcodeScanner.vue'))
+
+/** Days of diary history the picks/recents suggestions are ranked over. */
+const SUGGESTION_HISTORY_DAYS = 90
 
 const { foods, localDate, initialMeal } = defineProps<{
   foods: ReadonlyArray<DbFood>
@@ -28,7 +35,13 @@ const { foods, localDate, initialMeal } = defineProps<{
 const open = defineModel<boolean>('open', { required: true })
 const { t } = useI18n()
 
-const selectedFoodId = ref('')
+type DialogMode = { kind: 'search' } | { kind: 'portion'; food: DbFood } | { kind: 'create' }
+
+// Shallow on purpose: the mode object is replaced wholesale, and a deep ref
+// would proxy the carried DbFood — IndexedDB's structured clone rejects
+// proxies when the food snapshot is persisted.
+const mode = shallowRef<DialogMode>({ kind: 'search' })
+
 const name = ref('')
 const meal = ref<MealKind>(initialMeal)
 const grams = ref<number | string>(100)
@@ -45,11 +58,20 @@ const scanSupported = isBarcodeScanSupported()
 const scanState = ref<ScanState>('idle')
 const { lookup } = useFoodLookup()
 
-const selectedFood = computed(() => foods.find((food) => food.id === selectedFoodId.value))
-const isNewFood = computed(() => selectedFood.value === undefined)
+// Suggestions rank over recent history across all days, not just the diary
+// day being edited.
+const { data: historyEntries } = useLiveQuery(() => {
+  const today = getLocalDateKey()
+  return getNutritionRepository().observeRange(
+    shiftLocalDateKey(today, -(SUGGESTION_HISTORY_DAYS - 1)),
+    today,
+  )
+})
+const history = computed(() => historyEntries.value ?? [])
+
 const isValid = computed(() => {
   if (Number(grams.value) <= 0) return false
-  if (selectedFood.value) return true
+  if (mode.value.kind === 'portion') return true
   return (
     name.value.trim().length > 0 &&
     Number(calories.value) >= 0 &&
@@ -61,7 +83,7 @@ const isValid = computed(() => {
 
 watch(open, (isOpen) => {
   if (!isOpen) return
-  selectedFoodId.value = ''
+  mode.value = { kind: 'search' }
   name.value = ''
   meal.value = initialMeal
   grams.value = 100
@@ -74,10 +96,26 @@ watch(open, (isOpen) => {
   scanState.value = 'idle'
 })
 
-watch(selectedFood, (food) => {
-  if (!food) return
-  grams.value = food.defaultServingGrams ?? 100
-})
+function backToSearch() {
+  mode.value = { kind: 'search' }
+  saveFailed.value = false
+  scanState.value = 'idle'
+}
+
+function selectFood(food: DbFood) {
+  mode.value = { kind: 'portion', food }
+  meal.value = initialMeal
+  grams.value = quickAddGrams(food, history.value)
+  saveFailed.value = false
+}
+
+function startCreate(initialName: string) {
+  mode.value = { kind: 'create' }
+  name.value = initialName
+  meal.value = initialMeal
+  grams.value = 100
+  saveFailed.value = false
+}
 
 function roundNutrient(value: number): number {
   return Math.round(value * 10) / 10
@@ -100,8 +138,8 @@ async function handleBarcodeDetected(barcode: string) {
   const result = await lookup(barcode)
   // The dialog was reset (closed/reopened) while the lookup was in flight.
   if (scanState.value !== 'looking-up') return
-  // The user switched to an existing food mid-lookup; discard the result.
-  if (!isNewFood.value) {
+  // The user left the create form mid-lookup; discard the result.
+  if (mode.value.kind !== 'create') {
     scanState.value = 'idle'
     return
   }
@@ -113,6 +151,50 @@ async function handleBarcodeDetected(barcode: string) {
   scanState.value = 'idle'
 }
 
+function diaryEntryFor(
+  food: DbFood,
+  entryGrams: number,
+  entryMeal: MealKind,
+  now: number,
+): DbNutritionDiaryEntry {
+  return {
+    id: generateId(),
+    localDate,
+    meal: entryMeal,
+    foodId: food.id,
+    grams: entryGrams,
+    foodSnapshot: {
+      name: food.name,
+      brand: food.brand,
+      nutrientsPer100Grams: food.nutrientsPer100Grams,
+    },
+    loggedAt: now,
+    updatedAt: now,
+  }
+}
+
+async function quickAdd(food: DbFood) {
+  if (saving.value) return
+  saving.value = true
+  saveFailed.value = false
+  const entry = diaryEntryFor(food, quickAddGrams(food, history.value), initialMeal, Date.now())
+  const [error] = await tryCatch(getNutritionRepository().addDiaryEntry(entry))
+  saving.value = false
+  if (error) saveFailed.value = true
+  // Stays open on success so more foods can be logged in one visit.
+}
+
+async function toggleFavorite(food: DbFood) {
+  saveFailed.value = false
+  const [error] = await tryCatch(
+    getNutritionRepository().updateFood(food.id, {
+      favorite: !food.favorite,
+      updatedAt: Date.now(),
+    }),
+  )
+  if (error) saveFailed.value = true
+}
+
 async function save() {
   if (!isValid.value || saving.value) return
   saving.value = true
@@ -120,24 +202,6 @@ async function save() {
   const repository = getNutritionRepository()
   const now = Date.now()
   const servingGrams = Number(grams.value)
-
-  function logExistingFood(food: DbFood): Promise<void> {
-    const entry: DbNutritionDiaryEntry = {
-      id: generateId(),
-      localDate,
-      meal: meal.value,
-      foodId: food.id,
-      grams: servingGrams,
-      foodSnapshot: {
-        name: food.name,
-        brand: food.brand,
-        nutrientsPer100Grams: food.nutrientsPer100Grams,
-      },
-      loggedAt: now,
-      updatedAt: now,
-    }
-    return repository.addDiaryEntry(entry)
-  }
 
   function logNewFood(): Promise<void> {
     const servingNutrients: DbFoodNutrients = {
@@ -160,24 +224,13 @@ async function save() {
       updatedAt: now,
       lastUsedAt: now,
     }
-    const entry: DbNutritionDiaryEntry = {
-      id: generateId(),
-      localDate,
-      meal: meal.value,
-      foodId: food.id,
-      grams: servingGrams,
-      foodSnapshot: {
-        name: food.name,
-        brand: food.brand,
-        nutrientsPer100Grams: food.nutrientsPer100Grams,
-      },
-      loggedAt: now,
-      updatedAt: now,
-    }
-    return repository.addFoodAndDiaryEntry(food, entry)
+    return repository.addFoodAndDiaryEntry(food, diaryEntryFor(food, servingGrams, meal.value, now))
   }
 
-  const promise = selectedFood.value ? logExistingFood(selectedFood.value) : logNewFood()
+  const promise =
+    mode.value.kind === 'portion'
+      ? repository.addDiaryEntry(diaryEntryFor(mode.value.food, servingGrams, meal.value, now))
+      : logNewFood()
 
   const [error] = await tryCatch(promise)
   saving.value = false
@@ -191,12 +244,32 @@ async function save() {
 
 <template>
   <Dialog v-model:open="open">
-    <MobileDialogContent>
+    <MobileDialogContent class="sm:max-h-[min(40rem,calc(100vh-4rem))]">
       <DialogHeader>
         <DialogTitle>{{ t('nutrition.food.title') }}</DialogTitle>
         <DialogDescription>{{ t('nutrition.food.description') }}</DialogDescription>
       </DialogHeader>
-      <form class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
+
+      <template v-if="mode.kind === 'search'">
+        <FoodSearchPanel
+          :foods="foods"
+          :history="history"
+          @select="selectFood"
+          @quick-add="quickAdd"
+          @toggle-favorite="toggleFavorite"
+          @create="startCreate"
+        />
+        <p v-if="saveFailed" role="alert" class="text-sm text-destructive">
+          {{ t('nutrition.errors.saveFailed') }}
+        </p>
+      </template>
+
+      <form v-else class="flex min-h-0 flex-col gap-4" @submit.prevent="save">
+        <Button type="button" variant="ghost" size="sm" class="w-fit -ml-2" @click="backToSearch">
+          <ArrowLeft class="size-4" aria-hidden="true" />
+          {{ t('nutrition.food.backToSearch') }}
+        </Button>
+
         <div
           v-if="scanState === 'scanning'"
           class="min-h-0 overflow-y-auto overscroll-contain scroll-py-2"
@@ -204,15 +277,14 @@ async function save() {
           <FoodBarcodeScanner @detected="handleBarcodeDetected" @cancel="scanState = 'idle'" />
         </div>
         <div v-else class="min-h-0 space-y-4 overflow-y-auto overscroll-contain scroll-py-2">
-          <div v-if="foods.length > 0" class="space-y-1.5">
-            <Label for="nutrition-existing-food">{{ t('nutrition.food.choose') }}</Label>
-            <NativeSelect id="nutrition-existing-food" v-model="selectedFoodId" class="w-full">
-              <option value="">{{ t('nutrition.food.createNew') }}</option>
-              <option v-for="food in foods" :key="food.id" :value="food.id">{{ food.name }}</option>
-            </NativeSelect>
-          </div>
+          <p v-if="mode.kind === 'portion'" class="px-1 font-medium">
+            {{ mode.food.name }}
+            <span v-if="mode.food.brand" class="text-muted-foreground">
+              · {{ mode.food.brand }}
+            </span>
+          </p>
 
-          <div v-if="isNewFood && scanSupported" class="space-y-1.5">
+          <div v-if="mode.kind === 'create' && scanSupported" class="space-y-1.5">
             <Button
               type="button"
               variant="outline"
@@ -235,7 +307,7 @@ async function save() {
             </p>
           </div>
 
-          <div v-if="isNewFood" class="space-y-1.5">
+          <div v-if="mode.kind === 'create'" class="space-y-1.5">
             <Label for="nutrition-food-name">{{ t('nutrition.food.name') }}</Label>
             <Input
               id="nutrition-food-name"
@@ -245,7 +317,7 @@ async function save() {
             />
           </div>
 
-          <div v-if="isNewFood" class="space-y-1.5">
+          <div v-if="mode.kind === 'create'" class="space-y-1.5">
             <Label for="nutrition-food-brand">{{ t('nutrition.food.brand') }}</Label>
             <Input
               id="nutrition-food-brand"
@@ -278,7 +350,7 @@ async function save() {
             </div>
           </div>
 
-          <div v-if="isNewFood">
+          <div v-if="mode.kind === 'create'">
             <p class="mb-2 text-sm font-medium">{{ t('nutrition.food.nutrientsForServing') }}</p>
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1.5">

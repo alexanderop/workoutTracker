@@ -22,6 +22,7 @@ export class NutritionDashboardPO {
     carbs: string
     fat: string
   }): Promise<void> {
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByLabelText('Food name').fill(input.name)
     await page.getByLabelText('Serving (g)').fill(input.grams)
     await page.getByLabelText('Calories').fill(input.calories)

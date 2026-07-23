@@ -89,6 +89,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     // The fake detector reports the barcode on the first poll; the mocked
@@ -118,6 +119,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     await expect.element(page.getByText('Point the camera')).toBeVisible()
@@ -137,6 +139,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
@@ -160,6 +163,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
@@ -181,6 +185,7 @@ describe('Nutrition barcode scan', () => {
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
+    await page.getByRole('button', { name: 'Create a new food' }).click()
     await page.getByRole('button', { name: 'Scan barcode' }).click()
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
