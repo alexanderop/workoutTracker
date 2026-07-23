@@ -56,7 +56,8 @@ export function useWorkoutMode() {
 
   /**
    * Start the workout - transition from builder to active mode.
-   * Selects the first block and activates its first set if strength.
+   * Fresh workouts begin at the first block; resumed workouts re-enter the
+   * block the user left (or the first incomplete one if that is finished).
    */
   function startWorkout() {
     workout.value = startWorkoutTransition(workout.value, Date.now())

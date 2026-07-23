@@ -110,6 +110,24 @@ describe('workout set completion', () => {
     })
   })
 
+  it('skips an already-complete next block and lands on the first incomplete one', () => {
+    const current = createSet(1, 'active')
+    const completeBlock = createBlock(2, [createSet(1, 'completed')])
+    const incompleteBlock = createBlock(3, [createSet(1)])
+    const workout = createWorkout([createBlock(1, [current]), completeBlock, incompleteBlock])
+
+    const transition = completeWorkoutSet(workout, current, true)
+
+    expect(transition.workout.selectedBlockIndex).toBe(2)
+    expect(transition.workout.activeSetIndex).toBe(0)
+    expect(strengthBlock(transition.workout, 2).sets[0]?.status).toBe('active')
+    expect(transition.result).toEqual({
+      kind: 'completed',
+      nextAction: 'next-block',
+      blockIndex: 2,
+    })
+  })
+
   it('reports workout completion when no incomplete work remains', () => {
     const set = createSet(1, 'active')
     const workout = createWorkout([createBlock(1, [set])])

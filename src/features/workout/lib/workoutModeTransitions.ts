@@ -1,4 +1,8 @@
-import { hasWorkoutBlockProgress, isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
+import {
+  findFirstIncompleteWorkoutBlockIndex,
+  hasWorkoutBlockProgress,
+  isWorkoutBlockComplete,
+} from '@/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/types/blocks'
 import type { Workout } from '@/types/workout'
 import { activateWorkoutSet, updateWorkout } from './workoutMutations'
@@ -13,25 +17,41 @@ export function hasWorkoutStarted(workout: Workout): boolean {
   return workout.blocks.some(hasWorkoutBlockProgress)
 }
 
-export function startWorkout(workout: Workout, startedAt: number): Workout {
-  const firstBlock = workout.blocks[0]
-  if (!firstBlock) return workout
+// A resumed workout re-enters where the user left off; a fresh one starts at
+// block 0. If the block the user left is already complete, fall back to the
+// first incomplete block so resume never lands on finished work.
+function resolveStartBlockIndex(workout: Workout): number {
+  if (!hasWorkoutStarted(workout)) return 0
 
-  let activeWorkout = updateWorkout(workout, {
+  const currentBlock = workout.blocks[workout.selectedBlockIndex]
+  if (currentBlock && !isWorkoutBlockComplete(currentBlock)) return workout.selectedBlockIndex
+
+  const firstIncompleteBlockIndex = findFirstIncompleteWorkoutBlockIndex(workout.blocks)
+  if (firstIncompleteBlockIndex !== -1) return firstIncompleteBlockIndex
+
+  return currentBlock ? workout.selectedBlockIndex : 0
+}
+
+export function startWorkout(workout: Workout, startedAt: number): Workout {
+  if (workout.blocks.length === 0) return workout
+
+  const startBlockIndex = resolveStartBlockIndex(workout)
+  const startBlock = workout.blocks[startBlockIndex]
+
+  const activeWorkout = updateWorkout(workout, {
     mode: 'active',
-    selectedBlockIndex: 0,
+    selectedBlockIndex: startBlockIndex,
     activeSetIndex: null,
     ...(!hasWorkoutStarted(workout) && { startedAt }),
   })
 
-  if (!isStrengthBlock(firstBlock)) return activeWorkout
+  if (!startBlock || !isStrengthBlock(startBlock)) return activeWorkout
 
-  const nextSet = findNextIncompleteSet(firstBlock)
+  const nextSet = findNextIncompleteSet(startBlock)
   if (!nextSet) return activeWorkout
 
-  const setIndex = firstBlock.sets.findIndex((set) => set.id === nextSet.id)
-  activeWorkout = activateWorkoutSet(activeWorkout, 0, setIndex)
-  return activeWorkout
+  const setIndex = startBlock.sets.findIndex((set) => set.id === nextSet.id)
+  return activateWorkoutSet(activeWorkout, startBlockIndex, setIndex)
 }
 
 export function returnToWorkoutBuilder(workout: Workout): Workout {

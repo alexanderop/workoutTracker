@@ -1,4 +1,7 @@
-import { findFirstIncompleteWorkoutBlockIndex } from '@/lib/workoutBlockStatus'
+import {
+  findFirstIncompleteWorkoutBlockIndex,
+  isWorkoutBlockComplete,
+} from '@/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/types/blocks'
 import type { StrengthBlock } from '@/types/blocks'
 import type { PrefillableSetFields, Set, Workout } from '@/types/workout'
@@ -57,9 +60,14 @@ function activateNextSetInBlock(
 
 function advanceToBlock(workout: Workout, blockIndex: number): SetCompletionTransition | null {
   const block = workout.blocks[blockIndex]
-  if (!block) return null
+  // Refusing complete blocks lets the caller fall through to the
+  // first-incomplete-block search instead of landing on finished work.
+  if (!block || isWorkoutBlockComplete(block)) return null
 
-  let updatedWorkout = updateWorkout(workout, { selectedBlockIndex: blockIndex })
+  let updatedWorkout = updateWorkout(workout, {
+    selectedBlockIndex: blockIndex,
+    activeSetIndex: null,
+  })
   if (isStrengthBlock(block)) {
     const nextSet = findNextIncompleteSet(block)
     if (nextSet) {

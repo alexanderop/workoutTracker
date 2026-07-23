@@ -86,6 +86,50 @@ describe('workout mutations', () => {
     expect(updated.activeSetIndex).toBe(2)
   })
 
+  it('shifts the active index down when an earlier set is removed', () => {
+    const original = {
+      ...createWorkout([createSet(1), createSet(2), createSet(3)]),
+      activeSetIndex: 2,
+    }
+
+    const updated = removeSetFromBlock(original, 0, 1)
+
+    expect(strengthSets(updated).map((set) => set.id)).toEqual([2, 3])
+    expect(updated.activeSetIndex).toBe(1)
+  })
+
+  it('clears the active index when the active set itself is removed', () => {
+    const original = { ...createWorkout(), activeSetIndex: 1 }
+
+    const updated = removeSetFromBlock(original, 0, 2)
+
+    expect(strengthSets(updated).map((set) => set.id)).toEqual([1])
+    expect(updated.activeSetIndex).toBeNull()
+  })
+
+  it('leaves the active index alone when removing a set after it', () => {
+    const original = {
+      ...createWorkout([createSet(1), createSet(2), createSet(3)]),
+      activeSetIndex: 0,
+    }
+
+    const updated = removeSetFromBlock(original, 0, 3)
+
+    expect(updated.activeSetIndex).toBe(0)
+  })
+
+  it('clamps the active index when shrinking below it', () => {
+    const original = {
+      ...createWorkout([createSet(1), createSet(2), createSet(3), createSet(4)]),
+      activeSetIndex: 3,
+    }
+
+    const shrunk = setBlockSetCount(original, 0, 2)
+
+    expect(strengthSets(shrunk)).toHaveLength(2)
+    expect(shrunk.activeSetIndex).toBe(1)
+  })
+
   it('grows and shrinks set collections while enforcing one set minimum', () => {
     const original = createWorkout()
 

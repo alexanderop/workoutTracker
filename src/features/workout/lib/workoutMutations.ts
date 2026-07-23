@@ -63,13 +63,39 @@ export function addSetToBlock(workout: Workout, blockIndex: number): Workout {
   })
 }
 
-export function removeSetFromBlock(workout: Workout, blockIndex: number, setId: number): Workout {
-  return updateBlockAtIndex(workout, blockIndex, (block) => {
-    if (!isStrengthBlock(block) || block.sets.length <= 1) return block
-    if (block.sets.every((set) => set.id !== setId)) return block
+// activeSetIndex is positional and only meaningful for the selected block, so
+// any mutation that shifts set positions there must reconcile it or the index
+// silently points at a different (or missing) set.
+function reconcileActiveSetIndex(
+  workout: Workout,
+  blockIndex: number,
+  reconcile: (activeSetIndex: number) => number | null,
+): number | null {
+  const activeSetIndex = workout.activeSetIndex
+  if (blockIndex !== workout.selectedBlockIndex || activeSetIndex === null) return activeSetIndex
+  return reconcile(activeSetIndex)
+}
 
-    return { ...block, sets: block.sets.filter((set) => set.id !== setId) }
+export function removeSetFromBlock(workout: Workout, blockIndex: number, setId: number): Workout {
+  const block = workout.blocks[blockIndex]
+  if (!block || !isStrengthBlock(block) || block.sets.length <= 1) return workout
+
+  const removedSetIndex = block.sets.findIndex((set) => set.id === setId)
+  if (removedSetIndex === -1) return workout
+
+  const removedWorkout = updateBlockAtIndex(workout, blockIndex, (candidate) => {
+    if (!isStrengthBlock(candidate)) return candidate
+    return { ...candidate, sets: candidate.sets.filter((set) => set.id !== setId) }
   })
+
+  return {
+    ...removedWorkout,
+    activeSetIndex: reconcileActiveSetIndex(workout, blockIndex, (activeSetIndex) => {
+      if (activeSetIndex === removedSetIndex) return null
+      if (activeSetIndex > removedSetIndex) return activeSetIndex - 1
+      return activeSetIndex
+    }),
+  }
 }
 
 export function duplicateSetInBlock(workout: Workout, blockIndex: number, setId: number): Workout {
@@ -89,13 +115,9 @@ export function duplicateSetInBlock(workout: Workout, blockIndex: number, setId:
   const sets = [...block.sets]
   sets.splice(setIndex + 1, 0, duplicate)
 
-  const activeSetIndex = workout.activeSetIndex
-  const nextActiveSetIndex =
-    blockIndex === workout.selectedBlockIndex &&
-    activeSetIndex !== null &&
-    activeSetIndex > setIndex
-      ? activeSetIndex + 1
-      : activeSetIndex
+  const nextActiveSetIndex = reconcileActiveSetIndex(workout, blockIndex, (activeSetIndex) =>
+    activeSetIndex > setIndex ? activeSetIndex + 1 : activeSetIndex,
+  )
 
   return {
     ...workout,
@@ -118,10 +140,16 @@ export function setBlockSetCount(
   if (targetCount === block.sets.length) return workout
 
   if (targetCount < block.sets.length) {
-    return updateBlockAtIndex(workout, blockIndex, (candidate) => {
+    const shrunkWorkout = updateBlockAtIndex(workout, blockIndex, (candidate) => {
       if (!isStrengthBlock(candidate)) return candidate
       return { ...candidate, sets: candidate.sets.slice(0, targetCount) }
     })
+    return {
+      ...shrunkWorkout,
+      activeSetIndex: reconcileActiveSetIndex(workout, blockIndex, (activeSetIndex) =>
+        Math.min(activeSetIndex, targetCount - 1),
+      ),
+    }
   }
 
   let updatedWorkout = workout

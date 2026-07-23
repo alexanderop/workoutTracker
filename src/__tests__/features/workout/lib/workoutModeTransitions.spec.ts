@@ -80,6 +80,38 @@ describe('workout mode transitions', () => {
     expect(strengthBlock(resumed, 0).sets[1]?.status).toBe('active')
   })
 
+  it('resumes on the block the user left instead of resetting to block 0', () => {
+    const workout = {
+      ...createWorkout([
+        createBlock(1, [createSet(1, 'completed')]),
+        createBlock(2, [createSet(1, 'completed'), createSet(2)]),
+      ]),
+      selectedBlockIndex: 1,
+    }
+
+    const resumed = startWorkout(workout, 200)
+
+    expect(resumed.selectedBlockIndex).toBe(1)
+    expect(resumed.activeSetIndex).toBe(1)
+    expect(strengthBlock(resumed, 1).sets[1]?.status).toBe('active')
+  })
+
+  it('falls back to the first incomplete block when the resumed block is complete', () => {
+    const workout = {
+      ...createWorkout([
+        createBlock(1, [createSet(1)]),
+        createBlock(2, [createSet(1, 'completed')]),
+      ]),
+      selectedBlockIndex: 1,
+    }
+
+    const resumed = startWorkout(workout, 200)
+
+    expect(resumed.selectedBlockIndex).toBe(0)
+    expect(resumed.activeSetIndex).toBe(0)
+    expect(strengthBlock(resumed, 0).sets[0]?.status).toBe('active')
+  })
+
   it('moves between builder and completion modes', () => {
     const workout = { ...createWorkout([createBlock(1, [createSet(1)])]), mode: 'active' as const }
 
