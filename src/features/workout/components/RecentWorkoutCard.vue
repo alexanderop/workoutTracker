@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
-import type { RecentWorkout } from '@/composables/useRecentWorkouts'
+import type { RecentWorkout } from '@/features/workout/composables/useRecentWorkouts'
 
 type Properties = {
   workout: RecentWorkout
@@ -16,7 +16,7 @@ const { t } = useI18n()
 
 function handleActivationKey(event: KeyboardEvent): void {
   if (!(event.key === 'Enter' || event.key === ' ')) {
-	return;
+    return
   }
 
   event.preventDefault()

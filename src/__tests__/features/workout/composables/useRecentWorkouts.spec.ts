@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, shallowRef } from 'vue'
-import { useRecentWorkouts } from '@/composables/useRecentWorkouts'
+import { useRecentWorkouts } from '@/features/workout/composables/useRecentWorkouts'
 import { resetDatabase } from '@/__tests__/setup'
-import { createDbCompletedWorkout } from '../factories'
-import { seedCompletedWorkout } from '../helpers/dbAssertions'
+import { createDbCompletedWorkout } from '@/__tests__/factories'
+import { seedCompletedWorkout } from '@/__tests__/helpers/dbAssertions'
 
 async function seedWorkouts(count: number) {
   const base = Date.now()

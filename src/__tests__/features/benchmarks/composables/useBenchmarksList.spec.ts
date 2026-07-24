@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { effectScope } from 'vue'
 import { getBenchmarksRepository } from '@/db'
-import { useBenchmarksList } from '@/composables/useBenchmarksList'
+import { useBenchmarksList } from '@/features/benchmarks/composables/useBenchmarksList'
 import { resetDatabase } from '@/__tests__/setup'
-import { createDbBenchmarkRound } from '../factories'
+import { createDbBenchmarkRound } from '@/__tests__/factories'
 
 async function seedBenchmark(name: string) {
   return getBenchmarksRepository().create({

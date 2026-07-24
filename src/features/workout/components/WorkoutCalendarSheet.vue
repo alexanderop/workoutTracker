@@ -29,7 +29,7 @@ import {
   CalendarHeader,
   CalendarHeading,
 } from '@/components/ui/calendar'
-import type { CalendarWorkout, WorkoutDay } from '@/composables/useWorkoutCalendar'
+import type { CalendarWorkout, WorkoutDay } from '@/features/workout/composables/useWorkoutCalendar'
 
 type Properties = {
   open: boolean

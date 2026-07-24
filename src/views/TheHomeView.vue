@@ -4,13 +4,13 @@ import { CalendarDays, Play, Timer, ClipboardList } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import RecentWorkoutsSection from '@/components/RecentWorkoutsSection.vue'
-import WeekStrip from '@/components/WeekStrip.vue'
-import WorkoutCalendarSheet from '@/components/WorkoutCalendarSheet.vue'
+import RecentWorkoutsSection from '@/features/workout/components/RecentWorkoutsSection.vue'
+import WeekStrip from '@/features/workout/components/WeekStrip.vue'
+import WorkoutCalendarSheet from '@/features/workout/components/WorkoutCalendarSheet.vue'
 import HabitsHomeCard from '@/features/habits/components/HabitsHomeCard.vue'
 import NutritionDashboardCard from '@/features/nutrition/components/NutritionDashboardCard.vue'
 import HomeWeightSummaryCard from '@/features/weight/components/HomeWeightSummaryCard.vue'
-import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
+import { useWorkoutCalendar } from '@/features/workout/composables/useWorkoutCalendar'
 
 const { t, locale } = useI18n()
 const router = useRouter()
