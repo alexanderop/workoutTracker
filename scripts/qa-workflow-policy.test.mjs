@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
@@ -16,6 +17,7 @@ import {
 } from './qa-workflow-policy.mjs'
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
+const require = createRequire(import.meta.url)
 
 function assertMobileStartup(commands) {
   const open = commands.indexOf('agent-browser open')
@@ -27,6 +29,152 @@ function assertMobileStartup(commands) {
   assert.ok(device > open, 'device emulation must follow opening the app')
   assert.ok(reload > device, 'the app must reload after enabling device emulation')
   assert.ok(firstSnapshot > reload, 'device emulation must precede the first snapshot')
+}
+
+function runGit(cwd, args) {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' })
+  assert.equal(result.status, 0, result.stderr)
+  return result.stdout.trim()
+}
+
+async function runReviewCandidateFixture({
+  baseline,
+  changed,
+  findings,
+  fixed = [],
+  rejected = [],
+  human = [],
+  preclassified = [],
+}) {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-fix-review.yml', 'utf8'))
+  const step = workflow.jobs.agent.steps.find(
+    (candidate) => candidate.name === 'Validate decisions and create candidate',
+  )
+  assert.ok(step, 'candidate validation step must exist')
+  const directory = mkdtempSync(path.join(tmpdir(), 'review-candidate-'))
+  const repository = path.join(directory, 'repo')
+  const scratch = path.join(directory, 'tmp')
+  const reviewInput = path.join(scratch, 'review-input')
+  mkdirSync(path.join(repository, 'src'), { recursive: true })
+  mkdirSync(reviewInput, { recursive: true })
+  for (const [relativePath, contents] of Object.entries(baseline)) {
+    const target = path.join(repository, relativePath)
+    mkdirSync(path.dirname(target), { recursive: true })
+    writeFileSync(target, contents)
+  }
+  runGit(repository, ['init', '-q'])
+  runGit(repository, ['config', 'user.name', 'fixture'])
+  runGit(repository, ['config', 'user.email', 'fixture@example.test'])
+  runGit(repository, ['add', '.'])
+  runGit(repository, ['commit', '-qm', 'fixture base'])
+  const initialSha = runGit(repository, ['rev-parse', 'HEAD'])
+  for (const [relativePath, contents] of Object.entries(changed)) {
+    const target = path.join(repository, relativePath)
+    mkdirSync(path.dirname(target), { recursive: true })
+    writeFileSync(target, contents)
+  }
+  writeFileSync(path.join(reviewInput, 'findings.json'), JSON.stringify(findings))
+  writeFileSync(
+    path.join(reviewInput, 'gate.json'),
+    JSON.stringify({ head_sha: initialSha, repair_rounds: 0 }),
+  )
+  writeFileSync(path.join(scratch, 'fixed-findings.json'), JSON.stringify(fixed))
+  writeFileSync(path.join(scratch, 'rejected-findings.json'), JSON.stringify(rejected))
+  writeFileSync(path.join(scratch, 'needs-human-findings.json'), JSON.stringify(human))
+  writeFileSync(path.join(scratch, 'preclassified-findings.json'), JSON.stringify(preclassified))
+  const script = step.run
+    .replaceAll('/tmp/', () => `${scratch}/`)
+    .replaceAll('${{ github.run_id }}', '12345')
+  const result = spawnSync('bash', ['-c', script], {
+    cwd: repository,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      GITHUB_OUTPUT: path.join(directory, 'github-output'),
+      INITIAL_SHA: initialSha,
+      MAX_AUTO_FIX_FILES: '8',
+      MAX_AUTO_FIX_LINES: '400',
+    },
+  })
+  return { directory, initialSha, repository, result, scratch }
+}
+
+async function runReviewPartitionFixture({ findings, repairRounds }) {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-fix-review.yml', 'utf8'))
+  const step = workflow.jobs.agent.steps.find(
+    (candidate) => candidate.name === 'Validate sealed inputs and partition findings',
+  )
+  assert.ok(step, 'finding partition step must exist')
+  const directory = mkdtempSync(path.join(tmpdir(), 'review-partition-'))
+  const repository = path.join(directory, 'repo')
+  const scratch = path.join(directory, 'tmp')
+  const reviewInput = path.join(scratch, 'review-input')
+  mkdirSync(path.join(repository, 'src'), { recursive: true })
+  mkdirSync(reviewInput, { recursive: true })
+  writeFileSync(path.join(repository, 'src/app.ts'), 'export const app = true\n')
+  runGit(repository, ['init', '-q'])
+  runGit(repository, ['config', 'user.name', 'fixture'])
+  runGit(repository, ['config', 'user.email', 'fixture@example.test'])
+  runGit(repository, ['add', '.'])
+  runGit(repository, ['commit', '-qm', 'fixture base'])
+  const headSha = runGit(repository, ['rev-parse', 'HEAD'])
+  const signature = 'a'.repeat(12)
+  writeFileSync(path.join(reviewInput, 'findings.json'), JSON.stringify(findings))
+  writeFileSync(path.join(reviewInput, 'gate.json'), JSON.stringify({
+    head_sha: headSha,
+    repair_rounds: repairRounds,
+    signature,
+  }))
+  const result = spawnSync('bash', ['-c', step.run.split('/tmp/').join(`${scratch}/`)], {
+    cwd: repository,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      EXPECTED_SHA: headSha,
+      EXPECTED_SIGNATURE: signature,
+      GITHUB_OUTPUT: path.join(directory, 'github-output'),
+      MAX_AUTO_FIX_ROUNDS: '3',
+    },
+  })
+  assert.equal(result.status, 0, result.stderr)
+  return {
+    agent: JSON.parse(readFileSync(path.join(reviewInput, 'agent-findings.json'), 'utf8')),
+    human: JSON.parse(readFileSync(path.join(scratch, 'needs-human-findings.json'), 'utf8')),
+    output: readFileSync(path.join(directory, 'github-output'), 'utf8'),
+  }
+}
+
+function finding(commentId, file) {
+  return {
+    body: 'review finding',
+    commentId,
+    location: `${file}:1`,
+    reviewer: 'coderabbitai',
+  }
+}
+
+function fixedDecision(commentId, file) {
+  return {
+    changedPaths: [file],
+    commentId,
+    confidence: 0.9,
+    evidence: 'The candidate changes the affected path.',
+    summary: 'Addressed the finding.',
+    testEvidence: 'Workflow-owned verification will run.',
+  }
+}
+
+function reviewThread(id, reviewer, recent = []) {
+  return {
+    id: `thread-${id}`,
+    isResolved: false,
+    root: { nodes: [{ author: { login: reviewer }, databaseId: id }] },
+    recent: { nodes: recent },
+  }
+}
+
+function reviewFixMarker(id, sha) {
+  return `<!-- claude-fix-review:fixed:${id}:${'b'.repeat(12)}:${sha} -->`
 }
 
 test('filled PR template fields are meaningful', () => {
@@ -183,7 +331,7 @@ test('CLI writes GitHub outputs and fails incomplete reports', () => {
 })
 
 test('workflow definitions retain hardening invariants', async () => {
-  const [browser, ci, fix, followup, triage, reusable, codeql] = await Promise.all([
+  const [browser, ci, fix, followup, triage, reusable, codeql, codeRabbit] = await Promise.all([
     readFile('.github/workflows/claude-qa-browser.yml', 'utf8'),
     readFile('.github/workflows/ci.yml', 'utf8'),
     readFile('.github/workflows/claude-fix-review.yml', 'utf8'),
@@ -191,6 +339,7 @@ test('workflow definitions retain hardening invariants', async () => {
     readFile('.github/workflows/claude-flaky-detect.yml', 'utf8'),
     readFile('.github/workflows/reusable-node-command.yml', 'utf8'),
     readFile('.github/workflows/codeql.yml', 'utf8'),
+    readFile('.coderabbit.yaml', 'utf8'),
   ])
   assert.match(browser, /qa-workflow-policy\.mjs/)
   assert.match(browser, /Bash\(agent-browser:\*\)/)
@@ -207,7 +356,18 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(fix, /inputs\.force|FORCE/)
   assert.match(fix, /--disallowedTools "Bash,Skill"/)
   assert.match(fix, /Validate decisions and create candidate/)
+  assert.match(fix, /Confirm previously fixed findings after a fresh review/)
+  assert.match(fix, /MAX_AUTO_FIX_ROUNDS: 3/)
+  assert.match(fix, /MAX_AUTO_FIX_FILES: 8/)
+  assert.match(fix, /MAX_AUTO_FIX_LINES: 400/)
+  assert.match(fix, /fixed-findings\.json.*rejected-findings\.json.*needs-human-findings\.json/s)
+  assert.match(fix, /Preclassified human findings were removed or changed/)
+  assert.match(fix, /Fixed findings do not account for the candidate paths/)
+  assert.match(fix, /reviewThreads\(first: 100, after: \$after\)/)
+  assert.match(fix, /pnpm test:a11y\s+pnpm build/)
+  assert.match(fix, /core\.setOutput\('needs_human'/)
   assert.doesNotMatch(fix, /Immediately reply in-thread/)
+  assert.match(codeRabbit, /auto_pause_after_reviewed_commits: 3/)
   assert.doesNotMatch(followup, /RUN_JSON[^\n]*head_sha|\.head_sha' <<<"\$RUN_JSON"/)
   assert.match(followup, /qa-provenance\.json/)
   assert.match(followup, /\.pr_number == \$pr and \.tested_head_sha == \$sha/)
@@ -229,6 +389,393 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
+})
+
+test('fresh reviews only confirm exactly bound workflow fixes', async () => {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-fix-review.yml', 'utf8'))
+  const step = workflow.jobs.gate.steps.find(
+    (candidate) => candidate.name === 'Confirm previously fixed findings after a fresh review',
+  )
+  assert.ok(step, 'fresh-review confirmation step must exist')
+  const reviewedSha = 'a'.repeat(40)
+  const thread = (id, overrides = {}) => ({
+    id: `thread-${id}`,
+    isOutdated: true,
+    isResolved: false,
+    root: { nodes: [{ author: { login: 'coderabbitai' }, databaseId: id }] },
+    recent: {
+      nodes: [{
+        author: { login: 'github-actions[bot]' },
+        body: reviewFixMarker(id, reviewedSha),
+      }],
+    },
+    ...overrides,
+  })
+  const pages = [
+    [
+      thread(11),
+      thread(12, { isOutdated: false }),
+      thread(13, {
+        root: { nodes: [{ author: { login: 'copilot-pull-request-reviewer' }, databaseId: 13 }] },
+      }),
+      thread(14, {
+        recent: {
+          nodes: [{ author: { login: 'someone' }, body: reviewFixMarker(14, reviewedSha) }],
+        },
+      }),
+    ],
+    [
+      thread(15, { isResolved: true }),
+      thread(16, {
+        recent: {
+          nodes: [{
+            author: { login: 'github-actions[bot]' },
+            body: reviewFixMarker(16, 'c'.repeat(40)),
+          }],
+        },
+      }),
+    ],
+  ]
+  const resolved = []
+  const github = {
+    async graphql(query, variables) {
+      if (query.startsWith('mutation')) {
+        resolved.push(variables.threadId)
+        return { resolveReviewThread: { thread: { isResolved: true } } }
+      }
+      const pageIndex = variables.after ? 1 : 0
+      return {
+        repository: { pullRequest: { reviewThreads: {
+          nodes: pages[pageIndex],
+          pageInfo: { endCursor: pageIndex === 0 ? 'next' : null, hasNextPage: pageIndex === 0 },
+        } } },
+      }
+    },
+  }
+  const context = {
+    payload: {
+      pull_request: { head: { sha: reviewedSha }, number: 42 },
+      review: { commit_id: reviewedSha, user: { login: 'coderabbitai[bot]' } },
+    },
+    repo: { owner: 'owner', repo: 'repo' },
+  }
+  await new AsyncFunction('github', 'context', step.with.script)(github, context)
+  assert.deepEqual(resolved, ['thread-11'])
+
+  let staleQueries = 0
+  const staleGithub = { graphql: async () => { staleQueries += 1 } }
+  context.payload.review.commit_id = 'd'.repeat(40)
+  await new AsyncFunction('github', 'context', step.with.script)(staleGithub, context)
+  assert.equal(staleQueries, 0)
+})
+
+test('finding-set retries block only successful or recent pending runs', async () => {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-fix-review.yml', 'utf8'))
+  const step = workflow.jobs.gate.steps.find(
+    (candidate) => candidate.name === 'Fetch and seal the exact finding set',
+  )
+  assert.ok(step, 'finding-set gate must exist')
+  const blockStart = step.run.indexOf('BLOCKING=$(jq')
+  const filterStart = step.run.indexOf("'\n", blockStart) + 1
+  const filterEnd = step.run.indexOf(`' <<<"$STATUSES")`, filterStart)
+  assert.ok(blockStart !== -1 && filterStart > blockStart && filterEnd > filterStart)
+  const filter = step.run.slice(filterStart, filterEnd)
+  const prefix = 'claude-fix-review/abc/'
+  const evaluate = (statuses) => {
+    const result = spawnSync(
+      'jq',
+      ['--arg', 'prefix', prefix, '--argjson', 'now', '10000', filter],
+      { encoding: 'utf8', input: JSON.stringify(statuses) },
+    )
+    assert.equal(result.status, 0, result.stderr)
+    return JSON.parse(result.stdout)
+  }
+  const status = (state, createdAt = '1970-01-01T02:45:00Z') => ({
+    context: `${prefix}123`,
+    created_at: createdAt,
+    creator: { login: 'github-actions[bot]' },
+    state,
+  })
+  assert.equal(evaluate([]), false)
+  assert.equal(evaluate([status('success')]), true)
+  assert.equal(evaluate([status('failure')]), false)
+  assert.equal(evaluate([status('pending')]), true)
+  assert.equal(evaluate([status('pending', '1970-01-01T00:00:01Z')]), false)
+})
+
+test('repair-round cap and source boundary partition findings for human review', async () => {
+  const findings = [finding(1, 'src/a.ts'), finding(2, '.github/workflows/ci.yml')]
+  const belowCap = await runReviewPartitionFixture({ findings, repairRounds: 2 })
+  assert.deepEqual(belowCap.agent.map((entry) => entry.commentId), [1])
+  assert.deepEqual(belowCap.human.map((entry) => entry.commentId), [2])
+  assert.match(belowCap.human[0].evidence, /source-only automation boundary/)
+  assert.match(belowCap.output, /^actionable=1$/m)
+
+  const exhausted = await runReviewPartitionFixture({ findings, repairRounds: 3 })
+  assert.deepEqual(exhausted.agent, [])
+  assert.deepEqual(exhausted.human.map((entry) => entry.commentId), [1, 2])
+  assert.ok(exhausted.human.every((entry) => /repair-round budget/.test(entry.evidence)))
+  assert.match(exhausted.output, /^actionable=0$/m)
+})
+
+test('review replies paginate independently and remain idempotent', async () => {
+  const workflow = parseYaml(await readFile('.github/workflows/claude-fix-review.yml', 'utf8'))
+  const step = workflow.jobs.publish.steps.find(
+    (candidate) => candidate.name === 'Reply to and resolve sealed findings',
+  )
+  assert.ok(step, 'review reply step must exist')
+  const directory = mkdtempSync(path.join(tmpdir(), 'review-replies-'))
+  const files = {
+    FIXED_PATH: [{
+      ...fixedDecision(1, 'src/fixed.ts'),
+      testEvidence: 'Tests passed.',
+    }],
+    FINDINGS_PATH: [
+      { ...finding(1, 'src/fixed.ts'), reviewer: 'coderabbitai' },
+      { ...finding(2, 'src/rejected.ts'), reviewer: 'copilot-pull-request-reviewer' },
+      { ...finding(3, 'src/human.ts'), reviewer: 'coderabbitai' },
+    ],
+    HUMAN_PATH: [{
+      commentId: 3,
+      confidence: 1,
+      evidence: 'The change crosses the automation boundary.',
+      summary: 'Manual decision required.',
+    }],
+    METRICS_PATH: {
+      attempted_files: 1,
+      attempted_lines: 2,
+      fixed: 1,
+      needs_human: 1,
+      rejected: 1,
+      repair_round: 0,
+    },
+    REJECTED_PATH: [{
+      commentId: 2,
+      confidence: 0.8,
+      evidence: 'The reviewer assumption does not apply.',
+      summary: 'False positive.',
+    }],
+  }
+  const previousEnvironment = {}
+  for (const [name, contents] of Object.entries(files)) {
+    const filePath = path.join(directory, `${name}.json`)
+    writeFileSync(filePath, JSON.stringify(contents))
+    previousEnvironment[name] = process.env[name]
+    process.env[name] = filePath
+  }
+  Object.assign(previousEnvironment, {
+    PR_NUMBER: process.env.PR_NUMBER,
+    PUSHED_SHA: process.env.PUSHED_SHA,
+    SIGNATURE: process.env.SIGNATURE,
+  })
+  process.env.PR_NUMBER = '42'
+  process.env.PUSHED_SHA = 'e'.repeat(40)
+  process.env.SIGNATURE = 'f'.repeat(12)
+  const fixedMarker = `<!-- claude-fix-review:fixed:1:${process.env.SIGNATURE}:${process.env.PUSHED_SHA} -->`
+  const replies = []
+  let pageQueries = 0
+  let summaryComments = 0
+  const github = {
+    async graphql(_query, variables) {
+      pageQueries += 1
+      const firstPage = !variables.after
+      return {
+        repository: { pullRequest: { reviewThreads: {
+          nodes: firstPage
+            ? [reviewThread(1, 'coderabbitai', [{
+                author: { login: 'github-actions[bot]' },
+                body: fixedMarker,
+              }]),
+                reviewThread(2, 'copilot-pull-request-reviewer')]
+            : [reviewThread(3, 'coderabbitai')],
+          pageInfo: { endCursor: firstPage ? 'next' : null, hasNextPage: firstPage },
+        } } },
+      }
+    },
+    paginate: async () => [{
+      body: `<!-- claude-fix-review-human:${process.env.SIGNATURE} -->`,
+      user: { login: 'github-actions[bot]' },
+    }],
+    rest: {
+      issues: {
+        createComment: async () => { summaryComments += 1 },
+        listComments: Symbol('listComments'),
+      },
+      pulls: {
+        createReplyForReviewComment: async (input) => { replies.push(input) },
+      },
+    },
+  }
+  const outputs = {}
+  const summary = {
+    addHeading() { return this },
+    addTable() { return this },
+    async write() {},
+  }
+  const core = {
+    setOutput(name, value) { outputs[name] = value },
+    summary,
+  }
+  const context = { repo: { owner: 'owner', repo: 'repo' } }
+  try {
+    await new AsyncFunction('require', 'github', 'core', 'context', step.with.script)(
+      require,
+      github,
+      core,
+      context,
+    )
+  } finally {
+    for (const [name, value] of Object.entries(previousEnvironment)) {
+      if (value === undefined) delete process.env[name]
+      else process.env[name] = value
+    }
+  }
+  assert.equal(pageQueries, 2)
+  assert.deepEqual(replies.map((reply) => reply.comment_id), [2, 3])
+  assert.doesNotMatch(replies[0].body, /@coderabbitai/)
+  assert.match(replies[1].body, /needs-human:3:/)
+  assert.equal(summaryComments, 0)
+  assert.equal(outputs.needs_human, '1')
+})
+
+test('candidate validation enforces decisions, path binding, and diff budgets', async () => {
+  const valid = await runReviewCandidateFixture({
+    baseline: { 'src/a.ts': 'old\n' },
+    changed: { 'src/a.ts': 'new\n' },
+    findings: [finding(1, 'src/a.ts')],
+    fixed: [fixedDecision(1, 'src/a.ts')],
+  })
+  assert.equal(valid.result.status, 0, valid.result.stderr)
+  assert.notEqual(
+    readFileSync(path.join(valid.scratch, 'review-candidate/candidate.sha'), 'utf8').trim(),
+    valid.initialSha,
+  )
+
+  const duplicate = await runReviewCandidateFixture({
+    baseline: { 'src/a.ts': 'old\n' },
+    changed: { 'src/a.ts': 'new\n' },
+    findings: [finding(1, 'src/a.ts')],
+    fixed: [fixedDecision(1, 'src/a.ts')],
+    rejected: [{
+      commentId: 1,
+      confidence: 1,
+      evidence: 'duplicate',
+      summary: 'duplicate',
+    }],
+  })
+  assert.notEqual(duplicate.result.status, 0)
+
+  const preclassified = {
+    commentId: 1,
+    confidence: 1,
+    evidence: 'Policy boundary.',
+    summary: 'Human review required.',
+  }
+  const altered = await runReviewCandidateFixture({
+    baseline: { 'src/a.ts': 'old\n' },
+    changed: {},
+    findings: [finding(1, 'src/a.ts')],
+    human: [{ ...preclassified, summary: 'Changed by agent.' }],
+    preclassified: [preclassified],
+  })
+  assert.notEqual(altered.result.status, 0)
+
+  const mismatched = await runReviewCandidateFixture({
+    baseline: { 'src/a.ts': 'old\n', 'src/b.ts': 'old\n' },
+    changed: { 'src/b.ts': 'new\n' },
+    findings: [finding(1, 'src/a.ts')],
+    fixed: [fixedDecision(1, 'src/b.ts')],
+  })
+  assert.notEqual(mismatched.result.status, 0)
+
+  const boundaryBaseline = Object.fromEntries(
+    Array.from({ length: 8 }, (_, index) => [`src/f${index}.ts`, 'old\n']),
+  )
+  const boundaryChanged = Object.fromEntries(
+    Array.from({ length: 8 }, (_, index) => [
+      `src/f${index}.ts`,
+      index === 0 ? 'new\n'.repeat(385) : 'new\n',
+    ]),
+  )
+  const boundaryFindings = Array.from(
+    { length: 8 },
+    (_, index) => finding(index + 1, `src/f${index}.ts`),
+  )
+  const boundary = await runReviewCandidateFixture({
+    baseline: boundaryBaseline,
+    changed: boundaryChanged,
+    findings: boundaryFindings,
+    fixed: boundaryFindings.map((entry) =>
+      fixedDecision(entry.commentId, entry.location.replace(/:[0-9]+$/, ''))),
+  })
+  assert.equal(boundary.result.status, 0, boundary.result.stderr)
+  assert.notEqual(
+    readFileSync(path.join(boundary.scratch, 'review-candidate/candidate.sha'), 'utf8').trim(),
+    boundary.initialSha,
+  )
+
+  for (const overBudget of [
+    {
+      baseline: Object.fromEntries(
+        Array.from({ length: 9 }, (_, index) => [`src/f${index}.ts`, 'old\n']),
+      ),
+      changed: Object.fromEntries(
+        Array.from({ length: 9 }, (_, index) => [`src/f${index}.ts`, 'new\n']),
+      ),
+    },
+    {
+      baseline: { 'src/a.ts': 'old\n' },
+      changed: { 'src/a.ts': 'new\n'.repeat(400) },
+    },
+  ]) {
+    const paths = Object.keys(overBudget.changed)
+    const fixedFindings = paths.map((file, index) => finding(index + 1, file))
+    const budgetPreclassified = {
+      commentId: 100,
+      confidence: 1,
+      evidence: 'The finding requires a cross-file change.',
+      summary: 'Human review required by policy.',
+    }
+    const findings = [
+      ...fixedFindings,
+      finding(budgetPreclassified.commentId, 'src/human.ts'),
+    ]
+    const result = await runReviewCandidateFixture({
+      ...overBudget,
+      findings,
+      fixed: paths.map((file, index) => fixedDecision(index + 1, file)),
+      human: [budgetPreclassified],
+      preclassified: [budgetPreclassified],
+    })
+    assert.equal(result.result.status, 0, result.result.stderr)
+    assert.equal(
+      readFileSync(path.join(result.scratch, 'review-candidate/candidate.sha'), 'utf8').trim(),
+      result.initialSha,
+    )
+    const fixedPath = path.join(result.scratch, 'fixed-findings.json')
+    const fixedManifest = JSON.parse(readFileSync(fixedPath, 'utf8'))
+    assert.deepEqual(fixedManifest, [])
+    const humanManifest = JSON.parse(readFileSync(
+      path.join(result.scratch, 'needs-human-findings.json'),
+      'utf8',
+    ))
+    assert.deepEqual(
+      humanManifest.map((entry) => entry.commentId).toSorted((left, right) => left - right),
+      findings.map((entry) => entry.commentId).toSorted((left, right) => left - right),
+    )
+    assert.deepEqual(
+      humanManifest.find((entry) => entry.commentId === budgetPreclassified.commentId),
+      budgetPreclassified,
+    )
+    const budgetEscalations = humanManifest.filter(
+      (decision) => decision.commentId !== budgetPreclassified.commentId,
+    )
+    for (const entry of budgetEscalations) {
+      assert.match(entry.summary, /exceeded the safe diff budget/)
+      assert.match(entry.evidence, /discarded before verification or publication/)
+    }
+    assert.equal(runGit(result.repository, ['status', '--porcelain']), '')
+  }
 })
 
 test('browser QA starts and stays mobile-first by default', async () => {
