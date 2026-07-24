@@ -9,7 +9,7 @@ import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { EmomBlock, EmomResult } from '@/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
 import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
-import * as emomMath from '@/composables/timers/emomMath'
+import * as emomMath from '@/lib/emomMath'
 
 export type UseEmomTimerOptions = Readonly<{
   /** Called when a new minute begins (with the 1-based minute number). */
