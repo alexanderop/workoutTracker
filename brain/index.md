@@ -1,7 +1,7 @@
 # Brain
 
 ## Decisions
-- [[decisions/002-per-kind-block-codecs]] — Status: accepted. Supersedes the unimplemented full plugin architecture.
+- [[decisions/002-per-kind-block-codecs]] — Status: accepted, fully landed. Supersedes the unimplemented full plugin
 
 ## Lessons
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.

@@ -9,7 +9,7 @@ import {
   selectActiveWorkoutSet,
   startWorkout as startWorkoutTransition,
 } from '../lib/workoutModeTransitions'
-import { isWorkoutBlockComplete } from '@/lib/workoutBlockStatus'
+import { isWorkoutBlockComplete } from '@/features/workout/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/blocks'
 
 /**

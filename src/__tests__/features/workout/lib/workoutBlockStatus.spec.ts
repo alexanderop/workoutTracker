@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { createStrengthBlockWithSets } from '../factories/block.factory'
+import { createStrengthBlockWithSets } from '@/__tests__/factories/block.factory'
 import { createCardioWorkoutBlock, createTimedWorkoutBlock } from '@/blocks'
 import {
   findFirstIncompleteWorkoutBlockIndex,
   hasWorkoutBlockProgress,
   isWorkoutBlockComplete,
-} from '@/lib/workoutBlockStatus'
+} from '@/features/workout/lib/workoutBlockStatus'
 import { assert } from '@/__tests__/helpers/assert'
 
 const pushUps = {

@@ -1,7 +1,7 @@
 import {
   findFirstIncompleteWorkoutBlockIndex,
   isWorkoutBlockComplete,
-} from '@/lib/workoutBlockStatus'
+} from '@/features/workout/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/blocks'
 import type { StrengthBlock } from '@/blocks'
 import type { PrefillableSetFields, Set, Workout } from '@/types/workout'

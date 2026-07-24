@@ -2,7 +2,7 @@ import {
   findFirstIncompleteWorkoutBlockIndex,
   hasWorkoutBlockProgress,
   isWorkoutBlockComplete,
-} from '@/lib/workoutBlockStatus'
+} from '@/features/workout/lib/workoutBlockStatus'
 import { isStrengthBlock } from '@/blocks'
 import type { Workout } from '@/types/workout'
 import { activateWorkoutSet, updateWorkout } from './workoutMutations'
