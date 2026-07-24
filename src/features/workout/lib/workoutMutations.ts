@@ -136,7 +136,7 @@ export function setBlockSetCount(
   const block = workout.blocks[blockIndex]
   if (!block || !isStrengthBlock(block)) return workout
 
-  const targetCount = Math.max(1, requestedCount)
+  const targetCount = Math.max(1, Math.trunc(requestedCount))
   if (targetCount === block.sets.length) return workout
 
   if (targetCount < block.sets.length) {

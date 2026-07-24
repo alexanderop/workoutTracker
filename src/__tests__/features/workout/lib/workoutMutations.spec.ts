@@ -130,6 +130,18 @@ describe('workout mutations', () => {
     expect(shrunk.activeSetIndex).toBe(1)
   })
 
+  it('truncates fractional counts so the active index stays integral', () => {
+    const original = {
+      ...createWorkout([createSet(1), createSet(2), createSet(3), createSet(4)]),
+      activeSetIndex: 3,
+    }
+
+    const shrunk = setBlockSetCount(original, 0, 2.5)
+
+    expect(strengthSets(shrunk)).toHaveLength(2)
+    expect(shrunk.activeSetIndex).toBe(1)
+  })
+
   it('grows and shrinks set collections while enforcing one set minimum', () => {
     const original = createWorkout()
 
