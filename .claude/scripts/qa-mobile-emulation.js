@@ -28,6 +28,7 @@ Object.defineProperty(navigator, 'maxTouchPoints', {
 if (!('ontouchstart' in window)) {
   Object.defineProperty(window, 'ontouchstart', {
     configurable: true,
+    writable: true,
     value: null,
   })
 }

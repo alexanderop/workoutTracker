@@ -147,10 +147,12 @@ These have burned turns in past runs. Apply the workaround immediately, don't re
 
 **Why**: `fill` sets `input.value` directly without dispatching the `input` event Vue's `v-model` listens for. Reactive state stays empty.
 
-**Workaround**: after filling, nudge with a key press to trigger the event:
+**Workaround**: after filling, nudge with a key press to trigger the event (one action per command — see gotcha 3):
 ```bash
 agent-browser fill @e12 "20"
-agent-browser click @e12 && agent-browser press ArrowUp && agent-browser press ArrowDown
+agent-browser click @e12
+agent-browser press ArrowUp
+agent-browser press ArrowDown
 ```
 Or use `find role textbox fill --name "Weight" "20"` which goes through the semantic locator path and is more reliable.
 
@@ -165,7 +167,9 @@ Or use `find role textbox fill --name "Weight" "20"` which goes through the sema
 agent-browser set viewport 1200 900
 agent-browser click @e4
 agent-browser set device "iPhone 14"
+agent-browser reload
 ```
+The reload after restoring the device is required — without it, later mobile checks run against stale layout/touch state.
 If still blocked, try `find role button click --name "Finish Workout"` (semantic locator bypasses the overlay check).
 
 ### 3. Chained `&&` commands with `@eN` refs

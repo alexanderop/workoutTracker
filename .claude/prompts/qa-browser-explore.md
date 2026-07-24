@@ -22,21 +22,24 @@ See the system prompt for the full command reference. Key commands:
 - `agent-browser click @e1` / `agent-browser fill @e2 "text"` — interact by ref
 - `agent-browser console` — check for JS errors
 
-## Step 0: Dismiss Onboarding (ALWAYS do this first)
+## Step 0: Dismiss Onboarding (if present)
 
 ```bash
 agent-browser open {{APP_URL}}
 agent-browser set device "iPhone 14"
 agent-browser reload
 agent-browser snapshot -i
-# Find and click "Skip to App" or "Skip" button
+# Inspect the snapshot. ONLY if a "Skip to App" / "Skip" button is present:
 agent-browser click @eN   # use the ref from snapshot
 ```
 
 Keep the smoke test in iPhone 14 emulation. This app is optimized for use on a phone.
 
-The app shows an onboarding carousel on first visit. In CI there is no saved
-state, so this appears every run. Dismiss it before testing anything.
+The app shows an onboarding carousel on first visit, but agent-browser uses a
+persistent profile, so leftover localStorage may have dismissed it already.
+Inspect the snapshot first: if you see the main nav (Home, Workouts, Exercises,
+Weight, Settings) instead of the carousel, onboarding is already dismissed —
+skip the click and proceed to testing.
 
 ## Turn Budget: 15 turns MAX
 
