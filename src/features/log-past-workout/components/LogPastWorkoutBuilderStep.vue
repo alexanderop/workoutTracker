@@ -16,9 +16,7 @@ import {
 } from '@/components/ui/empty'
 import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
 import { usePastWorkout } from '../composables/usePastWorkout'
-import type {
-  StrengthBlock,
-} from '@/types/blocks'
+import type { StrengthBlock } from '@/blocks'
 
 const { t } = useI18n()
 
@@ -77,7 +75,6 @@ function handleAddExercise(exercise: Exercise) {
   const block = createStrengthBlockFromExercise(exercise)
   addBlock(block)
 }
-
 </script>
 
 <template>

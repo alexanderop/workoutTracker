@@ -1,4 +1,4 @@
-import type { DbWorkoutBlock } from '@/db/schema'
+import type { DbWorkoutBlock } from '@/blocks'
 import { isDbStrengthBlock } from '@/db/schema'
 
 /**
@@ -7,5 +7,8 @@ import { isDbStrengthBlock } from '@/db/schema'
 export function countCompletedSets(blocks: ReadonlyArray<DbWorkoutBlock>): number {
   return blocks
     .filter(isDbStrengthBlock)
-    .reduce((total, block) => total + block.sets.filter((set) => set.status === 'completed').length, 0)
+    .reduce(
+      (total, block) => total + block.sets.filter((set) => set.status === 'completed').length,
+      0,
+    )
 }

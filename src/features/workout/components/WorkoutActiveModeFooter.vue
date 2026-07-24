@@ -19,8 +19,8 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import type { useRestTimer } from '@/composables/timers/useRestTimer'
 import { cn } from '@/lib/utils'
-import type { WorkoutBlock } from '@/types/blocks'
-import { BLOCK_COLORS, isCardioBlock, isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
+import { BLOCK_COLORS, isCardioBlock, isStrengthBlock, isTimedBlock } from '@/blocks'
 
 const { t } = useI18n()
 

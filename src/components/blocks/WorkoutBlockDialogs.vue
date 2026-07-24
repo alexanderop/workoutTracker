@@ -8,7 +8,7 @@ import type {
   ForTimeConfig,
   TabataConfig,
   TimedBlockKind,
-} from '@/types/blocks'
+} from '@/blocks'
 import AddBlockDialog from './AddBlockDialog.vue'
 import ConfigureAmrapDialog from './ConfigureAmrapDialog.vue'
 import ConfigureCardioDialog from './ConfigureCardioDialog.vue'
@@ -61,13 +61,7 @@ function forwardForTime(config: ForTimeConfig, exercises: ReadonlyArray<BlockExe
 
   <ConfigureAmrapDialog v-model:open="amrapOpen" @confirm="forwardAmrap" />
   <ConfigureEmomDialog v-model:open="emomOpen" @confirm="forwardEmom" />
-  <ConfigureTabataDialog
-    v-model:open="tabataOpen"
-    @confirm="forwardTabata"
-  />
-  <ConfigureForTimeDialog
-    v-model:open="forTimeOpen"
-    @confirm="forwardForTime"
-  />
+  <ConfigureTabataDialog v-model:open="tabataOpen" @confirm="forwardTabata" />
+  <ConfigureForTimeDialog v-model:open="forTimeOpen" @confirm="forwardForTime" />
   <ConfigureCardioDialog v-model:open="cardioOpen" @confirm="emit('confirm-cardio', $event)" />
 </template>

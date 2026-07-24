@@ -8,13 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
-import type { TimedBlock } from '@/types/blocks'
-import {
-  BLOCK_ICONS,
-  BLOCK_LABELS,
-  getBlockDurationDisplay,
-  getBlockExerciseList,
-} from '@/types/blocks'
+import type { TimedBlock } from '@/blocks'
+import { BLOCK_ICONS, BLOCK_LABELS, getBlockDurationDisplay, getBlockExerciseList } from '@/blocks'
 
 const { t } = useI18n()
 

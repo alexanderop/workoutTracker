@@ -11,7 +11,7 @@ import {
   createDbForTimeResult as createDatabaseForTimeResult,
   generateId,
 } from '../../factories'
-import { generateNKeysBetween } from '@/lib/fractionalIndexing'
+import { generateNKeysBetween } from '@/features/benchmarks/lib/fractionalIndexing'
 
 /**
  * Creates a ForTime benchmark with variable reps per round.

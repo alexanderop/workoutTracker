@@ -3,8 +3,8 @@ import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEmomTimer } from '@/composables/timers/useEmomTimer'
 import { cn } from '@/lib/utils'
-import type { EmomBlock, EmomResult } from '@/types/blocks'
-import { BLOCK_COLORS, getBlockExerciseList } from '@/types/blocks'
+import type { EmomBlock, EmomResult } from '@/blocks'
+import { BLOCK_COLORS, getBlockExerciseList } from '@/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
@@ -79,7 +79,9 @@ defineExpose({
         <span class="text-xl text-muted-foreground font-bold tabular-nums">
           {{ block.config.minutes }}
         </span>
-        <span class="text-sm text-muted-foreground font-semibold uppercase ml-1">{{ t('timers.labels.minuteAbbr') }}</span>
+        <span class="text-sm text-muted-foreground font-semibold uppercase ml-1">{{
+          t('timers.labels.minuteAbbr')
+        }}</span>
       </div>
 
       <!-- MASSIVE seconds display -->

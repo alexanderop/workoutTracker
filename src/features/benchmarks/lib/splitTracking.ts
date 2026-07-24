@@ -18,4 +18,3 @@ export function createSplitTracker() {
 
   return { recordSplit, getSplits, reset }
 }
-

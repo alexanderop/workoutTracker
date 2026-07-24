@@ -1,3 +1,4 @@
+import type { DbTemplateBlock as DatabaseTemplateBlock } from '@/blocks'
 import type {
   DbActiveBenchmarkWorkout as DatabaseActiveBenchmarkWorkout,
   DbActiveWorkout as DatabaseActiveWorkout,
@@ -7,7 +8,6 @@ import type {
   DbFormDraft as DatabaseFormDraft,
   DbProgression as DatabaseProgression,
   DbProgressionSession as DatabaseProgressionSession,
-  DbTemplateBlock as DatabaseTemplateBlock,
   DbUserSetting as DatabaseUserSetting,
   DbWeightEntry as DatabaseWeightEntry,
   DbWorkoutTemplate as DatabaseWorkoutTemplate,

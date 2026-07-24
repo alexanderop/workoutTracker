@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { BlockExercise, EmomConfig as EmomBlockConfig } from '@/types/blocks'
-import { BLOCK_ICONS } from '@/types/blocks'
+import type { BlockExercise, EmomConfig as EmomBlockConfig } from '@/blocks'
+import { BLOCK_ICONS } from '@/blocks'
 import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
 import EmomConfigComponent, { type EmomConfigModel } from './EmomConfig.vue'
 

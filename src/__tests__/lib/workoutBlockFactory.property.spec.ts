@@ -1,17 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import {
-  createWorkoutBlockFromHistory,
-  createWorkoutBlockFromTemplate,
-} from '@/lib/workoutBlockFactory'
+import { createWorkoutBlockFromHistory, createWorkoutBlockFromTemplate } from '@/blocks'
 import {
   createTemplateAmrapBlock,
   createTemplateEmomBlock,
   createTemplateForTimeBlock,
   createTemplateTabataBlock,
 } from '@/features/templates/lib/templateBlock'
-import type { BlockExercise } from '@/types/blocks'
-import type { DbTemplateBlock, DbTemplateStrengthBlock } from '@/db/schema'
+import type { BlockExercise, DbTemplateBlock, DbTemplateStrengthBlock } from '@/blocks'
 import {
   amrapConfigArb,
   blockExerciseArb,

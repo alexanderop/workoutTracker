@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
-import { createAmrapWorkoutBlock } from '@/lib/workoutBlockFactory'
-import type { AmrapBlock } from '@/types/blocks'
+import { createAmrapWorkoutBlock } from '@/blocks'
+import type { AmrapBlock } from '@/blocks'
 
 function createAmrapBlock(config: Partial<AmrapBlock['config']> = {}): AmrapBlock {
   return createAmrapWorkoutBlock(

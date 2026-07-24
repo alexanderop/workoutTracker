@@ -5,8 +5,11 @@ import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobal
 import { useBenchmark } from '@/features/benchmarks/composables/useBenchmark'
 import { useBenchmarkMode } from '@/features/benchmarks/composables/useBenchmarkMode'
 import { useBenchmarkExerciseNavigation } from '@/features/benchmarks/composables/useBenchmarkExerciseNavigation'
-import { useBenchmarkSplitComparison, type SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
-import { createSplitTracker } from '@/lib/splitTracking'
+import {
+  useBenchmarkSplitComparison,
+  type SplitComparison,
+} from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
+import { createSplitTracker } from '@/features/benchmarks/lib/splitTracking'
 import BenchmarkForTimeView from './BenchmarkForTimeView.vue'
 import BenchmarkActiveModeHeaderActions from './BenchmarkActiveModeHeaderActions.vue'
 
@@ -55,7 +58,7 @@ const animationState = computed(() => ({
 }))
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const id = setTimeout(() => {
       timeoutIds.delete(id)
       resolve()
@@ -143,12 +146,7 @@ function returnToBuilder() {
 </script>
 
 <template>
-  <PageLayout
-    :title="headerTitle"
-    :scrollable="false"
-    prevent-navigation
-    @back="returnToBuilder"
-  >
+  <PageLayout :title="headerTitle" :scrollable="false" prevent-navigation @back="returnToBuilder">
     <template #header-actions>
       <BenchmarkActiveModeHeaderActions
         @open-queue="emit('open-queue')"
@@ -171,11 +169,15 @@ function returnToBuilder() {
           totalRounds: workout.blocks.length,
           isFirstAttempt: splitComparison.isFirstAttempt.value,
         }"
-        :completion="animationState.showCompletion ? {
-          isComplete: true,
-          time: animationState.completionTime,
-          benchmarkName: workout.name,
-        } : undefined"
+        :completion="
+          animationState.showCompletion
+            ? {
+                isComplete: true,
+                time: animationState.completionTime,
+                benchmarkName: workout.name,
+              }
+            : undefined
+        "
         :animation-state="animationState"
         :split-comparison="latestSplitComparison"
         :elapsed-time="benchmarkTimer.formattedElapsed.value"

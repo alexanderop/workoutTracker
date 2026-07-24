@@ -16,7 +16,7 @@ import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import { formatDurationMinutes, formatDurationHoursMinutes } from '@/lib/formatters'
-import { countCompletedSets } from '@/lib/workoutStats'
+import { countCompletedSets } from '@/features/workout/lib/workoutStats'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 
 // ============================================

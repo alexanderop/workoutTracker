@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useBenchmark } from './useBenchmark'
-import { getBlockExerciseList } from '@/types/blocks'
+import { getBlockExerciseList } from '@/blocks'
 
 /**
  * Composable for benchmark exercise navigation.

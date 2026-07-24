@@ -1,4 +1,4 @@
-import type { DbStrengthBlock, DbSet,  } from '@/db/schema'
+import type { DbStrengthBlock, DbSet } from '@/blocks'
 import { generateId } from '@/db'
 import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
@@ -37,5 +37,4 @@ export function createDbStrengthBlockWithSets(
 export const createDbExercise = createDbStrengthBlock
 export const createDbExerciseWithSets = createDbStrengthBlockWithSets
 
-
-export {type DbWorkoutBlock, type DbStrengthBlock} from '@/db/schema'
+export { type DbWorkoutBlock, type DbStrengthBlock } from '@/blocks'

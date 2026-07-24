@@ -1,5 +1,5 @@
 import type { Set, Workout } from '@/types/workout'
-import type { StrengthBlock, WorkoutBlock } from '@/types/blocks'
+import type { StrengthBlock, WorkoutBlock } from '@/blocks'
 import { createStrengthBlock, createStrengthBlockWithSets } from './block.factory'
 import { createWorkout } from './workout.factory'
 

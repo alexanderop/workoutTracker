@@ -3,7 +3,7 @@
  * with size constraints using the Canvas API.
  */
 
-import { tryCatch } from './tryCatch'
+import { tryCatch } from '@/lib/tryCatch'
 
 const MAX_SIZE_BYTES = 1024 * 1024 // 1MB output limit
 const MAX_INPUT_SIZE_BYTES = 10 * 1024 * 1024 // 10MB input limit

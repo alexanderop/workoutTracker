@@ -4,7 +4,7 @@ import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import type { TestApp } from '../helpers/createTestApp'
 import { expectWorkoutCount, getAllWorkouts, getWorkoutCount } from '../helpers/dbAssertions'
-import type { DbAmrapBlock, DbForTimeBlock } from '@/db/schema'
+import type { DbAmrapBlock, DbForTimeBlock } from '@/blocks'
 
 /**
  * Helper to navigate to timers page from home.

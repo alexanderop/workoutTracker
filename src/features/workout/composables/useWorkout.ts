@@ -19,7 +19,9 @@ import {
   createEmomWorkoutBlock,
   createForTimeWorkoutBlock,
   createTabataWorkoutBlock,
-} from '@/lib/workoutBlockFactory'
+  isStrengthBlock,
+  isTimedBlock,
+} from '@/blocks'
 import {
   appendWorkoutBlock,
   getNextWorkoutBlockId,
@@ -42,8 +44,7 @@ import type {
   TabataResult,
   TimedBlock,
   WorkoutBlock,
-} from '@/types/blocks'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+} from '@/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 // Get reference to shared workout singleton

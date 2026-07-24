@@ -1,20 +1,13 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import type { WorkoutMode } from '@/types/blocks'
+import type { WorkoutMode } from '@/types/workout'
 import type { BenchmarkType } from '@/types/benchmark'
-import type { DbSet, DbStrengthBlock } from '@/blocks/strength/types'
-import type { DbForTimeBlock } from '@/blocks/fortime/types'
-import type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
-
-// Block types moved to src/blocks/<kind>/ (ADR 002: Per-Kind Block Codecs);
-// re-exported here so existing import paths keep working.
-export type { DbSet, DbStrengthBlock, DbTemplateStrengthBlock } from '@/blocks/strength/types'
-export type { DbBlockExercise, DbTemplateBlockExercise } from '@/blocks/shared/types'
-export type { DbAmrapBlock, DbAmrapResult } from '@/blocks/amrap/types'
-export type { DbEmomBlock, DbEmomResult } from '@/blocks/emom/types'
-export type { DbTabataBlock, DbTabataResult } from '@/blocks/tabata/types'
-export type { DbForTimeBlock, DbForTimeResult } from '@/blocks/fortime/types'
-export type { DbCardioBlock, DbCardioResult } from '@/blocks/cardio/types'
-export type { DbTemplateBlock, DbWorkoutBlock } from '@/blocks/types'
+import type {
+  DbForTimeBlock,
+  DbSet,
+  DbStrengthBlock,
+  DbTemplateBlock,
+  DbWorkoutBlock,
+} from '@/blocks'
 
 // ============================================
 // Database Types

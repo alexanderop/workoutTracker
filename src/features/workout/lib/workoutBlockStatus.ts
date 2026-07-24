@@ -1,5 +1,5 @@
-import type { WorkoutBlock } from '@/types/blocks'
-import { isStrengthBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
+import { isStrengthBlock } from '@/blocks'
 
 export function isWorkoutBlockComplete(block: WorkoutBlock): boolean {
   if (isStrengthBlock(block)) {
@@ -17,8 +17,6 @@ export function hasWorkoutBlockProgress(block: WorkoutBlock): boolean {
   return block.result !== null
 }
 
-export function findFirstIncompleteWorkoutBlockIndex(
-  blocks: ReadonlyArray<WorkoutBlock>,
-): number {
+export function findFirstIncompleteWorkoutBlockIndex(blocks: ReadonlyArray<WorkoutBlock>): number {
   return blocks.findIndex((block) => !isWorkoutBlockComplete(block))
 }

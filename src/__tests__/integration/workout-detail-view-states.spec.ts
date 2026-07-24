@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
-import type { DbWorkoutBlock } from '@/db/schema'
+import type { DbWorkoutBlock } from '@/blocks'
 import { RouteNames } from '@/router'
 import { seedCompletedWorkout } from '../helpers/dbAssertions'
 import { dbWorkoutBuilder as databaseWorkoutBuilder } from '../factories/dbWorkout.factory'

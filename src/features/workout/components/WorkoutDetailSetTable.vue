@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { DbSet } from '@/db/schema'
+import type { DbSet } from '@/blocks'
 import WorkoutDetailSetRow from './WorkoutDetailSetRow.vue'
 
 const { t } = useI18n()

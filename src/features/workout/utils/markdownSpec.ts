@@ -5,19 +5,11 @@
  * Uses YAML frontmatter for metadata and consistent patterns for blocks.
  *
  * Per-kind parsed block types and the parse-result machinery live with the
- * Block Codecs under `src/blocks/` (ADR 002); this module re-exports them so
- * existing import paths stay stable. Workout-level types stay here.
+ * Block Codecs under `src/blocks/` (ADR 002); this module owns only the
+ * workout-level markdown types and spec constants.
  */
 
-import type { ParsedBlock } from '@/blocks/types'
-
-// ============================================
-// Re-exports from the Block Codecs
-// ============================================
-
-export type { ParseResult } from '@/blocks/shared/markdown'
-export { parseSuccess, singleError } from '@/blocks/shared/markdown'
-export type { ParsedBlock } from '@/blocks/types'
+import type { ParsedBlock } from '@/blocks'
 
 // ============================================
 // Spec Constants

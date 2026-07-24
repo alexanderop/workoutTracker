@@ -7,8 +7,8 @@ import {
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
 } from '@/lib/workoutBlockList'
-import { createCardioWorkoutBlock } from '@/lib/workoutBlockFactory'
-import type { WorkoutBlock } from '@/types/blocks'
+import { createCardioWorkoutBlock } from '@/blocks'
+import type { WorkoutBlock } from '@/blocks'
 
 /**
  * Property-based tests for the pure workout block list operations.

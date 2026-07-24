@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import type { DbEmomBlock, DbAmrapBlock, DbForTimeBlock, DbTabataBlock } from '@/db/schema'
+import type { DbEmomBlock, DbAmrapBlock, DbForTimeBlock, DbTabataBlock } from '@/blocks'
 
 type TimedBlock = DbEmomBlock | DbAmrapBlock | DbForTimeBlock | DbTabataBlock
 
@@ -19,11 +19,7 @@ const { t } = useI18n()
         {{ block.result.rounds }} {{ t('workouts.detail.rounds') }}
       </template>
       <template v-else-if="block.kind === 'fortime'">
-        {{
-          block.result.completed
-            ? t('workouts.detail.completed')
-            : t('workouts.detail.capped')
-        }}
+        {{ block.result.completed ? t('workouts.detail.completed') : t('workouts.detail.capped') }}
       </template>
       <template v-else-if="block.kind === 'emom'">
         {{ t('workouts.detail.minutesCompleted', { minutes: block.result.completedMinutes }) }}

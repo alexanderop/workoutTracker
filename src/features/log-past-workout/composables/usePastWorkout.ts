@@ -8,12 +8,7 @@ import type {
   TabataConfig,
   ForTimeConfig,
   CardioConfig,
-} from '@/types/blocks'
-import { isStrengthBlock } from '@/types/blocks'
-import type { Set } from '@/types/workout'
-import { getTemplatesRepository } from '@/db'
-import { getWorkoutsRepository } from '@/db'
-import { tryCatch } from '@/lib/tryCatch'
+} from '@/blocks'
 import {
   createAmrapWorkoutBlock,
   createCardioWorkoutBlock,
@@ -22,7 +17,12 @@ import {
   createTabataWorkoutBlock,
   createWorkoutBlockFromHistory,
   createWorkoutBlockFromTemplate,
-} from '@/lib/workoutBlockFactory'
+  isStrengthBlock,
+} from '@/blocks'
+import type { Set } from '@/types/workout'
+import { getTemplatesRepository } from '@/db'
+import { getWorkoutsRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 import {
   appendWorkoutBlock,
   getNextWorkoutBlockId,
@@ -71,9 +71,7 @@ export const usePastWorkout = createGlobalState(() => {
    * Loads blocks from a template.
    */
   async function loadFromTemplate(templateId: string): Promise<void> {
-    const [error, template] = await tryCatch(
-      getTemplatesRepository().getById(templateId),
-    )
+    const [error, template] = await tryCatch(getTemplatesRepository().getById(templateId))
 
     if (error || !template) {
       return
@@ -81,8 +79,9 @@ export const usePastWorkout = createGlobalState(() => {
     workoutName.value = template.name
 
     // Convert template blocks to workout blocks with empty sets
-    const workoutBlocks: Array<WorkoutBlock> = template.blocks
-      .map((block, index) => createWorkoutBlockFromTemplate(block, index + 1))
+    const workoutBlocks: Array<WorkoutBlock> = template.blocks.map((block, index) =>
+      createWorkoutBlockFromTemplate(block, index + 1),
+    )
 
     blocks.value = workoutBlocks
     sourceType.value = 'template'
@@ -93,9 +92,7 @@ export const usePastWorkout = createGlobalState(() => {
    * Loads blocks from a completed workout in history.
    */
   async function loadFromHistory(workoutId: string): Promise<void> {
-    const [error, historicalWorkout] = await tryCatch(
-      getWorkoutsRepository().getById(workoutId),
-    )
+    const [error, historicalWorkout] = await tryCatch(getWorkoutsRepository().getById(workoutId))
 
     if (error || !historicalWorkout) {
       return
@@ -103,8 +100,9 @@ export const usePastWorkout = createGlobalState(() => {
     workoutName.value = `${historicalWorkout.name} (Copy)`
 
     // Convert DB blocks to workout blocks, preserving set values
-    const workoutBlocks: Array<WorkoutBlock> = historicalWorkout.blocks
-      .map((block, index) => createWorkoutBlockFromHistory(block, index + 1))
+    const workoutBlocks: Array<WorkoutBlock> = historicalWorkout.blocks.map((block, index) =>
+      createWorkoutBlockFromHistory(block, index + 1),
+    )
 
     blocks.value = workoutBlocks
     sourceType.value = 'history'
@@ -132,27 +130,21 @@ export const usePastWorkout = createGlobalState(() => {
    * Adds an AMRAP block.
    */
   function addAmrapBlock(config: AmrapConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    appendNewBlock(
-      createAmrapWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)),
-    )
+    appendNewBlock(createAmrapWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)))
   }
 
   /**
    * Adds an EMOM block.
    */
   function addEmomBlock(config: EmomConfig, exercises: ReadonlyArray<BlockExercise>): void {
-    appendNewBlock(
-      createEmomWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)),
-    )
+    appendNewBlock(createEmomWorkoutBlock(config, exercises, getNextWorkoutBlockId(blocks.value)))
   }
 
   /**
    * Adds a Tabata block.
    */
   function addTabataBlock(config: TabataConfig, exercise: BlockExercise): void {
-    appendNewBlock(
-      createTabataWorkoutBlock(config, exercise, getNextWorkoutBlockId(blocks.value)),
-    )
+    appendNewBlock(createTabataWorkoutBlock(config, exercise, getNextWorkoutBlockId(blocks.value)))
   }
 
   /**

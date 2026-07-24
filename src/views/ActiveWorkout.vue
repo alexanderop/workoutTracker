@@ -6,11 +6,11 @@ import { RouteNames } from '@/router'
 import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.vue'
 import WorkoutCompletionScreen from '@/features/workout/components/WorkoutCompletionScreen.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
-import WorkoutCancelDialog from '@/components/WorkoutCancelDialog.vue'
+import WorkoutCancelDialog from '@/features/workout/components/WorkoutCancelDialog.vue'
 import { WorkoutBlockDialogs } from '@/components/blocks'
 import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
-import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
+import WorkoutFinishDialog from '@/features/workout/components/WorkoutFinishDialog.vue'
 import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer.vue'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { getWorkoutRef, resetWorkout } from '@/stores/workoutState'
@@ -20,7 +20,7 @@ import {
   useWorkoutBlockDialogs,
   type WorkoutBlockDialog,
 } from '@/composables/useWorkoutBlockDialogs'
-import { isStrengthBlock } from '@/types/blocks'
+import { isStrengthBlock } from '@/blocks'
 
 const router = useRouter()
 const {
@@ -59,11 +59,7 @@ onMounted(() => {
 })
 
 // Dialog state
-type WorkoutDialog =
-  | WorkoutBlockDialog
-  | 'editExercise'
-  | 'finish'
-  | 'cancel'
+type WorkoutDialog = WorkoutBlockDialog | 'editExercise' | 'finish' | 'cancel'
 
 const { createDialogModel, open: openDialog } = useDialogState<WorkoutDialog>()
 
@@ -239,15 +235,9 @@ function handleQueueAddBlock() {
       @confirm="handleConfirmFinish"
     />
 
-    <WorkoutCancelDialog
-      v-model:open="cancelDialogOpen"
-      @confirm="handleConfirmCancel"
-    />
+    <WorkoutCancelDialog v-model:open="cancelDialogOpen" @confirm="handleConfirmCancel" />
 
     <!-- Queue Drawer (active mode) -->
-    <WorkoutQueueDrawer
-      v-model:open="queueDrawerOpen"
-      @add-block="handleQueueAddBlock"
-    />
+    <WorkoutQueueDrawer v-model:open="queueDrawerOpen" @add-block="handleQueueAddBlock" />
   </div>
 </template>

@@ -48,11 +48,12 @@ Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 
 ```
 src/features/      # Feature-owned UI, state, composables, and domain logic
-src/blocks/        # Feature-neutral workout block types and codecs
+src/blocks/        # Feature-neutral workout block types and codecs (import via @/blocks)
 src/db/            # Dexie schema, converters, repository implementations
 src/stores/        # Shared app-wide singleton state
-src/composables/   # Shared reactive logic
-src/views/         # Route-level pages
+src/composables/   # Shared reactive logic (2+ consumers; single-feature code lives in its feature)
+src/views/         # Route-level pages; may compose multiple features
+src/components/    # App shell + UI shared across features (same 2+ consumer rule)
 src/components/ui/ # shadcn-vue / reka-ui primitives
 src/__tests__/     # Vitest + Playwright browser mode
 ```

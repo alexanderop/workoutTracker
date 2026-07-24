@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
-import { getDefaultWorkoutName } from '@/lib/workoutName'
+import { getDefaultWorkoutName } from '@/features/workout/lib/workoutName'
 
 const LONG_DURATION_THRESHOLD_MINUTES = 180 // 3 hours
 

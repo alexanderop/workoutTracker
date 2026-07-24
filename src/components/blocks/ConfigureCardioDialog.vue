@@ -10,8 +10,8 @@ import { Label } from '@/components/ui/label'
 import { NumericInputModal } from '@/components/ui/numeric-input'
 import { useTouchDevice } from '@/composables/useTouchDevice'
 import { cn } from '@/lib/utils'
-import type { CardioActivity, CardioConfig } from '@/types/blocks'
-import { CARDIO_ACTIVITIES } from '@/types/blocks'
+import type { CardioActivity, CardioConfig } from '@/blocks'
+import { CARDIO_ACTIVITIES } from '@/blocks'
 
 const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()

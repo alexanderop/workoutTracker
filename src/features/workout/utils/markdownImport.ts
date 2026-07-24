@@ -4,15 +4,16 @@
  * All functions are side-effect free: (input) => ParseResult<T>
  */
 
-import type { BlockKind, FieldParser, ParsedBlock } from '@/blocks'
-import { BLOCK_CODECS, createFieldParserLoop, parseDurationString } from '@/blocks'
-import type {
-  ParseResult,
-  ParsedWorkout,
-  MarkdownFrontmatter,
-  ParsedWorkoutMetadata,
-} from './markdownSpec'
-import { parseSuccess, singleError, MARKDOWN_SPEC_FORMAT } from './markdownSpec'
+import type { BlockKind, FieldParser, ParsedBlock, ParseResult } from '@/blocks'
+import {
+  BLOCK_CODECS,
+  createFieldParserLoop,
+  parseDurationString,
+  parseSuccess,
+  singleError,
+} from '@/blocks'
+import type { ParsedWorkout, MarkdownFrontmatter, ParsedWorkoutMetadata } from './markdownSpec'
+import { MARKDOWN_SPEC_FORMAT } from './markdownSpec'
 
 const FRONTMATTER_LINE_PATTERN = /^(\w+):\s*(.+)$/
 const H1_NAME_PATTERN = /^#\s+(.+)$/

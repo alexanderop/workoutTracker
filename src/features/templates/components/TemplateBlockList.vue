@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, useTemplateRef } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import type { DbTemplateBlock } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 import TemplateBlockItem from './TemplateBlockItem.vue'
 
 type Properties = {

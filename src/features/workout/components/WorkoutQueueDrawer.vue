@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sheet'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { cn } from '@/lib/utils'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/blocks'
 import WorkoutQueueItem from './WorkoutQueueItem.vue'
 
 const { t } = useI18n()

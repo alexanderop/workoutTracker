@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbTemplateBlock } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 import type {
   AmrapConfig,
   BlockExercise,
@@ -8,7 +8,7 @@ import type {
   EmomConfig,
   ForTimeConfig,
   TabataConfig,
-} from '@/types/blocks'
+} from '@/blocks'
 import {
   createTemplateAmrapBlock,
   createTemplateCardioBlock,
@@ -22,9 +22,7 @@ import {
  * Shared block management logic for template composables.
  * Accepts a blocks ref (ShallowRef or WritableComputedRef) and returns methods to manipulate it.
  */
-export function useTemplateBlockManagement(
-  blocks: Ref<ReadonlyArray<DbTemplateBlock>>,
-) {
+export function useTemplateBlockManagement(blocks: Ref<ReadonlyArray<DbTemplateBlock>>) {
   function addStrengthBlock(exercise: Exercise): void {
     blocks.value = [...blocks.value, createTemplateStrengthBlock(exercise)]
   }

@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { generateId } from '@/db/index'
-import type { BlockExercise, TabataConfig as TabataBlockConfig } from '@/types/blocks'
-import { BLOCK_ICONS } from '@/types/blocks'
+import type { BlockExercise, TabataConfig as TabataBlockConfig } from '@/blocks'
+import { BLOCK_ICONS } from '@/blocks'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import TabataConfigComponent, { type TabataConfigModel } from './TabataConfig.vue'
 
@@ -34,7 +34,7 @@ const canConfirm = computed(() => exercise.value !== null)
 
 watch(open, (isOpen) => {
   if (!isOpen) {
-	return;
+    return
   }
 
   config.value = { rounds: 8, workSeconds: 20, restSeconds: 10 }
@@ -58,7 +58,7 @@ function removeExercise() {
 
 function handleConfirm() {
   if (!exercise.value) {
-	return;
+    return
   }
 
   emit(

@@ -1,6 +1,9 @@
 # ADR 002: Per-kind block codecs
 
-Status: accepted. Supersedes the unimplemented full plugin architecture.
+Status: accepted, fully landed. Supersedes the unimplemented full plugin
+architecture. The transitional compat barrels (`src/types/blocks.ts`,
+`src/lib/workoutBlockFactory.ts`, block re-exports in `src/db/schema.ts` and
+`markdownSpec.ts`) are retired; `@/blocks` is the only public surface.
 
 ## Decision
 

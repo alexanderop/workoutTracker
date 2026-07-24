@@ -1,30 +1,28 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
+import { formatDate, formatDuration } from '@/lib/formatters'
 
 type Properties = {
-  template: {
+  workout: {
     id: string
     name: string
-    blocks: ReadonlyArray<unknown>
-    lastUsedAt: number | null
+    completedAt: number
+    durationSeconds: number
   }
-  formatDate: (timestamp: number | null) => string
 }
 
-const { template, formatDate } = defineProps<Properties>()
+const { workout } = defineProps<Properties>()
 const emit = defineEmits<{
   click: [id: string]
 }>()
-const { t } = useI18n()
 
 function handleActivationKey(event: KeyboardEvent): void {
   if (!(event.key === 'Enter' || event.key === ' ')) {
-	return;
+    return
   }
 
   event.preventDefault()
-  emit('click', template.id)
+  emit('click', workout.id)
 }
 </script>
 
@@ -33,20 +31,19 @@ function handleActivationKey(event: KeyboardEvent): void {
     role="button"
     tabindex="0"
     class="cursor-pointer p-4 transition-colors hover:bg-accent"
-    @click="emit('click', template.id)"
+    @click="emit('click', workout.id)"
     @keydown="handleActivationKey"
   >
     <div class="flex items-center justify-between">
       <div>
-        <div class="font-medium">{{ template.name }}</div>
+        <div class="font-medium">{{ workout.name }}</div>
         <div class="text-sm text-muted-foreground">
-          {{ t('workouts.builder.blockCount', { count: template.blocks.length }) }}
-        </div>
-        <div class="mt-1 text-xs text-muted-foreground">
-          {{ formatDate(template.lastUsedAt) }}
+          {{ formatDate(workout.completedAt) }}
         </div>
       </div>
-      <div class="text-sm text-muted-foreground">›</div>
+      <div class="tabular-nums text-sm text-muted-foreground">
+        {{ formatDuration(workout.durationSeconds) }}
+      </div>
     </div>
   </Card>
 </template>

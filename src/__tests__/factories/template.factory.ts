@@ -1,9 +1,5 @@
-import type {
-  DbTemplateBlockExercise,
-  DbTemplateStrengthBlock,
-  DbTemplateBlock,
-  DbWorkoutTemplate,
-} from '@/db/schema'
+import type { DbWorkoutTemplate } from '@/db/schema'
+import type { DbTemplateBlockExercise, DbTemplateStrengthBlock, DbTemplateBlock } from '@/blocks'
 import { generateId } from '@/db'
 
 // ============================================

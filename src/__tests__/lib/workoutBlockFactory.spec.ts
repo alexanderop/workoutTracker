@@ -4,8 +4,8 @@ import {
   createTimedWorkoutBlock,
   createWorkoutBlockFromHistory,
   createWorkoutBlockFromTemplate,
-} from '@/lib/workoutBlockFactory'
-import type { BlockExercise } from '@/types/blocks'
+} from '@/blocks'
+import type { BlockExercise } from '@/blocks'
 import { assert } from '@/__tests__/helpers/assert'
 
 const pushUps: BlockExercise = {

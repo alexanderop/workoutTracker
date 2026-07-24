@@ -4,7 +4,7 @@ import { useLiveQuery } from '@/composables/useLiveQuery'
 import { getWorkoutsRepository } from '@/db'
 import type { DbCompletedWorkout } from '@/db/schema'
 import { formatDurationMinutes, formatRelativeDate } from '@/lib/formatters'
-import { countCompletedSets } from '@/lib/workoutStats'
+import { countCompletedSets } from '@/features/workout/lib/workoutStats'
 
 // ============================================
 // Types

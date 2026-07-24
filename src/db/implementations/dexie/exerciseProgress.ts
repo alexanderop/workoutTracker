@@ -1,16 +1,13 @@
-import type {
-  ExerciseProgressRepository,
-  GetExerciseHistoryOptions,
-} from '@/db/interfaces'
+import type { ExerciseProgressRepository, GetExerciseHistoryOptions } from '@/db/interfaces'
 import type {
   DbCompletedWorkout,
-  DbStrengthBlock,
   ExerciseSession,
   ExerciseStats,
   PerformedExercise,
   PersonalRecords,
   SetPerformance,
 } from '@/db/schema'
+import type { DbStrengthBlock } from '@/blocks'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
@@ -52,23 +49,25 @@ function getStrengthBlocksForExercise(
  * Convert a strength block to set performance data.
  */
 function extractSetPerformances(block: DbStrengthBlock): ReadonlyArray<SetPerformance> {
-  return block.sets
-    .filter((set) => set.status === 'completed')
-    .map((set) => {
-      const kg = parseNumber(set.kg)
-      const reps = parseNumber(set.reps)
-      const duration = parseNumber(set.duration)
-      const rirValue = parseNumber(set.rir)
-      return {
-        kg,
-        reps,
-        duration,
-        rir: rirValue > 0 ? rirValue : null,
-        estimated1RM: calculateEstimated1RM(kg, reps),
-      }
-    })
-    // Keep weight-based sets OR duration-based sets (for isometric exercises)
-    .filter((set) => (set.kg > 0 && set.reps > 0) || set.duration > 0)
+  return (
+    block.sets
+      .filter((set) => set.status === 'completed')
+      .map((set) => {
+        const kg = parseNumber(set.kg)
+        const reps = parseNumber(set.reps)
+        const duration = parseNumber(set.duration)
+        const rirValue = parseNumber(set.rir)
+        return {
+          kg,
+          reps,
+          duration,
+          rir: rirValue > 0 ? rirValue : null,
+          estimated1RM: calculateEstimated1RM(kg, reps),
+        }
+      })
+      // Keep weight-based sets OR duration-based sets (for isometric exercises)
+      .filter((set) => (set.kg > 0 && set.reps > 0) || set.duration > 0)
+  )
 }
 
 /**

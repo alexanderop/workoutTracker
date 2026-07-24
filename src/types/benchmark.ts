@@ -4,8 +4,8 @@
  * These types define benchmark workout attributes used across the application.
  */
 
-import type { ForTimeBlock } from './blocks'
-import type { WorkoutMode } from './blocks'
+import type { ForTimeBlock } from '@/blocks'
+import type { WorkoutMode } from './workout'
 
 /**
  * Benchmark workout type.

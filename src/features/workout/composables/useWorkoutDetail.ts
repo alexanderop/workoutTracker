@@ -1,7 +1,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { getWorkoutsRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbCompletedWorkout, DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/db/schema'
+import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbSet, DbStrengthBlock, DbWorkoutBlock } from '@/blocks'
 import { isDbStrengthBlock } from '@/db/schema'
 
 // ============================================

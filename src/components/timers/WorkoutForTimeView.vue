@@ -2,8 +2,8 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
-import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
-import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/types/blocks'
+import type { ForTimeBlock, ForTimeResult } from '@/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
@@ -64,12 +64,17 @@ defineExpose({
       </div>
 
       <!-- MASSIVE elapsed time display -->
-      <span class="text-[5rem] leading-none font-mono tabular-nums font-black tracking-tight text-foreground">
+      <span
+        class="text-[5rem] leading-none font-mono tabular-nums font-black tracking-tight text-foreground"
+      >
         {{ timer.formattedElapsed.value }}
       </span>
 
       <!-- Time Cap indicator inside circle -->
-      <div v-if="block.config.timeCapSeconds" class="mt-2 text-base text-muted-foreground font-semibold">
+      <div
+        v-if="block.config.timeCapSeconds"
+        class="mt-2 text-base text-muted-foreground font-semibold"
+      >
         {{ t('timers.workout.fortime.cap') }}{{ Math.floor(block.config.timeCapSeconds / 60) }}:{{
           String(block.config.timeCapSeconds % 60).padStart(2, '0')
         }}

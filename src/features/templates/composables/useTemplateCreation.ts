@@ -1,7 +1,8 @@
 import { computed, ref, toRaw, type WritableComputedRef } from 'vue'
 import { getTemplatesRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
-import type { DbTemplateBlock, DbWorkoutTemplate } from '@/db/schema'
+import type { DbWorkoutTemplate } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 import { useTemplateBlockManagement } from './useTemplateBlockManagement'
 
 // ============================================
@@ -44,9 +45,7 @@ export function useTemplateCreation() {
   const isSaving = ref(false)
 
   // Computed
-  const isValid = computed(
-    () => templateName.value.trim().length > 0 && blocks.value.length > 0,
-  )
+  const isValid = computed(() => templateName.value.trim().length > 0 && blocks.value.length > 0)
 
   // Compose block management
   const blockManagement = useTemplateBlockManagement(blocks)

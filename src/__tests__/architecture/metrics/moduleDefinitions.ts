@@ -34,7 +34,12 @@ const CORE_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'blocks',
     path: 'src/blocks',
     category: 'core',
-    maxDistance: 0.25, // New home of per-kind block types and codecs (ADR 002)
+    // Home of per-kind block types and codecs (ADR 002). Since the compat
+    // barrels were retired, every consumer imports @/blocks directly; the
+    // extra afferent coupling lowers instability while abstractness is fixed
+    // by the concrete codecs, so D sits at ~0.286 while the module remains
+    // in the ideal Main Sequence zone.
+    maxDistance: 0.3,
   },
 ]
 

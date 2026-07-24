@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/empty'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/blocks'
 import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
 
 const { t } = useI18n()

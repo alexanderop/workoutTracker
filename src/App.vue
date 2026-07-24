@@ -3,7 +3,7 @@
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import Layout from '@/components/Layout.vue'
-import ResumeWorkoutDialog from '@/components/ResumeWorkoutDialog.vue'
+import ResumeWorkoutDialog from '@/features/workout/components/ResumeWorkoutDialog.vue'
 import ToastViewport from '@/components/ToastViewport.vue'
 import ActiveWorkoutFab from '@/features/workout/components/ActiveWorkoutFab.vue'
 import { useQuickAddStore } from '@/stores/quickAdd'

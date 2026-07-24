@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useImageConversion } from '@/composables/useImageConversion'
+import { useImageConversion } from '@/features/exercises/composables/useImageConversion'
 
 type ImageFormState = {
   image: Blob | undefined
@@ -52,7 +52,8 @@ export function useImageUpload(form: Ref<ImageFormState>) {
       'file-too-large': t('exercises.create.errors.imageTooLarge'),
       'invalid-image': t('exercises.create.errors.invalidImage'),
     }
-    form.value.imageError = errorMessages[result.error] ?? t('exercises.create.errors.conversionFailed')
+    form.value.imageError =
+      errorMessages[result.error] ?? t('exercises.create.errors.conversionFailed')
   }
 
   return { displayText, trigger, handleSelect }

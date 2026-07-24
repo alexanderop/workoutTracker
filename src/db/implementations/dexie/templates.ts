@@ -1,14 +1,14 @@
 import { liveQuery } from 'dexie'
 import type { CreateTemplateData, LiveQuery, TemplatesRepository } from '@/db/interfaces'
+import type { DbActiveWorkout, DbCompletedWorkout, DbWorkoutTemplate } from '@/db/schema'
 import type {
-  DbActiveWorkout,
-  DbCompletedWorkout,
+  BlockKind,
+  DbBlockByKind,
   DbTemplateBlock,
+  DbTemplateBlockByKind,
   DbWorkoutBlock,
-  DbWorkoutTemplate,
-} from '@/db/schema'
+} from '@/blocks'
 import { BLOCK_CODECS } from '@/blocks'
-import type { BlockKind, DbBlockByKind, DbTemplateBlockByKind } from '@/blocks'
 import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 import { generateId } from './database'

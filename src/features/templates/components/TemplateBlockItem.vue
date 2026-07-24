@@ -4,9 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { GripVertical, Minus, Plus, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
-import type { DbTemplateBlock } from '@/db/schema'
-import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
-import { CARDIO_ACTIVITIES } from '@/types/blocks'
+import type { DbTemplateBlock } from '@/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS, CARDIO_ACTIVITIES } from '@/blocks'
 import { getTemplateBlockExerciseNames } from '@/features/templates/lib/templateBlock'
 
 const { t } = useI18n()

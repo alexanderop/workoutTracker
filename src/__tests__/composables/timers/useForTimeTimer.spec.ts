@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
-import { createForTimeWorkoutBlock } from '@/lib/workoutBlockFactory'
-import type { ForTimeBlock } from '@/types/blocks'
+import { createForTimeWorkoutBlock } from '@/blocks'
+import type { ForTimeBlock } from '@/blocks'
 
 function createForTimeBlock(config: Partial<ForTimeBlock['config']> = {}): ForTimeBlock {
   return createForTimeWorkoutBlock(

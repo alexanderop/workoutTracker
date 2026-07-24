@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
 import { cn } from '@/lib/utils'
-import type { AmrapBlock, AmrapResult } from '@/types/blocks'
-import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/types/blocks'
+import type { AmrapBlock, AmrapResult } from '@/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()

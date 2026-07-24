@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { cn } from '@/lib/utils'
-import type { TabataBlock, TabataResult } from '@/types/blocks'
-import { getBlockExerciseList } from '@/types/blocks'
+import type { TabataBlock, TabataResult } from '@/blocks'
+import { getBlockExerciseList } from '@/blocks'
 import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
 
 const { t } = useI18n()

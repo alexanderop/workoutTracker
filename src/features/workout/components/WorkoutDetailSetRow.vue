@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
-import type { DbSet } from '@/db/schema'
+import type { DbSet } from '@/blocks'
 import { calculate10RM } from '@/lib/workout-utils'
 
 const { set, index } = defineProps<{

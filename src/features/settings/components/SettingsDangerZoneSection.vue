@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Trash2 } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { deleteAllData } from '@/db'
-import { useReloadPage } from '@/lib/reloadPage'
+import { useReloadPage } from '@/features/settings/utils/reloadPage'
 import SettingsDeleteAllDataDialog from './SettingsDeleteAllDataDialog.vue'
 
 const { t } = useI18n()

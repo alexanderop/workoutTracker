@@ -3,7 +3,7 @@ import { format } from 'date-fns'
 import { ChevronRight } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
-import { useWorkoutCalendar } from '@/composables/useWorkoutCalendar'
+import { useWorkoutCalendar } from '@/features/workout/composables/useWorkoutCalendar'
 import { getDateLocale, getCurrentLocale } from '@/lib/dateLocale'
 
 const emit = defineEmits<{

@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import type {
-  DbCompletedWorkout,
-  DbForTimeBlock,
-  DbForTimeResult,
-  DbWorkoutBlock,
-} from '@/db/schema'
+import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbForTimeBlock, DbForTimeResult, DbWorkoutBlock } from '@/blocks'
 import {
   extractSplitTimes,
   findPbWorkout,

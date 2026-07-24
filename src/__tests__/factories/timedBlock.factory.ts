@@ -10,16 +10,14 @@ import type {
   DbForTimeResult,
   DbTabataBlock,
   DbTabataResult,
-} from '@/db/schema'
+} from '@/blocks'
 import { generateId } from '@/db'
 
 // ============================================
 // Block Exercise (shared by all timed blocks)
 // ============================================
 
-export function createDbBlockExercise(
-  overrides: Partial<DbBlockExercise> = {},
-): DbBlockExercise {
+export function createDbBlockExercise(overrides: Partial<DbBlockExercise> = {}): DbBlockExercise {
   return {
     id: generateId(),
     name: 'Thrusters',
@@ -41,9 +39,7 @@ const FORTIME_DEFAULTS: Readonly<Omit<DbForTimeBlock, 'id' | 'exercises'>> = {
   orderIndex: 0,
 }
 
-export function createDbForTimeBlock(
-  overrides: Partial<DbForTimeBlock> = {},
-): DbForTimeBlock {
+export function createDbForTimeBlock(overrides: Partial<DbForTimeBlock> = {}): DbForTimeBlock {
   return {
     id: generateId(),
     ...FORTIME_DEFAULTS,
@@ -52,9 +48,7 @@ export function createDbForTimeBlock(
   }
 }
 
-export function createDbForTimeResult(
-  overrides: Partial<DbForTimeResult> = {},
-): DbForTimeResult {
+export function createDbForTimeResult(overrides: Partial<DbForTimeResult> = {}): DbForTimeResult {
   return {
     completionTime: 180,
     completed: true,
@@ -74,9 +68,7 @@ const AMRAP_DEFAULTS: Readonly<Omit<DbAmrapBlock, 'id' | 'exercises'>> = {
   orderIndex: 0,
 }
 
-export function createDbAmrapBlock(
-  overrides: Partial<DbAmrapBlock> = {},
-): DbAmrapBlock {
+export function createDbAmrapBlock(overrides: Partial<DbAmrapBlock> = {}): DbAmrapBlock {
   return {
     id: generateId(),
     ...AMRAP_DEFAULTS,
@@ -85,9 +77,7 @@ export function createDbAmrapBlock(
   }
 }
 
-export function createDbAmrapResult(
-  overrides: Partial<DbAmrapResult> = {},
-): DbAmrapResult {
+export function createDbAmrapResult(overrides: Partial<DbAmrapResult> = {}): DbAmrapResult {
   return {
     rounds: 5,
     partialReps: 3,
@@ -107,9 +97,7 @@ const EMOM_DEFAULTS: Readonly<Omit<DbEmomBlock, 'id' | 'exercises'>> = {
   orderIndex: 0,
 }
 
-export function createDbEmomBlock(
-  overrides: Partial<DbEmomBlock> = {},
-): DbEmomBlock {
+export function createDbEmomBlock(overrides: Partial<DbEmomBlock> = {}): DbEmomBlock {
   return {
     id: generateId(),
     ...EMOM_DEFAULTS,
@@ -118,9 +106,7 @@ export function createDbEmomBlock(
   }
 }
 
-export function createDbEmomResult(
-  overrides: Partial<DbEmomResult> = {},
-): DbEmomResult {
+export function createDbEmomResult(overrides: Partial<DbEmomResult> = {}): DbEmomResult {
   return {
     completedMinutes: 12,
     missedMinutes: [],
@@ -139,9 +125,7 @@ const TABATA_DEFAULTS: Readonly<Omit<DbTabataBlock, 'id' | 'exercise'>> = {
   orderIndex: 0,
 }
 
-export function createDbTabataBlock(
-  overrides: Partial<DbTabataBlock> = {},
-): DbTabataBlock {
+export function createDbTabataBlock(overrides: Partial<DbTabataBlock> = {}): DbTabataBlock {
   return {
     id: generateId(),
     ...TABATA_DEFAULTS,
@@ -150,9 +134,7 @@ export function createDbTabataBlock(
   }
 }
 
-export function createDbTabataResult(
-  overrides: Partial<DbTabataResult> = {},
-): DbTabataResult {
+export function createDbTabataResult(overrides: Partial<DbTabataResult> = {}): DbTabataResult {
   return {
     repsPerRound: [15, 14, 13, 12, 11, 10, 10, 9],
     ...overrides,
@@ -174,9 +156,7 @@ const CARDIO_DEFAULTS: Readonly<Omit<DbCardioBlock, 'id'>> = {
   orderIndex: 0,
 }
 
-export function createDbCardioBlock(
-  overrides: Partial<DbCardioBlock> = {},
-): DbCardioBlock {
+export function createDbCardioBlock(overrides: Partial<DbCardioBlock> = {}): DbCardioBlock {
   return {
     id: generateId(),
     ...CARDIO_DEFAULTS,
@@ -184,9 +164,7 @@ export function createDbCardioBlock(
   }
 }
 
-export function createDbCardioResult(
-  overrides: Partial<DbCardioResult> = {},
-): DbCardioResult {
+export function createDbCardioResult(overrides: Partial<DbCardioResult> = {}): DbCardioResult {
   return {
     actualDurationSeconds: 1800,
     distanceMeters: 5000,

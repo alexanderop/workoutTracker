@@ -1,5 +1,5 @@
 import type { Set } from '@/types/workout'
-import type { StrengthBlock } from '@/types/blocks'
+import type { StrengthBlock } from '@/blocks'
 import { createSet, createEmptySet } from './set.factory'
 
 const STRENGTH_DEFAULTS: Readonly<Omit<StrengthBlock, 'sets'>> = {
@@ -36,4 +36,4 @@ export function createStrengthBlockWithSets(
 export const createExercise = createStrengthBlock
 export const createExerciseWithSets = createStrengthBlockWithSets
 
-export { type WorkoutBlock, type StrengthBlock as Exercise } from '@/types/blocks'
+export { type WorkoutBlock, type StrengthBlock as Exercise } from '@/blocks'

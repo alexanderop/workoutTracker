@@ -9,7 +9,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
 
 const { icon, translationPrefix } = defineProps<{
