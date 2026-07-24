@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { TimedBlockKind } from '@/types/blocks'
+import type { TimedBlockKind } from '@/blocks'
 
 import { Activity, Clock, Gauge, RefreshCcw, Zap } from '@lucide/vue'
 import { ref, useTemplateRef, watch } from 'vue'
@@ -13,7 +13,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToastStore } from '@/stores/toast'
-import { BLOCK_COLORS, BLOCK_LABELS } from '@/types/blocks'
+import { BLOCK_COLORS, BLOCK_LABELS } from '@/blocks'
 
 const { t } = useI18n()
 

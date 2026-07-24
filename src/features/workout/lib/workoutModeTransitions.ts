@@ -3,7 +3,7 @@ import {
   hasWorkoutBlockProgress,
   isWorkoutBlockComplete,
 } from '@/lib/workoutBlockStatus'
-import { isStrengthBlock } from '@/types/blocks'
+import { isStrengthBlock } from '@/blocks'
 import type { Workout } from '@/types/workout'
 import { activateWorkoutSet, updateWorkout } from './workoutMutations'
 import { findNextIncompleteSet } from './workoutSetCompletion'

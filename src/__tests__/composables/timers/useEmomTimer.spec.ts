@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEmomTimer } from '@/composables/timers/useEmomTimer'
 import { createEmomWorkoutBlock } from '@/lib/workoutBlockFactory'
-import type { EmomBlock } from '@/types/blocks'
+import type { EmomBlock } from '@/blocks'
 
 function createEmomBlock(config: Partial<EmomBlock['config']> = {}): EmomBlock {
   return createEmomWorkoutBlock(

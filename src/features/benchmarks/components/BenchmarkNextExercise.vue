@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight } from '@lucide/vue'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 
 type Properties = {
   exercise?: BlockExercise | null
@@ -29,10 +29,7 @@ const displayText = computed(() => {
 </script>
 
 <template>
-  <div
-    v-if="exercise || isFinalExercise"
-    class="px-4 py-3 bg-muted/30 border-t border-border/50"
-  >
+  <div v-if="exercise || isFinalExercise" class="px-4 py-3 bg-muted/30 border-t border-border/50">
     <div class="flex items-center justify-center gap-2 text-sm text-muted-foreground">
       <template v-if="!isFinalExercise">
         <span class="font-semibold uppercase tracking-wider text-xs">

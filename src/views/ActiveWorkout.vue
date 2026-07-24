@@ -20,7 +20,7 @@ import {
   useWorkoutBlockDialogs,
   type WorkoutBlockDialog,
 } from '@/composables/useWorkoutBlockDialogs'
-import { isStrengthBlock } from '@/types/blocks'
+import { isStrengthBlock } from '@/blocks'
 
 const router = useRouter()
 const {
@@ -59,11 +59,7 @@ onMounted(() => {
 })
 
 // Dialog state
-type WorkoutDialog =
-  | WorkoutBlockDialog
-  | 'editExercise'
-  | 'finish'
-  | 'cancel'
+type WorkoutDialog = WorkoutBlockDialog | 'editExercise' | 'finish' | 'cancel'
 
 const { createDialogModel, open: openDialog } = useDialogState<WorkoutDialog>()
 
@@ -239,15 +235,9 @@ function handleQueueAddBlock() {
       @confirm="handleConfirmFinish"
     />
 
-    <WorkoutCancelDialog
-      v-model:open="cancelDialogOpen"
-      @confirm="handleConfirmCancel"
-    />
+    <WorkoutCancelDialog v-model:open="cancelDialogOpen" @confirm="handleConfirmCancel" />
 
     <!-- Queue Drawer (active mode) -->
-    <WorkoutQueueDrawer
-      v-model:open="queueDrawerOpen"
-      @add-block="handleQueueAddBlock"
-    />
+    <WorkoutQueueDrawer v-model:open="queueDrawerOpen" @add-block="handleQueueAddBlock" />
   </div>
 </template>

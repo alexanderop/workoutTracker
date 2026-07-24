@@ -5,8 +5,8 @@ import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import TimerPresetList from './TimerPresetList.vue'
 import TimerCustomForm from './TimerCustomForm.vue'
-import { BLOCK_COLORS } from '@/types/blocks'
-import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/types/blocks'
+import { BLOCK_COLORS } from '@/blocks'
+import type { AmrapBlock, EmomBlock, TabataBlock, ForTimeBlock } from '@/blocks'
 
 const { t } = useI18n()
 

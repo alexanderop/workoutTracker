@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 import { getBenchmarkWorkoutRef as getBenchmarkWorkoutReference } from '../state/benchmarkState'
 import type { BenchmarkWorkout } from '@/types/benchmark'
-import type { ForTimeBlock, BlockExercise } from '@/types/blocks'
-import { getBlockExerciseList } from '@/types/blocks'
+import type { ForTimeBlock, BlockExercise } from '@/blocks'
+import { getBlockExerciseList } from '@/blocks'
 
 // Get reference to shared benchmark workout singleton
 const benchmarkWorkout = getBenchmarkWorkoutReference()

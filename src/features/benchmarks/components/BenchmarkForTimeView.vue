@@ -5,8 +5,8 @@ import BenchmarkExerciseDisplay from './BenchmarkExerciseDisplay.vue'
 import CompletionScreen from '@/components/CompletionScreen.vue'
 import BenchmarkProgressBar from './BenchmarkProgressBar.vue'
 import BenchmarkNextExercise from './BenchmarkNextExercise.vue'
-import type { ForTimeBlock } from '@/types/blocks'
-import { getBlockExerciseList } from '@/types/blocks'
+import type { ForTimeBlock } from '@/blocks'
+import { getBlockExerciseList } from '@/blocks'
 import type { SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 
 type AnimationState = {

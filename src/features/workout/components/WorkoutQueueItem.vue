@@ -3,7 +3,7 @@ import { Check, ChevronDown, ChevronUp, GripVertical, X } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
-import type { WorkoutBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
 import {
   BLOCK_COLORS,
   BLOCK_LABELS,
@@ -12,7 +12,7 @@ import {
   getBlockName,
   isStrengthBlock,
   isTimedBlock,
-} from '@/types/blocks'
+} from '@/blocks'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { Button } from '@/components/ui/button'
 

@@ -42,8 +42,8 @@ import type {
   TabataResult,
   TimedBlock,
   WorkoutBlock,
-} from '@/types/blocks'
-import { isStrengthBlock, isTimedBlock } from '@/types/blocks'
+} from '@/blocks'
+import { isStrengthBlock, isTimedBlock } from '@/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 // Get reference to shared workout singleton

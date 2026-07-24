@@ -7,7 +7,7 @@ import {
   setBlockSetCount,
   updateSetInBlock,
 } from '@/features/workout/lib/workoutMutations'
-import type { StrengthBlock } from '@/types/blocks'
+import type { StrengthBlock } from '@/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 function createSet(id: number, status: Set['status'] = 'planned'): Set {

@@ -8,7 +8,7 @@ import { useRestTimer } from '@/composables/timers/useRestTimer'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useSettingsStore } from '@/stores/settings'
-import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/types/blocks'
+import { BLOCK_LABELS, isStrengthBlock, isTimedBlock, isTimedBlockResult } from '@/blocks'
 import type { Set } from '@/types/workout'
 import WorkoutActiveModeFooter, {
   REST_ADJUST_STEP_SECONDS,

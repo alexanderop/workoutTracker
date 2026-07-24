@@ -3,9 +3,8 @@
  *
  * External code imports from `@/blocks`; the per-kind folders and shared
  * modules are internal. The transitional compat barrels
- * (`src/types/blocks.ts`, parts of `src/db/schema.ts`,
- * `src/lib/workoutBlockFactory.ts`, `markdownSpec.ts`) keep their deep
- * imports until they are retired.
+ * (parts of `src/db/schema.ts`, `src/lib/workoutBlockFactory.ts`,
+ * `markdownSpec.ts`) keep their deep imports until they are retired.
  */
 
 // ============================================

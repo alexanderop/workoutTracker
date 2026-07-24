@@ -10,7 +10,7 @@ import {
   createTemplateForTimeBlock,
   createTemplateTabataBlock,
 } from '@/features/templates/lib/templateBlock'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 import type { DbTemplateBlock, DbTemplateStrengthBlock } from '@/db/schema'
 import {
   amrapConfigArb,

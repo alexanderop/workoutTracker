@@ -2,7 +2,7 @@ import { computed, shallowReadonly, shallowRef } from 'vue'
 import { useToggle } from '@vueuse/core'
 import type { Exercise } from '@/composables/useExerciseSearch'
 import { generateId } from '@/db/index'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 
 /**
  * Exercise list management shared by the timed-block configure dialogs

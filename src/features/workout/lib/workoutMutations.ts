@@ -1,5 +1,5 @@
-import { isStrengthBlock } from '@/types/blocks'
-import type { WorkoutBlock } from '@/types/blocks'
+import { isStrengthBlock } from '@/blocks'
+import type { WorkoutBlock } from '@/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 export function updateWorkout(workout: Workout, updates: Partial<Workout>): Workout {

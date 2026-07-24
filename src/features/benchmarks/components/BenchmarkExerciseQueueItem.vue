@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 
 type ExerciseStatus = 'completed' | 'active' | 'pending'
 
@@ -53,9 +53,7 @@ const isActive = computed(() => status === 'active')
 const isCompleted = computed(() => status === 'completed')
 
 const ariaLabel = computed(() => {
-  const roundInfo = roundNumber
-    ? t('workouts.benchmarks.queue.roundInfo', { n: roundNumber })
-    : ''
+  const roundInfo = roundNumber ? t('workouts.benchmarks.queue.roundInfo', { n: roundNumber }) : ''
   const exerciseInfo = t('workouts.benchmarks.queue.exerciseInfo', {
     n: exerciseNumber,
     name: exercise.name,
@@ -91,7 +89,9 @@ const ariaLabel = computed(() => {
     <div class="flex-1 min-w-0 flex items-center gap-2">
       <!-- Exercise number, thumbnail, and name -->
       <div class="flex items-center gap-1.5 min-w-0">
-        <span class="text-sm font-medium text-muted-foreground shrink-0">{{ exerciseNumber }}.</span>
+        <span class="text-sm font-medium text-muted-foreground shrink-0"
+          >{{ exerciseNumber }}.</span
+        >
         <ExerciseAvatar :name="exercise.name" :image="exercise.image" size="sm" />
         <span class="font-medium truncate">{{ exercise.name }}</span>
       </div>

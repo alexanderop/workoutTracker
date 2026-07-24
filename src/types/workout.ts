@@ -1,7 +1,8 @@
-import type { WorkoutBlock, WorkoutMode } from './blocks'
-import type { Set } from '@/blocks'
+import type { Set, WorkoutBlock } from '@/blocks'
 
 export type { Set } from '@/blocks'
+
+export type WorkoutMode = 'builder' | 'active' | 'completed'
 
 /**
  * Fields that can be prefilled from a previous set.

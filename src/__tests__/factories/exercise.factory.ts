@@ -5,7 +5,7 @@ export {
   createStrengthBlockWithSets as createExerciseWithSets,
 } from './block.factory'
 
-import type { StrengthBlock } from '@/types/blocks'
+import type { StrengthBlock } from '@/blocks'
 import type { Equipment } from '@/types/exercises'
 import { faker } from '@faker-js/faker'
 import { createStrengthBlock } from './block.factory'
@@ -23,4 +23,4 @@ export function createRandomExercise(overrides: Partial<StrengthBlock> = {}): St
 }
 
 // Re-export the type for backward compatibility
-export type { StrengthBlock as Exercise } from '@/types/blocks'
+export type { StrengthBlock as Exercise } from '@/blocks'

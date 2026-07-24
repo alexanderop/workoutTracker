@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
 import { cn } from '@/lib/utils'
-import type { WorkoutBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
 import {
   BLOCK_COLORS,
   BLOCK_LABELS,
@@ -14,7 +14,7 @@ import {
   getBlockName,
   isStrengthBlock,
   isTimedBlock,
-} from '@/types/blocks'
+} from '@/blocks'
 
 type Properties = {
   block: WorkoutBlock
@@ -115,7 +115,11 @@ const completedSets = computed(() => {
               {{ block.kind.toUpperCase() }}
             </span>
           </div>
-          <p :class="cn('text-sm truncate', isSelected ? 'text-foreground/60' : 'text-muted-foreground')">
+          <p
+            :class="
+              cn('text-sm truncate', isSelected ? 'text-foreground/60' : 'text-muted-foreground')
+            "
+          >
             {{ subtitle }}
           </p>
         </div>
@@ -142,7 +146,9 @@ const completedSets = computed(() => {
           variant="ghost"
           size="icon-sm"
           class="text-muted-foreground hover:text-destructive"
-          :aria-label="t('common.aria.removeBlock', { name: isStrengthBlock(block) ? block.name : label })"
+          :aria-label="
+            t('common.aria.removeBlock', { name: isStrengthBlock(block) ? block.name : label })
+          "
           @click.stop="emit('remove')"
         >
           <X class="icon-sm" aria-hidden="true" />

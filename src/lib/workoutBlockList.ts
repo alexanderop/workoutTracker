@@ -1,4 +1,4 @@
-import type { WorkoutBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
 
 export type BlockListUpdate = {
   blocks: Array<WorkoutBlock>
@@ -55,11 +55,7 @@ export function reorderWorkoutBlocks(
 
   return {
     blocks: nextBlocks,
-    selectedBlockIndex: getSelectedIndexAfterReorder(
-      currentSelectedIndex,
-      fromIndex,
-      toIndex,
-    ),
+    selectedBlockIndex: getSelectedIndexAfterReorder(currentSelectedIndex, fromIndex, toIndex),
   }
 }
 

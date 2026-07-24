@@ -1,5 +1,5 @@
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
-import type { WorkoutMode } from '@/types/blocks'
+import type { WorkoutMode } from '@/types/workout'
 import type { BenchmarkType } from '@/types/benchmark'
 import type { DbSet, DbStrengthBlock } from '@/blocks/strength/types'
 import type { DbForTimeBlock } from '@/blocks/fortime/types'

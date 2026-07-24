@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { createTabataWorkoutBlock } from '@/lib/workoutBlockFactory'
-import type { TabataBlock } from '@/types/blocks'
+import type { TabataBlock } from '@/blocks'
 
 function createTabataBlock(config: Partial<TabataBlock['config']> = {}): TabataBlock {
   return createTabataWorkoutBlock(

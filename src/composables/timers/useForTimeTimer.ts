@@ -6,7 +6,7 @@
 
 import type { ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
-import type { ForTimeBlock, ForTimeResult } from '@/types/blocks'
+import type { ForTimeBlock, ForTimeResult } from '@/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
 import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 

@@ -15,7 +15,7 @@ import type {
   EmomResult,
   TabataResult,
   ForTimeResult,
-} from '@/types/blocks'
+} from '@/blocks'
 import type {
   DbAmrapBlock,
   DbEmomBlock,

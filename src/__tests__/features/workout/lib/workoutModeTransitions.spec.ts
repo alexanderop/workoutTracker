@@ -8,7 +8,7 @@ import {
   selectActiveWorkoutSet,
   startWorkout,
 } from '@/features/workout/lib/workoutModeTransitions'
-import type { StrengthBlock } from '@/types/blocks'
+import type { StrengthBlock } from '@/blocks'
 import type { Set, Workout } from '@/types/workout'
 
 function createSet(id: number, status: Set['status'] = 'planned'): Set {

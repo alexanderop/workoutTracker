@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { WorkoutBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
 import type { DbCompletedWorkout, DbSet, DbWorkoutBlock } from '@/db/schema'
 import { blockToDatabase } from '@/blocks'
 import { getWorkoutsRepository, generateId } from '@/db'

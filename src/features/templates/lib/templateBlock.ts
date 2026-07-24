@@ -8,7 +8,7 @@ import type {
   EmomConfig,
   ForTimeConfig,
   TabataConfig,
-} from '@/types/blocks'
+} from '@/blocks'
 
 /**
  * Converts a BlockExercise to DbTemplateBlockExercise format.

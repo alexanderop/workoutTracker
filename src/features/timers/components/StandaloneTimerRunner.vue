@@ -8,7 +8,7 @@ import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
 import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
 import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
 import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
-import { BLOCK_COLORS } from '@/types/blocks'
+import { BLOCK_COLORS } from '@/blocks'
 import type {
   AmrapBlock,
   EmomBlock,
@@ -18,7 +18,7 @@ import type {
   EmomResult,
   TabataResult,
   ForTimeResult,
-} from '@/types/blocks'
+} from '@/blocks'
 import { useTimerWorkoutLogger } from '../composables/useTimerWorkoutLogger'
 
 const { t } = useI18n()

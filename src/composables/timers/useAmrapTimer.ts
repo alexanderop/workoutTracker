@@ -6,7 +6,7 @@
 
 import type { ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
-import type { AmrapBlock, AmrapResult } from '@/types/blocks'
+import type { AmrapBlock, AmrapResult } from '@/blocks'
 import type { BlockTimerReturn } from './useBaseTimer'
 import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
 

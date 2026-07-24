@@ -5,7 +5,7 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import type { WorkoutBlock } from '@/types/blocks'
+import type { WorkoutBlock } from '@/blocks'
 import WorkoutBlockPlaylistItem from './WorkoutBlockPlaylistItem.vue'
 
 const { t } = useI18n()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { AmrapConfig as AmrapBlockConfig, BlockExercise } from '@/types/blocks'
-import { BLOCK_ICONS } from '@/types/blocks'
+import type { AmrapConfig as AmrapBlockConfig, BlockExercise } from '@/blocks'
+import { BLOCK_ICONS } from '@/blocks'
 import AmrapConfigComponent, { type AmrapConfigModel } from './AmrapConfig.vue'
 import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
 

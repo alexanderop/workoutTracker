@@ -1,6 +1,6 @@
 import type { WritableComputedRef } from 'vue'
 import { useDialogState } from '@/composables/useDialogState'
-import type { TimedBlockKind } from '@/types/blocks'
+import type { TimedBlockKind } from '@/blocks'
 
 export type WorkoutBlockDialog =
   | 'addBlock'

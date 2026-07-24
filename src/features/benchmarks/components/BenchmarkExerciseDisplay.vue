@@ -2,7 +2,7 @@
 import { computed, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowUp, ArrowDown, Target } from '@lucide/vue'
-import type { BlockExercise } from '@/types/blocks'
+import type { BlockExercise } from '@/blocks'
 import type { SplitComparison } from '@/features/benchmarks/composables/useBenchmarkSplitComparison'
 import { formatDuration } from '@/lib/formatters'
 
