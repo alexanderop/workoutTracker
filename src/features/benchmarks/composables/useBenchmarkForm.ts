@@ -3,7 +3,10 @@ import type { Exercise } from '@/composables/useExerciseSearch'
 import type { DbBenchmark, DbBenchmarkRound } from '@/db/schema'
 import { getBenchmarksRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
-import { generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'
+import {
+  generateKeyBetween,
+  generateNKeysBetween,
+} from '@/features/benchmarks/lib/fractionalIndexing'
 
 const orderKeyCollator = new Intl.Collator()
 

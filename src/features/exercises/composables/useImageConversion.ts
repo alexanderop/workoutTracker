@@ -1,5 +1,5 @@
 import { computed, shallowReadonly, shallowRef, type ComputedRef, type ShallowRef } from 'vue'
-import { convertImageToWebP, type ConversionResult } from '@/lib/imageConversion'
+import { convertImageToWebP, type ConversionResult } from '@/features/exercises/lib/imageConversion'
 
 type ErrorCode = 'file-too-large' | 'conversion-failed' | 'invalid-image'
 

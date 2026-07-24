@@ -9,7 +9,7 @@ import { createAppRouter } from '@/appRouter'
 import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
-import { reloadPageKey } from '@/lib/reloadPage'
+import { reloadPageKey } from '@/features/settings/utils/reloadPage'
 import {
   CommonPO,
   BuilderPO,

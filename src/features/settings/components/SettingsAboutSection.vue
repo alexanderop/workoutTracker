@@ -4,7 +4,7 @@ import { Info, Palette } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { currentVersion } from '@/lib/appVersion'
+import { currentVersion } from '@/features/settings/utils/appVersion'
 import { RouteNames } from '@/router'
 
 const { t } = useI18n()

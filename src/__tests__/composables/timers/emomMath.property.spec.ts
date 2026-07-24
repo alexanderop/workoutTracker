@@ -5,7 +5,7 @@ import {
   emomRemainingSeconds,
   minuteForElapsed,
   secondsRemainingInMinute,
-} from '@/lib/emomMath'
+} from '@/composables/timers/emomMath'
 
 /**
  * Property-based tests for the pure EMOM timer math extracted from

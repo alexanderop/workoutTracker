@@ -1,6 +1,9 @@
 import type { DbBenchmark, DbBenchmarkRound, DbBenchmarkRoundExercise } from '@/db/schema'
 import { generateId } from '@/db'
-import { generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'
+import {
+  generateKeyBetween,
+  generateNKeysBetween,
+} from '@/features/benchmarks/lib/fractionalIndexing'
 import { generateStructureHash } from '@/lib/structureHash'
 
 /**
@@ -34,9 +37,7 @@ export function createDbBenchmarkRound(
 /**
  * Creates a benchmark with the rounds-based schema.
  */
-export function createDbBenchmark(
-  overrides: Partial<DbBenchmark> = {},
-): DbBenchmark {
+export function createDbBenchmark(overrides: Partial<DbBenchmark> = {}): DbBenchmark {
   const rounds = overrides.rounds ?? [createDbBenchmarkRound()]
   return {
     id: generateId(),
@@ -53,9 +54,7 @@ export function createDbBenchmark(
 /**
  * Creates a ForTime benchmark with standard exercises.
  */
-export function createDbForTimeBenchmark(
-  overrides: Partial<DbBenchmark> = {},
-): DbBenchmark {
+export function createDbForTimeBenchmark(overrides: Partial<DbBenchmark> = {}): DbBenchmark {
   const exerciseKeys = generateNKeysBetween(null, null, 2)
   const rounds = overrides.rounds ?? [
     createDbBenchmarkRound({
@@ -85,11 +84,13 @@ export function createDbForTimeBenchmark(
  * Creates a pyramid-style ForTime benchmark (e.g., 40-30-20-10).
  * Each round has the same exercises but different rep counts.
  */
-export function createDbPyramidBenchmark(options: {
-  name?: string
-  exerciseName?: string
-  repPattern?: ReadonlyArray<number>
-} = {}): DbBenchmark {
+export function createDbPyramidBenchmark(
+  options: {
+    name?: string
+    exerciseName?: string
+    repPattern?: ReadonlyArray<number>
+  } = {},
+): DbBenchmark {
   const {
     name = 'Pyramid 40-30-20-10',
     exerciseName = 'Burpees',

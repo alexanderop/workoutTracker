@@ -1,5 +1,5 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
-import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
+import { useAnimatedCounter } from '@/features/workout/composables/useAnimatedCounter'
 import { formatWeight as formatWeightUnit, WEIGHT_UNIT_LABELS } from '@/lib/unitConversion'
 import type { WorkoutStats } from './useWorkoutDetail'
 import type { WeightUnit } from '@/types/settings'
@@ -22,10 +22,10 @@ export function useSummaryStats(
     { delay: 600, duration: 1200 },
   )
 
-  const { displayValue: animatedSets } = useAnimatedCounter(
-    () => toValue(stats).setCount,
-    { delay: 750, duration: 1200 },
-  )
+  const { displayValue: animatedSets } = useAnimatedCounter(() => toValue(stats).setCount, {
+    delay: 750,
+    duration: 1200,
+  })
 
   const { displayValue: animatedWeight } = useAnimatedCounter(
     () => {
@@ -37,10 +37,10 @@ export function useSummaryStats(
     { delay: 900, duration: 1500 },
   )
 
-  const { displayValue: animatedRounds } = useAnimatedCounter(
-    () => toValue(stats).totalRounds,
-    { delay: 1050, duration: 1200 },
-  )
+  const { displayValue: animatedRounds } = useAnimatedCounter(() => toValue(stats).totalRounds, {
+    delay: 1050,
+    duration: 1200,
+  })
 
   // Computed flags for conditional rendering
   const hasTimedBlocks = computed(() => toValue(stats).timedBlockCount > 0)

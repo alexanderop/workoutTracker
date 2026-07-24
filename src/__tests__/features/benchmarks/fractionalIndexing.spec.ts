@@ -1,6 +1,10 @@
 /* eslint-disable vitest/max-nested-describe -- API behavior groups mirror the key-generation boundary cases. */
 import { describe, it, expect } from 'vitest'
-import { BASE_62_DIGITS, generateKeyBetween, generateNKeysBetween } from '@/lib/fractionalIndexing'
+import {
+  BASE_62_DIGITS,
+  generateKeyBetween,
+  generateNKeysBetween,
+} from '@/features/benchmarks/lib/fractionalIndexing'
 
 describe('fractionalIndexing', () => {
   describe('BASE_62_DIGITS', () => {
