@@ -7,6 +7,10 @@
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.
 - [[lessons/testing-gotchas]] — Most test configuration and commands are authoritative in `package.json`,
 
+## Plans
+- [[plans/numeric-input-modal-ui]]
+- [[plans/numeric-input-modal-ui.research]] — ---
+
 ## Reference
 - [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---
 
