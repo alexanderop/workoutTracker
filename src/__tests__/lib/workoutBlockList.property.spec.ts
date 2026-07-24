@@ -7,7 +7,7 @@ import {
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
 } from '@/lib/workoutBlockList'
-import { createCardioWorkoutBlock } from '@/lib/workoutBlockFactory'
+import { createCardioWorkoutBlock } from '@/blocks'
 import type { WorkoutBlock } from '@/blocks'
 
 /**

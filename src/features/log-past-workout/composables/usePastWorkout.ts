@@ -9,11 +9,6 @@ import type {
   ForTimeConfig,
   CardioConfig,
 } from '@/blocks'
-import { isStrengthBlock } from '@/blocks'
-import type { Set } from '@/types/workout'
-import { getTemplatesRepository } from '@/db'
-import { getWorkoutsRepository } from '@/db'
-import { tryCatch } from '@/lib/tryCatch'
 import {
   createAmrapWorkoutBlock,
   createCardioWorkoutBlock,
@@ -22,7 +17,12 @@ import {
   createTabataWorkoutBlock,
   createWorkoutBlockFromHistory,
   createWorkoutBlockFromTemplate,
-} from '@/lib/workoutBlockFactory'
+  isStrengthBlock,
+} from '@/blocks'
+import type { Set } from '@/types/workout'
+import { getTemplatesRepository } from '@/db'
+import { getWorkoutsRepository } from '@/db'
+import { tryCatch } from '@/lib/tryCatch'
 import {
   appendWorkoutBlock,
   getNextWorkoutBlockId,

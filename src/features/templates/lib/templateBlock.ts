@@ -1,6 +1,6 @@
 import { popularExercises } from '@/data/popularExercises'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbTemplateBlock, DbTemplateBlockExercise, DbTemplateStrengthBlock } from '@/db/schema'
+import type { DbTemplateBlock, DbTemplateBlockExercise, DbTemplateStrengthBlock } from '@/blocks'
 import type {
   AmrapConfig,
   BlockExercise,

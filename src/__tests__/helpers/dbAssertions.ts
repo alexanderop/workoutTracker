@@ -10,11 +10,11 @@ import type {
   DbCompletedWorkout,
   DbCustomExercise,
   DbFormDraft,
-  DbTemplateBlock,
   DbUserSetting,
   DbWorkoutTemplate,
   DraftKey,
 } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 
 /**
  * Repository-backed seed and assertion helpers for integration tests.

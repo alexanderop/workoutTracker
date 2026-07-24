@@ -1,4 +1,4 @@
-import type { DbTemplateStrengthBlock } from '@/db/schema'
+import type { DbTemplateStrengthBlock } from '@/blocks'
 
 /**
  * Popular template definition (without runtime fields like id, createdAt).

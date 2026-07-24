@@ -16,14 +16,14 @@ import type {
   TabataResult,
   ForTimeResult,
 } from '@/blocks'
+import type { DbCompletedWorkout } from '@/db/schema'
 import type {
   DbAmrapBlock,
   DbEmomBlock,
   DbTabataBlock,
   DbForTimeBlock,
-  DbCompletedWorkout,
   DbWorkoutBlock,
-} from '@/db/schema'
+} from '@/blocks'
 import { getWorkoutsRepository, generateId } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'
 

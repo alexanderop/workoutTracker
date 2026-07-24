@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import type { DbTemplateBlock } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 import type {
   AmrapConfig,
   BlockExercise,

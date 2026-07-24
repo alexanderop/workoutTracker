@@ -2,7 +2,7 @@
 import { page, userEvent } from 'vitest/browser'
 import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
-import type { DbTemplateBlock } from '@/db/schema'
+import type { DbTemplateBlock } from '@/blocks'
 import { seedTemplate } from '../helpers/dbAssertions'
 
 function createExercise(name: string) {

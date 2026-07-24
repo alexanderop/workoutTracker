@@ -3,12 +3,8 @@ import { getActiveBenchmarkWorkoutRepository, getBenchmarksRepository } from '@/
 import { dbToBenchmarkWorkout } from '@/db/converters'
 import { restoreBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { tryCatch } from '@/lib/tryCatch'
-import type {
-  DbActiveBenchmarkWorkout,
-  DbBenchmark,
-  DbBenchmarkRound,
-  DbForTimeBlock,
-} from '@/db/schema'
+import type { DbActiveBenchmarkWorkout, DbBenchmark, DbBenchmarkRound } from '@/db/schema'
+import type { DbForTimeBlock } from '@/blocks'
 // ============================================
 // Types
 // ============================================

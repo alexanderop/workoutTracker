@@ -1,4 +1,4 @@
-import type { DbSet } from '@/db/schema'
+import type { DbSet } from '@/blocks'
 import { generateId } from '@/db'
 
 const DEFAULTS: Readonly<Omit<DbSet, 'id'>> = {

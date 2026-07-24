@@ -5,12 +5,8 @@ import type {
   LiveQuery,
   WorkoutsRepository,
 } from '@/db/interfaces'
-import type {
-  DbActiveWorkout,
-  DbCompletedWorkout,
-  DbStrengthBlock,
-  DbWorkoutBlock,
-} from '@/db/schema'
+import type { DbActiveWorkout, DbCompletedWorkout } from '@/db/schema'
+import type { DbStrengthBlock, DbWorkoutBlock } from '@/blocks'
 import { isDbStrengthBlock } from '@/db/schema'
 import { createDatabaseError } from '@/lib/tryCatch'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'

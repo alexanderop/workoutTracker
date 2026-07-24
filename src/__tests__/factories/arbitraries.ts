@@ -14,15 +14,9 @@ import fc from 'fast-check'
 import { EQUIPMENT_VALUES } from '@/types/exercises'
 import type { Workout, Set } from '@/types/workout'
 import { CARDIO_ACTIVITIES } from '@/blocks'
-import type { BlockExercise, WorkoutBlock } from '@/blocks'
+import type { BlockExercise, DbSet, DbTemplateBlock, DbWorkoutBlock, WorkoutBlock } from '@/blocks'
 import type { WorkoutMode } from '@/types/workout'
-import type {
-  DbActiveWorkout,
-  DbCompletedWorkout,
-  DbSet,
-  DbTemplateBlock,
-  DbWorkoutBlock,
-} from '@/db/schema'
+import type { DbActiveWorkout, DbCompletedWorkout } from '@/db/schema'
 
 // ============================================
 // Primitives

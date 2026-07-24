@@ -1,6 +1,10 @@
-import type { DbCompletedWorkout, DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/db/schema'
+import type { DbCompletedWorkout } from '@/db/schema'
+import type { DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/blocks'
 import { generateId } from '@/db'
-import { createDbStrengthBlock as createDatabaseStrengthBlock, createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets } from './dbBlock.factory'
+import {
+  createDbStrengthBlock as createDatabaseStrengthBlock,
+  createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets,
+} from './dbBlock.factory'
 
 const DEFAULTS: Readonly<Omit<DbCompletedWorkout, 'id' | 'blocks'>> = {
   name: 'Test Workout',

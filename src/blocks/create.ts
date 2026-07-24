@@ -4,8 +4,7 @@
  * Per-kind creators live in `src/blocks/<kind>/create.ts`; this module owns
  * the source unions and the exhaustive per-kind dispatch maps (mapped over
  * the kind unions so a new kind is a compile error here, mirroring
- * `BLOCK_CODECS`). `src/lib/workoutBlockFactory.ts` re-exports everything so
- * existing import paths keep working.
+ * `BLOCK_CODECS`).
  */
 
 import type { BlockByKind, BlockKind, TimedBlock, TimedBlockKind, WorkoutBlock } from './types'

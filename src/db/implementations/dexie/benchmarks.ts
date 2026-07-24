@@ -1,5 +1,6 @@
 import type { BenchmarkAttempt, BenchmarksRepository } from '@/db/interfaces'
-import type { DbActiveWorkout, DbBenchmark, DbForTimeBlock, DbWorkoutBlock } from '@/db/schema'
+import type { DbActiveWorkout, DbBenchmark } from '@/db/schema'
+import type { DbForTimeBlock, DbWorkoutBlock } from '@/blocks'
 import { createDatabaseError } from '@/lib/tryCatch'
 import { generateStructureHash } from '@/lib/structureHash'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createStrengthBlockWithSets } from '../factories/block.factory'
-import { createCardioWorkoutBlock, createTimedWorkoutBlock } from '@/lib/workoutBlockFactory'
+import { createCardioWorkoutBlock, createTimedWorkoutBlock } from '@/blocks'
 import {
   findFirstIncompleteWorkoutBlockIndex,
   hasWorkoutBlockProgress,

@@ -4,7 +4,7 @@ import {
   createTimedWorkoutBlock,
   createWorkoutBlockFromHistory,
   createWorkoutBlockFromTemplate,
-} from '@/lib/workoutBlockFactory'
+} from '@/blocks'
 import type { BlockExercise } from '@/blocks'
 import { assert } from '@/__tests__/helpers/assert'
 

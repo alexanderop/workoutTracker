@@ -1,4 +1,5 @@
-import type { DbWorkoutExercise, DbSet } from '@/db/schema'
+import type { DbWorkoutExercise } from '@/db/schema'
+import type { DbSet } from '@/blocks'
 import { generateId } from '@/db'
 import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
