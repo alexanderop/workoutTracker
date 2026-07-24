@@ -12,7 +12,8 @@ import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEdit
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/components/WorkoutFinishDialog.vue'
 import WorkoutQueueDrawer from '@/features/workout/components/WorkoutQueueDrawer.vue'
-import { getWorkoutRef, resetWorkout, useWorkout } from '@/features/workout/composables/useWorkout'
+import { useWorkout } from '@/features/workout/composables/useWorkout'
+import { getWorkoutRef, resetWorkout } from '@/stores/workoutState'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
 import {

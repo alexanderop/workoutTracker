@@ -1,4 +1,4 @@
-import { resetWorkout } from '@/features/workout/composables/useWorkout'
+import { resetWorkout } from '@/stores/workoutState'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'

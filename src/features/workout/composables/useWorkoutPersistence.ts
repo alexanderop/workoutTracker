@@ -4,7 +4,7 @@ import { dbToWorkout, workoutToDb } from '@/db/converters'
 import { tryCatch } from '@/lib/tryCatch'
 import { autoLinkWorkoutCompletion } from '@/lib/habits/autoLinkWorkout'
 import { createPersistenceCore } from '@/composables/persistence/createPersistenceCore'
-import type { Workout } from './useWorkout'
+import type { Workout } from '@/types/workout'
 import type { DbCompletedWorkout } from '@/db/schema'
 
 // Track the startedAt timestamp for the current workout session

@@ -1,4 +1,4 @@
-import type { Workout } from '@/features/workout/composables/useWorkout'
+import type { Workout } from '@/types/workout'
 import { createStrengthBlock } from './block.factory'
 
 const DEFAULTS: Readonly<Omit<Workout, 'blocks'>> = {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Set } from '@/features/workout/composables/useWorkout'
-import { isSetReady } from '@/features/workout/composables/useWorkout'
+import { isSetReady } from '@/features/workout/lib/workoutSetValidation'
+import type { Set } from '@/types/workout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
 import { useNumberLocale } from '@/composables/useNumberLocale'
 import { calculate10RM } from '@/lib/workout-utils'
