@@ -10,7 +10,8 @@ timestamp: 2026-07-25T00:00:00Z
 ## Research: Timer beeps inaudible on Android PWA while music plays
 
 **Date:** 2026-07-25
-**Status:** Complete — no code changed yet; recommendation at the bottom.
+**Status:** Complete. Options A, B and F shipped (see *What shipped*); C, D and
+E are still open and gated on the device verification below.
 
 ## Problem Statement
 
@@ -130,6 +131,29 @@ if verification shows the failure is background/routing rather than masking.
 
 Deliberately not recommending E; pausing the user's music to announce a round
 is a worse outcome than a missed beep.
+
+## What shipped
+
+A, B and F, one commit each:
+
+1. **B** — `useTimerAudio` is a `createGlobalState` singleton: one
+   `AudioContext` per session instead of one per component, `prepare()` warms
+   it from the mount of a timer screen (while user activation still holds), an
+   inaudible `ConstantSourceNode` keeps the output device open between cues,
+   and `visibilitychange` resumes the context when the user comes back from
+   their music app. `dispose()` exists for the test boundary.
+2. **A** — each cue is now a burst of enveloped `square` pulses through a
+   shared `DynamicsCompressorNode`, scheduled on the audio clock rather than
+   chained `setTimeout`s. Pulse count identifies the cue by ear: 2 = work,
+   1 = rest, 3 = round, ascending = complete.
+3. **F** — Tabata work/rest/complete transitions vibrate as well as beep.
+   Round changes stay audio-only: work opens every round in the same tick, and
+   a second `navigator.vibrate()` call would cancel the first.
+
+Still open: **C** (schedule cues across a whole interval so background timer
+throttling cannot delay them), **D** (media-element cue to make Android duck
+the music), and the AMRAP/EMOM/ForTime views plus `useRestTimer`, which still
+have no audio cue at all.
 
 ## Verification (do this before building C or D)
 

@@ -203,10 +203,16 @@ export const useTimerAudio = createGlobalState(() => {
 
     oscillator.start(startAt)
     oscillator.stop(endAt)
-    oscillator.onended = () => {
-      oscillator.disconnect()
-      envelope.disconnect()
-    }
+    // Release the pulse's nodes once it has finished sounding; a workout
+    // schedules hundreds of these.
+    oscillator.addEventListener(
+      'ended',
+      () => {
+        oscillator.disconnect()
+        envelope.disconnect()
+      },
+      { once: true },
+    )
   }
 
   /**
