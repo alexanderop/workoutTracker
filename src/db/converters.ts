@@ -1,5 +1,5 @@
 import type { Workout } from '@/types/workout'
-import type { CustomExercise } from '@/types/exercises'
+import type { CustomExercise } from '@/exercises/types'
 import type { BenchmarkWorkout } from '@/types/benchmark'
 import {
   DEFAULT_HABIT_ACCENT,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 import type {
   AmrapConfig,
   BlockExercise,

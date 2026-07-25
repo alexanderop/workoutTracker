@@ -9,13 +9,13 @@ import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import BenchmarkViewMode from '@/features/benchmarks/components/BenchmarkViewMode.vue'
 import BenchmarkEditMode from '@/features/benchmarks/components/BenchmarkEditMode.vue'
 import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.vue'
-import ExercisePicker from '@/components/ExercisePicker.vue'
+import ExercisePicker from '@/exercises/ui/ExercisePicker.vue'
 import { useEnterAnimation } from '@/composables/useEnterAnimation'
 import { useBenchmarkDetail } from '@/features/benchmarks/composables/useBenchmarkDetail'
 import { useBenchmarkForm } from '@/features/benchmarks/composables/useBenchmarkForm'
 import { formatBenchmarkType } from '@/lib/formatters'
 import { RouteNames } from '@/router'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 
 const { t } = useI18n()
 
@@ -65,7 +65,7 @@ async function handleStartWorkout() {
 
 function enterEditMode() {
   if (state.value.status !== 'success') {
-	return;
+    return
   }
 
   initialize(state.value.benchmark)
@@ -122,7 +122,11 @@ async function handleDeleteBenchmark(): Promise<void> {
 
 <template>
   <PageLayout
-    :title="state.status === 'success' && !isEditMode ? state.benchmark.name : t('workouts.benchmarks.detail.title')"
+    :title="
+      state.status === 'success' && !isEditMode
+        ? state.benchmark.name
+        : t('workouts.benchmarks.detail.title')
+    "
     :subtitle="
       state.status === 'success' && !isEditMode
         ? formatBenchmarkType(state.benchmark.type, state.benchmark.rounds.length)
@@ -162,7 +166,10 @@ async function handleDeleteBenchmark(): Promise<void> {
     />
 
     <!-- Error state -->
-    <div v-else-if="state.status === 'error'" class="flex flex-col items-center justify-center py-16">
+    <div
+      v-else-if="state.status === 'error'"
+      class="flex flex-col items-center justify-center py-16"
+    >
       <p class="mb-4 text-muted-foreground">{{ t('workouts.benchmarks.detail.error') }}</p>
       <Button variant="outline" @click="router.push('/workouts')">
         {{ t('workouts.detail.goBack') }}

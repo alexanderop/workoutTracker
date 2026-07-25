@@ -1,7 +1,7 @@
 /* eslint-disable vitest/expect-expect -- Repository helpers throw on unsuccessful seed operations. */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { seedPopularExercises } from '@/db/seedExercises'
-import { egymExercises, popularExercises } from '@/data/popularExercises'
+import { egymExercises, popularExercises } from '@/exercises/catalog'
 import { getCustomExercisesRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { getCustomExerciseCount, expectCustomExerciseCount } from '@/__tests__/helpers/dbAssertions'

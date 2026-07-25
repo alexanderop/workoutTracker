@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Dumbbell } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkoutBlockDialogs } from '@/blocks/ui/useWorkoutBlockDialogs'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 import { WorkoutBlockDialogs } from '@/blocks/ui'
 import { Button } from '@/components/ui/button'
 import {

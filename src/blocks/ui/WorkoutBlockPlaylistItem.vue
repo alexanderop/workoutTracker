@@ -3,7 +3,7 @@ import { GripVertical, Pencil, X } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/blocks'
 import {

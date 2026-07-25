@@ -8,7 +8,7 @@ import NumericValueDisplay from './NumericValueDisplay.vue'
 import NumericKeypad from './NumericKeypad.vue'
 import { useNumericInput, type InputType } from './useNumericInput'
 import { useSettingsStore } from '@/stores/settings'
-import type { Equipment } from '@/types/exercises'
+import type { Equipment } from '@/exercises/types'
 
 type Props = {
   type: InputType
@@ -90,12 +90,7 @@ function handleCancel() {
     >
       <!-- Header -->
       <header class="flex items-center justify-between border-b px-4 py-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="text-muted-foreground"
-          @click="handleCancel"
-        >
+        <Button variant="ghost" size="sm" class="text-muted-foreground" @click="handleCancel">
           {{ t('common.buttons.cancel') }}
         </Button>
 

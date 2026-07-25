@@ -6,7 +6,7 @@
  * should not be deleted or overwritten in the database.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { useExercisesStore } from '@/stores/exercises'
+import { useExercisesStore } from '@/exercises/store'
 import { getCustomExercisesRepository, generateId } from '@/db'
 import type { DbCustomExercise } from '@/db/schema'
 import { resetDatabase } from '../helpers/resetDatabase'

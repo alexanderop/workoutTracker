@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 import type { DbBenchmark, DbBenchmarkRound } from '@/db/schema'
 import { getBenchmarksRepository } from '@/db'
 import { tryCatch } from '@/lib/tryCatch'

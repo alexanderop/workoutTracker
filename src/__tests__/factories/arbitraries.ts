@@ -11,7 +11,7 @@
  */
 
 import fc from 'fast-check'
-import { EQUIPMENT_VALUES } from '@/types/exercises'
+import { EQUIPMENT_VALUES } from '@/exercises/types'
 import type { Workout, Set } from '@/types/workout'
 import { CARDIO_ACTIVITIES } from '@/blocks'
 import type { BlockExercise, DbSet, DbTemplateBlock, DbWorkoutBlock, WorkoutBlock } from '@/blocks'

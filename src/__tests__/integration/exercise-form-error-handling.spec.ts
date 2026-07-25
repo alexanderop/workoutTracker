@@ -13,7 +13,7 @@ import { page, userEvent } from 'vitest/browser'
 import { describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
-import { useExercisesStore } from '@/stores/exercises'
+import { useExercisesStore } from '@/exercises/store'
 
 describe('Exercise Form Error Handling', () => {
   describe('Create exercise', () => {

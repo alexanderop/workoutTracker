@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod'
-import { EQUIPMENT_VALUES } from '@/types/exercises'
+import { EQUIPMENT_VALUES } from '@/exercises/types'
 
 /**
  * Reserved keywords that could enable prototype pollution attacks.

@@ -27,11 +27,12 @@ shared exercise UI (avatar, picker, filters, list item).
 
 ## Boundary against features
 
-A domain module holds what more than one feature (or a feature plus views)
-needs. Code only one feature needs stays in that feature. `src/features/exercises/`
-therefore keeps the exercise management screens' own components and composables
-even though `src/exercises/` exists — the domain module is the shared kernel,
-the feature is one consumer of it.
+A domain module holds one domain. A feature holds one user-facing capability
+built on top of domains. When the two would carry the same name, the domain
+module wins and absorbs the rest: there is no `src/features/exercises/`,
+because everything in it — the exercise form, the progress charts, the image
+upload — is the exercise catalog, not a capability layered on it. Features like
+workout, benchmarks and habits keep their own components and composables.
 
 ## Why
 

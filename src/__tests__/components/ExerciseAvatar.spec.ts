@@ -1,7 +1,7 @@
 import { render } from 'vitest-browser-vue'
 import { page } from 'vitest/browser'
 import { describe, expect, it } from 'vitest'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import { createTestImageBlob } from '@/__tests__/factories/image'
 
 const exerciseIconTestIdPattern = /^exercise-icon-/

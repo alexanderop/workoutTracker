@@ -1,6 +1,6 @@
 import { expectTypeOf } from 'vitest'
 import type { z } from 'zod'
-import type { ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type { ExerciseType, Metrics, Muscle } from '@/exercises/types'
 import {
   exerciseTypeSchema,
   metricsSchema,

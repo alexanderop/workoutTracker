@@ -3,7 +3,7 @@ import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkStat
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
-import { useExercisesStore } from '@/stores/exercises'
+import { useExercisesStore } from '@/exercises/store'
 import { useSettingsStore } from '@/stores/settings'
 import { resetWorkout } from '@/stores/workoutState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'

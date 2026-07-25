@@ -71,21 +71,25 @@ describe('main sequence fitness functions', () => {
       // Should be stable (few outgoing dependencies)
       expect(typesMetrics?.instability.instability).toBeLessThan(0.3)
 
-      // Should be on or near Main Sequence. Since ADR 002 the block types
-      // live in src/blocks and src/types partly re-exports them; re-export
-      // statements count as neither abstract nor concrete, so the threshold
-      // carries a small buffer over the 0.25 core default (current: 0.271).
-      expect(typesMetrics?.distance).toBeLessThan(0.3)
+      // Should be on or near Main Sequence (current: 0.131).
+      expect(typesMetrics?.distance).toBeLessThan(0.25)
     })
 
-    it('blocks should be close to Main Sequence (D < 0.3)', () => {
+    it('blocks should sit on the Main Sequence (D < 0.1)', () => {
       const blocksMetrics = getModuleMetrics(getReport(), 'blocks')
       expect(blocksMetrics).toBeDefined()
-      // Retiring the ADR 002 compat barrels pointed every consumer straight
-      // at @/blocks; the added afferent coupling lowers instability while the
-      // concrete codecs keep abstractness fixed, so D sits at ~0.286 (still
-      // inside the ideal Main Sequence zone reported by the analyzer).
-      expect(blocksMetrics?.distance).toBeLessThan(0.3)
+      // Taking the block UI and timers in (ADR 003) balanced the module: the
+      // concrete components lower abstractness by as much as their outgoing
+      // dependencies raise instability, so D fell from ~0.286 to ~0.021.
+      expect(blocksMetrics?.distance).toBeLessThan(0.1)
+    })
+
+    it('the exercise domain should be stable (I < 0.4)', () => {
+      const exercisesMetrics = getModuleMetrics(getReport(), 'exercises')
+      expect(exercisesMetrics).toBeDefined()
+      // ADR 003: every feature reads the exercise catalog, so the module has
+      // to be depended upon far more than it depends on anything.
+      expect(exercisesMetrics?.instability.instability).toBeLessThan(0.4)
     })
   })
 
@@ -190,12 +194,13 @@ describe('main sequence fitness functions', () => {
       }
     })
 
-    it('db module should only depend on types, blocks, and lib', () => {
+    it('db module should only depend on types, domain modules, and lib', () => {
       const databaseMetrics = getModuleMetrics(getReport(), 'db')
       expect(databaseMetrics).toBeDefined()
-      // DB dispatches block conversion through the Codec Registry (ADR 002)
-      // and can use lib utilities, but nothing else
-      const allowedDependencies = ['types', 'blocks', 'lib']
+      // DB dispatches block conversion through the Codec Registry (ADR 002),
+      // stores and seeds exercises from the exercise domain (ADR 003), and can
+      // use lib utilities, but nothing else
+      const allowedDependencies = ['types', 'blocks', 'exercises', 'lib']
       for (const dependency of databaseMetrics?.instability.dependsOn ?? []) {
         expect(allowedDependencies).toContain(dependency)
       }

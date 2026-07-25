@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import type { Equipment, Muscle } from '@/types/exercises'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Equipment, Muscle } from '@/exercises/types'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 
 import { Plus, Search, X } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { RouteNames } from '@/router'
-import ExerciseFilters from '@/components/ExerciseFilters.vue'
-import ExerciseListItem from '@/components/ExerciseListItem.vue'
+import ExerciseFilters from '@/exercises/ui/ExerciseFilters.vue'
+import ExerciseListItem from '@/exercises/ui/ExerciseListItem.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useExerciseSearch } from '@/composables/useExerciseSearch'
+import { useExerciseSearch } from '@/exercises/useExerciseSearch'
 
 const router = useRouter()
 const { t } = useI18n()

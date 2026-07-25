@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { useTimedBlockExercises } from '@/blocks/ui/useTimedBlockExercises'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 
 const pushUps: Exercise = { name: 'Push-ups', type: 'compound', metrics: 'reps-only' }
 const squats: Exercise = { name: 'Air Squats', type: 'compound', metrics: 'reps-only' }

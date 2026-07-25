@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import type { BlockExercise } from '@/blocks'
 
 const { t } = useI18n()

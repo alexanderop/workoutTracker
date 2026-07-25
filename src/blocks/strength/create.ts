@@ -1,4 +1,4 @@
-import type { Equipment } from '@/types/exercises'
+import type { Equipment } from '@/exercises/types'
 import type { Set, StrengthBlock } from './types'
 
 /**

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { EXERCISE_TYPE_VALUES, METRICS_VALUES, MUSCLE_VALUES } from '@/types/exercises'
+import { EXERCISE_TYPE_VALUES, METRICS_VALUES, MUSCLE_VALUES } from '@/exercises/types'
 
 // Generic validation primitives live with the Block Codecs (ADR 002) so the
 // per-kind schemas in src/blocks can use them without reaching into features;

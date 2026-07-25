@@ -15,11 +15,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import ExercisePicker from '@/components/ExercisePicker.vue'
+import ExercisePicker from '@/exercises/ui/ExercisePicker.vue'
 import BenchmarkExerciseList from '@/features/benchmarks/components/BenchmarkExerciseList.vue'
 import RoundTabs from '@/features/benchmarks/components/RoundTabs.vue'
 import NumericInputModal from '@/components/ui/numeric-input/NumericInputModal.vue'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 
 const { t } = useI18n()
 const router = useRouter()

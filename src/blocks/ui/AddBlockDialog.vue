@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 import type { TimedBlockKind } from '@/blocks'
 
 import { Activity, Clock, Gauge, RefreshCcw, Zap } from '@lucide/vue'
@@ -7,7 +7,7 @@ import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import ExercisePickerContent from '@/components/ExercisePickerContent.vue'
+import ExercisePickerContent from '@/exercises/ui/ExercisePickerContent.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'

@@ -43,6 +43,7 @@ const FEATURES = readdirSync(FEATURES_ROOT, { withFileTypes: true })
 
 const SHARED_FOLDERS = [
   'blocks',
+  'exercises',
   'components',
   'composables',
   'lib',
@@ -78,6 +79,11 @@ describe('circular dependencies', () => {
 
   it('block codecs should be free of cycles', async () => {
     const rule = projectFiles().inFolder('src/blocks/**').should().haveNoCycles()
+    await expect(rule).toPassAsync()
+  })
+
+  it('the exercise domain should be free of cycles', async () => {
+    const rule = projectFiles().inFolder('src/exercises/**').should().haveNoCycles()
     await expect(rule).toPassAsync()
   })
 })

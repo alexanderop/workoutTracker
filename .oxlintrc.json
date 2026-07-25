@@ -25,7 +25,7 @@
   },
   "overrides": [
     {
-      "files": ["**/stores/**"],
+      "files": ["**/stores/**", "**/store.ts"],
       "rules": {
         "eslint/no-restricted-imports": "off"
       }

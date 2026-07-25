@@ -1,6 +1,6 @@
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { useToggle } from '@vueuse/core'
-import type { Exercise } from '@/composables/useExerciseSearch'
+import type { Exercise } from '@/exercises/useExerciseSearch'
 import { generateId } from '@/db/index'
 import type { BlockExercise } from '@/blocks'
 

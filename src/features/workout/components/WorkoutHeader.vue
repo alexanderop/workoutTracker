@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Equipment } from '@/types/exercises'
+import type { Equipment } from '@/exercises/types'
 
 const { t } = useI18n()
 
@@ -52,11 +52,7 @@ const router = useRouter()
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            :aria-label="t('common.aria.moreOptions')"
-          >
+          <Button variant="ghost" size="icon-sm" :aria-label="t('common.aria.moreOptions')">
             <MoreVertical class="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>

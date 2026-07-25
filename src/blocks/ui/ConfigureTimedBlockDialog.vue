@@ -2,7 +2,7 @@
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogActions from '@/components/DialogActions.vue'
-import ExercisePicker from '@/components/ExercisePicker.vue'
+import ExercisePicker from '@/exercises/ui/ExercisePicker.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'

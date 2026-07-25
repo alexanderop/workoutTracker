@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { GripVertical, X } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import type { BenchmarkFormExercise } from '../composables/useBenchmarkForm'
 import { useI18n } from 'vue-i18n'
 
@@ -36,7 +36,10 @@ const { t } = useI18n()
     @keydown.enter="emit('click')"
   >
     <!-- Drag handle -->
-    <div :data-testid="`exercise-drag-handle-${index}`" class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing">
+    <div
+      :data-testid="`exercise-drag-handle-${index}`"
+      class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing"
+    >
       <GripVertical class="icon-md text-muted-foreground" aria-hidden="true" />
     </div>
 
@@ -53,7 +56,9 @@ const { t } = useI18n()
     <!-- Exercise info -->
     <div class="min-w-0 flex-1">
       <p class="truncate font-medium">{{ exercise.name }}</p>
-      <p class="text-sm text-muted-foreground">{{ exercise.prescribedReps }} {{ t('common.reps') }}</p>
+      <p class="text-sm text-muted-foreground">
+        {{ exercise.prescribedReps }} {{ t('common.reps') }}
+      </p>
     </div>
 
     <!-- Delete button -->

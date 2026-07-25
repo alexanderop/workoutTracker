@@ -440,6 +440,7 @@ export default defineConfigWithVueTs(
             {
               target: [
                 './src/blocks',
+                './src/exercises',
                 './src/components',
                 './src/composables',
                 './src/lib',
