@@ -63,8 +63,14 @@ When('they reload the page', async ({ page }) => {
   await page.reload({ waitUntil: 'domcontentloaded' })
 })
 
+// Scoped to the `habit-today-` testid -- the one HabitDashboardCard.vue puts
+// on the Today list's card -- so this asserts "in today's habits" rather than
+// "somewhere on /habits" (which a page-wide getByText would also satisfy if
+// the name rendered in, say, the archived list).
 Then("{string} appears in today's habits", async ({ page }, name: string) => {
-  await expect(page.getByText(name, { exact: true })).toBeVisible()
+  const card = page.getByTestId(`habit-today-${name}`)
+  await expect(card).toBeVisible()
+  await expect(card.getByText(name, { exact: true })).toBeVisible()
 })
 
 Then('{string} is marked complete', async ({ page }, name: string) => {
