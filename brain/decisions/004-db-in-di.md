@@ -14,7 +14,7 @@ only types from `@/db/interfaces`, so it stays Node unit tier safe.
 `RepositoriesLive = scoped(Repositories, () => createDexieRepositoryProvider(), release)`,
 browser tiers only. This is the codebase's first genuine acquire/release pair —
 ADR 003 named the Dexie connection as exactly the case `Scope` shipped
-unvalidated against, and this ADR is where that case gets exercised.
+unvalidated against.
 
 `getRepositoryProvider()` is retained as a deprecated shim, still calling
 `createDexieRepositoryProvider()` directly — the same factory `RepositoriesLive`
@@ -135,6 +135,19 @@ on a second feature, not just asserted.
 - **14 `console.error` calls across `src/features` are un-injected side
   effects** and noise in tests written against this template. A `Logger`
   service is a separate decision, not folded into this one.
+- **`release` is wired up but not exercised.** As `src/db/services.live.ts`'s
+  header comment states, nothing disposes a `RepositoriesLive` runtime, so no
+  test drives `release` through `Scope`. The invariant that makes this safe —
+  **no test may call `dispose()` on a runtime built from this layer**, because
+  `db` is a process-wide module singleton and disposing any such runtime
+  closes the database for the whole process — is enforced by nothing but that
+  code comment: no test, no type, no lint rule.
+- **Whether `RepositoriesLive` should stay `scoped` or become a plain `sync`
+  is open, not settled.** A reviewer proposed `sync`, since nothing exercises
+  the finalizer; the plan deliberately kept `scoped` as the codebase's first
+  acquire/release pair, and revising it now would change a frozen plan
+  contract rather than extend it. Revisit once something actually exercises
+  `release`.
 
 ## Rejected alternatives
 
