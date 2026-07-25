@@ -357,6 +357,7 @@ context and keep moving.
 | "The test passes, so it's a good test" | A green test that mocks internal collaborators, asserts call counts/order, tests private methods, or verifies through a side channel is coupled to implementation and breaks on refactor. Reject it; tests verify observable behavior through the public interface. |
 | "I'll commit everything once the whole plan is green" | One end-of-run commit throws away every resume point. Commit per AC, as each one goes green. |
 | "The tree is already dirty, I'll just start editing here" | Uncommitted work on `main` is how four hours of DI work ended up unshippable. Branch first; if the dirt is unrelated, stop and ask. |
+| "I'll dispatch the workers one at a time so I can react to each" | One worker per message is a sequential queue wearing a wave's clothes. Independent slices go in one message as separate tool calls; react after the wave lands. |
 | "The pre-commit gate is slow, I'll pass `--no-verify`" | The gate is ~15s and exists because a dead export reached Required CI. Bypassing it moves the failure to CI, where it costs minutes and a context switch. |
 
 ## Output
