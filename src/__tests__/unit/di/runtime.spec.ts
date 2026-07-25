@@ -21,6 +21,15 @@ describe('makeRuntime', () => {
     expect(runtime.get(countTag)).toBe(7)
   })
 
+  it('resolves every provided layer through the typed runtime.context', () => {
+    const countTag = Tag<number>('count')
+    const nameTag = Tag<string>('name')
+    const runtime = makeRuntime([succeed(countTag, 7), succeed(nameTag, 'x')])
+
+    expect(runtime.context.get(countTag)).toBe(7)
+    expect(runtime.context.get(nameTag)).toBe('x')
+  })
+
   it('lets a later layer read an earlier layer service off the accumulated context', () => {
     const countTag = Tag<number>('count')
     const doubledTag = Tag<number>('doubled')

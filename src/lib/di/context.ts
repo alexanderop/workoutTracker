@@ -75,7 +75,9 @@ export function make<S>(tag: Tag<S>, impl: S): Context<S> {
 
 /** Build a context from an already-erased key -> implementation map,
  *  snapshotting it so later mutations to the caller's map go unobserved.
- *  Used by runtime.ts; the resulting context has no typed service union. */
-export function unsafeMake(services: ReadonlyMap<string, unknown>): Context {
+ *  Used by runtime.ts; `Services` defaults to `never` when there is no tuple to infer it from. */
+export function unsafeMake<Services = never>(
+  services: ReadonlyMap<string, unknown>,
+): Context<Services> {
   return contextOf(new Map(services))
 }

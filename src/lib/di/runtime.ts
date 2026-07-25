@@ -37,10 +37,14 @@ function runtimeOf<Services>(context: Context<Services>, scope: Scope): Runtime<
   }
 }
 
-/** Compose any number of layers. Across a heterogeneous array the service
- *  union is erased (D7's known limitation), so `context` is `Context<never>`
- *  and services are reached with `runtime.get`. */
-export function makeRuntime(layers: ReadonlyArray<ErasedLayer>): Runtime {
+/** Compose any number of layers, recovering the service union via tuple
+ *  inference so `context` is typed per-layer. Vue's `inject()` erases it
+ *  again; `src/lib/di/vue.ts` is where the union is re-asserted. */
+type ServiceOf<L> = L extends Layer<infer S> ? S : never
+
+export function makeRuntime<Layers extends ReadonlyArray<ErasedLayer>>(
+  layers: readonly [...Layers],
+): Runtime<ServiceOf<Layers[number]>> {
   const scope = makeScope()
   const [error, services] = tryCatch(() => buildAll(layers, scope))
   if (error !== null) {
@@ -49,7 +53,7 @@ export function makeRuntime(layers: ReadonlyArray<ErasedLayer>): Runtime {
     tryCatch(() => scope.close())
     throw error
   }
-  return runtimeOf(unsafeMake(services), scope)
+  return runtimeOf(unsafeMake<ServiceOf<Layers[number]>>(services), scope)
 }
 
 /** Single-layer build that keeps the service in the context type — the typed
