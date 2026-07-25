@@ -23,10 +23,11 @@ type Resolution<S> = { found: true; value: S } | { found: false }
 // Coerces an erased value back to its statically-known type at the seams where
 // that is unavoidable, without an `as` assertion: the generic overload is what
 // callers see; the implementation signature below it only promises `unknown`,
-// so the body needs no cast. Used here for map lookups and by `./vue.ts` to
-// re-assert the `Services` union that Vue's `inject()` erases.
-export function unsafeCoerce<S>(value: unknown): S
-export function unsafeCoerce(value: unknown): unknown {
+// so the body needs no cast. Used here for map lookups; `./vue.ts` keeps its
+// own copy of this hatch rather than importing it, so it stays private to the
+// kernel.
+function unsafeCoerce<S>(value: unknown): S
+function unsafeCoerce(value: unknown): unknown {
   return value
 }
 
