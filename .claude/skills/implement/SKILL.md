@@ -257,12 +257,24 @@ slice.
 
 ### 6. Review Every Result
 
-A worker's "done" report is a claim, not a fact.
+A worker's "done" report is a claim, not a fact. The commit gate is the part of
+that claim you do not have to take on trust: `type-check`, `test:unit` and
+`knip` either passed or the commit does not exist, and no worker can talk its
+way past them.
+
+So spend your reading where the gate is blind. It proves types, the unit tier,
+and dead exports. It cannot see a deleted or weakened browser test, a hardcoded
+fixture, a stubbed branch with a TODO, or an edit outside the slice boundary —
+which is exactly the list of things a stuck worker reaches for.
 
 After each worker returns:
 
-1. Read the actual diff with `git diff`, not just the summary.
-2. Run the verification command yourself.
+1. Run the slice verification command yourself, then commit the AC. A red gate
+   ends the question here.
+2. Read the diff with `git diff`, hunting the gate's blind spots specifically:
+   removed or loosened assertions, `skip`/`only`, fixtures that encode the
+   expected answer, TODOs where behavior should be, and files outside the
+   brief. Skim what the gate already proved; do not re-derive it.
 3. If the result is wrong, re-dispatch once with the relevant diff and a
    specific correction.
 4. If it is wrong twice, treat the brief or model choice as the problem and
