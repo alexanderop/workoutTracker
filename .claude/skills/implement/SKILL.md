@@ -34,7 +34,9 @@ Never implement on `main`. Before the first edit:
 
 1. Run `git status --short`. If the tree is dirty with unrelated work, stop and
    ask — do not sweep someone else's changes onto a new branch.
-2. Create the branch from an up-to-date base:
+2. Check the branch you are on. If it is already a suitable feature branch, stay
+   on it, say so, and skip step 3 — do not switch away to cut a new one.
+3. Otherwise create the branch from an up-to-date base:
 
    ```bash
    git switch main && git pull --ff-only
@@ -44,7 +46,6 @@ Never implement on `main`. Before the first edit:
    `<type>` matches the Conventional Commit type the work will carry (`feat`,
    `fix`, `refactor`, `chore`, …) and `<slug>` is the plan slug when a plan
    exists — `feat/effect-style-di`, not `feat/new-stuff`.
-3. If already on a suitable feature branch, stay on it and say so.
 
 Skip this only when the user explicitly asked for an in-place edit on the
 current branch.

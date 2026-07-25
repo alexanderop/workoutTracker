@@ -9,8 +9,8 @@
 #                `HabitRepoLive` export reach Required CI on 2026-07-25
 #
 # Deliberately NOT here: the browser/integration/e2e tiers. They cost minutes
-# and are load-sensitive; CI owns them. Use `git commit --no-verify` only for a
-# genuine emergency, and re-run `pnpm lint:check && pnpm test` before pushing.
+# and are load-sensitive; CI owns them. Never bypass this hook with
+# `git commit --no-verify`; run `pnpm lint:check && pnpm test` before pushing.
 
 set -e
 
