@@ -14,5 +14,9 @@
  */
 import { RepositoriesLive } from '@/db/services.live'
 import { HabitRepoLive } from '@/features/habits/services.live'
+import type { ErasedLayer } from '@/lib/di/layer'
 
-export const appLayers = [RepositoriesLive, HabitRepoLive]
+export const appLayers = [
+  RepositoriesLive,
+  HabitRepoLive,
+] as const satisfies ReadonlyArray<ErasedLayer>
