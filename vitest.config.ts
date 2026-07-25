@@ -167,6 +167,14 @@ export default defineConfig({
           unstubGlobals: true,
           include: ['src/__tests__/architecture/**/*.test.ts'],
           // No browser config - runs in Node for filesystem access
+          //
+          // Every file here parses the whole TypeScript project (archunit or
+          // ts-morph), so each one saturates a core on its own. Running them
+          // concurrently starves all of them at once on a 2-core CI runner --
+          // which is exactly how three of these started timing out together.
+          // Serialize the files and let each have the machine.
+          fileParallelism: false,
+          testTimeout: 60_000,
         },
       },
     ],
