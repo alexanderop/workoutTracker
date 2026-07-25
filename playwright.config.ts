@@ -13,6 +13,7 @@ const bddTestDir = defineBddConfig({
 })
 
 export default defineConfig({
+  globalSetup: './test/e2e/bddGuard.ts',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
