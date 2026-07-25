@@ -73,3 +73,8 @@ src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
 # Scratch directory left behind by anthropics/claude-code-action runs; must
 # stay ignored so claude-fix-review.yml's source-only guard sees a clean tree
 .claude-pr/
+
+# Working plans are local scratch, not shared history. Grill/plan write them to
+# brain/plans/; they describe work in flight and go stale the moment it lands.
+# Durable outcomes belong in brain/decisions/ and brain/lessons/ instead.
+brain/plans/

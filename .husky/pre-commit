@@ -1,1 +1,20 @@
+# Commit-time gate. The workflow commits once per acceptance criterion, so this
+# runs often and must stay fast — budget is ~15s total.
+#
+# What is here and why:
+#   lint-staged  formatters/linters, staged files only
+#   type-check   vue-tsc --build, incremental (~11s)
+#   test:unit    node `unit` tier, no browser/IndexedDB (~1.5s, 131 tests)
+#   knip         dead exports (~1.4s) — the check that let an unused
+#                `HabitRepoLive` export reach Required CI on 2026-07-25
+#
+# Deliberately NOT here: the browser/integration/e2e tiers. They cost minutes
+# and are load-sensitive; CI owns them. Use `git commit --no-verify` only for a
+# genuine emergency, and re-run `pnpm lint:check && pnpm test` before pushing.
+
+set -e
+
 pnpm lint-staged
+pnpm -s type-check
+pnpm -s test:unit
+pnpm -s knip

@@ -16,8 +16,11 @@ INDEX="${BRAIN_DIR}/index.md"
 # brain/reflect skills; this hook bootstraps index.md the first time content lands.
 [ -d "$BRAIN_DIR" ] || exit 0
 
-# All .md files except index.md — relative paths without .md extension
+# All .md files except index.md — relative paths without .md extension.
+# plans/ is excluded: it is gitignored local scratch, and index.md is tracked,
+# so indexing plans would dirty a shared file with work-in-flight note names.
 disk=$(find "$BRAIN_DIR" -name "*.md" ! -name "index.md" -type f \
+    ! -path "${BRAIN_DIR}/plans/*" \
     | sed "s|^${BRAIN_DIR}/||; s|\.md$||" \
     | sort)
 

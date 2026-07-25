@@ -28,6 +28,27 @@ touching files.
 
 ## Process
 
+### 0. Branch Before Editing
+
+Never implement on `main`. Before the first edit:
+
+1. Run `git status --short`. If the tree is dirty with unrelated work, stop and
+   ask — do not sweep someone else's changes onto a new branch.
+2. Create the branch from an up-to-date base:
+
+   ```bash
+   git switch main && git pull --ff-only
+   git switch -c <type>/<slug>
+   ```
+
+   `<type>` matches the Conventional Commit type the work will carry (`feat`,
+   `fix`, `refactor`, `chore`, …) and `<slug>` is the plan slug when a plan
+   exists — `feat/effect-style-di`, not `feat/new-stuff`.
+3. If already on a suitable feature branch, stay on it and say so.
+
+Skip this only when the user explicitly asked for an in-place edit on the
+current branch.
+
 ### 1. Triage Complexity
 
 Before editing, classify the task.
@@ -268,6 +289,37 @@ behavior or cross-slice interactions. Before accepting:
   re-import after a new foreign key), not only per-slice checks. Isolated slice
   verification cannot see cross-slice runtime interactions.
 
+### 7. Commit Each Acceptance Criterion
+
+Commit as each acceptance criterion goes green — not once at the end. One AC is
+one commit: the behavior, its tests, and nothing else.
+
+```bash
+git add -A && git commit -m "<type>(<scope>): <what this AC delivers>"
+```
+
+The husky `pre-commit` hook is the gate: `lint-staged`, `type-check`,
+`test:unit`, and `knip`, about 15 seconds. A failing gate means the AC is not
+done — fix it and commit again. `commit-msg` enforces Conventional Commits, so
+the subject must match `<type>(<scope>): <subject>`.
+
+This is not bookkeeping. It buys three things a single end-of-run commit cannot:
+
+- **A resume point.** When an orchestrator dies mid-run (a 529, a timeout, a
+  context limit), completed ACs are already safe on the branch and only the
+  in-flight one is lost. Recovering meant redoing a whole integration pass by
+  hand on 2026-07-25.
+- **A reviewable history.** Each commit is one behavior with its own gate
+  evidence, so `git log` reads as the acceptance criteria in order.
+- **A bisect unit.** A later regression maps to one AC, not a 795-line blob.
+
+Tick the plan's verification checkbox in the same beat you commit, so the plan
+and the branch never disagree about what is done.
+
+Never use `git commit --no-verify` to get past the gate. If the gate is wrong,
+fix the gate in its own commit; if a check is genuinely inapplicable, say so in
+the final report rather than bypassing it silently.
+
 ## Stop and Ask
 
 STOP before dispatching workers when:
@@ -303,14 +355,19 @@ context and keep moving.
 | "I'll design the shared contract in the lead and just hand workers the call sites" | Contract design is the orchestrator's job. Designing it yourself is delegated architecture in reverse. Hand it the plan; let it freeze the contract and fan out the work. |
 | "The plan already fixed every contract, so I'll just execute it directly" | A decided plan is the orchestrator's input, not a reason to skip it. Frozen contracts still need bounded parallel slices and independent review. Hand the plan to `implement-orchestrator`. |
 | "The test passes, so it's a good test" | A green test that mocks internal collaborators, asserts call counts/order, tests private methods, or verifies through a side channel is coupled to implementation and breaks on refactor. Reject it; tests verify observable behavior through the public interface. |
+| "I'll commit everything once the whole plan is green" | One end-of-run commit throws away every resume point. Commit per AC, as each one goes green. |
+| "The tree is already dirty, I'll just start editing here" | Uncommitted work on `main` is how four hours of DI work ended up unshippable. Branch first; if the dirt is unrelated, stop and ask. |
+| "The pre-commit gate is slow, I'll pass `--no-verify`" | The gate is ~15s and exists because a dead export reached Required CI. Bypassing it moves the failure to CI, where it costs minutes and a context switch. |
 
 ## Output
 
 Final responses after implementation should include:
 
+- The branch name and the per-AC commits made on it (`git log --oneline`).
 - Changed files.
 - What changed and why.
 - Verification commands and results.
 - Any known gaps, follow-up risks, or blocked checks.
 
-When everything is green, suggest `simplify` as the next step.
+When everything is green, suggest `simplify` as the next step, then `ship-it`
+to push the branch and open the PR.

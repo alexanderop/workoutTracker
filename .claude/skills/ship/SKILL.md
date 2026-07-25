@@ -1,13 +1,13 @@
 ---
 name: ship
-description: Use when the user asks to run the whole AFK flow, ship a feature, take work from idea or plan to verified evidence, resume an AFK workflow, or make a final ship/no-ship call across planning, implementation, cleanup, and QA
+description: Use when the user asks to run the whole AFK flow, ship a feature, take work from idea or plan to a verified pull request, resume an AFK workflow, or make a final ship/no-ship call across planning, implementation, cleanup, QA, and PR creation
 ---
 
 # Ship
 
-Drive AFK's existing skills to an evidence-backed verdict. This skill
-orchestrates `grill`, `implement`, `simplify`, `review`, and
-`qa` without replacing their detailed instructions.
+Drive AFK's existing skills to an evidence-backed verdict and an open pull
+request. This skill orchestrates `grill`, `implement`, `simplify`, `review`,
+`qa`, and `ship-it` without replacing their detailed instructions.
 
 Core principle: do not claim something can ship until the relevant AFK phase
 artifacts exist or are deliberately skipped with a reason.
@@ -26,10 +26,10 @@ Use this skill when:
 Do not use this skill for:
 
 - A specific phase request such as "grill me", "implement this plan",
-  "simplify the diff", or "QA this"; use that named skill directly.
-- PR creation, branch management, release notes, or deployment monitoring. AFK
-  Ship stops at verified local evidence plus a brain reflection; it does not
-  push, deploy, or manage releases.
+  "simplify the diff", "QA this", or "open the PR"; use that named skill
+  directly.
+- Merging, release notes, or deployment monitoring. AFK Ship stops at an open
+  pull request; it does not merge, deploy, or manage releases.
 
 ## Process
 
@@ -40,11 +40,12 @@ finished phase `completed` before starting the next. The list gives the user a
 live view of the flow, for example:
 
 ```
-◼ Implement vim-trainer MVP via orchestrator
+◼ Implement vim-trainer MVP via orchestrator (branch + commit per AC)
 ◻ Simplify implementation diff
 ◻ Review diff (review)
 ◻ QA behavior (qa)
 ◻ Reflect learnings (reflect)
+◻ Push branch and open PR (ship-it)
 ```
 
 1. Inspect current state before routing.
@@ -111,11 +112,19 @@ live view of the flow, for example:
      with no new knowledge); say so. Reflection persists knowledge; it never
      changes the ship verdict.
 
-8. Finish with a ship report.
+8. Push the branch and open the PR.
+   - On a `SHIP` or `SHIP WITH CAVEATS` verdict, invoke `ship-it` to run the
+     full gate, rebase, push, and open the pull request. Verified work that
+     never leaves the machine is not shipped.
+   - On `DO NOT SHIP`, or with unresolved high-severity `review` findings, do
+     not invoke `ship-it`. Report the blocker and the next skill to run.
+   - Skip only when the user explicitly asked to stay local; say so.
+
+9. Finish with a ship report.
    - Summarize the phase route taken, changed files, verification, review
      verdict, QA report, final verdict, and what was reflected into the brain.
-   - Always include the `Route`, `Plan`, `Verification`, `Review`, `QA`, and
-     `Memory` fields even when phases were skipped.
+   - Always include the `Route`, `Plan`, `Verification`, `Review`, `QA`,
+     `Memory`, and `PR` fields even when phases were skipped.
    - If any phase could not run, report the blocker as a caveat or
      `DO NOT SHIP`; do not soften missing evidence into success.
 
@@ -127,8 +136,8 @@ STOP and ask the user when:
   not identify the right one.
 - Continuing would require product intent, credentials, paid services,
   destructive actions, or external state that the repo does not provide.
-- The user wants PR creation, deployment, or release management; that is
-  outside AFK Ship's v1 scope.
+- The user wants a merge, deployment, or release management; AFK Ship stops at
+  an open pull request.
 
 Do not ask about facts discoverable from plans, diffs, docs, tests, or QA
 artifacts.
@@ -141,6 +150,7 @@ artifacts.
 | "There is a QA report, so QA is done." | Reuse it only if it still matches the current diff and requested behavior. |
 | "Tests passed, so the final verdict is SHIP." | Tests are verification. Behavior-bearing work still needs `qa` evidence. |
 | "The work is almost done, so report success." | Missing phase evidence is a caveat or blocker, not success. |
+| "Everything is green locally, so the run is done." | Green and local is not shipped. Run `ship-it` unless the user asked to stay local. |
 
 ## Output
 
@@ -148,13 +158,14 @@ Return this compact shape:
 
 ```markdown
 Verdict: SHIP | DO NOT SHIP | SHIP WITH CAVEATS
-Route: grill skipped/used -> implement -> simplify skipped/used -> review skipped/used -> qa skipped/used -> reflect skipped/used
+Route: grill skipped/used -> implement -> simplify skipped/used -> review skipped/used -> qa skipped/used -> reflect skipped/used -> ship-it skipped/used
 Plan: brain/plans/<slug>.md or "none, reason"
 Changed: <files or summary>
 Verification: <commands/results>
 Review: accept | accept with notes | revise, or "skipped, reason"
 QA: qa/<slug>.md or "skipped, reason"
 Memory: <brain files written/updated, or "skipped, reason">
+PR: <url, or "skipped, reason">
 Caveat: <one sentence, only if needed>
 ```
 
