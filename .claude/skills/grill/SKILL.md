@@ -137,12 +137,13 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    steer.
 8. Now interview the ledger's open-needs-user rows, in priority order
    (blast-radius and irreversibility first, then the experience bar, then edge
-   cases, then cosmetics). **Exactly one question per message.** Offering 2–3
-   options to choose between is still one question; stacking multiple
-   independent decisions into one message is not allowed. If several things feel
-   open, ask only the one that unblocks the rest. Never ask for a vague "any
-   feedback?". Present each question as the quadruple — *(the view, the question,
-   why it matters / what breaks, your recommended default-if-silent)* — per
+   cases, then cosmetics). **Exactly one question per message** — offering 2–3
+   options to choose between is still one question, stacking independent
+   decisions is not. Ask the one that unblocks the rest, and never ask for a
+   vague "any feedback?" (full rule in
+   [RESEARCH-GATE.md](./RESEARCH-GATE.md)). Present each question as the
+   quadruple — *(the view, the question, why it matters / what breaks, your
+   recommended default-if-silent)* — per
    [QUESTION-FORMAT.md](./QUESTION-FORMAT.md): if the decision is about a code
    shape, draw the shape, and give every option its own code block. Silence or
    "your call" resolves a non-blocking row to its stated default — except the
