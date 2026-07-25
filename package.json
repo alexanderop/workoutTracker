@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "start:playwright:webserver": "vite preview --host 127.0.0.1 --port 5678 --strictPort",
     "test": "vitest run --project=default",
+    "test:unit": "vitest run --project=unit",
     "test:watch": "vitest --project=default",
     "test:headed": "vitest --project=default --browser.headless=false",
     "test:ui": "vitest --ui --project=default",

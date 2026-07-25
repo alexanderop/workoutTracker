@@ -42,8 +42,16 @@ jobs:
           set -euo pipefail
           case "$PROFILE" in
             quality)
+              # `test:unit` (the Node tier) rides along here rather than in its
+              # own job: it is ~2s of browserless tests, and this job already has
+              # deps installed. It runs without --coverage on purpose — the unit
+              # run's v8 map covers the whole `src/**` include at ~2% (it never
+              # loads the Vue components) and instruments the same files to
+              # different statement totals than the browser pipeline, so folding
+              # it into the merged gate drops statements from 86.14% to 70.36%
+              # and fails a threshold the browser shards clear on their own.
               pnpm exec run-p lint:check audit:prod knip i18n:check \
-                check:composables test:arch test:workflows
+                check:composables test:arch test:workflows test:unit
               ;;
             node-20-compat)
               pnpm type-check
