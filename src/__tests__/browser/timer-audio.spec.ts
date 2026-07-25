@@ -1,7 +1,14 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, type MockInstance } from 'vitest'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
+
+type OscillatorSpy = MockInstance<() => OscillatorNode>
+
+/** Frequencies of every oscillator the cue created, in scheduling order. */
+function playedFrequencies(spy: OscillatorSpy): Array<number | undefined> {
+  return spy.mock.results.map((result) => result.value?.frequency.value)
+}
 
 function setupWithSoundDisabled() {
   return withSetup(() => {
@@ -28,7 +35,9 @@ describe('useTimerAudio - browser mode', () => {
       app.unmount()
     })
 
-    it('creates oscillator with correct frequency for work beep (880Hz)', async () => {
+    // Pulse count is what tells the cues apart by ear over music, so it is part
+    // of the contract -- not just the frequency.
+    it('plays the work cue as two 880Hz pulses', async () => {
       // Spy BEFORE composable is created
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
@@ -37,42 +46,72 @@ describe('useTimerAudio - browser mode', () => {
       result.playWorkBeep()
 
       // Wait for async audio playback (AudioContext.resume() is async)
-      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
-      const oscillator = createOscillatorSpy.mock.results[0]?.value
-      expect(oscillator?.frequency.value).toBe(880)
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBe(2)
+      expect(playedFrequencies(createOscillatorSpy)).toEqual([880, 880])
 
       app.unmount()
       createOscillatorSpy.mockRestore()
     })
 
-    it('creates oscillator with correct frequency for rest beep (440Hz)', async () => {
+    it('plays the rest cue as a single 440Hz pulse', async () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playRestBeep()
 
-      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
-      const oscillator = createOscillatorSpy.mock.results[0]?.value
-      expect(oscillator?.frequency.value).toBe(440)
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBe(1)
+      expect(playedFrequencies(createOscillatorSpy)).toEqual([440])
 
       app.unmount()
       createOscillatorSpy.mockRestore()
     })
 
-    it('creates oscillator with correct frequency for round beep (660Hz)', async () => {
+    it('plays the round cue as three 660Hz pulses', async () => {
       const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
 
       const [result, app] = withSetup(() => useTimerAudio())
 
       result.playRoundBeep()
 
-      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
-      const oscillator = createOscillatorSpy.mock.results[0]?.value
-      expect(oscillator?.frequency.value).toBe(660)
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBe(3)
+      expect(playedFrequencies(createOscillatorSpy)).toEqual([660, 660, 660])
 
       app.unmount()
       createOscillatorSpy.mockRestore()
+    })
+
+    it('uses a harmonically rich waveform so cues cut through music', async () => {
+      const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
+
+      const [result, app] = withSetup(() => useTimerAudio())
+
+      result.playWorkBeep()
+
+      await expect.poll(() => createOscillatorSpy.mock.calls.length).toBeGreaterThan(0)
+      // A pure sine has no harmonics and is the easiest signal for music to mask.
+      expect(createOscillatorSpy.mock.results[0]?.value?.type).toBe('square')
+
+      app.unmount()
+      createOscillatorSpy.mockRestore()
+    })
+
+    it('schedules pulses on the audio clock rather than starting them now', async () => {
+      const startSpy = vi.spyOn(OscillatorNode.prototype, 'start')
+
+      const [result, app] = withSetup(() => useTimerAudio())
+
+      result.playRoundBeep()
+
+      await expect.poll(() => startSpy.mock.calls.length).toBe(3)
+      // Every pulse carries an explicit start time, and the burst is spread out
+      // in time -- a JS-timer-driven cue would pass no argument at all.
+      const startTimes = startSpy.mock.calls.map(([when]) => when)
+      expect(startTimes.every((when) => typeof when === 'number')).toBe(true)
+      expect(new Set(startTimes).size).toBe(3)
+
+      app.unmount()
+      startSpy.mockRestore()
     })
 
     it('plays complete sequence with ascending tones (440Hz, 660Hz, 880Hz)', async () => {

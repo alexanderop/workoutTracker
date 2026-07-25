@@ -18,6 +18,64 @@ const KEEPALIVE_OFFSET = 0.0001
 // worthless mid-workout, and unresolved resume() promises would hang callers.
 const RESUME_TIMEOUT_MS = 100
 
+// Android mixes our cues into the media stream at full music volume -- nothing
+// ducks the music for us -- so the cue itself has to cut through. A square wave
+// puts energy in the harmonics where music has least, and a burst of short
+// pulses is far easier to pick out of a mix than one flat tone. Pulse *count*
+// also tells the cues apart by ear alone: 2 = work, 1 = rest, 3 = round.
+const CUE_WAVEFORM: OscillatorType = 'square'
+
+// Per-pulse envelope. The attack/release are what stop the hard edges of a
+// square wave from clicking; without them every pulse starts at full amplitude.
+const PULSE_PEAK = 0.9
+const PULSE_ATTACK_SECONDS = 0.006
+const PULSE_RELEASE_SECONDS = 0.03
+// exponentialRampToValueAtTime() cannot ramp to zero.
+const PULSE_SILENCE = 0.0001
+
+// Schedule slightly ahead of `currentTime` so the first pulse is never placed in
+// the past (which plays it immediately, and clipped).
+const CUE_LEAD_SECONDS = 0.015
+
+// Compression before the volume knob: evens out the peaks so the cue reads as
+// louder against music without raising the user's configured volume.
+const COMPRESSOR_THRESHOLD_DB = -18
+const COMPRESSOR_KNEE_DB = 6
+const COMPRESSOR_RATIO = 6
+const COMPRESSOR_ATTACK_SECONDS = 0.003
+const COMPRESSOR_RELEASE_SECONDS = 0.1
+
+/** One tone within a cue: when it fires relative to the cue start, and for how long. */
+type CuePulse = {
+  frequency: number
+  /** Offset from the cue start, in seconds. */
+  at: number
+  duration: number
+}
+
+/** Work phase: two urgent high pulses -- "go". */
+const WORK_CUE: ReadonlyArray<CuePulse> = [
+  { frequency: 880, at: 0, duration: 0.1 },
+  { frequency: 880, at: 0.17, duration: 0.1 },
+]
+
+/** Rest phase: one longer, lower pulse -- "hold". */
+const REST_CUE: ReadonlyArray<CuePulse> = [{ frequency: 440, at: 0, duration: 0.24 }]
+
+/** Round transition: three mid pulses, the most distinctive pattern of the three. */
+const ROUND_CUE: ReadonlyArray<CuePulse> = [
+  { frequency: 660, at: 0, duration: 0.09 },
+  { frequency: 660, at: 0.15, duration: 0.09 },
+  { frequency: 660, at: 0.3, duration: 0.09 },
+]
+
+/** Completion: ascending tones, ending on a long high note. */
+const COMPLETE_CUE: ReadonlyArray<CuePulse> = [
+  { frequency: 440, at: 0, duration: 0.14 },
+  { frequency: 660, at: 0.16, duration: 0.14 },
+  { frequency: 880, at: 0.32, duration: 0.3 },
+]
+
 /**
  * Web-Audio beep cues for timer phase changes, respecting the user's timer
  * sound settings.
@@ -31,6 +89,8 @@ export const useTimerAudio = createGlobalState(() => {
 
   let audioContext: AudioContext | null = null
   let keepAlive: ConstantSourceNode | null = null
+  let cueBus: DynamicsCompressorNode | null = null
+  let volumeGain: GainNode | null = null
 
   /**
    * Hold the output device open between cues. Skipped where
@@ -90,56 +150,105 @@ export const useTimerAudio = createGlobalState(() => {
   })
 
   /**
-   * Play a beep at the specified frequency.
+   * The node every cue pulse connects to: compressor -> volume -> output. Built
+   * once per context and reused, so a cue only has to create its own pulses.
    */
-  async function playBeep(frequency: number, duration = 0.15): Promise<void> {
+  function getCueBus(context: AudioContext): DynamicsCompressorNode {
+    if (cueBus) return cueBus
+
+    const compressor = context.createDynamicsCompressor()
+    compressor.threshold.value = COMPRESSOR_THRESHOLD_DB
+    compressor.knee.value = COMPRESSOR_KNEE_DB
+    compressor.ratio.value = COMPRESSOR_RATIO
+    compressor.attack.value = COMPRESSOR_ATTACK_SECONDS
+    compressor.release.value = COMPRESSOR_RELEASE_SECONDS
+
+    const gain = context.createGain()
+    compressor.connect(gain)
+    gain.connect(context.destination)
+
+    cueBus = compressor
+    volumeGain = gain
+    return compressor
+  }
+
+  /**
+   * Schedule one enveloped pulse on the audio clock. Scheduling (rather than
+   * playing "now" from a JS timer) keeps a cue's rhythm intact even when the
+   * main thread is busy or throttled.
+   */
+  function schedulePulse(
+    context: AudioContext,
+    destination: AudioNode,
+    pulse: CuePulse,
+    cueStart: number,
+  ): void {
+    const startAt = cueStart + pulse.at
+    const endAt = startAt + pulse.duration
+
+    const oscillator = context.createOscillator()
+    oscillator.frequency.value = pulse.frequency
+    oscillator.type = CUE_WAVEFORM
+
+    const envelope = context.createGain()
+    const attackEnd = startAt + PULSE_ATTACK_SECONDS
+    const releaseStart = Math.max(attackEnd, endAt - PULSE_RELEASE_SECONDS)
+    envelope.gain.setValueAtTime(0, startAt)
+    envelope.gain.linearRampToValueAtTime(PULSE_PEAK, attackEnd)
+    envelope.gain.setValueAtTime(PULSE_PEAK, releaseStart)
+    envelope.gain.exponentialRampToValueAtTime(PULSE_SILENCE, endAt)
+
+    oscillator.connect(envelope)
+    envelope.connect(destination)
+
+    oscillator.start(startAt)
+    oscillator.stop(endAt)
+    oscillator.onended = () => {
+      oscillator.disconnect()
+      envelope.disconnect()
+    }
+  }
+
+  /**
+   * Play a cue: a burst of scheduled pulses through the shared cue bus.
+   */
+  async function playCue(cue: ReadonlyArray<CuePulse>): Promise<void> {
     const context = await ensureAudioReady()
     if (!context) return
 
-    const oscillator = context.createOscillator()
-    const gainNode = context.createGain()
+    const bus = getCueBus(context)
+    if (volumeGain) volumeGain.gain.value = Math.min(settings.timerSoundVolume, 1)
 
-    oscillator.frequency.value = frequency
-    oscillator.type = 'sine'
-    gainNode.gain.value = Math.min(settings.timerSoundVolume, 1)
-
-    oscillator.connect(gainNode)
-    gainNode.connect(context.destination)
-
-    oscillator.start()
-    oscillator.stop(context.currentTime + duration)
+    const cueStart = context.currentTime + CUE_LEAD_SECONDS
+    for (const pulse of cue) schedulePulse(context, bus, pulse, cueStart)
   }
 
   /**
-   * Play work interval beep (880Hz).
+   * Play the work interval cue (two 880Hz pulses).
    */
   function playWorkBeep(): void {
-    void playBeep(880)
+    void playCue(WORK_CUE)
   }
 
   /**
-   * Play rest interval beep (440Hz).
+   * Play the rest interval cue (one long 440Hz pulse).
    */
   function playRestBeep(): void {
-    void playBeep(440)
+    void playCue(REST_CUE)
   }
 
   /**
-   * Play round transition beep (660Hz).
+   * Play the round transition cue (three 660Hz pulses).
    */
   function playRoundBeep(): void {
-    void playBeep(660)
+    void playCue(ROUND_CUE)
   }
 
   /**
-   * Play completion sequence (ascending tones).
+   * Play the completion cue (ascending tones).
    */
   async function playComplete(): Promise<void> {
-    if (!settings.timerSoundEnabled) return
-
-    await playBeep(440, 0.15)
-    setTimeout(() => void playBeep(660, 0.15), 150)
-    setTimeout(() => void playBeep(880, 0.15), 300)
+    await playCue(COMPLETE_CUE)
   }
 
   /**
@@ -151,6 +260,10 @@ export const useTimerAudio = createGlobalState(() => {
     keepAlive?.stop()
     keepAlive?.disconnect()
     keepAlive = null
+    cueBus?.disconnect()
+    cueBus = null
+    volumeGain?.disconnect()
+    volumeGain = null
 
     const context = audioContext
     audioContext = null
