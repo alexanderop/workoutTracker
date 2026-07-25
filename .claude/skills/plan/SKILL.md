@@ -79,8 +79,8 @@ Constraints, Applicable skills (by name), Phases (ordered links like
 
 **Phase files** must include: a back-link (`Back to [[plans/42-mvp/overview]]`),
 Goal, Changes (files affected, high level), Data structures (name key
-types/schemas — one-line sketch, not full definitions), and Verification (static
-+ runtime, see Step 6).
+types/schemas — one-line sketch, not full definitions), and Verification (the
+Automated/Manual checkbox lists, see Step 6).
 
 **Keep plans high-level** — describe *what* and *why*, not *how* at the code
 level. A phase reads like a brief to a senior engineer. Order phases per the
@@ -99,16 +99,31 @@ overview's Constraints section, state which was chosen and why.
 
 ### Step 6 — Verification strategy
 
-Every phase **must** have a verification section with both:
+Every phase **must** have a verification section, written as a literal checkbox
+list with the exact command inline — not prose. The checkbox is not cosmetic: it
+is the **resume token**. A fresh session reads the plan, finds the first
+unchecked box, and continues from there; prose verification cannot be resumed
+from.
 
-- **Static** — type checking passes, linting passes, conventions followed, tests
-  written and passing.
-- **Runtime** — what to test manually, what automated tests to write
-  (unit/integration/e2e), edge cases, and (for UI) visual verification via
-  screenshot.
+```markdown
+#### Automated Verification:
+- [ ] Type checking passes: `pnpm type-check`
+- [ ] Lint passes: `pnpm lint`
+- [ ] Tests pass: `pnpm test`
 
-Per prove-it-works: "it compiles" is not verification. Every phase must describe
-how to **prove** the change works.
+#### Manual Verification:
+- [ ] [specific, actionable step]
+```
+
+- **Automated** — type checking, linting, and the tests written for this phase,
+  each with the command to run.
+- **Manual** — what to exercise by hand, edge cases, and (for UI) visual
+  verification via screenshot.
+
+Not every phase requires manual validation — don't put steps for manual
+validation just to have them. When a phase does, the bar stands: per
+prove-it-works, "it compiles" is not verification. Every box must be something
+that **proves** the change works.
 
 ### Step 7 — Update plans index
 

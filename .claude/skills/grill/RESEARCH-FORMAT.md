@@ -95,6 +95,14 @@ If none, say "None."
 ## Rules
 
 - **Descriptive only** — see the one rule above. Prescription lives in the plan.
+- **Research non-normatively; scouts must not be told what is being built.**
+  Brief every scout on how the system works *today*, never on the intended
+  change: "how does rest-timer state persist across reload" — never "how would we
+  add X". A scout that knows the desired answer finds evidence for it, and the
+  bias lands in this file as fact. The grill lead reads the ticket (it seeds
+  *what* to research); the scouts do not. This is what makes the file's claim
+  true — a reader can trust it as ground truth regardless of which plan spawned
+  it, and it stays usable for the next three tasks.
 - **Concept-first citations.** Say what something does, then cite where it lives.
   BAD: "`app.ts:57` creates WorkosService / `app.ts:58` creates S3Service."
   GOOD: "Services are module-level singletons created at startup in

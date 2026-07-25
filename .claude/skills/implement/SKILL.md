@@ -108,7 +108,14 @@ orchestrator's job. The lead's only inputs to `implement-orchestrator` are:
 
 1. The plan itself, usually `brain/plans/<slug>.md` from `grill` or
    `brain/plans/<slug>/` from `plan`, or the plan/design the user provided —
-   locate it under `brain/plans/` and pass it directly.
+   locate it under `brain/plans/` and pass it directly. **Document precedence:
+   `plan > research > brain notes > ticket`** — the most recent document wins and
+   the plan is the final authority. Do not re-open a decision the plan settled
+   because the ticket asked for something else or a brain note predates it; the
+   research doc (`<slug>.research.md`) is supporting evidence for *what is
+   there*, not a competing set of instructions. If the plan is genuinely silent
+   on something, that is a gap to decide or ask about, not licence to fall back
+   to the ticket's framing.
 2. Any constraints or acceptance criteria the user stated that are not already
    captured in the plan.
 3. Rulings for any decision in the plan the orchestrator will treat as a hard
@@ -237,6 +244,11 @@ After each worker returns:
    specific correction.
 4. If it is wrong twice, treat the brief or model choice as the problem and
    finish the fix in the lead context.
+
+Tick the plan's verification checkboxes as each one actually passes, and leave
+the rest unchecked. They are the resume token: a session picking this work up
+later starts at the **first unchecked box** rather than re-deriving where things
+stopped. Never tick a box you did not run.
 
 When all slices land, run the full relevant test suite and read the complete
 diff end-to-end for integration issues that slice reviews could not see. The
