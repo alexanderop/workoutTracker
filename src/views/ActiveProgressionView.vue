@@ -33,7 +33,7 @@ const {
   completeSession,
 } = useProgressionSession(id)
 
-const { playWorkBeep, playComplete } = useTimerAudio()
+const { prepare: prepareAudio, playWorkBeep, playComplete } = useTimerAudio()
 
 // Show completion dialog when timer finishes
 const showCompletionDialog = computed(() => isTimerComplete.value)
@@ -80,6 +80,9 @@ async function handleComplete(completed: boolean): Promise<void> {
 }
 
 onMounted(() => {
+  // Warm the audio path while the navigation gesture still counts as user
+  // activation, so the first minute beep is not swallowed by a cold output.
+  prepareAudio()
   load()
 })
 </script>
@@ -89,12 +92,7 @@ onMounted(() => {
     <!-- Header -->
     <header class="flex items-center justify-between border-b p-4">
       <div class="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          :aria-label="t('common.goBack')"
-          @click="handleBack"
-        >
+        <Button variant="ghost" size="icon" :aria-label="t('common.goBack')" @click="handleBack">
           <ArrowLeft :size="20" />
         </Button>
         <h1 class="text-lg font-semibold">{{ t('progressions.session.title') }}</h1>
@@ -131,7 +129,9 @@ onMounted(() => {
           <div v-if="isActive" class="space-y-4">
             <!-- Minute indicator -->
             <div class="text-lg text-muted-foreground">
-              {{ t('progressions.session.minute', { current: currentMinute, total: level?.minutes }) }}
+              {{
+                t('progressions.session.minute', { current: currentMinute, total: level?.minutes })
+              }}
             </div>
 
             <!-- Countdown -->
@@ -176,11 +176,7 @@ onMounted(() => {
           </DialogDescription>
         </DialogHeader>
         <DialogActions v-slot="{ buttonClass }">
-          <Button
-            variant="destructive"
-            :class="buttonClass"
-            @click="handleComplete(false)"
-          >
+          <Button variant="destructive" :class="buttonClass" @click="handleComplete(false)">
             <X class="mr-2" :size="16" />
             {{ t('progressions.session.no') }}
           </Button>

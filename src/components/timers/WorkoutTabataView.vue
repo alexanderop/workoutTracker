@@ -107,6 +107,9 @@ const formattedTime = computed(() => {
 
 // Initialize timer on mount
 onMounted(() => {
+  // Warm the audio path while opening the timer still counts as user
+  // activation, so the first cue is not swallowed by a cold output stream.
+  audio.prepare()
   timer.initialize(block)
 })
 

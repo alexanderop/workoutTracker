@@ -2,6 +2,7 @@ import { resetWorkout } from '@/stores/workoutState'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
 import { useBenchmarkGlobalTimer } from '@/composables/timers/useBenchmarkGlobalTimer'
+import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { usePastWorkout } from '@/features/log-past-workout/composables/usePastWorkout'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { useQuickAddStore } from '@/stores/quickAdd'
@@ -22,6 +23,9 @@ export async function cleanupIntegrationTest(): Promise<void> {
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
   useQuickAddStore().$reset()
+  // The timer audio engine is a singleton that owns an AudioContext; release it
+  // so each test starts from a cold, un-primed audio path.
+  await useTimerAudio().dispose()
   await resetDatabase()
   resetThemeState()
   document.body.style.cssText = ''
@@ -40,6 +44,7 @@ export async function setupIntegrationTest(): Promise<void> {
   useBenchmarkGlobalTimer().reset()
   usePastWorkout().reset()
   useQuickAddStore().$reset()
+  await useTimerAudio().dispose()
   await resetDatabase()
   resetThemeState()
 

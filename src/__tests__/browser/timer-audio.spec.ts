@@ -107,6 +107,38 @@ describe('useTimerAudio - browser mode', () => {
       createGainSpy.mockRestore()
     })
 
+    it('shares one audio engine across every caller', () => {
+      const [first, firstApp] = withSetup(() => useTimerAudio())
+      const [second, secondApp] = withSetup(() => useTimerAudio())
+
+      // A single engine means a single AudioContext for the session, which is
+      // what keeps the output path warm between cues on Android.
+      expect(second).toBe(first)
+
+      firstApp.unmount()
+      secondApp.unmount()
+    })
+
+    it('warms the audio path on prepare() without making a sound', async () => {
+      const [result, app] = withSetup(() => useTimerAudio())
+      // Earlier cases already primed the shared engine; start from a cold one.
+      await result.dispose()
+
+      const createOscillatorSpy = vi.spyOn(AudioContext.prototype, 'createOscillator')
+      const createConstantSourceSpy = vi.spyOn(AudioContext.prototype, 'createConstantSource')
+
+      result.prepare()
+
+      // The inaudible keepalive holds the output device open ...
+      await expect.poll(() => createConstantSourceSpy.mock.calls.length).toBeGreaterThan(0)
+      // ... but priming must never emit a tone of its own.
+      expect(createOscillatorSpy).not.toHaveBeenCalled()
+
+      app.unmount()
+      createOscillatorSpy.mockRestore()
+      createConstantSourceSpy.mockRestore()
+    })
+
     it('plays multiple beeps without errors', () => {
       const [result, app] = withSetup(() => useTimerAudio())
 
