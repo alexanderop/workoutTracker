@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { useHabits } from '@/features/habits/composables/useHabits'
 import { HabitRepo } from '@/features/habits/services'
 import { empty } from '@/lib/di/context'
-import { Clock } from '@/lib/clock'
+import { Clock, IdGen } from '@/lib/clock'
 import { testClock } from '@/__tests__/fakes/clock'
 import { getStartOfDay } from '@/lib/date'
 import { createFakeHabitRepository } from '@/__tests__/fakes/habitRepository'
@@ -65,6 +65,21 @@ describe('useHabits', () => {
       expect(habits.value).toHaveLength(0)
       expect(errorSpy).toHaveBeenCalled()
       errorSpy.mockRestore()
+    })
+
+    it('assigns the id produced by the seeded IdGen instead of a random one', async () => {
+      const ctx = contextFor(createFakeHabitRepository()).add(IdGen, () => 'habit-1')
+      const { createHabit } = useHabits(ctx)
+
+      const result = await createHabit({
+        name: 'Read',
+        icon: null,
+        schedule: { type: 'daily' },
+        kind: { type: 'binary' },
+        autoLink: null,
+      })
+
+      expect(result?.id).toBe('habit-1')
     })
   })
 
