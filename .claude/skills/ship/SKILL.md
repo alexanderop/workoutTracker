@@ -1,6 +1,7 @@
 ---
 name: ship
 description: Use when the user asks to run the whole AFK flow, ship a feature, take work from idea or plan to a verified pull request, resume an AFK workflow, or make a final ship/no-ship call across planning, implementation, cleanup, QA, and PR creation
+disable-model-invocation: true
 ---
 
 # Ship
@@ -11,6 +12,11 @@ request. This skill orchestrates `grill`, `implement`, `simplify`, `review`,
 
 Core principle: do not claim something can ship until the relevant AFK phase
 artifacts exist or are deliberately skipped with a reason.
+
+This skill is `disable-model-invocation: true` — only the user starts a ship
+run. It commits, pushes, and opens pull requests, and none of that should begin
+because the code merely looks ready. `ship-it` stays model-invocable so step 8
+can chain to it; its own preconditions are what stop an unwanted push.
 
 ## When to Use
 
