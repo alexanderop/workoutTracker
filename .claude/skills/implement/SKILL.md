@@ -270,8 +270,8 @@ which is exactly the list of things a stuck worker reaches for.
 
 After each worker returns:
 
-1. Run the slice verification command yourself, then commit the AC. A red gate
-   ends the question here.
+1. Run the slice verification command yourself. A red gate ends the question
+   here.
 2. Read the diff with `git diff`, hunting the gate's blind spots specifically:
    removed or loosened assertions, `skip`/`only`, fixtures that encode the
    expected answer, TODOs where behavior should be, and files outside the
@@ -280,6 +280,12 @@ After each worker returns:
    specific correction.
 4. If it is wrong twice, treat the brief or model choice as the problem and
    finish the fix in the lead context.
+
+A green slice is not a landed AC. One acceptance criterion usually spans several
+slices, so committing after each worker would split one AC across several
+commits and cost the resume, review, and bisect properties §7 exists to buy.
+Commit once every slice under that AC is green and its AC-level verification has
+run — see §7.
 
 Tick the plan's verification checkboxes as each one actually passes, and leave
 the rest unchecked. They are the resume token: a session picking this work up

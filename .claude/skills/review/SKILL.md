@@ -57,14 +57,13 @@ CHANGE**, delegate exploration to subagents (`subagent_type: Explore`) via the
 Task tool to read the code/plan, identify dependencies and downstream effects,
 and map types/tests/infrastructure. Parallelize independent areas.
 
-### Step 4 — Gather domain skills
+Do not go looking for peer skills to invoke. A cold reviewer that loads a
+sibling skill inherits that skill's framing and starts grading the diff against
+the goals it was written to pursue — which is the same self-grading the fork
+exists to prevent. Review from the diff, the code, the brain, and whatever
+domain guidance the caller handed you explicitly.
 
-Check installed skills (`.claude/skills/`, and any project skill directory) for
-ones matching the review's domain and **invoke matched skills** to inform the
-review. If a skill-search tool is available, search for relevant uninstalled
-skills.
-
-### Step 5 — Assessment pipeline
+### Step 4 — Assessment pipeline
 
 Work through all sections in order; check each against loaded principles.
 
@@ -84,7 +83,7 @@ Work through all sections in order; check each against loaded principles.
 6. **Principle compliance** — for each changed file, check against loaded
    principles (bolted-on vs. redesign, missing verification, added complexity).
 
-### Step 6 — Issue format
+### Step 5 — Issue format
 
 **NUMBER** each issue. For every issue: describe it concretely with file/line
 references; assign **severity** (high / medium / low); present 2–3 options
@@ -99,7 +98,7 @@ scope violation on core files, architecture-changing principle violation.
 **medium**: worth fixing, not blocking alone (multiple may block). **low**:
 style/docs/minor — note, don't block.
 
-### Step 7 — Verdict
+### Step 6 — Verdict
 
 - **Accept** — all checks pass, scope clean, tests present and passing.
 - **Accept with notes** — low-severity issues only; list for optional follow-up.
