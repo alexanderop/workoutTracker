@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogActions from '@/components/DialogActions.vue'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
+import { ExerciseIcon } from '@/components/exercise-icons'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -91,7 +92,10 @@ function handleClose() {
     >
       <DialogHeader>
         <div class="flex items-center gap-2">
-          <span class="text-2xl">{{ selectedActivityInfo?.icon ?? '🏃' }}</span>
+          <ExerciseIcon
+            :name="selectedActivityInfo?.icon ?? 'cardio-running'"
+            class="size-7 text-block-cardio"
+          />
           <DialogTitle>{{ t('dialogs.cardioConfig.title') }}</DialogTitle>
         </div>
         <DialogDescription>{{ t('dialogs.cardioConfig.description') }}</DialogDescription>
@@ -116,7 +120,7 @@ function handleClose() {
               "
               @click="selectedActivity = activity.value"
             >
-              <span class="text-xl mb-1">{{ activity.icon }}</span>
+              <ExerciseIcon :name="activity.icon" class="size-8 mb-1 text-current" />
               <span class="text-xs truncate w-full text-center">{{ activity.label }}</span>
             </button>
           </div>

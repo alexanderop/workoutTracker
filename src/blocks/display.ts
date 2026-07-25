@@ -12,10 +12,12 @@ import type { BlockExercise } from './shared/types'
 import type { BlockColor, BlockKind, BlockMeta, TimedBlock, WorkoutBlock } from './types'
 import type { CardioActivity } from './cardio/types'
 import { CARDIO_ACTIVITY_VALUES } from './cardio/types'
+import type { ExerciseIconKey } from '@/components/exercise-icons'
 
 type CardioActivityDisplay = {
   label: string
-  icon: string
+  /** Key into the bundled artwork in `src/components/exercise-icons`. */
+  icon: ExerciseIconKey
   supportsDistance: boolean
   distanceUnit: 'km' | 'laps' | null
 }
@@ -26,13 +28,43 @@ type CardioActivityDisplay = {
  * here until it gets a label.
  */
 const CARDIO_ACTIVITY_DISPLAY: Record<CardioActivity, CardioActivityDisplay> = {
-  running: { label: 'Running', icon: '🏃', supportsDistance: true, distanceUnit: 'km' },
-  cycling: { label: 'Cycling', icon: '🚴', supportsDistance: true, distanceUnit: 'km' },
-  rowing: { label: 'Rowing', icon: '🚣', supportsDistance: true, distanceUnit: 'km' },
-  elliptical: { label: 'Elliptical', icon: '🏋️', supportsDistance: false, distanceUnit: null },
-  swimming: { label: 'Swimming', icon: '🏊', supportsDistance: true, distanceUnit: 'laps' },
-  stairclimber: { label: 'Stair Climber', icon: '🪜', supportsDistance: false, distanceUnit: null },
-  walking: { label: 'Walking', icon: '🚶', supportsDistance: true, distanceUnit: 'km' },
+  running: {
+    label: 'Running',
+    icon: 'cardio-running',
+    supportsDistance: true,
+    distanceUnit: 'km',
+  },
+  cycling: {
+    label: 'Cycling',
+    icon: 'cardio-cycling',
+    supportsDistance: true,
+    distanceUnit: 'km',
+  },
+  rowing: { label: 'Rowing', icon: 'cardio-rowing', supportsDistance: true, distanceUnit: 'km' },
+  elliptical: {
+    label: 'Elliptical',
+    icon: 'cardio-elliptical',
+    supportsDistance: false,
+    distanceUnit: null,
+  },
+  swimming: {
+    label: 'Swimming',
+    icon: 'cardio-swimming',
+    supportsDistance: true,
+    distanceUnit: 'laps',
+  },
+  stairclimber: {
+    label: 'Stair Climber',
+    icon: 'cardio-stair-climber',
+    supportsDistance: false,
+    distanceUnit: null,
+  },
+  walking: {
+    label: 'Walking',
+    icon: 'cardio-walking',
+    supportsDistance: true,
+    distanceUnit: 'km',
+  },
 }
 
 export const CARDIO_ACTIVITIES: ReadonlyArray<{ value: CardioActivity } & CardioActivityDisplay> =
