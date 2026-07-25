@@ -1,5 +1,5 @@
 import { page, userEvent } from 'vitest/browser'
-import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import type { TestApp } from '../helpers/createTestApp'
 import {
@@ -161,6 +161,22 @@ describe('Timer Audio Playback', () => {
           { timeout: 7000 },
         )
         .toBeDefined()
+    })
+
+    it('vibrates alongside the work cue so a phase change is never sound-only', async ({
+      createTestApp,
+    }) => {
+      const testApp = await createTestApp()
+      const vibrateSpy = vi.spyOn(navigator, 'vibrate')
+
+      await startShortTabata(testApp)
+
+      await expect.poll(() => vibrateSpy.mock.calls.length).toBeGreaterThan(0)
+      // A multi-buzz pattern, not a single flat buzz: it has to be felt through
+      // a pocket and told apart from the rest cue.
+      expect(vibrateSpy).toHaveBeenCalledWith([140, 80, 140])
+
+      vibrateSpy.mockRestore()
     })
 
     it('does not play audio when timer sounds are disabled', async ({ createTestApp }) => {

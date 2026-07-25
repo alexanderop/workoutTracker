@@ -10,6 +10,7 @@
 
 ## Reference
 - [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---
+- [[reference/research/2026-07-25-android-pwa-timer-audio-over-music]] — ---
 
 ## Other
 - [[codebase]] — Durable as-is maps of the project structure, authored by `map-codebase`. One area per file in `code…

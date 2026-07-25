@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
+import { useVibrate } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useTabataTimer } from '@/composables/timers/useTabataTimer'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
@@ -23,19 +24,35 @@ const emit = defineEmits<{
 
 const audio = useTimerAudio()
 
+// Haptics double every audio cue. Vibration is the channel that still lands
+// when the beep is buried under music from another app, the phone is in a
+// pocket, or Android has parked the audio path -- so a phase change is never
+// signalled by sound alone. A Tabata round always opens with the work phase,
+// which is why the round pattern is fired from the work transition.
+const WORK_VIBRATION_PATTERN = [140, 80, 140]
+const REST_VIBRATION_PATTERN = [220]
+const COMPLETE_VIBRATION_PATTERN = [200, 100, 200, 100, 400]
+
+const { vibrate } = useVibrate({ pattern: WORK_VIBRATION_PATTERN, interval: 0 })
+
 function handleComplete() {
   audio.playComplete()
+  vibrate(COMPLETE_VIBRATION_PATTERN)
   onComplete?.()
 }
 
 function handlePhaseChange(phase: 'work' | 'rest') {
   if (phase === 'work') {
     audio.playWorkBeep()
+    vibrate(WORK_VIBRATION_PATTERN)
     return
   }
   audio.playRestBeep()
+  vibrate(REST_VIBRATION_PATTERN)
 }
 
+// Audio only: the work-phase transition in the same tick carries the haptics,
+// and a second navigator.vibrate() call would just cancel the first.
 function handleRoundChange() {
   audio.playRoundBeep()
 }
@@ -49,9 +66,11 @@ const timer = useTabataTimer({
 // Emit when isRunning changes so parent can react
 watch(timer.isRunning, (isRunning, wasRunning) => {
   emit('update:isRunning', isRunning)
-  // Play work beep when timer first starts (idle -> running)
+  // Cue the first work phase when the timer starts (idle -> running); round 1
+  // never fires a phase transition of its own.
   if (isRunning && !wasRunning) {
     audio.playWorkBeep()
+    vibrate(WORK_VIBRATION_PATTERN)
   }
 })
 
@@ -107,6 +126,9 @@ const formattedTime = computed(() => {
 
 // Initialize timer on mount
 onMounted(() => {
+  // Warm the audio path while opening the timer still counts as user
+  // activation, so the first cue is not swallowed by a cold output stream.
+  audio.prepare()
   timer.initialize(block)
 })
 
