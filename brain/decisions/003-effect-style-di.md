@@ -3,7 +3,9 @@
 Status: accepted for new feature services, landed as the habits pilot. `Scope`
 ships unvalidated — see Limits. ADR 002 is the governing precedent for how much
 machinery is acceptable: enough to remove a drift-prone cascade, not a
-framework.
+framework. Partially superseded by
+[ADR 004](004-db-in-di.md): the `Not in scope` clause (for `Db` only) and the
+250-line budget clause no longer hold.
 
 ## Decision
 
@@ -55,7 +57,8 @@ the imperative shell resolves `Clock` from a context.
 `Db` stays behind `getRepositoryProvider()`, and the eight `createGlobalState`
 stores keep their existing reset lists — CLAUDE.md's `createGlobalState()`
 convention for shared feature stores is unchanged. Extending DI to either is a
-new decision, not an application of this one.
+new decision, not an application of this one. Superseded for `Db` by
+[ADR 004](004-db-in-di.md); the `createGlobalState` half still stands.
 
 ## Why
 
@@ -85,4 +88,5 @@ boundaries) are reachable at all. Those cases were not previously expressible.
   validated it.
 - **The library sits at 248 lines against the 250-line budget** the pilot set as
   its abandon threshold. Growth past that is a signal to re-open this ADR, not
-  to raise the number.
+  to raise the number. Superseded: [ADR 004](004-db-in-di.md) moves the budget
+  to 280 lines to admit `Db` into DI.

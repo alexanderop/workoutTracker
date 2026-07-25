@@ -25,12 +25,18 @@ Vue 3.5+, TypeScript (strict), Vite, Dexie, Vitest (browser mode), shadcn-vue, T
 ```bash
 pnpm dev          # Dev server
 pnpm test         # Vitest browser tier — the full suite, minutes
+CI=1 pnpm test    # Same, with bail:0 — use when the tier is red or you need a count
 pnpm test:unit    # Node `unit` tier — pure logic, no DOM/IndexedDB, ~1.5s
 pnpm lint         # oxlint + eslint + markdownlint
 pnpm type-check   # vue-tsc --build
 pnpm build        # Production build
 pnpm knip         # Unused exports
 ```
+
+`pnpm test` runs with `bail: 1` locally, so a **failing** run stops at the first
+failure and its "N passed" total is partial. Never report that count as tier
+coverage — re-run with `CI=1` to get every failure and the real total. A green
+run is complete either way.
 
 ## Git workflow
 

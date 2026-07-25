@@ -72,6 +72,7 @@ catalogs:
     istanbul-lib-coverage: ^3.2.2
     jsdom: ^29.1.1
     playwright: ^1.61.1
+    playwright-bdd: 9.2.0
     vitest: ^4.1.10
     vitest-browser-vue: ^2.1.0
   ui:

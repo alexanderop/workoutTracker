@@ -11,22 +11,22 @@
  * composable is enough because every consumer (HabitsView, the home card)
  * mounts its own instance and only one is ever on screen at a time.
  *
- * Dependencies (the repository and the clock) arrive through a `Context`
- * defaulted to the live services (ADR 003), so a caller can
- * inject fakes in tests instead of monkey-patching the real repository.
+ * Dependencies (the repository, the clock, and the id generator) arrive
+ * through a `Context` defaulted to the app runtime's context via
+ * `useRuntimeContext()`, so a caller can inject fakes in tests instead of
+ * monkey-patching the real repository.
  */
 import { computed, ref } from 'vue'
-import { generateId } from '@/db/generateId'
 import type { DbHabit, DbHabitEntry, HabitAccent, HabitKind, HabitSchedule } from '@/db/schema'
 import { DEFAULT_HABIT_ACCENT } from '@/db/schema'
 import type { HabitRepository } from '@/db/interfaces'
 import type { Context } from '@/lib/di/context'
-import { Clock } from '@/lib/clock'
+import { useRuntimeContext } from '@/lib/di/vue'
+import { Clock, IdGen } from '@/lib/clock'
 import { tryCatch } from '@/lib/tryCatch'
 import { currentStreak, isEntryComplete, startOfDay, weeklyProgress } from '../lib/habitStats'
 import type { WeeklyProgress } from '../lib/habitStats'
 import { HabitRepo } from '../services'
-import { useServices } from '../services.live'
 
 export type HabitFormData = {
   name: string
@@ -47,9 +47,12 @@ export type HabitTodayItem = {
   weekProgress: WeeklyProgress | null
 }
 
-export function useHabits(ctx: Context<HabitRepository> = useServices()) {
+// `Clock` and `IdGen` are References, readable from any context via their own
+// defaults, so only `HabitRepository` has to appear in the union.
+export function useHabits(ctx: Context<HabitRepository> = useRuntimeContext<HabitRepository>()) {
   const repo = ctx.get(HabitRepo)
   const clock = ctx.get(Clock)
+  const generateId = ctx.get(IdGen)
 
   // Primary State
   const habits = ref<Array<DbHabit>>([])

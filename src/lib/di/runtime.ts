@@ -1,12 +1,15 @@
 import { tryCatch } from '../tryCatch'
-import { empty, make, unsafeMake, type Context } from './context'
+import { unsafeMake, type Context } from './context'
 import type { ErasedLayer, Layer } from './layer'
 import { makeScope, type Scope } from './scope'
-import type { Tag } from './tag'
+import type { Reference, Tag } from './tag'
 
 export type Runtime<Services = never> = {
   readonly context: Context<Services>
-  get<S>(tag: Tag<S>): S
+  /** A Reference is readable from any context — it carries its own default. */
+  get<S>(tag: Reference<S>): S
+  /** A plain Tag must have been provided; an unprovided tag is a compile error. */
+  get<S extends Services>(tag: Tag<S>): S
   dispose(): void
 }
 
@@ -28,19 +31,24 @@ function buildAll(layers: ReadonlyArray<ErasedLayer>, scope: Scope): ReadonlyMap
 function runtimeOf<Services>(context: Context<Services>, scope: Scope): Runtime<Services> {
   return {
     context,
-    get<S>(tag: Tag<S>): S {
-      return context.unsafeGet(tag)
-    },
+    // Mirrors `contextOf`'s own `get: unsafeGet` idiom (context.ts) — the
+    // overloaded `Runtime['get']` type is satisfied by `context.unsafeGet`'s
+    // single erased signature without a cast.
+    get: context.unsafeGet,
     dispose(): void {
       scope.close()
     },
   }
 }
 
-/** Compose any number of layers. Across a heterogeneous array the service
- *  union is erased (D7's known limitation), so `context` is `Context<never>`
- *  and services are reached with `runtime.get`. */
-export function makeRuntime(layers: ReadonlyArray<ErasedLayer>): Runtime {
+/** Compose any number of layers, recovering the service union from the element
+ *  type so `context` is typed per-layer. Vue's `inject()` erases it again;
+ *  `src/lib/di/vue.ts` is where the union is re-asserted. */
+type ServiceOf<L> = L extends Layer<infer S> ? S : never
+
+export function makeRuntime<L extends ErasedLayer>(
+  layers: ReadonlyArray<L>,
+): Runtime<ServiceOf<L>> {
   const scope = makeScope()
   const [error, services] = tryCatch(() => buildAll(layers, scope))
   if (error !== null) {
@@ -49,13 +57,5 @@ export function makeRuntime(layers: ReadonlyArray<ErasedLayer>): Runtime {
     tryCatch(() => scope.close())
     throw error
   }
-  return runtimeOf(unsafeMake(services), scope)
-}
-
-/** Single-layer build that keeps the service in the context type — the typed
- *  path D7 layer 1 protects. This is what the habits pilot uses. */
-export function makeRuntimeOf<S>(layer: Layer<S>): Runtime<S> {
-  const scope = makeScope()
-  const service = layer.build(empty(), scope)
-  return runtimeOf(make(layer.tag, service), scope)
+  return runtimeOf(unsafeMake<ServiceOf<L>>(services), scope)
 }

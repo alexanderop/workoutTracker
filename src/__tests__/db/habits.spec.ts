@@ -9,6 +9,10 @@ import type { DbHabitEntry, StoredDbHabit } from '@/db/schema'
  * Repository-level tests for habits and habit entries, mirroring the
  * dedup/archive-vs-delete conventions established by the weight repository
  * (src/db/implementations/dexie/weight.ts) and other CRUD repos.
+ *
+ * Stays in the browser tier: it certifies the Dexie adapter against real
+ * IndexedDB (including legacy-record normalization on read paths), a
+ * capability the Node `unit` tier has no global for.
  */
 describe('HabitRepository', () => {
   beforeEach(async () => {

@@ -10,6 +10,11 @@ import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
 import { reloadPageKey } from '@/features/settings/utils/reloadPage'
+import { appLayers } from '@/appLayers'
+import { setRepositoryProvider } from '@/db/provider'
+import { Repositories } from '@/db/services'
+import { makeRuntime } from '@/lib/di/runtime'
+import { provideRuntime } from '@/lib/di/vue'
 import {
   CommonPO,
   BuilderPO,
@@ -76,9 +81,24 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   const reloadPage = vi.fn()
 
+  // Built per-call, not at module scope: RepositoriesLive acquires a fresh
+  // RepositoryProvider for this app instance every time, matching the old
+  // useServices()-per-call behavior. Never call runtime.dispose() --
+  // RepositoriesLive's finalizer closes the process-wide Dexie connection and
+  // would break every subsequent test in this process.
+  const runtime = makeRuntime(appLayers)
+
+  // Mirrors main.ts: point the deprecated global shim at this runtime's own
+  // provider, so the injected composables and the specs/call sites that still
+  // resolve repositories via get*Repository() share one object instead of two
+  // that merely happen to wrap the same db singleton. Runs after
+  // resetDatabase()'s installProviderUnderTest(), so this is the provider that
+  // wins for the duration of the test.
+  setRepositoryProvider(runtime.get(Repositories))
+
   const screen = render(App, {
     global: {
-      plugins: [router, i18n],
+      plugins: [router, i18n, { install: (app) => provideRuntime(runtime, app) }],
       provide: { [reloadPageKey]: reloadPage },
     },
   })

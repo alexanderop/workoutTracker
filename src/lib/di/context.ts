@@ -20,10 +20,12 @@ export type Context<Services = never> = {
 
 type Resolution<S> = { found: true; value: S } | { found: false }
 
-// Coerces an erased map value back to its statically-known service type at
-// the single seam where that is unavoidable, without an `as` assertion: the
-// generic overload is what callers see; the implementation signature below it
-// only promises `unknown`, so the body needs no cast.
+// Coerces an erased value back to its statically-known type at the seams where
+// that is unavoidable, without an `as` assertion: the generic overload is what
+// callers see; the implementation signature below it only promises `unknown`,
+// so the body needs no cast. Used here for map lookups; `./vue.ts` keeps its
+// own copy of this hatch rather than importing it, so it stays private to the
+// kernel.
 function unsafeCoerce<S>(value: unknown): S
 function unsafeCoerce(value: unknown): unknown {
   return value
@@ -75,7 +77,9 @@ export function make<S>(tag: Tag<S>, impl: S): Context<S> {
 
 /** Build a context from an already-erased key -> implementation map,
  *  snapshotting it so later mutations to the caller's map go unobserved.
- *  Used by runtime.ts; the resulting context has no typed service union. */
-export function unsafeMake(services: ReadonlyMap<string, unknown>): Context {
+ *  Used by runtime.ts; `Services` defaults to `never` when there is no tuple to infer it from. */
+export function unsafeMake<Services = never>(
+  services: ReadonlyMap<string, unknown>,
+): Context<Services> {
   return contextOf(new Map(services))
 }
