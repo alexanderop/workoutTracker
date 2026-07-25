@@ -1,3 +1,4 @@
+import { tryCatch } from '../tryCatch'
 import { empty, make, unsafeMake, type Context } from './context'
 import type { ErasedLayer, Layer } from './layer'
 import { makeScope, type Scope } from './scope'
@@ -41,7 +42,14 @@ function runtimeOf<Services>(context: Context<Services>, scope: Scope): Runtime<
  *  and services are reached with `runtime.get`. */
 export function makeRuntime(layers: ReadonlyArray<ErasedLayer>): Runtime {
   const scope = makeScope()
-  return runtimeOf(unsafeMake(buildAll(layers, scope)), scope)
+  const [error, services] = tryCatch(() => buildAll(layers, scope))
+  if (error !== null) {
+    // A partial build hands back no runtime to dispose, so release what earlier
+    // layers acquired; wrapping close() stops a finalizer masking `error`.
+    tryCatch(() => scope.close())
+    throw error
+  }
+  return runtimeOf(unsafeMake(services), scope)
 }
 
 /** Single-layer build that keeps the service in the context type — the typed

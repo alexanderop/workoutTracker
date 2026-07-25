@@ -92,4 +92,28 @@ describe('makeRuntime', () => {
     runtime.dispose()
     expect(released).toEqual([9])
   })
+
+  it('releases an earlier scoped layer when a later layer build throws', () => {
+    const resourceTag = Tag<{ id: number }>('resource')
+    const brokenTag = Tag<number>('broken')
+    const released: Array<number> = []
+    const failure = new Error('layer build failed')
+
+    expect(() =>
+      makeRuntime([
+        scoped(
+          resourceTag,
+          () => ({ id: 9 }),
+          (resource) => released.push(resource.id),
+        ),
+        sync(brokenTag, () => {
+          throw failure
+        }),
+      ]),
+    ).toThrow(failure)
+
+    // The caller never got a runtime to dispose, so the partial build has to
+    // have closed its own scope.
+    expect(released).toEqual([9])
+  })
 })
