@@ -54,18 +54,40 @@ live view of the flow, for example:
 ◻ Push branch and open PR (ship-it)
 ```
 
-1. Inspect current state before routing.
-   - Read the user's request, `git status --short`, `git diff --stat`,
-     available plans (`brain/plans/` from `grill` and `plan`), and
-     available `qa/` reports.
-   - If the user supplied a plan path, use that plan as the source of truth.
-     Do not route back to `grill` merely because the plan is terse; ask
-     only when a specific missing decision blocks implementation.
-   - If the user asks to resume, treat existing plans, diffs, and QA reports as
-     possible progress, not as proof until checked.
-   - If the user explicitly asks only for the route, a dry run, or eval-mode
-     explanation, do not invoke child AFK skills. Report the route and gates
-     using the output shape below.
+1. Derive the current phase from artifacts, not from memory.
+
+   State lives on disk, so a ship run is resumable from a cold context — after a
+   `/clear`, a crashed orchestrator, or a session picked up days later. Never ask
+   the user where things stopped; read it:
+
+   ```bash
+   git branch --show-current && git status --short
+   git log --oneline main..HEAD
+   ls brain/plans/ qa/ 2>/dev/null
+   ```
+
+   Then route by the first row that matches:
+
+   | Observed state | Phase |
+   |---|---|
+   | No plan for this work | `grill` |
+   | Plan exists, unchecked verification boxes remain | `implement` — resume at the **first unchecked box** |
+   | All boxes checked, diff not yet cleaned up | `simplify` |
+   | Simplify done, no review findings on record | `review` |
+   | Review **Revise** with unresolved high-severity findings | back to `implement` or `simplify` |
+   | Review clean, behavior-bearing work, no `qa/<slug>.md` | `qa` |
+   | QA verdict recorded, nothing reflected | `reflect` |
+   | Verdict `SHIP`/`SHIP WITH CAVEATS`, branch unpushed | `ship-it` |
+
+   Artifacts are evidence, not proof. A checked box whose command you did not
+   watch run is a claim — spot-check the cheap ones (`git log`, file existence)
+   and re-run anything a later phase depends on. A plan the user supplied by path
+   is the source of truth; do not route back to `grill` merely because it is
+   terse, and ask only when a specific missing decision blocks implementation.
+
+   If the user explicitly asks only for the route, a dry run, or eval-mode
+   explanation, do not invoke child AFK skills. Report the route and gates using
+   the output shape below.
 
 2. Choose the planning route.
    - If a plan path was supplied or one relevant plan clearly matches the work,
