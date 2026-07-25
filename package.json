@@ -57,6 +57,7 @@
     "@unovis/vue": "catalog:ui",
     "@vueuse/core": "catalog:frontend",
     "@vueuse/integrations": "catalog:frontend",
+    "@xstate/vue": "catalog:frontend",
     "class-variance-authority": "catalog:ui",
     "clsx": "catalog:ui",
     "date-fns": "catalog:frontend",
@@ -71,6 +72,7 @@
     "vue-i18n": "catalog:frontend",
     "vue-router": "catalog:frontend",
     "web-vitals": "catalog:frontend",
+    "xstate": "catalog:frontend",
     "zod": "catalog:frontend"
   },
   "devDependencies": {
@@ -144,7 +146,7 @@
     {
       "name": "production JavaScript",
       "path": "dist/assets/*.js",
-      "limit": "438 kB"
+      "limit": "455 kB"
     }
   ],
   "lint-staged": {

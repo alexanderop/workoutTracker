@@ -2,6 +2,7 @@
 
 ## Decisions
 - [[decisions/002-per-kind-block-codecs]] — Status: accepted, fully landed. Supersedes the unimplemented full plugin
+- [[decisions/003-xstate-for-lifecycle-state]] — Status: accepted, partially landed. The app boot/resume flow
 
 ## Lessons
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.

@@ -323,6 +323,17 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // XState's `setup({ types: { context: {} as T } })` is the library's only
+  // way to declare machine types, and it is an assertion by construction.
+  // Scoped to machine definitions so the ban still holds everywhere else.
+  {
+    name: 'app/xstate-machine-types-exception',
+    files: ['src/features/*/machines/*.ts', 'src/machines/*.ts'],
+    rules: {
+      '@typescript-eslint/consistent-type-assertions': 'off',
+    },
+  },
+
   // Allow native try/catch in tryCatch utility implementation
   {
     name: 'app/try-catch-utility-exception',

@@ -83,6 +83,9 @@ catalogs:
     '@vueuse/integrations':
       specifier: ^14.3.0
       version: 14.3.0
+    '@xstate/vue':
+      specifier: ^5.0.1
+      version: 5.0.1
     date-fns:
       specifier: ^4.4.0
       version: 4.4.0
@@ -104,6 +107,9 @@ catalogs:
     web-vitals:
       specifier: ^5.3.0
       version: 5.3.0
+    xstate:
+      specifier: ^5.32.5
+      version: 5.32.5
     zod:
       specifier: ^4.4.3
       version: 4.4.3
@@ -304,6 +310,9 @@ importers:
       '@vueuse/integrations':
         specifier: catalog:frontend
         version: 14.3.0(change-case@5.4.4)(sortablejs@1.15.7)(vue@3.5.38(typescript@6.0.3))
+      '@xstate/vue':
+        specifier: catalog:frontend
+        version: 5.0.1(vue@3.5.38(typescript@6.0.3))(xstate@5.32.5)
       class-variance-authority:
         specifier: catalog:ui
         version: 0.7.1
@@ -343,6 +352,9 @@ importers:
       web-vitals:
         specifier: catalog:frontend
         version: 5.3.0
+      xstate:
+        specifier: catalog:frontend
+        version: 5.32.5
       zod:
         specifier: catalog:frontend
         version: 4.4.3
@@ -3513,6 +3525,15 @@ packages:
     resolution: {integrity: sha512-bZpge9eSXwa4ToSiqJ7j6KRwhAsneMFoSz3LMWKQDkqimm3D/tbFlrklrs/IOqC8tEcYmXQZJ6N0UrjhBirVCg==}
     peerDependencies:
       vue: ^3.5.0
+
+  '@xstate/vue@5.0.1':
+    resolution: {integrity: sha512-SsiIgj+9lnArECyeqcJ+y4JsxcdT/dA8mLaN+lA8sk7TfZM5ASEMk+/2VLho2r/PtRBCg7KZqRstb5MBF7yEWg==}
+    peerDependencies:
+      vue: ^3.0.0
+      xstate: ^5.32.5
+    peerDependenciesMeta:
+      xstate:
+        optional: true
 
   '@zerollup/ts-helpers@1.7.18':
     resolution: {integrity: sha512-S9zN+y+i5yN/evfWquzSO3lubqPXIsPQf6p9OiPMpRxDx/0totPLF39XoRw48Dav5dSvbIE8D2eAPpXXJxvKwg==}
@@ -7785,6 +7806,9 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
+  xstate@5.32.5:
+    resolution: {integrity: sha512-ULazi1oe6wGrXl0Frb6otSlkm5HLifbbVTkMk5kkSKqz4TkxJaVpnl6jOJwKeid3ORPxYyZQgNLUSYX9q65SIA==}
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -10895,6 +10919,12 @@ snapshots:
   '@vueuse/shared@14.3.0(vue@3.5.38(typescript@6.0.3))':
     dependencies:
       vue: 3.5.38(typescript@6.0.3)
+
+  '@xstate/vue@5.0.1(vue@3.5.38(typescript@6.0.3))(xstate@5.32.5)':
+    dependencies:
+      vue: 3.5.38(typescript@6.0.3)
+    optionalDependencies:
+      xstate: 5.32.5
 
   '@zerollup/ts-helpers@1.7.18(typescript@5.9.3)':
     dependencies:
@@ -15868,6 +15898,8 @@ snapshots:
   xml-name-validator@5.0.0: {}
 
   xmlchars@2.2.0: {}
+
+  xstate@5.32.5: {}
 
   xtend@4.0.2: {}
 

@@ -24,6 +24,7 @@ catalogs:
   frontend:
     '@vueuse/core': ^14.3.0
     '@vueuse/integrations': ^14.3.0
+    '@xstate/vue': ^5.0.1
     date-fns: ^4.4.0
     dexie: ^4.4.4
     sortablejs: ^1.15.7
@@ -31,6 +32,7 @@ catalogs:
     vue-i18n: ^11.4.6
     vue-router: ^5.1.0
     web-vitals: ^5.3.0
+    xstate: ^5.32.5
     zod: ^4.4.3
   lint:
     '@antfu/eslint-config': ^9.0.0
