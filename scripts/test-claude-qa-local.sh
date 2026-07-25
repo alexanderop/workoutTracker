@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Local simulation of .github/workflows/claude-qa-browser.yml
+# Local browser QA run.
 #
-# Runs the same `claude` invocation the workflow does, against the local dev
-# server, so you can iterate on prompts / tools without pushing to CI.
+# Drives `claude` with the QA prompts in .claude/prompts/ against the local dev
+# server. This is the only way browser QA runs now — the CI workflow that used
+# to run it on every PR was removed.
 #
 # Usage:
 #   scripts/test-claude-qa-local.sh [focus] [pr_source]

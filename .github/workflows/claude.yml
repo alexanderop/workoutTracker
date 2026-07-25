@@ -20,9 +20,7 @@ jobs:
     if: |
       (github.event_name == 'issue_comment' &&
        github.event.comment.author_association == 'OWNER' &&
-       contains(github.event.comment.body, '@claude') &&
-       !contains(github.event.comment.body, '@claude test') &&
-       !contains(github.event.comment.body, '@claude verify')) ||
+       contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' &&
        github.event.comment.author_association == 'OWNER' &&
        contains(github.event.comment.body, '@claude')) ||

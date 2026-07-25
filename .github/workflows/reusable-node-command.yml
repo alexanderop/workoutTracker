@@ -43,7 +43,7 @@ jobs:
           case "$PROFILE" in
             quality)
               pnpm exec run-p lint:check audit:prod knip i18n:check \
-                check:composables test:arch test:workflows
+                check:composables test:arch
               ;;
             node-20-compat)
               pnpm type-check

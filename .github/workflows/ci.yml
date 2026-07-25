@@ -1,8 +1,8 @@
 name: CI
 
 on:
-  # Dispatched by claude-ci-fix.yml / claude-fix-review.yml /
-  # claude-qa-followup.yml after they push a bot commit: those pushes use
+  # Dispatched by claude-ci-fix.yml / claude-fix-review.yml after they push a
+  # bot commit: those pushes use
   # GITHUB_TOKEN, which never re-triggers `push`/`pull_request`, so CI would
   # otherwise never re-run against the fix. No inputs needed -- it just runs
   # against whatever ref it's dispatched with.

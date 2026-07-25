@@ -26,7 +26,6 @@
     "test:e2e": "run-s type-check build-only test:e2e:prebuilt",
     "test:e2e:prebuilt": "playwright test",
     "test:e2e:prebuilt:ui": "playwright test --ui",
-    "test:workflows": "node --test scripts/qa-workflow-policy.test.mjs",
     "test:e2e:ui": "run-s type-check build-only test:e2e:prebuilt:ui",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
