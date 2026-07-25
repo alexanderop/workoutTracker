@@ -17,7 +17,7 @@ const exerciseIconTestIdPattern = /^exercise-icon-/
 
 describe('exercise icon inventory', () => {
   it('keeps the generated registry synchronized with the authored manifest', () => {
-    expect(exerciseIconKeys).toHaveLength(173)
+    expect(exerciseIconKeys).toHaveLength(180)
     expect(exerciseIconKeys).toEqual(exerciseIconManifest.map(({ key }) => key))
 
     for (const entry of exerciseIconManifest) {

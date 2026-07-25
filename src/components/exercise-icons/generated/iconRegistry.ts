@@ -175,6 +175,13 @@ import BodyweightSupermanIcon from '../icons/BodyweightSupermanIcon.vue'
 import BodyweightToeTouchIcon from '../icons/BodyweightToeTouchIcon.vue'
 import BodyweightVUpIcon from '../icons/BodyweightVUpIcon.vue'
 import ClubPendulumIcon from '../icons/ClubPendulumIcon.vue'
+import CardioRunningIcon from '../icons/CardioRunningIcon.vue'
+import CardioCyclingIcon from '../icons/CardioCyclingIcon.vue'
+import CardioRowingIcon from '../icons/CardioRowingIcon.vue'
+import CardioEllipticalIcon from '../icons/CardioEllipticalIcon.vue'
+import CardioSwimmingIcon from '../icons/CardioSwimmingIcon.vue'
+import CardioStairClimberIcon from '../icons/CardioStairClimberIcon.vue'
+import CardioWalkingIcon from '../icons/CardioWalkingIcon.vue'
 
 export type ExerciseIconRegistryEntry = Readonly<{
   component: ExerciseIconComponent
@@ -475,4 +482,11 @@ export const exerciseIconRegistry: Readonly<Record<ExerciseIconKey, ExerciseIcon
   'bodyweight-toe-touch': { component: BodyweightToeTouchIcon, title: 'Toe Touches' },
   'bodyweight-v-up': { component: BodyweightVUpIcon, title: 'V-ups' },
   'club-pendulum': { component: ClubPendulumIcon, title: 'Club Pendulum' },
+  'cardio-running': { component: CardioRunningIcon, title: 'Running' },
+  'cardio-cycling': { component: CardioCyclingIcon, title: 'Cycling' },
+  'cardio-rowing': { component: CardioRowingIcon, title: 'Rowing' },
+  'cardio-elliptical': { component: CardioEllipticalIcon, title: 'Elliptical' },
+  'cardio-swimming': { component: CardioSwimmingIcon, title: 'Swimming' },
+  'cardio-stair-climber': { component: CardioStairClimberIcon, title: 'Stair Climber' },
+  'cardio-walking': { component: CardioWalkingIcon, title: 'Walking' },
 }
