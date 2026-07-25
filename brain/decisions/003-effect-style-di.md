@@ -83,6 +83,12 @@ boundaries) are reachable at all. Those cases were not previously expressible.
   trivial finalizers. The one genuine acquire/release pair in the codebase is
   the Dexie connection, which this ADR defers. Do not read the pilot as having
   validated it.
-- **The library sits at 248 lines against the 250-line budget** the pilot set as
-  its abandon threshold. Growth past that is a signal to re-open this ADR, not
-  to raise the number.
+- **Scale is guarded by consumers, not by line count.** Every primitive must
+  earn its place with at least one real consumer in the codebase. The pilot's
+  250-line kill criterion was a decision about whether to continue, and it
+  expired when the pilot passed; carrying it forward would penalise comments,
+  reward reformatting, and fire on the `Scope` work this ADR itself endorses.
+  What would mean this had become a framework is concrete instead: Effect's `R`
+  requirement tracking, an effect type, a fiber runtime, or a generic error
+  channel. None of those belong here. By the consumer test `Scope` is already
+  the outlier — see above.
