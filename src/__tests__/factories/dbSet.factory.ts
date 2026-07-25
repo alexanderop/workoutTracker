@@ -1,5 +1,5 @@
 import type { DbSet } from '@/blocks'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 
 const DEFAULTS: Readonly<Omit<DbSet, 'id'>> = {
   kg: '100',

@@ -55,4 +55,4 @@ export {
 } from './dbHabit.factory'
 
 // Utility
-export { generateId } from '@/db'
+export { generateId } from '@/db/generateId'

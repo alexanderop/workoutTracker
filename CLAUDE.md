@@ -24,15 +24,29 @@ Vue 3.5+, TypeScript (strict), Vite, Dexie, Vitest (browser mode), shadcn-vue, T
 
 ```bash
 pnpm dev          # Dev server
-pnpm test         # Vitest (browser mode) — NOT test:unit
+pnpm test         # Vitest browser tier — the full suite, minutes
+pnpm test:unit    # Node `unit` tier — pure logic, no DOM/IndexedDB, ~1.5s
 pnpm lint         # oxlint + eslint + markdownlint
-pnpm type-check   # tsc --noEmit
+pnpm type-check   # vue-tsc --build
 pnpm build        # Production build
-pnpm knip         # Unused exports (occasional)
+pnpm knip         # Unused exports
 ```
 
-Run `pnpm type-check && pnpm lint && pnpm test` before committing.
+## Git workflow
+
+Never work on `main`. Branch first (`<type>/<slug>`), then **commit once per
+acceptance criterion** — the behavior, its tests, nothing else. Per-AC commits
+are the resume point when a long run dies, the review unit, and the bisect unit.
+
 Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
+
+The husky `pre-commit` hook is the gate and runs on every commit (~15s):
+`lint-staged`, `type-check`, `test:unit`, `knip`. Do not use `--no-verify`. The
+browser/integration/e2e tiers are too slow for per-commit — run `pnpm lint:check
+&& pnpm test` once before pushing, which is what `ship-it` does.
+
+Working plans in `brain/plans/` are gitignored local scratch. Durable outcomes
+belong in `brain/decisions/` and `brain/lessons/`.
 
 ## Critical Conventions
 

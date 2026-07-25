@@ -1,5 +1,5 @@
 import type { DbHabit, DbHabitEntry, HabitKind, HabitSchedule } from '@/db/schema'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import { getStartOfDay } from '@/lib/date'
 
 const DEFAULT_SCHEDULE: HabitSchedule = { type: 'daily' }

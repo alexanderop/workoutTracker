@@ -1,5 +1,5 @@
 import type { DbBenchmark, DbBenchmarkRound, DbBenchmarkRoundExercise } from '@/db/schema'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import {
   generateKeyBetween,
   generateNKeysBetween,

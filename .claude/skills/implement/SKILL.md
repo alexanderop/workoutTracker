@@ -28,6 +28,28 @@ touching files.
 
 ## Process
 
+### 0. Branch Before Editing
+
+Never implement on `main`. Before the first edit:
+
+1. Run `git status --short`. If the tree is dirty with unrelated work, stop and
+   ask — do not sweep someone else's changes onto a new branch.
+2. Check the branch you are on. If it is already a suitable feature branch, stay
+   on it, say so, and skip step 3 — do not switch away to cut a new one.
+3. Otherwise create the branch from an up-to-date base:
+
+   ```bash
+   git switch main && git pull --ff-only
+   git switch -c <type>/<slug>
+   ```
+
+   `<type>` matches the Conventional Commit type the work will carry (`feat`,
+   `fix`, `refactor`, `chore`, …) and `<slug>` is the plan slug when a plan
+   exists — `feat/effect-style-di`, not `feat/new-stuff`.
+
+Skip this only when the user explicitly asked for an in-place edit on the
+current branch.
+
 ### 1. Triage Complexity
 
 Before editing, classify the task.
@@ -236,16 +258,35 @@ slice.
 
 ### 6. Review Every Result
 
-A worker's "done" report is a claim, not a fact.
+A worker's "done" report is a claim, not a fact. The commit gate is the part of
+that claim you do not have to take on trust: `type-check`, `test:unit` and
+`knip` either passed or the commit does not exist, and no worker can talk its
+way past them.
+
+So spend your reading where the gate is blind. It proves types, the unit tier,
+and dead exports. It cannot see a deleted or weakened browser test, a hardcoded
+fixture, a stubbed branch with a TODO, or an edit outside the slice boundary —
+which is exactly the list of things a stuck worker reaches for.
 
 After each worker returns:
 
-1. Read the actual diff with `git diff`, not just the summary.
-2. Run the verification command yourself.
+1. Run the slice verification command yourself. A red gate settles whether the
+   slice is done — it is not — and sends it to step 3. Never accept the slice
+   as it stands, and never end the run on a red gate.
+2. Read the diff with `git diff`, hunting the gate's blind spots specifically:
+   removed or loosened assertions, `skip`/`only`, fixtures that encode the
+   expected answer, TODOs where behavior should be, and files outside the
+   brief. Skim what the gate already proved; do not re-derive it.
 3. If the result is wrong, re-dispatch once with the relevant diff and a
    specific correction.
 4. If it is wrong twice, treat the brief or model choice as the problem and
    finish the fix in the lead context.
+
+A green slice is not a landed AC. One acceptance criterion usually spans several
+slices, so committing after each worker would split one AC across several
+commits and cost the resume, review, and bisect properties §7 exists to buy.
+Commit once every slice under that AC is green and its AC-level verification has
+run — see §7.
 
 Tick the plan's verification checkboxes as each one actually passes, and leave
 the rest unchecked. They are the resume token: a session picking this work up
@@ -267,6 +308,37 @@ behavior or cross-slice interactions. Before accepting:
   chain that exercises the new constraint against existing flows (e.g. a
   re-import after a new foreign key), not only per-slice checks. Isolated slice
   verification cannot see cross-slice runtime interactions.
+
+### 7. Commit Each Acceptance Criterion
+
+Commit as each acceptance criterion goes green — not once at the end. One AC is
+one commit: the behavior, its tests, and nothing else.
+
+```bash
+git add -A && git commit -m "<type>(<scope>): <what this AC delivers>"
+```
+
+The husky `pre-commit` hook is the gate: `lint-staged`, `type-check`,
+`test:unit`, and `knip`, about 15 seconds. A failing gate means the AC is not
+done — fix it and commit again. `commit-msg` enforces Conventional Commits, so
+the subject must match `<type>(<scope>): <subject>`.
+
+This is not bookkeeping. It buys three things a single end-of-run commit cannot:
+
+- **A resume point.** When an orchestrator dies mid-run (a 529, a timeout, a
+  context limit), completed ACs are already safe on the branch and only the
+  in-flight one is lost. Recovering meant redoing a whole integration pass by
+  hand on 2026-07-25.
+- **A reviewable history.** Each commit is one behavior with its own gate
+  evidence, so `git log` reads as the acceptance criteria in order.
+- **A bisect unit.** A later regression maps to one AC, not a 795-line blob.
+
+Tick the plan's verification checkbox in the same beat you commit, so the plan
+and the branch never disagree about what is done.
+
+Never use `git commit --no-verify` to get past the gate. If the gate is wrong,
+fix the gate in its own commit; if a check is genuinely inapplicable, say so in
+the final report rather than bypassing it silently.
 
 ## Stop and Ask
 
@@ -303,14 +375,20 @@ context and keep moving.
 | "I'll design the shared contract in the lead and just hand workers the call sites" | Contract design is the orchestrator's job. Designing it yourself is delegated architecture in reverse. Hand it the plan; let it freeze the contract and fan out the work. |
 | "The plan already fixed every contract, so I'll just execute it directly" | A decided plan is the orchestrator's input, not a reason to skip it. Frozen contracts still need bounded parallel slices and independent review. Hand the plan to `implement-orchestrator`. |
 | "The test passes, so it's a good test" | A green test that mocks internal collaborators, asserts call counts/order, tests private methods, or verifies through a side channel is coupled to implementation and breaks on refactor. Reject it; tests verify observable behavior through the public interface. |
+| "I'll commit everything once the whole plan is green" | One end-of-run commit throws away every resume point. Commit per AC, as each one goes green. |
+| "The tree is already dirty, I'll just start editing here" | Uncommitted work on `main` is how four hours of DI work ended up unshippable. Branch first; if the dirt is unrelated, stop and ask. |
+| "I'll dispatch the workers one at a time so I can react to each" | One worker per message is a sequential queue wearing a wave's clothes. Independent slices go in one message as separate tool calls; react after the wave lands. |
+| "The pre-commit gate is slow, I'll pass `--no-verify`" | The gate is ~15s and exists because a dead export reached Required CI. Bypassing it moves the failure to CI, where it costs minutes and a context switch. |
 
 ## Output
 
 Final responses after implementation should include:
 
+- The branch name and the per-AC commits made on it (`git log --oneline`).
 - Changed files.
 - What changed and why.
 - Verification commands and results.
 - Any known gaps, follow-up risks, or blocked checks.
 
-When everything is green, suggest `simplify` as the next step.
+When everything is green, suggest `simplify` as the next step, then `ship-it`
+to push the branch and open the PR.

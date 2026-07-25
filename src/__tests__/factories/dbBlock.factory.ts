@@ -1,5 +1,5 @@
 import type { DbStrengthBlock, DbSet } from '@/blocks'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
 const STRENGTH_DEFAULTS: Readonly<Omit<DbStrengthBlock, 'id' | 'sets'>> = {

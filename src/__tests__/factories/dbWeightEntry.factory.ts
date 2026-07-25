@@ -1,5 +1,5 @@
 import type { DbWeightEntry } from '@/db/schema'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import { getStartOfDay } from '@/features/weight/lib/weightCalculations'
 
 const DEFAULTS: Readonly<Omit<DbWeightEntry, 'id'>> = {

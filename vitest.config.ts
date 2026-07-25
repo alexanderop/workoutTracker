@@ -86,10 +86,14 @@ export default defineConfig({
     coverage: coverageConfig,
 
     // Project-based configuration for running different test suites
-    // Pure lib/property specs intentionally stay in the browser project.
-    // Splitting them would violate the one-runtime convention and require a
-    // second coverage/sharding path; the lib suite also contains DOM/IDB specs.
+    // The former "one-runtime" convention (everything in the browser project)
+    // is deliberately retired in favour of a Node `unit` tier for pure,
+    // DOM/IDB-free specs. `src/__tests__/unit/**` is excluded from `default`
+    // below so those specs run in exactly one tier, not both.
     projects: [
+      // Project 0: Unit (pure Node tier — see vitest.unit.config.ts)
+      './vitest.unit.config.ts',
+
       // Project 1: Default (main tests)
       {
         plugins,
@@ -109,6 +113,7 @@ export default defineConfig({
             ...sharedTestConfig.exclude,
             'src/__tests__/a11y/**',
             'src/__tests__/visual/**',
+            'src/__tests__/unit/**',
           ],
           browser: browserConfig('default-browser'),
         },
@@ -162,6 +167,14 @@ export default defineConfig({
           unstubGlobals: true,
           include: ['src/__tests__/architecture/**/*.test.ts'],
           // No browser config - runs in Node for filesystem access
+          //
+          // Every file here parses the whole TypeScript project (archunit or
+          // ts-morph), so each one saturates a core on its own. Running them
+          // concurrently starves all of them at once on a 2-core CI runner --
+          // which is exactly how three of these started timing out together.
+          // Serialize the files and let each have the machine.
+          fileParallelism: false,
+          testTimeout: 60_000,
         },
       },
     ],

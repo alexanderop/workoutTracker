@@ -47,7 +47,7 @@ jobs:
           test "$(jq -r '.head.repo.full_name' <<<"$PR_JSON")" = "$REPO"
           test "$(jq -r '.head.ref' <<<"$PR_JSON")" = "$HEAD_BRANCH"
           test "$(jq -r '.head.sha' <<<"$PR_JSON")" = "$PUBLISHED_SHA"
-      - name: Dispatch CI and review repair
+      - name: Dispatch CI for the published repair
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # `gh workflow run` resolves the target repo from a local git remote,
@@ -55,15 +55,10 @@ jobs:
           # with "fatal: not a git repository".
           GH_REPO: ${{ github.repository }}
           HEAD_BRANCH: ${{ inputs.head_branch }}
-          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
-          dispatch() {
-            for attempt in 1 2 3; do
-              if gh workflow run "$@"; then return 0; fi
-              sleep $((attempt * 2))
-            done
-            return 1
-          }
-          dispatch ci.yml --ref "$HEAD_BRANCH"
-          dispatch claude-fix-review.yml -f pr_number="$PR_NUMBER"
+          for attempt in 1 2 3; do
+            if gh workflow run ci.yml --ref "$HEAD_BRANCH"; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1

@@ -43,6 +43,22 @@ or run shell commands.
   concurrently unless they edit a shared file or one consumes a contract the
   other still produces — default to parallel, serialize only on a real
   dependency.
+- **Dispatch a wave in a single message.** Concurrency comes from putting every
+  worker in that wave into one message as separate tool calls. One worker per
+  message runs them sequentially no matter how independent the slices are, and
+  it looks identical in the transcript — this rule is easy to satisfy in spirit
+  and miss in mechanism. Before dispatching, write down the wave's slices and the
+  disjoint file set each one owns; if two sets overlap, that is a wave boundary,
+  not a reason to serialize the whole batch.
+
+  Measured on 2026-07-25: a nine-worker wave dispatched one at a time spent
+  61.9 minutes of worker time over 60.0 minutes of wall clock — a 1.03x speedup
+  from nine parallel agents. The same session's four-agent `simplify` fan-out,
+  dispatched together, hit 3.0x. The instruction to parallelize was already
+  present in both cases; only the dispatch shape differed.
+- Do not hold a wave open waiting to react to each worker as it lands. Dispatch
+  the wave, collect the results, then decide. Reacting per worker is what
+  collapses a wave into a queue.
 - You own the final slicing. The plan's grouping is the default, not a
   straitjacket: when it does not survive contact with the code (wrong file
   ownership, a hidden dependency, or a task that must split into two

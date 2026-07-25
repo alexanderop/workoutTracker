@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { startOfWeek } from 'date-fns'
-import type { DbHabit, DbHabitEntry } from '@/db/schema'
+import type { DbHabit } from '@/db/schema'
 import {
   completionRate,
   currentStreak,
@@ -9,7 +9,8 @@ import {
   startOfDay,
   weeklyProgress,
 } from '@/features/habits/lib/habitStats'
-import { createDbHabit, createDbHabitEntry } from '@/__tests__/factories'
+import { createDbHabit } from '@/__tests__/factories'
+import { entryOn, localDays } from './habitStatsHelpers'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEK_MS = 7 * DAY_MS
@@ -19,23 +20,6 @@ const TODAY = startOfDay(new Date('2026-06-15T12:00:00Z').getTime()) // a Monday
 
 function daysBefore(referenceDay: number, days: number): number {
   return referenceDay - days * DAY_MS
-}
-
-function entryOn(habitId: string, day: number, value = 1): DbHabitEntry {
-  return createDbHabitEntry({ habitId, date: day, value })
-}
-
-/**
- * Local start-of-day timestamps for `offsets` days after `base`, via
- * calendar (not millisecond) arithmetic -- used by the DST regression
- * tests below, which need dates on either side of a transition.
- */
-function localDays(base: Date, offsets: ReadonlyArray<number>): Array<number> {
-  return offsets.map((offset) => {
-    const date = new Date(base)
-    date.setDate(date.getDate() + offset)
-    return startOfDay(date.getTime())
-  })
 }
 
 describe('isEntryComplete', () => {

@@ -7,6 +7,12 @@ const thresholds = JSON.parse(
 )
 
 const coverageDirectory = path.resolve(process.argv[2] ?? '.coverage')
+// Browser shards only. The Node `unit` tier is deliberately NOT merged in here:
+// its v8 run reports the whole `src/**` include at ~2% (it never loads the Vue
+// components) AND instruments the same files to different statement/line totals
+// than the browser pipeline, so merging inflates the denominator instead of
+// unioning coverage. Measured: 4 shards alone = 87.63% lines / 86.14%
+// statements (passes); with the unit map = 81.37% / 70.36% (fails).
 const expectedShardFiles = Array.from(
   { length: 4 },
   (_, index) => `coverage-shard-${index + 1}.json`,

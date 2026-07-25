@@ -2,6 +2,7 @@
 
 ## Decisions
 - [[decisions/002-per-kind-block-codecs]] — Status: accepted, fully landed. Supersedes the unimplemented full plugin
+- [[decisions/003-effect-style-di]] — Status: accepted for new feature services, landed as the habits pilot. `Scope`
 
 ## Lessons
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.

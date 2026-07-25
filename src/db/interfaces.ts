@@ -378,6 +378,8 @@ export type ExportDataContents = {
   nutritionGoals: ReadonlyArray<DbNutritionGoal>
   foods: ReadonlyArray<DbFood>
   nutritionDiaryEntries: ReadonlyArray<DbNutritionDiaryEntry>
+  progressions: ReadonlyArray<DatabaseProgression>
+  progressionSessions: ReadonlyArray<DatabaseProgressionSession>
 }
 
 export type DataManagementRepository = {

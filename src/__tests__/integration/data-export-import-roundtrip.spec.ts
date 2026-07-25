@@ -1,7 +1,7 @@
 /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect -- Imported data is narrowed by its discriminated result shape. */
 import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
-import { getDataManagementRepository } from '@/db'
+import { getDataManagementRepository, getProgressionsRepository } from '@/db'
 import { seedPopularExercises } from '@/db/seedExercises'
 import { parseExportFile, importAllData } from '@/features/settings/utils/dataImport'
 import { exportDataSchema } from '@/features/settings/utils/validation'
@@ -36,6 +36,21 @@ describe('Export/Import Round-Trip', () => {
     // Arrange: Create test data in the database
     const workout = databaseWorkoutBuilder().withName('Test Workout').withStrengthBlock().build()
     await seedCompletedWorkout(workout)
+
+    // A real progression row, so the export is validated against the actual
+    // progression schemas rather than an empty array. The seeded exercise
+    // library once failed the app's own import validation this way.
+    const progressions = getProgressionsRepository()
+    const progression = await progressions.create({
+      name: 'KB Swing Challenge',
+      availableWeights: [16, 20, 24],
+    })
+    await progressions.recordSession(progression.id, true, {
+      reps: 12,
+      minutes: 10,
+      weightIndex: 0,
+      isComplete: false,
+    })
 
     // Verify data exists
     expect(await getWorkoutCount()).toBe(1)
@@ -77,6 +92,8 @@ describe('Export/Import Round-Trip', () => {
     expect(await getWorkoutCount()).toBe(1)
     const workouts = await getAllWorkouts()
     expect(workouts[0]?.name).toBe('Test Workout')
+    expect(await progressions.getAll()).toHaveLength(1)
+    expect(await progressions.getSessionHistory(progression.id)).toHaveLength(1)
   })
 
   it('normalizes legacy habits from version 1 without changing their entries', async () => {

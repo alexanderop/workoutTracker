@@ -11,7 +11,7 @@ import type {
   DbTabataBlock,
   DbTabataResult,
 } from '@/blocks'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 
 // ============================================
 // Block Exercise (shared by all timed blocks)

@@ -1,16 +1,22 @@
 ---
 name: ship
-description: Use when the user asks to run the whole AFK flow, ship a feature, take work from idea or plan to verified evidence, resume an AFK workflow, or make a final ship/no-ship call across planning, implementation, cleanup, and QA
+description: Use when the user asks to run the whole AFK flow, ship a feature, take work from idea or plan to a verified pull request, resume an AFK workflow, or make a final ship/no-ship call across planning, implementation, cleanup, QA, and PR creation
+disable-model-invocation: true
 ---
 
 # Ship
 
-Drive AFK's existing skills to an evidence-backed verdict. This skill
-orchestrates `grill`, `implement`, `simplify`, `review`, and
-`qa` without replacing their detailed instructions.
+Drive AFK's existing skills to an evidence-backed verdict and an open pull
+request. This skill orchestrates `grill`, `implement`, `simplify`, `review`,
+`qa`, and `ship-it` without replacing their detailed instructions.
 
 Core principle: do not claim something can ship until the relevant AFK phase
 artifacts exist or are deliberately skipped with a reason.
+
+This skill is `disable-model-invocation: true` — only the user starts a ship
+run. It commits, pushes, and opens pull requests, and none of that should begin
+because the code merely looks ready. `ship-it` stays model-invocable so step 8
+can chain to it; its own preconditions are what stop an unwanted push.
 
 ## When to Use
 
@@ -26,10 +32,10 @@ Use this skill when:
 Do not use this skill for:
 
 - A specific phase request such as "grill me", "implement this plan",
-  "simplify the diff", or "QA this"; use that named skill directly.
-- PR creation, branch management, release notes, or deployment monitoring. AFK
-  Ship stops at verified local evidence plus a brain reflection; it does not
-  push, deploy, or manage releases.
+  "simplify the diff", "QA this", or "open the PR"; use that named skill
+  directly.
+- Merging, release notes, or deployment monitoring. AFK Ship stops at an open
+  pull request; it does not merge, deploy, or manage releases.
 
 ## Process
 
@@ -40,25 +46,48 @@ finished phase `completed` before starting the next. The list gives the user a
 live view of the flow, for example:
 
 ```
-◼ Implement vim-trainer MVP via orchestrator
+◼ Implement vim-trainer MVP via orchestrator (branch + commit per AC)
 ◻ Simplify implementation diff
 ◻ Review diff (review)
 ◻ QA behavior (qa)
 ◻ Reflect learnings (reflect)
+◻ Push branch and open PR (ship-it)
 ```
 
-1. Inspect current state before routing.
-   - Read the user's request, `git status --short`, `git diff --stat`,
-     available plans (`brain/plans/` from `grill` and `plan`), and
-     available `qa/` reports.
-   - If the user supplied a plan path, use that plan as the source of truth.
-     Do not route back to `grill` merely because the plan is terse; ask
-     only when a specific missing decision blocks implementation.
-   - If the user asks to resume, treat existing plans, diffs, and QA reports as
-     possible progress, not as proof until checked.
-   - If the user explicitly asks only for the route, a dry run, or eval-mode
-     explanation, do not invoke child AFK skills. Report the route and gates
-     using the output shape below.
+1. Derive the current phase from artifacts, not from memory.
+
+   State lives on disk, so a ship run is resumable from a cold context — after a
+   `/clear`, a crashed orchestrator, or a session picked up days later. Never ask
+   the user where things stopped; read it:
+
+   ```bash
+   git branch --show-current && git status --short
+   git log --oneline main..HEAD
+   ls brain/plans/ qa/ 2>/dev/null
+   ```
+
+   Then route by the first row that matches:
+
+   | Observed state | Phase |
+   |---|---|
+   | No plan for this work | `grill` |
+   | Plan exists, unchecked verification boxes remain | `implement` — resume at the **first unchecked box** |
+   | All boxes checked, diff not yet cleaned up | `simplify` |
+   | Simplify done, no review findings on record | `review` |
+   | Review **Revise** with unresolved high-severity findings | back to `implement` or `simplify` |
+   | Review clean, behavior-bearing work, no `qa/<slug>.md` | `qa` |
+   | QA verdict recorded, nothing reflected | `reflect` |
+   | Verdict `SHIP`/`SHIP WITH CAVEATS`, branch unpushed | `ship-it` |
+
+   Artifacts are evidence, not proof. A checked box whose command you did not
+   watch run is a claim — spot-check the cheap ones (`git log`, file existence)
+   and re-run anything a later phase depends on. A plan the user supplied by path
+   is the source of truth; do not route back to `grill` merely because it is
+   terse, and ask only when a specific missing decision blocks implementation.
+
+   If the user explicitly asks only for the route, a dry run, or eval-mode
+   explanation, do not invoke child AFK skills. Report the route and gates using
+   the output shape below.
 
 2. Choose the planning route.
    - If a plan path was supplied or one relevant plan clearly matches the work,
@@ -111,13 +140,46 @@ live view of the flow, for example:
      with no new knowledge); say so. Reflection persists knowledge; it never
      changes the ship verdict.
 
-8. Finish with a ship report.
+8. Push the branch and open the PR.
+   - On a `SHIP` or `SHIP WITH CAVEATS` verdict, invoke `ship-it` to run the
+     full gate, rebase, push, and open the pull request. Verified work that
+     never leaves the machine is not shipped.
+   - On `DO NOT SHIP`, or with unresolved high-severity `review` findings, do
+     not invoke `ship-it`. Report the blocker and the next skill to run.
+   - Skip only when the user explicitly asked to stay local; say so.
+
+9. Finish with a ship report.
    - Summarize the phase route taken, changed files, verification, review
      verdict, QA report, final verdict, and what was reflected into the brain.
-   - Always include the `Route`, `Plan`, `Verification`, `Review`, `QA`, and
-     `Memory` fields even when phases were skipped.
+   - Always include the `Route`, `Plan`, `Verification`, `Review`, `QA`,
+     `Memory`, and `PR` fields even when phases were skipped.
    - If any phase could not run, report the blocker as a caveat or
      `DO NOT SHIP`; do not soften missing evidence into success.
+
+## Loop Gates
+
+Any phase that edits files — `implement`, `simplify`, and the fix passes a
+**Revise** verdict sends back — must re-run the fast gate before the run
+advances:
+
+```bash
+pnpm -s type-check && pnpm -s test:unit && pnpm -s knip
+```
+
+Two rules govern the loop:
+
+- **Re-verify after every editing phase.** A cleanup pass can undo a fix made
+  earlier in the same run. On 2026-07-25 `simplify` removed the `test-unit` CI
+  job and with it a HIGH review fix from an hour before; it was caught only
+  because the lead independently re-checked. Do not rely on that.
+- **Two failed passes and you stop.** If the same finding survives two
+  corrective loops, stop and report it with the diff and what was tried. A third
+  attempt on a polluted context produces worse code, not better — this mirrors
+  `implement`'s own twice-wrong rule.
+
+Never let a phase silently revert a fix from an earlier phase. When a later
+phase removes something an earlier one added, say so explicitly and justify it
+before the run continues.
 
 ## Stop and Ask
 
@@ -127,8 +189,8 @@ STOP and ask the user when:
   not identify the right one.
 - Continuing would require product intent, credentials, paid services,
   destructive actions, or external state that the repo does not provide.
-- The user wants PR creation, deployment, or release management; that is
-  outside AFK Ship's v1 scope.
+- The user wants a merge, deployment, or release management; AFK Ship stops at
+  an open pull request.
 
 Do not ask about facts discoverable from plans, diffs, docs, tests, or QA
 artifacts.
@@ -141,6 +203,9 @@ artifacts.
 | "There is a QA report, so QA is done." | Reuse it only if it still matches the current diff and requested behavior. |
 | "Tests passed, so the final verdict is SHIP." | Tests are verification. Behavior-bearing work still needs `qa` evidence. |
 | "The work is almost done, so report success." | Missing phase evidence is a caveat or blocker, not success. |
+| "Everything is green locally, so the run is done." | Green and local is not shipped. Run `ship-it` unless the user asked to stay local. |
+| "Simplify only cleans things up, so nothing needs re-checking." | Cleanup can revert an earlier fix in the same run. Re-run the fast gate after every editing phase. |
+| "One more corrective loop and it'll be right." | Two failed passes is the limit. Stop and report the diff and what was tried. |
 
 ## Output
 
@@ -148,13 +213,14 @@ Return this compact shape:
 
 ```markdown
 Verdict: SHIP | DO NOT SHIP | SHIP WITH CAVEATS
-Route: grill skipped/used -> implement -> simplify skipped/used -> review skipped/used -> qa skipped/used -> reflect skipped/used
+Route: grill skipped/used -> implement -> simplify skipped/used -> review skipped/used -> qa skipped/used -> reflect skipped/used -> ship-it skipped/used
 Plan: brain/plans/<slug>.md or "none, reason"
 Changed: <files or summary>
 Verification: <commands/results>
 Review: accept | accept with notes | revise, or "skipped, reason"
 QA: qa/<slug>.md or "skipped, reason"
 Memory: <brain files written/updated, or "skipped, reason">
+PR: <url, or "skipped, reason">
 Caveat: <one sentence, only if needed>
 ```
 

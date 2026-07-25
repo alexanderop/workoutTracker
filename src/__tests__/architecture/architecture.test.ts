@@ -56,7 +56,7 @@ const SHARED_FOLDERS = [
 // =============================================================================
 
 describe('circular dependencies', () => {
-  it('features should be free of cycles', { timeout: 30_000 }, async () => {
+  it('features should be free of cycles', async () => {
     const rule = projectFiles().inFolder('src/features/**').should().haveNoCycles()
     await expect(rule).toPassAsync()
   })

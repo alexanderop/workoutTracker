@@ -1,6 +1,6 @@
 import type { DbWorkoutExercise } from '@/db/schema'
 import type { DbSet } from '@/blocks'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import { createDbSet as createDatabaseSet } from './dbSet.factory'
 
 const DEFAULTS: Readonly<Omit<DbWorkoutExercise, 'id' | 'sets'>> = {

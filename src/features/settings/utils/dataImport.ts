@@ -116,6 +116,8 @@ export async function importAllData(exportData: ExportData): Promise<boolean> {
       nutritionGoals: rawData.nutritionGoals ?? [],
       foods: rawData.foods ?? [],
       nutritionDiaryEntries: rawData.nutritionDiaryEntries ?? [],
+      progressions: rawData.progressions ?? [],
+      progressionSessions: rawData.progressionSessions ?? [],
     }),
   )
 

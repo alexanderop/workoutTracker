@@ -8,6 +8,12 @@ import {
   MAX_HABIT_ENTRIES,
   MAX_HABITS,
 } from './habitSchema'
+import {
+  dbProgressionSchema as databaseProgressionSchema,
+  dbProgressionSessionSchema as databaseProgressionSessionSchema,
+  MAX_PROGRESSION_SESSIONS,
+  MAX_PROGRESSIONS,
+} from './progressionSchema'
 import { dbUserSettingSchema as databaseUserSettingSchema } from './settingsSchema'
 import {
   dbFoodSchema as databaseFoodSchema,
@@ -68,6 +74,16 @@ export const exportDataSchema = z
         nutritionDiaryEntries: z
           .array(databaseNutritionDiaryEntrySchema)
           .max(MAX_NUTRITION_DIARY_ENTRIES)
+          .readonly()
+          .optional(),
+        progressions: z
+          .array(databaseProgressionSchema)
+          .max(MAX_PROGRESSIONS)
+          .readonly()
+          .optional(),
+        progressionSessions: z
+          .array(databaseProgressionSessionSchema)
+          .max(MAX_PROGRESSION_SESSIONS)
           .readonly()
           .optional(),
       })

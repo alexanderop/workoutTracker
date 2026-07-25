@@ -1,6 +1,7 @@
 import type { HabitRepository } from '@/db/interfaces'
 import { generateId } from '@/db/generateId'
 import { getStartOfDay } from '@/lib/date'
+import { type Clock, systemClock } from '@/lib/clock'
 
 /**
  * Auto-link active, workout-linked habits when a workout is completed.
@@ -25,10 +26,15 @@ import { getStartOfDay } from '@/lib/date'
  * never block or fail workout completion (mid-workout gym UX), so wrap this
  * call in `tryCatch` at the call site rather than relying on this function
  * to swallow errors.
+ *
+ * `recordedAt` comes from an injectable `Clock` (defaulting to the system
+ * clock) so tests can pin it, while `completedAt` -- the workout's own
+ * completion instant, used to derive `date` -- stays caller-supplied.
  */
 export async function autoLinkWorkoutCompletion(
   habitRepository: HabitRepository,
   completedAt: number,
+  clock: Clock = systemClock,
 ): Promise<void> {
   const date = getStartOfDay(new Date(completedAt))
 
@@ -39,7 +45,7 @@ export async function autoLinkWorkoutCompletion(
   )
   if (linkedHabits.length === 0) return
 
-  const recordedAt = Date.now()
+  const recordedAt = clock.now()
 
   for (const habit of linkedHabits) {
     await habitRepository.upsertEntry({

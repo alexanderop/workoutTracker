@@ -1,6 +1,6 @@
 import type { DbCompletedWorkout } from '@/db/schema'
 import type { DbStrengthBlock, DbSet, DbWorkoutBlock } from '@/blocks'
-import { generateId } from '@/db'
+import { generateId } from '@/db/generateId'
 import {
   createDbStrengthBlock as createDatabaseStrengthBlock,
   createDbStrengthBlockWithSets as createDatabaseStrengthBlockWithSets,
