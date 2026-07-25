@@ -16,6 +16,12 @@ ledger's open rows *are* the question list, so completeness is an enumerable
 check rather than a matter of when the interviewer runs out of ideas. See
 [RESEARCH-GATE.md](./RESEARCH-GATE.md).
 
+The plan is built **live**: the file exists before the first question and is
+re-worked after every answer, so the user steers while there is still something
+to steer. Questions carry a *view* — the code shape under discussion, one block
+per option — not prose describing one; see
+[QUESTION-FORMAT.md](./QUESTION-FORMAT.md).
+
 ## When to Use
 
 Use this skill when:
@@ -72,11 +78,21 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    versions — fetch Context7 or current official docs, record the URL and
    version, and run the deprecation/sunset check before any external API enters a
    contract. Announce the decision in one line.
-4. Whenever step 3 found research adds value, dispatch bounded read-only
-   subagents in parallel; scale depth to the step-3 signals (a throwaway gets the
-   codebase scout only; a payments or migration decision gets the full set plus
-   landscape delegation). Scouts report findings only — never recommendations;
-   prescription is the plan's job.
+4. Whenever step 3 found research adds value, print the scout brief and then
+   dispatch. **Before dispatching, show the user what each scout will
+   investigate and where** — one line per scout against the seven surfaces
+   ("codebase scout: how rest-timer state persists across reload today, in
+   `src/features/rest-timer/` and `src/db/`"), and accept redirection. This is
+   the cheapest checkpoint in the whole skill: "you're looking at the wrong
+   module" costs one sentence here and a full re-research later. Then dispatch
+   bounded read-only subagents in parallel; scale depth to the step-3 signals (a
+   throwaway gets the codebase scout only; a payments or migration decision gets
+   the full set plus landscape delegation). **Brief scouts non-normatively** —
+   ask how the code works today, never how it should change: "how does rest-timer
+   state persist across reload" and never "how would we add X". A scout that
+   knows the intended change finds evidence for it, and the research doc has to
+   stay true for the next three tasks, not just this one. Scouts report findings
+   only — never recommendations; prescription is the plan's job.
    - Codebase scout: inspect entrypoints, neighboring files, tests, schemas,
      configs, and existing patterns. Report file paths, current behavior,
      contradictions, untested surfaces, open questions, and the
@@ -97,7 +113,8 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    `brain/plans/<slug>.research.md` using [RESEARCH-FORMAT.md](./RESEARCH-FORMAT.md)
    — what the codebase and sources ARE today, citation-heavy, no recommendations,
    opening with a one-line research-value rating (high/moderate/low) and closing
-   with the Coverage ledger (the fixed surface taxonomy in RESEARCH-GATE.md, each
+   with the Coverage ledger (the fixed surface taxonomy in
+   [RESEARCH-GATE.md](./RESEARCH-GATE.md), each
    surface marked resolved-by-evidence, open-needs-user, or n/a-derived). It is
    the companion to the plan and the reusable input every later phase
    (`implement`, `qa`) reads instead of re-discovering. Skip the doc only
@@ -112,21 +129,44 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    open rows remain ("3 decisions need you; here's the first"), and state your
    read of the intent, inviting correction. This gives the user something
    concrete to react to instead of a cold first question.
-7. Now interview the ledger's open-needs-user rows, in priority order
+7. Create the plan file now, before the first question. Write
+   `brain/plans/<slug>.md` as a deliberately empty skeleton — the section
+   headings from Output, the Research link, and the step-6 Background written
+   into `## Context` (the template has no `## Background`; the Background is how
+   you *say* it, `## Context` is where it *lives*) — and tell the user where it
+   is. No preamble, no setup, no summaries: the faster
+   you reach the first question, the more the user stays engaged. The plan is
+   built live from here on, so the user steers while there is still something to
+   steer.
+8. Now interview the ledger's open-needs-user rows, in priority order
    (blast-radius and irreversibility first, then the experience bar, then edge
-   cases, then cosmetics). Ask one at a time, waiting for each answer, each as
-   (the question, why it matters / what breaks, and your recommended
-   default-if-silent). Silence or "your call" resolves a non-blocking row to its
-   stated default — except the Stop-and-Ask surfaces below, which must be asked
-   as real questions even when a default exists. If research already closed every
-   row, say so and go straight to the plan — do not manufacture questions.
-8. Challenge glossary conflicts immediately. If the user uses a term
-   differently from `brain/context.md`, say what the glossary says and ask which
-   meaning is authoritative.
-9. Sharpen fuzzy or overloaded language. Propose canonical terms when concepts
-   such as `account`, `user`, `customer`, `order`, or `cancellation` may mean
-   different things.
-10. Stress-test decisions with concrete scenarios, edge cases, failure modes,
+   cases, then cosmetics). **Exactly one question per message** — offering 2–3
+   options to choose between is still one question, stacking independent
+   decisions is not. Ask the one that unblocks the rest, and never ask for a
+   vague "any feedback?" (full rule in
+   [RESEARCH-GATE.md](./RESEARCH-GATE.md)). Present each question as the
+   quadruple — *(the view, the question, why it matters / what breaks, your
+   recommended default-if-silent)* — per
+   [QUESTION-FORMAT.md](./QUESTION-FORMAT.md): if the decision is about a code
+   shape, draw the shape, and give every option its own code block. Silence or
+   "your call" resolves a non-blocking row to its stated default — except the
+   Stop-and-Ask surfaces below, which must be asked as real questions even when a
+   default exists. If research already closed every row, say so and go straight
+   to the plan — do not manufacture questions.
+9. Re-work the plan after every single answer. Rewrite the affected section so
+   the document is a coherent design as of right now — never a Q&A log, never an
+   append-only transcript. **Rewriting entire sections as you go is expected, not
+   exceptional.** This is what catches the real failure mode: an answer at
+   question 9 that invalidates the framing from question 2 gets folded in
+   immediately instead of silently contradicting it. Show the user what changed
+   when a rewrite is structural.
+10. Challenge glossary conflicts immediately. If the user uses a term
+    differently from `brain/context.md`, say what the glossary says and ask which
+    meaning is authoritative.
+11. Sharpen fuzzy or overloaded language. Propose canonical terms when concepts
+    such as `account`, `user`, `customer`, `order`, or `cancellation` may mean
+    different things.
+12. Stress-test decisions with concrete scenarios, edge cases, failure modes,
     permission boundaries, lifecycle states, and cross-system contracts.
     For experience-bearing work — UI, dashboards, reports, anything whose value
     is what the user *understands or can do* — also grill the quality bar, not
@@ -135,45 +175,71 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
     scannability). Treat that bar as a contract, not taste — without it,
     implementation ships something that runs but does not deliver, and QA has no
     bar to fail it against.
-11. Cross-reference user claims against code and fetched sources. Surface
+13. Cross-reference user claims against code and fetched sources. Surface
     contradictions explicitly and ask which source should win. When an answer
     surfaces a new what-is fact, append it to the research doc before the plan
     cites it — research is ground truth, not a write-once snapshot.
-12. Update `brain/context.md` immediately when a glossary term is resolved. Use
+14. Update `brain/context.md` immediately when a glossary term is resolved. Use
     it only as a glossary: no implementation details, specs, scratch notes, or
     plan content. If creating it, use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
-13. Offer an ADR only when the decision is hard to reverse, surprising without
+15. Offer an ADR only when the decision is hard to reverse, surprising without
     context, and the result of a real trade-off. If creating one, use
     [ADR-FORMAT.md](./ADR-FORMAT.md).
-14. Continue until the coverage ledger closes: every surface is
+16. Continue until the coverage ledger closes — the gate in
+    [RESEARCH-GATE.md](./RESEARCH-GATE.md): every surface is
     resolved-by-evidence, resolved-by-user, default-accepted, or n/a-derived
-    (with a one-line reason) — none left open. This is an enumerable check, not a
-    feel; contracts clear, ambiguous terms defined, key edge cases answered, and
+    (with a one-line reason) — none left open, since `open-needs-user` is the one
+    transitional status and closing it is the whole point. This is an enumerable
+    check, not a feel; contracts clear, ambiguous terms defined, key edge cases answered, and
     source-of-truth conflicts settled all fall out of it.
-15. If during the interview the user pointed you at a reference repo they cloned
+17. If during the interview the user pointed you at a reference repo they cloned
     locally ("do it like that repo", "see the pattern in Y"), read it and record
     it in the plan: its origin (GitHub URL or name) and its local path, so
     implementation reads the real source instead of a remembered pattern.
-16. Write the agreed plan to `brain/plans/<slug>.md` and add a wikilink to it in
-    `brain/plans/index.md`, creating the vault if it does not exist yet. (Do not
-    edit `brain/index.md` — the auto-index hook maintains it.) If you wrote a
-    research doc in step 5, link it from the plan's `## Research` line so the plan
-    stays the single entrypoint. Every decision or contract that rests on a
-    finding must cite it (`[[<slug>.research#<finding>]]`) so the plan's
-    prescription is traceable back to the descriptive evidence; a choice made in
-    the interview with no finding behind it carries an explicit
-    `(no research — chosen in interview)` tag instead. Keep the finding in
-    research, the choice in the plan, never duplicate the prose. Include decisions
-    made, contracts between parts, relevant glossary or ADR updates, an explicit
-    `## Acceptance` bar for experience-bearing work (the user-visible quality
-    criteria, so `implement` has a target and `qa` has a bar), and the
-    implementation task list grouped into parallel waves (see Output). Decide the
-    schedule here so `implement` does not have to re-derive it: mark which
-    slices are independent (disjoint files, no shared contract) so they run
-    concurrently, and which depend on earlier slices; give every slice the files
-    it owns and what it depends on. Every contract that depends on a library,
-    SDK, or API must cite the source URL and version it was doc-verified against
-    (per step 3).
+18. Stop at the coherence gate before anything downstream is written. The ledger
+    proves every *surface* was covered; it cannot prove the resulting document
+    hangs together, and decision-by-decision construction reliably produces
+    locally-correct, globally-incoherent docs. Only a top-to-bottom human read
+    catches that, and it has to be asked for explicitly:
+
+    > I think the Decisions and Contracts are complete. Since we've been building
+    > them up decision by decision, can you read those two sections top to bottom
+    > and confirm they hang together before I write the tasks and waves?
+
+    Do not write the Tasks section without sign-off. This is cheap — nothing
+    downstream exists yet.
+19. Present the wave breakdown as its own reviewable beat, before filling in any
+    implementation detail: slice names, the files each owns, and its
+    dependencies — nothing more. Get agreement on the phasing, then fill in the
+    rest. Re-phasing a signature-level outline is free; re-phasing a plan full of
+    written-out detail means throwing work away, so nobody does it and the bad
+    phasing ships.
+20. Finish the plan at `brain/plans/<slug>.md` — a final consistency pass over
+    the document you have been building since step 7, not the first write — and
+    add a wikilink to it in `brain/plans/index.md`, creating the vault if it does
+    not exist yet. (Do not edit `brain/index.md` — the auto-index hook maintains
+    it.) Read it top to bottom yourself and reconcile anything a later answer
+    left stale. If you wrote a research doc in step 5, link it from the plan's
+    `## Research` line so the plan stays the single entrypoint. Every decision or
+    contract that rests on a finding must cite it (`[[<slug>.research#<finding>]]`)
+    so the plan's prescription is traceable back to the descriptive evidence; a
+    choice made in the interview with no finding behind it carries an explicit
+    `(no research — chosen in interview)` tag instead. Every decision that had a
+    real alternative records what lost and why (`rejected: <option> (<why>)`) —
+    the cheapest possible defence against re-litigation six weeks later. A row
+    that closed on silence rather than an explicit answer is marked
+    `(default accepted — not explicitly confirmed)` so a guess is never laundered
+    into a recorded decision. Keep the finding in research, the choice in the
+    plan, never duplicate the prose. Include decisions made, contracts between
+    parts, relevant glossary or ADR updates, an explicit `## Acceptance` bar for
+    experience-bearing work (the user-visible quality criteria, so `implement`
+    has a target and `qa` has a bar), and the implementation task list grouped
+    into parallel waves (see Output). Decide the schedule here so `implement`
+    does not have to re-derive it: mark which slices are independent (disjoint
+    files, no shared contract) so they run concurrently, and which depend on
+    earlier slices; give every slice the files it owns and what it depends on.
+    Every contract that depends on a library, SDK, or API must cite the source
+    URL and version it was doc-verified against (per step 3).
 
 ## Stop and Ask
 
@@ -205,10 +271,25 @@ fetched primary sources.
 | "I know this library/API well enough to write the contract." | Training data drifts. Fetch the current docs and verify every API name, parameter, and version before it goes in the plan (per step 3). |
 | "The interview feels done." | It's done when every coverage-ledger surface is non-open with a recorded status, not when you run out of questions. |
 | "This work is small, so skip the research doc." | Write whenever any scout ran or any external fact was fetched. Skip only when neither happened. |
+| "I'll describe the two options in a sentence." | If it's a code shape, draw it. Each option gets its own code block — see [QUESTION-FORMAT.md](./QUESTION-FORMAT.md). |
+| "I'll write the plan once the interview is done." | The plan file exists before question 1 and is re-worked after every answer. A plan first read after 12 answers is a plan accepted out of sunk cost. |
+| "The answers are all recorded, so the plan is current." | Appending answers produces a Q&A log. Rewrite the affected section so the document is a coherent design as of right now. |
+| "The ledger closed, so the document is coherent." | The ledger proves coverage, not coherence. Ask for the top-to-bottom read of Decisions and Contracts before writing tasks. |
+| "The decision is recorded, that's enough." | Record what lost and why too, or the same argument gets re-litigated in six weeks with no answer in the plan. |
 
 ## Output
 
-Create the plan file (`brain/plans/<slug>.md`) with this shape:
+**Document precedence:** `plan > research > brain notes > ticket`. The
+**highest-precedence** document wins — not the most recently written one. A
+brain note added yesterday does not override a plan decision made last week;
+recency settles only conflicts *within* one level, where a later revision of the
+plan supersedes an earlier one. The plan is the final authority: a decision
+settled there is not re-opened by a stale brain note or by what the ticket
+originally asked for, and later phases (`implement`, `qa`) read the plan first
+and treat the rest as supporting evidence.
+
+The plan file (`brain/plans/<slug>.md`) is created as an empty skeleton at step 7
+and built up live through the interview. Its finished shape:
 
 ```markdown
 # <Plan Title>
@@ -222,7 +303,12 @@ Create the plan file (`brain/plans/<slug>.md`) with this shape:
 - <Reference repos the user cloned to copy a pattern: origin (GitHub URL) and local path>
 
 ## Decisions
-- <Resolved decision and rationale> — grounds: [[<slug>.research#<finding>]] (or `(no research — chosen in interview)`)
+- <Resolved decision and rationale> — grounds: [[<slug>.research#<finding>]] (or `(no research — chosen in interview)`) — rejected: <option> (<why it lost>)
+- <Decision that closed on silence> — grounds: [[…]] — rejected: <option> (<why>) — (default accepted — not explicitly confirmed)
+
+<`rejected:` is omitted only when there was genuinely no alternative on the
+table. The `(default accepted …)` tag is mandatory for any row resolved by
+silence rather than an explicit answer.>
 
 ## Contracts
 - <Interface, data, lifecycle, permission, or ownership contract> — grounds: [[<slug>.research#<finding>]] (or `(no research — chosen in interview)`)
@@ -260,7 +346,24 @@ cases behind it.
   - <slice> · owns `<file>` · depends: <earlier slices>
 
 **Verification**
-1. <Verification task or command>
+
+Checkboxes, not prose — they are the resume token. A fresh session reads the
+plan, finds the first unchecked box, and continues from there; prose
+verification cannot be resumed from. Put the exact command inline.
+
+#### Automated Verification:
+- [ ] Type checking passes: `pnpm type-check`
+- [ ] Lint passes: `pnpm lint`
+- [ ] Tests pass: `pnpm test`
+
+#### Manual Verification:  <emit this subsection only when the wave needs one>
+- [ ] <specific, actionable step that proves the behavior works — not "it compiles">
+
+<Not every wave requires manual validation. When none is needed, omit the whole
+subsection, heading included — do not leave an empty placeholder box. Resume
+starts at the first unchecked box, so a box nobody intends to tick strands the
+plan short of done and invites invented steps to clear it. When a wave does need
+manual proof, the bar is proof the change works, per Acceptance.>
 ```
 
 End the session by telling the user the plan is ready, naming the exact plan

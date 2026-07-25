@@ -3,8 +3,12 @@
 The decision machinery behind grill's research phase: how it decides *whether*
 and *what* to research (the cascade), and how it guarantees the interview asks
 everything needed and nothing answerable by evidence (the surface taxonomy and
-coverage ledger). SKILL.md steps 3–7 and 14 reference this file; the detail
-lives here so the steps stay tight.
+coverage ledger). SKILL.md draws on it at step 3 (the cascade), step 5 (the
+ledger written into the research doc), step 8 (interview order and question
+shape), and step 16 (the coverage gate); steps 3, 5, and 8 link here directly.
+The detail lives here so the steps stay tight. How a question is *presented* —
+the view that must accompany it — lives in
+[QUESTION-FORMAT.md](./QUESTION-FORMAT.md).
 
 ## The three-stage cascade (whether / what to research)
 
@@ -89,25 +93,61 @@ one status:
   carrying a recommended default.
 - **`n/a-derived`** — does not apply here, with a one-line reason.
 
+Those three are the statuses at **research-write time** — the only ones a scout
+can assign, since two of them are settled by evidence and the third is the
+explicit "evidence cannot settle this". The interview then closes every
+`open-needs-user` row into exactly one of two **terminal** statuses, and it is
+these that the coverage gate and the plan read:
+
+- **`resolved-by-user`** — the user answered. Records the choice, the
+  alternatives that lost, and why.
+- **`default-accepted`** — the row closed on silence or "your call" against its
+  stated default. Carries the `(default accepted — not explicitly confirmed)`
+  tag wherever it lands in the plan.
+
+So the full vocabulary is five statuses: three initial, of which
+`open-needs-user` is transitional, and two terminal. `open-needs-user` is the
+only status that may not survive to the gate — that is exactly what the gate
+checks.
+
 At plan-write time the resolved/default-accepted rows become Decisions or
-Contracts (with their grounding citation), defer rows become Open Non-Blocking
-Notes, and the experience-bar row becomes an Acceptance criterion. The plan is
-largely a transcription of the closed ledger.
+Contracts — with their grounding citation, the alternatives that lost and why,
+and the `(default accepted — not explicitly confirmed)` tag on anything resolved
+by silence — defer rows become Open Non-Blocking Notes, and the experience-bar
+row becomes an Acceptance criterion. The plan is largely a transcription of the
+closed ledger, kept current as each row closes rather than written out at the
+end.
 
 ## Interview order and question shape
 
 Walk `open-needs-user` rows in priority order: **blast-radius and
 irreversibility first**, then the experience bar, then edge cases, then
-cosmetics. Present each as a triple:
+cosmetics. Present each as a quadruple:
 
-> (the question, why it matters / what breaks if unspecified, your recommended
-> default-if-silent)
+> (the view, the question, why it matters / what breaks if unspecified, your
+> recommended default-if-silent)
+
+The **view** is the code shape under discussion, rendered in a code block — one
+block per option when you are offering options. It comes first because it is
+what the user actually reads. See [QUESTION-FORMAT.md](./QUESTION-FORMAT.md) for
+the catalog and the exceptions: a pure product-intent question has no shape to
+draw, so it stays a **triple** — *(the question, why it matters, your
+recommended default-if-silent)*, the quadruple with the view dropped and nothing
+else changed. The default is stated and recorded either way.
+
+**Exactly one question per message.** Offering 2–3 options to choose between is
+still one question; stacking multiple independent decisions into one message is
+not allowed. If several things feel open, ask only the one that unblocks the
+rest. Never ask for a vague "any feedback?".
 
 Silence or "your call" resolves a **non-blocking** row to its stated default
-(record it in the plan's `## Open Non-Blocking Notes`). The **Stop-and-Ask**
-surfaces — product intent or acceptable trade-off, an owner-required
-business/legal/security/privacy/rollout call, or a source-of-truth conflict that
-changes behavior — must be asked as real questions even when a default exists.
+(record it in the plan's `## Open Non-Blocking Notes`). An auto-resolved row is
+marked `(default accepted — not explicitly confirmed)` wherever it lands in the
+plan, so a guess is never laundered into a recorded decision. The
+**Stop-and-Ask** surfaces — product intent or acceptable trade-off, an
+owner-required business/legal/security/privacy/rollout call, or a
+source-of-truth conflict that changes behavior — must be asked as real questions
+even when a default exists.
 
 ## The coverage gate
 
