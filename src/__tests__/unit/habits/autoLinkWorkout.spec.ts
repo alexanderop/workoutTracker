@@ -15,29 +15,34 @@ import { createDbHabit } from '@/__tests__/factories'
 import { createFakeHabitRepository } from '@/__tests__/fakes/habitRepository'
 
 describe('autoLinkWorkoutCompletion (unit tier, pinned clock)', () => {
-  it('records two entries on two distinct start-of-day keys when clock.adjust crosses local midnight between calls', async () => {
+  it('keys each entry off completedAt across local midnight while recordedAt tracks the clock', async () => {
     const habit = createDbHabit({ kind: { type: 'binary' }, autoLink: 'completed-workout' })
     const repo = createFakeHabitRepository({ habits: [habit] })
-    // 23:59:00 local time -- one minute from local midnight.
-    const clock = testClock(new Date(2026, 5, 10, 23, 59, 0).getTime())
+    // The clock never leaves the morning of the 11th, while the two completedAt
+    // instants straddle midnight -- so the two sources cannot be confused.
+    const clock = testClock(new Date(2026, 5, 11, 8, 0, 0).getTime())
 
-    const completedAtBeforeMidnight = clock.now()
+    const completedAtBeforeMidnight = new Date(2026, 5, 10, 23, 59, 0).getTime()
+    const recordedAtBeforeMidnight = clock.now()
     await autoLinkWorkoutCompletion(repo, completedAtBeforeMidnight, clock)
 
-    clock.adjust(2 * 60 * 1000) // 00:01:00 the next local day
-    const completedAtAfterMidnight = clock.now()
+    clock.adjust(60 * 1000)
+    const completedAtAfterMidnight = new Date(2026, 5, 11, 0, 1, 0).getTime()
+    const recordedAtAfterMidnight = clock.now()
     await autoLinkWorkoutCompletion(repo, completedAtAfterMidnight, clock)
 
     const dayBefore = getStartOfDay(new Date(completedAtBeforeMidnight))
     const dayAfter = getStartOfDay(new Date(completedAtAfterMidnight))
     expect(dayBefore).not.toBe(dayAfter)
+    // The first entry lands on the 10th, a day the clock was never on.
+    expect(dayBefore).not.toBe(getStartOfDay(new Date(recordedAtBeforeMidnight)))
 
     const entriesBefore = await repo.getEntriesForDay(dayBefore)
     const entriesAfter = await repo.getEntriesForDay(dayAfter)
     expect(entriesBefore).toHaveLength(1)
     expect(entriesAfter).toHaveLength(1)
-    expect(entriesBefore[0]?.recordedAt).toBe(completedAtBeforeMidnight)
-    expect(entriesAfter[0]?.recordedAt).toBe(completedAtAfterMidnight)
+    expect(entriesBefore[0]?.recordedAt).toBe(recordedAtBeforeMidnight)
+    expect(entriesAfter[0]?.recordedAt).toBe(recordedAtAfterMidnight)
   })
 
   it('produces exactly one entry at value 1 for two auto-links within the same virtual day', async () => {
@@ -59,7 +64,7 @@ describe('autoLinkWorkoutCompletion (unit tier, pinned clock)', () => {
       name: 'Archived, linked',
       kind: { type: 'binary' },
       autoLink: 'completed-workout',
-      archivedAt: Date.now(),
+      archivedAt: new Date(2026, 5, 1, 12, 0, 0).getTime(),
     })
     const active = createDbHabit({
       name: 'Active, linked',

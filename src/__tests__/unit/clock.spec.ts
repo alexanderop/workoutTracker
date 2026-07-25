@@ -105,18 +105,19 @@ describe('testClock', () => {
     expect(resolved).toStrictEqual([])
   })
 
-  it('completes in milliseconds when adjusted by an hour, proving no real timer is used', async () => {
+  // The "no real timer" guarantee is carried by this test's own timeout rather
+  // than by a wall-clock assertion in the body: a real one-hour timer blows the
+  // 1s budget, while a `Date.now()` delta would measure machine load too.
+  it('resolves an hour-long sleep on adjust, proving no real timer is used', async () => {
     const clock = testClock(0)
     const resolved: Array<true> = []
-    const start = Date.now()
 
     void clock.sleep(60 * 60 * 1000).then(() => resolved.push(true))
     clock.adjust(60 * 60 * 1000)
     await Promise.resolve()
 
     expect(resolved).toStrictEqual([true])
-    expect(Date.now() - start).toBeLessThan(50)
-  })
+  }, 1000)
 })
 
 describe('IdGen', () => {
