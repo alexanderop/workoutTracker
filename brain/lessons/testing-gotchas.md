@@ -26,6 +26,19 @@ failure modes here:
   related screenshots under `.vitest-attachments/`. Failed CI shards upload
   both in `vitest-debug-shard-<number>` artifacts. Open a downloaded trace with
   `pnpm exec playwright show-trace <trace.zip>`.
+- `bail: 1` is set for local runs (`vitest.config.ts`), so a **failing** browser
+  run stops at the first failure and its "N passed" total is a partial count,
+  not tier coverage. A green run is complete and trustworthy; a red one is
+  truncated. Never cite the count from a truncated run as evidence that the
+  tier passed — re-run with `CI=1 pnpm test` (which sets `bail: 0`) to see every
+  failure and the real total. The full default project is ~173 files / ~1289
+  tests and takes ~5 minutes.
+- A Playwright project can silently contribute **zero** tests while the run
+  still exits 0: if `bddgen` has not generated `.features-gen/`, the BDD project
+  is simply empty, and because the sibling `chromium` project still has tests,
+  Playwright never trips its "no tests found" guard. `test/e2e/bddGuard.ts`
+  (wired as `globalSetup`) now fails loudly on a real run. It cannot fire for
+  `playwright test --list`, which does not run `globalSetup`.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`
