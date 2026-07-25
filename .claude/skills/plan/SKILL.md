@@ -111,7 +111,7 @@ from.
 - [ ] Lint passes: `pnpm lint`
 - [ ] Tests pass: `pnpm test`
 
-#### Manual Verification:
+#### Manual Verification:  [emit this subsection only when the phase needs one]
 - [ ] [specific, actionable step]
 ```
 
@@ -120,10 +120,12 @@ from.
 - **Manual** — what to exercise by hand, edge cases, and (for UI) visual
   verification via screenshot.
 
-Not every phase requires manual validation — don't put steps for manual
-validation just to have them. When a phase does, the bar stands: per
-prove-it-works, "it compiles" is not verification. Every box must be something
-that **proves** the change works.
+Not every phase requires manual validation. When none is needed, omit the whole
+subsection, heading included — don't leave an empty placeholder box. Resume
+starts at the first unchecked box, so a box nobody intends to tick strands the
+plan short of done and invites invented steps to clear it. When a phase does
+need manual proof, the bar stands: per prove-it-works, "it compiles" is not
+verification. Every box must be something that **proves** the change works.
 
 ### Step 7 — Update plans index
 

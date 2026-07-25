@@ -356,11 +356,14 @@ verification cannot be resumed from. Put the exact command inline.
 - [ ] Lint passes: `pnpm lint`
 - [ ] Tests pass: `pnpm test`
 
-#### Manual Verification:
+#### Manual Verification:  <emit this subsection only when the wave needs one>
 - [ ] <specific, actionable step that proves the behavior works — not "it compiles">
 
-<Not every wave requires manual validation — don't invent manual steps just to
-have them. When a wave does, the bar is proof the change works, per Acceptance.>
+<Not every wave requires manual validation. When none is needed, omit the whole
+subsection, heading included — do not leave an empty placeholder box. Resume
+starts at the first unchecked box, so a box nobody intends to tick strands the
+plan short of done and invites invented steps to clear it. When a wave does need
+manual proof, the bar is proof the change works, per Acceptance.>
 ```
 
 End the session by telling the user the plan is ready, naming the exact plan
