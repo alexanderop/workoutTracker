@@ -270,8 +270,9 @@ which is exactly the list of things a stuck worker reaches for.
 
 After each worker returns:
 
-1. Run the slice verification command yourself. A red gate ends the question
-   here.
+1. Run the slice verification command yourself. A red gate settles whether the
+   slice is done — it is not — and sends it to step 3. Never accept the slice
+   as it stands, and never end the run on a red gate.
 2. Read the diff with `git diff`, hunting the gate's blind spots specifically:
    removed or loosened assertions, `skip`/`only`, fixtures that encode the
    expected answer, TODOs where behavior should be, and files outside the
