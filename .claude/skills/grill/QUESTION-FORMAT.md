@@ -25,7 +25,9 @@ prevent.
 code change in words alone, convert it into one of the views below before
 sending. The exceptions are genuine product-intent questions ("should a skipped
 set count toward the AMRAP total?") — there is no code shape to draw, so ask
-them as a plain triple.
+them as a plain **triple**: *(the question, why it matters, default-if-silent)*,
+which is the quadruple with the view dropped. Nothing else changes: the default
+is stated and recorded exactly as it is for a code-shape question.
 
 ## The view catalog
 

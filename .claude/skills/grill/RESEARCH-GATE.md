@@ -3,9 +3,12 @@
 The decision machinery behind grill's research phase: how it decides *whether*
 and *what* to research (the cascade), and how it guarantees the interview asks
 everything needed and nothing answerable by evidence (the surface taxonomy and
-coverage ledger). SKILL.md steps 3–8 and 16 reference this file; the detail
-lives here so the steps stay tight. How a question is *presented* — the view that
-must accompany it — lives in [QUESTION-FORMAT.md](./QUESTION-FORMAT.md).
+coverage ledger). SKILL.md draws on it at step 3 (the cascade), step 5 (the
+ledger written into the research doc), step 8 (interview order and question
+shape), and step 16 (the coverage gate); steps 3, 5, and 8 link here directly.
+The detail lives here so the steps stay tight. How a question is *presented* —
+the view that must accompany it — lives in
+[QUESTION-FORMAT.md](./QUESTION-FORMAT.md).
 
 ## The three-stage cascade (whether / what to research)
 
@@ -90,6 +93,23 @@ one status:
   carrying a recommended default.
 - **`n/a-derived`** — does not apply here, with a one-line reason.
 
+Those three are the statuses at **research-write time** — the only ones a scout
+can assign, since two of them are settled by evidence and the third is the
+explicit "evidence cannot settle this". The interview then closes every
+`open-needs-user` row into exactly one of two **terminal** statuses, and it is
+these that the coverage gate and the plan read:
+
+- **`resolved-by-user`** — the user answered. Records the choice, the
+  alternatives that lost, and why.
+- **`default-accepted`** — the row closed on silence or "your call" against its
+  stated default. Carries the `(default accepted — not explicitly confirmed)`
+  tag wherever it lands in the plan.
+
+So the full vocabulary is five statuses: three initial, of which
+`open-needs-user` is transitional, and two terminal. `open-needs-user` is the
+only status that may not survive to the gate — that is exactly what the gate
+checks.
+
 At plan-write time the resolved/default-accepted rows become Decisions or
 Contracts — with their grounding citation, the alternatives that lost and why,
 and the `(default accepted — not explicitly confirmed)` tag on anything resolved
@@ -110,8 +130,10 @@ cosmetics. Present each as a quadruple:
 The **view** is the code shape under discussion, rendered in a code block — one
 block per option when you are offering options. It comes first because it is
 what the user actually reads. See [QUESTION-FORMAT.md](./QUESTION-FORMAT.md) for
-the catalog and the exceptions (pure product-intent questions have no shape to
-draw and stay a triple).
+the catalog and the exceptions: a pure product-intent question has no shape to
+draw, so it stays a **triple** — *(the question, why it matters, your
+recommended default-if-silent)*, the quadruple with the view dropped and nothing
+else changed. The default is stated and recorded either way.
 
 **Exactly one question per message.** Offering 2–3 options to choose between is
 still one question; stacking multiple independent decisions into one message is

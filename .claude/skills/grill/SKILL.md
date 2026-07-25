@@ -113,7 +113,8 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    `brain/plans/<slug>.research.md` using [RESEARCH-FORMAT.md](./RESEARCH-FORMAT.md)
    — what the codebase and sources ARE today, citation-heavy, no recommendations,
    opening with a one-line research-value rating (high/moderate/low) and closing
-   with the Coverage ledger (the fixed surface taxonomy in RESEARCH-GATE.md, each
+   with the Coverage ledger (the fixed surface taxonomy in
+   [RESEARCH-GATE.md](./RESEARCH-GATE.md), each
    surface marked resolved-by-evidence, open-needs-user, or n/a-derived). It is
    the companion to the plan and the reusable input every later phase
    (`implement`, `qa`) reads instead of re-discovering. Skip the doc only
@@ -130,8 +131,10 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
    concrete to react to instead of a cold first question.
 7. Create the plan file now, before the first question. Write
    `brain/plans/<slug>.md` as a deliberately empty skeleton — the section
-   headings from Output, the Research link, and the Background you just wrote —
-   and tell the user where it is. No preamble, no setup, no summaries: the faster
+   headings from Output, the Research link, and the step-6 Background written
+   into `## Context` (the template has no `## Background`; the Background is how
+   you *say* it, `## Context` is where it *lives*) — and tell the user where it
+   is. No preamble, no setup, no summaries: the faster
    you reach the first question, the more the user stays engaged. The plan is
    built live from here on, so the user steers while there is still something to
    steer.
@@ -182,10 +185,12 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
 15. Offer an ADR only when the decision is hard to reverse, surprising without
     context, and the result of a real trade-off. If creating one, use
     [ADR-FORMAT.md](./ADR-FORMAT.md).
-16. Continue until the coverage ledger closes: every surface is
+16. Continue until the coverage ledger closes — the gate in
+    [RESEARCH-GATE.md](./RESEARCH-GATE.md): every surface is
     resolved-by-evidence, resolved-by-user, default-accepted, or n/a-derived
-    (with a one-line reason) — none left open. This is an enumerable check, not a
-    feel; contracts clear, ambiguous terms defined, key edge cases answered, and
+    (with a one-line reason) — none left open, since `open-needs-user` is the one
+    transitional status and closing it is the whole point. This is an enumerable
+    check, not a feel; contracts clear, ambiguous terms defined, key edge cases answered, and
     source-of-truth conflicts settled all fall out of it.
 17. If during the interview the user pointed you at a reference repo they cloned
     locally ("do it like that repo", "see the pattern in Y"), read it and record
@@ -274,11 +279,14 @@ fetched primary sources.
 
 ## Output
 
-**Document precedence:** `plan > research > brain notes > ticket`. The most
-recent document wins; the plan is the final authority. A decision settled in the
-plan is not re-opened by a stale brain note or by what the ticket originally
-asked for — later phases (`implement`, `qa`) read the plan first and treat the
-rest as supporting evidence.
+**Document precedence:** `plan > research > brain notes > ticket`. The
+**highest-precedence** document wins — not the most recently written one. A
+brain note added yesterday does not override a plan decision made last week;
+recency settles only conflicts *within* one level, where a later revision of the
+plan supersedes an earlier one. The plan is the final authority: a decision
+settled there is not re-opened by a stale brain note or by what the ticket
+originally asked for, and later phases (`implement`, `qa`) read the plan first
+and treat the rest as supporting evidence.
 
 The plan file (`brain/plans/<slug>.md`) is created as an empty skeleton at step 7
 and built up live through the interview. Its finished shape:

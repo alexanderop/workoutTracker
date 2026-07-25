@@ -109,8 +109,10 @@ orchestrator's job. The lead's only inputs to `implement-orchestrator` are:
 1. The plan itself, usually `brain/plans/<slug>.md` from `grill` or
    `brain/plans/<slug>/` from `plan`, or the plan/design the user provided —
    locate it under `brain/plans/` and pass it directly. **Document precedence:
-   `plan > research > brain notes > ticket`** — the most recent document wins and
-   the plan is the final authority. Do not re-open a decision the plan settled
+   `plan > research > brain notes > ticket`** — the highest-precedence document
+   wins, not the most recently written one; recency settles only conflicts within
+   one level, where a later revision of the plan supersedes an earlier one. The
+   plan is the final authority. Do not re-open a decision the plan settled
    because the ticket asked for something else or a brain note predates it; the
    research doc (`<slug>.research.md`) is supporting evidence for *what is
    there*, not a competing set of instructions. If the plan is genuinely silent
