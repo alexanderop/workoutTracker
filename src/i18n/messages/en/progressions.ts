@@ -63,6 +63,7 @@ export default {
     completeQuestion: 'Did you complete all reps in each minute?',
     yes: 'Yes, completed!',
     no: 'No, missed some',
+    retry: 'Try again',
     completed: 'Completed',
     failed: 'Incomplete',
   },

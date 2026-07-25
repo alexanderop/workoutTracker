@@ -1,13 +1,14 @@
-import { computed, onUnmounted, ref } from 'vue'
-import { getProgressionsRepository } from '@/db'
+import { useActorRef, useSelector } from '@xstate/vue'
+import { computed } from 'vue'
+import { waitFor, type SnapshotFrom } from 'xstate'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import { calculateNextLevel, getCurrentLevel } from '../lib/progressionLogic'
+import {
+  progressionSessionMachine,
+  type ProgressionSessionContext,
+} from '../machines/progressionSessionMachine'
+import { getCurrentLevel } from '../lib/progressionLogic'
 import type { ProgressionLevel } from '../types'
-
-// ============================================
-// Types
-// ============================================
 
 type SessionState =
   | { status: 'idle' }
@@ -18,147 +19,156 @@ type SessionState =
   | { status: 'completed'; session: DbProgressionSession }
   | { status: 'error'; error: Error }
 
-// ============================================
-// Composable
-// ============================================
+function requireProgression(context: ProgressionSessionContext): DbProgression {
+  if (!context.progression) {
+    throw new Error('Progression session entered an invalid state without a progression')
+  }
+  return context.progression
+}
+
+function requireSession(context: ProgressionSessionContext): DbProgressionSession {
+  if (!context.session) {
+    throw new Error('Progression session completed without a session record')
+  }
+  return context.session
+}
+
+function isActiveSession(snapshot: SnapshotFrom<typeof progressionSessionMachine>): boolean {
+  return snapshot.matches('running') || snapshot.matches('awaitingResult')
+}
+
+function toSessionState(snapshot: SnapshotFrom<typeof progressionSessionMachine>): SessionState {
+  if (isActiveSession(snapshot)) {
+    return {
+      status: 'active',
+      progression: requireProgression(snapshot.context),
+      startedAt: snapshot.context.startedAt ?? 0,
+    }
+  }
+
+  switch (snapshot.value) {
+    case 'idle': {
+      return { status: 'idle' }
+    }
+    case 'loading': {
+      return { status: 'loading' }
+    }
+    case 'ready': {
+      return { status: 'ready', progression: requireProgression(snapshot.context) }
+    }
+    case 'saving': {
+      return { status: 'completing' }
+    }
+    case 'completed': {
+      return { status: 'completed', session: requireSession(snapshot.context) }
+    }
+    case 'failure': {
+      return {
+        status: 'error',
+        error: snapshot.context.error ?? new Error('Unknown progression session error'),
+      }
+    }
+    default: {
+      throw new Error(`Unsupported progression session state: ${String(snapshot.value)}`)
+    }
+  }
+}
 
 /**
- * Active EMOM session with timer for a progression.
+ * XState-backed active EMOM progression session.
+ *
+ * Repository work and the timer are invoked actors, so leaving their owning
+ * state cancels their lifecycle automatically. Elapsed time is derived from
+ * timestamps rather than interval counts to stay correct when the browser
+ * throttles background work.
  */
 export function useProgressionSession(progressionId: string) {
-  // Core state
-  const state = ref<SessionState>({ status: 'idle' })
-
-  // Timer state
-  const currentSecond = ref(0)
-  const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
-
-  // Derived state
-  const progression = computed(() => {
-    if (state.value.status === 'ready' || state.value.status === 'active') {
-      return state.value.progression
-    }
-    return null
+  const actor = useActorRef(progressionSessionMachine, {
+    input: { progressionId },
   })
+  const snapshot = useSelector(actor, (value) => value)
 
+  const state = computed<SessionState>(() => toSessionState(snapshot.value))
+
+  const progression = computed(() => snapshot.value.context.progression)
   const level = computed((): ProgressionLevel | null =>
     progression.value ? getCurrentLevel(progression.value) : null,
   )
-
+  const currentSecond = computed(() => snapshot.value.context.currentSecond)
   const totalSeconds = computed(() => (level.value?.minutes ?? 0) * 60)
-
   const currentMinute = computed(() => Math.floor(currentSecond.value / 60) + 1)
-
   const secondsInCurrentMinute = computed(() => currentSecond.value % 60)
-
   const secondsUntilNextMinute = computed(() => 60 - secondsInCurrentMinute.value)
-
   const isLastMinute = computed(
     () => level.value !== null && currentMinute.value >= level.value.minutes,
   )
+  const isTimerComplete = computed(
+    () => snapshot.value.matches('awaitingResult') || snapshot.value.matches('saving'),
+  )
+  const isActive = computed(() => snapshot.value.matches('running'))
+  const isReady = computed(() => snapshot.value.matches('ready'))
+  const canRetry = computed(
+    () => snapshot.value.matches('failure') && snapshot.value.context.canRetry,
+  )
 
-  const isTimerComplete = computed(() => currentSecond.value >= totalSeconds.value)
-
-  const isActive = computed(() => state.value.status === 'active')
-
-  const isReady = computed(() => state.value.status === 'ready')
-
-  // Methods
-  async function load(): Promise<void> {
-    state.value = { status: 'loading' }
-
-    const repo = getProgressionsRepository()
-    const [error, loaded] = await tryCatch(repo.getById(progressionId))
-
-    if (error) {
-      state.value = { status: 'error', error }
-      return
-    }
-
-    if (!loaded) {
-      state.value = { status: 'error', error: new Error('Progression not found') }
-      return
-    }
-
-    if (loaded.isComplete) {
-      state.value = { status: 'error', error: new Error('Progression already complete') }
-      return
-    }
-
-    state.value = { status: 'ready', progression: loaded }
+  function load(): void {
+    actor.send({ type: 'LOAD' })
   }
 
   function startTimer(): void {
-    if (state.value.status !== 'ready') return
-
-    const prog = state.value.progression
-    state.value = { status: 'active', progression: prog, startedAt: Date.now() }
-    currentSecond.value = 0
-
-    timerInterval.value = setInterval(() => {
-      currentSecond.value++
-
-      if (currentSecond.value >= totalSeconds.value) {
-        stopTimer()
-      }
-    }, 1000)
+    actor.send({ type: 'START', now: Date.now() })
   }
 
   function stopTimer(): void {
-    if (!timerInterval.value) {
-	return;
-    }
-
-    clearInterval(timerInterval.value)
-    timerInterval.value = null
+    actor.send({ type: 'CANCEL' })
   }
 
   function cancelSession(): void {
-    stopTimer()
-    currentSecond.value = 0
-    if (progression.value) {
-      state.value = { status: 'ready', progression: progression.value }
-    }
+    actor.send({ type: 'CANCEL' })
   }
 
-  async function completeSession(completed: boolean): Promise<DbProgressionSession | null> {
-    stopTimer()
+  async function retry(): Promise<DbProgressionSession | null> {
+    const failedSave =
+      actor.getSnapshot().matches('failure') &&
+      actor.getSnapshot().context.failedOperation === 'save'
 
-    const currentProgression = progression.value
-    if (!currentProgression) return null
-
-    state.value = { status: 'completing' }
-
-    // Compute next level in the feature layer, pass to repository
-    const nextLevel = completed && !currentProgression.isComplete
-      ? calculateNextLevel(currentProgression)
-      : undefined
-
-    const repo = getProgressionsRepository()
-    const [error, session] = await tryCatch(
-      repo.recordSession(progressionId, completed, nextLevel),
-    )
-
-    if (error) {
-      state.value = { status: 'error', error }
+    if (!failedSave) {
+      actor.send({ type: 'RETRY' })
       return null
     }
 
-    state.value = { status: 'completed', session }
-    return session
+    actor.send({ type: 'RETRY' })
+    const settled = waitFor(
+      actor,
+      (value) =>
+        value.matches('completed') ||
+        (value.matches('failure') && value.context.failedOperation === 'save'),
+    )
+
+    const [error, result] = await tryCatch(settled)
+    if (error) return null
+    return result.matches('completed') ? result.context.session : null
   }
 
-  // Cleanup
-  onUnmounted(() => {
-    stopTimer()
-  })
+  async function completeSession(completed: boolean): Promise<DbProgressionSession | null> {
+    if (!actor.getSnapshot().matches('awaitingResult')) return null
+
+    const settled = waitFor(
+      actor,
+      (value) =>
+        value.matches('completed') ||
+        (value.matches('failure') && value.context.failedOperation === 'save'),
+    )
+    actor.send({ type: 'SUBMIT_RESULT', completed })
+
+    const [error, result] = await tryCatch(settled)
+    if (error) return null
+    return result.matches('completed') ? result.context.session : null
+  }
 
   return {
-    // State
     state,
     currentSecond,
-
-    // Derived
     progression,
     level,
     totalSeconds,
@@ -169,12 +179,12 @@ export function useProgressionSession(progressionId: string) {
     isTimerComplete,
     isActive,
     isReady,
-
-    // Methods
+    canRetry,
     load,
     startTimer,
     stopTimer,
     cancelSession,
+    retry,
     completeSession,
   }
 }

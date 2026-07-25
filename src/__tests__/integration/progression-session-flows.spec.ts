@@ -1,5 +1,5 @@
 import { page } from 'vitest/browser'
-import { describe, expect } from 'vitest'
+import { describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { getProgressionsRepository } from '@/db'
 
@@ -101,6 +101,40 @@ describe('Progression Session Flows', () => {
     expect(history[0]?.completed).toBe(false)
   }, 20_000)
 
+  it('retries a transient save failure without losing the session result', async ({
+    createTestApp,
+  }) => {
+    const app = await createTestApp()
+    const repo = getProgressionsRepository()
+    const progression = await repo.create({
+      name: 'Retry Ladder',
+      availableWeights: [16, 20],
+    })
+    await repo.update(progression.id, { currentMinutes: TWO_SECOND_SESSION })
+
+    const recordSession = repo.recordSession
+    vi.spyOn(repo, 'recordSession')
+      .mockRejectedValueOnce(new Error('IndexedDB temporarily unavailable'))
+      .mockImplementation(recordSession)
+
+    await app.navigateTo(`/progressions/${progression.id}/session`)
+    await expect.element(page.getByText(/tap to start/i)).toBeVisible()
+    await app.progressions.clickPlayButton()
+    await expect.element(page.getByRole('dialog'), { timeout: 8000 }).toBeVisible()
+    await app.progressions.confirmSessionCompleted()
+
+    await expect.element(page.getByRole('button', { name: /try again/i })).toBeVisible()
+    await page.getByRole('button', { name: /try again/i }).click()
+    await expect
+      .poll(() => app.router.currentRoute.value.path)
+      .toBe(`/progressions/${progression.id}`)
+
+    const updated = await repo.getById(progression.id)
+    expect(updated?.currentReps).toBe(12)
+    expect(updated?.sessionsCompleted).toBe(1)
+    expect(await repo.getSessionHistory(progression.id)).toHaveLength(1)
+  }, 20_000)
+
   it('abandons an active session with the back button without recording anything', async ({
     createTestApp,
   }) => {
@@ -167,8 +201,8 @@ describe('Progression Session Flows', () => {
     await app.navigateTo('/progressions/does-not-exist/session')
     await expect.element(page.getByText(/error/i)).toBeVisible()
 
-    // Confirming the (spurious) completion dialog is a safe no-op
-    await page.getByRole('button', { name: /yes, completed/i }).click()
+    // Invalid sessions cannot accidentally expose completion actions
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
     expect(app.router.currentRoute.value.path).toBe('/progressions/does-not-exist/session')
     expect(await repo.getAll()).toHaveLength(0)
 

@@ -64,6 +64,7 @@ export default {
     completeQuestion: 'Hast du alle Wiederholungen in jeder Minute geschafft?',
     yes: 'Ja, geschafft!',
     no: 'Nein, nicht alle',
+    retry: 'Erneut versuchen',
     completed: 'Geschafft',
     failed: 'Unvollständig',
   },

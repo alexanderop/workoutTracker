@@ -27,9 +27,11 @@ const {
   isTimerComplete,
   isActive,
   isReady,
+  canRetry,
   load,
   startTimer,
   cancelSession,
+  retry,
   completeSession,
 } = useProgressionSession(id)
 
@@ -79,6 +81,13 @@ async function handleComplete(completed: boolean): Promise<void> {
   }
 }
 
+async function handleRetry(): Promise<void> {
+  const session = await retry()
+  if (session) {
+    router.push({ name: RouteNames.ProgressionDetail, params: { id } })
+  }
+}
+
 onMounted(() => {
   load()
 })
@@ -89,12 +98,7 @@ onMounted(() => {
     <!-- Header -->
     <header class="flex items-center justify-between border-b p-4">
       <div class="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          :aria-label="t('common.goBack')"
-          @click="handleBack"
-        >
+        <Button variant="ghost" size="icon" :aria-label="t('common.goBack')" @click="handleBack">
           <ArrowLeft :size="20" />
         </Button>
         <h1 class="text-lg font-semibold">{{ t('progressions.session.title') }}</h1>
@@ -108,8 +112,11 @@ onMounted(() => {
 
     <!-- Error state -->
     <div v-else-if="state.status === 'error'" class="flex flex-1 items-center justify-center p-4">
-      <div class="text-center text-destructive">
-        {{ t('common.states.error') }}
+      <div class="space-y-4 text-center">
+        <div class="text-destructive">{{ t('common.states.error') }}</div>
+        <Button v-if="canRetry" variant="outline" @click="handleRetry">
+          {{ t('progressions.session.retry') }}
+        </Button>
       </div>
     </div>
 
@@ -131,7 +138,9 @@ onMounted(() => {
           <div v-if="isActive" class="space-y-4">
             <!-- Minute indicator -->
             <div class="text-lg text-muted-foreground">
-              {{ t('progressions.session.minute', { current: currentMinute, total: level?.minutes }) }}
+              {{
+                t('progressions.session.minute', { current: currentMinute, total: level?.minutes })
+              }}
             </div>
 
             <!-- Countdown -->
@@ -179,12 +188,17 @@ onMounted(() => {
           <Button
             variant="destructive"
             :class="buttonClass"
+            :disabled="state.status === 'completing'"
             @click="handleComplete(false)"
           >
             <X class="mr-2" :size="16" />
             {{ t('progressions.session.no') }}
           </Button>
-          <Button :class="buttonClass" @click="handleComplete(true)">
+          <Button
+            :class="buttonClass"
+            :disabled="state.status === 'completing'"
+            @click="handleComplete(true)"
+          >
             <Check class="mr-2" :size="16" />
             {{ t('progressions.session.yes') }}
           </Button>
