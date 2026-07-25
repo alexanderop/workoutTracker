@@ -1,25 +1,17 @@
 import type { RepositoryProvider as RepoProvider } from './interfaces'
-import { makeRuntime } from '@/lib/di/runtime'
-import { Repositories } from './services'
-import { RepositoriesLive } from './services.live'
+import { createDexieRepositoryProvider } from './implementations/dexie'
 
 let currentProvider: RepoProvider | null = null
 
 /**
  * Get the current repository provider.
- * Lazily initializes a Dexie-backed provider if none set, resolved through
- * the `RepositoriesLive` DI layer rather than calling
- * `createDexieRepositoryProvider()` directly, so this legacy accessor path
- * and the DI path (`ctx.get(Repositories)`) agree on the same kind of
- * instance.
- *
- * The one-layer runtime built here is intentionally never disposed — see the
- * "process-wide singleton" footgun documented on `RepositoriesLive` in
- * `services.live.ts`. Wave 3's `main.ts` calls
- * `setRepositoryProvider(runtime.get(Repositories))` with the app's own
- * runtime instance once it exists, so both paths end up handing out the same
- * object; until then, this lazy fallback is what the 92 remaining
- * `get*Repository()` call sites resolve through.
+ * Lazily initializes a Dexie-backed provider if none set — the same factory
+ * `RepositoriesLive` acquires, called directly so this deprecated accessor
+ * stays free of any dependency on the DI kernel it is slated to be deleted
+ * for. `main.ts` calls `setRepositoryProvider(runtime.get(Repositories))`
+ * with the app runtime's own instance, so in the app both paths hand out the
+ * same object; this lazy fallback is only what the remaining
+ * `get*Repository()` call sites resolve through before that runs.
  *
  * @deprecated Resolve `Repositories` from the app runtime instead
  * (`src/db/services.ts` / `src/db/services.live.ts`, ADR 004:
@@ -27,7 +19,7 @@ let currentProvider: RepoProvider | null = null
  * migrating them is a deliberate follow-on, not an oversight.
  */
 export function getRepositoryProvider(): RepoProvider {
-  currentProvider ??= makeRuntime([RepositoriesLive]).get(Repositories)
+  currentProvider ??= createDexieRepositoryProvider()
   return currentProvider
 }
 

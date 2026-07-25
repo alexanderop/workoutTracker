@@ -1,17 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { fresh, scoped, succeed, sync } from '@/lib/di/layer'
-import { makeRuntime, makeRuntimeOf } from '@/lib/di/runtime'
+import { makeRuntime } from '@/lib/di/runtime'
 import { Tag } from '@/lib/di/tag'
-
-describe('makeRuntimeOf', () => {
-  it('resolves the built service through the typed context', () => {
-    const tag = Tag<number>('count')
-    const runtime = makeRuntimeOf(succeed(tag, 42))
-
-    expect(runtime.context.get(tag)).toBe(42)
-    expect(runtime.get(tag)).toBe(42)
-  })
-})
 
 describe('makeRuntime', () => {
   it('resolves each layer through runtime.get', () => {

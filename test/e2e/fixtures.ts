@@ -1,32 +1,9 @@
-import { expect as playwrightExpect } from '@playwright/test'
 import { createBdd, test as base } from 'playwright-bdd'
+import { e2eFixtures, type E2EFixtures } from './test-utils'
 
-type AppPath = `/${string}`
-
-type E2EFixtures = {
-  goto: (path: AppPath) => Promise<void>
-  noPageErrors: void
-}
-
-export const test = base.extend<E2EFixtures>({
-  goto: async ({ page }, use) => {
-    await use(async (path: AppPath) => {
-      await page.goto(path, { waitUntil: 'domcontentloaded' })
-    })
-  },
-
-  noPageErrors: [
-    async ({ page }, use) => {
-      const errors: Array<string> = []
-      page.on('pageerror', (error) => errors.push(error.message))
-
-      await use()
-
-      playwrightExpect(errors, `Unexpected page errors:\n${errors.join('\n')}`).toEqual([])
-    },
-    { auto: true },
-  ],
-})
+// Same fixtures as the plain-spec `test` in ./test-utils, layered onto
+// playwright-bdd's base — `createBdd` only accepts a test derived from it.
+export const test = base.extend<E2EFixtures>(e2eFixtures)
 
 export const { Given, When, Then } = createBdd(test)
 

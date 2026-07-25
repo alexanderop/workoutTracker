@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { succeed } from '@/lib/di/layer'
-import { makeRuntime, makeRuntimeOf } from '@/lib/di/runtime'
+import { makeRuntime } from '@/lib/di/runtime'
 import { Reference, Tag } from '@/lib/di/tag'
 import { provideRuntime, useRuntimeContext } from '@/lib/di/vue'
 
@@ -9,7 +9,7 @@ describe('provideRuntime / useRuntimeContext', () => {
   it('resolves the service a runtime built through useRuntimeContext', () => {
     const tag = Tag<number>('count')
     const app = createApp({})
-    provideRuntime(makeRuntimeOf(succeed(tag, 42)), app)
+    provideRuntime(makeRuntime([succeed(tag, 42)]), app)
 
     const value = app.runWithContext(() => useRuntimeContext<number>().unsafeGet(tag))
 
@@ -52,8 +52,8 @@ describe('provideRuntime / useRuntimeContext', () => {
     const tag = Tag<number>('count')
     const appA = createApp({})
     const appB = createApp({})
-    provideRuntime(makeRuntimeOf(succeed(tag, 1)), appA)
-    provideRuntime(makeRuntimeOf(succeed(tag, 2)), appB)
+    provideRuntime(makeRuntime([succeed(tag, 1)]), appA)
+    provideRuntime(makeRuntime([succeed(tag, 2)]), appB)
 
     const valueA = appA.runWithContext(() => useRuntimeContext<number>().unsafeGet(tag))
     const valueB = appB.runWithContext(() => useRuntimeContext<number>().unsafeGet(tag))

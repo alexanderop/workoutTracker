@@ -51,7 +51,7 @@ const rejects = () => Promise.reject(new Error('boom'))
 function contextFor(
   repo: HabitRepository,
   failing: Partial<HabitRepository> = {},
-): Context<HabitRepository | Clock> {
+): Context<HabitRepository> {
   return empty()
     .add(HabitRepo, { ...repo, ...failing })
     .add(Clock, testClock(NOW))

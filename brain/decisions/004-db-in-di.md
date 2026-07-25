@@ -16,22 +16,26 @@ browser tiers only. This is the codebase's first genuine acquire/release pair �
 ADR 003 named the Dexie connection as exactly the case `Scope` shipped
 unvalidated against, and this ADR is where that case gets exercised.
 
-`getRepositoryProvider()` is retained as a deprecated shim. It delegates to the
-app runtime so both paths resolve the same provider instances. The 92 call
-sites that still resolve repositories through `get*Repository()` accessors are
-explicitly not migrated here; that migration is the follow-on to this work, not
-part of it.
+`getRepositoryProvider()` is retained as a deprecated shim, still calling
+`createDexieRepositoryProvider()` directly — the same factory `RepositoriesLive`
+acquires, so both paths hand out the same kind of instance without the shim
+depending on the kernel it is slated to be deleted for. `main.ts` calls
+`setRepositoryProvider(runtime.get(Repositories))`, so in the running app the
+shim hands out the app runtime's instance. The 92 call sites that still resolve
+repositories through `get*Repository()` accessors are explicitly not migrated
+here; that migration is the follow-on to this work, not part of it.
 
 ### The budget: 250 -> 280 lines
 
 The `wc -l src/lib/di/*.ts` abandon threshold ADR 003 set at 250 moves to 280.
-Two additions buy the extra lines: a variadic tuple signature on `makeRuntime`
-that recovers the `Services` union across multiple layers — so an unprovided
-service stays a compile error instead of degrading to a runtime
-`Service not found` once a runtime is built from more than one layer array —
-and the new `src/lib/di/vue.ts` bridge (below). 280 is the new abandon
-threshold. Growth past it re-opens this ADR, not a raised number, exactly as
-ADR 003 stated for 250.
+Two changes buy the extra lines: `makeRuntime` now takes an array of layers and
+recovers the `Services` union from the element type — so an unprovided service
+stays a compile error instead of degrading to a runtime `Service not found`
+once a runtime is built from more than one layer — and the new
+`src/lib/di/vue.ts` bridge (below). `makeRuntime([layer])` subsumes the
+single-layer `makeRuntimeOf`, which is deleted, so the kernel lands at 265. 280
+is the new abandon threshold. Growth past it re-opens this ADR, not a raised
+number, exactly as ADR 003 stated for 250.
 
 ### The copyable template
 
@@ -48,19 +52,26 @@ src/features/<f>/services.live.ts  # the feature's Layer(s)         — browser 
   for example `sync(FooRepo, (ctx) => ctx.unsafeGet(Repositories).foo)`.
 - The feature's composable takes `ctx: Context<...>` as a parameter, defaulting
   to `useRuntimeContext<...>()`. Passing an explicit context is what makes the
-  composable's spec runnable outside a browser.
-- `src/main.ts` composes the ordered layer array once, for the whole app.
+  composable's spec runnable outside a browser. Only plain `Tag`s belong in that
+  union: a `Reference` (`Clock`, `IdGen`) is readable from any context via its
+  own default, so listing one would assert a provisioning requirement no layer
+  satisfies.
+- `src/appLayers.ts` composes the ordered layer array once, for the whole app.
+  Both composition roots (`src/main.ts` and
+  `src/__tests__/helpers/createTestApp.ts`) build their runtime from it, so the
+  ordering contract below is stated in one place rather than re-satisfied per
+  root.
 
 The acceptance bar for "bulletproof enough to copy": converting a second
-feature touches only that feature's `services.ts`, `services.live.ts`, and its
-composable's signature. No edit to `src/lib/di/`, `src/db/provider.ts`, or
-`main.ts` is required.
+feature touches only that feature's `services.ts`, `services.live.ts`, its
+composable's signature, and one line in `src/appLayers.ts`. No edit to
+`src/lib/di/`, `src/db/provider.ts`, or either composition root is required.
 
 ### Layer order is positional and load-bearing
 
 `buildAll` gives each layer in the array a snapshot of only the services built
-before it. There is no dependency graph and no cycle detection. The app's
-layer array is therefore ordered so a dependent layer always follows what it
+before it. There is no dependency graph and no cycle detection. `appLayers` is
+therefore ordered so a dependent layer always follows what it
 depends on, for example `[RepositoriesLive, HabitRepoLive, ...]`. Get the order
 wrong and the failure is `Service not found` at build time, not silently wrong
 behavior — the ordering is a contract enforced by nothing but position, and
@@ -68,7 +79,7 @@ every layer array author has to know that.
 
 ### `src/lib/di/vue.ts`
 
-`provideRuntime<S>(runtime: Runtime<S>, app: App): void` and
+`provideRuntime(runtime: Runtime, app: App): void` and
 `useRuntimeContext<S>(): Context<S>` live in one new file. `provideRuntime`
 takes `app` as a required second parameter because Vue's bare `provide()` only
 works inside a component `setup()`, and both composition roots that call it —

@@ -1,8 +1,12 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, Given, Then, When } from '../fixtures'
 
-function escapeRegExp(value: string): string {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+/** The toggle's accessible name is the literal `Mark {name} complete` /
+ *  `Mark {name} incomplete` from `src/i18n/messages/en/habits.ts`, so an exact
+ *  string match is enough — and it avoids "incomplete" matching a prefix of
+ *  "complete"'s label, which a loose match would. */
+function toggle(page: Page, name: string, state: 'complete' | 'incomplete'): Locator {
+  return page.getByRole('button', { name: `Mark ${name} ${state}`, exact: true })
 }
 
 async function createDailyHabit(page: Page, name: string): Promise<void> {
@@ -12,6 +16,20 @@ async function createDailyHabit(page: Page, name: string): Promise<void> {
   await dialog.getByRole('textbox', { name: /^name$/i }).fill(name)
   await dialog.getByRole('button', { name: /^save$/i }).click()
   await expect(dialog).toBeHidden()
+}
+
+// Toggling writes to IndexedDB before the button's accessible name flips, so
+// waiting for the resulting label is what guarantees the write has landed --
+// not just that the click was dispatched. This matters most right before a
+// reload, the local-first guarantee this feature file exists to protect.
+async function toggleHabit(
+  page: Page,
+  name: string,
+  from: 'complete' | 'incomplete',
+): Promise<void> {
+  const to = from === 'complete' ? 'incomplete' : 'complete'
+  await toggle(page, name, from).click()
+  await expect(toggle(page, name, to)).toBeVisible()
 }
 
 Given('a first-time user has entered the app', async ({ page, goto }) => {
@@ -33,30 +51,12 @@ Given('a daily habit named {string} exists', async ({ page }, name: string) => {
   await createDailyHabit(page, name)
 })
 
-// Toggling writes to IndexedDB before the button's accessible name flips, so
-// waiting for the resulting label is what guarantees the write has landed --
-// not just that the click was dispatched. This matters most right before a
-// reload, the local-first guarantee this feature file exists to protect.
 When('they check off {string} for today', async ({ page }, name: string) => {
-  const toggleButton = page.getByRole('button', {
-    name: new RegExp(`^Mark ${escapeRegExp(name)}`, 'i'),
-  })
-  await toggleButton.click()
-  const completedButton = page.getByRole('button', {
-    name: new RegExp(`^Mark ${escapeRegExp(name)} incomplete$`, 'i'),
-  })
-  await expect(completedButton).toBeVisible()
+  await toggleHabit(page, name, 'complete')
 })
 
 When('they uncheck {string} for today', async ({ page }, name: string) => {
-  const toggleButton = page.getByRole('button', {
-    name: new RegExp(`^Mark ${escapeRegExp(name)}`, 'i'),
-  })
-  await toggleButton.click()
-  const incompleteButton = page.getByRole('button', {
-    name: new RegExp(`^Mark ${escapeRegExp(name)} complete$`, 'i'),
-  })
-  await expect(incompleteButton).toBeVisible()
+  await toggleHabit(page, name, 'incomplete')
 })
 
 When('they reload the page', async ({ page }) => {
@@ -68,11 +68,9 @@ Then("{string} appears in today's habits", async ({ page }, name: string) => {
 })
 
 Then('{string} is marked complete', async ({ page }, name: string) => {
-  const buttonName = new RegExp(`^Mark ${escapeRegExp(name)} incomplete$`, 'i')
-  await expect(page.getByRole('button', { name: buttonName })).toBeVisible()
+  await expect(toggle(page, name, 'incomplete')).toBeVisible()
 })
 
 Then('{string} is marked incomplete', async ({ page }, name: string) => {
-  const buttonName = new RegExp(`^Mark ${escapeRegExp(name)} complete$`, 'i')
-  await expect(page.getByRole('button', { name: buttonName })).toBeVisible()
+  await expect(toggle(page, name, 'complete')).toBeVisible()
 })

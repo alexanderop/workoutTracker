@@ -10,8 +10,7 @@ import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
 import { reloadPageKey } from '@/features/settings/utils/reloadPage'
-import { RepositoriesLive } from '@/db/services.live'
-import { HabitRepoLive } from '@/features/habits/services.live'
+import { appLayers } from '@/appLayers'
 import { makeRuntime } from '@/lib/di/runtime'
 import { provideRuntime } from '@/lib/di/vue'
 import {
@@ -86,7 +85,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
   // each test -- matching the old useServices()-per-call behavior. Never call
   // runtime.dispose() -- RepositoriesLive's finalizer closes the process-wide
   // Dexie connection and would break every subsequent test in this process.
-  const runtime = makeRuntime([RepositoriesLive, HabitRepoLive])
+  const runtime = makeRuntime(appLayers)
 
   const screen = render(App, {
     global: {

@@ -47,9 +47,9 @@ export type HabitTodayItem = {
   weekProgress: WeeklyProgress | null
 }
 
-export function useHabits(
-  ctx: Context<HabitRepository | Clock> = useRuntimeContext<HabitRepository | Clock>(),
-) {
+// `Clock` and `IdGen` are References, readable from any context via their own
+// defaults, so only `HabitRepository` has to appear in the union.
+export function useHabits(ctx: Context<HabitRepository> = useRuntimeContext<HabitRepository>()) {
   const repo = ctx.get(HabitRepo)
   const clock = ctx.get(Clock)
   const generateId = ctx.get(IdGen)

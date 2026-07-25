@@ -2,10 +2,9 @@ import { createApp } from 'vue'
 
 import { setRepositoryProvider } from '@/db/provider'
 import { Repositories } from '@/db/services'
-import { RepositoriesLive } from '@/db/services.live'
-import { HabitRepoLive } from '@/features/habits/services.live'
 import { makeRuntime } from '@/lib/di/runtime'
 import { provideRuntime } from '@/lib/di/vue'
+import { appLayers } from './appLayers'
 import App from './App.vue'
 import { i18n } from './i18n'
 import { renderMountFailure } from './lib/mountRecovery'
@@ -14,10 +13,9 @@ import { reportWebVitals } from './lib/webVitals'
 import { router } from './appRouter'
 import './style.css'
 
-// Select the active persistence backend (single seam for swapping adapters).
-// Order is load-bearing: HabitRepoLive reads Repositories out of the context,
-// so RepositoriesLive must build first.
-const runtime = makeRuntime([RepositoriesLive, HabitRepoLive])
+// Select the active persistence backend (single seam for swapping adapters);
+// `appLayers` owns the build order.
+const runtime = makeRuntime(appLayers)
 setRepositoryProvider(runtime.get(Repositories))
 
 const app = createApp(App)
