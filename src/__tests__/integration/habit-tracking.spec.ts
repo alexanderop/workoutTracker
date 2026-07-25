@@ -14,6 +14,13 @@ function daysAgo(days: number): Date {
   return date
 }
 
+/**
+ * Stays in the browser tier: it drives the mounted habit UI through real DOM
+ * events (`userEvent`, `page`) via `createTestApp`, and asserts through
+ * `getHabitsRepository()` backed by real IndexedDB -- a real DOM plus a real
+ * IndexedDB-backed repository wired end to end through the routed app, which
+ * the Node `unit` tier has no globals for.
+ */
 describe('Habit Tracking', () => {
   describe('creating and checking off a binary habit', () => {
     it('creates a binary daily habit via the form and shows it in the Today list', async ({
@@ -113,24 +120,26 @@ describe('Habit Tracking', () => {
       await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
     })
 
-    it('shows weekly progress alongside the quantity progress for a weekly quantity habit', { timeout: 15_000 }, async ({
-      createTestApp,
-    }) => {
-      const { navigateTo, habits } = await createTestApp()
+    it(
+      'shows weekly progress alongside the quantity progress for a weekly quantity habit',
+      { timeout: 15_000 },
+      async ({ createTestApp }) => {
+        const { navigateTo, habits } = await createTestApp()
 
-      await navigateTo({ name: RouteNames.Habits })
-      await habits.createHabit({
-        name: 'Push-ups',
-        schedule: { type: 'weekly', targetDaysPerWeek: '3' },
-        kind: { type: 'quantity', target: '20', unit: 'reps' },
-      })
+        await navigateTo({ name: RouteNames.Habits })
+        await habits.createHabit({
+          name: 'Push-ups',
+          schedule: { type: 'weekly', targetDaysPerWeek: '3' },
+          kind: { type: 'quantity', target: '20', unit: 'reps' },
+        })
 
-      await habits.expectWeekProgress('Push-ups', 0, 3)
+        await habits.expectWeekProgress('Push-ups', 0, 3)
 
-      await habits.clickIncrementQuantity('Push-ups', 20)
-      await expect.element(habits.getTodayRow('Push-ups').getByText('20 / 20 reps')).toBeVisible()
-      await habits.expectWeekProgress('Push-ups', 1, 3)
-    })
+        await habits.clickIncrementQuantity('Push-ups', 20)
+        await expect.element(habits.getTodayRow('Push-ups').getByText('20 / 20 reps')).toBeVisible()
+        await habits.expectWeekProgress('Push-ups', 1, 3)
+      },
+    )
 
     it('tolerates a corrupted zero quantity target without crashing (progress reads 0)', async ({
       createTestApp,

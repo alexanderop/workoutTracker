@@ -1,11 +1,11 @@
 /**
- * Node-tier edge-case specs for `autoLinkWorkoutCompletion`
- * (src/lib/habits/autoLinkWorkout.ts), exercised against the in-memory fake
- * repository and a `testClock` instead of the real Dexie repository and
- * ambient `Date.now()` used by the browser-tier spec
- * (src/__tests__/lib/habits/autoLinkWorkout.spec.ts). These cases were not
- * expressible before the `Clock` seam existed: `recordedAt` used to be
- * ambient `Date.now()`, so there was nothing to pin or advance.
+ * Node-tier specs for `autoLinkWorkoutCompletion`
+ * (src/lib/habits/autoLinkWorkout.ts) -- the single home for this function's
+ * tests, exercised against the in-memory fake repository and a `testClock`
+ * rather than a real Dexie repository and ambient `Date.now()`. None of these
+ * cases depends on real IndexedDB: they assert on entries the function
+ * writes, which the fake records faithfully, so there is nothing here for
+ * the browser tier to earn.
  */
 import { describe, expect, it } from 'vitest'
 import { autoLinkWorkoutCompletion } from '@/lib/habits/autoLinkWorkout'
@@ -15,6 +15,20 @@ import { createDbHabit } from '@/__tests__/factories'
 import { createFakeHabitRepository } from '@/__tests__/fakes/habitRepository'
 
 describe('autoLinkWorkoutCompletion (unit tier, pinned clock)', () => {
+  it('marks a binary habit done for the day', async () => {
+    const habit = createDbHabit({ kind: { type: 'binary' }, autoLink: 'completed-workout' })
+    const repo = createFakeHabitRepository({ habits: [habit] })
+    const clock = testClock(new Date(2026, 5, 10, 9, 0, 0).getTime())
+
+    const completedAt = clock.now()
+    await autoLinkWorkoutCompletion(repo, completedAt, clock)
+
+    const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
+    expect(entries).toHaveLength(1)
+    expect(entries[0]?.habitId).toBe(habit.id)
+    expect(entries[0]?.value).toBe(1)
+  })
+
   it('keys each entry off completedAt across local midnight while recordedAt tracks the clock', async () => {
     const habit = createDbHabit({ kind: { type: 'binary' }, autoLink: 'completed-workout' })
     const repo = createFakeHabitRepository({ habits: [habit] })
@@ -81,5 +95,57 @@ describe('autoLinkWorkoutCompletion (unit tier, pinned clock)', () => {
     const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
     expect(entries).toHaveLength(1)
     expect(entries[0]?.habitId).toBe(active.id)
+  })
+
+  it('ignores quantity habits even when they have a legacy auto-link value', async () => {
+    const habit = createDbHabit({
+      kind: { type: 'quantity', target: 3, unit: 'workouts' },
+      autoLink: 'completed-workout',
+    })
+    const repo = createFakeHabitRepository({ habits: [habit] })
+    const clock = testClock(new Date(2026, 5, 10, 9, 0, 0).getTime())
+
+    const completedAt = clock.now()
+    await autoLinkWorkoutCompletion(repo, completedAt, clock)
+
+    const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
+    expect(entries).toEqual([])
+  })
+
+  it('does not touch habits with autoLink: null', async () => {
+    const habit = createDbHabit({ kind: { type: 'binary' }, autoLink: null })
+    const repo = createFakeHabitRepository({ habits: [habit] })
+    const clock = testClock(new Date(2026, 5, 10, 9, 0, 0).getTime())
+
+    const completedAt = clock.now()
+    await autoLinkWorkoutCompletion(repo, completedAt, clock)
+
+    const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
+    expect(entries).toHaveLength(0)
+  })
+
+  it('updates every auto-link habit in a single call, leaving unlinked habits alone', async () => {
+    const binaryLinked = createDbHabit({
+      name: 'Binary linked',
+      kind: { type: 'binary' },
+      autoLink: 'completed-workout',
+    })
+    const quantityLinked = createDbHabit({
+      name: 'Quantity linked',
+      kind: { type: 'quantity', target: 2, unit: 'sessions' },
+      autoLink: 'completed-workout',
+    })
+    const unlinked = createDbHabit({ name: 'Unlinked', autoLink: null })
+    const repo = createFakeHabitRepository({ habits: [binaryLinked, quantityLinked, unlinked] })
+    const clock = testClock(new Date(2026, 5, 10, 9, 0, 0).getTime())
+
+    const completedAt = clock.now()
+    await autoLinkWorkoutCompletion(repo, completedAt, clock)
+
+    const entries = await repo.getEntriesForDay(getStartOfDay(new Date(completedAt)))
+    expect(entries).toHaveLength(1)
+    expect(entries.find((e) => e.habitId === binaryLinked.id)?.value).toBe(1)
+    expect(entries.find((e) => e.habitId === quantityLinked.id)).toBeUndefined()
+    expect(entries.find((e) => e.habitId === unlinked.id)).toBeUndefined()
   })
 })
