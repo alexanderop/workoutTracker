@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { useHabits } from '@/features/habits/composables/useHabits'
-import { getHabitsRepository } from '@/db'
+import { HabitRepo } from '@/features/habits/services'
+import { empty } from '@/lib/di/context'
+import { Clock } from '@/lib/clock'
+import { testClock } from '@/__tests__/fakes/clock'
 import { getStartOfDay } from '@/lib/date'
-import { resetDatabase } from '@/__tests__/setup'
+import { createFakeHabitRepository } from '@/__tests__/fakes/habitRepository'
 import { createDbHabit, createDbHabitEntry } from '@/__tests__/factories'
+import type { HabitRepository } from '@/db/interfaces'
+import type { Context } from '@/lib/di/context'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
 function formDataFor(habit: ReturnType<typeof createDbHabit>): HabitFormData {
@@ -16,24 +21,35 @@ function formDataFor(habit: ReturnType<typeof createDbHabit>): HabitFormData {
   }
 }
 
+/** A repository method that always rejects — the "the repository throws" arm. */
+const rejects = () => Promise.reject(new Error('boom'))
+
+/**
+ * A `Context` providing `repo`, with `failing` methods overridden to reject.
+ * Mirrors Effect's Layer-override pattern: build the working service, then
+ * replace exactly the one method under test.
+ */
+function contextFor(
+  repo: HabitRepository,
+  failing: Partial<HabitRepository> = {},
+): Context<HabitRepository> {
+  return empty().add(HabitRepo, { ...repo, ...failing })
+}
+
 /**
  * Direct composable-level tests for `useHabits`, covering paths the UI
  * integration suite (habit-tracking.spec.ts) can't reach: repository error
- * branches (stubbed via `vi.spyOn` on the real repository, mirroring
- * useBenchmarkPersistence.spec.ts's convention), `reorder` (not wired to any
- * UI yet), and edge cases like acting on a habit id that was never loaded
- * into local state.
+ * branches (an in-memory fake with one method overridden to reject, injected
+ * via `Context`, mirroring Effect's Layer-override pattern), `reorder` (not
+ * wired to any UI yet), and edge cases like acting on a habit id that was
+ * never loaded into local state.
  */
 describe('useHabits', () => {
-  beforeEach(async () => {
-    await resetDatabase()
-  })
-
   describe('createHabit', () => {
     it('returns undefined and leaves local state untouched when the repository throws', async () => {
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(getHabitsRepository(), 'addHabit').mockRejectedValueOnce(new Error('boom'))
-      const { createHabit, habits } = useHabits()
+      const ctx = contextFor(createFakeHabitRepository(), { addHabit: rejects })
+      const { createHabit, habits } = useHabits(ctx)
 
       const result = await createHabit({
         name: 'Read',
@@ -52,12 +68,10 @@ describe('useHabits', () => {
 
   describe('editHabit', () => {
     it('updates only the matching habit in local state, leaving others untouched', async () => {
-      const repo = getHabitsRepository()
       const a = createDbHabit({ name: 'A', orderIndex: 0 })
       const b = createDbHabit({ name: 'B', orderIndex: 1 })
-      await repo.addHabit(a)
-      await repo.addHabit(b)
-      const { load, editHabit, habits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [a, b] })
+      const { load, editHabit, habits } = useHabits(contextFor(repo))
       await load()
 
       const ok = await editHabit(a.id, { ...formDataFor(a), name: 'A renamed' })
@@ -68,14 +82,12 @@ describe('useHabits', () => {
     })
 
     it('returns false and leaves local state untouched when the repository throws', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit({ name: 'Original' })
-      await repo.addHabit(habit)
-      const { load, editHabit, habits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [habit] })
+      const { load, editHabit, habits } = useHabits(contextFor(repo, { updateHabit: rejects }))
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'updateHabit').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await editHabit(habit.id, { ...formDataFor(habit), name: 'Renamed' })
 
@@ -88,14 +100,14 @@ describe('useHabits', () => {
 
   describe('archive', () => {
     it('returns false and leaves local state untouched when the repository throws', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
-      const { load, archive, habits, archivedHabits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [habit] })
+      const { load, archive, habits, archivedHabits } = useHabits(
+        contextFor(repo, { archiveHabit: rejects }),
+      )
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'archiveHabit').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await archive(habit.id)
 
@@ -107,12 +119,12 @@ describe('useHabits', () => {
     })
 
     it('succeeds against the repository but is a local no-op for a habit id not in local state', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
+      const repo = createFakeHabitRepository({ habits: [habit] })
       // Deliberately not calling load(): this composable instance's local
-      // `habits` never learned about the habit that already exists in the DB.
-      const { archive, archivedHabits } = useHabits()
+      // `habits` never learned about the habit that already exists in the
+      // fake repository.
+      const { archive, archivedHabits } = useHabits(contextFor(repo))
 
       const ok = await archive(habit.id)
 
@@ -124,15 +136,15 @@ describe('useHabits', () => {
 
   describe('unarchive', () => {
     it('returns false and leaves local state untouched when the repository throws', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
+      const repo = createFakeHabitRepository({ habits: [habit] })
       await repo.archiveHabit(habit.id)
-      const { load, unarchive, habits, archivedHabits } = useHabits()
+      const { load, unarchive, habits, archivedHabits } = useHabits(
+        contextFor(repo, { unarchiveHabit: rejects }),
+      )
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'unarchiveHabit').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await unarchive(habit.id)
 
@@ -144,13 +156,12 @@ describe('useHabits', () => {
     })
 
     it('succeeds against the repository but is a local no-op for a habit id not in local state', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
+      const repo = createFakeHabitRepository({ habits: [habit] })
       await repo.archiveHabit(habit.id)
       // Deliberately not calling load(): this instance's `archivedHabits`
       // never learned about the already-archived habit.
-      const { unarchive, habits } = useHabits()
+      const { unarchive, habits } = useHabits(contextFor(repo))
 
       const ok = await unarchive(habit.id)
 
@@ -162,12 +173,10 @@ describe('useHabits', () => {
 
   describe('reorder', () => {
     it('reassigns local orderIndex to match the given id order', async () => {
-      const repo = getHabitsRepository()
       const a = createDbHabit({ name: 'A', orderIndex: 0 })
       const b = createDbHabit({ name: 'B', orderIndex: 1 })
-      await repo.addHabit(a)
-      await repo.addHabit(b)
-      const { load, reorder, habits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [a, b] })
+      const { load, reorder, habits } = useHabits(contextFor(repo))
       await load()
 
       const ok = await reorder([b.id, a.id])
@@ -178,10 +187,9 @@ describe('useHabits', () => {
     })
 
     it('drops ids that are not in local state rather than inserting a placeholder', async () => {
-      const repo = getHabitsRepository()
       const a = createDbHabit({ name: 'A', orderIndex: 0 })
-      await repo.addHabit(a)
-      const { load, reorder, habits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [a] })
+      const { load, reorder, habits } = useHabits(contextFor(repo))
       await load()
 
       const ok = await reorder(['unknown-id', a.id])
@@ -191,16 +199,13 @@ describe('useHabits', () => {
     })
 
     it('returns false and leaves local state untouched when the repository throws', async () => {
-      const repo = getHabitsRepository()
       const a = createDbHabit({ name: 'A', orderIndex: 0 })
       const b = createDbHabit({ name: 'B', orderIndex: 1 })
-      await repo.addHabit(a)
-      await repo.addHabit(b)
-      const { load, reorder, habits } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [a, b] })
+      const { load, reorder, habits } = useHabits(contextFor(repo, { reorderHabits: rejects }))
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'reorderHabits').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await reorder([b.id, a.id])
 
@@ -213,10 +218,9 @@ describe('useHabits', () => {
 
   describe('toggleToday', () => {
     it('jumps straight to the target when toggling a quantity habit on', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit({ kind: { type: 'quantity', target: 8, unit: 'glasses' } })
-      await repo.addHabit(habit)
-      const { load, toggleToday, entriesFor } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [habit] })
+      const { load, toggleToday, entriesFor } = useHabits(contextFor(repo))
       await load()
 
       const ok = await toggleToday(habit)
@@ -226,11 +230,10 @@ describe('useHabits', () => {
     })
 
     it('initializes per-habit entry state on first write even without a prior load() for it', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
+      const repo = createFakeHabitRepository({ habits: [habit] })
       // No load() call: entriesByHabit has no map entry for this habit yet.
-      const { toggleToday, entriesFor } = useHabits()
+      const { toggleToday, entriesFor } = useHabits(contextFor(repo))
 
       const ok = await toggleToday(habit)
 
@@ -239,14 +242,14 @@ describe('useHabits', () => {
     })
 
     it('returns false and logs when saving the entry throws', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
-      const { load, toggleToday, entriesFor } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [habit] })
+      const { load, toggleToday, entriesFor } = useHabits(
+        contextFor(repo, { upsertEntry: rejects }),
+      )
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'upsertEntry').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await toggleToday(habit)
 
@@ -257,17 +260,22 @@ describe('useHabits', () => {
     })
 
     it('returns false and logs when clearing an already-complete entry throws', async () => {
-      const repo = getHabitsRepository()
+      // A fixed clock keeps "today" (as computed inside useHabits) and the
+      // pre-existing entry's date (constructed here) provably the same
+      // calendar day, instead of relying on two independent wall-clock reads.
+      const clock = testClock(Date.UTC(2026, 0, 15, 12))
+      const today = getStartOfDay(new Date(clock.now()))
       const habit = createDbHabit()
-      await repo.addHabit(habit)
-      await repo.upsertEntry(
-        createDbHabitEntry({ habitId: habit.id, date: getStartOfDay(), value: 1 }),
+      const repo = createFakeHabitRepository({
+        habits: [habit],
+        entries: [createDbHabitEntry({ habitId: habit.id, date: today, value: 1 })],
+      })
+      const { load, toggleToday, entriesFor } = useHabits(
+        contextFor(repo, { clearEntryForDay: rejects }).add(Clock, clock),
       )
-      const { load, toggleToday, entriesFor } = useHabits()
       await load()
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(repo, 'clearEntryForDay').mockRejectedValueOnce(new Error('boom'))
 
       const ok = await toggleToday(habit) // already complete -> tries to clear -> throws
       expect(ok).toBe(false)
@@ -279,12 +287,13 @@ describe('useHabits', () => {
 
   describe('toggleDay', () => {
     it('retro-toggles a complete day back to incomplete', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit()
-      await repo.addHabit(habit)
       const day = getStartOfDay(new Date('2026-01-01'))
-      await repo.upsertEntry(createDbHabitEntry({ habitId: habit.id, date: day, value: 1 }))
-      const { load, toggleDay, entriesFor } = useHabits()
+      const repo = createFakeHabitRepository({
+        habits: [habit],
+        entries: [createDbHabitEntry({ habitId: habit.id, date: day, value: 1 })],
+      })
+      const { load, toggleDay, entriesFor } = useHabits(contextFor(repo))
       await load()
 
       const ok = await toggleDay(habit, day)
@@ -294,11 +303,10 @@ describe('useHabits', () => {
     })
 
     it('retro-toggles a quantity habit day on straight to its target', async () => {
-      const repo = getHabitsRepository()
       const habit = createDbHabit({ kind: { type: 'quantity', target: 5, unit: 'x' } })
-      await repo.addHabit(habit)
       const day = getStartOfDay(new Date('2026-01-01'))
-      const { load, toggleDay, entriesFor } = useHabits()
+      const repo = createFakeHabitRepository({ habits: [habit] })
+      const { load, toggleDay, entriesFor } = useHabits(contextFor(repo))
       await load()
 
       const ok = await toggleDay(habit, day)

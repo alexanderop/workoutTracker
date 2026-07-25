@@ -10,14 +10,23 @@
  * Not a `createGlobalState()` singleton -- like `useWeightEntries`, a plain
  * composable is enough because every consumer (HabitsView, the home card)
  * mounts its own instance and only one is ever on screen at a time.
+ *
+ * Dependencies (the repository and the clock) arrive through a `Context`
+ * defaulted to the live services (C5, effect-style-di.md), so a caller can
+ * inject fakes in tests instead of monkey-patching the real repository.
  */
 import { computed, ref } from 'vue'
-import { generateId, getHabitsRepository } from '@/db'
+import { generateId } from '@/db/generateId'
 import type { DbHabit, DbHabitEntry, HabitAccent, HabitKind, HabitSchedule } from '@/db/schema'
 import { DEFAULT_HABIT_ACCENT } from '@/db/schema'
+import type { HabitRepository } from '@/db/interfaces'
+import type { Context } from '@/lib/di/context'
+import { Clock } from '@/lib/clock'
 import { tryCatch } from '@/lib/tryCatch'
 import { currentStreak, isEntryComplete, startOfDay, weeklyProgress } from '../lib/habitStats'
 import type { WeeklyProgress } from '../lib/habitStats'
+import { HabitRepo } from '../services'
+import { useServices } from '../services.live'
 
 export type HabitFormData = {
   name: string
@@ -38,7 +47,10 @@ export type HabitTodayItem = {
   weekProgress: WeeklyProgress | null
 }
 
-export function useHabits() {
+export function useHabits(ctx: Context<HabitRepository> = useServices()) {
+  const repo = ctx.get(HabitRepo)
+  const clock = ctx.get(Clock)
+
   // Primary State
   const habits = ref<Array<DbHabit>>([])
   const archivedHabits = ref<Array<DbHabit>>([])
@@ -55,7 +67,7 @@ export function useHabits() {
   }
 
   function todayEntry(habitId: string): DbHabitEntry | undefined {
-    const today = startOfDay(Date.now())
+    const today = startOfDay(clock.now())
     return entriesFor(habitId).find((entry) => entry.date === today)
   }
 
@@ -69,11 +81,11 @@ export function useHabits() {
   }
 
   function streakFor(habit: Readonly<DbHabit>): number {
-    return currentStreak(habit, entriesFor(habit.id), Date.now())
+    return currentStreak(habit, entriesFor(habit.id), clock.now())
   }
 
   function weekProgressFor(habit: Readonly<DbHabit>): WeeklyProgress {
-    return weeklyProgress(habit, entriesFor(habit.id), Date.now())
+    return weeklyProgress(habit, entriesFor(habit.id), clock.now())
   }
 
   const todayItems = computed<ReadonlyArray<HabitTodayItem>>(() =>
@@ -88,7 +100,6 @@ export function useHabits() {
 
   // Methods -- loading
   async function refreshEntriesFor(habitIds: ReadonlyArray<string>): Promise<void> {
-    const repo = getHabitsRepository()
     const results = await Promise.all(
       habitIds.map(async (id) => [id, await repo.getEntriesForHabit(id)] as const),
     )
@@ -99,7 +110,6 @@ export function useHabits() {
 
   async function load(): Promise<void> {
     isLoading.value = true
-    const repo = getHabitsRepository()
     const [active, archived] = await Promise.all([repo.getAllHabits(), repo.getArchivedHabits()])
     habits.value = [...active]
     archivedHabits.value = [...archived]
@@ -123,8 +133,6 @@ export function useHabits() {
     date: number,
     value: number,
   ): Promise<boolean> {
-    const repo = getHabitsRepository()
-
     if (value <= 0) {
       const [error] = await tryCatch(repo.clearEntryForDay(habit.id, date))
       if (error) {
@@ -140,7 +148,7 @@ export function useHabits() {
       habitId: habit.id,
       date,
       value,
-      recordedAt: Date.now(),
+      recordedAt: clock.now(),
     }
     const [error] = await tryCatch(repo.upsertEntry(entry))
     if (error) {
@@ -153,7 +161,7 @@ export function useHabits() {
 
   /** Toggle today's completion for a binary habit; for a quantity habit, jumps straight to its target. */
   async function toggleToday(habit: Readonly<DbHabit>): Promise<boolean> {
-    const today = startOfDay(Date.now())
+    const today = startOfDay(clock.now())
     if (isCompleteToday(habit)) return setEntryValue(habit, today, 0)
     const value = habit.kind.type === 'quantity' ? habit.kind.target : 1
     return setEntryValue(habit, today, value)
@@ -161,7 +169,7 @@ export function useHabits() {
 
   /** Set today's exact value for a quantity habit (0 clears the entry). */
   async function logQuantityToday(habit: Readonly<DbHabit>, value: number): Promise<boolean> {
-    const today = startOfDay(Date.now())
+    const today = startOfDay(clock.now())
     return setEntryValue(habit, today, Math.max(0, value))
   }
 
@@ -177,7 +185,6 @@ export function useHabits() {
 
   // Methods -- habit CRUD
   async function createHabit(data: HabitFormData): Promise<DbHabit | undefined> {
-    const repo = getHabitsRepository()
     const habit: DbHabit = {
       id: generateId(),
       name: data.name,
@@ -189,7 +196,7 @@ export function useHabits() {
       autoLink: data.kind.type === 'binary' ? data.autoLink : null,
       archivedAt: null,
       orderIndex: habits.value.length,
-      createdAt: Date.now(),
+      createdAt: clock.now(),
     }
     const [error] = await tryCatch(repo.addHabit(habit))
     if (error) {
@@ -202,7 +209,6 @@ export function useHabits() {
   }
 
   async function editHabit(id: string, data: HabitFormData): Promise<boolean> {
-    const repo = getHabitsRepository()
     const current = habits.value.find((habit) => habit.id === id)
     const normalizedData = {
       ...data,
@@ -222,7 +228,6 @@ export function useHabits() {
   }
 
   async function archive(id: string): Promise<boolean> {
-    const repo = getHabitsRepository()
     const [error] = await tryCatch(repo.archiveHabit(id))
     if (error) {
       console.error('Failed to archive habit:', error)
@@ -231,13 +236,12 @@ export function useHabits() {
     const habit = habits.value.find((existing) => existing.id === id)
     habits.value = habits.value.filter((existing) => existing.id !== id)
     if (habit) {
-      archivedHabits.value = [{ ...habit, archivedAt: Date.now() }, ...archivedHabits.value]
+      archivedHabits.value = [{ ...habit, archivedAt: clock.now() }, ...archivedHabits.value]
     }
     return true
   }
 
   async function unarchive(id: string): Promise<boolean> {
-    const repo = getHabitsRepository()
     const [error] = await tryCatch(repo.unarchiveHabit(id))
     if (error) {
       console.error('Failed to restore habit:', error)
@@ -252,7 +256,6 @@ export function useHabits() {
   }
 
   async function reorder(ids: ReadonlyArray<string>): Promise<boolean> {
-    const repo = getHabitsRepository()
     const [error] = await tryCatch(repo.reorderHabits(ids))
     if (error) {
       console.error('Failed to reorder habits:', error)
