@@ -34,6 +34,18 @@ pnpm knip         # Unused exports (occasional)
 Run `pnpm type-check && pnpm lint && pnpm test` before committing.
 Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 
+### Cloud sessions
+
+In Claude Code on the web (`$CLAUDE_CODE_REMOTE == "true"`),
+`.claude/hooks/cloud-bootstrap.sh` installs deps and the Chromium build the
+pinned playwright expects — the base image ships a different revision and Vitest
+browser mode refuses to launch on a mismatch. The environment's setup script
+(`.claude/cloud-setup.sh`) does the same work once, into the cached snapshot.
+
+Two things do not work there: `gh` is not installed and the sandbox's
+`GH_TOKEN` is a placeholder, so anything shelling out to `gh` — including
+`pnpm -s pr:comments` — fails. Use the GitHub MCP tools instead.
+
 ## Critical Conventions
 
 - **State**: prefer VueUse `createGlobalState()` for shared feature stores (NOT

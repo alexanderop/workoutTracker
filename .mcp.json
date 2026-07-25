@@ -4,7 +4,7 @@
       "command": "npx",
       "args": ["cclsp@latest"],
       "env": {
-        "CCLSP_CONFIG_PATH": "/Users/alex/Projects/Vue/workoutTracker/cclsp.json"
+        "CCLSP_CONFIG_PATH": "${CLAUDE_PROJECT_DIR:-.}/cclsp.json"
       }
     }
   }
