@@ -1,5 +1,5 @@
 /**
- * Habits pilot — Live Layer (C2, C5, D6 in effect-style-di.md).
+ * Habits pilot — Live Layer (ADR 003: brain/decisions/003-effect-style-di.md).
  *
  * Browser tiers only: `getRepositoryProvider` transitively imports `@/db`,
  * which constructs the Dexie singleton at import time, so this module must

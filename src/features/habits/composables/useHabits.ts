@@ -12,7 +12,7 @@
  * mounts its own instance and only one is ever on screen at a time.
  *
  * Dependencies (the repository and the clock) arrive through a `Context`
- * defaulted to the live services (C5, effect-style-di.md), so a caller can
+ * defaulted to the live services (ADR 003), so a caller can
  * inject fakes in tests instead of monkey-patching the real repository.
  */
 import { computed, ref } from 'vue'

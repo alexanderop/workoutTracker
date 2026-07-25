@@ -1,5 +1,5 @@
 /**
- * Node-tier spec for the habits pilot (C2, C5 in effect-style-di.md).
+ * Node-tier spec for the habits pilot (ADR 003: brain/decisions/003-effect-style-di.md).
  *
  * This spec deliberately imports only `services.ts` (Tags) and the fake
  * repository — never `services.live.ts`, which reaches `@/db` and would

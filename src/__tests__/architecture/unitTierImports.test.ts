@@ -1,5 +1,5 @@
 /**
- * Architecture rule (C2, effect-style-di.md): the Node `unit` tier must
+ * Architecture rule (ADR 003, brain/decisions/003-effect-style-di.md): the Node `unit` tier must
  * never transitively reach `@/db`.
  *
  * D1's structural constraint: `import … from '@/db'` runs

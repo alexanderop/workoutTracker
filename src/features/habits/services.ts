@@ -1,5 +1,5 @@
 /**
- * Habits pilot — Tags only (C2, C5 in effect-style-di.md).
+ * Habits pilot — Tags only (ADR 003: brain/decisions/003-effect-style-di.md).
  *
  * `import type` from `@/db/interfaces` is fully erased at compile time, so
  * this module stays importable from the Node `unit` tier. No value import
