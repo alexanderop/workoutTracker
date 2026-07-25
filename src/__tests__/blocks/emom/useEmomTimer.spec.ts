@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useEmomTimer } from '@/composables/timers/useEmomTimer'
+import { useEmomTimer } from '@/blocks/emom/useEmomTimer'
 import { createEmomWorkoutBlock } from '@/blocks'
 import type { EmomBlock } from '@/blocks'
 

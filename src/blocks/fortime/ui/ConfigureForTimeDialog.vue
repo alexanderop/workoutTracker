@@ -2,8 +2,10 @@
 import { ref, watch } from 'vue'
 import type { BlockExercise, ForTimeConfig as ForTimeBlockConfig } from '@/blocks'
 import { BLOCK_ICONS } from '@/blocks'
-import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
-import ForTimeConfigComponent, { type ForTimeConfigModel } from './ForTimeConfig.vue'
+import ConfigureTimedBlockDialog from '@/blocks/ui/ConfigureTimedBlockDialog.vue'
+import ForTimeConfigComponent, {
+  type ForTimeConfigModel,
+} from '@/blocks/fortime/ui/ForTimeConfig.vue'
 
 type Emits = {
   confirm: [config: ForTimeBlockConfig, exercises: ReadonlyArray<BlockExercise>]

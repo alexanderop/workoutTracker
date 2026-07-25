@@ -7,8 +7,12 @@
 import type { ComputedRef, ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { TabataBlock, TabataResult } from '@/blocks'
-import type { BlockTimerReturn } from './useBaseTimer'
-import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import type { BlockTimerReturn } from '@/composables/timers/useBaseTimer'
+import {
+  blockTimerBase,
+  createFormattedTimeComputeds,
+  useBaseTimer,
+} from '@/composables/timers/useBaseTimer'
 
 type TabataPhase = 'work' | 'rest'
 

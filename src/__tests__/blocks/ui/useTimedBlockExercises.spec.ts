@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
+import { useTimedBlockExercises } from '@/blocks/ui/useTimedBlockExercises'
 import type { Exercise } from '@/composables/useExerciseSearch'
 
 const pushUps: Exercise = { name: 'Push-ups', type: 'compound', metrics: 'reps-only' }

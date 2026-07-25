@@ -6,7 +6,7 @@ import {
   getNextWorkoutBlockId,
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
-} from '@/lib/workoutBlockList'
+} from '@/blocks/list'
 import { createCardioWorkoutBlock } from '@/blocks'
 import type { WorkoutBlock } from '@/blocks'
 
@@ -166,7 +166,7 @@ function expectMatchesModel(real: RealState, model: ModelState): void {
   expect(selected?.id).toBe(model.selectedId)
 }
 
-describe('workoutBlockList (property-based)', () => {
+describe('blocks/list (property-based)', () => {
   describe('getNextWorkoutBlockId', () => {
     it('returns 1 for an empty list', () => {
       expect(getNextWorkoutBlockId([])).toBe(1)

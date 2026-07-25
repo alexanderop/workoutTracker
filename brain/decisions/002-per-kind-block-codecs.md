@@ -16,8 +16,10 @@ Each workout block kind owns its representations under `src/blocks/<kind>/`:
 - `src/blocks/registry.ts` is the exhaustive runtime dispatch.
 
 `src/blocks/` is feature-neutral and must not import feature modules.
-Lifecycle, Vue components, timers, and other runtime behavior remain in
-`src/features/`; they are intentionally not codec responsibilities.
+Lifecycle, Vue components, timers, and other runtime behavior are not codec
+responsibilities. This ADR originally placed them in `src/features/`; ADR 003
+supersedes that clause and gives each kind folder a `ui/` and a timer
+composable, because the two features that run blocks share them.
 
 ## Why
 

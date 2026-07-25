@@ -15,10 +15,10 @@ import WorkoutActiveModeFooter, {
   type TimerDisplayData,
 } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
-import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
-import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
-import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
-import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
+import WorkoutAmrapView from '@/blocks/amrap/ui/WorkoutAmrapView.vue'
+import WorkoutEmomView from '@/blocks/emom/ui/WorkoutEmomView.vue'
+import WorkoutForTimeView from '@/blocks/fortime/ui/WorkoutForTimeView.vue'
+import WorkoutTabataView from '@/blocks/tabata/ui/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
 
 // Strategy pattern: Map block kinds to their view components

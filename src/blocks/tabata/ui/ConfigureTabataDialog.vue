@@ -15,7 +15,7 @@ import { generateId } from '@/db/index'
 import type { BlockExercise, TabataConfig as TabataBlockConfig } from '@/blocks'
 import { BLOCK_ICONS } from '@/blocks'
 import type { Exercise } from '@/composables/useExerciseSearch'
-import TabataConfigComponent, { type TabataConfigModel } from './TabataConfig.vue'
+import TabataConfigComponent, { type TabataConfigModel } from '@/blocks/tabata/ui/TabataConfig.vue'
 
 const { t } = useI18n()
 

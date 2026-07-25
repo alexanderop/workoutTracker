@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
+import { useForTimeTimer } from '@/blocks/fortime/useForTimeTimer'
 import { createForTimeWorkoutBlock } from '@/blocks'
 import type { ForTimeBlock } from '@/blocks'
 

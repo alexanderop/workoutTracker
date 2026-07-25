@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { restoreWorkout } from '@/stores/workoutState'
 import { RouteNames } from '@/router'
-import { WorkoutBlockDialogs } from '@/components/blocks'
+import { WorkoutBlockDialogs } from '@/blocks/ui'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import UnsavedChangesDialog from '@/components/UnsavedChangesDialog.vue'
@@ -14,7 +14,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/componen
 import { Input } from '@/components/ui/input'
 import { useTemplateDetail } from '@/features/templates/composables/useTemplateDetail'
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard'
-import { useWorkoutBlockDialogs } from '@/composables/useWorkoutBlockDialogs'
+import { useWorkoutBlockDialogs } from '@/blocks/ui/useWorkoutBlockDialogs'
 
 const { t } = useI18n()
 const route = useRoute()

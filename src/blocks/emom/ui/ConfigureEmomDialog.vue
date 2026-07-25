@@ -2,8 +2,8 @@
 import { ref, watch } from 'vue'
 import type { BlockExercise, EmomConfig as EmomBlockConfig } from '@/blocks'
 import { BLOCK_ICONS } from '@/blocks'
-import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
-import EmomConfigComponent, { type EmomConfigModel } from './EmomConfig.vue'
+import ConfigureTimedBlockDialog from '@/blocks/ui/ConfigureTimedBlockDialog.vue'
+import EmomConfigComponent, { type EmomConfigModel } from '@/blocks/emom/ui/EmomConfig.vue'
 
 type Emits = {
   confirm: [config: EmomBlockConfig, exercises: ReadonlyArray<BlockExercise>]

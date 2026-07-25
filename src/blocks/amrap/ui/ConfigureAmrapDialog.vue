@@ -2,8 +2,8 @@
 import { ref, watch } from 'vue'
 import type { AmrapConfig as AmrapBlockConfig, BlockExercise } from '@/blocks'
 import { BLOCK_ICONS } from '@/blocks'
-import AmrapConfigComponent, { type AmrapConfigModel } from './AmrapConfig.vue'
-import ConfigureTimedBlockDialog from './ConfigureTimedBlockDialog.vue'
+import AmrapConfigComponent, { type AmrapConfigModel } from '@/blocks/amrap/ui/AmrapConfig.vue'
+import ConfigureTimedBlockDialog from '@/blocks/ui/ConfigureTimedBlockDialog.vue'
 
 type Emits = {
   confirm: [config: AmrapBlockConfig, exercises: ReadonlyArray<BlockExercise>]

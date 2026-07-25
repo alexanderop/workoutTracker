@@ -9,12 +9,12 @@ import type {
   TabataConfig,
   TimedBlockKind,
 } from '@/blocks'
-import AddBlockDialog from './AddBlockDialog.vue'
-import ConfigureAmrapDialog from './ConfigureAmrapDialog.vue'
-import ConfigureCardioDialog from './ConfigureCardioDialog.vue'
-import ConfigureEmomDialog from './ConfigureEmomDialog.vue'
-import ConfigureForTimeDialog from './ConfigureForTimeDialog.vue'
-import ConfigureTabataDialog from './ConfigureTabataDialog.vue'
+import AddBlockDialog from '@/blocks/ui/AddBlockDialog.vue'
+import ConfigureAmrapDialog from '@/blocks/amrap/ui/ConfigureAmrapDialog.vue'
+import ConfigureCardioDialog from '@/blocks/cardio/ui/ConfigureCardioDialog.vue'
+import ConfigureEmomDialog from '@/blocks/emom/ui/ConfigureEmomDialog.vue'
+import ConfigureForTimeDialog from '@/blocks/fortime/ui/ConfigureForTimeDialog.vue'
+import ConfigureTabataDialog from '@/blocks/tabata/ui/ConfigureTabataDialog.vue'
 
 const addBlockOpen = defineModel<boolean>('addBlockOpen', { required: true })
 const amrapOpen = defineModel<boolean>('amrapOpen', { required: true })

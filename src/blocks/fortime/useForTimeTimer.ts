@@ -7,8 +7,12 @@
 import type { ShallowRef } from 'vue'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import type { ForTimeBlock, ForTimeResult } from '@/blocks'
-import type { BlockTimerReturn } from './useBaseTimer'
-import { blockTimerBase, createFormattedTimeComputeds, useBaseTimer } from './useBaseTimer'
+import type { BlockTimerReturn } from '@/composables/timers/useBaseTimer'
+import {
+  blockTimerBase,
+  createFormattedTimeComputeds,
+  useBaseTimer,
+} from '@/composables/timers/useBaseTimer'
 
 export type UseForTimeTimerOptions = Readonly<{
   /** Called once when the timer completes (time cap reached or finished manually). */

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useTabataTimer } from '@/composables/timers/useTabataTimer'
+import { useTabataTimer } from '@/blocks/tabata/useTabataTimer'
 import { createTabataWorkoutBlock } from '@/blocks'
 import type { TabataBlock } from '@/blocks'
 

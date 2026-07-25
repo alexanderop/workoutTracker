@@ -166,14 +166,16 @@ describe('main sequence fitness functions', () => {
   // =============================================================================
 
   describe('dependency direction', () => {
-    it('blocks module should not depend on any other internal modules except types', () => {
-      const blocksMetrics = getModuleMetrics(getReport(), 'blocks')
-      expect(blocksMetrics).toBeDefined()
-      // Blocks is the foundational block model (ADR 002) - it may reach the
-      // kind-neutral leaf types (Equipment) but nothing else
-      const allowedDependencies = ['types']
-      for (const dependency of blocksMetrics?.instability.dependsOn ?? []) {
-        expect(allowedDependencies).toContain(dependency)
+    it('leaf layers should not depend on the blocks domain module', () => {
+      // ADR 003: blocks owns the whole block vertical (codecs, timers, UI) and
+      // sits above the leaf layers, so the edge only runs one way. Before
+      // ADR 003 the per-kind timers, config dialogs and runner views lived in
+      // lib/composables/components and inverted it.
+      // `types` is excluded on purpose: `Workout` composes `WorkoutBlock`.
+      for (const leaf of ['lib', 'composables', 'stores']) {
+        const leafMetrics = getModuleMetrics(getReport(), leaf)
+        expect(leafMetrics, leaf).toBeDefined()
+        expect(leafMetrics?.instability.dependsOn ?? [], leaf).not.toContain('blocks')
       }
     })
 

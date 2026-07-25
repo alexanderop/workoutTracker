@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { useTimedBlockExercises } from '@/composables/useTimedBlockExercises'
+import { useTimedBlockExercises } from '@/blocks/ui/useTimedBlockExercises'
 import type { BlockExercise } from '@/blocks'
-import TimedBlockExerciseList from './TimedBlockExerciseList.vue'
+import TimedBlockExerciseList from '@/blocks/ui/TimedBlockExerciseList.vue'
 
 const { icon, translationPrefix } = defineProps<{
   /** Block emoji shown next to the dialog title. */

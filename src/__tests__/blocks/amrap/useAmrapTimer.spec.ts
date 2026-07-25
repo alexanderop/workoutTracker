@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
+import { useAmrapTimer } from '@/blocks/amrap/useAmrapTimer'
 import { createAmrapWorkoutBlock } from '@/blocks'
 import type { AmrapBlock } from '@/blocks'
 

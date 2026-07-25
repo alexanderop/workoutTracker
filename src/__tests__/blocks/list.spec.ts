@@ -5,16 +5,18 @@ import {
   getNextWorkoutBlockId,
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
-} from '@/lib/workoutBlockList'
+} from '@/blocks/list'
 
-describe('workoutBlockList', () => {
+describe('blocks/list', () => {
   it('generates the first id and increments from the current max id', () => {
     expect(getNextWorkoutBlockId([])).toBe(1)
-    expect(getNextWorkoutBlockId([
-      createStrengthBlock({ id: 2 }),
-      createStrengthBlock({ id: 7 }),
-      createStrengthBlock({ id: 4 }),
-    ])).toBe(8)
+    expect(
+      getNextWorkoutBlockId([
+        createStrengthBlock({ id: 2 }),
+        createStrengthBlock({ id: 7 }),
+        createStrengthBlock({ id: 4 }),
+      ]),
+    ).toBe(8)
   })
 
   it('appends a block and selects it', () => {

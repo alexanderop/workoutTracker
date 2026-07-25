@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useForTimeTimer } from '@/composables/timers/useForTimeTimer'
+import { useForTimeTimer } from '@/blocks/fortime/useForTimeTimer'
 import type { ForTimeBlock, ForTimeResult } from '@/blocks'
 import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/blocks'
-import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+import WorkoutCircularTimer from '@/blocks/ui/WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useEmomTimer } from '@/composables/timers/useEmomTimer'
+import { useEmomTimer } from '@/blocks/emom/useEmomTimer'
 import { cn } from '@/lib/utils'
 import type { EmomBlock, EmomResult } from '@/blocks'
 import { BLOCK_COLORS, getBlockExerciseList } from '@/blocks'
-import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+import WorkoutCircularTimer from '@/blocks/ui/WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 

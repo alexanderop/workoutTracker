@@ -27,7 +27,7 @@ import {
   getNextWorkoutBlockId,
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
-} from '@/lib/workoutBlockList'
+} from '@/blocks/list'
 import { useExercisesStore } from '@/stores/exercises'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {

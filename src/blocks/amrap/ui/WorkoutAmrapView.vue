@@ -2,11 +2,11 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import { useAmrapTimer } from '@/composables/timers/useAmrapTimer'
+import { useAmrapTimer } from '@/blocks/amrap/useAmrapTimer'
 import { cn } from '@/lib/utils'
 import type { AmrapBlock, AmrapResult } from '@/blocks'
 import { BLOCK_COLORS, BLOCK_LABELS, getBlockExerciseList } from '@/blocks'
-import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+import WorkoutCircularTimer from '@/blocks/ui/WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 

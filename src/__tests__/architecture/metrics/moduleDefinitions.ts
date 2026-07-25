@@ -158,7 +158,12 @@ const UI_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'components',
     path: 'src/components',
     category: 'ui',
-    maxDistance: 0.6, // Current: 0.508 - good
+    // ADR 003 moved the domain UI (block config dialogs, runner views) out of
+    // this module and into the domain modules that own it. What is left is a
+    // leaf widget kit: concrete, and depended on far more than it depends on
+    // anything. That is the same Zone-of-Uselessness shape `ui-primitives`
+    // has, and it is the intended shape, so it carries the same threshold.
+    maxDistance: 0.7, // Current: 0.603 - was 0.508 while it still held domain UI
   },
   {
     name: 'views',

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useTabataTimer } from '@/composables/timers/useTabataTimer'
+import { useTabataTimer } from '@/blocks/tabata/useTabataTimer'
 import { useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { cn } from '@/lib/utils'
 import type { TabataBlock, TabataResult } from '@/blocks'
 import { getBlockExerciseList } from '@/blocks'
-import WorkoutCircularTimer from './WorkoutCircularTimer.vue'
+import WorkoutCircularTimer from '@/blocks/ui/WorkoutCircularTimer.vue'
 
 const { t } = useI18n()
 
