@@ -11,8 +11,6 @@ import {
 } from '@/features/workout/machines/appInitMachine'
 import { tryCatch } from '@/lib/tryCatch'
 
-export type { InitState } from '@/features/workout/machines/appInitMachine'
-
 // App-wide singleton: App.vue drives initialization while WorkoutDetailView
 // triggers resume, and both must see the same boot state. Created on first use
 // rather than at module import so the machine's DB work never races repository
