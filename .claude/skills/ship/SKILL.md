@@ -156,6 +156,31 @@ live view of the flow, for example:
    - If any phase could not run, report the blocker as a caveat or
      `DO NOT SHIP`; do not soften missing evidence into success.
 
+## Loop Gates
+
+Any phase that edits files — `implement`, `simplify`, and the fix passes a
+**Revise** verdict sends back — must re-run the fast gate before the run
+advances:
+
+```bash
+pnpm -s type-check && pnpm -s test:unit && pnpm -s knip
+```
+
+Two rules govern the loop:
+
+- **Re-verify after every editing phase.** A cleanup pass can undo a fix made
+  earlier in the same run. On 2026-07-25 `simplify` removed the `test-unit` CI
+  job and with it a HIGH review fix from an hour before; it was caught only
+  because the lead independently re-checked. Do not rely on that.
+- **Two failed passes and you stop.** If the same finding survives two
+  corrective loops, stop and report it with the diff and what was tried. A third
+  attempt on a polluted context produces worse code, not better — this mirrors
+  `implement`'s own twice-wrong rule.
+
+Never let a phase silently revert a fix from an earlier phase. When a later
+phase removes something an earlier one added, say so explicitly and justify it
+before the run continues.
+
 ## Stop and Ask
 
 STOP and ask the user when:
@@ -179,6 +204,8 @@ artifacts.
 | "Tests passed, so the final verdict is SHIP." | Tests are verification. Behavior-bearing work still needs `qa` evidence. |
 | "The work is almost done, so report success." | Missing phase evidence is a caveat or blocker, not success. |
 | "Everything is green locally, so the run is done." | Green and local is not shipped. Run `ship-it` unless the user asked to stay local. |
+| "Simplify only cleans things up, so nothing needs re-checking." | Cleanup can revert an earlier fix in the same run. Re-run the fast gate after every editing phase. |
+| "One more corrective loop and it'll be right." | Two failed passes is the limit. Stop and report the diff and what was tried. |
 
 ## Output
 
