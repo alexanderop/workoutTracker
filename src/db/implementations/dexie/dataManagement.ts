@@ -35,6 +35,8 @@ export function createDexieDataManagementRepository(
     database.nutritionGoals,
     database.foods,
     database.nutritionDiaryEntries,
+    database.progressions,
+    database.progressionSessions,
   ] as const
 
   // Every table in the schema, for a full wipe (Settings > Delete All Data).
@@ -58,6 +60,8 @@ export function createDexieDataManagementRepository(
         nutritionGoals,
         foods,
         nutritionDiaryEntries,
+        progressions,
+        progressionSessions,
       ] = await Promise.all([
         database.settings.toArray(),
         database.customExercises.toArray(),
@@ -70,6 +74,8 @@ export function createDexieDataManagementRepository(
         database.nutritionGoals.toArray(),
         database.foods.toArray(),
         database.nutritionDiaryEntries.toArray(),
+        database.progressions.toArray(),
+        database.progressionSessions.toArray(),
       ])
 
       return {
@@ -84,6 +90,8 @@ export function createDexieDataManagementRepository(
         nutritionGoals,
         foods,
         nutritionDiaryEntries,
+        progressions,
+        progressionSessions,
       }
     },
 
@@ -103,6 +111,8 @@ export function createDexieDataManagementRepository(
           nutritionGoals,
           foods,
           nutritionDiaryEntries,
+          progressions,
+          progressionSessions,
         } = data
 
         await Promise.all([
@@ -118,6 +128,10 @@ export function createDexieDataManagementRepository(
           bulkAddIfPresent(foods, (items) => database.foods.bulkAdd(items)),
           bulkAddIfPresent(nutritionDiaryEntries, (items) =>
             database.nutritionDiaryEntries.bulkAdd(items),
+          ),
+          bulkAddIfPresent(progressions, (items) => database.progressions.bulkAdd(items)),
+          bulkAddIfPresent(progressionSessions, (items) =>
+            database.progressionSessions.bulkAdd(items),
           ),
         ])
       })

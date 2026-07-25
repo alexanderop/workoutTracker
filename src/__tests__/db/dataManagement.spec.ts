@@ -167,3 +167,41 @@ describe('DataManagementRepository nutrition export/import', () => {
     })
   })
 })
+
+/**
+ * Progressions were in the schema (and in the full-wipe scope) but absent from
+ * ExportDataContents, so a backup silently dropped every progression plan and
+ * its session history. `architecture/backupCoverage.test.ts` is what keeps the
+ * export contract and the schema from drifting apart again; this pins that the
+ * rows actually survive the round trip.
+ */
+describe('DataManagementRepository progressions export/import', () => {
+  beforeEach(async () => {
+    await resetDatabase()
+  })
+
+  it('round-trips progressions and their session history', async () => {
+    const progressions = getProgressionsRepository()
+    const progression = await progressions.create({
+      name: 'KB Swing Challenge',
+      availableWeights: [16, 20, 24],
+    })
+    await progressions.recordSession(progression.id, true, {
+      reps: 12,
+      minutes: 10,
+      weightIndex: 0,
+      isComplete: false,
+    })
+
+    const expectedProgressions = await progressions.getAll()
+    const expectedSessions = await progressions.getSessionHistory(progression.id)
+
+    const dataManagement = getDataManagementRepository()
+    const exported = await dataManagement.exportAll()
+    await dataManagement.deleteAll()
+    await dataManagement.importAll(exported)
+
+    expect(await progressions.getAll()).toEqual(expectedProgressions)
+    expect(await progressions.getSessionHistory(progression.id)).toEqual(expectedSessions)
+  })
+})

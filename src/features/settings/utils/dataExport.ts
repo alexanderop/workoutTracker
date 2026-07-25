@@ -7,6 +7,8 @@ import type {
   DbFood,
   DbNutritionDiaryEntry,
   DbNutritionGoal,
+  DbProgression,
+  DbProgressionSession,
   DbUserSetting,
   DbWeightEntry,
   DbWorkoutTemplate,
@@ -38,6 +40,8 @@ export type ExportData = {
     nutritionGoals?: ReadonlyArray<DbNutritionGoal>
     foods?: ReadonlyArray<DbFood>
     nutritionDiaryEntries?: ReadonlyArray<DbNutritionDiaryEntry>
+    progressions?: ReadonlyArray<DbProgression>
+    progressionSessions?: ReadonlyArray<DbProgressionSession>
   }
 }
 
