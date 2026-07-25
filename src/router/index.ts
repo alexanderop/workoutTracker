@@ -116,7 +116,7 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
   {
     path: '/food-log',
     name: RouteNames.FoodLog,
-    component: () => import('@/features/nutrition/views/FoodLogView.vue'),
+    component: () => import('@/views/FoodLogView.vue'),
     meta: { titleKey: 'foodLog' },
   },
   {
@@ -212,13 +212,13 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
   {
     path: '/onboarding',
     name: RouteNames.Onboarding,
-    component: () => import('@/features/onboarding/views/OnboardingView.vue'),
+    component: () => import('@/views/OnboardingView.vue'),
     meta: { titleKey: 'onboarding' },
   },
   {
     path: '/health-prototypes',
     name: RouteNames.HealthPrototypes,
-    component: () => import('@/features/health-prototypes/views/HealthPrototypeView.vue'),
+    component: () => import('@/views/HealthPrototypeView.vue'),
     meta: { titleKey: 'healthPrototypes', hideNav: true },
   },
   // Catch-all: keep this last so every named route above gets first shot at

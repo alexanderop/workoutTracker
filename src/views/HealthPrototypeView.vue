@@ -3,9 +3,9 @@ import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { ArrowLeft, LayoutDashboard, PanelsTopLeft, ScrollText } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import DailyCardsPrototype from '../components/DailyCardsPrototype.vue'
-import GuidedJournalPrototype from '../components/GuidedJournalPrototype.vue'
-import HealthDashboardPrototype from '../components/HealthDashboardPrototype.vue'
+import DailyCardsPrototype from '@/features/health-prototypes/components/DailyCardsPrototype.vue'
+import GuidedJournalPrototype from '@/features/health-prototypes/components/GuidedJournalPrototype.vue'
+import HealthDashboardPrototype from '@/features/health-prototypes/components/HealthDashboardPrototype.vue'
 
 type PrototypeKind = 'cards' | 'journal' | 'dashboard'
 

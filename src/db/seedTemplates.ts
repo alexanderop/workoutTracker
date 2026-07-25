@@ -1,5 +1,5 @@
 import { getTemplatesRepository as getTemplatesRepo } from './index'
-import { popularTemplates } from '@/data/popularTemplates'
+import { popularTemplates } from './popularTemplates'
 
 /**
  * Seed popular templates to IndexedDB if not already seeded.

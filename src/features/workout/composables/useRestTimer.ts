@@ -2,7 +2,7 @@ import type { Pausable } from '@vueuse/core'
 import { useVibrate } from '@vueuse/core'
 import { computed, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from 'vue'
 import { formatTime } from '@/lib/workout-utils'
-import { useBaseTimer } from './useBaseTimer'
+import { useBaseTimer } from '@/composables/timers/useBaseTimer'
 
 // Safety cap on the count-up display so a forgotten/unattended rest timer
 // doesn't tick forever in the background. Widened to cover the configured

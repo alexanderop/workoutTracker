@@ -47,16 +47,24 @@ Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 ## Structure
 
 ```
+src/blocks/        # Domain module: workout blocks (import via @/blocks, UI via @/blocks/ui)
+src/exercises/     # Domain module: the exercise catalog (types, data, store, ui/, icons/)
 src/features/      # Feature-owned UI, state, composables, and domain logic
-src/blocks/        # Feature-neutral workout block types and codecs (import via @/blocks)
 src/db/            # Dexie schema, converters, repository implementations
 src/stores/        # Shared app-wide singleton state
 src/composables/   # Shared reactive logic (2+ consumers; single-feature code lives in its feature)
-src/views/         # Route-level pages; may compose multiple features
+src/views/         # Route-level pages; every route component lives here
 src/components/    # App shell + UI shared across features (same 2+ consumer rule)
 src/components/ui/ # shadcn-vue / reka-ui primitives
 src/__tests__/     # Vitest + Playwright browser mode
 ```
+
+A **domain module** (`src/blocks`, `src/exercises`) owns one domain end to end
+— types, persistence mapping, logic, state and Vue components — and is
+feature-neutral: it never imports `src/features/**` or `src/views/**`, and any
+feature may import it. See `brain/decisions/003-domain-modules.md`. Each block
+kind is a full vertical: `src/blocks/<kind>/` holds its types, codec, meta,
+create helpers, timer composable and `ui/`.
 
 ## Reading PR Feedback
 

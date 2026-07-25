@@ -1,4 +1,4 @@
-import type { VersionInfo } from '@/types/version'
+import type { VersionInfo } from './version'
 
 /**
  * Build-time version metadata, baked in by `versionPlugin`. Purely

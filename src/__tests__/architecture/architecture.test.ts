@@ -18,12 +18,13 @@
  * 8. Views Independence (1) - views don't import each other
  * 9. Composables Full Isolation (2) - composables don't depend on UI
  * 10. Naming Conventions (1) - composables follow use* / create* pattern
+ * 11. Route Components (1) - the router loads every route from src/views
  *
  * Note: Code metrics (LOC, LCOM) are skipped due to library compatibility issues
  * with the current TypeScript/Vitest setup. Consider revisiting when archunit
  * releases updates.
  */
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { projectFiles } from 'archunit'
 
@@ -385,5 +386,26 @@ describe('naming conventions', () => {
       .should()
       .haveName(/^(use|create)[A-Z]/)
     await expect(rule).toPassAsync()
+  })
+})
+
+// =============================================================================
+// ROUTE COMPONENTS
+// ArchUnit resolves TypeScript imports only, so the router's lazy
+// `() => import('@/....vue')` route components are invisible to the "router
+// should not import from features" rule above. Read the router source
+// directly so a route pointing straight into a feature cannot slip through.
+// =============================================================================
+
+describe('route components', () => {
+  it('are all loaded from src/views', () => {
+    const routerSource = readFileSync(new URL('../../router/index.ts', import.meta.url), 'utf8')
+    const specifiers = Array.from(
+      routerSource.matchAll(/import\(\s*'([^']+)'\s*\)/g),
+      (match) => match[1] ?? '',
+    )
+
+    expect(specifiers.length).toBeGreaterThan(0)
+    expect(specifiers.filter((specifier) => !specifier.startsWith('@/views/'))).toEqual([])
   })
 })

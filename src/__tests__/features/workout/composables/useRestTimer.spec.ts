@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { useRestTimer } from '@/composables/timers/useRestTimer'
+import { useRestTimer } from '@/features/workout/composables/useRestTimer'
 
 describe('useRestTimer', () => {
   beforeEach(() => {

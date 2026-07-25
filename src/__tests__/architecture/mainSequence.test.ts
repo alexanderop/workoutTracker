@@ -109,6 +109,17 @@ describe('main sequence fitness functions', () => {
     }
   })
 
+  it('lib should stay a stable leaf', () => {
+    const libMetrics = getModuleMetrics(getReport(), 'lib')
+    expect(libMetrics).toBeDefined()
+    // A utility kit is concrete and is depended upon, not depending. This,
+    // rather than its Main Sequence distance, is what must not regress: if
+    // `lib` starts reaching outward it has stopped being a leaf and is
+    // accumulating domain logic that belongs in a domain module or a feature.
+    expect(libMetrics?.abstractness.abstractness).toBeLessThan(0.3)
+    expect(libMetrics?.instability.instability).toBeLessThan(0.3)
+  })
+
   // =============================================================================
   // FEATURE MODULES - Domain implementations, allowed to be concrete and unstable
   // =============================================================================

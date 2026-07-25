@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import OnboardingCarousel from '../components/OnboardingCarousel.vue'
+import OnboardingCarousel from '@/features/onboarding/components/OnboardingCarousel.vue'
 </script>
 
 <template>

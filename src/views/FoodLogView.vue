@@ -9,15 +9,17 @@ import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { getCurrentLocale, getDateLocale } from '@/lib/dateLocale'
 import { tryCatch } from '@/lib/tryCatch'
 import { useToastStore } from '@/stores/toast'
-import FoodLogTimeline from '../components/FoodLogTimeline.vue'
-import FoodLogWeekStrip from '../components/FoodLogWeekStrip.vue'
-import { useFoodLogDay } from '../composables/useFoodLogDay'
-import { mealForHour } from '../lib/foodLogTimeline'
+import FoodLogTimeline from '@/features/nutrition/components/FoodLogTimeline.vue'
+import FoodLogWeekStrip from '@/features/nutrition/components/FoodLogWeekStrip.vue'
+import { useFoodLogDay } from '@/features/nutrition/composables/useFoodLogDay'
+import { mealForHour } from '@/features/nutrition/lib/foodLogTimeline'
 
 // Loaded on first use so the barcode-scanning/camera machinery (and the food
 // lookup network code) stays off the startup path — the app has a Lighthouse
 // performance budget on first paint.
-const FoodLogDialog = defineAsyncComponent(() => import('../components/FoodLogDialog.vue'))
+const FoodLogDialog = defineAsyncComponent(
+  () => import('@/features/nutrition/components/FoodLogDialog.vue'),
+)
 
 const { t } = useI18n()
 const { showToast } = useToastStore()
