@@ -71,7 +71,7 @@ src/__tests__/visual/__screenshots__/**/Visual-Regression-*.png
 .claude/scheduled_tasks.lock
 
 # Scratch directory left behind by anthropics/claude-code-action runs; must
-# stay ignored so claude-fix-review.yml's source-only guard sees a clean tree
+# stay ignored so the repo tree stays clean after an action run
 .claude-pr/
 
 # Working plans are local scratch, not shared history. Grill/plan write them to

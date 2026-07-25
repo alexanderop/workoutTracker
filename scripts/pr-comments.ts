@@ -430,8 +430,8 @@ const qaReportRe = /^#{1,3} QA /m
 function isBotNoise(e: Entry): boolean {
   // Vercel's deployment status card — CI status, edited in place per push.
   if (e.user === 'vercel[bot]') return true
-  // claude-code-action progress/status comments (the claude-pr-review sticky
-  // summary, QA verdicts): normally carry a "[View job](...)" header line
+  // claude-code-action progress/status comments (sticky run summaries, QA
+  // verdicts): normally carry a "[View job](...)" header line
   // linking the workflow run, and duplicate the inline review comments which
   // are line-level and kept. The comment is edited in place while the job
   // runs, and in transient states the header is absent — so also match the

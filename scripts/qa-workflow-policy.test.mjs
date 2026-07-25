@@ -15,8 +15,6 @@ import {
   validateQaReport,
 } from './qa-workflow-policy.mjs'
 
-const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
-
 function assertMobileStartup(commands) {
   const open = commands.indexOf('agent-browser open')
   const device = commands.indexOf('agent-browser set device "iPhone 14"')
@@ -183,12 +181,10 @@ test('CLI writes GitHub outputs and fails incomplete reports', () => {
 })
 
 test('workflow definitions retain hardening invariants', async () => {
-  const [browser, ci, fix, followup, triage, reusable, codeql] = await Promise.all([
+  const [browser, ci, followup, reusable, codeql] = await Promise.all([
     readFile('.github/workflows/claude-qa-browser.yml', 'utf8'),
     readFile('.github/workflows/ci.yml', 'utf8'),
-    readFile('.github/workflows/claude-fix-review.yml', 'utf8'),
     readFile('.github/workflows/claude-qa-followup.yml', 'utf8'),
-    readFile('.github/workflows/claude-flaky-detect.yml', 'utf8'),
     readFile('.github/workflows/reusable-node-command.yml', 'utf8'),
     readFile('.github/workflows/codeql.yml', 'utf8'),
   ])
@@ -196,18 +192,6 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(browser, /Bash\(agent-browser:\*\)/)
   assert.match(browser, /agent-browser set device "iPhone 14"/)
   assert.doesNotMatch(browser, /--allowedTools "Bash,/)
-  assert.match(fix, /name: Verify candidate without secrets/)
-  assert.match(fix, /persist-credentials: false/)
-  assert.match(fix, /--ignore-scripts/)
-  assert.match(fix, /claude-fix-review\//)
-  assert.match(fix, /HEAD_SHA.*FINDING_IDS/)
-  assert.match(fix, /\[\[ "\$path" == src\/\* \]\]/)
-  assert.match(fix, /original sealed inputs and agent candidate/)
-  assert.match(fix, /git rev-list --count/)
-  assert.match(fix, /inputs\.force|FORCE/)
-  assert.match(fix, /--disallowedTools "Bash,Skill"/)
-  assert.match(fix, /Validate decisions and create candidate/)
-  assert.doesNotMatch(fix, /Immediately reply in-thread/)
   assert.doesNotMatch(followup, /RUN_JSON[^\n]*head_sha|\.head_sha' <<<"\$RUN_JSON"/)
   assert.match(followup, /qa-provenance\.json/)
   assert.match(followup, /\.pr_number == \$pr and \.tested_head_sha == \$sha/)
@@ -222,10 +206,6 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(ci, /git-push: 'false'/)
   assert.match(ci, /zizmorcore\/zizmor-action@[0-9a-f]{40}/)
   assert.match(ci, /online-audits: true/)
-  assert.match(triage, /head_repository\.full_name == github\.repository/)
-  assert.match(triage, /pull\.head\.sha !== expectedSha/)
-  assert.match(triage, /filter\(name => name !== 'Required CI'\)/)
-  assert.doesNotMatch(triage, /anthropics\/claude-code-action|actions\/checkout|id-token:/)
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
@@ -286,17 +266,17 @@ test('browser QA starts and stays mobile-first by default', async () => {
 })
 
 test('Playwright system packages are installed independently of the browser cache', async () => {
-  const workflow = parseYaml(await readFile('.github/workflows/claude-ci-fix.yml', 'utf8'))
-  const steps = workflow.jobs.verify.steps
+  const action = parseYaml(await readFile('.github/actions/setup-test-env/action.yml', 'utf8'))
+  const steps = action.runs.steps
   const cache = steps.find((step) => step.name === 'Cache Playwright browsers')
   const dependencies = steps.find((step) => step.name === 'Install Playwright system dependencies')
-  const browser = steps.find((step) => step.name === 'Install Playwright browser')
+  const browser = steps.find((step) => step.name === 'Install Playwright browsers')
 
   assert.match(cache.with.key, /\$\{\{ runner\.arch \}\}/)
   assert.equal(dependencies.if, "runner.os == 'Linux'")
-  assert.equal(dependencies.run, 'pnpm exec playwright install-deps chromium')
+  assert.match(dependencies.run, /playwright install-deps/)
   assert.equal(browser.if, "steps.playwright-cache.outputs.cache-hit != 'true'")
-  assert.equal(browser.run, 'pnpm exec playwright install chromium')
+  assert.match(browser.run, /playwright install "\$\{browsers\[@\]\}"/)
 })
 
 test('issue assignment authorizes the triggering repository owner', async () => {
@@ -349,94 +329,28 @@ test('Required CI gates every verification job and the exact release commit', as
   assert.match(publish.run, /git push origin.*refs\/tags/s)
 })
 
-test('deterministic CI failures bypass the flaky retry with the aggregate failure', async () => {
-  const workflow = parseYaml(await readFile('.github/workflows/claude-flaky-detect.yml', 'utf8'))
-  const script = workflow.jobs.triage.steps[0].with.script
-  const calls = { comments: 0, dispatches: 0, reruns: 0 }
-  const expectedSha = 'a'.repeat(40)
-  const environment = {
-    DEFAULT_BRANCH: 'main',
-    EXPECTED_HEAD_SHA: expectedSha,
-    EXPECTED_REPOSITORY: 'owner/repo',
-    HEAD_BRANCH: 'feature',
-    PR_NUMBER: '42',
-    RUN_ATTEMPT: '1',
-    RUN_ID: '123',
-    RUN_URL: 'https://example.test/run/123',
-  }
-  const previous = Object.fromEntries(
-    Object.keys(environment).map((name) => [name, process.env[name]]),
-  )
-  Object.assign(process.env, environment)
-  const summary = {
-    addHeading() {
-      return this
-    },
-    addRaw() {
-      return this
-    },
-    async write() {},
-  }
-  const github = {
-    paginate: async () => [
-      { conclusion: 'failure', name: 'type-check' },
-      { conclusion: 'failure', name: 'Required CI' },
-    ],
-    rest: {
-      actions: {
-        createWorkflowDispatch: async () => {
-          calls.dispatches += 1
-        },
-        getWorkflowRun: async () => ({
-          data: {
-            conclusion: 'failure',
-            head_repository: { full_name: 'owner/repo' },
-            head_sha: expectedSha,
-            name: 'CI',
-          },
-        }),
-        listJobsForWorkflowRun: Symbol('listJobsForWorkflowRun'),
-        reRunWorkflowFailedJobs: async () => {
-          calls.reruns += 1
-        },
-      },
-      issues: {
-        createComment: async () => {
-          calls.comments += 1
-        },
-      },
-      pulls: {
-        get: async () => ({
-          data: {
-            head: { repo: { full_name: 'owner/repo' }, sha: expectedSha },
-            state: 'open',
-          },
-        }),
-      },
-    },
-  }
-  const core = {
-    setFailed(message) {
-      assert.fail(message)
-    },
-    summary,
-  }
-
-  try {
-    await new AsyncFunction('github', 'core', script)(github, core)
-  } finally {
-    for (const [name, value] of Object.entries(previous)) {
-      if (value === undefined) delete process.env[name]
-      else process.env[name] = value
-    }
-  }
-  assert.deepEqual(calls, { comments: 0, dispatches: 1, reruns: 0 })
-})
-
 test('deprecated and competing privileged workflows are removed', async () => {
   const workflowNames = await readdir('.github/workflows')
   assert.equal(workflowNames.includes('claude-qa-test.yml'), false)
   assert.equal(workflowNames.includes('release.yml'), false)
+  // Retired automation: Claude no longer auto-fixes CI, auto-reviews PRs, or
+  // auto-applies reviewer findings. Removing the files is the whole feature —
+  // this keeps a stray re-add from silently restoring the write path.
+  for (const retired of [
+    'claude-ci-fix.yml',
+    'claude-flaky-detect.yml',
+    'claude-pr-review.yml',
+    'claude-fix-review.yml',
+  ]) {
+    assert.equal(workflowNames.includes(retired), false, `${retired} was intentionally removed`)
+  }
+
+  const sources = await Promise.all(
+    workflowNames.map((name) => readFile(`.github/workflows/${name}`, 'utf8')),
+  )
+  for (const source of sources) {
+    assert.doesNotMatch(source, /claude-(?:ci-fix|flaky-detect|pr-review|fix-review)\.yml/)
+  }
 })
 
 test('agent-browser executable is integrity-pinned', async () => {
