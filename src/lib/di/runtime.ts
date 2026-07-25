@@ -2,11 +2,14 @@ import { tryCatch } from '../tryCatch'
 import { unsafeMake, type Context } from './context'
 import type { ErasedLayer, Layer } from './layer'
 import { makeScope, type Scope } from './scope'
-import type { Tag } from './tag'
+import type { Reference, Tag } from './tag'
 
 export type Runtime<Services = never> = {
   readonly context: Context<Services>
-  get<S>(tag: Tag<S>): S
+  /** A Reference is readable from any context — it carries its own default. */
+  get<S>(tag: Reference<S>): S
+  /** A plain Tag must have been provided; an unprovided tag is a compile error. */
+  get<S extends Services>(tag: Tag<S>): S
   dispose(): void
 }
 
@@ -28,9 +31,10 @@ function buildAll(layers: ReadonlyArray<ErasedLayer>, scope: Scope): ReadonlyMap
 function runtimeOf<Services>(context: Context<Services>, scope: Scope): Runtime<Services> {
   return {
     context,
-    get<S>(tag: Tag<S>): S {
-      return context.unsafeGet(tag)
-    },
+    // Mirrors `contextOf`'s own `get: unsafeGet` idiom (context.ts) — the
+    // overloaded `Runtime['get']` type is satisfied by `context.unsafeGet`'s
+    // single erased signature without a cast.
+    get: context.unsafeGet,
     dispose(): void {
       scope.close()
     },
