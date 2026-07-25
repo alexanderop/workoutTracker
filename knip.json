@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/**/*.vue", "src/blocks/index.ts", "eslint-local-rules/**/*.ts"],
+  "entry": ["src/blocks/index.ts", "eslint-local-rules/**/*.ts"],
   "project": ["src/**/*.ts", "src/**/*.vue", "eslint-local-rules/**/*.ts"],
   "ignore": ["src/components/ui/**", "src/i18n/messages/de/**", "src/types/router.d.ts"],
   "ignoreDependencies": [

@@ -2,14 +2,14 @@
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { RouteNames } from '@/router'
-import { WorkoutBlockDialogs } from '@/components/blocks'
+import { WorkoutBlockDialogs } from '@/blocks/ui'
 import TemplateBlockList from '@/features/templates/components/TemplateBlockList.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTemplateCreation } from '@/features/templates/composables/useTemplateCreation'
 import { useFormDraft } from '@/composables/useFormDraft'
-import { useWorkoutBlockDialogs } from '@/composables/useWorkoutBlockDialogs'
+import { useWorkoutBlockDialogs } from '@/blocks/ui/useWorkoutBlockDialogs'
 import { Trash2 } from '@lucide/vue'
 
 const router = useRouter()

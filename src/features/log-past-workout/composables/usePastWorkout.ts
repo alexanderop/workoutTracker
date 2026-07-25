@@ -28,7 +28,7 @@ import {
   getNextWorkoutBlockId,
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
-} from '@/lib/workoutBlockList'
+} from '@/blocks/list'
 
 /**
  * Creates a new set based on the previous set's values (or defaults).

@@ -6,7 +6,7 @@ import { BarbellPlateHint } from '@/components/ui/barbell-hint'
 import { useNumberLocale } from '@/composables/useNumberLocale'
 import type { InputType } from './useNumericInput'
 import type { WeightUnit } from '@/types/settings'
-import type { Equipment } from '@/types/exercises'
+import type { Equipment } from '@/exercises/types'
 
 type Props = {
   unit?: string

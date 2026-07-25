@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { Dumbbell } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
-import { useWorkoutBlockDialogs } from '@/composables/useWorkoutBlockDialogs'
-import type { Exercise } from '@/composables/useExerciseSearch'
-import { WorkoutBlockDialogs } from '@/components/blocks'
+import { useWorkoutBlockDialogs } from '@/blocks/ui/useWorkoutBlockDialogs'
+import type { Exercise } from '@/exercises/useExerciseSearch'
+import { WorkoutBlockDialogs } from '@/blocks/ui'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -14,7 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import WorkoutBlockPlaylist from '@/components/blocks/WorkoutBlockPlaylist.vue'
+import WorkoutBlockPlaylist from '@/blocks/ui/WorkoutBlockPlaylist.vue'
 import { usePastWorkout } from '../composables/usePastWorkout'
 import type { StrengthBlock } from '@/blocks'
 

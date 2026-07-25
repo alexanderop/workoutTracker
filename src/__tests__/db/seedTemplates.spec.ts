@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { seedPopularTemplates } from '@/db/seedTemplates'
-import { popularTemplates } from '@/data/popularTemplates'
+import { popularTemplates } from '@/db/popularTemplates'
 import { resetDatabase } from '@/__tests__/setup'
 import { getAllTemplates, getTemplateCount } from '@/__tests__/helpers/dbAssertions'
 

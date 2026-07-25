@@ -6,7 +6,7 @@ export {
 } from './block.factory'
 
 import type { StrengthBlock } from '@/blocks'
-import type { Equipment } from '@/types/exercises'
+import type { Equipment } from '@/exercises/types'
 import { faker } from '@faker-js/faker'
 import { createStrengthBlock } from './block.factory'
 

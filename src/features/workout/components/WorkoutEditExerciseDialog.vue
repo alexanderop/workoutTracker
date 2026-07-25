@@ -14,7 +14,7 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from '@/components/ui/number-field'
-import { useExercisesStore } from '@/stores/exercises'
+import { useExercisesStore } from '@/exercises/store'
 
 const { t } = useI18n()
 const exercisesStore = useExercisesStore()

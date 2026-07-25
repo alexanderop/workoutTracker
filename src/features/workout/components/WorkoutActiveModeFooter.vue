@@ -17,7 +17,7 @@ import { Check, ChevronLeft, ChevronRight, Minus, Pause, Play, Plus } from '@luc
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import type { useRestTimer } from '@/composables/timers/useRestTimer'
+import type { useRestTimer } from '@/features/workout/composables/useRestTimer'
 import { cn } from '@/lib/utils'
 import type { WorkoutBlock } from '@/blocks'
 import { BLOCK_COLORS, isCardioBlock, isStrengthBlock, isTimedBlock } from '@/blocks'

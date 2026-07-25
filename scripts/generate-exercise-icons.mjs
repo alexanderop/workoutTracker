@@ -5,7 +5,7 @@ import ts from 'typescript'
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const rootDirectory = path.resolve(scriptDirectory, '..')
-const iconDirectory = path.join(rootDirectory, 'src/components/exercise-icons')
+const iconDirectory = path.join(rootDirectory, 'src/exercises/icons')
 const manifestPath = path.join(iconDirectory, 'manifest.ts')
 const generatedDirectory = path.join(iconDirectory, 'generated')
 
@@ -87,12 +87,12 @@ async function validate(entries) {
       aliases.set(normalized, entry.key)
     }
     try {
-      const componentPath = path.join(iconDirectory, 'icons', `${entry.component}.vue`)
+      const componentPath = path.join(iconDirectory, 'components', `${entry.component}.vue`)
       const componentStat = await stat(componentPath)
       if (!componentStat.isFile())
         fail(`${entry.key} component is not a file: ${entry.component}.vue`)
     } catch {
-      fail(`${entry.key} references missing component icons/${entry.component}.vue`)
+      fail(`${entry.key} references missing component components/${entry.component}.vue`)
     }
   }
 }
@@ -119,7 +119,7 @@ function createAliases(entries) {
 
 function createRegistry(entries) {
   const imports = entries
-    .map((entry) => `import ${entry.component} from '../icons/${entry.component}.vue'`)
+    .map((entry) => `import ${entry.component} from '../components/${entry.component}.vue'`)
     .join('\n')
   const records = entries
     .map(

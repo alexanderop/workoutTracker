@@ -7,7 +7,7 @@ import WorkoutActiveMode from '@/features/workout/components/WorkoutActiveMode.v
 import WorkoutCompletionScreen from '@/features/workout/components/WorkoutCompletionScreen.vue'
 import WorkoutBuilderMode from '@/features/workout/components/WorkoutBuilderMode.vue'
 import WorkoutCancelDialog from '@/features/workout/components/WorkoutCancelDialog.vue'
-import { WorkoutBlockDialogs } from '@/components/blocks'
+import { WorkoutBlockDialogs } from '@/blocks/ui'
 import WorkoutEditExerciseDialog from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import type { ExerciseEditData } from '@/features/workout/components/WorkoutEditExerciseDialog.vue'
 import WorkoutFinishDialog from '@/features/workout/components/WorkoutFinishDialog.vue'
@@ -16,10 +16,7 @@ import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { getWorkoutRef, resetWorkout } from '@/stores/workoutState'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
-import {
-  useWorkoutBlockDialogs,
-  type WorkoutBlockDialog,
-} from '@/composables/useWorkoutBlockDialogs'
+import { useWorkoutBlockDialogs, type WorkoutBlockDialog } from '@/blocks/ui/useWorkoutBlockDialogs'
 import { isStrengthBlock } from '@/blocks'
 
 const router = useRouter()

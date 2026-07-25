@@ -27,8 +27,8 @@ import {
   getNextWorkoutBlockId,
   removeWorkoutBlockAtIndex,
   reorderWorkoutBlocks,
-} from '@/lib/workoutBlockList'
-import { useExercisesStore } from '@/stores/exercises'
+} from '@/blocks/list'
+import { useExercisesStore } from '@/exercises/store'
 import { getWorkoutRef } from '@/stores/workoutState'
 import type {
   AmrapConfig,

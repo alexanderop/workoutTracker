@@ -3,7 +3,7 @@ import { Check, Circle, type LucideIcon } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import type { BlockExercise } from '@/blocks'
 
 type ExerciseStatus = 'completed' | 'active' | 'pending'

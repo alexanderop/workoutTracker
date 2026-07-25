@@ -4,7 +4,7 @@ import { computed, ref, useTemplateRef, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLayout from '@/components/PageLayout.vue'
 import { Button } from '@/components/ui/button'
-import { useRestTimer } from '@/composables/timers/useRestTimer'
+import { useRestTimer } from '@/features/workout/composables/useRestTimer'
 import { useWorkout } from '@/features/workout/composables/useWorkout'
 import { useWorkoutMode } from '@/features/workout/composables/useWorkoutMode'
 import { useSettingsStore } from '@/stores/settings'
@@ -15,10 +15,10 @@ import WorkoutActiveModeFooter, {
   type TimerDisplayData,
 } from './WorkoutActiveModeFooter.vue'
 import WorkoutActiveStrengthView from './WorkoutActiveStrengthView.vue'
-import WorkoutAmrapView from '@/components/timers/WorkoutAmrapView.vue'
-import WorkoutEmomView from '@/components/timers/WorkoutEmomView.vue'
-import WorkoutForTimeView from '@/components/timers/WorkoutForTimeView.vue'
-import WorkoutTabataView from '@/components/timers/WorkoutTabataView.vue'
+import WorkoutAmrapView from '@/blocks/amrap/ui/WorkoutAmrapView.vue'
+import WorkoutEmomView from '@/blocks/emom/ui/WorkoutEmomView.vue'
+import WorkoutForTimeView from '@/blocks/fortime/ui/WorkoutForTimeView.vue'
+import WorkoutTabataView from '@/blocks/tabata/ui/WorkoutTabataView.vue'
 import WorkoutActiveModeHeaderActions from './WorkoutActiveModeHeaderActions.vue'
 
 // Strategy pattern: Map block kinds to their view components

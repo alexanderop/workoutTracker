@@ -1,30 +1,30 @@
 <script setup lang="ts">
 /* eslint-disable vue/no-unused-refs -- imageInput ref used by useImageUpload composable */
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/exercises/types'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Camera } from '@lucide/vue'
-import ExerciseSelectorDialog from '@/features/exercises/components/ExerciseSelectorDialog.vue'
-import ExerciseSettingsItem from '@/features/exercises/components/ExerciseSettingsItem.vue'
+import ExerciseSelectorDialog from '@/exercises/ui/ExerciseSelectorDialog.vue'
+import ExerciseSettingsItem from '@/exercises/ui/ExerciseSettingsItem.vue'
 import ErrorDialog from '@/components/ErrorDialog.vue'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import PageLayout from '@/components/PageLayout.vue'
 import UnsavedChangesDialog from '@/components/UnsavedChangesDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDialogState } from '@/composables/useDialogState'
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard'
-import { useExerciseForm } from '@/features/exercises/composables/useExerciseForm'
-import { useImageUpload } from '@/features/exercises/composables/useImageUpload'
+import { useExerciseForm } from '@/exercises/useExerciseForm'
+import { useImageUpload } from '@/exercises/useImageUpload'
 import {
   EQUIPMENT_OPTIONS,
   METRICS_OPTIONS,
   MUSCLE_OPTIONS,
   TYPE_OPTIONS,
-} from '@/features/exercises/data/exerciseOptions'
-import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/lib/exerciseLabels'
-import { useExercisesStore } from '@/stores/exercises'
+} from '@/exercises/options'
+import { EQUIPMENT_LABELS, METRICS_LABELS, MUSCLE_LABELS, TYPE_LABELS } from '@/exercises/labels'
+import { useExercisesStore } from '@/exercises/store'
 
 const { id } = defineProps<{
   id?: string

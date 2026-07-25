@@ -1,6 +1,6 @@
 import { generateId, getCustomExercisesRepository as getCustomExercisesRepo } from './index'
-import { egymExercises, popularExercises } from '@/data/popularExercises'
-import type { PopularExercise } from '@/data/popularExercises'
+import { egymExercises, popularExercises } from '@/exercises/catalog'
+import type { PopularExercise } from '@/exercises/catalog'
 import type { DbCustomExercise as DatabaseCustomExercise } from './schema'
 
 const SEED_VERSION_KEY = 'exercises_seed_version'

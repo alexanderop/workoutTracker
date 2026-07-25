@@ -28,18 +28,28 @@ const CORE_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'types',
     path: 'src/types',
     category: 'core',
-    maxDistance: 0.3, // Current: 0.271 - re-export barrel over src/blocks since ADR 002
+    // Cross-domain types only: the workout model, settings units, benchmarks.
+    maxDistance: 0.25, // Current: 0.131 - was 0.271 while it also held exercises
   },
   {
     name: 'blocks',
     path: 'src/blocks',
     category: 'core',
-    // Home of per-kind block types and codecs (ADR 002). Since the compat
-    // barrels were retired, every consumer imports @/blocks directly; the
-    // extra afferent coupling lowers instability while abstractness is fixed
-    // by the concrete codecs, so D sits at ~0.286 while the module remains
-    // in the ideal Main Sequence zone.
-    maxDistance: 0.3,
+    // Home of the whole block vertical (ADR 002 + ADR 003). Taking the block
+    // UI and timers in balanced the module: the concrete components lower
+    // abstractness by as much as their outgoing dependencies raise
+    // instability.
+    maxDistance: 0.1, // Current: 0.021 - was 0.286 with codecs alone
+  },
+  {
+    name: 'exercises',
+    path: 'src/exercises',
+    category: 'core',
+    // Home of the exercise catalog domain (ADR 003): attribute types, bundled
+    // catalog, metadata, labels, store, search, icons and exercise UI. The 173
+    // generated icon components make it unavoidably concrete, so it sits on
+    // the stable-and-concrete side rather than on the Main Sequence.
+    maxDistance: 0.6, // Current: 0.578
   },
 ]
 
@@ -55,22 +65,26 @@ const SHARED_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'lib',
     path: 'src/lib',
     category: 'shared',
-    // Baseline threshold. Pure leaf helpers (zero imports, e.g. emomMath)
-    // necessarily lower lib's instability and push D up — that's the nature
-    // of a utilities module, not a regression.
-    maxDistance: 0.76, // Current: 0.753 - in Zone of Uselessness, needs attention
+    // Distance is not a meaningful signal for this module and the threshold is
+    // deliberately loose. `lib` is a leaf utility kit: concrete by nature
+    // (A near 0) and depended on by everything while depending on almost
+    // nothing (I near 0), so A + I can never approach 1. Every correct change
+    // pushes D *up* — moving `structureHash` next to its only consumer took it
+    // from 0.718 to 0.766. The assertion that carries the real meaning is
+    // `lib should stay a stable leaf` in mainSequence.test.ts.
+    maxDistance: 0.8, // Current: 0.766
   },
   {
     name: 'composables',
     path: 'src/composables',
     category: 'shared',
-    maxDistance: 0.4, // Current: 0.344 - good
+    maxDistance: 0.3, // Current: 0.250 - good
   },
   {
     name: 'stores',
     path: 'src/stores',
     category: 'shared',
-    maxDistance: 0.7, // Current: 0.667 - warning zone, needs attention
+    maxDistance: 0.62, // Current: 0.584 - warning zone, needs attention
   },
 ]
 
@@ -94,12 +108,6 @@ const FEATURE_MODULES: ReadonlyArray<ModuleDefinition> = [
   {
     name: 'templates',
     path: 'src/features/templates',
-    category: 'feature',
-    maxDistance: 0.5,
-  },
-  {
-    name: 'exercises',
-    path: 'src/features/exercises',
     category: 'feature',
     maxDistance: 0.5,
   },
@@ -152,13 +160,18 @@ const UI_MODULES: ReadonlyArray<ModuleDefinition> = [
     name: 'ui-primitives',
     path: 'src/components/ui',
     category: 'ui',
-    maxDistance: 0.7, // Current: 0.669 - shadcn primitives are stable but concrete
+    maxDistance: 0.68, // Current: 0.641 - shadcn primitives are stable but concrete
   },
   {
     name: 'components',
     path: 'src/components',
     category: 'ui',
-    maxDistance: 0.6, // Current: 0.508 - good
+    // ADR 003 moved the domain UI (block config dialogs, runner views) out of
+    // this module and into the domain modules that own it. What is left is a
+    // leaf widget kit: concrete, and depended on far more than it depends on
+    // anything. That is the same Zone-of-Uselessness shape `ui-primitives`
+    // has, and it is the intended shape, so it carries the same threshold.
+    maxDistance: 0.55, // Current: 0.497 - was 0.603 mid-refactor, 0.508 before it
   },
   {
     name: 'views',

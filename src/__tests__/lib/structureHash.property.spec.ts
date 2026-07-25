@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { generateStructureHash } from '@/lib/structureHash'
+import { generateStructureHash } from '@/db/structureHash'
 import type { DbBenchmarkRound } from '@/db/schema'
 
 /**

@@ -26,7 +26,12 @@ function browserConfig(name: string) {
     instances: [{ browser: 'chromium' as const, name }],
     headless: true,
     trace: {
-      mode: 'retain-on-failure' as const,
+      // Recording writes a multi-MB network dump per test before deciding
+      // whether to retain it. Over a full 176-file run that reaches tens of
+      // gigabytes, and on a small disk the run stalls mid-suite instead of
+      // failing. `VITEST_TRACE=off` opts out when the disk matters more than
+      // the post-mortem.
+      mode: process.env.VITEST_TRACE === 'off' ? ('off' as const) : ('retain-on-failure' as const),
       tracesDir: '.vitest/traces',
     },
   }

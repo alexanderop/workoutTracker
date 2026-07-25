@@ -134,7 +134,7 @@ function handleRemoveBlock(index: number) {
 // Up/down buttons -- keyboard/screen-reader-accessible alternative to the
 // pointer-only Sortable.js drag handle above. `reorderBlocks` already keeps the
 // active block's identity correct across a reorder (see `reorderWorkoutBlocks`
-// in `src/lib/workoutBlockList.ts`). See Finding "No way to reorder exercises in
+// in `src/blocks/list.ts`). See Finding "No way to reorder exercises in
 // the workout queue drawer", July 2026 UX review.
 function handleMoveUp(index: number) {
   reorderBlocks(index, index - 1)

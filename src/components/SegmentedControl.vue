@@ -3,7 +3,7 @@ import type { HTMLAttributes } from 'vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 
-export type SegmentedOption<V extends string> = {
+type SegmentedOption<V extends string> = {
   value: V
   label: string
 }

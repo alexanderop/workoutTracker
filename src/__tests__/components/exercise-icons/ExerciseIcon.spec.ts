@@ -9,9 +9,9 @@ import {
   normalizeExerciseIconName,
   resolveExerciseIconKey,
   setExerciseIconOverride,
-} from '@/components/exercise-icons'
-import { exerciseIconManifest } from '@/components/exercise-icons/manifest'
-import { popularExercises } from '@/data/popularExercises'
+} from '@/exercises/icons'
+import { exerciseIconManifest } from '@/exercises/icons/manifest'
+import { popularExercises } from '@/exercises/catalog'
 
 const exerciseIconTestIdPattern = /^exercise-icon-/
 

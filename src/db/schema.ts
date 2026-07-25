@@ -1,4 +1,4 @@
-import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
+import type { Equipment, ExerciseType, Metrics, Muscle } from '@/exercises/types'
 import type { WorkoutMode } from '@/types/workout'
 import type { BenchmarkType } from '@/types/benchmark'
 import type {

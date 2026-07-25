@@ -13,7 +13,7 @@ import {
   isStrengthBlock,
   isTimedBlock,
 } from '@/blocks'
-import ExerciseAvatar from '@/components/ExerciseAvatar.vue'
+import ExerciseAvatar from '@/exercises/ui/ExerciseAvatar.vue'
 import { Button } from '@/components/ui/button'
 
 type Properties = {

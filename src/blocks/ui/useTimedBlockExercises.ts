@@ -1,0 +1,61 @@
+import { computed, shallowReadonly, shallowRef } from 'vue'
+import { useToggle } from '@vueuse/core'
+import type { Exercise } from '@/exercises/useExerciseSearch'
+import { generateId } from '@/db/index'
+import type { BlockExercise } from '@/blocks'
+
+/**
+ * Exercise list management shared by the timed-block configure dialogs
+ * (EMOM/AMRAP/ForTime): add via the exercise picker, remove, and edit
+ * prescribed reps/load. `showExercisePicker` stays writable for v-model.
+ */
+export function useTimedBlockExercises() {
+  const exercises = shallowRef<Array<BlockExercise>>([])
+  const [showExercisePicker, toggleShowExercisePicker] = useToggle(false)
+
+  const canConfirm = computed(() => exercises.value.length > 0)
+
+  function handleSelectExercise(exercise: Exercise) {
+    const newExercise: BlockExercise = {
+      id: generateId(),
+      name: exercise.name,
+      prescribedReps: 10,
+      load: null,
+      image: exercise.image ?? null,
+    }
+    exercises.value = [...exercises.value, newExercise]
+    toggleShowExercisePicker(false)
+  }
+
+  function removeExercise(index: number) {
+    exercises.value = exercises.value.filter((_, index_) => index_ !== index)
+  }
+
+  function updateExerciseReps(index: number, reps: number) {
+    exercises.value = exercises.value.map((ex, index_) =>
+      index_ === index ? { ...ex, prescribedReps: reps } : ex,
+    )
+  }
+
+  function updateExerciseLoad(index: number, load: string) {
+    exercises.value = exercises.value.map((ex, index_) =>
+      index_ === index ? { ...ex, load: load || null } : ex,
+    )
+  }
+
+  function reset() {
+    exercises.value = []
+    toggleShowExercisePicker(false)
+  }
+
+  return {
+    exercises: shallowReadonly(exercises),
+    showExercisePicker,
+    canConfirm,
+    handleSelectExercise,
+    removeExercise,
+    updateExerciseReps,
+    updateExerciseLoad,
+    reset,
+  }
+}

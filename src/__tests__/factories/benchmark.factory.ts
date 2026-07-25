@@ -4,7 +4,7 @@ import {
   generateKeyBetween,
   generateNKeysBetween,
 } from '@/features/benchmarks/lib/fractionalIndexing'
-import { generateStructureHash } from '@/lib/structureHash'
+import { generateStructureHash } from '@/db/structureHash'
 
 /**
  * Creates a single exercise for use within a benchmark round.
