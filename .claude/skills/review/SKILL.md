@@ -1,6 +1,7 @@
 ---
 name: review
 description: Use when asked to review, critique, or assess the quality of code changes, PRs, or plans against the brain's principles, producing numbered findings and a verdict without making changes.
+context: fork
 ---
 
 # Review
@@ -9,6 +10,15 @@ Principle-grounded review of every changed file in a PR, plan, or set of code
 changes. **Do NOT make changes — the review is the deliverable.** The invariant:
 every finding is numbered, severity-rated, mapped to a principle, and offered with
 options, so the user can act on it deliberately.
+
+This skill runs in a forked context (`context: fork`). That is a correctness
+property, not a token optimization: a reviewer that watched the code being
+written grades its own reasoning. Judging the diff cold is the point.
+
+Two consequences follow. You cannot talk to the user — your findings are a
+return value, and the caller presents them and asks for direction. And you start
+with none of the implementation conversation, so read what you need from the
+diff, the code, and the brain rather than assuming context you were not given.
 
 ## When to Use
 
@@ -79,9 +89,10 @@ Work through all sections in order; check each against loaded principles.
 **NUMBER** each issue. For every issue: describe it concretely with file/line
 references; assign **severity** (high / medium / low); present 2–3 options
 **lettered** A/B/C (including "do nothing" where reasonable) with effort, risk,
-blast radius, and maintenance burden; give a recommended option mapped to a
-principle; ask whether the user agrees. When asking, label options with issue
-NUMBER + option LETTER, recommended first.
+blast radius, and maintenance burden; and give a recommended option mapped to a
+principle, recommended first. Label options with issue NUMBER + option LETTER so
+the caller can put them to the user verbatim. Do not ask the question yourself —
+you are forked and cannot hear the answer.
 
 Severity guide — **high**: incorrect behavior, missing tests for new behavior,
 scope violation on core files, architecture-changing principle violation.
@@ -97,15 +108,23 @@ style/docs/minor — note, don't block.
 
 ## Stop and Ask
 
-STOP and ask only when scope is genuinely uninferable (nothing in the message,
-diff, or referenced plan to go on). Otherwise present all sections together, then
-ask for direction once at the end. Do not assume priorities on timeline or scale.
+You are forked, so you cannot stop and ask. When scope is genuinely uninferable
+(nothing in the message, diff, or referenced plan to go on), return that as the
+finding — say what you could not determine and what input would settle it — and
+let the caller ask. Do not assume priorities on timeline or scale.
 
 ## Output
 
-Numbered findings grouped by section, then one overall verdict.
+Numbered findings grouped by section, then one overall verdict. This text is the
+return value the caller receives, not a message to a human: no preamble, no
+"let me know if you'd like me to" closing. The caller presents it and asks.
 
 ## Red Flags
 
 - "The fix is one line — I'll just apply it." Review diagnoses; it never edits.
   Write it up as a numbered finding and let the user decide.
+- "I'll ask the user which option they prefer." You are forked. Return the
+  lettered options; the caller asks.
+- "The implementer said this was intentional, so it is fine." You did not see
+  that conversation and should not reconstruct it. Judge the diff on its own
+  terms — that is why this review runs cold.
