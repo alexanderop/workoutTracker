@@ -23,8 +23,7 @@
  * long as the page and is never disposed in practice. It means **no test may
  * call `dispose()` on a runtime built from this layer** — doing so would
  * close the shared Dexie connection out from under every other test still
- * running against it. State that constraint here so the next author does not
- * learn it by breaking the suite.
+ * running against it.
  *
  * ## What this does and does not prove
  *

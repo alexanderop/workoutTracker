@@ -12,8 +12,9 @@
  * mounts its own instance and only one is ever on screen at a time.
  *
  * Dependencies (the repository and the clock) arrive through a `Context`
- * defaulted to the live services (ADR 003), so a caller can
- * inject fakes in tests instead of monkey-patching the real repository.
+ * defaulted to the app runtime's context via `useRuntimeContext()`, so a
+ * caller can inject fakes in tests instead of monkey-patching the real
+ * repository.
  */
 import { computed, ref } from 'vue'
 import { generateId } from '@/db/generateId'
@@ -21,12 +22,12 @@ import type { DbHabit, DbHabitEntry, HabitAccent, HabitKind, HabitSchedule } fro
 import { DEFAULT_HABIT_ACCENT } from '@/db/schema'
 import type { HabitRepository } from '@/db/interfaces'
 import type { Context } from '@/lib/di/context'
+import { useRuntimeContext } from '@/lib/di/vue'
 import { Clock } from '@/lib/clock'
 import { tryCatch } from '@/lib/tryCatch'
 import { currentStreak, isEntryComplete, startOfDay, weeklyProgress } from '../lib/habitStats'
 import type { WeeklyProgress } from '../lib/habitStats'
 import { HabitRepo } from '../services'
-import { useServices } from '../services.live'
 
 export type HabitFormData = {
   name: string
@@ -47,7 +48,9 @@ export type HabitTodayItem = {
   weekProgress: WeeklyProgress | null
 }
 
-export function useHabits(ctx: Context<HabitRepository> = useServices()) {
+export function useHabits(
+  ctx: Context<HabitRepository | Clock> = useRuntimeContext<HabitRepository | Clock>(),
+) {
   const repo = ctx.get(HabitRepo)
   const clock = ctx.get(Clock)
 

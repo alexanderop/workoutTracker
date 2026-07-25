@@ -10,6 +10,10 @@ import { useExercisesStore } from '@/stores/exercises'
 import { i18n } from '@/i18n'
 import en from '@/i18n/messages/en'
 import { reloadPageKey } from '@/features/settings/utils/reloadPage'
+import { RepositoriesLive } from '@/db/services.live'
+import { HabitRepoLive } from '@/features/habits/services.live'
+import { makeRuntime } from '@/lib/di/runtime'
+import { provideRuntime } from '@/lib/di/vue'
 import {
   CommonPO,
   BuilderPO,
@@ -76,9 +80,17 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
 
   const reloadPage = vi.fn()
 
+  // Built per-call, not at module scope: resetDatabase() calls
+  // installProviderUnderTest() between specs, installing a fresh
+  // RepositoryProvider, so a fresh runtime here resolves Repositories anew for
+  // each test -- matching the old useServices()-per-call behavior. Never call
+  // runtime.dispose() -- RepositoriesLive's finalizer closes the process-wide
+  // Dexie connection and would break every subsequent test in this process.
+  const runtime = makeRuntime([RepositoriesLive, HabitRepoLive])
+
   const screen = render(App, {
     global: {
-      plugins: [router, i18n],
+      plugins: [router, i18n, { install: (app) => provideRuntime(runtime, app) }],
       provide: { [reloadPageKey]: reloadPage },
     },
   })

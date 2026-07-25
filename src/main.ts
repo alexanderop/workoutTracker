@@ -1,7 +1,11 @@
 import { createApp } from 'vue'
 
 import { setRepositoryProvider } from '@/db/provider'
-import { createDexieRepositoryProvider } from '@/db/implementations/dexie'
+import { Repositories } from '@/db/services'
+import { RepositoriesLive } from '@/db/services.live'
+import { HabitRepoLive } from '@/features/habits/services.live'
+import { makeRuntime } from '@/lib/di/runtime'
+import { provideRuntime } from '@/lib/di/vue'
 import App from './App.vue'
 import { i18n } from './i18n'
 import { renderMountFailure } from './lib/mountRecovery'
@@ -10,10 +14,14 @@ import { reportWebVitals } from './lib/webVitals'
 import { router } from './appRouter'
 import './style.css'
 
-// Select the active persistence backend (single seam for swapping adapters)
-setRepositoryProvider(createDexieRepositoryProvider())
+// Select the active persistence backend (single seam for swapping adapters).
+// Order is load-bearing: HabitRepoLive reads Repositories out of the context,
+// so RepositoriesLive must build first.
+const runtime = makeRuntime([RepositoriesLive, HabitRepoLive])
+setRepositoryProvider(runtime.get(Repositories))
 
 const app = createApp(App)
+provideRuntime(runtime, app)
 
 // Surface runtime errors that would otherwise fail silently — see brain UX
 // review M3: an intermittent blank #app with no console output at all.
