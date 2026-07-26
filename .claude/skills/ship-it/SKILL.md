@@ -98,7 +98,37 @@ git rebase origin/main
 Re-run the fast gate (`pnpm -s type-check && pnpm -s test:unit`) if the rebase
 moved anything. Stop and ask on conflicts you cannot resolve mechanically.
 
-### 4. Push
+### 4. Run the AI review gate
+
+```bash
+pnpm -s review:ai --base origin/main
+```
+
+A second, isolated Claude run over the whole branch diff. It reports only
+blocking-severity defects and exits non-zero when it finds one, so this is a
+gate, not a suggestion — **do not push on a non-zero exit.**
+
+It runs here, after the rebase, rather than in step 2 for two reasons. The diff
+it reviews is then the exact one the PR will show. And a model call costs
+minutes, so it runs once on the final tree instead of once per rebase.
+
+Workers already gated their own slices (`implementation-worker`, step 7). This
+run is not a repeat of that: a worker sees one slice in isolation, and this sees
+how the slices compose — the integration defects no single worker could have
+seen. Expect it to be quiet most of the time; that is the gate working, not the
+gate being useless.
+
+On findings: fix them, re-run the feature's `## Test Scope`, and re-run the gate.
+If two rounds do not converge, stop and report rather than patching a third time
+— that is the same scope-break signal `review` step 6 describes, and the answer
+is a follow-up issue, not a bigger diff. If a finding is real but out of scope,
+say so explicitly in the PR body instead of silently pushing past it.
+
+Exit `2` means the gate itself failed — a missing tool, an unresolvable base ref,
+no structured output. That is a blocked check, not a pass. Fix the gate or say
+plainly that you shipped without it.
+
+### 5. Push
 
 ```bash
 git push -u origin HEAD
@@ -107,7 +137,7 @@ git push -u origin HEAD
 Never force-push a branch that already has review comments on it without
 saying so first.
 
-### 5. Open the PR
+### 6. Open the PR
 
 Title follows Conventional Commits with a scope, matching the branch's dominant
 change type: `feat(habits): inject repositories through a typed context`.
@@ -130,8 +160,8 @@ Body:
 
 ## Verification
 
-<the scoped commands run and their results, naming the scope; note that the
-full suite runs in CI on this PR>
+<the scoped commands run and their results, naming the scope; the AI review
+gate's result; note that the full suite runs in CI on this PR>
 
 ## Notes
 
@@ -148,7 +178,7 @@ gh pr create --title "<title>" --body-file <(...)
 
 Return the PR URL.
 
-### 6. Hand off
+### 7. Hand off
 
 Tell the user the PR is open, that CI is now running the full suite against it,
 and that `pnpm -s pr:comments` is how to read review feedback once it lands —
