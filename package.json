@@ -43,6 +43,7 @@
     "audit:prod": "pnpm audit --prod --audit-level=critical",
     "i18n:check": "pnpm exec tsx scripts/check-i18n.ts",
     "pr:comments": "pnpm exec tsx scripts/pr-comments.ts",
+    "review:ai": "bash .claude/scripts/ai-review",
     "knip": "knip",
     "size-limit": "size-limit",
     "ralph": "./.ralph/ralph.sh",
