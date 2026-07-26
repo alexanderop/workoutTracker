@@ -8,6 +8,7 @@ import HabitCompactGrid from './HabitCompactGrid.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
+import type { HabitRowDensity } from '../lib/rowLayout'
 
 const { item, tapTargets = 'compact' } = defineProps<{
   item: HabitTodayItem
@@ -20,10 +21,11 @@ const { item, tapTargets = 'compact' } = defineProps<{
    * baseline pins -- keeps the sizing it already had. Growing it there is a
    * worthwhile follow-up, but it needs a regenerated macOS baseline.
    */
-  tapTargets?: 'compact' | 'comfortable'
+  tapTargets?: HabitRowDensity
 }>()
 
 const comfortable = tapTargets === 'comfortable'
+const gridColumns = HABIT_ROW_GRID_COLUMNS[tapTargets]
 
 const emit = defineEmits<{
   toggle: [habit: DbHabit]
@@ -37,7 +39,7 @@ const { t } = useI18n()
     :data-testid="`habit-today-${item.habit.name}`"
     :data-habit-accent="item.habit.accent"
     class="grid items-center gap-3 rounded-lg border bg-card p-3"
-    :class="HABIT_ROW_GRID_COLUMNS"
+    :class="gridColumns"
   >
     <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
     <!-- `touch-target` gives the tap area a 44px floor instead of letting it be
@@ -64,7 +66,13 @@ const { t } = useI18n()
       </span>
     </button>
     <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="HABIT_ROW_DAYS" />
+    <!-- Quantity habits get a tap-to-target control only in the `comfortable`
+         (`/habits` rows) layout. On the home card a stray tap would write a full
+         day's quantity -- 3 of 3 L -- with no stepper, no confirmation and no
+         undo, on a glance surface that never offered the control before. Binary
+         habits keep it everywhere, as they always had. -->
     <Button
+      v-if="comfortable || item.habit.kind.type === 'binary'"
       size="icon"
       variant="outline"
       class="shrink-0 rounded-full border-2"
@@ -82,5 +90,6 @@ const { t } = useI18n()
     >
       <Check v-if="item.isComplete" class="size-4" />
     </Button>
+    <span v-else aria-hidden="true" class="size-9" />
   </div>
 </template>

@@ -62,7 +62,7 @@ const days = computed(() => {
          starts 1px to the left and every column is off by a pixel. -->
     <div
       class="grid items-end gap-3 border border-transparent px-3"
-      :class="HABIT_ROW_GRID_COLUMNS"
+      :class="HABIT_ROW_GRID_COLUMNS.comfortable"
       data-testid="habit-row-date-header"
     >
       <span aria-hidden="true" class="size-6" />
