@@ -20,7 +20,7 @@ const align = await page.evaluate(() => {
   const headerCells = [...header.querySelectorAll('.grid-cols-7 > span')].map((s) => {
     const r = s.getBoundingClientRect()
     return {
-      text: s.innerText.replace('\n', ' '),
+      text: s.innerText.replaceAll('\n', ' '),
       cx: +(r.x + r.width / 2).toFixed(1),
       bold: getComputedStyle(s).fontWeight,
       color: getComputedStyle(s).color,

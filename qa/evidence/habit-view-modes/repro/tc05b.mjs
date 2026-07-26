@@ -27,7 +27,7 @@ const overflow = await page.evaluate(() => {
     const wd = cell.children[0]
     const dm = cell.children[1]
     return {
-      text: cell.innerText.replace('\n', '/'),
+      text: cell.innerText.replaceAll('\n', '/'),
       cellW: +r.width.toFixed(2),
       weekdayTextW: +wd.getBoundingClientRect().width.toFixed(2),
       weekdayScrollW: wd.scrollWidth,
