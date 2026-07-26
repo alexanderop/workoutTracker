@@ -22,7 +22,7 @@ const SparklineChart = defineAsyncComponent(
 // Loaded on first use so the barcode-scanning/camera machinery (and the food
 // lookup network code) stays off the startup path — same Lighthouse budget
 // on first paint as the sparkline above.
-const FoodLogDialog = defineAsyncComponent(() => import('./FoodLogDialog.vue'))
+const FoodLogSheet = defineAsyncComponent(() => import('./FoodLogSheet.vue'))
 
 const { t } = useI18n()
 const router = useRouter()
@@ -238,12 +238,15 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
     </div>
 
     <NutritionGoalsDialog v-model:open="goalsOpen" :goal="goal" />
-    <FoodLogDialog
+    <FoodLogSheet
       v-if="foodLogRequested"
       v-model:open="foodLogOpen"
       :foods="foods"
       :local-date="localDate"
       :initial-meal="selectedMeal"
+      :goal="goal"
+      :committed="totals"
+      :day-label="t('nutrition.foodLog.today')"
     />
   </section>
 </template>

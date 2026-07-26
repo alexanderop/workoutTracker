@@ -108,7 +108,10 @@ export function buildCommit(
       foodSnapshot: {
         name: item.name,
         brand: item.brand,
-        nutrientsPer100Grams: item.nutrientsPer100Grams,
+        // Copied, not aliased. The basket is reactive state, and IndexedDB
+        // cannot `structuredClone` a Vue proxy -- passing one straight
+        // through fails the write with a DataCloneError.
+        nutrientsPer100Grams: { ...item.nutrientsPer100Grams },
       },
       loggedAt: now,
       updatedAt: now,
@@ -121,7 +124,7 @@ export function buildCommit(
         id: newId(),
         name: item.name,
         brand: item.brand,
-        nutrientsPer100Grams: item.nutrientsPer100Grams,
+        nutrientsPer100Grams: { ...item.nutrientsPer100Grams },
         defaultServingName: servingName,
         defaultServingGrams: item.grams,
         favorite: false,

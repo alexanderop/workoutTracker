@@ -8,11 +8,11 @@ describe('Nutrition dashboard', () => {
   it('logs a reusable food, updates daily totals, and persists across navigation', async ({
     createTestApp,
   }) => {
-    const { navigateTo, nutrition } = await createTestApp()
+    const { navigateTo, nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Breakfast')
-    await nutrition.logNewFood({
+    await foodLog.stageCustomFood({
       name: 'Greek yogurt',
       grams: '200',
       calories: '180',
@@ -20,6 +20,7 @@ describe('Nutrition dashboard', () => {
       carbs: '12',
       fat: '4',
     })
+    await foodLog.commitBasket(1)
 
     await nutrition.expectFood('Greek yogurt')
     await expect

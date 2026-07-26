@@ -1,5 +1,6 @@
 import { getDataManagementRepository } from '@/db'
 import { resetBenchmarkWorkout } from '@/features/benchmarks/state/benchmarkState'
+import { useFoodLogBasket } from '@/features/nutrition/composables/useFoodLogBasket'
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding'
 import { resetInitState } from '@/features/workout/composables/useAppInitialization'
 import { resetWorkoutPersistence } from '@/features/workout/composables/useWorkoutPersistence'
@@ -26,6 +27,7 @@ export async function resetDatabase(): Promise<void> {
   useExercisesStore().$reset()
   useOnboarding().$reset()
   useToastStore().$reset()
+  useFoodLogBasket().$reset()
 
   // Reset singleton workout state
   resetWorkout()

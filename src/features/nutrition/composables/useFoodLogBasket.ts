@@ -78,10 +78,22 @@ export const useFoodLogBasket = createGlobalState(() => {
     })
   }
 
+  /**
+   * Full teardown for test isolation — `createGlobalState` outlives a
+   * component tree, and `clear()` alone would leave `localDate` set, so the
+   * next test's `openFor` on the same day would not discard anything.
+   */
+  function $reset(): void {
+    clear()
+    localDate.value = ''
+    meal.value = 'breakfast'
+  }
+
   return {
     items,
     localDate,
     meal,
+    $reset,
     totals,
     isEmpty,
     openFor,

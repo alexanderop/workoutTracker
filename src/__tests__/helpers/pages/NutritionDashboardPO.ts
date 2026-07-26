@@ -14,23 +14,8 @@ export class NutritionDashboardPO {
     await this.common.waitForDialog()
   }
 
-  async logNewFood(input: {
-    name: string
-    grams: string
-    calories: string
-    protein: string
-    carbs: string
-    fat: string
-  }): Promise<void> {
-    await page.getByLabelText('Food name').fill(input.name)
-    await page.getByLabelText('Serving (g)').fill(input.grams)
-    await page.getByLabelText('Calories').fill(input.calories)
-    await page.getByLabelText('Protein (g)').fill(input.protein)
-    await page.getByLabelText('Carbs (g)').fill(input.carbs)
-    await page.getByLabelText('Fat (g)').fill(input.fat)
-    await page.getByRole('button', { name: 'Add to diary' }).click()
-    await this.common.waitForDialogClose()
-  }
+  // Logging itself lives on FoodLogPO: both entry points open the same sheet,
+  // and a second copy of those steps here would drift from it.
 
   async expectFood(name: string): Promise<void> {
     await expect.element(this.dashboard.getByText(name, { exact: true })).toBeVisible()

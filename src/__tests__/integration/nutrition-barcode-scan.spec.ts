@@ -82,43 +82,57 @@ describe('Nutrition barcode scan', () => {
     restoreDetector()
   })
 
-  it('scans a barcode, prefills the serving from the product, and saves the brand', async ({
+  it('scans a barcode straight into the basket and logs it to the tapped meal', async ({
     createTestApp,
   }) => {
-    const { nutrition } = await createTestApp()
+    const { nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
 
     // The fake detector reports the barcode on the first poll; the mocked
-    // Open Food Facts lookup then prefills a 15 g serving.
-    await expect.element(page.getByLabelText('Food name'), { timeout: 5000 }).toHaveValue('Nutella')
-    await expect.element(page.getByLabelText('Brand (optional)')).toHaveValue('Ferrero')
-    await expect.element(page.getByLabelText('Serving (g)')).toHaveValue(15)
-    await expect.element(page.getByLabelText('Calories')).toHaveValue(81)
-    await expect.element(page.getByLabelText('Protein (g)')).toHaveValue(0.9)
-    await expect.element(page.getByLabelText('Carbs (g)')).toHaveValue(8.6)
-    await expect.element(page.getByLabelText('Fat (g)')).toHaveValue(4.6)
+    // Open Food Facts lookup supplies a 15 g serving. Nothing to confirm --
+    // the barcode already answered every question a form would have asked.
+    await expect.element(foodLog.basket.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
 
-    await page.getByRole('button', { name: 'Add to diary' }).click()
+    await foodLog.commitBasket(1)
     await expect
       .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
       .toMatchObject({
         foods: [{ name: 'Nutella', brand: 'Ferrero', defaultServingGrams: 15 }],
+        // The dashboard's tapped meal wins over the hour of day.
         diaryEntries: [{ meal: 'snack', grams: 15 }],
       })
+  })
+
+  it('lets the grams stepper correct a scanned serving without a keyboard', async ({
+    createTestApp,
+  }) => {
+    const { nutrition, foodLog } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await foodLog.selectTab('Scan')
+    await expect.element(foodLog.basket.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+
+    await foodLog.adjustStaged('Nutella', 2)
+    await foodLog.commitBasket(1)
+
+    await expect
+      .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
+      .toMatchObject({ diaryEntries: [{ grams: 35 }] })
   })
 
   it('does not show a flashlight toggle when the camera has no torch support', async ({
     createTestApp,
   }) => {
     Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
-    const { nutrition } = await createTestApp()
+    const { nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
 
     await expect.element(page.getByText('Point the camera')).toBeVisible()
     await expect
@@ -133,11 +147,11 @@ describe('Nutrition barcode scan', () => {
     const applyConstraints = vi.fn().mockResolvedValue(undefined)
     const stream = createFakeCameraStreamWithTorch(applyConstraints)
     vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
-    const { nutrition } = await createTestApp()
+    const { nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
     await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
@@ -156,11 +170,11 @@ describe('Nutrition barcode scan', () => {
     const applyConstraints = vi.fn().mockRejectedValue(new Error('torch unsupported'))
     const stream = createFakeCameraStreamWithTorch(applyConstraints)
     vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
-    const { nutrition } = await createTestApp()
+    const { nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
     await expect.element(torchButton).toHaveAttribute('aria-pressed', 'false')
@@ -177,11 +191,11 @@ describe('Nutrition barcode scan', () => {
     const applyConstraints = vi.fn(() => pendingConstraints.promise)
     const stream = createFakeCameraStreamWithTorch(applyConstraints)
     vi.spyOn(navigator.mediaDevices, 'getUserMedia').mockResolvedValue(stream)
-    const { nutrition } = await createTestApp()
+    const { nutrition, foodLog } = await createTestApp()
 
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
 
     const torchButton = page.getByRole('button', { name: 'Toggle flashlight' })
     await expect.element(torchButton).toBeVisible()
@@ -189,8 +203,9 @@ describe('Nutrition barcode scan', () => {
     await torchButton.click()
     await expect.poll(() => applyConstraints.mock.calls.length).toBe(1)
 
+    // Cancelling drops back to the search tab, which unmounts the scanner.
     await page.getByRole('button', { name: 'Cancel' }).click()
-    await expect.element(page.getByRole('button', { name: 'Scan barcode' })).toBeVisible()
+    await expect.element(page.getByLabelText('Search foods')).toBeVisible()
 
     // Resolving after cancellation must not resurrect the toggle or throw.
     pendingConstraints.resolve()
@@ -198,7 +213,7 @@ describe('Nutrition barcode scan', () => {
       .element(page.getByRole('button', { name: 'Toggle flashlight' }))
       .not.toBeInTheDocument()
 
-    await page.getByRole('button', { name: 'Scan barcode' }).click()
+    await foodLog.selectTab('Scan')
     await expect
       .element(page.getByRole('button', { name: 'Toggle flashlight' }))
       .toHaveAttribute('aria-pressed', 'false')
