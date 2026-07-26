@@ -142,80 +142,11 @@ describe('Progression Management', () => {
     })
   })
 
+  // The three repository-only advancement tests that used to live here moved
+  // to `src/__tests__/unit/progressions/progressionAdvancement.spec.ts`: they
+  // looped `recordSession` 5-11 times to assert arithmetic, which needs no
+  // browser. What is left here mounts the app, which does.
   describe('Progression Advancement', () => {
-    it('advances from reps to time phase', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression and advance to max reps (20)
-      const progression = await repo.create({
-        name: 'Test Progression',
-        availableWeights: [16, 20],
-      })
-
-      // Simulate completing 5 sessions: 10→12→14→16→18→20 reps
-      for (const _ of Array.from({ length: 5 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database - should be at 20 reps, 10 min
-      const afterRepsPhase = await repo.getById(progression.id)
-      expect(afterRepsPhase?.currentReps).toBe(20)
-      expect(afterRepsPhase?.currentMinutes).toBe(10)
-
-      // Complete another session - should advance to 12 min
-      await recordSessionWithAdvancement(repo, progression.id, true)
-
-      // Verify advancement
-      const afterTimeAdvance = await repo.getById(progression.id)
-      expect(afterTimeAdvance?.currentReps).toBe(20)
-      expect(afterTimeAdvance?.currentMinutes).toBe(12)
-    })
-
-    it('advances to next kettlebell after completing all phases', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression
-      const progression = await repo.create({
-        name: 'Test Progression',
-        availableWeights: [16, 20, 24],
-      })
-
-      // Simulate completing entire first KB (11 sessions total):
-      // Reps: 10→12→14→16→18→20 (5 sessions to reach max reps)
-      // Time: 10→12→14→16→18→20 (5 more sessions to reach max time)
-      // +1 session to trigger advance to next KB
-      for (const _ of Array.from({ length: 11 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database - should have advanced to 20kg, reset to 10 reps, 10 min
-      const updated = await repo.getById(progression.id)
-      expect(updated?.currentWeightIndex).toBe(1) // 20kg
-      expect(updated?.currentReps).toBe(10)
-      expect(updated?.currentMinutes).toBe(10)
-      expect(updated?.sessionsCompleted).toBe(11)
-    })
-
-    it('marks progression as complete after finishing all kettlebells', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression with only one KB for faster completion
-      const progression = await repo.create({
-        name: 'Quick Progression',
-        availableWeights: [16],
-      })
-
-      // Complete all 11 sessions for the single KB:
-      // 6 rep phases (10→12→14→16→18→20) + 5 time phases (10→12→14→16→18→20)
-      for (const _ of Array.from({ length: 11 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database
-      const updated = await repo.getById(progression.id)
-      expect(updated?.isComplete).toBe(true)
-    })
-
     it('shows complete badge in UI after finishing all kettlebells', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
