@@ -10,6 +10,8 @@ import { RouteNames } from '@/router'
 const { t } = useI18n()
 const router = useRouter()
 
+const isDev = import.meta.env.DEV
+
 const formattedBuildTime = computed(() => {
   if (!currentVersion.buildTime) return '-'
   const date = new Date(currentVersion.buildTime)
@@ -60,7 +62,8 @@ const formattedBuildTime = computed(() => {
         </Button>
       </div>
 
-      <div class="flex items-center gap-3 rounded-lg border p-3">
+      <!-- Matches the dev-only /design route; in production there is nothing to link to. -->
+      <div v-if="isDev" class="flex items-center gap-3 rounded-lg border p-3">
         <Layers class="icon-md shrink-0 text-primary" />
         <div class="min-w-0 flex-1">
           <p class="font-medium">{{ t('settings.labels.designSystem') }}</p>

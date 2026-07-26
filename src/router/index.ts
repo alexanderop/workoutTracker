@@ -51,6 +51,24 @@ export const RouteNames = {
 
 export type RouteName = (typeof RouteNames)[keyof typeof RouteNames]
 
+/**
+ * Dev-only. The studio is a design surface, not product: shipping it would add
+ * ~18kB of brotlied JS that the service worker precaches onto every user's
+ * phone for a screen only the developer opens. `import.meta.env.DEV` is
+ * statically replaced, so the whole subtree — view, frames, theme lab — is
+ * tree-shaken out of the production bundle.
+ */
+const designSystemRoutes: ReadonlyArray<RouteRecordRaw> = import.meta.env.DEV
+  ? [
+      {
+        path: '/design',
+        name: RouteNames.DesignSystem,
+        component: () => import('@/features/design-system/views/DesignSystemView.vue'),
+        meta: { titleKey: 'designSystem', hideNav: true },
+      },
+    ]
+  : []
+
 export const routes: ReadonlyArray<RouteRecordRaw> = [
   {
     path: '/',
@@ -222,12 +240,7 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
     component: () => import('@/features/health-prototypes/views/HealthPrototypeView.vue'),
     meta: { titleKey: 'healthPrototypes', hideNav: true },
   },
-  {
-    path: '/design',
-    name: RouteNames.DesignSystem,
-    component: () => import('@/features/design-system/views/DesignSystemView.vue'),
-    meta: { titleKey: 'designSystem', hideNav: true },
-  },
+  ...designSystemRoutes,
   // Catch-all: keep this last so every named route above gets first shot at
   // matching. Unmatched URLs (e.g. a plausible-looking but non-existent
   // `/benchmarks` or `/timers/emom/custom`) previously rendered a blank
