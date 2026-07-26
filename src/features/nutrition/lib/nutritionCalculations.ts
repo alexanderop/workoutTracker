@@ -68,6 +68,42 @@ export function caloriesByLocalDate(
   return dateKeys.map((key) => Math.round(caloriesByDate.get(key) ?? 0))
 }
 
+export type BudgetSegments = {
+  /** Width of the already-logged segment, in percent of the bar. */
+  readonly committedPct: number
+  /** Width of the staged-but-uncommitted segment, drawn after `committedPct`. */
+  readonly stagedPct: number
+  /** Where the target sits on the bar. Below 100 exactly when over target. */
+  readonly tickPct: number
+  readonly overflow: boolean
+}
+
+/**
+ * Lay out a macro budget bar so going over target stays legible.
+ *
+ * The bar scales to `max(committed + staged, target)` and carries a tick at
+ * the target rather than clamping at it. A clamped bar renders 2210/2200 and
+ * 4000/2200 identically — it saturates exactly when the staged-vs-committed
+ * split is trying to answer "how much does this basket cost me?".
+ *
+ * `useNutritionDay.calorieProgress` deliberately still clamps: it feeds a
+ * conic-gradient ring and a `Progress` primitive, both 0-100 by contract, and
+ * a ring has nowhere to grow past its own circumference.
+ */
+export function budgetSegments(committed: number, staged: number, target: number): BudgetSegments {
+  const total = Math.max(0, committed) + Math.max(0, staged)
+  if (target <= 0) {
+    return { committedPct: 0, stagedPct: 0, tickPct: 0, overflow: total > 0 }
+  }
+  const scale = Math.max(total, target)
+  return {
+    committedPct: (Math.max(0, committed) / scale) * 100,
+    stagedPct: (Math.max(0, staged) / scale) * 100,
+    tickPct: (target / scale) * 100,
+    overflow: total > target,
+  }
+}
+
 export function nutrientsPer100Grams(
   nutrientsForServing: DbFoodNutrients,
   servingGrams: number,

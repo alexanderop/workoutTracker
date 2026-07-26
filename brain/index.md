@@ -15,6 +15,9 @@
 - [[principles/encode-lessons-in-structure]] — A lesson written down is a lesson someone has to remember to read. A lesson
 - [[principles/type-guarantees-need-a-pinned-call-site]] — A constrained signature only proves something where code actually calls it. If
 
+## Prototypes
+- [[prototypes/food-logging-surface]] — Question:
+
 ## Reference
 - [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---
 - [[reference/research/2026-07-25-android-pwa-timer-audio-over-music]] — ---
