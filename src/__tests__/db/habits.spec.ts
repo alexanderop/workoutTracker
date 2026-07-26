@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { isAppIconKey } from '@/components/app-icons'
 import { getHabitsRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntry, createDbHabitEntryForDate } from '@/__tests__/factories'
@@ -46,6 +47,30 @@ describe('HabitRepository', () => {
       })
     })
 
+    it('migrates emoji icons stored before the bundled icon set onto real artwork', async () => {
+      const legacyIcons = ['💧', '🏃', '🧘', '📚', '🛌', '🥗', '🏋️', '✍️', '🚭', '🧹', '📌']
+      for (const [index, icon] of legacyIcons.entries()) {
+        await db.habits.add({
+          id: `legacy-${index}`,
+          name: `Legacy ${index}`,
+          icon,
+          schedule: { type: 'daily' },
+          kind: { type: 'binary' },
+          autoLink: null,
+          archivedAt: null,
+          orderIndex: index,
+          createdAt: 1,
+        })
+      }
+
+      const migrated = await getHabitsRepository().getAllHabits()
+
+      expect(migrated).toHaveLength(legacyIcons.length)
+      for (const habit of migrated) {
+        expect(isAppIconKey(habit.icon)).toBe(true)
+      }
+    })
+
     it('should return an added habit from getAllHabits and getHabitById', async () => {
       const repo = getHabitsRepository()
       const habit = createDbHabit({ name: 'Stretch' })
@@ -88,11 +113,11 @@ describe('HabitRepository', () => {
       const habit = createDbHabit({ name: 'Read', icon: null })
       await repo.addHabit(habit)
 
-      await repo.updateHabit(habit.id, { name: 'Read daily', icon: '📚' })
+      await repo.updateHabit(habit.id, { name: 'Read daily', icon: 'habit-read' })
 
       const updated = await repo.getHabitById(habit.id)
       expect(updated?.name).toBe('Read daily')
-      expect(updated?.icon).toBe('📚')
+      expect(updated?.icon).toBe('habit-read')
       expect(updated?.kind).toEqual(habit.kind)
     })
 

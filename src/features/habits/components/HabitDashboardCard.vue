@@ -17,6 +17,8 @@ import { useHabitStats } from '../composables/useHabitStats'
 import HabitCompactGrid from './HabitCompactGrid.vue'
 import HabitHistoryGrid from './HabitHistoryGrid.vue'
 import HabitStatsSummary from './HabitStatsSummary.vue'
+import { AppIcon } from '@/components/app-icons'
+import { resolveHabitIcon } from '../lib/habitIcons'
 
 const { habit, entries } = defineProps<{
   habit: DbHabit
@@ -78,7 +80,7 @@ function handleArchive(): void {
   >
     <div class="space-y-3 p-4">
       <div class="flex items-start gap-3">
-        <span class="mt-0.5 text-2xl" aria-hidden="true">{{ habit.icon ?? '📌' }}</span>
+        <AppIcon :name="resolveHabitIcon(habit.icon)" class="mt-0.5 size-8 shrink-0" />
         <button
           type="button"
           class="min-w-0 flex-1 text-left"

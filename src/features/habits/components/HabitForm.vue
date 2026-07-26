@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
+import { Check } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,10 +26,9 @@ import {
   type HabitKind,
   type HabitSchedule,
 } from '@/db/schema'
+import { AppIcon } from '@/components/app-icons'
 import type { HabitFormData } from '../composables/useHabits'
-
-/** Small, low-effort emoji picker -- keeps icon selection to a tap, per the Phase 2 brief. */
-const ICON_PRESETS = ['💧', '🏃', '🧘', '📚', '🛌', '🥗', '🏋️', '✍️', '🚭', '🧹'] as const
+import { HABIT_ICON_PRESETS } from '../lib/habitIcons'
 
 const MIN_WEEKLY_TARGET = 1
 const MAX_WEEKLY_TARGET = 7
@@ -50,9 +50,7 @@ const { t } = useI18n()
 
 const name = ref('')
 const description = ref('')
-// Input's v-model only accepts string | number, so empty string stands in
-// for "no icon" here and is normalized to null on save.
-const icon = ref('')
+const icon = ref<string | null>(null)
 const accent = ref<HabitAccent>(DEFAULT_HABIT_ACCENT)
 const scheduleType = ref<HabitSchedule['type']>('daily')
 const targetDaysPerWeek = ref(3)
@@ -81,7 +79,7 @@ function seedKindFields(kind: HabitKind | undefined) {
 function seedIdentityFields(source: DbHabit | undefined) {
   name.value = source?.name ?? ''
   description.value = source?.description ?? ''
-  icon.value = source?.icon ?? ''
+  icon.value = source?.icon ?? null
   accent.value = source?.accent ?? DEFAULT_HABIT_ACCENT
 }
 
@@ -161,7 +159,7 @@ function handleSave() {
   emit('save', {
     name: name.value.trim(),
     description: description.value.trim() || null,
-    icon: icon.value.trim().length > 0 ? icon.value.trim() : null,
+    icon: icon.value,
     accent: accent.value,
     schedule,
     kind,
@@ -209,24 +207,29 @@ function handleSave() {
 
         <!-- Icon -->
         <div class="space-y-1.5">
-          <Label for="habit-icon">{{ t('habits.form.iconLabel') }}</Label>
-          <Input
-            id="habit-icon"
-            v-model="icon"
-            :placeholder="t('habits.form.iconPlaceholder')"
-            maxlength="4"
-            class="w-20 text-center text-lg"
-          />
-          <div class="flex flex-wrap gap-1.5">
+          <Label>{{ t('habits.form.iconLabel') }}</Label>
+          <div class="flex flex-wrap gap-1.5" role="group" :aria-label="t('habits.form.iconLabel')">
             <button
-              v-for="preset in ICON_PRESETS"
-              :key="preset"
               type="button"
-              class="flex h-9 w-9 items-center justify-center rounded-md border text-lg transition-colors hover:bg-accent"
-              :class="icon === preset && 'border-primary bg-accent'"
-              @click="icon = preset"
+              class="flex size-11 items-center justify-center rounded-md border text-xs font-medium transition-colors hover:bg-accent"
+              :class="icon === null && 'border-primary bg-accent'"
+              :aria-label="t('habits.form.iconNone')"
+              :aria-pressed="icon === null"
+              @click="icon = null"
             >
-              {{ preset }}
+              {{ t('habits.form.iconNoneShort') }}
+            </button>
+            <button
+              v-for="preset in HABIT_ICON_PRESETS"
+              :key="preset.key"
+              type="button"
+              class="flex size-11 items-center justify-center rounded-md border p-2 transition-colors hover:bg-accent"
+              :class="icon === preset.key && 'border-primary bg-accent'"
+              :aria-label="t(`habits.form.icons.${preset.labelKey}`)"
+              :aria-pressed="icon === preset.key"
+              @click="icon = preset.key"
+            >
+              <AppIcon :name="preset.key" class="size-full" />
             </button>
           </div>
         </div>
@@ -245,7 +248,7 @@ function handleSave() {
               :aria-pressed="accent === option"
               @click="accent = option"
             >
-              <span v-if="accent === option" class="text-sm font-bold">✓</span>
+              <Check v-if="accent === option" class="size-4" />
             </button>
           </div>
         </div>
