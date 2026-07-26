@@ -34,6 +34,18 @@ failure modes here:
   related screenshots under `.vitest-attachments/`. Failed CI shards upload
   both in `vitest-debug-shard-<number>` artifacts. Open a downloaded trace with
   `pnpm exec playwright show-trace <trace.zip>`.
+- Those traces will fill the disk on a local full-tier run. `retain-on-failure`
+  still records every test before deciding to discard, and one
+  `pnpm test:coverage` over the whole `default` project wrote **~29 GB** to
+  `.vitest/traces`, hitting `ENOSPC` and killing the run mid-way — which
+  presents as an unrelated browser-connection crash, not as a disk error. If a
+  full local run dies strangely, `du -sh .vitest` first. `rm -rf .vitest`
+  reclaims it, and `--browser.trace.mode=off` avoids it for a run where you do
+  not need traces.
+- Ordering assertions against the real Dexie adapters can tie and flip; see
+  [[local-data-gotchas]]. A fake with a counter clock never ties, so a spec that
+  passes in the Node tier can still be asserting an order production does not
+  provide.
 - `bail: 1` is set for local runs (`vitest.config.ts`), so a **failing** browser
   run stops at the first failure and its "N passed" total is a partial count,
   not tier coverage. A green run is complete and trustworthy; a red one is

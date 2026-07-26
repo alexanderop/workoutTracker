@@ -1,0 +1,21 @@
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v4.1.10 /home/user/workoutTracker
+
+
+PWA v1.3.0
+mode      generateSW
+precache  2 entries (0.12 KiB)
+files generated
+  dev-dist/sw.js
+  dev-dist/workbox-6fc47aa9.js
+Sourcemap for "/@vite-plugin-pwa/virtual:pwa-register/vue" points to missing source files
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+Type Errors  no errors
+   Start at  17:05:00
+   Duration  8.24s (transform 0ms, setup 6.66s, import 96ms, tests 233ms, environment 0ms)
+
+EXIT=0

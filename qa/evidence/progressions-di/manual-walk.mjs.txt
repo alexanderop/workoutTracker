@@ -1,0 +1,161 @@
+// Manual QA walk of the progressions feature against the built app.
+// Stands in for the `pnpm dev` walk in the plan's Manual Verification box:
+// create -> open -> start session -> run the EMOM -> complete -> level advanced.
+import { chromium } from 'playwright'
+import { mkdirSync } from 'node:fs'
+
+const BASE = process.env.QA_BASE ?? 'http://127.0.0.1:5679'
+const OUT = '/home/user/workoutTracker/qa/evidence/progressions-di/manual-walk'
+mkdirSync(OUT, { recursive: true })
+
+const consoleErrors = []
+const pageErrors = []
+let step = 0
+const log = (m) => console.log(`[walk] ${m}`)
+
+const browser = await chromium.launch()
+const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
+const page = await context.newPage()
+page.on('console', (m) => {
+  if (m.type() === 'error') consoleErrors.push(m.text())
+})
+page.on('pageerror', (e) => pageErrors.push(e.message))
+
+const shot = async (name) => {
+  step += 1
+  await page.screenshot({ path: `${OUT}/${String(step).padStart(2, '0')}-${name}.png`, fullPage: true })
+}
+const must = async (label, fn) => {
+  try {
+    await fn()
+    log(`PASS ${label}`)
+  } catch (e) {
+    log(`FAIL ${label}: ${e.message.split('\n')[0]}`)
+    process.exitCode = 1
+  }
+}
+
+await page.clock.install()
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' })
+
+// --- onboarding ---
+await page.getByRole('button', { name: 'Skip to App', exact: true }).click()
+await page.waitForURL(/\/$/)
+log(`url after onboarding: ${page.url()}`)
+
+// --- navigate to progressions ---
+await page.getByRole('button', { name: /^workouts$/i }).click()
+await page.waitForURL(/\/workouts$/)
+await page.getByRole('tab', { name: /progressions/i }).click()
+await shot('progressions-empty')
+await must('empty state visible', async () => {
+  await page.getByText('No progressions yet').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- create ---
+await page.getByRole('button', { name: /^create progression$/i }).click()
+await page.waitForURL(/\/progressions\/create$/)
+await page.getByLabel(/^name$/i).fill('QA Swing Ladder')
+await page.getByRole('button', { name: '16kg', exact: true }).click()
+await page.getByRole('button', { name: '20kg', exact: true }).click()
+await shot('create-form-filled')
+await page.getByRole('button', { name: /^save$/i }).click()
+await page.waitForURL((u) => /\/progressions\/[^/]+$/.test(u.pathname) && !u.pathname.endsWith('/create'))
+const detailUrl = page.url()
+log(`detail url: ${detailUrl}`)
+await shot('detail-initial')
+
+await must('initial level is 16kg x 10 reps x 10 min', async () => {
+  await page.getByText('16kg • 10 reps • 10 min').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+await must('initial sessions count is 0', async () => {
+  await page.getByText('0 sessions completed').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- start session ---
+await page.getByRole('button', { name: /^start session$/i }).click()
+await page.waitForURL(/\/progressions\/[^/]+\/session$/)
+await shot('session-ready')
+await must('ready state shows 10 minute EMOM', async () => {
+  await page.getByText('10 minute EMOM').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- run the EMOM on a controlled clock ---
+await page.getByRole('button', { name: /tap to start/i }).click()
+await page.clock.runFor(1000)
+await shot('session-active-minute-1')
+await must('active timer shows Minute 1 of 10', async () => {
+  await page.getByText('Minute 1 of 10').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+await page.clock.runFor(60_000 * 4)
+await shot('session-active-minute-5')
+await must('after 4 more minutes shows Minute 5 of 10', async () => {
+  await page.getByText('Minute 5 of 10').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+await page.clock.runFor(60_000 * 5)
+await shot('session-last-minute')
+await must('last-minute indicator appears', async () => {
+  await page.getByText('Last minute!').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+await page.clock.runFor(60_000)
+await shot('session-complete-dialog')
+await must('completion dialog appears at 10:00', async () => {
+  await page.getByText('Session Complete').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- confirm completion ---
+await page.getByRole('button', { name: /yes, completed/i }).click()
+await page.waitForURL(/\/progressions\/[^/]+$/)
+await shot('detail-after-session')
+
+await must('level advanced to 12 reps', async () => {
+  await page.getByText('16kg • 12 reps • 10 min').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+await must('sessions count is 1', async () => {
+  await page.getByText('1 sessions completed').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+await must('session history records the completed session at the old level', async () => {
+  await page.getByText('16kg × 10 reps × 10 min').first().waitFor({ state: 'visible', timeout: 5000 })
+  await page.getByText('Completed').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- persistence round trip ---
+await page.reload({ waitUntil: 'domcontentloaded' })
+await shot('detail-after-reload')
+await must('advanced level survives a reload', async () => {
+  await page.getByText('16kg • 12 reps • 10 min').first().waitFor({ state: 'visible', timeout: 5000 })
+  await page.getByText('1 sessions completed').first().waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- list view shows the advanced level ---
+await page.getByRole('button', { name: /^go back$/i }).click()
+await page.waitForURL(/\/progressions$/)
+await shot('list-after-session')
+await must('list card aria-label reflects the advanced level', async () => {
+  await page
+    .getByRole('button', { name: 'QA Swing Ladder - 16kg, 12 reps, 10 min EMOM', exact: true })
+    .waitFor({ state: 'visible', timeout: 5000 })
+})
+
+// --- delete round trip ---
+await page.getByRole('button', { name: 'QA Swing Ladder - 16kg, 12 reps, 10 min EMOM', exact: true }).click()
+await page.waitForURL(/\/progressions\/[^/]+$/)
+await page.getByRole('button', { name: /^delete progression$/i }).click()
+await shot('delete-dialog')
+await page.getByRole('button', { name: /^delete$/i }).click()
+await page.waitForURL(/\/progressions$/)
+await page.reload({ waitUntil: 'domcontentloaded' })
+await shot('list-after-delete')
+await must('deleted progression stays deleted after reload', async () => {
+  await page.getByText('No progressions yet').waitFor({ state: 'visible', timeout: 5000 })
+})
+
+log(`console errors: ${JSON.stringify(consoleErrors, null, 2)}`)
+log(`page errors: ${JSON.stringify(pageErrors, null, 2)}`)
+if (pageErrors.length > 0) process.exitCode = 1
+
+await browser.close()
+log(`done, exitCode=${process.exitCode ?? 0}`)

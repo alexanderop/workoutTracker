@@ -16,3 +16,12 @@ Keep these invariants covered by tests when changing the related code.
   destructive-delete scope are not automatically identical.
 - New backup properties stay optional at the file boundary when older exports
   must remain importable.
+- Repository sort comparators that tie have no defined order. Adapters stamp
+  `createdAt`/`completedAt` with `Date.now()`, so rows written back-to-back
+  share a millisecond; the comparator returns `0`, `toSorted` is stable, and
+  the result falls through to Dexie's primary-key order over
+  `crypto.randomUUID()` — effectively random. This is a production property,
+  not just a test one: two progressions created in the same millisecond render
+  in arbitrary order on the list screen. Give a comparator a total order (final
+  tie-break on `id`) when the order is user-visible, and never assert a
+  position in a test that a tie could decide.

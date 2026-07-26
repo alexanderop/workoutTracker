@@ -64,8 +64,22 @@ src/features/<f>/services.live.ts  # the feature's Layer(s)         — browser 
 
 The acceptance bar for "bulletproof enough to copy": converting a second
 feature touches only that feature's `services.ts`, `services.live.ts`, its
-composable's signature, and one line in `src/appLayers.ts`. No edit to
+composable's signature, one line in `src/appLayers.ts`, and one line in the
+pinned call site `src/__tests__/types/appLayers.test-d.ts`. No edit to
 `src/lib/di/`, `src/db/provider.ts`, or either composition root is required.
+
+The pinned call site is the correction the progressions conversion produced.
+This section originally said "four edits" and omitted
+`src/__tests__/types/appLayers.test-d.ts`, which must gain an
+`expectTypeOf(runtime.get(FooRepo)).toEqualTypeOf<FooRepository>()` line per
+layer or the layer's absence stops being a compile error — the entire point of
+[[../principles/type-guarantees-need-a-pinned-call-site]]. It is not a
+violation of the bar (it is none of the three prohibited paths, and the file
+exists precisely to grow per layer), but a converter measuring against the old
+wording would score five edits against a stated four and think the template had
+leaked. Measured on the progressions conversion: exactly those five files, no
+edit to `src/lib/di/`, `src/db/provider.ts`, `src/main.ts`, or
+`createTestApp.ts`.
 
 ### Layer order is positional and load-bearing
 
@@ -132,6 +146,18 @@ on a second feature, not just asserted.
   considered and not taken this pass.** Tier discipline rests on the one-line
   comment convention above, not on an enforced gate. Revisit once a second
   feature has actually been converted and there is a real second data point.
+
+  *Second data point, from the progressions conversion:* still not taken, and
+  now with evidence rather than deferral. Triaging all 16 surviving browser
+  specs against the rule, every one could name a genuine capability — reka-ui
+  `Select` pointer events, real confirm dialogs, router navigation, the real
+  `setInterval` EMOM, or a DOM render assertion including negatives ("Start
+  Session is absent"). Zero violations, so a gate built now would police a
+  failure mode that has not occurred in two conversions. What the rule *did*
+  buy was a forcing function during triage: it moved a 341-line pure property
+  spec and three repository-only tests out of the browser tier. The convention
+  earns its keep; the enforcement does not yet. Revisit if a third conversion
+  produces a browser spec that cannot name its capability.
 - **14 `console.error` calls across `src/features` are un-injected side
   effects** and noise in tests written against this template. A `Logger`
   service is a separate decision, not folded into this one.

@@ -1,0 +1,14 @@
+[WebServer] fatal: No names found, cannot describe anything.
+
+Running 7 tests using 2 workers
+
+  ✓  1 [bdd] › .features-gen/test/e2e/features/habits.feature.spec.js:10:3 › Habit tracking › Creating a habit adds it to today's list (1.6s)
+  ✓  2 [bdd] › .features-gen/test/e2e/features/habits.feature.spec.js:15:3 › Habit tracking › Checking a habit off marks it complete, and unchecking it marks it incomplete again (1.7s)
+  ✓  4 [bdd] › .features-gen/test/e2e/features/progressions.feature.spec.js:10:3 › Kettlebell progressions › A created progression survives a page reload (1.5s)
+  ✓  3 [bdd] › .features-gen/test/e2e/features/habits.feature.spec.js:23:3 › Habit tracking › A completed habit survives a page reload (1.8s)
+  ✓  5 [chromium] › test/e2e/onboarding.spec.ts:4:3 › Onboarding › a first-time user can enter the app and stay onboarded after reload (1.1s)
+  ✓  6 [chromium] › test/e2e/workout-persistence.spec.ts:138:3 › Workout persistence › an active workout and completed set survive a real page reload (4.8s)
+  ✓  7 [chromium] › test/e2e/workout-persistence.spec.ts:160:3 › Workout persistence › a completed workout remains available in history after reload (4.8s)
+
+  7 passed (13.4s)
+EXIT=0

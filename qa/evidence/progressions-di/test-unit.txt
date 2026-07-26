@@ -1,0 +1,14 @@
+
+> workouttracker@1.40.2 test:unit /home/user/workoutTracker
+> vitest run --project=unit
+
+
+ RUN  v4.1.10 /home/user/workoutTracker
+
+
+ Test Files  23 passed (23)
+      Tests  223 passed (223)
+   Start at  16:21:51
+   Duration  5.67s (transform 1000ms, setup 3.48s, import 8.52s, tests 607ms, environment 3ms)
+
+EXIT=0

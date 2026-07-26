@@ -1,0 +1,5 @@
+
+> workouttracker@1.40.2 type-check /home/user/workoutTracker
+> vue-tsc --build
+
+EXIT=0

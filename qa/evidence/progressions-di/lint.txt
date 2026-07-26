@@ -1,0 +1,31 @@
+
+> workouttracker@1.40.2 lint:check /home/user/workoutTracker
+> run-s lint:oxlint:check lint:eslint:check lint:md lint:tokens lint:emoji
+
+
+> workouttracker@1.40.2 lint:oxlint:check /home/user/workoutTracker
+> oxlint . --ignore-path .gitignore
+
+
+> workouttracker@1.40.2 lint:eslint:check /home/user/workoutTracker
+> eslint . --cache --max-warnings 0
+
+
+> workouttracker@1.40.2 lint:md /home/user/workoutTracker
+> markdownlint-cli2 "**/*.md" "#node_modules"
+
+markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
+Finding: **/*.md !node_modules !CHANGELOG.md !.claude/**
+Linting: 57 file(s)
+Summary: 0 error(s)
+
+> workouttracker@1.40.2 lint:tokens /home/user/workoutTracker
+> node scripts/check-design-tokens.mjs
+
+Design tokens OK: no raw palette classes or dark: variants in app code.
+
+> workouttracker@1.40.2 lint:emoji /home/user/workoutTracker
+> node scripts/check-no-emoji.mjs
+
+Emoji OK: app code renders icons as drawn artwork.
+EXIT=0

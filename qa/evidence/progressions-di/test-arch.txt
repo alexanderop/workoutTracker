@@ -1,0 +1,14 @@
+
+> workouttracker@1.40.2 test:arch /home/user/workoutTracker
+> vitest run --project=arch
+
+
+ RUN  v4.1.10 /home/user/workoutTracker
+
+
+ Test Files  4 passed (4)
+      Tests  82 passed (82)
+   Start at  16:22:04
+   Duration  27.00s (transform 154ms, setup 0ms, import 1.23s, tests 25.12s, environment 0ms)
+
+EXIT=0
