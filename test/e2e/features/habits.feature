@@ -6,6 +6,7 @@ Feature: Habit tracking
 
   Background:
     Given a first-time user has entered the app
+    And they open the habits page
 
   Scenario: Creating a habit adds it to today's list
     When they add a new daily habit named "Drink water"

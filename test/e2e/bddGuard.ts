@@ -3,10 +3,12 @@ import type { FullConfig } from '@playwright/test'
 
 /**
  * Fails loudly, on an actual `playwright test` run, when the BDD project's
- * generated spec directory is missing or empty -- the failure mode this
- * guards against is the `chromium` project's specs masking the BDD project's
- * absence, so `playwright test` exits 0 while every Gherkin scenario silently
- * contributed zero tests.
+ * generated spec directory is missing or empty -- the failure mode this guards
+ * against is a run that contributes zero tests from every Gherkin scenario and
+ * still reports something plausible. Every e2e project now reads the generated
+ * directory, so Playwright's own "no tests found" guard would also trip; this
+ * one survives the addition of any future non-BDD project and, either way,
+ * names the actual cause instead of leaving it to be inferred.
  *
  * This is wired as `globalSetup`, not an inline check in the body of
  * `playwright.config.ts`, because `bddgen` itself loads `playwright.config.ts`

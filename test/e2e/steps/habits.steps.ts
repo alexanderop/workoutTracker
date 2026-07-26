@@ -32,13 +32,7 @@ async function toggleHabit(
   await expect(toggle(page, name, to)).toBeVisible()
 }
 
-Given('a first-time user has entered the app', async ({ page, goto }) => {
-  await goto('/')
-  await expect(page).toHaveURL(/\/onboarding$/)
-
-  await page.getByRole('button', { name: 'Skip to App', exact: true }).click()
-  await expect(page).toHaveURL(/\/$/)
-
+Given('they open the habits page', async ({ page }) => {
   await page.getByRole('button', { name: /^habits$/i }).click()
   await expect(page).toHaveURL(/\/habits$/)
 })
@@ -57,10 +51,6 @@ When('they check off {string} for today', async ({ page }, name: string) => {
 
 When('they uncheck {string} for today', async ({ page }, name: string) => {
   await toggleHabit(page, name, 'incomplete')
-})
-
-When('they reload the page', async ({ page }) => {
-  await page.reload({ waitUntil: 'domcontentloaded' })
 })
 
 // Scoped to the `habit-today-` testid -- the one HabitDashboardCard.vue puts

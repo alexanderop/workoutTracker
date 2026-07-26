@@ -35,10 +35,19 @@ failure modes here:
   tests and takes ~5 minutes.
 - A Playwright project can silently contribute **zero** tests while the run
   still exits 0: if `bddgen` has not generated `.features-gen/`, the BDD project
-  is simply empty, and because the sibling `chromium` project still has tests,
-  Playwright never trips its "no tests found" guard. `test/e2e/bddGuard.ts`
-  (wired as `globalSetup`) now fails loudly on a real run. It cannot fire for
-  `playwright test --list`, which does not run `globalSetup`.
+  is simply empty, and a sibling project with its own specs keeps Playwright
+  from tripping its "no tests found" guard. `test/e2e/bddGuard.ts` (wired as
+  `globalSetup`) fails loudly on a real run. It cannot fire for `playwright test
+  --list`, which does not run `globalSetup`.
+- Every e2e scenario is Gherkin — `test/e2e/features/*.feature` plus steps in
+  `test/e2e/steps/`. There are no plain `.spec.ts` files under `test/e2e`, and
+  both Playwright projects read the generated `.features-gen/` directory, so a
+  new e2e test means a new scenario, not a new spec file.
+- playwright-bdd's step registry is **global** and keyword-typed. Two features
+  declaring the same sentence is an ambiguous-step error, not sharing — put
+  cross-feature sentences in `test/e2e/steps/app.steps.ts`. And a sentence
+  registered with `Given` will not match a `When` step (nor `And` following
+  one); register it under the keyword the feature file actually uses.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`

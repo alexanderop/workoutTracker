@@ -37,15 +37,13 @@ export default defineConfig({
       testDir: bddTestDir,
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'chromium',
-      testDir: './test/e2e',
-      use: { ...devices['Desktop Chrome'] },
-    },
+    // Same generated specs as `bdd`, narrowed by scenario name to the two
+    // flows worth paying a second device for: getting into the app, and a
+    // logged set surviving a reload.
     {
       name: 'mobile-webkit-critical',
-      testDir: './test/e2e',
-      grep: /first-time user can enter|active workout and completed set survive/,
+      testDir: bddTestDir,
+      grep: /skip straight into the app|in-progress workout and its logged set survive/,
       use: { ...devices['iPhone 13'] },
     },
   ],
