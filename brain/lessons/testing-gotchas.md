@@ -59,6 +59,23 @@ failure modes here:
   Playwright never trips its "no tests found" guard. `test/e2e/bddGuard.ts`
   (wired as `globalSetup`) now fails loudly on a real run. It cannot fire for
   `playwright test --list`, which does not run `globalSetup`.
+- A layout assertion that only proves an element **exists** proves nothing about
+  whether it is readable. The habits week header shared its grid template with
+  the rows beneath it exactly — and every one of its seven labels needed 12–21px
+  in a 9.14px column, so they overflowed and painted over each other into one
+  smear. The spec was green throughout, because "the header exists" and "it
+  shares `HABIT_ROW_GRID_COLUMNS`" were both true. When a test covers text in a
+  constrained box, measure: `scrollWidth > clientWidth` per element is the
+  assertion, and `getBoundingClientRect().width` is the one for "is this column
+  wide enough to tell two truncated names apart". Verify such a test by
+  restoring the old geometry and watching it fail — an unverified layout
+  assertion is usually asserting the wrong thing.
+- Screenshots are not enough on their own either, and neither is axe. axe-core
+  dropped `duplicate-id-active`, and `form-field-multiple-labels` does not fire
+  when the *second* of two same-id inputs is the unlabelled one — so two
+  components rendering a control for the same entity can collide on a DOM id
+  and leave one control nameless with the a11y tier green. Assert the control is
+  reachable **by accessible name** while both are mounted.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`

@@ -12,6 +12,7 @@
 ## Principles
 - [[principles]] — Project engineering and design principles. One topic per file in `principles/`, linked here as `[[p…
 - [[principles/a-fake-must-not-promise-more-than-the-real-thing]] — A test double exists to stand in for a dependency. The moment it guarantees
+- [[principles/encode-lessons-in-structure]] — A lesson written down is a lesson someone has to remember to read. A lesson
 - [[principles/type-guarantees-need-a-pinned-call-site]] — A constrained signature only proves something where code actually calls it. If
 
 ## Reference
