@@ -42,7 +42,7 @@ function createValidHabit(overrides: Record<string, unknown> = {}) {
   return {
     id: 'habit-1',
     name: 'Drink water',
-    icon: '💧',
+    icon: 'habit-water',
     schedule: { type: 'daily' },
     kind: { type: 'binary' },
     autoLink: null,

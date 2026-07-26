@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { AppIcon } from '@/components/app-icons'
 import { formatDate, formatDuration } from '@/lib/formatters'
 import type { AttemptWithComparison } from '../composables/useBenchmarkAttemptHistory'
 
@@ -39,6 +40,7 @@ const { t } = useI18n()
           v-if="attempt.isPersonalBest"
           class="flex items-center gap-1 text-sm font-semibold text-primary"
         >
+          <AppIcon name="trophy" class="size-4 shrink-0" />
           {{ t('workouts.benchmarks.pbBadge') }}
         </div>
         <div v-else class="text-sm text-muted-foreground">

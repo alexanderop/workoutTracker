@@ -7,7 +7,6 @@ type HabitKindInput = { type: 'binary' } | { type: 'quantity'; target: string; u
 
 export type CreateHabitOptions = {
   name: string
-  icon?: string
   schedule?: HabitScheduleInput
   kind?: HabitKindInput
   autoLink?: boolean
@@ -62,15 +61,10 @@ export class HabitsPO {
     await userEvent.fill(input, name)
   }
 
-  async setIcon(icon: string): Promise<void> {
-    const input = page.getByRole('dialog').getByRole('textbox', { name: /^icon$/i })
-    await userEvent.clear(input)
-    await userEvent.fill(input, icon)
-  }
-
-  async clickIconPreset(emoji: string): Promise<void> {
+  /** `label` is the accessible name of an icon button, e.g. 'Reading' or 'No icon'. */
+  async clickIconPreset(label: string): Promise<void> {
     await userEvent.click(
-      page.getByRole('dialog').getByRole('button', { name: emoji, exact: true }),
+      page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
     )
   }
 

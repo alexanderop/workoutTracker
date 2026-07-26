@@ -11,15 +11,16 @@ import {
   Scale,
   Sparkles,
 } from '@lucide/vue'
+import { AppIcon } from '@/components/app-icons'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 
 const moods = [
-  { value: 1, emoji: '😔', label: 'Low' },
-  { value: 2, emoji: '😕', label: 'Off' },
-  { value: 3, emoji: '😐', label: 'Okay' },
-  { value: 4, emoji: '🙂', label: 'Good' },
-  { value: 5, emoji: '😊', label: 'Great' },
+  { value: 1, icon: 'mood-low', label: 'Low' },
+  { value: 2, icon: 'mood-off', label: 'Off' },
+  { value: 3, icon: 'mood-okay', label: 'Okay' },
+  { value: 4, icon: 'mood-good', label: 'Good' },
+  { value: 5, icon: 'mood-great', label: 'Great' },
 ] as const
 
 const selectedMood = ref(4)
@@ -78,7 +79,7 @@ function addWater() {
             :aria-label="`Mood: ${mood.label}`"
             @click="selectedMood = mood.value"
           >
-            <span aria-hidden="true" class="text-2xl">{{ mood.emoji }}</span>
+            <AppIcon :name="mood.icon" class="size-7" />
             <span>{{ mood.label }}</span>
           </button>
         </div>

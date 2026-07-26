@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { isAppIconKey } from '@/components/app-icons'
 import { getHabitsRepository } from '@/db'
 import { resetDatabase } from '@/__tests__/setup'
 import { createDbHabit, createDbHabitEntry, createDbHabitEntryForDate } from '@/__tests__/factories'
@@ -46,6 +47,66 @@ describe('HabitRepository', () => {
       })
     })
 
+    it('migrates emoji icons stored before the bundled icon set onto real artwork', async () => {
+      // Every emoji the pre-icon habit form offered, paired with the artwork it
+      // must land on -- asserting the exact key, not merely "some bundled key",
+      // so a mis-wired row in the converter's table fails here.
+      const migrations = [
+        { emoji: '💧', key: 'habit-water' },
+        { emoji: '🏃', key: 'habit-run' },
+        { emoji: '🧘', key: 'habit-meditate' },
+        { emoji: '📚', key: 'habit-read' },
+        { emoji: '🛌', key: 'habit-sleep' },
+        { emoji: '🥗', key: 'habit-nutrition' },
+        { emoji: '🏋️', key: 'habit-strength' },
+        { emoji: '✍️', key: 'habit-journal' },
+        { emoji: '🚭', key: 'habit-no-smoke' },
+        { emoji: '🧹', key: 'habit-clean' },
+        { emoji: '📌', key: 'habit-default' },
+      ]
+
+      for (const [index, { emoji }] of migrations.entries()) {
+        await db.habits.add({
+          id: `legacy-${index}`,
+          name: `Legacy ${index}`,
+          icon: emoji,
+          schedule: { type: 'daily' },
+          kind: { type: 'binary' },
+          autoLink: null,
+          archivedAt: null,
+          orderIndex: index,
+          createdAt: 1,
+        })
+      }
+
+      const migrated = await getHabitsRepository().getAllHabits()
+
+      expect(migrated.map((habit) => habit.icon)).toEqual(migrations.map(({ key }) => key))
+      for (const { key } of migrations) {
+        expect(isAppIconKey(key)).toBe(true)
+      }
+    })
+
+    it('preserves a hand-typed icon the bundled set has no equivalent for', async () => {
+      await db.habits.add({
+        id: 'hand-typed',
+        name: 'Moon goals',
+        icon: '🦄',
+        schedule: { type: 'daily' },
+        kind: { type: 'binary' },
+        autoLink: null,
+        archivedAt: null,
+        orderIndex: 0,
+        createdAt: 1,
+      })
+
+      // Read-path migration must never discard what the user chose: the UI falls
+      // back to the generic marker, but the record keeps the original value.
+      const [habit] = await getHabitsRepository().getAllHabits()
+      expect(habit?.icon).toBe('🦄')
+      expect(isAppIconKey(habit?.icon)).toBe(false)
+    })
+
     it('should return an added habit from getAllHabits and getHabitById', async () => {
       const repo = getHabitsRepository()
       const habit = createDbHabit({ name: 'Stretch' })
@@ -88,11 +149,11 @@ describe('HabitRepository', () => {
       const habit = createDbHabit({ name: 'Read', icon: null })
       await repo.addHabit(habit)
 
-      await repo.updateHabit(habit.id, { name: 'Read daily', icon: '📚' })
+      await repo.updateHabit(habit.id, { name: 'Read daily', icon: 'habit-read' })
 
       const updated = await repo.getHabitById(habit.id)
       expect(updated?.name).toBe('Read daily')
-      expect(updated?.icon).toBe('📚')
+      expect(updated?.icon).toBe('habit-read')
       expect(updated?.kind).toEqual(habit.kind)
     })
 

@@ -5,6 +5,8 @@ import { ChevronDown } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import type { DbHabit } from '@/db/schema'
+import { AppIcon } from '@/components/app-icons'
+import { resolveHabitIcon } from '../lib/habitIcons'
 
 const { habits } = defineProps<{
   habits: ReadonlyArray<DbHabit>
@@ -33,7 +35,7 @@ const open = ref(false)
         :data-testid="`habit-archived-${habit.name}`"
         class="flex items-center gap-3 rounded-lg border bg-card px-4 py-3"
       >
-        <span class="text-xl" aria-hidden="true">{{ habit.icon ?? '📌' }}</span>
+        <AppIcon :name="resolveHabitIcon(habit.icon)" class="size-6 shrink-0" />
         <span class="flex-1 min-w-0 truncate font-medium text-muted-foreground">{{
           habit.name
         }}</span>

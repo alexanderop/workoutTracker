@@ -30,6 +30,41 @@ function isHabitAccent(value: unknown): value is HabitAccent {
   return HABIT_ACCENT_VALUES.has(value)
 }
 
+/**
+ * Habit icons were free-text emoji before the bundled icon set. Every emoji the
+ * old form offered maps onto its drawn equivalent; anything hand-typed is kept
+ * verbatim so no user input is destroyed, and the UI falls back to the generic
+ * habit marker for values it cannot resolve.
+ *
+ * Keys must stay in sync with `src/components/app-icons` -- covered by
+ * `src/__tests__/db/habits.spec.ts`.
+ */
+const LEGACY_HABIT_ICONS: Readonly<Record<string, string>> = {
+  '💧': 'habit-water',
+  '🏃': 'habit-run',
+  '🏋': 'habit-strength',
+  '🧘': 'habit-meditate',
+  '📚': 'habit-read',
+  '✍': 'habit-journal',
+  '🛌': 'habit-sleep',
+  '🥗': 'habit-nutrition',
+  '🚭': 'habit-no-smoke',
+  '🧹': 'habit-clean',
+  '✅': 'habit-check',
+  '📊': 'habit-progress',
+  '📌': 'habit-default',
+}
+
+/** Emoji presentation selectors, which stored icons may or may not carry. */
+const VARIATION_SELECTORS = /[\uFE0E\uFE0F]/g
+
+function normalizeHabitIcon(icon: unknown): string | null {
+  if (typeof icon !== 'string') return null
+  const trimmed = icon.trim()
+  if (trimmed === '') return null
+  return LEGACY_HABIT_ICONS[trimmed.replaceAll(VARIATION_SELECTORS, '')] ?? trimmed
+}
+
 /** Normalize legacy or malformed appearance fields at the repository boundary. */
 export function normalizeDbHabit(habit: Readonly<StoredDbHabit>): DbHabit {
   return {
@@ -37,6 +72,7 @@ export function normalizeDbHabit(habit: Readonly<StoredDbHabit>): DbHabit {
     description:
       typeof habit.description === 'string' ? habit.description : DEFAULT_HABIT_DESCRIPTION,
     accent: isHabitAccent(habit.accent) ? habit.accent : DEFAULT_HABIT_ACCENT,
+    icon: normalizeHabitIcon(habit.icon),
   }
 }
 

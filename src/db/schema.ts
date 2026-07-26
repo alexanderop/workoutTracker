@@ -413,7 +413,7 @@ export const DEFAULT_HABIT_ACCENT: HabitAccent = 'purple'
 export type DbHabit = {
   id: string
   name: string
-  icon: string | null // emoji
+  icon: string | null // bundled app-icon key (see src/components/app-icons)
   description: string | null
   accent: HabitAccent
   schedule: HabitSchedule
@@ -425,9 +425,11 @@ export type DbHabit = {
 }
 
 /** Raw habit shape accepted from IndexedDB before repository normalization. */
-export type StoredDbHabit = Omit<DbHabit, 'description' | 'accent'> & {
+export type StoredDbHabit = Omit<DbHabit, 'description' | 'accent' | 'icon'> & {
   description?: unknown
   accent?: unknown
+  /** Emoji in rows written before the bundled icon set shipped. */
+  icon?: unknown
 }
 
 /**

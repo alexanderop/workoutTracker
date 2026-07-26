@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/number-field'
 import type { DbHabit, HabitKind } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
+import { AppIcon } from '@/components/app-icons'
+import { resolveHabitIcon } from '../lib/habitIcons'
 
 /** Streaks shorter than this aren't worth a badge -- 1 day isn't a "streak" yet. */
 const STREAK_BADGE_THRESHOLD = 2
@@ -70,7 +72,7 @@ function handleQuantityChange(item: HabitTodayItem, value: number) {
         "
         @click="emit('toggle', item.habit)"
       >
-        <span class="text-2xl" aria-hidden="true">{{ item.habit.icon ?? '✅' }}</span>
+        <AppIcon :name="resolveHabitIcon(item.habit.icon, 'habit-check')" class="size-8 shrink-0" />
         <span class="flex-1 min-w-0">
           <span class="block font-medium truncate">{{ item.habit.name }}</span>
           <span v-if="item.weekProgress" class="block text-xs text-muted-foreground">
@@ -96,7 +98,10 @@ function handleQuantityChange(item: HabitTodayItem, value: number) {
       <!-- Quantity: progress + inline stepper -->
       <div v-else class="space-y-2 rounded-lg border bg-card px-4 py-3">
         <div class="flex items-center gap-3">
-          <span class="text-2xl" aria-hidden="true">{{ item.habit.icon ?? '📊' }}</span>
+          <AppIcon
+            :name="resolveHabitIcon(item.habit.icon, 'habit-progress')"
+            class="size-8 shrink-0"
+          />
           <span class="flex-1 min-w-0">
             <span class="block font-medium truncate">{{ item.habit.name }}</span>
             <span class="block text-xs text-muted-foreground">

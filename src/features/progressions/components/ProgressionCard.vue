@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ChevronRight } from '@lucide/vue'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -21,9 +22,7 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 
-const levelDisplay = computed(
-  () => `${level.weight}kg • ${level.reps} reps • ${level.minutes} min`,
-)
+const levelDisplay = computed(() => `${level.weight}kg • ${level.reps} reps • ${level.minutes} min`)
 
 const statusBadge = computed(() => {
   if (isComplete) {
@@ -45,7 +44,7 @@ const cardAriaLabel = computed(() =>
 
 function handleActivationKey(event: KeyboardEvent): void {
   if (!(event.key === 'Enter' || event.key === ' ')) {
-	return;
+    return
   }
 
   event.preventDefault()
@@ -81,7 +80,7 @@ function handleActivationKey(event: KeyboardEvent): void {
           {{ t('progressions.card.sessions', { count: sessionsCompleted }) }}
         </div>
       </div>
-      <div class="text-sm text-muted-foreground" aria-hidden="true">›</div>
+      <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </div>
   </Card>
 </template>

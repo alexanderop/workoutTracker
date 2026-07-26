@@ -47,10 +47,19 @@ export class ExercisesPO {
    * @param muscleLabel - The visible label of the muscle option (e.g. "Chest")
    */
   async selectMuscle(muscleLabel: string): Promise<void> {
-    const muscleRow = page.getByRole('button', { name: /muscle group/i })
-    await userEvent.click(muscleRow)
+    await this.openMuscleSelector()
     const option = page.getByRole('button', { name: new RegExp(muscleLabel, 'i') })
     await userEvent.click(option)
+  }
+
+  /** Opens the Muscle Group selector and leaves it open, for inspecting options. */
+  async openMuscleSelector(): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name: /muscle group/i }))
+  }
+
+  /** An option button inside an open selector dialog, by its visible label. */
+  getSelectorOption(label: string) {
+    return page.getByRole('dialog').getByRole('button', { name: label, exact: true })
   }
 
   /**

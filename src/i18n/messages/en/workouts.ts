@@ -271,8 +271,8 @@ export default {
       },
     },
     pb: {
-      newPb: '🎉 New PB! 🎉',
-      firstPb: '🎉 First PB set! 🎉',
+      newPb: 'New PB!',
+      firstPb: 'First PB set!',
       previous: 'Previous:',
       faster: '{time} faster!',
       minute: 'minute',
@@ -282,7 +282,7 @@ export default {
     },
     attemptHistory: 'Attempt History',
     noAttempts: 'No attempts yet',
-    pbBadge: '🏆 Personal Best',
+    pbBadge: 'Personal Best',
     completion: {
       finalTime: 'Final Time',
     },

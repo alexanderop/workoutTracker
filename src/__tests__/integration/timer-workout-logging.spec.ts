@@ -65,7 +65,7 @@ describe('Timer Workout Logging', () => {
       await expect.element(page.getByRole('button', { name: /done/i })).toBeVisible()
     })
 
-    it('changes button to "Logged ✓" after clicking Log Workout', async ({ createTestApp }) => {
+    it('changes button to "Logged" after clicking Log Workout', async ({ createTestApp }) => {
       const app = await createTestApp()
       await goToTimersPage(app)
       await startAmrapTimer()
@@ -75,7 +75,7 @@ describe('Timer Workout Logging', () => {
       const logButton = page.getByRole('button', { name: /log workout/i })
       await userEvent.click(logButton)
 
-      // Button should change to "Logged ✓" and be disabled
+      // Button should change to "Logged" and be disabled
       await expect.element(page.getByRole('button', { name: /logged/i })).toBeVisible()
       await expect.element(page.getByRole('button', { name: /logged/i })).toBeDisabled()
     })
@@ -148,7 +148,7 @@ describe('Timer Workout Logging', () => {
       await startAmrapTimer()
       await completeTimer()
 
-      // Log Workout button should be available again (not "Logged ✓")
+      // Log Workout button should be available again (not "Logged")
       await expect.element(page.getByRole('button', { name: /log workout/i })).toBeVisible()
     })
   })

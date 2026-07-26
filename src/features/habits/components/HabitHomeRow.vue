@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import type { DbHabit, DbHabitEntry } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
 import HabitCompactGrid from './HabitCompactGrid.vue'
+import { AppIcon } from '@/components/app-icons'
+import { resolveHabitIcon } from '../lib/habitIcons'
 
 const { item, entries } = defineProps<{
   item: HabitTodayItem
@@ -21,7 +23,7 @@ const { t } = useI18n()
     :data-habit-accent="item.habit.accent"
     class="grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-3 rounded-lg border bg-card p-3"
   >
-    <span class="text-xl" aria-hidden="true">{{ item.habit.icon ?? '📌' }}</span>
+    <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
     <div class="min-w-0">
       <p class="truncate text-sm font-medium">{{ item.habit.name }}</p>
       <p v-if="item.habit.kind.type === 'quantity'" class="truncate text-xs text-muted-foreground">

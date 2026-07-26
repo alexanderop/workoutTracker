@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ChevronRight } from '@lucide/vue'
 
 type Properties = {
   label: string
@@ -27,7 +28,7 @@ const displayValue = computed(() => value || placeholder || t('common.settings.p
       <span class="text-sm text-muted-foreground">
         {{ displayValue }}
       </span>
-      <span class="text-muted-foreground">›</span>
+      <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </div>
   </button>
 </template>

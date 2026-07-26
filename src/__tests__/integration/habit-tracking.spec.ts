@@ -431,27 +431,27 @@ describe('Habit Tracking', () => {
       expect(await repo.getAllHabits()).toEqual([])
     })
 
-    it('sets a custom icon via a preset button or by typing it directly', async ({
-      createTestApp,
-    }) => {
+    it('picks a bundled icon and clears it again', async ({ createTestApp }) => {
       const { navigateTo, habits } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Habits })
       await habits.openCreateForm()
       await habits.fillName('Read')
-      await habits.clickIconPreset('📚')
+      await habits.clickIconPreset('Reading')
       await habits.clickSave()
 
       const repo = getHabitsRepository()
       const withPreset = (await repo.getAllHabits())[0]!
-      expect(withPreset.icon).toBe('📚')
+      expect(withPreset.icon).toBe('habit-read')
+      await expect.element(page.getByTestId('app-icon-habit-read').first()).toBeVisible()
 
       await habits.openEditForm('Read')
-      await habits.setIcon('🎯')
+      await habits.clickIconPreset('No icon')
       await habits.clickSave()
 
-      const withTypedIcon = (await repo.getAllHabits())[0]!
-      expect(withTypedIcon.icon).toBe('🎯')
+      const cleared = (await repo.getAllHabits())[0]!
+      expect(cleared.icon).toBeNull()
+      await expect.element(page.getByTestId('app-icon-habit-default').first()).toBeVisible()
     })
 
     it('creates a habit that auto-links to completed workouts when the switch is toggled', async ({

@@ -7,6 +7,8 @@ import type { DbHabit, DbHabitEntry } from '@/db/schema'
 import { useHabitStats } from '../composables/useHabitStats'
 import HabitHistoryGrid from './HabitHistoryGrid.vue'
 import HabitStatsSummary from './HabitStatsSummary.vue'
+import { AppIcon } from '@/components/app-icons'
+import { resolveHabitIcon } from '../lib/habitIcons'
 
 const { habit, entries } = defineProps<{
   habit: DbHabit
@@ -45,7 +47,7 @@ const kindSummary = (h: DbHabit) =>
 <template>
   <div class="rounded-lg border bg-card" :data-testid="`habit-item-${habit.name}`">
     <div class="flex items-center gap-3 px-4 py-3">
-      <span class="text-xl" aria-hidden="true">{{ habit.icon ?? '📌' }}</span>
+      <AppIcon :name="resolveHabitIcon(habit.icon)" class="size-6 shrink-0" />
       <div class="flex-1 min-w-0">
         <p class="font-medium truncate">{{ habit.name }}</p>
         <p class="text-xs text-muted-foreground">

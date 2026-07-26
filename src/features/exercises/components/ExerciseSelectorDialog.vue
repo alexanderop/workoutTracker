@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends string">
+import { Check } from '@lucide/vue'
+import { AppIcon } from '@/components/app-icons'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { SelectorOption } from '@/features/exercises/data/exerciseOptions'
@@ -38,6 +40,7 @@ function handleSelect(value: T) {
         <button
           v-for="option in options"
           :key="option.value"
+          :aria-pressed="selected === option.value"
           class="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all"
           :class="[
             selected === option.value
@@ -46,7 +49,7 @@ function handleSelect(value: T) {
           ]"
           @click="handleSelect(option.value)"
         >
-          <span class="text-3xl">{{ option.icon }}</span>
+          <AppIcon v-if="option.icon" :name="option.icon" class="size-9" />
           <span class="text-xs font-medium text-center">{{ option.label }}</span>
         </button>
       </div>
@@ -58,6 +61,7 @@ function handleSelect(value: T) {
           <button
             v-for="option in options"
             :key="option.value"
+            :aria-pressed="selected === option.value"
             class="w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left"
             :class="[
               selected === option.value
@@ -66,9 +70,13 @@ function handleSelect(value: T) {
             ]"
             @click="handleSelect(option.value)"
           >
-            <span class="text-2xl">{{ option.icon }}</span>
+            <AppIcon v-if="option.icon" :name="option.icon" class="size-7 shrink-0" />
             <span class="font-medium">{{ option.label }}</span>
-            <span v-if="selected === option.value" class="ml-auto text-primary">✓</span>
+            <Check
+              v-if="selected === option.value"
+              class="ml-auto size-5 text-primary"
+              aria-hidden="true"
+            />
           </button>
         </template>
 
@@ -77,6 +85,7 @@ function handleSelect(value: T) {
           <button
             v-for="option in options"
             :key="option.value"
+            :aria-pressed="selected === option.value"
             class="w-full text-left px-4 py-3 rounded-lg border transition-all"
             :class="[
               selected === option.value
@@ -92,9 +101,11 @@ function handleSelect(value: T) {
                   {{ option.description }}
                 </p>
               </div>
-              <span v-if="selected === option.value" class="text-primary text-lg flex-shrink-0"
-                >✓</span
-              >
+              <Check
+                v-if="selected === option.value"
+                class="size-5 shrink-0 text-primary"
+                aria-hidden="true"
+              />
             </div>
           </button>
         </template>

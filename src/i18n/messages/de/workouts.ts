@@ -272,8 +272,8 @@ export default {
       },
     },
     pb: {
-      newPb: '🎉 Neue Bestleistung! 🎉',
-      firstPb: '🎉 Erste Bestleistung gesetzt! 🎉',
+      newPb: 'Neue Bestleistung!',
+      firstPb: 'Erste Bestleistung gesetzt!',
       previous: 'Vorherige:',
       faster: '{time} schneller!',
       minute: 'Minute',
@@ -283,7 +283,7 @@ export default {
     },
     attemptHistory: 'Versuchsverlauf',
     noAttempts: 'Noch keine Versuche',
-    pbBadge: '🏆 Persönliche Bestleistung',
+    pbBadge: 'Persönliche Bestleistung',
     completion: {
       finalTime: 'Endzeit',
     },
