@@ -166,14 +166,16 @@ advances:
 
 ```bash
 pnpm -s type-check && pnpm -s test:unit && pnpm -s knip
-pnpm exec vitest run --project=default <path from the plan's ## Test Scope>
+# plus every command in the plan's `## Test Scope`, verbatim — e.g.
+pnpm exec vitest run --project=default src/__tests__/features/<feature>
 ```
 
-The second line is the feature's own browser specs — the plan's `## Test Scope`,
-every command in it. Never substitute `pnpm test`: the full tier is ~5 minutes
-per loop iteration, and CI runs it sharded on the PR. If a phase widened the
-diff past the recorded scope, widen the scope and the plan with it rather than
-falling back to the whole tier.
+After the fast gate, run the plan's `## Test Scope` — **every** entry the
+editing phase could have touched, copied as written, including any non-`default`
+project. One entry run out of two is half a gate. Never substitute `pnpm test`:
+the full tier is ~5 minutes per loop iteration, and CI runs it sharded on the
+PR. If a phase widened the diff past the recorded scope, widen the scope and the
+plan with it rather than falling back to the whole tier.
 
 Two rules govern the loop:
 

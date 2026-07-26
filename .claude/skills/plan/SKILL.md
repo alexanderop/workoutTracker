@@ -129,7 +129,8 @@ from.
 - [ ] Type checking passes: `pnpm type-check`
 - [ ] Lint passes: `pnpm lint`
 - [ ] Unit tier passes: `pnpm test:unit`
-- [ ] Scoped tests pass: `pnpm exec vitest run --project=default src/__tests__/[path from Test Scope]`
+- [ ] [Test Scope entry this phase needs, command copied verbatim]
+- [ ] [second entry, if the phase spans two — one box per entry]
 - [ ] Full suite: CI on the PR — not run locally
 
 #### Manual Verification:  [emit this subsection only when the phase needs one]
@@ -137,9 +138,14 @@ from.
 ```
 
 - **Automated** — type checking, linting, and the tests written for this phase,
-  each with the command to run, scoped to the paths this phase touches. A bare
-  `pnpm test` box does not belong in a phase; point it at a `## Test Scope`
-  entry instead.
+  each with the command to run, scoped to the paths this phase touches. Emit
+  **one box per `## Test Scope` entry** the phase depends on, copying each
+  command verbatim — its own `--project`, its own path. Never wrap a recorded
+  path in another prefix: the entries are already complete commands, so
+  prefixing one yields `src/__tests__/src/__tests__/…` and matches nothing. A
+  scope spanning the `unit` and `default` projects gives the phase two boxes,
+  not one. A bare `pnpm test` box does not belong in a phase; point it at a
+  `## Test Scope` entry instead.
 - **Manual** — what to exercise by hand, edge cases, and (for UI) visual
   verification via screenshot.
 

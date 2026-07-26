@@ -55,13 +55,21 @@ this feature**, before the push rather than after CI rejects it:
 
 ```bash
 pnpm lint:check
-pnpm exec vitest run --project=default <path from the plan's ## Test Scope>
+# then every command in the plan's `## Test Scope`, verbatim — e.g.
+pnpm exec vitest run --project=default src/__tests__/features/<feature>
+pnpm exec vitest run --project=unit src/__tests__/unit/<area>
 ```
 
-Run every command in the plan's `## Test Scope`, not just one. No plan, or no
-`## Test Scope` in it? Derive the scope from `git diff --name-only main...HEAD`
-— the changed features' specs plus the specs of anything that imports what you
-changed — and say in the PR body which scope you ran.
+Run **every** command the scope records, not just the first and not just the
+`default` one — a scope spanning two projects is two runs, and dropping the
+`unit` line silently ships that half unverified. Copy each command as written;
+the recorded entries are already complete, so re-prefixing a path yields
+`src/__tests__/src/__tests__/…` and matches nothing.
+
+No plan, or no `## Test Scope` in it? Derive the scope from
+`git diff --name-only main...HEAD` — the changed features' specs plus the specs
+of anything that imports what you changed — and say in the PR body which scope
+you ran.
 
 **Do not run `pnpm test` here.** The full browser tier is ~5 minutes locally,
 and CI runs it on the PR sharded four ways, alongside the a11y, visual, e2e,
@@ -144,12 +152,28 @@ Tell the user the PR is open, that CI is now running the full suite against it,
 and that `pnpm -s pr:comments` is how to read review feedback once it lands —
 `gh pr view --comments` silently omits review summaries and line comments.
 
-CI is the full-suite gate, so the push is not the end of the gate — watch it
-land. Either subscribe to the PR's activity (`subscribe_pr_activity`) or check
-back with `gh pr checks`, and treat a tier that only CI runs going red as this
-work's problem until proven otherwise: reproduce the failure locally with the
-narrowest command that covers it, fix it, and push again. Do not close out the
-run with "CI will tell us".
+CI is the full-suite gate, so **the push is not the end of the gate** — the run
+is complete when CI has reported, not when the PR exists. Moving the suite to CI
+moved the finish line with it; ending here would mean the tiers nobody ran
+locally were never checked at all.
+
+Wait for the verdict by whichever mechanism the environment supports:
+
+```bash
+gh pr checks <pr> --watch    # blocks until every check settles
+```
+
+Where `gh` is unavailable (it is absent in the Claude Code web sandbox, among
+others), subscribe to the PR's activity (`subscribe_pr_activity`) and act on the
+events as they wake the session, or poll the checks through the GitHub API. The
+mechanism is negotiable; finishing without a verdict is not.
+
+Then report the outcome explicitly — "Required CI green" or the named failing
+job. A red tier that only CI runs is this work's problem until proven otherwise:
+reproduce it locally with the narrowest command that covers it, fix it, and push
+again. Do not close out the run with "CI will tell us", and do not report the
+PR as shipped while checks are still in flight — say they are running and that
+you are waiting.
 
 ## Stop and Ask
 
@@ -181,9 +205,9 @@ STOP and ask when:
 
 ```markdown
 Branch: <name> (<n> commits ahead of main)
-Gate: <scoped commands and results>
+Gate: <every scoped command run, and its result>
 Scope: <what the scope covered, and where it came from — plan `## Test Scope` or derived from the diff>
-CI: full suite running on the PR
+CI: <green | the failing job | still running, waiting on it>
 PR: <url>
 Caveat: <one sentence, only if needed>
 ```

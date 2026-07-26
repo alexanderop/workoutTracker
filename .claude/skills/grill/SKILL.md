@@ -388,11 +388,17 @@ verification cannot be resumed from. Put the exact command inline.
 - [ ] Type checking passes: `pnpm type-check`
 - [ ] Lint passes: `pnpm lint`
 - [ ] Unit tier passes: `pnpm test:unit`
-- [ ] Scoped tests pass: `pnpm exec vitest run --project=default src/__tests__/<path from Test Scope>`
+- [ ] <Test Scope entry 1, command copied verbatim>
+- [ ] <Test Scope entry 2, command copied verbatim — one box per entry>
 - [ ] Full suite: CI on the PR — not run locally
 
-<Every test box names a scope from `## Test Scope`. A bare `pnpm test` box does
-not belong here: the local loop runs the feature's tests, CI runs the tier.>
+<Emit **one box per `## Test Scope` entry**, copying each command verbatim —
+whole line, its own `--project`, its own path. Do not collapse several entries
+into one box, and do not wrap a path in another prefix: the entries are already
+complete commands, so prefixing one yields `src/__tests__/src/__tests__/…` and
+matches nothing. A scope with a `unit` and a `default` command produces two
+boxes. A bare `pnpm test` box does not belong here: the local loop runs the
+feature's tests, CI runs the tier.>
 
 #### Manual Verification:  <emit this subsection only when the wave needs one>
 - [ ] <specific, actionable step that proves the behavior works — not "it compiles">
