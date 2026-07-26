@@ -11,6 +11,7 @@ import { computed, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RouteNames } from '@/router'
 import DesignFrame from '../components/DesignFrame.vue'
 import DesignInspectorPanel from '../components/DesignInspectorPanel.vue'
 import DesignLayersPanel from '../components/DesignLayersPanel.vue'
@@ -136,6 +137,19 @@ function frameOrigin(id: string): { x: number; y: number } | null {
   }
 }
 
+/**
+ * Back normally means "undo the navigation that got me here", but the studio is
+ * often opened straight from a bookmarked /design URL — and `router.back()`
+ * with no app history to pop leaves the user stranded on the canvas.
+ */
+function goBack(): void {
+  if (globalThis.history.state?.back) {
+    router.back()
+    return
+  }
+  router.push({ name: RouteNames.Settings })
+}
+
 function selectFrame(id: string): void {
   selectedId.value = id
 }
@@ -155,11 +169,15 @@ function jumpToFrame(id: string): void {
 
 <template>
   <!-- eslint-disable @intlify/vue-i18n/no-raw-text -- design tooling chrome, not product copy -->
-  <div class="flex h-screen flex-col overflow-hidden bg-background" :style="themeStyle">
+  <div
+    data-testid="design-studio"
+    class="flex h-screen flex-col overflow-hidden bg-background"
+    :style="themeStyle"
+  >
     <DesignToolbar
       :zoom-label="zoomLabel"
       :is-dark="isDark"
-      @back="router.back()"
+      @back="goBack"
       @zoom-in="zoomIn"
       @zoom-out="zoomOut"
       @fit="fit"

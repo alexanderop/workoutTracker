@@ -43,8 +43,17 @@ const unit = ref('kg')
       </div>
       <div class="space-y-1.5">
         <Label for="ds-invalid">Invalid state</Label>
-        <Input id="ds-invalid" model-value="-5" aria-invalid="true" />
-        <p class="text-xs text-destructive">Weight must be positive.</p>
+        <!--
+          The message is wired with aria-describedby, not just coloured red:
+          a validation error nobody can hear is not a validation error.
+        -->
+        <Input
+          id="ds-invalid"
+          model-value="-5"
+          aria-invalid="true"
+          aria-describedby="ds-invalid-error"
+        />
+        <p id="ds-invalid-error" class="text-xs text-destructive">Weight must be positive.</p>
       </div>
       <div class="space-y-1.5">
         <Label for="ds-disabled">Disabled</Label>
@@ -67,7 +76,7 @@ const unit = ref('kg')
     <section class="space-y-2">
       <h3 class="text-sm font-semibold">Slider</h3>
       <div class="flex items-center gap-3">
-        <Slider v-model="rpe" :min="6" :max="10" :step="0.5" class="flex-1" />
+        <Slider v-model="rpe" label="RPE" :min="6" :max="10" :step="0.5" class="flex-1" />
         <span class="w-8 text-right text-sm font-medium tabular-nums">{{ rpe[0] }}</span>
       </div>
       <p class="text-xs text-muted-foreground">RPE — coarse steps beat precision on a phone.</p>

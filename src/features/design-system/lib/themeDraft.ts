@@ -69,9 +69,14 @@ export function formatOklch({ l, c, h }: Oklch): string {
  * Foreground that sits on the primary fill. A flat threshold rather than a
  * contrast calculation: oklch lightness already tracks perceived lightness, so
  * "is this fill light or dark" is the only question worth asking.
+ *
+ * The cutoff sits below the break-even point, not on it. For a neutral fill the
+ * two foregrounds tie at about L=0.60 (white gives ~3:1 there, which fails AA);
+ * crossing to dark text early costs nothing on the dark side and rescues the
+ * mid-light values a slider lands on constantly.
  */
 export function primaryForeground(primary: Oklch): string {
-  return primary.l > 0.62 ? 'oklch(0.15 0 0)' : 'oklch(0.985 0 0)'
+  return primary.l > 0.57 ? 'oklch(0.15 0 0)' : 'oklch(0.985 0 0)'
 }
 
 /**

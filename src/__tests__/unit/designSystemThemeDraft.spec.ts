@@ -46,6 +46,16 @@ describe('primaryForeground', () => {
   it('puts light text on a dark fill', () => {
     expect(primaryForeground({ l: 0.4, c: 0.15, h: 260 })).toBe('oklch(0.985 0 0)')
   })
+
+  it('switches to dark text before the fill gets light enough to fail AA', () => {
+    // A neutral at L=0.60 is where white and dark text tie at roughly 3:1 —
+    // below AA either way, so the cutoff has to sit under it, not on it.
+    expect(primaryForeground({ l: 0.6, c: 0, h: 0 })).toBe('oklch(0.15 0 0)')
+  })
+
+  it('keeps light text for the shipped default primary', () => {
+    expect(primaryForeground(DEFAULT_DRAFT.primary)).toBe('oklch(0.985 0 0)')
+  })
 })
 
 describe('themeVariables', () => {

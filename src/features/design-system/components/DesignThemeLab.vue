@@ -80,6 +80,7 @@ function setChannel(channel: keyof Oklch, value: number | undefined): void {
             }}</span>
           </div>
           <Slider
+            label="Primary lightness"
             :model-value="[draft.primary.l]"
             :min="LIGHTNESS_RANGE.min"
             :max="LIGHTNESS_RANGE.max"
@@ -96,6 +97,7 @@ function setChannel(channel: keyof Oklch, value: number | undefined): void {
             }}</span>
           </div>
           <Slider
+            label="Primary chroma"
             :model-value="[draft.primary.c]"
             :min="CHROMA_RANGE.min"
             :max="CHROMA_RANGE.max"
@@ -112,6 +114,7 @@ function setChannel(channel: keyof Oklch, value: number | undefined): void {
             }}</span>
           </div>
           <Slider
+            label="Primary hue"
             :model-value="[draft.primary.h]"
             :min="HUE_RANGE.min"
             :max="HUE_RANGE.max"
@@ -130,6 +133,7 @@ function setChannel(channel: keyof Oklch, value: number | undefined): void {
         <span class="text-[10px] tabular-nums text-muted-foreground">{{ draft.radius }}rem</span>
       </div>
       <Slider
+        label="Corner radius"
         :model-value="[draft.radius]"
         :min="RADIUS_RANGE.min"
         :max="RADIUS_RANGE.max"

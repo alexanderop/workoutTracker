@@ -74,7 +74,7 @@ const sets = [
             class="flex size-8 items-center justify-center rounded-md border"
             :class="set.done ? 'border-success bg-success text-success-foreground' : ''"
           >
-            <Check class="icon-sm" />
+            <Check v-if="set.done" class="icon-sm" />
           </span>
         </div>
       </Card>
