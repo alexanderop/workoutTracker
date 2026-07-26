@@ -75,7 +75,8 @@ brain/plans/42-mvp/
 
 **Overview file** must include: Context (problem and why), Scope (in/out),
 Constraints, Applicable skills (by name), Phases (ordered links like
-`[[plans/42-mvp/phase-1-scaffold]]`), and Verification (project-level commands).
+`[[plans/42-mvp/phase-1-scaffold]]`), Test Scope (see Step 6), and Verification
+(project-level commands).
 
 **Phase files** must include: a back-link (`Back to [[plans/42-mvp/overview]]`),
 Goal, Changes (files affected, high level), Data structures (name key
@@ -99,6 +100,24 @@ overview's Constraints section, state which was chosen and why.
 
 ### Step 6 — Verification strategy
 
+The overview **must** carry a `## Test Scope` section: the scoped commands that
+cover this plan, with the reach of each. Every phase runs those, never the bare
+full tier — the whole browser tier is ~5 minutes locally, and CI shards it four
+ways and runs a11y, visual, e2e, and coverage alongside it on the PR. Scope by
+what the change can break, not by the files it edits; a cross-cutting change may
+honestly need the whole tier, and if so, say so and say why. Filters match
+**test** paths under `src/__tests__/`, not source paths — a filter on
+`src/features/x` matches nothing and exits 1.
+
+```markdown
+## Test Scope
+
+- `pnpm exec vitest run --project=default src/__tests__/features/<feature>` — [what this covers]
+- `pnpm exec vitest run --project=unit src/__tests__/unit/<area>` — [what this covers]
+- Widen to: [specs outside the feature this change can break] (or "nothing else")
+- Full tier locally: not run — CI runs it on the PR.
+```
+
 Every phase **must** have a verification section, written as a literal checkbox
 list with the exact command inline — not prose. The checkbox is not cosmetic: it
 is the **resume token**. A fresh session reads the plan, finds the first
@@ -109,14 +128,18 @@ from.
 #### Automated Verification:
 - [ ] Type checking passes: `pnpm type-check`
 - [ ] Lint passes: `pnpm lint`
-- [ ] Tests pass: `pnpm test`
+- [ ] Unit tier passes: `pnpm test:unit`
+- [ ] Scoped tests pass: `pnpm exec vitest run --project=default src/__tests__/[path from Test Scope]`
+- [ ] Full suite: CI on the PR — not run locally
 
 #### Manual Verification:  [emit this subsection only when the phase needs one]
 - [ ] [specific, actionable step]
 ```
 
 - **Automated** — type checking, linting, and the tests written for this phase,
-  each with the command to run.
+  each with the command to run, scoped to the paths this phase touches. A bare
+  `pnpm test` box does not belong in a phase; point it at a `## Test Scope`
+  entry instead.
 - **Manual** — what to exercise by hand, edge cases, and (for UI) visual
   verification via screenshot.
 

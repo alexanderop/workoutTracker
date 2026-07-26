@@ -214,7 +214,22 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
     rest. Re-phasing a signature-level outline is free; re-phasing a plan full of
     written-out detail means throwing work away, so nobody does it and the bad
     phasing ships.
-20. Finish the plan at `brain/plans/<slug>.md` — a final consistency pass over
+20. Decide the test scope and write it into the plan as `## Test Scope`. Name the
+    exact scoped commands that cover this change — paths, directories, or
+    projects, never the bare full tier — so `implement`, `qa`, and `ship-it` run
+    the feature's tests instead of re-deriving a scope or falling back to the
+    whole suite. The whole browser tier is ~5 minutes locally; CI shards it four
+    ways and runs a11y, visual, e2e, and coverage alongside it, so the full
+    suite is the PR's job, not the loop's. Derive the scope from what the change
+    can break, not from the files it edits: a `src/db/` converter or a shared
+    composable pulls in its consumers' specs. Specs live under `src/__tests__/`,
+    not beside their source, so map source paths to test paths when you write
+    the commands — a filter on `src/features/x` matches nothing. A cross-cutting
+    change may honestly scope to the whole tier — if it does, say so and say
+    why. The codebase scout's map of neighboring tests is the input; if you
+    never identified which specs cover the area, that is an open ledger row, not
+    a detail to leave to implementation.
+21. Finish the plan at `brain/plans/<slug>.md` — a final consistency pass over
     the document you have been building since step 7, not the first write — and
     add a wikilink to it in `brain/plans/index.md`, creating the vault if it does
     not exist yet. (Do not edit `brain/index.md` — the auto-index hook maintains
@@ -239,7 +254,9 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
     files, no shared contract) so they run concurrently, and which depend on
     earlier slices; give every slice the files it owns and what it depends on.
     Every contract that depends on a library, SDK, or API must cite the source
-    URL and version it was doc-verified against (per step 3).
+    URL and version it was doc-verified against (per step 3). Carry the step-20
+    `## Test Scope` into this pass too, and point every verification checkbox at
+    one of its entries.
 
 ## Stop and Ask
 
@@ -276,6 +293,8 @@ fetched primary sources.
 | "The answers are all recorded, so the plan is current." | Appending answers produces a Q&A log. Rewrite the affected section so the document is a coherent design as of right now. |
 | "The ledger closed, so the document is coherent." | The ledger proves coverage, not coherence. Ask for the top-to-bottom read of Decisions and Contracts before writing tasks. |
 | "The decision is recorded, that's enough." | Record what lost and why too, or the same argument gets re-litigated in six weeks with no answer in the plan. |
+| "`pnpm test` covers it, so the verification boxes are fine." | The full tier is ~5 minutes and CI already shards it. Name the scoped commands in `## Test Scope` and point every box at one. |
+| "Implementation can work out which tests to run." | Then it runs everything or nothing. You did the codebase research; the scope is yours to record. |
 
 ## Output
 
@@ -321,6 +340,20 @@ verifiable by QA.>
   90-day trend is legible at a glance, axis scaled to the data range not fixed
   to zero, the key comparison visible without interaction, same insight on mobile>
 
+## Test Scope
+
+The scoped commands that cover this change. Every later phase runs these, not
+the full tier — CI runs the full tier on the PR. State the reach, so a reader
+can tell whether the scope is right. Filters match **test** paths under
+`src/__tests__/`, not source paths; a filter matching nothing exits 1, so a
+wrong scope fails loudly rather than passing empty.
+
+- `pnpm exec vitest run --project=default src/__tests__/features/<feature>` — <what this covers>
+- `pnpm exec vitest run --project=unit src/__tests__/unit/<area>` — <what this covers>
+- Widen to: <specs outside the feature this change can break, and why> (or "nothing else — the change is contained")
+- Full tier locally: not run — CI shards `default` four ways and runs a11y,
+  visual, e2e, and coverage on the PR.
+
 ## Open Non-Blocking Notes
 - <Known follow-up that does not block implementation>
 
@@ -354,7 +387,12 @@ verification cannot be resumed from. Put the exact command inline.
 #### Automated Verification:
 - [ ] Type checking passes: `pnpm type-check`
 - [ ] Lint passes: `pnpm lint`
-- [ ] Tests pass: `pnpm test`
+- [ ] Unit tier passes: `pnpm test:unit`
+- [ ] Scoped tests pass: `pnpm exec vitest run --project=default src/__tests__/<path from Test Scope>`
+- [ ] Full suite: CI on the PR — not run locally
+
+<Every test box names a scope from `## Test Scope`. A bare `pnpm test` box does
+not belong here: the local loop runs the feature's tests, CI runs the tier.>
 
 #### Manual Verification:  <emit this subsection only when the wave needs one>
 - [ ] <specific, actionable step that proves the behavior works — not "it compiles">
