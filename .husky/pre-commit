@@ -10,7 +10,10 @@
 #
 # Deliberately NOT here: the browser/integration/e2e tiers. They cost minutes
 # and are load-sensitive; CI owns them. Never bypass this hook with
-# `git commit --no-verify`; run `pnpm lint:check && pnpm test` before pushing.
+# `git commit --no-verify`. Before pushing, run `pnpm lint:check` plus the
+# plan's `## Test Scope` commands — the feature's own specs, e.g.
+# `pnpm exec vitest run --project=default src/__tests__/features/<feature>`.
+# The full tier stays CI's job; see "Test scope" in CLAUDE.md.
 
 set -e
 

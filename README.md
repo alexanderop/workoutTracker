@@ -144,7 +144,9 @@ Open an issue describing:
 1. Fork the repo and create your branch from `main`
 2. Run `pnpm install` to set up dependencies
 3. Make your changes
-4. Ensure tests pass: `pnpm test`
+4. Ensure the tests covering your change pass:
+   `pnpm exec vitest run --project=default src/__tests__/<area>`
+   (the full suite runs in CI on your PR — see [Running Tests](#running-tests))
 5. Ensure linting passes: `pnpm lint`
 6. Ensure types check: `pnpm type-check`
 7. Open a PR with a clear description of your changes
@@ -163,8 +165,13 @@ This project uses **Vitest** with **Playwright** for browser-based testing. Test
 ### Running Tests
 
 ```bash
-# Run all tests
-pnpm test
+# Run the tests covering what you changed — the everyday command.
+# Filters match test paths under src/__tests__/, not source paths.
+pnpm exec vitest run --project=default src/__tests__/features/workout
+pnpm exec vitest run --project=default src/__tests__/browser/timer-audio.spec.ts
+
+# Fast Node tier: pure logic, no DOM or IndexedDB (~1.5s)
+pnpm test:unit
 
 # Run with visible browser (great for debugging)
 pnpm test:headed
@@ -175,9 +182,14 @@ pnpm test:ui
 # Run with coverage
 pnpm test:coverage
 
-# Run a specific test file
-pnpm test src/features/workout/
+# Run the whole browser tier (~5 min) — CI does this for you on every PR
+pnpm test
 ```
+
+Prefer the scoped run locally. The full browser tier takes about five minutes on
+one machine, and CI shards it four ways and runs the a11y, visual, e2e, and
+coverage tiers alongside it on every pull request, so a local full run mostly
+buys a slower copy of a signal the PR gets anyway.
 
 ### Test Structure
 
