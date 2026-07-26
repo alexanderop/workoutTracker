@@ -38,6 +38,7 @@ export default {
     activeProgression: 'Progression Session',
     onboarding: 'Welcome',
     healthPrototypes: 'Health prototypes',
+    designSystem: 'Design system',
     notFound: 'Page Not Found',
   },
   homeView: {

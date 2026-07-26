@@ -45,6 +45,7 @@ export const RouteNames = {
   ActiveProgression: 'ActiveProgression',
   Onboarding: 'Onboarding',
   HealthPrototypes: 'HealthPrototypes',
+  DesignSystem: 'DesignSystem',
   NotFound: 'NotFound',
 } as const
 
@@ -220,6 +221,12 @@ export const routes: ReadonlyArray<RouteRecordRaw> = [
     name: RouteNames.HealthPrototypes,
     component: () => import('@/features/health-prototypes/views/HealthPrototypeView.vue'),
     meta: { titleKey: 'healthPrototypes', hideNav: true },
+  },
+  {
+    path: '/design',
+    name: RouteNames.DesignSystem,
+    component: () => import('@/features/design-system/views/DesignSystemView.vue'),
+    meta: { titleKey: 'designSystem', hideNav: true },
   },
   // Catch-all: keep this last so every named route above gets first shot at
   // matching. Unmatched URLs (e.g. a plausible-looking but non-existent
