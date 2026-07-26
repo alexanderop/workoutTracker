@@ -32,7 +32,7 @@ const controls = computed(() => frame?.controls ?? [])
 
 <template>
   <!-- eslint-disable @intlify/vue-i18n/no-raw-text -- design tooling chrome, not product copy -->
-  <aside class="flex w-72 shrink-0 flex-col overflow-y-auto border-l bg-card">
+  <div class="flex flex-col">
     <div v-if="!frame" class="flex flex-1 flex-col justify-center gap-2 p-6 text-center">
       <p class="text-sm font-medium">Nothing selected</p>
       <p class="text-xs text-muted-foreground">
@@ -124,5 +124,5 @@ const controls = computed(() => frame?.controls ?? [])
         </button>
       </section>
     </template>
-  </aside>
+  </div>
 </template>

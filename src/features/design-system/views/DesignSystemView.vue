@@ -10,12 +10,22 @@
 import { computed, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DesignFrame from '../components/DesignFrame.vue'
 import DesignInspectorPanel from '../components/DesignInspectorPanel.vue'
 import DesignLayersPanel from '../components/DesignLayersPanel.vue'
+import DesignThemeLab from '../components/DesignThemeLab.vue'
 import DesignToolbar from '../components/DesignToolbar.vue'
 import { useCanvasViewport } from '../composables/useCanvasViewport'
 import { initialControlState } from '../lib/controls'
+import {
+  DEFAULT_DRAFT,
+  isDefaultDraft,
+  normalizeOklch,
+  normalizeRadius,
+  themeVariables,
+} from '../lib/themeDraft'
+import type { Oklch, ThemeDraft } from '../lib/themeDraft'
 import { designSections } from '../catalog'
 import type { DesignControlState, DesignControlValue } from '../types'
 
@@ -70,6 +80,30 @@ const selectedState = computed(() =>
   selectedId.value === null ? null : (controlStates.value[selectedId.value] ?? null),
 )
 
+const panelTab = ref('inspect')
+const themeDraft = ref<ThemeDraft>(DEFAULT_DRAFT)
+
+/**
+ * Only override once the draft has actually been edited. Applying the light
+ * theme's defaults unconditionally would repaint dark mode with the wrong
+ * primary the moment the studio opened.
+ */
+const themeStyle = computed(() =>
+  isDefaultDraft(themeDraft.value) ? {} : themeVariables(themeDraft.value),
+)
+
+function setThemeRadius(radius: number): void {
+  themeDraft.value = { ...themeDraft.value, radius: normalizeRadius(radius) }
+}
+
+function setThemePrimary(primary: Oklch): void {
+  themeDraft.value = { ...themeDraft.value, primary: normalizeOklch(primary) }
+}
+
+function resetTheme(): void {
+  themeDraft.value = DEFAULT_DRAFT
+}
+
 const worldStyle = computed(() => ({
   transform: `translate3d(${viewport.value.x}px, ${viewport.value.y}px, 0) scale(${viewport.value.zoom})`,
   transformOrigin: '0 0',
@@ -121,7 +155,7 @@ function jumpToFrame(id: string): void {
 
 <template>
   <!-- eslint-disable @intlify/vue-i18n/no-raw-text -- design tooling chrome, not product copy -->
-  <div class="flex h-screen flex-col overflow-hidden bg-background">
+  <div class="flex h-screen flex-col overflow-hidden bg-background" :style="themeStyle">
     <DesignToolbar
       :zoom-label="zoomLabel"
       :is-dark="isDark"
@@ -183,14 +217,34 @@ function jumpToFrame(id: string): void {
         </p>
       </div>
 
-      <DesignInspectorPanel
-        class="hidden lg:flex"
-        :frame="selectedFrame"
-        :section-name="selectedSectionName"
-        :state="selectedState"
-        :frame-count="allFrames.length"
-        @update-control="applyControl"
-      />
+      <aside class="hidden w-72 shrink-0 flex-col border-l bg-card lg:flex">
+        <Tabs v-model="panelTab" class="flex min-h-0 flex-1 flex-col">
+          <TabsList class="m-2 grid shrink-0 grid-cols-2">
+            <TabsTrigger value="inspect">Inspect</TabsTrigger>
+            <TabsTrigger value="theme">Theme</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="inspect" class="min-h-0 flex-1 overflow-y-auto">
+            <DesignInspectorPanel
+              :frame="selectedFrame"
+              :section-name="selectedSectionName"
+              :state="selectedState"
+              :frame-count="allFrames.length"
+              @update-control="applyControl"
+            />
+          </TabsContent>
+
+          <TabsContent value="theme" class="min-h-0 flex-1 overflow-y-auto">
+            <DesignThemeLab
+              :draft="themeDraft"
+              :is-dark="isDark"
+              @update-radius="setThemeRadius"
+              @update-primary="setThemePrimary"
+              @reset="resetTheme"
+            />
+          </TabsContent>
+        </Tabs>
+      </aside>
     </div>
   </div>
 </template>
