@@ -63,6 +63,13 @@ function createGetFunction(database: WorkoutTrackerDatabase) {
  * field is a compile error here rather than a silent bad write at runtime. The
  * complexity budget is one arm short of the number of settings we have; that
  * is a fact about the rule, not about this function.
+ *
+ * The `default` arm covers the other half. A type mismatch was always caught;
+ * a *missing* arm was not -- a `switch` over a union in a `void` function is
+ * not exhaustiveness-checked, so a new key with no case here would have made
+ * `getAll()` hand back the default instead of the user's stored value, silently
+ * and with a green build. Assigning the narrowed `setting` to `never` turns
+ * that into a compile error too.
  */
 // eslint-disable-next-line complexity -- One arm per setting; see above.
 function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
@@ -106,6 +113,10 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
     case 'habitViewMode': {
       result.habitViewMode = setting.value
       break
+    }
+    default: {
+      const unhandled: never = setting
+      return unhandled
     }
   }
 }

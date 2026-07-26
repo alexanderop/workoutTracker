@@ -19,8 +19,6 @@ export default {
   decreaseQuantity: '{name} verringern',
   gridSummary: '{name}: {count} erledigte Tage in den letzten {days} Tagen',
   detailsFor: 'Details für {name}',
-  showDetails: 'Details anzeigen',
-  hideDetails: 'Details ausblenden',
   showDetailsFor: 'Details für {name} anzeigen',
   thisWeek: 'Diese Woche',
   viewMode: {

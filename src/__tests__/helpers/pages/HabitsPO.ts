@@ -326,16 +326,34 @@ export class HabitsPO {
   // History grid (lives inside the detail sheet)
   // ============================================
 
-  getHistoryDayCell(_name: string, date: number) {
+  /**
+   * Fails unless the open sheet belongs to `name`.
+   *
+   * The history grid moved into the sheet, so these helpers read from whatever
+   * sheet happens to be open rather than from a named row. Without this check
+   * `name` would be decorative: a test that forgot `openDetails`, or opened a
+   * different habit, would assert against the wrong habit and pass. The Edit
+   * button's aria-label is the habit-specific marker inside the sheet.
+   */
+  private assertSheetShows(name: string): void {
+    const editButtonName = new RegExp(`^Edit ${escapeRegExp(name)}$`, 'i')
+    const editButton = this.getDetailSheet().getByRole('button', { name: editButtonName })
+    if (editButton.query() === null) {
+      throw new Error(`The open detail sheet is not "${name}" -- call openDetails('${name}') first`)
+    }
+  }
+
+  getHistoryDayCell(name: string, date: number) {
+    this.assertSheetShows(name)
     return this.getDetailSheet().getByTestId(`habit-day-${date}`)
   }
 
-  /** Opens the habit's sheet if it is not already the one on screen. */
   async toggleHistoryDay(name: string, date: number): Promise<void> {
     await userEvent.click(this.getHistoryDayCell(name, date))
   }
 
-  async countCompleteHistoryDays(_name: string): Promise<number> {
+  async countCompleteHistoryDays(name: string): Promise<number> {
+    this.assertSheetShows(name)
     return (await this.getDetailSheet().getByRole('button', { pressed: true }).all()).length
   }
 }

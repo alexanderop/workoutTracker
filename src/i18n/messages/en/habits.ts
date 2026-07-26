@@ -19,8 +19,6 @@ export default {
   decreaseQuantity: 'Decrease {name}',
   gridSummary: '{name}: {count} completed days in the last {days} days',
   detailsFor: 'Details for {name}',
-  showDetails: 'Show details',
-  hideDetails: 'Hide details',
   showDetailsFor: 'Show details for {name}',
   thisWeek: 'This week',
   viewMode: {
