@@ -1,6 +1,6 @@
 import { render } from 'vitest-browser-vue'
 import { page } from 'vitest/browser'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { routes } from '@/router'
 import { i18n } from '@/i18n'
@@ -32,6 +32,17 @@ async function renderStudio(): Promise<DesignStudioPO> {
 }
 
 describe('design studio', () => {
+  /**
+   * The viewport belongs to the browser, not to this file — a spec that runs
+   * after this one in the same shard would otherwise inherit a 1440px desktop
+   * window and quietly render the mobile-first app in a layout it never
+   * expects. 414x896 is Vitest's default (the config sets none), so this
+   * restores the size every other spec is written against.
+   */
+  afterAll(async () => {
+    await page.viewport(414, 896)
+  })
+
   it('renders artboards for the catalog sections', async () => {
     const studio = await renderStudio()
 
