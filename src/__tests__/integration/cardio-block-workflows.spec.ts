@@ -3,6 +3,15 @@ import { page, userEvent } from 'vitest/browser'
 import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
 
+/** The header pose is decorative, so it carries no accessible handle to query. */
+async function dialogHeaderIconKey(): Promise<string | undefined> {
+  const dialog = await page.getByRole('dialog').element()
+  // eslint-disable-next-line no-restricted-syntax -- Asserts which bundled pose the header rendered.
+  return dialog.querySelector<HTMLElement>(
+    ':scope [data-slot="dialog-header"] [data-exercise-icon]',
+  )?.dataset.exerciseIcon
+}
+
 describe('Cardio Block Workflows', () => {
   describe('Configuration', () => {
     it('shows cardio option in timed blocks tab', async ({ createTestApp }) => {
@@ -62,6 +71,56 @@ describe('Cardio Block Workflows', () => {
       // Verify block was added
       const playlistButtons = await builder.getPlaylistBlockButtons()
       expect(playlistButtons).toHaveLength(1)
+    })
+
+    it('renders the bundled artwork for every cardio activity', async ({ createTestApp }) => {
+      const { builder, common } = await createTestApp()
+
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await builder.switchToTimedBlocksTab()
+      await userEvent.click(common.getDialogButton('Cardio'))
+      await expect.element(page.getByText('Configure')).toBeVisible()
+
+      // Every activity option shows its own pose - no emoji fallback, no
+      // missing icon (ExerciseIcon renders nothing for an unknown key).
+      const expectedActivityIcons = [
+        { label: 'Running', icon: 'cardio-running' },
+        { label: 'Cycling', icon: 'cardio-cycling' },
+        { label: 'Rowing', icon: 'cardio-rowing' },
+        { label: 'Elliptical', icon: 'cardio-elliptical' },
+        { label: 'Swimming', icon: 'cardio-swimming' },
+        { label: 'Stair Climber', icon: 'cardio-stair-climber' },
+        { label: 'Walking', icon: 'cardio-walking' },
+      ]
+
+      for (const { label, icon } of expectedActivityIcons) {
+        const option = page.getByRole('button', { name: label, exact: true })
+        await expect.element(option).toBeVisible()
+
+        const optionElement = await option.element()
+        // eslint-disable-next-line no-restricted-syntax -- Asserts which bundled pose the option rendered.
+        const pose = optionElement.querySelector(`[data-exercise-icon="${CSS.escape(icon)}"]`)
+        expect(pose, `${label} option should render the ${icon} pose`).toBeTruthy()
+      }
+    })
+
+    it('swaps the dialog header artwork when another activity is selected', async ({
+      createTestApp,
+    }) => {
+      const { builder, common } = await createTestApp()
+
+      await builder.navigateTo()
+      await builder.openAddBlockDialog()
+      await builder.switchToTimedBlocksTab()
+      await userEvent.click(common.getDialogButton('Cardio'))
+      await expect.element(page.getByText('Configure')).toBeVisible()
+
+      // Running is the default activity
+      expect(await dialogHeaderIconKey()).toBe('cardio-running')
+
+      await userEvent.click(page.getByRole('button', { name: 'Swimming', exact: true }))
+      await expect.poll(dialogHeaderIconKey).toBe('cardio-swimming')
     })
 
     it('shows distance field for activities that support it', async ({ createTestApp }) => {
