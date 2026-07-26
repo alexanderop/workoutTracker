@@ -104,6 +104,24 @@ describe('design studio', () => {
     expect(await studio.zoomPercent()).toBeLessThan(zoomedIn)
   })
 
+  it('pans the rendered canvas on wheel', async () => {
+    const studio = await renderStudio()
+    await studio.waitForInitialFit()
+
+    const before = await studio.worldTranslate()
+    await studio.wheelBy(120, 80)
+
+    // Content follows the gesture: scrolling down moves the world up. Pinning
+    // the sign here is the point — the unit tier proves panBy's arithmetic but
+    // not that the wheel handler is wired to it with the right direction.
+    await expect
+      .poll(() => studio.worldTranslate())
+      .toEqual({
+        x: before.x - 120,
+        y: before.y - 80,
+      })
+  })
+
   it('returns to 100% when the zoom readout is reset', async () => {
     const studio = await renderStudio()
     await studio.waitForInitialFit()

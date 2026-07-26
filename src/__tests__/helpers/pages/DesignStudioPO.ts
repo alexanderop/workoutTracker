@@ -99,6 +99,25 @@ export class DesignStudioPO {
     return ensureHTMLElement(world).style.transform
   }
 
+  /** World offset in screen pixels, parsed out of the transform. */
+  async worldTranslate(): Promise<{ x: number; y: number }> {
+    const match = /translate3d\((-?[\d.]+)px,\s*(-?[\d.]+)px/.exec(await this.worldTransform())
+    if (!match) throw new Error('World is not translated')
+    return { x: Number(match[1]), y: Number(match[2]) }
+  }
+
+  /**
+   * Wheel-to-pan has no accessible control to drive, so the event is dispatched
+   * directly. The listener is registered non-passive on the canvas, which is
+   * exactly the wiring worth pinning.
+   */
+  async wheelBy(deltaX: number, deltaY: number): Promise<void> {
+    const canvas = await page.getByTestId('design-canvas').element()
+    ensureHTMLElement(canvas).dispatchEvent(
+      new WheelEvent('wheel', { deltaX, deltaY, bubbles: true, cancelable: true }),
+    )
+  }
+
   async openThemeTab(): Promise<void> {
     await userEvent.click(page.getByRole('tab', { name: 'Theme' }))
   }

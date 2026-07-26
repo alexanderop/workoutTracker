@@ -195,6 +195,7 @@ function jumpToFrame(id: string): void {
 
       <div
         ref="canvasEl"
+        data-testid="design-canvas"
         class="relative min-w-0 flex-1 touch-none overflow-hidden bg-muted/40 select-none"
         :style="canvasStyle"
         @pointerdown="onPointerDown"
