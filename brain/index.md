@@ -6,6 +6,7 @@
 - [[decisions/004-db-in-di]] — Status: accepted. Supersedes ADR 003's `Not in scope` clause, for `Db` only —
 
 ## Lessons
+- [[lessons/lazy-dialog-open-watcher]] — Every dialog in this app is mounted on first use, to keep its dependencies off
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.
 - [[lessons/testing-gotchas]] — Most test configuration and commands are authoritative in `package.json`,
 

@@ -93,6 +93,11 @@ failure modes here:
   committing them would plant bogus baselines. Corollary: a change that alters a
   snapshotted screen cannot be verified locally, so either scope the change away
   from that screen or hand the baseline regeneration to someone on macOS.
+- `expect.element(...)` on something that never appears burns the whole
+  `testTimeout` and reports "Test timed out in 8000ms" at the `it()` line, with
+  no locator in the message. It looks like a hang, not an assertion failure. The
+  failure screenshot under `__screenshots__/` shows the real DOM state and is
+  usually faster to read than the stack — check it first.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`
