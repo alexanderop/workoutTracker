@@ -318,6 +318,30 @@ describe('Habit Tracking', () => {
 
       await habits.navigateToHabitsFromHomeCard()
     })
+
+    it('offers no one-tap control for a quantity habit, so a stray tap cannot log a full day', async ({
+      createTestApp,
+    }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { habits } = await createTestApp()
+
+      await expect.element(habits.getHomeCard().getByText('Water')).toBeVisible()
+
+      // `/habits` rows mode deliberately gives quantity habits a tap-to-target
+      // control. The home card must not: it has no stepper, no confirmation and
+      // no undo, so one stray tap would write 3 of 3 L for the day.
+      await expect
+        .element(habits.getHomeCard().getByRole('button', { name: /^Mark Water/i }))
+        .not.toBeInTheDocument()
+      expect(await repo.getEntriesForHabit(habit.id)).toHaveLength(0)
+    })
   })
 
   describe('view modes', () => {
