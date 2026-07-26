@@ -15,18 +15,28 @@ import MuscleChestIcon from './icons/MuscleChestIcon.vue'
 import MuscleCoreIcon from './icons/MuscleCoreIcon.vue'
 import MuscleLegsIcon from './icons/MuscleLegsIcon.vue'
 import MuscleShouldersIcon from './icons/MuscleShouldersIcon.vue'
+import HabitBikeIcon from './icons/HabitBikeIcon.vue'
 import HabitCheckIcon from './icons/HabitCheckIcon.vue'
 import HabitCleanIcon from './icons/HabitCleanIcon.vue'
 import HabitDefaultIcon from './icons/HabitDefaultIcon.vue'
 import HabitJournalIcon from './icons/HabitJournalIcon.vue'
 import HabitMeditateIcon from './icons/HabitMeditateIcon.vue'
+import HabitNoAlcoholIcon from './icons/HabitNoAlcoholIcon.vue'
+import HabitNoPhoneIcon from './icons/HabitNoPhoneIcon.vue'
 import HabitNoSmokeIcon from './icons/HabitNoSmokeIcon.vue'
 import HabitNutritionIcon from './icons/HabitNutritionIcon.vue'
 import HabitProgressIcon from './icons/HabitProgressIcon.vue'
 import HabitReadIcon from './icons/HabitReadIcon.vue'
 import HabitRunIcon from './icons/HabitRunIcon.vue'
+import HabitShowerIcon from './icons/HabitShowerIcon.vue'
 import HabitSleepIcon from './icons/HabitSleepIcon.vue'
 import HabitStrengthIcon from './icons/HabitStrengthIcon.vue'
+import HabitStretchIcon from './icons/HabitStretchIcon.vue'
+import HabitSunlightIcon from './icons/HabitSunlightIcon.vue'
+import HabitSupplementIcon from './icons/HabitSupplementIcon.vue'
+import HabitSwimIcon from './icons/HabitSwimIcon.vue'
+import HabitTeethIcon from './icons/HabitTeethIcon.vue'
+import HabitWalkIcon from './icons/HabitWalkIcon.vue'
 import HabitWaterIcon from './icons/HabitWaterIcon.vue'
 import MoodGoodIcon from './icons/MoodGoodIcon.vue'
 import MoodGreatIcon from './icons/MoodGreatIcon.vue'
@@ -74,6 +84,16 @@ export const appIconKeys = [
   'habit-journal',
   'habit-no-smoke',
   'habit-clean',
+  'habit-walk',
+  'habit-stretch',
+  'habit-bike',
+  'habit-swim',
+  'habit-supplement',
+  'habit-sunlight',
+  'habit-shower',
+  'habit-teeth',
+  'habit-no-alcohol',
+  'habit-no-phone',
   'habit-default',
   'habit-check',
   'habit-progress',
@@ -119,6 +139,16 @@ const appIconRegistry: Readonly<Record<AppIconKey, AppIconEntry>> = {
   'habit-journal': { title: 'Journal', component: HabitJournalIcon },
   'habit-no-smoke': { title: 'No smoking', component: HabitNoSmokeIcon },
   'habit-clean': { title: 'Tidy up', component: HabitCleanIcon },
+  'habit-walk': { title: 'Walk', component: HabitWalkIcon },
+  'habit-stretch': { title: 'Stretch', component: HabitStretchIcon },
+  'habit-bike': { title: 'Cycle', component: HabitBikeIcon },
+  'habit-swim': { title: 'Swim', component: HabitSwimIcon },
+  'habit-supplement': { title: 'Supplements', component: HabitSupplementIcon },
+  'habit-sunlight': { title: 'Daylight', component: HabitSunlightIcon },
+  'habit-shower': { title: 'Shower', component: HabitShowerIcon },
+  'habit-teeth': { title: 'Brush teeth', component: HabitTeethIcon },
+  'habit-no-alcohol': { title: 'No alcohol', component: HabitNoAlcoholIcon },
+  'habit-no-phone': { title: 'Screen free', component: HabitNoPhoneIcon },
   'habit-default': { title: 'Habit', component: HabitDefaultIcon },
   'habit-check': { title: 'Done', component: HabitCheckIcon },
   'habit-progress': { title: 'Progress', component: HabitProgressIcon },
