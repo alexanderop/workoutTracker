@@ -11,27 +11,9 @@
  * stays in the browser tier as `src/__tests__/db/progressions.spec.ts`.
  */
 import { describe, it, expect } from 'vitest'
-import { calculateNextLevel } from '@/features/progressions/lib/progressionLogic'
 import { createFakeProgressionsRepository } from '@/__tests__/fakes/progressionsRepository'
+import { recordSessionWithAdvancement } from './helpers'
 import type { ProgressionsRepository } from '@/db/interfaces'
-
-/**
- * Record a session the way the feature layer does: the next level is computed
- * in the feature and handed to the repository, which never derives it itself.
- */
-async function recordSessionWithAdvancement(
-  repo: ProgressionsRepository,
-  progressionId: string,
-  completed: boolean,
-): Promise<void> {
-  const progression = await repo.getById(progressionId)
-  if (!progression) throw new Error(`Progression ${progressionId} not found`)
-
-  const nextLevel =
-    completed && !progression.isComplete ? calculateNextLevel(progression) : undefined
-
-  await repo.recordSession(progressionId, completed, nextLevel)
-}
 
 async function completeSessions(
   repo: ProgressionsRepository,

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, Given, Then, When } from '../fixtures'
+import { skipOnboarding } from '../test-utils'
 
 /**
  * Steps for `progressions.feature`. Like `habits.steps.ts`, all data is created
@@ -50,11 +51,7 @@ async function createProgression(
 
 Given('a first-time user has opened the progressions list', async ({ page, goto }) => {
   await goto('/')
-  await expect(page).toHaveURL(/\/onboarding$/)
-
-  await page.getByRole('button', { name: 'Skip to App', exact: true }).click()
-  await expect(page).toHaveURL(/\/$/)
-
+  await skipOnboarding(page)
   await openProgressionsList(page)
 })
 

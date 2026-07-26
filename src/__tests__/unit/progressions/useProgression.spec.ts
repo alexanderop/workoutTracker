@@ -14,35 +14,11 @@
 import { describe, it, expect } from 'vitest'
 import { useProgression } from '@/features/progressions/composables/useProgression'
 import { ProgressionRepo } from '@/features/progressions/services'
-import { empty } from '@/lib/di/context'
-import { createFakeProgressionsRepository } from '@/__tests__/fakes/progressionsRepository'
+import { assert } from '@/__tests__/helpers/assert'
+import { rejects } from '@/__tests__/helpers/di'
+import { make } from '@/lib/di/context'
+import { progressionContext as contextFor, seeded } from './helpers'
 import type { ProgressionsRepository } from '@/db/interfaces'
-import type { Context } from '@/lib/di/context'
-
-type DetailState = ReturnType<typeof useProgression>['state']['value']
-type SuccessState = Extract<DetailState, { status: 'success' }>
-
-function contextFor(
-  repo: ProgressionsRepository,
-  failing: Partial<ProgressionsRepository> = {},
-): Context<ProgressionsRepository> {
-  return empty().add(ProgressionRepo, { ...repo, ...failing })
-}
-
-const rejects = () => Promise.reject(new Error('boom'))
-
-function asSuccess(state: DetailState): SuccessState {
-  if (state.status !== 'success') {
-    throw new Error(`expected the success state, got "${state.status}"`)
-  }
-  return state
-}
-
-async function seeded(): Promise<{ repo: ProgressionsRepository; id: string }> {
-  const repo = createFakeProgressionsRepository()
-  const progression = await repo.create({ name: 'KB Swing Ladder', availableWeights: [16, 20] })
-  return { repo, id: progression.id }
-}
 
 describe('useProgression', () => {
   it('loads the progression with its derived level, phase and progress', async () => {
@@ -54,7 +30,9 @@ describe('useProgression', () => {
 
     await reload()
 
-    expect(asSuccess(state.value).progression.name).toBe('KB Swing Ladder')
+    const loaded = state.value
+    assert(loaded.status === 'success')
+    expect(loaded.progression.name).toBe('KB Swing Ladder')
     expect(currentLevel.value).toEqual({ weight: 16, reps: 10, minutes: 10 })
     expect(phase.value).toBe('reps')
     expect(progress.value).toBe(0)
@@ -88,7 +66,9 @@ describe('useProgression', () => {
 
     // The progression is the page's primary content; a failed history read
     // degrades to an empty list rather than blanking the whole detail view.
-    expect(asSuccess(state.value).progression.id).toBe(id)
+    const loaded = state.value
+    assert(loaded.status === 'success')
+    expect(loaded.progression.id).toBe(id)
     expect(sessions.value).toEqual([])
   })
 
@@ -100,7 +80,9 @@ describe('useProgression', () => {
 
     await reload()
 
-    const { sessions } = asSuccess(state.value)
+    const loaded = state.value
+    assert(loaded.status === 'success')
+    const { sessions } = loaded
     expect(sessions).toHaveLength(2)
     expect(sessions[0]?.completed).toBe(false)
     expect(sessions[1]?.completed).toBe(true)
@@ -150,7 +132,7 @@ describe('useProgression', () => {
         await Promise.resolve()
       },
     }
-    const { reload, deleteProgression } = useProgression(id, empty().add(ProgressionRepo, slow))
+    const { reload, deleteProgression } = useProgression(id, make(ProgressionRepo, slow))
     await reload()
 
     const [first, second] = await Promise.all([deleteProgression(), deleteProgression()])

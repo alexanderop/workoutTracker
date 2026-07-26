@@ -15,40 +15,12 @@
 import { describe, it, expect } from 'vitest'
 import { useProgressions } from '@/features/progressions/composables/useProgressions'
 import { ProgressionRepo } from '@/features/progressions/services'
-import { empty } from '@/lib/di/context'
+import { assert } from '@/__tests__/helpers/assert'
+import { rejects } from '@/__tests__/helpers/di'
 import { createFakeProgressionsRepository } from '@/__tests__/fakes/progressionsRepository'
+import { make } from '@/lib/di/context'
+import { progressionContext as contextFor } from './helpers'
 import type { ProgressionsRepository } from '@/db/interfaces'
-import type { Context } from '@/lib/di/context'
-
-type ProgressionsState = ReturnType<typeof useProgressions>['state']['value']
-type SuccessState = Extract<ProgressionsState, { status: 'success' }>
-type ErrorState = Extract<ProgressionsState, { status: 'error' }>
-
-function contextFor(
-  repo: ProgressionsRepository,
-  failing: Partial<ProgressionsRepository> = {},
-): Context<ProgressionsRepository> {
-  return empty().add(ProgressionRepo, { ...repo, ...failing })
-}
-
-/** A repository method that always rejects — the "the repository throws" arm. */
-const rejects = () => Promise.reject(new Error('boom'))
-
-// Narrowing helpers live at module scope so the branch is not a conditional
-// inside a test body (`vitest/no-conditional-in-test`).
-function asSuccess(state: ProgressionsState): SuccessState {
-  if (state.status !== 'success') {
-    throw new Error(`expected the success state, got "${state.status}"`)
-  }
-  return state
-}
-
-function asError(state: ProgressionsState): ErrorState {
-  if (state.status !== 'error') {
-    throw new Error(`expected the error state, got "${state.status}"`)
-  }
-  return state
-}
 
 describe('useProgressions', () => {
   it('starts in the loading state before anything is loaded', () => {
@@ -72,9 +44,10 @@ describe('useProgressions', () => {
 
     await reload()
 
-    const { items } = asSuccess(state.value)
-    expect(items).toHaveLength(1)
-    expect(items[0]).toMatchObject({
+    const loaded = state.value
+    assert(loaded.status === 'success')
+    expect(loaded.items).toHaveLength(1)
+    expect(loaded.items[0]).toMatchObject({
       name: 'KB Swing Ladder',
       level: { weight: 16, reps: 10, minutes: 10 },
       isComplete: false,
@@ -93,7 +66,9 @@ describe('useProgressions', () => {
     const { state, reload } = useProgressions(contextFor(repo))
     await reload()
 
-    expect(asSuccess(state.value).items.map((item) => item.name)).toEqual(['Fresh', 'Stale'])
+    const loaded = state.value
+    assert(loaded.status === 'success')
+    expect(loaded.items.map((item) => item.name)).toEqual(['Fresh', 'Stale'])
   })
 
   it('reports the error and keeps no stale items when the repository throws', async () => {
@@ -102,7 +77,9 @@ describe('useProgressions', () => {
 
     await reload()
 
-    expect(asError(state.value).error).toBeInstanceOf(Error)
+    const failed = state.value
+    assert(failed.status === 'error')
+    expect(failed.error).toBeInstanceOf(Error)
   })
 
   it('returns to loading before a reload resolves, so a stale list is never shown', async () => {
@@ -128,7 +105,7 @@ describe('useProgressions', () => {
       ...repo,
       getAll: () => (gate.failing ? Promise.reject(new Error('boom')) : repo.getAll()),
     }
-    const { state, reload } = useProgressions(empty().add(ProgressionRepo, flaky))
+    const { state, reload } = useProgressions(make(ProgressionRepo, flaky))
 
     await reload()
     expect(state.value.status).toBe('error')

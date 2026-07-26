@@ -1,13 +1,10 @@
 {
-  // `playwright-report/`, `test-results/` and `.features-gen/` are gitignored
-  // e2e artifacts containing generated Markdown (Playwright's error-context
-  // reports). Without these entries `pnpm lint` fails for anyone who has run
-  // `pnpm test:e2e` locally — on files nobody wrote and nobody can fix.
-  "ignores": [
-    "CHANGELOG.md",
-    ".claude/**",
-    "playwright-report/**",
-    "test-results/**",
-    ".features-gen/**"
-  ]
+  // Respect .gitignore rather than hand-listing generated directories. Without
+  // this, `pnpm lint` failed on gitignored Playwright artifacts
+  // (`playwright-report/`, `test-results/`) after any local `pnpm test:e2e`,
+  // and on `brain/plans/**` — local scratch nobody writes for review.
+  // markdownlint-cli2 supports this natively; enumerating the directories by
+  // hand only defers the next discovery to whoever hits it.
+  "gitignore": true,
+  "ignores": ["CHANGELOG.md", ".claude/**"]
 }

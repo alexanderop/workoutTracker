@@ -16,10 +16,7 @@ export const COMMON_KETTLEBELL_WEIGHTS = [8, 12, 16, 20, 24, 28, 32, 36, 40, 44,
 /**
  * Form state for creating/editing a progression.
  *
- * The repository arrives through a `Context` defaulted to the app runtime's
- * context via `useRuntimeContext()`, so a caller can inject a fake in tests
- * instead of reaching for the global singleton (ADR 004:
- * brain/decisions/004-db-in-di.md).
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
  */
 export function useProgressionForm(
   ctx: Context<ProgressionsRepository> = useRuntimeContext<ProgressionsRepository>(),

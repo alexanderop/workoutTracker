@@ -9,19 +9,11 @@
 import { describe, it, expect } from 'vitest'
 import { useProgressionForm } from '@/features/progressions/composables/useProgressionForm'
 import { ProgressionRepo } from '@/features/progressions/services'
-import { empty } from '@/lib/di/context'
+import { rejects } from '@/__tests__/helpers/di'
 import { createFakeProgressionsRepository } from '@/__tests__/fakes/progressionsRepository'
+import { make } from '@/lib/di/context'
+import { progressionContext as contextFor } from './helpers'
 import type { ProgressionsRepository } from '@/db/interfaces'
-import type { Context } from '@/lib/di/context'
-
-function contextFor(
-  repo: ProgressionsRepository,
-  failing: Partial<ProgressionsRepository> = {},
-): Context<ProgressionsRepository> {
-  return empty().add(ProgressionRepo, { ...repo, ...failing })
-}
-
-const rejects = () => Promise.reject(new Error('boom'))
 
 describe('useProgressionForm', () => {
   describe('validation', () => {
@@ -142,7 +134,7 @@ describe('useProgressionForm', () => {
         ...repo,
         create: (data) => (gate.failing ? Promise.reject(new Error('boom')) : repo.create(data)),
       }
-      const form = useProgressionForm(empty().add(ProgressionRepo, flaky))
+      const form = useProgressionForm(make(ProgressionRepo, flaky))
       form.name.value = 'KB Swing Ladder'
       form.toggleWeight(16)
       await form.save()

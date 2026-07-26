@@ -15,37 +15,22 @@
  * fake that returned its own stored references would let a test pass on
  * aliasing that does not hold against the real adapter.
  *
- * `now` and `nextId` are injectable and default to deterministic counters
- * rather than `Date.now()` / `crypto.randomUUID()`, so a spec asserting on an
- * id or a timestamp is provable rather than incidental.
+ * `now` and `nextId` are deterministic counters rather than `Date.now()` /
+ * `crypto.randomUUID()`, so ordering (which `getAll` and `getSessionHistory`
+ * both depend on) is provable rather than incidental.
  */
 import type { CreateProgressionData, ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
 
-export type FakeProgressionsRepositoryOptions = {
-  progressions?: ReadonlyArray<DbProgression>
-  sessions?: ReadonlyArray<DbProgressionSession>
-  /** Defaults to a counter starting at 1000, incrementing by 1 per call. */
-  now?: () => number
-  /** Defaults to `progression-1`, `progression-2`, … */
-  nextId?: () => string
-}
-
-export function createFakeProgressionsRepository(
-  initial?: FakeProgressionsRepositoryOptions,
-): ProgressionsRepository {
-  let progressions: Array<DbProgression> = initial?.progressions
-    ? initial.progressions.map((entry) => ({ ...entry }))
-    : []
-  let sessions: Array<DbProgressionSession> = initial?.sessions
-    ? initial.sessions.map((entry) => ({ ...entry }))
-    : []
+export function createFakeProgressionsRepository(): ProgressionsRepository {
+  let progressions: Array<DbProgression> = []
+  let sessions: Array<DbProgressionSession> = []
 
   let tick = 1000
-  const now = initial?.now ?? (() => tick++)
+  const now = () => tick++
 
   let idCounter = 0
-  const nextId = initial?.nextId ?? (() => `progression-${++idCounter}`)
+  const nextId = () => `progression-${++idCounter}`
 
   function find(id: string): DbProgression | undefined {
     return progressions.find((entry) => entry.id === id)

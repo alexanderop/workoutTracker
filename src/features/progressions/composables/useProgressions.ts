@@ -48,10 +48,7 @@ function toListItem(progression: DbProgression): ProgressionListItem {
 /**
  * List all progressions with current level info.
  *
- * The repository arrives through a `Context` defaulted to the app runtime's
- * context via `useRuntimeContext()`, so a caller can inject a fake in tests
- * instead of reaching for the global singleton (ADR 004:
- * brain/decisions/004-db-in-di.md).
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
  */
 export function useProgressions(
   ctx: Context<ProgressionsRepository> = useRuntimeContext<ProgressionsRepository>(),

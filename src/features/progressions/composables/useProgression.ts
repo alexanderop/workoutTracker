@@ -30,10 +30,7 @@ type ProgressionDetailState =
 /**
  * Single progression with detail info and session history.
  *
- * The repository arrives through a `Context` defaulted to the app runtime's
- * context via `useRuntimeContext()`, so a caller can inject a fake in tests
- * instead of reaching for the global singleton (ADR 004:
- * brain/decisions/004-db-in-di.md).
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
  */
 export function useProgression(
   progressionId: string,

@@ -11,29 +11,16 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useProgressionSession } from '@/features/progressions/composables/useProgressionSession'
-import { ProgressionRepo } from '@/features/progressions/services'
-import { empty } from '@/lib/di/context'
-import { createFakeProgressionsRepository } from '@/__tests__/fakes/progressionsRepository'
+import { rejects } from '@/__tests__/helpers/di'
+import { progressionContext as contextFor, seeded as seedProgression } from './helpers'
+import type { DbProgression } from '@/db/schema'
 import type { ProgressionsRepository } from '@/db/interfaces'
-import type { Context } from '@/lib/di/context'
 
-function contextFor(
-  repo: ProgressionsRepository,
-  failing: Partial<ProgressionsRepository> = {},
-): Context<ProgressionsRepository> {
-  return empty().add(ProgressionRepo, { ...repo, ...failing })
-}
-
-const rejects = () => Promise.reject(new Error('boom'))
-
-/** A one-minute EMOM, so a full timer run is 60 fake ticks rather than 600. */
-async function seeded(
-  overrides: Partial<{ currentMinutes: number; isComplete: boolean }> = {},
+/** A one-minute EMOM by default, so a full timer run is 60 fake ticks, not 600. */
+function seeded(
+  overrides: Partial<Omit<DbProgression, 'id' | 'createdAt'>> = {},
 ): Promise<{ repo: ProgressionsRepository; id: string }> {
-  const repo = createFakeProgressionsRepository()
-  const progression = await repo.create({ name: 'KB Swing Ladder', availableWeights: [16, 20] })
-  await repo.update(progression.id, { currentMinutes: 1, ...overrides })
-  return { repo, id: progression.id }
+  return seedProgression({ currentMinutes: 1, ...overrides })
 }
 
 describe('useProgressionSession', () => {

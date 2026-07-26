@@ -16,7 +16,7 @@ type SessionState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'ready'; progression: DbProgression }
-  | { status: 'active'; progression: DbProgression; startedAt: number }
+  | { status: 'active'; progression: DbProgression }
   | { status: 'completing' }
   | { status: 'completed'; session: DbProgressionSession }
   | { status: 'error'; error: Error }
@@ -28,12 +28,12 @@ type SessionState =
 /**
  * Active EMOM session with timer for a progression.
  *
- * The repository arrives through a `Context` defaulted to the app runtime's
- * context via `useRuntimeContext()` (ADR 004:
- * brain/decisions/004-db-in-di.md). Time is deliberately *not* injected: the
- * only clock reads here are the 1-second `setInterval` tick and `startedAt`,
- * and Node specs drive the tick with `vi.useFakeTimers()` instead — see
- * brain/plans/progressions-di.md.
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
+ *
+ * Time is deliberately *not* injected, unlike `useHabits`: after removing the
+ * write-only `startedAt`, the sole remaining clock read is the 1-second
+ * `setInterval` tick, and `Clock` has no interval primitive to replace it with.
+ * Node specs drive the tick with `vi.useFakeTimers()` instead.
  */
 export function useProgressionSession(
   progressionId: string,
@@ -105,7 +105,7 @@ export function useProgressionSession(
     if (state.value.status !== 'ready') return
 
     const prog = state.value.progression
-    state.value = { status: 'active', progression: prog, startedAt: Date.now() }
+    state.value = { status: 'active', progression: prog }
     currentSecond.value = 0
 
     timerInterval.value = setInterval(() => {
