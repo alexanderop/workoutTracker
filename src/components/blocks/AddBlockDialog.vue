@@ -2,7 +2,7 @@
 import type { Exercise } from '@/composables/useExerciseSearch'
 import type { TimedBlockKind } from '@/blocks'
 
-import { Activity, Clock, Gauge, RefreshCcw, Zap } from '@lucide/vue'
+import { Activity, ChevronRight, Clock, Gauge, RefreshCcw, Zap } from '@lucide/vue'
 import { ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -166,7 +166,10 @@ function handleCreateNew() {
                 </p>
                 <p class="text-sm text-muted-foreground">{{ blockType.description }}</p>
               </div>
-              <span :class="[blockType.color.text, 'opacity-50 text-xl']">›</span>
+              <ChevronRight
+                :class="[blockType.color.text, 'size-5 shrink-0 opacity-50']"
+                aria-hidden="true"
+              />
             </button>
 
             <!-- Cardio Block -->
@@ -185,7 +188,7 @@ function handleCreateNew() {
                   {{ t('dialogs.addBlock.cardioDescription') }}
                 </p>
               </div>
-              <span class="text-block-cardio/50 text-xl">›</span>
+              <ChevronRight class="size-5 shrink-0 text-block-cardio/50" aria-hidden="true" />
             </button>
           </div>
 

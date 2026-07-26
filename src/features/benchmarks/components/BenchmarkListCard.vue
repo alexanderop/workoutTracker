@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ChevronRight } from '@lucide/vue'
 import { Card } from '@/components/ui/card'
 import { usePersonalBestDisplay } from '../composables/usePersonalBestDisplay'
 import type { DbBenchmark } from '@/db/schema'
@@ -29,7 +30,7 @@ const totalExerciseCount = computed(() =>
 
 function handleActivationKey(event: KeyboardEvent): void {
   if (!(event.key === 'Enter' || event.key === ' ')) {
-	return;
+    return
   }
 
   event.preventDefault()
@@ -59,7 +60,7 @@ function handleActivationKey(event: KeyboardEvent): void {
           {{ pbDisplay }}
         </div>
       </div>
-      <div class="text-sm text-muted-foreground" aria-hidden="true">›</div>
+      <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </div>
   </Card>
 </template>

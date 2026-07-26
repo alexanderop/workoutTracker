@@ -4,10 +4,11 @@ const WHITESPACE_PATTERN = /\s+/
  * Generate 2-letter initials from an exercise name.
  * - Multi-word: first letter of each word ("Bench Press" → "BP")
  * - Single word: first two letters ("Deadlift" → "DE")
+ * - Blank: empty, so callers fall back to artwork rather than a text glyph
  */
 export function getExerciseInitials(name: string): string {
   const trimmed = name.trim()
-  if (!trimmed) return '💪'
+  if (!trimmed) return ''
 
   const words = trimmed.split(WHITESPACE_PATTERN)
   const firstWord = words[0]

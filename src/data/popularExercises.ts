@@ -28,7 +28,7 @@ function validateUniqueExercises<const T extends ReadonlyArray<PopularExercise>>
 
   if (duplicates.length > 0) {
     throw new Error(
-      `❌ Duplicate exercise names found: ${duplicates.join(', ')}\n` +
+      `Duplicate exercise names found: ${duplicates.join(', ')}\n` +
         `Please ensure all exercise names in popularExercises.ts are unique.`,
     )
   }

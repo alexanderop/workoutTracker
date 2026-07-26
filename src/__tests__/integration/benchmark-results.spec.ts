@@ -175,8 +175,8 @@ describe('Benchmark Results', () => {
       await app.benchmarkDetail.navigateToDetail(benchmark.id)
       await app.benchmarkDetail.waitForLoad('Fran')
 
-      // Find PB badges with trophy emoji - should only be one (in attempt history)
-      const pbBadges = await page.getByText(/🏆.*personal best/i).all()
+      // Only the fastest attempt carries the trophy badge in attempt history
+      const pbBadges = await page.getByTestId('app-icon-trophy').all()
       expect(pbBadges).toHaveLength(1)
     })
 

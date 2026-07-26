@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { ChevronRight } from '@lucide/vue'
 import { Card } from '@/components/ui/card'
 
 type Properties = {
@@ -46,7 +47,7 @@ function handleActivationKey(event: KeyboardEvent): void {
           {{ formatDate(template.lastUsedAt) }}
         </div>
       </div>
-      <div class="text-sm text-muted-foreground">›</div>
+      <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </div>
   </Card>
 </template>
