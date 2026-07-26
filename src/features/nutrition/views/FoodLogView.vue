@@ -17,7 +17,7 @@ import { mealForHour } from '../lib/foodLogTimeline'
 // Loaded on first use so the barcode-scanning/camera machinery (and the food
 // lookup network code) stays off the startup path — the app has a Lighthouse
 // performance budget on first paint.
-const FoodLogDialog = defineAsyncComponent(() => import('../components/FoodLogDialog.vue'))
+const FoodLogSheet = defineAsyncComponent(() => import('../components/FoodLogSheet.vue'))
 
 const { t } = useI18n()
 const { showToast } = useToastStore()
@@ -28,6 +28,7 @@ const {
   selectedDate,
   isToday,
   weekDays,
+  goal,
   foods,
   diaryEntries,
   totals,
@@ -166,12 +167,15 @@ function rounded(value: number): number {
       </div>
     </footer>
 
-    <FoodLogDialog
+    <FoodLogSheet
       v-if="foodLogRequested"
       v-model:open="foodLogOpen"
       :foods="foods"
       :local-date="selectedDateKey"
       :initial-meal="selectedMeal"
+      :goal="goal"
+      :committed="totals"
+      :day-label="dayTitle"
     />
   </div>
 </template>

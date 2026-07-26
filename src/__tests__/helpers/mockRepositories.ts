@@ -292,6 +292,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       addFoodAndDiaryEntry: vi.fn().mockResolvedValue(undefined),
       updateFood: vi.fn().mockResolvedValue(undefined),
       addDiaryEntry: vi.fn().mockResolvedValue(undefined),
+      commitDiaryBatch: vi.fn().mockResolvedValue(undefined),
       deleteDiaryEntry: vi.fn().mockResolvedValue(undefined),
     },
   }

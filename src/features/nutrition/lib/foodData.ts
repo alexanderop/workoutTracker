@@ -4,7 +4,7 @@ import type { DbFoodNutrients } from '@/db/schema'
  * Provider-neutral food data resolved from a scanned barcode, normalized
  * per 100 g. Every barcode data source maps its response into this shape.
  */
-export type ScannedFood = {
+type ScannedFood = {
   name: string
   brand: string | null
   servingGrams: number | null

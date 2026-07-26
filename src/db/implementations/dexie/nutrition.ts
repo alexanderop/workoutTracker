@@ -96,6 +96,30 @@ export function createDexieNutritionRepository(
       })
     },
 
+    async commitDiaryBatch(
+      foods: ReadonlyArray<DbFood>,
+      entries: ReadonlyArray<DbNutritionDiaryEntry>,
+    ): Promise<void> {
+      if (entries.length === 0 && foods.length === 0) return
+      await database.transaction('rw', database.foods, database.nutritionDiaryEntries, async () => {
+        // Copied because Dexie's `bulkAdd` signature wants a mutable array,
+        // while the repository contract hands out ReadonlyArray.
+        await database.foods.bulkAdd([...foods])
+        await database.nutritionDiaryEntries.bulkAdd([...entries])
+        // Foods created in this same batch already carry `lastUsedAt`; only
+        // pre-existing ones an entry points at still need the bump.
+        const createdIds = new Set(foods.map((food) => food.id))
+        const bumps = new Map<string, number>()
+        for (const entry of entries) {
+          if (entry.foodId === null || createdIds.has(entry.foodId)) continue
+          bumps.set(entry.foodId, Math.max(bumps.get(entry.foodId) ?? 0, entry.loggedAt))
+        }
+        for (const [foodId, loggedAt] of bumps) {
+          await database.foods.update(foodId, { lastUsedAt: loggedAt })
+        }
+      })
+    },
+
     async deleteDiaryEntry(id: string): Promise<void> {
       await database.nutritionDiaryEntries.delete(id)
     },

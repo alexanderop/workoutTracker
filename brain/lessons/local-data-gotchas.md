@@ -16,6 +16,11 @@ Keep these invariants covered by tests when changing the related code.
   destructive-delete scope are not automatically identical.
 - New backup properties stay optional at the file boundary when older exports
   must remain importable.
+- Never hand a Vue reactive object to a Dexie write. IndexedDB persists via
+  `structuredClone`, which throws `DataCloneError` on a `Proxy`. Reading a
+  reactive value into a fresh plain object at the boundary (`{ ...nutrients }`)
+  is the fix, and the failure surfaces as a rejected write, not as a type
+  error — so the browser tier is what catches it.
 - Repository sort comparators that tie have no defined order. Adapters stamp
   `createdAt`/`completedAt` with `Date.now()`, so rows written back-to-back
   share a millisecond; the comparator returns `0`, `toSorted` is stable, and

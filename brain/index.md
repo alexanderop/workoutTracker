@@ -6,6 +6,7 @@
 - [[decisions/004-db-in-di]] — Status: accepted. Supersedes ADR 003's `Not in scope` clause, for `Db` only —
 
 ## Lessons
+- [[lessons/lazy-dialog-open-watcher]] — Every dialog in this app is mounted on first use, to keep its dependencies off
 - [[lessons/local-data-gotchas]] — Keep these invariants covered by tests when changing the related code.
 - [[lessons/testing-gotchas]] — Most test configuration and commands are authoritative in `package.json`,
 
@@ -14,6 +15,9 @@
 - [[principles/a-fake-must-not-promise-more-than-the-real-thing]] — A test double exists to stand in for a dependency. The moment it guarantees
 - [[principles/encode-lessons-in-structure]] — A lesson written down is a lesson someone has to remember to read. A lesson
 - [[principles/type-guarantees-need-a-pinned-call-site]] — A constrained signature only proves something where code actually calls it. If
+
+## Prototypes
+- [[prototypes/food-logging-surface]] — Question:
 
 ## Reference
 - [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---

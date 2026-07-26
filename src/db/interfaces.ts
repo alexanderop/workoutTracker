@@ -600,6 +600,18 @@ export type NutritionRepository = {
   ): Promise<void>
   updateFood(id: string, updates: Partial<Omit<DbFood, 'id' | 'createdAt'>>): Promise<void>
   addDiaryEntry(entry: Readonly<DbNutritionDiaryEntry>): Promise<void>
+  /**
+   * Write a whole staging basket at once: every new food, every diary entry,
+   * and a `lastUsedAt` bump for each food an entry points at.
+   *
+   * All-or-nothing. A basket that half-lands is worse than one that does not
+   * land at all -- the user would have to work out which of five items made it
+   * before retrying, mid-meal, on a phone.
+   */
+  commitDiaryBatch(
+    foods: ReadonlyArray<DbFood>,
+    entries: ReadonlyArray<DbNutritionDiaryEntry>,
+  ): Promise<void>
   deleteDiaryEntry(id: string): Promise<void>
 }
 

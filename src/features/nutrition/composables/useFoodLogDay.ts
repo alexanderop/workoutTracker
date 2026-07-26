@@ -57,13 +57,14 @@ export function useFoodLogDay() {
     selectedDateKey.value = getLocalDateKey()
   }
 
-  const { foods, diaryEntries, totals } = useNutritionDay(selectedDateKey)
+  const { goal, foods, diaryEntries, totals } = useNutritionDay(selectedDateKey)
 
   return {
     selectedDateKey,
     selectedDate,
     isToday,
     weekDays,
+    goal,
     foods,
     diaryEntries,
     totals,
