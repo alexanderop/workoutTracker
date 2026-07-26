@@ -225,11 +225,14 @@ empty, `TBD`, or `N/A`):
 ## Confidence
 ```
 
-Do not rename, merge, nest, or re-order them. Folding one into another —
-putting the evidence only inside the AC table, or the observations only in the
-summary — drops the heading and fails the run. If a section has nothing to
-report, say so in a sentence (`Bugs / Observations: none found.`) rather than
-omitting it.
+What fails the run is a heading that is renamed, merged away, or nested deeper
+than `## ` — folding one into another, such as putting the evidence only inside
+the AC table or the observations only in the summary, drops the heading and the
+report is rejected. If a section has nothing to report, say so in a sentence
+(`Bugs / Observations: none found.`) rather than omitting it.
+
+Keep the order above for readability; the validator itself checks only that
+each heading is present and non-empty, not the order they appear in.
 
 What belongs under each:
 

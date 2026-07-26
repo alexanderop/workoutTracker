@@ -255,6 +255,33 @@ test('QA prompts name the exact headings the validator requires', async () => {
     ...requiredSections.flatMap((section) => [`## ${section}`, '', 'Observed as expected.', '']),
   ].join('\n')
   assert.deepEqual(validateQaReport(report), { ready: true, verdict: 'HEALTHY' })
+
+  // The regression that cost run 30190993183: a plausible report that folds
+  // the evidence and observations into the AC table instead of giving them
+  // their own headings. Reads complete, fails the gate.
+  const folded = [
+    '## Verdict: HEALTHY',
+    '',
+    'Everything checked out.',
+    '## Acceptance Criteria',
+    '',
+    '| AC | Result | Evidence | Notes |',
+    '| --- | --- | --- | --- |',
+    '| Icons render | Pass | ![grid](qa-screenshots/grid.png) | none found |',
+    '## Accessibility Findings',
+    '',
+    'No issues observed.',
+    '## Console',
+    '',
+    'No errors.',
+    '## Confidence',
+    '',
+    'High.',
+  ].join('\n')
+  assert.deepEqual(validateQaReport(folded), {
+    ready: false,
+    reason: 'QA report is missing sections: Evidence, Bugs / Observations',
+  })
 })
 
 test('browser QA starts and stays mobile-first by default', async () => {
