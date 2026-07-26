@@ -80,6 +80,56 @@ describe('design studio', () => {
     await expect.element(page.getByRole('button', { name: 'Finish set' })).toBeVisible()
   })
 
+  it('drives the real component from a switch control', async () => {
+    const studio = await renderStudio()
+    await studio.selectFrame('Button')
+
+    expect(await studio.playgroundClassList()).not.toContain('w-full')
+
+    await studio.toggleSwitch('Full width')
+
+    expect(await studio.playgroundClassList()).toContain('w-full')
+  })
+
+  it('zooms the canvas from the toolbar', async () => {
+    const studio = await renderStudio()
+    await studio.waitForInitialFit()
+
+    const before = await studio.zoomPercent()
+    await studio.zoomIn()
+    const zoomedIn = await studio.zoomPercent()
+    expect(zoomedIn).toBeGreaterThan(before)
+
+    await studio.zoomOut()
+    expect(await studio.zoomPercent()).toBeLessThan(zoomedIn)
+  })
+
+  it('returns to 100% when the zoom readout is reset', async () => {
+    const studio = await renderStudio()
+    await studio.waitForInitialFit()
+
+    await studio.zoomIn()
+    await studio.zoomIn()
+    expect(await studio.zoomPercent()).not.toBe(100)
+
+    await studio.resetZoom()
+
+    expect(await studio.zoomPercent()).toBe(100)
+    // Reset returns the origin too, not just the scale.
+    expect(await studio.worldTransform()).toContain('scale(1)')
+  })
+
+  it('scales the canvas down to fit the whole file', async () => {
+    const studio = await renderStudio()
+    await studio.waitForInitialFit()
+
+    await studio.resetZoom()
+    await studio.fitToScreen()
+
+    // The file is far wider than 1440px, so fitting must shrink it.
+    expect(await studio.zoomPercent()).toBeLessThan(100)
+  })
+
   it('repaints the studio when the theme lab changes primary', async () => {
     const studio = await renderStudio()
 

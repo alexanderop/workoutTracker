@@ -204,6 +204,7 @@ function jumpToFrame(id: string): void {
       >
         <div
           ref="worldEl"
+          data-testid="design-world"
           class="absolute top-0 left-0 flex items-start gap-14 p-14"
           :style="worldStyle"
         >

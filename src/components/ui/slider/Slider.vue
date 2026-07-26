@@ -15,6 +15,19 @@ const emits = defineEmits<SliderRootEmits>()
 const delegatedProps = reactiveOmit(props, 'class', 'label')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+/**
+ * One name per thumb. A range slider's handles are separate controls, so
+ * repeating the same name on both would leave a screen reader user unable to
+ * tell which end they are dragging. Mirrors reka-ui's own positional wording,
+ * with the caller's label supplying the context reka-ui has no way to know.
+ */
+function thumbLabel(index: number, total: number): string | undefined {
+  if (!props.label) return undefined
+  if (total <= 1) return props.label
+  if (total === 2) return `${props.label} ${index === 0 ? 'minimum' : 'maximum'}`
+  return `${props.label} value ${index + 1} of ${total}`
+}
 </script>
 
 <template>
@@ -43,7 +56,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       v-for="(_, key) in modelValue"
       :key="key"
       data-slot="slider-thumb"
-      :aria-label="props.label"
+      :aria-label="thumbLabel(key, modelValue?.length ?? 0)"
       class="bg-white border-primary ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
     />
   </SliderRoot>
