@@ -18,6 +18,20 @@
  * `now` and `nextId` are deterministic counters rather than `Date.now()` /
  * `crypto.randomUUID()`, so ordering (which `getAll` and `getSessionHistory`
  * both depend on) is provable rather than incidental.
+ *
+ * ## Two places this fake is deliberately kinder than Dexie
+ *
+ * 1. **It never ties on a timestamp.** The real adapter stamps `createdAt` and
+ *    `completedAt` with `Date.now()`, so rows written in the same millisecond
+ *    compare equal and fall through to primary-key order over random UUIDs.
+ *    Do not assert a positional order here that rests on the counter — see
+ *    `unit/progressions/progressionAdvancement.spec.ts`, which asserts session
+ *    history as a set for exactly this reason.
+ * 2. **Reads are shallow copies.** `availableWeights` stays aliased to stored
+ *    state, where Dexie structured-clones. `DbProgression` types it
+ *    `ReadonlyArray<number>`, so the compiler blocks the mutation that would
+ *    expose the difference; deep-cloning to close a hole types already close
+ *    would be machinery for a case that cannot arise.
  */
 import type { CreateProgressionData, ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'

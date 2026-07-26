@@ -106,9 +106,14 @@ describe('progression advancement', () => {
     await recordSessionWithAdvancement(repo, progression.id, false)
 
     const history = await repo.getSessionHistory(progression.id)
-    expect(history.map((session) => session.completed)).toEqual([false, true, true])
-    // The first session was logged at the starting level, not the advanced one.
-    expect(history[2]?.reps).toBe(10)
-    expect(history[1]?.reps).toBe(12)
+    expect(history).toHaveLength(3)
+    // Each row is stamped with the level it was performed at, not the level it
+    // advanced to. Asserted as a set, not by position: the real adapter stamps
+    // `completedAt` with `Date.now()`, so rows written in the same millisecond
+    // tie and their relative order is arbitrary. The fake's counter clock never
+    // ties, and leaning on that would assert an ordering production does not
+    // provide.
+    expect(history.map((session) => session.reps).toSorted((a, b) => a - b)).toEqual([10, 12, 14])
+    expect(history.filter((session) => !session.completed)).toHaveLength(1)
   })
 })

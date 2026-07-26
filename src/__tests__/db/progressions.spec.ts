@@ -17,6 +17,24 @@ import { db } from '@/db/implementations/dexie/database'
  * `src/__tests__/unit/progressions/progressionAdvancement.spec.ts` against an
  * in-memory fake, where it costs milliseconds instead of a browser.
  */
+/**
+ * Both `createdAt` and `completedAt` are stamped with `Date.now()` inside the
+ * adapter, with no seam to inject. Rows written back-to-back therefore land in
+ * the same millisecond, both ordering comparators return 0 for the pair, and
+ * `toSorted` — being stable — falls through to Dexie's primary-key order over
+ * `crypto.randomUUID()`. That is a coin flip, and it made the ordering
+ * assertions below fail roughly one run in five.
+ *
+ * So: wait for the clock to actually advance before writing a row whose
+ * ordering is under test. A sleep in a test is normally a smell, but here the
+ * timestamp is the thing being ordered and it has no injectable seam — the
+ * honest options are to wait for it or to stop asserting the order.
+ */
+async function nextMillisecond(): Promise<void> {
+  const start = Date.now()
+  while (Date.now() === start) await new Promise((resolve) => setTimeout(resolve, 1))
+}
+
 describe('ProgressionsRepository', () => {
   beforeEach(async () => {
     await resetDatabase()
@@ -62,7 +80,9 @@ describe('ProgressionsRepository', () => {
     it('orders by most recent session, falling back to newest created', async () => {
       const repo = getProgressionsRepository()
       const first = await repo.create({ name: 'First', availableWeights: [16] })
+      await nextMillisecond()
       const second = await repo.create({ name: 'Second', availableWeights: [16] })
+      await nextMillisecond()
       const third = await repo.create({ name: 'Third', availableWeights: [16] })
       // Only `first` has a session, so it outranks both never-used plans; those
       // two fall back to createdAt, newest first.
@@ -139,6 +159,7 @@ describe('ProgressionsRepository', () => {
       const other = await repo.create({ name: 'Other', availableWeights: [16] })
       await repo.recordSession(mine.id, true)
       await repo.recordSession(other.id, true)
+      await nextMillisecond()
       await repo.recordSession(mine.id, false)
 
       const history = await repo.getSessionHistory(mine.id)
