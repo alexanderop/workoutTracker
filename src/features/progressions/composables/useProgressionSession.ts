@@ -1,8 +1,11 @@
 import { computed, onUnmounted, ref } from 'vue'
-import { getProgressionsRepository } from '@/db'
+import type { ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
+import type { Context } from '@/lib/di/context'
+import { useRuntimeContext } from '@/lib/di/vue'
 import { tryCatch } from '@/lib/tryCatch'
 import { calculateNextLevel, getCurrentLevel } from '../lib/progressionLogic'
+import { ProgressionRepo } from '../services'
 import type { ProgressionLevel } from '../types'
 
 // ============================================
@@ -13,7 +16,7 @@ type SessionState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'ready'; progression: DbProgression }
-  | { status: 'active'; progression: DbProgression; startedAt: number }
+  | { status: 'active'; progression: DbProgression }
   | { status: 'completing' }
   | { status: 'completed'; session: DbProgressionSession }
   | { status: 'error'; error: Error }
@@ -24,8 +27,19 @@ type SessionState =
 
 /**
  * Active EMOM session with timer for a progression.
+ *
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
+ *
+ * Time is deliberately *not* injected, unlike `useHabits`: after removing the
+ * write-only `startedAt`, the sole remaining clock read is the 1-second
+ * `setInterval` tick, and `Clock` has no interval primitive to replace it with.
+ * Node specs drive the tick with `vi.useFakeTimers()` instead.
  */
-export function useProgressionSession(progressionId: string) {
+export function useProgressionSession(
+  progressionId: string,
+  ctx: Context<ProgressionsRepository> = useRuntimeContext<ProgressionsRepository>(),
+) {
+  const repo = ctx.get(ProgressionRepo)
   // Core state
   const state = ref<SessionState>({ status: 'idle' })
 
@@ -67,7 +81,6 @@ export function useProgressionSession(progressionId: string) {
   async function load(): Promise<void> {
     state.value = { status: 'loading' }
 
-    const repo = getProgressionsRepository()
     const [error, loaded] = await tryCatch(repo.getById(progressionId))
 
     if (error) {
@@ -92,7 +105,7 @@ export function useProgressionSession(progressionId: string) {
     if (state.value.status !== 'ready') return
 
     const prog = state.value.progression
-    state.value = { status: 'active', progression: prog, startedAt: Date.now() }
+    state.value = { status: 'active', progression: prog }
     currentSecond.value = 0
 
     timerInterval.value = setInterval(() => {
@@ -106,7 +119,7 @@ export function useProgressionSession(progressionId: string) {
 
   function stopTimer(): void {
     if (!timerInterval.value) {
-	return;
+      return
     }
 
     clearInterval(timerInterval.value)
@@ -130,14 +143,12 @@ export function useProgressionSession(progressionId: string) {
     state.value = { status: 'completing' }
 
     // Compute next level in the feature layer, pass to repository
-    const nextLevel = completed && !currentProgression.isComplete
-      ? calculateNextLevel(currentProgression)
-      : undefined
+    const nextLevel =
+      completed && !currentProgression.isComplete
+        ? calculateNextLevel(currentProgression)
+        : undefined
 
-    const repo = getProgressionsRepository()
-    const [error, session] = await tryCatch(
-      repo.recordSession(progressionId, completed, nextLevel),
-    )
+    const [error, session] = await tryCatch(repo.recordSession(progressionId, completed, nextLevel))
 
     if (error) {
       state.value = { status: 'error', error }

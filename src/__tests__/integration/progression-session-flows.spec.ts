@@ -12,11 +12,21 @@ import { getProgressionsRepository } from '@/db'
  * mode). Tests that need the timer to finish shrink the session duration to
  * two seconds by updating `currentMinutes` in the repository (1/30 of a
  * minute) before entering the session, so a full user journey stays fast.
+ *
+ * Browser capability, per ADR 004's tiering rule, shared by every test below:
+ * each one drives the real `setInterval` timer, a real completion dialog, or
+ * real back-navigation between routes. The timer *state machine* itself is not
+ * retested here — `unit/progressions/useProgressionSession.spec.ts` covers tick
+ * cadence, minute derivation, self-stop, cancel and the error arms under
+ * `vi.useFakeTimers()`. What is left here is the wiring: that the screen starts
+ * the timer, that finishing raises the dialog, and that the answer reaches the
+ * database.
  */
 
 const TWO_SECOND_SESSION = 1 / 30
 
 describe('Progression Session Flows', () => {
+  // Browser: a real 2s EMOM runs to completion, raising the real dialog.
   it('runs a session to the end and advances the level after confirming success', async ({
     createTestApp,
   }) => {
@@ -65,6 +75,7 @@ describe('Progression Session Flows', () => {
     expect(history[0]?.completed).toBe(true)
   }, 20_000)
 
+  // Browser: same real timer + dialog, taking the "No, missed some" arm.
   it('records a failed session without advancing the level', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
@@ -101,6 +112,8 @@ describe('Progression Session Flows', () => {
     expect(history[0]?.completed).toBe(false)
   }, 20_000)
 
+  // Browser: back-navigation out of a *running* timer, twice, asserting the
+  // interval leaves nothing behind.
   it('abandons an active session with the back button without recording anything', async ({
     createTestApp,
   }) => {
@@ -136,6 +149,7 @@ describe('Progression Session Flows', () => {
     await expect.poll(() => app.router.currentRoute.value.path).toBe('/progressions')
   })
 
+  // Browser: back-navigation from the ready screen before any timer exists.
   it('leaves the ready session screen without starting the timer', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()
@@ -157,6 +171,8 @@ describe('Progression Session Flows', () => {
     expect(await repo.getSessionHistory(progression.id)).toHaveLength(0)
   })
 
+  // Browser: a stale deep link renders the error screen, and the spurious
+  // dialog button is a no-op against the real router.
   it('shows an error for a stale session link and recovers via back navigation', async ({
     createTestApp,
   }) => {
@@ -177,6 +193,8 @@ describe('Progression Session Flows', () => {
     await expect.element(page.getByText(/progression not found/i)).toBeVisible()
   })
 
+  // Browser: asserts the timer control is absent from the DOM, a negative
+  // only a real render can answer.
   it('refuses to start a session for an already finished progression', async ({
     createTestApp,
   }) => {
@@ -197,6 +215,7 @@ describe('Progression Session Flows', () => {
     await expect.element(page.getByText(/tap to start/i)).not.toBeInTheDocument()
   })
 
+  // Browser: opens the real confirm dialog and cancels it.
   it('keeps the progression when deletion is cancelled', async ({ createTestApp }) => {
     const app = await createTestApp()
     const repo = getProgressionsRepository()

@@ -1,0 +1,53 @@
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v4.1.10 /home/user/workoutTracker
+
+
+PWA v1.3.0
+mode      generateSW
+precache  2 entries (0.12 KiB)
+files generated
+  dev-dist/sw.js
+  dev-dist/workbox-6fc47aa9.js
+Sourcemap for "/@vite-plugin-pwa/virtual:pwa-register/vue" points to missing source files
+4:22:48 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:48 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:48 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:49 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:50 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:50 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:51 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:51 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:51 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:51 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:52 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:53 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:53 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:53 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:53 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:54 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:54 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:54 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:54 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:55 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:55 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:55 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:55 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:56 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:56 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+4:22:56 PM [vite] (client) [console.warn] [WakeLock] Native API failed: NotAllowedError: Wake Lock permission request denied
+4:22:56 PM [vite] (client) [console.warn] [WakeLock] Video fallback play failed: NotSupportedError: Failed to load because no supported source was found.
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+Type Errors  no errors
+   Start at  16:22:37
+   Duration  19.51s (transform 0ms, setup 27.26s, import 740ms, tests 14.46s, environment 0ms)
+
+EXIT=0

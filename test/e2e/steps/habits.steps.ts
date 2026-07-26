@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect, Given, Then, When } from '../fixtures'
+import { skipOnboarding } from '../test-utils'
 
 /** The toggle's accessible name is the literal `Mark {name} complete` /
  *  `Mark {name} incomplete` from `src/i18n/messages/en/habits.ts`, so an exact
@@ -34,10 +35,7 @@ async function toggleHabit(
 
 Given('a first-time user has entered the app', async ({ page, goto }) => {
   await goto('/')
-  await expect(page).toHaveURL(/\/onboarding$/)
-
-  await page.getByRole('button', { name: 'Skip to App', exact: true }).click()
-  await expect(page).toHaveURL(/\/$/)
+  await skipOnboarding(page)
 
   await page.getByRole('button', { name: /^habits$/i }).click()
   await expect(page).toHaveURL(/\/habits$/)

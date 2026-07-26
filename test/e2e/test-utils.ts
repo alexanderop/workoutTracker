@@ -1,4 +1,5 @@
 import { expect as playwrightExpect, test as base } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import type {
   Fixtures,
   PlaywrightTestArgs,
@@ -47,5 +48,17 @@ export const e2eFixtures: Fixtures<
 }
 
 export const test = base.extend<E2EFixtures>(e2eFixtures)
+
+/**
+ * Walks a first-time user past onboarding and leaves them on the home route.
+ *
+ * Shared because every feature file needs it and the `Skip to App` accessible
+ * name would otherwise be hardcoded once per steps file.
+ */
+export async function skipOnboarding(page: Page): Promise<void> {
+  await playwrightExpect(page).toHaveURL(/\/onboarding$/)
+  await page.getByRole('button', { name: 'Skip to App', exact: true }).click()
+  await playwrightExpect(page).toHaveURL(/\/$/)
+}
 
 export { expect } from '@playwright/test'

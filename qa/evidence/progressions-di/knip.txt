@@ -1,0 +1,7 @@
+
+> workouttracker@1.40.2 knip /home/user/workoutTracker
+> knip
+
+Configuration hints (1)
+src/i18n/messages/de/**    knip.json  Remove from ignore
+EXIT=0

@@ -1,0 +1,19 @@
+[walk] url after onboarding: http://127.0.0.1:5679/
+[walk] PASS empty state visible
+[walk] detail url: http://127.0.0.1:5679/progressions/271a15f8-3aa6-44f5-804f-5c2285593ed8
+[walk] PASS initial level is 16kg x 10 reps x 10 min
+[walk] PASS initial sessions count is 0
+[walk] PASS ready state shows 10 minute EMOM
+[walk] PASS active timer shows Minute 1 of 10
+[walk] PASS after 4 more minutes shows Minute 5 of 10
+[walk] PASS last-minute indicator appears
+[walk] PASS completion dialog appears at 10:00
+[walk] PASS level advanced to 12 reps
+[walk] PASS sessions count is 1
+[walk] PASS session history records the completed session at the old level
+[walk] PASS advanced level survives a reload
+[walk] PASS list card aria-label reflects the advanced level
+[walk] PASS deleted progression stays deleted after reload
+[walk] console errors: []
+[walk] page errors: []
+[walk] done, exitCode=0

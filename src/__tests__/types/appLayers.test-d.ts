@@ -1,8 +1,9 @@
 import { expectTypeOf } from 'vitest'
 import { appLayers } from '@/appLayers'
-import type { HabitRepository, RepositoryProvider } from '@/db/interfaces'
+import type { HabitRepository, ProgressionsRepository, RepositoryProvider } from '@/db/interfaces'
 import { Repositories } from '@/db/services'
 import { HabitRepo } from '@/features/habits/services'
+import { ProgressionRepo } from '@/features/progressions/services'
 import { makeRuntime } from '@/lib/di/runtime'
 
 // The app runtime must resolve every service the app depends on. Deleting a
@@ -13,3 +14,4 @@ const runtime = makeRuntime(appLayers)
 
 expectTypeOf(runtime.get(Repositories)).toEqualTypeOf<RepositoryProvider>()
 expectTypeOf(runtime.get(HabitRepo)).toEqualTypeOf<HabitRepository>()
+expectTypeOf(runtime.get(ProgressionRepo)).toEqualTypeOf<ProgressionsRepository>()

@@ -23,8 +23,20 @@ async function recordSessionWithAdvancement(
   await repo.recordSession(progressionId, completed, nextLevel)
 }
 
+/**
+ * Full-app UI flows for managing progressions.
+ *
+ * Every test here mounts the app, so per ADR 004's tiering rule each one names
+ * the browser capability it needs in a one-line comment. The feature's pure
+ * logic, its state machine, and its repository-error branches are *not*
+ * retested here — they live in `src/__tests__/unit/progressions/**` against an
+ * injected fake, and the Dexie adapter's transactional guarantees live in
+ * `src/__tests__/db/progressions.spec.ts`.
+ */
 describe('Progression Management', () => {
   describe('Creation', () => {
+    // Browser: real text input and repeated button presses driving a live form,
+    // then router navigation to the created progression's detail route.
     it('creates a progression with multiple kettlebells', async ({ createTestApp }) => {
       const app = await createTestApp()
 
@@ -58,6 +70,8 @@ describe('Progression Management', () => {
       expect(progressions[0]?.availableWeights).toEqual([16, 20, 24])
     })
 
+    // Browser: the starting-weight control is a reka-ui `Select`, which opens
+    // its listbox on real pointer events — there is no headless equivalent.
     it('creates progression with custom starting weight', async ({ createTestApp }) => {
       const app = await createTestApp()
 
@@ -85,38 +99,40 @@ describe('Progression Management', () => {
   })
 
   describe('Session Completion', () => {
+    // Browser: the detail view must re-render the stored level on a fresh
+    // mount, and "Start Session" must route to the session screen.
+    //
+    // The advancement arithmetic behind this is asserted in
+    // `unit/progressions/progressionAdvancement.spec.ts`; this test only proves
+    // the screen reflects it. The previous version also clicked the play button
+    // before bypassing the timer via the repository — that click asserted
+    // nothing and left a live 10-minute interval running, so it is gone.
     it('advances progression when session is completed successfully', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
 
-      // Create progression via API
       const progression = await repo.create({
         name: 'Test Progression',
         availableWeights: [16, 20],
       })
 
-      // Navigate to detail
       await app.navigateTo(`/progressions/${progression.id}`)
       await app.progressions.assertCurrentLevel(16, 10, 10)
 
-      // Start session
+      // "Start Session" reaches the session screen...
       await app.progressions.clickStartSession()
       await expect.poll(() => app.router.currentRoute.value.path).toMatch(/\/session$/)
 
-      // Start timer (click play button)
-      await app.progressions.clickPlayButton()
-
-      // Fast-forward: directly complete via API to avoid waiting for timer
+      // ...and once a session is on record, a fresh mount of the detail view
+      // shows the advanced level rather than a stale one.
       await recordSessionWithAdvancement(repo, progression.id, true)
-
-      // Navigate back to detail to check advancement
       await app.navigateTo(`/progressions/${progression.id}`)
 
-      // Should have advanced to 12 reps
       await app.progressions.assertCurrentLevel(16, 12, 10)
       await app.progressions.assertSessionsCompleted(1)
     })
 
+    // Browser: renders the unchanged level plus the "Incomplete" history badge.
     it('stays at same level when session is failed', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
@@ -142,80 +158,13 @@ describe('Progression Management', () => {
     })
   })
 
+  // The three repository-only advancement tests that used to live here moved
+  // to `src/__tests__/unit/progressions/progressionAdvancement.spec.ts`: they
+  // looped `recordSession` 5-11 times to assert arithmetic, which needs no
+  // browser. What is left here mounts the app, which does.
   describe('Progression Advancement', () => {
-    it('advances from reps to time phase', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression and advance to max reps (20)
-      const progression = await repo.create({
-        name: 'Test Progression',
-        availableWeights: [16, 20],
-      })
-
-      // Simulate completing 5 sessions: 10→12→14→16→18→20 reps
-      for (const _ of Array.from({ length: 5 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database - should be at 20 reps, 10 min
-      const afterRepsPhase = await repo.getById(progression.id)
-      expect(afterRepsPhase?.currentReps).toBe(20)
-      expect(afterRepsPhase?.currentMinutes).toBe(10)
-
-      // Complete another session - should advance to 12 min
-      await recordSessionWithAdvancement(repo, progression.id, true)
-
-      // Verify advancement
-      const afterTimeAdvance = await repo.getById(progression.id)
-      expect(afterTimeAdvance?.currentReps).toBe(20)
-      expect(afterTimeAdvance?.currentMinutes).toBe(12)
-    })
-
-    it('advances to next kettlebell after completing all phases', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression
-      const progression = await repo.create({
-        name: 'Test Progression',
-        availableWeights: [16, 20, 24],
-      })
-
-      // Simulate completing entire first KB (11 sessions total):
-      // Reps: 10→12→14→16→18→20 (5 sessions to reach max reps)
-      // Time: 10→12→14→16→18→20 (5 more sessions to reach max time)
-      // +1 session to trigger advance to next KB
-      for (const _ of Array.from({ length: 11 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database - should have advanced to 20kg, reset to 10 reps, 10 min
-      const updated = await repo.getById(progression.id)
-      expect(updated?.currentWeightIndex).toBe(1) // 20kg
-      expect(updated?.currentReps).toBe(10)
-      expect(updated?.currentMinutes).toBe(10)
-      expect(updated?.sessionsCompleted).toBe(11)
-    })
-
-    it('marks progression as complete after finishing all kettlebells', async () => {
-      const repo = getProgressionsRepository()
-
-      // Create progression with only one KB for faster completion
-      const progression = await repo.create({
-        name: 'Quick Progression',
-        availableWeights: [16],
-      })
-
-      // Complete all 11 sessions for the single KB:
-      // 6 rep phases (10→12→14→16→18→20) + 5 time phases (10→12→14→16→18→20)
-      for (const _ of Array.from({ length: 11 })) {
-        await recordSessionWithAdvancement(repo, progression.id, true)
-      }
-
-      // Verify in database
-      const updated = await repo.getById(progression.id)
-      expect(updated?.isComplete).toBe(true)
-    })
-
+    // Browser: renders the completion badge and, just as importantly, proves
+    // "Start Session" is absent from the DOM once the plan is finished.
     it('shows complete badge in UI after finishing all kettlebells', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
@@ -245,6 +194,8 @@ describe('Progression Management', () => {
   })
 
   describe('Deletion', () => {
+    // Browser: a real confirm dialog (open, confirm, close) followed by router
+    // navigation back to the list.
     it('deletes progression and navigates back to list', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
@@ -272,6 +223,8 @@ describe('Progression Management', () => {
   })
 
   describe('Session History', () => {
+    // Browser: renders a mixed history list — the Completed/Incomplete badge
+    // pair is a template concern, not a repository one.
     it('displays session history with correct status badges', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
@@ -300,6 +253,8 @@ describe('Progression Management', () => {
   })
 
   describe('List View', () => {
+    // Browser: renders multiple cards and follows a real click through to the
+    // detail route — the list-to-detail wiring, not the list data itself.
     it('shows progressions in list with current level info', async ({ createTestApp }) => {
       const app = await createTestApp()
       const repo = getProgressionsRepository()
@@ -335,6 +290,8 @@ describe('Progression Management', () => {
   })
 
   describe('Scope Copy', () => {
+    // Browser: asserts rendered i18n copy, including a negative ("kettlebell
+    // swing" must not appear) that only a real DOM can answer.
     it('scopes the page to kettlebell EMOM without assuming a specific exercise', async ({
       createTestApp,
     }) => {

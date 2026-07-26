@@ -1,6 +1,8 @@
 import { onMounted, ref, computed } from 'vue'
-import { getProgressionsRepository } from '@/db'
+import type { ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
+import type { Context } from '@/lib/di/context'
+import { useRuntimeContext } from '@/lib/di/vue'
 import { tryCatch } from '@/lib/tryCatch'
 import {
   getCurrentLevel,
@@ -8,6 +10,7 @@ import {
   getProgressionPhase,
   formatLevelCompact,
 } from '../lib/progressionLogic'
+import { ProgressionRepo } from '../services'
 import type { ProgressionLevel, ProgressionPhase } from '../types'
 
 // ============================================
@@ -26,8 +29,14 @@ type ProgressionDetailState =
 
 /**
  * Single progression with detail info and session history.
+ *
+ * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
  */
-export function useProgression(progressionId: string) {
+export function useProgression(
+  progressionId: string,
+  ctx: Context<ProgressionsRepository> = useRuntimeContext<ProgressionsRepository>(),
+) {
+  const repo = ctx.get(ProgressionRepo)
   const state = ref<ProgressionDetailState>({ status: 'loading' })
   const isDeleting = ref(false)
 
@@ -36,9 +45,7 @@ export function useProgression(progressionId: string) {
     state.value.status === 'success' ? state.value.progression : null,
   )
 
-  const sessions = computed(() =>
-    state.value.status === 'success' ? state.value.sessions : [],
-  )
+  const sessions = computed(() => (state.value.status === 'success' ? state.value.sessions : []))
 
   const currentLevel = computed((): ProgressionLevel | null =>
     progression.value ? getCurrentLevel(progression.value) : null,
@@ -60,7 +67,6 @@ export function useProgression(progressionId: string) {
   async function loadProgression(): Promise<void> {
     state.value = { status: 'loading' }
 
-    const repo = getProgressionsRepository()
     const [error, loaded] = await tryCatch(repo.getById(progressionId))
 
     if (error) {
@@ -74,9 +80,7 @@ export function useProgression(progressionId: string) {
     }
 
     // Load session history
-    const [sessionsError, sessionHistory] = await tryCatch(
-      repo.getSessionHistory(progressionId),
-    )
+    const [sessionsError, sessionHistory] = await tryCatch(repo.getSessionHistory(progressionId))
 
     state.value = {
       status: 'success',
@@ -89,9 +93,7 @@ export function useProgression(progressionId: string) {
     if (state.value.status !== 'success' || isDeleting.value) return false
 
     isDeleting.value = true
-    const [error] = await tryCatch(
-      getProgressionsRepository().delete(progressionId),
-    )
+    const [error] = await tryCatch(repo.delete(progressionId))
     isDeleting.value = false
 
     return !error

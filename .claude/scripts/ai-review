@@ -145,7 +145,15 @@ done
 # grep, not `${diff//[[:space:]]/}` — bash pattern substitution over a whole
 # branch diff takes minutes. The check has to tolerate a whitespace-only string
 # because the untracked-file loop above appends a newline even when it finds none.
-if ! printf '%s' "$diff" | grep -q '[^[:space:]]'; then
+#
+# Herestring, not `printf … | grep -q`: `grep -q` exits on its first match, which
+# SIGPIPEs the writer, and `set -o pipefail` (line 41) then reports the pipeline
+# as status 141. Any diff larger than the ~64KB pipe buffer therefore looked
+# EMPTY here, so this gate announced "no changes in scope" and exited 0 without
+# reviewing a line — silently clean on exactly the large branches that most need
+# it. Small diffs fit the buffer and passed, which is why it went unnoticed.
+# A herestring is a temp file, not a pipe: no SIGPIPE, no pipefail interaction.
+if ! grep -q '[^[:space:]]' <<< "$diff"; then
   status "ai-review: no changes in scope ($label) — nothing to review"
   [ "$JSON_ONLY" -eq 1 ] && echo '[]'
   exit 0
