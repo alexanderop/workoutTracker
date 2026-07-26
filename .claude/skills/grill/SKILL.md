@@ -214,7 +214,9 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
     rest. Re-phasing a signature-level outline is free; re-phasing a plan full of
     written-out detail means throwing work away, so nobody does it and the bad
     phasing ships.
-20. Decide the test scope and write it into the plan as `## Test Scope`. Name the
+20. Decide the test scope and write it into the plan as `## Test Scope`, splitting
+    runnable **Commands** from contextual **Notes** per the Output template —
+    only Commands are executed or become checkboxes. Name the
     exact scoped commands that cover this change — paths, directories, or
     projects, never the bare full tier — so `implement`, `qa`, and `ship-it` run
     the feature's tests instead of re-deriving a scope or falling back to the
@@ -255,8 +257,9 @@ obvious cause, or execution of an already-written plan (`brain/plans/`).
     earlier slices; give every slice the files it owns and what it depends on.
     Every contract that depends on a library, SDK, or API must cite the source
     URL and version it was doc-verified against (per step 3). Carry the step-20
-    `## Test Scope` into this pass too, and point every verification checkbox at
-    one of its entries.
+    `## Test Scope` into this pass too, emitting one verification checkbox per
+    **Commands** entry — every one of them, copied verbatim. **Notes** bullets
+    never become checkboxes.
 
 ## Stop and Ask
 
