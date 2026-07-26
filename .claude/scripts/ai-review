@@ -3,7 +3,7 @@
 # AI review gate — a second, isolated Claude run over the branch diff.
 #
 # This is the mechanical floor, not a replacement for the `review` skill.
-# It runs on every ship (see `.claude/skills/ship-it/SKILL.md` step 2), reports
+# It runs on every ship (see `.claude/skills/ship-it/SKILL.md` step 4), reports
 # only blocking-severity defects, and exits non-zero so the push can be gated on
 # it. The `review` skill remains the deep, principle-grounded pass you invoke
 # deliberately for big or architectural changes.
@@ -70,6 +70,17 @@ case "$MAX_PRIORITY" in
   *) echo "ai-review: --max-priority must be P0, P1, or P2" >&2; exit 2 ;;
 esac
 
+# With --json, stdout carries exactly one JSON array and nothing else — a status
+# banner on stdout breaks every consumer on first use, the same way an unquiet
+# pnpm corrupts `pr:comments` output. Without --json, status is the human report.
+status() {
+  if [ "$JSON_ONLY" -eq 1 ]; then
+    echo "$@" >&2
+  else
+    echo "$@"
+  fi
+}
+
 for bin in claude jq git; do
   command -v "$bin" >/dev/null 2>&1 || { echo "ai-review: '$bin' not found on PATH" >&2; exit 2; }
 done
@@ -110,11 +121,24 @@ fi
 
 changed="$(printf '%s' "$changed" | grep -v '^$' || true)"
 
+# A `--paths` scope that resolves to nothing must fail, not pass. Git pathspecs
+# resolve from the repo root and match silently when wrong, so a typo, a stale
+# path after a rename, or paths written relative to the caller's cwd would
+# otherwise review zero files and exit 0 — reporting a clean gate over
+# unreviewed code. This mirrors the standard CLAUDE.md sets for scoped test
+# runs: a wrong filter fails loudly rather than passing silently.
+if [ -n "$PATHS" ] && [ -z "$changed" ]; then
+  echo "ai-review: --paths matched no changed file in scope ($label)" >&2
+  echo "ai-review: paths resolve from the repo root — check for typos, renames, or cwd-relative paths" >&2
+  exit 2
+fi
+
 # grep, not `${diff//[[:space:]]/}` — bash pattern substitution over a whole
 # branch diff takes minutes. The check has to tolerate a whitespace-only string
 # because the untracked-file loop above appends a newline even when it finds none.
 if ! printf '%s' "$diff" | grep -q '[^[:space:]]'; then
-  echo "ai-review: no changes in scope ($label) — nothing to review"
+  status "ai-review: no changes in scope ($label) — nothing to review"
+  [ "$JSON_ONLY" -eq 1 ] && echo '[]'
   exit 0
 fi
 
@@ -164,12 +188,12 @@ ${rules}
 </project_conventions>
 EOF
 
-echo "ai-review: ${label} ($(printf '%s' "$changed" | grep -c . || true) files, model ${MODEL}, threshold ${MAX_PRIORITY})"
+status "ai-review: ${label} ($(printf '%s' "$changed" | grep -c . || true) files, model ${MODEL}, threshold ${MAX_PRIORITY})"
 
 if [ "$DRY_RUN" -eq 1 ]; then
-  echo "ai-review: dry run — scope is"
-  printf '%s\n' "$changed" | sed 's/^/  /'
-  echo "ai-review: $(printf '%s' "$diff" | wc -l | tr -d ' ') diff lines, $(printf '%s' "$INSTRUCTIONS" | wc -c | tr -d ' ') prompt bytes; no model call made"
+  status "ai-review: dry run — scope is"
+  if [ "$JSON_ONLY" -eq 1 ]; then printf '%s\n' "$changed" | sed 's/^/  /' >&2; else printf '%s\n' "$changed" | sed 's/^/  /'; fi
+  status "ai-review: $(printf '%s' "$diff" | wc -l | tr -d ' ') diff lines, $(printf '%s' "$INSTRUCTIONS" | wc -c | tr -d ' ') prompt bytes; no model call made"
   exit 0
 fi
 
@@ -238,4 +262,4 @@ if [ "$count" -gt 0 ]; then
   exit 1
 fi
 
-echo "ai-review: clean — no findings at or above $MAX_PRIORITY"
+status "ai-review: clean — no findings at or above $MAX_PRIORITY"
