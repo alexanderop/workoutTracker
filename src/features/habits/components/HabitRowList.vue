@@ -15,15 +15,12 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { addDays, startOfWeek } from 'date-fns'
+import { addDays } from 'date-fns'
 import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
-import { startOfDay } from '../lib/habitStats'
+import { startOfDay, startOfWeekDay } from '../lib/habitStats'
 import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
 import HabitHomeRow from './HabitHomeRow.vue'
-
-/** Matches `WEEK_STARTS_ON` in lib/habitGrid.ts -- weeks begin on Monday. */
-const WEEK_STARTS_ON = 1
 
 defineProps<{ items: ReadonlyArray<HabitTodayItem> }>()
 
@@ -36,13 +33,17 @@ const { t, locale } = useI18n()
 
 const days = computed(() => {
   const today = startOfDay(Date.now())
-  const weekStart = startOfWeek(today, { weekStartsOn: WEEK_STARTS_ON })
+  const weekStart = startOfWeekDay(today)
+  // Built once for the week rather than per cell: `toLocaleDateString` spins up
+  // a fresh formatter on every call, and this ran fourteen of them per render.
+  const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'short' })
+  const dayOfMonthFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric' })
   return Array.from({ length: HABIT_ROW_DAYS }, (_, index) => {
     const date = addDays(weekStart, index)
     return {
       key: date.getTime(),
-      weekday: date.toLocaleDateString(locale.value, { weekday: 'short' }),
-      dayOfMonth: date.toLocaleDateString(locale.value, { day: 'numeric' }),
+      weekday: weekdayFormat.format(date),
+      dayOfMonth: dayOfMonthFormat.format(date),
       isToday: startOfDay(date.getTime()) === today,
     }
   })

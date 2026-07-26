@@ -31,8 +31,13 @@ export function startOfDay(timestampMs: number): number {
 /**
  * Start-of-day timestamp for the Monday that starts the week containing
  * `timestampMs`.
+ *
+ * Exported because every surface that lines something up with a habit week --
+ * the grid builder, the compact rows' date header -- has to start it on the
+ * same day as this module does. A second local `startOfWeek(..., { weekStartsOn })`
+ * is a copy of `WEEK_STARTS_ON` waiting to disagree with this one.
  */
-function startOfWeekDay(timestampMs: number): number {
+export function startOfWeekDay(timestampMs: number): number {
   return startOfDay(startOfWeek(timestampMs, { weekStartsOn: WEEK_STARTS_ON }).getTime())
 }
 

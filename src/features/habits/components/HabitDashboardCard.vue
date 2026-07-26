@@ -13,19 +13,11 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, ChevronRight, Flame } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import {
-  NumberField,
-  NumberFieldContent,
-  NumberFieldDecrement,
-  NumberFieldIncrement,
-  NumberFieldInput,
-} from '@/components/ui/number-field'
 import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
 import { useHabitStats } from '../composables/useHabitStats'
 import HabitCompactGrid from './HabitCompactGrid.vue'
+import HabitQuantityControl from './HabitQuantityControl.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 
@@ -39,16 +31,16 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// Read off the single `item` prop; `value`/`complete` arrive pre-derived
-// rather than being recomputed from entries a second time.
+// Read off the single `item` prop -- `value` and `isComplete` arrive
+// pre-derived rather than being recomputed from entries a second time, so they
+// are used directly. `habit` is aliased only because the template names it a
+// dozen times.
 const habit = computed(() => item.habit)
 const { stats } = useHabitStats(
   () => item.habit,
   () => item.entries,
 )
 
-const value = computed(() => item.value)
-const complete = computed(() => item.isComplete)
 const metadata = computed(() => {
   if (habit.value.schedule.type === 'weekly' && stats.value) {
     return t('habits.weekProgressLabel', stats.value.weeklyProgress)
@@ -56,11 +48,6 @@ const metadata = computed(() => {
   return stats.value && stats.value.currentStreak >= 2
     ? t('habits.streakLabel', { count: stats.value.currentStreak })
     : t('habits.schedule.daily')
-})
-const quantityPercent = computed(() => {
-  const kind = habit.value.kind
-  if (kind.type !== 'quantity' || kind.target <= 0) return 0
-  return Math.min(100, Math.round((value.value / kind.target) * 100))
 })
 </script>
 
@@ -96,48 +83,24 @@ const quantityPercent = computed(() => {
           size="icon"
           variant="outline"
           class="size-touch-target shrink-0 rounded-full border-2"
-          :class="complete ? 'habit-today-complete' : 'habit-today-incomplete'"
-          :aria-pressed="complete"
+          :class="item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete'"
+          :aria-pressed="item.isComplete"
           :aria-label="
-            complete
+            item.isComplete
               ? t('habits.markIncomplete', { name: habit.name })
               : t('habits.markComplete', { name: habit.name })
           "
           @click="emit('toggle', habit)"
         >
-          <Check v-if="complete" class="size-5" />
+          <Check v-if="item.isComplete" class="size-5" />
         </Button>
       </div>
 
-      <div
-        v-if="habit.kind.type === 'quantity'"
-        class="flex items-center gap-3 rounded-lg bg-muted/60 p-2 pl-3"
-      >
-        <span class="text-sm font-medium tabular-nums">
-          {{
-            t('habits.quantityLabel', { value, target: habit.kind.target, unit: habit.kind.unit })
-          }}
-        </span>
-        <Label :for="`habit-quantity-${habit.id}`" class="sr-only">
-          {{ t('habits.quantityInputLabel', { name: habit.name }) }}
-        </Label>
-        <NumberField
-          :id="`habit-quantity-${habit.id}`"
-          class="ml-auto w-32"
-          :model-value="value"
-          :min="0"
-          :max="9999"
-          :step="1"
-          @update:model-value="(next) => emit('log-quantity', habit, next)"
-        >
-          <NumberFieldContent>
-            <NumberFieldDecrement />
-            <NumberFieldInput class="text-center" />
-            <NumberFieldIncrement />
-          </NumberFieldContent>
-        </NumberField>
-      </div>
-      <Progress v-if="habit.kind.type === 'quantity'" :model-value="quantityPercent" />
+      <HabitQuantityControl
+        :habit="habit"
+        :value="item.value"
+        @update:value="(next) => emit('log-quantity', habit, next)"
+      />
 
       <HabitCompactGrid :habit="habit" :entries="item.entries" />
     </div>

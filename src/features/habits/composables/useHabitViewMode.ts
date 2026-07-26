@@ -27,7 +27,6 @@ import type { HabitViewModePrefs } from '../services'
 
 export type UseHabitViewMode = {
   mode: Ref<HabitViewMode>
-  isLoaded: Ref<boolean>
   load: () => Promise<void>
   setMode: (mode: HabitViewMode) => Promise<boolean>
 }
@@ -40,17 +39,14 @@ export function useHabitViewMode(
   // Starts at the default so the first paint renders a real layout instead of
   // nothing while the stored value is in flight.
   const mode = ref<HabitViewMode>(DEFAULT_HABIT_VIEW_MODE)
-  const isLoaded = ref(false)
 
   async function load(): Promise<void> {
     const [error, stored] = await tryCatch(store.get())
     if (error) {
       console.error('Failed to read habit view mode:', error)
-      isLoaded.value = true
       return
     }
     mode.value = stored
-    isLoaded.value = true
   }
 
   async function setMode(next: HabitViewMode): Promise<boolean> {
@@ -63,5 +59,5 @@ export function useHabitViewMode(
     return true
   }
 
-  return { mode, isLoaded, load, setMode }
+  return { mode, load, setMode }
 }

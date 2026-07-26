@@ -1,8 +1,7 @@
-import { addDays, addWeeks, startOfWeek, subWeeks } from 'date-fns'
+import { addDays, addWeeks, subWeeks } from 'date-fns'
 import type { DbHabit, DbHabitEntry } from '@/db/schema'
-import { startOfDay } from './habitStats'
+import { startOfDay, startOfWeekDay } from './habitStats'
 
-const WEEK_STARTS_ON = 1
 const DASHBOARD_WEEKS = 16
 
 type HabitDayVisualState = 'future' | 'empty' | 'partial' | 'complete'
@@ -70,10 +69,7 @@ export function buildHabitGrid(
 ): ReadonlyArray<HabitGridWeek> {
   const today = startOfDay(referenceDay)
   const entryByDay = new Map(entries.map((entry) => [startOfDay(entry.date), entry]))
-  const currentWeekStart = startOfDay(
-    startOfWeek(today, { weekStartsOn: WEEK_STARTS_ON }).getTime(),
-  )
-  let firstWeekStart = currentWeekStart
+  let firstWeekStart = startOfWeekDay(today)
   for (let index = 1; index < weeksCount; index += 1) firstWeekStart = previousWeek(firstWeekStart)
 
   const weeks: Array<HabitGridWeek> = []

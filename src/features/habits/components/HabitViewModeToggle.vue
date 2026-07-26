@@ -34,12 +34,13 @@ const options = computed(() =>
 )
 
 /**
- * ToggleGroup emits `''` when the active item is tapped again (deselect). A
- * layout is not optional -- there is no "no view" state -- so re-tapping the
- * current mode is a no-op rather than a way to empty the page.
+ * ToggleGroup emits `''` when the active item is tapped again (deselect), and
+ * types its payload loosely. A layout is not optional -- there is no "no view"
+ * state -- so anything that is not one of the three modes, `''` included, is a
+ * no-op rather than a way to empty the page. Matching against the mode list is
+ * the whole guard: it rejects the deselect and narrows the type in one step.
  */
 function handleChange(next: unknown): void {
-  if (typeof next !== 'string' || next === '') return
   const match = HABIT_VIEW_MODES.find((candidate) => candidate === next)
   if (match) mode.value = match
 }

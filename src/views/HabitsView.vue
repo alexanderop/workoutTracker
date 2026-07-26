@@ -125,11 +125,7 @@ const archiveDialogDescription = computed(() =>
     <div class="flex items-center justify-between gap-2">
       <h1 class="text-page-title font-bold">{{ t('habits.title') }}</h1>
       <div class="flex items-center gap-2">
-        <HabitViewModeToggle
-          v-if="hasHabits"
-          :model-value="mode"
-          @update:model-value="(next) => setMode(next)"
-        />
+        <HabitViewModeToggle v-if="hasHabits" :model-value="mode" @update:model-value="setMode" />
         <Button size="sm" @click="openCreateForm">
           <Plus class="mr-1 h-4 w-4" />
           {{ t('habits.addHabit') }}

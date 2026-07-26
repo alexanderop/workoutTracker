@@ -48,7 +48,23 @@ function createGetFunction(database: WorkoutTrackerDatabase) {
 
 /**
  * Apply a single setting to the result object with proper type narrowing.
+ *
+ * Every arm says the same thing -- `result[key] = value` for its own key -- so
+ * this reads like boilerplate begging to be collapsed into one indexed write.
+ * It cannot be, on this codebase's terms: TypeScript will not correlate
+ * `setting.key` with `setting.value` when indexing a discriminated union, so
+ * the collapsed form needs a type assertion, and assertions are banned here
+ * (`@typescript-eslint/consistent-type-assertions`). A generic write helper
+ * gets past the linter only by widening `value` to the union of every
+ * setting's type, which is the same safety hole wearing a hat.
+ *
+ * So the arms stay, and with them the property worth having: adding a
+ * `DbUserSetting` variant whose value type disagrees with its `SettingDefaults`
+ * field is a compile error here rather than a silent bad write at runtime. The
+ * complexity budget is one arm short of the number of settings we have; that
+ * is a fact about the rule, not about this function.
  */
+// eslint-disable-next-line complexity -- One arm per setting; see above.
 function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
   switch (setting.key) {
     case 'theme': {

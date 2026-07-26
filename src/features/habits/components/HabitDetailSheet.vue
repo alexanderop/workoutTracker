@@ -12,19 +12,9 @@
  * removed rather than kept alongside this, so there is one place to change
  * when the detail view changes.
  */
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Archive, Pencil } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import {
-  NumberField,
-  NumberFieldContent,
-  NumberFieldDecrement,
-  NumberFieldIncrement,
-  NumberFieldInput,
-} from '@/components/ui/number-field'
 import {
   Sheet,
   SheetContent,
@@ -38,6 +28,7 @@ import type { HabitTodayItem } from '../composables/useHabits'
 import { useHabitStats } from '../composables/useHabitStats'
 import { resolveHabitIcon } from '../lib/habitIcons'
 import HabitHistoryGrid from './HabitHistoryGrid.vue'
+import HabitQuantityControl from './HabitQuantityControl.vue'
 import HabitStatsSummary from './HabitStatsSummary.vue'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -55,84 +46,65 @@ const { t } = useI18n()
 
 // `item` is undefined between closing the sheet and the next open; the stats
 // composable is fed a stable fallback so it never sees a null habit.
-const habit = computed(() => item?.habit)
 const { stats } = useHabitStats(
   () => item?.habit,
   () => item?.entries ?? [],
 )
 
-const quantityPercent = computed(() => {
-  const kind = habit.value?.kind
-  if (kind?.type !== 'quantity' || kind.target <= 0) return 0
-  return Math.min(100, Math.round(((item?.value ?? 0) / kind.target) * 100))
-})
+// Every emit re-checks `item` rather than asserting it non-null off the
+// template's `v-if`: these run from event handlers, where the prop could have
+// been cleared since the render that produced the guard.
+function handleLogQuantity(value: number): void {
+  if (!item) return
+  emit('log-quantity', item.habit, value)
+}
+
+function handleToggleDay(date: number): void {
+  if (!item) return
+  emit('toggle-day', item.habit, date)
+}
 
 function handleEdit(): void {
-  if (!habit.value) return
+  if (!item) return
   open.value = false
-  emit('edit', habit.value)
+  emit('edit', item.habit)
 }
 
 function handleArchive(): void {
-  if (!habit.value) return
+  if (!item) return
   open.value = false
-  emit('archive', habit.value)
+  emit('archive', item.habit)
 }
 </script>
 
 <template>
   <Sheet v-model:open="open">
-    <SheetContent v-if="habit && item" side="bottom" class="max-h-[90vh] overflow-y-auto">
+    <SheetContent v-if="item" side="bottom" class="max-h-[90vh] overflow-y-auto">
       <SheetHeader>
         <SheetTitle class="flex items-center gap-2">
-          <AppIcon :name="resolveHabitIcon(habit.icon)" class="size-6 shrink-0" />
-          <span class="min-w-0 truncate">{{ habit.name }}</span>
+          <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
+          <span class="min-w-0 truncate">{{ item.habit.name }}</span>
         </SheetTitle>
         <SheetDescription>
-          {{ habit.description || t('habits.detailsFor', { name: habit.name }) }}
+          {{ item.habit.description || t('habits.detailsFor', { name: item.habit.name }) }}
         </SheetDescription>
       </SheetHeader>
 
       <div class="space-y-4 px-4 pb-4" data-testid="habit-detail-sheet">
-        <div v-if="habit.kind.type === 'quantity'" class="space-y-2">
-          <div class="flex items-center gap-3 rounded-lg bg-muted/60 p-2 pl-3">
-            <span class="text-sm font-medium tabular-nums">
-              {{
-                t('habits.quantityLabel', {
-                  value: item.value,
-                  target: habit.kind.target,
-                  unit: habit.kind.unit,
-                })
-              }}
-            </span>
-            <Label :for="`habit-quantity-${habit.id}`" class="sr-only">
-              {{ t('habits.quantityInputLabel', { name: habit.name }) }}
-            </Label>
-            <NumberField
-              :id="`habit-quantity-${habit.id}`"
-              class="ml-auto w-32"
-              :model-value="item.value"
-              :min="0"
-              :max="9999"
-              :step="1"
-              @update:model-value="(next) => emit('log-quantity', habit!, next)"
-            >
-              <NumberFieldContent>
-                <NumberFieldDecrement />
-                <NumberFieldInput class="text-center" />
-                <NumberFieldIncrement />
-              </NumberFieldContent>
-            </NumberField>
-          </div>
-          <Progress :model-value="quantityPercent" />
+        <div v-if="item.habit.kind.type === 'quantity'" class="space-y-2">
+          <HabitQuantityControl
+            :habit="item.habit"
+            :value="item.value"
+            @update:value="handleLogQuantity"
+          />
         </div>
 
         <template v-if="stats">
           <HabitStatsSummary :stats="stats" />
           <HabitHistoryGrid
             :grid="stats.grid"
-            :habit-name="habit.name"
-            @toggle-day="(date) => emit('toggle-day', habit!, date)"
+            :habit-name="item.habit.name"
+            @toggle-day="handleToggleDay"
           />
         </template>
 
@@ -140,7 +112,7 @@ function handleArchive(): void {
           <Button
             variant="ghost"
             size="sm"
-            :aria-label="t('habits.editLabel', { name: habit.name })"
+            :aria-label="t('habits.editLabel', { name: item.habit.name })"
             @click="handleEdit"
           >
             <Pencil class="mr-1 size-4" />{{ t('habits.edit') }}
@@ -148,7 +120,7 @@ function handleArchive(): void {
           <Button
             variant="ghost"
             size="sm"
-            :aria-label="t('habits.archiveLabel', { name: habit.name })"
+            :aria-label="t('habits.archiveLabel', { name: item.habit.name })"
             @click="handleArchive"
           >
             <Archive class="mr-1 size-4" />{{ t('habits.archive') }}
