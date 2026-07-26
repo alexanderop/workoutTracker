@@ -106,7 +106,9 @@ Skipped:
 - Finding skipped and why.
 
 Verification:
-- Commands run, or "Not run" with the reason.
+- Scoped commands run (the plan's `## Test Scope`, or the specs covering the
+  files you touched), or "Not run" with the reason. Not the full tier — CI runs
+  that on the PR.
 ```
 
 If the code was already clean, say that no cleanup changes were needed and

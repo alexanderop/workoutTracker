@@ -142,8 +142,10 @@ live view of the flow, for example:
 
 8. Push the branch and open the PR.
    - On a `SHIP` or `SHIP WITH CAVEATS` verdict, invoke `ship-it` to run the
-     full gate, rebase, push, and open the pull request. Verified work that
-     never leaves the machine is not shipped.
+     scoped gate, rebase, push, and open the pull request. Verified work that
+     never leaves the machine is not shipped. The full suite runs in CI on the
+     PR, so the run is not over at the push — the PR going green is the finish
+     line.
    - On `DO NOT SHIP`, or with unresolved high-severity `review` findings, do
      not invoke `ship-it`. Report the blocker and the next skill to run.
    - Skip only when the user explicitly asked to stay local; say so.
@@ -164,7 +166,14 @@ advances:
 
 ```bash
 pnpm -s type-check && pnpm -s test:unit && pnpm -s knip
+pnpm exec vitest run --project=default <path from the plan's ## Test Scope>
 ```
+
+The second line is the feature's own browser specs — the plan's `## Test Scope`,
+every command in it. Never substitute `pnpm test`: the full tier is ~5 minutes
+per loop iteration, and CI runs it sharded on the PR. If a phase widened the
+diff past the recorded scope, widen the scope and the plan with it rather than
+falling back to the whole tier.
 
 Two rules govern the loop:
 
@@ -206,6 +215,7 @@ artifacts.
 | "Everything is green locally, so the run is done." | Green and local is not shipped. Run `ship-it` unless the user asked to stay local. |
 | "Simplify only cleans things up, so nothing needs re-checking." | Cleanup can revert an earlier fix in the same run. Re-run the fast gate after every editing phase. |
 | "One more corrective loop and it'll be right." | Two failed passes is the limit. Stop and report the diff and what was tried. |
+| "The loop gate should run the whole suite so nothing slips." | Five minutes × every editing phase, to re-prove untouched code. Gate on the plan's `## Test Scope`; CI runs the tier on the PR. |
 
 ## Output
 
@@ -216,7 +226,7 @@ Verdict: SHIP | DO NOT SHIP | SHIP WITH CAVEATS
 Route: grill skipped/used -> implement -> simplify skipped/used -> review skipped/used -> qa skipped/used -> reflect skipped/used -> ship-it skipped/used
 Plan: brain/plans/<slug>.md or "none, reason"
 Changed: <files or summary>
-Verification: <commands/results>
+Verification: <scoped commands/results, and the scope they covered>
 Review: accept | accept with notes | revise, or "skipped, reason"
 QA: qa/<slug>.md or "skipped, reason"
 Memory: <brain files written/updated, or "skipped, reason">

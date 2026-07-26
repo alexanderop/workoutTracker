@@ -10,7 +10,10 @@ AFK flow: `grill` -> `implement` -> `simplify` -> `review` -> `qa` -> **ship-it*
 
 Core principle: the branch already holds one commit per acceptance criterion.
 This skill does not create work, squash it, or reinterpret it — it runs the
-checks `pre-commit` was too fast to run, pushes, and writes the PR.
+feature's own tests (the checks `pre-commit` was too fast to run, scoped to what
+changed), pushes, and writes the PR. The full suite is CI's job: the whole
+browser tier is ~5 minutes on one machine and CI shards it four ways on the PR,
+so running it here delays the push to re-prove code nobody touched.
 
 ## When to Use
 
@@ -45,24 +48,35 @@ git log --oneline main..HEAD
   outstanding instead of committing it blind.
 - **At least one commit ahead of `main`.** Nothing to ship otherwise.
 
-### 2. Run the full gate
+### 2. Run the scoped gate
 
-`pre-commit` deliberately runs only the fast tier. Run what it skipped, before
-the push rather than after CI rejects it:
+`pre-commit` deliberately runs only the fast tier. Run what it skipped **for
+this feature**, before the push rather than after CI rejects it:
 
 ```bash
 pnpm lint:check
-pnpm test
+pnpm exec vitest run --project=default <path from the plan's ## Test Scope>
 ```
 
-Add `pnpm test:e2e` when the change touches routing, the service worker, or a
-full user flow. Report the actual output.
+Run every command in the plan's `## Test Scope`, not just one. No plan, or no
+`## Test Scope` in it? Derive the scope from `git diff --name-only main...HEAD`
+— the changed features' specs plus the specs of anything that imports what you
+changed — and say in the PR body which scope you ran.
 
-If a browser or integration spec fails, check whether it fails in isolation
-before treating it as a blocker — this suite has known load-sensitive specs and
-which one fails varies per run. A spec that passes alone and has no reference to
-the changed code is suite health, not this work; say so explicitly rather than
-burying it.
+**Do not run `pnpm test` here.** The full browser tier is ~5 minutes locally,
+and CI runs it on the PR sharded four ways, alongside the a11y, visual, e2e,
+coverage, and Lighthouse tiers (`.github/workflows/ci.yml`). A local full run
+buys a slower copy of a signal the PR gets anyway. The same goes for
+`pnpm test:e2e`: CI's `test-e2e` job covers it, so run it locally only when the
+change touches routing or the service worker *and* you have a specific reason to
+believe CI would tell you too late.
+
+Report the actual output, and name the scope you ran.
+
+If a scoped spec fails, check whether it fails in isolation before treating it
+as a blocker — this suite has known load-sensitive specs and which one fails
+varies per run. A spec that passes alone and has no reference to the changed
+code is suite health, not this work; say so explicitly rather than burying it.
 
 ### 3. Rebase on main
 
@@ -106,7 +120,8 @@ Body:
 
 ## Verification
 
-<commands run and their results, including anything deliberately skipped>
+<the scoped commands run and their results, naming the scope; note that the
+full suite runs in CI on this PR>
 
 ## Notes
 
@@ -125,16 +140,25 @@ Return the PR URL.
 
 ### 6. Hand off
 
-Tell the user the PR is open and that `pnpm -s pr:comments` is how to read
-review feedback once it lands — `gh pr view --comments` silently omits review
-summaries and line comments.
+Tell the user the PR is open, that CI is now running the full suite against it,
+and that `pnpm -s pr:comments` is how to read review feedback once it lands —
+`gh pr view --comments` silently omits review summaries and line comments.
+
+CI is the full-suite gate, so the push is not the end of the gate — watch it
+land. Either subscribe to the PR's activity (`subscribe_pr_activity`) or check
+back with `gh pr checks`, and treat a tier that only CI runs going red as this
+work's problem until proven otherwise: reproduce the failure locally with the
+narrowest command that covers it, fix it, and push again. Do not close out the
+run with "CI will tell us".
 
 ## Stop and Ask
 
 STOP and ask when:
 
 - The current branch is `main`, or the tree is dirty.
-- The full gate fails in a way that is plausibly caused by this change.
+- The scoped gate fails in a way that is plausibly caused by this change.
+- The change is cross-cutting and you cannot bound a scope for it — say so
+  rather than silently pushing on a gate that proved nothing.
 - The rebase conflicts non-mechanically.
 - A `review` verdict of **Revise** or a `qa` verdict of **DO NOT SHIP** is
   outstanding.
@@ -145,7 +169,10 @@ STOP and ask when:
 | Thought | Reality |
 |---------|---------|
 | "The tree is dirty, I'll just commit the rest as `chore: wip`." | An uncommitted remainder means an AC is unfinished. Route back to `implement`. |
-| "`pre-commit` passed on every commit, so the branch is green." | `pre-commit` runs the unit tier only. The browser, integration, and e2e tiers have not run yet. |
+| "`pre-commit` passed on every commit, so the branch is green." | `pre-commit` runs the unit tier only. The feature's browser specs have not run yet — run the plan's `## Test Scope` before pushing. |
+| "I'll run `pnpm test` to be safe before pushing." | Five minutes to re-prove code you did not touch, then CI runs it again sharded four ways. Run the scope; let CI run the tier. |
+| "CI runs everything, so I can skip the local gate entirely." | The scope is the fast signal on the code you actually changed. Skipping it spends a full CI cycle to learn what 30 seconds would have told you. |
+| "Pushed, CI will tell us if it's broken." | You own the PR to green. Watch the checks, reproduce a red tier locally with the narrowest command that covers it, and push the fix. |
 | "A test failed, so I'll rerun until it passes." | Check isolation first, then say which it was: a real failure, or a known load-sensitive spec. Never silently retry to green. |
 | "I'll link the plan so reviewers have context." | `brain/plans/` is gitignored. Inline the decisions instead. |
 | "I'll squash the AC commits into one clean commit." | The per-AC commits are the reviewable unit and the bisect unit. Keep them. |
@@ -154,7 +181,9 @@ STOP and ask when:
 
 ```markdown
 Branch: <name> (<n> commits ahead of main)
-Gate: <commands and results>
+Gate: <scoped commands and results>
+Scope: <what the scope covered, and where it came from — plan `## Test Scope` or derived from the diff>
+CI: full suite running on the PR
 PR: <url>
 Caveat: <one sentence, only if needed>
 ```

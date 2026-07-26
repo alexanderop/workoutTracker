@@ -126,7 +126,8 @@ actually works", or "can this ship?"
      promise rejections, failed jobs, and unexpected retries.
    - For backend-only work, run the narrow relevant automated test command
      after manual contract checks and include the command and result as
-     supporting evidence.
+     supporting evidence. Take it from the plan's `## Test Scope`; never
+     substitute the full tier, which CI runs on the PR.
 
 5. Clean up.
    - Close browser sessions or stop background services you started.
