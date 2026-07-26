@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings", "verdict"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "body", "priority", "category", "file", "line"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+          "body": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2"] },
+          "category": {
+            "type": "string",
+            "enum": ["bug", "durability", "regression", "test_gap", "architecture"]
+          },
+          "file": { "type": "string", "minLength": 1 },
+          "line": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "verdict": { "type": "string", "enum": ["clean", "changes needed"] }
+  }
+}

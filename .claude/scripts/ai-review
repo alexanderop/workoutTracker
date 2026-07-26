@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+#
+# AI review gate — a second, isolated Claude run over the branch diff.
+#
+# This is the mechanical floor, not a replacement for the `review` skill.
+# It runs on every ship (see `.claude/skills/ship-it/SKILL.md` step 2), reports
+# only blocking-severity defects, and exits non-zero so the push can be gated on
+# it. The `review` skill remains the deep, principle-grounded pass you invoke
+# deliberately for big or architectural changes.
+#
+# Why not in `pre-commit`: that hook has a ~15s budget and runs once per
+# acceptance criterion. A model call belongs at the pre-push boundary, where the
+# reviewable unit is the whole branch.
+#
+# Why not in CI: `ci.yml` already runs the full tier, Gitleaks, and CodeRabbit on
+# the PR. This gate exists to catch things *before* the branch leaves the machine,
+# which is the cheapest moment to change your mind.
+#
+# Usage:
+#   .claude/scripts/ai-review                      # main...HEAD, P0 only
+#   .claude/scripts/ai-review --base origin/main
+#   .claude/scripts/ai-review --max-priority P1    # widen (asks for more noise)
+#   .claude/scripts/ai-review --json               # raw findings, for tooling
+#
+#   # Slice gate for an implementation-worker: uncommitted work, own files only.
+#   .claude/scripts/ai-review --local --paths src/features/x/a.ts,src/__tests__/x.spec.ts
+#
+# `--local` reviews uncommitted work against HEAD instead of a branch range,
+# because the lead commits at the acceptance-criterion boundary, not per slice.
+# `--paths` is mandatory in practice for workers: waves run several workers in
+# one shared working tree, so an unscoped `git diff` would pull in a neighbour's
+# half-finished edits. Workers never share files, so their own paths are a safe
+# scope. Pass exactly the files the brief assigned.
+#
+# Model: defaults to opus. A same-model review gives you cold context but not
+# different priors — if the reviewer shares the blind spot that produced the bug,
+# it will share it again. Set AI_REVIEW_MODEL=fable (or pass --model) to review
+# with a different model than the one that wrote the code.
+
+set -euo pipefail
+
+BASE="main"
+MAX_PRIORITY="P0"
+MODEL="${AI_REVIEW_MODEL:-opus}"
+JSON_ONLY=0
+LOCAL=0
+DRY_RUN=0
+PATHS=""
+
+usage() {
+  sed -n '3,40p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --base) BASE="${2:?--base needs a ref}"; shift 2 ;;
+    --max-priority) MAX_PRIORITY="${2:?--max-priority needs P0|P1|P2}"; shift 2 ;;
+    --model) MODEL="${2:?--model needs a model}"; shift 2 ;;
+    --paths) PATHS="${2:?--paths needs a comma-separated list}"; shift 2 ;;
+    --local) LOCAL=1; shift ;;
+    --dry-run) DRY_RUN=1; shift ;;
+    --json) JSON_ONLY=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "ai-review: unknown option '$1' (try --help)" >&2; exit 2 ;;
+  esac
+done
+
+case "$MAX_PRIORITY" in
+  P0|P1|P2) ;;
+  *) echo "ai-review: --max-priority must be P0, P1, or P2" >&2; exit 2 ;;
+esac
+
+for bin in claude jq git; do
+  command -v "$bin" >/dev/null 2>&1 || { echo "ai-review: '$bin' not found on PATH" >&2; exit 2; }
+done
+
+REPO="$(git rev-parse --show-toplevel)"
+cd "$REPO"
+
+SCHEMA_FILE=".claude/scripts/ai-review.schema.json"
+[ -f "$SCHEMA_FILE" ] || { echo "ai-review: missing $SCHEMA_FILE" >&2; exit 2; }
+
+pathspec=()
+if [ -n "$PATHS" ]; then
+  IFS=',' read -r -a pathspec <<< "$PATHS"
+fi
+# `set -u` plus an empty array is an error on bash 3.2 (macOS system bash).
+spec=(${pathspec[@]+"${pathspec[@]}"})
+
+if [ "$LOCAL" -eq 1 ]; then
+  label="local uncommitted"
+  diff="$(git diff --no-ext-diff --no-textconv HEAD -- ${spec[@]+"${spec[@]}"})"
+  untracked="$(git ls-files --others --exclude-standard -- ${spec[@]+"${spec[@]}"})"
+  # A worker's slice usually creates files. `git diff HEAD` cannot see them, and
+  # `git add -N` would mutate an index shared with parallel workers, so synthesize
+  # the addition diff instead. `--no-index` exits 1 whenever it finds a difference.
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    diff="$diff
+$(git diff --no-ext-diff --no-textconv --no-index -- /dev/null "$file" || true)"
+  done <<< "$untracked"
+  changed="$(printf '%s\n%s' "$(git diff --name-only HEAD -- ${spec[@]+"${spec[@]}"})" "$untracked")"
+else
+  label="$BASE...HEAD"
+  git rev-parse --verify --quiet "$BASE" >/dev/null \
+    || { echo "ai-review: base ref '$BASE' does not resolve locally" >&2; exit 2; }
+  diff="$(git diff --no-ext-diff --no-textconv "$BASE...HEAD" -- ${spec[@]+"${spec[@]}"})"
+  changed="$(git diff --name-only "$BASE...HEAD" -- ${spec[@]+"${spec[@]}"})"
+fi
+
+changed="$(printf '%s' "$changed" | grep -v '^$' || true)"
+
+# grep, not `${diff//[[:space:]]/}` — bash pattern substitution over a whole
+# branch diff takes minutes. The check has to tolerate a whitespace-only string
+# because the untracked-file loop above appends a newline even when it finds none.
+if ! printf '%s' "$diff" | grep -q '[^[:space:]]'; then
+  echo "ai-review: no changes in scope ($label) — nothing to review"
+  exit 0
+fi
+
+# `--safe-mode` stops the reviewer from auto-loading CLAUDE.md, skills, hooks, and
+# MCP servers. That is deliberate — but the project's own conventions are exactly
+# what a reviewer needs, so pass them explicitly instead. Explicit beats inherited:
+# what the reviewer was told is visible here and in version control.
+rules="$(cat CLAUDE.md)"
+if [ -f brain/principles.md ]; then
+  rules="$rules
+
+# Project principles
+
+$(cat brain/principles.md)
+$(cat brain/principles/*.md 2>/dev/null || true)"
+fi
+
+read -r -d '' INSTRUCTIONS <<EOF || true
+You are a senior code reviewer. Review the git diff supplied on stdin. It is the
+complete change under review; you have no other access to the repository.
+
+Report ONLY defects this diff introduces that must be fixed before it lands.
+Threshold: report ${MAX_PRIORITY} and above. Omit everything below it — polish,
+speculative risk, "would be better architected as", and follow-up ideas.
+
+Hard rules:
+- Every finding must cite a file and line that appears in this diff. A finding
+  about unchanged code is out of scope and will be discarded.
+- Do not report a missing import, symbol, call site, test, or config entry
+  merely because it is absent from the diff. You are seeing a patch, not the
+  repository. Such a claim needs proof inside the diff itself.
+- For each finding, state the concrete failure: exact input or state, then the
+  wrong output, crash, or lost data. No reproducible path means no finding.
+- Prefer the smallest correct pre-merge fix. Do not propose rewrites.
+- If nothing blocks landing, return an empty findings array and verdict "clean".
+
+Weight these categories for this project:
+- durability: this app is local-first with no backend. A Dexie schema change
+  without a converter update silently breaks existing users' data and there is
+  no server to repair it from. This is the highest-severity class here.
+- bug, regression, test_gap, architecture: as normal.
+
+Judge against the project's own conventions, which follow.
+
+<project_conventions>
+${rules}
+</project_conventions>
+EOF
+
+echo "ai-review: ${label} ($(printf '%s' "$changed" | grep -c . || true) files, model ${MODEL}, threshold ${MAX_PRIORITY})"
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "ai-review: dry run — scope is"
+  printf '%s\n' "$changed" | sed 's/^/  /'
+  echo "ai-review: $(printf '%s' "$diff" | wc -l | tr -d ' ') diff lines, $(printf '%s' "$INSTRUCTIONS" | wc -c | tr -d ' ') prompt bytes; no model call made"
+  exit 0
+fi
+
+set +e
+report="$(printf '%s' "$diff" | claude -p "$INSTRUCTIONS" \
+  --safe-mode \
+  --setting-sources user \
+  --strict-mcp-config \
+  --disallowedTools 'mcp__*' \
+  --tools 'WebSearch' \
+  --no-session-persistence \
+  --output-format json \
+  --json-schema "$(cat "$SCHEMA_FILE")" \
+  --model "$MODEL" \
+  --effort high)"
+claude_status=$?
+set -e
+
+if [ $claude_status -ne 0 ]; then
+  echo "ai-review: claude exited $claude_status" >&2
+  printf '%s\n' "$report" >&2
+  exit 2
+fi
+
+structured="$(printf '%s' "$report" | jq -c '.structured_output // empty')"
+if [ -z "$structured" ]; then
+  echo "ai-review: no structured_output in the response — the gate cannot be trusted" >&2
+  printf '%s' "$report" | jq -r '.result // .' >&2
+  exit 2
+fi
+
+# The scope filter. A reviewer being thorough will report real problems in files
+# this diff never touched; those are not findings about this change, and letting
+# them block a push is how a gate becomes something you learn to ignore.
+kept="$(printf '%s' "$structured" | jq --arg files "$changed" --arg max "$MAX_PRIORITY" '
+  ($files | split("\n") | map(select(length > 0))) as $scope
+  | (["P0","P1","P2"] | index($max)) as $limit
+  | [ .findings[]
+      | select(.file as $f | $scope | index($f))
+      | select(.priority as $p | (["P0","P1","P2"] | index($p)) <= $limit) ]
+')"
+
+dropped="$(printf '%s' "$structured" | jq --arg files "$changed" '
+  ($files | split("\n") | map(select(length > 0))) as $scope
+  | [ .findings[] | select(.file as $f | ($scope | index($f)) | not) ]
+')"
+
+if [ "$JSON_ONLY" -eq 1 ]; then
+  printf '%s\n' "$kept"
+else
+  if [ "$(printf '%s' "$dropped" | jq length)" -gt 0 ]; then
+    echo "" >&2
+    echo "ai-review: ignored out-of-scope finding(s) — real or not, they are not about this diff:" >&2
+    printf '%s' "$dropped" | jq -r '.[] | "  \(.file):\(.line)  \(.title)"' >&2
+  fi
+  count="$(printf '%s' "$kept" | jq length)"
+  if [ "$count" -gt 0 ]; then
+    echo ""
+    printf '%s' "$kept" | jq -r '.[] | "\(.priority)  \(.category)  \(.file):\(.line)\n  \(.title)\n  \(.body)\n"'
+  fi
+fi
+
+count="$(printf '%s' "$kept" | jq length)"
+if [ "$count" -gt 0 ]; then
+  echo "ai-review: $count finding(s) at or above $MAX_PRIORITY — not landable yet" >&2
+  exit 1
+fi
+
+echo "ai-review: clean — no findings at or above $MAX_PRIORITY"
