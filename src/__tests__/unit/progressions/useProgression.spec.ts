@@ -72,7 +72,7 @@ describe('useProgression', () => {
     expect(sessions.value).toEqual([])
   })
 
-  it('lists session history newest first', async () => {
+  it('exposes every recorded session, passing the repository list through unchanged', async () => {
     const { repo, id } = await seeded()
     await repo.recordSession(id, true, { reps: 12, minutes: 10, weightIndex: 0, isComplete: false })
     await repo.recordSession(id, false)
@@ -84,8 +84,11 @@ describe('useProgression', () => {
     assert(loaded.status === 'success')
     const { sessions } = loaded
     expect(sessions).toHaveLength(2)
-    expect(sessions[0]?.completed).toBe(false)
-    expect(sessions[1]?.completed).toBe(true)
+    // As a set, not by position. The composable does no sorting of its own, so
+    // the newest-first guarantee belongs to the adapter and is asserted in
+    // `db/progressions.spec.ts`. Only the fake's counter clock makes position
+    // stable here; real Dexie ties on same-millisecond `completedAt`.
+    expect(sessions.map((session) => session.completed).toSorted()).toEqual([false, true])
   })
 
   it('deletes a loaded progression and reports success', async () => {

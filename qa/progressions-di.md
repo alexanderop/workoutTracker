@@ -5,8 +5,10 @@
 Every acceptance criterion in `brain/plans/progressions-di.md` is met with
 direct evidence, including the two the handoff listed as unverifiable:
 `pnpm test:coverage` **did** complete (174/174 files, thresholds passed) and the
-manual `pnpm dev` walk **was** performed against the production build. The
-single caveat is documentation, not code — see Observation 1.
+manual browser walk **was** performed — against the production build under
+`vite preview` rather than `pnpm dev`, which is stricter than the plan asked
+for (see TC-05). The single caveat is documentation, not code — see
+Observation 1.
 
 ## Route
 

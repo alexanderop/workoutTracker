@@ -98,7 +98,7 @@ describe('progression advancement', () => {
     expect(updated?.sessionsCompleted).toBe(14)
   })
 
-  it('records one session row per attempt, newest first', async () => {
+  it('records one session row per attempt, each stamped at the level it was performed at', async () => {
     const repo = createFakeProgressionsRepository()
     const progression = await repo.create({ name: 'Ladder', availableWeights: [16] })
 
