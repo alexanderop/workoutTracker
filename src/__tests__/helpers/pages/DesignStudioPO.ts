@@ -1,0 +1,72 @@
+import { page, userEvent } from 'vitest/browser'
+import { ensureHTMLElement } from '../domHelpers'
+
+/**
+ * Page Object for the design studio at /design.
+ *
+ * Reads go through roles and visible text the way a user would find them; the
+ * only DOM-level access is the studio root's inline custom properties, which
+ * are the theme lab's actual output and have no accessible surface.
+ */
+export class DesignStudioPO {
+  sectionHeading(name: string) {
+    return page.getByRole('heading', { name, exact: true })
+  }
+
+  inspectorTitle() {
+    return page.getByRole('heading', { name: 'Button', exact: true })
+  }
+
+  /** The layers-panel row, which both selects the frame and jumps to it. */
+  async selectFrame(name: string): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name, exact: true }).first())
+  }
+
+  playgroundButton() {
+    return page.getByRole('button', { name: /log set/i }).first()
+  }
+
+  async playgroundClassList(): Promise<string> {
+    const element = await this.playgroundButton().element()
+    return ensureHTMLElement(element).className
+  }
+
+  async setVariant(variant: string): Promise<void> {
+    const select = await page.getByLabelText('Variant').element()
+    const element = ensureHTMLElement(select)
+    if (!(element instanceof HTMLSelectElement)) {
+      throw new TypeError('Variant control is not a <select>')
+    }
+    await userEvent.selectOptions(element, variant)
+  }
+
+  async setLabel(text: string): Promise<void> {
+    const input = await page.getByLabelText('Label').element()
+    await userEvent.fill(ensureHTMLElement(input), text)
+  }
+
+  async openThemeTab(): Promise<void> {
+    await userEvent.click(page.getByRole('tab', { name: 'Theme' }))
+  }
+
+  async applyPreset(name: string): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name: `Use the ${name} primary` }))
+  }
+
+  /** Exact, so this never picks up the toolbar's "Reset zoom to 100%". */
+  async resetTheme(): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name: 'Reset', exact: true }))
+  }
+
+  /**
+   * The `--primary` override the theme lab writes onto the studio root.
+   * Empty string means no override is applied — the untouched state.
+   *
+   * Read off the element rather than through a role: an inline custom property
+   * is the theme lab's actual output and has no accessible surface to assert on.
+   */
+  async rootPrimary(): Promise<string> {
+    const root = await page.getByTestId('design-studio').element()
+    return ensureHTMLElement(root).style.getPropertyValue('--primary')
+  }
+}
