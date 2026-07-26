@@ -62,6 +62,19 @@ export class HabitsPO {
     return page.getByTestId('habit-tile-grid')
   }
 
+  /**
+   * Visible width of each tile's name, in pixels.
+   *
+   * Criterion 4 says truncated names must still tell habits apart. A name
+   * column only a few characters wide collapses distinct habits to the same
+   * string ("Meditate" and "Medication" both becoming "Medi…"), which no
+   * existence assertion notices.
+   */
+  async getTileNameWidths(): Promise<Array<number>> {
+    const names = await page.getByTestId('habit-tile-name').all()
+    return names.map((name) => name.element().getBoundingClientRect().width)
+  }
+
   getRowDateHeader() {
     return page.getByTestId('habit-row-date-header')
   }
@@ -73,10 +86,37 @@ export class HabitsPO {
 
   /** How many day columns the compact-rows header renders. */
   async countRowDateHeaderColumns(): Promise<number> {
+    return this.rowDateHeaderColumns().length
+  }
+
+  /**
+   * Header columns whose text is wider than the column itself.
+   *
+   * Asserting the header *exists* and shares the row grid passes even when
+   * every label overflows and paints over its neighbours, which is exactly how
+   * an unreadable week header reached QA. `scrollWidth > clientWidth` is the
+   * measurement that catches it.
+   */
+  async findOverflowingRowDateHeaderColumns(): Promise<Array<string>> {
+    return this.rowDateHeaderColumns()
+      .filter((column) => column.scrollWidth > column.clientWidth)
+      .map((column) => column.textContent?.trim() ?? '')
+  }
+
+  /**
+   * Text of the header columns marked as today -- an array so a test can prove
+   * there is exactly one, not just at least one.
+   */
+  async getRowDateHeaderTodayColumns(): Promise<Array<string>> {
+    return this.rowDateHeaderColumns()
+      .filter((column) => column.dataset.today === 'true')
+      .map((column) => column.textContent?.trim() ?? '')
+  }
+
+  private rowDateHeaderColumns(): Array<HTMLElement> {
     const header = this.getRowDateHeader().element()
     // eslint-disable-next-line no-restricted-syntax -- Scoped to the resolved header element
-    const columns = header.querySelectorAll(':scope .grid-cols-7 > *')
-    return columns.length
+    return [...header.querySelectorAll<HTMLElement>(':scope .grid-cols-7 > *')]
   }
 
   async navigateToHabitsFromHomeCard(): Promise<void> {

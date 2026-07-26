@@ -36,7 +36,12 @@ const days = computed(() => {
   const weekStart = startOfWeekDay(today)
   // Built once for the week rather than per cell: `toLocaleDateString` spins up
   // a fresh formatter on every call, and this ran fourteen of them per render.
-  const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'short' })
+  //
+  // `narrow` (one character), not `short`: a 12.5px column fits "M" in any
+  // locale but not English's "Mon". Narrow weekdays repeat (T/T, S/S), which
+  // the date underneath disambiguates -- "T 23" and "T 25" are never confusable
+  // the way a bare "T" would be.
+  const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'narrow' })
   const dayOfMonthFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric' })
   return Array.from({ length: HABIT_ROW_DAYS }, (_, index) => {
     const date = addDays(weekStart, index)
@@ -65,6 +70,7 @@ const days = computed(() => {
           :key="day.key"
           class="text-[0.625rem] leading-tight"
           :class="day.isToday ? 'font-bold text-foreground' : 'text-muted-foreground'"
+          :data-today="day.isToday ? 'true' : undefined"
         >
           <span class="block">{{ day.weekday }}</span>
           <span class="block tabular-nums">{{ day.dayOfMonth }}</span>

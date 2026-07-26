@@ -23,8 +23,16 @@ import type { HabitTodayItem } from '../composables/useHabits'
 import { resolveHabitIcon } from '../lib/habitIcons'
 import HabitCompactGrid from './HabitCompactGrid.vue'
 
-/** Five weeks of history: 7 rows x 5 columns at ~10rem wide. */
-const TILE_DAYS = 35
+/**
+ * Six weeks of history: 7 rows x 6 columns.
+ *
+ * More columns makes the tile *shorter*, not taller -- the cells are square and
+ * sized by tile width / columns, so six columns give 12.7px cells over five's
+ * 16px, and the seven-row block loses ~23px of height. That is what keeps seven
+ * habits inside a phone viewport once the name has its own row, and it buys a
+ * week more history rather than costing one.
+ */
+const TILE_DAYS = 42
 
 defineProps<{ items: ReadonlyArray<HabitTodayItem> }>()
 
@@ -47,9 +55,14 @@ const monthLabel = computed(() =>
       :key="item.habit.id"
       :data-testid="`habit-today-${item.habit.name}`"
       :data-habit-accent="item.habit.accent"
-      class="flex flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm"
+      class="flex flex-col gap-1.5 rounded-xl border bg-card p-1.5 shadow-sm"
     >
-      <div class="flex items-start gap-1.5">
+      <!-- Check and icon share the top row; the name gets a row to itself.
+           Sharing one row with a 32px control and a 14px icon left the name
+           about four characters of a ~10rem tile, which turned "Meditate" and
+           "Medication" into the same "Medi…". On its own row it has the full
+           tile width, which is what the truncation decision assumed. -->
+      <div class="flex items-center justify-between gap-1">
         <Button
           size="icon"
           variant="outline"
@@ -65,22 +78,22 @@ const monthLabel = computed(() =>
         >
           <Check v-if="item.isComplete" class="size-4" />
         </Button>
-
-        <button
-          type="button"
-          class="min-w-0 flex-1 text-left"
-          :aria-label="t('habits.showDetailsFor', { name: item.habit.name })"
-          @click="emit('open-details', item.habit)"
-        >
-          <span class="flex items-center gap-1">
-            <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-3.5 shrink-0" />
-            <span class="min-w-0 truncate text-xs font-medium">{{ item.habit.name }}</span>
-          </span>
-          <span class="block truncate text-[0.625rem] text-muted-foreground">
-            {{ monthLabel }}
-          </span>
-        </button>
+        <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-4 shrink-0 opacity-70" />
       </div>
+
+      <button
+        type="button"
+        class="min-w-0 text-left"
+        :aria-label="t('habits.showDetailsFor', { name: item.habit.name })"
+        @click="emit('open-details', item.habit)"
+      >
+        <span class="block truncate text-xs font-medium" data-testid="habit-tile-name">
+          {{ item.habit.name }}
+        </span>
+        <span class="block truncate text-[0.625rem] text-muted-foreground">
+          {{ monthLabel }}
+        </span>
+      </button>
 
       <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="TILE_DAYS" />
     </article>

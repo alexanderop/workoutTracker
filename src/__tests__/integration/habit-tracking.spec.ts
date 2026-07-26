@@ -480,10 +480,17 @@ describe('Habit Tracking', () => {
       // Seven columns, matching the seven heatmap cells in each row.
       expect(await habits.countRowDateHeaderColumns()).toBe(7)
 
-      // Today has to be findable without counting in from the edge.
-      const today = new Date()
-      const expectedWeekday = today.toLocaleDateString('en', { weekday: 'short' })
-      await expect.element(header.getByText(expectedWeekday, { exact: true })).toBeVisible()
+      // ...and each label has to fit the column it labels. Geometry alone is
+      // not legibility: the header once shared the grid exactly while every
+      // label overflowed and painted over its neighbours.
+      expect(await habits.findOverflowingRowDateHeaderColumns()).toEqual([])
+
+      // Today has to be findable without counting in from the edge: exactly
+      // one column is marked, and it carries today's date. The date is what
+      // disambiguates a narrow weekday, which repeats (T/T, S/S).
+      const todayColumns = await habits.getRowDateHeaderTodayColumns()
+      expect(todayColumns).toHaveLength(1)
+      expect(todayColumns[0]).toContain(String(new Date().getDate()))
     })
 
     it('lays habits out as tiles in grid mode and ticks one off in place', async ({
@@ -540,6 +547,13 @@ describe('Habit Tracking', () => {
         await expect.element(habits.getTodayRow(name)).toBeVisible()
       }
       expect(await habits.countVisibleCheckControls()).toBe(names.length)
+
+      // Truncated names still have to tell the habits apart. At ~4 characters
+      // "Meditate" and "Medication" become the same string, so the name needs
+      // real width -- 70px is roughly eight characters at this font size.
+      const nameWidths = await habits.getTileNameWidths()
+      expect(nameWidths).toHaveLength(names.length)
+      expect(Math.min(...nameWidths)).toBeGreaterThan(70)
     })
 
     it('names the sheet stepper even while the card renders its own', async ({ createTestApp }) => {
