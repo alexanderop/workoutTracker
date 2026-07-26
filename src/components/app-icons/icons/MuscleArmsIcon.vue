@@ -4,13 +4,12 @@ import AppIconSvg from '../AppIconSvg.vue'
 
 <template>
   <AppIconSvg>
+    <g fill="var(--app-icon-body, currentColor)">
+      <rect x="4" y="23" width="34" height="13" rx="6.5" />
+      <rect x="25" y="6" width="13" height="26" rx="6.5" />
+    </g>
     <path
-      d="M6 22h20a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H6zM26 11h9a3 3 0 0 1 3 3v22h-15V14a3 3 0 0 1 3-3z"
-      fill="var(--app-icon-body, currentColor)"
-    />
-    <circle cx="31.5" cy="10" r="6.5" fill="var(--app-icon-support, var(--muted-foreground))" />
-    <path
-      d="M8 22c0-7.2 4.2-11.5 10-11.5S27 14.8 27 22z"
+      d="M9 23c0-7.5 4.7-12 10.5-12S30 15.5 30 23z"
       fill="var(--app-icon-accent, var(--primary))"
     />
   </AppIconSvg>

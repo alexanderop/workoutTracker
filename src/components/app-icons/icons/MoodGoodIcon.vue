@@ -5,6 +5,6 @@ import MoodFaceGlyph from '../MoodFaceGlyph.vue'
 
 <template>
   <AppIconSvg>
-    <MoodFaceGlyph mouth="M16 29Q24 34.5 32 29" />
+    <MoodFaceGlyph mouth="M16.5 29.5Q24 33.5 31.5 29.5" />
   </AppIconSvg>
 </template>
