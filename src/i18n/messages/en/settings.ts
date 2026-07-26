@@ -48,6 +48,10 @@ export default {
     healthPrototypes: 'Health prototypes',
     healthPrototypesDescription: 'Compare interactive concepts for the future health journal',
     openHealthPrototypes: 'Open prototypes',
+    designSystem: 'Design system',
+    designSystemDescription:
+      'Browse every component and token on a live canvas, and try theme ideas',
+    openDesignSystem: 'Open studio',
   },
   languages: {
     en: 'English',

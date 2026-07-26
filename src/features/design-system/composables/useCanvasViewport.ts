@@ -12,12 +12,15 @@ import {
   zoomAt,
 } from '../lib/viewport'
 
-/** Elements that swallow the space bar for their own purposes. */
-const TEXT_ENTRY = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
+/**
+ * Space already means something to these — typing, or activating the control.
+ * The frames render real, focusable components, so claiming the space bar for
+ * panning would break keyboard activation of the very things on display.
+ */
+const INTERACTIVE = 'input, textarea, select, button, a[href], [role], [contenteditable="true"]'
 
-function isTextEntry(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  return TEXT_ENTRY.has(target.tagName) || target.isContentEditable
+function ownsSpaceKey(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(INTERACTIVE) !== null
 }
 
 /**
@@ -169,7 +172,7 @@ export function useCanvasViewport(
 
   // --- Space-to-pan
   useEventListener(globalThis, 'keydown', (event: KeyboardEvent) => {
-    if (event.code !== 'Space' || isTextEntry(event.target)) return
+    if (event.code !== 'Space' || ownsSpaceKey(event.target)) return
     isSpaceHeld.value = true
     event.preventDefault()
   })

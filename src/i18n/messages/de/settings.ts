@@ -49,6 +49,10 @@ export default {
     healthPrototypesDescription:
       'Interaktive Konzepte für das zukünftige Gesundheitstagebuch vergleichen',
     openHealthPrototypes: 'Prototypen öffnen',
+    designSystem: 'Designsystem',
+    designSystemDescription:
+      'Alle Komponenten und Tokens auf einer Live-Canvas ansehen und Theme-Ideen ausprobieren',
+    openDesignSystem: 'Studio öffnen',
   },
   languages: {
     en: 'English',
