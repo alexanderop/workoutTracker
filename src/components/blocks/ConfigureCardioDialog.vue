@@ -13,6 +13,7 @@ import { useTouchDevice } from '@/composables/useTouchDevice'
 import { cn } from '@/lib/utils'
 import type { CardioActivity, CardioConfig } from '@/blocks'
 import { CARDIO_ACTIVITIES } from '@/blocks'
+import { CARDIO_ACTIVITY_ICONS } from './cardioActivityIcons'
 
 const { t } = useI18n()
 const { isTouchDevice } = useTouchDevice()
@@ -93,7 +94,7 @@ function handleClose() {
       <DialogHeader>
         <div class="flex items-center gap-2">
           <ExerciseIcon
-            :name="selectedActivityInfo?.icon ?? 'cardio-running'"
+            :name="CARDIO_ACTIVITY_ICONS[selectedActivity]"
             class="size-7 text-block-cardio"
           />
           <DialogTitle>{{ t('dialogs.cardioConfig.title') }}</DialogTitle>
@@ -120,7 +121,10 @@ function handleClose() {
               "
               @click="selectedActivity = activity.value"
             >
-              <ExerciseIcon :name="activity.icon" class="size-8 mb-1 text-current" />
+              <ExerciseIcon
+                :name="CARDIO_ACTIVITY_ICONS[activity.value]"
+                class="size-8 mb-1 text-current"
+              />
               <span class="text-xs truncate w-full text-center">{{ activity.label }}</span>
             </button>
           </div>
