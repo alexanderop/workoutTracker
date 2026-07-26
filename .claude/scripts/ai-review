@@ -121,17 +121,26 @@ fi
 
 changed="$(printf '%s' "$changed" | grep -v '^$' || true)"
 
-# A `--paths` scope that resolves to nothing must fail, not pass. Git pathspecs
-# resolve from the repo root and match silently when wrong, so a typo, a stale
-# path after a rename, or paths written relative to the caller's cwd would
-# otherwise review zero files and exit 0 — reporting a clean gate over
-# unreviewed code. This mirrors the standard CLAUDE.md sets for scoped test
-# runs: a wrong filter fails loudly rather than passing silently.
-if [ -n "$PATHS" ] && [ -z "$changed" ]; then
-  echo "ai-review: --paths matched no changed file in scope ($label)" >&2
-  echo "ai-review: paths resolve from the repo root — check for typos, renames, or cwd-relative paths" >&2
-  exit 2
-fi
+# Every `--paths` entry must resolve to something, checked one entry at a time.
+# Git pathspecs resolve from the repo root and match silently when wrong, so a
+# typo, a path stale after a rename, or a path written relative to the caller's
+# cwd reviews nothing and would otherwise exit 0 — a clean gate over unreviewed
+# code. Checking the aggregate is not enough: a list mixing one good path with
+# one bad one is non-empty, and the bad one's file goes unreviewed while the run
+# still reports clean. Re-resolving through git rather than string-matching
+# `$changed` keeps directory and glob pathspecs working.
+for p in ${spec[@]+"${spec[@]}"}; do
+  if [ "$LOCAL" -eq 1 ]; then
+    hit="$(git diff --name-only HEAD -- "$p"; git ls-files --others --exclude-standard -- "$p")"
+  else
+    hit="$(git diff --name-only "$BASE...HEAD" -- "$p")"
+  fi
+  if [ -z "$(printf '%s' "$hit" | grep -v '^$' || true)" ]; then
+    echo "ai-review: --paths entry '$p' matched no changed file in scope ($label)" >&2
+    echo "ai-review: paths resolve from the repo root — check for typos, renames, or cwd-relative paths" >&2
+    exit 2
+  fi
+done
 
 # grep, not `${diff//[[:space:]]/}` — bash pattern substitution over a whole
 # branch diff takes minutes. The check has to tolerate a whitespace-only string
