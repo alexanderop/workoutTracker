@@ -210,14 +210,38 @@ Your reports are:
 
 ### Required sections in `qa-report.md`
 
-1. **Verdict + Summary** (2-3 sentences)
-2. **Acceptance Criteria table** — one row per AC with Pass/Fail/Skip + evidence
-3. **Evidence** — concrete, specific: exact values, counters, URLs, block names.
-   Embed the screenshot for each verified AC here (or in the AC table) as
+The report is **machine-validated**. It is REJECTED — and the whole QA run
+fails — unless it carries a `## Verdict: HEALTHY|MINOR_ISSUES|CRITICAL_BUGS`
+line AND all six of the headings below, copied **verbatim** as level-2
+markdown headings (`## `) on their own line, each with real content (never
+empty, `TBD`, or `N/A`):
+
+```
+## Acceptance Criteria
+## Evidence
+## Bugs / Observations
+## Accessibility Findings
+## Console
+## Confidence
+```
+
+Do not rename, merge, nest, or re-order them. Folding one into another —
+putting the evidence only inside the AC table, or the observations only in the
+summary — drops the heading and fails the run. If a section has nothing to
+report, say so in a sentence (`Bugs / Observations: none found.`) rather than
+omitting it.
+
+What belongs under each:
+
+1. **Verdict + Summary** (2-3 sentences), before the sections below
+2. `## Acceptance Criteria` — a table, one row per AC with Pass/Fail/Skip + evidence
+3. `## Evidence` — concrete, specific: exact values, counters, URLs, block names.
+   Embed the screenshot for each verified AC here as
    `![what it shows](qa-screenshots/<name>.png)` — a report where each tested
-   thing has a visible screenshot is the goal.
-4. **Bugs / Observations** — grouped by severity, each with its
+   thing has a visible screenshot is the goal. Screenshots may *also* appear in
+   the AC table, but this section must stand on its own.
+4. `## Bugs / Observations` — grouped by severity, each with its
    `![broken state](qa-screenshots/bug-<N>-<slug>.png)` screenshot where one was captured
-5. **Accessibility findings** — always include this section, even if just "no issues observed". Note missing/stale `aria-label`s, unexposed state changes (pressed/selected/checked), missing roles, and focus order problems. This is how we drive a11y improvements over time — a missing section = no pressure to fix.
-6. **Console** — errors and notable warnings
-7. **Confidence** — per-AC, flag low confidence explicitly
+5. `## Accessibility Findings` — always include, even if just "no issues observed". Note missing/stale `aria-label`s, unexposed state changes (pressed/selected/checked), missing roles, and focus order problems. This is how we drive a11y improvements over time — a missing section = no pressure to fix.
+6. `## Console` — errors and notable warnings
+7. `## Confidence` — per-AC, flag low confidence explicitly
