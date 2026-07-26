@@ -211,6 +211,79 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
 })
 
+// The publish job rejects a report whose H2 headings don't match
+// validateQaReport's required list exactly, so every prompt that can be the
+// last word to the QA agent has to name those headings verbatim. A run was
+// lost to a prompt that listed them as prose bullets ("Accessibility
+// findings", "Acceptance Criteria table") and let evidence be folded into the
+// AC table, which silently dropped two headings.
+test('QA prompts name the exact headings the validator requires', async () => {
+  const requiredSections = [
+    'Acceptance Criteria',
+    'Evidence',
+    'Bugs / Observations',
+    'Accessibility Findings',
+    'Console',
+    'Confidence',
+  ]
+  const [systemPrompt, browser] = await Promise.all([
+    readFile('.claude/prompts/qa-system-prompt.md', 'utf8'),
+    readFile('.github/workflows/claude-qa-browser.yml', 'utf8'),
+  ])
+
+  for (const section of requiredSections) {
+    const escaped = section.replace('/', String.raw`\/`)
+    assert.match(
+      systemPrompt,
+      new RegExp(String.raw`^##\s+${escaped}\s*$`, 'm'),
+      `qa-system-prompt.md must show "## ${section}" verbatim so the agent emits it`,
+    )
+    // The workflow embeds the same headings as quoted shell/JS string
+    // literals (`echo '## Evidence'`, `report.push('## Evidence')`).
+    assert.match(
+      browser,
+      new RegExp(String.raw`'##\s+${escaped}'`),
+      `the retry prompt must show "## ${section}" verbatim so the agent emits it`,
+    )
+  }
+
+  // A report that satisfies the prompt must satisfy the validator.
+  const report = [
+    '## Verdict: HEALTHY',
+    '',
+    'Everything checked out.',
+    ...requiredSections.flatMap((section) => [`## ${section}`, '', 'Observed as expected.', '']),
+  ].join('\n')
+  assert.deepEqual(validateQaReport(report), { ready: true, verdict: 'HEALTHY' })
+
+  // The regression that cost run 30190993183: a plausible report that folds
+  // the evidence and observations into the AC table instead of giving them
+  // their own headings. Reads complete, fails the gate.
+  const folded = [
+    '## Verdict: HEALTHY',
+    '',
+    'Everything checked out.',
+    '## Acceptance Criteria',
+    '',
+    '| AC | Result | Evidence | Notes |',
+    '| --- | --- | --- | --- |',
+    '| Icons render | Pass | ![grid](qa-screenshots/grid.png) | none found |',
+    '## Accessibility Findings',
+    '',
+    'No issues observed.',
+    '## Console',
+    '',
+    'No errors.',
+    '## Confidence',
+    '',
+    'High.',
+  ].join('\n')
+  assert.deepEqual(validateQaReport(folded), {
+    ready: false,
+    reason: 'QA report is missing sections: Evidence, Bugs / Observations',
+  })
+})
+
 test('browser QA starts and stays mobile-first by default', async () => {
   const [
     workflowSource,

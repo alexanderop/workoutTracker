@@ -174,6 +174,13 @@ export const exerciseIconKeys = [
   'bodyweight-toe-touch',
   'bodyweight-v-up',
   'club-pendulum',
+  'cardio-running',
+  'cardio-cycling',
+  'cardio-rowing',
+  'cardio-elliptical',
+  'cardio-swimming',
+  'cardio-stair-climber',
+  'cardio-walking',
 ] as const
 
 export type ExerciseIconKey = (typeof exerciseIconKeys)[number]

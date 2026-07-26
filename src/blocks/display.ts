@@ -15,7 +15,6 @@ import { CARDIO_ACTIVITY_VALUES } from './cardio/types'
 
 type CardioActivityDisplay = {
   label: string
-  icon: string
   supportsDistance: boolean
   distanceUnit: 'km' | 'laps' | null
 }
@@ -26,13 +25,13 @@ type CardioActivityDisplay = {
  * here until it gets a label.
  */
 const CARDIO_ACTIVITY_DISPLAY: Record<CardioActivity, CardioActivityDisplay> = {
-  running: { label: 'Running', icon: '🏃', supportsDistance: true, distanceUnit: 'km' },
-  cycling: { label: 'Cycling', icon: '🚴', supportsDistance: true, distanceUnit: 'km' },
-  rowing: { label: 'Rowing', icon: '🚣', supportsDistance: true, distanceUnit: 'km' },
-  elliptical: { label: 'Elliptical', icon: '🏋️', supportsDistance: false, distanceUnit: null },
-  swimming: { label: 'Swimming', icon: '🏊', supportsDistance: true, distanceUnit: 'laps' },
-  stairclimber: { label: 'Stair Climber', icon: '🪜', supportsDistance: false, distanceUnit: null },
-  walking: { label: 'Walking', icon: '🚶', supportsDistance: true, distanceUnit: 'km' },
+  running: { label: 'Running', supportsDistance: true, distanceUnit: 'km' },
+  cycling: { label: 'Cycling', supportsDistance: true, distanceUnit: 'km' },
+  rowing: { label: 'Rowing', supportsDistance: true, distanceUnit: 'km' },
+  elliptical: { label: 'Elliptical', supportsDistance: false, distanceUnit: null },
+  swimming: { label: 'Swimming', supportsDistance: true, distanceUnit: 'laps' },
+  stairclimber: { label: 'Stair Climber', supportsDistance: false, distanceUnit: null },
+  walking: { label: 'Walking', supportsDistance: true, distanceUnit: 'km' },
 }
 
 export const CARDIO_ACTIVITIES: ReadonlyArray<{ value: CardioActivity } & CardioActivityDisplay> =
