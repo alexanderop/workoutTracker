@@ -241,18 +241,44 @@
   [data-habit-accent='pink'] {
     --habit-accent: var(--habit-pink);
   }
+}
 
+/*
+ * Habit accent paint.
+ *
+ * In `@layer utilities`, not `components`, and deliberately so: the check
+ * controls used to be shadcn outline `Button`s, whose background and border
+ * utilities beat *any* rule in the components layer regardless of specificity
+ * -- so every one of these accent declarations was silently discarded and each
+ * habit's control painted the same neutral grey no matter which colour the
+ * user picked. The controls are now plain elements (`HabitCheckButton.vue`)
+ * with no competing utility, and living in the utilities layer keeps that true
+ * if one grows a Tailwind background again.
+ */
+@layer utilities {
   .habit-accent-swatch,
   .habit-grid-complete,
   .habit-today-complete {
     background-color: var(--habit-accent);
+    border-color: var(--habit-accent);
     color: oklch(0.99 0 0);
   }
   .habit-grid-partial {
-    background-color: oklch(from var(--habit-accent) l c h / 38%);
+    background-color: oklch(from var(--habit-accent) l c h / 40%);
+  }
+  /*
+   * A day with nothing logged. Tinted with the habit's own accent rather than
+   * a neutral `bg-muted`: a heatmap is mostly untouched days, so the track is
+   * what gives a card its colour identity at a glance -- with a grey track
+   * seven habits read as seven grey blocks and the accent only shows up on the
+   * handful of days that were actually completed.
+   */
+  .habit-grid-empty {
+    background-color: oklch(from var(--habit-accent) l c h / 14%);
   }
   .habit-today-incomplete {
-    border-color: oklch(from var(--habit-accent) l c h / 55%);
+    background-color: oklch(from var(--habit-accent) l c h / 12%);
+    border-color: oklch(from var(--habit-accent) l c h / 45%);
     color: var(--habit-accent);
   }
   .habit-today-ring {
@@ -260,7 +286,20 @@
       0 0 0 1px var(--card),
       0 0 0 3px var(--habit-accent);
   }
+  /*
+   * Accent-tinted container behind a habit's icon or streak badge. Background
+   * only, with the foreground colour a separate opt-in: accent-on-tint is about
+   * 3:1, which is fine for an icon but below the 4.5:1 that badge text needs.
+   */
+  .habit-accent-tint {
+    background-color: oklch(from var(--habit-accent) l c h / 16%);
+  }
+  .habit-accent-fg {
+    color: var(--habit-accent);
+  }
+}
 
+@layer components {
   /* Status color classes for completion/comparison states */
   .status-success {
     color: var(--success);

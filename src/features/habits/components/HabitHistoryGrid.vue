@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { HabitGridWeek } from '../lib/habitGrid'
+import { habitDayCellClass } from '../lib/gridCell'
 
 const { grid, habitName } = defineProps<{
   grid: ReadonlyArray<HabitGridWeek>
@@ -52,15 +53,8 @@ function handleDayClick(day: HabitGridWeek[number]): void {
           :data-testid="`habit-day-${day.date}`"
           :aria-label="dayLabel(day)"
           :aria-pressed="!day.isFuture ? day.complete : undefined"
-          class="h-3.5 w-3.5 rounded-sm transition-colors"
-          :class="[
-            day.isFuture
-              ? 'bg-transparent cursor-default'
-              : day.complete
-                ? 'bg-primary hover:bg-primary/80'
-                : 'bg-muted hover:bg-muted-foreground/20',
-            day.isToday && 'ring-1 ring-offset-1 ring-primary',
-          ]"
+          class="h-3.5 w-3.5 rounded-sm transition-opacity"
+          :class="[habitDayCellClass(day), day.isFuture ? 'cursor-default' : 'hover:opacity-75']"
           @click="handleDayClick(day)"
         />
       </template>

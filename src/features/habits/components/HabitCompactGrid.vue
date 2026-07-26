@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DbHabit, DbHabitEntry } from '@/db/schema'
 import { buildCompactHabitGrid } from '../lib/habitGrid'
+import { habitDayCellClass } from '../lib/gridCell'
 
 const {
   habit,
@@ -41,13 +42,7 @@ const summary = computed(() =>
       :key="day.date"
       aria-hidden="true"
       class="aspect-square min-w-0 rounded-[3px]"
-      :class="[
-        day.state === 'empty' && 'bg-muted',
-        day.state === 'complete' && 'habit-grid-complete',
-        day.state === 'partial' && 'habit-grid-partial',
-        day.state === 'future' && 'bg-transparent',
-        day.isToday && 'habit-today-ring',
-      ]"
+      :class="habitDayCellClass(day)"
     />
   </div>
 </template>
