@@ -60,11 +60,13 @@ pnpm exec vitest run --project=default src/__tests__/features/<feature>
 pnpm exec vitest run --project=unit src/__tests__/unit/<area>
 ```
 
-Run **every** command the scope records, not just the first and not just the
-`default` one — a scope spanning two projects is two runs, and dropping the
-`unit` line silently ships that half unverified. Copy each command as written;
-the recorded entries are already complete, so re-prefixing a path yields
-`src/__tests__/src/__tests__/…` and matches nothing.
+Run **every** entry under the scope's **Commands**, not just the first and not
+just the `default` one — a scope spanning two projects is two runs, and dropping
+the `unit` line silently ships that half unverified. Copy each command as
+written; the recorded entries are already complete, so re-prefixing a path
+yields `src/__tests__/src/__tests__/…` and matches nothing. The scope's
+**Notes** bullets ("Widen to: …") are context, not commands — read them to judge
+whether the scope is still right, never execute them.
 
 No plan, or no `## Test Scope` in it? Derive the scope from
 `git diff --name-only main...HEAD` — the changed features' specs plus the specs

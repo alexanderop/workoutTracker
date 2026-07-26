@@ -297,8 +297,9 @@ the rest unchecked. They are the resume token: a session picking this work up
 later starts at the **first unchecked box** rather than re-deriving where things
 stopped. Never tick a box you did not run.
 
-When all slices land, run the plan's `## Test Scope` in full — every command in
-it, not just the one for the last slice — and read the complete diff end-to-end
+When all slices land, run the plan's `## Test Scope` in full — every entry under
+its **Commands**, not just the one for the last slice (the **Notes** bullets are
+context, not commands) — and read the complete diff end-to-end
 for integration issues that slice reviews could not see. Per-slice runs are
 narrower than the scope; running the whole scope once here is what catches a
 slice that broke a sibling's specs. Do not escalate to the full tier: it is ~5

@@ -348,11 +348,23 @@ can tell whether the scope is right. Filters match **test** paths under
 `src/__tests__/`, not source paths; a filter matching nothing exits 1, so a
 wrong scope fails loudly rather than passing empty.
 
+**Commands** — the *entries*. Each is one complete, runnable command in
+backticks. These, and only these, are what downstream phases execute and turn
+into verification boxes.
+
 - `pnpm exec vitest run --project=default src/__tests__/features/<feature>` — <what this covers>
 - `pnpm exec vitest run --project=unit src/__tests__/unit/<area>` — <what this covers>
+
+**Notes** — context for the reader. Never executed, never a verification box.
+
 - Widen to: <specs outside the feature this change can break, and why> (or "nothing else — the change is contained")
 - Full tier locally: not run — CI shards `default` four ways and runs a11y,
   visual, e2e, and coverage on the PR.
+
+<The split is load-bearing: downstream skills emit one box per **Commands**
+entry, so a prose bullet living among them becomes an unrunnable checkbox that
+strands the plan at a box nobody can tick. If a note ever needs to be enforced,
+promote it to a real command under **Commands**.>
 
 ## Open Non-Blocking Notes
 - <Known follow-up that does not block implementation>
@@ -392,13 +404,15 @@ verification cannot be resumed from. Put the exact command inline.
 - [ ] <Test Scope entry 2, command copied verbatim — one box per entry>
 - [ ] Full suite: CI on the PR — not run locally
 
-<Emit **one box per `## Test Scope` entry**, copying each command verbatim —
-whole line, its own `--project`, its own path. Do not collapse several entries
-into one box, and do not wrap a path in another prefix: the entries are already
-complete commands, so prefixing one yields `src/__tests__/src/__tests__/…` and
-matches nothing. A scope with a `unit` and a `default` command produces two
-boxes. A bare `pnpm test` box does not belong here: the local loop runs the
-feature's tests, CI runs the tier.>
+<Emit **one box per `## Test Scope` Commands entry** — every one, copied
+verbatim: whole line, its own `--project`, its own path. Do not collapse several
+entries into one box, and do not wrap a path in another prefix: the entries are
+already complete commands, so prefixing one yields
+`src/__tests__/src/__tests__/…` and matches nothing. A scope with a `unit` and a
+`default` command produces two boxes. Take entries only from **Commands** — a
+**Notes** bullet ("Widen to: …") is prose and becomes an unrunnable box. A bare
+`pnpm test` box does not belong here: the local loop runs the feature's tests,
+CI runs the tier.>
 
 #### Manual Verification:  <emit this subsection only when the wave needs one>
 - [ ] <specific, actionable step that proves the behavior works — not "it compiles">

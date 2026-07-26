@@ -170,12 +170,16 @@ pnpm -s type-check && pnpm -s test:unit && pnpm -s knip
 pnpm exec vitest run --project=default src/__tests__/features/<feature>
 ```
 
-After the fast gate, run the plan's `## Test Scope` — **every** entry the
-editing phase could have touched, copied as written, including any non-`default`
-project. One entry run out of two is half a gate. Never substitute `pnpm test`:
-the full tier is ~5 minutes per loop iteration, and CI runs it sharded on the
-PR. If a phase widened the diff past the recorded scope, widen the scope and the
-plan with it rather than falling back to the whole tier.
+After the fast gate, run **every** entry under the plan's `## Test Scope`
+**Commands** — all of them, copied as written, including any non-`default`
+project. Do not filter by which entries you think this phase touched: "simplify
+only cleaned up feature A, so feature B's specs can't have moved" is the same
+assumption that let a cleanup pass silently delete a CI job on 2026-07-25. The
+scope is a handful of seconds; run it whole. One entry run out of two is half a
+gate. Never substitute `pnpm test`: the full tier is ~5 minutes per loop
+iteration, and CI runs it sharded on the PR. If a phase widened the diff past
+the recorded scope, widen the scope and the plan with it rather than falling
+back to the whole tier.
 
 Two rules govern the loop:
 
