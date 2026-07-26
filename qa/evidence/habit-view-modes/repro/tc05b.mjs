@@ -1,6 +1,6 @@
 // Acceptance 5, follow-up: is the weekday row legible, and does today stay
 // distinct mid-week (not just when it is the last column)?
-import { launch, seed, shot, BASE } from './harness.mjs'
+import { launch, seed, shot, BASE, EVIDENCE } from './harness.mjs'
 
 const { browser, context, page, errors, consoleErrors } = await launch()
 
@@ -10,7 +10,11 @@ await context.clock.install({ time: new Date('2026-07-22T10:30:00') })
 await page.goto(BASE, { waitUntil: 'networkidle' })
 await seed(page, { viewMode: 'rows' })
 await page.goto(`${BASE}/habits`, { waitUntil: 'networkidle' })
-await page.evaluate(() => document.fonts.ready)
+await page.evaluate(async () => {
+  // Awaited in-page and not returned: `document.fonts.ready` resolves to a
+  // FontFaceSet, which is not serializable across the Playwright boundary.
+  await document.fonts.ready
+})
 await page.waitForTimeout(1500)
 
 console.log('page now:', await page.evaluate(() => new Date().toString()))
@@ -66,7 +70,7 @@ const crop = await page.evaluate(() => {
   return { x: r.x, y: r.y }
 })
 await page.screenshot({
-  path: '/home/user/workoutTracker/qa/evidence/habit-view-modes/10-rows-header-midweek-crop.png',
+  path: `${EVIDENCE}/10-rows-header-midweek-crop.png`,
   clip: { x: crop.x - 4, y: crop.y - 8, width: 374, height: 170 },
 })
 console.log('errors', errors, consoleErrors)

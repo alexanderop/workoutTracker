@@ -85,6 +85,14 @@ failure modes here:
   Check the spec in isolation before touching anything — on 2026-07-26 a shard-1
   `numeric-keypad.spec.ts` failure (1 failed / 356 passed, setup alone 140s)
   passed 3/3 locally and referenced nothing in the PR's diff.
+- The `visual` tier cannot be run on Linux. Every tracked baseline is
+  `*-chromium-darwin.png` because CI runs `test-visual` on a macOS runner, so a
+  local Linux run finds no reference, *creates* `*-chromium-linux.png`, and fails
+  with "No existing reference screenshot found" — which reads exactly like a
+  regression and is not one. Delete the generated `*-linux.png` files afterwards;
+  committing them would plant bogus baselines. Corollary: a change that alters a
+  snapshotted screen cannot be verified locally, so either scope the change away
+  from that screen or hand the baseline regeneration to someone on macOS.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`

@@ -32,16 +32,20 @@ import {
 } from '@/components/ui/number-field'
 import type { DbHabit } from '@/db/schema'
 
-const { habit, value, scope } = defineProps<{
+const { habit, scope } = defineProps<{
   habit: DbHabit
-  value: number
   /** Disambiguates the input id when two instances share a habit. */
   scope: 'card' | 'sheet'
 }>()
 
-const emit = defineEmits<{ 'update:value': [value: number] }>()
+/** `v-model:value` per the project convention; callers are unchanged. */
+const value = defineModel<number>('value', { required: true })
 
 const { t } = useI18n()
+
+function handleUpdate(next: number): void {
+  value.value = next
+}
 
 const inputId = computed(() => `habit-quantity-${scope}-${habit.id}`)
 
@@ -50,7 +54,7 @@ const kind = computed(() => (habit.kind.type === 'quantity' ? habit.kind : undef
 const percent = computed(() => {
   const target = kind.value?.target ?? 0
   if (target <= 0) return 0
-  return Math.min(100, Math.round((value / target) * 100))
+  return Math.min(100, Math.round((value.value / target) * 100))
 })
 </script>
 
@@ -73,7 +77,7 @@ const percent = computed(() => {
       :min="0"
       :max="9999"
       :step="1"
-      @update:model-value="(next) => emit('update:value', next)"
+      @update:model-value="handleUpdate"
     >
       <NumberFieldContent>
         <NumberFieldDecrement />

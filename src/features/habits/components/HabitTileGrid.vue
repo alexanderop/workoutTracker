@@ -66,7 +66,7 @@ const monthLabel = computed(() =>
         <Button
           size="icon"
           variant="outline"
-          class="size-8 shrink-0 rounded-lg border-2"
+          class="size-touch-target shrink-0 rounded-lg border-2"
           :class="item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete'"
           :aria-pressed="item.isComplete"
           :aria-label="
@@ -81,21 +81,32 @@ const monthLabel = computed(() =>
         <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-4 shrink-0 opacity-70" />
       </div>
 
+      <!-- The heatmap sits *inside* the details button rather than beside it.
+           A tile is only ~130px tall and the grid has ~26px of slack at seven
+           habits, so growing a text-sized button to the 44px touch floor would
+           push the last row off screen. Wrapping the name, month and heatmap
+           gives a tap area far past 44px and costs no height. Safe to nest: the
+           heatmap is `role="img"` with aria-hidden cells and no controls of its
+           own (HabitCompactGrid). -->
       <button
         type="button"
-        class="min-w-0 text-left"
+        class="min-w-0 flex flex-col gap-1 text-left"
         :aria-label="t('habits.showDetailsFor', { name: item.habit.name })"
         @click="emit('open-details', item.habit)"
       >
-        <span class="block truncate text-xs font-medium" data-testid="habit-tile-name">
+        <span class="block w-full truncate text-xs font-medium" data-testid="habit-tile-name">
           {{ item.habit.name }}
         </span>
-        <span class="block truncate text-[0.625rem] text-muted-foreground">
+        <span class="block w-full truncate text-[0.625rem] text-muted-foreground">
           {{ monthLabel }}
         </span>
+        <HabitCompactGrid
+          class="w-full"
+          :habit="item.habit"
+          :entries="item.entries"
+          :days="TILE_DAYS"
+        />
       </button>
-
-      <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="TILE_DAYS" />
     </article>
   </div>
 </template>

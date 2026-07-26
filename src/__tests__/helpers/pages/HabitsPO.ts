@@ -104,6 +104,32 @@ export class HabitsPO {
   }
 
   /**
+   * Largest horizontal gap, in pixels, between a header column's centre and the
+   * centre of the heatmap cell it labels.
+   *
+   * The header sharing `HABIT_ROW_GRID_COLUMNS` with the rows is necessary but
+   * not sufficient: the header's leading and trailing spacers stand in for the
+   * row's icon and check control, so resizing either control shifts the heatmap
+   * column out from under the header while every other assertion stays green.
+   * That regressed once, when the check button grew to the 44px touch target.
+   */
+  async getRowHeaderCellDrift(habitName: string): Promise<number> {
+    const centres = (element: Element): Array<number> =>
+      // eslint-disable-next-line no-restricted-syntax -- Geometry needs the raw nodes
+      [...element.querySelectorAll(':scope .grid-cols-7 > *')].map((cell) => {
+        const box = cell.getBoundingClientRect()
+        return box.x + box.width / 2
+      })
+
+    const header = centres(this.getRowDateHeader().element())
+    const row = centres(this.getTodayRow(habitName).element())
+    if (header.length === 0 || row.length === 0) {
+      throw new Error('Expected both the row header and the habit row to render day columns')
+    }
+    return Math.max(...row.map((cx, index) => Math.abs(cx - (header[index % header.length] ?? 0))))
+  }
+
+  /**
    * Text of the header columns marked as today -- an array so a test can prove
    * there is exactly one, not just at least one.
    */

@@ -123,6 +123,58 @@ describe('useHabitViewMode', () => {
     expect(error).toHaveBeenCalled()
   })
 
+  it('persists the last mode picked when two writes overlap', async () => {
+    // The first write resolves *after* the second, which is what makes an
+    // unordered implementation persist the stale value.
+    const gates = new Map<HabitViewMode, PromiseWithResolvers<void>>([
+      ['rows', Promise.withResolvers<void>()],
+      ['grid', Promise.withResolvers<void>()],
+    ])
+    const writes: Array<HabitViewMode> = []
+    const prefs: HabitViewModePrefs = {
+      async get() {
+        return 'cards'
+      },
+      async set(next) {
+        await gates.get(next)?.promise
+        writes.push(next)
+      },
+    }
+    const { mode, setMode } = useHabitViewMode(contextFor(prefs))
+
+    const first = setMode('rows')
+    const second = setMode('grid')
+
+    // Release the slow first write last -- the ordering that breaks a
+    // fire-and-forget implementation.
+    gates.get('grid')?.resolve()
+    gates.get('rows')?.resolve()
+    await Promise.all([first, second])
+
+    expect(writes).toEqual(['rows', 'grid'])
+    expect(mode.value).toBe('grid')
+  })
+
+  it('does not let a slow initial read overwrite a mode the user already picked', async () => {
+    const gate = Promise.withResolvers<void>()
+    const prefs: HabitViewModePrefs = {
+      async get() {
+        await gate.promise
+        return 'cards'
+      },
+      async set() {},
+    }
+    const { mode, load, setMode } = useHabitViewMode(contextFor(prefs))
+
+    const loading = load()
+    // The user taps before the stored value has come back.
+    await setMode('grid')
+    gate.resolve()
+    await loading
+
+    expect(mode.value).toBe('grid')
+  })
+
   it('keeps the default when the initial read fails', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     const prefs: HabitViewModePrefs = {

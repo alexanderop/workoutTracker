@@ -40,18 +40,42 @@ export function useHabitViewMode(
   // nothing while the stored value is in flight.
   const mode = ref<HabitViewMode>(DEFAULT_HABIT_VIEW_MODE)
 
+  /**
+   * Set once the user picks a mode, so a slow `load()` cannot overwrite it.
+   * `HabitsView` calls `load()` on mount; the toggle is a one-tap control right
+   * there, so a pick can easily land first and the read would otherwise snap the
+   * layout back to whatever was stored.
+   */
+  let userHasChosen = false
+
+  /**
+   * Writes are chained rather than issued in parallel. `store.set` is async, so
+   * two quick taps could resolve out of order and leave the *older* mode
+   * persisted while the UI shows the newer one -- the ref and the database
+   * disagreeing is precisely the bug persistence exists to avoid.
+   */
+  let pendingWrites: Promise<unknown> = Promise.resolve()
+
   async function load(): Promise<void> {
     const [error, stored] = await tryCatch(store.get())
     if (error) {
       console.error('Failed to read habit view mode:', error)
       return
     }
+    if (userHasChosen) return
     mode.value = stored
   }
 
   async function setMode(next: HabitViewMode): Promise<boolean> {
+    userHasChosen = true
     mode.value = next
-    const [error] = await tryCatch(store.set(next))
+
+    const write = pendingWrites.then(() => store.set(next))
+    // Swallow on the chain itself so one rejection does not poison later writes;
+    // the caller still sees this write's own outcome via `tryCatch` below.
+    pendingWrites = write.catch(() => {})
+
+    const [error] = await tryCatch(write)
     if (error) {
       console.error('Failed to save habit view mode:', error)
       return false

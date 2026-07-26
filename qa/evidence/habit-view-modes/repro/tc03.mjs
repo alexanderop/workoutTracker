@@ -3,7 +3,15 @@
 // past day, edit a habit, archive a habit.
 import { launch, seed, shot, readEntries, BASE } from './harness.mjs'
 
-const mode = process.argv[2] // 'grid' | 'rows'
+const mode = process.argv[2]
+// Without this, a missing argv leaves `mode` undefined: seeding skips the
+// setting, the container check silently falls through to the rows selector, and
+// the run writes `undefined-a-ticked.png` while still exiting 0 -- evidence that
+// looks like a pass and measures nothing.
+if (mode !== 'grid' && mode !== 'rows') {
+  console.error('usage: node tc03.mjs <grid|rows>')
+  process.exit(1)
+}
 const P = (n) => `${mode}-${n}`
 
 const { browser, page, errors, consoleErrors } = await launch()

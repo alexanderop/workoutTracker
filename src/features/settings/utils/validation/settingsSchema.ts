@@ -72,6 +72,19 @@ const timerSoundEnabledSettingSchema = z
   .strict()
 
 /**
+ * Timer sound volume setting schema.
+ *
+ * Matches `setTimerSoundVolume`'s clamp in `src/stores/settings.ts`, which
+ * pins the range to 0.5-1 rather than 0-1.
+ */
+const timerSoundVolumeSettingSchema = z
+  .object({
+    key: z.literal('timerSoundVolume'),
+    value: z.number().min(0.5).max(1),
+  })
+  .strict()
+
+/**
  * Language setting schema.
  */
 const languageSettingSchema = z
@@ -103,6 +116,7 @@ export const dbUserSettingSchema = z.discriminatedUnion('key', [
   autoSaveIntervalSettingSchema,
   screenWakeLockSettingSchema,
   timerSoundEnabledSettingSchema,
+  timerSoundVolumeSettingSchema,
   languageSettingSchema,
   habitViewModeSettingSchema,
 ])

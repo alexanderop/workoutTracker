@@ -485,6 +485,12 @@ describe('Habit Tracking', () => {
       // label overflowed and painted over its neighbours.
       expect(await habits.findOverflowingRowDateHeaderColumns()).toEqual([])
 
+      // ...and each label has to sit over the cell it labels. Sharing the grid
+      // template is not enough: the header's spacers stand in for the row's
+      // icon and check control, so resizing either slides the heatmap column
+      // out from under the header. Sub-pixel rounding only.
+      expect(await habits.getRowHeaderCellDrift('Read')).toBeLessThan(1)
+
       // Today has to be findable without counting in from the edge: exactly
       // one column is marked, and it carries today's date. The date is what
       // disambiguates a narrow weekday, which repeats (T/T, S/S).

@@ -15,6 +15,7 @@ the first-pass sections are left intact as the record of what was wrong.
 | 3 | No dead-end modes | PASS | PASS |
 | 4 | `grid` fits 7 habits | PASS (caveat: 40px names) | **PASS** — 100px names, none truncated, 62px headroom |
 | 5 | `rows` today unambiguous | **FAIL** | **PASS** — 0/7 overflowing, 0 collisions |
+| 6 | Switching instant and lossless | PASS | PASS |
 
 ### Fix 1 — Acceptance 5, the illegible week header
 
@@ -201,6 +202,10 @@ Evidence: `qa/evidence/habit-view-modes/grid-a-ticked.png` …
 
 ## TC-04: `grid` fits 7 habits without scrolling (Acceptance 4) - PASS (with caveat)
 
+> **Superseded — first-pass evidence.** The 40px name column recorded below was
+> fixed (see *Fix 2* above): names now measure 100px and none of the seven
+> truncate. Kept as the record of what was measured before the fix.
+
 Steps:
 
 1. Seeded 7 habits with `habitViewMode = 'grid'`, opened `/habits`.
@@ -244,7 +249,12 @@ this set, so this is a PASS. Two caveats sit under it:
 Evidence: `qa/evidence/habit-view-modes/04-grid-7-habits.png`,
 `05-grid-truncation-adversarial.png`
 
-## TC-05: `rows` makes today unambiguous (Acceptance 5) - FAIL
+## TC-05: `rows` makes today unambiguous (Acceptance 5) - FAIL (superseded — now PASS)
+
+> **Superseded — first-pass evidence.** The overflow recorded below was fixed
+> (see *Fix 1* above): 0/7 columns overflow and 0 neighbours collide. Kept as
+> the record of the failure, since it is what the new regression assertion was
+> written against.
 
 Steps:
 
@@ -386,7 +396,7 @@ Evidence: `qa/evidence/habit-view-modes/12-home-card-unchanged.png`
   in the Vite server log during headless runs. Pre-existing, unrelated to
   habits, and warnings rather than errors.
 
-**Design gaps worth a follow-up (repeated from the test cases)**
+**Design gaps — both since fixed on this branch, listed for the record**
 
 - The `grid` tile name column is 40px / ~4 characters, against the plan's
   stated whole-first-word truncation. Cheapest fixes: drop the `AppIcon` from

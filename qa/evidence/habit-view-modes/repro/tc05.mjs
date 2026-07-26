@@ -1,6 +1,6 @@
 // Acceptance 5: rows mode -- header aligns column-for-column with the heatmap
 // cells beneath it, and today's column is distinct at a glance.
-import { launch, seed, shot, BASE } from './harness.mjs'
+import { launch, seed, shot, BASE, EVIDENCE } from './harness.mjs'
 
 const { browser, page, errors, consoleErrors } = await launch()
 await page.goto(BASE, { waitUntil: 'networkidle' })
@@ -51,10 +51,18 @@ console.log(
 )
 
 // Column-for-column: header centre vs every row's cell centre.
+// The header is one week; a row's cells are collected from the whole heatmap,
+// so index modulo the header length rather than assuming equal counts -- a
+// longer row would otherwise read `headerCells[i].cx` off the end and throw
+// mid-measurement.
+const columns = align.headerCells.length
 const drift = align.rows.flatMap((r) =>
-  r.cells.map((c, i) => Math.abs(c.cx - align.headerCells[i].cx)),
+  r.cells.map((c, i) => Math.abs(c.cx - align.headerCells[i % columns].cx)),
 )
-console.log('max header/cell centre drift (px):', Math.max(...drift).toFixed(2))
+console.log(
+  'max header/cell centre drift (px):',
+  drift.length > 0 ? Math.max(...drift).toFixed(2) : 'n/a (no cells measured)',
+)
 
 // Which column is ringed as today, and does the header mark the same one?
 const ringIdx = align.rows[0].cells.findIndex((c) => c.ring)
@@ -63,7 +71,7 @@ console.log('ringed cell index:', ringIdx, 'bold header index:', boldIdx)
 
 await shot(page, '06-rows-mode')
 await page.locator('[data-testid=habit-row-date-header]').screenshot({
-  path: '/home/user/workoutTracker/qa/evidence/habit-view-modes/07-rows-header-crop.png',
+  path: `${EVIDENCE}/07-rows-header-crop.png`,
 })
 // A tight crop over the header + first two rows makes the alignment checkable.
 await page.evaluate(() => {
@@ -73,7 +81,7 @@ await page.evaluate(() => {
 })
 const crop = await page.evaluate(() => window.__crop)
 await page.screenshot({
-  path: '/home/user/workoutTracker/qa/evidence/habit-view-modes/08-rows-header-alignment.png',
+  path: `${EVIDENCE}/08-rows-header-alignment.png`,
   clip: { x: crop.x - 4, y: crop.y - 6, width: 374, height: 180 },
 })
 

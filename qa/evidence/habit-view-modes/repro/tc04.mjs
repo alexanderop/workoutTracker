@@ -42,8 +42,11 @@ const names = await page.evaluate(() => {
   const out = []
   document.querySelectorAll('[data-testid=habit-tile-grid] article').forEach((a) => {
     const span = a.querySelector('span.truncate')
+    // Skip rather than throw: one tile without the span would otherwise abort
+    // the whole measurement pass.
+    if (!span) return
     const r = span.getBoundingClientRect()
-    // Binary-search the longest prefix that still fits the rendered width.
+    // Linear scan for the longest prefix that still fits the rendered width.
     const cs = getComputedStyle(span)
     const canvas = document.createElement('canvas').getContext('2d')
     canvas.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`

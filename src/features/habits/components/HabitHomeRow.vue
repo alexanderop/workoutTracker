@@ -9,7 +9,21 @@ import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
 
-const { item } = defineProps<{ item: HabitTodayItem }>()
+const { item, tapTargets = 'compact' } = defineProps<{
+  item: HabitTodayItem
+  /**
+   * `comfortable` grows the controls to the app's 44px touch floor, for the
+   * `/habits` rows layout where these are the primary logging targets.
+   *
+   * `compact` is the default so the home card -- a four-row glance surface that
+   * this plan deliberately left alone, and whose appearance a visual-regression
+   * baseline pins -- keeps the sizing it already had. Growing it there is a
+   * worthwhile follow-up, but it needs a regenerated macOS baseline.
+   */
+  tapTargets?: 'compact' | 'comfortable'
+}>()
+
+const comfortable = tapTargets === 'comfortable'
 
 const emit = defineEmits<{
   toggle: [habit: DbHabit]
@@ -26,9 +40,12 @@ const { t } = useI18n()
     :class="HABIT_ROW_GRID_COLUMNS"
   >
     <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
+    <!-- `touch-target` gives the tap area a 44px floor instead of letting it be
+         however tall the habit's name happens to render. -->
     <button
       type="button"
-      class="min-w-0 text-left"
+      class="min-w-0 flex flex-col justify-center text-left"
+      :class="comfortable && 'touch-target'"
       :aria-label="t('habits.showDetailsFor', { name: item.habit.name })"
       @click="emit('open-details', item.habit)"
     >
@@ -50,8 +67,11 @@ const { t } = useI18n()
     <Button
       size="icon"
       variant="outline"
-      class="rounded-full border-2"
-      :class="item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete'"
+      class="shrink-0 rounded-full border-2"
+      :class="[
+        comfortable && 'size-touch-target',
+        item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete',
+      ]"
       :aria-pressed="item.isComplete"
       :aria-label="
         item.isComplete

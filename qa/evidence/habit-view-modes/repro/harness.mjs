@@ -1,8 +1,12 @@
-import { chromium } from '/home/user/workoutTracker/node_modules/playwright/index.mjs'
+import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
 
 export const BASE = 'http://localhost:5173'
-export const EVIDENCE = '/home/user/workoutTracker/qa/evidence/habit-view-modes'
+/** This file lives in `<evidence>/repro/`, so the evidence root is one up. */
+export const EVIDENCE = fileURLToPath(new URL('..', import.meta.url))
 mkdirSync(EVIDENCE, { recursive: true })
 
 export const HABITS = [
@@ -25,8 +29,7 @@ export const HABITS = [
   { name: 'No Phone After 9', icon: 'habit-no-phone', accent: 'pink', kind: { type: 'binary' } },
 ]
 
-export const PROFILE =
-  '/tmp/claude-0/-home-user-workoutTracker/495d3a2f-3b39-5fbf-be89-c6ed78165d2f/scratchpad/profile'
+export const PROFILE = process.env.QA_PROFILE_DIR ?? join(tmpdir(), 'habit-view-modes-profile')
 
 /**
  * A *persistent* context, so closing the browser and relaunching is a real
@@ -34,7 +37,10 @@ export const PROFILE =
  */
 export async function launch() {
   const context = await chromium.launchPersistentContext(PROFILE, {
-    executablePath: '/opt/pw-browsers/chromium-1228/chrome-linux64/chrome',
+    // Let Playwright resolve its own browser by default. `QA_CHROMIUM_PATH` is
+    // the escape hatch for an image whose bundled build does not match the
+    // installed Playwright version.
+    ...(process.env.QA_CHROMIUM_PATH ? { executablePath: process.env.QA_CHROMIUM_PATH } : {}),
     args: ['--no-sandbox', '--font-render-hinting=none'],
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
@@ -115,6 +121,9 @@ export async function seed(page, { habits = HABITS, entries = true, viewMode = n
         const tx = db.transaction(stores, 'readwrite')
         tx.oncomplete = () => res()
         tx.onerror = () => rej(tx.error)
+        // Without onabort, an aborted seed (missing store after a schema
+        // change, quota error) settles nothing and every driver hangs silently.
+        tx.onabort = () => rej(tx.error ?? new Error('seed transaction aborted'))
         const habitsStore = tx.objectStore('habits')
         const entriesStore = tx.objectStore('habitEntries')
         habitsStore.clear()

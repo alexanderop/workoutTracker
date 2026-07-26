@@ -57,8 +57,11 @@ const days = computed(() => {
 
 <template>
   <div class="space-y-2">
+    <!-- `border-transparent` is load-bearing, not decoration: the rows below
+         carry a 1px border, so without a matching one the header's content box
+         starts 1px to the left and every column is off by a pixel. -->
     <div
-      class="grid items-end gap-3 px-3"
+      class="grid items-end gap-3 border border-transparent px-3"
       :class="HABIT_ROW_GRID_COLUMNS"
       data-testid="habit-row-date-header"
     >
@@ -76,13 +79,18 @@ const days = computed(() => {
           <span class="block tabular-nums">{{ day.dayOfMonth }}</span>
         </span>
       </div>
-      <span aria-hidden="true" class="size-9" />
+      <!-- These two spacers stand in for the row's icon and check control, and
+           must match their sizes exactly: the trailing one is `size-touch-target`
+           because the row's check button is, and a mismatch here shifts the
+           heatmap column relative to the header it is supposed to label. -->
+      <span aria-hidden="true" class="size-touch-target" />
     </div>
 
     <HabitHomeRow
       v-for="item in items"
       :key="item.habit.id"
       :item="item"
+      tap-targets="comfortable"
       @toggle="emit('toggle', $event)"
       @open-details="emit('open-details', $event)"
     />
