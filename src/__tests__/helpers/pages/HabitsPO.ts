@@ -58,6 +58,18 @@ export class HabitsPO {
     return undefined
   }
 
+  getRowDateHeader() {
+    return page.getByTestId('habit-row-date-header')
+  }
+
+  /** How many day columns the compact-rows header renders. */
+  async countRowDateHeaderColumns(): Promise<number> {
+    const header = this.getRowDateHeader().element()
+    // eslint-disable-next-line no-restricted-syntax -- Scoped to the resolved header element
+    const columns = header.querySelectorAll(':scope .grid-cols-7 > *')
+    return columns.length
+  }
+
   async navigateToHabitsFromHomeCard(): Promise<void> {
     await userEvent.click(page.getByRole('button', { name: /view all habits/i }))
     await this.common.waitForRoute(/^\/habits$/)

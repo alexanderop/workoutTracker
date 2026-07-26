@@ -22,6 +22,7 @@ export default {
   showDetails: 'Details anzeigen',
   hideDetails: 'Details ausblenden',
   showDetailsFor: 'Details für {name} anzeigen',
+  thisWeek: 'Diese Woche',
   viewMode: {
     label: 'Ansicht der Gewohnheiten',
     grid: 'Kachelansicht',

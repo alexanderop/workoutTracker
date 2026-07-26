@@ -467,6 +467,25 @@ describe('Habit Tracking', () => {
       await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
     })
 
+    it('heads the compact rows with this week, today marked', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      const header = habits.getRowDateHeader()
+      await expect.element(header).toBeVisible()
+
+      // Seven columns, matching the seven heatmap cells in each row.
+      expect(await habits.countRowDateHeaderColumns()).toBe(7)
+
+      // Today has to be findable without counting in from the edge.
+      const today = new Date()
+      const expectedWeekday = today.toLocaleDateString('en', { weekday: 'short' })
+      await expect.element(header.getByText(expectedWeekday, { exact: true })).toBeVisible()
+    })
+
     it('ignores a repeat tap on the active mode rather than emptying the page', async ({
       createTestApp,
     }) => {

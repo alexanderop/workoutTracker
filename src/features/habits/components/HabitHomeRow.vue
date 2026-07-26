@@ -7,6 +7,7 @@ import type { HabitTodayItem } from '../composables/useHabits'
 import HabitCompactGrid from './HabitCompactGrid.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
+import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
 
 const { item } = defineProps<{ item: HabitTodayItem }>()
 
@@ -21,7 +22,8 @@ const { t } = useI18n()
   <div
     :data-testid="`habit-today-${item.habit.name}`"
     :data-habit-accent="item.habit.accent"
-    class="grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-3 rounded-lg border bg-card p-3"
+    class="grid items-center gap-3 rounded-lg border bg-card p-3"
+    :class="HABIT_ROW_GRID_COLUMNS"
   >
     <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
     <button
@@ -44,7 +46,7 @@ const { t } = useI18n()
         }}
       </span>
     </button>
-    <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="7" />
+    <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="HABIT_ROW_DAYS" />
     <Button
       size="icon"
       variant="outline"

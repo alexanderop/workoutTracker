@@ -22,6 +22,7 @@ export default {
   showDetails: 'Show details',
   hideDetails: 'Hide details',
   showDetailsFor: 'Show details for {name}',
+  thisWeek: 'This week',
   viewMode: {
     label: 'Habit layout',
     grid: 'Grid view',
