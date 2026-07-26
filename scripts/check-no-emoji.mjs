@@ -54,7 +54,9 @@ function* walk(dir) {
 const violations = []
 
 for (const file of walk(SRC)) {
-  const rel = path.relative(ROOT, file)
+  // Allowlist keys are written with forward slashes, so normalize away the
+  // native separator rather than silently missing every entry on Windows.
+  const rel = path.relative(ROOT, file).split(path.sep).join('/')
   if (ALLOWLIST.has(rel)) continue
 
   const lines = readFileSync(file, 'utf8').split('\n')

@@ -248,7 +248,7 @@ function handleSave() {
               :aria-pressed="accent === option"
               @click="accent = option"
             >
-              <Check v-if="accent === option" class="size-4" />
+              <Check v-if="accent === option" class="size-4" aria-hidden="true" />
             </button>
           </div>
         </div>

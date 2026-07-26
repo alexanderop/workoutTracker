@@ -70,7 +70,11 @@ function handleSelect(value: T) {
           >
             <AppIcon v-if="option.icon" :name="option.icon" class="size-7 shrink-0" />
             <span class="font-medium">{{ option.label }}</span>
-            <Check v-if="selected === option.value" class="ml-auto size-5 text-primary" />
+            <Check
+              v-if="selected === option.value"
+              class="ml-auto size-5 text-primary"
+              aria-hidden="true"
+            />
           </button>
         </template>
 
@@ -94,7 +98,11 @@ function handleSelect(value: T) {
                   {{ option.description }}
                 </p>
               </div>
-              <Check v-if="selected === option.value" class="size-5 shrink-0 text-primary" />
+              <Check
+                v-if="selected === option.value"
+                class="size-5 shrink-0 text-primary"
+                aria-hidden="true"
+              />
             </div>
           </button>
         </template>

@@ -7,7 +7,6 @@ type HabitKindInput = { type: 'binary' } | { type: 'quantity'; target: string; u
 
 export type CreateHabitOptions = {
   name: string
-  icon?: string
   schedule?: HabitScheduleInput
   kind?: HabitKindInput
   autoLink?: boolean
