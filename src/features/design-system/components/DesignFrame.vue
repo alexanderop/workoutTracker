@@ -45,8 +45,11 @@ const emit = defineEmits<{
     </button>
 
     <div
-      class="rounded-xl border bg-background p-5 shadow-sm transition-shadow"
-      :class="selected ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent' : ''"
+      class="overflow-hidden rounded-xl border bg-background shadow-sm transition-shadow"
+      :class="[
+        spec.bleed ? '' : 'p-5',
+        selected ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent' : '',
+      ]"
       @pointerdown="emit('select', spec.id)"
     >
       <component :is="spec.component" v-bind="stateBinding" />

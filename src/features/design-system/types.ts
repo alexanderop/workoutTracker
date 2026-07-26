@@ -50,6 +50,11 @@ export type DesignFrameSpec = {
   /** Import path a developer would reach for to reuse this. */
   readonly source?: string
   /**
+   * Screen artboards render edge to edge — the frame's own padding would read
+   * as a margin the app does not have. Defaults to padded.
+   */
+  readonly bleed?: boolean
+  /**
    * Declaring controls makes the frame a playground: the inspector renders
    * them and the frame component receives the live values as `state`.
    */

@@ -7,6 +7,9 @@ import ColorTokensFrame from './frames/ColorTokensFrame.vue'
 import FeedbackFrame from './frames/FeedbackFrame.vue'
 import FormControlsFrame from './frames/FormControlsFrame.vue'
 import NavigationFrame from './frames/NavigationFrame.vue'
+import ScreenActiveWorkoutFrame from './frames/ScreenActiveWorkoutFrame.vue'
+import ScreenHistoryEmptyFrame from './frames/ScreenHistoryEmptyFrame.vue'
+import ScreenHomeFrame from './frames/ScreenHomeFrame.vue'
 import SpacingFrame from './frames/SpacingFrame.vue'
 import TypographyFrame from './frames/TypographyFrame.vue'
 
@@ -155,6 +158,43 @@ export const designSections: ReadonlyArray<DesignSection> = [
         component: BlockKindsFrame,
         tokens: ['--block-strength', '--block-amrap', '--block-emom'],
         source: '@/blocks',
+      },
+    ],
+  },
+  {
+    id: 'screens',
+    name: 'Screens',
+    frames: [
+      {
+        id: 'screen-home',
+        name: 'Home',
+        description:
+          'Device width, real components. A card looks fine on its own and crowded once there are twelve of them in a 390px column — that is the judgement a screen artboard exists to support.',
+        width: 390,
+        component: ScreenHomeFrame,
+        bleed: true,
+        tokens: ['space-y-section', 'text-page-title', 'h-touch'],
+      },
+      {
+        id: 'screen-active-workout',
+        name: 'Logging a set',
+        description:
+          'The screen the app exists for. Everything is thumb-sized and the set grid uses tabular figures so numbers stop jumping as they change. If a design makes this screen slower, it is the wrong design.',
+        width: 390,
+        component: ScreenActiveWorkoutFrame,
+        bleed: true,
+        tokens: ['--success', '--block-strength', 'tabular-nums'],
+      },
+      {
+        id: 'screen-history-empty',
+        name: 'Empty history',
+        description:
+          'Empty states are judged by how much screen they have to carry, not by how the component looks in isolation — and they always offer the next action.',
+        width: 390,
+        component: ScreenHistoryEmptyFrame,
+        bleed: true,
+        tokens: ['.filter-pill', '--muted-foreground'],
+        source: '@/components/ui/empty',
       },
     ],
   },
