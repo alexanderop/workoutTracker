@@ -1,3 +1,13 @@
 {
-  "ignores": ["CHANGELOG.md", ".claude/**"]
+  // `playwright-report/`, `test-results/` and `.features-gen/` are gitignored
+  // e2e artifacts containing generated Markdown (Playwright's error-context
+  // reports). Without these entries `pnpm lint` fails for anyone who has run
+  // `pnpm test:e2e` locally — on files nobody wrote and nobody can fix.
+  "ignores": [
+    "CHANGELOG.md",
+    ".claude/**",
+    "playwright-report/**",
+    "test-results/**",
+    ".features-gen/**"
+  ]
 }
