@@ -63,10 +63,14 @@ If a clean independent split is not possible, STOP — see Stop and Ask.
 
 ### 3. Write the plan and get approval
 
-Write a numbered unit list: for each unit, its files, the exact change, and its
-verification recipe. State the shared verification every worker runs (the
-project's test command from `CLAUDE.md`) and the per-unit e2e recipe. Present
-this plan to the user and **wait for approval before spawning any worker.**
+Write a numbered unit list: for each unit, its files, the exact change, its
+**scoped** test command (the specs covering that unit's files — see Test Scope
+in `CLAUDE.md`), and its verification recipe. State the shared verification
+every worker runs — the fast gate, plus each unit's own scoped command, never
+the full tier: N workers each running the ~5-minute browser suite is N × 5
+minutes to re-prove code they did not touch, and CI runs the full tier on every
+resulting PR. Present this plan to the user and **wait for approval before
+spawning any worker.**
 
 ### 4. Spawn one worker per unit, in parallel
 
@@ -85,12 +89,15 @@ Each must include:
 - The unit's exact files, the change to make, and files to read first.
 - Code conventions to follow, with a concrete file to mimic.
 - The local loop to run, in order: implement the smallest correct change, then
-  run the project test command and fix failures, then the unit's e2e recipe.
+  run the unit's scoped test command — written out in full, not "the project
+  test command" — and fix failures, then the unit's e2e recipe. CI runs the full
+  suite on the unit's PR.
 - Hard boundaries: edit only this unit's files, no neighboring refactors, no new
   dependencies, no renames outside the brief.
 - The finish, in order: if the unit's diff is substantial — multi-line logic,
   a new file, an extraction, or a non-trivial rewrite — run `simplify` on it
-  and re-run the test command so the PR carries cleaned-up, still-passing code;
+  and re-run the scoped test command so the PR carries cleaned-up, still-passing
+  code;
   skip simplify when the change is a trivial one-liner (a version bump, a string
   or constant edit, a rename) where there is nothing to clean up. Then commit,
   push the branch, open a PR with `gh pr create`, and report back the single line
