@@ -66,6 +66,11 @@ Ran against `pnpm dev`, seeded from an empty database:
   confirm. Deliberate (the barcode answers everything the form asked, and the
   grams stepper covers the rest), but it is a behaviour change for anyone used
   to reviewing the scanned values before saving.
-- `useNutritionDay.calorieProgress` still clamps at 100, so the home
-  dashboard's calorie ring cannot show overflow. Recorded as a non-blocking
-  note in the plan; a ring needs a different visual than a tick.
+- ~~`useNutritionDay.calorieProgress` still clamps at 100~~ — closed as a
+  follow-up in this branch. The clamp stays (the ring and `Progress` are 0–100
+  by contract), but the dashboard now turns the ring and headline number
+  destructive past the goal and draws a goal marker on the bar. Verified in the
+  browser at 2,500 / 2,200: ring red, centre reads "300 kcal over", marker at
+  88% of the bar. Covered by `nutrition-dashboard.spec.ts` "shows how far past
+  the calorie goal the day went". Visual baselines were **not** regenerated —
+  the under-goal render is unchanged and the `visual` tier passes as-is.

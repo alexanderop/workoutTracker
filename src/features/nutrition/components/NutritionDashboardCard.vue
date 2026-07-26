@@ -27,8 +27,16 @@ const FoodLogSheet = defineAsyncComponent(() => import('./FoodLogSheet.vue'))
 const { t } = useI18n()
 const router = useRouter()
 const localDate = getLocalDateKey()
-const { goal, foods, diaryEntries, totals, remainingCalories, calorieProgress } =
-  useNutritionDay(localDate)
+const {
+  goal,
+  foods,
+  diaryEntries,
+  totals,
+  remainingCalories,
+  caloriesOver,
+  calorieProgress,
+  calorieSegments,
+} = useNutritionDay(localDate)
 const { caloriesTrend } = useNutritionTrend(7)
 
 const goalsOpen = ref(false)
@@ -38,6 +46,8 @@ const foodLogOpen = ref(false)
 const foodLogRequested = ref(false)
 const selectedMeal = ref<MealKind>('breakfast')
 const meals: ReadonlyArray<MealKind> = ['breakfast', 'lunch', 'dinner', 'snack']
+
+const isOverGoal = computed(() => caloriesOver.value > 0)
 
 const entriesByMeal = computed<Record<MealKind, ReadonlyArray<DbNutritionDiaryEntry>>>(() => ({
   breakfast: diaryEntries.value.filter((entry) => entry.meal === 'breakfast'),
@@ -116,13 +126,20 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
           <div
             class="absolute inset-2 rounded-full"
             :style="{
-              background: `conic-gradient(var(--primary) ${calorieProgress * 3.6}deg, color-mix(in oklch, var(--primary) 18%, transparent) 0deg)`,
+              background: `conic-gradient(${isOverGoal ? 'var(--destructive)' : 'var(--primary)'} ${calorieProgress * 3.6}deg, color-mix(in oklch, var(--primary) 18%, transparent) 0deg)`,
             }"
           />
           <div class="absolute inset-[15px] rounded-full bg-card" />
           <div class="relative text-center">
-            <p class="text-xl font-bold sm:text-2xl">{{ rounded(remainingCalories) }}</p>
-            <p class="text-[11px] text-muted-foreground">{{ t('nutrition.caloriesLeft') }}</p>
+            <p
+              class="text-xl font-bold sm:text-2xl"
+              :class="isOverGoal ? 'text-destructive' : undefined"
+            >
+              {{ rounded(isOverGoal ? caloriesOver : remainingCalories) }}
+            </p>
+            <p class="text-[11px] text-muted-foreground">
+              {{ isOverGoal ? t('nutrition.caloriesOver') : t('nutrition.caloriesLeft') }}
+            </p>
           </div>
         </div>
         <div class="min-w-0">
@@ -133,7 +150,22 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
               >/ {{ goal.calories.toLocaleString() }}</span
             >
           </p>
-          <Progress :model-value="calorieProgress" class="mt-3" />
+          <!--
+            The bar itself still fills to 100 and stops. What says "how far
+            over" is the marker: once past the goal the bar rescales to the
+            day's total, so the tick lands where the goal was. Under the goal
+            the tick would sit at the far end, where it says nothing, so it is
+            not drawn.
+          -->
+          <div class="relative mt-3">
+            <Progress :model-value="calorieProgress" />
+            <span
+              v-if="isOverGoal"
+              class="absolute inset-y-0 w-0.5 rounded-full bg-foreground"
+              :style="{ left: `${calorieSegments.tickPct}%` }"
+              aria-hidden="true"
+            />
+          </div>
           <p v-if="goal.updatedAt === 0" class="mt-2 text-xs text-muted-foreground">
             {{ t('nutrition.noGoalHint') }}
           </p>

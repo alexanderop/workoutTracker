@@ -3,6 +3,7 @@ export default {
   dailyEnergy: 'Daily energy',
   consumed: 'Consumed',
   caloriesLeft: 'kcal left',
+  caloriesOver: 'kcal over',
   caloriesUnit: 'kcal',
   gramsUnit: 'g',
   editGoals: 'Edit goals',
