@@ -76,6 +76,15 @@ failure modes here:
   components rendering a control for the same entity can collide on a DOM id
   and leave one control nameless with the a11y tier green. Assert the control is
   reachable **by accessible name** while both are mounted.
+- A CI browser failure reading `locator.click: Timeout 620ms exceeded` with a
+  call log that says **"locator resolved to `<button …>`"** is shard load, not a
+  broken selector. Nothing configures 620ms: Vitest browser derives an action's
+  timeout from what remains of the test budget (`testTimeout` is 15s in CI), so
+  a sub-second figure means the test had already spent ~14s before reaching that
+  click. The element was found; there was simply no budget left to act on it.
+  Check the spec in isolation before touching anything — on 2026-07-26 a shard-1
+  `numeric-keypad.spec.ts` failure (1 failed / 356 passed, setup alone 140s)
+  passed 3/3 locally and referenced nothing in the PR's diff.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`
