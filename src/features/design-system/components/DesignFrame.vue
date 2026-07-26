@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import type { DesignFrameSpec } from '../types'
+import { computed } from 'vue'
+import type { DesignControlState, DesignFrameSpec } from '../types'
 
-const { spec, selected } = defineProps<{
+const { spec, selected, state } = defineProps<{
   spec: DesignFrameSpec
   selected: boolean
+  state?: DesignControlState
 }>()
+
+// Only playground frames declare a `state` prop; binding it unconditionally
+// would land on every other frame's root element as a stray attribute.
+const stateBinding = computed(() => (spec.controls ? { state } : {}))
 
 const emit = defineEmits<{
   select: [id: string]
@@ -43,7 +49,7 @@ const emit = defineEmits<{
       :class="selected ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent' : ''"
       @pointerdown="emit('select', spec.id)"
     >
-      <component :is="spec.component" />
+      <component :is="spec.component" v-bind="stateBinding" />
     </div>
   </div>
 </template>

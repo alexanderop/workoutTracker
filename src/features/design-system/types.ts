@@ -2,6 +2,36 @@ import type { Component } from 'vue'
 
 type DesignSectionId = 'foundations' | 'components' | 'patterns' | 'screens'
 
+export type DesignControlValue = string | boolean
+
+/**
+ * A knob the inspector renders for the selected frame — the studio's answer to
+ * Figma's variant properties, except it drives the real component's props.
+ */
+export type DesignControl =
+  | {
+      readonly kind: 'select'
+      readonly key: string
+      readonly label: string
+      readonly options: ReadonlyArray<string>
+      readonly initial: string
+    }
+  | {
+      readonly kind: 'switch'
+      readonly key: string
+      readonly label: string
+      readonly initial: boolean
+    }
+  | {
+      readonly kind: 'text'
+      readonly key: string
+      readonly label: string
+      readonly initial: string
+    }
+
+/** Current value of every control on one frame, keyed by control key. */
+export type DesignControlState = Record<string, DesignControlValue>
+
 /**
  * One artboard on the studio canvas.
  *
@@ -19,6 +49,11 @@ export type DesignFrameSpec = {
   readonly tokens?: ReadonlyArray<string>
   /** Import path a developer would reach for to reuse this. */
   readonly source?: string
+  /**
+   * Declaring controls makes the frame a playground: the inspector renders
+   * them and the frame component receives the live values as `state`.
+   */
+  readonly controls?: ReadonlyArray<DesignControl>
 }
 
 export type DesignSection = {

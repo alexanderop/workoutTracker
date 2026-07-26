@@ -64,6 +64,26 @@ export const designSections: ReadonlyArray<DesignSection> = [
         component: ButtonsFrame,
         tokens: ['bg-primary', 'bg-destructive', 'h-touch'],
         source: '@/components/ui/button',
+        controls: [
+          {
+            kind: 'select',
+            key: 'variant',
+            label: 'Variant',
+            options: ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'],
+            initial: 'default',
+          },
+          {
+            kind: 'select',
+            key: 'size',
+            label: 'Size',
+            options: ['sm', 'default', 'lg'],
+            initial: 'default',
+          },
+          { kind: 'text', key: 'label', label: 'Label', initial: 'Log set' },
+          { kind: 'switch', key: 'icon', label: 'Leading icon', initial: true },
+          { kind: 'switch', key: 'fullWidth', label: 'Full width', initial: false },
+          { kind: 'switch', key: 'disabled', label: 'Disabled', initial: false },
+        ],
       },
       {
         id: 'badges',
@@ -74,6 +94,17 @@ export const designSections: ReadonlyArray<DesignSection> = [
         component: BadgesFrame,
         tokens: ['.filter-pill', '.status-success-bg', '.status-warning-bg'],
         source: '@/components/ui/badge',
+        controls: [
+          {
+            kind: 'select',
+            key: 'variant',
+            label: 'Variant',
+            options: ['default', 'secondary', 'outline', 'destructive'],
+            initial: 'default',
+          },
+          { kind: 'text', key: 'label', label: 'Label', initial: '12 day streak' },
+          { kind: 'switch', key: 'icon', label: 'Leading icon', initial: true },
+        ],
       },
       {
         id: 'cards',

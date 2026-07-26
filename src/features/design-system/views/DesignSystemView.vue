@@ -11,10 +11,13 @@ import { computed, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import DesignFrame from '../components/DesignFrame.vue'
+import DesignInspectorPanel from '../components/DesignInspectorPanel.vue'
 import DesignLayersPanel from '../components/DesignLayersPanel.vue'
 import DesignToolbar from '../components/DesignToolbar.vue'
 import { useCanvasViewport } from '../composables/useCanvasViewport'
+import { initialControlState } from '../lib/controls'
 import { designSections } from '../catalog'
+import type { DesignControlState, DesignControlValue } from '../types'
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -37,6 +40,35 @@ const {
 } = useCanvasViewport(canvasEl, worldEl)
 
 const selectedId = ref<string | null>(null)
+
+const allFrames = designSections.flatMap((section) => section.frames)
+
+/**
+ * Live control values, one bag per playground frame. Kept here rather than
+ * inside each frame so the inspector and the artboard read and write the same
+ * object — that is what makes the panel feel wired to the canvas.
+ */
+const controlStates = ref<Record<string, DesignControlState>>(
+  Object.fromEntries(
+    allFrames
+      .filter((frame) => frame.controls)
+      .map((frame) => [frame.id, initialControlState(frame.controls)]),
+  ),
+)
+
+const selectedFrame = computed(
+  () => allFrames.find((frame) => frame.id === selectedId.value) ?? null,
+)
+
+const selectedSectionName = computed(
+  () =>
+    designSections.find((section) => section.frames.some((frame) => frame.id === selectedId.value))
+      ?.name ?? null,
+)
+
+const selectedState = computed(() =>
+  selectedId.value === null ? null : (controlStates.value[selectedId.value] ?? null),
+)
 
 const worldStyle = computed(() => ({
   transform: `translate3d(${viewport.value.x}px, ${viewport.value.y}px, 0) scale(${viewport.value.zoom})`,
@@ -72,6 +104,11 @@ function frameOrigin(id: string): { x: number; y: number } | null {
 
 function selectFrame(id: string): void {
   selectedId.value = id
+}
+
+function applyControl(key: string, value: DesignControlValue): void {
+  const state = selectedState.value
+  if (state) state[key] = value
 }
 
 /** Layers-panel picks also navigate; clicking the artboard itself only selects. */
@@ -132,6 +169,7 @@ function jumpToFrame(id: string): void {
                 :key="frame.id"
                 :spec="frame"
                 :selected="frame.id === selectedId"
+                :state="controlStates[frame.id]"
                 @select="selectFrame"
               />
             </div>
@@ -144,6 +182,15 @@ function jumpToFrame(id: string): void {
           Scroll to pan · ⌘/Ctrl + scroll to zoom · drag empty space to move
         </p>
       </div>
+
+      <DesignInspectorPanel
+        class="hidden lg:flex"
+        :frame="selectedFrame"
+        :section-name="selectedSectionName"
+        :state="selectedState"
+        :frame-count="allFrames.length"
+        @update-control="applyControl"
+      />
     </div>
   </div>
 </template>
