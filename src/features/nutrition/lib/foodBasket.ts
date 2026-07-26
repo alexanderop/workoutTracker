@@ -21,9 +21,12 @@ type StagedSource =
   | { readonly source: 'new' }
   | { readonly source: 'quick' }
 
-export type StagedItem = StagedSource & {
-  /** Identity within the basket only; never persisted. */
-  readonly stageId: string
+/**
+ * An item as a caller describes it, before the basket gives it an identity.
+ * Split out because `Omit<StagedItem, 'stageId'>` would collapse the union
+ * above into one shape with an optional `foodId`.
+ */
+export type UnstagedItem = StagedSource & {
   readonly name: string
   readonly brand: string | null
   readonly nutrientsPer100Grams: DbFoodNutrients
@@ -33,6 +36,11 @@ export type StagedItem = StagedSource & {
    * sums the same way.
    */
   readonly grams: number
+}
+
+export type StagedItem = UnstagedItem & {
+  /** Identity within the basket only; never persisted. */
+  readonly stageId: string
 }
 
 export type CommitBatch = {
