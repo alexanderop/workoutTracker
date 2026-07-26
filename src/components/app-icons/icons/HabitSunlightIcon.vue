@@ -5,7 +5,7 @@ import AppIconSvg from '../AppIconSvg.vue'
 <template>
   <AppIconSvg>
     <g fill="var(--app-icon-body, currentColor)">
-      <rect x="22" y="4" width="4" height="7" rx="2" transform="rotate(0 24 21)" />
+      <rect x="22" y="4" width="4" height="7" rx="2" />
       <rect x="22" y="4" width="4" height="7" rx="2" transform="rotate(45 24 21)" />
       <rect x="22" y="4" width="4" height="7" rx="2" transform="rotate(90 24 21)" />
       <rect x="22" y="4" width="4" height="7" rx="2" transform="rotate(135 24 21)" />
