@@ -285,7 +285,7 @@ describe('Habit Tracking', () => {
       const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
-      await habits.expandDetails('Walk')
+      await habits.openDetails('Walk')
       await expect.poll(() => habits.countCompleteHistoryDays('Walk')).toBe(1)
 
       // Retro-toggle yesterday (not yet complete) on.
@@ -371,6 +371,100 @@ describe('Habit Tracking', () => {
       await second.navigateTo({ name: RouteNames.Habits })
 
       await expect.poll(() => second.habits.getActiveViewMode()).toBe('rows')
+    })
+
+    it('reaches edit from the compact rows layout without switching back to cards', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // openEditForm goes through the detail sheet, which is the whole point:
+      // the same route to management from whichever layout is on screen.
+      await habits.openEditForm('Read')
+      await habits.fillName('Read more')
+      await habits.clickSave()
+
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+      await expect.element(habits.getTodayRow('Read more')).toBeVisible()
+    })
+
+    it('reaches archive from the compact rows layout', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      await habits.requestArchive('Read')
+      await habits.confirmArchive()
+
+      await expect.poll(async () => (await getHabitsRepository().getAllHabits()).length).toBe(0)
+    })
+
+    it('retro-toggles a past day from the compact rows layout', async ({ createTestApp }) => {
+      const habit = createDbHabit({ name: 'Walk', orderIndex: 0 })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      await habits.openDetails('Walk')
+      const yesterday = getStartOfDay(daysAgo(1))
+      await habits.toggleHistoryDay('Walk', yesterday)
+
+      await expect
+        .poll(async () =>
+          (await repo.getEntriesForHabit(habit.id)).some((e) => e.date === yesterday),
+        )
+        .toBe(true)
+    })
+
+    it('logs an exact quantity from the compact rows layout', async ({ createTestApp }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // The stepper has no room in a compact row; it lives in the sheet.
+      await habits.openDetails('Water')
+      await habits.clickIncrementQuantity('Water', 2)
+
+      await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(2)
+    })
+
+    it('lets a quantity habit be ticked straight to target from a compact row', async ({
+      createTestApp,
+    }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // Before this change a compact row rendered a spacer for quantity
+      // habits, so they could not be logged from the row at all.
+      await habits.toggleBinaryHabit('Water')
+
+      await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
     })
 
     it('ignores a repeat tap on the active mode rather than emptying the page', async ({

@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+/**
+ * `cards` mode: the roomiest layout, and the default for a user who has never
+ * picked one.
+ *
+ * Everything above the fold is unchanged from when this was the only layout --
+ * icon, name, metadata, check control or quantity stepper, 16-week heatmap.
+ * What it no longer owns is the detail view: stats, history retro-toggle, Edit
+ * and Archive moved to `HabitDetailSheet`, which every mode opens, so there is
+ * one detail surface rather than one per layout.
+ */
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Archive, Check, ChevronDown, ChevronUp, Flame, Pencil } from '@lucide/vue'
+import { Check, ChevronRight, Flame } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
@@ -16,8 +26,6 @@ import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
 import { useHabitStats } from '../composables/useHabitStats'
 import HabitCompactGrid from './HabitCompactGrid.vue'
-import HabitHistoryGrid from './HabitHistoryGrid.vue'
-import HabitStatsSummary from './HabitStatsSummary.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 
@@ -26,16 +34,13 @@ const { item } = defineProps<{ item: HabitTodayItem }>()
 const emit = defineEmits<{
   toggle: [habit: DbHabit]
   'log-quantity': [habit: DbHabit, value: number]
-  edit: [habit: DbHabit]
-  archive: [habit: DbHabit]
-  'toggle-day': [habit: DbHabit, date: number]
+  'open-details': [habit: DbHabit]
 }>()
 
 const { t } = useI18n()
-const expanded = ref(false)
 
-// Read off the single `item` prop; `value`/`complete` come pre-derived rather
-// than being recomputed from entries a second time.
+// Read off the single `item` prop; `value`/`complete` arrive pre-derived
+// rather than being recomputed from entries a second time.
 const habit = computed(() => item.habit)
 const { stats } = useHabitStats(
   () => item.habit,
@@ -57,15 +62,6 @@ const quantityPercent = computed(() => {
   if (kind.type !== 'quantity' || kind.target <= 0) return 0
   return Math.min(100, Math.round((value.value / kind.target) * 100))
 })
-
-function handleEdit(): void {
-  expanded.value = false
-  emit('edit', habit.value)
-}
-
-function handleArchive(): void {
-  emit('archive', habit.value)
-}
 </script>
 
 <template>
@@ -80,14 +76,12 @@ function handleArchive(): void {
         <button
           type="button"
           class="min-w-0 flex-1 text-left"
-          :aria-label="expanded ? t('habits.hideDetails') : t('habits.showDetails')"
-          :aria-expanded="expanded"
-          @click="expanded = !expanded"
+          :aria-label="t('habits.showDetailsFor', { name: habit.name })"
+          @click="emit('open-details', habit)"
         >
           <span class="flex items-center gap-1 font-semibold">
             <span class="truncate">{{ habit.name }}</span>
-            <ChevronUp v-if="expanded" class="size-4 shrink-0 text-muted-foreground" />
-            <ChevronDown v-else class="size-4 shrink-0 text-muted-foreground" />
+            <ChevronRight class="size-4 shrink-0 text-muted-foreground" />
           </span>
           <span v-if="habit.description" class="block truncate text-sm text-muted-foreground">
             {{ habit.description }}
@@ -99,7 +93,6 @@ function handleArchive(): void {
         </button>
 
         <Button
-          v-if="habit.kind.type === 'binary'"
           size="icon"
           variant="outline"
           class="size-touch-target shrink-0 rounded-full border-2"
@@ -147,33 +140,6 @@ function handleArchive(): void {
       <Progress v-if="habit.kind.type === 'quantity'" :model-value="quantityPercent" />
 
       <HabitCompactGrid :habit="habit" :entries="item.entries" />
-    </div>
-
-    <div v-if="expanded && stats" class="space-y-4 border-t bg-muted/20 p-4">
-      <HabitStatsSummary :stats="stats" />
-      <HabitHistoryGrid
-        :grid="stats.grid"
-        :habit-name="habit.name"
-        @toggle-day="(date) => emit('toggle-day', habit, date)"
-      />
-      <div class="flex justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          :aria-label="t('habits.editLabel', { name: habit.name })"
-          @click="handleEdit"
-        >
-          <Pencil class="mr-1 size-4" />{{ t('habits.edit') }}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          :aria-label="t('habits.archiveLabel', { name: habit.name })"
-          @click="handleArchive"
-        >
-          <Archive class="mr-1 size-4" />{{ t('habits.archive') }}
-        </Button>
-      </div>
     </div>
   </article>
 </template>

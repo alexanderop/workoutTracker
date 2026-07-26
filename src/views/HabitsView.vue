@@ -12,6 +12,7 @@ import HabitForm from '@/features/habits/components/HabitForm.vue'
 import HabitDashboardCard from '@/features/habits/components/HabitDashboardCard.vue'
 import HabitRowList from '@/features/habits/components/HabitRowList.vue'
 import HabitViewModeToggle from '@/features/habits/components/HabitViewModeToggle.vue'
+import HabitDetailSheet from '@/features/habits/components/HabitDetailSheet.vue'
 import HabitArchivedList from '@/features/habits/components/HabitArchivedList.vue'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
@@ -38,6 +39,22 @@ onMounted(() => {
   void load()
   void loadViewMode()
 })
+
+// Detail sheet -- the one surface every mode opens for stats, history,
+// exact-quantity entry, edit, and archive. Tracked by id rather than by a
+// snapshot of the item so the sheet re-renders as entries change underneath it
+// (e.g. retro-toggling a day while it is open).
+const detailSheetOpen = ref(false)
+const detailHabitId = ref<string | undefined>(undefined)
+
+const detailItem = computed(() =>
+  todayItems.value.find((candidate) => candidate.habit.id === detailHabitId.value),
+)
+
+function openDetails(habit: DbHabit): void {
+  detailHabitId.value = habit.id
+  detailSheetOpen.value = true
+}
 
 // Create/edit dialog -- `editingHabit` undefined means create mode.
 const formOpen = ref(false)
@@ -137,7 +154,7 @@ const archiveDialogDescription = computed(() =>
           v-if="mode === 'rows'"
           :items="todayItems"
           @toggle="toggleToday"
-          @open-details="openEditForm"
+          @open-details="openDetails"
         />
 
         <div v-else class="space-y-3">
@@ -147,9 +164,7 @@ const archiveDialogDescription = computed(() =>
             :item="item"
             @toggle="toggleToday"
             @log-quantity="logQuantityToday"
-            @edit="openEditForm"
-            @archive="requestArchive"
-            @toggle-day="(habit, date) => toggleDay(habit, date)"
+            @open-details="openDetails"
           />
         </div>
       </section>
@@ -160,6 +175,15 @@ const archiveDialogDescription = computed(() =>
         @unarchive="(habit) => unarchive(habit.id)"
       />
     </template>
+
+    <HabitDetailSheet
+      v-model:open="detailSheetOpen"
+      :item="detailItem"
+      @log-quantity="logQuantityToday"
+      @toggle-day="(habit, date) => toggleDay(habit, date)"
+      @edit="openEditForm"
+      @archive="requestArchive"
+    />
 
     <HabitForm v-model:open="formOpen" :habit="editingHabit" @save="handleFormSave" />
 

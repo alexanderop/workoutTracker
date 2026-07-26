@@ -73,11 +73,9 @@ export class HabitsPO {
   }
 
   async openEditForm(name: string): Promise<void> {
-    await this.expandDetails(name)
-    const row = this.getManageRow(name)
+    await this.openDetails(name)
     const editButtonName = new RegExp(`^Edit ${escapeRegExp(name)}$`, 'i')
-    const editButton = row.getByRole('button', { name: editButtonName })
-    await userEvent.click(editButton)
+    await userEvent.click(this.getDetailSheet().getByRole('button', { name: editButtonName }))
     await this.common.waitForDialog()
   }
 
@@ -249,22 +247,36 @@ export class HabitsPO {
   }
 
   // ============================================
-  // Manage section (edit / archive / expand)
+  // Detail sheet (stats / history / edit / archive)
+  //
+  // One surface for all three layouts: tapping a habit's body opens it in
+  // every mode, which is what stops `grid` and `rows` from being dead ends.
   // ============================================
 
   getManageRow(name: string) {
     return this.getTodayRow(name)
   }
 
-  async expandDetails(name: string): Promise<void> {
-    await userEvent.click(this.getManageRow(name).getByRole('button', { name: /show details/i }))
+  getDetailSheet() {
+    return page.getByTestId('habit-detail-sheet')
+  }
+
+  /** Open a habit's detail sheet from whichever layout is on screen. */
+  async openDetails(name: string): Promise<void> {
+    const bodyName = new RegExp(`^Show details for ${escapeRegExp(name)}$`, 'i')
+    await userEvent.click(this.getManageRow(name).getByRole('button', { name: bodyName }))
+    await expect.element(this.getDetailSheet()).toBeVisible()
+  }
+
+  async closeDetails(): Promise<void> {
+    await userEvent.keyboard('{Escape}')
+    await expect.element(this.getDetailSheet()).not.toBeInTheDocument()
   }
 
   async requestArchive(name: string): Promise<void> {
-    await this.expandDetails(name)
+    await this.openDetails(name)
     const buttonName = new RegExp(`^Archive ${escapeRegExp(name)}$`, 'i')
-    const archiveButton = this.getManageRow(name).getByRole('button', { name: buttonName })
-    await userEvent.click(archiveButton)
+    await userEvent.click(this.getDetailSheet().getByRole('button', { name: buttonName }))
     await this.common.waitForDialog()
   }
 
@@ -290,19 +302,20 @@ export class HabitsPO {
   }
 
   // ============================================
-  // History grid
+  // History grid (lives inside the detail sheet)
   // ============================================
 
-  getHistoryDayCell(name: string, date: number) {
-    return this.getManageRow(name).getByTestId(`habit-day-${date}`)
+  getHistoryDayCell(_name: string, date: number) {
+    return this.getDetailSheet().getByTestId(`habit-day-${date}`)
   }
 
+  /** Opens the habit's sheet if it is not already the one on screen. */
   async toggleHistoryDay(name: string, date: number): Promise<void> {
     await userEvent.click(this.getHistoryDayCell(name, date))
   }
 
-  async countCompleteHistoryDays(name: string): Promise<number> {
-    return (await this.getManageRow(name).getByRole('button', { pressed: true }).all()).length
+  async countCompleteHistoryDays(_name: string): Promise<number> {
+    return (await this.getDetailSheet().getByRole('button', { pressed: true }).all()).length
   }
 }
 
