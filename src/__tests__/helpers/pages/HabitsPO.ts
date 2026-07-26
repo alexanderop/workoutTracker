@@ -58,8 +58,17 @@ export class HabitsPO {
     return undefined
   }
 
+  getTileGrid() {
+    return page.getByTestId('habit-tile-grid')
+  }
+
   getRowDateHeader() {
     return page.getByTestId('habit-row-date-header')
+  }
+
+  /** Check controls on screen, whichever layout is rendering them. */
+  async countVisibleCheckControls(): Promise<number> {
+    return (await page.getByRole('button', { name: /^Mark .+ (in)?complete$/i }).all()).length
   }
 
   /** How many day columns the compact-rows header renders. */

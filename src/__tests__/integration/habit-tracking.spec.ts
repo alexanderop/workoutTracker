@@ -486,6 +486,62 @@ describe('Habit Tracking', () => {
       await expect.element(header.getByText(expectedWeekday, { exact: true })).toBeVisible()
     })
 
+    it('lays habits out as tiles in grid mode and ticks one off in place', async ({
+      createTestApp,
+    }) => {
+      const repo = getHabitsRepository()
+      await repo.addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+      await repo.addHabit(createDbHabit({ name: 'Walk', orderIndex: 1 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      await expect.element(habits.getTileGrid()).toBeVisible()
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
+      await expect.element(habits.getTodayRow('Walk')).toBeVisible()
+
+      // Check-off is one tap in the densest mode too -- no sheet required.
+      await habits.toggleBinaryHabit('Read')
+      await habits.expectComplete('Read')
+      await habits.expectIncomplete('Walk')
+    })
+
+    it('reaches the detail sheet from a tile, so grid mode is not a dead end', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      await habits.openEditForm('Read')
+      await habits.fillName('Read more')
+      await habits.clickSave()
+
+      await expect.poll(() => habits.getActiveViewMode()).toBe('grid')
+      await expect.element(habits.getTodayRow('Read more')).toBeVisible()
+    })
+
+    it('keeps every habit reachable in grid mode at seven habits', async ({ createTestApp }) => {
+      const repo = getHabitsRepository()
+      const names = ['Walk', 'Read', 'Workout', 'Deep work', 'Steps', 'Calories', 'Protein']
+      for (const [index, name] of names.entries()) {
+        await repo.addHabit(createDbHabit({ name, orderIndex: index }))
+      }
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      // Every tile rendered, and every check control is its own tap target.
+      for (const name of names) {
+        await expect.element(habits.getTodayRow(name)).toBeVisible()
+      }
+      expect(await habits.countVisibleCheckControls()).toBe(names.length)
+    })
+
     it('ignores a repeat tap on the active mode rather than emptying the page', async ({
       createTestApp,
     }) => {

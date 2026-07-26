@@ -11,6 +11,7 @@ import { useHabitViewMode } from '@/features/habits/composables/useHabitViewMode
 import HabitForm from '@/features/habits/components/HabitForm.vue'
 import HabitDashboardCard from '@/features/habits/components/HabitDashboardCard.vue'
 import HabitRowList from '@/features/habits/components/HabitRowList.vue'
+import HabitTileGrid from '@/features/habits/components/HabitTileGrid.vue'
 import HabitViewModeToggle from '@/features/habits/components/HabitViewModeToggle.vue'
 import HabitDetailSheet from '@/features/habits/components/HabitDetailSheet.vue'
 import HabitArchivedList from '@/features/habits/components/HabitArchivedList.vue'
@@ -150,8 +151,15 @@ const archiveDialogDescription = computed(() =>
 
     <template v-else>
       <section v-if="hasHabits" class="space-y-3">
+        <HabitTileGrid
+          v-if="mode === 'grid'"
+          :items="todayItems"
+          @toggle="toggleToday"
+          @open-details="openDetails"
+        />
+
         <HabitRowList
-          v-if="mode === 'rows'"
+          v-else-if="mode === 'rows'"
           :items="todayItems"
           @toggle="toggleToday"
           @open-details="openDetails"
