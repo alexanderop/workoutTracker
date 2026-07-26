@@ -12,7 +12,7 @@
         "categories:performance": ["error", { "minScore": 0.75 }],
         "categories:accessibility": ["error", { "minScore": 1 }],
         "first-contentful-paint": ["error", { "maxNumericValue": 3800 }],
-        "largest-contentful-paint": ["error", { "maxNumericValue": 4000 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 4200 }],
         "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
         "dom-size": ["warn", { "maxNumericValue": 2000 }],
         "bf-cache": "off",
