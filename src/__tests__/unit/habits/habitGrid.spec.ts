@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildCompactHabitGrid, buildHabitGrid } from '@/features/habits/lib/habitGrid'
+import {
+  buildCompactHabitGrid,
+  buildHabitGrid,
+  buildHabitMonthGrid,
+} from '@/features/habits/lib/habitGrid'
 import type { HabitGridDay, HabitGridWeek } from '@/features/habits/lib/habitGrid'
 import { startOfDay } from '@/features/habits/lib/habitStats'
 import { createDbHabit, createDbHabitEntryForDate } from '@/__tests__/factories'
@@ -167,5 +171,79 @@ describe('buildHabitGrid DST transitions (Europe/Berlin, host timezone)', () => 
       const todayCell = dayCell(grid, oct27)
       expect(todayCell?.hasEntry).toBe(true)
     })
+  })
+})
+
+/**
+ * The tile layout renders these weeks as *rows* under a "Jul 2026" caption, so
+ * what matters here is that the weeks really are the captioned month's -- a
+ * trailing-window grid drawn the same way starts mid-way through the previous
+ * month and quietly makes the caption wrong.
+ */
+describe('buildHabitMonthGrid', () => {
+  it('covers the calendar month of the reference day in whole Monday weeks', () => {
+    const habit = createDbHabit()
+    // Jul 2026: Wed 1st to Fri 31st, so the grid pads back to Mon Jun 29 and
+    // forward to Sun Aug 2 -- five weeks.
+    const grid = buildHabitMonthGrid(habit, [], TODAY)
+
+    expect(grid).toHaveLength(5)
+    for (const week of grid) {
+      expect(week).toHaveLength(7)
+      expect(new Date(week[0]!.date).getDay()).toBe(1)
+    }
+
+    const days = grid.flat()
+    expect(new Date(days[0]!.date).getDate()).toBe(29)
+    expect(new Date(days.at(-1)!.date).getDate()).toBe(2)
+  })
+
+  it('flags only the captioned month as in-month, so padding days can be dimmed', () => {
+    const habit = createDbHabit()
+    const grid = buildHabitMonthGrid(habit, [], TODAY)
+
+    const inMonth = grid.flat().filter((day) => day.inMonth)
+    const padding = grid.flat().filter((day) => !day.inMonth)
+
+    expect(inMonth).toHaveLength(31)
+    for (const day of inMonth) expect(new Date(day.date).getMonth()).toBe(6)
+    for (const day of padding) expect(new Date(day.date).getMonth()).not.toBe(6)
+  })
+
+  it('places every day in the column matching its weekday', () => {
+    const habit = createDbHabit()
+    const grid = buildHabitMonthGrid(habit, [], TODAY)
+
+    for (const week of grid) {
+      for (const [columnIndex, day] of week.entries()) {
+        // Monday-first columns: JS `getDay()` is Sunday-first, so Sunday (0)
+        // belongs in the last column.
+        const expectedDay = columnIndex === 6 ? 0 : columnIndex + 1
+        expect(new Date(day.date).getDay()).toBe(expectedDay)
+      }
+    }
+  })
+
+  it('carries the same completion states as the trailing-window grid', () => {
+    const habit = createDbHabit({ kind: { type: 'quantity', target: 8, unit: 'glasses' } })
+    const partial = createDbHabitEntryForDate(habit.id, new Date(TODAY), { value: 3 })
+
+    const grid = buildHabitMonthGrid(habit, [partial], TODAY)
+
+    expect(dayCell(grid, startOfDay(TODAY))).toMatchObject({
+      value: 3,
+      state: 'partial',
+      isToday: true,
+    })
+    expect(grid.flat().some((day) => day.state === 'future')).toBe(true)
+  })
+
+  it('pads a month that starts on a Monday without a leading blank week', () => {
+    const habit = createDbHabit()
+    // Jun 2026 starts on Mon Jun 1 and ends Tue Jun 30.
+    const grid = buildHabitMonthGrid(habit, [], new Date('2026-06-10T12:00:00').getTime())
+
+    expect(new Date(grid[0]![0]!.date).getDate()).toBe(1)
+    expect(grid.flat().filter((day) => day.inMonth)).toHaveLength(30)
   })
 })
