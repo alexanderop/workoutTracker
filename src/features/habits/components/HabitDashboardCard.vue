@@ -12,7 +12,8 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from '@/components/ui/number-field'
-import type { DbHabit, DbHabitEntry } from '@/db/schema'
+import type { DbHabit } from '@/db/schema'
+import type { HabitTodayItem } from '../composables/useHabits'
 import { useHabitStats } from '../composables/useHabitStats'
 import HabitCompactGrid from './HabitCompactGrid.vue'
 import HabitHistoryGrid from './HabitHistoryGrid.vue'
@@ -20,10 +21,7 @@ import HabitStatsSummary from './HabitStatsSummary.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 
-const { habit, entries } = defineProps<{
-  habit: DbHabit
-  entries: ReadonlyArray<DbHabitEntry>
-}>()
+const { item } = defineProps<{ item: HabitTodayItem }>()
 
 const emit = defineEmits<{
   toggle: [habit: DbHabit]
@@ -35,22 +33,19 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const expanded = ref(false)
+
+// Read off the single `item` prop; `value`/`complete` come pre-derived rather
+// than being recomputed from entries a second time.
+const habit = computed(() => item.habit)
 const { stats } = useHabitStats(
-  () => habit,
-  () => entries,
+  () => item.habit,
+  () => item.entries,
 )
 
-const todayEntry = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return entries.find((entry) => entry.date === today.getTime())
-})
-const value = computed(() => todayEntry.value?.value ?? 0)
-const complete = computed(() =>
-  habit.kind.type === 'binary' ? value.value >= 1 : value.value >= habit.kind.target,
-)
+const value = computed(() => item.value)
+const complete = computed(() => item.isComplete)
 const metadata = computed(() => {
-  if (habit.schedule.type === 'weekly' && stats.value) {
+  if (habit.value.schedule.type === 'weekly' && stats.value) {
     return t('habits.weekProgressLabel', stats.value.weeklyProgress)
   }
   return stats.value && stats.value.currentStreak >= 2
@@ -58,17 +53,18 @@ const metadata = computed(() => {
     : t('habits.schedule.daily')
 })
 const quantityPercent = computed(() => {
-  if (habit.kind.type !== 'quantity' || habit.kind.target <= 0) return 0
-  return Math.min(100, Math.round((value.value / habit.kind.target) * 100))
+  const kind = habit.value.kind
+  if (kind.type !== 'quantity' || kind.target <= 0) return 0
+  return Math.min(100, Math.round((value.value / kind.target) * 100))
 })
 
 function handleEdit(): void {
   expanded.value = false
-  emit('edit', habit)
+  emit('edit', habit.value)
 }
 
 function handleArchive(): void {
-  emit('archive', habit)
+  emit('archive', habit.value)
 }
 </script>
 
@@ -150,7 +146,7 @@ function handleArchive(): void {
       </div>
       <Progress v-if="habit.kind.type === 'quantity'" :model-value="quantityPercent" />
 
-      <HabitCompactGrid :habit="habit" :entries="entries" />
+      <HabitCompactGrid :habit="habit" :entries="item.entries" />
     </div>
 
     <div v-if="expanded && stats" class="space-y-4 border-t bg-muted/20 p-4">

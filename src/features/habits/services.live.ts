@@ -19,6 +19,14 @@
  */
 import { Repositories } from '@/db/services'
 import { sync } from '@/lib/di/layer'
-import { HabitRepo } from './services'
+import { HabitRepo, HabitViewModeStore } from './services'
 
 export const HabitRepoLive = sync(HabitRepo, (ctx) => ctx.unsafeGet(Repositories).habits)
+
+export const HabitViewModeStoreLive = sync(HabitViewModeStore, (ctx) => {
+  const settings = ctx.unsafeGet(Repositories).settings
+  return {
+    get: () => settings.get('habitViewMode'),
+    set: (mode) => settings.set({ key: 'habitViewMode', value: mode }),
+  }
+})

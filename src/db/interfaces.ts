@@ -13,6 +13,7 @@ import type {
   DbWorkoutTemplate as DatabaseWorkoutTemplate,
   DbHabit,
   DbHabitEntry,
+  HabitViewMode,
   DbFood,
   DbNutritionDiaryEntry,
   DbNutritionGoal,
@@ -41,6 +42,7 @@ export type SettingDefaults = {
   timerSoundEnabled: boolean
   timerSoundVolume: number
   language: 'en' | 'de' | undefined
+  habitViewMode: HabitViewMode
 }
 
 export type SettingsRepository = {
@@ -80,6 +82,10 @@ export type SettingsRepository = {
    * Retrieve language setting with fallback to default (undefined).
    */
   get(key: 'language'): Promise<'en' | 'de' | undefined>
+  /**
+   * Retrieve the habits page layout with fallback to default (cards).
+   */
+  get(key: 'habitViewMode'): Promise<HabitViewMode>
   /**
    * Save or update a user setting in the database.
    */

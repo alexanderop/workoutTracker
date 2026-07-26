@@ -13,7 +13,7 @@ const HOME_CARD_LIMIT = 4
 
 const { t } = useI18n()
 const router = useRouter()
-const { todayItems, hasHabits, isLoading, load, toggleToday, entriesFor } = useHabits()
+const { todayItems, hasHabits, isLoading, load, toggleToday } = useHabits()
 
 onMounted(load)
 
@@ -41,12 +41,14 @@ function navigateToHabits(): void {
     </div>
 
     <div v-if="!isLoading" class="space-y-2">
+      <!-- The home card has no detail surface of its own: tapping a row body
+           takes the user to the full page, where the sheet lives. -->
       <HabitHomeRow
         v-for="item in visibleItems"
         :key="item.habit.id"
         :item="item"
-        :entries="entriesFor(item.habit.id)"
         @toggle="toggleToday"
+        @open-details="navigateToHabits"
       />
     </div>
   </section>

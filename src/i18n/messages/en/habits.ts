@@ -21,6 +21,13 @@ export default {
   detailsFor: 'Details for {name}',
   showDetails: 'Show details',
   hideDetails: 'Hide details',
+  showDetailsFor: 'Show details for {name}',
+  viewMode: {
+    label: 'Habit layout',
+    grid: 'Grid view',
+    rows: 'Compact list view',
+    cards: 'Card view',
+  },
   edit: 'Edit',
   editLabel: 'Edit {name}',
   archive: 'Archive',

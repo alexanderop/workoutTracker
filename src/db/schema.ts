@@ -181,6 +181,7 @@ export type DbUserSetting =
   | { key: 'timerSoundEnabled'; value: boolean }
   | { key: 'timerSoundVolume'; value: number }
   | { key: 'language'; value: 'en' | 'de' }
+  | { key: 'habitViewMode'; value: HabitViewMode }
 
 export type UserSettingKey = DbUserSetting['key']
 
@@ -403,6 +404,17 @@ export type HabitAccent = (typeof HABIT_ACCENTS)[number]
 
 export const DEFAULT_HABIT_DESCRIPTION = null
 export const DEFAULT_HABIT_ACCENT: HabitAccent = 'purple'
+
+/**
+ * Which layout `/habits` renders the same habits in. A layout choice, never a
+ * filter -- every habit appears in every mode.
+ */
+export const HABIT_VIEW_MODES = ['grid', 'rows', 'cards'] as const
+
+export type HabitViewMode = (typeof HABIT_VIEW_MODES)[number]
+
+/** `cards` is today's layout, so a user who never picks sees no change. */
+export const DEFAULT_HABIT_VIEW_MODE: HabitViewMode = 'cards'
 
 /**
  * A habit definition (e.g. "Drink water", "Stretch").

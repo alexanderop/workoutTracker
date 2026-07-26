@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { HABIT_VIEW_MODES } from '@/db/schema'
 
 /**
  * Theme setting schema.
@@ -81,6 +82,16 @@ const languageSettingSchema = z
   .strict()
 
 /**
+ * Habits page layout setting schema.
+ */
+const habitViewModeSettingSchema = z
+  .object({
+    key: z.literal('habitViewMode'),
+    value: z.enum(HABIT_VIEW_MODES),
+  })
+  .strict()
+
+/**
  * DbUserSetting discriminated union schema.
  * Matches src/db/schema.ts DbUserSetting type.
  */
@@ -93,4 +104,5 @@ export const dbUserSettingSchema = z.discriminatedUnion('key', [
   screenWakeLockSettingSchema,
   timerSoundEnabledSettingSchema,
   languageSettingSchema,
+  habitViewModeSettingSchema,
 ])

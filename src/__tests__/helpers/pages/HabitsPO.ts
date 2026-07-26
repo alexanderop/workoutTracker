@@ -32,6 +32,32 @@ export class HabitsPO {
     return page.getByTestId('habits-home-card')
   }
 
+  // ============================================
+  // View mode (grid / rows / cards)
+  // ============================================
+
+  getViewModeToggle() {
+    return page.getByTestId('habit-view-mode-toggle')
+  }
+
+  /** Switch the habits page layout via the title-row toggle. */
+  async switchViewMode(mode: 'grid' | 'rows' | 'cards'): Promise<void> {
+    await userEvent.click(page.getByTestId(`habit-view-mode-${mode}`))
+  }
+
+  /**
+   * Which mode the toggle currently reports. Reads `aria-pressed`/`data-state`
+   * off the items rather than any app state, so it proves what a user sees.
+   */
+  async getActiveViewMode(): Promise<'grid' | 'rows' | 'cards' | undefined> {
+    const modes = ['grid', 'rows', 'cards'] as const
+    for (const mode of modes) {
+      const element = page.getByTestId(`habit-view-mode-${mode}`).element()
+      if (element.dataset.state === 'on') return mode
+    }
+    return undefined
+  }
+
   async navigateToHabitsFromHomeCard(): Promise<void> {
     await userEvent.click(page.getByRole('button', { name: /view all habits/i }))
     await this.common.waitForRoute(/^\/habits$/)

@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { DbHabit } from '@/db/schema'
 import { useHabits } from '@/features/habits/composables/useHabits'
+import { useHabitViewMode } from '@/features/habits/composables/useHabitViewMode'
 import HabitForm from '@/features/habits/components/HabitForm.vue'
 import HabitDashboardCard from '@/features/habits/components/HabitDashboardCard.vue'
+import HabitRowList from '@/features/habits/components/HabitRowList.vue'
+import HabitViewModeToggle from '@/features/habits/components/HabitViewModeToggle.vue'
 import HabitArchivedList from '@/features/habits/components/HabitArchivedList.vue'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
@@ -18,7 +21,6 @@ const {
   archivedHabits,
   hasHabits,
   todayItems,
-  entriesFor,
   toggleToday,
   logQuantityToday,
   toggleDay,
@@ -29,7 +31,13 @@ const {
   load,
 } = useHabits()
 
-onMounted(load)
+// The layout choice is persisted, so it loads alongside the habits themselves.
+const { mode, load: loadViewMode, setMode } = useHabitViewMode()
+
+onMounted(() => {
+  void load()
+  void loadViewMode()
+})
 
 // Create/edit dialog -- `editingHabit` undefined means create mode.
 const formOpen = ref(false)
@@ -96,12 +104,19 @@ const archiveDialogDescription = computed(() =>
 
 <template>
   <div class="container mx-auto max-w-lg space-y-section p-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-2">
       <h1 class="text-page-title font-bold">{{ t('habits.title') }}</h1>
-      <Button size="sm" @click="openCreateForm">
-        <Plus class="mr-1 h-4 w-4" />
-        {{ t('habits.addHabit') }}
-      </Button>
+      <div class="flex items-center gap-2">
+        <HabitViewModeToggle
+          v-if="hasHabits"
+          :model-value="mode"
+          @update:model-value="(next) => setMode(next)"
+        />
+        <Button size="sm" @click="openCreateForm">
+          <Plus class="mr-1 h-4 w-4" />
+          {{ t('habits.addHabit') }}
+        </Button>
+      </div>
     </div>
 
     <template v-if="!hasHabits && archivedHabits.length === 0">
@@ -118,12 +133,18 @@ const archiveDialogDescription = computed(() =>
 
     <template v-else>
       <section v-if="hasHabits" class="space-y-3">
-        <div class="space-y-3">
+        <HabitRowList
+          v-if="mode === 'rows'"
+          :items="todayItems"
+          @toggle="toggleToday"
+          @open-details="openEditForm"
+        />
+
+        <div v-else class="space-y-3">
           <HabitDashboardCard
             v-for="item in todayItems"
             :key="item.habit.id"
-            :habit="item.habit"
-            :entries="entriesFor(item.habit.id)"
+            :item="item"
             @toggle="toggleToday"
             @log-quantity="logQuantityToday"
             @edit="openEditForm"

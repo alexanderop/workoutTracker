@@ -320,6 +320,77 @@ describe('Habit Tracking', () => {
     })
   })
 
+  describe('view modes', () => {
+    it('defaults to cards, so a user who never picks sees the layout they had', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await expect.element(habits.getViewModeToggle()).toBeVisible()
+      await expect.poll(() => habits.getActiveViewMode()).toBe('cards')
+      // The card layout is the one carrying the expandable details.
+      await expect
+        .element(habits.getTodayRow('Read').getByRole('button', { name: /show details/i }))
+        .toBeVisible()
+    })
+
+    it('switches to the compact rows layout and keeps check-off working there', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+
+      // Same habit, different layout -- and still tickable without switching back.
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
+      await habits.expectIncomplete('Read')
+      await habits.toggleBinaryHabit('Read')
+      await habits.expectComplete('Read')
+    })
+
+    it('persists the chosen mode across a full app remount (cold start)', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const first = await createTestApp()
+      await first.navigateTo({ name: RouteNames.Habits })
+      await first.habits.switchViewMode('rows')
+      await expect.poll(() => first.habits.getActiveViewMode()).toBe('rows')
+
+      // A second app instance is what reopening the PWA actually does: fresh
+      // component state, same IndexedDB.
+      const second = await createTestApp()
+      await second.navigateTo({ name: RouteNames.Habits })
+
+      await expect.poll(() => second.habits.getActiveViewMode()).toBe('rows')
+    })
+
+    it('ignores a repeat tap on the active mode rather than emptying the page', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+
+      // ToggleGroup emits '' on deselect; there is no "no layout" state.
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
+    })
+  })
+
   describe('form validation', () => {
     it('rejects an empty name', async ({ createTestApp }) => {
       const { navigateTo, habits } = await createTestApp()

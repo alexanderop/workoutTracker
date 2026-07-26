@@ -21,6 +21,13 @@ export default {
   detailsFor: 'Details für {name}',
   showDetails: 'Details anzeigen',
   hideDetails: 'Details ausblenden',
+  showDetailsFor: 'Details für {name} anzeigen',
+  viewMode: {
+    label: 'Ansicht der Gewohnheiten',
+    grid: 'Kachelansicht',
+    rows: 'Kompakte Listenansicht',
+    cards: 'Kartenansicht',
+  },
   edit: 'Bearbeiten',
   editLabel: '{name} bearbeiten',
   archive: 'Archivieren',

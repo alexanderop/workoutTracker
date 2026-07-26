@@ -1,6 +1,7 @@
 import { liveQuery } from 'dexie'
 import type { LiveQuery, SettingDefaults, SettingsRepository } from '@/db/interfaces'
-import type { DbUserSetting, UserSettingKey } from '@/db/schema'
+import type { DbUserSetting, HabitViewMode, UserSettingKey } from '@/db/schema'
+import { DEFAULT_HABIT_VIEW_MODE } from '@/db/schema'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
@@ -16,6 +17,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
   timerSoundEnabled: true,
   timerSoundVolume: 0.8,
   language: undefined,
+  habitViewMode: DEFAULT_HABIT_VIEW_MODE,
 }
 
 /**
@@ -31,6 +33,7 @@ function createGetFunction(database: WorkoutTrackerDatabase) {
   async function get(key: 'timerSoundEnabled'): Promise<boolean>
   async function get(key: 'timerSoundVolume'): Promise<number>
   async function get(key: 'language'): Promise<'en' | 'de' | undefined>
+  async function get(key: 'habitViewMode'): Promise<HabitViewMode>
   async function get(key: UserSettingKey) {
     const setting = await database.settings.get(key)
     if (!setting) {
@@ -82,6 +85,10 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
     }
     case 'language': {
       result.language = setting.value
+      break
+    }
+    case 'habitViewMode': {
+      result.habitViewMode = setting.value
       break
     }
   }

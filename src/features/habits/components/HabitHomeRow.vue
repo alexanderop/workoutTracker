@@ -2,18 +2,18 @@
 import { Check } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
-import type { DbHabit, DbHabitEntry } from '@/db/schema'
+import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
 import HabitCompactGrid from './HabitCompactGrid.vue'
 import { AppIcon } from '@/components/app-icons'
 import { resolveHabitIcon } from '../lib/habitIcons'
 
-const { item, entries } = defineProps<{
-  item: HabitTodayItem
-  entries: ReadonlyArray<DbHabitEntry>
-}>()
+const { item } = defineProps<{ item: HabitTodayItem }>()
 
-const emit = defineEmits<{ toggle: [habit: DbHabit] }>()
+const emit = defineEmits<{
+  toggle: [habit: DbHabit]
+  'open-details': [habit: DbHabit]
+}>()
 const { t } = useI18n()
 </script>
 
@@ -24,9 +24,17 @@ const { t } = useI18n()
     class="grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-3 rounded-lg border bg-card p-3"
   >
     <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
-    <div class="min-w-0">
-      <p class="truncate text-sm font-medium">{{ item.habit.name }}</p>
-      <p v-if="item.habit.kind.type === 'quantity'" class="truncate text-xs text-muted-foreground">
+    <button
+      type="button"
+      class="min-w-0 text-left"
+      :aria-label="t('habits.showDetailsFor', { name: item.habit.name })"
+      @click="emit('open-details', item.habit)"
+    >
+      <span class="block truncate text-sm font-medium">{{ item.habit.name }}</span>
+      <span
+        v-if="item.habit.kind.type === 'quantity'"
+        class="block truncate text-xs text-muted-foreground"
+      >
         {{
           t('habits.quantityLabel', {
             value: item.value,
@@ -34,11 +42,10 @@ const { t } = useI18n()
             unit: item.habit.kind.unit,
           })
         }}
-      </p>
-    </div>
-    <HabitCompactGrid :habit="item.habit" :entries="entries" :days="7" />
+      </span>
+    </button>
+    <HabitCompactGrid :habit="item.habit" :entries="item.entries" :days="7" />
     <Button
-      v-if="item.habit.kind.type === 'binary'"
       size="icon"
       variant="outline"
       class="rounded-full border-2"
@@ -53,6 +60,5 @@ const { t } = useI18n()
     >
       <Check v-if="item.isComplete" class="size-4" />
     </Button>
-    <span v-else class="size-9" />
   </div>
 </template>
