@@ -43,6 +43,30 @@ describe('Exercise Muscle Group Requirement', () => {
     await expect.element(page.getByText(/select a muscle group/i)).toBeVisible()
   })
 
+  /**
+   * The selector marks the chosen option with colour and a check icon, both of
+   * which are invisible to a screen reader (the icon is decorative, so it is
+   * `aria-hidden`). `aria-pressed` is the only thing carrying selection state,
+   * so it is asserted rather than assumed.
+   */
+  it('exposes which selector option is selected to assistive tech', async ({ createTestApp }) => {
+    const { exercises } = await createTestApp()
+
+    await exercises.navigateTo()
+    await exercises.clickCreateCustomExercise()
+    await exercises.fillName('Curl With Muscle')
+    await exercises.selectMuscle('Arms')
+
+    await exercises.openMuscleSelector()
+
+    await expect
+      .element(exercises.getSelectorOption('Arms'))
+      .toHaveAttribute('aria-pressed', 'true')
+    await expect
+      .element(exercises.getSelectorOption('Chest'))
+      .toHaveAttribute('aria-pressed', 'false')
+  })
+
   it('should enable save once a muscle group is selected', async ({ createTestApp }) => {
     const { exercises } = await createTestApp()
 

@@ -52,5 +52,9 @@ export function resolveHabitIcon(
   icon: string | null,
   fallback: HabitIconKey = HABIT_ICON_FALLBACK,
 ): HabitIconKey {
-  return isHabitIconKey(icon) ? icon : fallback
+  // `fallback` is checked at runtime as well as by the compiler: the return
+  // feeds `AppIcon`, which throws on a key with no artwork, so the contract has
+  // to hold even if a caller slips past the type.
+  const safeFallback = isHabitIconKey(fallback) ? fallback : HABIT_ICON_FALLBACK
+  return isHabitIconKey(icon) ? icon : safeFallback
 }
