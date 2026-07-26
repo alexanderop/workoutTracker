@@ -211,7 +211,11 @@ brief must include:
   interface, mocks only at system boundaries (external APIs, database, time,
   randomness) and never internal collaborators, and does not assert on call
   counts/order or verify through a side channel.
-- The verification command to run before reporting back.
+- The verification command to run before reporting back — the scoped command
+  from the plan's `## Test Scope` that covers this slice's paths, written out in
+  full. Never brief a worker with `pnpm test`: the full browser tier is ~5
+  minutes, and N workers running it is N × 5 minutes to re-prove code they did
+  not touch. CI runs the full tier on the PR.
 - Hard boundaries: no neighboring refactors, no new dependencies, no renames,
   and no work outside the brief unless explicitly allowed.
 
@@ -293,10 +297,20 @@ the rest unchecked. They are the resume token: a session picking this work up
 later starts at the **first unchecked box** rather than re-deriving where things
 stopped. Never tick a box you did not run.
 
-When all slices land, run the full relevant test suite and read the complete
-diff end-to-end for integration issues that slice reviews could not see. The
-static gate — typecheck, unit tests, file existence — does not exercise runtime
-behavior or cross-slice interactions. Before accepting:
+When all slices land, run the plan's `## Test Scope` in full — every entry under
+its **Commands**, not just the one for the last slice (the **Notes** bullets are
+context, not commands) — and read the complete diff end-to-end
+for integration issues that slice reviews could not see. Per-slice runs are
+narrower than the scope; running the whole scope once here is what catches a
+slice that broke a sibling's specs. Do not escalate to the full tier: it is ~5
+minutes and CI shards it four ways on the PR alongside a11y, visual, e2e, and
+coverage. If the diff outgrew the plan's scope — a slice ended up touching
+`src/db/`, a shared composable, or the app shell — widen the scope to the new
+consumers and record that in the plan's `## Test Scope`, rather than reaching
+for `pnpm test`.
+
+The static gate — typecheck, unit tests, file existence — does not exercise
+runtime behavior or cross-slice interactions. Before accepting:
 
 - **Frontend slices:** boot the app and do a minimal live-render smoke check —
   the affected page actually renders and key components are not blank. A green
@@ -379,6 +393,8 @@ context and keep moving.
 | "The tree is already dirty, I'll just start editing here" | Uncommitted work on `main` is how four hours of DI work ended up unshippable. Branch first; if the dirt is unrelated, stop and ask. |
 | "I'll dispatch the workers one at a time so I can react to each" | One worker per message is a sequential queue wearing a wave's clothes. Independent slices go in one message as separate tool calls; react after the wave lands. |
 | "The pre-commit gate is slow, I'll pass `--no-verify`" | The gate is ~15s and exists because a dead export reached Required CI. Bypassing it moves the failure to CI, where it costs minutes and a context switch. |
+| "I'll have each worker run `pnpm test` so nothing slips" | Five workers × 5 minutes to re-prove code nobody touched. Brief each with the scoped command from `## Test Scope`; CI runs the tier on the PR. |
+| "The plan's Test Scope looks narrow, I'll run the whole tier to be safe" | Widen the scope to the consumers the diff can actually break and record that in the plan. "Run everything" is not a scope, it's the absence of one — and CI already does it. |
 
 ## Output
 

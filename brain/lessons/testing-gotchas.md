@@ -22,6 +22,14 @@ failure modes here:
 - Run one default-project file with
   `pnpm exec vitest run --project=default <file>`. Do not insert a literal `--`
   before the path; it can cause Vitest to run the entire default project.
+- Scoped runs filter on **test** paths, and specs are not colocated with source:
+  they live under `src/__tests__/`, mirroring the source tree. A filter on
+  `src/features/x` or `src/db` therefore matches zero files. That exits 1 with
+  "No test files found" rather than passing empty — so a mis-scoped run is loud,
+  but only if you read the file count. Several filters OR together in one run:
+  `pnpm exec vitest run --project=default src/__tests__/features/weight src/__tests__/integration`.
+  The `unit` project is narrower still (`src/__tests__/unit/**/*.spec.ts` only),
+  and the `default` project excludes `unit/`, `a11y/`, and `visual/`.
 - Failed browser tests retain Playwright traces under `.vitest/traces/` and
   related screenshots under `.vitest-attachments/`. Failed CI shards upload
   both in `vitest-debug-shard-<number>` artifacts. Open a downloaded trace with

@@ -24,19 +24,55 @@ Vue 3.5+, TypeScript (strict), Vite, Dexie, Vitest (browser mode), shadcn-vue, T
 
 ```bash
 pnpm dev          # Dev server
-pnpm test         # Vitest browser tier — the full suite, minutes
-CI=1 pnpm test    # Same, with bail:0 — use when the tier is red or you need a count
+pnpm exec vitest run --project=default src/__tests__/<area>  # Scoped run — the local default
 pnpm test:unit    # Node `unit` tier — pure logic, no DOM/IndexedDB, ~1.5s
 pnpm lint         # oxlint + eslint + markdownlint
 pnpm type-check   # vue-tsc --build
 pnpm build        # Production build
 pnpm knip         # Unused exports
+pnpm test         # Whole browser tier — ~5 min; CI's job, not yours
+CI=1 pnpm test    # Same, with bail:0 — only when you must count a red tier
 ```
 
 `pnpm test` runs with `bail: 1` locally, so a **failing** run stops at the first
 failure and its "N passed" total is partial. Never report that count as tier
 coverage — re-run with `CI=1` to get every failure and the real total. A green
 run is complete either way.
+
+### Test scope: run your feature's tests, let CI run the rest
+
+The whole browser tier is ~173 files / ~5 minutes on one machine. CI shards it
+four ways and runs the a11y, visual, e2e, coverage, and Lighthouse tiers
+alongside it (`.github/workflows/ci.yml`), so a local full run buys a slower
+copy of a signal the PR gets anyway. **Locally, run only the tests related to
+the feature.**
+
+Every plan carries a `## Test Scope` section naming the exact commands that
+cover the change — `grill` and `plan` write it, `implement`, `qa`, and `ship-it`
+run it. Scope a run with path filters, which are matched against **test** paths:
+
+```bash
+pnpm exec vitest run --project=default src/__tests__/features/workout
+pnpm exec vitest run --project=default src/__tests__/browser/timer-audio.spec.ts
+pnpm exec vitest run --project=unit src/__tests__/unit/habits
+# several filters OR together — one run over a feature and its integration specs
+pnpm exec vitest run --project=default src/__tests__/features/weight src/__tests__/integration
+```
+
+Specs are **not colocated with source**: they live under `src/__tests__/`,
+mirroring the source tree (`src/__tests__/features/`, `db/`, `components/`,
+`composables/`, `integration/`, `browser/`, `stores/`, …). Filtering on a source
+path like `src/features/workout` matches zero files. That fails loudly — Vitest
+exits 1 with "No test files found" — so a wrong scope is visible, never a silent
+pass. Do not insert a literal `--` before the path; it can make Vitest run the
+entire project.
+
+The scope is "what this change can break", not "the file I edited", and the
+filter is on test paths, not source paths — so map from one to the other. A
+`src/db/` converter change scopes to `src/__tests__/db` **and** the feature
+specs that read through it; a shared composable scopes to its consumers'. Run
+the full tier locally only when CI is red in a way you cannot reproduce from the
+scope, and say why.
 
 ## Git workflow
 
@@ -48,8 +84,9 @@ Commits: Conventional Commits with scope — `feat(workout): add rest timer`.
 
 The husky `pre-commit` hook is the gate and runs on every commit (~15s):
 `lint-staged`, `type-check`, `test:unit`, `knip`. Do not use `--no-verify`. The
-browser/integration/e2e tiers are too slow for per-commit — run `pnpm lint:check
-&& pnpm test` once before pushing, which is what `ship-it` does.
+browser/integration/e2e tiers are too slow for per-commit — run `pnpm lint:check`
+plus the plan's `## Test Scope` commands once before pushing, which is what
+`ship-it` does. The full suite runs on the PR in CI.
 
 Working plans in `brain/plans/` are gitignored local scratch. Durable outcomes
 belong in `brain/decisions/` and `brain/lessons/`.
