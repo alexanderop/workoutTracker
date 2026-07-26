@@ -95,6 +95,7 @@ function handleArchive(): void {
           <HabitQuantityControl
             :habit="item.habit"
             :value="item.value"
+            scope="sheet"
             @update:value="handleLogQuantity"
           />
         </div>

@@ -542,6 +542,27 @@ describe('Habit Tracking', () => {
       expect(await habits.countVisibleCheckControls()).toBe(names.length)
     })
 
+    it('names the sheet stepper even while the card renders its own', async ({ createTestApp }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      await getHabitsRepository().addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      // `cards` mode already shows a stepper inline, so opening the sheet puts
+      // a second one on screen. If both claim the same input id, the sheet's
+      // label resolves to the card's input and the sheet stepper goes unnamed.
+      await habits.openDetails('Water')
+
+      await expect
+        .element(habits.getDetailSheet().getByRole('spinbutton', { name: /^Log Water$/ }))
+        .toBeVisible()
+    })
+
     it('ignores a repeat tap on the active mode rather than emptying the page', async ({
       createTestApp,
     }) => {

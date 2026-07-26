@@ -12,6 +12,12 @@
  * needs no `v-if` of its own. Two root nodes rather than a wrapper `div`: the
  * row and the bar are laid out by the caller's own vertical rhythm
  * (`space-y-*`), exactly as they were when this markup was inline.
+ *
+ * `scope` is not decoration. Two instances can be on screen for the *same*
+ * habit -- `cards` mode renders one inline and the detail sheet renders another
+ * over it -- and a shared input id makes both `<Label for>` resolve to the first
+ * input, leaving the second stepper with no accessible name at all. Each caller
+ * passes a distinct scope so the ids stay unique.
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -26,11 +32,18 @@ import {
 } from '@/components/ui/number-field'
 import type { DbHabit } from '@/db/schema'
 
-const { habit, value } = defineProps<{ habit: DbHabit; value: number }>()
+const { habit, value, scope } = defineProps<{
+  habit: DbHabit
+  value: number
+  /** Disambiguates the input id when two instances share a habit. */
+  scope: 'card' | 'sheet'
+}>()
 
 const emit = defineEmits<{ 'update:value': [value: number] }>()
 
 const { t } = useI18n()
+
+const inputId = computed(() => `habit-quantity-${scope}-${habit.id}`)
 
 const kind = computed(() => (habit.kind.type === 'quantity' ? habit.kind : undefined))
 
@@ -50,11 +63,11 @@ const percent = computed(() => {
          `aria-label` prop: NumberFieldRoot only threads `id` down to the actual
          <input>, so an aria-label on the root lands on its wrapper div and the
          spinbutton itself stays unnamed. -->
-    <Label :for="`habit-quantity-${habit.id}`" class="sr-only">
+    <Label :for="inputId" class="sr-only">
       {{ t('habits.quantityInputLabel', { name: habit.name }) }}
     </Label>
     <NumberField
-      :id="`habit-quantity-${habit.id}`"
+      :id="inputId"
       class="ml-auto w-32"
       :model-value="value"
       :min="0"

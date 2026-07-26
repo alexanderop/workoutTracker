@@ -99,6 +99,7 @@ const metadata = computed(() => {
       <HabitQuantityControl
         :habit="habit"
         :value="item.value"
+        scope="card"
         @update:value="(next) => emit('log-quantity', habit, next)"
       />
 
