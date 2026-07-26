@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Set } from '@/types/workout'
 import { useWeightDisplay } from '@/composables/useWeightDisplay'
-import { Plus } from '@lucide/vue'
+import { Check, Plus } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import WorkoutSetTableRow from '@/features/workout/components/WorkoutSetTableRow.vue'
@@ -46,7 +46,7 @@ function handleUpdateSet(setId: number, field: 'kg' | 'reps' | 'rir', value: num
           t('workouts.table.headers.tenRm')
         }}</TableHead>
         <TableHead class="text-center w-[50px] h-8 p-1">
-          <span aria-hidden="true">✓</span>
+          <Check class="mx-auto size-4" aria-hidden="true" />
           <span class="sr-only">{{ t('common.aria.statusColumn') }}</span>
         </TableHead>
         <TableHead class="w-[40px] h-8 p-1">

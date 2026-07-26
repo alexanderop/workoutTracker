@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends string">
+import { Check } from '@lucide/vue'
+import { AppIcon } from '@/components/app-icons'
 import MobileDialogContent from '@/components/MobileDialogContent.vue'
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { SelectorOption } from '@/features/exercises/data/exerciseOptions'
@@ -46,7 +48,7 @@ function handleSelect(value: T) {
           ]"
           @click="handleSelect(option.value)"
         >
-          <span class="text-3xl">{{ option.icon }}</span>
+          <AppIcon v-if="option.icon" :name="option.icon" class="size-9" />
           <span class="text-xs font-medium text-center">{{ option.label }}</span>
         </button>
       </div>
@@ -66,9 +68,9 @@ function handleSelect(value: T) {
             ]"
             @click="handleSelect(option.value)"
           >
-            <span class="text-2xl">{{ option.icon }}</span>
+            <AppIcon v-if="option.icon" :name="option.icon" class="size-7 shrink-0" />
             <span class="font-medium">{{ option.label }}</span>
-            <span v-if="selected === option.value" class="ml-auto text-primary">✓</span>
+            <Check v-if="selected === option.value" class="ml-auto size-5 text-primary" />
           </button>
         </template>
 
@@ -92,9 +94,7 @@ function handleSelect(value: T) {
                   {{ option.description }}
                 </p>
               </div>
-              <span v-if="selected === option.value" class="text-primary text-lg flex-shrink-0"
-                >✓</span
-              >
+              <Check v-if="selected === option.value" class="size-5 shrink-0 text-primary" />
             </div>
           </button>
         </template>

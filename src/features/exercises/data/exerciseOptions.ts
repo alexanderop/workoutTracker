@@ -1,32 +1,34 @@
+import type { AppIconKey } from '@/components/app-icons'
 import type { Equipment, ExerciseType, Metrics, Muscle } from '@/types/exercises'
 
 export type SelectorOption<T extends string = string> = {
   value: T
   label: string
-  icon?: string
+  /** Bundled artwork key -- see src/components/app-icons. */
+  icon?: AppIconKey
   description?: string
 }
 
 export const EQUIPMENT_OPTIONS: ReadonlyArray<SelectorOption<Equipment>> = [
-  { value: 'barbell', label: 'Barbell', icon: '🏋️' },
-  { value: 'dumbbell', label: 'Dumbbell', icon: '🪑' },
-  { value: 'machine', label: 'Machine', icon: '⚙️' },
-  { value: 'cable', label: 'Cable', icon: '📏' },
-  { value: 'bodyweight', label: 'Bodyweight', icon: '💪' },
-  { value: 'kettlebell', label: 'Kettlebell', icon: '🔔' },
-  { value: 'band', label: 'Band', icon: '〰️' },
-  { value: 'ez-bar', label: 'EZ Bar', icon: '↪️' },
-  { value: 'hex-bar', label: 'Hex Bar', icon: '⬡' },
-  { value: 'egym', label: 'EGYM', icon: '🤖' },
+  { value: 'barbell', label: 'Barbell', icon: 'equipment-barbell' },
+  { value: 'dumbbell', label: 'Dumbbell', icon: 'equipment-dumbbell' },
+  { value: 'machine', label: 'Machine', icon: 'equipment-machine' },
+  { value: 'cable', label: 'Cable', icon: 'equipment-cable' },
+  { value: 'bodyweight', label: 'Bodyweight', icon: 'equipment-bodyweight' },
+  { value: 'kettlebell', label: 'Kettlebell', icon: 'equipment-kettlebell' },
+  { value: 'band', label: 'Band', icon: 'equipment-band' },
+  { value: 'ez-bar', label: 'EZ Bar', icon: 'equipment-ez-bar' },
+  { value: 'hex-bar', label: 'Hex Bar', icon: 'equipment-hex-bar' },
+  { value: 'egym', label: 'EGYM', icon: 'equipment-egym' },
 ]
 
 export const MUSCLE_OPTIONS: ReadonlyArray<SelectorOption<Muscle>> = [
-  { value: 'chest', label: 'Chest', icon: '🏔️' },
-  { value: 'back', label: 'Back', icon: '🔙' },
-  { value: 'legs', label: 'Legs', icon: '🦵' },
-  { value: 'shoulders', label: 'Shoulders', icon: '💪' },
-  { value: 'arms', label: 'Arms', icon: '💯' },
-  { value: 'core', label: 'Core', icon: '⭐' },
+  { value: 'chest', label: 'Chest', icon: 'muscle-chest' },
+  { value: 'back', label: 'Back', icon: 'muscle-back' },
+  { value: 'legs', label: 'Legs', icon: 'muscle-legs' },
+  { value: 'shoulders', label: 'Shoulders', icon: 'muscle-shoulders' },
+  { value: 'arms', label: 'Arms', icon: 'muscle-arms' },
+  { value: 'core', label: 'Core', icon: 'muscle-core' },
 ]
 
 export const TYPE_OPTIONS: ReadonlyArray<SelectorOption<ExerciseType>> = [
