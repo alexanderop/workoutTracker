@@ -193,18 +193,35 @@ buys a slower copy of a signal the PR gets anyway.
 
 ### Test Structure
 
+Specs are **not** colocated with source. They all live under `src/__tests__/`,
+mirroring the source tree — so the test for `src/features/workout/foo.ts` lives
+at `src/__tests__/features/workout/foo.spec.ts`, and a scoped run filters on the
+test path, never the source path.
+
 ```
 src/
-├── __tests__/
-│   ├── helpers/       # Test utilities (createTestApp, withSetup)
-│   └── factories/     # Test data builders
-├── features/
-│   └── workout/
-│       └── __tests__/ # Feature-specific tests
-└── composables/
-    └── timers/
-        └── __tests__/ # Composable tests
+└── __tests__/
+    ├── features/      # Feature specs, mirroring src/features/
+    │   └── workout/
+    ├── composables/   # Composable specs, mirroring src/composables/
+    │   └── timers/
+    ├── components/    # Shared component specs
+    ├── db/            # Repository and converter specs
+    ├── stores/        # Shared store specs
+    ├── integration/   # Cross-feature flows
+    ├── browser/       # Browser-only behavior (wake lock, timer audio)
+    ├── unit/          # `unit` project — pure Node, no DOM or IndexedDB
+    ├── a11y/          # `a11y` project
+    ├── visual/        # `visual` project
+    ├── architecture/  # `arch` project
+    ├── helpers/       # Test utilities (createTestApp, withSetup)
+    └── factories/     # Test data builders
 ```
+
+The `default` project covers `src/__tests__/**/*.spec.ts` but excludes `unit/`,
+`a11y/`, and `visual/` — those have their own projects (`pnpm test:unit`,
+`test:a11y`, `test:visual`), so scope a run with the project that owns the specs
+you want.
 
 ### Writing Tests
 
