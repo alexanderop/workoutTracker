@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Check } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,22 @@ const { item, tapTargets = 'compact' } = defineProps<{
 
 const comfortable = tapTargets === 'comfortable'
 const gridColumns = HABIT_ROW_GRID_COLUMNS[tapTargets]
+
+/**
+ * A quantity habit's tap writes the full target, so "mark complete" would
+ * misdescribe it to a screen reader. `aria-pressed` stays either way: the
+ * control is a genuine 0/target toggle for both kinds.
+ */
+const toggleLabel = computed(() => {
+  const { habit, isComplete } = item
+  if (habit.kind.type === 'quantity') {
+    const params = { name: habit.name, target: habit.kind.target, unit: habit.kind.unit }
+    return isComplete ? t('habits.clearTarget', params) : t('habits.logTarget', params)
+  }
+  return isComplete
+    ? t('habits.markIncomplete', { name: habit.name })
+    : t('habits.markComplete', { name: habit.name })
+})
 
 const emit = defineEmits<{
   toggle: [habit: DbHabit]
@@ -81,11 +98,7 @@ const { t } = useI18n()
         item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete',
       ]"
       :aria-pressed="item.isComplete"
-      :aria-label="
-        item.isComplete
-          ? t('habits.markIncomplete', { name: item.habit.name })
-          : t('habits.markComplete', { name: item.habit.name })
-      "
+      :aria-label="toggleLabel"
       @click="emit('toggle', item.habit)"
     >
       <Check v-if="item.isComplete" class="size-4" />

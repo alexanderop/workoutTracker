@@ -81,7 +81,9 @@ export class HabitsPO {
 
   /** Check controls on screen, whichever layout is rendering them. */
   async countVisibleCheckControls(): Promise<number> {
-    return (await page.getByRole('button', { name: /^Mark .+ (in)?complete$/i }).all()).length
+    return (
+      await page.getByRole('button', { name: /^(Mark .+ (in)?complete|Log .+:|Clear .+,)/i }).all()
+    ).length
   }
 
   /** How many day columns the compact-rows header renders. */
@@ -268,8 +270,13 @@ export class HabitsPO {
     return page.getByTestId(`habit-today-${name}`)
   }
 
+  /**
+   * Tap a habit's check control. Quantity habits in the `rows` layout announce
+   * "Log <name>: <target> <unit>" rather than "Mark <name> complete", because
+   * the tap writes the whole target -- so this matches either wording.
+   */
   async toggleBinaryHabit(name: string): Promise<void> {
-    const buttonName = new RegExp(`^Mark ${escapeRegExp(name)}`, 'i')
+    const buttonName = new RegExp(`^(Mark|Log|Clear) ${escapeRegExp(name)}`, 'i')
     const toggleButton = page.getByRole('button', { name: buttonName })
     await userEvent.click(toggleButton)
   }

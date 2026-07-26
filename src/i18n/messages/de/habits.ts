@@ -14,6 +14,8 @@ export default {
   quantityLabel: '{value} / {target} {unit}',
   markComplete: '{name} als erledigt markieren',
   markIncomplete: '{name} als nicht erledigt markieren',
+  logTarget: '{name} eintragen: {target} {unit}',
+  clearTarget: '{name} zurücksetzen, aktuell {target} {unit}',
   quantityInputLabel: '{name} eintragen',
   increaseQuantity: '{name} erhöhen',
   decreaseQuantity: '{name} verringern',

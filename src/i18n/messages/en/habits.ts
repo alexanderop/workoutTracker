@@ -14,6 +14,8 @@ export default {
   quantityLabel: '{value} / {target} {unit}',
   markComplete: 'Mark {name} complete',
   markIncomplete: 'Mark {name} incomplete',
+  logTarget: 'Log {name}: {target} {unit}',
+  clearTarget: 'Clear {name}, currently {target} {unit}',
   quantityInputLabel: 'Log {name}',
   increaseQuantity: 'Increase {name}',
   decreaseQuantity: 'Decrease {name}',

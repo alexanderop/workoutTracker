@@ -484,6 +484,10 @@ describe('Habit Tracking', () => {
       await navigateTo({ name: RouteNames.Habits })
       await habits.switchViewMode('rows')
 
+      // The control announces what it actually does -- it writes the whole
+      // target, so "mark complete" would misdescribe it.
+      await expect.element(page.getByRole('button', { name: 'Log Water: 3 L' })).toBeVisible()
+
       // Before this change a compact row rendered a spacer for quantity
       // habits, so they could not be logged from the row at all.
       await habits.toggleBinaryHabit('Water')
