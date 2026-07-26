@@ -38,9 +38,15 @@ export type HabitFormData = {
   autoLink: 'completed-workout' | null
 }
 
-/** A habit plus everything its "today" row needs, pre-derived for display. */
+/**
+ * A habit plus everything any of the three layouts needs, pre-derived for
+ * display. `entries` rides along rather than being passed as a parallel prop:
+ * every field here is already derived from it, so splitting them lets a caller
+ * hand a layout an item and entries that disagree.
+ */
 export type HabitTodayItem = {
   habit: DbHabit
+  entries: ReadonlyArray<DbHabitEntry>
   value: number
   isComplete: boolean
   streak: number
@@ -94,6 +100,7 @@ export function useHabits(ctx: Context<HabitRepository> = useRuntimeContext<Habi
   const todayItems = computed<ReadonlyArray<HabitTodayItem>>(() =>
     habits.value.map((habit) => ({
       habit,
+      entries: entriesFor(habit.id),
       value: todayValue(habit.id),
       isComplete: isCompleteToday(habit),
       streak: streakFor(habit),

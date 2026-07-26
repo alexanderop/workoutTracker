@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { HABIT_VIEW_MODES } from '@/db/schema'
 
 /**
  * Theme setting schema.
@@ -71,12 +72,35 @@ const timerSoundEnabledSettingSchema = z
   .strict()
 
 /**
+ * Timer sound volume setting schema.
+ *
+ * Matches `setTimerSoundVolume`'s clamp in `src/stores/settings.ts`, which
+ * pins the range to 0.5-1 rather than 0-1.
+ */
+const timerSoundVolumeSettingSchema = z
+  .object({
+    key: z.literal('timerSoundVolume'),
+    value: z.number().min(0.5).max(1),
+  })
+  .strict()
+
+/**
  * Language setting schema.
  */
 const languageSettingSchema = z
   .object({
     key: z.literal('language'),
     value: z.enum(['en', 'de']),
+  })
+  .strict()
+
+/**
+ * Habits page layout setting schema.
+ */
+const habitViewModeSettingSchema = z
+  .object({
+    key: z.literal('habitViewMode'),
+    value: z.enum(HABIT_VIEW_MODES),
   })
   .strict()
 
@@ -92,5 +116,7 @@ export const dbUserSettingSchema = z.discriminatedUnion('key', [
   autoSaveIntervalSettingSchema,
   screenWakeLockSettingSchema,
   timerSoundEnabledSettingSchema,
+  timerSoundVolumeSettingSchema,
   languageSettingSchema,
+  habitViewModeSettingSchema,
 ])

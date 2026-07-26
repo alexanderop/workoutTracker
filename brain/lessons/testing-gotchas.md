@@ -59,6 +59,40 @@ failure modes here:
   Playwright never trips its "no tests found" guard. `test/e2e/bddGuard.ts`
   (wired as `globalSetup`) now fails loudly on a real run. It cannot fire for
   `playwright test --list`, which does not run `globalSetup`.
+- A layout assertion that only proves an element **exists** proves nothing about
+  whether it is readable. The habits week header shared its grid template with
+  the rows beneath it exactly — and every one of its seven labels needed 12–21px
+  in a 9.14px column, so they overflowed and painted over each other into one
+  smear. The spec was green throughout, because "the header exists" and "it
+  shares `HABIT_ROW_GRID_COLUMNS`" were both true. When a test covers text in a
+  constrained box, measure: `scrollWidth > clientWidth` per element is the
+  assertion, and `getBoundingClientRect().width` is the one for "is this column
+  wide enough to tell two truncated names apart". Verify such a test by
+  restoring the old geometry and watching it fail — an unverified layout
+  assertion is usually asserting the wrong thing.
+- Screenshots are not enough on their own either, and neither is axe. axe-core
+  dropped `duplicate-id-active`, and `form-field-multiple-labels` does not fire
+  when the *second* of two same-id inputs is the unlabelled one — so two
+  components rendering a control for the same entity can collide on a DOM id
+  and leave one control nameless with the a11y tier green. Assert the control is
+  reachable **by accessible name** while both are mounted.
+- A CI browser failure reading `locator.click: Timeout 620ms exceeded` with a
+  call log that says **"locator resolved to `<button …>`"** is shard load, not a
+  broken selector. Nothing configures 620ms: Vitest browser derives an action's
+  timeout from what remains of the test budget (`testTimeout` is 15s in CI), so
+  a sub-second figure means the test had already spent ~14s before reaching that
+  click. The element was found; there was simply no budget left to act on it.
+  Check the spec in isolation before touching anything — on 2026-07-26 a shard-1
+  `numeric-keypad.spec.ts` failure (1 failed / 356 passed, setup alone 140s)
+  passed 3/3 locally and referenced nothing in the PR's diff.
+- The `visual` tier cannot be run on Linux. Every tracked baseline is
+  `*-chromium-darwin.png` because CI runs `test-visual` on a macOS runner, so a
+  local Linux run finds no reference, *creates* `*-chromium-linux.png`, and fails
+  with "No existing reference screenshot found" — which reads exactly like a
+  regression and is not one. Delete the generated `*-linux.png` files afterwards;
+  committing them would plant bogus baselines. Corollary: a change that alters a
+  snapshotted screen cannot be verified locally, so either scope the change away
+  from that screen or hand the baseline regeneration to someone on macOS.
 - Locator actions and `expect.element()` assertions are source-linked in traces.
   Add `page.mark()` or `locator.mark()` only when those automatic action groups
   do not explain a failure; wrap shared assertion helpers in `vi.defineHelper()`

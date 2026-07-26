@@ -7,8 +7,13 @@ import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { DbHabit } from '@/db/schema'
 import { useHabits } from '@/features/habits/composables/useHabits'
+import { useHabitViewMode } from '@/features/habits/composables/useHabitViewMode'
 import HabitForm from '@/features/habits/components/HabitForm.vue'
 import HabitDashboardCard from '@/features/habits/components/HabitDashboardCard.vue'
+import HabitRowList from '@/features/habits/components/HabitRowList.vue'
+import HabitTileGrid from '@/features/habits/components/HabitTileGrid.vue'
+import HabitViewModeToggle from '@/features/habits/components/HabitViewModeToggle.vue'
+import HabitDetailSheet from '@/features/habits/components/HabitDetailSheet.vue'
 import HabitArchivedList from '@/features/habits/components/HabitArchivedList.vue'
 import type { HabitFormData } from '@/features/habits/composables/useHabits'
 
@@ -18,7 +23,6 @@ const {
   archivedHabits,
   hasHabits,
   todayItems,
-  entriesFor,
   toggleToday,
   logQuantityToday,
   toggleDay,
@@ -29,7 +33,29 @@ const {
   load,
 } = useHabits()
 
-onMounted(load)
+// The layout choice is persisted, so it loads alongside the habits themselves.
+const { mode, load: loadViewMode, setMode } = useHabitViewMode()
+
+onMounted(() => {
+  void load()
+  void loadViewMode()
+})
+
+// Detail sheet -- the one surface every mode opens for stats, history,
+// exact-quantity entry, edit, and archive. Tracked by id rather than by a
+// snapshot of the item so the sheet re-renders as entries change underneath it
+// (e.g. retro-toggling a day while it is open).
+const detailSheetOpen = ref(false)
+const detailHabitId = ref<string | undefined>(undefined)
+
+const detailItem = computed(() =>
+  todayItems.value.find((candidate) => candidate.habit.id === detailHabitId.value),
+)
+
+function openDetails(habit: DbHabit): void {
+  detailHabitId.value = habit.id
+  detailSheetOpen.value = true
+}
 
 // Create/edit dialog -- `editingHabit` undefined means create mode.
 const formOpen = ref(false)
@@ -96,12 +122,15 @@ const archiveDialogDescription = computed(() =>
 
 <template>
   <div class="container mx-auto max-w-lg space-y-section p-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-2">
       <h1 class="text-page-title font-bold">{{ t('habits.title') }}</h1>
-      <Button size="sm" @click="openCreateForm">
-        <Plus class="mr-1 h-4 w-4" />
-        {{ t('habits.addHabit') }}
-      </Button>
+      <div class="flex items-center gap-2">
+        <HabitViewModeToggle v-if="hasHabits" :model-value="mode" @update:model-value="setMode" />
+        <Button size="sm" @click="openCreateForm">
+          <Plus class="mr-1 h-4 w-4" />
+          {{ t('habits.addHabit') }}
+        </Button>
+      </div>
     </div>
 
     <template v-if="!hasHabits && archivedHabits.length === 0">
@@ -118,17 +147,28 @@ const archiveDialogDescription = computed(() =>
 
     <template v-else>
       <section v-if="hasHabits" class="space-y-3">
-        <div class="space-y-3">
+        <HabitTileGrid
+          v-if="mode === 'grid'"
+          :items="todayItems"
+          @toggle="toggleToday"
+          @open-details="openDetails"
+        />
+
+        <HabitRowList
+          v-else-if="mode === 'rows'"
+          :items="todayItems"
+          @toggle="toggleToday"
+          @open-details="openDetails"
+        />
+
+        <div v-else class="space-y-3">
           <HabitDashboardCard
             v-for="item in todayItems"
             :key="item.habit.id"
-            :habit="item.habit"
-            :entries="entriesFor(item.habit.id)"
+            :item="item"
             @toggle="toggleToday"
             @log-quantity="logQuantityToday"
-            @edit="openEditForm"
-            @archive="requestArchive"
-            @toggle-day="(habit, date) => toggleDay(habit, date)"
+            @open-details="openDetails"
           />
         </div>
       </section>
@@ -139,6 +179,15 @@ const archiveDialogDescription = computed(() =>
         @unarchive="(habit) => unarchive(habit.id)"
       />
     </template>
+
+    <HabitDetailSheet
+      v-model:open="detailSheetOpen"
+      :item="detailItem"
+      @log-quantity="logQuantityToday"
+      @toggle-day="(habit, date) => toggleDay(habit, date)"
+      @edit="openEditForm"
+      @archive="requestArchive"
+    />
 
     <HabitForm v-model:open="formOpen" :habit="editingHabit" @save="handleFormSave" />
 

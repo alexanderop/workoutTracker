@@ -1,6 +1,7 @@
 import { liveQuery } from 'dexie'
 import type { LiveQuery, SettingDefaults, SettingsRepository } from '@/db/interfaces'
-import type { DbUserSetting, UserSettingKey } from '@/db/schema'
+import type { DbUserSetting, HabitViewMode, UserSettingKey } from '@/db/schema'
+import { DEFAULT_HABIT_VIEW_MODE } from '@/db/schema'
 import type { WorkoutTrackerDb as WorkoutTrackerDatabase } from './database'
 
 /**
@@ -16,6 +17,7 @@ const SETTING_DEFAULTS: SettingDefaults = {
   timerSoundEnabled: true,
   timerSoundVolume: 0.8,
   language: undefined,
+  habitViewMode: DEFAULT_HABIT_VIEW_MODE,
 }
 
 /**
@@ -31,6 +33,7 @@ function createGetFunction(database: WorkoutTrackerDatabase) {
   async function get(key: 'timerSoundEnabled'): Promise<boolean>
   async function get(key: 'timerSoundVolume'): Promise<number>
   async function get(key: 'language'): Promise<'en' | 'de' | undefined>
+  async function get(key: 'habitViewMode'): Promise<HabitViewMode>
   async function get(key: UserSettingKey) {
     const setting = await database.settings.get(key)
     if (!setting) {
@@ -45,7 +48,30 @@ function createGetFunction(database: WorkoutTrackerDatabase) {
 
 /**
  * Apply a single setting to the result object with proper type narrowing.
+ *
+ * Every arm says the same thing -- `result[key] = value` for its own key -- so
+ * this reads like boilerplate begging to be collapsed into one indexed write.
+ * It cannot be, on this codebase's terms: TypeScript will not correlate
+ * `setting.key` with `setting.value` when indexing a discriminated union, so
+ * the collapsed form needs a type assertion, and assertions are banned here
+ * (`@typescript-eslint/consistent-type-assertions`). A generic write helper
+ * gets past the linter only by widening `value` to the union of every
+ * setting's type, which is the same safety hole wearing a hat.
+ *
+ * So the arms stay, and with them the property worth having: adding a
+ * `DbUserSetting` variant whose value type disagrees with its `SettingDefaults`
+ * field is a compile error here rather than a silent bad write at runtime. The
+ * complexity budget is one arm short of the number of settings we have; that
+ * is a fact about the rule, not about this function.
+ *
+ * The `default` arm covers the other half. A type mismatch was always caught;
+ * a *missing* arm was not -- a `switch` over a union in a `void` function is
+ * not exhaustiveness-checked, so a new key with no case here would have made
+ * `getAll()` hand back the default instead of the user's stored value, silently
+ * and with a green build. Assigning the narrowed `setting` to `never` turns
+ * that into a compile error too.
  */
+// eslint-disable-next-line complexity -- One arm per setting; see above.
 function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
   switch (setting.key) {
     case 'theme': {
@@ -83,6 +109,14 @@ function applySetting(result: SettingDefaults, setting: DbUserSetting): void {
     case 'language': {
       result.language = setting.value
       break
+    }
+    case 'habitViewMode': {
+      result.habitViewMode = setting.value
+      break
+    }
+    default: {
+      const unhandled: never = setting
+      return unhandled
     }
   }
 }

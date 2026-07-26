@@ -346,6 +346,31 @@ describe('Settings Schema Validation', () => {
       expect(result.success).toBe(false)
     })
 
+    // Regression: `timerSoundVolume` is a DbUserSetting member but had no arm
+    // in this union, so an export containing the user's saved volume failed
+    // import validation and the value was silently lost on restore.
+    it('accepts a stored timerSoundVolume so it survives export/import', () => {
+      const result = dbUserSettingSchema.safeParse({ key: 'timerSoundVolume', value: 0.8 })
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects a timerSoundVolume outside the range the store clamps to', () => {
+      for (const value of [0.4, 1.5]) {
+        const result = dbUserSettingSchema.safeParse({ key: 'timerSoundVolume', value })
+        expect(result.success).toBe(false)
+      }
+    })
+
+    it('accepts a stored habitViewMode', () => {
+      const result = dbUserSettingSchema.safeParse({ key: 'habitViewMode', value: 'grid' })
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects an unknown habitViewMode', () => {
+      const result = dbUserSettingSchema.safeParse({ key: 'habitViewMode', value: 'list' })
+      expect(result.success).toBe(false)
+    })
+
     it('accepts valid defaultRestTimer', () => {
       const result = dbUserSettingSchema.safeParse({ key: 'defaultRestTimer', value: 90 })
       expect(result.success).toBe(true)

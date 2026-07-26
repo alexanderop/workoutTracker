@@ -285,7 +285,7 @@ describe('Habit Tracking', () => {
       const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
 
-      await habits.expandDetails('Walk')
+      await habits.openDetails('Walk')
       await expect.poll(() => habits.countCompleteHistoryDays('Walk')).toBe(1)
 
       // Retro-toggle yesterday (not yet complete) on.
@@ -317,6 +317,315 @@ describe('Habit Tracking', () => {
       await expect.poll(() => habits.getTodayCompactGridColor('Read')).not.toBe(incompleteColor)
 
       await habits.navigateToHabitsFromHomeCard()
+    })
+
+    it('offers no one-tap control for a quantity habit, so a stray tap cannot log a full day', async ({
+      createTestApp,
+    }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { habits } = await createTestApp()
+
+      await expect.element(habits.getHomeCard().getByText('Water')).toBeVisible()
+
+      // `/habits` rows mode deliberately gives quantity habits a tap-to-target
+      // control. The home card must not: it has no stepper, no confirmation and
+      // no undo, so one stray tap would write 3 of 3 L for the day.
+      await expect
+        .element(habits.getHomeCard().getByRole('button', { name: /^Mark Water/i }))
+        .not.toBeInTheDocument()
+      expect(await repo.getEntriesForHabit(habit.id)).toHaveLength(0)
+    })
+  })
+
+  describe('view modes', () => {
+    it('defaults to cards, so a user who never picks sees the layout they had', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await expect.element(habits.getViewModeToggle()).toBeVisible()
+      await expect.poll(() => habits.getActiveViewMode()).toBe('cards')
+      // The card layout is the one carrying the expandable details.
+      await expect
+        .element(habits.getTodayRow('Read').getByRole('button', { name: /show details/i }))
+        .toBeVisible()
+    })
+
+    it('switches to the compact rows layout and keeps check-off working there', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+
+      // Same habit, different layout -- and still tickable without switching back.
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
+      await habits.expectIncomplete('Read')
+      await habits.toggleBinaryHabit('Read')
+      await habits.expectComplete('Read')
+    })
+
+    it('persists the chosen mode across a full app remount (cold start)', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const first = await createTestApp()
+      await first.navigateTo({ name: RouteNames.Habits })
+      await first.habits.switchViewMode('rows')
+      await expect.poll(() => first.habits.getActiveViewMode()).toBe('rows')
+
+      // A second app instance is what reopening the PWA actually does: fresh
+      // component state, same IndexedDB.
+      const second = await createTestApp()
+      await second.navigateTo({ name: RouteNames.Habits })
+
+      await expect.poll(() => second.habits.getActiveViewMode()).toBe('rows')
+    })
+
+    it('reaches edit from the compact rows layout without switching back to cards', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // openEditForm goes through the detail sheet, which is the whole point:
+      // the same route to management from whichever layout is on screen.
+      await habits.openEditForm('Read')
+      await habits.fillName('Read more')
+      await habits.clickSave()
+
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+      await expect.element(habits.getTodayRow('Read more')).toBeVisible()
+    })
+
+    it('reaches archive from the compact rows layout', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      await habits.requestArchive('Read')
+      await habits.confirmArchive()
+
+      await expect.poll(async () => (await getHabitsRepository().getAllHabits()).length).toBe(0)
+    })
+
+    it('retro-toggles a past day from the compact rows layout', async ({ createTestApp }) => {
+      const habit = createDbHabit({ name: 'Walk', orderIndex: 0 })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      await habits.openDetails('Walk')
+      const yesterday = getStartOfDay(daysAgo(1))
+      await habits.toggleHistoryDay('Walk', yesterday)
+
+      await expect
+        .poll(async () =>
+          (await repo.getEntriesForHabit(habit.id)).some((e) => e.date === yesterday),
+        )
+        .toBe(true)
+    })
+
+    it('logs an exact quantity from the compact rows layout', async ({ createTestApp }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // The stepper has no room in a compact row; it lives in the sheet.
+      await habits.openDetails('Water')
+      await habits.clickIncrementQuantity('Water', 2)
+
+      await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(2)
+    })
+
+    it('lets a quantity habit be ticked straight to target from a compact row', async ({
+      createTestApp,
+    }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      const repo = getHabitsRepository()
+      await repo.addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      // The control announces what it actually does -- it writes the whole
+      // target, so "mark complete" would misdescribe it.
+      await expect.element(page.getByRole('button', { name: 'Log Water: 3 L' })).toBeVisible()
+
+      // Before this change a compact row rendered a spacer for quantity
+      // habits, so they could not be logged from the row at all.
+      await habits.toggleBinaryHabit('Water')
+
+      await expect.poll(async () => (await repo.getEntriesForHabit(habit.id))[0]?.value).toBe(3)
+    })
+
+    it('heads the compact rows with this week, today marked', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('rows')
+
+      const header = habits.getRowDateHeader()
+      await expect.element(header).toBeVisible()
+
+      // Seven columns, matching the seven heatmap cells in each row.
+      expect(await habits.countRowDateHeaderColumns()).toBe(7)
+
+      // ...and each label has to fit the column it labels. Geometry alone is
+      // not legibility: the header once shared the grid exactly while every
+      // label overflowed and painted over its neighbours.
+      expect(await habits.findOverflowingRowDateHeaderColumns()).toEqual([])
+
+      // ...and each label has to sit over the cell it labels. Sharing the grid
+      // template is not enough: the header's spacers stand in for the row's
+      // icon and check control, so resizing either slides the heatmap column
+      // out from under the header. Sub-pixel rounding only.
+      expect(await habits.getRowHeaderCellDrift('Read')).toBeLessThan(1)
+
+      // Today has to be findable without counting in from the edge: exactly
+      // one column is marked, and it carries today's date. The date is what
+      // disambiguates a narrow weekday, which repeats (T/T, S/S).
+      const todayColumns = await habits.getRowDateHeaderTodayColumns()
+      expect(todayColumns).toHaveLength(1)
+      expect(todayColumns[0]).toContain(String(new Date().getDate()))
+    })
+
+    it('lays habits out as tiles in grid mode and ticks one off in place', async ({
+      createTestApp,
+    }) => {
+      const repo = getHabitsRepository()
+      await repo.addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+      await repo.addHabit(createDbHabit({ name: 'Walk', orderIndex: 1 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      await expect.element(habits.getTileGrid()).toBeVisible()
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
+      await expect.element(habits.getTodayRow('Walk')).toBeVisible()
+
+      // Check-off is one tap in the densest mode too -- no sheet required.
+      await habits.toggleBinaryHabit('Read')
+      await habits.expectComplete('Read')
+      await habits.expectIncomplete('Walk')
+    })
+
+    it('reaches the detail sheet from a tile, so grid mode is not a dead end', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      await habits.openEditForm('Read')
+      await habits.fillName('Read more')
+      await habits.clickSave()
+
+      await expect.poll(() => habits.getActiveViewMode()).toBe('grid')
+      await expect.element(habits.getTodayRow('Read more')).toBeVisible()
+    })
+
+    it('keeps every habit reachable in grid mode at seven habits', async ({ createTestApp }) => {
+      const repo = getHabitsRepository()
+      const names = ['Walk', 'Read', 'Workout', 'Deep work', 'Steps', 'Calories', 'Protein']
+      for (const [index, name] of names.entries()) {
+        await repo.addHabit(createDbHabit({ name, orderIndex: index }))
+      }
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      // Every tile rendered, and every check control is its own tap target.
+      for (const name of names) {
+        await expect.element(habits.getTodayRow(name)).toBeVisible()
+      }
+      expect(await habits.countVisibleCheckControls()).toBe(names.length)
+
+      // Truncated names still have to tell the habits apart. At ~4 characters
+      // "Meditate" and "Medication" become the same string, so the name needs
+      // real width -- 70px is roughly eight characters at this font size.
+      const nameWidths = await habits.getTileNameWidths()
+      expect(nameWidths).toHaveLength(names.length)
+      expect(Math.min(...nameWidths)).toBeGreaterThan(70)
+    })
+
+    it('names the sheet stepper even while the card renders its own', async ({ createTestApp }) => {
+      const habit = createDbHabit({
+        name: 'Water',
+        orderIndex: 0,
+        kind: { type: 'quantity', target: 3, unit: 'L' },
+      })
+      await getHabitsRepository().addHabit(habit)
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      // `cards` mode already shows a stepper inline, so opening the sheet puts
+      // a second one on screen. If both claim the same input id, the sheet's
+      // label resolves to the card's input and the sheet stepper goes unnamed.
+      await habits.openDetails('Water')
+
+      await expect
+        .element(habits.getDetailSheet().getByRole('spinbutton', { name: /^Log Water$/ }))
+        .toBeVisible()
+    })
+
+    it('ignores a repeat tap on the active mode rather than emptying the page', async ({
+      createTestApp,
+    }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+
+      // ToggleGroup emits '' on deselect; there is no "no layout" state.
+      await habits.switchViewMode('rows')
+      await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
+      await expect.element(habits.getTodayRow('Read')).toBeVisible()
     })
   })
 

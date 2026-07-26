@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { assertNoViolations } from '../helpers/a11y'
 import { createTestApp } from '../helpers/createTestApp'
 import { cleanupIntegrationTest, setupIntegrationTest } from '../helpers/integrationSetup'
+import { createDbHabit } from '../factories'
+import { getHabitsRepository } from '@/db'
 
 describe('Accessibility', () => {
   beforeEach(setupIntegrationTest)
@@ -135,6 +137,55 @@ describe('Accessibility', () => {
       const { common, container, cleanup } = await createTestApp()
 
       await common.navigateToWorkouts()
+      await assertNoViolations(container)
+
+      cleanup()
+    })
+  })
+
+  describe('Habits Page', () => {
+    it('has no a11y violations in each view mode', async () => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { habits, container, cleanup } = await createTestApp()
+
+      await habits.navigateTo()
+      await assertNoViolations(container)
+
+      for (const mode of ['grid', 'rows'] as const) {
+        await habits.switchViewMode(mode)
+        await assertNoViolations(container)
+      }
+
+      cleanup()
+    })
+
+    /**
+     * The one state where two controls for the same habit are on screen at
+     * once: `cards` renders a quantity stepper inline and the detail sheet
+     * renders another over it.
+     *
+     * Covers the sheet's own markup. It is explicitly **not** the guard against
+     * the duplicate-input-id bug that state once had -- verified by restoring
+     * the collision, which this case still passes: axe-core dropped
+     * `duplicate-id-active`, and `form-field-multiple-labels` does not fire
+     * when the *second* input is the unlabelled one. The regression test that
+     * does catch it asserts the sheet's spinbutton is reachable by name, in
+     * `habit-tracking.spec.ts`.
+     */
+    it('has no a11y violations with the detail sheet open over a quantity habit', async () => {
+      await getHabitsRepository().addHabit(
+        createDbHabit({
+          name: 'Water',
+          orderIndex: 0,
+          kind: { type: 'quantity', target: 3, unit: 'L' },
+        }),
+      )
+
+      const { habits, container, cleanup } = await createTestApp()
+
+      await habits.navigateTo()
+      await habits.openDetails('Water')
       await assertNoViolations(container)
 
       cleanup()

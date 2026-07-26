@@ -38,6 +38,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
     timerSoundEnabled: true,
     timerSoundVolume: 0.8,
     language: undefined,
+    habitViewMode: 'cards',
   }
 
   return {

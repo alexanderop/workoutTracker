@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["src/components/ui/**", ".claude/**"],
+  "ignorePatterns": ["src/components/ui/**", ".claude/**", "qa/evidence/**"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"

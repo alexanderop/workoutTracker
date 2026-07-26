@@ -4,21 +4,28 @@
  *
  * Order is load-bearing and there is no dependency graph: `buildAll` walks the
  * array once, so a layer that reads another service off the context must be
- * listed after the layer that provides it. `HabitRepoLive` reads
- * `Repositories`, so `RepositoriesLive` comes first.
+ * listed after the layer that provides it. `HabitRepoLive`,
+ * `HabitViewModeStoreLive` and `ProgressionRepoLive` all read `Repositories`,
+ * so `RepositoriesLive` comes first.
  *
  * Declared here rather than inline in `main.ts` because there is a second
  * composition root — `src/__tests__/helpers/createTestApp.ts` — and the
  * ordering contract has to be stated once, not re-satisfied per root. Adding a
  * feature's layer is an edit to this array only.
+ *
+ * Every layer added here also needs an assertion in
+ * `src/__tests__/types/appLayers.test-d.ts`; without one, deleting it
+ * type-checks clean and fails only at route mount.
+ * `src/__tests__/architecture/appLayerPins.test.ts` enforces that.
  */
 import { RepositoriesLive } from '@/db/services.live'
-import { HabitRepoLive } from '@/features/habits/services.live'
+import { HabitRepoLive, HabitViewModeStoreLive } from '@/features/habits/services.live'
 import { ProgressionRepoLive } from '@/features/progressions/services.live'
 import type { ErasedLayer } from '@/lib/di/layer'
 
 export const appLayers = [
   RepositoriesLive,
   HabitRepoLive,
+  HabitViewModeStoreLive,
   ProgressionRepoLive,
 ] as const satisfies ReadonlyArray<ErasedLayer>
