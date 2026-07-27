@@ -32,9 +32,15 @@ const numericValueSchema = z
  *
  * One level deep on purpose — each nested object is parsed through its own
  * schema, which does this for itself.
+ *
+ * Arrays pass through untouched so they stay malformed. `Object.fromEntries`
+ * would turn `[]` into `{}`, and since every field below is optional the empty
+ * object validates: a scan of a product whose `nutriments` came back as an
+ * array would report "found" with a silent 0 kcal for every macro instead of
+ * an error.
  */
 function withoutUnknownFields(value: unknown): unknown {
-  if (value === null || typeof value !== 'object') return value
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return value
   return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== null))
 }
 

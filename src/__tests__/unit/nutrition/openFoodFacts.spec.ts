@@ -137,6 +137,19 @@ describe('parseBarcodeLookup', () => {
   })
 
   /**
+   * An array where an object belongs is malformed, and it has to stay
+   * malformed. Stripping null fields must not quietly reshape `[]` into `{}` —
+   * every nutriment is optional, so the empty object validates, and a scan
+   * would come back "found" with a silent 0 kcal for every macro.
+   */
+  it('refuses an array where the product or its nutriments should be', () => {
+    expect(
+      parseBarcodeLookup({ status: 1, product: { product_name: 'Oats', nutriments: [] } }),
+    ).toEqual({ status: 'error' })
+    expect(parseBarcodeLookup({ status: 1, product: ['Oats'] })).toEqual({ status: 'error' })
+  })
+
+  /**
    * Open Food Facts answers every lookup with a `status`, found or not. A body
    * carrying a `product` and no verdict is something else — a proxy, a cached
    * fragment, a rewritten response — and reading a food out of it would put
