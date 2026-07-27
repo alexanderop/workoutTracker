@@ -548,6 +548,26 @@ describe('Habit Tracking', () => {
       await habits.expectIncomplete('Walk')
     })
 
+    it('draws each tile a whole number of weeks, so a row is a week', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      // A calendar month padded to whole Monday weeks is 4 to 6 rows of 7. The
+      // multiple-of-7 check is what fails if the grid is ever pointed back at a
+      // trailing day window, which no other assertion in this file notices.
+      const cells = habits.getTileGridCellCount('Read')
+      expect(cells % 7).toBe(0)
+      expect(cells).toBeGreaterThanOrEqual(28)
+      expect(cells).toBeLessThanOrEqual(42)
+
+      // The caption has to name the month the cells actually cover.
+      const month = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      await expect.element(habits.getTodayRow('Read').getByText(month)).toBeVisible()
+    })
+
     it('reaches the detail sheet from a tile, so grid mode is not a dead end', async ({
       createTestApp,
     }) => {
@@ -626,6 +646,70 @@ describe('Habit Tracking', () => {
       await habits.switchViewMode('rows')
       await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
       await expect.element(habits.getTodayRow('Read')).toBeVisible()
+    })
+  })
+
+  /**
+   * The accent a user picks per habit reaches the screen through a CSS cascade
+   * layer, which no class-name or aria assertion can see. It once did not
+   * reach it at all -- the paint sat in a layer Tailwind's own utilities
+   * outrank, so every control in every layout rendered the same neutral grey
+   * while the whole suite stayed green. These read computed colours because
+   * that is the only thing that notices.
+   */
+  describe('accent colours', () => {
+    async function seedTwoAccents(): Promise<void> {
+      const repo = getHabitsRepository()
+      await repo.addHabit(createDbHabit({ name: 'Read', accent: 'green', orderIndex: 0 }))
+      await repo.addHabit(createDbHabit({ name: 'Walk', accent: 'rose', orderIndex: 1 }))
+    }
+
+    for (const mode of ['cards', 'rows', 'grid'] as const) {
+      it(`paints each habit's check control in its own accent in ${mode} mode`, async ({
+        createTestApp,
+      }) => {
+        await seedTwoAccents()
+
+        const { navigateTo, habits } = await createTestApp()
+        await navigateTo({ name: RouteNames.Habits })
+        await habits.switchViewMode(mode)
+        await expect.poll(() => habits.getActiveViewMode()).toBe(mode)
+
+        // Two habits, two accents: identical colours mean the accent was
+        // discarded somewhere between the picker and the pixel.
+        expect(habits.getCheckControlColor('Read')).not.toBe(habits.getCheckControlColor('Walk'))
+
+        // ...and the accent has to survive the completed state too, which is
+        // painted by a different rule.
+        await habits.toggleBinaryHabit('Read')
+        await habits.expectComplete('Read')
+        expect(habits.getCheckControlColor('Read')).not.toBe(habits.getCheckControlColor('Walk'))
+      })
+    }
+
+    it('rings the chosen swatch in the form rather than painting the ring its own colour', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.openCreateForm()
+
+      await habits.selectAccent('Green')
+
+      const { border, background } = habits.getAccentSwatchColors('Green')
+      expect(background).not.toBe('rgba(0, 0, 0, 0)')
+      expect(border).not.toBe(background)
+    })
+
+    it("tints a habit's untouched heatmap days with its own accent", async ({ createTestApp }) => {
+      await seedTwoAccents()
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      expect(habits.getTodayCompactGridColor('Read')).not.toBe(
+        habits.getTodayCompactGridColor('Walk'),
+      )
     })
   })
 

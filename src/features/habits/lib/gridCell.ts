@@ -15,23 +15,29 @@ const CELL_STATE_CLASS = {
   empty: 'habit-grid-empty',
   partial: 'habit-grid-partial',
   complete: 'habit-grid-complete',
-  /**
-   * Days that haven't happened yet still occupy the grid, at a fraction of the
-   * empty tint. Rendering them transparent instead leaves the current week (and
-   * the tail of the current month) visibly ragged, which reads as missing data
-   * rather than as time that hasn't passed.
-   */
-  future: 'habit-grid-empty opacity-40',
+  future: 'habit-grid-empty',
 } as const
 
-/** Extra dimming for a day outside the month a month-grid is captioned with. */
-const OUT_OF_MONTH_CLASS = 'opacity-40'
+/**
+ * Days that don't belong to the window being read: still to come, or a
+ * neighbouring month's padding in a month grid. Dimmed rather than blanked --
+ * rendering them transparent leaves the current week and the tail of the month
+ * visibly ragged, which reads as missing data rather than as time that hasn't
+ * passed.
+ *
+ * A single class covering both reasons, applied once: a day can be out-of-month
+ * *and* in the future, and two dim classes on one cell is a contradiction
+ * waiting to be resolved by whichever Tailwind emitted last. Below
+ * `habit-grid-partial`'s 40% so a padded-in complete day stays distinguishable
+ * from a partial one.
+ */
+const DIMMED_CLASS = 'opacity-30'
 
 export function habitDayCellClass(
   day: Pick<HabitGridDay, 'state' | 'isToday'> & { inMonth?: boolean },
 ): Array<string> {
   const classes: Array<string> = [CELL_STATE_CLASS[day.state]]
-  if (day.inMonth === false) classes.push(OUT_OF_MONTH_CLASS)
+  if (day.state === 'future' || day.inMonth === false) classes.push(DIMMED_CLASS)
   if (day.isToday) classes.push('habit-today-ring')
   return classes
 }

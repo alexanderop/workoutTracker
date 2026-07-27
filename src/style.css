@@ -260,8 +260,17 @@
   .habit-grid-complete,
   .habit-today-complete {
     background-color: var(--habit-accent);
-    border-color: var(--habit-accent);
     color: oklch(0.99 0 0);
+  }
+  /*
+   * Only the check control declares a border colour, and deliberately not via
+   * the shared rule above: `.habit-accent-swatch` is the form's colour picker,
+   * which marks the selected swatch with `border-foreground`. Both selectors
+   * are one class in this layer, so a shared `border-color` wins on source
+   * order and the selection ring silently paints itself the swatch's own fill.
+   */
+  .habit-today-complete {
+    border-color: var(--habit-accent);
   }
   .habit-grid-partial {
     background-color: oklch(from var(--habit-accent) l c h / 40%);
@@ -288,8 +297,10 @@
   }
   /*
    * Accent-tinted container behind a habit's icon or streak badge. Background
-   * only, with the foreground colour a separate opt-in: accent-on-tint is about
-   * 3:1, which is fine for an icon but below the 4.5:1 that badge text needs.
+   * only, with the foreground colour a separate opt-in: measured against the
+   * built stylesheet, accent-on-tint runs 2.2:1 (amber) to 3.6:1 (purple) in
+   * light mode -- fine behind an `aria-hidden` glyph, nowhere near the 4.5:1
+   * that the streak badge's text needs, so that text stays on `--foreground`.
    */
   .habit-accent-tint {
     background-color: oklch(from var(--habit-accent) l c h / 16%);

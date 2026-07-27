@@ -75,6 +75,22 @@ export class HabitsPO {
     return names.map((name) => name.element().getBoundingClientRect().width)
   }
 
+  /**
+   * Day cells in a tile's mini heatmap.
+   *
+   * The tile shows one calendar month a week per row, so the count has to stay
+   * a whole number of weeks -- a grid that silently reverted to a trailing
+   * window, or rendered nothing at all, still satisfies every "the tile is
+   * visible" assertion.
+   */
+  getTileGridCellCount(habitName: string): number {
+    const tile = this.getTodayRow(habitName).element()
+    // eslint-disable-next-line no-restricted-syntax -- Scoped lookup within the named tile
+    const grid = tile.querySelector('[role="img"]')
+    if (!grid) throw new Error(`Month grid for "${habitName}" not found`)
+    return grid.childElementCount
+  }
+
   getRowDateHeader() {
     return page.getByTestId('habit-row-date-header')
   }
@@ -300,6 +316,42 @@ export class HabitsPO {
     const todayCell = row.querySelector('.habit-today-ring')
     if (!todayCell) throw new Error(`Today's compact grid cell for "${name}" not found`)
     return globalThis.getComputedStyle(todayCell).backgroundColor
+  }
+
+  /**
+   * Background colour of a habit's check control, whichever layout renders it.
+   *
+   * The accent a user picks reaches the control through a CSS cascade layer,
+   * not through a class name a DOM assertion can see -- and it once reached it
+   * through a layer that Tailwind's own utilities outrank, so every habit's
+   * control painted the same neutral grey while every existing test stayed
+   * green. Reading the computed colour is the only assertion that notices.
+   */
+  getCheckControlColor(name: string): string {
+    const row = this.getTodayRow(name).element()
+    // eslint-disable-next-line no-restricted-syntax -- Scoped lookup within the named habit
+    const control = row.querySelector('button[aria-pressed]')
+    if (!control) throw new Error(`Check control for "${name}" not found`)
+    return globalThis.getComputedStyle(control).backgroundColor
+  }
+
+  /** Pick an accent in the create/edit form by its visible colour name. */
+  async selectAccent(label: string): Promise<void> {
+    await userEvent.click(page.getByRole('button', { name: label, exact: true }))
+  }
+
+  /**
+   * Border and background of the form's selected accent swatch.
+   *
+   * The selection ring is `border-foreground` over the swatch's accent fill.
+   * Both are one class, so any accent rule that also declares `border-color`
+   * wins on source order and repaints the ring in the swatch's own colour --
+   * invisible to every assertion that only checks `aria-pressed`.
+   */
+  getAccentSwatchColors(label: string): { border: string; background: string } {
+    const swatch = page.getByRole('button', { name: label, exact: true }).element()
+    const style = globalThis.getComputedStyle(swatch)
+    return { border: style.borderColor, background: style.backgroundColor }
   }
 
   getQuantityInput(name: string) {
