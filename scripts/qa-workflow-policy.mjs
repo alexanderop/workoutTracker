@@ -33,6 +33,27 @@ export function hasMeaningfulTemplateContent(section) {
   })
 }
 
+// The six report counts are pure functions of `tests` and `bugs`, so they are
+// derived here instead of being trusted (or gated on) as the agent reported
+// them. Two consecutive QA runs of PR #246 produced a complete, accurate report
+// and had it thrown away over an off-by-one in `total_tests` — hand arithmetic
+// is the one part of a QA payload that can be wrong while everything it counts
+// is right, so it is never evidence and never a reason to reject a run.
+const countWhere = (items, key, value) => items.filter((item) => item?.[key] === value).length
+
+export function deriveQaMetrics(data) {
+  const tests = Array.isArray(data?.tests) ? data.tests : []
+  const bugs = Array.isArray(data?.bugs) ? data.bugs : []
+  return {
+    total_tests: tests.length,
+    passed: countWhere(tests, 'result', 'pass'),
+    failed: countWhere(tests, 'result', 'fail'),
+    critical_bugs: countWhere(bugs, 'severity', 'critical'),
+    major_bugs: countWhere(bugs, 'severity', 'major'),
+    minor_bugs: countWhere(bugs, 'severity', 'minor'),
+  }
+}
+
 // Screenshot filenames are produced by an unprivileged Claude run but later
 // committed to a repo branch by the privileged publish job, so they must be
 // safe as both git paths and URL segments: flat (no directories), lowercase
@@ -73,27 +94,11 @@ export function validateQaReport(report, structuredOutput = '') {
             typeof test.details === 'string' &&
             test.details.trim(),
         )
-      const metricNames = [
-        'total_tests',
-        'passed',
-        'failed',
-        'critical_bugs',
-        'major_bugs',
-        'minor_bugs',
-      ]
-      const metricsValid =
-        data.metrics &&
-        metricNames.every(
-          (name) => Number.isSafeInteger(data.metrics[name]) && data.metrics[name] >= 0,
-        ) &&
-        data.metrics.total_tests === data.tests.length
-      if (
-        !testsValid ||
-        !metricsValid ||
-        typeof data.summary !== 'string' ||
-        !data.summary.trim()
-      ) {
-        return { ready: false, reason: 'Structured output has no completed tests or metrics' }
+      // Deliberately no check on `data.metrics`: see deriveQaMetrics above.
+      // What the run must show is the evidence itself — a verdict, a summary,
+      // and named tests with observations — not a matching tally of it.
+      if (!testsValid || typeof data.summary !== 'string' || !data.summary.trim()) {
+        return { ready: false, reason: 'Structured output has no completed tests or summary' }
       }
       const markdownResult = validateQaReport(report)
       return markdownResult.ready

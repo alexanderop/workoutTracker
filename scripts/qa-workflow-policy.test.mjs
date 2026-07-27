@@ -8,6 +8,7 @@ import test from 'node:test'
 import { load as parseYaml } from 'js-yaml'
 
 import {
+  deriveQaMetrics,
   extractMarkdownSection,
   hasMeaningfulTemplateContent,
   isValidScreenshotFilename,
@@ -125,7 +126,7 @@ test('final-looking reports with empty sections are rejected', () => {
   assert.equal(validateQaReport(report).ready, false)
 })
 
-test('structured output requires detailed tests and complete metrics', () => {
+test('structured output requires detailed tests', () => {
   const incomplete = JSON.stringify({
     verdict: 'HEALTHY',
     summary: 'Done',
@@ -163,6 +164,72 @@ No errors.
 High.`
   assert.deepEqual(validateQaReport(report, complete), { ready: true, verdict: 'HEALTHY' })
   assert.match(validateQaReport('', complete).reason, /Markdown report incomplete/)
+})
+
+// Runs 30272652329 and 30273740519 both QA'd PR #246 successfully — verdict,
+// summary, 13-14 detailed tests, screenshots — and both were thrown away
+// because the agent's `total_tests` was one behind the array it counted. The
+// retry that followed overwrote the good report with an UNKNOWN skeleton and
+// posted a red status. Counts are derived from the evidence, never gated on.
+test('metrics that disagree with the tests never reject a run', () => {
+  const data = {
+    verdict: 'MINOR_ISSUES',
+    summary: 'Search works; one minor accessibility gap.',
+    tests: [
+      { name: 'Search returns results', result: 'pass', details: '18 branded hits rendered.' },
+      {
+        name: 'Logged item updates day total',
+        result: 'pass',
+        details: 'Total moved to 371 kcal.',
+      },
+      { name: 'Forced 5xx retry', result: 'skip', details: 'Cannot force a live 5xx from the UI.' },
+      { name: 'Add button announces staged state', result: 'fail', details: 'No aria-pressed.' },
+    ],
+    bugs: [{ severity: 'minor', title: 'No staged-state feedback' }],
+    // One behind, exactly as the failing runs reported it.
+    metrics: {
+      total_tests: 3,
+      passed: 2,
+      failed: 1,
+      critical_bugs: 0,
+      major_bugs: 0,
+      minor_bugs: 1,
+    },
+  }
+  const report = `# QA Report
+**Verdict:** MINOR_ISSUES
+## Acceptance Criteria
+All pass.
+## Evidence
+Observed the flow.
+## Bugs / Observations
+One minor gap.
+## Accessibility Findings
+No aria-pressed on the Add button.
+## Console
+No errors.
+## Confidence
+High.`
+  assert.deepEqual(validateQaReport(report, JSON.stringify(data)), {
+    ready: true,
+    verdict: 'MINOR_ISSUES',
+  })
+  assert.deepEqual(deriveQaMetrics(data), {
+    total_tests: 4,
+    passed: 2,
+    failed: 1,
+    critical_bugs: 0,
+    major_bugs: 0,
+    minor_bugs: 1,
+  })
+  assert.deepEqual(deriveQaMetrics({}), {
+    total_tests: 0,
+    passed: 0,
+    failed: 0,
+    critical_bugs: 0,
+    major_bugs: 0,
+    minor_bugs: 0,
+  })
 })
 
 test('CLI writes GitHub outputs and fails incomplete reports', () => {
@@ -209,6 +276,30 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
+})
+
+// The retry's own first instruction is to overwrite qa-report.md with an
+// UNKNOWN skeleton, so an unguarded retry can only lower the bar: run
+// 30273740519 lost a complete report that way and then failed the job outright
+// when the retry hit its turn cap. The retry is allowed to fail; what it leaves
+// behind is what gets judged, and the main run's report survives it.
+test('the QA retry cannot end worse than the run it retries', async () => {
+  const browser = await readFile('.github/workflows/claude-qa-browser.yml', 'utf8')
+  const retryJob = browser.slice(browser.indexOf('- name: Retry if no report generated'))
+
+  assert.match(browser, /- name: Preserve pre-retry report/)
+  assert.match(browser, /cp qa-report\.md \/tmp\/qa-report-pre-retry\.md/)
+  assert.match(retryJob, /continue-on-error: true/)
+  assert.match(retryJob, /cp \/tmp\/qa-report-pre-retry\.md qa-report\.md/)
+  assert.match(retryJob, /if: always\(\)/)
+
+  // The retry prompt's stated budget must leave headroom under the CLI cap it
+  // is spent against, and must not promise turns the cap will not grant.
+  const promptBudget = Number(browser.match(/Finalize qa-report\.md no later than (\d+) turns/)[1])
+  const promptCap = Number(browser.match(/hard limit is (\d+)/)[1])
+  const cliCap = Number(retryJob.match(/--max-turns (\d+)/)[1])
+  assert.equal(promptCap, cliCap, 'the prompt must quote the real --max-turns cap')
+  assert.ok(promptBudget < cliCap, 'the prompt must ask for the report before the cap')
 })
 
 // The publish job rejects a report whose H2 headings don't match
