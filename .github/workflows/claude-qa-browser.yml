@@ -886,9 +886,12 @@ jobs:
                 if (test.details) report.push(`- **${test.name || 'unnamed test'}**: ${test.details}`);
               }
             }
-            if (data.metrics) {
-              report.push(`- Metrics: ${data.metrics.total_tests ?? 0} tests, ${data.metrics.passed ?? 0} passed, ${data.metrics.failed ?? 0} failed, ${data.metrics.critical_bugs ?? 0} critical / ${data.metrics.major_bugs ?? 0} major / ${data.metrics.minor_bugs ?? 0} minor bugs.`);
-            }
+            // Counted from the arrays this report just rendered rather than
+            // read from data.metrics, which is the agent's own arithmetic and
+            // has been observed to disagree with the tests it summarises.
+            const bugsForMetrics = Array.isArray(data.bugs) ? data.bugs : [];
+            const countWhere = (items, key, value) => items.filter((item) => item && item[key] === value).length;
+            report.push(`- Metrics: ${tests.length} tests, ${countWhere(tests, 'result', 'pass')} passed, ${countWhere(tests, 'result', 'fail')} failed, ${countWhere(bugsForMetrics, 'severity', 'critical')} critical / ${countWhere(bugsForMetrics, 'severity', 'major')} major / ${countWhere(bugsForMetrics, 'severity', 'minor')} minor bugs.`);
             if (report.length === evidenceStart) {
               report.push('No evidence details were captured in the structured output.');
             }
@@ -1108,12 +1111,18 @@ jobs:
             }
             lines.push('');
 
-            const m = data.metrics || {};
+            // Derived from data.tests/data.bugs by the policy module, not read
+            // from data.metrics — the agent's own tally can disagree with the
+            // rows rendered below it.
+            const { deriveQaMetrics } = await import(
+              `${process.env.GITHUB_WORKSPACE}/scripts/qa-workflow-policy.mjs`
+            );
+            const m = deriveQaMetrics(data);
             lines.push('## Metrics');
             lines.push('');
             lines.push('| Total | Passed | Failed | Critical | Major | Minor |');
             lines.push('|------:|-------:|-------:|---------:|------:|------:|');
-            lines.push(`| ${m.total_tests ?? 0} | ${m.passed ?? 0} | ${m.failed ?? 0} | ${m.critical_bugs ?? 0} | ${m.major_bugs ?? 0} | ${m.minor_bugs ?? 0} |`);
+            lines.push(`| ${m.total_tests} | ${m.passed} | ${m.failed} | ${m.critical_bugs} | ${m.major_bugs} | ${m.minor_bugs} |`);
             lines.push('');
 
             const bugs = Array.isArray(data.bugs) ? data.bugs : [];
