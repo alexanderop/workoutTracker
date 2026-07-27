@@ -78,13 +78,18 @@ const productSchema = z.preprocess(
  * Response of GET /api/v2/product/{barcode}. `status` is 1 when the product
  * exists and 0 for unknown/invalid codes (which the API can also answer with
  * an HTTP 404 instead of a body).
+ *
+ * Required, not optional: the endpoint sends it on every answer — verified for
+ * both a known and an unknown barcode, and it survives the `fields` filter. A
+ * body without it did not come from this API, and a `product` arriving with no
+ * verdict attached is not grounds to log food from it.
  */
 const productStatusSchema = z.union([z.literal(0), z.literal(1)])
 
 const productResponseSchema = z.preprocess(
   withoutUnknownFields,
   z.object({
-    status: productStatusSchema.optional(),
+    status: productStatusSchema,
     product: productSchema.optional(),
   }),
 )

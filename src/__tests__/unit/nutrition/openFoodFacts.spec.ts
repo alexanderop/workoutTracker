@@ -122,12 +122,36 @@ describe('parseBarcodeLookup', () => {
     expect(parseBarcodeLookup({ status: 2, product: { product_name: 'Oats' } })).toEqual({
       status: 'error',
     })
+    // `status` is spelled out on these two so they fail on the nutriment they
+    // are named for. Without it they would be rejected for the missing status
+    // and pass whatever the numbers did.
     expect(
-      parseBarcodeLookup({ product: { nutriments: { 'energy-kcal_100g': 'not a number' } } }),
+      parseBarcodeLookup({
+        status: 1,
+        product: { nutriments: { 'energy-kcal_100g': 'not a number' } },
+      }),
     ).toEqual({ status: 'error' })
-    expect(parseBarcodeLookup({ product: { nutriments: { fat_100g: Infinity } } })).toEqual({
-      status: 'error',
-    })
+    expect(
+      parseBarcodeLookup({ status: 1, product: { nutriments: { fat_100g: Infinity } } }),
+    ).toEqual({ status: 'error' })
+  })
+
+  /**
+   * Open Food Facts answers every lookup with a `status`, found or not. A body
+   * carrying a `product` and no verdict is something else — a proxy, a cached
+   * fragment, a rewritten response — and reading a food out of it would put
+   * numbers nobody vouched for into the day's totals.
+   */
+  it('refuses a product that arrives without a status', () => {
+    expect(
+      parseBarcodeLookup({
+        product: {
+          product_name: 'Skyr Natural',
+          brands: 'Arla',
+          nutriments: { 'energy-kcal_100g': 63, proteins_100g: 10.6 },
+        },
+      }),
+    ).toEqual({ status: 'error' })
   })
 
   /**
