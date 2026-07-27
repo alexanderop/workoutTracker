@@ -23,7 +23,51 @@ export type RemoteFoodSearchState =
 const MIN_QUERY_LENGTH = 3
 /** Long enough to swallow a word being typed, short enough to feel like a search. */
 const DEBOUNCE_MS = 350
+/** Bounds the whole search, retries included, not each attempt. */
 const SEARCH_TIMEOUT_MS = 10_000
+
+/**
+ * How many times one settled query is sent, first attempt included.
+ *
+ * Open Food Facts' search backend sheds load by answering with an HTML 503,
+ * often for several requests in a row while the very next one succeeds. One
+ * attempt therefore reports "unreachable" for a service that is answering —
+ * the same empty panel this whole feature is meant to stop showing. Three
+ * attempts is where the added wait stops buying much: the user is still
+ * reading their own library, which rendered synchronously and never waited.
+ */
+const MAX_ATTEMPTS = 3
+/** Backoff before the second and third attempt. Short — a phone is waiting. */
+const RETRY_DELAYS_MS = [400, 1200] as const
+
+/**
+ * What one attempt tells the caller to do next, rather than a bare boolean:
+ * "the server is struggling" and "the server answered something unusable" both
+ * fail, and only one of them is worth sending again.
+ */
+type AttemptOutcome =
+  | { readonly kind: 'answered'; readonly json: unknown }
+  | { readonly kind: 'retryable' }
+  | { readonly kind: 'final' }
+
+/** A cancellable pause, so a retry in flight does not outlive the query. */
+function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal.aborted) {
+      resolve()
+      return
+    }
+    const timer = setTimeout(resolve, milliseconds)
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        resolve()
+      },
+      { once: true },
+    )
+  })
+}
 
 /**
  * Free-text search against an external food database, alongside the local
@@ -47,6 +91,23 @@ export function useRemoteFoodSearch(
     inFlight = null
   }
 
+  async function attempt(term: string, signal: AbortSignal): Promise<AttemptOutcome> {
+    const [requestError, response] = await tryCatch(fetch(adapter.searchUrl(term), { signal }))
+    // A request that never lands is the shape offline, a dropped connection and
+    // a CORS rejection all take. Some of those come good on the next try, and
+    // for the ones that do not this costs a device with no network two more
+    // immediate rejections.
+    if (requestError !== null) return { kind: 'retryable' }
+    // 5xx is the load-shedding this endpoint does under pressure. A 4xx says
+    // this exact request is wrong, and it will be just as wrong twice.
+    if (!response.ok) return { kind: response.status >= 500 ? 'retryable' : 'final' }
+
+    const [bodyError, json] = await tryCatch<unknown>(response.json())
+    // A 200 carrying something that is not JSON is a captive portal or a
+    // rewritten response, not a server under load — asking again changes nothing.
+    return bodyError === null ? { kind: 'answered', json } : { kind: 'final' }
+  }
+
   async function run(term: string): Promise<void> {
     // Aborting the previous request is what keeps a slow answer to "ska" from
     // landing on top of a fast answer to "skyr".
@@ -56,22 +117,27 @@ export function useRemoteFoodSearch(
     state.value = { status: 'searching' }
 
     const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(SEARCH_TIMEOUT_MS)])
-    const [requestError, response] = await tryCatch(fetch(adapter.searchUrl(term), { signal }))
-    if (controller.signal.aborted) return
-    if (requestError !== null || !response.ok) {
-      state.value = { status: 'error' }
-      return
+
+    for (let index = 0; index < MAX_ATTEMPTS; index += 1) {
+      if (index > 0) {
+        await delay(RETRY_DELAYS_MS[index - 1] ?? 0, signal)
+        if (controller.signal.aborted) return
+      }
+
+      const outcome = await attempt(term, signal)
+      // Re-checked after every await: the query can move on mid-retry, and an
+      // answer to a term the field no longer holds must never be rendered.
+      if (controller.signal.aborted) return
+
+      if (outcome.kind === 'answered') {
+        const result = adapter.parseSearchResponse(outcome.json)
+        state.value = result.status === 'ok' ? { status: 'ready', foods: result.foods } : result
+        return
+      }
+      if (outcome.kind === 'final') break
     }
 
-    const [bodyError, json] = await tryCatch<unknown>(response.json())
-    if (controller.signal.aborted) return
-    if (bodyError !== null) {
-      state.value = { status: 'error' }
-      return
-    }
-
-    const result = adapter.parseSearchResponse(json)
-    state.value = result.status === 'ok' ? { status: 'ready', foods: result.foods } : result
+    state.value = { status: 'error' }
   }
 
   const term = computed(() => toValue(query).trim())

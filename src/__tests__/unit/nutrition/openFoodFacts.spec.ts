@@ -129,6 +129,49 @@ describe('parseBarcodeLookup', () => {
       status: 'error',
     })
   })
+
+  /**
+   * The scan path is where rejecting `null` hurts most: barcode 6111246721735
+   * is a real product with complete nutriments and `"serving_quantity": null`,
+   * and a schema that refuses the null answers a scan of it with an error —
+   * the user is standing in a shop holding the thing the app just failed to
+   * find.
+   */
+  it('scans a product whose serving quantity was never filled in', () => {
+    expect(
+      parseBarcodeLookup({
+        status: 1,
+        product: {
+          product_name: 'Fromage blanc nature',
+          brands: 'MILKY FOOD',
+          serving_quantity: null,
+          nutriments: {
+            'energy-kcal_100g': 96,
+            proteins_100g: 4.1,
+            carbohydrates_100g: 12,
+            fat_100g: 3.2,
+          },
+        },
+      }),
+    ).toEqual({
+      status: 'found',
+      food: {
+        name: 'Fromage blanc nature',
+        brand: 'MILKY FOOD',
+        servingGrams: null,
+        nutrientsPer100Grams: {
+          calories: 96,
+          proteinGrams: 4.1,
+          carbohydrateGrams: 12,
+          fatGrams: 3.2,
+        },
+      },
+    })
+  })
+
+  it('reports not-found, not an error, for an explicitly null product', () => {
+    expect(parseBarcodeLookup({ status: 0, product: null })).toEqual({ status: 'not-found' })
+  })
 })
 
 describe('parseFoodSearch', () => {
@@ -300,6 +343,58 @@ describe('parseFoodSearch against captured Open Food Facts responses', () => {
         { id: '5690845001987', name: 'Skyr Moka', brand: 'Skyr' },
       ],
     })
+  })
+
+  /**
+   * `null` is how Open Food Facts stores a field somebody cleared, and it is
+   * common: a live `search_terms=skyr` page carries one `"serving_quantity":
+   * null` among its 20 products. Rejecting it drops a fully-populated product
+   * out of the results for a reason the user cannot see or act on.
+   */
+  it('treats a null field as unknown rather than dropping the whole product', () => {
+    expect(
+      parseFoodSearch({
+        products: [
+          {
+            code: '6111246721735',
+            product_name: 'Fromage blanc nature',
+            brands: 'MILKY FOOD',
+            serving_quantity: null,
+            nutriments: {
+              'energy-kcal_100g': 96,
+              proteins_100g: 4.1,
+              carbohydrates_100g: 12,
+              fat_100g: 3.2,
+              energy_100g: null,
+            },
+          },
+        ],
+      }),
+    ).toMatchObject({
+      status: 'ok',
+      foods: [
+        {
+          id: '6111246721735',
+          name: 'Fromage blanc nature',
+          brand: 'MILKY FOOD',
+          // Unknown, so the panel falls back to 100 g -- not zero, and not a
+          // missing row.
+          servingGrams: null,
+          nutrientsPer100Grams: { calories: 96, proteinGrams: 4.1 },
+        },
+      ],
+    })
+  })
+
+  it('still rejects a value that is present and unusable, rather than blanking it', () => {
+    // `null` means "nobody filled this in"; a non-numeric string means the
+    // entry is malformed, and silently reading it as 0 kcal would be worse
+    // than skipping the hit.
+    expect(
+      parseFoodSearch({
+        products: [{ product_name: 'Broken', nutriments: { 'energy-kcal_100g': 'lots' } }],
+      }),
+    ).toEqual({ status: 'ok', foods: [] })
   })
 
   it('leaves a hit with no brand at all unbranded rather than dropping it', () => {
