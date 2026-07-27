@@ -1,4 +1,4 @@
-import { toValue, ref, type MaybeRefOrGetter, type Ref } from 'vue'
+import { computed, toValue, ref, watch, type MaybeRefOrGetter, type Ref } from 'vue'
 import { tryOnScopeDispose, watchDebounced } from '@vueuse/core'
 import { tryCatch } from '@/lib/tryCatch'
 import type { ExternalFoodHit, FoodSearchApiAdapter } from '../lib/foodData'
@@ -16,8 +16,9 @@ export type RemoteFoodSearchState =
   | { readonly status: 'error' }
 
 /**
- * Below this the query is too broad to be worth a round trip — and typing
- * through "s", "sk", "sky" would fire three requests nobody reads.
+ * Shortest query worth a round trip: three characters search, one and two do
+ * not. Three is where real foods start ("egg", "oat", "ham"), and below it the
+ * result set is too broad to be worth the request.
  */
 const MIN_QUERY_LENGTH = 3
 /** Long enough to swallow a word being typed, short enough to feel like a search. */
@@ -73,17 +74,35 @@ export function useRemoteFoodSearch(
     state.value = result.status === 'ok' ? { status: 'ready', foods: result.foods } : result
   }
 
-  watchDebounced(
-    () => toValue(query).trim(),
-    (term) => {
-      if (term.length < MIN_QUERY_LENGTH) {
-        cancelInFlight()
-        state.value = { status: 'idle' }
-        return
-      }
-      void run(term)
+  const term = computed(() => toValue(query).trim())
+  const searchable = computed(() => term.value.length >= MIN_QUERY_LENGTH)
+
+  /**
+   * Undebounced, so the moment the query changes the previous query's hits stop
+   * being on screen and tappable. Debouncing this too would leave hits for
+   * "skyr" staged-able while the field already reads "skyr protein", and would
+   * let a request that lands inside the debounce window render under the new
+   * query.
+   */
+  watch(
+    term,
+    () => {
+      cancelInFlight()
+      state.value = searchable.value ? { status: 'searching' } : { status: 'idle' }
     },
-    { debounce: DEBOUNCE_MS },
+    // `immediate` matters: the panel unmounts on every tab switch and remounts
+    // with the query still in the field, so a plain watcher would leave a
+    // returning user with no remote section until they typed another letter.
+    { immediate: true },
+  )
+
+  // Only the request itself is debounced.
+  watchDebounced(
+    term,
+    (current) => {
+      if (searchable.value) void run(current)
+    },
+    { debounce: DEBOUNCE_MS, immediate: true },
   )
 
   // The sheet closes mid-flight far more often than not — the user found what

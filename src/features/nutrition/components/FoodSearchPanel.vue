@@ -86,8 +86,11 @@ function hitGrams(hit: ExternalFoodHit): number {
           Not an alert and not a toast: an unreachable food database is a
           missing extra, and the library above still answers the question.
         -->
+        <!-- `status`, not `alert`: announced politely when a screen reader
+             lands on it or the region updates, without interrupting. -->
         <p
           v-else-if="remote.status === 'error'"
+          role="status"
           class="px-4 py-4 text-center text-sm text-muted-foreground"
         >
           {{ t('nutrition.sheet.onlineFailed') }}

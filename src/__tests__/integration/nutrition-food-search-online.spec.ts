@@ -25,12 +25,19 @@ const SEARCH_RESPONSE = {
   ],
 }
 
+/** True only for the search host itself — a substring test would also match
+ *  `https://evil.example/?x=search.openfoodfacts.org`. */
+function isSearchRequest(input: unknown): boolean {
+  return new URL(String(input), globalThis.location.href).hostname === SEARCH_HOST
+}
+
 /** Routes only the Open Food Facts search host; everything else stays real. */
 function mockSearch(respond: (url: URL) => Promise<Response>): void {
   const realFetch = globalThis.fetch.bind(globalThis)
   vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
-    const url = new URL(String(input), globalThis.location.href)
-    if (url.hostname === SEARCH_HOST) return respond(url)
+    if (isSearchRequest(input)) {
+      return respond(new URL(String(input), globalThis.location.href))
+    }
     return realFetch(input, init)
   })
 }
@@ -145,7 +152,7 @@ describe('Food search against Open Food Facts', () => {
 
     await expect.element(foodLog.onlineSection).not.toBeInTheDocument()
     await expect
-      .poll(() => fetchSpy.mock.calls.some((call) => String(call[0]).includes(SEARCH_HOST)))
+      .poll(() => fetchSpy.mock.calls.some((call) => isSearchRequest(call[0])))
       .toBe(false)
   })
 })

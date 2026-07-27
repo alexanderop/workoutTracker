@@ -180,9 +180,11 @@ function toSearchHit(raw: unknown, index: number): ExternalFoodHit | null {
     servingGrams: servingGrams(product.serving_quantity),
     nutrientsPer100Grams,
   }
-  // Falls back to the position when a hit carries no barcode: the id only has
-  // to be unique within one response, where it is a list key.
-  return { ...food, id: product.code ?? `off-${index}` }
+  // Falls back to the position when a hit carries no barcode -- or a blank
+  // one, which would hand every such hit the same list key. The id only has to
+  // be unique within one response.
+  const code = product.code?.trim()
+  return { ...food, id: code === undefined || code.length === 0 ? `off-${index}` : code }
 }
 
 /**
