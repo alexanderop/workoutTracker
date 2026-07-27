@@ -278,6 +278,30 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
 })
 
+// The retry's own first instruction is to overwrite qa-report.md with an
+// UNKNOWN skeleton, so an unguarded retry can only lower the bar: run
+// 30273740519 lost a complete report that way and then failed the job outright
+// when the retry hit its turn cap. The retry is allowed to fail; what it leaves
+// behind is what gets judged, and the main run's report survives it.
+test('the QA retry cannot end worse than the run it retries', async () => {
+  const browser = await readFile('.github/workflows/claude-qa-browser.yml', 'utf8')
+  const retryJob = browser.slice(browser.indexOf('- name: Retry if no report generated'))
+
+  assert.match(browser, /- name: Preserve pre-retry report/)
+  assert.match(browser, /cp qa-report\.md \/tmp\/qa-report-pre-retry\.md/)
+  assert.match(retryJob, /continue-on-error: true/)
+  assert.match(retryJob, /cp \/tmp\/qa-report-pre-retry\.md qa-report\.md/)
+  assert.match(retryJob, /if: always\(\)/)
+
+  // The retry prompt's stated budget must leave headroom under the CLI cap it
+  // is spent against, and must not promise turns the cap will not grant.
+  const promptBudget = Number(browser.match(/Finalize qa-report\.md no later than (\d+) turns/)[1])
+  const promptCap = Number(browser.match(/hard limit is (\d+)/)[1])
+  const cliCap = Number(retryJob.match(/--max-turns (\d+)/)[1])
+  assert.equal(promptCap, cliCap, 'the prompt must quote the real --max-turns cap')
+  assert.ok(promptBudget < cliCap, 'the prompt must ask for the report before the cap')
+})
+
 // The publish job rejects a report whose H2 headings don't match
 // validateQaReport's required list exactly, so every prompt that can be the
 // last word to the QA agent has to name those headings verbatim. A run was

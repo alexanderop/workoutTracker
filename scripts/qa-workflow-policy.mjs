@@ -39,10 +39,11 @@ export function hasMeaningfulTemplateContent(section) {
 // and had it thrown away over an off-by-one in `total_tests` — hand arithmetic
 // is the one part of a QA payload that can be wrong while everything it counts
 // is right, so it is never evidence and never a reason to reject a run.
+const countWhere = (items, key, value) => items.filter((item) => item?.[key] === value).length
+
 export function deriveQaMetrics(data) {
   const tests = Array.isArray(data?.tests) ? data.tests : []
   const bugs = Array.isArray(data?.bugs) ? data.bugs : []
-  const countWhere = (items, key, value) => items.filter((item) => item?.[key] === value).length
   return {
     total_tests: tests.length,
     passed: countWhere(tests, 'result', 'pass'),

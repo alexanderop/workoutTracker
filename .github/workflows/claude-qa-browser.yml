@@ -988,7 +988,10 @@ jobs:
             echo '3. Run agent-browser set device "iPhone 14", reload, and verify matchMedia("(pointer: coarse)").matches before the first snapshot'
             echo '4. Dismiss onboarding if a "Skip to App" button is in the snapshot'
             echo '5. Check 3-4 main pages load correctly, updating qa-report.md after each page'
-            echo '6. Finalize qa-report.md no later than 30 turns spent (hard limit is 40)'
+            echo '6. Finalize qa-report.md no later than 45 turns spent (hard limit is 60)'
+            echo ''
+            echo 'Every Bash command you run must start with `agent-browser` — nothing else is'
+            echo 'permitted, so do not spend turns on curl, ls, or cat health checks.'
             echo ''
             echo 'The report is machine-validated: it is REJECTED unless it has a final'
             echo '"## Verdict: HEALTHY|MINOR_ISSUES|CRITICAL_BUGS" line AND all six of these'
@@ -1007,10 +1010,28 @@ jobs:
             echo 'RETRY_PROMPT_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      # The retry's first action is to overwrite qa-report.md with an UNKNOWN
+      # skeleton, so a retry that dies mid-run leaves the PR worse off than the
+      # main run did. Keep the main run's report so the verification step below
+      # can fall back to it.
+      - name: Preserve pre-retry report
+        if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/qa-report-pre-retry.md
+          if [ -f qa-report.md ]; then
+            cp qa-report.md /tmp/qa-report-pre-retry.md
+          fi
+
       - name: Retry if no report generated
         id: claude-qa-retry
         if: steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
         timeout-minutes: 8
+        # A retry that exhausts its turns is not itself the failure — the report
+        # it left behind is what matters, and "Verify report after retry" below
+        # is the gate that judges it.
+        continue-on-error: true
         uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -1023,19 +1044,31 @@ jobs:
           claude_args: |
             --allowedTools "Bash(agent-browser:*),Edit(qa-report.md),Write(qa-report.md)"
             --disallowedTools "Skill,Read,Glob,Grep"
-            --max-turns 40
+            --max-turns 60
             --model ${{ env.CLAUDE_MODEL }}
             --json-schema '${{ steps.load-schema.outputs.schema }}'
 
       - name: Verify report after retry
         id: check-report-retry
-        if: steps.check-report.outputs.exists == 'false'
+        if: always() && steps.claude-action-guard.outputs.can_run == 'true' && steps.check-report.outputs.exists == 'false'
         shell: bash
         env:
           STRUCTURED_OUTPUT: ${{ steps.claude-qa-retry.outputs.structured_output }}
         run: |
           set -euo pipefail
-          node /tmp/qa-workflow-policy.mjs qa-report.md
+          if node /tmp/qa-workflow-policy.mjs qa-report.md; then
+            exit 0
+          fi
+          # The retry left nothing publishable. If the main run's report stands
+          # on its own (validated without the retry's structured output), keep
+          # that rather than shipping the retry's skeleton.
+          if [ -f /tmp/qa-report-pre-retry.md ] &&
+             STRUCTURED_OUTPUT='' node /tmp/qa-workflow-policy.mjs /tmp/qa-report-pre-retry.md; then
+            echo "::notice::Retry produced no usable report — restoring the report from the main QA run."
+            cp /tmp/qa-report-pre-retry.md qa-report.md
+            exit 0
+          fi
+          exit 1
 
       - name: Validate final QA report
         id: final-report
