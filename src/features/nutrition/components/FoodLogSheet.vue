@@ -15,6 +15,7 @@ import { useFoodLogBasket } from '../composables/useFoodLogBasket'
 import { useFoodLookup } from '../composables/useFoodLookup'
 import { isBarcodeScanSupported } from '../lib/barcodeDetector'
 import { buildCommit } from '../lib/foodBasket'
+import type { ExternalFoodHit } from '../lib/foodData'
 import FoodBasketTray from './FoodBasketTray.vue'
 import FoodBudgetBars from './FoodBudgetBars.vue'
 import FoodCustomPanel from './FoodCustomPanel.vue'
@@ -100,6 +101,16 @@ async function handleBarcodeDetected(barcode: string): Promise<void> {
   // stepper covers the one thing it might have got wrong.
   tab.value = 'search'
   showToast(t('nutrition.sheet.scanAdded', { name }))
+}
+
+/**
+ * An Open Food Facts hit stages exactly like a scanned one — `source: 'new'`,
+ * so committing adds it to the library and the next search finds it locally,
+ * without a round trip.
+ */
+function stageExternalFood(hit: ExternalFoodHit): void {
+  const { name, brand, servingGrams, nutrientsPer100Grams } = hit
+  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams: servingGrams ?? 100 })
 }
 
 function stageQuickAdd(nutrients: DbFoodNutrients): void {
@@ -226,6 +237,7 @@ async function commit(): Promise<void> {
           v-model:query="query"
           :foods="foods"
           @stage="basket.stageLibraryFood"
+          @stage-external="stageExternalFood"
         />
 
         <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">

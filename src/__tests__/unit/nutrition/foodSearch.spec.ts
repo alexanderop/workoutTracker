@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeForSearch, searchFoods } from '@/features/nutrition/lib/foodSearch'
+import {
+  excludeLibraryDuplicates,
+  normalizeForSearch,
+  searchFoods,
+} from '@/features/nutrition/lib/foodSearch'
+import type { ExternalFoodHit } from '@/features/nutrition/lib/foodData'
 import type { DbFood } from '@/db/schema'
 
 function food(name: string, brand: string | null = null): DbFood {
@@ -15,6 +20,16 @@ function food(name: string, brand: string | null = null): DbFood {
     createdAt: 0,
     updatedAt: 0,
     lastUsedAt: null,
+  }
+}
+
+function hit(name: string, brand: string | null = null): ExternalFoodHit {
+  return {
+    id: name,
+    name,
+    brand,
+    servingGrams: null,
+    nutrientsPer100Grams: { calories: 63, proteinGrams: 10, carbohydrateGrams: 4, fatGrams: 0 },
   }
 }
 
@@ -52,5 +67,29 @@ describe('searchFoods', () => {
 
   it('preserves the input order, which is the repository lastUsedAt order', () => {
     expect(searchFoods(library, 'a').map((f) => f.name)).toEqual(['Skyr', 'Banane', 'Hafermilch'])
+  })
+})
+
+describe('excludeLibraryDuplicates', () => {
+  const library = [food('Skyr', 'Arla'), food('Müsli')]
+
+  it('drops a hit the library already has, matching case and accents loosely', () => {
+    expect(excludeLibraryDuplicates([hit('SKYR', 'arla'), hit('Musli')], library)).toEqual([])
+  })
+
+  it('keeps the same name under a different brand — those are different foods', () => {
+    expect(excludeLibraryDuplicates([hit('Skyr', 'Lidl')], library).map((h) => h.brand)).toEqual([
+      'Lidl',
+    ])
+  })
+
+  it('matches the whole library, not only what the current query surfaced', () => {
+    // The library here is what the panel passes: every food, unfiltered.
+    expect(excludeLibraryDuplicates([hit('Skyr', 'Arla')], library)).toEqual([])
+  })
+
+  it('returns every hit when the library is empty', () => {
+    const hits = [hit('Skyr', 'Arla'), hit('Banane')]
+    expect(excludeLibraryDuplicates(hits, [])).toEqual(hits)
   })
 })
