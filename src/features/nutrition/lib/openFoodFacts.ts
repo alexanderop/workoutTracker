@@ -20,17 +20,22 @@ const numericValueSchema = z
   .refine((value) => Number.isFinite(value), { message: 'Expected a finite number' })
 
 /**
- * A field Open Food Facts may not have a value for.
+ * Drops the keys Open Food Facts has no value for.
  *
  * It spells "not known" two ways — the key is absent, or it is present and
  * `null` for a crowd-sourced entry whose field was cleared — and both have to
- * mean the same thing here. Treating `null` as a schema violation instead
- * fails the *whole product*: `"serving_quantity": null` is common enough to
- * drop roughly one hit per search page, and on the barcode path it turns a
- * scan of a real, fully-populated product into a lookup error.
+ * mean the same thing here. Reconciling them once, before validation, is why
+ * every field below can stay a plain `.optional()`. Letting `null` reach the
+ * schema instead fails the *whole product*: `"serving_quantity": null` is
+ * common enough to drop about one hit per search page, and on the barcode path
+ * it turns a scan of a real, fully-populated product into a lookup error.
+ *
+ * One level deep on purpose — each nested object is parsed through its own
+ * schema, which does this for itself.
  */
-function unknownable<T extends z.ZodType>(schema: T) {
-  return schema.nullish().transform((value) => value ?? undefined)
+function withoutUnknownFields(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') return value
+  return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== null))
 }
 
 /**
@@ -38,13 +43,16 @@ function unknownable<T extends z.ZodType>(schema: T) {
  * the `_100g` keys). `energy_100g` is kilojoules and is only used as a
  * fallback when `energy-kcal_100g` is missing.
  */
-const nutrimentsSchema = z.object({
-  'energy-kcal_100g': unknownable(numericValueSchema),
-  energy_100g: unknownable(numericValueSchema),
-  proteins_100g: unknownable(numericValueSchema),
-  carbohydrates_100g: unknownable(numericValueSchema),
-  fat_100g: unknownable(numericValueSchema),
-})
+const nutrimentsSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    'energy-kcal_100g': numericValueSchema.optional(),
+    energy_100g: numericValueSchema.optional(),
+    proteins_100g: numericValueSchema.optional(),
+    carbohydrates_100g: numericValueSchema.optional(),
+    fat_100g: numericValueSchema.optional(),
+  }),
+)
 
 /**
  * Brands as either backend spells them: the CGI serves one comma-separated
@@ -55,13 +63,16 @@ const brandsSchema = z
   .union([z.string(), z.array(z.string())])
   .transform((value) => (Array.isArray(value) ? value.join(',') : value))
 
-const productSchema = z.object({
-  code: unknownable(z.string()),
-  product_name: unknownable(z.string()),
-  brands: unknownable(brandsSchema),
-  serving_quantity: unknownable(numericValueSchema),
-  nutriments: unknownable(nutrimentsSchema),
-})
+const productSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    code: z.string().optional(),
+    product_name: z.string().optional(),
+    brands: brandsSchema.optional(),
+    serving_quantity: numericValueSchema.optional(),
+    nutriments: nutrimentsSchema.optional(),
+  }),
+)
 
 /**
  * Response of GET /api/v2/product/{barcode}. `status` is 1 when the product
@@ -70,10 +81,13 @@ const productSchema = z.object({
  */
 const productStatusSchema = z.union([z.literal(0), z.literal(1)])
 
-const productResponseSchema = z.object({
-  status: unknownable(productStatusSchema),
-  product: unknownable(productSchema),
-})
+const productResponseSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    status: productStatusSchema.optional(),
+    product: productSchema.optional(),
+  }),
+)
 
 /**
  * Text search returns a page of products. Open Food Facts serves this from two
