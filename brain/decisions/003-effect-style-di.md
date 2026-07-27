@@ -54,7 +54,7 @@ the imperative shell resolves `Clock` from a context.
 
 ## Not in scope
 
-`Db` stays behind `getRepositoryProvider()`, and the eight `createGlobalState`
+`Db` stays behind `getRepositoryProvider()`, and the ten `createGlobalState`
 stores keep their existing reset lists — CLAUDE.md's `createGlobalState()`
 convention for shared feature stores is unchanged. Extending DI to either is a
 new decision, not an application of this one. Superseded for `Db` by

@@ -1,7 +1,7 @@
 # ADR 004: Db in DI, and the copyable feature template
 
 Status: accepted. Supersedes ADR 003's `Not in scope` clause, for `Db` only —
-the eight `createGlobalState` stores are untouched and CLAUDE.md's
+the ten `createGlobalState` stores are untouched and CLAUDE.md's
 `createGlobalState()` convention for shared feature stores still stands — and
 ADR 003's 250-line budget clause, which moves to 280.
 
@@ -33,7 +33,7 @@ recovers the `Services` union from the element type — so an unprovided service
 stays a compile error instead of degrading to a runtime `Service not found`
 once a runtime is built from more than one layer — and the new
 `src/lib/di/vue.ts` bridge (below). `makeRuntime([layer])` subsumes the
-single-layer `makeRuntimeOf`, which is deleted, so the kernel lands at 265. 280
+single-layer `makeRuntimeOf`, which is deleted, so the kernel lands at 276. 280
 is the new abandon threshold. Growth past it re-opens this ADR, not a raised
 number, exactly as ADR 003 stated for 250.
 
@@ -158,7 +158,7 @@ on a second feature, not just asserted.
   spec and three repository-only tests out of the browser tier. The convention
   earns its keep; the enforcement does not yet. Revisit if a third conversion
   produces a browser spec that cannot name its capability.
-- **14 `console.error` calls across `src/features` are un-injected side
+- **16 `console.error` calls across `src/features` are un-injected side
   effects** and noise in tests written against this template. A `Logger`
   service is a separate decision, not folded into this one.
 - **`release` is wired up but not exercised.** As `src/db/services.live.ts`'s

@@ -1,7 +1,7 @@
 # A lazily-mounted dialog is already open when it mounts
 
-Every dialog in this app is mounted on first use, to keep its dependencies off
-the startup path:
+Dialogs with non-trivial dependencies (camera, live queries, etc.) are mounted
+on first use, to keep those dependencies off the startup path:
 
 ```vue
 const Sheet = defineAsyncComponent(() => import('./FoodLogSheet.vue'))
