@@ -95,6 +95,11 @@ export default {
     recents: 'Zuletzt benutzt',
     matches: 'Treffer',
     noMatches: 'Kein Treffer. Lege es unter „Eigenes“ an.',
+    online: 'Open Food Facts',
+    onlineSearching: 'Suche bei Open Food Facts…',
+    onlineNoMatches: 'Online nichts gefunden.',
+    onlineFailed:
+      'Open Food Facts nicht erreichbar. Deine eigenen Lebensmittel funktionieren weiterhin.',
     emptyLibrary: 'Noch keine Lebensmittel. Scanne einen Barcode oder lege eines an.',
     stage: '{name} hinzufügen',
     perServing: '{grams} g · {serving}',

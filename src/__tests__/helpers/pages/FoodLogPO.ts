@@ -27,6 +27,15 @@ export class FoodLogPO {
     return page.getByTestId('food-search-results')
   }
 
+  /** The Open Food Facts section below the library results. */
+  get onlineSection() {
+    return page.getByTestId('food-search-online')
+  }
+
+  get onlineResults() {
+    return page.getByTestId('food-search-online-results')
+  }
+
   async openAddFood(): Promise<void> {
     await page.getByRole('button', { name: 'Add food', exact: true }).click()
     await this.common.waitForDialog()
