@@ -20,42 +20,94 @@ const numericValueSchema = z
   .refine((value) => Number.isFinite(value), { message: 'Expected a finite number' })
 
 /**
+ * Drops the keys Open Food Facts has no value for.
+ *
+ * It spells "not known" two ways — the key is absent, or it is present and
+ * `null` for a crowd-sourced entry whose field was cleared — and both have to
+ * mean the same thing here. Reconciling them once, before validation, is why
+ * every field below can stay a plain `.optional()`. Letting `null` reach the
+ * schema instead fails the *whole product*: `"serving_quantity": null` is
+ * common enough to drop about one hit per search page, and on the barcode path
+ * it turns a scan of a real, fully-populated product into a lookup error.
+ *
+ * One level deep on purpose — each nested object is parsed through its own
+ * schema, which does this for itself.
+ *
+ * Arrays pass through untouched so they stay malformed. `Object.fromEntries`
+ * would turn `[]` into `{}`, and since every field below is optional the empty
+ * object validates: a scan of a product whose `nutriments` came back as an
+ * array would report "found" with a silent 0 kcal for every macro instead of
+ * an error.
+ */
+function withoutUnknownFields(value: unknown): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return value
+  return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== null))
+}
+
+/**
  * Macros per 100 g (per 100 ml for beverages, which OFF also reports under
  * the `_100g` keys). `energy_100g` is kilojoules and is only used as a
  * fallback when `energy-kcal_100g` is missing.
  */
-const nutrimentsSchema = z.object({
-  'energy-kcal_100g': numericValueSchema.optional(),
-  energy_100g: numericValueSchema.optional(),
-  proteins_100g: numericValueSchema.optional(),
-  carbohydrates_100g: numericValueSchema.optional(),
-  fat_100g: numericValueSchema.optional(),
-})
+const nutrimentsSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    'energy-kcal_100g': numericValueSchema.optional(),
+    energy_100g: numericValueSchema.optional(),
+    proteins_100g: numericValueSchema.optional(),
+    carbohydrates_100g: numericValueSchema.optional(),
+    fat_100g: numericValueSchema.optional(),
+  }),
+)
 
-const productSchema = z.object({
-  code: z.string().optional(),
-  product_name: z.string().optional(),
-  brands: z.string().optional(),
-  serving_quantity: numericValueSchema.optional(),
-  nutriments: nutrimentsSchema.optional(),
-})
+/**
+ * Brands as either backend spells them: the CGI serves one comma-separated
+ * string, Search-a-licious an array of names. Normalised to the string form so
+ * everything downstream reads a single shape.
+ */
+const brandsSchema = z
+  .union([z.string(), z.array(z.string())])
+  .transform((value) => (Array.isArray(value) ? value.join(',') : value))
+
+const productSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    code: z.string().optional(),
+    product_name: z.string().optional(),
+    brands: brandsSchema.optional(),
+    serving_quantity: numericValueSchema.optional(),
+    nutriments: nutrimentsSchema.optional(),
+  }),
+)
 
 /**
  * Response of GET /api/v2/product/{barcode}. `status` is 1 when the product
  * exists and 0 for unknown/invalid codes (which the API can also answer with
  * an HTTP 404 instead of a body).
+ *
+ * Required, not optional: the endpoint sends it on every answer — verified for
+ * both a known and an unknown barcode, and it survives the `fields` filter. A
+ * body without it did not come from this API, and a `product` arriving with no
+ * verdict attached is not grounds to log food from it.
  */
-const productResponseSchema = z.object({
-  status: z.union([z.literal(0), z.literal(1)]).optional(),
-  product: productSchema.optional(),
-})
+const productStatusSchema = z.union([z.literal(0), z.literal(1)])
+
+const productResponseSchema = z.preprocess(
+  withoutUnknownFields,
+  z.object({
+    status: productStatusSchema,
+    product: productSchema.optional(),
+  }),
+)
 
 /**
  * Text search returns a page of products. Open Food Facts serves this from two
- * places with the same product shape under different keys: the Search-a-licious
- * service answers with `hits`, the legacy `/cgi/search.pl` with `products`.
- * Accepting both keeps `SEARCH_ENDPOINT` a one-line switch if the newer service
- * is unavailable.
+ * places with the same product shape under different keys: the legacy
+ * `/cgi/search.pl` answers with `products`, the Search-a-licious service with
+ * `hits`. Accepting both means moving to Search-a-licious, should it ever
+ * become reachable from a browser (see below), needs no change here — but it
+ * is not a one-line switch: that service takes the query as `q` and has no use
+ * for `search_simple`/`action`/`json`, so `searchUrl` has to change with it.
  */
 const searchResponseSchema = z.object({
   hits: z.array(z.unknown()).optional(),
@@ -69,12 +121,32 @@ const PRODUCT_ENDPOINT = 'https://world.openfoodfacts.org/api/v2/product/'
 const PRODUCT_FIELDS = 'product_name,brands,serving_quantity,nutriments'
 
 /**
- * Search-a-licious rather than the legacy `/cgi/search.pl`: it is the endpoint
- * Open Food Facts points text search at, and it is not under the 10-searches-
- * per-minute limit the legacy CGI carries — which a debounced search field
- * types straight through.
+ * The legacy `/cgi/search.pl`, on the same host as the barcode lookup, rather
+ * than Search-a-licious at `search.openfoodfacts.org`.
+ *
+ * Search-a-licious is the faster and better endpoint, and it is unusable from
+ * a browser: it answers with `Access-Control-Allow-Credentials: true` and no
+ * `Access-Control-Allow-Origin` at all, so every request this app makes is
+ * blocked at the CORS layer before the response is readable — search could
+ * only ever render "Open Food Facts is unreachable". That is a server-side
+ * misconfiguration nothing here can work around; a proxy would need a backend,
+ * and this app does not have one.
+ *
+ * `world.openfoodfacts.org` sends `Access-Control-Allow-Origin: *`, which is
+ * why the barcode scanner has always worked. The trade is a much slower and
+ * less available backend — it answers a large share of requests with an HTML
+ * 503 under load — which is why `useRemoteFoodSearch` retries before giving
+ * up. What it cannot retry past still lands in the `error` state, leaving the
+ * user's own library untouched.
  */
-const SEARCH_ENDPOINT = 'https://search.openfoodfacts.org/search'
+const SEARCH_ENDPOINT = 'https://world.openfoodfacts.org/cgi/search.pl'
+/**
+ * Worth sending even though the CGI only honours it at the top level: it takes
+ * a page of 20 from ~790 kB to ~35 kB. The remainder is `nutriments`, which
+ * comes back complete (~81 keys per product) whether or not five of them are
+ * all that is asked for — the CGI has no syntax for selecting inside it, so
+ * that cost is not removable from this side.
+ */
 const SEARCH_FIELDS = 'code,product_name,brands,serving_quantity,nutriments'
 /** One screenful after dedupe against the library; the list scrolls, but nobody scrolls it far. */
 const SEARCH_PAGE_SIZE = 20
@@ -85,7 +157,12 @@ function productUrl(barcode: string): string {
 
 function searchUrl(query: string): string {
   const parameters = new URLSearchParams({
-    q: query,
+    search_terms: query,
+    // The CGI serves the human search page by default; these two ask it for the
+    // free-text search a query field means, and `json` for a body to parse.
+    search_simple: '1',
+    action: 'process',
+    json: '1',
     page_size: String(SEARCH_PAGE_SIZE),
     fields: SEARCH_FIELDS,
   })

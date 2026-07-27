@@ -3,9 +3,17 @@ import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
+import { openFoodFactsAdapter } from '@/features/nutrition/lib/openFoodFacts'
 import type { MediaTrackCapabilitiesWithTorch } from '@/features/nutrition/lib/torch'
 
 const NUTELLA_BARCODE = '3017620422003'
+
+/**
+ * The lookup path, taken from the adapter. Text search lives on the same host,
+ * so a host-only match would have this spec answering searches with a product
+ * body — a mock that stands in for more than the one call it was written for.
+ */
+const PRODUCT_PATH_PREFIX = new URL(openFoodFactsAdapter.productUrl(NUTELLA_BARCODE)).pathname
 
 const OPEN_FOOD_FACTS_RESPONSE = {
   status: 1,
@@ -70,7 +78,7 @@ describe('Nutrition barcode scan', () => {
     const realFetch = globalThis.fetch.bind(globalThis)
     vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const url = new URL(String(input), globalThis.location.href)
-      if (url.hostname === 'world.openfoodfacts.org') {
+      if (url.pathname === PRODUCT_PATH_PREFIX) {
         return Promise.resolve(Response.json(OPEN_FOOD_FACTS_RESPONSE))
       }
       return realFetch(input, init)

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { parseBarcodeLookup, parseFoodSearch } from '@/features/nutrition/lib/openFoodFacts'
+import {
+  openFoodFactsAdapter,
+  parseBarcodeLookup,
+  parseFoodSearch,
+} from '@/features/nutrition/lib/openFoodFacts'
 
 describe('parseBarcodeLookup', () => {
   it('maps a full Open Food Facts product to a scanned food', () => {
@@ -118,12 +122,92 @@ describe('parseBarcodeLookup', () => {
     expect(parseBarcodeLookup({ status: 2, product: { product_name: 'Oats' } })).toEqual({
       status: 'error',
     })
+    // `status` is spelled out on these two so they fail on the nutriment they
+    // are named for. Without it they would be rejected for the missing status
+    // and pass whatever the numbers did.
     expect(
-      parseBarcodeLookup({ product: { nutriments: { 'energy-kcal_100g': 'not a number' } } }),
+      parseBarcodeLookup({
+        status: 1,
+        product: { nutriments: { 'energy-kcal_100g': 'not a number' } },
+      }),
     ).toEqual({ status: 'error' })
-    expect(parseBarcodeLookup({ product: { nutriments: { fat_100g: Infinity } } })).toEqual({
-      status: 'error',
+    expect(
+      parseBarcodeLookup({ status: 1, product: { nutriments: { fat_100g: Infinity } } }),
+    ).toEqual({ status: 'error' })
+  })
+
+  /**
+   * An array where an object belongs is malformed, and it has to stay
+   * malformed. Stripping null fields must not quietly reshape `[]` into `{}` —
+   * every nutriment is optional, so the empty object validates, and a scan
+   * would come back "found" with a silent 0 kcal for every macro.
+   */
+  it('refuses an array where the product or its nutriments should be', () => {
+    expect(
+      parseBarcodeLookup({ status: 1, product: { product_name: 'Oats', nutriments: [] } }),
+    ).toEqual({ status: 'error' })
+    expect(parseBarcodeLookup({ status: 1, product: ['Oats'] })).toEqual({ status: 'error' })
+  })
+
+  /**
+   * Open Food Facts answers every lookup with a `status`, found or not. A body
+   * carrying a `product` and no verdict is something else — a proxy, a cached
+   * fragment, a rewritten response — and reading a food out of it would put
+   * numbers nobody vouched for into the day's totals.
+   */
+  it('refuses a product that arrives without a status', () => {
+    expect(
+      parseBarcodeLookup({
+        product: {
+          product_name: 'Skyr Natural',
+          brands: 'Arla',
+          nutriments: { 'energy-kcal_100g': 63, proteins_100g: 10.6 },
+        },
+      }),
+    ).toEqual({ status: 'error' })
+  })
+
+  /**
+   * The scan path is where rejecting `null` hurts most: barcode 6111246721735
+   * is a real product with complete nutriments and `"serving_quantity": null`,
+   * and a schema that refuses the null answers a scan of it with an error —
+   * the user is standing in a shop holding the thing the app just failed to
+   * find.
+   */
+  it('scans a product whose serving quantity was never filled in', () => {
+    expect(
+      parseBarcodeLookup({
+        status: 1,
+        product: {
+          product_name: 'Fromage blanc nature',
+          brands: 'MILKY FOOD',
+          serving_quantity: null,
+          nutriments: {
+            'energy-kcal_100g': 96,
+            proteins_100g: 4.1,
+            carbohydrates_100g: 12,
+            fat_100g: 3.2,
+          },
+        },
+      }),
+    ).toEqual({
+      status: 'found',
+      food: {
+        name: 'Fromage blanc nature',
+        brand: 'MILKY FOOD',
+        servingGrams: null,
+        nutrientsPer100Grams: {
+          calories: 96,
+          proteinGrams: 4.1,
+          carbohydrateGrams: 12,
+          fatGrams: 3.2,
+        },
+      },
     })
+  })
+
+  it('reports not-found, not an error, for an explicitly null product', () => {
+    expect(parseBarcodeLookup({ status: 0, product: null })).toEqual({ status: 'not-found' })
   })
 })
 
@@ -206,5 +290,206 @@ describe('parseFoodSearch', () => {
   it('reports an error for a response that is not a search result', () => {
     expect(parseFoodSearch('nonsense')).toEqual({ status: 'error' })
     expect(parseFoodSearch({ error: 'rate limited' })).toEqual({ status: 'error' })
+  })
+})
+
+/**
+ * The fixtures below are trimmed captures of what the two Open Food Facts
+ * search backends actually answer with, unknown keys and all. The hand-written
+ * hits above share one made-up product shape, which is how a search that
+ * returned zero rows against the real API went unnoticed: both backends were
+ * asserted with the *same* `brands` spelling, and only one of them uses it.
+ */
+describe('parseFoodSearch against captured Open Food Facts responses', () => {
+  it('maps a legacy /cgi/search.pl page, which spells brands as one string', () => {
+    const result = parseFoodSearch({
+      count: 3992,
+      page: 1,
+      page_count: 200,
+      page_size: 20,
+      skip: 0,
+      products: [
+        {
+          code: '3329770077003',
+          product_name: 'Skyr nature 0%',
+          brands: 'Yoplait',
+          serving_quantity: 100,
+          nutriments: {
+            'energy-kcal_100g': 57,
+            'energy-kj_100g': 243,
+            energy_100g: 243,
+            proteins_100g: 9.5,
+            carbohydrates_100g: 4,
+            fat_100g: 0.2,
+            salt_100g: 0.1,
+            sugars_100g: 4,
+          },
+        },
+        {
+          code: '6111246721261',
+          product_name: 'Fromage Blanc Nature',
+          brands: 'Milky Food Professional',
+          serving_quantity: 100,
+          nutriments: { 'energy-kcal_100g': 159, proteins_100g: 5 },
+        },
+      ],
+    })
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      foods: [
+        { id: '3329770077003', name: 'Skyr nature 0%', brand: 'Yoplait', servingGrams: 100 },
+        { id: '6111246721261', name: 'Fromage Blanc Nature', brand: 'Milky Food Professional' },
+      ],
+    })
+  })
+
+  it('maps a Search-a-licious page, which spells brands as an array', () => {
+    const result = parseFoodSearch({
+      hits: [
+        {
+          code: '8710624358174',
+          product_name: 'Skyr naturel',
+          brands: ['Skyr'],
+          nutriments: {
+            'energy-kcal_100g': 62,
+            proteins_100g: 11,
+            carbohydrates_100g: 4,
+            fat_100g: 0.200000002980232,
+          },
+        },
+        {
+          code: '5690845001987',
+          product_name: 'Skyr Moka',
+          // Multiple brands, unpadded first and padded rest, as OFF stores them.
+          brands: ['Skyr', ' Isey Skyr'],
+          nutriments: { 'energy-kcal_100g': 79, proteins_100g: 9.5 },
+        },
+      ],
+      count: 1929,
+      page: 1,
+      page_size: 20,
+      aggregations: null,
+      is_count_exact: true,
+    })
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      foods: [
+        { id: '8710624358174', name: 'Skyr naturel', brand: 'Skyr' },
+        { id: '5690845001987', name: 'Skyr Moka', brand: 'Skyr' },
+      ],
+    })
+  })
+
+  /**
+   * `null` is how Open Food Facts stores a field somebody cleared, and it is
+   * common: a live `search_terms=skyr` page carries one `"serving_quantity":
+   * null` among its 20 products. Rejecting it drops a fully-populated product
+   * out of the results for a reason the user cannot see or act on.
+   */
+  it('treats a null field as unknown rather than dropping the whole product', () => {
+    expect(
+      parseFoodSearch({
+        products: [
+          {
+            code: '6111246721735',
+            product_name: 'Fromage blanc nature',
+            brands: 'MILKY FOOD',
+            serving_quantity: null,
+            nutriments: {
+              'energy-kcal_100g': 96,
+              proteins_100g: 4.1,
+              carbohydrates_100g: 12,
+              fat_100g: 3.2,
+              energy_100g: null,
+            },
+          },
+        ],
+      }),
+    ).toMatchObject({
+      status: 'ok',
+      foods: [
+        {
+          id: '6111246721735',
+          name: 'Fromage blanc nature',
+          brand: 'MILKY FOOD',
+          // Unknown, so the panel falls back to 100 g -- not zero, and not a
+          // missing row.
+          servingGrams: null,
+          nutrientsPer100Grams: { calories: 96, proteinGrams: 4.1 },
+        },
+      ],
+    })
+  })
+
+  it('still rejects a value that is present and unusable, rather than blanking it', () => {
+    // `null` means "nobody filled this in"; a non-numeric string means the
+    // entry is malformed, and silently reading it as 0 kcal would be worse
+    // than skipping the hit.
+    expect(
+      parseFoodSearch({
+        products: [{ product_name: 'Broken', nutriments: { 'energy-kcal_100g': 'lots' } }],
+      }),
+    ).toEqual({ status: 'ok', foods: [] })
+  })
+
+  it('leaves a hit with no brand at all unbranded rather than dropping it', () => {
+    expect(
+      parseFoodSearch({ hits: [{ product_name: 'Oats', nutriments: { proteins_100g: 13 } }] }),
+    ).toMatchObject({ status: 'ok', foods: [{ name: 'Oats', brand: null }] })
+    expect(
+      parseFoodSearch({
+        hits: [{ product_name: 'Oats', brands: [], nutriments: { proteins_100g: 13 } }],
+      }),
+    ).toMatchObject({ status: 'ok', foods: [{ name: 'Oats', brand: null }] })
+  })
+})
+
+describe('openFoodFactsAdapter.searchUrl', () => {
+  /**
+   * The regression this pins. Search used to point at
+   * `search.openfoodfacts.org` (Search-a-licious), which answers cross-origin
+   * requests with `Access-Control-Allow-Credentials` and no
+   * `Access-Control-Allow-Origin`, so the browser discarded every response
+   * before the app could read it and the online section could only ever render
+   * "Open Food Facts is unreachable".
+   *
+   * Tying the two URLs together is the point: `productUrl` is the lookup the
+   * barcode scanner has always used successfully, which makes its host the one
+   * demonstrably configured to answer this app. Search has to share it.
+   */
+  it('searches the same host the working barcode lookup uses', () => {
+    const search = new URL(openFoodFactsAdapter.searchUrl('skyr'))
+
+    expect(search.origin).toBe(new URL(openFoodFactsAdapter.productUrl('3329770077003')).origin)
+    expect(search.origin).toBe('https://world.openfoodfacts.org')
+  })
+
+  it('asks the CGI for a JSON free-text search instead of its HTML page', () => {
+    const url = new URL(openFoodFactsAdapter.searchUrl('skyr protein'))
+
+    expect(url.pathname).toBe('/cgi/search.pl')
+    // `json` is what makes the body parseable at all, and without
+    // `search_simple`/`action` the CGI ignores the terms and answers with the
+    // unfiltered product list -- which reads as "search is broken" just as much
+    // as an empty section does.
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      search_terms: 'skyr protein',
+      search_simple: '1',
+      action: 'process',
+      json: '1',
+      page_size: '20',
+      fields: 'code,product_name,brands,serving_quantity,nutriments',
+    })
+  })
+
+  it('encodes a query rather than letting it rewrite the other parameters', () => {
+    const url = new URL(openFoodFactsAdapter.searchUrl('a&page_size=500&json=0#frag'))
+
+    expect(url.searchParams.get('search_terms')).toBe('a&page_size=500&json=0#frag')
+    expect(url.searchParams.get('page_size')).toBe('20')
+    expect(url.searchParams.get('json')).toBe('1')
+    expect(url.hash).toBe('')
   })
 })
