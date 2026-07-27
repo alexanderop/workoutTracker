@@ -32,10 +32,19 @@ const nutrimentsSchema = z.object({
   fat_100g: numericValueSchema.optional(),
 })
 
+/**
+ * Brands as either backend spells them: the CGI serves one comma-separated
+ * string, Search-a-licious an array of names. Normalised to the string form so
+ * everything downstream reads a single shape.
+ */
+const brandsSchema = z
+  .union([z.string(), z.array(z.string())])
+  .transform((value) => (Array.isArray(value) ? value.join(',') : value))
+
 const productSchema = z.object({
   code: z.string().optional(),
   product_name: z.string().optional(),
-  brands: z.string().optional(),
+  brands: brandsSchema.optional(),
   serving_quantity: numericValueSchema.optional(),
   nutriments: nutrimentsSchema.optional(),
 })
@@ -52,10 +61,10 @@ const productResponseSchema = z.object({
 
 /**
  * Text search returns a page of products. Open Food Facts serves this from two
- * places with the same product shape under different keys: the Search-a-licious
- * service answers with `hits`, the legacy `/cgi/search.pl` with `products`.
- * Accepting both keeps `SEARCH_ENDPOINT` a one-line switch if the newer service
- * is unavailable.
+ * places with the same product shape under different keys: the legacy
+ * `/cgi/search.pl` answers with `products`, the Search-a-licious service with
+ * `hits`. Accepting both keeps `SEARCH_ENDPOINT` a one-line switch if
+ * Search-a-licious ever becomes reachable from a browser (see below).
  */
 const searchResponseSchema = z.object({
   hits: z.array(z.unknown()).optional(),
@@ -69,12 +78,23 @@ const PRODUCT_ENDPOINT = 'https://world.openfoodfacts.org/api/v2/product/'
 const PRODUCT_FIELDS = 'product_name,brands,serving_quantity,nutriments'
 
 /**
- * Search-a-licious rather than the legacy `/cgi/search.pl`: it is the endpoint
- * Open Food Facts points text search at, and it is not under the 10-searches-
- * per-minute limit the legacy CGI carries — which a debounced search field
- * types straight through.
+ * The legacy `/cgi/search.pl`, on the same host as the barcode lookup, rather
+ * than Search-a-licious at `search.openfoodfacts.org`.
+ *
+ * Search-a-licious is the faster and better endpoint, and it is unusable from
+ * a browser: it answers with `Access-Control-Allow-Credentials: true` and no
+ * `Access-Control-Allow-Origin` at all, so every request this app makes is
+ * blocked at the CORS layer before the response is readable — search could
+ * only ever render "Open Food Facts is unreachable". That is a server-side
+ * misconfiguration nothing here can work around; a proxy would need a backend,
+ * and this app does not have one.
+ *
+ * `world.openfoodfacts.org` sends `Access-Control-Allow-Origin: *`, which is
+ * why the barcode scanner has always worked. The trade is a slower, rate-
+ * limited backend, and both of its failure modes already land in the adapter's
+ * `error` state, which leaves the user's own library untouched.
  */
-const SEARCH_ENDPOINT = 'https://search.openfoodfacts.org/search'
+const SEARCH_ENDPOINT = 'https://world.openfoodfacts.org/cgi/search.pl'
 const SEARCH_FIELDS = 'code,product_name,brands,serving_quantity,nutriments'
 /** One screenful after dedupe against the library; the list scrolls, but nobody scrolls it far. */
 const SEARCH_PAGE_SIZE = 20
@@ -85,7 +105,12 @@ function productUrl(barcode: string): string {
 
 function searchUrl(query: string): string {
   const parameters = new URLSearchParams({
-    q: query,
+    search_terms: query,
+    // The CGI serves the human search page by default; these two ask it for the
+    // free-text search a query field means, and `json` for a body to parse.
+    search_simple: '1',
+    action: 'process',
+    json: '1',
     page_size: String(SEARCH_PAGE_SIZE),
     fields: SEARCH_FIELDS,
   })

@@ -32,6 +32,15 @@ const adapter: FoodSearchApiAdapter = {
   }),
 }
 
+/**
+ * Drain the `await` chain inside `run()`, whatever branch it takes. Reading a
+ * response body is not purely microtask work, so this has to let queued tasks
+ * run too -- `advanceTimersByTimeAsync` is the fake-timer way to do that.
+ */
+async function flushAsyncWork(): Promise<void> {
+  for (let index = 0; index < 5; index += 1) await vi.advanceTimersByTimeAsync(0)
+}
+
 /** A fetch whose response the test releases by hand. */
 function deferredFetch() {
   const pending = Promise.withResolvers<Response>()
@@ -43,6 +52,14 @@ function deferredFetch() {
       pending.resolve(Response.json(body))
       // Two ticks: one for the fetch promise, one for `response.json()`.
       return Promise.resolve().then(() => {})
+    },
+    respondWithResponse: async (response: Response) => {
+      pending.resolve(response)
+      await flushAsyncWork()
+    },
+    rejectWith: async (error: Error) => {
+      pending.reject(error)
+      await flushAsyncWork()
     },
   }
 }
@@ -145,5 +162,57 @@ describe('useRemoteFoodSearch', () => {
     // query, which is still waiting on its own request.
     expect(state.value).toEqual({ status: 'searching' })
     scope.stop()
+  })
+
+  /**
+   * The three ways the real Open Food Facts search fails, all of which have to
+   * land in `error` rather than hang on `searching` or throw: the panel keeps
+   * showing the user's own library either way, and a permanent spinner is the
+   * one outcome that reads as a broken app.
+   */
+  describe('when Open Food Facts does not answer with a usable page', () => {
+    it('reports an error for an outage, which OFF serves as an HTML 503', async () => {
+      const { respondWithResponse } = deferredFetch()
+      const query = ref('skyr')
+      const { state, scope } = runInScope(query)
+
+      await nextTick()
+      vi.advanceTimersByTime(DEBOUNCE_MS)
+      await respondWithResponse(
+        new Response('<!DOCTYPE html><title>Page temporarily unavailable</title>', {
+          status: 503,
+          headers: { 'content-type': 'text/html' },
+        }),
+      )
+
+      expect(state.value).toEqual({ status: 'error' })
+      scope.stop()
+    })
+
+    it('reports an error when the request never lands, as offline or CORS does', async () => {
+      const { rejectWith } = deferredFetch()
+      const query = ref('skyr')
+      const { state, scope } = runInScope(query)
+
+      await nextTick()
+      vi.advanceTimersByTime(DEBOUNCE_MS)
+      await rejectWith(new TypeError('Failed to fetch'))
+
+      expect(state.value).toEqual({ status: 'error' })
+      scope.stop()
+    })
+
+    it('reports an error for a 200 whose body is not JSON', async () => {
+      const { respondWithResponse } = deferredFetch()
+      const query = ref('skyr')
+      const { state, scope } = runInScope(query)
+
+      await nextTick()
+      vi.advanceTimersByTime(DEBOUNCE_MS)
+      await respondWithResponse(new Response('<html>captive portal</html>', { status: 200 }))
+
+      expect(state.value).toEqual({ status: 'error' })
+      scope.stop()
+    })
   })
 })

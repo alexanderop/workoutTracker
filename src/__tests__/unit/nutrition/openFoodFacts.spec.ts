@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { parseBarcodeLookup, parseFoodSearch } from '@/features/nutrition/lib/openFoodFacts'
+import {
+  openFoodFactsAdapter,
+  parseBarcodeLookup,
+  parseFoodSearch,
+} from '@/features/nutrition/lib/openFoodFacts'
 
 describe('parseBarcodeLookup', () => {
   it('maps a full Open Food Facts product to a scanned food', () => {
@@ -206,5 +210,154 @@ describe('parseFoodSearch', () => {
   it('reports an error for a response that is not a search result', () => {
     expect(parseFoodSearch('nonsense')).toEqual({ status: 'error' })
     expect(parseFoodSearch({ error: 'rate limited' })).toEqual({ status: 'error' })
+  })
+})
+
+/**
+ * The fixtures below are trimmed captures of what the two Open Food Facts
+ * search backends actually answer with, unknown keys and all. The hand-written
+ * hits above share one made-up product shape, which is how a search that
+ * returned zero rows against the real API went unnoticed: both backends were
+ * asserted with the *same* `brands` spelling, and only one of them uses it.
+ */
+describe('parseFoodSearch against captured Open Food Facts responses', () => {
+  it('maps a legacy /cgi/search.pl page, which spells brands as one string', () => {
+    const result = parseFoodSearch({
+      count: 3992,
+      page: 1,
+      page_count: 200,
+      page_size: 20,
+      skip: 0,
+      products: [
+        {
+          code: '3329770077003',
+          product_name: 'Skyr nature 0%',
+          brands: 'Yoplait',
+          serving_quantity: 100,
+          nutriments: {
+            'energy-kcal_100g': 57,
+            'energy-kj_100g': 243,
+            energy_100g: 243,
+            proteins_100g: 9.5,
+            carbohydrates_100g: 4,
+            fat_100g: 0.2,
+            salt_100g: 0.1,
+            sugars_100g: 4,
+          },
+        },
+        {
+          code: '6111246721261',
+          product_name: 'Fromage Blanc Nature',
+          brands: 'Milky Food Professional',
+          serving_quantity: 100,
+          nutriments: { 'energy-kcal_100g': 159, proteins_100g: 5 },
+        },
+      ],
+    })
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      foods: [
+        { id: '3329770077003', name: 'Skyr nature 0%', brand: 'Yoplait', servingGrams: 100 },
+        { id: '6111246721261', name: 'Fromage Blanc Nature', brand: 'Milky Food Professional' },
+      ],
+    })
+  })
+
+  it('maps a Search-a-licious page, which spells brands as an array', () => {
+    const result = parseFoodSearch({
+      hits: [
+        {
+          code: '8710624358174',
+          product_name: 'Skyr naturel',
+          brands: ['Skyr'],
+          nutriments: {
+            'energy-kcal_100g': 62,
+            proteins_100g: 11,
+            carbohydrates_100g: 4,
+            fat_100g: 0.200000002980232,
+          },
+        },
+        {
+          code: '5690845001987',
+          product_name: 'Skyr Moka',
+          // Multiple brands, unpadded first and padded rest, as OFF stores them.
+          brands: ['Skyr', ' Isey Skyr'],
+          nutriments: { 'energy-kcal_100g': 79, proteins_100g: 9.5 },
+        },
+      ],
+      count: 1929,
+      page: 1,
+      page_size: 20,
+      aggregations: null,
+      is_count_exact: true,
+    })
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      foods: [
+        { id: '8710624358174', name: 'Skyr naturel', brand: 'Skyr' },
+        { id: '5690845001987', name: 'Skyr Moka', brand: 'Skyr' },
+      ],
+    })
+  })
+
+  it('leaves a hit with no brand at all unbranded rather than dropping it', () => {
+    expect(
+      parseFoodSearch({ hits: [{ product_name: 'Oats', nutriments: { proteins_100g: 13 } }] }),
+    ).toMatchObject({ status: 'ok', foods: [{ name: 'Oats', brand: null }] })
+    expect(
+      parseFoodSearch({
+        hits: [{ product_name: 'Oats', brands: [], nutriments: { proteins_100g: 13 } }],
+      }),
+    ).toMatchObject({ status: 'ok', foods: [{ name: 'Oats', brand: null }] })
+  })
+})
+
+describe('openFoodFactsAdapter.searchUrl', () => {
+  /**
+   * The regression this pins. Search used to point at
+   * `search.openfoodfacts.org` (Search-a-licious), which answers cross-origin
+   * requests with `Access-Control-Allow-Credentials` and no
+   * `Access-Control-Allow-Origin`, so the browser discarded every response
+   * before the app could read it and the online section could only ever render
+   * "Open Food Facts is unreachable".
+   *
+   * Tying the two URLs together is the point: `productUrl` is the lookup the
+   * barcode scanner has always used successfully, which makes its host the one
+   * demonstrably configured to answer this app. Search has to share it.
+   */
+  it('searches the same host the working barcode lookup uses', () => {
+    const search = new URL(openFoodFactsAdapter.searchUrl('skyr'))
+
+    expect(search.origin).toBe(new URL(openFoodFactsAdapter.productUrl('3329770077003')).origin)
+    expect(search.origin).toBe('https://world.openfoodfacts.org')
+  })
+
+  it('asks the CGI for a JSON free-text search instead of its HTML page', () => {
+    const url = new URL(openFoodFactsAdapter.searchUrl('skyr protein'))
+
+    expect(url.pathname).toBe('/cgi/search.pl')
+    // `json` is what makes the body parseable at all, and without
+    // `search_simple`/`action` the CGI ignores the terms and answers with the
+    // unfiltered product list -- which reads as "search is broken" just as much
+    // as an empty section does.
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      search_terms: 'skyr protein',
+      search_simple: '1',
+      action: 'process',
+      json: '1',
+      page_size: '20',
+      fields: 'code,product_name,brands,serving_quantity,nutriments',
+    })
+  })
+
+  it('encodes a query rather than letting it rewrite the other parameters', () => {
+    const url = new URL(openFoodFactsAdapter.searchUrl('a&page_size=500&json=0#frag'))
+
+    expect(url.searchParams.get('search_terms')).toBe('a&page_size=500&json=0#frag')
+    expect(url.searchParams.get('page_size')).toBe('20')
+    expect(url.searchParams.get('json')).toBe('1')
+    expect(url.hash).toBe('')
   })
 })

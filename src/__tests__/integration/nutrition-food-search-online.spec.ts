@@ -4,12 +4,19 @@ import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getNutritionRepository } from '@/db'
 import { getLocalDateKey } from '@/features/nutrition/lib/nutritionCalculations'
+import { openFoodFactsAdapter } from '@/features/nutrition/lib/openFoodFacts'
 
-const SEARCH_HOST = 'search.openfoodfacts.org'
+/**
+ * Asked of the adapter rather than written down here. A hardcoded host is what
+ * let these tests stay green while search was broken for every real user: the
+ * mock answered the host the spec named, the app requested a different one, and
+ * nothing in between compared the two.
+ */
+const SEARCH_URL = new URL(openFoodFactsAdapter.searchUrl('probe'), globalThis.location.href)
 
 const SEARCH_RESPONSE = {
   count: 1,
-  hits: [
+  products: [
     {
       code: '3017620422003',
       product_name: 'Nutella',
@@ -25,10 +32,16 @@ const SEARCH_RESPONSE = {
   ],
 }
 
-/** True only for the search host itself — a substring test would also match
- *  `https://evil.example/?x=search.openfoodfacts.org`. */
+/**
+ * True only for the search endpoint itself — matching on the URL's parts rather
+ * than a substring, which would also match
+ * `https://evil.example/?x=world.openfoodfacts.org`. The path matters as much
+ * as the host: the barcode lookup lives on the same host, and a host-only test
+ * would have these specs answering scans too.
+ */
 function isSearchRequest(input: unknown): boolean {
-  return new URL(String(input), globalThis.location.href).hostname === SEARCH_HOST
+  const url = new URL(String(input), globalThis.location.href)
+  return url.hostname === SEARCH_URL.hostname && url.pathname === SEARCH_URL.pathname
 }
 
 /** Routes only the Open Food Facts search host; everything else stays real. */
