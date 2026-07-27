@@ -15,6 +15,31 @@ function daysAgo(days: number): Date {
 }
 
 /**
+ * A local calendar day as a DST-proof ordinal.
+ *
+ * Habit dates are *local* start-of-day timestamps, so a local day is 23 or 25
+ * hours long either side of a DST transition and raw timestamp arithmetic
+ * reports the wrong gap. Projecting the local Y/M/D onto UTC makes every day
+ * exactly 86,400,000ms apart, whatever the timezone did that night.
+ */
+function calendarDay(date: Date): number {
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+const DAY_MS = 86_400_000
+
+function monthKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}`
+}
+
+/** Two habits whose accents differ, for assertions that compare their paint. */
+async function seedTwoAccents(): Promise<void> {
+  const repo = getHabitsRepository()
+  await repo.addHabit(createDbHabit({ name: 'Read', accent: 'green', orderIndex: 0 }))
+  await repo.addHabit(createDbHabit({ name: 'Walk', accent: 'rose', orderIndex: 1 }))
+}
+
+/**
  * Stays in the browser tier: it drives the mounted habit UI through real DOM
  * events (`userEvent`, `page`) via `createTestApp`, and asserts through
  * `getHabitsRepository()` backed by real IndexedDB -- a real DOM plus a real
@@ -548,6 +573,59 @@ describe('Habit Tracking', () => {
       await habits.expectIncomplete('Walk')
     })
 
+    it('draws each tile one calendar month, a week per row', async ({ createTestApp }) => {
+      await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.switchViewMode('grid')
+
+      const dates = habits.getTileGridDates('Read').map((date) => new Date(date))
+
+      // Whole Monday-to-Sunday weeks...
+      expect(dates.length % 7).toBe(0)
+      expect(dates[0]!.getDay()).toBe(1)
+      expect(dates.at(-1)!.getDay()).toBe(0)
+
+      // ...of genuinely consecutive days. Counts and weekday boundaries alone
+      // are satisfied by a grid that dropped a day and repeated another, which
+      // would silently misalign every cell after the gap.
+      const gaps = dates
+        .slice(1)
+        .map((date, index) => calendarDay(date) - calendarDay(dates[index]!))
+      expect(gaps.every((gap) => gap === DAY_MS)).toBe(true)
+
+      // ...covering exactly one month, plus at most a partial week of padding
+      // at each end. This is what a trailing six-week window fails: it also
+      // contains a whole month, but reaches nine or more days back past its
+      // first, and a cell count alone cannot tell the two apart.
+      //
+      // Derived from the rendered dates rather than from `new Date()` so the
+      // assertion cannot drift when a run straddles midnight.
+      const perMonth = new Map<string, number>()
+      for (const date of dates)
+        perMonth.set(monthKey(date), (perMonth.get(monthKey(date)) ?? 0) + 1)
+
+      const [fullestMonth, inMonthCount] = [...perMonth].toSorted(([, a], [, b]) => b - a)[0]!
+      const [year, month] = fullestMonth.split('-').map(Number)
+      expect(inMonthCount).toBe(new Date(year!, month! + 1, 0).getDate())
+
+      // Padding is checked per side, not as a total: a six-week trailing
+      // window reaches nine days back past the 1st and pads the far end barely
+      // at all, so a combined budget of two partial weeks lets it through.
+      const leadingPad = dates.findIndex((date) => date.getDate() === 1)
+      expect(leadingPad).toBeGreaterThanOrEqual(0)
+      expect(leadingPad).toBeLessThanOrEqual(6)
+      expect(dates.length - leadingPad - inMonthCount).toBeLessThanOrEqual(6)
+
+      // And the caption names that month rather than whatever today's is.
+      const caption = new Date(year!, month!, 1).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      })
+      await expect.element(habits.getTodayRow('Read').getByText(caption)).toBeVisible()
+    })
+
     it('reaches the detail sheet from a tile, so grid mode is not a dead end', async ({
       createTestApp,
     }) => {
@@ -626,6 +704,64 @@ describe('Habit Tracking', () => {
       await habits.switchViewMode('rows')
       await expect.poll(() => habits.getActiveViewMode()).toBe('rows')
       await expect.element(habits.getTodayRow('Read')).toBeVisible()
+    })
+  })
+
+  /**
+   * The accent a user picks per habit reaches the screen through a CSS cascade
+   * layer, which no class-name or aria assertion can see. It once did not
+   * reach it at all -- the paint sat in a layer Tailwind's own utilities
+   * outrank, so every control in every layout rendered the same neutral grey
+   * while the whole suite stayed green. These read computed colours because
+   * that is the only thing that notices.
+   */
+  describe('accent colours', () => {
+    for (const mode of ['cards', 'rows', 'grid'] as const) {
+      it(`paints each habit's check control in its own accent in ${mode} mode`, async ({
+        createTestApp,
+      }) => {
+        await seedTwoAccents()
+
+        const { navigateTo, habits } = await createTestApp()
+        await navigateTo({ name: RouteNames.Habits })
+        await habits.switchViewMode(mode)
+        await expect.poll(() => habits.getActiveViewMode()).toBe(mode)
+
+        // Two habits, two accents: identical colours mean the accent was
+        // discarded somewhere between the picker and the pixel.
+        expect(habits.getCheckControlColor('Read')).not.toBe(habits.getCheckControlColor('Walk'))
+
+        // ...and the accent has to survive the completed state too, which is
+        // painted by a different rule.
+        await habits.toggleBinaryHabit('Read')
+        await habits.expectComplete('Read')
+        expect(habits.getCheckControlColor('Read')).not.toBe(habits.getCheckControlColor('Walk'))
+      })
+    }
+
+    it('rings the chosen swatch in the form rather than painting the ring its own colour', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+      await habits.openCreateForm()
+
+      await habits.selectAccent('Green')
+
+      const { border, background } = habits.getAccentSwatchColors('Green')
+      expect(background).not.toBe('rgba(0, 0, 0, 0)')
+      expect(border).not.toBe(background)
+    })
+
+    it("tints a habit's untouched heatmap days with its own accent", async ({ createTestApp }) => {
+      await seedTwoAccents()
+
+      const { navigateTo, habits } = await createTestApp()
+      await navigateTo({ name: RouteNames.Habits })
+
+      expect(habits.getTodayCompactGridColor('Read')).not.toBe(
+        habits.getTodayCompactGridColor('Walk'),
+      )
     })
   })
 

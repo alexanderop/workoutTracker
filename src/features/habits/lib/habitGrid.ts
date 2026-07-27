@@ -1,4 +1,4 @@
-import { addDays, addWeeks, subWeeks } from 'date-fns'
+import { addDays, addWeeks, endOfMonth, isSameMonth, startOfMonth, subWeeks } from 'date-fns'
 import type { DbHabit, DbHabitEntry } from '@/db/schema'
 import { startOfDay, startOfWeekDay } from './habitStats'
 
@@ -93,4 +93,53 @@ export function buildCompactHabitGrid(
   referenceDay: number,
 ): ReadonlyArray<HabitGridWeek> {
   return buildHabitGrid(habit, entries, DASHBOARD_WEEKS, referenceDay)
+}
+
+/** A month-grid day also knows whether it belongs to the month being shown. */
+type HabitMonthDay = HabitGridDay & { readonly inMonth: boolean }
+export type HabitMonthWeek = ReadonlyArray<HabitMonthDay>
+
+/**
+ * The calendar month containing `referenceDay`, padded out to whole Monday-to-
+ * Sunday weeks.
+ *
+ * Same weeks-of-days shape as {@link buildHabitGrid}, but anchored to a month
+ * rather than to a trailing window, because its one consumer (the tile grid)
+ * renders each week as a *row* under a "Jul 2026" caption. A trailing 6-week
+ * window laid out that way is not a month -- its first row starts mid-June --
+ * so the caption would be labelling something it doesn't describe.
+ *
+ * The padding days either side carry their real history rather than being
+ * blanks, so the first and last rows are still full weeks; `inMonth` is what
+ * lets the grid dim them so the month still reads as a month.
+ *
+ * Length is 4 to 6 weeks depending on where the month falls, so callers must
+ * not assume a fixed row count.
+ */
+export function buildHabitMonthGrid(
+  habit: Readonly<DbHabit>,
+  entries: ReadonlyArray<DbHabitEntry>,
+  referenceDay: number,
+): ReadonlyArray<HabitMonthWeek> {
+  const today = startOfDay(referenceDay)
+  const entryByDay = new Map(entries.map((entry) => [startOfDay(entry.date), entry]))
+  const monthStart = startOfMonth(new Date(referenceDay))
+  const lastDayOfMonth = startOfDay(endOfMonth(monthStart).getTime())
+
+  const weeks: Array<HabitMonthWeek> = []
+  let weekStart = startOfWeekDay(monthStart.getTime())
+  while (weekStart <= lastDayOfMonth) {
+    const days: Array<HabitMonthDay> = []
+    let date = weekStart
+    for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+      days.push({
+        ...createDay(habit, entryByDay, date, today),
+        inMonth: isSameMonth(date, monthStart),
+      })
+      date = nextDay(date)
+    }
+    weeks.push(days)
+    weekStart = nextWeek(weekStart)
+  }
+  return weeks
 }

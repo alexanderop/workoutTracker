@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
 import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
+import HabitCheckButton from './HabitCheckButton.vue'
 import HabitCompactGrid from './HabitCompactGrid.vue'
-import { AppIcon } from '@/components/app-icons'
-import { resolveHabitIcon } from '../lib/habitIcons'
+import HabitIconTile from './HabitIconTile.vue'
 import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
 import type { HabitRowDensity } from '../lib/rowLayout'
 
@@ -58,7 +56,7 @@ const { t } = useI18n()
     class="grid items-center gap-3 rounded-lg border bg-card p-3"
     :class="gridColumns"
   >
-    <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />
+    <HabitIconTile :icon="item.habit.icon" size="md" />
     <!-- `touch-target` gives the tap area a 44px floor instead of letting it be
          however tall the habit's name happens to render. -->
     <button
@@ -88,21 +86,13 @@ const { t } = useI18n()
          day's quantity -- 3 of 3 L -- with no stepper, no confirmation and no
          undo, on a glance surface that never offered the control before. Binary
          habits keep it everywhere, as they always had. -->
-    <Button
+    <HabitCheckButton
       v-if="comfortable || item.habit.kind.type === 'binary'"
-      size="icon"
-      variant="outline"
-      class="shrink-0 rounded-full border-2"
-      :class="[
-        comfortable && 'size-touch-target',
-        item.isComplete ? 'habit-today-complete' : 'habit-today-incomplete',
-      ]"
-      :aria-pressed="item.isComplete"
-      :aria-label="toggleLabel"
-      @click="emit('toggle', item.habit)"
-    >
-      <Check v-if="item.isComplete" class="size-4" />
-    </Button>
+      :pressed="item.isComplete"
+      :size="comfortable ? 'md' : 'sm'"
+      :label="toggleLabel"
+      @toggle="emit('toggle', item.habit)"
+    />
     <span v-else aria-hidden="true" class="size-9" />
   </div>
 </template>

@@ -65,7 +65,9 @@ const days = computed(() => {
       :class="HABIT_ROW_GRID_COLUMNS.comfortable"
       data-testid="habit-row-date-header"
     >
-      <span aria-hidden="true" class="size-6" />
+      <!-- Stands in for the row's accent-tinted icon tile; its size has to
+           match, or every heatmap column shifts out from under its label. -->
+      <span aria-hidden="true" class="size-8" />
       <span class="text-xs font-medium text-muted-foreground">{{ t('habits.thisWeek') }}</span>
       <div class="grid grid-cols-7 gap-1 text-center">
         <span

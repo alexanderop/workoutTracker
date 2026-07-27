@@ -79,7 +79,15 @@ function handleArchive(): void {
 
 <template>
   <Sheet v-model:open="open">
-    <SheetContent v-if="item" side="bottom" class="max-h-[90vh] overflow-y-auto">
+    <!-- The accent attribute has to be on the sheet itself: it teleports out of
+         the layout that carries it, so without this the history grid inherits
+         no `--habit-accent` and paints nothing. -->
+    <SheetContent
+      v-if="item"
+      :data-habit-accent="item.habit.accent"
+      side="bottom"
+      class="max-h-[90vh] overflow-y-auto"
+    >
       <SheetHeader>
         <SheetTitle class="flex items-center gap-2">
           <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-6 shrink-0" />

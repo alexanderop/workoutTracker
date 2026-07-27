@@ -20,6 +20,7 @@ export default {
   increaseQuantity: '{name} erhöhen',
   decreaseQuantity: '{name} verringern',
   gridSummary: '{name}: {count} erledigte Tage in den letzten {days} Tagen',
+  monthGridSummary: '{name}: {count} erledigte Tage im {month}',
   detailsFor: 'Details für {name}',
   showDetailsFor: 'Details für {name} anzeigen',
   thisWeek: 'Diese Woche',
