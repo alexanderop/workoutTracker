@@ -28,13 +28,17 @@ describe('habitDayCellClass', () => {
     expect(classes.some((cellClass) => cellClass.startsWith('opacity-'))).toBe(true)
   })
 
-  it('dims a month grid`s padding days, and only those', () => {
+  it("dims a month grid's padding days, and only those", () => {
     expect(habitDayCellClass({ state: 'complete', isToday: false, inMonth: true })).toEqual([
       'habit-grid-complete',
     ])
-    expect(habitDayCellClass({ state: 'complete', isToday: false, inMonth: false })).not.toEqual([
-      'habit-grid-complete',
-    ])
+
+    // A padding day keeps its state -- it is real history, not a blank -- and
+    // gains dimming on top. Asserting only that the two differ would pass for
+    // any unrelated extra class, including one that dropped the state.
+    const padding = habitDayCellClass({ state: 'complete', isToday: false, inMonth: false })
+    expect(padding).toContain('habit-grid-complete')
+    expect(padding.filter((cellClass) => cellClass.includes('opacity-'))).toHaveLength(1)
   })
 
   /**

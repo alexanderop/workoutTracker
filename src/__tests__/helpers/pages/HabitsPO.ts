@@ -76,19 +76,19 @@ export class HabitsPO {
   }
 
   /**
-   * Day cells in a tile's mini heatmap.
+   * The date each cell of a tile's mini heatmap stands for, in render order.
    *
-   * The tile shows one calendar month a week per row, so the count has to stay
-   * a whole number of weeks -- a grid that silently reverted to a trailing
-   * window, or rendered nothing at all, still satisfies every "the tile is
-   * visible" assertion.
+   * Dates rather than a cell count, because a count cannot tell a calendar
+   * month from a trailing six-week window -- both are 35 aria-hidden squares
+   * in a 7-column grid, and every "the tile is visible" assertion passes for
+   * either.
    */
-  getTileGridCellCount(habitName: string): number {
+  getTileGridDates(habitName: string): Array<number> {
     const tile = this.getTodayRow(habitName).element()
     // eslint-disable-next-line no-restricted-syntax -- Scoped lookup within the named tile
-    const grid = tile.querySelector('[role="img"]')
-    if (!grid) throw new Error(`Month grid for "${habitName}" not found`)
-    return grid.childElementCount
+    const cells = tile.querySelectorAll<HTMLElement>(':scope [role="img"] > [data-date]')
+    if (cells.length === 0) throw new Error(`Month grid for "${habitName}" not found`)
+    return [...cells].map((cell) => Number(cell.dataset.date))
   }
 
   getRowDateHeader() {

@@ -17,9 +17,8 @@ import type { HabitTodayItem } from '../composables/useHabits'
 import { useHabitStats } from '../composables/useHabitStats'
 import HabitCheckButton from './HabitCheckButton.vue'
 import HabitCompactGrid from './HabitCompactGrid.vue'
+import HabitIconTile from './HabitIconTile.vue'
 import HabitQuantityControl from './HabitQuantityControl.vue'
-import { AppIcon } from '@/components/app-icons'
-import { resolveHabitIcon } from '../lib/habitIcons'
 
 const { item } = defineProps<{ item: HabitTodayItem }>()
 
@@ -66,11 +65,7 @@ const metadata = computed(() => {
            colour appears above the fold, and a bare glyph left every card
            looking alike until you read the name. -->
       <div class="flex items-center gap-3">
-        <span
-          class="habit-accent-tint habit-accent-fg flex size-11 shrink-0 items-center justify-center rounded-xl"
-        >
-          <AppIcon :name="resolveHabitIcon(habit.icon)" class="size-6" />
-        </span>
+        <HabitIconTile :icon="habit.icon" size="lg" />
         <button
           type="button"
           class="min-w-0 flex-1 text-left"

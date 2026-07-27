@@ -548,24 +548,50 @@ describe('Habit Tracking', () => {
       await habits.expectIncomplete('Walk')
     })
 
-    it('draws each tile a whole number of weeks, so a row is a week', async ({ createTestApp }) => {
+    it('draws each tile one calendar month, a week per row', async ({ createTestApp }) => {
       await getHabitsRepository().addHabit(createDbHabit({ name: 'Read', orderIndex: 0 }))
 
       const { navigateTo, habits } = await createTestApp()
       await navigateTo({ name: RouteNames.Habits })
       await habits.switchViewMode('grid')
 
-      // A calendar month padded to whole Monday weeks is 4 to 6 rows of 7. The
-      // multiple-of-7 check is what fails if the grid is ever pointed back at a
-      // trailing day window, which no other assertion in this file notices.
-      const cells = habits.getTileGridCellCount('Read')
-      expect(cells % 7).toBe(0)
-      expect(cells).toBeGreaterThanOrEqual(28)
-      expect(cells).toBeLessThanOrEqual(42)
+      const dates = habits.getTileGridDates('Read').map((date) => new Date(date))
 
-      // The caption has to name the month the cells actually cover.
-      const month = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-      await expect.element(habits.getTodayRow('Read').getByText(month)).toBeVisible()
+      // Whole Monday-to-Sunday weeks of consecutive days.
+      expect(dates.length % 7).toBe(0)
+      expect(dates[0]!.getDay()).toBe(1)
+      expect(dates.at(-1)!.getDay()).toBe(0)
+
+      // ...covering exactly one month, plus at most a partial week of padding
+      // at each end. This is what a trailing six-week window fails: it also
+      // contains a whole month, but reaches nine or more days back past its
+      // first, and a cell count alone cannot tell the two apart.
+      //
+      // Derived from the rendered dates rather than from `new Date()` so the
+      // assertion cannot drift when a run straddles midnight.
+      const monthKey = (date: Date): string => `${date.getFullYear()}-${date.getMonth()}`
+      const perMonth = new Map<string, number>()
+      for (const date of dates)
+        perMonth.set(monthKey(date), (perMonth.get(monthKey(date)) ?? 0) + 1)
+
+      const [fullestMonth, inMonthCount] = [...perMonth].toSorted(([, a], [, b]) => b - a)[0]!
+      const [year, month] = fullestMonth.split('-').map(Number)
+      expect(inMonthCount).toBe(new Date(year!, month! + 1, 0).getDate())
+
+      // Padding is checked per side, not as a total: a six-week trailing
+      // window reaches nine days back past the 1st and pads the far end barely
+      // at all, so a combined budget of two partial weeks lets it through.
+      const leadingPad = dates.findIndex((date) => date.getDate() === 1)
+      expect(leadingPad).toBeGreaterThanOrEqual(0)
+      expect(leadingPad).toBeLessThanOrEqual(6)
+      expect(dates.length - leadingPad - inMonthCount).toBeLessThanOrEqual(6)
+
+      // And the caption names that month rather than whatever today's is.
+      const caption = new Date(year!, month!, 1).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      })
+      await expect.element(habits.getTodayRow('Read').getByText(caption)).toBeVisible()
     })
 
     it('reaches the detail sheet from a tile, so grid mode is not a dead end', async ({

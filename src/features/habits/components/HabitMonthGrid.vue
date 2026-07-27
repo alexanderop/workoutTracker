@@ -55,10 +55,16 @@ const summary = computed(() =>
     </span>
     <div role="img" :aria-label="summary" class="grid grid-cols-7 gap-[3px]">
       <template v-for="(week, weekIndex) in weeks" :key="weekIndex">
+        <!-- `data-date` is the only thing that makes this grid's *shape*
+             assertable: the cells are aria-hidden squares, so a trailing
+             six-week window would render an identical-looking block of the
+             same cell count. Same convention as `HabitHistoryGrid`, whose day
+             cells already carry their date. -->
         <span
           v-for="day in week"
           :key="day.date"
           aria-hidden="true"
+          :data-date="day.date"
           class="aspect-square min-w-0 rounded-[3px]"
           :class="habitDayCellClass(day)"
         />

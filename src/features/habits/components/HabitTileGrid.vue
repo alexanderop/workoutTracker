@@ -13,11 +13,10 @@
  * claimed to be showing.
  */
 import { useI18n } from 'vue-i18n'
-import { AppIcon } from '@/components/app-icons'
 import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
-import { resolveHabitIcon } from '../lib/habitIcons'
 import HabitCheckButton from './HabitCheckButton.vue'
+import HabitIconTile from './HabitIconTile.vue'
 import HabitMonthGrid from './HabitMonthGrid.vue'
 
 defineProps<{ items: ReadonlyArray<HabitTodayItem> }>()
@@ -54,11 +53,7 @@ const { t } = useI18n()
           "
           @toggle="emit('toggle', item.habit)"
         />
-        <span
-          class="habit-accent-tint habit-accent-fg flex size-7 shrink-0 items-center justify-center rounded-lg"
-        >
-          <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-4" />
-        </span>
+        <HabitIconTile :icon="item.habit.icon" size="sm" />
       </div>
 
       <!-- The heatmap sits *inside* the details button rather than beside it.

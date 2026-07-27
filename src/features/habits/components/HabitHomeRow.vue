@@ -5,8 +5,7 @@ import type { DbHabit } from '@/db/schema'
 import type { HabitTodayItem } from '../composables/useHabits'
 import HabitCheckButton from './HabitCheckButton.vue'
 import HabitCompactGrid from './HabitCompactGrid.vue'
-import { AppIcon } from '@/components/app-icons'
-import { resolveHabitIcon } from '../lib/habitIcons'
+import HabitIconTile from './HabitIconTile.vue'
 import { HABIT_ROW_DAYS, HABIT_ROW_GRID_COLUMNS } from '../lib/rowLayout'
 import type { HabitRowDensity } from '../lib/rowLayout'
 
@@ -57,11 +56,7 @@ const { t } = useI18n()
     class="grid items-center gap-3 rounded-lg border bg-card p-3"
     :class="gridColumns"
   >
-    <span
-      class="habit-accent-tint habit-accent-fg flex size-8 shrink-0 items-center justify-center rounded-lg"
-    >
-      <AppIcon :name="resolveHabitIcon(item.habit.icon)" class="size-5" />
-    </span>
+    <HabitIconTile :icon="item.habit.icon" size="md" />
     <!-- `touch-target` gives the tap area a 44px floor instead of letting it be
          however tall the habit's name happens to render. -->
     <button

@@ -238,6 +238,17 @@ describe('buildHabitMonthGrid', () => {
     expect(grid.flat().some((day) => day.state === 'future')).toBe(true)
   })
 
+  it('pads a month that needs the full six weeks', () => {
+    const habit = createDbHabit()
+    // Nov 2026 starts Sun Nov 1 and ends Mon Nov 30 -- the widest a
+    // Monday-aligned month gets, and the upper bound the row count is
+    // documented against.
+    const grid = buildHabitMonthGrid(habit, [], new Date('2026-11-10T12:00:00').getTime())
+
+    expect(grid).toHaveLength(6)
+    expect(grid.flat().filter((day) => day.inMonth)).toHaveLength(30)
+  })
+
   it('pads a month that starts on a Monday without a leading blank week', () => {
     const habit = createDbHabit()
     // Jun 2026 starts on Mon Jun 1 and ends Tue Jun 30.
