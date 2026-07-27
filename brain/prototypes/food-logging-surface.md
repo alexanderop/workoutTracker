@@ -1,5 +1,10 @@
 # Food Logging Surface
 
+Resolved: implemented as `src/features/nutrition/components/FoodLogSheet.vue`
+(tabs: search/scan/quick/custom) + `FoodBasketTray.vue`/`FoodBudgetBars.vue`
+(staging basket + budget feedback). The `nutrition-log-prototype` directory
+and route below have been deleted per the Decision.
+
 Question:
 What structure should replace `FoodLogDialog.vue`? Today it is one form doing
 four jobs: a `NativeSelect` over the whole food library (no search), barcode
