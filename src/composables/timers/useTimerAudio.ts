@@ -85,15 +85,15 @@ const COMPLETE_CUE: ReadonlyArray<CuePulse> = [
  * the session. Call `prepare()` from a user gesture -- opening or starting a
  * timer -- so the audio path is already warm when the first cue fires.
  */
-export type UseTimerAudioOptions = ConfigurableWindow & {
+export type UseTimerAudioOptions = Omit<ConfigurableWindow, 'window'> & {
+  window?: Window & Partial<Pick<typeof globalThis, 'AudioContext'>>
   audioContext?: typeof AudioContext
 }
 
-export const useTimerAudio = createGlobalState((options: UseTimerAudioOptions = {}) => {
+export function createTimerAudioState(options: UseTimerAudioOptions = {}) {
   const { window = defaultWindow } = options
   const document = window?.document
-  const AudioContextConstructor =
-    options.audioContext ?? (window ? globalThis.AudioContext : undefined)
+  const AudioContextConstructor = options.audioContext ?? window?.AudioContext
   const settings = useSettingsStore()
   const isSupported = useSupported(() => AudioContextConstructor !== undefined)
 
@@ -295,4 +295,6 @@ export const useTimerAudio = createGlobalState((options: UseTimerAudioOptions = 
     playComplete,
     dispose,
   }
-})
+}
+
+export const useTimerAudio = createGlobalState(createTimerAudioState)
