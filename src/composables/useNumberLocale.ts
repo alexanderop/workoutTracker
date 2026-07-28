@@ -70,14 +70,17 @@ export function useNumberLocale(): UseNumberLocaleReturn {
   }
 
   /**
-   * Format a numeric input value for display (0-1 decimal places).
+   * Format a numeric input value for display (0-2 decimal places).
    * Used by NumericPresetList and NumericValueDisplay.
+   *
+   * Two decimals because the keypad accepts two: showing 116.3 for a typed
+   * 116.25 would misreport the value the confirm button commits.
    */
   function formatInputValue(value: number, allowDecimal: boolean): string {
     if (allowDecimal) {
       return formatNumber(value, {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 2,
         useGrouping: false,
       })
     }

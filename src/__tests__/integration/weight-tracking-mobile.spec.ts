@@ -209,4 +209,37 @@ describe('Weight Tracking (Mobile)', () => {
       await modalPO.clickCancel()
     })
   })
+
+  describe('decimal precision', () => {
+    it('keeps a two-decimal keypad entry through display and save', async ({ createTestApp }) => {
+      const { navigateTo } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      const defaultButton = page.getByRole('button', { name: '80 kg' })
+      await expect.element(defaultButton).toBeVisible()
+
+      await defaultButton.click()
+      await modalPO.waitForOpen()
+      await modalPO.enterValue(116.25)
+
+      // The display must show what was typed — 116.3 would be a lie about
+      // the value the confirm button is about to commit.
+      expect(await modalPO.getCurrentValue()).toBe(116.25)
+
+      await modalPO.clickConfirm()
+      await modalPO.waitForClose()
+
+      await expect.element(page.getByRole('button', { name: '116.25 kg' })).toBeVisible()
+
+      await page.getByRole('button', { name: /save/i }).click()
+
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries[0]?.weight
+        })
+        .toBe(116.25)
+    })
+  })
 })

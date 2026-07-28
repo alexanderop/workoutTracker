@@ -91,6 +91,48 @@ describe('Weight Tracking', () => {
       expect(entries[0]?.weight).toBe(76)
     })
 
+    it('saves a two-decimal weight instead of snapping it to the input step', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, weight } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      // A scale reading like 116.25 sits between the 0.5 steps of the +/- buttons.
+      await weight.addEntry('116.25')
+
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries[0]?.weight
+        })
+        .toBe(116.25)
+
+      // Stats and history must show what was entered, not a rounded stand-in.
+      await expect.element(page.getByText('116.25 kg').first()).toBeVisible()
+    })
+
+    it('saves a two-decimal weight in lbs without losing the quarter pound', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, weight } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Settings })
+      await page.getByRole('button', { name: /pounds/i }).click()
+
+      await navigateTo({ name: RouteNames.Weight })
+      await weight.addEntry('116.25')
+
+      await expect
+        .poll(async () => {
+          const entries = await getWeightRepository().getAll()
+          return entries.length
+        })
+        .toBe(1)
+
+      await expect.element(page.getByText('116.25 lbs').first()).toBeVisible()
+    })
+
     it('respects weight unit setting (lbs)', async ({ createTestApp }) => {
       const { navigateTo, weight } = await createTestApp()
 

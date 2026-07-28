@@ -93,12 +93,16 @@ const isValid = computed(() => {
 
       <!-- Desktop: Inline NumberField with +/- buttons -->
       <template v-else>
+        <!-- step drives the +/- buttons only. Snapping is off so a scale
+             reading between two steps (116.25) survives being typed. -->
         <NumberField
           id="weight-input"
           v-model="inputValue"
           :min="0"
           :max="500"
           :step="0.5"
+          :step-snapping="false"
+          :format-options="{ maximumFractionDigits: 2, useGrouping: false }"
           class="flex-1"
         >
           <NumberFieldContent>
