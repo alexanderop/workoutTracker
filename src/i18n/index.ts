@@ -63,7 +63,7 @@ export async function loadLocale(locale: SupportedLocale): Promise<void> {
   const [error] = await tryCatch(loadPromise)
   loadingLocales.delete(locale)
 
-  if (error) return
+  if (error) throw error
 
   i18n.global.locale.value = locale
 }

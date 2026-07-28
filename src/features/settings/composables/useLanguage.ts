@@ -9,13 +9,24 @@ function detectBrowserLocale(browserLanguage: string | undefined): SupportedLoca
   return browserLang === 'de' ? 'de' : 'en'
 }
 
-export type UseLanguageOptions = ConfigurableWindow
+type LanguageSettings = {
+  language: SupportedLocale | undefined
+  isLoaded: boolean
+  loadFromDb: () => Promise<boolean>
+  setLanguage: (locale: SupportedLocale) => Promise<void>
+}
+
+export type UseLanguageOptions = ConfigurableWindow & {
+  localeLoader?: (locale: SupportedLocale) => Promise<void>
+  settings?: LanguageSettings
+}
 
 async function applyLocale(
   locale: SupportedLocale,
   window: Window | undefined,
+  localeLoader: (locale: SupportedLocale) => Promise<void>,
 ): Promise<SupportedLocale> {
-  await loadLocale(locale)
+  await localeLoader(locale)
   if (window) window.document.documentElement.lang = locale
   return locale
 }
@@ -26,22 +37,28 @@ async function applyLocale(
  * locale chunk are still loading.
  */
 export async function prepareInitialLanguage(options: UseLanguageOptions = {}) {
-  const { window = defaultWindow } = options
-  const settings = useSettingsStore()
+  const {
+    window = defaultWindow,
+    localeLoader = loadLocale,
+    settings = useSettingsStore(),
+  } = options
 
-  await settings.loadFromDb()
+  const didLoadSettings = await settings.loadFromDb()
 
   const locale = settings.language ?? detectBrowserLocale(window?.navigator.language)
-  if (!settings.language) await settings.setLanguage(locale)
+  if (didLoadSettings && !settings.language) await settings.setLanguage(locale)
 
-  return applyLocale(locale, window)
+  return applyLocale(locale, window, localeLoader)
 }
 
 export function createLanguageState(options: UseLanguageOptions = {}) {
-  const { window = defaultWindow } = options
+  const {
+    window = defaultWindow,
+    localeLoader = loadLocale,
+    settings = useSettingsStore(),
+  } = options
 
   // 1. Initializing
-  const settings = useSettingsStore()
   const { language: browserLanguage } = useNavigatorLanguage({ window })
 
   // 2. Primary State + 3. State Metadata via useAsyncState
@@ -51,7 +68,7 @@ export function createLanguageState(options: UseLanguageOptions = {}) {
     error,
     execute,
   } = useAsyncState(
-    (locale: SupportedLocale) => applyLocale(locale, window),
+    (locale: SupportedLocale) => applyLocale(locale, window, localeLoader),
     settings.language ?? 'en',
     { immediate: false, resetOnExecute: false },
   )

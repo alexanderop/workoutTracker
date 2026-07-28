@@ -94,17 +94,18 @@ export const useSettingsStore = createGlobalState(() => {
    * Load all settings from the database.
    * Call this on app initialization.
    */
-  async function loadFromDatabase(): Promise<void> {
-    if (isLoading.value) return
+  async function loadFromDatabase(): Promise<boolean> {
+    if (isLoading.value) return false
 
     isLoading.value = true
     const [error, snapshot] = await tryCatch(settingsQuery.get())
     isLoading.value = false
 
-    if (error) return
+    if (error) return false
 
     applySnapshot(snapshot)
     isLoaded.value = true
+    return true
   }
 
   /**

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createLanguageState,
   prepareInitialLanguage,
@@ -18,6 +18,8 @@ function getBrowserWindow(): Window {
 describe('useLanguage', () => {
   afterEach(async () => {
     await resetDatabase()
+    i18n.global.locale.value = 'en'
+    document.documentElement.lang = 'en'
   })
 
   it('preserves a saved locale while the settings snapshot loads', async () => {
@@ -53,5 +55,48 @@ describe('useLanguage', () => {
     expect(i18n.global.locale.value).toBe('de')
     expect(document.documentElement.lang).toBe('de')
     await expect(repository.get('language')).resolves.toBe('de')
+  })
+
+  it('does not claim a requested locale when its messages fail to load', async () => {
+    const repository = getSettingsRepository()
+    await repository.set({ key: 'language', value: 'de' })
+
+    const settings = useSettingsStore()
+    settings.$reset()
+    i18n.global.locale.value = 'en'
+    document.documentElement.lang = 'en'
+    const loadError = new Error('locale chunk unavailable')
+
+    await expect(
+      prepareInitialLanguage({
+        window: getBrowserWindow(),
+        localeLoader: () => Promise.reject(loadError),
+      }),
+    ).rejects.toBe(loadError)
+
+    expect(i18n.global.locale.value).toBe('en')
+    expect(document.documentElement.lang).toBe('en')
+  })
+
+  it('uses but does not persist the browser fallback after a failed settings read', async () => {
+    const localeLoader = vi.fn(async () => {})
+    const setLanguage = vi.fn(async () => {})
+    const failedSettings = {
+      language: undefined,
+      isLoaded: false,
+      loadFromDb: vi.fn(async () => false),
+      setLanguage,
+    }
+
+    const locale = await prepareInitialLanguage({
+      window: getBrowserWindow(),
+      localeLoader,
+      settings: failedSettings,
+    })
+
+    expect(['en', 'de']).toContain(locale)
+    expect(localeLoader).toHaveBeenCalledWith(locale)
+    expect(document.documentElement.lang).toBe(locale)
+    expect(setLanguage).not.toHaveBeenCalled()
   })
 })
