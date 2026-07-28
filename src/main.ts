@@ -31,15 +31,15 @@ app.config.errorHandler = (error, _instance, info) => {
 app.use(i18n)
 app.use(router)
 
-// Resolve the persisted locale before mounting so the first translated frame
-// is internally consistent instead of changing piecemeal after the settings
-// snapshot and lazy locale messages arrive.
-const [languageError] = await tryCatch(prepareInitialLanguage())
-if (languageError) {
-  console.error('[Language initialization error]', languageError)
-}
+async function boot(): Promise<void> {
+  // Resolve the persisted locale before mounting so the first translated
+  // frame is internally consistent instead of changing piecemeal after the
+  // settings snapshot and lazy locale messages arrive.
+  const [languageError] = await tryCatch(prepareInitialLanguage())
+  if (languageError) {
+    console.error('[Language initialization error]', languageError)
+  }
 
-function boot(): void {
   const [mountError] = tryCatch(() => app.mount('#app'))
 
   if (mountError) {
@@ -53,4 +53,7 @@ function boot(): void {
   void reportWebVitals()
 }
 
-boot()
+// Top-level await splits the entry graph into many small chunks, adding enough
+// compression overhead to exceed the production bundle budget.
+// eslint-disable-next-line unicorn/prefer-top-level-await -- preserve entry chunk compression
+void boot()
