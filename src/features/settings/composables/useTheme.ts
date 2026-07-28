@@ -1,7 +1,12 @@
-import { useColorMode } from '@vueuse/core'
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
+import type { ConfigurableWindow } from '@vueuse/core'
+import { createSharedComposable, defaultWindow, useColorMode } from '@vueuse/core'
 
-export function useTheme() {
+export type UseThemeOptions = ConfigurableWindow
+
+const useSharedTheme = createSharedComposable((options: UseThemeOptions = {}) => {
+  const { window = defaultWindow } = options
+
   // 1. Initializing - external dependencies
   const colorMode = useColorMode({
     attribute: 'class',
@@ -9,6 +14,7 @@ export function useTheme() {
       light: '',
       dark: 'dark',
     },
+    window,
   })
 
   // 4. Computed - derived state
@@ -19,15 +25,9 @@ export function useTheme() {
     },
   })
 
-  // 7. Watchers - sync HTML class with color mode
-  watch(
-    () => colorMode.value,
-    (newMode) => {
-      const method = newMode === 'dark' ? 'add' : 'remove'
-      document.documentElement.classList[method]('dark')
-    },
-    { immediate: true },
-  )
-
   return { colorMode, isDark }
+})
+
+export function useTheme(options: UseThemeOptions = {}) {
+  return useSharedTheme(options)
 }
