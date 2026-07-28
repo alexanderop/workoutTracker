@@ -11,6 +11,32 @@ function detectBrowserLocale(browserLanguage: string | undefined): SupportedLoca
 
 export type UseLanguageOptions = ConfigurableWindow
 
+async function applyLocale(
+  locale: SupportedLocale,
+  window: Window | undefined,
+): Promise<SupportedLocale> {
+  await loadLocale(locale)
+  if (window) window.document.documentElement.lang = locale
+  return locale
+}
+
+/**
+ * Resolve persisted language state before Vue mounts. This prevents the first
+ * translated frame from rendering in English while IndexedDB and the saved
+ * locale chunk are still loading.
+ */
+export async function prepareInitialLanguage(options: UseLanguageOptions = {}) {
+  const { window = defaultWindow } = options
+  const settings = useSettingsStore()
+
+  await settings.loadFromDb()
+
+  const locale = settings.language ?? detectBrowserLocale(window?.navigator.language)
+  if (!settings.language) await settings.setLanguage(locale)
+
+  return applyLocale(locale, window)
+}
+
 export function createLanguageState(options: UseLanguageOptions = {}) {
   const { window = defaultWindow } = options
 
@@ -25,11 +51,7 @@ export function createLanguageState(options: UseLanguageOptions = {}) {
     error,
     execute,
   } = useAsyncState(
-    async (locale: SupportedLocale) => {
-      await loadLocale(locale)
-      if (window) window.document.documentElement.lang = locale
-      return locale
-    },
+    (locale: SupportedLocale) => applyLocale(locale, window),
     settings.language ?? 'en',
     { immediate: false, resetOnExecute: false },
   )

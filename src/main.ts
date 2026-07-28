@@ -6,6 +6,7 @@ import { makeRuntime } from '@/lib/di/runtime'
 import { provideRuntime } from '@/lib/di/vue'
 import { appLayers } from './appLayers'
 import App from './App.vue'
+import { prepareInitialLanguage } from './features/settings/composables/useLanguage'
 import { i18n } from './i18n'
 import { renderMountFailure } from './lib/mountRecovery'
 import { tryCatch } from './lib/tryCatch'
@@ -29,6 +30,14 @@ app.config.errorHandler = (error, _instance, info) => {
 
 app.use(i18n)
 app.use(router)
+
+// Resolve the persisted locale before mounting so the first translated frame
+// is internally consistent instead of changing piecemeal after the settings
+// snapshot and lazy locale messages arrive.
+const [languageError] = await tryCatch(prepareInitialLanguage())
+if (languageError) {
+  console.error('[Language initialization error]', languageError)
+}
 
 function boot(): void {
   const [mountError] = tryCatch(() => app.mount('#app'))

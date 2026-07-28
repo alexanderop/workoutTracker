@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLanguageState } from '@/features/settings/composables/useLanguage'
+import {
+  createLanguageState,
+  prepareInitialLanguage,
+} from '@/features/settings/composables/useLanguage'
 import { getSettingsRepository } from '@/db'
+import { i18n } from '@/i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { resetDatabase } from '../helpers/resetDatabase'
 import { withSetup } from '../helpers/withSetup'
@@ -31,5 +35,23 @@ describe('useLanguage', () => {
     await expect(repository.get('language')).resolves.toBe('de')
 
     app.unmount()
+  })
+
+  it('prepares the saved locale before the app can render its first frame', async () => {
+    const repository = getSettingsRepository()
+    await repository.set({ key: 'language', value: 'de' })
+
+    const settings = useSettingsStore()
+    settings.$reset()
+    i18n.global.locale.value = 'en'
+    document.documentElement.lang = 'en'
+
+    const locale = await prepareInitialLanguage({ window: getBrowserWindow() })
+
+    expect(locale).toBe('de')
+    expect(settings.isLoaded).toBe(true)
+    expect(i18n.global.locale.value).toBe('de')
+    expect(document.documentElement.lang).toBe('de')
+    await expect(repository.get('language')).resolves.toBe('de')
   })
 })
