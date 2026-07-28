@@ -42,12 +42,16 @@ describe('useTimerAudio - browser mode', () => {
     })
     const [result, app] = withSetup(() => createTimerAudioState({ window: injectedWindow }))
 
-    result.prepare()
-
-    await expect.poll(() => calls.contextCount).toBe(1)
-
-    await result.dispose()
-    app.unmount()
+    try {
+      result.prepare()
+      await expect.poll(() => calls.contextCount).toBe(1)
+    } finally {
+      try {
+        await result.dispose()
+      } finally {
+        app.unmount()
+      }
+    }
   })
 
   describe('real AudioContext integration', () => {
