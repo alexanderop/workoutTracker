@@ -1,5 +1,5 @@
-import { useIntervalFn } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
+import { createSharedComposable, useIntervalFn } from '@vueuse/core'
 import { formatDuration } from '@/lib/workout-utils'
 import { useWorkout } from './useWorkout'
 import { useWorkoutMode } from './useWorkoutMode'
@@ -8,17 +8,24 @@ import { useWorkoutMode } from './useWorkoutMode'
  * Composable for tracking total workout duration.
  * Provides a live timer that updates every second during active mode.
  */
-export function useWorkoutDurationTimer() {
+const useSharedWorkoutDurationTimer = createSharedComposable(() => {
   const { workout } = useWorkout()
   const { isActiveMode } = useWorkoutMode()
 
   // Tick counter to force reactivity updates
-  const tick = ref(0)
+  const tick = shallowRef(0)
 
-  // Update every second to trigger reactivity
-  useIntervalFn(() => {
-    tick.value++
-  }, 1000)
+  const { pause, resume } = useIntervalFn(
+    () => {
+      tick.value++
+    },
+    1000,
+    { immediate: false },
+  )
+
+  // The app-level FAB owns this composable for the app lifetime. Keep its
+  // shared interval cold until a workout is actually running.
+  watch(isActiveMode, (active) => (active ? resume() : pause()), { immediate: true })
 
   const elapsedSeconds = computed(() => {
     // Include tick to ensure reactivity
@@ -33,4 +40,8 @@ export function useWorkoutDurationTimer() {
     elapsedSeconds,
     formattedDuration,
   }
+})
+
+export function useWorkoutDurationTimer() {
+  return useSharedWorkoutDurationTimer()
 }
