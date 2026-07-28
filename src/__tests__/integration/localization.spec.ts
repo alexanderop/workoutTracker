@@ -52,6 +52,9 @@ describe('Localization', () => {
 
       // Verify German labels display
       await expect.element(getByText(/gewicht/i).first()).toBeVisible() // "Gewicht" = Weight in German
+      await expect.element(getByRole('switch', { name: 'Dunkelmodus' })).toBeVisible()
+      await expect.element(getByRole('switch', { name: 'Bildschirm anlassen' })).toBeVisible()
+      await expect.element(getByRole('switch', { name: 'Timer-Töne' })).toBeVisible()
 
       // Open the language select dropdown (aria-label is "Sprache" in German)
       const languageSelect = getByRole('combobox', { name: /sprache/i })
@@ -75,6 +78,9 @@ describe('Localization', () => {
       // (The old anchored form matched the Weight nav tab, which moved into
       // the quick-add sheet.)
       await expect.element(getByText(/weight/i).first()).toBeVisible()
+      await expect.element(getByRole('switch', { name: 'Dark Mode' })).toBeVisible()
+      await expect.element(getByRole('switch', { name: 'Keep Screen On' })).toBeVisible()
+      await expect.element(getByRole('switch', { name: 'Timer Sounds' })).toBeVisible()
     })
   })
 })

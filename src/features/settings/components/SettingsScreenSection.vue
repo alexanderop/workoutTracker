@@ -75,6 +75,7 @@ function handleDefaultRestTimerChange(value: AcceptableValue | ReadonlyArray<Acc
         <Switch
           id="wake-lock-toggle"
           :model-value="settingsStore.screenWakeLock"
+          :aria-label="t('settings.labels.keepScreenOn')"
           data-testid="screen-wake-lock-toggle"
           class="shrink-0"
           @update:model-value="handleScreenWakeLockChange"
@@ -97,6 +98,7 @@ function handleDefaultRestTimerChange(value: AcceptableValue | ReadonlyArray<Acc
         <Switch
           id="timer-sound-toggle"
           :model-value="settingsStore.timerSoundEnabled"
+          :aria-label="t('settings.labels.timerSounds')"
           data-testid="timer-sound-toggle"
           class="shrink-0"
           @update:model-value="handleTimerSoundChange"
