@@ -62,6 +62,13 @@ export function isValidScreenshotFilename(name) {
   return typeof name === 'string' && name.length <= 100 && /^[a-z0-9][a-z0-9_-]*\.png$/.test(name)
 }
 
+// Videos cross the same trust boundary as screenshots. Keep them flat and
+// narrowly typed so an agent-controlled path can never become an arbitrary
+// artifact entry or report URL.
+export function isValidVideoFilename(name) {
+  return typeof name === 'string' && name.length <= 100 && /^[a-z0-9][a-z0-9_-]*\.webm$/.test(name)
+}
+
 // Replace relative `qa-screenshots/<file>` image references in the markdown
 // report with hosted URLs. Only filenames present in urlMap (i.e. actually
 // published) are rewritten; everything else is left untouched so a dangling
@@ -71,6 +78,18 @@ export function rewriteScreenshotLinks(report, urlMap) {
   return report.replaceAll(
     /qa-screenshots\/([a-z0-9][a-z0-9_-]*\.png)/g,
     (match, file) => urlMap[file] ?? match,
+  )
+}
+
+// GitHub PR comments cannot serve files from a workflow workspace. The upload
+// action provides an authenticated artifact URL, so validated relative video
+// links are rewritten to that durable URL for the lifetime of the artifact.
+export function rewriteVideoLinks(report, artifactUrl, publishedFiles) {
+  if (!report || !artifactUrl || !Array.isArray(publishedFiles)) return report
+  const allowed = new Set(publishedFiles.filter(isValidVideoFilename))
+  return report.replaceAll(
+    /qa-videos\/([a-z0-9][a-z0-9_-]*\.webm)/g,
+    (match, file) => (allowed.has(file) ? artifactUrl : match),
   )
 }
 

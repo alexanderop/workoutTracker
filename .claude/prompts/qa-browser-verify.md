@@ -74,7 +74,8 @@ This is a deeper QA pass for a pull request. Your job is to:
 | ------------------ | ------ | ------------------------------------------------------ |
 | Parse Contract     | 1-5    | Read ACs, QA scope, risks, scenarios                   |
 | Verify ACs         | 6-45   | Verify each requirement through the UI                 |
-| Regression + Edges | 46-70  | Related flow plus up to 3 mobile-first edge cases      |
+| Regression + Edges | 46-60  | Related flow plus up to 3 mobile-first edge cases      |
+| Video Evidence     | 61-70  | Replay one concise feature walkthrough                 |
 | Report             | 71-100 | Write qa-report.md and return JSON                     |
 
 ### Mid-run checkpoint (turn 35)
@@ -89,11 +90,12 @@ This checkpoint exists because past runs have over-invested in setup (template c
 
 ### HARD STOP RULE
 
-**After turn 70, STOP testing immediately and write your report. No exceptions.**
+**After turn 60, STOP exploratory testing and record the verified primary flow.
+After turn 70, STOP all browser work and write your report. No exceptions.**
 
 A test run that produces no report is WORTHLESS — worse than a run that tests less
-but delivers results. If you reach turn 65 and haven't started the report, wrap up
-your current test and move to the Report phase NOW.
+but delivers results. If you reach turn 65 and haven't started recording, make
+one short attempt; always stop the recording and move to the Report phase by 70.
 
 The workflow parses your structured JSON output to set commit status and post PR
 comments. If you run out of turns without returning JSON, the entire pipeline

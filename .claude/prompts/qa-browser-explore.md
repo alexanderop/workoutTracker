@@ -43,11 +43,12 @@ skip the click and proceed to testing.
 
 ## Turn Budget: 15 turns MAX
 
-| Phase         | Turns | Goal                               |
-| ------------- | ----- | ---------------------------------- |
-| Open & verify | 1-3   | Open app, snapshot, check console  |
-| Navigate      | 4-8   | Click through 3-4 main pages       |
-| Report        | 9-10  | Write qa-report.md and return JSON |
+| Phase         | Turns | Goal                                    |
+| ------------- | ----- | --------------------------------------- |
+| Open & verify | 1-3   | Open app, snapshot, check console       |
+| Navigate      | 4-7   | Click through 3-4 main pages            |
+| Video         | 8-11  | Record a concise navigation walkthrough |
+| Report        | 12-15 | Write qa-report.md and return JSON      |
 
 ## Test Steps
 
@@ -60,6 +61,9 @@ skip the click and proceed to testing.
    also screenshot any bug you find (`qa-screenshots/bug-<N>-<slug>.png`)
 6. Write `qa-report.md` with findings, embedding screenshots as
    `![...](qa-screenshots/<name>.png)`
+7. Record the shortest successful navigation replay to
+   `qa-videos/feature-walkthrough.webm` using the system prompt's procedure,
+   then stop the recording before writing the final report
 
 ## FAIL if
 

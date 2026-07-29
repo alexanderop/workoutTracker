@@ -80,9 +80,10 @@ need a follow-up `snapshot` — so one UI action costs ~2 turns. Budget accordin
   If the run dies later, this file is what CI falls back on.
 - **Update `qa-report.md` after completing each acceptance criterion** — never
   let it fall more than one AC behind what you've tested.
-- **At 75 turns spent, STOP testing** no matter what remains, mark untested ACs
-  as `skip`, and finalize the report. An incomplete report that exists beats a
-  complete report that never got written.
+- **At 65 turns spent, STOP exploratory testing** no matter what remains. Mark
+  untested ACs as `skip`, use up to 10 turns for the required concise feature
+  walkthrough recording, then finalize the report. An incomplete report that
+  exists beats a complete report that never got written.
 - Do not wander into unrelated exploratory testing.
 
 ## Test Guidance
@@ -96,6 +97,9 @@ need a follow-up `snapshot` — so one UI action costs ~2 turns. Budget accordin
   `screenshot` fields. See "Screenshot evidence" in the system prompt.
 - If `agent-browser fill` appears out of sync with Vue state, retry once after reload, then record it as a tool-sync limitation and move on.
 - Check console once during the run for JS errors.
+- After the primary changed flow is verified, replay its shortest representative
+  path in `qa-videos/feature-walkthrough.webm` using the system prompt's video
+  procedure. Reserve the recording turns; do not trade away the final report.
 
 ## Report Requirements
 
