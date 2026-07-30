@@ -3,7 +3,6 @@ import { useLiveQuery } from '@/composables/useLiveQuery'
 import { generateId, getWeightRepository } from '@/db'
 import type { DbWeightEntry } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
-import { getStartOfDay } from '../lib/weightCalculations'
 
 // ============================================
 // Types
@@ -50,24 +49,6 @@ function transformToChartData(entries: ReadonlyArray<DbWeightEntry>): Array<Weig
     date: new Date(entry.date),
     weight: entry.weight,
   }))
-}
-
-async function addEntry(weight: number): Promise<boolean> {
-  const now = Date.now()
-  const entry: DbWeightEntry = {
-    id: generateId(),
-    weight,
-    date: getStartOfDay(new Date()),
-    recordedAt: now,
-  }
-
-  const [error] = await tryCatch(getWeightRepository().add(entry))
-  if (error) {
-    console.error('Failed to add weight entry:', error)
-    return false
-  }
-
-  return true
 }
 
 async function deleteEntry(id: string): Promise<boolean> {
@@ -161,7 +142,6 @@ export function useWeightEntries() {
     hasEntries,
     isLoading,
     selectedRange,
-    addEntry,
     deleteEntry,
     upsertEntry,
     setTimeRange,

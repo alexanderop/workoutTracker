@@ -12,8 +12,8 @@ import { useQuickAddStore } from '@/stores/quickAdd'
 // live query) stays off the startup path — the app has a Lighthouse
 // performance budget on first paint.
 const QuickAddSheet = defineAsyncComponent(() => import('@/components/QuickAddSheet.vue'))
-const WeightQuickLogDialog = defineAsyncComponent(
-  () => import('@/features/weight/components/WeightQuickLogDialog.vue'),
+const WeightLogSheet = defineAsyncComponent(
+  () => import('@/features/weight/components/WeightLogSheet.vue'),
 )
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
 import { useTheme } from '@/features/settings/composables/useTheme'
@@ -31,14 +31,14 @@ usePwaUpdate()
 const { initState, initialize, resumeWorkout, discardWorkout } = useAppInitialization()
 
 const quickAdd = useQuickAddStore()
-const weightQuickLogOpen = ref(false)
+const weightSheetOpen = ref(false)
 // Stays true after the first request so the dialog (and its exit animation)
 // survives closing; it just never mounts before it's needed.
-const weightQuickLogRequested = ref(false)
+const weightSheetRequested = ref(false)
 
-function handleQuickLogWeight() {
-  weightQuickLogRequested.value = true
-  weightQuickLogOpen.value = true
+function handleLogWeight() {
+  weightSheetRequested.value = true
+  weightSheetOpen.value = true
 }
 
 const showResumeDialog = computed(() => initState.value.status === 'prompt-resume')
@@ -68,9 +68,9 @@ onMounted(() => {
     <QuickAddSheet
       v-if="quickAdd.hasOpened"
       v-model:open="quickAdd.isOpen"
-      @log-weight="handleQuickLogWeight"
+      @log-weight="handleLogWeight"
     />
-    <WeightQuickLogDialog v-if="weightQuickLogRequested" v-model:open="weightQuickLogOpen" />
+    <WeightLogSheet v-if="weightSheetRequested" v-model:open="weightSheetOpen" />
 
     <!-- Resume workout dialog -->
     <ResumeWorkoutDialog
