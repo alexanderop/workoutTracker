@@ -80,9 +80,33 @@ async function deleteEntry(id: string): Promise<boolean> {
   return true
 }
 
-async function getEntryForToday(): Promise<DbWeightEntry | undefined> {
-  const [error, entry] = await tryCatch(getWeightRepository().getByDate(new Date()))
-  return error ? undefined : entry
+/**
+ * Write the entry for `day` (a start-of-day timestamp), replacing that day's
+ * most recent existing entry if there is one. `bodyFatPct` is omitted from
+ * the record entirely when undefined.
+ */
+async function upsertEntry(input: {
+  day: number
+  weightKg: number
+  bodyFatPct?: number
+}): Promise<boolean> {
+  // Built as a fresh plain object -- never a reactive proxy -- because Dexie
+  // persists via structuredClone, which throws DataCloneError on a Proxy.
+  const entry: DbWeightEntry = {
+    id: generateId(),
+    weight: input.weightKg,
+    date: input.day,
+    recordedAt: Date.now(),
+    ...(input.bodyFatPct !== undefined && { bodyFatPct: input.bodyFatPct }),
+  }
+
+  const [error] = await tryCatch(getWeightRepository().upsertForDate(entry))
+  if (error) {
+    console.error('Failed to upsert weight entry:', error)
+    return false
+  }
+
+  return true
 }
 
 // ============================================
@@ -139,7 +163,7 @@ export function useWeightEntries() {
     selectedRange,
     addEntry,
     deleteEntry,
+    upsertEntry,
     setTimeRange,
-    getEntryForToday,
   }
 }
