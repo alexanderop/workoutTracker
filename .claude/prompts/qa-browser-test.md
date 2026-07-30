@@ -17,7 +17,7 @@ Just call Bash directly with the command.
 
 See the system prompt for the full command reference.
 
-## Steps (8 turns max)
+## Steps (14 turns max)
 
 1. Open the app — run in Bash: `agent-browser open {{APP_URL}}`
 2. Enable touch-capable mobile emulation — run in Bash: `agent-browser set device "iPhone 14"`
@@ -28,7 +28,11 @@ See the system prompt for the full command reference.
 7. Click one navigation link from the snapshot — run in Bash: `agent-browser click @e3` (use refs from snapshot)
 8. Take another snapshot to confirm the new page loaded
 9. Check for JS errors — run in Bash: `agent-browser console`
-10. Return your JSON result
+10. Return to the starting page and run `agent-browser record start qa-videos/feature-walkthrough.webm`
+11. Re-snapshot because recording starts a fresh context, then repeat the successful navigation
+12. Run `agent-browser record stop`
+13. Link the recording under `## Evidence` in `qa-report.md`
+14. Return your JSON result
 
 ## IMPORTANT: Structured Output
 

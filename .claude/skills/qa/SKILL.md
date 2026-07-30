@@ -79,6 +79,15 @@ actually works", or "can this ship?"
         console lines, relevant input values, and `window.location.href`.
      5. Round-trip created or edited data when possible by navigating away and
         confirming the downstream view updated.
+   - After verifying the primary changed flow, record one concise replay under
+     `qa/evidence/<slug>/feature-walkthrough.webm`:
+     1. Return to a clean starting point.
+     2. Run `agent-browser record start qa/evidence/<slug>/feature-walkthrough.webm`.
+     3. Re-snapshot because recording creates a fresh browser context, then
+        replay only the shortest representative path and visible result.
+     4. Run `agent-browser record stop` before writing the report.
+     5. Link the recording from the test case's Evidence line. Keep it under
+        90 seconds; if the feature fails, record the shortest reproduction.
    - Treat a rendered success screen with a 500, uncaught exception, or
      relevant console error as a failure.
    - Judge the primary view against its stated intent, not just that it
@@ -130,6 +139,8 @@ actually works", or "can this ship?"
      substitute the full tier, which CI runs on the PR.
 
 5. Clean up.
+   - Stop any active recording before closing the browser so the WebM is
+     finalized and readable.
    - Close browser sessions or stop background services you started.
    - Keep evidence files that support the report.
 

@@ -12,7 +12,9 @@ import {
   extractMarkdownSection,
   hasMeaningfulTemplateContent,
   isValidScreenshotFilename,
+  isValidVideoFilename,
   rewriteScreenshotLinks,
+  rewriteVideoLinks,
   validateQaReport,
 } from './qa-workflow-policy.mjs'
 
@@ -77,6 +79,33 @@ test('published screenshot links are rewritten, unknown ones left alone', () => 
     ].join('\n'),
   )
   assert.equal(rewriteScreenshotLinks('', {}), '')
+})
+
+test('video filenames must be flat kebab-case .webm', () => {
+  assert.equal(isValidVideoFilename('feature-walkthrough.webm'), true)
+  assert.equal(isValidVideoFilename('ac1_feature-result.webm'), true)
+  assert.equal(isValidVideoFilename('../escape.webm'), false)
+  assert.equal(isValidVideoFilename('sub/dir.webm'), false)
+  assert.equal(isValidVideoFilename('UPPER.webm'), false)
+  assert.equal(isValidVideoFilename('walkthrough.mp4'), false)
+  assert.equal(isValidVideoFilename('.hidden.webm'), false)
+  assert.equal(isValidVideoFilename(`${'a'.repeat(96)}.webm`), false)
+  assert.equal(isValidVideoFilename(undefined), false)
+})
+
+test('validated video links point to the QA artifact', () => {
+  const report = [
+    '[Watch](qa-videos/feature-walkthrough.webm)',
+    '[Missing](qa-videos/not-published.webm)',
+  ].join('\n')
+  const artifactUrl = 'https://github.example/actions/runs/123/artifacts/456'
+
+  assert.equal(
+    rewriteVideoLinks(report, artifactUrl, ['feature-walkthrough.webm', '../escape.webm']),
+    [`[Watch](${artifactUrl})`, '[Missing](qa-videos/not-published.webm)'].join('\n'),
+  )
+  assert.equal(rewriteVideoLinks(report, '', ['feature-walkthrough.webm']), report)
+  assert.equal(rewriteVideoLinks('', artifactUrl, ['feature-walkthrough.webm']), '')
 })
 
 test('an explicit QA skip is a final report', () => {
@@ -258,6 +287,9 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(browser, /qa-workflow-policy\.mjs/)
   assert.match(browser, /Bash\(agent-browser:\*\)/)
   assert.match(browser, /agent-browser set device "iPhone 14"/)
+  assert.match(browser, /qa-videos\//)
+  assert.match(browser, /VIDEO_SHA256/)
+  assert.match(browser, /artifact-url/)
   assert.doesNotMatch(browser, /--allowedTools "Bash,/)
   assert.doesNotMatch(followup, /RUN_JSON[^\n]*head_sha|\.head_sha' <<<"\$RUN_JSON"/)
   assert.match(followup, /qa-provenance\.json/)
@@ -276,6 +308,24 @@ test('workflow definitions retain hardening invariants', async () => {
   assert.match(reusable, /case "\$PROFILE" in/)
   assert.doesNotMatch(reusable, /inputs\.command/)
   assert.match(codeql, /github\/codeql-action\/analyze@[0-9a-f]{40}/)
+})
+
+test('QA prompts require a finalized feature walkthrough recording', async () => {
+  const [systemPrompt, fastPrompt, verifyPrompt, explorePrompt, pipelinePrompt] =
+    await Promise.all([
+      readFile('.claude/prompts/qa-system-prompt.md', 'utf8'),
+      readFile('.claude/prompts/qa-browser-fast.md', 'utf8'),
+      readFile('.claude/prompts/qa-browser-verify.md', 'utf8'),
+      readFile('.claude/prompts/qa-browser-explore.md', 'utf8'),
+      readFile('.claude/prompts/qa-browser-test.md', 'utf8'),
+    ])
+
+  assert.match(systemPrompt, /agent-browser record start qa-videos\/feature-walkthrough\.webm/)
+  assert.match(systemPrompt, /agent-browser record stop/)
+  assert.match(systemPrompt, /under 90 seconds/)
+  for (const prompt of [fastPrompt, verifyPrompt, explorePrompt, pipelinePrompt]) {
+    assert.match(prompt, /feature-walkthrough\.webm|Video Evidence/)
+  }
 })
 
 // The retry's own first instruction is to overwrite qa-report.md with an

@@ -51,16 +51,22 @@ You've been testing this app for months. Here's what you know:
 
 4. **CONTINUE AFTER BUGS.** Finding a bug is not the end. Document it, then KEEP TESTING. One bug often reveals more.
 
-5. **MOBILE FIRST.** This is a phone-first workout app. Begin every run with
+5. **RECORD THE RESULT.** For every run with a UI-verifiable changed flow,
+   reserve enough turns to record one short walkthrough after verification.
+   Replay the clearest working path; if the feature is broken, record the
+   shortest reliable reproduction instead. The recording supplements the
+   snapshot-based findings—it never replaces them.
+
+6. **MOBILE FIRST.** This is a phone-first workout app. Begin every run with
    iPhone 14 device emulation and keep it as the default for all user-facing
    checks. A narrow viewport alone is not enough because touch behavior matters.
    Switch to desktop only when an acceptance criterion or targeted regression
    explicitly requires it. Reload after changing device mode, and restore
    iPhone 14 emulation plus reload before continuing.
 
-6. **FIXTURE BUGS ≠ PRODUCT BUGS.** If an acceptance criterion depends on a UI affordance that doesn't exist anywhere in the app (e.g. "configure rest seconds per block" when no such control is discoverable), that's a **fixture contract bug**, not a product bug. Mark the test `skip` with reason "affordance not discoverable" and do NOT downgrade the verdict on that alone.
+7. **FIXTURE BUGS ≠ PRODUCT BUGS.** If an acceptance criterion depends on a UI affordance that doesn't exist anywhere in the app (e.g. "configure rest seconds per block" when no such control is discoverable), that's a **fixture contract bug**, not a product bug. Mark the test `skip` with reason "affordance not discoverable" and do NOT downgrade the verdict on that alone.
 
-7. **ACCESSIBILITY IS A FIRST-CLASS CHECK.** When an element's state changes (pressed/logged/selected/disabled), verify its accessible name or role reflects that — visual state alone isn't enough. Screen-reader users rely on ARIA state, not colors.
+8. **ACCESSIBILITY IS A FIRST-CLASS CHECK.** When an element's state changes (pressed/logged/selected/disabled), verify its accessible name or role reflects that — visual state alone isn't enough. Screen-reader users rely on ARIA state, not colors.
 
 ## Bug Severity Guide
 
@@ -127,6 +133,40 @@ Rules:
   so a correct relative path is all you need.
 - **Reference them in the JSON output** via the optional `screenshot` field on
   each test and bug (just the filename, e.g. `ac1-weight-saved.png`).
+
+### Video evidence
+
+For every run that has a UI-verifiable changed flow, create exactly one short
+recording that lets a reviewer see the feature's result without reconstructing
+the test from screenshots.
+
+1. Finish verifying the primary flow with snapshots first.
+2. Return to a clean starting point for the shortest representative path.
+3. Start recording:
+
+   ```bash
+   agent-browser record start qa-videos/feature-walkthrough.webm
+   ```
+
+   Recording starts a fresh browser context while preserving cookies and local
+   storage. Re-run `snapshot -i` before interacting because old refs are stale.
+4. Replay only the important user actions and visible result. Keep the video
+   under 90 seconds and stay in iPhone 14 emulation unless the criterion is
+   explicitly desktop-only.
+5. Always finalize the file before writing the report:
+
+   ```bash
+   agent-browser record stop
+   ```
+
+6. Add this link under `## Evidence` in `qa-report.md`:
+   `[Download the feature walkthrough](qa-videos/feature-walkthrough.webm)`.
+   The workflow replaces it with the authenticated QA-artifact URL when it
+   publishes the PR comment. Do not add a video field to the structured JSON.
+
+If the changed flow fails, record its shortest reliable reproduction and say
+that the video shows the failure. If the run has no UI-verifiable changed flow,
+do not invent a recording; explain the skip in the report.
 
 ### Refs are the preferred selector
 

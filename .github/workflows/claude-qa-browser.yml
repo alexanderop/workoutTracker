@@ -242,6 +242,7 @@ jobs:
   qa-browser:
     needs: [qa-admission, prepare-app]
     outputs:
+      artifact-url: ${{ steps.upload-qa-artifacts.outputs.artifact-url }}
       pr-number: ${{ steps.pr-context.outputs.pr_number || steps.pr-metadata.outputs.number || github.event.pull_request.number || github.event.inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
       report-ready: ${{ steps.final-report.outputs.ready }}
       tested-head-sha: ${{ needs.prepare-app.outputs.head-sha }}
@@ -623,8 +624,8 @@ jobs:
         shell: bash
         run: |
           rm -f qa-report.md qa-structured-output.json
-          rm -rf qa-screenshots
-          mkdir -p qa-screenshots
+          rm -rf qa-screenshots qa-videos
+          mkdir -p qa-screenshots qa-videos
 
       - name: Dev server health check
         if: steps.ui-changed.outputs.ui_changed != 'false'
@@ -990,7 +991,7 @@ jobs:
             echo '5. Check 3-4 main pages load correctly, updating qa-report.md after each page'
             echo '6. Finalize qa-report.md no later than 45 turns spent (hard limit is 60)'
             echo ''
-            echo 'Every Bash command you run must start with `agent-browser` — nothing else is'
+            echo "Every Bash command you run must start with \`agent-browser\` — nothing else is"
             echo 'permitted, so do not spend turns on curl, ls, or cat health checks.'
             echo ''
             echo 'The report is machine-validated: it is REJECTED unless it has a final'
@@ -1287,6 +1288,51 @@ jobs:
           console.info(`Kept ${kept.length} screenshot(s): ${kept.join(', ') || '(none)'}`)
           NODE
 
+      # A recording is agent-produced evidence too. Accept one bounded WebM
+      # with a flat safe name, and verify the EBML/WebM header before it enters
+      # the immutable artifact. A failed or interrupted recording degrades to
+      # no video without making the textual QA report unusable.
+      - name: Sanitize QA video
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-videos
+          find qa-videos -mindepth 2 -type f -name '*.webm' -exec mv -n {} qa-videos/ \;
+          find qa-videos -mindepth 1 -type d -exec rm -rf {} +
+          node --input-type=module - <<'NODE'
+          import { readdir, readFile, stat, unlink } from 'node:fs/promises'
+          import path from 'node:path'
+          import { pathToFileURL } from 'node:url'
+          let policy = {}
+          try {
+            policy = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE, 'scripts/qa-workflow-policy.mjs',
+            )).href)
+          } catch {}
+          const isValid = policy.isValidVideoFilename ?? ((name) =>
+            typeof name === 'string' && name.length <= 100 && /^[a-z0-9][a-z0-9_-]*\.webm$/.test(name))
+          const MAX_FILES = 1
+          const MAX_BYTES = 50 * 1024 * 1024
+          const EBML_MAGIC = Buffer.from([0x1a, 0x45, 0xdf, 0xa3])
+          const kept = []
+          for (const name of (await readdir('qa-videos')).sort()) {
+            const file = path.join('qa-videos', name)
+            const drop = async (reason) => {
+              console.warn(`Dropping ${name}: ${reason}`)
+              await unlink(file)
+            }
+            if (!isValid(name)) { await drop('invalid filename'); continue }
+            const { size } = await stat(file)
+            if (size === 0 || size > MAX_BYTES) { await drop(`invalid size (${size} bytes)`); continue }
+            const head = (await readFile(file)).subarray(0, EBML_MAGIC.length)
+            if (!head.equals(EBML_MAGIC)) { await drop('not a WebM/EBML file'); continue }
+            if (kept.length >= MAX_FILES) { await drop('over file limit'); continue }
+            kept.push(name)
+          }
+          console.info(`Kept ${kept.length} video(s): ${kept.join(', ') || '(none)'}`)
+          NODE
+
       - name: Write immutable QA provenance
         if: always()
         env:
@@ -1298,13 +1344,20 @@ jobs:
             '[inputs | select(length > 0)
               | capture("^(?<sha256>[0-9a-f]{64}) [ *](?<file>qa-screenshots/.+)$")
               | {file: (.file | sub("^qa-screenshots/"; "")), sha256}]' )
+          VIDEOS=$( { sha256sum qa-videos/*.webm 2>/dev/null || true; } | jq -Rn \
+            '[inputs | select(length > 0)
+              | capture("^(?<sha256>[0-9a-f]{64}) [ *](?<file>qa-videos/.+)$")
+              | {file: (.file | sub("^qa-videos/"; "")), sha256}]' )
           jq -n --arg pr "$PR_NUMBER" --arg sha "$TESTED_HEAD_SHA" \
             --arg report_sha256 "$REPORT_SHA256" \
             --argjson screenshots "$SCREENSHOTS" \
-            '{pr_number: $pr, tested_head_sha: $sha, report_sha256: $report_sha256, screenshots: $screenshots}' \
+            --argjson videos "$VIDEOS" \
+            '{pr_number: $pr, tested_head_sha: $sha, report_sha256: $report_sha256,
+              screenshots: $screenshots, videos: $videos}' \
             > qa-provenance.json
 
       - name: Upload QA artifacts
+        id: upload-qa-artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1314,6 +1367,7 @@ jobs:
             qa-structured-output.json
             qa-provenance.json
             qa-screenshots/
+            qa-videos/
             qa-debug/
           if-no-files-found: ignore
 
@@ -1384,6 +1438,16 @@ jobs:
             [[ "$SHA" =~ ^[0-9a-f]{64}$ ]]
             test "$(sha256sum "/tmp/qa-report/qa-screenshots/$FILE" | cut -d' ' -f1)" = "$SHA"
           done < <(jq -c '.screenshots[]?' /tmp/qa-report/qa-provenance.json)
+          # The WebM is downloadable from the same authenticated artifact URL
+          # linked in the report. Validate its immutable provenance before that
+          # link can be published.
+          while IFS= read -r entry; do
+            FILE=$(jq -r '.file' <<<"$entry")
+            VIDEO_SHA256=$(jq -r '.sha256' <<<"$entry")
+            [[ "$FILE" =~ ^[a-z0-9][a-z0-9_-]*\.webm$ ]]
+            [[ "$VIDEO_SHA256" =~ ^[0-9a-f]{64}$ ]]
+            test "$(sha256sum "/tmp/qa-report/qa-videos/$FILE" | cut -d' ' -f1)" = "$VIDEO_SHA256"
+          done < <(jq -c '.videos[]?' /tmp/qa-report/qa-provenance.json)
           node scripts/qa-workflow-policy.mjs /tmp/qa-report/qa-report.md
           echo 'ready=true' >> "$GITHUB_OUTPUT"
       # PR comments cannot embed images from artifacts or local paths, so the
@@ -1477,9 +1541,11 @@ jobs:
             fs.writeFileSync(MAP_PATH, JSON.stringify(urls, null, 2));
             core.info(`Published ${tree.length} screenshot(s) to ${BRANCH} @ ${commit.sha}.`);
 
-      - name: Inline hosted screenshot links into report
+      - name: Inline hosted evidence links into report
         if: steps.validate.outputs.ready == 'true'
         shell: bash
+        env:
+          QA_ARTIFACT_URL: ${{ needs.qa-browser.outputs.artifact-url }}
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -1492,14 +1558,30 @@ jobs:
               process.env.GITHUB_WORKSPACE, 'scripts/qa-workflow-policy.mjs',
             )).href)
           } catch {}
-          const rewrite = policy.rewriteScreenshotLinks ?? ((report, urlMap) =>
+          const rewriteScreenshots = policy.rewriteScreenshotLinks ?? ((report, urlMap) =>
             report.replaceAll(/qa-screenshots\/([a-z0-9][a-z0-9_-]*\.png)/g,
               (match, file) => urlMap[file] ?? match))
+          const rewriteVideos = policy.rewriteVideoLinks ?? ((report, artifactUrl, publishedFiles) => {
+            const allowed = new Set(publishedFiles)
+            return report.replaceAll(/qa-videos\/([a-z0-9][a-z0-9_-]*\.webm)/g,
+              (match, file) => allowed.has(file) ? artifactUrl : match)
+          })
           const report = await readFile('/tmp/qa-report/qa-report.md', 'utf8')
           const urls = JSON.parse(
             await readFile('/tmp/qa-report/screenshot-urls.json', 'utf8').catch(() => '{}'),
           )
-          await writeFile('/tmp/qa-report/qa-report-published.md', rewrite(report, urls))
+          const provenance = JSON.parse(await readFile('/tmp/qa-report/qa-provenance.json', 'utf8'))
+          const videos = Array.isArray(provenance.videos)
+            ? provenance.videos.map(({ file }) => file)
+            : []
+          let published = rewriteScreenshots(report, urls)
+          published = rewriteVideos(published, process.env.QA_ARTIFACT_URL, videos)
+          if (videos.length > 0 && process.env.QA_ARTIFACT_URL &&
+              !published.includes(process.env.QA_ARTIFACT_URL)) {
+            published += `\n\n## Video Evidence\n\n` +
+              `[Download the QA artifact containing \`${videos[0]}\`](${process.env.QA_ARTIFACT_URL}).\n`
+          }
+          await writeFile('/tmp/qa-report/qa-report-published.md', published)
           NODE
 
       - name: Post QA report as PR comment
