@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Moon, Globe } from '@lucide/vue'
-import { useTheme } from '@/features/settings/composables/useTheme'
+import { useTheme } from '@/composables/useTheme'
 import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from 'vue-i18n'
 

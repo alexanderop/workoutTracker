@@ -16,7 +16,7 @@ const WeightQuickLogDialog = defineAsyncComponent(
   () => import('@/features/weight/components/WeightQuickLogDialog.vue'),
 )
 import { useAppInitialization } from '@/features/workout/composables/useAppInitialization'
-import { useTheme } from '@/features/settings/composables/useTheme'
+import { useTheme } from '@/composables/useTheme'
 import { useGlobalWakeLock } from '@/composables/useGlobalWakeLock'
 import { useKeyboardInset } from '@/composables/useKeyboardInset'
 import { useLanguage } from '@/features/settings/composables/useLanguage'

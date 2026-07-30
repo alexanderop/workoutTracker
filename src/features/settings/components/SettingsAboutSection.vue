@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Info, Palette } from '@lucide/vue'
+import { Info, Layers, Palette } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,8 @@ import { RouteNames } from '@/router'
 
 const { t } = useI18n()
 const router = useRouter()
+
+const isDev = import.meta.env.DEV
 
 const formattedBuildTime = computed(() => {
   if (!currentVersion.buildTime) return '-'
@@ -57,6 +59,20 @@ const formattedBuildTime = computed(() => {
           @click="router.push({ name: RouteNames.HealthPrototypes })"
         >
           {{ t('settings.labels.openHealthPrototypes') }}
+        </Button>
+      </div>
+
+      <!-- Matches the dev-only /design route; in production there is nothing to link to. -->
+      <div v-if="isDev" class="flex items-center gap-3 rounded-lg border p-3">
+        <Layers class="icon-md shrink-0 text-primary" />
+        <div class="min-w-0 flex-1">
+          <p class="font-medium">{{ t('settings.labels.designSystem') }}</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('settings.labels.designSystemDescription') }}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" @click="router.push({ name: RouteNames.DesignSystem })">
+          {{ t('settings.labels.openDesignSystem') }}
         </Button>
       </div>
     </div>
