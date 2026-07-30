@@ -267,7 +267,10 @@ export type DbWeightEntry = {
   weight: number // Always stored in kg
   date: number // Start of day timestamp (for one-entry-per-day deduplication)
   recordedAt: number // When the entry was actually logged
+  /** Optional body-fat percentage (0-100). Absent on entries logged before this field existed. */
+  bodyFatPct?: number
 }
+// `bodyFatPct` is unindexed, so no Dexie schema version bump is needed to add it.
 
 // ============================================
 // Nutrition Tracking Types

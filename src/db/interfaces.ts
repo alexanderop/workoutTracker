@@ -569,6 +569,14 @@ export type WeightRepository = {
   getByDate(date: Date): Promise<DatabaseWeightEntry | undefined>
 
   /**
+   * Write the entry for its `date`, replacing that day's most recent existing
+   * row in place (reusing its `id`) when one exists, otherwise inserting.
+   * Unlike {@link WeightRepository.add}, duplicate rows that already exist for
+   * the same date are left untouched.
+   */
+  upsertForDate(entry: Readonly<DatabaseWeightEntry>): Promise<void>
+
+  /**
    * Delete a weight entry by ID.
    */
   delete(id: string): Promise<void>

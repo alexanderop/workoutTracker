@@ -61,6 +61,21 @@ export function createDexieWeightRepository(database: WorkoutTrackerDatabase): W
       return database.weightEntries.where('date').equals(timestamp).first()
     },
 
+    async upsertForDate(entry: Readonly<DbWeightEntry>): Promise<void> {
+      await database.transaction('rw', database.weightEntries, async () => {
+        const rowsForDate = await database.weightEntries.where('date').equals(entry.date).toArray()
+
+        // Total-order comparator (recordedAt desc, id desc tie-break) so the
+        // "most recent" row is deterministic even when two rows share a
+        // recordedAt millisecond -- see the repository comparator brain note.
+        const [mostRecent] = rowsForDate.toSorted(
+          (a, b) => b.recordedAt - a.recordedAt || (b.id < a.id ? -1 : Number(b.id > a.id)),
+        )
+
+        await database.weightEntries.put(mostRecent ? { ...entry, id: mostRecent.id } : entry)
+      })
+    },
+
     async delete(id: string): Promise<void> {
       await database.weightEntries.delete(id)
     },
