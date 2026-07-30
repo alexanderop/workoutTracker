@@ -1,8 +1,36 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { WakeLockSentinel } from '@vueuse/core'
 import { nextTick } from 'vue'
 import { useScreenWakeLock } from '@/composables/useScreenWakeLock'
 import { tryCatch } from '@/lib/tryCatch'
 import { withSetup } from '../helpers/withSetup'
+
+class TestWakeLockSentinel extends EventTarget implements WakeLockSentinel {
+  readonly type = 'screen'
+  released = false
+
+  constructor(readonly release: () => Promise<void>) {
+    super()
+  }
+}
+
+function restoreProperty(
+  target: object,
+  key: PropertyKey,
+  descriptor: PropertyDescriptor | undefined,
+): void {
+  if (descriptor) {
+    Object.defineProperty(target, key, descriptor)
+    return
+  }
+  Reflect.deleteProperty(target, key)
+}
+
+function getBrowserWindow(): Window {
+  const browserWindow = document.defaultView
+  if (!browserWindow) throw new Error('Expected a browser window')
+  return browserWindow
+}
 
 /**
  * Browser tests for useScreenWakeLock with real browser APIs.
@@ -179,6 +207,40 @@ describe('useScreenWakeLock - browser mode', () => {
 
       result.stopVideoFallback()
       expect(result.isActive.value).toBe(false)
+    })
+
+    it('does not recreate a fallback when acquisition settles after unmount', async () => {
+      const release = vi.fn(async () => {})
+      const sentinel = new TestWakeLockSentinel(release)
+      const pendingRequest = Promise.withResolvers<WakeLockSentinel>()
+      const originalWakeLock = Object.getOwnPropertyDescriptor(globalThis.navigator, 'wakeLock')
+      Object.defineProperty(globalThis.navigator, 'wakeLock', {
+        configurable: true,
+        value: {
+          request: () => pendingRequest.promise,
+        },
+      })
+      try {
+        const [result, app] = withSetup(() =>
+          useScreenWakeLock({
+            window: getBrowserWindow(),
+            document,
+            navigator: globalThis.navigator,
+          }),
+        )
+
+        const acquisition = result.acquireAll({ redundant: true })
+        app.unmount()
+        pendingRequest.resolve(sentinel)
+        await acquisition
+
+        // eslint-disable-next-line no-restricted-syntax -- Verifying the raw DOM fallback is absent after teardown
+        expect(document.querySelector('video')).toBeNull()
+        expect(result.isActive.value).toBe(false)
+        expect(release).toHaveBeenCalledOnce()
+      } finally {
+        restoreProperty(globalThis.navigator, 'wakeLock', originalWakeLock)
+      }
     })
   })
 

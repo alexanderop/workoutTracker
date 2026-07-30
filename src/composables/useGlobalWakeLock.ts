@@ -1,33 +1,32 @@
 import type { ComputedRef } from 'vue'
 import { watch } from 'vue'
-import { tryOnScopeDispose, useDocumentVisibility } from '@vueuse/core'
+import { defaultDocument, tryOnScopeDispose, useDocumentVisibility } from '@vueuse/core'
 import { useSettingsStore } from '@/stores/settings'
-import { useScreenWakeLock } from './useScreenWakeLock'
-
-// Check for browser environment
-const isBrowser = typeof document !== 'undefined'
+import { useScreenWakeLock, type UseScreenWakeLockOptions } from './useScreenWakeLock'
 
 export type UseGlobalWakeLockReturn = {
   isSupported: ComputedRef<boolean>
   isActive: ComputedRef<boolean>
 }
 
+export type UseGlobalWakeLockOptions = UseScreenWakeLockOptions
+
 /**
  * Global wake lock composable that respects user settings.
  * Keeps screen awake when enabled and page is visible.
  * Call this once at the app root level (App.vue).
  */
-export function useGlobalWakeLock(): UseGlobalWakeLockReturn {
+export function useGlobalWakeLock(options: UseGlobalWakeLockOptions = {}): UseGlobalWakeLockReturn {
+  const document = options.document ?? options.window?.document ?? defaultDocument
   const settingsStore = useSettingsStore()
-  const visibility = useDocumentVisibility()
-  const wakeLock = useScreenWakeLock()
+  const visibility = useDocumentVisibility({ document })
+  const wakeLock = useScreenWakeLock(options)
 
   // Track if we should be holding a wake lock
   let shouldBeActive = false
 
   function updateWakeLock() {
-    // Skip in non-browser environments (SSR, tests)
-    if (!isBrowser) return
+    if (!document) return
 
     const enabled = settingsStore.screenWakeLock
     const isVisible = visibility.value === 'visible'
@@ -39,7 +38,7 @@ export function useGlobalWakeLock(): UseGlobalWakeLockReturn {
     const shouldActivate = enabled && isVisible
 
     if (shouldActivate && !shouldBeActive) {
-      wakeLock.acquireAll()
+      void wakeLock.acquireAll()
       shouldBeActive = true
       return
     }
@@ -65,7 +64,7 @@ export function useGlobalWakeLock(): UseGlobalWakeLockReturn {
 
   // Watch visibility changes
   watch(visibility, (state, previousState) => {
-    if (!isBrowser) return
+    if (!document) return
     if (!settingsStore.isLoaded || !settingsStore.screenWakeLock) return
 
     if (state === 'hidden') {
@@ -75,7 +74,7 @@ export function useGlobalWakeLock(): UseGlobalWakeLockReturn {
     }
 
     if (state === 'visible' && previousState === 'hidden') {
-      wakeLock.acquireAll()
+      void wakeLock.acquireAll()
       shouldBeActive = true
     }
   })

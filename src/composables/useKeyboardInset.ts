@@ -1,4 +1,5 @@
-import { useEventListener } from '@vueuse/core'
+import type { ConfigurableDocument } from '@vueuse/core'
+import { defaultDocument, defaultWindow, tryOnScopeDispose, useEventListener } from '@vueuse/core'
 
 const KEYBOARD_INSET_PROPERTY = '--keyboard-inset'
 
@@ -15,23 +16,48 @@ const KEYBOARD_INSET_PROPERTY = '--keyboard-inset'
  *
  * Call once at app root.
  */
-export function useKeyboardInset(): void {
-  const viewport = window.visualViewport
-  if (!viewport) return
+type KeyboardViewport = EventTarget & Pick<VisualViewport, 'height' | 'offsetTop' | 'scale'>
+type KeyboardWindow = Pick<Window, 'innerHeight'> & {
+  visualViewport?: KeyboardViewport | null
+}
+
+export type UseKeyboardInsetOptions = ConfigurableDocument & {
+  window?: KeyboardWindow
+}
+
+export function useKeyboardInset(options: UseKeyboardInsetOptions = {}): () => void {
+  const { window = defaultWindow } = options
+  const document = options.document ?? defaultDocument
+  const viewport = window?.visualViewport
+  if (!window || !document || !viewport) return () => {}
+  const browserWindow = window
+  const browserDocument = document
 
   function update(): void {
     if (!viewport) return
     // Pinch-zoom also shrinks the visual viewport; only track keyboard-like insets.
     const inset =
       viewport.scale === 1
-        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        ? Math.max(0, browserWindow.innerHeight - viewport.height - viewport.offsetTop)
         : 0
-    document.documentElement.style.setProperty(KEYBOARD_INSET_PROPERTY, `${Math.round(inset)}px`)
+    browserDocument.documentElement.style.setProperty(
+      KEYBOARD_INSET_PROPERTY,
+      `${Math.round(inset)}px`,
+    )
   }
 
   // iOS reveals a focused input by panning (scrolling) the layout viewport
   // instead of resizing it, so the scroll listener is required, not optional.
-  useEventListener(viewport, 'resize', update, { passive: true })
-  useEventListener(viewport, 'scroll', update, { passive: true })
+  const stopResize = useEventListener(viewport, 'resize', update, { passive: true })
+  const stopScroll = useEventListener(viewport, 'scroll', update, { passive: true })
   update()
+
+  function stop(): void {
+    stopResize()
+    stopScroll()
+    browserDocument.documentElement.style.removeProperty(KEYBOARD_INSET_PROPERTY)
+  }
+
+  tryOnScopeDispose(stop)
+  return stop
 }

@@ -1,4 +1,5 @@
-import { createGlobalState, useEventListener } from '@vueuse/core'
+import type { ConfigurableWindow } from '@vueuse/core'
+import { createGlobalState, defaultWindow, useEventListener, useSupported } from '@vueuse/core'
 import { useSettingsStore } from '@/stores/settings'
 
 // One AudioContext for the whole app, not one per component instance. On
@@ -84,8 +85,17 @@ const COMPLETE_CUE: ReadonlyArray<CuePulse> = [
  * the session. Call `prepare()` from a user gesture -- opening or starting a
  * timer -- so the audio path is already warm when the first cue fires.
  */
-export const useTimerAudio = createGlobalState(() => {
+export type UseTimerAudioOptions = Omit<ConfigurableWindow, 'window'> & {
+  window?: Window & Partial<Pick<typeof globalThis, 'AudioContext'>>
+  audioContext?: typeof AudioContext
+}
+
+export function createTimerAudioState(options: UseTimerAudioOptions = {}) {
+  const { window = defaultWindow } = options
+  const document = window?.document
+  const AudioContextConstructor = options.audioContext ?? window?.AudioContext
   const settings = useSettingsStore()
+  const isSupported = useSupported(() => AudioContextConstructor !== undefined)
 
   let audioContext: AudioContext | null = null
   let keepAlive: ConstantSourceNode | null = null
@@ -115,10 +125,10 @@ export const useTimerAudio = createGlobalState(() => {
    * the page is hidden, hence the resume on every call.
    */
   async function ensureAudioReady(): Promise<AudioContext | null> {
-    if (!settings.timerSoundEnabled) return null
+    if (!settings.timerSoundEnabled || !AudioContextConstructor) return null
 
-    audioContext ??= new AudioContext()
-    const context = audioContext
+    const context = audioContext ?? new AudioContextConstructor()
+    audioContext = context
 
     // 'interrupted' is an iOS Safari specific state absent from the standard typings.
     const state: string = context.state
@@ -144,7 +154,7 @@ export const useTimerAudio = createGlobalState(() => {
   // exactly what happens when the user switches to their music app. Resume as
   // soon as they come back rather than waiting for the next cue to try.
   useEventListener(document, 'visibilitychange', () => {
-    if (document.visibilityState !== 'visible') return
+    if (document?.visibilityState !== 'visible') return
     if (!audioContext || audioContext.state === 'running') return
     prepare()
   })
@@ -277,6 +287,7 @@ export const useTimerAudio = createGlobalState(() => {
   }
 
   return {
+    isSupported,
     prepare,
     playWorkBeep,
     playRestBeep,
@@ -284,4 +295,6 @@ export const useTimerAudio = createGlobalState(() => {
     playComplete,
     dispose,
   }
-})
+}
+
+export const useTimerAudio = createGlobalState(createTimerAudioState)

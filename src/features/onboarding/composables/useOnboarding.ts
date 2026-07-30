@@ -1,4 +1,5 @@
-import { createGlobalState, useMediaQuery } from '@vueuse/core'
+import type { ConfigurableWindow } from '@vueuse/core'
+import { createGlobalState, defaultWindow, useMediaQuery } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import {
   getOnboardingRepository,
@@ -37,7 +38,11 @@ async function checkExistingData(): Promise<boolean> {
  * Global state for onboarding flow.
  * Manages completion status, current step, and PWA detection.
  */
-export const useOnboarding = createGlobalState(() => {
+export type UseOnboardingOptions = ConfigurableWindow
+
+export const useOnboarding = createGlobalState((options: UseOnboardingOptions = {}) => {
+  const { window = defaultWindow } = options
+
   // State
   const currentStep = ref(0)
   const completed = ref(false)
@@ -46,10 +51,10 @@ export const useOnboarding = createGlobalState(() => {
   const isInitialized = ref(false)
 
   // PWA detection
-  const isPwaStandalone = useMediaQuery('(display-mode: standalone)')
+  const isPwaStandalone = useMediaQuery('(display-mode: standalone)', { window })
   const isSafariStandalone = computed(() => {
-    const nav = globalThis.navigator
-    return 'standalone' in nav && nav.standalone === true
+    const nav = window?.navigator
+    return nav !== undefined && 'standalone' in nav && nav.standalone === true
   })
   const isPWA = computed(() => isPwaStandalone.value || isSafariStandalone.value)
 

@@ -1,6 +1,7 @@
-import { ref, watch } from 'vue'
+import { shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useEventListener, useIntervalFn } from '@vueuse/core'
+import type { ConfigurableWindow } from '@vueuse/core'
+import { defaultWindow, useEventListener, useIntervalFn, useOnline } from '@vueuse/core'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { RouteNames } from '@/router'
 import { tryCatch } from '@/lib/tryCatch'
@@ -29,9 +30,14 @@ const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000 // 30 minutes
  * - Application: apply a pending update by reloading, but only on routes where
  *   a reload can't lose in-progress data (never mid-workout/-benchmark).
  */
-export function usePwaUpdate() {
+export type UsePwaUpdateOptions = ConfigurableWindow
+
+export function usePwaUpdate(options: UsePwaUpdateOptions = {}) {
+  const { window = defaultWindow } = options
+  const document = window?.document
   const router = useRouter()
-  const swRegistration = ref<ServiceWorkerRegistration | undefined>()
+  const swRegistration = shallowRef<ServiceWorkerRegistration | undefined>()
+  const isOnline = useOnline({ window })
 
   const { needRefresh, updateServiceWorker } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
@@ -42,7 +48,7 @@ export function usePwaUpdate() {
   async function checkForUpdate() {
     const registration = swRegistration.value
     if (!registration || registration.installing) return
-    if (!navigator.onLine) return
+    if (!isOnline.value) return
     // Best-effort: a failed check (e.g. transient network error) just means we
     // retry on the next interval or visibility change.
     await tryCatch(registration.update())
@@ -53,7 +59,7 @@ export function usePwaUpdate() {
   // moment the user returns to it.
   useIntervalFn(checkForUpdate, UPDATE_CHECK_INTERVAL_MS)
   useEventListener(document, 'visibilitychange', () => {
-    if (document.visibilityState === 'visible') void checkForUpdate()
+    if (document?.visibilityState === 'visible') void checkForUpdate()
   })
 
   // Apply a pending update as soon as we're on a safe route. Reacting to

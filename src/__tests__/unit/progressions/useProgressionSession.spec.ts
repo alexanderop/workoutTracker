@@ -10,6 +10,7 @@
  * needs that trick.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { effectScope } from 'vue'
 import { useProgressionSession } from '@/features/progressions/composables/useProgressionSession'
 import { rejects } from '@/__tests__/helpers/di'
 import { progressionContext as contextFor, seeded as seedProgression } from './helpers'
@@ -143,6 +144,21 @@ describe('useProgressionSession', () => {
 
       expect(currentSecond.value).toBe(60)
       expect(isTimerComplete.value).toBe(true)
+    })
+
+    it('stops ticking when its owning effect scope is disposed', async () => {
+      const { repo, id } = await seeded()
+      const scope = effectScope()
+      const session = scope.run(() => useProgressionSession(id, contextFor(repo)))!
+      await session.load()
+
+      session.startTimer()
+      vi.advanceTimersByTime(3000)
+      expect(session.currentSecond.value).toBe(3)
+
+      scope.stop()
+      vi.advanceTimersByTime(3000)
+      expect(session.currentSecond.value).toBe(3)
     })
 
     it('rewinds to ready and clears the tick when the session is cancelled', async () => {

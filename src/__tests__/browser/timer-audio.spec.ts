@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, type MockInstance } from 'vitest'
-import { useTimerAudio } from '@/composables/timers/useTimerAudio'
+import { createTimerAudioState, useTimerAudio } from '@/composables/timers/useTimerAudio'
 import { useSettingsStore } from '@/stores/settings'
 import { withSetup } from '../helpers/withSetup'
 
@@ -25,6 +25,35 @@ function setupWithSoundDisabled() {
  * Note: playWorkBeep etc. are fire-and-forget async operations, so tests use expect.poll().
  */
 describe('useTimerAudio - browser mode', () => {
+  it('resolves AudioContext from the injected window realm', async () => {
+    const calls = { contextCount: 0 }
+    class InjectedAudioContext extends AudioContext {
+      constructor() {
+        super()
+        calls.contextCount++
+      }
+    }
+
+    const injectedWindow = new Proxy(globalThis.window, {
+      get(target, property) {
+        if (property === 'AudioContext') return InjectedAudioContext
+        return Reflect.get(target, property, target)
+      },
+    })
+    const [result, app] = withSetup(() => createTimerAudioState({ window: injectedWindow }))
+
+    try {
+      result.prepare()
+      await expect.poll(() => calls.contextCount).toBe(1)
+    } finally {
+      try {
+        await result.dispose()
+      } finally {
+        app.unmount()
+      }
+    }
+  })
+
   describe('real AudioContext integration', () => {
     it('creates AudioContext successfully without errors', () => {
       const [result, app] = withSetup(() => useTimerAudio())

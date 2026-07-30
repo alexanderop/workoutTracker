@@ -1,21 +1,65 @@
 import { computed, watch } from 'vue'
-import { createGlobalState, useAsyncState } from '@vueuse/core'
+import type { ConfigurableWindow } from '@vueuse/core'
+import { createGlobalState, defaultWindow, useAsyncState, useNavigatorLanguage } from '@vueuse/core'
 import { loadLocale, type SupportedLocale } from '@/i18n'
 import { useSettingsStore } from '@/stores/settings'
 
-function detectBrowserLocale(): SupportedLocale {
-  const browserLang = navigator.language.split('-', 1)[0]
+function detectBrowserLocale(browserLanguage: string | undefined): SupportedLocale {
+  const browserLang = browserLanguage?.split('-', 1)[0]
   return browserLang === 'de' ? 'de' : 'en'
 }
 
-export const useLanguage = createGlobalState(() => {
-  // 1. Initializing
-  const settings = useSettingsStore()
+type LanguageSettings = {
+  language: SupportedLocale | undefined
+  isLoaded: boolean
+  loadFromDb: () => Promise<boolean>
+  setLanguage: (locale: SupportedLocale) => Promise<void>
+}
 
-  // Auto-detect on first visit
-  if (settings.language === undefined) {
-    settings.setLanguage(detectBrowserLocale())
-  }
+export type UseLanguageOptions = ConfigurableWindow & {
+  localeLoader?: (locale: SupportedLocale) => Promise<void>
+  settings?: LanguageSettings
+}
+
+async function applyLocale(
+  locale: SupportedLocale,
+  window: Window | undefined,
+  localeLoader: (locale: SupportedLocale) => Promise<void>,
+): Promise<SupportedLocale> {
+  await localeLoader(locale)
+  if (window) window.document.documentElement.lang = locale
+  return locale
+}
+
+/**
+ * Resolve persisted language state before Vue mounts. This prevents the first
+ * translated frame from rendering in English while IndexedDB and the saved
+ * locale chunk are still loading.
+ */
+export async function prepareInitialLanguage(options: UseLanguageOptions = {}) {
+  const {
+    window = defaultWindow,
+    localeLoader = loadLocale,
+    settings = useSettingsStore(),
+  } = options
+
+  const didLoadSettings = await settings.loadFromDb()
+
+  const locale = settings.language ?? detectBrowserLocale(window?.navigator.language)
+  if (didLoadSettings && !settings.language) await settings.setLanguage(locale)
+
+  return applyLocale(locale, window, localeLoader)
+}
+
+export function createLanguageState(options: UseLanguageOptions = {}) {
+  const {
+    window = defaultWindow,
+    localeLoader = loadLocale,
+    settings = useSettingsStore(),
+  } = options
+
+  // 1. Initializing
+  const { language: browserLanguage } = useNavigatorLanguage({ window })
 
   // 2. Primary State + 3. State Metadata via useAsyncState
   const {
@@ -24,11 +68,7 @@ export const useLanguage = createGlobalState(() => {
     error,
     execute,
   } = useAsyncState(
-    async (locale: SupportedLocale) => {
-      await loadLocale(locale)
-      document.documentElement.lang = locale
-      return locale
-    },
+    (locale: SupportedLocale) => applyLocale(locale, window, localeLoader),
     settings.language ?? 'en',
     { immediate: false, resetOnExecute: false },
   )
@@ -38,11 +78,19 @@ export const useLanguage = createGlobalState(() => {
 
   // 7. Watchers
   watch(
-    () => settings.language,
-    (locale) => {
-      if (locale) {
-        execute(0, locale)
+    [() => settings.isLoaded, () => settings.language],
+    ([isLoaded, locale]) => {
+      // The store begins with `language === undefined`. Waiting for its
+      // IndexedDB snapshot prevents the browser default from overwriting a
+      // preference that is still loading on a cold start.
+      if (!isLoaded) return
+
+      if (!locale) {
+        void settings.setLanguage(detectBrowserLocale(browserLanguage.value))
+        return
       }
+
+      void execute(0, locale)
     },
     { immediate: true },
   )
@@ -53,4 +101,6 @@ export const useLanguage = createGlobalState(() => {
     isLoading,
     error,
   }
-})
+}
+
+export const useLanguage = createGlobalState(createLanguageState)

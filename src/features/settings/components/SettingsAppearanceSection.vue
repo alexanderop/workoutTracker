@@ -37,7 +37,12 @@ function handleLanguageChange(value: AcceptableValue) {
           <Moon class="icon-md text-muted-foreground" />
           {{ t('settings.labels.darkMode') }}
         </Label>
-        <Switch id="theme-toggle" v-model="isDark" data-testid="theme-toggle" />
+        <Switch
+          id="theme-toggle"
+          v-model="isDark"
+          :aria-label="t('settings.labels.darkMode')"
+          data-testid="theme-toggle"
+        />
       </div>
 
       <!-- Language -->

@@ -1,6 +1,10 @@
 import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import { computed, shallowRef } from 'vue'
+import type { ConfigurableWindow, UseWakeLockOptions } from '@vueuse/core'
 import {
+  defaultDocument,
+  defaultNavigator,
+  defaultWindow,
   tryOnScopeDispose,
   useDocumentVisibility,
   useEventListener,
@@ -33,13 +37,19 @@ export type UseScreenWakeLockReturn = {
   releaseAll: () => void
 }
 
+export type UseScreenWakeLockOptions = ConfigurableWindow & UseWakeLockOptions
+
 /**
  * Screen wake lock with a hidden-video fallback: prefers the native Wake Lock
  * API and falls back to (or doubles up with) a looping silent video on
  * mobile/PWA where the native API is unreliable. Releases everything when the
  * owning scope is disposed.
  */
-export function useScreenWakeLock(): UseScreenWakeLockReturn {
+export function useScreenWakeLock(options: UseScreenWakeLockOptions = {}): UseScreenWakeLockReturn {
+  const { window = defaultWindow } = options
+  const document = options.document ?? window?.document ?? defaultDocument
+  const navigator = options.navigator ?? window?.navigator ?? defaultNavigator
+
   // 1. Initializing - external dependencies
   const {
     isSupported: nativeIsSupported,
@@ -47,26 +57,27 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     request,
     release,
     sentinel,
-  } = useWakeLock()
-  const visibility = useDocumentVisibility()
+  } = useWakeLock({ document, navigator })
+  const visibility = useDocumentVisibility({ document })
 
   // 2. Primary State
   const videoIsActive = shallowRef(false)
   let videoElement: HTMLVideoElement | null = null
   let isUserHasInteracted = false // Track user gesture for PWA autoplay
+  let isDisposed = false
+  let acquisitionGeneration = 0
 
   // Mobile detection for redundancy decision
   const isMobileDevice = computed(() => {
-    if (typeof navigator === 'undefined') return false
-    return navigator.maxTouchPoints > 0
+    return (navigator?.maxTouchPoints ?? 0) > 0
   })
 
   // PWA standalone mode detection - wake lock is less reliable in installed PWAs
   // Reactive media query - updates automatically if display mode changes
-  const isStandaloneMedia = useMediaQuery('(display-mode: standalone)')
+  const isStandaloneMedia = useMediaQuery('(display-mode: standalone)', { window })
   // Safari-specific standalone property check
   const isSafariStandalone = computed(
-    () => 'standalone' in globalThis.navigator && globalThis.navigator.standalone === true,
+    () => navigator !== undefined && 'standalone' in navigator && navigator.standalone === true,
   )
   const isPWAStandalone = computed(() => isStandaloneMedia.value || isSafariStandalone.value)
 
@@ -83,24 +94,24 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     // Only re-acquire if user has interacted (for PWA autoplay policies)
     if (!isUserHasInteracted) return
     // Use acquireAll to try both native AND video fallback
-    acquireAll()
+    void acquireAll()
   }
 
   async function acquireNative(): Promise<void> {
-    if (!nativeIsSupported.value) return
+    if (isDisposed || !nativeIsSupported.value) return
     const [error] = await tryCatch(request('screen'))
     if (error) {
-      console.warn('[WakeLock] Native API failed:', error)
       throw error
     }
+    if (isDisposed) releaseNative()
   }
 
   function releaseNative(): void {
-    release()
+    void release()
   }
 
   function startVideoFallback(): void {
-    if (videoElement) return
+    if (!document?.body || videoElement || isDisposed) return
 
     videoElement = document.createElement('video')
     videoElement.setAttribute('playsinline', '')
@@ -113,8 +124,8 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     const playPromise = videoElement.play()
     // Handle browsers/jsdom where play() may return undefined
     if (playPromise) {
-      playPromise.catch((error) => {
-        console.warn('[WakeLock] Video fallback play failed:', error)
+      void playPromise.catch(() => {
+        stopVideoFallback()
       })
     }
     videoIsActive.value = true
@@ -129,17 +140,28 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
     videoIsActive.value = false
   }
 
-  async function acquireAll(options?: { redundant?: boolean }): Promise<void> {
+  async function acquireAll(acquireOptions?: { redundant?: boolean }): Promise<void> {
+    if (isDisposed) return
+    const generation = ++acquisitionGeneration
+
     // Mark that user has interacted - enables re-acquisition after forced release
     isUserHasInteracted = true
 
     // Always use redundancy on mobile OR in PWA standalone mode (less reliable there)
-    const useRedundancy = options?.redundant ?? (isMobileDevice.value || isPWAStandalone.value)
+    const useRedundancy =
+      acquireOptions?.redundant ?? (isMobileDevice.value || isPWAStandalone.value)
 
     let isNativeSucceeded = false
     if (nativeIsSupported.value) {
       const [error] = await tryCatch(acquireNative())
       isNativeSucceeded = !error
+    }
+
+    // A pending native request can settle after releaseAll() or scope
+    // disposal. Never recreate a wake lock or fallback for a stale request.
+    if (isDisposed || generation !== acquisitionGeneration) {
+      releaseNative()
+      return
     }
 
     // On mobile/PWA, ALWAYS start video as backup (native API unreliable in PWA mode)
@@ -150,6 +172,7 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
   }
 
   function releaseAll(): void {
+    acquisitionGeneration++
     releaseNative()
     stopVideoFallback()
   }
@@ -162,6 +185,7 @@ export function useScreenWakeLock(): UseScreenWakeLockReturn {
 
   // 6. Cleanup
   tryOnScopeDispose(() => {
+    isDisposed = true
     releaseAll()
   })
 

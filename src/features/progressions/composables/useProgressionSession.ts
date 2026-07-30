@@ -1,4 +1,5 @@
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, shallowRef } from 'vue'
+import { useIntervalFn } from '@vueuse/core'
 import type { ProgressionsRepository } from '@/db/interfaces'
 import type { DbProgression, DbProgressionSession } from '@/db/schema'
 import type { Context } from '@/lib/di/context'
@@ -30,10 +31,9 @@ type SessionState =
  *
  * Repository injected per ADR 004 (brain/decisions/004-db-in-di.md).
  *
- * Time is deliberately *not* injected, unlike `useHabits`: after removing the
- * write-only `startedAt`, the sole remaining clock read is the 1-second
- * `setInterval` tick, and `Clock` has no interval primitive to replace it with.
- * Node specs drive the tick with `vi.useFakeTimers()` instead.
+ * Time is deliberately *not* injected, unlike `useHabits`: the scope-bound
+ * `useIntervalFn` is driven by fake timers in unit specs and disposes with its
+ * owning component or effect scope.
  */
 export function useProgressionSession(
   progressionId: string,
@@ -41,11 +41,10 @@ export function useProgressionSession(
 ) {
   const repo = ctx.get(ProgressionRepo)
   // Core state
-  const state = ref<SessionState>({ status: 'idle' })
+  const state = shallowRef<SessionState>({ status: 'idle' })
 
   // Timer state
-  const currentSecond = ref(0)
-  const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
+  const currentSecond = shallowRef(0)
 
   // Derived state
   const progression = computed(() => {
@@ -76,6 +75,18 @@ export function useProgressionSession(
   const isActive = computed(() => state.value.status === 'active')
 
   const isReady = computed(() => state.value.status === 'ready')
+
+  const { pause: stopInterval, resume: startInterval } = useIntervalFn(
+    () => {
+      currentSecond.value++
+
+      if (currentSecond.value >= totalSeconds.value) {
+        stopTimer()
+      }
+    },
+    1000,
+    { immediate: false },
+  )
 
   // Methods
   async function load(): Promise<void> {
@@ -108,22 +119,11 @@ export function useProgressionSession(
     state.value = { status: 'active', progression: prog }
     currentSecond.value = 0
 
-    timerInterval.value = setInterval(() => {
-      currentSecond.value++
-
-      if (currentSecond.value >= totalSeconds.value) {
-        stopTimer()
-      }
-    }, 1000)
+    startInterval()
   }
 
   function stopTimer(): void {
-    if (!timerInterval.value) {
-      return
-    }
-
-    clearInterval(timerInterval.value)
-    timerInterval.value = null
+    stopInterval()
   }
 
   function cancelSession(): void {
@@ -158,11 +158,6 @@ export function useProgressionSession(
     state.value = { status: 'completed', session }
     return session
   }
-
-  // Cleanup
-  onUnmounted(() => {
-    stopTimer()
-  })
 
   return {
     // State

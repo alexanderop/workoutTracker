@@ -6,6 +6,7 @@ import { makeRuntime } from '@/lib/di/runtime'
 import { provideRuntime } from '@/lib/di/vue'
 import { appLayers } from './appLayers'
 import App from './App.vue'
+import { prepareInitialLanguage } from './features/settings/composables/useLanguage'
 import { i18n } from './i18n'
 import { renderMountFailure } from './lib/mountRecovery'
 import { tryCatch } from './lib/tryCatch'
@@ -30,7 +31,15 @@ app.config.errorHandler = (error, _instance, info) => {
 app.use(i18n)
 app.use(router)
 
-function boot(): void {
+async function boot(): Promise<void> {
+  // Resolve the persisted locale before mounting so the first translated
+  // frame is internally consistent instead of changing piecemeal after the
+  // settings snapshot and lazy locale messages arrive.
+  const [languageError] = await tryCatch(prepareInitialLanguage())
+  if (languageError) {
+    console.error('[Language initialization error]', languageError)
+  }
+
   const [mountError] = tryCatch(() => app.mount('#app'))
 
   if (mountError) {
@@ -44,4 +53,7 @@ function boot(): void {
   void reportWebVitals()
 }
 
-boot()
+// Top-level await splits the entry graph into many small chunks, adding enough
+// compression overhead to exceed the production bundle budget.
+// eslint-disable-next-line unicorn/prefer-top-level-await -- preserve entry chunk compression
+void boot()
