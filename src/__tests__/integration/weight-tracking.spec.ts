@@ -3,6 +3,7 @@ import { describe, expect } from 'vitest'
 import { it } from '../helpers/integrationTest'
 import { RouteNames } from '@/router'
 import { getWeightRepository } from '@/db'
+import { getStartOfDay } from '@/lib/date'
 import { createDbWeightEntriesForDays as createDatabaseWeightEntriesForDays } from '../factories/dbWeightEntry.factory'
 
 describe('Weight Tracking', () => {
@@ -25,22 +26,25 @@ describe('Weight Tracking', () => {
       await expect.element(page.getByText('75.5 kg').first()).toBeVisible()
     })
 
-    it('preserves entered weight as default after first entry', async ({ createTestApp }) => {
+    it('pre-fills the sheet with the saved value for today when reopened', async ({
+      createTestApp,
+    }) => {
       const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
 
-      // No entries exist - form defaults to 80kg
-      // User enters 100kg and saves
+      // Save today's weight through the sheet.
       await weight.addEntry('100')
 
-      // After saving, form should show 100 (the value just entered)
-      // NOT 80 (the hardcoded default)
-      const input = page.getByRole('spinbutton', { name: /weight/i })
+      // Reopening the sheet for today should pre-fill the value just saved.
+      await weight.openSheet()
+      const input = page.getByLabelText('Weight', { exact: true })
       await expect.element(input).toHaveValue('100')
     })
 
-    it('shows last saved weight after navigating away and back', async ({ createTestApp }) => {
+    it('pre-fills the sheet with the saved weight after navigating away and back', async ({
+      createTestApp,
+    }) => {
       const { navigateTo, weight } = await createTestApp()
 
       await navigateTo({ name: RouteNames.Weight })
@@ -54,8 +58,9 @@ describe('Weight Tracking', () => {
       // Navigate back to weight page
       await navigateTo({ name: RouteNames.Weight })
 
-      // Form should show 100 (from database), NOT 80 (default)
-      const input = page.getByRole('spinbutton', { name: /weight/i })
+      // Reopening the sheet should still show 100 (from the database).
+      await weight.openSheet()
+      const input = page.getByLabelText('Weight', { exact: true })
       await expect.element(input).toHaveValue('100')
     })
 
@@ -115,6 +120,86 @@ describe('Weight Tracking', () => {
 
       const entries = await repo.getAll()
       expect(entries[0]?.weight).toBeCloseTo(99.79, 1)
+    })
+  })
+
+  describe('logging via the calendar', () => {
+    it('logs a weight for a past date picked via the calendar, storing it on that date', async ({
+      createTestApp,
+    }) => {
+      const { navigateTo, weight } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.openSheet()
+      await weight.openDatePicker()
+      await weight.goToPreviousMonth()
+      await weight.pickDay(15)
+      await weight.enterWeight('77')
+      await weight.clickSave()
+
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+
+      const previousMonth = new Date()
+      previousMonth.setDate(1)
+      previousMonth.setMonth(previousMonth.getMonth() - 1)
+      const expectedDate = getStartOfDay(
+        new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 15),
+      )
+
+      const [entry] = await getWeightRepository().getAll()
+      expect(entry?.date).toBe(expectedDate)
+      expect(entry?.weight).toBe(77)
+    })
+
+    it('logs body fat alongside weight and stores bodyFatPct', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.openSheet()
+      await weight.enterWeight('80')
+      await weight.enterBodyFat('18.5')
+      await weight.clickSave()
+
+      await expect.poll(async () => (await getWeightRepository().getAll()).length).toBe(1)
+
+      const [entry] = await getWeightRepository().getAll()
+      expect(entry?.weight).toBe(80)
+      expect(entry?.bodyFatPct).toBe(18.5)
+    })
+
+    it('cannot select a date after today in the calendar', async ({ createTestApp }) => {
+      const { navigateTo, weight } = await createTestApp()
+
+      await navigateTo({ name: RouteNames.Weight })
+
+      await weight.openSheet()
+      await weight.openDatePicker()
+
+      // Targeted by exact date value (not day-of-month) so this holds
+      // regardless of whether tomorrow falls in the currently visible month
+      // or rolls into the next one (e.g. when today is the last day of a month).
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const tomorrowValue = [
+        tomorrow.getFullYear(),
+        String(tomorrow.getMonth() + 1).padStart(2, '0'),
+        String(tomorrow.getDate()).padStart(2, '0'),
+      ].join('-')
+      // eslint-disable-next-line no-restricted-syntax -- data-value is the calendar's frozen rendered contract (see WeightLogSheet.spec.ts), targeting an exact date without reconstructing its locale-formatted accessible name
+      const tomorrowCell = document.querySelector(`[data-value="${CSS.escape(tomorrowValue)}"]`)
+      expect(tomorrowCell).not.toBeNull()
+      expect(tomorrowCell?.hasAttribute('data-disabled')).toBe(true)
+
+      tomorrowCell?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+
+      // The disabled day rejects the click -- the calendar stays open
+      // instead of returning to the entry form for an impossible future date.
+      await expect.element(page.getByRole('group', { name: 'Select a date' })).toBeVisible()
+
+      const entries = await getWeightRepository().getAll()
+      expect(entries).toHaveLength(0)
     })
   })
 

@@ -12,6 +12,7 @@ export const dbWeightEntrySchema = z
     weight: z.number().positive().max(1000), // Max 1000kg
     date: timestampSchema, // Start of day timestamp
     recordedAt: timestampSchema, // When entry was logged
+    bodyFatPct: z.number().min(0).max(100).optional(),
   })
   .strict()
 

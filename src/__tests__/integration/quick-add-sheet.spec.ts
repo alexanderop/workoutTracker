@@ -60,7 +60,8 @@ describe('Quick Add Sheet', () => {
     await common.openQuickAddSheet()
     await userEvent.click(page.getByRole('dialog').getByRole('button', { name: /^log weight$/i }))
 
-    await expect.element(page.getByRole('heading', { name: /log weight/i })).toBeVisible()
+    // The dialog title is sr-only; the visible subtitle is the design authority's name.
+    await expect.element(page.getByText('Scale Weight', { exact: true })).toBeVisible()
     await weight.enterWeight('82.5')
     await weight.clickSave()
 

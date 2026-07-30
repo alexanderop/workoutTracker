@@ -212,6 +212,7 @@ export function createMockRepositoryProvider(): RepositoryProvider {
       getByDateRange: vi.fn().mockResolvedValue([]),
       getLatest: vi.fn().mockResolvedValue(undefined),
       getByDate: vi.fn().mockResolvedValue(undefined),
+      upsertForDate: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
     },
     drafts: {
