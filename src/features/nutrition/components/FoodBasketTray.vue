@@ -2,6 +2,7 @@
 import { Minus, Plus } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Input } from '@/components/ui/input'
 import { isAdjustable, type StagedItem } from '../lib/foodBasket'
 
 /** One tap of the stepper. Coarse on purpose: this is a thumb, mid-meal. */
@@ -10,6 +11,7 @@ const GRAMS_STEP = 10
 const { items } = defineProps<{ items: ReadonlyArray<StagedItem> }>()
 const emit = defineEmits<{
   adjust: [stageId: string, delta: number]
+  set: [stageId: string, grams: number]
   remove: [stageId: string]
 }>()
 
@@ -29,6 +31,14 @@ watch(
 
 function toggle(stageId: string): void {
   expandedId.value = expandedId.value === stageId ? null : stageId
+}
+
+/** A cleared or nonsensical field changes nothing; the model keeps the last grams. */
+function setGrams(stageId: string, event: Event): void {
+  if (!(event.target instanceof HTMLInputElement)) return
+  const grams = Number(event.target.value)
+  if (!Number.isFinite(grams) || grams <= 0) return
+  emit('set', stageId, grams)
 }
 </script>
 
@@ -67,9 +77,18 @@ function toggle(stageId: string): void {
         >
           <Minus class="size-3.5" aria-hidden="true" />
         </button>
-        <span class="w-16 text-center text-xs font-semibold tabular-nums">
-          {{ Math.round(expanded.grams) }}{{ t('nutrition.gramsUnit') }}
-        </span>
+        <!-- Typing beats tapping for large corrections; `change`, not per
+             keystroke, so a half-typed "2" is never clamped mid-entry. -->
+        <Input
+          :model-value="Math.round(expanded.grams)"
+          type="number"
+          min="1"
+          inputmode="numeric"
+          autocomplete="off"
+          class="h-8 w-16 px-1 text-center text-xs font-semibold tabular-nums"
+          :aria-label="t('nutrition.sheet.grams')"
+          @change="setGrams(expanded.stageId, $event)"
+        />
         <button
           type="button"
           class="flex size-8 items-center justify-center rounded-lg bg-background"

@@ -105,6 +105,7 @@ export default {
     perServing: '{grams} g · {serving}',
     basketEmpty: 'Noch nichts ausgewählt',
     adjust: '{name} anpassen',
+    grams: 'Gramm',
     less: 'Weniger',
     more: 'Mehr',
     remove: 'Entfernen',

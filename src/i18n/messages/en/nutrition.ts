@@ -104,6 +104,7 @@ export default {
     perServing: '{grams} g · {serving}',
     basketEmpty: 'Nothing added yet',
     adjust: 'Adjust {name}',
+    grams: 'Grams',
     less: 'Less',
     more: 'More',
     remove: 'Remove',

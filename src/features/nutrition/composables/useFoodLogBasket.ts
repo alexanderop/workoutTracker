@@ -71,11 +71,19 @@ export const useFoodLogBasket = createGlobalState(() => {
     items.value = items.value.filter((item) => item.stageId !== stageId)
   }
 
-  function adjustGrams(stageId: string, delta: number): void {
+  function updateGrams(stageId: string, next: (current: number) => number): void {
     items.value = items.value.map((item) => {
       if (item.stageId !== stageId || !isAdjustable(item)) return item
-      return { ...item, grams: Math.max(MIN_GRAMS, item.grams + delta) }
+      return { ...item, grams: Math.max(MIN_GRAMS, next(item.grams)) }
     })
+  }
+
+  function adjustGrams(stageId: string, delta: number): void {
+    updateGrams(stageId, (grams) => grams + delta)
+  }
+
+  function setGrams(stageId: string, grams: number): void {
+    updateGrams(stageId, () => grams)
   }
 
   /**
@@ -102,6 +110,7 @@ export const useFoodLogBasket = createGlobalState(() => {
     stageQuickAdd,
     unstage,
     adjustGrams,
+    setGrams,
     clear,
   }
 })

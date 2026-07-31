@@ -110,6 +110,12 @@ export class FoodLogPO {
     await this.portionPanel.getByRole('button', { name: 'Add', exact: true }).click()
   }
 
+  /** Opens a staged item's editor and types an exact gram amount. */
+  async setStagedGrams(name: string, grams: string): Promise<void> {
+    await page.getByRole('button', { name: `Adjust ${name}`, exact: true }).click()
+    await page.getByLabelText('Grams').fill(grams)
+  }
+
   /** Opens the grams stepper for a staged item and taps it `steps` times. */
   async adjustStaged(name: string, steps: number): Promise<void> {
     await page.getByRole('button', { name: `Adjust ${name}`, exact: true }).click()

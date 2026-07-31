@@ -181,6 +181,25 @@ describe('Nutrition barcode scan', () => {
       .toMatchObject({ diaryEntries: [{ grams: 35 }] })
   })
 
+  it('types an exact gram amount for a staged item', async ({ createTestApp }) => {
+    const { nutrition, foodLog } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await foodLog.selectTab('Scan')
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    await foodLog.confirmPortion()
+    await expect.element(foodLog.basket.getByText('Nutella')).toBeVisible()
+
+    // 15 g → 250 g is 24 stepper taps; typing it is the realistic correction.
+    await foodLog.setStagedGrams('Nutella', '250')
+    await foodLog.commitBasket(1)
+
+    await expect
+      .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
+      .toMatchObject({ diaryEntries: [{ grams: 250 }] })
+  })
+
   it('does not show a flashlight toggle when the camera has no torch support', async ({
     createTestApp,
   }) => {

@@ -248,6 +248,7 @@ async function commit(): Promise<void> {
         <FoodBasketTray
           :items="basket.items.value"
           @adjust="basket.adjustGrams"
+          @set="basket.setGrams"
           @remove="basket.unstage"
         />
 
