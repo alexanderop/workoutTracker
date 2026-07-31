@@ -6,7 +6,7 @@ import { ChevronRight } from '@lucide/vue'
 import { RouteNames } from '@/router'
 import { Button } from '@/components/ui/button'
 import { useHabits } from '../composables/useHabits'
-import HabitHomeRow from './HabitHomeRow.vue'
+import HabitDashboardTile from './HabitDashboardTile.vue'
 
 /** Home card only surfaces a quick glance -- the full list lives at /habits. */
 const HOME_CARD_LIMIT = 4
@@ -25,9 +25,16 @@ function navigateToHabits(): void {
 </script>
 
 <template>
-  <section v-if="hasHabits || isLoading" class="w-full max-w-md" data-testid="habits-home-card">
-    <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-section-title font-semibold">{{ t('habits.home.title') }}</h2>
+  <section
+    v-if="hasHabits || isLoading"
+    aria-labelledby="habits-home-heading"
+    class="w-full max-w-md"
+    data-testid="habits-home-card"
+  >
+    <div class="mb-3 flex items-center justify-between px-1">
+      <h2 id="habits-home-heading" class="text-section-title font-bold">
+        {{ t('habits.title') }}
+      </h2>
       <Button
         variant="link"
         size="sm"
@@ -35,15 +42,15 @@ function navigateToHabits(): void {
         :aria-label="t('habits.home.viewAllAriaLabel')"
         @click="navigateToHabits"
       >
-        {{ t('habits.home.viewAll') }}
-        <ChevronRight class="ml-1 h-4 w-4" />
+        {{ t('common.dashboard.seeAll') }}
+        <ChevronRight class="ml-1 size-4" aria-hidden="true" />
       </Button>
     </div>
 
-    <div v-if="!isLoading" class="space-y-2">
-      <!-- The home card has no detail surface of its own: tapping a row body
-           takes the user to the full page, where the sheet lives. -->
-      <HabitHomeRow
+    <!-- The home tiles have no detail surface of their own: tapping a tile body
+         takes the user to the full page, where the detail sheet lives. -->
+    <div v-if="!isLoading" class="grid grid-cols-2 gap-3">
+      <HabitDashboardTile
         v-for="item in visibleItems"
         :key="item.habit.id"
         :item="item"
