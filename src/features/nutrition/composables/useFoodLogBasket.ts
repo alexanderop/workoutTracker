@@ -2,10 +2,13 @@ import { computed, ref } from 'vue'
 import { createGlobalState } from '@vueuse/core'
 import { generateId } from '@/db/generateId'
 import type { DbFood, DbFoodNutrients, MealKind } from '@/db/schema'
-import { isAdjustable, stagedTotals, type StagedItem, type UnstagedItem } from '../lib/foodBasket'
-
-/** Smallest sensible portion; the stepper never walks a food down to nothing. */
-const MIN_GRAMS = 5
+import {
+  isAdjustable,
+  MIN_GRAMS,
+  stagedTotals,
+  type StagedItem,
+  type UnstagedItem,
+} from '../lib/foodBasket'
 
 /**
  * The staging basket behind the food-logging sheet.

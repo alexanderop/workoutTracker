@@ -37,7 +37,15 @@ const LABEL_KEYS = {
 const { food, goal } = defineProps<{ food: PortionFood; goal: DbNutritionTargets }>()
 const emit = defineEmits<{ add: [grams: number]; back: [] }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+/**
+ * Locale-aware decimals ("30,9" in de) without thousands grouping — a kcal
+ * figure reads as one number at arm's length, not as "1,348".
+ */
+const numberFormat = computed(
+  () => new Intl.NumberFormat(locale.value, { useGrouping: false, maximumFractionDigits: 1 }),
+)
 
 /** Narrowed once: a non-positive serving size counts as "no serving". */
 const servingGrams = food.servingGrams !== null && food.servingGrams > 0 ? food.servingGrams : null
@@ -78,7 +86,7 @@ const units = computed(() => {
 
 /** Whole kcal; grams to one decimal — the label precision of a food package. */
 function formatValue(key: keyof DbNutritionTargets, value: number): string {
-  return String(key === 'calories' ? Math.round(value) : Math.round(value * 10) / 10)
+  return numberFormat.value.format(key === 'calories' ? Math.round(value) : value)
 }
 
 const macros = computed(() => {
@@ -177,7 +185,7 @@ function add(): void {
           </div>
         </div>
         <p v-if="unit === 'serving' && grams !== null" class="text-xs text-muted-foreground">
-          {{ t('nutrition.sheet.portion.resolvedGrams', { grams: Math.round(grams * 10) / 10 }) }}
+          {{ t('nutrition.sheet.portion.resolvedGrams', { grams: numberFormat.format(grams) }) }}
         </p>
       </div>
       <Button type="submit" class="w-full" :disabled="grams === null">

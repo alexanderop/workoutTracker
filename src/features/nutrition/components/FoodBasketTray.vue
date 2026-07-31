@@ -3,7 +3,7 @@ import { Minus, Plus } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Input } from '@/components/ui/input'
-import { isAdjustable, type StagedItem } from '../lib/foodBasket'
+import { isAdjustable, MIN_GRAMS, type StagedItem } from '../lib/foodBasket'
 
 /** One tap of the stepper. Coarse on purpose: this is a thumb, mid-meal. */
 const GRAMS_STEP = 10
@@ -33,11 +33,16 @@ function toggle(stageId: string): void {
 }
 
 /** A cleared or nonsensical field changes nothing; the model keeps the last grams. */
-function setGrams(stageId: string, event: Event): void {
+function setGrams(item: StagedItem, event: Event): void {
   if (!(event.target instanceof HTMLInputElement)) return
   const grams = Number(event.target.value)
-  if (!Number.isFinite(grams) || grams <= 0) return
-  emit('set', stageId, grams)
+  if (!Number.isFinite(grams) || grams <= 0) {
+    // The model did not change, so the field would keep displaying the
+    // rejected text; put the last valid grams back.
+    event.target.value = String(Math.round(item.grams))
+    return
+  }
+  emit('set', item.stageId, grams)
 }
 </script>
 
@@ -81,12 +86,12 @@ function setGrams(stageId: string, event: Event): void {
         <Input
           :model-value="Math.round(expanded.grams)"
           type="number"
-          min="1"
+          :min="MIN_GRAMS"
           inputmode="numeric"
           autocomplete="off"
           class="h-8 w-16 px-1 text-center text-xs font-semibold tabular-nums"
           :aria-label="t('nutrition.sheet.grams')"
-          @change="setGrams(expanded.stageId, $event)"
+          @change="setGrams(expanded, $event)"
         />
         <button
           type="button"

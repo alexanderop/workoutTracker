@@ -35,12 +35,14 @@ export function portionGrams(
  * does not. A macro with no target reports 0: there is no budget to consume
  * a share of.
  */
+function share(value: number, target: number): number {
+  return target > 0 ? Math.round((value / target) * 100) : 0
+}
+
 export function targetImpactPercents(
   portion: DbFoodNutrients,
   goal: DbNutritionTargets,
 ): MacroPercents {
-  const share = (value: number, target: number): number =>
-    target > 0 ? Math.round((value / target) * 100) : 0
   return {
     calories: share(portion.calories, goal.calories),
     proteinGrams: share(portion.proteinGrams, goal.proteinGrams),

@@ -48,6 +48,9 @@ export type CommitBatch = {
   readonly entries: ReadonlyArray<DbNutritionDiaryEntry>
 }
 
+/** Smallest sensible portion; grams edits never walk a food down to nothing. */
+export const MIN_GRAMS = 5
+
 /** Grams are meaningless for a quick add — its macros are the whole truth. */
 export function isAdjustable(item: StagedItem): boolean {
   return item.source !== 'quick'
