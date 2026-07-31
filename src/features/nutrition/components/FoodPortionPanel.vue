@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type { AcceptableValue } from 'reka-ui'
 import { ChevronLeft } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { DbFoodNutrients, DbNutritionTargets } from '@/db/schema'
 import { portionGrams, type PortionUnit, targetImpactPercents } from '../lib/foodPortion'
 import { MACRO_DISPLAY, scaleNutrients } from '../lib/nutritionCalculations'
@@ -65,10 +63,18 @@ function switchUnit(next: PortionUnit): void {
   amount.value = Math.round((current / servingGrams) * 100) / 100
 }
 
-/** A deselect tap on the active item reports an empty value; keep the unit. */
-function handleUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>): void {
-  if (value === 'grams' || value === 'serving') switchUnit(value)
-}
+/**
+ * Plain buttons, not the shared `ToggleGroup`: reka-ui's roving-focus
+ * machinery ends up in the entry's modulepreload graph, and the Lighthouse
+ * performance budget on first paint is a single point deep.
+ */
+const units = computed(() => {
+  const available: ReadonlyArray<PortionUnit> = hasServing ? ['grams', 'serving'] : ['grams']
+  return available.map((value) => ({
+    value,
+    label: value === 'grams' ? t('nutrition.gramsUnit') : t('nutrition.food.serving'),
+  }))
+})
 
 /** Whole kcal; grams to one decimal — the label precision of a food package. */
 function formatValue(key: keyof DbNutritionTargets, value: number): string {
@@ -152,19 +158,23 @@ function add(): void {
             inputmode="decimal"
             autocomplete="off"
           />
-          <ToggleGroup
-            type="single"
-            :model-value="unit"
-            variant="outline"
-            :aria-label="t('nutrition.sheet.portion.unit')"
-            class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
-            @update:model-value="handleUnitChange"
-          >
-            <ToggleGroupItem value="grams">{{ t('nutrition.gramsUnit') }}</ToggleGroupItem>
-            <ToggleGroupItem v-if="hasServing" value="serving">
-              {{ t('nutrition.food.serving') }}
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div class="flex gap-1" role="group" :aria-label="t('nutrition.sheet.portion.unit')">
+            <button
+              v-for="option in units"
+              :key="option.value"
+              type="button"
+              class="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+              :class="
+                unit === option.value
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-input text-muted-foreground'
+              "
+              :aria-pressed="unit === option.value"
+              @click="switchUnit(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
         </div>
         <p v-if="unit === 'serving' && grams !== null" class="text-xs text-muted-foreground">
           {{ t('nutrition.sheet.portion.resolvedGrams', { grams: Math.round(grams * 10) / 10 }) }}
