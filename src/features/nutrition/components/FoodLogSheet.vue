@@ -20,6 +20,8 @@ import FoodBasketTray from './FoodBasketTray.vue'
 import FoodBudgetBars from './FoodBudgetBars.vue'
 import FoodCustomPanel from './FoodCustomPanel.vue'
 import type { CustomFood } from './FoodCustomPanel.vue'
+import FoodPortionPanel from './FoodPortionPanel.vue'
+import type { PortionFood } from './FoodPortionPanel.vue'
 import FoodQuickAddPanel from './FoodQuickAddPanel.vue'
 import FoodSearchPanel from './FoodSearchPanel.vue'
 
@@ -28,7 +30,20 @@ import FoodSearchPanel from './FoodSearchPanel.vue'
 const FoodBarcodeScanner = defineAsyncComponent(() => import('./FoodBarcodeScanner.vue'))
 
 type Tab = 'search' | 'scan' | 'quick' | 'custom'
-type ScanState = 'idle' | 'looking-up' | 'not-found' | 'failed'
+type ScanState = 'scanning' | 'looking-up' | 'not-found' | 'failed'
+
+/**
+ * A food waiting for the user to say how much — the one mechanism behind
+ * every entry point (scan, library row, online row). `foodId` links a library
+ * food so Add stages `source: 'library'`; `null` creates a new one. `origin`
+ * decides what Add does afterwards: a scan returns to the search tab with a
+ * toast, a search stays where the user already is.
+ */
+type PendingPortion = {
+  food: PortionFood
+  foodId: string | null
+  origin: 'scan' | 'search'
+}
 
 const { foods, localDate, initialMeal, goal, committed, dayLabel } = defineProps<{
   foods: ReadonlyArray<DbFood>
@@ -48,7 +63,8 @@ const { lookup } = useFoodLookup()
 
 const tab = ref<Tab>('search')
 const query = ref('')
-const scanState = ref<ScanState>('idle')
+const scanState = ref<ScanState>('scanning')
+const pendingPortion = ref<PendingPortion | null>(null)
 const committing = ref(false)
 const commitFailed = ref(false)
 
@@ -78,7 +94,8 @@ watch(
     basket.openFor(localDate, initialMeal)
     tab.value = 'search'
     query.value = ''
-    scanState.value = 'idle'
+    scanState.value = 'scanning'
+    pendingPortion.value = null
     commitFailed.value = false
   },
   { immediate: true },
@@ -93,14 +110,42 @@ async function handleBarcodeDetected(barcode: string): Promise<void> {
     scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
     return
   }
-  const { name, brand, servingGrams, nutrientsPer100Grams } = result.food
-  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams: servingGrams ?? 100 })
-  scanState.value = 'idle'
-  // Straight into the basket rather than into a form to confirm: the barcode
-  // already answered every question the form would ask, and the tray's grams
-  // stepper covers the one thing it might have got wrong.
-  tab.value = 'search'
-  showToast(t('nutrition.sheet.scanAdded', { name }))
+  // Into a confirmation step, not straight into the basket: the barcode names
+  // the product, but only the user knows how much of it is on the plate.
+  scanState.value = 'scanning'
+  pendingPortion.value = { food: result.food, foodId: null, origin: 'scan' }
+}
+
+/** Picking a tab abandons a pending portion — the tabs are the way out. */
+function selectTab(next: Tab): void {
+  pendingPortion.value = null
+  tab.value = next
+}
+
+function openLibraryPortion(food: DbFood): void {
+  const { name, brand, defaultServingGrams, nutrientsPer100Grams } = food
+  pendingPortion.value = {
+    food: { name, brand, servingGrams: defaultServingGrams, nutrientsPer100Grams },
+    foodId: food.id,
+    origin: 'search',
+  }
+}
+
+/** The portion panel's Add: stage the confirmed grams. */
+function stagePending(grams: number): void {
+  const pending = pendingPortion.value
+  if (pending === null) return
+  const { name, brand, nutrientsPer100Grams } = pending.food
+  basket.stage(
+    pending.foodId === null
+      ? { source: 'new', name, brand, nutrientsPer100Grams, grams }
+      : { source: 'library', foodId: pending.foodId, name, brand, nutrientsPer100Grams, grams },
+  )
+  pendingPortion.value = null
+  if (pending.origin === 'scan') {
+    tab.value = 'search'
+    showToast(t('nutrition.sheet.scanAdded', { name }))
+  }
 }
 
 /**
@@ -201,7 +246,7 @@ async function commit(): Promise<void> {
 
         <FoodBasketTray
           :items="basket.items.value"
-          @adjust="basket.adjustGrams"
+          @set="basket.setGrams"
           @remove="basket.unstage"
         />
 
@@ -224,7 +269,7 @@ async function commit(): Promise<void> {
               : 'border-transparent text-muted-foreground'
           "
           :aria-pressed="tab === entry.id"
-          @click="tab = entry.id"
+          @click="selectTab(entry.id)"
         >
           <component :is="entry.icon" class="size-4" aria-hidden="true" />
           {{ entry.label }}
@@ -232,19 +277,29 @@ async function commit(): Promise<void> {
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <FoodPortionPanel
+          v-if="pendingPortion !== null"
+          :food="pendingPortion.food"
+          :goal="goal"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          @add="stagePending"
+          @back="pendingPortion = null"
+        />
         <FoodSearchPanel
-          v-if="tab === 'search'"
+          v-else-if="tab === 'search'"
           v-model:query="query"
           :foods="foods"
           @stage="basket.stageLibraryFood"
           @stage-external="stageExternalFood"
+          @open="openLibraryPortion"
+          @open-external="pendingPortion = { food: $event, foodId: null, origin: 'search' }"
         />
 
         <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
           <FoodBarcodeScanner
             v-if="scanState !== 'looking-up'"
             @detected="handleBarcodeDetected"
-            @cancel="tab = 'search'"
+            @cancel="selectTab('search')"
           />
           <p v-else class="text-sm text-muted-foreground">
             {{ t('nutrition.food.scanLookingUp') }}

@@ -104,6 +104,7 @@ export default {
     perServing: '{grams} g · {serving}',
     basketEmpty: 'Nothing added yet',
     adjust: 'Adjust {name}',
+    grams: 'Grams',
     less: 'Less',
     more: 'More',
     remove: 'Remove',
@@ -118,6 +119,12 @@ export default {
     customAdd: 'Create and add',
     scanAdded: 'Added {name}',
     over: 'over',
+    portion: {
+      amount: 'Amount',
+      unit: 'Unit',
+      impact: 'Impact on targets',
+      resolvedGrams: '= {grams} g',
+    },
   },
   errors: {
     saveFailed: 'Could not save. Please try again.',

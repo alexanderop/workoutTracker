@@ -2,7 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DbFoodNutrients, DbNutritionTargets } from '@/db/schema'
-import { budgetSegments } from '../lib/nutritionCalculations'
+import { budgetSegments, MACRO_DISPLAY } from '../lib/nutritionCalculations'
+
+const LABEL_KEYS = {
+  calories: 'nutrition.caloriesUnit',
+  proteinGrams: 'nutrition.foodLog.proteinShort',
+  fatGrams: 'nutrition.foodLog.fatShort',
+  carbohydrateGrams: 'nutrition.foodLog.carbsShort',
+} as const satisfies Record<keyof DbNutritionTargets, string>
 
 const { committed, staged, goal } = defineProps<{
   committed: DbFoodNutrients
@@ -17,20 +24,15 @@ const { t } = useI18n()
  * "what this basket costs me" is readable before committing it.
  */
 const bars = computed(() =>
-  (
-    [
-      { key: 'calories', label: t('nutrition.caloriesUnit'), color: 'bg-chart-1' },
-      { key: 'proteinGrams', label: t('nutrition.foodLog.proteinShort'), color: 'bg-chart-2' },
-      { key: 'fatGrams', label: t('nutrition.foodLog.fatShort'), color: 'bg-chart-4' },
-      { key: 'carbohydrateGrams', label: t('nutrition.foodLog.carbsShort'), color: 'bg-chart-5' },
-    ] as const
-  ).map((bar) => {
-    const target = goal[bar.key]
+  MACRO_DISPLAY.map(({ key, colorClass }) => {
+    const target = goal[key]
     return {
-      ...bar,
+      key,
+      color: colorClass,
+      label: t(LABEL_KEYS[key]),
       target,
-      total: Math.round(committed[bar.key] + staged[bar.key]),
-      segments: budgetSegments(committed[bar.key], staged[bar.key], target),
+      total: Math.round(committed[key] + staged[key]),
+      segments: budgetSegments(committed[key], staged[key], target),
     }
   }),
 )

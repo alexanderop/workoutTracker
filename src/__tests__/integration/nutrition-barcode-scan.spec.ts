@@ -90,7 +90,7 @@ describe('Nutrition barcode scan', () => {
     restoreDetector()
   })
 
-  it('scans a barcode straight into the basket and logs it to the tapped meal', async ({
+  it('shows the scanned product for confirmation and stages its default serving', async ({
     createTestApp,
   }) => {
     const { nutrition, foodLog } = await createTestApp()
@@ -99,10 +99,17 @@ describe('Nutrition barcode scan', () => {
     await nutrition.openMeal('Snacks')
     await foodLog.selectTab('Scan')
 
-    // The fake detector reports the barcode on the first poll; the mocked
-    // Open Food Facts lookup supplies a 15 g serving. Nothing to confirm --
-    // the barcode already answered every question a form would have asked.
-    await expect.element(foodLog.basket.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    // The scan resolves to a confirmation panel, not straight into the
+    // basket: the barcode names the product, only the user knows the amount.
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    await expect.element(foodLog.portionPanel.getByText('Ferrero')).toBeVisible()
+    // 1 × the 15 g serving is prefilled: 539 kcal / 100 g → 81 kcal.
+    await expect.element(page.getByLabelText('Amount')).toHaveValue(1)
+    await expect.element(foodLog.portionPanel.getByText('81')).toBeVisible()
+    await expect.element(foodLog.basket.getByText('Nutella')).not.toBeInTheDocument()
+
+    await foodLog.confirmPortion()
+    await expect.element(foodLog.basket.getByText('Nutella')).toBeVisible()
 
     await foodLog.commitBasket(1)
     await expect
@@ -114,6 +121,46 @@ describe('Nutrition barcode scan', () => {
       })
   })
 
+  it('logs the grams typed into the portion panel', async ({ createTestApp }) => {
+    const { nutrition, foodLog } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await foodLog.selectTab('Scan')
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+
+    // Switching units converts the prefilled 1 serving into its 15 g.
+    await foodLog.selectPortionUnit('g')
+    await expect.element(page.getByLabelText('Amount')).toHaveValue(15)
+
+    // The macro preview follows the typed amount: 539 kcal / 100 g × 250 g.
+    await foodLog.setPortionAmount('250')
+    await expect.element(foodLog.portionPanel.getByText('1348')).toBeVisible()
+
+    await foodLog.confirmPortion()
+    await foodLog.commitBasket(1)
+
+    await expect
+      .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
+      .toMatchObject({ diaryEntries: [{ grams: 250 }] })
+  })
+
+  it('returns to the scanner without staging anything', async ({ createTestApp }) => {
+    const { nutrition, foodLog } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await foodLog.selectTab('Scan')
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+
+    // The remounted scanner must not immediately re-open the panel.
+    Reflect.set(globalThis, 'BarcodeDetector', SilentBarcodeDetector)
+    await page.getByRole('button', { name: 'Go back' }).click()
+
+    await expect.element(page.getByText('Point the camera')).toBeVisible()
+    await expect.element(foodLog.basket.getByText('Nutella')).not.toBeInTheDocument()
+  })
+
   it('lets the grams stepper correct a scanned serving without a keyboard', async ({
     createTestApp,
   }) => {
@@ -122,7 +169,9 @@ describe('Nutrition barcode scan', () => {
     await expect.element(nutrition.dashboard).toBeVisible()
     await nutrition.openMeal('Snacks')
     await foodLog.selectTab('Scan')
-    await expect.element(foodLog.basket.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    await foodLog.confirmPortion()
+    await expect.element(foodLog.basket.getByText('Nutella')).toBeVisible()
 
     await foodLog.adjustStaged('Nutella', 2)
     await foodLog.commitBasket(1)
@@ -130,6 +179,25 @@ describe('Nutrition barcode scan', () => {
     await expect
       .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
       .toMatchObject({ diaryEntries: [{ grams: 35 }] })
+  })
+
+  it('types an exact gram amount for a staged item', async ({ createTestApp }) => {
+    const { nutrition, foodLog } = await createTestApp()
+
+    await expect.element(nutrition.dashboard).toBeVisible()
+    await nutrition.openMeal('Snacks')
+    await foodLog.selectTab('Scan')
+    await expect.element(foodLog.portionPanel.getByText('Nutella'), { timeout: 5000 }).toBeVisible()
+    await foodLog.confirmPortion()
+    await expect.element(foodLog.basket.getByText('Nutella')).toBeVisible()
+
+    // 15 g → 250 g is 24 stepper taps; typing it is the realistic correction.
+    await foodLog.setStagedGrams('Nutella', '250')
+    await foodLog.commitBasket(1)
+
+    await expect
+      .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
+      .toMatchObject({ diaryEntries: [{ grams: 250 }] })
   })
 
   it('does not show a flashlight toggle when the camera has no torch support', async ({

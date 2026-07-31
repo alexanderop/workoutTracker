@@ -11,7 +11,12 @@ import { excludeLibraryDuplicates, searchFoods } from '../lib/foodSearch'
 import FoodResultRow from './FoodResultRow.vue'
 
 const { foods } = defineProps<{ foods: ReadonlyArray<DbFood> }>()
-const emit = defineEmits<{ stage: [food: DbFood]; 'stage-external': [hit: ExternalFoodHit] }>()
+const emit = defineEmits<{
+  stage: [food: DbFood]
+  'stage-external': [hit: ExternalFoodHit]
+  open: [food: DbFood]
+  'open-external': [hit: ExternalFoodHit]
+}>()
 const query = defineModel<string>('query', { required: true })
 
 const { t } = useI18n()
@@ -56,6 +61,7 @@ function hitGrams(hit: ExternalFoodHit): number {
           :nutrients="food.nutrientsPer100Grams"
           :serving-name="food.defaultServingName ?? t('nutrition.food.serving')"
           @stage="emit('stage', food)"
+          @open="emit('open', food)"
         />
       </ul>
       <p v-else class="px-4 py-6 text-center text-sm text-muted-foreground">
@@ -105,6 +111,7 @@ function hitGrams(hit: ExternalFoodHit): number {
             :nutrients="hit.nutrientsPer100Grams"
             :serving-name="t('nutrition.food.serving')"
             @stage="emit('stage-external', hit)"
+            @open="emit('open-external', hit)"
           />
         </ul>
         <p v-else class="px-4 py-4 text-center text-sm text-muted-foreground">

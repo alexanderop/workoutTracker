@@ -105,6 +105,7 @@ export default {
     perServing: '{grams} g · {serving}',
     basketEmpty: 'Noch nichts ausgewählt',
     adjust: '{name} anpassen',
+    grams: 'Gramm',
     less: 'Weniger',
     more: 'Mehr',
     remove: 'Entfernen',
@@ -119,6 +120,12 @@ export default {
     customAdd: 'Anlegen und hinzufügen',
     scanAdded: '{name} hinzugefügt',
     over: 'drüber',
+    portion: {
+      amount: 'Menge',
+      unit: 'Einheit',
+      impact: 'Auswirkung auf Ziele',
+      resolvedGrams: '= {grams} g',
+    },
   },
   errors: {
     saveFailed: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',

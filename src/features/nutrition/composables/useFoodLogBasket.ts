@@ -2,10 +2,13 @@ import { computed, ref } from 'vue'
 import { createGlobalState } from '@vueuse/core'
 import { generateId } from '@/db/generateId'
 import type { DbFood, DbFoodNutrients, MealKind } from '@/db/schema'
-import { isAdjustable, stagedTotals, type StagedItem, type UnstagedItem } from '../lib/foodBasket'
-
-/** Smallest sensible portion; the stepper never walks a food down to nothing. */
-const MIN_GRAMS = 5
+import {
+  isAdjustable,
+  MIN_GRAMS,
+  stagedTotals,
+  type StagedItem,
+  type UnstagedItem,
+} from '../lib/foodBasket'
 
 /**
  * The staging basket behind the food-logging sheet.
@@ -71,10 +74,14 @@ export const useFoodLogBasket = createGlobalState(() => {
     items.value = items.value.filter((item) => item.stageId !== stageId)
   }
 
-  function adjustGrams(stageId: string, delta: number): void {
+  /**
+   * Absolute grams, from the tray's stepper and its typed field alike — the
+   * tray has the current grams in hand, so there is no second delta protocol.
+   */
+  function setGrams(stageId: string, grams: number): void {
     items.value = items.value.map((item) => {
       if (item.stageId !== stageId || !isAdjustable(item)) return item
-      return { ...item, grams: Math.max(MIN_GRAMS, item.grams + delta) }
+      return { ...item, grams: Math.max(MIN_GRAMS, grams) }
     })
   }
 
@@ -101,7 +108,7 @@ export const useFoodLogBasket = createGlobalState(() => {
     stageLibraryFood,
     stageQuickAdd,
     unstage,
-    adjustGrams,
+    setGrams,
     clear,
   }
 })

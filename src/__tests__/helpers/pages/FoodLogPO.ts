@@ -90,6 +90,32 @@ export class FoodLogPO {
     await page.getByRole('button', { name: 'Add to basket' }).click()
   }
 
+  /** The confirmation panel the scan flow opens before anything is staged. */
+  get portionPanel() {
+    return page.getByTestId('food-portion-panel')
+  }
+
+  /** Fills the amount field on the portion confirmation panel. */
+  async setPortionAmount(value: string): Promise<void> {
+    await page.getByLabelText('Amount').fill(value)
+  }
+
+  /** Switches the portion unit; the buttons are named by their visible label. */
+  async selectPortionUnit(unit: 'g' | 'serving'): Promise<void> {
+    await this.portionPanel.getByRole('button', { name: unit, exact: true }).click()
+  }
+
+  /** Confirms the portion panel, staging the food into the basket. */
+  async confirmPortion(): Promise<void> {
+    await this.portionPanel.getByRole('button', { name: 'Add', exact: true }).click()
+  }
+
+  /** Opens a staged item's editor and types an exact gram amount. */
+  async setStagedGrams(name: string, grams: string): Promise<void> {
+    await page.getByRole('button', { name: `Adjust ${name}`, exact: true }).click()
+    await page.getByLabelText('Grams').fill(grams)
+  }
+
   /** Opens the grams stepper for a staged item and taps it `steps` times. */
   async adjustStaged(name: string, steps: number): Promise<void> {
     await page.getByRole('button', { name: `Adjust ${name}`, exact: true }).click()
