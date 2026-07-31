@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { portionGrams, targetImpactPercents } from '@/features/nutrition/lib/foodPortion'
+import { scaleNutrients } from '@/features/nutrition/lib/nutritionCalculations'
 
 const PER_100_GRAMS = { calories: 539, proteinGrams: 6.3, carbohydrateGrams: 57.5, fatGrams: 30.9 }
 const GOAL = { calories: 2500, proteinGrams: 160, carbohydrateGrams: 240, fatGrams: 70 }
@@ -36,7 +37,7 @@ describe('targetImpactPercents', () => {
   it('reports what share of each daily target the portion consumes', () => {
     // 100 g of the fixture: 539 kcal of 2500 → 22 %, 6.3 g of 160 g → 4 %,
     // 57.5 g of 240 g → 24 %, 30.9 g of 70 g → 44 %.
-    expect(targetImpactPercents(PER_100_GRAMS, 100, GOAL)).toEqual({
+    expect(targetImpactPercents(scaleNutrients(PER_100_GRAMS, 100), GOAL)).toEqual({
       calories: 22,
       proteinGrams: 4,
       carbohydrateGrams: 24,
@@ -44,16 +45,19 @@ describe('targetImpactPercents', () => {
     })
   })
 
-  it('scales with the chosen grams', () => {
-    expect(targetImpactPercents(PER_100_GRAMS, 15, GOAL).calories).toBe(3)
+  it('follows the scaled portion', () => {
+    expect(targetImpactPercents(scaleNutrients(PER_100_GRAMS, 15), GOAL).calories).toBe(3)
   })
 
   it('can exceed 100 % — the ring clamps, the number does not', () => {
-    expect(targetImpactPercents(PER_100_GRAMS, 500, GOAL).fatGrams).toBe(221)
+    expect(targetImpactPercents(scaleNutrients(PER_100_GRAMS, 500), GOAL).fatGrams).toBe(221)
   })
 
   it('reports 0 for a macro whose target is unset', () => {
-    const impact = targetImpactPercents(PER_100_GRAMS, 100, { ...GOAL, fatGrams: 0 })
+    const impact = targetImpactPercents(scaleNutrients(PER_100_GRAMS, 100), {
+      ...GOAL,
+      fatGrams: 0,
+    })
     expect(impact.fatGrams).toBe(0)
   })
 })

@@ -100,9 +100,9 @@ export class FoodLogPO {
     await page.getByLabelText('Amount').fill(value)
   }
 
-  /** Switches the portion unit; the labels mirror the toggle buttons. */
+  /** Switches the portion unit; matched by the toggle's visible label. */
   async selectPortionUnit(unit: 'g' | 'serving'): Promise<void> {
-    await this.portionPanel.getByRole('button', { name: unit, exact: true }).click()
+    await this.portionPanel.getByText(unit, { exact: true }).click()
   }
 
   /** Confirms the portion panel, staging the food into the basket. */

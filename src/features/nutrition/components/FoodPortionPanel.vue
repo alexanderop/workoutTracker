@@ -1,14 +1,34 @@
 <script setup lang="ts">
+import type { AcceptableValue } from 'reka-ui'
 import { ChevronLeft } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { DbNutritionTargets } from '@/db/schema'
-import type { ExternalFood } from '../lib/foodData'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import type { DbFoodNutrients, DbNutritionTargets } from '@/db/schema'
 import { portionGrams, type PortionUnit, targetImpactPercents } from '../lib/foodPortion'
-import { scaleNutrients } from '../lib/nutritionCalculations'
+import { MACRO_DISPLAY, scaleNutrients } from '../lib/nutritionCalculations'
+
+/**
+ * What the panel needs to render and stage a food — deliberately its own
+ * shape rather than `ExternalFood`, because the food here may just as well be
+ * a library one; callers map to it at the call site.
+ */
+export type PortionFood = {
+  name: string
+  brand: string | null
+  servingGrams: number | null
+  nutrientsPer100Grams: DbFoodNutrients
+}
+
+const LABEL_KEYS = {
+  calories: 'nutrition.fields.calories',
+  proteinGrams: 'nutrition.foodLog.totals.protein',
+  fatGrams: 'nutrition.foodLog.totals.fat',
+  carbohydrateGrams: 'nutrition.foodLog.totals.carbs',
+} as const satisfies Record<keyof DbNutritionTargets, string>
 
 /**
  * Confirms how much of a resolved food goes into the basket. A scan (or a
@@ -16,26 +36,38 @@ import { scaleNutrients } from '../lib/nutritionCalculations'
  * plate — this panel is where they say it, with the macro cost and the share
  * of the daily targets recomputed live as they type.
  */
-const { food, goal } = defineProps<{ food: ExternalFood; goal: DbNutritionTargets }>()
+const { food, goal } = defineProps<{ food: PortionFood; goal: DbNutritionTargets }>()
 const emit = defineEmits<{ add: [grams: number]; back: [] }>()
 
 const { t } = useI18n()
 
-const hasServing = food.servingGrams !== null && food.servingGrams > 0
+/** Narrowed once: a non-positive serving size counts as "no serving". */
+const servingGrams = food.servingGrams !== null && food.servingGrams > 0 ? food.servingGrams : null
+const hasServing = servingGrams !== null
+
 const unit = ref<PortionUnit>(hasServing ? 'serving' : 'grams')
 const amount = ref<number | string>(hasServing ? '1' : '100')
 
-const grams = computed(() => portionGrams(Number(amount.value), unit.value, food.servingGrams))
+const grams = computed(() => portionGrams(Number(amount.value), unit.value, servingGrams))
 
 /** Switching units converts the amount, so "1 serving" becomes "15 g", not "1 g". */
 function switchUnit(next: PortionUnit): void {
   if (next === unit.value) return
   const current = grams.value
-  if (current !== null) {
-    const converted = next === 'grams' ? current : current / (food.servingGrams ?? 1)
-    amount.value = Math.round(converted * 100) / 100
-  }
   unit.value = next
+  if (current === null) return
+  if (next === 'grams') {
+    amount.value = Math.round(current * 100) / 100
+    return
+  }
+  // Unreachable null: the serving toggle only renders when a serving exists.
+  if (servingGrams === null) return
+  amount.value = Math.round((current / servingGrams) * 100) / 100
+}
+
+/** A deselect tap on the active item reports an empty value; keep the unit. */
+function handleUnitChange(value: AcceptableValue | ReadonlyArray<AcceptableValue>): void {
+  if (value === 'grams' || value === 'serving') switchUnit(value)
 }
 
 /** Whole kcal; grams to one decimal — the label precision of a food package. */
@@ -45,26 +77,13 @@ function formatValue(key: keyof DbNutritionTargets, value: number): string {
 
 const macros = computed(() => {
   const portion = scaleNutrients(food.nutrientsPer100Grams, grams.value ?? 0)
-  const impact = targetImpactPercents(food.nutrientsPer100Grams, grams.value ?? 0, goal)
-  return (
-    [
-      { key: 'calories', label: t('nutrition.fields.calories'), color: 'var(--chart-1)' },
-      {
-        key: 'proteinGrams',
-        label: t('nutrition.foodLog.totals.protein'),
-        color: 'var(--chart-2)',
-      },
-      { key: 'fatGrams', label: t('nutrition.foodLog.totals.fat'), color: 'var(--chart-4)' },
-      {
-        key: 'carbohydrateGrams',
-        label: t('nutrition.foodLog.totals.carbs'),
-        color: 'var(--chart-5)',
-      },
-    ] as const
-  ).map((macro) => ({
-    ...macro,
-    value: formatValue(macro.key, portion[macro.key]),
-    percent: impact[macro.key],
+  const impact = targetImpactPercents(portion, goal)
+  return MACRO_DISPLAY.map(({ key, colorVar }) => ({
+    key,
+    color: colorVar,
+    label: t(LABEL_KEYS[key]),
+    value: formatValue(key, portion[key]),
+    percent: impact[key],
   }))
 })
 
@@ -133,35 +152,19 @@ function add(): void {
             inputmode="decimal"
             autocomplete="off"
           />
-          <div class="flex gap-1" role="group" :aria-label="t('nutrition.sheet.portion.unit')">
-            <button
-              type="button"
-              class="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-              :class="
-                unit === 'grams'
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-input text-muted-foreground'
-              "
-              :aria-pressed="unit === 'grams'"
-              @click="switchUnit('grams')"
-            >
-              {{ t('nutrition.gramsUnit') }}
-            </button>
-            <button
-              v-if="hasServing"
-              type="button"
-              class="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-              :class="
-                unit === 'serving'
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-input text-muted-foreground'
-              "
-              :aria-pressed="unit === 'serving'"
-              @click="switchUnit('serving')"
-            >
+          <ToggleGroup
+            type="single"
+            :model-value="unit"
+            variant="outline"
+            :aria-label="t('nutrition.sheet.portion.unit')"
+            class="[&_[data-state=on]]:bg-primary [&_[data-state=on]]:text-primary-foreground"
+            @update:model-value="handleUnitChange"
+          >
+            <ToggleGroupItem value="grams">{{ t('nutrition.gramsUnit') }}</ToggleGroupItem>
+            <ToggleGroupItem v-if="hasServing" value="serving">
               {{ t('nutrition.food.serving') }}
-            </button>
-          </div>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
         <p v-if="unit === 'serving' && grams !== null" class="text-xs text-muted-foreground">
           {{ t('nutrition.sheet.portion.resolvedGrams', { grams: Math.round(grams * 10) / 10 }) }}

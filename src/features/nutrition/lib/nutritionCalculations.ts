@@ -104,6 +104,24 @@ export function budgetSegments(committed: number, staged: number, target: number
   }
 }
 
+/**
+ * Macro display order and chart-color slot, shared by every macro read-out
+ * (budget bars, portion rings) so two components cannot disagree on which
+ * color means which macro. Both color forms are spelled out literally: the
+ * class form because Tailwind's scanner only sees literal class names, the
+ * var form for inline gradients.
+ */
+export const MACRO_DISPLAY = [
+  { key: 'calories', colorClass: 'bg-chart-1', colorVar: 'var(--chart-1)' },
+  { key: 'proteinGrams', colorClass: 'bg-chart-2', colorVar: 'var(--chart-2)' },
+  { key: 'fatGrams', colorClass: 'bg-chart-4', colorVar: 'var(--chart-4)' },
+  { key: 'carbohydrateGrams', colorClass: 'bg-chart-5', colorVar: 'var(--chart-5)' },
+] as const satisfies ReadonlyArray<{
+  key: keyof DbNutritionTargets
+  colorClass: string
+  colorVar: string
+}>
+
 export function nutrientsPer100Grams(
   nutrientsForServing: DbFoodNutrients,
   servingGrams: number,

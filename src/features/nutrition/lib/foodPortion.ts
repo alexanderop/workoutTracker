@@ -1,8 +1,13 @@
 import type { DbFoodNutrients, DbNutritionTargets } from '@/db/schema'
-import { scaleNutrients } from './nutritionCalculations'
 
 /** The two ways an amount can be typed into the portion panel. */
 export type PortionUnit = 'grams' | 'serving'
+
+/**
+ * Percentages per macro. Its own type, not `DbFoodNutrients`: a bag of
+ * percents must not be structurally interchangeable with a bag of kcal/grams.
+ */
+export type MacroPercents = Record<keyof DbFoodNutrients, number>
 
 /**
  * Grams a typed amount resolves to, or `null` when it cannot make a portion —
@@ -22,17 +27,18 @@ export function portionGrams(
 }
 
 /**
- * Share of each daily target this portion consumes, as rounded percentages.
- * Deliberately unclamped — 221 % of the fat budget is the answer the user is
- * asking for; the ring drawing it clamps, the number does not. A macro with
- * no target reports 0: there is no budget to consume a share of.
+ * Share of each daily target an already-scaled portion consumes, as rounded
+ * percentages. Takes the portion, not per-100g-plus-grams: the caller has the
+ * scaled figures in hand for display anyway, and scaling twice per keystroke
+ * would be pure waste. Deliberately unclamped — 221 % of the fat budget is
+ * the answer the user is asking for; the ring drawing it clamps, the number
+ * does not. A macro with no target reports 0: there is no budget to consume
+ * a share of.
  */
 export function targetImpactPercents(
-  nutrientsPer100Grams: DbFoodNutrients,
-  grams: number,
+  portion: DbFoodNutrients,
   goal: DbNutritionTargets,
-): DbFoodNutrients {
-  const portion = scaleNutrients(nutrientsPer100Grams, grams)
+): MacroPercents {
   const share = (value: number, target: number): number =>
     target > 0 ? Math.round((value / target) * 100) : 0
   return {

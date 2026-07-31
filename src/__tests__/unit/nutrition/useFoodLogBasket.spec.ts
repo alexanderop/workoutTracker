@@ -83,23 +83,23 @@ describe('useFoodLogBasket', () => {
     expect(basket.totals.value.proteinGrams).toBeCloseTo(44, 10)
   })
 
-  it('adjusts grams and the totals follow', () => {
+  it('sets grams and the totals follow', () => {
     const basket = useFoodLogBasket()
     basket.stageLibraryFood(food())
     const stageId = basket.items.value[0]?.stageId ?? ''
 
-    basket.adjustGrams(stageId, -100)
+    basket.setGrams(stageId, 300)
 
     expect(basket.items.value[0]?.grams).toBe(300)
     expect(basket.totals.value.calories).toBeCloseTo(180, 10)
   })
 
-  it('floors the grams stepper instead of walking a food down to nothing', () => {
+  it('floors the grams instead of walking a food down to nothing', () => {
     const basket = useFoodLogBasket()
     basket.stageLibraryFood(food({ defaultServingGrams: 10 }))
     const stageId = basket.items.value[0]?.stageId ?? ''
 
-    basket.adjustGrams(stageId, -50)
+    basket.setGrams(stageId, -40)
 
     expect(basket.items.value[0]?.grams).toBe(5)
   })
@@ -114,7 +114,7 @@ describe('useFoodLogBasket', () => {
     })
     const stageId = basket.items.value[0]?.stageId ?? ''
 
-    basket.adjustGrams(stageId, 100)
+    basket.setGrams(stageId, 200)
 
     expect(basket.items.value[0]?.grams).toBe(100)
     expect(basket.totals.value.calories).toBe(650)

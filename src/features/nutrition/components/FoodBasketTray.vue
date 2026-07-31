@@ -10,7 +10,6 @@ const GRAMS_STEP = 10
 
 const { items } = defineProps<{ items: ReadonlyArray<StagedItem> }>()
 const emit = defineEmits<{
-  adjust: [stageId: string, delta: number]
   set: [stageId: string, grams: number]
   remove: [stageId: string]
 }>()
@@ -73,7 +72,7 @@ function setGrams(stageId: string, event: Event): void {
           type="button"
           class="flex size-8 items-center justify-center rounded-lg bg-background"
           :aria-label="t('nutrition.sheet.less')"
-          @click="emit('adjust', expanded.stageId, -GRAMS_STEP)"
+          @click="emit('set', expanded.stageId, expanded.grams - GRAMS_STEP)"
         >
           <Minus class="size-3.5" aria-hidden="true" />
         </button>
@@ -93,7 +92,7 @@ function setGrams(stageId: string, event: Event): void {
           type="button"
           class="flex size-8 items-center justify-center rounded-lg bg-background"
           :aria-label="t('nutrition.sheet.more')"
-          @click="emit('adjust', expanded.stageId, GRAMS_STEP)"
+          @click="emit('set', expanded.stageId, expanded.grams + GRAMS_STEP)"
         >
           <Plus class="size-3.5" aria-hidden="true" />
         </button>

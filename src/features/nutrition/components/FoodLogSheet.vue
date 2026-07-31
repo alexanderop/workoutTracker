@@ -15,12 +15,13 @@ import { useFoodLogBasket } from '../composables/useFoodLogBasket'
 import { useFoodLookup } from '../composables/useFoodLookup'
 import { isBarcodeScanSupported } from '../lib/barcodeDetector'
 import { buildCommit } from '../lib/foodBasket'
-import type { ExternalFood, ExternalFoodHit } from '../lib/foodData'
+import type { ExternalFoodHit } from '../lib/foodData'
 import FoodBasketTray from './FoodBasketTray.vue'
 import FoodBudgetBars from './FoodBudgetBars.vue'
 import FoodCustomPanel from './FoodCustomPanel.vue'
 import type { CustomFood } from './FoodCustomPanel.vue'
 import FoodPortionPanel from './FoodPortionPanel.vue'
+import type { PortionFood } from './FoodPortionPanel.vue'
 import FoodQuickAddPanel from './FoodQuickAddPanel.vue'
 import FoodSearchPanel from './FoodSearchPanel.vue'
 
@@ -29,33 +30,19 @@ import FoodSearchPanel from './FoodSearchPanel.vue'
 const FoodBarcodeScanner = defineAsyncComponent(() => import('./FoodBarcodeScanner.vue'))
 
 type Tab = 'search' | 'scan' | 'quick' | 'custom'
+type ScanState = 'scanning' | 'looking-up' | 'not-found' | 'failed'
 
 /**
- * One scanning attempt, start to finish. A union rather than a status string
- * plus a nullable pending food: `confirm` without a food — or a leftover food
- * in any other state — should not be representable.
+ * A food waiting for the user to say how much — the one mechanism behind
+ * every entry point (scan, library row, online row). `foodId` links a library
+ * food so Add stages `source: 'library'`; `null` creates a new one. `origin`
+ * decides what Add does afterwards: a scan returns to the search tab with a
+ * toast, a search stays where the user already is.
  */
-type ScanFlow =
-  | { kind: 'scanning' }
-  | { kind: 'looking-up' }
-  | { kind: 'not-found' }
-  | { kind: 'failed' }
-  | { kind: 'confirm'; food: ExternalFood }
-
-/**
- * A search row opened in the portion panel. The origin decides what Add
- * stages: a library food keeps its `foodId`, an Open Food Facts hit becomes a
- * new food — same split the plus buttons already make.
- */
-type SearchPortion =
-  | { origin: 'library'; food: DbFood }
-  | { origin: 'external'; hit: ExternalFoodHit }
-
-/** Both origins render through the panel's provider-neutral food shape. */
-function portionFood(portion: SearchPortion): ExternalFood {
-  if (portion.origin === 'external') return portion.hit
-  const { name, brand, defaultServingGrams, nutrientsPer100Grams } = portion.food
-  return { name, brand, servingGrams: defaultServingGrams, nutrientsPer100Grams }
+type PendingPortion = {
+  food: PortionFood
+  foodId: string | null
+  origin: 'scan' | 'search'
 }
 
 const { foods, localDate, initialMeal, goal, committed, dayLabel } = defineProps<{
@@ -76,8 +63,8 @@ const { lookup } = useFoodLookup()
 
 const tab = ref<Tab>('search')
 const query = ref('')
-const scanFlow = ref<ScanFlow>({ kind: 'scanning' })
-const searchPortion = ref<SearchPortion | null>(null)
+const scanState = ref<ScanState>('scanning')
+const pendingPortion = ref<PendingPortion | null>(null)
 const committing = ref(false)
 const commitFailed = ref(false)
 
@@ -107,34 +94,58 @@ watch(
     basket.openFor(localDate, initialMeal)
     tab.value = 'search'
     query.value = ''
-    scanFlow.value = { kind: 'scanning' }
-    searchPortion.value = null
+    scanState.value = 'scanning'
+    pendingPortion.value = null
     commitFailed.value = false
   },
   { immediate: true },
 )
 
 async function handleBarcodeDetected(barcode: string): Promise<void> {
-  scanFlow.value = { kind: 'looking-up' }
+  scanState.value = 'looking-up'
   const result = await lookup(barcode)
   // The sheet was reopened, or the user left the scan tab, mid-lookup.
-  if (scanFlow.value.kind !== 'looking-up') return
+  if (scanState.value !== 'looking-up') return
   if (result.status !== 'found') {
-    scanFlow.value = { kind: result.status === 'not-found' ? 'not-found' : 'failed' }
+    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
     return
   }
   // Into a confirmation step, not straight into the basket: the barcode names
   // the product, but only the user knows how much of it is on the plate.
-  scanFlow.value = { kind: 'confirm', food: result.food }
+  scanState.value = 'scanning'
+  pendingPortion.value = { food: result.food, foodId: null, origin: 'scan' }
 }
 
-/** The portion panel's Add: stage the confirmed grams and return to search. */
-function stageScannedFood(food: ExternalFood, grams: number): void {
-  const { name, brand, nutrientsPer100Grams } = food
-  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams })
-  scanFlow.value = { kind: 'scanning' }
-  tab.value = 'search'
-  showToast(t('nutrition.sheet.scanAdded', { name }))
+/** Picking a tab abandons a pending portion — the tabs are the way out. */
+function selectTab(next: Tab): void {
+  pendingPortion.value = null
+  tab.value = next
+}
+
+function openLibraryPortion(food: DbFood): void {
+  const { name, brand, defaultServingGrams, nutrientsPer100Grams } = food
+  pendingPortion.value = {
+    food: { name, brand, servingGrams: defaultServingGrams, nutrientsPer100Grams },
+    foodId: food.id,
+    origin: 'search',
+  }
+}
+
+/** The portion panel's Add: stage the confirmed grams. */
+function stagePending(grams: number): void {
+  const pending = pendingPortion.value
+  if (pending === null) return
+  const { name, brand, nutrientsPer100Grams } = pending.food
+  basket.stage(
+    pending.foodId === null
+      ? { source: 'new', name, brand, nutrientsPer100Grams, grams }
+      : { source: 'library', foodId: pending.foodId, name, brand, nutrientsPer100Grams, grams },
+  )
+  pendingPortion.value = null
+  if (pending.origin === 'scan') {
+    tab.value = 'search'
+    showToast(t('nutrition.sheet.scanAdded', { name }))
+  }
 }
 
 /**
@@ -145,18 +156,6 @@ function stageScannedFood(food: ExternalFood, grams: number): void {
 function stageExternalFood(hit: ExternalFoodHit): void {
   const { name, brand, servingGrams, nutrientsPer100Grams } = hit
   basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams: servingGrams ?? 100 })
-}
-
-/** The search-tab portion panel's Add: stage the confirmed grams. */
-function stageSearchPortion(portion: SearchPortion, grams: number): void {
-  searchPortion.value = null
-  if (portion.origin === 'library') {
-    const { id, name, brand, nutrientsPer100Grams } = portion.food
-    basket.stage({ source: 'library', foodId: id, name, brand, nutrientsPer100Grams, grams })
-    return
-  }
-  const { name, brand, nutrientsPer100Grams } = portion.hit
-  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams })
 }
 
 function stageQuickAdd(nutrients: DbFoodNutrients): void {
@@ -247,7 +246,6 @@ async function commit(): Promise<void> {
 
         <FoodBasketTray
           :items="basket.items.value"
-          @adjust="basket.adjustGrams"
           @set="basket.setGrams"
           @remove="basket.unstage"
         />
@@ -271,7 +269,7 @@ async function commit(): Promise<void> {
               : 'border-transparent text-muted-foreground'
           "
           :aria-pressed="tab === entry.id"
-          @click="tab = entry.id"
+          @click="selectTab(entry.id)"
         >
           <component :is="entry.icon" class="size-4" aria-hidden="true" />
           {{ entry.label }}
@@ -280,12 +278,12 @@ async function commit(): Promise<void> {
 
       <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <FoodPortionPanel
-          v-if="tab === 'search' && searchPortion !== null"
-          :food="portionFood(searchPortion)"
+          v-if="pendingPortion !== null"
+          :food="pendingPortion.food"
           :goal="goal"
           class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-          @add="stageSearchPortion(searchPortion, $event)"
-          @back="searchPortion = null"
+          @add="stagePending"
+          @back="pendingPortion = null"
         />
         <FoodSearchPanel
           v-else-if="tab === 'search'"
@@ -293,34 +291,25 @@ async function commit(): Promise<void> {
           :foods="foods"
           @stage="basket.stageLibraryFood"
           @stage-external="stageExternalFood"
-          @open="searchPortion = { origin: 'library', food: $event }"
-          @open-external="searchPortion = { origin: 'external', hit: $event }"
+          @open="openLibraryPortion"
+          @open-external="pendingPortion = { food: $event, foodId: null, origin: 'search' }"
         />
 
-        <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <FoodPortionPanel
-            v-if="scanFlow.kind === 'confirm'"
-            :food="scanFlow.food"
-            :goal="goal"
-            @add="stageScannedFood(scanFlow.food, $event)"
-            @back="scanFlow = { kind: 'scanning' }"
+        <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+          <FoodBarcodeScanner
+            v-if="scanState !== 'looking-up'"
+            @detected="handleBarcodeDetected"
+            @cancel="selectTab('search')"
           />
-          <div v-else class="space-y-3 p-4">
-            <FoodBarcodeScanner
-              v-if="scanFlow.kind !== 'looking-up'"
-              @detected="handleBarcodeDetected"
-              @cancel="tab = 'search'"
-            />
-            <p v-else class="text-sm text-muted-foreground">
-              {{ t('nutrition.food.scanLookingUp') }}
-            </p>
-            <p v-if="scanFlow.kind === 'not-found'" role="alert" class="text-sm text-destructive">
-              {{ t('nutrition.food.scanNotFound') }}
-            </p>
-            <p v-if="scanFlow.kind === 'failed'" role="alert" class="text-sm text-destructive">
-              {{ t('nutrition.food.scanFailed') }}
-            </p>
-          </div>
+          <p v-else class="text-sm text-muted-foreground">
+            {{ t('nutrition.food.scanLookingUp') }}
+          </p>
+          <p v-if="scanState === 'not-found'" role="alert" class="text-sm text-destructive">
+            {{ t('nutrition.food.scanNotFound') }}
+          </p>
+          <p v-if="scanState === 'failed'" role="alert" class="text-sm text-destructive">
+            {{ t('nutrition.food.scanFailed') }}
+          </p>
         </div>
 
         <div v-else class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
