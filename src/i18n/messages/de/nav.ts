@@ -52,6 +52,9 @@ export default {
     quickTimerDescription: 'AMRAP, EMOM, Tabata, For Time',
     logPastWorkout: 'Vergangenes Workout eintragen',
     logPastWorkoutDescription: 'Ein Workout von früher eintragen',
+    insights: 'Einblicke & Analysen',
+    bodyMetrics: 'Körperwerte',
+    seeAllBodyMetrics: 'Alle Körperwerte anzeigen',
     recentWorkouts: 'Letzte Workouts',
     viewAll: 'Alle anzeigen',
     emptyHistory: {

@@ -112,6 +112,13 @@ export default {
     today: 'Today',
     yesterday: 'Yesterday',
   },
+  dashboard: {
+    seeAll: 'See All',
+    last7Days: 'Last 7 Days',
+    last30Days: 'Last 30 Days',
+    lastEntries: 'Last {count} Entries',
+    notEnoughData: 'Not enough data yet',
+  },
   goBack: 'Go back',
   back: 'Back',
   continue: 'Continue',

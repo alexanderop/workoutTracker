@@ -31,6 +31,23 @@ export function formatDate(timestamp: number): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+/**
+ * Trailing moving average: `result[i]` is the mean of the up-to-`window`
+ * values ending at `i`, so early points average over what exists rather than
+ * being dropped. Smooths day-to-day scale noise into a trend line for the
+ * dashboard's Weight Trend tile. `window <= 1` returns the values unchanged.
+ */
+export function trailingAverage(
+  values: ReadonlyArray<number>,
+  window: number,
+): ReadonlyArray<number> {
+  if (window <= 1) return values
+  return values.map((_, index) => {
+    const windowValues = values.slice(Math.max(0, index - window + 1), index + 1)
+    return windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length
+  })
+}
+
 /** Relative change (as a fraction) above which a new entry is flagged as an outlier. */
 const OUTLIER_RELATIVE_THRESHOLD = 0.2
 

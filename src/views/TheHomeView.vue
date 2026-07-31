@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { CalendarDays, Play, Timer, ClipboardList } from '@lucide/vue'
+import { CalendarDays, ChevronRight, Play, Timer, ClipboardList } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Button } from '@/components/ui/button'
 import { RouteNames } from '@/router'
 import RecentWorkoutsSection from '@/features/workout/components/RecentWorkoutsSection.vue'
 import WeekStrip from '@/features/workout/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/features/workout/components/WorkoutCalendarSheet.vue'
 import HabitsHomeCard from '@/features/habits/components/HabitsHomeCard.vue'
 import NutritionDashboardCard from '@/features/nutrition/components/NutritionDashboardCard.vue'
-import HomeWeightSummaryCard from '@/features/weight/components/HomeWeightSummaryCard.vue'
+import NutritionCaloriesTile from '@/features/nutrition/components/NutritionCaloriesTile.vue'
+import WeightStatTile from '@/features/weight/components/WeightStatTile.vue'
 import { useWorkoutCalendar } from '@/features/workout/composables/useWorkoutCalendar'
 
 const { t, locale } = useI18n()
@@ -84,11 +86,25 @@ function openCalendarSheet() {
         @next-month="goToNextMonth"
       />
 
+      <!-- Insights & Analytics: glanceable sparkline tiles, each opening its
+           feature's full page. -->
+      <section aria-labelledby="insights-heading">
+        <div class="mb-3 flex items-center justify-between px-1">
+          <h2 id="insights-heading" class="text-section-title font-bold">
+            {{ t('nav.homeView.insights') }}
+          </h2>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <NutritionCaloriesTile />
+          <WeightStatTile metric="trend" />
+        </div>
+      </section>
+
       <NutritionDashboardCard />
 
       <section aria-labelledby="workout-actions-heading">
         <div class="mb-3 flex items-center justify-between px-1">
-          <h2 id="workout-actions-heading" class="font-semibold">
+          <h2 id="workout-actions-heading" class="text-section-title font-bold">
             {{ t('nav.homeView.workout') }}
           </h2>
           <span class="text-xs text-muted-foreground">{{ t('nav.homeView.quickActions') }}</span>
@@ -142,7 +158,29 @@ function openCalendarSheet() {
         </div>
       </section>
 
-      <HomeWeightSummaryCard />
+      <!-- Body Metrics: raw scale entries and body fat, both opening the
+           weight page. -->
+      <section aria-labelledby="body-metrics-heading">
+        <div class="mb-3 flex items-center justify-between px-1">
+          <h2 id="body-metrics-heading" class="text-section-title font-bold">
+            {{ t('nav.homeView.bodyMetrics') }}
+          </h2>
+          <Button
+            variant="link"
+            size="sm"
+            class="h-auto p-0 text-primary"
+            :aria-label="t('nav.homeView.seeAllBodyMetrics')"
+            @click="router.push({ name: RouteNames.Weight })"
+          >
+            {{ t('common.dashboard.seeAll') }}
+            <ChevronRight class="ml-1 size-4" aria-hidden="true" />
+          </Button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <WeightStatTile metric="scale" />
+          <WeightStatTile metric="bodyFat" />
+        </div>
+      </section>
 
       <!-- Today's Habits -->
       <HabitsHomeCard />
