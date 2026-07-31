@@ -15,11 +15,12 @@ import { useFoodLogBasket } from '../composables/useFoodLogBasket'
 import { useFoodLookup } from '../composables/useFoodLookup'
 import { isBarcodeScanSupported } from '../lib/barcodeDetector'
 import { buildCommit } from '../lib/foodBasket'
-import type { ExternalFoodHit } from '../lib/foodData'
+import type { ExternalFood, ExternalFoodHit } from '../lib/foodData'
 import FoodBasketTray from './FoodBasketTray.vue'
 import FoodBudgetBars from './FoodBudgetBars.vue'
 import FoodCustomPanel from './FoodCustomPanel.vue'
 import type { CustomFood } from './FoodCustomPanel.vue'
+import FoodPortionPanel from './FoodPortionPanel.vue'
 import FoodQuickAddPanel from './FoodQuickAddPanel.vue'
 import FoodSearchPanel from './FoodSearchPanel.vue'
 
@@ -28,7 +29,18 @@ import FoodSearchPanel from './FoodSearchPanel.vue'
 const FoodBarcodeScanner = defineAsyncComponent(() => import('./FoodBarcodeScanner.vue'))
 
 type Tab = 'search' | 'scan' | 'quick' | 'custom'
-type ScanState = 'idle' | 'looking-up' | 'not-found' | 'failed'
+
+/**
+ * One scanning attempt, start to finish. A union rather than a status string
+ * plus a nullable pending food: `confirm` without a food — or a leftover food
+ * in any other state — should not be representable.
+ */
+type ScanFlow =
+  | { kind: 'scanning' }
+  | { kind: 'looking-up' }
+  | { kind: 'not-found' }
+  | { kind: 'failed' }
+  | { kind: 'confirm'; food: ExternalFood }
 
 const { foods, localDate, initialMeal, goal, committed, dayLabel } = defineProps<{
   foods: ReadonlyArray<DbFood>
@@ -48,7 +60,7 @@ const { lookup } = useFoodLookup()
 
 const tab = ref<Tab>('search')
 const query = ref('')
-const scanState = ref<ScanState>('idle')
+const scanFlow = ref<ScanFlow>({ kind: 'scanning' })
 const committing = ref(false)
 const commitFailed = ref(false)
 
@@ -78,27 +90,31 @@ watch(
     basket.openFor(localDate, initialMeal)
     tab.value = 'search'
     query.value = ''
-    scanState.value = 'idle'
+    scanFlow.value = { kind: 'scanning' }
     commitFailed.value = false
   },
   { immediate: true },
 )
 
 async function handleBarcodeDetected(barcode: string): Promise<void> {
-  scanState.value = 'looking-up'
+  scanFlow.value = { kind: 'looking-up' }
   const result = await lookup(barcode)
   // The sheet was reopened, or the user left the scan tab, mid-lookup.
-  if (scanState.value !== 'looking-up') return
+  if (scanFlow.value.kind !== 'looking-up') return
   if (result.status !== 'found') {
-    scanState.value = result.status === 'not-found' ? 'not-found' : 'failed'
+    scanFlow.value = { kind: result.status === 'not-found' ? 'not-found' : 'failed' }
     return
   }
-  const { name, brand, servingGrams, nutrientsPer100Grams } = result.food
-  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams: servingGrams ?? 100 })
-  scanState.value = 'idle'
-  // Straight into the basket rather than into a form to confirm: the barcode
-  // already answered every question the form would ask, and the tray's grams
-  // stepper covers the one thing it might have got wrong.
+  // Into a confirmation step, not straight into the basket: the barcode names
+  // the product, but only the user knows how much of it is on the plate.
+  scanFlow.value = { kind: 'confirm', food: result.food }
+}
+
+/** The portion panel's Add: stage the confirmed grams and return to search. */
+function stageScannedFood(food: ExternalFood, grams: number): void {
+  const { name, brand, nutrientsPer100Grams } = food
+  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams })
+  scanFlow.value = { kind: 'scanning' }
   tab.value = 'search'
   showToast(t('nutrition.sheet.scanAdded', { name }))
 }
@@ -240,21 +256,30 @@ async function commit(): Promise<void> {
           @stage-external="stageExternalFood"
         />
 
-        <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
-          <FoodBarcodeScanner
-            v-if="scanState !== 'looking-up'"
-            @detected="handleBarcodeDetected"
-            @cancel="tab = 'search'"
+        <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <FoodPortionPanel
+            v-if="scanFlow.kind === 'confirm'"
+            :food="scanFlow.food"
+            :goal="goal"
+            @add="stageScannedFood(scanFlow.food, $event)"
+            @back="scanFlow = { kind: 'scanning' }"
           />
-          <p v-else class="text-sm text-muted-foreground">
-            {{ t('nutrition.food.scanLookingUp') }}
-          </p>
-          <p v-if="scanState === 'not-found'" role="alert" class="text-sm text-destructive">
-            {{ t('nutrition.food.scanNotFound') }}
-          </p>
-          <p v-if="scanState === 'failed'" role="alert" class="text-sm text-destructive">
-            {{ t('nutrition.food.scanFailed') }}
-          </p>
+          <div v-else class="space-y-3 p-4">
+            <FoodBarcodeScanner
+              v-if="scanFlow.kind !== 'looking-up'"
+              @detected="handleBarcodeDetected"
+              @cancel="tab = 'search'"
+            />
+            <p v-else class="text-sm text-muted-foreground">
+              {{ t('nutrition.food.scanLookingUp') }}
+            </p>
+            <p v-if="scanFlow.kind === 'not-found'" role="alert" class="text-sm text-destructive">
+              {{ t('nutrition.food.scanNotFound') }}
+            </p>
+            <p v-if="scanFlow.kind === 'failed'" role="alert" class="text-sm text-destructive">
+              {{ t('nutrition.food.scanFailed') }}
+            </p>
+          </div>
         </div>
 
         <div v-else class="min-h-0 flex-1 overflow-y-auto overscroll-contain">

@@ -119,6 +119,12 @@ export default {
     customAdd: 'Anlegen und hinzufügen',
     scanAdded: '{name} hinzugefügt',
     over: 'drüber',
+    portion: {
+      amount: 'Menge',
+      unit: 'Einheit',
+      impact: 'Auswirkung auf Ziele',
+      resolvedGrams: '= {grams} g',
+    },
   },
   errors: {
     saveFailed: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',
