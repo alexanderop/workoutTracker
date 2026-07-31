@@ -18,7 +18,7 @@ const { nutrients, grams, servingName, brand } = defineProps<{
   nutrients: DbFoodNutrients
   servingName: string
 }>()
-const emit = defineEmits<{ stage: [] }>()
+const emit = defineEmits<{ stage: []; open: [] }>()
 
 const { t } = useI18n()
 
@@ -42,11 +42,13 @@ const servingLine = computed(() => {
 
 <template>
   <li class="flex items-center gap-3 border-b px-4 py-2.5 last:border-b-0">
-    <div class="min-w-0 flex-1">
+    <!-- The row body opens the portion panel; the plus is the express lane
+         that stages the shown serving as-is. -->
+    <button type="button" class="min-w-0 flex-1 text-left" @click="emit('open')">
       <p class="truncate text-sm font-medium">{{ name }}</p>
       <p class="truncate text-xs tabular-nums text-muted-foreground">{{ macroLine }}</p>
       <p class="truncate text-xs text-muted-foreground">{{ servingLine }}</p>
-    </div>
+    </button>
     <button
       type="button"
       class="flex size-10 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-primary hover:text-primary-foreground"

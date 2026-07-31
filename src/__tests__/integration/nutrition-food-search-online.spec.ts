@@ -90,6 +90,75 @@ describe('Food search against Open Food Facts', () => {
       })
   })
 
+  it('opens a portion panel from an online hit to pick the amount', async ({ createTestApp }) => {
+    const { navigateTo, foodLog } = await createTestApp()
+
+    await navigateTo({ name: RouteNames.FoodLog })
+    await foodLog.openAddFood()
+    await foodLog.search('nutella')
+    await expect
+      .element(foodLog.onlineResults.getByText('Nutella'), { timeout: 5000 })
+      .toBeVisible()
+
+    // Tapping the row (not its plus button) asks "how much?" first.
+    await foodLog.onlineResults.getByText('Nutella').click()
+    await expect.element(foodLog.portionPanel.getByText('Nutella')).toBeVisible()
+
+    await foodLog.selectPortionUnit('g')
+    await foodLog.setPortionAmount('250')
+    await foodLog.confirmPortion()
+    await expect.element(foodLog.basket.getByText('Nutella')).toBeVisible()
+
+    await foodLog.commitBasket(1)
+    await expect
+      .poll(async () => getNutritionRepository().observeDay(getLocalDateKey()).get())
+      .toMatchObject({
+        foods: [{ name: 'Nutella' }],
+        diaryEntries: [{ grams: 250 }],
+      })
+  })
+
+  it('opens the portion panel for a library food without creating a duplicate', async ({
+    createTestApp,
+  }) => {
+    const { navigateTo, foodLog } = await createTestApp()
+
+    await navigateTo({ name: RouteNames.FoodLog })
+    await foodLog.openAddFood()
+    await foodLog.stageCustomFood({
+      name: 'Nutella',
+      brand: 'Ferrero',
+      grams: '15',
+      calories: '81',
+      protein: '0.9',
+      carbs: '8.6',
+      fat: '4.6',
+    })
+    await foodLog.commitBasket(1)
+
+    await foodLog.openAddFood()
+    await foodLog.selectTab('Search')
+    // The recents list offers the food; tapping the row opens the panel with
+    // the library serving prefilled.
+    await foodLog.searchResults.getByText('Nutella').click()
+    await expect.element(foodLog.portionPanel.getByText('Nutella')).toBeVisible()
+
+    await foodLog.setPortionAmount('3')
+    await foodLog.confirmPortion()
+    await foodLog.commitBasket(1)
+
+    // Still one Nutella in the library; the new entry points at it.
+    await expect
+      .poll(async () => {
+        const day = await getNutritionRepository().observeDay(getLocalDateKey()).get()
+        return {
+          foodCount: day.foods.length,
+          grams: day.diaryEntries.map((entry) => entry.grams).toSorted((a, b) => a - b),
+        }
+      })
+      .toEqual({ foodCount: 1, grams: [15, 45] })
+  })
+
   it('does not offer a product the user already has a food for', async ({ createTestApp }) => {
     const { navigateTo, foodLog } = await createTestApp()
 

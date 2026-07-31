@@ -42,6 +42,22 @@ type ScanFlow =
   | { kind: 'failed' }
   | { kind: 'confirm'; food: ExternalFood }
 
+/**
+ * A search row opened in the portion panel. The origin decides what Add
+ * stages: a library food keeps its `foodId`, an Open Food Facts hit becomes a
+ * new food — same split the plus buttons already make.
+ */
+type SearchPortion =
+  | { origin: 'library'; food: DbFood }
+  | { origin: 'external'; hit: ExternalFoodHit }
+
+/** Both origins render through the panel's provider-neutral food shape. */
+function portionFood(portion: SearchPortion): ExternalFood {
+  if (portion.origin === 'external') return portion.hit
+  const { name, brand, defaultServingGrams, nutrientsPer100Grams } = portion.food
+  return { name, brand, servingGrams: defaultServingGrams, nutrientsPer100Grams }
+}
+
 const { foods, localDate, initialMeal, goal, committed, dayLabel } = defineProps<{
   foods: ReadonlyArray<DbFood>
   localDate: string
@@ -61,6 +77,7 @@ const { lookup } = useFoodLookup()
 const tab = ref<Tab>('search')
 const query = ref('')
 const scanFlow = ref<ScanFlow>({ kind: 'scanning' })
+const searchPortion = ref<SearchPortion | null>(null)
 const committing = ref(false)
 const commitFailed = ref(false)
 
@@ -91,6 +108,7 @@ watch(
     tab.value = 'search'
     query.value = ''
     scanFlow.value = { kind: 'scanning' }
+    searchPortion.value = null
     commitFailed.value = false
   },
   { immediate: true },
@@ -127,6 +145,18 @@ function stageScannedFood(food: ExternalFood, grams: number): void {
 function stageExternalFood(hit: ExternalFoodHit): void {
   const { name, brand, servingGrams, nutrientsPer100Grams } = hit
   basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams: servingGrams ?? 100 })
+}
+
+/** The search-tab portion panel's Add: stage the confirmed grams. */
+function stageSearchPortion(portion: SearchPortion, grams: number): void {
+  searchPortion.value = null
+  if (portion.origin === 'library') {
+    const { id, name, brand, nutrientsPer100Grams } = portion.food
+    basket.stage({ source: 'library', foodId: id, name, brand, nutrientsPer100Grams, grams })
+    return
+  }
+  const { name, brand, nutrientsPer100Grams } = portion.hit
+  basket.stage({ source: 'new', name, brand, nutrientsPer100Grams, grams })
 }
 
 function stageQuickAdd(nutrients: DbFoodNutrients): void {
@@ -248,12 +278,22 @@ async function commit(): Promise<void> {
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <FoodPortionPanel
+          v-if="tab === 'search' && searchPortion !== null"
+          :food="portionFood(searchPortion)"
+          :goal="goal"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          @add="stageSearchPortion(searchPortion, $event)"
+          @back="searchPortion = null"
+        />
         <FoodSearchPanel
-          v-if="tab === 'search'"
+          v-else-if="tab === 'search'"
           v-model:query="query"
           :foods="foods"
           @stage="basket.stageLibraryFood"
           @stage-external="stageExternalFood"
+          @open="searchPortion = { origin: 'library', food: $event }"
+          @open-external="searchPortion = { origin: 'external', hit: $event }"
         />
 
         <div v-else-if="tab === 'scan'" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
