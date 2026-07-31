@@ -14,8 +14,8 @@ import { useNutritionDay } from '../composables/useNutritionDay'
 import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
 
 // Loaded on first use so the barcode-scanning/camera machinery (and the food
-// lookup network code) stays off the startup path — same Lighthouse budget
-// on first paint as the sparkline above.
+// lookup network code) stays off the startup path — the app has a Lighthouse
+// performance budget on first paint.
 const FoodLogSheet = defineAsyncComponent(() => import('./FoodLogSheet.vue'))
 
 const { t } = useI18n()
