@@ -11,14 +11,8 @@ import type { DbNutritionDiaryEntry, MealKind } from '@/db/schema'
 import { tryCatch } from '@/lib/tryCatch'
 import NutritionGoalsDialog from './NutritionGoalsDialog.vue'
 import { useNutritionDay } from '../composables/useNutritionDay'
-import { useNutritionTrend } from '../composables/useNutritionTrend'
 import { getLocalDateKey, scaleNutrients } from '../lib/nutritionCalculations'
 
-// Loaded on first use so the unovis charting engine stays off the startup
-// path — the app has a Lighthouse performance budget on first paint.
-const SparklineChart = defineAsyncComponent(
-  () => import('@/components/ui/chart/SparklineChart.vue'),
-)
 // Loaded on first use so the barcode-scanning/camera machinery (and the food
 // lookup network code) stays off the startup path — same Lighthouse budget
 // on first paint as the sparkline above.
@@ -37,7 +31,6 @@ const {
   calorieProgress,
   calorieSegments,
 } = useNutritionDay(localDate)
-const { caloriesTrend } = useNutritionTrend(7)
 
 const goalsOpen = ref(false)
 const foodLogOpen = ref(false)
@@ -197,17 +190,6 @@ async function removeEntry(entry: DbNutritionDiaryEntry) {
             {{ t('nutrition.macroLabels.fat', { target: goal.fatGrams }) }}
           </p>
         </div>
-      </div>
-
-      <div v-if="caloriesTrend.filter((value) => value > 0).length > 1" class="mt-4">
-        <p class="text-xs text-muted-foreground">{{ t('nutrition.trend.title') }}</p>
-        <SparklineChart
-          :data="caloriesTrend"
-          color="var(--primary)"
-          :height="32"
-          class="mt-1"
-          :aria-label="t('nutrition.trend.chartLabel')"
-        />
       </div>
     </div>
 

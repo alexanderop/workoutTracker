@@ -113,6 +113,13 @@ export default {
     today: 'Heute',
     yesterday: 'Gestern',
   },
+  dashboard: {
+    seeAll: 'Alle anzeigen',
+    last7Days: 'Letzte 7 Tage',
+    last30Days: 'Letzte 30 Tage',
+    lastEntries: 'Letzte {count} Einträge',
+    notEnoughData: 'Noch nicht genug Daten',
+  },
   goBack: 'Zurück',
   back: 'Zurück',
   continue: 'Weiter',

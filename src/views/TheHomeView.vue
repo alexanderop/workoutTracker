@@ -9,6 +9,8 @@ import WeekStrip from '@/features/workout/components/WeekStrip.vue'
 import WorkoutCalendarSheet from '@/features/workout/components/WorkoutCalendarSheet.vue'
 import HabitsHomeCard from '@/features/habits/components/HabitsHomeCard.vue'
 import NutritionDashboardCard from '@/features/nutrition/components/NutritionDashboardCard.vue'
+import NutritionCaloriesTile from '@/features/nutrition/components/NutritionCaloriesTile.vue'
+import WeightStatTile from '@/features/weight/components/WeightStatTile.vue'
 import HomeWeightSummaryCard from '@/features/weight/components/HomeWeightSummaryCard.vue'
 import { useWorkoutCalendar } from '@/features/workout/composables/useWorkoutCalendar'
 
@@ -84,11 +86,25 @@ function openCalendarSheet() {
         @next-month="goToNextMonth"
       />
 
+      <!-- Insights & Analytics: glanceable sparkline tiles, each opening its
+           feature's full page. -->
+      <section aria-labelledby="insights-heading">
+        <div class="mb-3 flex items-center justify-between px-1">
+          <h2 id="insights-heading" class="text-section-title font-bold">
+            {{ t('nav.homeView.insights') }}
+          </h2>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <NutritionCaloriesTile />
+          <WeightStatTile metric="trend" />
+        </div>
+      </section>
+
       <NutritionDashboardCard />
 
       <section aria-labelledby="workout-actions-heading">
         <div class="mb-3 flex items-center justify-between px-1">
-          <h2 id="workout-actions-heading" class="font-semibold">
+          <h2 id="workout-actions-heading" class="text-section-title font-bold">
             {{ t('nav.homeView.workout') }}
           </h2>
           <span class="text-xs text-muted-foreground">{{ t('nav.homeView.quickActions') }}</span>

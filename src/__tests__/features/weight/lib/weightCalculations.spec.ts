@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import { isOutlier } from '@/features/weight/lib/weightCalculations'
+import { isOutlier, trailingAverage } from '@/features/weight/lib/weightCalculations'
+
+describe('trailingAverage', () => {
+  it('averages each value with the window preceding it', () => {
+    expect(trailingAverage([80, 82, 84, 86], 3)).toEqual([80, 81, 82, 84])
+  })
+
+  it('averages over what exists before a full window has accumulated', () => {
+    expect(trailingAverage([90, 92], 3)).toEqual([90, 91])
+  })
+
+  it('returns the values unchanged for a window of 1 or less', () => {
+    expect(trailingAverage([80, 82, 84], 1)).toEqual([80, 82, 84])
+    expect(trailingAverage([80, 82, 84], 0)).toEqual([80, 82, 84])
+  })
+
+  it('handles an empty series', () => {
+    expect(trailingAverage([], 3)).toEqual([])
+  })
+})
 
 describe('isOutlier', () => {
   it('should return false when the new weight is close to the previous weight', () => {
