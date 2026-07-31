@@ -171,7 +171,7 @@ function add(): void {
               v-for="option in units"
               :key="option.value"
               type="button"
-              class="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+              class="min-h-11 min-w-11 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               :class="
                 unit === option.value
                   ? 'border-primary bg-primary text-primary-foreground'
