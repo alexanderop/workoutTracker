@@ -213,13 +213,13 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Checkout exact PR revision without credentials
         if: steps.context.outputs.ui_changed == 'true'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ steps.context.outputs.head_sha }}
           persist-credentials: false
       - name: Setup pnpm
         if: steps.context.outputs.ui_changed == 'true'
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Setup Node
         if: steps.context.outputs.ui_changed == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -319,7 +319,7 @@ jobs:
           exit 1
 
       - name: Checkout trusted default-branch orchestration
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
@@ -701,7 +701,7 @@ jobs:
         if: steps.claude-action-guard.outputs.can_run == 'true'
         id: claude-smoke
         timeout-minutes: 3
-        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
+        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # workflow_run QA is triggered by whoever pushed the PR branch;
@@ -779,7 +779,7 @@ jobs:
         id: claude-qa
         timeout-minutes: 20
         continue-on-error: true
-        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
+        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_bots: dependabot,github-actions
@@ -1033,7 +1033,7 @@ jobs:
         # it left behind is what matters, and "Verify report after retry" below
         # is the gate that judges it.
         continue-on-error: true
-        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
+        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b # v1.0.183
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_bots: dependabot,github-actions
@@ -1402,7 +1402,7 @@ jobs:
       report-ready: ${{ steps.validate.outputs.ready }}
     steps:
       - name: Checkout trusted default-branch publisher
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
