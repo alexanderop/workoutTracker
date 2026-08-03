@@ -11,14 +11,14 @@ catalogs:
     '@vue/tsconfig': ^0.9.1
     husky: ^9.1.7
     jiti: ^2.7.0
-    npm-run-all2: ^9.0.2
+    npm-run-all2: ^9.0.3
     rollup-plugin-visualizer: ^7.0.1
     ts-morph: ^28.0.0
     typescript: ~6.0.3
     vite: ^8.0.16
     vite-plugin-pwa: ^1.3.0
     vite-plugin-vue-devtools: ^8.1.5
-    vue-tsc: ^3.3.7
+    vue-tsc: ^3.3.9
     workbox-build: ^7.4.1
     workbox-window: ^7.4.1
   frontend:
@@ -27,8 +27,8 @@ catalogs:
     date-fns: ^4.4.0
     dexie: ^4.4.4
     sortablejs: ^1.15.7
-    vue: 3.5.38
-    vue-i18n: ^11.4.6
+    vue: 3.5.40
+    vue-i18n: ^11.4.8
     vue-router: ^5.1.0
     web-vitals: ^5.3.0
     zod: ^4.4.3
@@ -39,7 +39,7 @@ catalogs:
     '@intlify/eslint-plugin-vue-i18n': ^4.5.1
     '@prettier/plugin-oxc': ^0.1.4
     '@size-limit/file': ^12.1.0
-    '@vitest/eslint-plugin': ^1.6.23
+    '@vitest/eslint-plugin': ^1.6.24
     '@vue/eslint-config-prettier': ^10.2.0
     '@vue/eslint-config-typescript': ^14.8.0
     eslint: ^10.5.0
@@ -50,7 +50,7 @@ catalogs:
     eslint-plugin-regexp: ^3.1.1
     eslint-plugin-unicorn: ^68.0.0
     eslint-plugin-vue: ~10.9.2
-    jscpd: ^5.0.12
+    jscpd: ^5.0.14
     knip: ^6.17.1
     lint-staged: ^17.0.8
     markdownlint-cli2: ^0.22.1
