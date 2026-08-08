@@ -1,0 +1,40 @@
+name: Agentic Browser QA (Reusable v1 Pilot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Open same-repository PR to test
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  browser-qa:
+    name: Run reusable browser QA
+    permissions:
+      actions: read # Download isolated application and QA evidence artifacts.
+      contents: read
+      id-token: write # Authenticate claude-code-action through its OIDC boundary.
+      issues: write # Create or update the sticky QA report comment.
+      pull-requests: read # Resolve the exact PR revision and its acceptance context.
+      statuses: write # Publish the verdict against the tested commit.
+    uses: alexanderop/agentic-browser-qa/.github/workflows/agentic-browser-qa.yml@80d249155a1ac5a6562491a888a5ecc094f9a664 # v1.0.0
+    with:
+      pr_number: ${{ inputs.pr_number }}
+      node_version: '22'
+      setup_command: corepack enable
+      install_command: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+      build_command: pnpm build-only
+      artifact_path: dist
+      port: 5173
+      spa_fallback: true
+      device: iPhone 14
+      model: claude-sonnet-5
+      max_turns: 100
+      record_video: true
+      instructions_file: .github/agentic-browser-qa.md
+      status_context: Agentic Browser QA (Reusable v1)
+    secrets:
+      claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
