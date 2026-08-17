@@ -1,5 +1,8 @@
 # Brain
 
+## _archive
+- [[_archive/food-logging-surface]] — Archived 2026-08-17 (brain sync): resolved prototype journal for a now-shipped
+
 ## Decisions
 - [[decisions/002-per-kind-block-codecs]] — Status: accepted, fully landed. Supersedes the unimplemented full plugin
 - [[decisions/003-effect-style-di]] — Status: accepted for new feature services, landed as the habits pilot. `Scope`
@@ -15,9 +18,6 @@
 - [[principles/a-fake-must-not-promise-more-than-the-real-thing]] — A test double exists to stand in for a dependency. The moment it guarantees
 - [[principles/encode-lessons-in-structure]] — A lesson written down is a lesson someone has to remember to read. A lesson
 - [[principles/type-guarantees-need-a-pinned-call-site]] — A constrained signature only proves something where code actually calls it. If
-
-## Prototypes
-- [[prototypes/food-logging-surface]] — Resolved: implemented as `src/features/nutrition/components/FoodLogSheet.vue`
 
 ## Reference
 - [[reference/research/2026-07-19-mobile-modal-keyboard-ux]] — ---

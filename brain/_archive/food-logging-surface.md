@@ -1,3 +1,15 @@
+> Archived 2026-08-17 (brain sync): resolved prototype journal for a now-shipped
+> feature. Core deliverable (the sheet, its four tabs, the basket, and the
+> translucent staged-budget-bars) matches `FoodLogSheet.vue` /
+> `FoodBasketTray.vue` / `FoodBudgetBars.vue` exactly. Two committed "graft from
+> the runners-up" items were never carried into the real implementation and
+> have no other tracking — flagging here so the gap isn't lost:
+> - the numeric quick-add shorthand (`650 45p 20f` → 650 kcal · 45P 20F) inside
+>   the Schnell/quick-add tab (still four separate number fields today)
+> - the Gegessen/Übrig (eaten/remaining) toggle on the day's budget
+>
+> Original note follows, unchanged.
+
 # Food Logging Surface
 
 Resolved: implemented as `src/features/nutrition/components/FoodLogSheet.vue`

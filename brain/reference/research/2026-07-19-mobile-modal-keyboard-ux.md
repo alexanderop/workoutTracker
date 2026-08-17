@@ -135,6 +135,10 @@ Full inventory (2026-07-19): 21 `MobileDialogContent` consumers, 2
 - Composable conventions to mirror: `useTouchDevice` (VueUse
   `useMediaQuery`), `useScreenWakeLock` (VueUse `useEventListener`).
 
+Note (post-2026-07-19): `FoodLogDialog` was rewritten as `FoodLogSheet.vue`
+(2026-07-26) and now follows the `MobileDialogContent` + `dvh` good pattern
+described above, rather than the worst-case pattern it's cited as here.
+
 ## Recommended Approach (implemented)
 
 1. **Viewport meta** (`index.html`): add `interactive-widget=resizes-content`
@@ -151,8 +155,9 @@ Full inventory (2026-07-19): 21 `MobileDialogContent` consumers, 2
    instead). Desktop (`sm:`) behavior unchanged.
 4. **Dialog bodies**: input-heavy dialogs use header / `flex-1 min-h-0
    overflow-y-auto overscroll-contain` body / pinned footer CTA.
-5. **Inputs ≥16px on mobile**: `text-base sm:text-sm` on Input/NativeSelect/
-   Textarea to kill iOS zoom-on-focus.
+5. **Inputs ≥16px on mobile**: `text-base` (reduced via `md:text-sm`) on
+   Input/NativeSelect/NumberFieldInput to kill iOS zoom-on-focus. No
+   Textarea component exists in this codebase to apply it to.
 6. Normalize remaining `vh` caps in sheets to `dvh`.
 
 Pitfalls deliberately avoided: no `maximum-scale=1`; no
