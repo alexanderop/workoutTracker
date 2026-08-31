@@ -152,7 +152,7 @@ jobs:
       sha: ${{ steps.candidate.outputs.sha }}
     steps:
       - name: Checkout exact tested revision without credentials
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           fetch-depth: 50
@@ -182,7 +182,7 @@ jobs:
           test -f /tmp/qa-report/qa-report.md
           test ! -L /tmp/qa-report/qa-report.md
       - name: Run Claude on QA findings
-        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1.0.93
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1.0.210
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -263,7 +263,7 @@ jobs:
       sha: ${{ steps.seal.outputs.sha }}
     steps:
       - name: Checkout exact tested revision without credentials
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
@@ -281,7 +281,7 @@ jobs:
           test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
           git checkout --detach "$EXPECTED_SHA"
       - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -327,7 +327,7 @@ jobs:
         run: test '${{ needs.agent.result }}' = success
       - name: Checkout original head without credentials
         if: needs.agent.outputs.candidate == 'true'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           ref: ${{ needs.gate.outputs.initial-sha }}
           persist-credentials: false
