@@ -33,8 +33,10 @@ four places, all in the kind direction:
 4. **Ids are sortable.** `progression-1`, `progression-2` versus
    `crypto.randomUUID()` — a test could lean on ordering that does not exist.
 
-Only #1 had actually bitten. The rest are recorded in the fake's own header so
-the next author does not lean on them.
+Only #1 had actually bitten. #2 is recorded in the fake's own header (`## Two
+places this fake is deliberately kinder than Dexie`) so the next author does
+not lean on it. #3 and #4 are not documented in the fake itself — recorded
+here instead.
 
 Corollaries:
 

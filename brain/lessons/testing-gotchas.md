@@ -51,8 +51,9 @@ failure modes here:
   not tier coverage. A green run is complete and trustworthy; a red one is
   truncated. Never cite the count from a truncated run as evidence that the
   tier passed — re-run with `CI=1 pnpm test` (which sets `bail: 0`) to see every
-  failure and the real total. The full default project is ~173 files / ~1289
-  tests and takes ~5 minutes.
+  failure and the real total. The full default project is ~185 files and takes
+  ~5 minutes (test count grows with the suite; re-check via a full run rather
+  than trusting a stale figure here).
 - A Playwright project can silently contribute **zero** tests while the run
   still exits 0: if `bddgen` has not generated `.features-gen/`, the BDD project
   is simply empty, and because the sibling `chromium` project still has tests,

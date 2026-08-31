@@ -3,7 +3,11 @@
 Resolved: implemented as `src/features/nutrition/components/FoodLogSheet.vue`
 (tabs: search/scan/quick/custom) + `FoodBasketTray.vue`/`FoodBudgetBars.vue`
 (staging basket + budget feedback). The `nutrition-log-prototype` directory
-and route below have been deleted per the Decision.
+and route below have been deleted per the Decision. Neither graft below (the
+numeric quick-add parse, the Gegessen/Übrig toggle) was carried into the real
+implementation as of 2026-08-31 — `FoodQuickAddPanel.vue` still uses four
+separate numeric fields, and `NutritionDashboardCard.vue` shows only a single
+fixed remaining/over-goal number with no toggle.
 
 Question:
 What structure should replace `FoodLogDialog.vue`? Today it is one form doing

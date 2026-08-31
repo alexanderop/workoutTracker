@@ -17,7 +17,7 @@ That is invisible as long as the watcher only resets transient state (a tab
 index, a query string), because the initial values are already correct. It
 becomes a real bug the moment the watcher initialises something the component
 does not own. `FoodLogSheet`'s watcher calls
-`basket.openFor(localDate, meal)` on an app-scoped store, which discards the
+`basket.openFor(localDate, initialMeal)` on an app-scoped store, which discards the
 basket when the day changes. Missing the first opening left `basket.localDate`
 empty, so the **second** opening read the same day as a day change and threw
 the basket away — the exact failure an app-scoped basket exists to prevent.
